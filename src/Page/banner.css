@@ -1,0 +1,28 @@
+.banner-container {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+.banner-header {
+    display: flex;
+    align-items: center;
+
+}
+
+.banner-list {
+    display: flex;
+    list-style: none;
+    gap:50px;
+}
+
+
+.banner-list li p{
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.banner-list li a{
+    color:black;
+}
