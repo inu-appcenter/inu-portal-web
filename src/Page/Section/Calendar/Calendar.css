@@ -1,0 +1,45 @@
+.fc {
+    width: 540px;
+    height: 380px;
+}
+
+.fc .fc-toolbar-title {
+    font-family: Inter;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 29px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: #0E4D9D;
+}
+
+
+.fc .fc-col-header-cell-cushion {
+    display: inline-block;
+    font-size: 14px;
+}
+
+
+.fc .fc-daygrid-day-number ,a {
+    color:rgba(0, 0, 0, 0.411);
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.fc .fc-daygrid-day-top {
+    display: flex;
+}
+
+.fc-day-sun a {
+    color: red;
+    text-decoration: none;
+}
+
+.fc .fc-button {
+    padding:0
+}
+
+.fc-daygrid-event {
+    font-size:8px;
+} 
+
