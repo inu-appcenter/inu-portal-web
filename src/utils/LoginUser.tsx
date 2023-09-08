@@ -19,6 +19,10 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
     if (response.status == 400) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
+    else if(response.status ==401) {
+      console.log("비밀번호가 틀립니다.");
+      throw new Error('Wrong password');
+    }
     else {
         const token = response.text();
         console.log("로그인 성공", token);
