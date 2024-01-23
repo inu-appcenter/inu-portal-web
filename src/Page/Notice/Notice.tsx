@@ -1,4 +1,4 @@
-import Noticeitems from "./noticeItems";
+import Noticeitems from "./NoticeItem/NoticeItems";
 
 
 export interface notice {

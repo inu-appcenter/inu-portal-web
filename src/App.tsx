@@ -1,6 +1,6 @@
 import { Route, Routes,BrowserRouter } from "react-router-dom";
 
-import Main from "./Page/Main";
+import Main from "./Page/Main/Main";
 
 
 function App() {
