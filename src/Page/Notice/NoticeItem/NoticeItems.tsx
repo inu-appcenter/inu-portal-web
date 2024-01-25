@@ -17,13 +17,13 @@ interface NoticesProps {
 const Noticeitems: React.FC<NoticesProps> = ({ notices }) => {
   const [startIndex, setStartIndex] = useState(0);
 
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     setStartIndex((prevIndex) => (prevIndex + 3) % notices.length);
-  //   }, 5000);
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setStartIndex((prevIndex) => (prevIndex + 3) % notices.length);
+    }, 5000);
 
-  //   return () => clearInterval(intervalId);
-  // }, [notices.length]);
+    return () => clearInterval(intervalId);
+  }, [notices.length]);
 
   return (
     <div className="div">

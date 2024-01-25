@@ -16,6 +16,7 @@ const CategoryUniversity: React.FC<CategoryUniversityProps> = ({ university }) =
     setSelectedUniversity((prevUniversity) => (prevUniversity === category ? null : category));
     const targetUrl = link
     window.open(targetUrl);
+    console.log(selectedUniversity);
   };
 
 
