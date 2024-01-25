@@ -1,10 +1,12 @@
-import Banner from '../Banner/Banner'
+import Header from '../Header/Header'
+import Nav from '../Banner/Banner'
 import Notice from '../Notice/Notice'
 
 function Main() {
   return (
     <>
-      <Banner></Banner>
+      <Header></Header>
+      <Nav></Nav>
       <Notice></Notice>
     </>
   )

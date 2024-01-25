@@ -1,23 +1,44 @@
 .div {
-  position: relative;
-  left:100%;
+  position: absolute;
+  bottom: 10%;
+  width: 100%;
 }
 .notice-header {
     font-size: 30px;
-    font-weight: 800;
+    font-weight: 900;
+    color:#0E4D9D;
+    margin-left:50px;
 }
 
 .notice-container {
-    display: grid;
-    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
+    gap:100px;
 }
+
+.notice-link {
+  box-sizing: border-box;
+  width: 350px;
+  background-color: #0E4D9D;
+  color:white;
+  font-size: 36px;
+  font-weight: 900;
+  padding:20px;
+  margin-left:50px;
+}
+
+.notice-link img {
+  vertical-align:bottom;
+  margin-left:20px;
+}
+
   
   .notice {
-    width: 300px;
+    box-sizing: border-box;
+    width: 350px;
     opacity: 0;
-    margin-right: 20px;
-    margin-bottom: 20px;
     transition: opacity 0.5s ease-in-out;
+    background-color: #595959;
   }
   
   .visible {

@@ -1,8 +1,17 @@
-.banner-container {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, 0);
+.banner-nav{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 70px;
+    align-items: center;
+    margin: 0 50px;
+}
+.banner-nav img {
+    padding-top:10px;
+    width: 225px;
+    height: 54px;
+    flex: 20%;
+    margin-right: 60px;
 }
 
 .banner-header {
@@ -14,15 +23,42 @@
 .banner-list {
     display: flex;
     list-style: none;
-    gap:50px;
+    gap:100px;
+    flex:60%;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 
 .banner-list li p{
-    font-size: 20px;
+    font-size: 30px;
     font-weight: 900;
 }
 
 .banner-list li a{
     color:black;
+}
+
+.banner-list .search-img {
+    width: 35px;
+    height: 35px;
+    vertical-align: middle;
+}
+
+.banner-university {
+    padding:55px;
+}
+.banner-university.open {
+    box-sizing: border-box;
+    background-color: #424242;
+    color: white;
+}
+
+.banner-department {
+    padding:55px;
+}
+.banner-department.open {
+    box-sizing: border-box;
+    background-color: #424242;
+    color: white;
 }

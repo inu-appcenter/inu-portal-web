@@ -1,34 +1,34 @@
 import React, { useState } from "react";
 import "./CategoryDepartment.css"
-interface Group {
+interface Department {
   title: string;
-  extendProps: {
-    group: string[];
+  department: {
+    department: string[];
   };
-  groupLink: {
+  departmentlink: {
     link:string[]
 }
 }
 
-interface CategoryDropDown {
-  groups: Group[];
+interface CategoryDepartmentProps {
+  department: Department[];
 }
 
-const CategoryDropDown: React.FC<CategoryDropDown> = ({ groups }) => {
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-  console.log(selectedGroup);
+const CategoryDepartment: React.FC<CategoryDepartmentProps> = ({ department }) => {
+  const [selectedDepartment,setSelectedDepartment] = useState<string | null>(null);
+  console.log(selectedDepartment);
 
 
-  const onGroupClicked = (group: string) => () => {
-
-    setSelectedGroup((prevGroup) => (prevGroup === group ? null : group));
+  const onDepartmentClicked = (department: string) => () => {
+    setSelectedDepartment((prevDepartment) => (prevDepartment === department ? null : department));
   };
   
   const onhandleClick = (index: number) => () => {
-    if (selectedGroup) {
-      const group = groups.find((group) => group.title === selectedGroup);
-      if (group) {
-        group.groupLink.link.forEach((link, subIndex) => {
+    if (selectedDepartment) {
+      const foundDepartment = department.find((dep) => dep.title === selectedDepartment);
+  
+      if (foundDepartment) {
+        foundDepartment.departmentlink.link.forEach((link, subIndex) => {
           if (subIndex === index) {
             const targetUrl = link;
             window.location.href = targetUrl;
@@ -37,18 +37,19 @@ const CategoryDropDown: React.FC<CategoryDropDown> = ({ groups }) => {
       }
     }
   };
+  
 
   return (
-      <div className="category-container">
-        <ul className="category-list">
-            {groups.map((group, index) => (
+      <div className="category-department-container">
+        <ul className="category-department-list">
+            {department.map((department, index) => (
               <React.Fragment key={index}>
-                  <li className="category-item" onClick={onGroupClicked(group.title)}>
-                    {group.title}
+                  <li className="category-department-item" onClick={onDepartmentClicked(department.title)}>
+                    {department.title}
                   </li>
-                {selectedGroup === group.title &&
-                  group.extendProps.group.map((title, subIndex) => (
-                    <li className="category-items" key={subIndex} onClick={onhandleClick(subIndex)}>{title}</li>
+                {selectedDepartment === department.title &&
+                  department.department.department.map((title, subIndex) => (
+                    <li className="category-department-items" key={subIndex} onClick={onhandleClick(subIndex)}>{title}</li>
                   ))}
               </React.Fragment>
             ))}
@@ -57,4 +58,4 @@ const CategoryDropDown: React.FC<CategoryDropDown> = ({ groups }) => {
   );
 };
 
-export default CategoryDropDown;
+export default CategoryDepartment;

@@ -1,7 +1,7 @@
 // Noticeitems.tsx
 import { useEffect, useState } from "react";
 import "./Noticeitems.css";
-
+import img from "../../../assets/image 6.png";
 interface Notice {
   category: string;
   title: string;
@@ -17,34 +17,41 @@ interface NoticesProps {
 const Noticeitems: React.FC<NoticesProps> = ({ notices }) => {
   const [startIndex, setStartIndex] = useState(0);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setStartIndex((prevIndex) => (prevIndex + 3) % notices.length);
-    }, 5000);
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     setStartIndex((prevIndex) => (prevIndex + 3) % notices.length);
+  //   }, 5000);
 
-    return () => clearInterval(intervalId);
-  }, [notices.length]);
+  //   return () => clearInterval(intervalId);
+  // }, [notices.length]);
 
   return (
     <div className="div">
-      <p className="notice-header">공지사항</p>
+      <p className="notice-header">📌 NOTICE</p>
       <div className="notice-container">
-        {notices.slice(startIndex, startIndex + 3).map((notice, index) => (
+        <div className="notice-link">
+          <span>인천대</span>
+          <img src={img} alt="인천대학교 로고" />
+          <p>공지사항</p>
+        </div>
+        {notices.slice(startIndex, startIndex + 7).map((notice, index) => (
           <div key={index} className={`notice visible`}>
             <div className="notice-container">
               <div>
                 <span className="notice-title">{notice.title}</span>
               </div>
-              <div className="notice-content">
+              {/* <div className="notice-content">
                 <span>{notice.content}</span>
-              </div>
+              </div> */}
             </div>
-            <div className="notice-readmore">
+            {/* <div className="notice-readmore">
               <span>READ MORE</span>
             </div>
-          </div>
-        ))}
+          </div> */}
+        
       </div>
+        ))}
+    </div>
     </div>
   );
 };
