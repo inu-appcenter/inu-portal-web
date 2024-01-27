@@ -1,7 +1,7 @@
 // Noticeitems.tsx
 import { useEffect, useState } from "react";
 import "./Noticeitems.css";
-import img from "../../../assets/image 6.png";
+import img from "../../../assets/Images/image 6.png";
 interface Notice {
   category: string;
   title: string;
@@ -32,7 +32,7 @@ const Noticeitems: React.FC<NoticesProps> = ({ notices }) => {
         <div className="notice-link">
           <span>인천대</span>
           <img src={img} alt="인천대학교 로고" />
-          <p>공지사항</p>
+          <p>공지사항 &gt; </p>
         </div>
         {notices.slice(startIndex, startIndex + 7).map((notice, index) => (
           <div key={index} className={`notice visible`}>

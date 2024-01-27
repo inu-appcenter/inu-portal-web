@@ -1,34 +1,33 @@
 .header-header {
     position: fixed;
     top:0;
-    left:50px;
-    right:50px;
+    left:32px;
+    right:32px;
     background-color:#0E4D9D;
-    padding:10px;
+    padding:5px 0 8px 0;
     text-align: right;
-    padding-right: 5%;
+    padding-right: 26px;
 }
 
 .header-header a {
-    font-size: 25px;
+    font-size: 17px;
     font-weight: 300;
     line-height: 20px;
-    letter-spacing: 0px;
     color: #FFFFFF;
     text-decoration: none;
 }
 
 .header-header button {
-    font-size: 25px;
+    font-size: 17px;
     font-weight: 300;
     line-height: 20px;
-    letter-spacing: 0px;
     color: #FCAF15;
     background-color: #0E4D9D;
     border: none;
 }
 
 .header-header button::before {
-    content: url("/src/assets/Earth\ Globe.png");
-    margin: 0px 5px 0 20px;
+    content: url("/src/assets/Images/Earth\ Globe.png");
+    margin: 5px 8px 0px 15px;
+    vertical-align: middle;
 }

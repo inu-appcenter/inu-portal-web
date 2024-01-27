@@ -3,7 +3,6 @@ import CategoryUniversity from "../Category/CategoryUniversity";
 
 
 import "./Banner.css"
-import img from "../../assets/Vector.png"
 import CategoryDepartment from "../Category/CategoryDepartment";
 
 
@@ -161,13 +160,12 @@ function Nav(){
                 <a href="#" target="_blank">
                 <img src="https://www.inu.ac.kr/sites/inu/images/common/logo-header.png" alt="인천대학교"/>
                 </a>
-            <div></div>
             <ul className="banner-list">
-                <li><p>메인 페이지</p></li>
+                <li><div><p>메인 페이지</p></div></li>
                 <li><div onClick={onUniversityToggle}><p className={`banner-university${isUniversityOpen ? ' open' : ''}`}>학교 홈페이지</p></div>{isUniversityOpen && <CategoryUniversity university={university} />}</li>
                 <li><div onClick={onDepartmentToggle}><p className={`banner-department${isDepartmentOpen ? ' open' : ''}`}>학과 홈페이지</p></div>{isDepartmentOpen && <CategoryDepartment department={departments} />}</li>
-                <li><p>마이페이지</p></li>
-                <li><img className="search-img" src={img} alt="" /></li>
+                <li><div><p>마이페이지</p></div></li>
+                {/* <li><img className="search-img" src={img} alt="" /></li> */}
             </ul>
             </nav>
         </div>
