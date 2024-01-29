@@ -1,6 +1,5 @@
 import { useState } from "react";
 import CategoryUniversity from "../Category/CategoryUniversity";
-import { useNavigate } from "react-router-dom";
 
 import "./Banner.css"
 import CategoryDepartment from "../Category/CategoryDepartment";
@@ -148,7 +147,7 @@ export const departments: Department[] = [
 function Nav(){
     const [isDepartmentOpen, setIsDepartmentOpen] = useState<boolean>(false);
     const [isUniversityOpen, setIsUniversityOpen] = useState<boolean>(false);
-    const navigate = useNavigate();
+
     const onDepartmentToggle = () => {
         setIsDepartmentOpen(!isDepartmentOpen);
     }
@@ -156,9 +155,6 @@ function Nav(){
         setIsUniversityOpen(!isUniversityOpen)
     }
 
-    const clicked = () => {
-        navigate("/login");
-    };
     return (
         <div className="banner-container">
             <nav className="banner-nav">
@@ -169,7 +165,7 @@ function Nav(){
                 <li><div><p>메인 페이지</p></div></li>
                 <li><div onClick={onUniversityToggle}><p className={`banner-university${isUniversityOpen ? ' open' : ''}`}>학교 홈페이지</p></div>{isUniversityOpen && <CategoryUniversity university={university} />}</li>
                 <li><div onClick={onDepartmentToggle}><p className={`banner-department${isDepartmentOpen ? ' open' : ''}`}>학과 홈페이지</p></div>{isDepartmentOpen && <CategoryDepartment department={departments} />}</li>
-                <li><div onClick={clicked}><p>마이페이지</p></div></li>
+                <li><p>마이페이지</p></li>
                 {/* <li><img className="search-img" src={img} alt="" /></li> */}
             </ul>
             </nav>
