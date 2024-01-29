@@ -2,13 +2,13 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    padding-top: 75px;
+    padding-top: 40px;
     align-items: center;
     margin: 0 61px;
 }
 .banner-nav img {
-    width: 225px;
-    height: 54px;
+    width: 147px;
+    height: 34px;
     flex: 20%;
 }
 
@@ -30,7 +30,7 @@
 
 
 .banner-list li p{
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 900;
 }
 
