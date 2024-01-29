@@ -22,6 +22,7 @@ const TipsDocuments: React.FC<TipsDocumentsProps> = ({ selectedCategory }) => {
       { title: `Document 3 for ${category}`, author: "작성자 3", date: "2024-01-03" }
     ];
     setDocuments(dummyDocuments);
+    console.log(selectedDocument);
   };
 
   useEffect(() => {

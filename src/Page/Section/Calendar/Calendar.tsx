@@ -48,7 +48,9 @@ class DashBoard extends Component<DashBoardProps, DashBoardState> {
           style={{
             display: 'grid',
             float:"right",
-            marginRight:24
+            marginRight:8,
+            position: "relative",
+            top:-450
           }}
         >
           <FullCalendar

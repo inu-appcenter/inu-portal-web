@@ -1,6 +1,6 @@
 .div {
   position: absolute;
-  bottom: 3%;
+  bottom: 2%;
   width: 100%;
 }
 
@@ -9,7 +9,7 @@
   overflow-x: auto; 
   white-space: nowrap; 
   gap:16px;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
 }
 
 .notice-items-container::-webkit-scrollbar {
@@ -40,16 +40,16 @@
     letter-spacing: 0px;
     text-align: left;
     color:#0E4D9D;
-    margin-left:30px;
+    margin:15px 0 0 30px;
 }
 
 .notice-container {
     display: flex;
     gap:16px;
     margin:0 30px;
-      overflow-x: auto; 
-  white-space: nowrap; 
-  margin-right: 16px; 
+    overflow-x: auto; 
+    white-space: nowrap; 
+    margin-right: 16px; 
 }
 
 .notice-link {
