@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import TipsDocumentDetail from './TipsDocumentDetail';
 
 interface Document {
   title: string;
@@ -31,10 +30,7 @@ const TipsDocuments: React.FC<TipsDocumentsProps> = ({ selectedCategory }) => {
 
   return (
     <div>
-      <h2>{selectedCategory} Tips</h2>
-      {selectedDocument ? (
-        <TipsDocumentDetail document={selectedDocument} />
-      ) : (
+      <h2>{selectedCategory} Tips</h2> 
         <div>
           {documents.map((document, index) => (
             <div key={index} onClick={() => setSelectedDocument(document)}>
@@ -42,7 +38,6 @@ const TipsDocuments: React.FC<TipsDocumentsProps> = ({ selectedCategory }) => {
             </div>
           ))}
         </div>
-      )}
     </div>
   );
 };
