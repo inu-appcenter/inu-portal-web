@@ -61,7 +61,7 @@ const MainTips: React.FC = () => {
   }, []);
 
   return (
-    <div>
+    <div className='tips'>
       <div className="tips-header">
         <div className="tips-title">⭐️ TIPS</div>
         <div className="tips-search">

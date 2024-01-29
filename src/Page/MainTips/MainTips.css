@@ -1,3 +1,8 @@
+.tips {
+  width: 1250px;
+  margin-left: 36px;
+}
+
 .tips-header {
   display: flex;
   flex-direction: row;
@@ -9,7 +14,7 @@
 .tips-title {
   color: #0e4d9d;
   font-family: "Inter-Bold", Helvetica;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   top: 0;
 }
@@ -114,4 +119,5 @@
 
   padding-left: 8px;
   padding-right: 8px;
+  font-size: 12px;
 }
