@@ -1,41 +1,87 @@
-
-.container{
+.Banner {
+    background-color: #0e4d9d;
+  }
+  
+  .Banner {
+    padding: 30px;
+  }
+  .container {
+  
+  }
+  .PostSidePart {
+    width: 200px;
+    height: 100#;
+    position: fixed;
+    padding: 300px 0 0 0;
     text-align: center;
-
-}
-
-.subject{
-    padding: 50px;
-   
-}
-
-.view-detail{
+  }
+  
+  .Views{
+      margin: 0 0 30px 0;
+  }
+  
+  .post-info-container{
+  
+  }
+  .divider{
+      border-top: 1px solid #aaaaaa;
+      width: 500px;
+  
+      text-align: center;
+  
+      
+  }
+  .SubNavi {
+    text-align: left;
+    padding: 30px;
+  }
+  
+  .PostCenterPart {
+    text-align: center;
+    margin: 0 200px 0 200px;
+    border-style: solid;
+    border-color: #aaaaaa;
+  }
+  
+  .subject {
+    padding: 10px;
+  }
+  
+  .view-detail {
     display: flex;
     justify-content: space-around;
-    border-style: solid;
-    border-color: black;
-}
-
-.inline-list{
-    display: flex;
-    flex-direction: row;
-}
-
-.inline-list div{
-    margin: 0 30px;
-}
-.inline-list dl{
-    display: flex;
-}
-
-.inline-list dt,
-.inline-list dd{
-    margin: 0 10px;
-}
-
-.contents{
+  }
+  
+  .inline-list {
+  
+  }
+  .view-title {
+    font-size: 30px;
+  }
+  .post-contents {
+      padding: 30px 0 0 0;
+  }
+  
+  .contents {
     width: 100%;
     height: 400px;
-    border-style: solid;
-    border-color: black;
-}
+  }
+  
+  .Like,
+  .Views{
+    border: none;
+    background-color: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .CommentBox {
+    }
+  
+  .CommentContent{
+    width: 700px;
+  }
+  .submit{
+    padding: 30px;
+  }
