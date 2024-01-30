@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import './Post.css';
 import CommentForm from './Component/CommentForm';
 import CommentList from './Component/CommnetList';

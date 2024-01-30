@@ -2,16 +2,14 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    padding-top: 70px;
+    padding-top: 40px;
     align-items: center;
-    margin: 0 50px;
+    margin: 0 61px;
 }
 .banner-nav img {
-    padding-top:10px;
-    width: 225px;
-    height: 54px;
+    width: 147px;
+    height: 34px;
     flex: 20%;
-    margin-right: 60px;
 }
 
 .banner-header {
@@ -23,15 +21,16 @@
 .banner-list {
     display: flex;
     list-style: none;
-    gap:100px;
+    gap:64px;
     flex:60%;
     justify-content: flex-end;
     align-items: center;
+    padding:0px;
 }
 
 
 .banner-list li p{
-    font-size: 30px;
+    font-size: 14px;
     font-weight: 900;
 }
 
@@ -45,18 +44,18 @@
     vertical-align: middle;
 }
 
-.banner-university {
+/* .banner-university {
     padding:55px;
-}
+} */
 .banner-university.open {
     box-sizing: border-box;
     background-color: #424242;
     color: white;
 }
 
-.banner-department {
+/* .banner-department {
     padding:55px;
-}
+} */
 .banner-department.open {
     box-sizing: border-box;
     background-color: #424242;

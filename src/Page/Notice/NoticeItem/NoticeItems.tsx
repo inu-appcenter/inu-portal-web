@@ -1,7 +1,7 @@
 // Noticeitems.tsx
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import "./Noticeitems.css";
-import img from "../../../assets/image 6.png";
+import img from "../../../assets/Images/image 6.png";
 interface Notice {
   category: string;
   title: string;
@@ -15,26 +15,21 @@ interface NoticesProps {
 }
 
 const Noticeitems: React.FC<NoticesProps> = ({ notices }) => {
-  const [startIndex, setStartIndex] = useState(0);
+  // const [startIndex, setStartIndex] = useState(0);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setStartIndex((prevIndex) => (prevIndex + 3) % notices.length);
-    }, 5000);
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     setStartIndex((prevIndex) => (prevIndex + 3) % notices.length);
+  //   }, 5000);
 
-    return () => clearInterval(intervalId);
-  }, [notices.length]);
+  //   return () => clearInterval(intervalId);
+  // }, [notices.length]);
 
   return (
     <div className="div">
       <p className="notice-header">📌 NOTICE</p>
       <div className="notice-container">
-        <div className="notice-link">
-          <span>인천대</span>
-          <img src={img} alt="인천대학교 로고" />
-          <p>공지사항</p>
-        </div>
-        {notices.slice(startIndex, startIndex + 7).map((notice, index) => (
+        {/* {notices.slice(startIndex, startIndex + 7).map((notice, index) => (
           <div key={index} className={`notice visible`}>
             <div className="notice-container">
               <div>
@@ -43,14 +38,32 @@ const Noticeitems: React.FC<NoticesProps> = ({ notices }) => {
               {/* <div className="notice-content">
                 <span>{notice.content}</span>
               </div> */}
+            
+            {/* <div className="notice-readmore">
+              <span>READ MORE</span>
+            </div>
+          </div> */}
+        <div className="notice-items-container">
+        <div className="notice-link">
+          <span>인천대</span>
+          <img src={img} alt="인천대학교 로고" />
+          <p>공지사항 &gt; </p>
+        </div>
+        {notices.map((notice, index) => (
+          <div key={index} className={`notice visible`}>
+            <div className="notice-container">
+                <span className="notice-title">{notice.title}</span>
+              {/* <div className="notice-content">
+                <span>{notice.content}</span>
+              </div> */}
             </div>
             {/* <div className="notice-readmore">
               <span>READ MORE</span>
             </div>
           </div> */}
-        
-      </div>
+        </div>
         ))}
+        </div>
     </div>
     </div>
   );
