@@ -1,9 +1,9 @@
 import "styled-components"; 
 
-import CategoryDepartment from "../../Page/Category/CategoryDepartment";
-import { departmentType } from "../../Resource/Data/aboutDepartment";
+import CategoryDepartment from "../../page/Category/CategoryDepartment";
+import { departmentType } from "../../resource/Data/aboutDepartment";
 import { useState } from "react";
-import { BannerDepartment } from "../../Styles/department";
+import { BannerDepartment } from "../../styles/department";
 
 export default function Department() {
     

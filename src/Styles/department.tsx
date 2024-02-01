@@ -12,4 +12,12 @@ export const BannerDepartment = styled.p`
 export const BannerListItem = styled.li`
     font-size: 14px;
     font-weight: 900;
+    p {
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  a {
+    color: black;
+  }
 `;

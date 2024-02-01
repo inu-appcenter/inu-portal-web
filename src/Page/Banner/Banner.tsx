@@ -1,20 +1,10 @@
-import { useState } from "react";
-import CategoryUniversity from "../Category/CategoryUniversity";
-
+import Department from "../../components/home/department";
+import University from "../../components/home/university";
 import "./Banner.css"
-
-import { universityType } from "../../Resource/Data/aboutUniveristy";
-import Department from "../../Components/home/department";
-
 
 
 function Nav() {
-    const [isUniversityOpen, setIsUniversityOpen] = useState<boolean>(false);
-  
-  
-    const onUniversityToggle = () => {
-      setIsUniversityOpen(!isUniversityOpen);
-    };
+
   
     return (
       <div className="banner-container">
@@ -24,13 +14,8 @@ function Nav() {
           </a>
           <ul className="banner-list">
             <li><div><p>메인 페이지</p></div></li>
-            <li>
-              <div onClick={onUniversityToggle}>
-                <p className={`banner-university${isUniversityOpen ? ' open' : ''}`}>학교 홈페이지</p>
-              </div>
-              {isUniversityOpen && <CategoryUniversity university={universityType} />}
-            </li>
             <Department/>
+            <University/>
             <li><p>마이페이지</p></li>
           </ul>
         </nav>

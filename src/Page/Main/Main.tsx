@@ -1,6 +1,8 @@
-import Header from '../Header/Header'
+
+import Header from '../../container/Header'
 import Nav from '../Banner/Banner'
-import Notice from '../Notice/Notice'
+
+import Notice from "../Notice/Notice"
 import Section from '../Section/Section'
 
 export default function Main(){

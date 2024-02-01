@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Tips_Categories from './TipsCategories';
+import Tips_Categories from "./TipsCategories";
 import Tips_Documents from './TipsDocuments';
 
 const Tips: React.FC = () => {

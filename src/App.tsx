@@ -1,9 +1,10 @@
 
 import { Route, Routes,BrowserRouter } from "react-router-dom";
-import Main from './Page/Main/Main';
-import Tips from './Page/Tips/Tips';
-import Login from './Page/Login/Login';
-import MainTips from './Page/MainTips/MainTips';
+
+import Tips from './page/Tips/Tips';
+import Login from './page/Login/Login';
+import MainTips from './page/MainTips/MainTips';
+import Main from "./page/Main/Main";
 
 function App() {
   return (
