@@ -1,5 +1,5 @@
-import Header from "../container/home/HeaderContainer"
-import Nav from "../container/home/NavContainer"
+import Header from "../container/common/HeaderContainer"
+import Nav from "../container/common/NavContainer"
 import { Outlet } from 'react-router-dom';
 export default function MainPage() {
     return (
