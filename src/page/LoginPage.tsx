@@ -1,19 +1,22 @@
-import React from 'react';
-import LoginDetail from '../container/login/LoginDetailContainer';
-import LoginImg from '../container/login/LoginImgContainer';
-import LoginTitle from '../component/login/logintitle';
+import styled from 'styled-components';
+import LoginImgContainer from '../container/login/LoginImgContainer';
+import LoginDetailContainer from '../container/login/LoginDetailContainer';
 
-const Login: React.FC = () => {
+export default function LoginPage() {
 
   return (
     <>
-      <div className="login-container">
-        <LoginImg/>
-        <LoginTitle/>
-        <LoginDetail/>
-      </div>
+      <LoginWrapper>
+        <LoginImgContainer/>
+        <LoginDetailContainer/>
+      </LoginWrapper>
     </>
   )
 };
 
-export default Login;
+const LoginWrapper = styled.div `
+  display: flex;
+  flex-direction: row;
+
+  padding-top: 200px; // 임시 (나중에 MainPage에서 위치 조절 필요)
+`
