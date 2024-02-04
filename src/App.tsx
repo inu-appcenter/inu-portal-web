@@ -1,21 +1,19 @@
-import './App.css'
-import { Route, Routes,BrowserRouter } from "react-router-dom";
-import Main from './Page/Main/Main';
-import Tips from './Page/Tips/Tips';
-import Login from './Page/Login/Login';
-import MainTips from './Page/MainTips/MainTips';
+import { Route, Routes,BrowserRouter  } from "react-router-dom";
+import MainPage from "./page/MainPage";
+import HomePage from "./page/HomePage";
 
-function App() {
+
+
+export default function App() {
   return (
     <BrowserRouter> 
       <Routes>
-        <Route path="/" element={<Main/>} />
-        <Route path="/tips" element={<Tips/>} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/MainTips" element={<MainTips/>} />
+        {/* <Route path="/" element={<Navigate to={'/home'}/>} /> */}
+        <Route path="/" element={<MainPage/>} >
+          <Route index element={<HomePage />} />
+
+        </Route>
       </Routes>
     </BrowserRouter>
   );
 }
-
-export default App;
