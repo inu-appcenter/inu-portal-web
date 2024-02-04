@@ -1,19 +1,18 @@
-import React from 'react';
-import LoginDetail from '../container/login/LoginDetailContainer';
-import LoginImg from '../container/login/LoginImgContainer';
-import LoginTitle from '../component/login/logintitle';
+import styled from 'styled-components';
+import LoginSide from '../container/login/LoginSideContainer';
+import Login from '../container/login/LoginContainer';
 
-const Login: React.FC = () => {
+export default function HomePage() {
+    
+    return (
+      <LoginWrapper>
+        <LoginSide/>
+        <Login/>
+      </LoginWrapper>
+    );
+}
 
-  return (
-    <>
-      <div className="login-container">
-        <LoginImg/>
-        <LoginTitle/>
-        <LoginDetail/>
-      </div>
-    </>
-  )
-};
-
-export default Login;
+const LoginWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+`
