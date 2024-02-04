@@ -6,7 +6,7 @@ export default function Navbar() {
     return (
         <React.Fragment>
             <Nav>
-                <a href="#" target="_blank">
+                <a href="/" target="_blank">
                     <img className= "logo" src="https://www.inu.ac.kr/sites/inu/images/common/logo-header.png" alt="INU logo" />
                 </a>
                 <NavItems/>

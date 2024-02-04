@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom'; // useNavigate 추가
 //   };
 // }
 
-const LoginInput: React.FC = () => {
+export default function LoginInput() {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // useNavigate 추가
   const [username, setUsername] = useState("");
@@ -62,11 +62,11 @@ const LoginInput: React.FC = () => {
   return (
     <>
       <input
-  type="text"  // Corrected from "username" to "text"
-  placeholder="아이디"
-  value={username}
-  onChange={handleUsernameChange}
-/>
+        type="text"  // Corrected from "username" to "text"
+        placeholder="아이디"
+        value={username}
+        onChange={handleUsernameChange}
+      />
       <div className="line"></div>
       <input
         type="password"
@@ -88,5 +88,3 @@ const LoginClickButton = styled.div`
 const LoginButtonText = styled.div`
 
 `
-
-export default LoginInput;
