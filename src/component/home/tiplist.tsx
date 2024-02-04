@@ -20,7 +20,6 @@ export default function MainTip() {
     
     useEffect(() => {
         setArticles(tipList);
-        console.log(articles);
       }, []);
     
       const goToAllTips = () => {

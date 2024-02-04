@@ -15,7 +15,6 @@ export default function Calendarbar() {
   const addInitialEvents = () => {
     // Instead of direct assignment, use setEvents function to update the state
     setEvents(calendarInfo);
-    console.log(events);
     const calendarApi = calendarRef.current?.getApi();
     if (calendarApi) {
       calendarInfo.forEach((event) => {
