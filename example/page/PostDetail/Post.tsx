@@ -2,6 +2,7 @@ import  { useState } from 'react';
 import './Post.css';
 import CommentForm from './Component/CommentForm';
 import CommentList from './Component/CommnetList';
+import React from 'react';
 
 interface CommentData {
   author: string;

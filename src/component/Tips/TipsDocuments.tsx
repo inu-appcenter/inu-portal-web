@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import TipsTitle from './TipsTitle'; // TipsTitle 컴포넌트 불러오기
 
 interface Document {
   title: string;
@@ -11,13 +12,9 @@ interface TipsDocumentsProps {
   selectedCategory: string;
 }
 
-export default function TipsDocuments({
-  selectedCategory,
-}: TipsDocumentsProps) {
+export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
-    null
-  );
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
   const getDocuments = (category: string) => {
     // 현재 더미데이터 이용, 이곳에 백엔드에서 카테고리 가져오는 코드 작성.
@@ -42,6 +39,12 @@ export default function TipsDocuments({
     console.log(selectedDocument);
   };
 
+  const handleCategoryClick = (category: string) => {
+    // TipsTitle 컴포넌트에서 받아온 카테고리를 처리
+    // 필요한 로직을 추가로 작성할 수 있습니다.
+    console.log(`Selected Category: ${category}`);
+  };
+
   useEffect(() => {
     getDocuments(selectedCategory);
   }, [selectedCategory]);
@@ -49,7 +52,8 @@ export default function TipsDocuments({
   return (
     <TipsDocumentsWrapper>
       <div>
-        <h2>{selectedCategory} Tips</h2>
+        {/* TipsTitle 컴포넌트 사용 */}
+        <TipsTitle selectedCategory={selectedCategory} onCategoryClick={handleCategoryClick} />
         <div>
           {documents.map((document, index) => (
             <div key={index} onClick={() => setSelectedDocument(document)}>
