@@ -4,7 +4,7 @@ import TipsTitle from '../../component/Tips/TipsTitle';
 export default function TipsDocContainer() {
   return (
     <>
-      <TipsTitle />
+      <TipsTitle selectedCategory={''} onCategoryClick={function (): void {}} />
       <TipsDocuments selectedCategory={''} />
     </>
   );

@@ -3,6 +3,7 @@ import MainPage from "./page/MainPage";
 import HomePage from "./page/HomePage";
 import Login from "./page/LoginPage";
 import Register from "./page/RegisterPage";
+import Tips from "./Page/TipsPage";
 
 export default function App() {
   return (
@@ -13,6 +14,8 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/tips" element={<Tips/>} />
+
         </Route>
       </Routes>
     </BrowserRouter>

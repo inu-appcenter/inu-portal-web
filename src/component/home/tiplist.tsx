@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { tipList } from '../../resource/string/tip';
 import { useNavigate } from 'react-router-dom';
+
+
 interface Article {
     id: number;
     title: string;
@@ -23,7 +25,7 @@ export default function MainTip() {
       }, []);
     
       const goToAllTips = () => {
-        navigate('/Tips'); // '/Tips' 경로로 이동
+        navigate('/tips'); // '/Tips' 경로로 이동
       };
     return (
         <TipWrapper>
