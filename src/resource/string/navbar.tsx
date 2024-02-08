@@ -24,3 +24,4 @@ export const navBarList = [
         title:'마이 페이지',
     }
 ]
+

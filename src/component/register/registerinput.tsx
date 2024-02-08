@@ -40,7 +40,7 @@ export default function RegisterInput() {
       email: email,
       password: password
     };
-
+    console.log(data);
     try {
       const token = await registerUser(data);
 
