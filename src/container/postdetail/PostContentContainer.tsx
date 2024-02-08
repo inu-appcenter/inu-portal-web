@@ -1,6 +1,6 @@
-import PostCategory from '../../component/PostDetail/PostCategory';
-import PostContent from '../../component/PostDetail/postcontent';
-import PostTitle from '../../component/PostDetail/posttitle';
+import PostCategory from '../../component/postdetail/post/PostCategory';
+import PostContent from '../../component/postdetail/post/postcontent';
+import PostTitle from '../../component/postdetail/post/posttitle';
 
 
 export default function PostContentContainer(){

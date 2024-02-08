@@ -1,11 +1,11 @@
 import React from 'react';
 
-interface CommnetProps {
-  author: string;
+interface CommentProps {
+  author: string; // 작성자 입력 시 (author, content)로 변경
   content: string;
 }
 
-const Comment: React.FC<CommnetProps> = ({ author, content }) => {
+const Comment: React.FC<CommentProps> = ({ author, content }) => {
   return (
     <div className='CommnetBox'>
       <div className='CBox-profile'>

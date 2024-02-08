@@ -1,5 +1,5 @@
-import TipsDocuments from '../../component/Tips/TipsDocuments';
-import TipsTitle from '../../component/Tips/TipsTitle';
+import TipsDocuments from '../../component/tips/TipsDocuments';
+import TipsTitle from '../../component/tips/TipsTitle';
 
 export default function TipsDocContainer() {
   return (
@@ -9,3 +9,4 @@ export default function TipsDocContainer() {
     </>
   );
 }
+ 

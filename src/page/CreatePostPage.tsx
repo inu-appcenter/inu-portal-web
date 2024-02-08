@@ -1,14 +1,14 @@
 import styled from 'styled-components';
 import PostForm from '../container/createpost/PostFormContainer';
 
-export default function CreatPostsPage(){
+export default function CreatePost(){
 
     return(
-        <CreatPostWrapper>
+        <CreatePostWrapper>
             <PostForm/>
-        </CreatPostWrapper>
+        </CreatePostWrapper>
     )
 }
 
-const CreatPostWrapper = styled.div `
+const CreatePostWrapper = styled.div `
 `

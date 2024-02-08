@@ -1,5 +1,5 @@
-import NewPost from '../../component/createPost/newpost';
-import Launch from '../../component/createPost/postlaunch';
+import NewPost from '../../component/createpost/newpost';
+import Launch from '../../component/createpost/postlaunch';
 
 
 export default function PostForm(){

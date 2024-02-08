@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import TipsTitle from './TipsTitle'; // TipsTitle 컴포넌트 불러오기
+import TipsTitle from './TipsTitle' // TipsTitle 컴포넌트 불러오기
 
 interface Document {
   title: string;

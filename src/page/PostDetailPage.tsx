@@ -3,7 +3,7 @@ import PostContent from '../container/postdetail/PostContentContainer';
 import PostUtility from '../container/postdetail/PostUtilityContainer';
 import PostComment from '../container/postdetail/PostCommentContainer';
 
-export default function PostDetailPage(){
+export default function PostDetail(){
 
     return(
         <PostWrapper>

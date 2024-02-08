@@ -1,5 +1,4 @@
 import React, {useState} from 'react'
-import '../Post.css'
 
 interface PostLikeProps{
   onLike:() => void;

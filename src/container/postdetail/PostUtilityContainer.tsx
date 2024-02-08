@@ -1,7 +1,7 @@
 // Like, 스크랩, 공유, 삭제, 수정 등
 
-import PostLike from '../../component/PostDetail/postlike';
-import PostScrap from '../../component/PostDetail/postscrap';
+import PostLike from '../../component/postdetail/post/postlike';
+import PostScrap from '../../component/postdetail/post/postscrap';
 import { useState } from 'react';
 
 export default function PostUtility() {
