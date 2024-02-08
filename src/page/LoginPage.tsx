@@ -12,8 +12,7 @@ export default function LoginPage() {
       </LoginWrapper>
     </>
   )
-};
-
+}
 const LoginWrapper = styled.div `
   display: flex;
   flex-direction: row;
