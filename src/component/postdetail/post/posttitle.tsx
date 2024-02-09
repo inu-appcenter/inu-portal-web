@@ -1,11 +1,7 @@
-//본문-제목
-//ToDo: 글쓰기(CreatePost)랑 연동해서 title 받아오기
+interface PostTitleProps {
+    title: string; // title prop 추가
+}
 
-
-export default function PostTitle(){
-
-    return(
-        <>
-        </>
-    )
+export default function PostTitle({ title }: PostTitleProps) {
+    return <h1>{title}</h1>; // 제목 표시
 }

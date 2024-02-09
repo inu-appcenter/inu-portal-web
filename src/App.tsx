@@ -16,11 +16,10 @@ export default function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route path='/tips' element={<Tips />} />
+          <Route path='/post/:id' element={<PostDetail />} />
         </Route>
 
         <Route path='/write' element={<CreatePost />} />
-        <Route path='/post:title' element={<PostDetail />} />
-
       </Routes>
     </BrowserRouter>
   );

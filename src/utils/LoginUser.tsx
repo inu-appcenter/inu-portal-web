@@ -24,7 +24,8 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
       throw new Error('Wrong password');
     }
     else {
-        const token = response.text();
+        const data = await response.json();
+        const token = data['data'];
         console.log("로그인 성공", token);
 
         dispatch(loginUserAction({token:token}));

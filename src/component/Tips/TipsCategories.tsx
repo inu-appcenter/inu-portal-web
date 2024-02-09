@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 
 interface TipsCategoriesProps {
-  setSelectCategory: (category: string) => void;
+  setSelectedCategory: (category: string) => void;
 }
 
-export default function TipsCategories({setSelectCategory,}: TipsCategoriesProps) {
+export default function TipsCategories({setSelectedCategory,}: TipsCategoriesProps) {
   const [categories, setCategories] = useState<string[]>([]);
 
   const getCategories = () => {
@@ -18,6 +18,7 @@ export default function TipsCategories({setSelectCategory,}: TipsCategoriesProps
       '학사',
       '국제교류원',
       '장학금',
+      '전체'
     ];
     setCategories(dummyCategories);
   };
@@ -29,7 +30,7 @@ export default function TipsCategories({setSelectCategory,}: TipsCategoriesProps
   return (
     <div>
       {categories.map((category, index) => (
-        <div key={index} onClick={() => setSelectCategory(category)}>
+        <div key={index} onClick={() => setSelectedCategory(category)}>
           {category}
         </div>
       ))}
