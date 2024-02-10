@@ -2,12 +2,28 @@ import styled from 'styled-components';
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutUser } from '../../reducer/userSlice';
 
 export default function Headerbar() {
+    const email = useSelector((state: any) => state.user.email);
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(logoutUser());
+    };
+
     return (
         <React.Fragment>
             <Header>
-                <Link to='/login' className='login'>로그인</Link>
+                {email ? (
+                    <>
+                        현재 로그인: {email}
+                        <span onClick={handleLogout} className='login'>로그아웃</span>
+                    </>
+                ) : (
+                    <Link to='/login' className='login'>로그인</Link>
+                )} 
             </Header>
         </React.Fragment>
     )
@@ -22,7 +38,7 @@ const Header = styled.header`
     text-align: right;
     padding-right: 26px;
 
-    a{
+    .login {
         font-size: 14px;
         font-weight: 300;
         line-height: 20px;
