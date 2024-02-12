@@ -1,6 +1,7 @@
 // NewPost.tsx
 
 import React, { useState } from 'react';
+import Launch from './postlaunch';
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState<string>('');
@@ -14,6 +15,7 @@ const NewPost: React.FC = () => {
     setContent(e.target.value);
   };
 
+  
   return (
     <div>
       <h2>Create New Post</h2>
@@ -26,6 +28,7 @@ const NewPost: React.FC = () => {
 
         {/* 양식추가 */}
       </form>
+      <Launch title={title} content={content} />
     </div>
   );
 };
