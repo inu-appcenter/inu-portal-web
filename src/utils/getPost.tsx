@@ -1,5 +1,5 @@
-const getPost = async (postId: string) => {
-  const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}`;
+const getPost = async (postId:string) => {
+  const apiURL = `https://portal.inuappcenter.kr/api//api/categories`;
   try {
     const response = await fetch(apiURL, {
       method: 'GET',

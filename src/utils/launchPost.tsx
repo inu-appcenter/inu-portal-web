@@ -6,7 +6,7 @@ interface PostData{
 }
 
 
-const launchPost = async (data: PostData, token: string) => {
+const launchPost = async (data: PostData, token:string) => {
     
     try {
       const response = await fetch(`https://portal.inuappcenter.kr/api/posts`, {
