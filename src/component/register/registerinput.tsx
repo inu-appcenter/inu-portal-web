@@ -9,6 +9,7 @@ export default function RegisterInput() {
   const [verificationCode, setVerificationCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [nickname, setNickname] = useState('');
   const [verificationStatus, setVerificationStatus] = useState("notVerified");
 
   const navigate = useNavigate();
@@ -38,7 +39,8 @@ export default function RegisterInput() {
     }
     const data = {
       email: email,
-      password: password
+      password: password,
+      nickname: nickname
     };
     console.log(data);
     try {
@@ -71,6 +73,12 @@ export default function RegisterInput() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="비밀번호 재확인"
+          />
+          <input
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임 입력"
           />
           <button onClick={handleRegister}>가입하기</button>
         </div>
