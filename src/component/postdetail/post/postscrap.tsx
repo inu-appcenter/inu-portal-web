@@ -34,7 +34,7 @@ const PostScrap: React.FC<PostScrapProps> = ({ scrap, isScrapedProp }) => {
 
   return (
     <div className='Scraps' onClick={handleScrapClick} style={{fontSize:'45px'}}>
-    🔖
+    {isScraped ? '⭐️' :'☆'}
     <span style={{fontSize:'18px'}}>{scraps}</span>
     </div>
   );
