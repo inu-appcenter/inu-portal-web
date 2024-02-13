@@ -79,7 +79,7 @@ export default function LoginInput() {
       </LoginClickButton>
     </>
   );
-};
+}
 
 const LoginClickButton = styled.div`
 

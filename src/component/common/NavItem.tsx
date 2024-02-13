@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from "react-redux";
+import { useNavigate } from 'react-router-dom';
 
 interface loginInfo {
   user: {
@@ -11,18 +12,25 @@ interface loginInfo {
 export default function NavItems() {
     const [toggleIndex, setToggleIndex] = useState<number | null>(null);
     const user = useSelector((state: loginInfo) => state.user);
+    const navigate = useNavigate();
     const handleToggle = (index: number) => {
         setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
     };
 
     const handleItemClick = (index: number) => {
         if (index === 3) {
-            
-            console.log('마이 페이지 클릭됨');
-            console.log(user.token);
             if(user.token == ""){
-                alert("로그인 해주세요")
+                alert("로그인 해주세요");
+                navigate('/login');
+                return;
             }
+            else {
+                console.log('마이 페이지 클릭됨');
+                console.log(user.token);
+                navigate('/mypage');
+            }
+
+            
         }
     };
 
