@@ -6,28 +6,34 @@ import PostComment from '../container/postdetail/PostCommentContainer';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import getPost from '../utils/getPost';
+import { useSelector } from 'react-redux';
 
 interface post {
     id: number;
     title: string;
     category: string;
     writer: string;
-    good: number;
-    bad: number;
+    like: number;
     scrap: number;
+    isLiked: boolean;
+    isScraped: boolean;
     createDate: string;
     modifiedDate: string;
   }
 
 export default function PostDetail(){
+    const token = useSelector((state: any) => state.user.token);
     const { id } = useParams<{ id: string }>();
     const [post, setPost] = useState<post|null>();
     useEffect(() => {
-        const fetchPost = async () => {
-          const postDetail = await getPost(id);
-          setPost(postDetail);
-        };
-        fetchPost();
+        if (id) {
+            const fetchPost = async () => {
+              const postDetail = await getPost(token, id);
+              setPost(postDetail);
+            };
+            fetchPost();
+        }
+        console.log(post);
     }, [id]);
     return(
         <>
@@ -35,7 +41,7 @@ export default function PostDetail(){
             <PostWrapper>
                 <ReturnButton />
                 <PostContentContainer title={post.title} writer={post.writer} />
-                <PostUtility good={post.good} scrap={post.scrap}/> {/*기능버튼(스크랩, 좋아요...)*/}
+                <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
                 <PostComment/> {/*댓글*/}
             </PostWrapper>
         }

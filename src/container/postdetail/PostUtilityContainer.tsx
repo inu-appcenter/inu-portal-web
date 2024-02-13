@@ -3,16 +3,18 @@
 import PostLike from '../../component/postdetail/post/postlike';
 import PostScrap from '../../component/postdetail/post/postscrap';
 interface PostUtilityProps {
-  good: number;
+  like: number;
+  isLiked: boolean;
   scrap: number;
+  isScraped: boolean;
 }
 
-export default function PostUtility({ good, scrap }: PostUtilityProps) {
+export default function PostUtility({ like, isLiked, scrap, isScraped }: PostUtilityProps) {
 
   return (
     <>
-      <PostLike good={good} />
-      <PostScrap scrap={scrap} />
+      <PostLike like={like} isLikedProp={isLiked} />
+      <PostScrap scrap={scrap} isScrapedProp={isScraped} />
     </>
   );
 }

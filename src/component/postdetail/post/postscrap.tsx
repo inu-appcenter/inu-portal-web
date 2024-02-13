@@ -5,25 +5,27 @@ import handleScrap from '../../../utils/handleScrap'
 
 interface PostScrapProps {
   scrap: number;
+  isScrapedProp: boolean;
 }
 
-const PostScrap: React.FC<PostScrapProps> = ({ scrap }) => {
+const PostScrap: React.FC<PostScrapProps> = ({ scrap, isScrapedProp }) => {
   const [scraps, setScraps] = useState(scrap);
   const { id } = useParams<{ id: string }>();
-  const isScraped = true; // 백엔드에서 scrap 여부 가져오기 필요
+  const [isScraped, setIsScraped] = useState(isScrapedProp);
   const token = useSelector((state: any) => state.user.token);
 
   const handleScrapClick = async() => {
     if (token) {
       const result = await handleScrap(token, id);
-      console.log(result);
+      setIsScraped(!isScraped);
       if (result['data'] === -1) {
         setScraps(scraps - 1);
+        alert('스크랩 취소');
       }
       else {
         setScraps(scraps + 1);
+        alert('스크랩 성공');
       }
-      alert('스크랩 반영 성공');
     }
     else {
       alert('로그인 필요');

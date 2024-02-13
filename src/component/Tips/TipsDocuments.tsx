@@ -9,8 +9,7 @@ interface Document {
   title: string;
   category: string;
   writer: string;
-  good: number;
-  bad: number;
+  like: number;
   scrap: number;
   createDate: string;
   modifiedDate: string;
@@ -55,7 +54,7 @@ export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) 
             <tr key={document.id} onClick={() => handleDocumentClick(document.id)}>
               <td>{document.title}</td>
               <td>{document.writer}</td>
-              <td>{document.good}</td>
+              <td>{document.like}</td>
               <td>{document.scrap}</td>
               <td>{document.createDate}</td>
             </tr>
