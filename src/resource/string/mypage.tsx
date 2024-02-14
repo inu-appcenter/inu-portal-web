@@ -1,4 +1,4 @@
-import scrapImg from "../assets/search.svg"
+import scrapImg from "../assets/scrap-logo.svg"
 
 export const MypageList = [
     {
