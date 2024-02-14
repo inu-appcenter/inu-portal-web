@@ -4,11 +4,13 @@ import { MypageList } from '../../resource/string/mypage';
 import ScrapInfo from './scrap';
 import ActiveInfo from './active';
 import ModifyInfo from './modify';
+import DeleteInfo from './delete';
 
 export default function MyPageListButton() {
-  const [showScrapInfo, setShowScrapInfo] = useState(false); 
+  const [showScrapInfo, setShowScrapInfo] = useState(true); 
   const [showActvieInfo, setShowActvieInfo] = useState(false); 
   const [showModifyInfo, setShowModifyInfo] = useState(false); 
+  const [showDeleteInfo, setShowDeleteInfo] = useState(false); 
   const handleBtn = (title: string) => {
       switch (title) {
         case '스크랩':
@@ -16,24 +18,31 @@ export default function MyPageListButton() {
           setShowScrapInfo(true); 
           setShowActvieInfo(false);
           setShowModifyInfo(false);
+          setShowDeleteInfo(false);
           break;
         case '내 활동':
           console.log('내 활동 버튼이 클릭되었습니다.');
           setShowScrapInfo(false); 
           setShowActvieInfo(true);
           setShowModifyInfo(false);
+          setShowDeleteInfo(false);
           break;
         case '비밀번호 변경':
           console.log('비밀번호 변경 버튼이 클릭되었습니다.');
           setShowScrapInfo(false); 
           setShowActvieInfo(false);
           setShowModifyInfo(true);
+          setShowDeleteInfo(false);
           break;
-        case '회원 탈퇴':
+        case '회원탈퇴':
           console.log('회원 탈퇴 버튼이 클릭되었습니다.');
+          setShowScrapInfo(false); 
+          setShowActvieInfo(false);
+          setShowModifyInfo(false);
+          setShowDeleteInfo(true);
           break;
         default:
-          console.log('기타 버튼이 클릭되었습니다.');
+          break;
       }
     
   };
@@ -51,6 +60,7 @@ export default function MyPageListButton() {
       {showScrapInfo && <ScrapInfo />}
       {showActvieInfo && <ActiveInfo />}
       {showModifyInfo && <ModifyInfo />}
+      {showDeleteInfo && <DeleteInfo />}
     </MyPageWrpper>
   );
 }
