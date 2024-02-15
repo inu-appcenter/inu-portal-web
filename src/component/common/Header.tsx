@@ -1,16 +1,17 @@
 import styled from 'styled-components';
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../../reducer/userSlice';
 
 export default function Headerbar() {
     const email = useSelector((state: any) => state.user.email);
     const dispatch = useDispatch();
-
+    const navigate = useNavigate();
     const handleLogout = () => {
         dispatch(logoutUser());
+        navigate('/');
     };
 
     return (
