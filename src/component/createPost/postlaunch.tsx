@@ -1,16 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import launchPost from '../../utils/launchPost';
+import { useSelector } from 'react-redux';
 
 interface LaunchProps {
   title: string;
   content: string;
   category: string;
+  anymous:boolean;
 }
 
-const Launch: React.FC<LaunchProps> = ({ title, content, category }) => {
+const LaunchPosts: React.FC<LaunchProps> = ({ title, content, category,anymous }) => {
   const navigate = useNavigate();
-
+  const token = useSelector((state: any) => state.user.token); 
+  console.log(token,"durl");
   const handleLaunch = async () => {
     // 필수 항목 체크
     if (!title.trim() || !content.trim()) {
@@ -24,9 +27,11 @@ const Launch: React.FC<LaunchProps> = ({ title, content, category }) => {
         title: title,
         content: content,
         category: category,
+        anymous:anymous
       };
 
-      const token  = await launchPost(data, token); // launchPost 함수 호출
+      const aa  = await launchPost(data, token); // launchPost 함수 호출
+      console.log(aa);
       // 등록 완료 알림
       alert('정상적으로 게시되었습니다!');
 
@@ -45,4 +50,4 @@ const Launch: React.FC<LaunchProps> = ({ title, content, category }) => {
   );
 };
 
-export default Launch;
+export default LaunchPosts;

@@ -23,7 +23,7 @@ export default function ActiveInfo() {
     console.log("여기까지 왔니")
   const [PostInfo, setPostInfo] = useState<PostInfo[]>([]); 
   const token = useSelector((state: loginInfo) => state.user.token);
-
+  console.log(PostInfo,"정보");
   useEffect(() => {
     const fetchPostInfo = async () => {
       try {

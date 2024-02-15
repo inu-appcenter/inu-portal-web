@@ -25,6 +25,7 @@ export default function ScrapInfo() {
     const fetchScrapInfo = async () => {
       try {
         const info = await getScrapInfo(token);
+        console.log(info);
         setScrapInfo(info.data); 
       } catch (error) {
         console.error('에러가 발생했습니다.', error);
