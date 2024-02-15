@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import getCategory from '../../utils/getCategory';
 
 interface TipsCategoriesProps {
   setSelectedCategory: (category: string) => void;
@@ -7,24 +8,14 @@ interface TipsCategoriesProps {
 export default function TipsCategories({setSelectedCategory,}: TipsCategoriesProps) {
   const [categories, setCategories] = useState<string[]>([]);
 
-  const getCategories = () => {
-    // 현재 더미데이터 이용, 이곳에 백엔드에서 카테고리 가져오는 코드 작성.
-    const dummyCategories = [
-      '수강신청',
-      '도서관',
-      '대학생활',
-      '기숙사',
-      '동아리',
-      '학사',
-      '국제교류원',
-      '장학금',
-      '전체'
-    ];
-    setCategories(dummyCategories);
+  const fetchCategories = async () => {
+    const cats = await getCategory();
+    cats.push('전체');
+    setCategories(cats);
   };
 
   useEffect(() => {
-    getCategories();
+    fetchCategories();
   }, []);
 
   return (

@@ -1,5 +1,5 @@
 const getCategory = async () => {
-    const apiURL = `https://portal.inuappcenter.kr/api/category`;
+    const apiURL = `https://portal.inuappcenter.kr/api/categories`;
     try {
       const response = await fetch(apiURL, {
         method: 'GET',
@@ -11,8 +11,8 @@ const getCategory = async () => {
       console.log(response,'response');
       if (response.status == 200) {    
           const data = await response.json();
-          console.log(data);
-          return data;
+          console.log(data.data);
+          return data.data;
       }
       
       
