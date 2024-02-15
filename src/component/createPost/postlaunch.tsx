@@ -7,13 +7,14 @@ interface LaunchProps {
   title: string;
   content: string;
   category: string;
-  anymous:boolean;
+  anonymous:boolean;
 }
 
-const LaunchPosts: React.FC<LaunchProps> = ({ title, content, category,anymous }) => {
+const LaunchPosts: React.FC<LaunchProps> = ({ title, content, category,anonymous }) => {
   const navigate = useNavigate();
   const token = useSelector((state: any) => state.user.token); 
   console.log(token,"durl");
+  console.log(title,content,category,anonymous,"여기모야");
   const handleLaunch = async () => {
     // 필수 항목 체크
     if (!title.trim() || !content.trim()) {
@@ -27,7 +28,7 @@ const LaunchPosts: React.FC<LaunchProps> = ({ title, content, category,anymous }
         title: title,
         content: content,
         category: category,
-        anymous:anymous
+        anonymous:anonymous
       };
 
       const aa  = await launchPost(data, token); // launchPost 함수 호출

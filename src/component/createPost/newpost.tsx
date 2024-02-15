@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 
-import LaunchPosts from './postlaunch';
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState<string>('');
@@ -29,7 +28,6 @@ const NewPost: React.FC = () => {
 
         {/* 양식추가 */}
       </form>
-      <LaunchPosts title={title} content={content} category={"수강신청"} anymous={true}/>
     </div>
   );
 };
