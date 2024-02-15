@@ -28,7 +28,7 @@ const NewPost: React.FC = () => {
 
         {/* 양식추가 */}
       </form>
-      <Launch title={title} content={content} />
+
     </div>
   );
 };
