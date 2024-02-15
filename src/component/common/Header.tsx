@@ -19,7 +19,7 @@ export default function Headerbar() {
                 {email ? (
                     <>
                         현재 로그인: {email}
-                        <span onClick={handleLogout} className='login'>로그아웃</span>
+                        <LogOutButton onClick={handleLogout} className='login'>로그아웃</LogOutButton>
                     </>
                 ) : (
                     <Link to='/login' className='login'>로그인</Link>
@@ -46,3 +46,9 @@ const Header = styled.header`
         text-decoration: none;
     }
 `;
+
+const  LogOutButton = styled.button`
+
+    background-color:#0E4D9D;
+    border:none;
+`
