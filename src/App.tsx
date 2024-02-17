@@ -5,7 +5,6 @@ import Login from './page/LoginPage';
 import Register from './page/RegisterPage';
 import Tips from './page/TipsPage';
 import CreatePost from './page/CreatePostPage';
-import PostDetail from "./page/PostDetailPage";
 import MyPage from './page/MyPage';
 
 export default function App() {
@@ -17,8 +16,7 @@ export default function App() {
           <Route path='/home' element={<HomePage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
-          <Route path='/tips' element={<Tips />} />
-          <Route path='/post/:id' element={<PostDetail />} />
+          <Route path='/tips/*' element={<Tips />} />
           <Route path='/mypage' element={<MyPage />} />
         </Route>
 
