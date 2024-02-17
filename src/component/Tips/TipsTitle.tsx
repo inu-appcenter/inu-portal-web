@@ -16,4 +16,5 @@ const TipsTitle: React.FC<TipsTitleProps> = ({ selectedCategory }) => {
 
 export default TipsTitle;
 
-const TipsTitleWrapper = styled.div``;
+const TipsTitleWrapper = styled.div`
+`;

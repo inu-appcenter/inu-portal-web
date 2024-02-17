@@ -15,21 +15,44 @@ export default function TipSearch({ onSearch }: TipSearchProps)  {
   };
 
   return (
-    <TipSearchContent>
-      <TipSearchInput
-        type="text"
-        id="searchInput"
-        value={searchInput}
-        onChange={(e) => setSearchInput(e.target.value)}
-        onKeyDown={handleKeyPress}
-      />
-      <TipSearchImg src={searchImg} alt="search image" onClick={() => onSearch(searchInput)} />
-    </TipSearchContent>
+    <TipSearchWrapper>
+      <TipSearchContent>
+        <TipSearchInput
+          type="text"
+          id="searchInput"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={handleKeyPress}
+        />
+        <TipSearchImg src={searchImg} alt="search image" onClick={() => onSearch(searchInput)} />
+      </TipSearchContent>
+    </TipSearchWrapper>
   );
 }
 
-const TipSearchContent = styled.div``;
+const TipSearchWrapper = styled.div`
+  width: 245px;
+  height: 30px;
+  margin-left:10px;
+`;
 
-const TipSearchInput = styled.input``;
+const TipSearchContent = styled.div`
+  border:none;
+  border-bottom: 1px solid black;
+  height: 29px;
+  box-sizing: border-box;
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+`;
 
-const TipSearchImg = styled.img``;
+
+const TipSearchInput = styled.input`
+  border: none;
+`;
+
+const TipSearchImg = styled.img`
+  width:16px;
+  height:16px;
+  margin-right: 16px;
+`;
