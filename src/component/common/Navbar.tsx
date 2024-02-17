@@ -16,10 +16,7 @@ export default function Navbar() {
 }
 
 const Nav = styled.nav`
-     position: fixed;
-    top: 5px;
-    left: 0px;
-    right: 0px;
+    margin-top: 22px;
     max-width: 100vw;
     padding: 1rem 2.5rem;
     display: flex;
@@ -37,5 +34,5 @@ const Nav = styled.nav`
     height: 35px;
     }
 
-    
+
 `;
