@@ -13,8 +13,10 @@ export default function HomePage() {
     return (
         <HomePageWrapper>
             <Image/>
-            <Calendar/>
-            <Tip/>
+            <MainWrapper>
+                <Tip/>
+                <Calendar/>
+            </MainWrapper>
             <Notice/>
         </HomePageWrapper>
     );
@@ -22,10 +24,15 @@ export default function HomePage() {
 
 const HomePageWrapper = styled.div`
     display: grid;
-    row-gap: 8rem;
     grid-template-columns: 100%;
     margin: 0 2rem;
     @media (max-width: 350px) {
         padding: 0 1rem;
     }
 `;
+
+const MainWrapper = styled.div`
+    display: flex;
+    justify-content: space-between;
+`;
+
