@@ -62,7 +62,9 @@ export default function NavItems() {
 }
 
 const ItemWrapper = styled.div`
-    position: relative;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 2rem;
 
     .child {
         width: 8rem;
@@ -82,9 +84,13 @@ const ItemWrapper = styled.div`
     }
 `;
 
-const Items = styled.ul`
+const Items = styled.div`
     display: flex;
+    max-width: 500px;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
     align-items: center;
+    -webkit-box-flex: 1;
     flex-grow: 1;
-    gap: 20px;
 `;

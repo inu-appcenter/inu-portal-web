@@ -20,9 +20,9 @@ export default function App() {
           <Route path='/tips' element={<Tips />} />
           <Route path='/post/:id' element={<PostDetail />} />
           <Route path='/mypage' element={<MyPage />} />
+          <Route path='/write' element={<CreatePost />} />
         </Route>
 
-        <Route path='/write' element={<CreatePost />} />
       </Routes>
     </BrowserRouter>
   );

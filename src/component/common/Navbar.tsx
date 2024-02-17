@@ -16,28 +16,26 @@ export default function Navbar() {
 }
 
 const Nav = styled.nav`
-    position: fixed;
+     position: fixed;
     top: 5px;
     left: 0px;
     right: 0px;
-    width: 100vw;
-    padding: 1rem 10.4167vw;
+    max-width: 100vw;
+    padding: 1rem 2.5rem;
     display: flex;
-    justify-content: space-between;
+    -webkit-box-align: center;
     align-items: center;
-    a {
+    justify-content: space-between;
+    &.logo {
         display: flex;
     -webkit-box-align: center;
     align-items: center;
     -webkit-box-flex: 1;
     flex-grow: 1;
     position: relative;
-    top: -5px;
-}
-    
-    .logo {
-        width: 147px;
-        height: 34px;
-        object-fit: cover;
+    width: 200px;
+    height: 35px;
     }
+
+    
 `;

@@ -8,13 +8,13 @@ export default function UtilButtons() {
     navigate('/register');
   };
 
-  const handleFindIdClick = () => {
-    navigate('/');  // 페이지 url 입력 필요
-  };
+  // const handleFindIdClick = () => {
+  //   navigate('/');  // 페이지 url 입력 필요
+  // };
 
-  const handleFindPasswordClick = () => {
-    navigate('/');  // 페이지 url 입력 필요
-  };
+  // const handleFindPasswordClick = () => {
+  //   navigate('/');  // 페이지 url 입력 필요
+  // };
 
   return(
     <UtilButtonsWrapper>
