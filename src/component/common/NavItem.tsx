@@ -43,6 +43,9 @@ export default function NavItems() {
                     if (items.title === '마이 페이지') {
                         handleItemClick(index);
                     }
+                    if(items.title === '메인 페이지') {
+                        navigate('/home');
+                    }
                 }}>
                     {items.title}
                     <div className={toggleIndex === index ? 'child toggle' : 'child'}>
