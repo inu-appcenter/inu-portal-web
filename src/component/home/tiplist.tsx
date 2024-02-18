@@ -64,5 +64,12 @@ const TipWrapper = styled.div`
 `
 
 const TotalTip = styled.button`
-    
+    height: 46px;
+    background-color: #0E4D9D;
+    padding-left: 8px;
+    padding-right: 8px;
+    border:none;
+    color:white;
+    font-size: 12px;
+    font-weight: 800;
 `

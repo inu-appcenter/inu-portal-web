@@ -34,5 +34,6 @@ const HomePageWrapper = styled.div`
 const MainWrapper = styled.div`
     display: flex;
     justify-content: space-between;
+    margin-top:39px;
 `;
 
