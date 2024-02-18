@@ -33,7 +33,7 @@ export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) 
   }, [selectedCategory]);
 
   const handleDocumentClick = (id: number) => {
-    navigate(`/post/${id}`);
+    navigate(`/tips/${id}`);
   };
 
   return (

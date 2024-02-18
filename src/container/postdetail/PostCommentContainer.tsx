@@ -1,30 +1,28 @@
-import Comment from '../../component/postdetail/comment/comment';
-import CommentInput from '../../component/postdetail/comment/commentinput';
 import CommentList from '../../component/postdetail/comment/commentlist';
 import React, { useState } from 'react';
 
-interface CommentData {
+
+interface replies {
   id: number;
-  author: string; // 작성자 추가
+  writer: string;
   content: string;
-  editable: boolean;
+  like: number;
+  isLiked: boolean;
+  createDate: string;
+  modifiedDate: string;
+  reReplies: any;
+}
+
+interface PostCommentContainerProps {
+  comments: replies[];
+  onCommentUpdate: () => void; 
 }
 
 // 글의 댓글
-export default function PostComment() {
-  const [comments, setComments] = useState<CommentData[]>([]);
-
-  const handleSubmit = (content: string) => {
-    const newComment = { id: Date.now(), author: 'Anonymous', content, editable: false };
-    setComments([...comments, newComment]);
-  };
-
+export default function PostComment({ comments, onCommentUpdate }: PostCommentContainerProps) {
   return (
     <>
-      <CommentInput onAddComment={handleSubmit} />
-      <CommentList comments={comments} onDelete={function (id: number): void {
-        throw new Error('Function not implemented.');
-      } } />
+      <CommentList comments={comments} onCommentUpdate={onCommentUpdate}></CommentList>
     </>
   );
 }

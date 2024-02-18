@@ -1,19 +1,20 @@
-const getPost = async (token: string, postId: string) => {
-  const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}`;
+const deleteComment = async (token: string, replyId: number) => {
+  const apiURL = `https://portal.inuappcenter.kr/api/replies/${replyId}`;
   try {
     const response = await fetch(apiURL, {
-      method: 'GET',
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Auth: token} : {})
+        'Auth': token
       }
     });
 
     console.log(response,'response');
     if (response.status == 200) {
-      const data = await response.json();
-      console.log(data);
-      return data.data;
+        return 200;
+    }
+    else if (response.status == 403) {
+      return 403;
     }
     else {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -26,4 +27,4 @@ const getPost = async (token: string, postId: string) => {
   }
 };
 
-export default getPost;
+export default deleteComment;

@@ -1,16 +1,16 @@
 import React, {useState} from 'react'
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import handleLike from '../../../utils/handlePostLike'
+import handleLike from '../../../utils/handleCommentLike'
 
 interface PostLikeProps{
+  id: number;
   like: number
   isLikedProp: boolean;
 }
 
-const PostLike: React.FC<PostLikeProps> = ({like, isLikedProp}) =>{
+const PostLike: React.FC<PostLikeProps> = ({id, like, isLikedProp}) =>{
   const [likes, setLikes] = useState(like);
-  const { id } = useParams<{ id: string }>();
   const [isLiked, setIsLiked] = useState(isLikedProp);
   const token = useSelector((state: any) => state.user.token);
 
@@ -35,7 +35,7 @@ const PostLike: React.FC<PostLikeProps> = ({like, isLikedProp}) =>{
 
   return(
     <>
-      <button className='Like' onClick={handleLikeClick} style={{fontSize:'45px'}}>
+      <button className='Like' onClick={handleLikeClick}>
         {isLiked ? '❤️' :'🤍'}
       </button>
       {likes}

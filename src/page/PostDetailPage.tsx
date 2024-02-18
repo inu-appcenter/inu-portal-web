@@ -15,36 +15,52 @@ interface post {
     writer: string;
     like: number;
     scrap: number;
+    view: number;
     isLiked: boolean;
     isScraped: boolean;
     createDate: string;
     modifiedDate: string;
-  }
+    replies: replies[];
+}
+
+interface replies {
+    id: number;
+    writer: string;
+    content: string;
+    like: number;
+    isLiked: boolean;
+    createDate: string;
+    modifiedDate: string;
+    reReplies: any;
+}
 
 export default function PostDetail(){
     const token = useSelector((state: any) => state.user.token);
     const { id } = useParams<{ id: string }>();
     const [post, setPost] = useState<post|null>();
+    const [commentUpdated, setCommentUpdated] = useState(false);
     useEffect(() => {
         if (id) {
             const fetchPost = async () => {
               const postDetail = await getPost(token, id);
               setPost(postDetail);
             };
+            setCommentUpdated(false);
             fetchPost();
         }
-        console.log(post);
-    }, [id]);
+    }, [id, commentUpdated]);
     return(
         <>
-        {post &&
+        {post ? (
             <PostWrapper>
                 <ReturnButton />
                 <PostContentContainer title={post.title} writer={post.writer} />
                 <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
-                <PostComment/> {/*댓글*/}
+                <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
             </PostWrapper>
-        }
+        ) : (
+            <div>Loading...</div>
+        )}
         </>
     )
 }

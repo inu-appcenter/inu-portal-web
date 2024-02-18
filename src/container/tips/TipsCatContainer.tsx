@@ -1,15 +1,14 @@
-import { useState } from 'react';
-
 import TipsCategories from '../../component/tips/TipsCategories';
-import TipsDocuments from '../../component/tips/TipsDocuments'
 import styled from 'styled-components';
 
-export default function TipsCatContainer() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
+interface TipsCatContainerProps {
+  setSelectedCategory: (category: string) => void;
+}
+
+export default function TipsCatContainer( { setSelectedCategory }: TipsCatContainerProps) {
   return (
     <TipsContainerWraaper>
       <TipsCategories setSelectedCategory={setSelectedCategory} />
-      <TipsDocuments selectedCategory={selectedCategory} />
     </TipsContainerWraaper>
   );
 }
