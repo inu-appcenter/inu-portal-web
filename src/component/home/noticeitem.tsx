@@ -9,8 +9,8 @@ export default function NoticeItems() {
         <Items>
             <NoticeLink >
                 <NoticeLinkInu>인천대</NoticeLinkInu>
-                <NoticeLinkImg src={logoImg} alt="inu logo" />
-                <NoticeLinkInu>공지사항 &gt; </NoticeLinkInu>
+                <NoticeLinkImg src={logoImg} alt="inu logo" /><br/>
+                <NoticeLinkInu className='noticeSpan'>공지사항 &gt; </NoticeLinkInu>
             </NoticeLink>
             {notices.map((notice, index) => (
                 <Notice key={index} className={`notice visible`}>
@@ -31,16 +31,37 @@ const Items = styled.div`
 `;
 
 const NoticeLink = styled.div`
-    
+    background-color:#0E4D9D;
+    padding:25px;
+    width: 215px;
+    height: 173px;
 `
 
 const NoticeLinkInu = styled.span`
-    
+    font-family: Inter;
+    font-size: 30px;
+    font-weight: 500;
+    color:white;
+    margin-bottom:10px;
+    &.noticeSpan {
+        font-weight: 800;
+        margin-top: 20px;
+    }
+
 `
 const NoticeLinkImg = styled.img`
-    
+    width: 34px;
+    height: 36px;
+    margin-left:7px;
 `
 const Notice = styled.div`
+     background-color:#0E4D9D;
+    padding:25px;
+    width: 215px;
+    font-size: 30px;
+    font-weight: 500;
+    height: 173px;
+    color:white;
     .notice {
         display: flex;
         flex:0 0 auto;
@@ -48,7 +69,7 @@ const Notice = styled.div`
         opacity: 0;
         transition: opacity 0.5s ease-in-out;
         border:3px solid black;
-        width: 200px;
+        width: 215px;
     }
     
     .visible {
