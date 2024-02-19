@@ -1,4 +1,5 @@
 import CommentList from '../../component/postdetail/comment/commentlist';
+import CommentInput from '../../component/postdetail/comment/commentinput';
 import React, { useState } from 'react';
 
 
@@ -22,6 +23,7 @@ interface PostCommentContainerProps {
 export default function PostComment({ comments, onCommentUpdate }: PostCommentContainerProps) {
   return (
     <>
+      <CommentInput onCommentUpdate={onCommentUpdate}></CommentInput>
       <CommentList comments={comments} onCommentUpdate={onCommentUpdate}></CommentList>
     </>
   );
