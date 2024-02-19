@@ -4,6 +4,7 @@ import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 
+import LoginModal from './LoginModal.tsx';
 interface loginInfo {
   user: {
     token: string;
@@ -12,6 +13,7 @@ interface loginInfo {
 export default function NavItems() {
     const [toggleIndex, setToggleIndex] = useState<number | null>(null);
     const user = useSelector((state: loginInfo) => state.user);
+    const [isOpenModal, setOpenModal] = useState<boolean>(false);
     const navigate = useNavigate();
     const handleToggle = (index: number) => {
         setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
@@ -20,9 +22,9 @@ export default function NavItems() {
     const handleItemClick = (index: number) => {
         if (index === 3) {
             if(user.token == ""){
-                alert("로그인 해주세요");
-                navigate('/login');
-                return;
+                // alert("로그인 해주세요");
+                setOpenModal(!isOpenModal);
+                // navigate('/login');
             }
             else {
                 console.log('마이 페이지 클릭됨');
@@ -32,6 +34,10 @@ export default function NavItems() {
 
             
         }
+    };
+
+    const closeModal = () => {
+        setOpenModal(false); // 모달을 닫기 위해 상태 업데이트
     };
 
     return (
@@ -60,6 +66,7 @@ export default function NavItems() {
                 </div>
             </ItemWrapper>
         ))}
+         {isOpenModal && <LoginModal setOpenModal={setOpenModal} closeModal={closeModal} />} {/* isOpenModal 상태에 따라 모달을 렌더링 */}
     </Items>
     );
 }
