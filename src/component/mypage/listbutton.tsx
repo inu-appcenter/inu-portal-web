@@ -6,84 +6,80 @@ import ActiveInfo from './active';
 import ModifyInfo from './modify';
 import DeleteInfo from './delete';
 
+
 export default function MyPageListButton() {
-  const [showScrapInfo, setShowScrapInfo] = useState(true); 
-  const [showActvieInfo, setShowActvieInfo] = useState(false); 
-  const [showModifyInfo, setShowModifyInfo] = useState(false); 
-  const [showDeleteInfo, setShowDeleteInfo] = useState(false); 
+  const [selectedItem, setSelectedItem] = useState<string>('스크랩'); 
+
   const handleBtn = (title: string) => {
-      switch (title) {
-        case '스크랩':
-          console.log('스크랩 버튼이 클릭되었습니다.');
-          setShowScrapInfo(true); 
-          setShowActvieInfo(false);
-          setShowModifyInfo(false);
-          setShowDeleteInfo(false);
-          break;
-        case '내 활동':
-          console.log('내 활동 버튼이 클릭되었습니다.');
-          setShowScrapInfo(false); 
-          setShowActvieInfo(true);
-          setShowModifyInfo(false);
-          setShowDeleteInfo(false);
-          break;
-        case '비밀번호 변경':
-          console.log('비밀번호 변경 버튼이 클릭되었습니다.');
-          setShowScrapInfo(false); 
-          setShowActvieInfo(false);
-          setShowModifyInfo(true);
-          setShowDeleteInfo(false);
-          break;
-        case '회원탈퇴':
-          console.log('회원 탈퇴 버튼이 클릭되었습니다.');
-          setShowScrapInfo(false); 
-          setShowActvieInfo(false);
-          setShowModifyInfo(false);
-          setShowDeleteInfo(true);
-          break;
-        default:
-          break;
-      }
-    
+    setSelectedItem(title); // 선택된 항목 업데이트
   };
 
   return (
-    <MyPageWrpper>
+    <>
+      <MyPageDetailWrapper>
       <ScrapList>
-      {MypageList.map((list, index) => (
-          <MyPageBtnWrapper key={index} onClick={() => handleBtn(list.title)}>
-            <ScrapImg src={list.img} />
-            <ScrapBtn>{list.title}</ScrapBtn>
+        {MypageList.map((list, index) => (
+          <MyPageBtnWrapper
+            key={index}
+            onClick={() => handleBtn(list.title)}
+            className={selectedItem === list.title ? 'select' : ''}
+          >
+            <BtnImg src={list.img}  className={selectedItem === list.title ? 'change' : ''}/>
+            <BtnTitle  className={selectedItem === list.title ? 'color' : ''}>{list.title}</BtnTitle>
           </MyPageBtnWrapper>
-      ))}
+        ))}
       </ScrapList>
-      {showScrapInfo && <ScrapInfo />}
-      {showActvieInfo && <ActiveInfo />}
-      {showModifyInfo && <ModifyInfo />}
-      {showDeleteInfo && <DeleteInfo />}
-    </MyPageWrpper>
+      {selectedItem === '스크랩' && <ScrapInfo />}
+      {selectedItem === '내 활동' && <ActiveInfo />}
+      {selectedItem === '비밀번호 변경' && <ModifyInfo />}
+      {selectedItem === '회원탈퇴' && <DeleteInfo />}
+      </MyPageDetailWrapper>
+    </>
   );
 }
 
-const MyPageWrpper = styled.div`
-  display: flex;
-  justify-content: flex-start;
-`
-const MyPageBtnWrapper = styled.div`
-  width: 100px;
-  background-color: #0e4d9d;
-  padding: 20px;
-  border-radius: 20px;
-  margin: 10px 0;
-`;
 
-const ScrapBtn = styled.button`
-  background-color: #0e4d9d;
-  color: white;
+
+const MyPageBtnWrapper = styled.button`
+  display:flex;
+  width: 193px;
+  box-sizing: border-box;
+  padding:25px 20px;
   border: none;
+  font-size: 17px;
+  font-weight: 500;
+  border-radius: 12px;
+  color: #656565;
+  background-color: white;
+  &.select {
+    background: #0E4D9D;
+  }
 `;
 
-const ScrapImg = styled.img``;
+const MyPageDetailWrapper = styled.div`
+  display: flex;
+  flex:1;
+`;
+
+const BtnTitle = styled.div`
+  border:none;
+  color: #656565;
+  margin-left: 23px;
+  &.color {
+    color: white;
+    font-weight: 800;
+  }
+
+`;
+
+const BtnImg = styled.img`
+
+  color: #656565;
+  &.change {
+    /* color: white; */
+    /* filter: opacity(0.5) drop-shadow(0 0 0 #e8d9ff); */
+  }
+`;
 
 const ScrapList = styled.div`
   margin-right: 30px;

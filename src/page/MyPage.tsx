@@ -15,5 +15,5 @@ export default function MyPage() {
 const MyPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding-top: 200px;
+  padding-top:  11px;
 `;

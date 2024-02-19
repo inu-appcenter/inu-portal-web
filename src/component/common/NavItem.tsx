@@ -58,9 +58,9 @@ export default function NavItems() {
                         {toggleIndex === index &&
                             items.child &&
                             items.child.map((item, itemIndex) => (
-                                <div key={itemIndex}>
+                                <ChildDetail key={itemIndex}>
                                     {item.title}
-                                </div>
+                                </ChildDetail>
                             ))}
                     </div>
                 </div>
@@ -77,9 +77,9 @@ const ItemWrapper = styled.div`
     line-height: 2rem;
 
     .child {
-        width: 8rem;
+        width: 5rem;
         position: absolute;
-        top: 2rem;
+        top:4.6rem;
         display: flex;
         justify-content: center;
         flex-direction: column;
@@ -92,6 +92,7 @@ const ItemWrapper = styled.div`
         visibility: visible;
         opacity: 1;
     }
+
 `;
 
 const Items = styled.div`
@@ -104,3 +105,9 @@ const Items = styled.div`
     -webkit-box-flex: 1;
     flex-grow: 1;
 `;
+
+const ChildDetail = styled.div`
+width: 8rem;
+    background-color: #0000007d;
+    color:white;
+`
