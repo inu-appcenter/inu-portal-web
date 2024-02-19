@@ -2,20 +2,21 @@ import CommentList from '../../component/postdetail/comment/commentlist';
 import CommentInput from '../../component/postdetail/comment/commentinput';
 import React, { useState } from 'react';
 
-
-interface replies {
+interface Replies {
   id: number;
   writer: string;
   content: string;
   like: number;
   isLiked: boolean;
+  isAnonymous: boolean;
   createDate: string;
   modifiedDate: string;
-  reReplies: any;
+  reReplies: Replies[];
 }
 
+
 interface PostCommentContainerProps {
-  comments: replies[];
+  comments: Replies[];
   onCommentUpdate: () => void; 
 }
 

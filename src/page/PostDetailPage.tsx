@@ -20,6 +20,7 @@ interface post {
     isScraped: boolean;
     createDate: string;
     modifiedDate: string;
+    imageCount: number;
     replies: replies[];
 }
 
@@ -29,10 +30,22 @@ interface replies {
     content: string;
     like: number;
     isLiked: boolean;
+    isanonymous: boolean;
     createDate: string;
     modifiedDate: string;
-    reReplies: any;
+    reReplies: reReplies[];
 }
+
+interface reReplies {
+    id: number;
+    writer: string;
+    content: string;
+    like: number;
+    isLikde: boolean;
+    isAnonymous: boolean;
+    createDate: string;
+    modifiedDate: string;
+  }
 
 export default function PostDetail(){
     const token = useSelector((state: any) => state.user.token);
