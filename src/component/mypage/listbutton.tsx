@@ -16,7 +16,7 @@ export default function MyPageListButton() {
 
   return (
     <>
-      <MyPageDetailWrapper>
+      
       <ScrapList>
         {MypageList.map((list, index) => (
           <MyPageBtnWrapper
@@ -29,6 +29,7 @@ export default function MyPageListButton() {
           </MyPageBtnWrapper>
         ))}
       </ScrapList>
+      <MyPageDetailWrapper>
       {selectedItem === '스크랩' && <ScrapInfo />}
       {selectedItem === '내 활동' && <ActiveInfo />}
       {selectedItem === '비밀번호 변경' && <ModifyInfo />}
@@ -57,8 +58,8 @@ const MyPageBtnWrapper = styled.button`
 `;
 
 const MyPageDetailWrapper = styled.div`
-  display: flex;
-  flex:1;
+  position: absolute;
+  left: 300px;
 `;
 
 const BtnTitle = styled.div`

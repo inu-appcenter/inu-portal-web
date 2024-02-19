@@ -29,7 +29,7 @@ export default function MyPageContainer() {
 
 const MyPageWrapper = styled.div`
   display: flex;
-
-  margin-left:40px;
+  position: relative;
+  margin:40px;
   flex-direction: column;
 `;

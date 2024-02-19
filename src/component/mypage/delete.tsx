@@ -52,11 +52,11 @@ interface loginInfo {
     
     }
   return (
-    <ModifyWrapper>
-        <h2>회원탈퇴</h2>
-        <p>INTIP 회원탈퇴 시 유의사항</p>
-        {/* label을 사용하여 체크박스와 텍스트를 함께 렌더링 */}
-        <label>
+    <DeleteWrapper>
+        <Title>회원탈퇴</Title>
+        <Check>INTIP 회원탈퇴 시 유의사항</Check>
+        <Input></Input>
+        <Checkbox>
             <input
                 type='checkbox'
                 onChange={(e) => {
@@ -64,23 +64,73 @@ interface loginInfo {
                 }}
             />
             회원탈퇴 후 3일간 재가입 불가에 대해 동의합니다
-        </label>
-       <ModifyClickButton onClick={handleModifyClick}>
-        <ModifyClickText>회원탈퇴</ModifyClickText>
-      </ModifyClickButton>
-    </ModifyWrapper>
+        </Checkbox>
+        <ButtonWrapper>
+          <ModifyClickButton onClick={handleModifyClick}>
+          회원탈퇴
+        </ModifyClickButton>
+        </ButtonWrapper>
+
+    </DeleteWrapper>
   );
 }
-const ModifyWrapper = styled.div`
-
+const DeleteWrapper = styled.div`
+  width: 100%;
+  background-color:  #EFF2F9;
+  padding:40px;
 
 `;
 
+const Title = styled.div`
+    color: #0E4D9D;
+  font-family: Inter;
+  font-size: 30px;
+  font-weight: 600;
 
+`;
+
+const Check = styled.div`
+    font-family: Inter;
+    font-size: 20px;
+    font-weight: 700;
+  margin-top: 64px;
+`;
+
+
+const Input = styled.input`
+    width: 672px;
+    height:381px;
+    border: none;
+    margin-top: 40px;
+`;
+
+const Checkbox = styled.div`
+font-family: Inter;
+font-size: 15px;
+font-weight: 400;
+margin-top: 35px;
+&input {
+  margin-right: 2px;
+}
+`;
+
+
+
+const ButtonWrapper = styled.div`
+  text-align:center;
+`
 const ModifyClickButton = styled.button`
-
+background-color: #0E4D9D;
+font-family: Inter;
+font-size: 15px;
+font-weight: 400;
+line-height: 20px;
+letter-spacing: 0px;
+text-align: left;
+color:white;
+padding:5px 156px;
+margin-top: 34px;
+border-radius: 5px;
+text-align: center;
 `;
 
-const ModifyClickText = styled.div`
-
-`;
