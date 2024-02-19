@@ -7,11 +7,16 @@ const CommonStyle = createGlobalStyle`
     font-family: 'Pretendard', sans-serif;
   }
 
-  body {
-    margin: 0;
-  }
 
-  
+  body{
+    margin: 0;
+    -ms-overflow-style: none;
+    height:100vh;
+    overflow: hidden;
+ }
+ 
+
+
 `;
 
 export default CommonStyle;
