@@ -9,6 +9,7 @@ export default function  MypageLogout () {
     const dispatch = useDispatch();
 
     const handleLogout = () => {
+        localStorage.removeItem('token');
         dispatch(logoutUser());
         navigate('/');
     };
