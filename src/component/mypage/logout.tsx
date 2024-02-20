@@ -1,11 +1,21 @@
 import styled from "styled-components"
 import logoutImg from  "../../resource/assets/logout-logo.png"
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../../reducer/userSlice";
 
 export default function  MypageLogout () {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(logoutUser());
+        navigate('/');
+    };
     return (
         <MyPageLogpoutWrapper>
             <MyPageLogpoutImg src={logoutImg} alt="마이페이지 로그아웃로고"/>
-            <MyPageLogpoutTitle>로그아웃</MyPageLogpoutTitle>
+            <MyPageLogpoutTitle onClick={handleLogout}>로그아웃</MyPageLogpoutTitle>
         </MyPageLogpoutWrapper>
     )
 }
@@ -23,7 +33,7 @@ height: 24px;
 
 `;
 
-const MyPageLogpoutTitle = styled.span`
+const MyPageLogpoutTitle = styled.button`
 display: inline;
 font-family: Inter;
 font-size: 17px;
@@ -33,5 +43,6 @@ letter-spacing: 0px;
 text-align: left;
 color: #656565;
 margin-left: 19px;
-
+border:none;
+background-color: white;
 `;
