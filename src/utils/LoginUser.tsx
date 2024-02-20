@@ -28,6 +28,7 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
         const token = responseData['data'];
         console.log("로그인 성공", token);
 
+        localStorage.setItem('token', token);
         dispatch(loginUserAction({email: data.email, token:token}));
 
         return token; 

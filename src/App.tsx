@@ -6,8 +6,18 @@ import Register from './page/RegisterPage';
 import Tips from './page/TipsPage';
 import CreatePost from './page/CreatePostPage';
 import MyPage from './page/MyPage';
+import { useEffect } from 'react';
+import reLogin from './utils/reLogin';
+import { useDispatch } from 'react-redux';
+
 
 export default function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    reLogin(dispatch);
+  }, [dispatch]);
+
   return (
     <BrowserRouter>
       <Routes>

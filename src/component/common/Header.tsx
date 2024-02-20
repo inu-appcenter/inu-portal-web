@@ -10,6 +10,7 @@ export default function Headerbar() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleLogout = () => {
+        localStorage.removeItem('token');
         dispatch(logoutUser());
         navigate('/');
     };
