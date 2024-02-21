@@ -13,6 +13,7 @@ interface Replies {
   like: number;
   isLiked: boolean;
   isAnonymous: boolean;
+  hasAuthority: boolean;
   createDate: string;
   modifiedDate: string;
   reReplies: Replies[];
@@ -33,8 +34,12 @@ const CommentList: React.FC<CommentListProps> = ({ comments, onCommentUpdate }) 
         <div key={comment.id}>
           <strong>{comment.writer}</strong>: {comment.content}
           <CommentLike id={comment.id} like={comment.like} isLikedProp={comment.isLiked} />
-          <EditCommentButton token={token} id={comment.id} currentContent={comment.content} isAnonymous={comment.isAnonymous} onCommentUpdate={onCommentUpdate} />
-          <DeleteCommentButton token={token} id={comment.id} onCommentUpdate={onCommentUpdate} />
+          {comment.hasAuthority && (
+            <>
+              <EditCommentButton token={token} id={comment.id} currentContent={comment.content} isAnonymous={comment.isAnonymous} onCommentUpdate={onCommentUpdate} />
+              <DeleteCommentButton token={token} id={comment.id} onCommentUpdate={onCommentUpdate} />
+            </>
+          )}
           <button onClick={() => setShowReCommentInputId(comment.id)}>대댓글</button>
           {showReCommentInputId === comment.id && (
             <ReCommentInput parentId={comment.id} onCommentUpdate={onCommentUpdate} />

@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import getPost from '../utils/getPost';
 import { useSelector } from 'react-redux';
 
-interface post {
+interface Post {
     id: number;
     title: string;
     category: string;
@@ -18,39 +18,30 @@ interface post {
     view: number;
     isLiked: boolean;
     isScraped: boolean;
+    hasAuthority: boolean;
     createDate: string;
     modifiedDate: string;
     imageCount: number;
-    replies: replies[];
+    replies: Replies[];
 }
 
-interface replies {
+interface Replies {
     id: number;
     writer: string;
     content: string;
     like: number;
     isLiked: boolean;
-    isanonymous: boolean;
-    createDate: string;
-    modifiedDate: string;
-    reReplies: reReplies[];
-}
-
-interface reReplies {
-    id: number;
-    writer: string;
-    content: string;
-    like: number;
-    isLikde: boolean;
     isAnonymous: boolean;
+    hasAuthority: boolean;
     createDate: string;
     modifiedDate: string;
-  }
+    reReplies: Replies[];
+}
 
 export default function PostDetail(){
     const token = useSelector((state: any) => state.user.token);
     const { id } = useParams<{ id: string }>();
-    const [post, setPost] = useState<post|null>();
+    const [post, setPost] = useState<Post|null>();
     const [commentUpdated, setCommentUpdated] = useState(false);
     useEffect(() => {
         if (id) {
