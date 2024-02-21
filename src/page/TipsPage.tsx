@@ -12,23 +12,20 @@ export default function TipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   return (
     <TipsPageWrapper>
-      
       <div>
-        <PostBotton />
-        <TipsCatContainer setSelectedCategory={setSelectedCategory}/>
+        <TipsCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
       </div>
       <Routes>
         <Route index element={<TipsDocuments selectedCategory={selectedCategory} />} />
         <Route path=":id" element={<PostDetail />} />
       </Routes>
+      <PostBotton />
     </TipsPageWrapper>
   )
 }
 
 
 const TipsPageWrapper = styled.div`
-  padding-top: 200px; // 임시 (나중에 MainPage에서 위치 조절 필요)
-
   display: flex;
   flex-dicrection: row;
 `
