@@ -13,6 +13,7 @@ interface Post {
     title: string;
     category: string;
     writer: string;
+    content: string;
     like: number;
     scrap: number;
     view: number;
@@ -58,7 +59,7 @@ export default function PostDetail(){
         {post ? (
             <PostWrapper>
                 <ReturnButton />
-                <PostContentContainer title={post.title} writer={post.writer} />
+                <PostContentContainer title={post.title} writer={post.writer} content={post.content} />
                 <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
                 <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
             </PostWrapper>
