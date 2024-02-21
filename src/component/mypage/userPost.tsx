@@ -20,7 +20,7 @@ export default function UserPost({postinfo}:postinfoProps) {
       <h3>{item.title}</h3>
       <p>{item.category}</p>
       {/* 아래의 부분 수정 */}
-      <PoistLink to={`/post/${item.id}`}>자세히 보기</PoistLink>
+      <PoistLink to={`/tips/${item.id}`}>자세히 보기</PoistLink>
     </ScrapItem>
   ))}
 </ScrapWrapper>
@@ -29,11 +29,10 @@ export default function UserPost({postinfo}:postinfoProps) {
 
 const ScrapWrapper = styled.div`
 
-  /* 스타일 지정 */
 `;
 
 const ScrapItem = styled.div`
-  /* 스타일 지정 */
+  
 `;
 
 const PoistLink = styled(Link)`

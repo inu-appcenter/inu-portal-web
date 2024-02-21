@@ -1,5 +1,5 @@
 const getUserPost = async (token: string) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/posts/all`;
+    const apiURL = `https://portal.inuappcenter.kr/api/members/posts`;
     try {
       const response = await fetch(apiURL, {
         method: 'GET',
