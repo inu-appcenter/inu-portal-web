@@ -1,57 +1,38 @@
-import React, { useState, useEffect } from 'react';
+//selectCat.tsx
+import { useState, useEffect } from 'react';
 import getCategory from '../../utils/getCategory';
 
-interface Category {
-  id: number;
-  name: string;
+interface CategoriesProps {
+  setSelectedCategory: (category: string) => void;
 }
 
-interface SelectCatProps {
-  onSelect: (selectedCategory: string) => void;
-}
+export default function SelectCat({ setSelectedCategory }: CategoriesProps) {
+  const [categories, setCategories] = useState<string[]>([]);
 
-const SelectCat: React.FC<SelectCatProps> = ({ onSelect }) => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const fetchCategories = async () => {
+    const cats = await getCategory();
+    setCategories(cats);
+  };
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategory();
-        setCategories(data);
-      } catch (error) {
-        console.error('카테고리를 불러오는데 실패했습니다.', error);
-      }
-    };
-
     fetchCategories();
   }, []);
 
   const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = event.target.value;
-    setSelectedCategory(selectedValue);
-    onSelect(selectedValue);
+    const selectedCategory = event.target.value;
+    setSelectedCategory(selectedCategory);
   };
 
   return (
     <div>
-      <label htmlFor="categorySelect">카테고리 선택:</label>
-      <select
-        id="categorySelect"
-        value={selectedCategory}
-        onChange={handleCategoryChange}
-      >
-        <option value="" disabled>
-          선택하세요
-        </option>
-        {categories.map((category) => (
-          <option key={category.id} value={category.name}>
-            {category.name}
+      <label htmlFor="categorySelect">카테고리 선택</label>
+      <select id="categorySelect" onChange={handleCategoryChange}>
+        {categories.map((category, index) => (
+          <option key={index} value={category}>
+            {category}
           </option>
         ))}
       </select>
     </div>
   );
-};
-
-export default SelectCat;
+}

@@ -1,17 +1,20 @@
+// TipsPage.tsx
 import styled from 'styled-components';
 import { Routes, Route, Outlet } from 'react-router-dom';
 import TipsCatContainer from '../container/tips/TipsCatContainer';
-import PostButton from '../component/tips/PostButton';
-import TipsDocuments from '../component/tips/TipsDocuments';
-import PostDetail from "../page/PostDetailPage";
+import TipsDocuments from '../component/Tips/TipsDocuments';
+import PostDetail from "../Page/PostDetailPage";
 import { useState } from 'react';
+import PostBotton from '../component/Tips/PostButton';
+
 
 export default function TipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   return (
     <TipsPageWrapper>
+      
       <div>
-        <PostButton />
+        <PostBotton />
         <TipsCatContainer setSelectedCategory={setSelectedCategory}/>
       </div>
       <Routes>

@@ -1,26 +1,50 @@
-// import NewPost from '../../component/createpost/newpost';
-// import LaunchPosts from '../../component/createpost/postlaunch';
-// import SelectCat from '../../component/createpost/selectcat';
+//PostFormContainer.tsx
+import { useState } from 'react';
+import Anonymous from '../../component/createPost/anonymous';
+import NewPost from '../../component/createPost/newpost';
+import PostLaunch from '../../component/createPost/postlaunch';
+import SelectCat from '../../component/createPost/selectcat';
+import launchPost from '../../utils/launchPost';
 
-import NewPost from "../../component/createPost/newpost";
-import LaunchPosts from "../../component/createPost/postlaunch";
 
 // import Anonymous from '../../component/createpost/anonymous';
 
 export default function PostForm() {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [category, setCategory] = useState('');
+  const [anonymous, setAnonymous] =useState(false);
+
+  const handleTitleChange = (newTitle: string) =>{
+    setTitle(newTitle);
+  }
+
+  const handleContentChange = (newContent: string) =>{
+    setTitle(newContent);
+  }
+
+  const handleCategorySelect = (selectedCategory: string) =>{
+    setCategory(selectedCategory);
+  }
+
+  const handleToggleAnonymous = (isAnonymous: boolean) =>{
+    setAnonymous(isAnonymous);
+  }
   return (
     <>
-      <NewPost />
-
-      {/* <SelectCat
-        onSelect={function (selectedCategory: string): void {
-          throw new Error('Function not implemented.');
-        }}
+      <NewPost 
+      onTitleChange ={handleTitleChange}/>
+<SelectCat setSelectedCategory={function (category: string): void {
+}}/>
+      <Anonymous
+        onToggleAnonymous={handleToggleAnonymous}
       />
-      <Anonymous onToggleAnonymous={function (anonymous: boolean): void {
-        throw new Error('Function not implemented.');
-      } }/> */}
-      <LaunchPosts title={'하이'} content={'안뇽'} category={'수강신청'} anonymous={true}/>
+      <LaunchPosts
+        title={title}
+        content={content}
+        category={category}
+        anonymous={false}
+      />
     </>
   );
 }

@@ -1,3 +1,4 @@
+// postlaunch.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import launchPost from '../../utils/launchPost';
@@ -10,18 +11,22 @@ interface LaunchProps {
   anonymous:boolean;
 }
 
-const LaunchPosts: React.FC<LaunchProps> = ({ title, content, category,anonymous }) => {
+const PostLaunch: React.FC<LaunchProps> = ({ title, content, category,anonymous }) => {
   const navigate = useNavigate();
   const token = useSelector((state: any) => state.user.token); 
-  console.log(token,"durl");
-  console.log(title,content,category,anonymous,"여기모야");
-  const handleLaunch = async () => {
-    // 필수 항목 체크
-    if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 작성해주세요.');
-      return; // 필수 항목이 없으면 함수 종료
-    }
+  // console.log(token,"durl");
 
+  const handleLaunch = async () => {
+    console.log('디버깅 - title:', title);
+console.log('디버깅 - content:', content);
+  // 필수 항목 체크
+  if (!title.trim() || !content.trim()) {
+
+    alert('제목과 내용을 작성해주세요.');
+  } else if(!category){
+    alert('카테고리를 선택하세요.')
+  }
+  else{
     try {
       // 서버로 데이터 전송
       const data = {
@@ -42,8 +47,10 @@ const LaunchPosts: React.FC<LaunchProps> = ({ title, content, category,anonymous
       console.error('에러가 발생했습니다.', error);
       alert('게시에 실패하였습니다.'); // 에러 발생 시 알림 표시
     }
-  };
-
+  ;
+    
+}
+}
   return (
     <div>
       <button className='LaunchBtn' onClick={handleLaunch}>Launch Post</button>
@@ -51,4 +58,4 @@ const LaunchPosts: React.FC<LaunchProps> = ({ title, content, category,anonymous
   );
 };
 
-export default LaunchPosts;
+export default PostLaunch;

@@ -1,7 +1,5 @@
-// NewPost.tsx
 
 import React, { useState } from 'react';
-
 
 const NewPost: React.FC = () => {
   const [title, setTitle] = useState<string>('');
@@ -15,18 +13,20 @@ const NewPost: React.FC = () => {
     setContent(e.target.value);
   };
 
-  
   return (
     <div>
       <h2>Create New Post</h2>
       <form>
-        <label>Title:</label>
-        <input type="text" value={title} onChange={handleTitleChange} />
+        <label>제목</label>
+        <input 
+        type='text' 
+        value={title} 
+        onChange={handleTitleChange} />
 
-        <label>Content:</label>
-        <textarea value={content} onChange={handleContentChange} />
-
-        {/* 양식추가 */}
+        <label>내용</label>
+        <textarea 
+        value={content} 
+        onChange={handleContentChange} />
       </form>
     </div>
   );
