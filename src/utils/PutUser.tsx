@@ -4,7 +4,7 @@ interface ModifyInfo {
 }
 
 const ModifyUser = async (token: string, data: ModifyInfo) => {
-    console.log(data);
+    console.log(data,"잘왔니");
     try {
      const response = await fetch(`https://portal.inuappcenter.kr/api/members`, {
         method: 'PUT',
