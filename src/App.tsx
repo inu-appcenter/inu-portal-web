@@ -1,8 +1,8 @@
 import { Route, Routes, BrowserRouter,Navigate } from 'react-router-dom';
 import MainPage from './page/MainPage';
 import HomePage from './page/HomePage';
-import Login from './page/LoginPage';
-import Register from './page/RegisterPage';
+import Login from './Page/LoginPage/LoginPage';
+import Register from './Page/RegisterPage/RegisterPage';
 import Tips from './page/TipsPage';
 import CreatePost from './page/CreatePostPage';
 import MyPage from './page/MyPage';

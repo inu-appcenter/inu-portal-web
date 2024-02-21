@@ -13,5 +13,12 @@ export default function LoginDetail () {
 }
 
 const RegisterDetaileWrapper = styled.div`
+  flex-grow: 1;
+  max-width: 473px;
+  margin: auto;
+  padding-left: 40px;
+  
+  display: flex;
+  flex-direction: column;
     
 `

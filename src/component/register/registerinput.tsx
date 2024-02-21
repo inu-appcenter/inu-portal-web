@@ -2,6 +2,9 @@
 import React, { useState } from 'react';
 import registerUser from "../../utils/RegisterUser";
 import { useNavigate } from 'react-router-dom';
+import './registerinput.css';
+import loginUserImg from '../../resource/assets/login-user.png';
+import loginPasswordImg from '../../resource/assets/login-password.png';
 
 export default function RegisterInput() {
   // 확인: 유저가 클라이언트(웹 브라우저) 상에서 verificationStatus를 임의로 바꿀 수 있기 때문에, 인증번호확인 때 얻은 token을 회원가입할 때 같이 서버로 전송해야 할 듯 (현재는 이메일과 비밀번호만 전송)
@@ -61,51 +64,79 @@ export default function RegisterInput() {
     case "codeVerified":
       return (
         <div>
-          <input type="email" value={email} readOnly />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호 입력"
-          />
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="비밀번호 재확인"
-          />
-          <input
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="닉네임 입력"
-          />
-          <button onClick={handleRegister}>가입하기</button>
+          <div className='div-input'>
+            <input
+              className='register-input' type="email" value={email} readOnly />
+              <img src={loginUserImg} alt='loginUserImg'></img>
+          </div>
+          <div className='line'></div>
+          <div className='div-input'>
+            <input
+              className='register-input'
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호 입력"
+            />
+            <img src={loginPasswordImg} alt='loginPasswordImg'></img>
+          </div>
+          <div className='line'></div>
+          <div className='div-input'>
+            <input
+              className='register-input'
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="비밀번호 재확인"
+            />
+            <img src={loginPasswordImg} alt='loginPasswordImg'></img>
+          </div>
+          <div className='line'></div>
+          <div className='div-input'>
+            <input
+              className='register-input'
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="닉네임 입력"
+            />
+          </div>
+          <div className='line'></div>
+          <div className='RegisterClickButton' onClick={handleRegister}>가입하기</div>
         </div>
       );
     case "emailVerified":
       return (
         <div>
-          <input
-            type="text"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
-            placeholder="인증번호 입력"
-          />
-          <button onClick={handleVerifyCode}>인증번호 확인</button>
+          <div className='div-input'>
+            <input
+              className='register-input'
+              type="text"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              placeholder="인증번호 입력"
+            />
+          </div>
+          <div className='line'></div>
+          <div className='RegisterClickButton' onClick={handleVerifyCode}>인증번호 확인</div>
         </div>
       );
     case "notVerified":
     default:
       return (
         <div>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="이메일 입력"
-          />
-          <button onClick={handleVerifyEmail}>인증하기</button>
+          <div className='div-input'>
+            <input
+              className='register-input'
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="학교 이메일"
+            />
+            <img src={loginUserImg} alt='loginUserImg'></img>
+          </div>
+          <div className='line'></div>
+          <div className='RegisterClickButton' onClick={handleVerifyEmail}>인증하기</div>
         </div>
       );
   }

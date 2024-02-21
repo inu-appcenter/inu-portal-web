@@ -2,8 +2,10 @@
 import React, {  useState } from 'react';
 import { useDispatch } from 'react-redux';
 import loginUser from "../../utils/LoginUser";
-import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom'; // useNavigate 추가
+import './logininput.css';
+import loginUserImg from '../../resource/assets/login-user.png';
+import loginPasswordImg from '../../resource/assets/login-password.png';
 
 
 // import { useSelector } from "react-redux";
@@ -66,31 +68,32 @@ export default function LoginInput() {
 
   return (
     <>
-      <input
-        type="text"  // Corrected from "username" to "text"
-        placeholder="아이디"
-        value={username}
-        onChange={handleUsernameChange}
-      />
+      <div className='div-input'>
+        <input
+          className='login-input'
+          type="text"  // Corrected from "username" to "text"
+          placeholder="이메일"
+          value={username}
+          onChange={handleUsernameChange}
+        />
+        <img src={loginUserImg} alt='loginUserImg'></img>
+      </div>
+        <div className="line"></div>
+
+      <div className='div-input'>
+        <input
+          className='login-input'
+          type="password"
+          placeholder="비밀번호"
+          value={password}
+          onChange={handlePasswordChange}
+          onKeyDown={handleKeyPress}
+        />
+        <img src={loginPasswordImg} alt='loginPasswordImg'></img>
+      </div>
       <div className="line"></div>
-      <input
-        type="password"
-        placeholder="비밀번호"
-        value={password}
-        onChange={handlePasswordChange}
-        onKeyDown={handleKeyPress}
-      />
-      <LoginClickButton onClick={handleLoginClick}>
-        <LoginButtonText>로그인</LoginButtonText>
-      </LoginClickButton>
+
+      <div className='LoginClickButton' onClick={handleLoginClick}>로그인</div>
     </>
   );
 }
-
-const LoginClickButton = styled.div`
-
-`
-
-const LoginButtonText = styled.div`
-
-`
