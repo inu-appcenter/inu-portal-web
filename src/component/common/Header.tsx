@@ -20,8 +20,9 @@ export default function Headerbar() {
             <Header>
                 {email ? (
                     <>
-                        현재 로그인: {email}
-                        <LogOutButton onClick={handleLogout} className='login'>로그아웃</LogOutButton>
+                        <LoginInfo>{email}</LoginInfo>
+                        <span> </span>
+                        <span onClick={handleLogout} className='login'>로그아웃</span>
                     </>
                 ) : (
                     <Link to='/login' className='login'>로그인</Link>
@@ -46,11 +47,15 @@ const Header = styled.header`
         line-height: 20px;
         color: #FFFFFF;
         text-decoration: none;
+        cursor: pointer;
     }
 `;
 
-const  LogOutButton = styled.button`
-
-    background-color:#0E4D9D;
-    border:none;
+const LoginInfo = styled.span`
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 20px;
+    color: #FFFFFF;
+    text-decoration: none;
+    margin-right: 10px;
 `

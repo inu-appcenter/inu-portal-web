@@ -1,0 +1,12 @@
+.UniversityBuildingImg {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+}
+.ElipseImg {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+}

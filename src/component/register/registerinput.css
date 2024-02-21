@@ -1,0 +1,43 @@
+.div-input {
+  display:flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.register-input {
+  flex-grow: 1;
+
+  font-family: Inter;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0em;
+  text-align: left;
+
+  border: 0;
+}
+
+.line {
+  margin-top: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #969696
+}
+
+.RegisterClickButton {
+  height: 56px;
+  top: 578px;
+  left: 879px;
+  border-radius: 8px;
+  background: #FCAF15;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  font-family: Inter;
+  font-size: 25px;
+  font-weight: 600;
+  color: #FFFFFF;
+
+  cursor: pointer;
+}
