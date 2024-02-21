@@ -1,10 +1,16 @@
 import styled from "styled-components"
 import ProfileImg from "../../resource/assets/profile-logo.png"
-export default function  MyInfo () {
+
+interface NicknameProps {
+    nickname: string;
+}
+export default function  MyInfo ({nickname}:NicknameProps) {
+
+
     return (
         <InfoWrapper>
             <MyProfileImg src={ProfileImg} alt="프로필 이미지"></MyProfileImg>
-            <Nickname>메롱이닷</Nickname>
+            <Nickname>{nickname}</Nickname>
         </InfoWrapper>
     )
 }
@@ -17,7 +23,7 @@ margin:49px 0 54px 104px;
 const Nickname = styled.div`
 font-family: Inter;
 font-size: 25px;
-font-weight: 500;
+font-weight: 700;
 margin-left:13px;
 line-height: 47px;
 `
