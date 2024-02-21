@@ -1,50 +1,76 @@
-//PostFormContainer.tsx
-import { useState } from 'react';
-import Anonymous from '../../component/createPost/anonymous';
-import NewPost from '../../component/createPost/newpost';
-import PostLaunch from '../../component/createPost/postlaunch';
-import SelectCat from '../../component/createPost/selectcat';
-import launchPost from '../../utils/launchPost';
+import React, { useState } from 'react';
 
+import TitleInput from '../../component/createPost/TitleInput';
+import ContentInput from '../../component/createPost/ContentInput';
+import CategorySelect from '../../component/createPost/CategorySelect';
+import PostService from '../../component/createPost/PostService';
+import AnonymousCheckbox from '../../component/createPost/AnonymousCheckbox';
+import { useSelector } from 'react-redux';
+import ImageUpload from '../../component/createPost/ImageUpload';
 
-// import Anonymous from '../../component/createpost/anonymous';
+interface PostFormProps {
+  onPostSubmit: () => void;
+}
 
-export default function PostForm() {
+const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [anonymous, setAnonymous] =useState(false);
+  const [anonymous, setAnonymous] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
-  const handleTitleChange = (newTitle: string) =>{
-    setTitle(newTitle);
-  }
+  const token = useSelector((state: any) => state.user.token); 
 
-  const handleContentChange = (newContent: string) =>{
-    setTitle(newContent);
-  }
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+  };
 
-  const handleCategorySelect = (selectedCategory: string) =>{
-    setCategory(selectedCategory);
-  }
+  const handleContentChange = (value: string) => {
+    setContent(value);
+  };
 
-  const handleToggleAnonymous = (isAnonymous: boolean) =>{
-    setAnonymous(isAnonymous);
-  }
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+  };
+
+  const handleAnonymousChange = (checked: boolean) => {
+    setAnonymous(checked);
+  };
+
+  const handleImageChange = (file: File | null) => {
+    setSelectedImage(file);
+  };
+
+  const handlePostSubmit = async () => {
+    try {
+      // 각 필드가 비어있지 않은지 검사
+      if (!title.trim() || !content.trim()) {
+        console.error('모든 필드를 입력하세요.');
+        return;
+      }
+
+      // 서버로의 통신은 PostService에서 담당
+      await PostService.submitPost({ title, content, category, anonymous }, token);
+
+      console.log('Post submitted successfully');
+
+      // 게시 성공 후 부모 컴포넌트에서 전달한 콜백 함수 호출
+      onPostSubmit();
+    } catch (error) {
+      console.error('Error submitting post:', error);
+    }
+  };
+
   return (
-    <>
-      <NewPost 
-      onTitleChange ={handleTitleChange}/>
-<SelectCat setSelectedCategory={function (category: string): void {
-}}/>
-      <Anonymous
-        onToggleAnonymous={handleToggleAnonymous}
-      />
-      <LaunchPosts
-        title={title}
-        content={content}
-        category={category}
-        anonymous={false}
-      />
-    </>
+    <div>
+      <TitleInput value={title} onChange={handleTitleChange} />
+      <ContentInput value={content} onChange={handleContentChange} />
+      <CategorySelect value={category}  onChange={(value) => console.log(value)} />
+      <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
+      <ImageUpload onImageChange={handleImageChange}/>
+      <button onClick={handlePostSubmit}>게시 버튼</button>
+    </div>
   );
-}
+};
+
+export default PostFormContainer;

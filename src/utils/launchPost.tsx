@@ -22,7 +22,7 @@ const launchPost = async (data: PostData, token: string) => {
 
       if (response.status === 201) {
         console.log('게시글 등록 성공:', responseData);
-      } else if (response.status === 402) {
+      } else if (response.status === 404) {
         console.error('존재하지 않는 회원입니다:', response.status);
         alert('존재하지 않는 회원입니다.');
       }
@@ -32,7 +32,7 @@ const launchPost = async (data: PostData, token: string) => {
       console.error('게시글 등록 실패:', response.status);
 
       // Handle other HTTP status codes if needed
-      throw new Error(`HTTP 에러! 상태 코드: ${response.status}`);
+      // throw new Error(`HTTP 에러! 상태 코드: ${response.status}`);
     }
   } catch (error) {
     console.error('에러가 발생했습니다:', error);
