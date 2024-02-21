@@ -19,11 +19,11 @@ export default function UtilButtons() {
 
   return(
     <UtilButtonsWrapper>
-      <div className='text' onClick={handleRegisterClick}>회원가입 &gt;</div>
+      <div className='text btn' onClick={handleRegisterClick}>회원가입 &gt;</div>
       <span>
-        <span className='text'>아이디 찾기</span>
+        <span className='text btn'>아이디 찾기</span>
         <span className='text'> | </span>
-        <span className='text'>비밀번호 찾기</span>
+        <span className='text btn'>비밀번호 찾기</span>
       </span>
     </UtilButtonsWrapper>
   )

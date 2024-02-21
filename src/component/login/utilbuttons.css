@@ -2,5 +2,8 @@
   font-family: Inter;
   font-size: 15px;
   font-weight: 500;
+}
 
+.btn {
+  cursor: pointer;
 }

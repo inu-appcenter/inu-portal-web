@@ -19,7 +19,7 @@ export default function RegisterInput() {
 
   const handleVerifyEmail = () => {
     if (email.endsWith('@inu.ac.kr')) {
-      // 인증번호 발송 API 호출 구현 필요
+      // 인증번호 발송 API 호출 구현 필요 (이미 가입 된 이메일인지 확인 필요)
       setVerificationStatus("emailVerified");
     } else {
       alert('인천대학교 이메일(@inu.ac.kr)을 사용해주세요.');
