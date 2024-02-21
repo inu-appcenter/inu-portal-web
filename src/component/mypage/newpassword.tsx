@@ -1,15 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
 
-interface   CurrentPasswordInputProps {
+interface   NewPasswordInputProps {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const CurrentpasswordInput: React.FC<CurrentPasswordInputProps> = ({ value, onChange }) => {
+const NewPasswordInput: React.FC<NewPasswordInputProps> = ({ value, onChange }) => {
     return (
         <Wrapper>
-            <CurrentPasswordTitle>현재 비밀번호</CurrentPasswordTitle>
+            <NewPasswordTitle>새 비밀번호</NewPasswordTitle>
             <Input
                 type="password"
                 value={value}
@@ -22,16 +22,15 @@ const CurrentpasswordInput: React.FC<CurrentPasswordInputProps> = ({ value, onCh
 const Wrapper = styled.li`
     list-style: none;
     padding-bottom: 55px;
-    
 `;
 
-const CurrentPasswordTitle = styled.span`
-    /* 원하는 스타일링을 여기에 추가하세요 */
+const NewPasswordTitle = styled.span`
+    text-align: right;
 `;
 
 const Input = styled.input`
-    margin-left:36px;
-    padding:10px 60px;
+     margin-left:36px;
+     padding:10px 60px;
 `;
 
-export default CurrentpasswordInput;
+export default NewPasswordInput;
