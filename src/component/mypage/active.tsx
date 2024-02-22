@@ -6,10 +6,13 @@ import { useEffect, useState } from 'react';
 
 
 import getUserLikePost from '../../utils/getUserLikePost';
-import UserPost from './userPost';
+
 import getUserComment from '../../utils/getUserComment';
-import LikePost from './likePost';
+
 import UserComment from './usercomment';
+import ActiveTitle from './activetitle';
+import LikePost from './likepost';
+import UserPost from './userpost';
 
 interface loginInfo {
     user: {
@@ -27,6 +30,7 @@ interface PostInfo {
 interface CommentInfo {
   // 스크랩 정보의 타입 정의
   id: number;
+  postId:number;
   content: string;
   category:string;
 }
@@ -36,9 +40,6 @@ export default function ActiveInfo() {
   const [PostLikeInfo, setPostLikeInfo] = useState<PostInfo[]>([]); 
   const [PostCommentInfo, setPostCommentInfo] = useState<CommentInfo[]>([]); 
   const token = useSelector((state: loginInfo) => state.user.token);
-  console.log(PostInfo,"정보1");
-  console.log(PostLikeInfo,"정보2");
-  console.log(PostCommentInfo,"정보2");
   useEffect(() => {
     const fetchPostInfo = async () => {
       try {
@@ -86,20 +87,23 @@ export default function ActiveInfo() {
 
 
   return (
-    <ScrapWrapper>
+    <ActiveWrapper>
+      <ActiveTitle/>
       <LikePost postLikeInfo ={PostLikeInfo}/>
       <UserComment postCommentInfo = {PostCommentInfo}/>
-      <div>dadaf</div>
       <UserPost postinfo={PostInfo}/>
-      <div>dadaf</div>
 
-  </ScrapWrapper>
+  </ActiveWrapper>
   );
 }
 
-const ScrapWrapper = styled.div`
-width: 100%;
+const ActiveWrapper = styled.div`
   background-color:  #EFF2F9;
-  padding:40px;
+  padding:2.5rem 5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items:stretch;
 `;
 
