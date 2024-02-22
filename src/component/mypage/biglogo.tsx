@@ -12,6 +12,4 @@ export default function  MypageBigLogo () {
 const MyPageLogoImg = styled.img`
 width: 196px;
 height: 216px;
-margin-top: 92px;
-
 `
