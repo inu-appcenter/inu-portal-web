@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import TitleInput from '../../component/createPost/TitleInput';
 import ContentInput from '../../component/createPost/ContentInput';
 import CategorySelect from '../../component/createPost/CategorySelect';
@@ -20,6 +20,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const token = useSelector((state: any) => state.user.token); 
+  const navigate = useNavigate();
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -52,12 +53,15 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       }
 
       // 서버로의 통신은 PostService에서 담당
-      await PostService.submitPost({ title, content, category, anonymous }, token);
+    await PostService.submitPost({ title, content, category, anonymous }, token);
 
       console.log('Post submitted successfully');
 
+
+      
       // 게시 성공 후 부모 컴포넌트에서 전달한 콜백 함수 호출
       onPostSubmit();
+      navigate(`/tips`);
     } catch (error) {
       console.error('Error submitting post:', error);
     }

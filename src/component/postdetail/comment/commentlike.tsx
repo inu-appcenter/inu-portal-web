@@ -21,11 +21,11 @@ const PostLike: React.FC<PostLikeProps> = ({id, like, isLikedProp}) =>{
         console.log(result);
         if (result['data'] === -1) {
           setLikes(likes - 1);
-          alert('좋아요 취소');
+          // alert('좋아요 취소');
         }
         else {
           setLikes(likes + 1);
-          alert('좋아요 성공');
+          // alert('좋아요 성공');
         }
       }
       else {
