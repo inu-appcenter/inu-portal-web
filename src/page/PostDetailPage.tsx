@@ -7,6 +7,8 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import getPost from '../utils/getPost';
 import { useSelector } from 'react-redux';
+import DeletePostBtn from '../component/postdetail/post/deletpostbtn';
+
 
 interface Post {
     id: number;
@@ -54,11 +56,18 @@ export default function PostDetail(){
             fetchPost();
         }
     }, [id, commentUpdated]);
+
+    const handlePostUpdate = () => {
+        // 업데이트가 필요한 경우 여기에서 수행
+        // 예: 댓글 갱신, 상태 변경 등
+        setCommentUpdated(true);
+    };
     return(
         <>
         {post ? (
             <PostWrapper>
                 <ReturnButton />
+                <DeletePostBtn token={token} id={post.id} onPostUpdate={handlePostUpdate} /> 
                 <PostContentContainer title={post.title} writer={post.writer} content={post.content} />
                 <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
                 <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}

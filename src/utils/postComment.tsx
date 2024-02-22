@@ -6,7 +6,7 @@ const postComment = async (token: string, postId: number, content: string, anony
       headers: {
         'Content-Type': 'application/json',
         'Auth': token
-      },
+      }, 
       body: JSON.stringify({
         'content': content,
         'anonymous': anonymous

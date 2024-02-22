@@ -2,6 +2,7 @@
 
 import PostLike from '../../component/postdetail/post/postlike';
 import PostScrap from '../../component/postdetail/post/postscrap';
+
 interface PostUtilityProps {
   like: number;
   isLiked: boolean;

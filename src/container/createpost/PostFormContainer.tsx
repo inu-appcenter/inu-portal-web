@@ -6,7 +6,7 @@ import CategorySelect from '../../component/createPost/CategorySelect';
 import PostService from '../../component/createPost/PostService';
 import AnonymousCheckbox from '../../component/createPost/AnonymousCheckbox';
 import { useSelector } from 'react-redux';
-import ImageUpload from '../../component/createPost/ImageUpload';
+import ImageInput from '../../component/createPost/ImageInput';
 
 interface PostFormProps {
   onPostSubmit: () => void;
@@ -53,7 +53,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       }
 
       // 서버로의 통신은 PostService에서 담당
-    await PostService.submitPost({ title, content, category, anonymous }, token);
+      await PostService.submitPost({ title, content, category, anonymous, image: selectedImage }, token);
 
       console.log('Post submitted successfully');
 
@@ -73,7 +73,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       <ContentInput value={content} onChange={handleContentChange} />
       <CategorySelect value={category}  onChange={handleCategoryChange} />
       <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
-      <ImageUpload onImageChange={handleImageChange}/>
+      <ImageInput onImageChange={handleImageChange} />
       <button onClick={handlePostSubmit}>게시 버튼</button>
     </div>
   );

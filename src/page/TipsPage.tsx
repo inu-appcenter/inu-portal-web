@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Routes, Route, Outlet } from 'react-router-dom';
 import TipsCatContainer from '../container/tips/TipsCatContainer';
 import TipsDocuments from '../component/Tips/TipsDocuments';
-import PostDetail from "../Page/PostDetailPage";
+import PostDetail from "./PostDetailPage";
 import { useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
 
