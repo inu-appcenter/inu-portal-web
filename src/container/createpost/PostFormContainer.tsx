@@ -31,6 +31,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
 
   const handleCategoryChange = (value: string) => {
     setCategory(value);
+    console.log(value)
   };
 
   const handleAnonymousChange = (checked: boolean) => {
@@ -46,6 +47,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       // 각 필드가 비어있지 않은지 검사
       if (!title.trim() || !content.trim()) {
         console.error('모든 필드를 입력하세요.');
+        alert('제목과 내용을 모두 작성하세요.')
         return;
       }
 
@@ -65,7 +67,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     <div>
       <TitleInput value={title} onChange={handleTitleChange} />
       <ContentInput value={content} onChange={handleContentChange} />
-      <CategorySelect value={category}  onChange={(value) => console.log(value)} />
+      <CategorySelect value={category}  onChange={handleCategoryChange} />
       <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
       <ImageUpload onImageChange={handleImageChange}/>
       <button onClick={handlePostSubmit}>게시 버튼</button>
