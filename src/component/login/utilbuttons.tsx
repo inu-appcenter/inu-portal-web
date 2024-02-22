@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
+import './utilbuttons.css'
 
 export default function UtilButtons() {
   const navigate = useNavigate();
@@ -18,9 +19,12 @@ export default function UtilButtons() {
 
   return(
     <UtilButtonsWrapper>
-      <button onClick={handleRegisterClick}>회원가입</button>
-      <button>아이디 찾기</button>
-      <button>비밀번호 찾기</button>
+      <div className='text btn' onClick={handleRegisterClick}>회원가입 &gt;</div>
+      <span>
+        <span className='text btn'>아이디 찾기</span>
+        <span className='text'> | </span>
+        <span className='text btn'>비밀번호 찾기</span>
+      </span>
     </UtilButtonsWrapper>
   )
 }
@@ -28,4 +32,7 @@ export default function UtilButtons() {
 const UtilButtonsWrapper = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
+
+  margin-top: 20px;
 `

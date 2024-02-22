@@ -3,13 +3,14 @@
 
 interface PostContentProps {
   writer: string;
+  content: string;
 }
-export default function PostContent({ writer }: PostContentProps) {
+export default function PostContent({ writer, content }: PostContentProps) {
   return (
     <>
       <div className='post-contents'>
         <h3>{writer}</h3>
-        <div className='contents'>본문</div>
+        <div className='contents'>{content}</div>
       </div>
     </>
   );

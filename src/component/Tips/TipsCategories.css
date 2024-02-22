@@ -1,0 +1,26 @@
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.categoryItem {
+  width: 193px;
+  height: 60px;
+  border-radius: 10px;
+
+  font-family: Inter;
+  font-size: 17px;
+  font-weight: 500;
+  color: #656565;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.selected {
+  background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
+  font-weight: 700;
+  color: #FFFFFF;
+}

@@ -1,3 +1,4 @@
+import styled from "styled-components";
 import { useEffect } from "react";
 import Header from "../container/common/HeaderContainer"
 import Nav from "../container/common/NavContainer"
@@ -12,7 +13,7 @@ export default function MainPage() {
         }
     }, [pathname]);
     return (
-        <>
+        <MainPageWrapper>
             <header>
                 <Header />
             </header>
@@ -22,7 +23,12 @@ export default function MainPage() {
             <main>
                 <Outlet />
             </main>
-        </>
+        </MainPageWrapper>
 
     )
 }
+
+const MainPageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;

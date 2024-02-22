@@ -8,49 +8,41 @@ import { useEffect, useState } from 'react';
 import getPost from '../utils/getPost';
 import { useSelector } from 'react-redux';
 
-interface post {
+interface Post {
     id: number;
     title: string;
     category: string;
     writer: string;
+    content: string;
     like: number;
     scrap: number;
     view: number;
     isLiked: boolean;
     isScraped: boolean;
+    hasAuthority: boolean;
     createDate: string;
     modifiedDate: string;
     imageCount: number;
-    replies: replies[];
+    replies: Replies[];
 }
 
-interface replies {
+interface Replies {
     id: number;
     writer: string;
     content: string;
     like: number;
     isLiked: boolean;
-    isanonymous: boolean;
-    createDate: string;
-    modifiedDate: string;
-    reReplies: reReplies[];
-}
-
-interface reReplies {
-    id: number;
-    writer: string;
-    content: string;
-    like: number;
-    isLikde: boolean;
     isAnonymous: boolean;
+    hasAuthority: boolean;
     createDate: string;
     modifiedDate: string;
-  }
+    reReplies: Replies[];
+}
 
 export default function PostDetail(){
     const token = useSelector((state: any) => state.user.token);
     const { id } = useParams<{ id: string }>();
-    const [post, setPost] = useState<post|null>();
+    const [post, setPost] = useState<Post|null>();
     const [commentUpdated, setCommentUpdated] = useState(false);
     useEffect(() => {
         if (id) {
@@ -67,7 +59,7 @@ export default function PostDetail(){
         {post ? (
             <PostWrapper>
                 <ReturnButton />
-                <PostContentContainer title={post.title} writer={post.writer} />
+                <PostContentContainer title={post.title} writer={post.writer} content={post.content} />
                 <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
                 <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
             </PostWrapper>

@@ -1,10 +1,12 @@
+//TipContainer.tsx
 import  { useState } from 'react';
 import TipDropDown from '../../component/home/tipdropdown'; // Adjust the path accordingly
 import TipSearch from "../../component/home/tipsearch" // Adjust the path accordingly
 import MainTip from '../../component/home/tiplist'; // Adjust the path accordingly
 import TipTitle from '../../component/home/tiptitle';
-import styled from 'styled-components';
 import TipPostBtn from '../../component/home/tippostbtn';
+import styled from 'styled-components';
+
 
 export default function MainTips () {
   const [searchType, setSearchType] = useState('제목+내용');
@@ -18,6 +20,7 @@ export default function MainTips () {
     setSearchInput(input);
     alert(`검색: ${input} (검색 타입: ${searchType})`);
   };
+
 
   return (
     <TipWrapper>

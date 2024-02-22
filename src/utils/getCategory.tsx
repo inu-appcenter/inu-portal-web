@@ -1,3 +1,4 @@
+// getCategory.tsx
 const getCategory = async () => {
   const apiURL = `https://portal.inuappcenter.kr/api/categories`;
   try {

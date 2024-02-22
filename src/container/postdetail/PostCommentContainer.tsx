@@ -9,6 +9,7 @@ interface Replies {
   like: number;
   isLiked: boolean;
   isAnonymous: boolean;
+  hasAuthority: boolean;
   createDate: string;
   modifiedDate: string;
   reReplies: Replies[];
