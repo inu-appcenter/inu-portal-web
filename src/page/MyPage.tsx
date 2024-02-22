@@ -1,13 +1,15 @@
 import styled from 'styled-components';
 
 import MyPageContainer from '../container/mypage/MyPageContainer';
+import MyPageHeaderContainer from '../container/mypage/MyPageHeaderContainer';
 
 
 
 export default function MyPage() {
   return (
     <MyPageWrapper>
-        <MyPageContainer />
+      <MyPageHeaderContainer/>
+      <MyPageContainer />
     </MyPageWrapper>
   );
 }
