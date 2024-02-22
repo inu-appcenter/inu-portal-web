@@ -22,11 +22,9 @@ const CurrentpasswordInput: React.FC<CurrentPasswordInputProps> = ({ value, onCh
 const Wrapper = styled.li`
     list-style: none;
     padding-bottom: 55px;
-    
 `;
 
 const CurrentPasswordTitle = styled.span`
-    /* 원하는 스타일링을 여기에 추가하세요 */
 `;
 
 const Input = styled.input`

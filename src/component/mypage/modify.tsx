@@ -125,7 +125,6 @@ export default function ModifyInfo() {
 const ModifyWrapper = styled.div`
   background-color:  #EFF2F9;
   padding:2.5rem 5rem;
-  width: 100%;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;

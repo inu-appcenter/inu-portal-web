@@ -2,6 +2,9 @@ import  { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import getScrapInfo from '../../utils/getScrap';
+import ScrapPost from './scrapdetail';
+import ScrapTitle from './scaptitle';
+import ScrapFolder from './scrapfolder';
 
 interface loginInfo {
     user: {
@@ -38,22 +41,32 @@ export default function ScrapInfo() {
 
   return (
     <ScrapWrapper>
-      {/* 받아온 스크랩 정보를 화면에 출력 */}
-      {scrapInfo.map((item) => (
-        <ScrapItem key={item.id}>
-          <h3>{item.title}</h3>
-          <p>{item.category}</p>
-        </ScrapItem>
-      ))}
+      <ScrapTitle/>
+      <ScrapFolder/>
+      <ChangeWrapper>
+        <ScrapPost postScrapInfo={scrapInfo}/>
+      </ChangeWrapper>
     </ScrapWrapper>
   );
 }
 
 const ScrapWrapper = styled.div`
+  background-color:  #EFF2F9;
+  padding:2.5rem 5rem;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  height: 100vh;
+  
+`
 
-  /* 스타일 지정 */
-`;
+const ChangeWrapper = styled.div`
+    font-family: Inter;
+font-size: 20px;
+font-weight: 700;
+line-height: 20px;
+margin-top: 30px;
+width:100%;
+`
 
-const ScrapItem = styled.div`
-  /* 스타일 지정 */
-`;

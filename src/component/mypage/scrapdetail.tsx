@@ -2,39 +2,38 @@
 import styled from 'styled-components';
 
 import { Link } from 'react-router-dom';
-import commentlogo from "../../resource/assets/comment-logo.png"
+
 interface postinfoProps {
-    postCommentInfo: {
-      id:number;
-        postId: number;
-        content: string;
+    postScrapInfo: {
+        id:number;
+        title: string;
         category: string;
     }[];
 }
 
-export default function UserComment({postCommentInfo}:postinfoProps) {
+export default function ScrapPost({postScrapInfo}:postinfoProps) {
     
   return (
-    <UserCommentWrapper>
+    <ScrapWrapper>
       <CountWrapper>
-        <Commentimg src={commentlogo} />
-        <CommentCount>{postCommentInfo.length}</CommentCount>
+        <ScrapText>All scraps</ScrapText>
+        <ScrapCount>{postScrapInfo.length}</ScrapCount>
       </CountWrapper>
       <Items>
-        {postCommentInfo.map((item) => (
-          <PostLink  to={`/tips/${item.postId}`}>
-            <CommentPostItem key={item.id}>
+        {postScrapInfo.map((item) => (
+          <PostLink  to={`/tips/${item.id}`}>
+            <PostScrapItem key={item.id}>
               <p className='category'>{item.category}</p>
-              <p className='title'>{item.content}</p>
-          </CommentPostItem>
+              <p className='title'>{item.title}</p>
+          </PostScrapItem>
           </PostLink>
         ))}
       </Items>
-  </UserCommentWrapper>
+  </ScrapWrapper>
   );
 }
 
-const UserCommentWrapper = styled.div`
+const ScrapWrapper = styled.div`
 
 `;
 
@@ -42,17 +41,22 @@ const CountWrapper = styled.div`
   display: flex;
   margin-top: 26px;
   align-items: center;
-`
-const Commentimg = styled.img`
-  width: 24px;
-  height: 20px;
-`;
-
-const CommentCount = styled.p`
-font-family: Inter;
+  font-family: Inter;
 font-size: 15px;
 font-weight: 600;
-margin-left: 15px;
+line-height: 20px;
+letter-spacing: 0px;
+width: 100%;
+`
+const ScrapText = styled.p`
+color: #969696;
+
+
+`;
+
+const ScrapCount = styled.p`
+color: #0E4D9D;
+margin-left:10px;
 `;
 
 const Items = styled.div`
@@ -63,7 +67,7 @@ const Items = styled.div`
   overflow-y: auto; 
 `;
 
-const CommentPostItem = styled.div`
+const PostScrapItem = styled.div`
   display: flex;
   gap:2px;
   background-color:white;

@@ -52,6 +52,7 @@ const MyPageBtnWrapper = styled.button`
   border-radius: 12px;
   color: #656565;
   background-color: white;
+  position: relative;
   &.select {
     background: #0E4D9D;
   }
@@ -60,6 +61,8 @@ const MyPageBtnWrapper = styled.button`
 const MyPageDetailWrapper = styled.div`
   position: absolute;
   left: 300px;
+  width: 60%;
+  margin-right: 40px;
 `;
 
 const BtnTitle = styled.div`
