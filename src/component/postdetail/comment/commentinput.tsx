@@ -21,7 +21,7 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
     try {
       const response = await postComment(token, id, content, isAnonymous);
       if (response === 201) {
-        alert("등록 성공");
+        // alert("등록 성공");
         setContent("");
         setIsAnonymous(false);
         onCommentUpdate();
@@ -35,7 +35,11 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
       alert('등록 에러');
     }
   };
-
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      handleCommentSubmit();
+    }
+  };
   return (
     <div>
       <label>
@@ -50,6 +54,8 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="댓글을 입력하세요."
+        onKeyDown={handleKeyPress}
+
       />
       <div>
       </div>

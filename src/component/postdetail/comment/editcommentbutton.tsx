@@ -16,7 +16,7 @@ const EditCommentButton: React.FC<EditCommentButtonProps> = ({ token, id, curren
       try {
         const response = await editComment(token, id, newContent, isAnonymous);
         if (response === 200) {
-          alert("수정 성공");
+          // alert("수정 성공");
           onCommentUpdate();
         }
         else if (response === 403) {
