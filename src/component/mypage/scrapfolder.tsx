@@ -1,28 +1,72 @@
 import styled from 'styled-components';
 import folderImg from '../../resource/assets/file-logo.png';
 import PlusImg from "../../resource/assets/plus-logo.png";
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import MakeModal from './foldermakemodal';
+import { useSelector } from 'react-redux';
+import CreateFolder from '../../utils/postMakeFolder';
+import getFolder from '../../utils/getFolder';
 
 type FolderName = string;
 
 
+// async function createFolder(): Promise<FolderName> {
+
+//     return "New Folder";
+// }
+
+interface loginInfo {
+    user: {
+      token: string;
+    };
+  }
+
+interface folder {
+    name:string;
+}
+
 export default function ScrapFolder() {
+    const token = useSelector((state: loginInfo) => state.user.token);
     const [folders, setFolders] = useState<FolderName[]>(["내 폴더"]);
-    
-    const handleMakeFolder = async () => {
+    const [isOpenModal, setOpenModal] = useState<boolean>(false);
+
+    useEffect(() => {
+        const fetchFolders = async () => {
+            try {
+                // 여기서 폴더 이름을 받아오는 API 호출 또는 처리
+                const response = await getFolder(token);
+                const names = (Object.values(response) as { name: string }[]).map(item => item.name);
+
+
+                console.log(names,"폴더");
+                setFolders(prevFolders => [...prevFolders, ...names]);
+            } catch (error) {
+                console.error("폴더 이름을 가져오지 못했습니다.", error);
+            }
+        };
+
+        fetchFolders(); 
+    }, [token]);
+
+    const handleMakeFolder =  () => {
+        setOpenModal(true);
+    };
+
+    const closeModal = () => {
+        setOpenModal(false);
+    };
+
+
+
+    const handleFolderCreate = async (folderName: string) => {
         try {
-            const newFolderName: FolderName = await createFolder(); 
-            setFolders([...folders, newFolderName]); 
+            const response = await CreateFolder(token,folderName);
+            console.log(response);
+            setFolders([...folders, folderName]); 
         } catch (error) {
             console.error("폴더를 생성하지 못했습니다.", error);
         }
-    };
 
-    const handleNmaeFolder = (index: number, folderName: string) => {
-        const updatedFolders = [...folders];
-        updatedFolders[index] = folderName;
-        setFolders(updatedFolders);
     };
 
     return (
@@ -30,13 +74,11 @@ export default function ScrapFolder() {
             {folders.map((folderName, index) => (
                 <FolderWrapper key={index}>
                     <Folder src={folderImg} alt="" />
-                    <FolderNameInput 
-                        type="text" 
-                        value={folderName} 
-                        onChange={(e) => handleNmaeFolder(index, e.target.value)} />
+                    <FolderNameInput>{folderName}</FolderNameInput>
                 </FolderWrapper>
             ))}
-            <Plus src={PlusImg} onClick={handleMakeFolder}/>
+            <Plus src={PlusImg} onClick={handleMakeFolder} />
+            {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate}/>} 
         </Container>
     );
 }
@@ -45,7 +87,7 @@ export default function ScrapFolder() {
 const Container = styled.div`
     display: flex;
     align-items: center;
-    gap: 60%;
+
     flex-wrap: nowrap;
 `
 const FolderWrapper = styled.div`
@@ -59,7 +101,7 @@ const Folder = styled.img`
     position: relative;
 `;
 
-const FolderNameInput = styled.input`
+const FolderNameInput = styled.p`
     position: absolute;
     top: 18%;
     margin-left:20px;
