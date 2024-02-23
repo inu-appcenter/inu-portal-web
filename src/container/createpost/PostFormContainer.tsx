@@ -53,6 +53,10 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     setImages(images.filter((_, i) => i !== index));
   }
 
+  const handleSave = () => {
+    alert('저장은 아직 미구현');
+  }
+
   const handlePostSubmit = async () => {
     try {
       // 각 필드가 비어있지 않은지 검사
@@ -85,21 +89,23 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   };
 
   return (
-    <div>
+    <div className='PostFormContainer'>
       <div className='bar'>
         <ImageInput onImageChange={handleImageChange} />
         <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
-        <div className='post-button'>저장</div>
+        <div className='post-button' onClick={handleSave}>저장</div>
         <div className='post-button' onClick={handlePostSubmit}>업로드</div>
       </div>
       <div className='container1'>
         <div className='container2'>
           <TitleInput value={title} onChange={handleTitleChange} />
+          <div className='write-line'></div>
           <ContentInput value={content} onChange={handleContentChange} />
+          <div className='write-line'></div>
           <div>
             {images.map((image, index) => (
               <div key={index} style={{ position: 'relative', display: 'inline-block', margin: '10px' }}>
-                <img src={URL.createObjectURL(image)} alt={`preview ${index}`} style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                <img src={URL.createObjectURL(image)} alt={`preview ${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
                 <button onClick={() => handleImageRemove(index)} style={{ position: 'absolute', top: 0, right: 0 }}>X</button>
               </div>
             ))}

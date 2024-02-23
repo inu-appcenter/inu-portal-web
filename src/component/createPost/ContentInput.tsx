@@ -8,8 +8,7 @@ interface ContentInputProps {
 const ContentInput: React.FC<ContentInputProps> = ({ value, onChange }) => {
   return (
     <div>
-      <label htmlFor="content">내용:</label>
-      <textarea id="content" value={value} onChange={(e) => onChange(e.target.value)} />
+      <textarea id="content" value={value} placeholder='내용을 입력하세요.' onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 };

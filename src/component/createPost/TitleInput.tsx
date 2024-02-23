@@ -8,8 +8,7 @@ interface TitleInputProps {
 const TitleInput: React.FC<TitleInputProps> = ({ value, onChange }) => {
   return (
     <div>
-      <label htmlFor="title">제목:</label>
-      <input type="text" id="title" value={value} onChange={(e) => onChange(e.target.value)} />
+      <input type="text" id="title" value={value} placeholder='제목' onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 };

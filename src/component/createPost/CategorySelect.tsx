@@ -35,21 +35,23 @@ const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange }) => {
   };
 
   return (
-    <div className={`dropdown-container ${isOpen ? 'open' : 'close'}`}>
-      <div className="dropdown-selected" onClick={handleDropdownToggle}>
-        <div className='dropdown-text'> {value || "카테고리 선택"} </div>
-        <img className='dropdown-img' src={dropdownImg}></img>
-      </div>
-      {isOpen && (
-        <div className="dropdown-options">
-          {options.map((option) => (
-            <div key={option} className="dropdown-option" onClick={() => handleOptionClick(option)} >
-              <div className='dropdown-option-line'></div>
-              <div className='dropdown-option-text'>{option}</div>
-            </div>
-          ))}
+    <div>
+      <div className={`dropdown-container ${isOpen ? 'open' : 'close'}`}>
+        <div className="dropdown-selected" onClick={handleDropdownToggle}>
+          <div className='dropdown-text'> {value || "카테고리 선택"} </div>
+          <img className='dropdown-img' src={dropdownImg}></img>
         </div>
-      )}
+        {isOpen && (
+          <div className="dropdown-options">
+            {options.map((option) => (
+              <div key={option} className="dropdown-option" onClick={() => handleOptionClick(option)} >
+                <div className='dropdown-option-line'></div>
+                <div className='dropdown-option-text'>{option}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
