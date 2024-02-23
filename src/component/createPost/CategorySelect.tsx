@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import getCategory from '../../utils/getCategory';
+import dropdownImg from '../../resource/assets/dropdown-img.png';
+import './CategorySelect.css';
 
 interface CategorySelectProps {
   value: string;
@@ -9,6 +10,7 @@ interface CategorySelectProps {
 
 const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange }) => {
   const [options, setOptions] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -23,58 +25,33 @@ const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange }) => {
     fetchCategories();
   }, []);
 
+  const handleDropdownToggle = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleOptionClick = (option: string) => {
+    onChange(option);
+    setIsOpen(false);
+  };
+
   return (
-    <div>
-      <label htmlFor="category">카테고리:</label>
-      <select id="category" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">카테고리 선택</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+    <div className={`dropdown-container ${isOpen ? 'open' : 'close'}`}>
+      <div className="dropdown-selected" onClick={handleDropdownToggle}>
+        <div className='dropdown-text'> {value || "카테고리 선택"} </div>
+        <img className='dropdown-img' src={dropdownImg}></img>
+      </div>
+      {isOpen && (
+        <div className="dropdown-options">
+          {options.map((option) => (
+            <div key={option} className="dropdown-option" onClick={() => handleOptionClick(option)} >
+              <div className='dropdown-option-line'></div>
+              <div className='dropdown-option-text'>{option}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
 export default CategorySelect;
-
-// import { useState, useEffect } from 'react';
-// import getCategory from '../../utils/getCategory';
-
-// interface CategoriesProps {
-//   setSelectedCategory: (category: string) => void;
-// }
-
-// export default function SelectCat({ setSelectedCategory }: CategoriesProps) {
-//   const [categories, setCategories] = useState<string[]>([]);
-
-//   const fetchCategories = async () => {
-//     const cats = await getCategory();
-//     setCategories(cats);
-//   };
-
-//   useEffect(() => {
-//     fetchCategories();
-//   }, []);
-
-//   const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-//     const selectedCategory = event.target.value;
-//     setSelectedCategory(selectedCategory);
-//   };
-
-//   return (
-//     <div>
-//       <label htmlFor="categorySelect">카테고리 선택</label>
-//       <select id="categorySelect" onChange={handleCategoryChange}>
-//         {categories.map((category, index) => (
-//           <option key={index} value={category}>
-//             {category}
-//           </option>
-//         ))}
-//       </select>
-//     </div>
-//   );
-// }
-// src/components/CategorySelect.tsx

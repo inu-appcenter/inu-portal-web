@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import ImageInput from '../../component/createPost/ImageInput';
 import launchPost from '../../utils/launchPost';
 import postImage from '../../utils/postImage';
+import './PostFormContainer.css'
 
 interface PostFormProps {
   onPostSubmit: () => void;
@@ -48,6 +49,10 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     }
   };
 
+  const handleImageRemove = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  }
+
   const handlePostSubmit = async () => {
     try {
       // 각 필드가 비어있지 않은지 검사
@@ -81,12 +86,27 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
 
   return (
     <div>
-      <TitleInput value={title} onChange={handleTitleChange} />
-      <ContentInput value={content} onChange={handleContentChange} />
-      <CategorySelect value={category}  onChange={handleCategoryChange} />
-      <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
-      <ImageInput onImageChange={handleImageChange} />
-      <button onClick={handlePostSubmit}>게시 버튼</button>
+      <div className='bar'>
+        <ImageInput onImageChange={handleImageChange} />
+        <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
+        <div className='post-button'>저장</div>
+        <div className='post-button' onClick={handlePostSubmit}>업로드</div>
+      </div>
+      <div className='container1'>
+        <div className='container2'>
+          <TitleInput value={title} onChange={handleTitleChange} />
+          <ContentInput value={content} onChange={handleContentChange} />
+          <div>
+            {images.map((image, index) => (
+              <div key={index} style={{ position: 'relative', display: 'inline-block', margin: '10px' }}>
+                <img src={URL.createObjectURL(image)} alt={`preview ${index}`} style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                <button onClick={() => handleImageRemove(index)} style={{ position: 'absolute', top: 0, right: 0 }}>X</button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <CategorySelect value={category}  onChange={handleCategoryChange} />
+      </div>
     </div>
   );
 };

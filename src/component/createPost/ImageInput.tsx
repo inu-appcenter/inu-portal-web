@@ -1,4 +1,6 @@
 import React, { ChangeEvent } from 'react';
+import pictureImg from '../../resource/assets/picture-img.png';
+import './ImageInput.css';
 
 interface ImageInputProps {
   onImageChange: (file: File | null) => void;
@@ -15,7 +17,10 @@ const ImageInput: React.FC<ImageInputProps> = ({ onImageChange }) => {
 
   return (
     <div>
-      <label htmlFor="imageUpload">이미지 업로드</label>
+      <label className='image-input-label' htmlFor="imageUpload">
+        <img className='image-input-img' src={pictureImg} alt="Upload" />
+        <div className='image-input-text'>사진</div>
+      </label>
       <input type="file" id="imageUpload" accept="image/*" onChange={handleImageChange} />
     </div>
   );

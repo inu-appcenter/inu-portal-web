@@ -9,4 +9,7 @@ export default function CreatePost() {
   );
 }
 
-const CreatePostWrapper = styled.div``;
+const CreatePostWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+`;
