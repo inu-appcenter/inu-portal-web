@@ -1,17 +1,24 @@
-const getFolderPost = async (folderId: number) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}`;
+const deleteFolderPost = async (postId:number,folderId: number) => {
+    console.log(postId,"aa",folderId,"bbb");
+    const apiURL = `https://portal.inuappcenter.kr/api/folders/post`;
+
     try {
       const response = await fetch(apiURL, {
-        method: 'GET',
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({
+            'folderId': folderId,
+            'postId': [postId]
+        })
       });
   
       console.log(response,'response');
       if (response.status === 200) {
         const data = await response.json();
-        return data.data;
+        console.log(data,"폴더 삭제 성공");
+        return 200;
       } else {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -21,4 +28,4 @@ const getFolderPost = async (folderId: number) => {
     }
   };
   
-  export default getFolderPost;
+  export default deleteFolderPost;
