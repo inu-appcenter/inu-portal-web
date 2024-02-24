@@ -18,6 +18,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
+  const [ selectedCategory, setSelectedCategory ] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
@@ -64,6 +65,10 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
         console.error('모든 필드를 입력하세요.');
         alert('제목과 내용을 모두 작성하세요.')
         return;
+      }
+      if (category.trim() ===''){
+        alert('카테고리를 선택하세요!');
+      return;
       }
 
       try {

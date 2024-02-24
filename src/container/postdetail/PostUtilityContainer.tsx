@@ -1,4 +1,4 @@
-// Like, 스크랩, 공유, 삭제, 수정 등
+// Like, 스크랩
 
 import PostLike from '../../component/postdetail/post/postlike';
 import PostScrap from '../../component/postdetail/post/postscrap';
