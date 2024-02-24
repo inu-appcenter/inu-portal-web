@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import TitleInput from '../../component/createPost/TitleInput';
 import ContentInput from '../../component/createPost/ContentInput';
 import CategorySelect from '../../component/createPost/CategorySelect';
-import PostService from '../../component/createPost/PostService';
 import AnonymousCheckbox from '../../component/createPost/AnonymousCheckbox';
 import { useSelector } from 'react-redux';
 import ImageInput from '../../component/createPost/ImageInput';
+import launchPost from '../../utils/launchPost';
+import postImage from '../../utils/postImage';
+import './PostFormContainer.css'
 
 interface PostFormProps {
   onPostSubmit: () => void;
@@ -18,6 +20,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   const [category, setCategory] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [images, setImages] = useState<File[]>([]);
 
   const token = useSelector((state: any) => state.user.token); 
   const navigate = useNavigate();
@@ -41,7 +44,18 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
 
   const handleImageChange = (file: File | null) => {
     setSelectedImage(file);
+    if (file) {
+      setImages((prevImages) => [...prevImages, file]);
+    }
   };
+
+  const handleImageRemove = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  }
+
+  const handleSave = () => {
+    alert('저장은 아직 미구현');
+  }
 
   const handlePostSubmit = async () => {
     try {
@@ -52,13 +66,20 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
         return;
       }
 
-      // 서버로의 통신은 PostService에서 담당
-      await PostService.submitPost({ title, content, category, anonymous, image: selectedImage }, token);
-
-      console.log('Post submitted successfully');
-
-
-      
+      try {
+        const response = await launchPost({ title, content, category, anonymous }, token);
+        if (response) {
+          console.log('Post submitted successfully');
+          const postId = response.data;
+            const responseImage = await postImage(token, postId, images);
+            if (responseImage) {
+              console.log(`이미지 등록 성공`);
+            }
+          }
+        }
+      catch (error) {
+        console.log(error);
+      }
       // 게시 성공 후 부모 컴포넌트에서 전달한 콜백 함수 호출
       onPostSubmit();
       navigate(`/tips`);
@@ -68,13 +89,30 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   };
 
   return (
-    <div>
-      <TitleInput value={title} onChange={handleTitleChange} />
-      <ContentInput value={content} onChange={handleContentChange} />
-      <CategorySelect value={category}  onChange={handleCategoryChange} />
-      <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
-      <ImageInput onImageChange={handleImageChange} />
-      <button onClick={handlePostSubmit}>게시 버튼</button>
+    <div className='PostFormContainer'>
+      <div className='bar'>
+        <ImageInput onImageChange={handleImageChange} />
+        <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
+        <div className='post-button' onClick={handleSave}>저장</div>
+        <div className='post-button' onClick={handlePostSubmit}>업로드</div>
+      </div>
+      <div className='container1'>
+        <div className='container2'>
+          <TitleInput value={title} onChange={handleTitleChange} />
+          <div className='write-line'></div>
+          <ContentInput value={content} onChange={handleContentChange} />
+          <div className='write-line'></div>
+          <div>
+            {images.map((image, index) => (
+              <div key={index} style={{ position: 'relative', display: 'inline-block', margin: '10px' }}>
+                <img src={URL.createObjectURL(image)} alt={`preview ${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
+                <button onClick={() => handleImageRemove(index)} style={{ position: 'absolute', top: 0, right: 0 }}>X</button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <CategorySelect value={category}  onChange={handleCategoryChange} />
+      </div>
     </div>
   );
 };

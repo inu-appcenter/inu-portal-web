@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import getCategory from '../../utils/getCategory';
 import './TipsCategories.css';
 
@@ -9,6 +10,7 @@ interface TipsCategoriesProps {
 
 export default function TipsCategories({ selectedCategory, setSelectedCategory }: TipsCategoriesProps) {
   const [categories, setCategories] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const fetchCategories = async () => {
     const cats = await getCategory();
@@ -23,7 +25,7 @@ export default function TipsCategories({ selectedCategory, setSelectedCategory }
   return (
     <div className='categories'>
       {categories.map((category, index) => (
-        <div className={`categoryItem ${selectedCategory === category ? 'selected' : ''}`} key={index} onClick={() => setSelectedCategory(category)}>
+        <div className={`categoryItem ${selectedCategory === category ? 'selected' : ''}`} key={index} onClick={() => {setSelectedCategory(category); navigate('/tips');}}>
           {category}
         </div>
       ))}

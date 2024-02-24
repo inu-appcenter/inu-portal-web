@@ -1,0 +1,21 @@
+.checkboxContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 22px;
+
+  gap: 5px;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+}
+
+.checkbox-text {
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 400;
+  text-align: center;
+  color: #9FA3A6;
+}

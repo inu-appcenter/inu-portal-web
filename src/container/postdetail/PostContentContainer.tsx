@@ -3,16 +3,18 @@ import PostTitle from '../../component/postdetail/post/posttitle';
 
 
 interface PostContentContainerProps {
+    id: number;
     title: string;
     writer: string;
     content: string;
+    imageCount: number;
 }
 
-export default function PostContentContainer({ title, writer, content }: PostContentContainerProps) {
+export default function PostContentContainer({ id, title, writer, content, imageCount }: PostContentContainerProps) {
     return (
         <>
             <PostTitle title={title} /> {/* PostTitle 컴포넌트에 title prop 전달 */}
-            <PostContent writer={writer} content={content}/>
+            <PostContent id={id} writer={writer} content={content} imageCount={imageCount}/>
         </>
     );
 }

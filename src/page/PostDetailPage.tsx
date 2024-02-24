@@ -68,7 +68,7 @@ export default function PostDetail(){
             <PostWrapper>
                 <ReturnButton />
                 <DeletePostBtn token={token} id={post.id} onPostUpdate={handlePostUpdate} /> 
-                <PostContentContainer title={post.title} writer={post.writer} content={post.content} />
+                <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
                 <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
                 <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
             </PostWrapper>

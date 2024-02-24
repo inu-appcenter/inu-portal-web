@@ -1,11 +1,15 @@
-const postImage = async (postId: number, images: File) => {
+const postImage = async (token: string, postId: number, images: File[]) => {
     const apiURL = `https://portal.inuappcenter.kr/api/posts/images/${postId}`;
     try {
       const formData = new FormData();
-      formData.append('file', images);
-  
+      images.forEach((image, index) => {
+        formData.append('images', image, `image${index}`);
+      });
       const response = await fetch(apiURL, {
         method: 'POST',
+        headers: {
+          'Auth': token,
+        },
         body: formData,
       });
   
