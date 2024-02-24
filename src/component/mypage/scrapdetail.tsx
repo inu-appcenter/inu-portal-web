@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import getFolder from '../../utils/getFolder';
 import postInsertFolders from '../../utils/postinsertfolder';
+import getFolderPost from '../../utils/getfolderpost';
+// import postInsertFolders from '../../utils/postindertfolder';
+
 
 interface loginInfo {
   user: {
@@ -21,6 +24,13 @@ interface postinfoProps {
         category: string;
     }[];
 }
+
+interface PostInfo {
+  id: number;
+  title: string;
+  category: string;
+}
+
 type FolderName = string;
 export default function ScrapPost({postScrapInfo}:postinfoProps) {
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
@@ -28,24 +38,46 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
   const [folderId, setFolderId] = useState<number[]>([0]);
   const token = useSelector((state: loginInfo) => state.user.token);
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
+  const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
 
   useEffect(() => {
     const fetchFolders = async () => {
-        try {
-            const response = await getFolder(token);
-            const names = (Object.values(response) as { name: string }[]).map(item => item.name);
-            const folderId = (Object.values(response) as { id: number }[]).map(item => item.id);
+      try {
+        const response = await getFolder(token);
+        const names = (Object.values(response) as { name: string }[]).map(item => item.name);
+        const folderId = (Object.values(response) as { id: number }[]).map(item => item.id);
 
-            setFolderId(prevFolderId => [...prevFolderId,...folderId]);
-            console.log(names,"폴더",folderId);
-            setFolders(prevFolders => [...prevFolders, ...names]);
-        } catch (error) {
-            console.error("폴더 이름을 가져오지 못했습니다.", error);
-        }
+        setFolderId(prevFolderId => [...prevFolderId,...folderId]);
+        setFolders(prevFolders => [...prevFolders, ...names]);
+      } catch (error) {
+        console.error("폴더 이름을 가져오지 못했습니다.", error);
+      }
     };
 
     fetchFolders(); 
-}, [token]);
+  }, [token]);
+
+  useEffect(() => {
+    const fetchFolderPosts = async () => {
+        try {
+            // const newFolderPosts: ScrapFolderPostProps[] = [];
+            console.log(folderId,"시작전이구");
+            for (let id = 1; id < folderId.length; id++) {
+                const response = await getFolderPost(folderId[id]) as PostInfo[];
+                console.log(response,"결과가 뭔데?");
+                // const scrapFolderPost: ScrapFolderPostProps = { postScrapFolderInfo: response };
+                // newFolderPosts.push(scrapFolderPost);
+                setFolderPosts(response);
+            }
+            // setFolderPosts(prevPosts => [...prevPosts, ...newFolderPosts]);
+            console.log(folderPosts,"처음 렌더링할때 뭐가 있니?")
+        } catch (error) {
+            console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
+        }
+    };
+
+    fetchFolderPosts(); 
+}, [folderId]);
 
   const handleSearchTypeClick = (index: number) => {
     setShowDropdown(prevIndex => (prevIndex === index ? null : index));
@@ -139,14 +171,15 @@ const Items = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 150px; 
-  overflow-y: auto; 
+  /* max-height: 150px; 
+  overflow-y: auto;  */
 `;
 
 const PostScrapItem = styled.div`
   display: flex;
   gap:2px;
   background-color:white;
+  justify-content: space-between;
   .category {
     background-color: #a4c8e4; 
     padding:10px;
@@ -170,46 +203,28 @@ const PostLink = styled(Link)`
   color:black;
   box-sizing: border-box;
 `;
-// const DropdownButton = styled.button`
-// position: relative; /* 부모 요소에 상대 위치 설정 */
-// `;
-
-// const DropdownMenu = styled.div`
-//   /* 필요한 스타일링 추가 */
-//   position: absolute; /* 절대 위치 설정 */
-//   top: 10px; /* 부모 요소 아래에 표시되도록 설정 */
-//   left: 0; /* 왼쪽 정렬 */
-//   background-color: white; /* 배경색 */
-//   padding: 10px; /* 패딩 추가 */
-//   border: 1px solid #ccc; /* 테두리 추가 */
-//   border-radius: 5px; /* 테두리 반경 설정 */
-//   z-index: 100; /* 다른 요소 위에 표시되도록 설정 */
-// `;
 
 const TipDropDownWrapper = styled.div`
-  width: 81px;
+  width: 150px;
   height: 30px;
   display: flex;
   padding: 10px;
   box-sizing: border-box;
   justify-content: space-between;
   position: relative;
-  background: #F3F3F3;
+  background: white;
 
 `;
 
 const TipDropDownBox = styled.div`
   font-size: 10px;
   font-weight: 800;
-  line-height: 12px;
   letter-spacing: 0em;
-  text-align: left;
-`;
 
-// const Img = styled.img`
-// width: 6px;
-// height: 11px;
-// `;
+  font-size: 50px;
+  line-height: 30px;
+  color:gray;
+`;
 
 const TipDropDowns = styled.div`
   z-index: 3000;
@@ -220,6 +235,19 @@ const TipDropDowns = styled.div`
   background-color: black;
 border-radius: 10px;
 color:white;
+  padding:20px;
+  button {
+    background-color: black;
+    color:white;
+    display: block;
+    margin:0 auto;
+    text-align: center;
+    border: none;
+  }
+
+  label {
+    display: flex;
+  }
 `;
 
 const TipDropDownDetail = styled.div`
