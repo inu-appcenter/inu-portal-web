@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 interface EditPostBtnProps {
   handleEditPost: () => void;
+  
 }
 
 const EditPostBtn: React.FC<EditPostBtnProps> = ({ handleEditPost }) => {
@@ -15,7 +16,7 @@ const EditPostBtn: React.FC<EditPostBtnProps> = ({ handleEditPost }) => {
       <button
         onClick={() => {
           handleEditPost();
-          navigate('/update')
+          navigate(`/update`); 
         }}
       >
         수정하기

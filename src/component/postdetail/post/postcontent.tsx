@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import getPostsImages from "../../../utils/getPostsimages";
+import getPostsImages from '../../../utils/getPostsImages';
+
 interface PostContentProps {
   id: number;
   writer: string;

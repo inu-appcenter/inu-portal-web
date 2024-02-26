@@ -5,11 +5,12 @@ import Login from './Page/LoginPage/LoginPage';
 import Register from './Page/RegisterPage/RegisterPage';
 import Tips from './page/TipsPage';
 import CreatePost from './page/CreatePostPage';
-import EditPost from './Page/EditPostPage';
+import EditPost from './Page/EditPostPage'
 import MyPage from './page/MyPage';
 import { useEffect } from 'react';
 import reLogin from './utils/reLogin';
 import { useDispatch } from 'react-redux';
+
 
 
 export default function App() {
