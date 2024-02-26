@@ -5,6 +5,7 @@ import Login from './Page/LoginPage/LoginPage';
 import Register from './Page/RegisterPage/RegisterPage';
 import Tips from './page/TipsPage';
 import CreatePost from './page/CreatePostPage';
+import EditPost from './Page/EditPostPage';
 import MyPage from './page/MyPage';
 import { useEffect } from 'react';
 import reLogin from './utils/reLogin';
@@ -29,6 +30,9 @@ export default function App() {
           <Route path='/tips/*' element={<Tips />} />
           <Route path='/mypage' element={<MyPage />} />
           <Route path='/write' element={<CreatePost />} />
+          <Route path='/update' element={<EditPost />} />
+
+          
         </Route>
 
       </Routes>

@@ -9,13 +9,7 @@ interface EditCommentButtonProps {
   onCommentUpdate: () => void;
 }
 
-const EditCommentButton: React.FC<EditCommentButtonProps> = ({
-  token,
-  id,
-  currentContent,
-  isAnonymous,
-  onCommentUpdate,
-}) => {
+const EditCommentButton: React.FC<EditCommentButtonProps> = ({token, id, currentContent, isAnonymous, onCommentUpdate,}) => {
   const handleEditClick = async () => {
     const newContent = prompt('수정:', currentContent);
     if (newContent !== null && newContent !== currentContent) {

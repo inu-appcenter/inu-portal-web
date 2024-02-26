@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import PostFormContainer from '../container/createpost/PostFormContainer';
 
+
 export default function CreatePost() {
   return (
     <CreatePostWrapper>

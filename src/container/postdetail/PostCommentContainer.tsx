@@ -15,7 +15,6 @@ interface Replies {
   reReplies: Replies[];
 }
 
-
 interface PostCommentContainerProps {
   comments: Replies[];
   onCommentUpdate: () => void; 

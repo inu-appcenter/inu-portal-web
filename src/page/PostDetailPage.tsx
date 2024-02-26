@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import getPost from '../utils/getPost';
 import { useSelector } from 'react-redux';
 import DeletePostBtn from '../component/postdetail/post/deletpostbtn';
+import EditPostBtn from '../component/postdetail/post/editpostbtn';
 
 
 interface Post {
@@ -62,12 +63,18 @@ export default function PostDetail(){
         // 예: 댓글 갱신, 상태 변경 등
         setCommentUpdated(true);
     };
+
+    const handleEditPost =() =>{
+        console.log('Edit button Clicked!');
+    };
+
     return(
         <>
         {post ? (
             <PostWrapper>
                 <ReturnButton />
                 <DeletePostBtn token={token} id={post.id} onPostUpdate={handlePostUpdate} /> 
+                <EditPostBtn handleEditPost={handleEditPost}/>
                 <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
                 <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
                 <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
