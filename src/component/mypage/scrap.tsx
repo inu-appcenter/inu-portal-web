@@ -23,7 +23,6 @@ export default function ScrapInfo() {
     console.log("여기까지 왔니")
   const [scrapInfo, setScrapInfo] = useState<ScrapInfo[]>([]); 
   const token = useSelector((state: loginInfo) => state.user.token);
-
   useEffect(() => {
     const fetchScrapInfo = async () => {
       try {
@@ -42,7 +41,7 @@ export default function ScrapInfo() {
   return (
     <ScrapWrapper>
       <ScrapTitle/>
-      <ScrapFolder/>
+      <ScrapFolder />
       <ChangeWrapper>
         <ScrapPost postScrapInfo={scrapInfo}/>
       </ChangeWrapper>

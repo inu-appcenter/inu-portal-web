@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {  useState } from 'react';
 import styled from 'styled-components';
 import { MypageList } from '../../resource/string/mypage';
 import ScrapInfo from './scrap';
@@ -9,9 +9,8 @@ import DeleteInfo from './delete';
 
 export default function MyPageListButton() {
   const [selectedItem, setSelectedItem] = useState<string>('스크랩'); 
-
   const handleBtn = (title: string) => {
-    setSelectedItem(title); // 선택된 항목 업데이트
+    setSelectedItem(title);
   };
 
   return (
