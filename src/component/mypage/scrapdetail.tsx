@@ -39,6 +39,7 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
   const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
+  // const [updatedPostScrapFolderInfo, setUpdatedPostScrapFolderInfo] = useState<PostInfo[]>(postScrapInfo);
 
   useEffect(() => {
     const fetchFolders = async () => {

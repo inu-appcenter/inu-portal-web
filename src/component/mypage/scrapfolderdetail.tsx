@@ -26,9 +26,7 @@ export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolde
       try {
         const response = await deleteFolderPost(postId, folderId);
         if(response === 200) {
-          // postId에 해당하는 항목을 제외한 새로운 배열 생성
           const filteredPostScrapFolderInfo = updatedPostScrapFolderInfo.filter(item => item.id !== postId);
-          // 새로운 배열로 상태 업데이트
           setUpdatedPostScrapFolderInfo(filteredPostScrapFolderInfo);
         }
       } catch (error) {
