@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import ReturnButton from '../component/postdetail/post/returnButton';
 import PostContentContainer from '../container/postdetail/PostContentContainer';
 import PostUtility from '../container/postdetail/PostUtilityContainer';
 import PostComment from '../container/postdetail/PostCommentContainer';
@@ -9,6 +8,7 @@ import getPost from '../utils/getPost';
 import { useSelector } from 'react-redux';
 import DeletePostBtn from '../component/postdetail/post/deletpostbtn';
 import EditPostBtn from '../component/postdetail/post/editpostbtn';
+import ReturnButton from '../component/postdetail/post/ReturnButton';
 
 
 interface Post {

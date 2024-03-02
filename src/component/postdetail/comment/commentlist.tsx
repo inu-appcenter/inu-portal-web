@@ -25,7 +25,9 @@ interface CommentListProps {
 }
 
 const CommentList: React.FC<CommentListProps> = ({ comments, onCommentUpdate }) => {
-  const token = useSelector((state: any) => state.user.token);
+  console.log(comments);
+  
+  const token = useSelector((state: any) => state.user?.token);
   const [showReCommentInputId, setShowReCommentInputId] = useState<number | null>(null);
 
   return (

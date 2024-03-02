@@ -2,12 +2,11 @@
 import EditPostFormContainer from '../container/editpost/EditPostFormContainer';
 import styled from 'styled-components';
 // // import getPost from '../utils/getPost';
-import { useSelector } from 'react-redux';
 // import { useEffect, useState } from 'react';
 // import { Route, useParams, useNavigate } from 'react-router-dom';
 
 export default function EditPost() {
-  const token = useSelector((state: any) => state.user.token);
+
   // const { id } = useParams<{ id: string }>();
   // const [post, setPost] = useState<any>({});
   // const [title, setTitle] = useState('');
