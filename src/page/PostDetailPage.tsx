@@ -26,6 +26,7 @@ interface Post {
     createDate: string;
     modifiedDate: string;
     imageCount: number;
+    bestReplies: Replies;
     replies: Replies[];
 }
 
