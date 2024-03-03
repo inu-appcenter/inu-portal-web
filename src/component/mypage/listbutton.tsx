@@ -5,6 +5,7 @@ import ScrapInfo from './scrap';
 import ActiveInfo from './active';
 import ModifyInfo from './modify';
 import DeleteInfo from './delete';
+import ModifyMyInfo from './modifyme';
 
 
 export default function MyPageListButton() {
@@ -32,6 +33,7 @@ export default function MyPageListButton() {
       {selectedItem === '스크랩' && <ScrapInfo />}
       {selectedItem === '내 활동' && <ActiveInfo />}
       {selectedItem === '비밀번호 변경' && <ModifyInfo />}
+      {selectedItem === '개인정보 수정' && <ModifyMyInfo />}
       {selectedItem === '회원탈퇴' && <DeleteInfo />}
       </MyPageDetailWrapper>
     </>

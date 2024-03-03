@@ -61,16 +61,12 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
   useEffect(() => {
     const fetchFolderPosts = async () => {
         try {
-            // const newFolderPosts: ScrapFolderPostProps[] = [];
             console.log(folderId,"시작전이구");
             for (let id = 1; id < folderId.length; id++) {
                 const response = await getFolderPost(folderId[id]) as PostInfo[];
                 console.log(response,"결과가 뭔데?");
-                // const scrapFolderPost: ScrapFolderPostProps = { postScrapFolderInfo: response };
-                // newFolderPosts.push(scrapFolderPost);
                 setFolderPosts(response);
             }
-            // setFolderPosts(prevPosts => [...prevPosts, ...newFolderPosts]);
             console.log(folderPosts,"처음 렌더링할때 뭐가 있니?")
         } catch (error) {
             console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);

@@ -4,36 +4,32 @@ import styled from 'styled-components';
 
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import ModifyUser from '../../utils/PutUser';
-import { Link, useNavigate } from 'react-router-dom';
+
+import { Link } from 'react-router-dom';
 import MyInfo from './info';
 import CurrentpasswordInput from './currentpassword';
 import NewPasswordInput from './newpassword';
 import CheckNewPasswordInput from './checknewpassword';
-import NewNicknameInput from './nickname';
+
 import ModifyTitle from './modifytitle';
 import ModifyButton from './modifybutton';
-import postPasswordCheck from '../../utils/postCheckPassword';
+
 import getUser from '../../utils/getUser';
+import ModifyPassword from '../../utils/putPassword';
 
 interface loginInfo {
     user: {
       token: string;
     };
 }
-interface PasswordResponse {
-  data: boolean;
-  msg: string;
-}
+
 export default function ModifyInfo() {
     const token = useSelector((state: loginInfo) => state.user.token);
     const [currentpassword, setCurrentpassword] = useState("");
     const [newpassword, setNewpassword] = useState("");
     const [checkpassword, setCheckPassword] = useState("");
     const [currnetnickname, setCurrentNickname] = useState("");
-    const [nickname, setNickname] = useState("");
-
-    const navigate = useNavigate();
+  
 
 
     const handleCurrentPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,9 +47,6 @@ export default function ModifyInfo() {
   };
 
 
-    const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setNickname(e.target.value);
-    };
 
     useEffect(() => {
       handleUserInfo();
@@ -71,38 +64,23 @@ export default function ModifyInfo() {
   };
 
     const handleModifyClick = async () => {
-      try {
-          const passwordResponse:PasswordResponse = await postPasswordCheck(token, currentpassword);
-          console.log(passwordResponse, "비밀번호 일치 여부:", passwordResponse.data);
-          
-          if (passwordResponse.data && newpassword === checkpassword && nickname !== "") {
-              const data = {
-                  password: checkpassword,
-                  nickname: nickname
-              };
-              try {
-                  const response = await ModifyUser(token, data);
-                  console.log(response, "비밀번호 변경 결과:", response);
-  
-                  navigate('/');
-              } catch (error) {
-                  console.error('비밀번호 변경 에러:', error);
-                  alert('비밀번호 변경에 실패했습니다.');
-              }
-          } else {
-              if(passwordResponse.data == false) {
-                alert("현재 비밀번호가 틀렸습니다.");
-              }
-              else if (nickname === "") {
-                  alert("닉네임을 입력해주세요");
-              } else {
-                  alert("비밀번호가 일치하지 않습니다.");
-              }
+          if(newpassword !== checkpassword) {
+            alert("비밀번호가 일치하지 않습니다.");
           }
-      } catch (error) {
-          console.error('비밀번호 확인 에러:', error);
-          alert('비밀번호 확인에 실패했습니다.');
-      }
+          else {
+            try {
+              const response = await ModifyPassword(token, currentpassword,newpassword);
+              console.log(response, "비밀번호 변경 결과:", response);
+            
+              // navigate('/');
+                } catch (error) {
+                    console.error('비밀번호 변경 에러:', error);
+                    alert('비밀번호 변경에 실패했습니다.');
+                }
+
+          }
+        
+    
   };
     
     
@@ -114,7 +92,6 @@ export default function ModifyInfo() {
         <CurrentpasswordInput value={currentpassword} onChange={handleCurrentPasswordChange}/>
         <NewPasswordInput value={newpassword} onChange={handleNewPasswordChange}/>
         <CheckNewPasswordInput value={checkpassword} onChange={handleCheckNewPasswordChange}/>
-        <NewNicknameInput value={nickname} onChange={handleNicknameChange}/>
       </ChangeWrapper>
       <ModifyButton onClick={handleModifyClick}/>
       <LostBtn to="/home">비밀번호를 잃어버리셨습니까?</LostBtn>
