@@ -30,8 +30,6 @@ interface loginInfo {
 
   export default function ScrapFolder() {
     const token = useSelector((state: loginInfo) => state.user.token);
-    // const [folders, setFolders] = useState<FolderName[]>(["내 폴더"]);
-    // const [folderId, setFolderId] = useState<number[]>([0]);
     const [folderData, setFolderData] = useState<{[key:string]:number}>({"내 폴더":0});
      const [isOpenModal, setOpenModal] = useState<boolean>(false);
     const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
@@ -46,18 +44,13 @@ interface loginInfo {
             try {
                 const response = await getFolder(token) as { id: number; name: string }[];
                 console.log("여기 뭐가 나오는건데",response);
-                // const names = (Object.values(response) as { name: string }[]).map(item => item.name);
-                // const folderId = (Object.values(response) as { id: number }[]).map(item => item.id);
-                // const folderId = response.map(item => item.id);
-                // const names = response.map(item => item.name);
+
                 const data:{ [key:string]:number} = {};
                 response.forEach(item => {
                     data[item.name] = item.id;
                 })
                 console.log(data,"data에 뭐가 들어가있지");
                 setFolderData(prevFolderData => ({ ...prevFolderData,...data}));
-                // setFolders(prevFolders => [...prevFolders, ...names]);
-                // console.log(folderData,"여기 뭐냐?
             } catch (error) {
                 console.error("폴더 이름을 가져오지 못했습니다.", error);
             }
@@ -71,21 +64,6 @@ interface loginInfo {
             try {
                 const newFolderPosts: PostInfo[] = [];
                 console.log(folderData,"시작전이구");
-                // for (let id = 1; id < folderId.length; id++) {
-                //     const response = await getFolderPost(folderId[id]) as PostInfo[];
-                //     console.log(response,"결과가 뭔데?");
-                //     // const scrapFolderPost: ScrapFolderPostProps = { postScrapFolderInfo: response };
-                //     // newFolderPosts.push(scrapFolderPost);
-                //     setFolderPosts(response);
-                // }
-                // {Object.keys(folderData).forEach((folderName)=>(
-                //     const response = await getFolderPost(folderData[folderName])
-                // ))
-                // folderData.forEach(item => {
-                //     const response = await getFolderPost(folderData[item.name])
-                // });
-                // setFolderPosts(prevPosts => [...prevPosts, ...newFolderPosts]);
-                // console.log(folderPosts,"처음 렌더링할때 뭐가 있니?")
                 for (const folderName in folderData) {
                     const response = await getFolderPost(folderData[folderName]);
                     newFolderPosts.push(...response);
@@ -135,14 +113,13 @@ interface loginInfo {
         } catch (error) {
             console.log("스크랩 폴더 삭제를 실패하였습니다.",error);
         }
-        // const updatedFolders = folders.filter((_, index) => folderId !== folderId[index]);
-        // setFolders(updatedFolders);
+
     };
 
     const handleGetFolderPost = async (folderId: number) => {
         console.log(folderId,"id가 뭔데");
         try {
-            const response = await getFolderPost(folderId); // 폴더 게시글의 목록이라고 가정
+            const response = await getFolderPost(folderId); 
             console.log(response, "폴더 게시글 목록");
             const responseInfo: PostInfo[] = response.map((item: any) => ({
                 id: item.id,
@@ -161,14 +138,7 @@ interface loginInfo {
     return (
         <>
             <Container>
-                {/* {folderData.map((folders, index) => (
-                    
-                    <FolderWrapper key={index} onClick={() => handleGetFolderPost(folderId[index])}>
-                        <Folder src={folderImg} alt="" />
-                        <FolderNameInput>{folderName}</FolderNameInput>
-                        <button onClick={()=>handleFolderDelete(folderId[index])}>-</button>
-                    </FolderWrapper>
-                ))} */}
+
                 {Object.keys(folderData).map((folderName,index)=>(
                      <FolderWrapper key={index} onClick={() => handleGetFolderPost(folderData[folderName])}>
                      <Folder src={folderImg} alt="" />
@@ -176,7 +146,6 @@ interface loginInfo {
                      <button onClick={()=>handleFolderDelete(folderData[folderName])}>-</button>
                  </FolderWrapper>
                 ))}
-                {/* {folderData.map((item:any) =>{console.log(item)})} */}
                 {<Plus src={PlusImg} onClick={handleMakeFolder} />}
                 {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate}/>}
             
