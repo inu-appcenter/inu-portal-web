@@ -6,6 +6,7 @@ import MyPageHeaderContainer from '../container/mypage/MyPageHeaderContainer';
 
 
 export default function MyPage() {
+
   return (
     <MyPageWrapper>
       <MyPageHeaderContainer/>

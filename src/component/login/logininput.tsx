@@ -8,13 +8,6 @@ import loginUserImg from '../../resource/assets/login-user.png';
 import loginPasswordImg from '../../resource/assets/login-password.png';
 
 
-// import { useSelector } from "react-redux";
-
-// interface loginInfo {
-//   user: {
-//     token: string;
-//   };
-// }
 
 export default function LoginInput() {
   const dispatch = useDispatch();
@@ -22,13 +15,7 @@ export default function LoginInput() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // state에 잘 들어갔는지 확인용 
-  // const user = useSelector((state: loginInfo) => state.user);
 
-  // useEffect(() => {
-  //   // Log the user state whenever it changes
-  //   console.log("Updated user state:", user);
-  // }, [user]); // Run this effect when the 'user' state changes
 
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

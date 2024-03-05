@@ -87,7 +87,7 @@ export default function ModifyInfo() {
   return (
     <ModifyWrapper>
       <ModifyTitle/>
-      <MyInfo nickname={currnetnickname} />
+      <MyInfo />
       <ChangeWrapper>
         <CurrentpasswordInput value={currentpassword} onChange={handleCurrentPasswordChange}/>
         <NewPasswordInput value={newpassword} onChange={handleNewPasswordChange}/>

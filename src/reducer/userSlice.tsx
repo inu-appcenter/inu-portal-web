@@ -19,10 +19,14 @@ export const userSlice = createSlice({
             state.email = "";
             state.token = "";
             state.nickname="";
+        },
+        NicknameUser:(state,action) => {
+            state.nickname = action.payload.nickname;
+            return state;
         }
     },
 });
 
-export const { loginUser, logoutUser } = userSlice.actions;
+export const { loginUser, logoutUser ,NicknameUser } = userSlice.actions;
 export default userSlice.reducer;
 

@@ -138,7 +138,6 @@ interface loginInfo {
     return (
         <>
             <Container>
-
                 {Object.keys(folderData).map((folderName,index)=>(
                      <FolderWrapper key={index} onClick={() => handleGetFolderPost(folderData[folderName])}>
                      <Folder src={folderImg} alt="" />
@@ -148,7 +147,6 @@ interface loginInfo {
                 ))}
                 {<Plus src={PlusImg} onClick={handleMakeFolder} />}
                 {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate}/>}
-            
             </Container>
             {folderPosts.length > 0 && <ScrapFolderPost postScrapFolderInfo={folderPosts} folderId={currentFolderId}/>}
         </>
@@ -189,7 +187,7 @@ const FolderNameInput = styled.p`
 `;
 
 const Plus = styled.img`
-  width: 30px;
-  height: 30px;
-  color:gray;
+    width: 30px;
+    height: 30px;
+    color:gray;
 `

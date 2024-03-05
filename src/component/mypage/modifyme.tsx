@@ -3,7 +3,7 @@
 import styled from 'styled-components';
 
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import MyInfo from './info';
 
@@ -13,6 +13,7 @@ import ModifyTitle from './modifytitle';
 
 import getUser from '../../utils/getUser';
 import ModifyNickname from '../../utils/putNickname';
+import { NicknameUser as NicknameUserAction } from "../../reducer/userSlice";
 
 interface loginInfo {
     user: {
@@ -24,7 +25,7 @@ export default function ModifyMyInfo() {
     const token = useSelector((state: loginInfo) => state.user.token);
     const [currnetnickname, setCurrentNickname] = useState("");
     const [nickname, setNickname] = useState("");
-
+    const dispatch = useDispatch();
 
     const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         console.log(e.target.value)
@@ -53,17 +54,18 @@ export default function ModifyMyInfo() {
           const nicknameResponse = await ModifyNickname(token, nickname);
           console.log(nicknameResponse, "닉네임 변경 성공");
           setCurrentNickname(nickname);
+          dispatch(NicknameUserAction({"nickname":nickname}));
       } catch (error) {
           console.error('닉네임 변경 실패:', error);
           alert('닉네임 변경에 실패했습니다.');
-      }
+      } 
   };
     
     
   return (
     <ModifyWrapper>
       <ModifyTitle/>
-      <MyInfo nickname={currnetnickname} />
+      <MyInfo />
       <ChangeWrapper>
         <ProfileChange>프로필 변경</ProfileChange>
         <span>닉네임 변경</span>

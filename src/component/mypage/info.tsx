@@ -1,12 +1,9 @@
 import styled from "styled-components"
 import ProfileImg from "../../resource/assets/profile-logo.png"
+import {  useSelector } from "react-redux"
 
-interface NicknameProps {
-    nickname: string;
-}
-export default function  MyInfo ({nickname}:NicknameProps) {
-
-
+export default function  MyInfo () {
+    const nickname = useSelector((state: any) => state.user.nickname);
     return (
         <InfoWrapper>
             <MyProfileImg src={ProfileImg} alt="프로필 이미지"></MyProfileImg>
