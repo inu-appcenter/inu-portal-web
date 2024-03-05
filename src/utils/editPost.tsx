@@ -18,6 +18,7 @@ const editPost = async (data: PostData, token: string, postId:number) => {
       body: JSON.stringify(data),
     });
     console.log(response, 'response');
+    
     if (response.ok) {
       const data = await response.json();
 

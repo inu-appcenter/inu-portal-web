@@ -1,11 +1,11 @@
 // EditPostBtn.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 
 interface EditPostBtnProps {
-  handleEditPost: () => void;
-  id: number; 
+  handleEditPost: (id: number) => void;
+  id: number;
 }
 
 const EditPostBtn: React.FC<EditPostBtnProps> = ({ handleEditPost, id }) => {
@@ -13,7 +13,10 @@ const EditPostBtn: React.FC<EditPostBtnProps> = ({ handleEditPost, id }) => {
 
   const handleEditButtonClick = async () => {
     try {
-      await handleEditPost(); 
+      // 서버에 postId를 전송
+      const response = await handleEditPost(id);
+      
+      // 수정 후 어떤 화면으로 이동할지에 대한 로직
       navigate(`/update`);
     } catch (error) {
       console.error('에러?:', error);
