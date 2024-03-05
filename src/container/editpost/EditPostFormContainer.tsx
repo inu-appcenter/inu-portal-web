@@ -91,14 +91,24 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate, id}) 
   };
 
   return (
-    <form>
-      <TitleInput value={title} onChange={handleTitleChange} />
-      <ContentInput value={content} onChange={handleContentChange} />
-      <CategorySelect value={category} onChange={handleCategoryChange} />
+    <div className='EditPostFormContainer'>
+      <div className='bar'>
       <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
+      <div className='post-button' onClick={handleEditSubmit}>수정 완료</div>
+      </div>
+      <div className='container1'>
+        <div className='container2'>
+      <TitleInput value={title} onChange={handleTitleChange} />
+      <div className='write-line'></div>
+      <ContentInput value={content} onChange={handleContentChange} />
+      <div className='write-line'></div>
 
-      <button onClick={handleEditSubmit}>수정 완료</button>
-    </form>
+        </div>
+      <CategorySelect value={category} onChange={handleCategoryChange} />
+      </div>
+      
+
+    </div>
   );
 };
 
