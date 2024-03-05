@@ -1,6 +1,6 @@
 const checkMail = async (email: string, numbers: string) => {
   try {
-    const apiURL = `https://portal.inuappcenter.kr/api/members/checkMail`;
+    const apiURL = `https://portal.inuappcenter.kr/api/members/check-mails`;
     const response = await fetch(apiURL, {
       method: 'POST',
       headers: {
