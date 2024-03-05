@@ -22,6 +22,7 @@ const editPost = async (data: PostData, token: string, postId:number) => {
       const data = await response.json();
 
     if (response.status == 200) {
+      console.log('게시글 등록 성공:', data);
       return data;
     } else if (response.status == 403) {
       return 403;
