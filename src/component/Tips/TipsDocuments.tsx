@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import TipsTitle from './TipsTitle';
 import getDocuments from '../../utils/getDocuments';
 import { useNavigate } from 'react-router-dom';
+import './TipsDocuments.css'
+import Heart from '../../resource/assets/heart.png';
 
 interface Document {
   id: number;
@@ -39,52 +41,30 @@ export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) 
   return (
     <TipsDocumentsWrapper>
       <TipsTitle selectedCategory={selectedCategory} />
-      <Table>
-        <thead>
-          <tr>
-            <th>제목</th>
-            <th>작성자</th>
-            <th>좋아요</th>
-            <th>스크랩</th>
-            <th>작성일</th>
-          </tr>
-        </thead>
-        <tbody>
-          {documents.map((document) => (
-            <tr key={document.id} onClick={() => handleDocumentClick(document.id)}>
-              <td>{document.title}</td>
-              <td>{document.writer}</td>
-              <td>{document.like}</td>
-              <td>{document.scrap}</td>
-              <td>{document.createDate}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <div className='grid-container'>
+        {documents.map((document) => (
+            <div className='document-card' key={document.id} onClick={() => handleDocumentClick(document.id)}>
+              <div className='card-1'>
+                <div className='document-category'>
+                  <div className='category-text'>{document.category}</div>
+                  <div className='category-underbar'></div>
+                </div>
+                <span className='document-like'>
+                  <img src={Heart}></img>
+                  <div className='like-num'>{document.like}</div>
+                </span>
+              </div>
+              <h3>{document.title}</h3>
+              <div className='document-content'>api/posts/all에서 내용을 가져와야합니다 내용이 전체가 아니라도 앞부분만이라도 잘라서 가져와야 할 듯 합니다api/posts/all에서 내용을 가져와야합니다 내용이 전체가 아니라도 앞부분만이라도 잘라서 가져와야 할 듯 합니다api/posts/all에서 내용을 가져와야합니다 내용이 전체가 아니라도 앞부분만이라도 잘라서 가져와야 할 듯 합니다</div>
+              <div className='document-date'>{document.createDate}</div>
+            </div>
+        ))}
+      </div>
     </TipsDocumentsWrapper>
   );
 }
 
 const TipsDocumentsWrapper = styled.div`
+  flex-grow: 1;
   padding: 20px;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f2f2f2;
-  }
-
-  tr:hover {
-    background-color: #f0f0f0;
-  }
-
 `;

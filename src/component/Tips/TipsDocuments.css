@@ -1,0 +1,74 @@
+.grid-container {
+  width: 100%;
+
+  display: flex;
+  flex-wrap: wrap;
+  overflow-y: auto;
+  gap: 20px;
+}
+
+.document-card {
+  padding: 15px;
+  border: 2px solid #AAC9EE;
+  cursor: pointer;
+  width: 226px;
+  height: 271px;
+  
+  display: flex;
+  flex-direction: column;
+}
+
+.card-1 {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.document-category {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-text {
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #0E4D9D;
+  margin-bottom: 4px;
+}
+
+.category-underbar {
+  height: 1px;
+  width: 100%;
+  background-color: #7AA7E5;
+}
+
+.document-like {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.like-num {
+  font-family: Inter;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.document-content {
+  flex-grow: 1;
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 500;
+  color: #888888;
+  overflow: hidden;
+}
+
+.document-date {
+  font-family: Inter;
+  font-size: 30px;
+  font-weight: 700;
+  color: #7AA7E5;
+  text-align: center;
+}
