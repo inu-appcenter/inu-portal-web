@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import TipsTitle from './TipsTitle';
 import getDocuments from '../../utils/getDocuments';
 import { useNavigate } from 'react-router-dom';
 import './TipsDocuments.css'
@@ -40,7 +39,6 @@ export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) 
 
   return (
     <TipsDocumentsWrapper>
-      <TipsTitle selectedCategory={selectedCategory} />
       <div className='grid-container'>
         {documents.map((document) => (
             <div className='document-card' key={document.id} onClick={() => handleDocumentClick(document.id)}>
