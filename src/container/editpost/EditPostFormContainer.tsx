@@ -3,19 +3,52 @@ import TitleInput from '../../component/createPost/TitleInput';
 import ContentInput from '../../component/createPost/ContentInput';
 import CategorySelect from '../../component/createPost/CategorySelect';
 import AnonymousCheckbox from '../../component/createPost/AnonymousCheckbox';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import getPost from '../../utils/getPost';
 import editPost from '../../utils/editPost';
 import { useSelector } from 'react-redux';
 
 interface EditPostBtnProps {
-  id:number;
   onPostUpdate: () => void;
 }
 
-const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate, id}) => {
+interface Post {
+  id: number;
+  title: string;
+  category: string;
+  writer: string;
+  content: string;
+  like: number;
+  scrap: number;
+  view: number;
+  isLiked: boolean;
+  isScraped: boolean;
+  hasAuthority: boolean;
+  createDate: string;
+  modifiedDate: string;
+  imageCount: number;
+  bestReplies: Replies;
+  replies: Replies[];
+}
+
+interface Replies {
+  id: number;
+  writer: string;
+  content: string;
+  like: number;
+  isLiked: boolean;
+  isAnonymous: boolean;
+  hasAuthority: boolean;
+  createDate: string;
+  modifiedDate: string;
+  reReplies: Replies[];
+}
+
+const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
+  const { id } = useParams<{ id: string }>();
   const token = useSelector((state: any) => state.user.token);
   const navigate = useNavigate();
+  const [post, setPost] = useState<Post|null>();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
@@ -40,31 +73,24 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate, id}) 
 
 
   useEffect(() => {
-    const fetchPostDetails = async () => {
-      try {
-        if (id) {
-          const response = await getPost(token, id);
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const { title, content, category, anonymous } = await response.json();
-          return { title, content, category, anonymous };
-        }
-      } catch (error) {
-        console.error('Error fetching board:', error);
-        throw error;
+    console.log('id', id);
+      if (id) {
+          const fetchPost = async () => {
+            const postDetail = await getPost(token, id);
+            setPost(postDetail);
+          };
+          fetchPost();
       }
-    };
-
-    fetchPostDetails().then((result) => {
-      if (result) {
-        setTitle(result.title);
-        setContent(result.content);
-        setCategory(result.category);
-        setAnonymous(result.anonymous);
-      }
-    });
   }, [id, token]);
+
+  useEffect(() => {
+    console.log(post);
+    if (post) {
+      setTitle(post.title);
+      setContent(post.content);
+      setCategory(post.category);
+    }
+  }, [post])
 
   const handleEditSubmit = async () => {
     
