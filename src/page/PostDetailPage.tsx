@@ -53,6 +53,7 @@ export default function PostDetail(){
             const fetchPost = async () => {
               const postDetail = await getPost(token, id);
               setPost(postDetail);
+              
             };
             setCommentUpdated(false);
             fetchPost();
@@ -70,20 +71,26 @@ export default function PostDetail(){
     };
 
     return(
-        <>
-        {post ? (
-            <PostWrapper>
-                <ReturnButton />
+    <>
+    {post ? (
+        <PostWrapper>
+            <ReturnButton />
+            <div key={post.id}>
+                {post.hasAuthority &&(
+                <>
                 <DeletePostBtn token={token} id={post.id} onPostUpdate={handlePostUpdate} /> 
-                <EditPostBtn handleEditPost={handleEditPost} id={post.id}/>
-                <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
-                <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
-                <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
-            </PostWrapper>
-        ) : (
+                <EditPostBtn handleEditPost={handleEditPost} id={post.id} />
+                </>
+                )}
+            </div>
+            <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
+            <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
+            <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
+        </PostWrapper>
+    ) : (
             <div>Loading...</div>
         )}
-        </>
+    </>
     )
 }
 
