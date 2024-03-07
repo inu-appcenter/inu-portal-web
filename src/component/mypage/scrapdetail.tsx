@@ -1,15 +1,10 @@
-// import  { useState, useEffect } from 'react';
 import styled from 'styled-components';
-
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-
 import { useSelector } from 'react-redux';
 import getFolder from '../../utils/getFolder';
 import postInsertFolders from '../../utils/postinsertfolder';
 import getFolderPost from '../../utils/getfolderpost';
-// import postInsertFolders from '../../utils/postindertfolder';
-
 
 interface loginInfo {
   user: {
@@ -31,75 +26,67 @@ interface PostInfo {
   category: string;
 }
 
-type FolderName = string;
 export default function ScrapPost({postScrapInfo}:postinfoProps) {
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
-  const [folders, setFolders] = useState<FolderName[]>(["내 폴더"]);
-  const [folderId, setFolderId] = useState<number[]>([0]);
+  const [folderData, setFolderData] = useState<{[key:number]:string}>({0: "내 폴더"});
   const token = useSelector((state: loginInfo) => state.user.token);
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
   const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
-  // const [updatedPostScrapFolderInfo, setUpdatedPostScrapFolderInfo] = useState<PostInfo[]>(postScrapInfo);
-
+  const folders = useSelector((state: any) => state.folder.folders);
+  console.log("folders 뭐야뭐야",folders);
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await getFolder(token);
-        const names = (Object.values(response) as { name: string }[]).map(item => item.name);
-        const folderId = (Object.values(response) as { id: number }[]).map(item => item.id);
+        const response = await getFolder(token) as { id: number; name: string }[];
+        const data:{ [key:number]:string} = {};
+        response.forEach(item => {
+            data[item.id] = item.name;
+        })
+        setFolderData(prevFolderData => ({ ...prevFolderData,...data}));
 
-        setFolderId(prevFolderId => [...prevFolderId,...folderId]);
-        setFolders(prevFolders => [...prevFolders, ...names]);
       } catch (error) {
         console.error("폴더 이름을 가져오지 못했습니다.", error);
       }
     };
-
     fetchFolders(); 
   }, [token]);
 
   useEffect(() => {
     const fetchFolderPosts = async () => {
-        try {
-            console.log(folderId,"시작전이구");
-            for (let id = 1; id < folderId.length; id++) {
-                const response = await getFolderPost(folderId[id]) as PostInfo[];
-                console.log(response,"결과가 뭔데?");
-                setFolderPosts(response);
-            }
-            console.log(folderPosts,"처음 렌더링할때 뭐가 있니?")
-        } catch (error) {
-            console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
-        }
+      try {
+          const newFolderPosts: PostInfo[] = [];
+          for (const folderId in folderData) {
+              const response = await getFolderPost(Number(folderId));
+              newFolderPosts.push(...response);
+          }
+          setFolderPosts(newFolderPosts);
+      } catch (error) {
+          console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
+      }
     };
-
     fetchFolderPosts(); 
-}, [folderId]);
+  }, [folderData]);
 
   const handleSearchTypeClick = (index: number) => {
     setShowDropdown(prevIndex => (prevIndex === index ? null : index));
-};
-
-  const handleOptionClick = (idx:number) => {
-    const selectedFolderId = folderId[idx]; 
-    if (!selectedFolderIds.includes(selectedFolderId)) {
-      setSelectedFolderIds(prevIds => [...prevIds, selectedFolderId]);
-    }
-  setShowDropdown(null);
-
-
   };
-  const handleAddClick = async (postId:number) => {
-    console.log(selectedFolderIds);
-    console.log("postId는",postId);
-    try {
-      const response = await postInsertFolders(postId,selectedFolderIds);
 
+  const handleOptionClick = (folderId:number) => {
+    if (!selectedFolderIds.includes(folderId)) {
+      setSelectedFolderIds(prevIds => [...prevIds, folderId]);
+    }
+    setShowDropdown(null);
+  };
+
+  const handleAddClick = async (postId:number) => {
+    try {
+      const response = await postInsertFolders(postId, selectedFolderIds);
       console.log(response);
-  } catch (error) {
-      console.error("폴더 이름을 가져오지 못했습니다.", error);
+    } catch (error) {
+      console.error("폴더에 추가하지 못했습니다.", error);
+    }
   }
-  }
+
   return (
     <ScrapWrapper>
       <CountWrapper>
@@ -116,20 +103,18 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
               </PostScrapItem>
             </PostLink>
             <TipDropDownWrapper onClick={() => handleSearchTypeClick(index)}>
-            <TipDropDownBox>+</TipDropDownBox>
-            {showDropdown == index && (
-              <TipDropDowns className="dropdown-menu">
-                {folders.map((type,idx) => (
-                  <label>
-                  <input type="checkbox" onClick={() => handleOptionClick(idx)}>
-                  </input>
-                  <TipDropDownDetail>{type}</TipDropDownDetail>
-                  </label>
+              <TipDropDownBox>+</TipDropDownBox>
+              {showDropdown === index && (
+                <TipDropDowns className="dropdown-menu">
+                   {Object.entries(folders).map(([folderId, folderName]) => (
+                    <label key={folderId}>
+                        <input type="checkbox" onClick={() => handleOptionClick(Number(folderId))} />
+                        <TipDropDownDetail>{folderName as string}</TipDropDownDetail>
+                    </label>
                 ))}
-                 <button onClick={() => handleAddClick(item.id)}>추가</button>
-              </TipDropDowns>
-              
-            )}
+                  <button onClick={() => handleAddClick(item.id)}>추가</button>
+                </TipDropDowns>
+              )}
             </TipDropDownWrapper>
           </PostScrapItem>
         ))}
@@ -137,6 +122,7 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
     </ScrapWrapper>
   );
 }
+
 
 const ScrapWrapper = styled.div`
 
