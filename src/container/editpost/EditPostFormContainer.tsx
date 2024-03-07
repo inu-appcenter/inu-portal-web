@@ -7,6 +7,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import getPost from '../../utils/getPost';
 import editPost from '../../utils/editPost';
 import { useSelector } from 'react-redux';
+import getPostsImages from '../../utils/getPostsImages';
+import editImage from '../../utils/editImage';
+import ImageInput from '../../component/createPost/ImageInput';
+
+
 
 interface EditPostBtnProps {
   onPostUpdate: () => void;
@@ -54,6 +59,12 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
   const [category, setCategory] = useState('');
   const [anonymous, setAnonymous] = useState(false);
 
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [images, setImages] = useState<File[]>([]);
+  const [fetchImages, setfetchImages] = useState<string[]>([]);
+  const [imageCount, setImageCount] = useState<number>(0);
+
+
   const handleTitleChange = (value: string) => {
     setTitle(value);
   };
@@ -71,6 +82,18 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
     setAnonymous(checked);
   };
 
+  const handleImageChange = (file: File | null) => {
+    setSelectedImage(file);
+    if (file) {
+      setImages((prevImages) => [...prevImages, file]);
+    }
+  };
+
+console.log(images);
+
+  const handleImageRemove = (index: number) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     console.log('id', id);
@@ -83,17 +106,45 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
       }
   }, [id, token]);
 
+
   useEffect(() => {
-    console.log(post);
     if (post) {
       setTitle(post.title);
       setContent(post.content);
       setCategory(post.category);
+      setImageCount(post.imageCount);
     }
   }, [post])
 
+  const fetchImagesData = async () => {
+    try {
+      let images = [];
+      for (let imageId = 1; imageId <= imageCount; imageId++) {
+        try {
+        const imageUrl = await getPostsImages(id, imageId);
+        const imageBlob = await fetch(imageUrl).then((res) => res.blob());
+        const imageFile = new File([imageBlob], `image_${imageId}.png`);
+        images.push(imageFile);
+      } catch (error) {
+        console.error(`Error fetching image ${imageId}:`, error);
+        // 이미지를 찾지 못해도 계속 진행
+      }
+      }
+      setImages(images);
+      console.log(images);
+      
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchImagesData();
+  }, [id, imageCount]);
+
   const handleEditSubmit = async () => {
-    
+    try {
       if (!title.trim() || !content.trim()) {
         console.error('모든 필드를 입력하세요.');
         alert('제목과 내용을 모두 작성하세요.');
@@ -103,22 +154,42 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
         alert('카테고리를 선택하세요!');
         return;
       }
+  
       try {
-          const response = await editPost({ title, content, category, anonymous }, token, id);
-          if (response) {
-            console.log('Post submitted successfully');
-            onPostUpdate();
-            navigate(`/post/${id}`); 
+        const response = await editPost({ title, content, category, anonymous }, token, id);
+  
+        if (response) {
+          console.log('Post submitted successfully');
+          const postId = response.data;
+  
+          // 이미지 수정
+          for (let imageId = 1; imageId <= imageCount; imageId++) {
+            try {
+              const responseImage = await editImage(token, postId, imageId, images);
+              if (responseImage) {
+                console.log(`이미지 수정 성공 - imageId: ${imageId}`);
+              }
+            } catch (error) {
+              console.error(`Error editing image ${imageId}:`, error);
+            }
           }
+  
+          onPostUpdate();
+          navigate(`/tips/${id}`);
+        }
       } catch (error) {
-        console.error('Error submitting post:', error);
+        console.error(error);
       }
-    
+    } catch (error) {
+      console.error('Error submitting post:', error);
+    }
   };
-
+  
+  
   return (
     <div className='EditPostFormContainer'>
       <div className='bar'>
+      <ImageInput onImageChange={handleImageChange} />
       <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
       <div className='post-button' onClick={handleEditSubmit}>수정 완료</div>
       </div>
@@ -128,13 +199,19 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
       <div className='write-line'></div>
       <ContentInput value={content} onChange={handleContentChange} />
       <div className='write-line'></div>
-
+      <div>
+            {images.map((image, index) => (
+              <div key={index} style={{ position: 'relative', display: 'inline-block', margin: '10px' }}>
+                <img src={URL.createObjectURL(image)} alt={`preview ${index}`} style={{ maxWidth: '200px', maxHeight: '200px' }} />
+                <button onClick={() => handleImageRemove(index)} style={{ position: 'absolute', top: 0, right: 0 }}>X</button>
+              </div>
+            ))}
+          </div>
+        </div>
         </div>
       <CategorySelect value={category} onChange={handleCategoryChange} />
       </div>
       
-
-    </div>
   );
 };
 

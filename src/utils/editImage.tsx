@@ -5,7 +5,7 @@ const editImage = async (token: string, postId: number, imageId:number, images: 
         images.forEach((image, index) => {
             formData.append(`image${index + 1}`, image);
           });
-
+ console.log('apiURL:', apiURL);
       const response = await fetch(apiURL, {
         method: 'PUT',
         headers: {

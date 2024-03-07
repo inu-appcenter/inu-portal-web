@@ -76,6 +76,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
         if (response) {
           console.log('Post submitted successfully');
           const postId = response.data;
+          
             const responseImage = await postImage(token, postId, images);
             if (responseImage) {
               console.log(`이미지 등록 성공`);
