@@ -3,69 +3,69 @@ import folderImg from '../../resource/assets/file-logo.png';
 import PlusImg from "../../resource/assets/plus-logo.png";
 import { useEffect, useState } from 'react';
 import MakeModal from './foldermakemodal';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import CreateFolder from '../../utils/postMakeFolder';
 import getFolder from '../../utils/getFolder';
 import getFolderPost from '../../utils/getfolderpost';
 import { ScrapFolderPost } from './scrapfolderdetail';
-
 import deleteFolder from '../../utils/deletefolder';
-
-
-
+import { addFolder, removeFolder } from '../../reducer/folderSlice';
 
 interface loginInfo {
     user: {
-      token: string;
+        token: string;
     };
-  }
+}
 
-
-  interface PostInfo {
+interface PostInfo {
     id: number;
     title: string;
     category: string;
-  }
-  
+}
 
-  export default function ScrapFolder() {
+
+
+
+export default function ScrapFolder() {
     const token = useSelector((state: loginInfo) => state.user.token);
-    const [folderData, setFolderData] = useState<{[key:string]:number}>({"내 폴더":0});
-     const [isOpenModal, setOpenModal] = useState<boolean>(false);
+    const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
+    const [isOpenModal, setOpenModal] = useState<boolean>(false);
     const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
-    const [currentFolderId, setCurrentFolderId] = useState<number | undefined>(undefined); // 변경된 부분
+    const [currentFolderId, setCurrentFolderId] = useState<number | undefined>(undefined);
+    const dispatch = useDispatch();
+    const folders = useSelector((state: any) => state.folder.folders);
     useEffect(() => {
-        console.log("업데이트된 폴더, 업데이트된 게시물", folderData,folderPosts);
-    }, [folderData,folderPosts]);
+        console.log("업데이트된 폴더, 업데이트된 게시물", folderData, folderPosts,folders);
+    }, [folderData, folderPosts,folders]);
 
+    // useEffect(() => {
+    //     console.log("redux0",folders);
+    // }, [folders]);
 
     useEffect(() => {
         const fetchFolders = async () => {
             try {
                 const response = await getFolder(token) as { id: number; name: string }[];
-                console.log("여기 뭐가 나오는건데",response);
-
-                const data:{ [key:string]:number} = {};
+                const data: { [key: number]: string } = {};
                 response.forEach(item => {
-                    data[item.name] = item.id;
-                })
-                console.log(data,"data에 뭐가 들어가있지");
-                setFolderData(prevFolderData => ({ ...prevFolderData,...data}));
+                    data[item.id] = item.name;
+                });
+                console.log("data형태",data);
+                setFolderData(prevFolderData => ({ ...prevFolderData, ...data }));
+                dispatch(addFolder(data));
             } catch (error) {
                 console.error("폴더 이름을 가져오지 못했습니다.", error);
             }
         };
-
-        fetchFolders(); 
+        fetchFolders();
     }, [token]);
 
     useEffect(() => {
         const fetchFolderPosts = async () => {
             try {
                 const newFolderPosts: PostInfo[] = [];
-                console.log(folderData,"시작전이구");
-                for (const folderName in folderData) {
-                    const response = await getFolderPost(folderData[folderName]);
+                for (const folderId in folderData) {
+                    const response = await getFolderPost(Number(folderId));
                     newFolderPosts.push(...response);
                 }
                 setFolderPosts(newFolderPosts);
@@ -73,12 +73,10 @@ interface loginInfo {
                 console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
             }
         };
-    
-        fetchFolderPosts(); 
+        fetchFolderPosts();
     }, [folderData]);
-    
 
-    const handleMakeFolder =  () => {
+    const handleMakeFolder = () => {
         setOpenModal(true);
     };
 
@@ -86,73 +84,68 @@ interface loginInfo {
         setOpenModal(false);
     };
 
-
-
     const handleFolderCreate = async (folderName: string) => {
         try {
-            const response = await CreateFolder(token,folderName);
-            console.log(response,"생성",response.data);
+            const response = await CreateFolder(token, folderName);
             const newFolderId = response.data;
-            setFolderData(prevData => ({ ...prevData, [folderName]: newFolderId }));
+            setFolderData(prevData => ({ ...prevData, [newFolderId]: folderName }));
             setCurrentFolderId(newFolderId);
+            dispatch(addFolder({[newFolderId]: folderName}));
         } catch (error) {
             console.error("폴더를 생성하지 못했습니다.", error);
         }
-
     };
 
-    const handleFolderDelete = async(folderIdToDelete:number) => {
-        console.log(folderIdToDelete,"삭제할 폴더 아이디가 뭔데");
+    const handleFolderDelete = async (folderIdToDelete: number) => {
         try {
-            const response = await deleteFolder(folderIdToDelete);
-            console.log(response, "삭제한 폴더 ");
-            const updatedFolderData = { ...folderData };
-            delete updatedFolderData[Object.keys(folderData).find(key => folderData[key] === folderIdToDelete) || ""];
-            setFolderData(updatedFolderData);
-    
+            await deleteFolder(folderIdToDelete);
+            setFolderData(prevData => {
+                const updatedData = { ...prevData };
+                delete updatedData[folderIdToDelete];
+                return updatedData;
+            });
+            if (currentFolderId === folderIdToDelete) {
+                setFolderPosts([]); 
+                setCurrentFolderId(undefined); 
+            }
+            dispatch(removeFolder({ [folderIdToDelete]: true }));
         } catch (error) {
-            console.log("스크랩 폴더 삭제를 실패하였습니다.",error);
+            console.error("스크랩 폴더 삭제를 실패하였습니다.", error);
         }
-
     };
 
     const handleGetFolderPost = async (folderId: number) => {
-        console.log(folderId,"id가 뭔데");
         try {
-            const response = await getFolderPost(folderId); 
-            console.log(response, "폴더 게시글 목록");
+            const response = await getFolderPost(folderId);
             const responseInfo: PostInfo[] = response.map((item: any) => ({
                 id: item.id,
                 title: item.title,
                 category: item.category
             }));
-            console.log(responseInfo);
             setFolderPosts(responseInfo);
             setCurrentFolderId(folderId);
-
-        } catch(error) {
-            console.log("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
+        } catch (error) {
+            console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
         }
-    }
-    
+    };
+
     return (
         <>
             <Container>
-                {Object.keys(folderData).map((folderName,index)=>(
-                     <FolderWrapper key={index} onClick={() => handleGetFolderPost(folderData[folderName])}>
-                     <Folder src={folderImg} alt="" />
-                     <FolderNameInput>{folderName}</FolderNameInput>
-                     <button onClick={()=>handleFolderDelete(folderData[folderName])}>-</button>
-                 </FolderWrapper>
+                {Object.entries(folderData).map(([folderId, folderName]) => (
+                    <FolderWrapper key={folderId} onClick={() => handleGetFolderPost(Number(folderId))}>
+                        <Folder src={folderImg} alt="" />
+                        <FolderNameInput>{folderName}</FolderNameInput>
+                        <button onClick={() => handleFolderDelete(Number(folderId))}>-</button>
+                    </FolderWrapper>
                 ))}
-                {<Plus src={PlusImg} onClick={handleMakeFolder} />}
-                {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate}/>}
+                <Plus src={PlusImg} onClick={handleMakeFolder} />
+                {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate} />}
             </Container>
-            {folderPosts.length > 0 && <ScrapFolderPost postScrapFolderInfo={folderPosts} folderId={currentFolderId}/>}
+            {folderPosts.length > 0 && <ScrapFolderPost postScrapFolderInfo={folderPosts} folderId={currentFolderId} />}
         </>
     );
 }
-
 
 const Container = styled.div`
     display: flex;
