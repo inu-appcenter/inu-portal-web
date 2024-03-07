@@ -6,6 +6,7 @@ import TipsDocuments from '../component/Tips/TipsDocuments';
 import PostDetail from "./PostDetailPage";
 import { useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
+import TipsTitle from '../component/tips/TipsTitle';
 
 
 export default function TipsPage() {
@@ -15,10 +16,13 @@ export default function TipsPage() {
       <div>
         <TipsCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
       </div>
-      <Routes>
-        <Route index element={<TipsDocuments selectedCategory={selectedCategory} />} />
-        <Route path=":id" element={<PostDetail />} />
-      </Routes>
+      <div>
+        <TipsTitle selectedCategory={selectedCategory} />
+        <Routes>
+          <Route index element={<TipsDocuments selectedCategory={selectedCategory} />} />
+          <Route path=":id" element={<PostDetail />} />
+        </Routes>
+      </div>
       <PostBotton />
     </TipsPageWrapper>
   )
@@ -28,4 +32,5 @@ export default function TipsPage() {
 const TipsPageWrapper = styled.div`
   display: flex;
   flex-dicrection: row;
+  margin: 20px;
 `

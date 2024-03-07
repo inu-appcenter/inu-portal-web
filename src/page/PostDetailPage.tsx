@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import ReturnButton from '../component/postdetail/post/returnButton';
 import PostContentContainer from '../container/postdetail/PostContentContainer';
 import PostUtility from '../container/postdetail/PostUtilityContainer';
 import PostComment from '../container/postdetail/PostCommentContainer';
@@ -9,6 +8,7 @@ import getPost from '../utils/getPost';
 import { useSelector } from 'react-redux';
 import DeletePostBtn from '../component/postdetail/post/deletpostbtn';
 import EditPostBtn from '../component/postdetail/post/editpostbtn';
+import ReturnButton from '../component/postdetail/post/ReturnButton';
 
 
 interface Post {
@@ -75,7 +75,7 @@ export default function PostDetail(){
             <PostWrapper>
                 <ReturnButton />
                 <DeletePostBtn token={token} id={post.id} onPostUpdate={handlePostUpdate} /> 
-                <EditPostBtn handleEditPost={handleEditPost}/>
+                <EditPostBtn handleEditPost={handleEditPost} id={post.id}/>
                 <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
                 <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
                 <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}

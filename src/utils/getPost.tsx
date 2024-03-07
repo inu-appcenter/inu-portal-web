@@ -1,4 +1,4 @@
-const getPost = async (token: string, postId: string) => {
+const getPost = async (token: string, postId: number) => {
   const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}`;
   try {
     const response = await fetch(apiURL, {
