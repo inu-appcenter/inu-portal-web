@@ -41,6 +41,7 @@ export default function ScrapInfo() {
   return (
     <ScrapWrapper>
       <ScrapTitle/>
+      {/* <ScrapSerach/> */}
       <ScrapFolder />
       <ChangeWrapper>
         <ScrapPost postScrapInfo={scrapInfo}/>

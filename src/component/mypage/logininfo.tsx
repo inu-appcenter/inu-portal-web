@@ -1,27 +1,40 @@
-import { useEffect, useState } from "react";
-import getUser from "../../utils/getUser";
 import { useSelector } from "react-redux";
-import MyInfoDetail from "./logininfodetail";
+import styled from "styled-components";
+import ProfileImg from "../../resource/assets/profile-logo.png"
 
-export default function LoginInfo () {
+export default function LoginInfo()  {
     const token = useSelector((state: any) => state.user.token);
-    const [currnetnickname, setCurrentNickname] = useState("");
-    useEffect(() => {
-        handleUserInfo();
-    }, []);
-  
-    const handleUserInfo = async () => {
-        try {
-            const response = await getUser(token);
-            console.log(response);
-            setCurrentNickname(response);
-            console.log("닉네임이름",currnetnickname);
-        } catch (error) {
-            console.error("회원을 가져오지 못했습니다.", error);
-        }
-    };
+    const nickname = useSelector((state: any) => state.user.nickname);
+    console.log("token",token,"nickname",nickname);
 
     return (
-        <MyInfoDetail nickname={currnetnickname} />
+        <InfoWrapper>
+            <MyProfileImg src={ProfileImg} alt="프로필 이미지"></MyProfileImg>
+            <Nickname>{nickname}</Nickname>
+        </InfoWrapper>
     )
 }
+
+const InfoWrapper = styled.div`
+display: flex;
+justify-content: flex-end;
+align-items: center;
+position:absolute;
+left: 90vw;
+
+`
+const Nickname = styled.div`
+font-family: Inter;
+font-size: 15px;
+font-weight: 600;
+line-height: 20px;
+letter-spacing: 0px;
+margin-left: 15px;;
+
+
+`
+
+const MyProfileImg=styled.img`
+    width: 30px;
+    height: 30px;
+`
