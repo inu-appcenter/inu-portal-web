@@ -53,7 +53,7 @@ export default function ActiveInfo() {
     };
 
     fetchPostInfo(); 
-  }, [token]); 
+  }, [token,PostInfo]); 
 
   useEffect(() => {
     const likePostInfo = async () => {
@@ -68,7 +68,7 @@ export default function ActiveInfo() {
     };
 
     likePostInfo(); 
-  }, [token]); 
+  }, [token,PostLikeInfo]); 
 
   useEffect(() => {
     const CommentPostInfo = async () => {
@@ -83,7 +83,7 @@ export default function ActiveInfo() {
     };
 
     CommentPostInfo(); 
-  }, [token]); 
+  }, [token,PostCommentInfo]); 
 
 
   return (
