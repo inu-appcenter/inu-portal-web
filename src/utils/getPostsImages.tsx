@@ -1,5 +1,5 @@
 const getPostsImages = async (postId: number, imageId: number) => {
-  const apiURL = `https://portal.inuappcenter.kr/api/posts/images?postId=${postId}&imageId=${imageId}`;
+  const apiURL = `https://portal.inuappcenter.kr/api/posts/images`;
   try {
     const response = await fetch(apiURL, {
       method: 'GET',

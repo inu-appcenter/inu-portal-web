@@ -1,5 +1,5 @@
 const postImage = async (token: string, postId: number, images: File[]) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/posts/images/${postId}`;
+    const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/images`;
     try {
       const formData = new FormData();
       images.forEach((image, index) => {

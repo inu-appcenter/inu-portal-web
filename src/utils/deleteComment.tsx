@@ -1,5 +1,5 @@
 const deleteComment = async (token: string, replyId: number) => {
-  const apiURL = `https://portal.inuappcenter.kr/api/posts/${replyId}`;
+  const apiURL = `https://portal.inuappcenter.kr/api/replies/${replyId}`;
   try {
     const response = await fetch(apiURL, {
       method: 'DELETE',

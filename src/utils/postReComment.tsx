@@ -1,5 +1,5 @@
 const postReComment = async (token: string, replyId: number, content: string, anonymous: boolean) => {
-  const apiURL = `https://portal.inuappcenter.kr/api/replies/reReplies/${replyId}`;
+  const apiURL = `https://portal.inuappcenter.kr/api/replies/${replyId}/re-replies`;
   try {
     const response = await fetch(apiURL, {
       method: 'POST',

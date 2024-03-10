@@ -1,10 +1,10 @@
 const getDocuments = async (category: string) => {
   let apiURL;
   if (category === '전체'){
-    apiURL = 'https://portal.inuappcenter.kr/api/posts/all';
+    apiURL = 'https://portal.inuappcenter.kr/api/posts';
   }
   else {
-    apiURL = `https://portal.inuappcenter.kr/api/posts/all/${category}`;
+    apiURL = `https://portal.inuappcenter.kr/api/posts/${category}`;
   }
   try {
     const response = await fetch(apiURL, {
