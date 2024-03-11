@@ -16,16 +16,17 @@ interface Replies {
 }
 
 interface PostCommentContainerProps {
+  bestComment: Replies;
   comments: Replies[];
   onCommentUpdate: () => void; 
 }
 
 // 글의 댓글
-export default function PostComment({ comments, onCommentUpdate }: PostCommentContainerProps) {
+export default function PostComment({ bestComment, comments, onCommentUpdate }: PostCommentContainerProps) {
   return (
     <>
       <CommentInput onCommentUpdate={onCommentUpdate}></CommentInput>
-      <CommentList comments={comments} onCommentUpdate={onCommentUpdate}></CommentList>
+      <CommentList bestComment={bestComment} comments={comments} onCommentUpdate={onCommentUpdate}></CommentList>
     </>
   );
 }

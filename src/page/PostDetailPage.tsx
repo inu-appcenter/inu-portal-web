@@ -26,7 +26,7 @@ interface Post {
     createDate: string;
     modifiedDate: string;
     imageCount: number;
-    bestReplies: Replies;
+    bestReplies: Replies[];
     replies: Replies[];
 }
 
@@ -85,7 +85,7 @@ export default function PostDetail(){
             </div>
             <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
             <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
-            <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
+            <PostComment bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
         </PostWrapper>
     ) : (
             <div>Loading...</div>
