@@ -1,5 +1,5 @@
-const editImage = async (token: string, postId: number, imageId:number, images: File[] = []) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/images/${imageId}`;
+const editImage = async (token: string, postId: number, images: File[] = []) => {
+    const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/images`;
     try {
         const formData = new FormData();
         images.forEach((image, index) => {

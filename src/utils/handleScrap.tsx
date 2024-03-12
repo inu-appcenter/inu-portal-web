@@ -1,5 +1,5 @@
 const handleScrap = async (token: string, postId: string) => {
-  const apiURL = `https://portal.inuappcenter.kr/api/posts/scrap/${postId}`;
+  const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/scrap`;
   try {
     const response = await fetch(apiURL, {
       method: 'PUT',

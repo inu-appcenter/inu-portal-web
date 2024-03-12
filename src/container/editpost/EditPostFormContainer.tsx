@@ -126,7 +126,7 @@ console.log(images);
         const imageFile = new File([imageBlob], `image_${imageId}.png`);
         images.push(imageFile);
       } catch (error) {
-        console.error(`Error fetching image ${imageId}:`, error);
+        console.error(`Error fetching image:`, error);
         // 이미지를 찾지 못해도 계속 진행
       }
       }
@@ -163,16 +163,16 @@ console.log(images);
           const postId = response.data;
   
           // 이미지 수정
-          for (let imageId = 1; imageId <= imageCount; imageId++) {
+          
             try {
-              const responseImage = await editImage(token, postId, imageId, images);
+              const responseImage = await editImage(token, postId,  images);
               if (responseImage) {
-                console.log(`이미지 수정 성공 - imageId: ${imageId}`);
+                console.log(`이미지 수정 성공`);
               }
             } catch (error) {
-              console.error(`Error editing image ${imageId}:`, error);
+              console.error(`Error editing image`, error);
             }
-          }
+          
   
           onPostUpdate();
           navigate(`/tips/${id}`);

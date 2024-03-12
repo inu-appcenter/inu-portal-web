@@ -1,5 +1,5 @@
 const handleLike = async (token: string, replyId: number) => {
-  const apiURL = `https://portal.inuappcenter.kr/api/replies/like/${replyId}`;
+  const apiURL = `https://portal.inuappcenter.kr/api/replies/${replyId}/like`;
   try {
     const response = await fetch(apiURL, {
       method: 'PUT',

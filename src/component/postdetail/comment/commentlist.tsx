@@ -20,11 +20,12 @@ interface Replies {
 }
 
 interface CommentListProps {
+  bestComment: Replies;
   comments: Replies[];
   onCommentUpdate: () => void;
 }
 
-const CommentList: React.FC<CommentListProps> = ({ comments, onCommentUpdate }) => {
+const CommentList: React.FC<CommentListProps> = ({ bestComment, comments, onCommentUpdate }) => {
   console.log(comments);
   
   const token = useSelector((state: any) => state.user?.token);
@@ -32,8 +33,27 @@ const CommentList: React.FC<CommentListProps> = ({ comments, onCommentUpdate }) 
 
   return (
     <div>
+      <div>
+        {bestComment && (<div>
+          (베스트)
+          <strong>{bestComment.writer}</strong>: {bestComment.content}
+          <CommentLike id={bestComment.id} like={bestComment.like} isLikedProp={bestComment.isLiked} />
+          {bestComment.hasAuthority && (
+            <>
+              <EditCommentButton token={token} id={bestComment.id} currentContent={bestComment.content} isAnonymous={bestComment.isAnonymous} onCommentUpdate={onCommentUpdate} />
+              <DeleteCommentButton token={token} id={bestComment.id} onCommentUpdate={onCommentUpdate} />
+            </>
+          )}
+          <button onClick={() => setShowReCommentInputId(bestComment.id)}>대댓글</button>
+          {showReCommentInputId === bestComment.id && (
+            <ReCommentInput parentId={bestComment.id} onCommentUpdate={onCommentUpdate} />
+          )}
+        </div>)}
+      </div>
       {comments.map((comment) => (
         <div key={comment.id}>
+          {(comment.id != bestComment.id) && 
+          (<div>
           <strong>{comment.writer}</strong>: {comment.content}
           <CommentLike id={comment.id} like={comment.like} isLikedProp={comment.isLiked} />
           {comment.hasAuthority && (
@@ -47,6 +67,7 @@ const CommentList: React.FC<CommentListProps> = ({ comments, onCommentUpdate }) 
             <ReCommentInput parentId={comment.id} onCommentUpdate={onCommentUpdate} />
           )}
           <ReCommentList token={token} reReplies={comment.reReplies} onCommentUpdate={onCommentUpdate} />
+          </div>)}
         </div>
       ))}
     </div>
