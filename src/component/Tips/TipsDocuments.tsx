@@ -27,7 +27,7 @@ interface TipsDocumentsProps {
   setPage: (page: string) => void;
 }
 
-export default function TipsDocuments({ selectedCategory, sort, page, setSort setPage }: TipsDocumentsProps) {
+export default function TipsDocuments({ selectedCategory, sort, page, setSort, setPage }: TipsDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const navigate = useNavigate();
   const location = useLocation();

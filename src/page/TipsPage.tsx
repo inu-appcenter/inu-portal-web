@@ -9,12 +9,14 @@ import PostBotton from '../component/Tips/PostButton';
 import TipsTitle from '../component/tips/TipsTitle';
 import queryString from 'query-string';
 import PopularPosts from '../component/Tips/PopularPosts';
+import EditPost from './EditPostPage';
 
 
 export default function TipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const location = useLocation();
-  
+  const [sort, setSort] = useState<string>('date');
+  const [page, setPage] = useState<string>('1');
 
   useEffect(() => {
     if (location.pathname.includes('/tips/search')) {
@@ -30,9 +32,10 @@ export default function TipsPage() {
         <TipsTitle selectedCategory={selectedCategory} />
         <PopularPosts/>
         <Routes>
-          <Route index element={<TipsDocuments selectedCategory={selectedCategory} sortParam='date' pageParam='1' />} />
-          <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sortParam='date' pageParam='1'/>} />
+          <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+          <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
           <Route path=":id" element={<PostDetail />} />
+          <Route path='update/:id' element={<EditPost />} />
         </Routes>
       </div>
       <PostBotton />
