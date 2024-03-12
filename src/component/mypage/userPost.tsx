@@ -3,22 +3,35 @@ import styled from 'styled-components';
 
 import { Link } from 'react-router-dom';
 import postlogo from "../../resource/assets/comment-logo.png"
-interface postinfoProps {
-    postinfo: {
+import SortDropDown from './sortdropdown';
+
+interface  postinfo {
         id: number;
         title: string;
         category: string;
-    }[];
 }
 
-export default function UserPost({postinfo}:postinfoProps) {
+interface PostinfoProps {
+  postinfo: postinfo[],
+  onSearchTypeChange:  (type: string) => void;
+}
+
+export default function UserPost({postinfo,onSearchTypeChange}:PostinfoProps) {
     
   return (
     <UserPostWrapper>
-    <CountWrapper>
+
+            <Wrapper>
+            <CountWrapper>
       <Postimg src={postlogo} />
       <PostCount>{postinfo.length}</PostCount>
     </CountWrapper>
+      <SortWrapper>
+        <ScrapText>sort by</ScrapText>
+        <SortDropDown onSearchTypeChange={onSearchTypeChange} />
+      </SortWrapper>
+      </Wrapper>
+   
     <Items>
         {postinfo.map((item) => (
           <PostLink  to={`/tips/${item.id}`}>
@@ -33,6 +46,25 @@ export default function UserPost({postinfo}:postinfoProps) {
   );
 }
 
+const Wrapper = styled.div`
+  display: flex;
+`
+const SortWrapper = styled.div`
+    display: flex;
+  margin-top: 26px;
+  align-items: center;
+  font-family: Inter;
+font-size: 15px;
+font-weight: 600;
+line-height: 20px;
+letter-spacing: 0px;
+width: 100%;
+`
+const ScrapText = styled.p`
+color: #969696;
+
+
+`;
 const UserPostWrapper = styled.div`
 
 `;
