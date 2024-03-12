@@ -58,6 +58,15 @@ export default function TipsDocuments({ selectedCategory, sortParam, pageParam }
   return (
     <TipsDocumentsWrapper>
       <div>
+        <div className='SortDropdown'>
+          <div className='dropdown'>
+            <button className='dropbtn'>{sort === 'date' ? '최신순' : '인기순'}</button>
+            <div className='dropdown-content'>
+              <span onClick={() => setSort('date')}>최신순</span>
+              <span onClick={() => setSort('like')}>인기순</span>
+            </div>
+          </div>
+        </div>
         {documents && (
           <div className='grid-container'>
           {documents.map((document) => (
