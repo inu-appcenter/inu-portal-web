@@ -2,8 +2,10 @@
 
 const postInsertFolders = async (postId:number,selectedFolderIds:number[]) => {
 
-    const apiURL = `https://portal.inuappcenter.kr/api/folders/insert`;
-    selectedFolderIds.map(async (id) => {
+    
+    selectedFolderIds.map(async (folderId) => {
+      console.log("폴더 아이디가 뭔데",folderId);
+      const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}/posts`;
         try {
           const response = await fetch(apiURL, {
             method: 'POST',
@@ -11,7 +13,6 @@ const postInsertFolders = async (postId:number,selectedFolderIds:number[]) => {
               'Content-Type': 'application/json',
             }, 
             body: JSON.stringify({
-              'folderId': id,
               'postId': [postId]
             })
           });

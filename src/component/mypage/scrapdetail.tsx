@@ -33,6 +33,7 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
   const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
   const folders = useSelector((state: any) => state.folder.folders);
+  const [showType,setShowType] = useState<string[]>(['sort','like']);
   console.log("folders 뭐야뭐야",folders);
   useEffect(() => {
     const fetchFolders = async () => {
@@ -93,6 +94,10 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
         <ScrapText>All scraps</ScrapText>
         <ScrapCount>{postScrapInfo.length}</ScrapCount>
       </CountWrapper>
+      <DropDownWrapper>
+        <ScrapText>All scraps</ScrapText>
+        <ScrapCount>{postScrapInfo.length}</ScrapCount>
+      </DropDownWrapper>
       <Items>
         {postScrapInfo.map((item,index) => (
           <PostScrapItem  key={item.id}> 
