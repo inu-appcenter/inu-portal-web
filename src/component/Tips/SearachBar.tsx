@@ -18,7 +18,7 @@ export default function SearchBar() {
       alert('두 글자 이상 입력해주세요.');
       return;
     }
-    navigate(`/tips/search?query=${query}&sort=like&page=1`);
+    navigate(`/tips/search?query=${query}`);
   };
 
   return (

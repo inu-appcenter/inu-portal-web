@@ -7,12 +7,11 @@ import PostDetail from "./PostDetailPage";
 import { useEffect, useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
 import TipsTitle from '../component/tips/TipsTitle';
-import queryString from 'query-string';
 
 export default function TipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const location = useLocation();
-  const queryParameters = queryString.parse(location.search);
+  
 
   useEffect(() => {
     if (location.pathname.includes('/tips/search')) {
@@ -27,8 +26,8 @@ export default function TipsPage() {
       <div>
         <TipsTitle selectedCategory={selectedCategory} />
         <Routes>
-          <Route index element={<TipsDocuments selectedCategory={selectedCategory} />} />
-          <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} queryParameters={queryParameters}/>} />
+          <Route index element={<TipsDocuments selectedCategory={selectedCategory} sortParam='date' pageParam='1' />} />
+          <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sortParam='date' pageParam='1'/>} />
           <Route path=":id" element={<PostDetail />} />
         </Routes>
       </div>
@@ -42,6 +41,6 @@ const TipsPageWrapper = styled.div`
   display: flex;
   flex-dicrection: row;
 
-  height: calc(100vh - 120px);
+  height: calc(100vh - 240px);
   margin-bottom: 120px;
 `
