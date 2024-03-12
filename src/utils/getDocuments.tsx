@@ -2,7 +2,7 @@ const getDocuments = async (category: string, sort: string, page: string) => {
   try {
     let response;
     if (category === '전체') {
-      const apiURL = 'https://portal.inuappcenter.kr/api/posts';
+      const apiURL = `https://portal.inuappcenter.kr/api/posts?sort=${sort}&page=${page}`;
       response = await fetch(apiURL, {
         method: 'GET',
         headers: {

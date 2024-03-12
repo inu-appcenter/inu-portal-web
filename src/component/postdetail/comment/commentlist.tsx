@@ -52,7 +52,7 @@ const CommentList: React.FC<CommentListProps> = ({ bestComment, comments, onComm
       </div>
       {comments.map((comment) => (
         <div key={comment.id}>
-          {(comment.id != bestComment.id) && 
+          {(!bestComment || (comment.id != bestComment.id)) && 
           (<div>
           <strong>{comment.writer}</strong>: {comment.content}
           <CommentLike id={comment.id} like={comment.like} isLikedProp={comment.isLiked} />
