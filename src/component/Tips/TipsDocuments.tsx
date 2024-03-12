@@ -64,5 +64,5 @@ export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) 
 
 const TipsDocumentsWrapper = styled.div`
   flex-grow: 1;
-  padding: 20px;
+
 `;

@@ -3,13 +3,12 @@
   flex-wrap: wrap;
   overflow-y: auto;
   gap: 20px;
-
   border: 5px solid #EAEAEA;
-  padding: 50px;
+  padding: 40px; 
 }
 
 .document-card {
-  padding: 15px;
+  padding: 20px;
   border: 2px solid #AAC9EE;
   cursor: pointer;
   width: 226px;
