@@ -150,6 +150,10 @@ console.log(images);
         alert('제목과 내용을 모두 작성하세요.');
         return;
       }
+      if (content.length > 1999) {
+        alert('내용은 2000자 이하로 작성해 주세요.');
+        return;
+      }
       if (category.trim() === '') {
         alert('카테고리를 선택하세요!');
         return;

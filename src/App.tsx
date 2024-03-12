@@ -31,7 +31,6 @@ export default function App() {
           <Route path='/tips/*' element={<Tips />} />
           <Route path='/mypage' element={<MyPage />} />
           <Route path='/write' element={<CreatePost />} />
-          <Route path='/update/:id' element={<EditPost />} />
 
           
         </Route>

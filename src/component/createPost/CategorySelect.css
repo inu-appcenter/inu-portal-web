@@ -1,5 +1,5 @@
 .dropdown-container {
-  width: 180px;
+  width: 176px;
   padding: 10px;
 
   border-radius: 100px;
@@ -37,8 +37,10 @@
 .dropdown-text {
   font-family: Inter;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 400;
   text-align: left;
+  color:#000000;
+  line-height:20px;
   
 }
 
@@ -75,4 +77,15 @@
   font-weight: 500;
   text-align: center;
   color: #656565;
+}
+
+.deco{
+position: absolute;
+width: 10px;
+height: 10px;
+left: 1145px;
+top: 297px;
+
+background: #FFFFFF;
+
 }

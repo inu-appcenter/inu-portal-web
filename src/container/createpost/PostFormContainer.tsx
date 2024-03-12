@@ -54,16 +54,16 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     setImages(images.filter((_, i) => i !== index));
   }
 
-  const handleSave = () => {
-    alert('저장은 아직 미구현');
-  }
-
   const handlePostSubmit = async () => {
     try {
       // 각 필드가 비어있지 않은지 검사
       if (!title.trim() || !content.trim()) {
         console.error('모든 필드를 입력하세요.');
         alert('제목과 내용을 모두 작성하세요.')
+        return;
+      }
+      if (content.length > 1999) {
+        alert('내용은 2000자 이하로 작성해 주세요.');
         return;
       }
       if (category.trim() ===''){
@@ -98,8 +98,13 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     <div className='PostFormContainer'>
       <div className='bar'>
         <ImageInput onImageChange={handleImageChange} />
+        <div className='line'/>
+        <div> 글꼴 </div>
+        <div> 글자크기 </div>
+        <div> 색상 </div>
+        <div className='line'/>
+
         <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
-        <div className='post-button' onClick={handleSave}>저장</div>
         <div className='post-button' onClick={handlePostSubmit}>업로드</div>
       </div>
       <div className='container1'>
