@@ -5,19 +5,12 @@ import { useSelector } from 'react-redux';
 import getFolder from '../../utils/getFolder';
 import postInsertFolders from '../../utils/postinsertfolder';
 import getFolderPost from '../../utils/getfolderpost';
+import SortDropDown from './sortdropdown';
 
 interface loginInfo {
   user: {
     token: string;
   };
-}
-
-interface postinfoProps {
-    postScrapInfo: {
-        id:number;
-        title: string;
-        category: string;
-    }[];
 }
 
 interface PostInfo {
@@ -26,15 +19,36 @@ interface PostInfo {
   category: string;
 }
 
-export default function ScrapPost({postScrapInfo}:postinfoProps) {
+
+// interface postinfoProps {
+//   postScrapInfo: PostInfo[];
+// }
+
+
+// interface SortDropDownProps {
+//   onSearchTypeChange: (type: string) => void;
+// }
+
+interface ScrapFolderPostProps {
+  postScrapInfo: PostInfo[],
+  onSearchTypeChange:  (type: string) => void;
+}
+
+
+
+
+export default function ScrapPost({postScrapInfo,onSearchTypeChange}:ScrapFolderPostProps) {
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
   const [folderData, setFolderData] = useState<{[key:number]:string}>({0: "내 폴더"});
   const token = useSelector((state: loginInfo) => state.user.token);
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
   const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
   const folders = useSelector((state: any) => state.folder.folders);
-  const [showType,setShowType] = useState<string[]>(['sort','like']);
+
+  // const [searchType, setSearchType] = useState('date');
   console.log("folders 뭐야뭐야",folders);
+
+
   useEffect(() => {
     const fetchFolders = async () => {
       try {
@@ -90,14 +104,16 @@ export default function ScrapPost({postScrapInfo}:postinfoProps) {
 
   return (
     <ScrapWrapper>
+      <Wrapper>
       <CountWrapper>
         <ScrapText>All scraps</ScrapText>
-        <ScrapCount>{postScrapInfo.length}</ScrapCount>
+        <ScrapCount>{folderPosts.length}</ScrapCount>
       </CountWrapper>
-      <DropDownWrapper>
-        <ScrapText>All scraps</ScrapText>
-        <ScrapCount>{postScrapInfo.length}</ScrapCount>
-      </DropDownWrapper>
+      <SortWrapper>
+        <ScrapText>sort by</ScrapText>
+        <SortDropDown onSearchTypeChange={onSearchTypeChange} />
+      </SortWrapper>
+      </Wrapper>
       <Items>
         {postScrapInfo.map((item,index) => (
           <PostScrapItem  key={item.id}> 
@@ -133,6 +149,20 @@ const ScrapWrapper = styled.div`
 
 `;
 
+const Wrapper = styled.div`
+  display: flex;
+`
+const SortWrapper = styled.div`
+    display: flex;
+  margin-top: 26px;
+  align-items: center;
+  font-family: Inter;
+font-size: 15px;
+font-weight: 600;
+line-height: 20px;
+letter-spacing: 0px;
+width: 100%;
+`
 const CountWrapper = styled.div`
   display: flex;
   margin-top: 26px;

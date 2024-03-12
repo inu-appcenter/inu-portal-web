@@ -19,14 +19,24 @@ interface ScrapInfo {
   category: string;
 }
 
+
 export default function ScrapInfo() {
     console.log("여기까지 왔니")
   const [scrapInfo, setScrapInfo] = useState<ScrapInfo[]>([]); 
   const token = useSelector((state: loginInfo) => state.user.token);
+  
+  const [searchType, setSearchType] = useState('date');
+
+  const handleSearchTypeChange = (type: string) => {
+    setSearchType(type);
+    console.log(searchType);
+  };
+
+
   useEffect(() => {
     const fetchScrapInfo = async () => {
       try {
-        const info = await getScrapInfo(token);
+        const info = await getScrapInfo(token, searchType);
         console.log(info);
         setScrapInfo(info.data); 
       } catch (error) {
@@ -34,9 +44,9 @@ export default function ScrapInfo() {
         alert('게시에 실패하였습니다.');
       }
     };
-
+  
     fetchScrapInfo(); 
-  }, [token]); 
+  }, [token, searchType]);
 
   return (
     <ScrapWrapper>
@@ -44,7 +54,7 @@ export default function ScrapInfo() {
       {/* <ScrapSerach/> */}
       <ScrapFolder />
       <ChangeWrapper>
-        <ScrapPost postScrapInfo={scrapInfo}/>
+        <ScrapPost postScrapInfo={scrapInfo} onSearchTypeChange={handleSearchTypeChange}/>
       </ChangeWrapper>
     </ScrapWrapper>
   );

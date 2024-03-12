@@ -53,7 +53,7 @@ export default function ActiveInfo() {
     };
 
     fetchPostInfo(); 
-  }, [token,PostInfo]); 
+  }, [token]); 
 
   useEffect(() => {
     const likePostInfo = async () => {
@@ -68,14 +68,15 @@ export default function ActiveInfo() {
     };
 
     likePostInfo(); 
-  }, [token,PostLikeInfo]); 
+  }, [token]); 
 
   useEffect(() => {
     const CommentPostInfo = async () => {
       try {
         const CommentInfo = await getUserComment(token);
         setPostCommentInfo(CommentInfo.data); 
-        console.log(CommentInfo);
+        console.log(CommentInfo.data,'댓글');
+
       } catch (error) {
         console.error('에러가 발생했습니다.', error);
         alert('게시에 실패하였습니다.');
@@ -83,7 +84,7 @@ export default function ActiveInfo() {
     };
 
     CommentPostInfo(); 
-  }, [token,PostCommentInfo]); 
+  }, [token]); 
 
 
   return (

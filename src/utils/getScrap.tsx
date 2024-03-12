@@ -1,6 +1,7 @@
-const getScrapInfo = async (token:string) => {
+const getScrapInfo = async (token:string,sort:string) => {
     console.log(token,".");
-    const apiURL = `https://portal.inuappcenter.kr/api/members/scraps`;
+    const apiURL = sort ==='date'?`https://portal.inuappcenter.kr/api/members/scraps`:`https://portal.inuappcenter.kr/api/members/scraps?sort=${sort}`;
+    console.log(apiURL,"apiurl이뭘깡ㅇ");
     try {
         const response = await fetch(apiURL, {
             method: 'GET',
