@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import getDocuments from '../../utils/getDocuments';
+import search from '../../utils/search';
 import { useNavigate } from 'react-router-dom';
 import './TipsDocuments.css'
 import Heart from '../../resource/assets/heart.png';
@@ -10,6 +11,7 @@ interface Document {
   title: string;
   category: string;
   writer: string;
+  content: string;
   like: number;
   scrap: number;
   createDate: string;
@@ -18,20 +20,31 @@ interface Document {
 
 interface TipsDocumentsProps {
   selectedCategory: string;
+  queryParameters?: {
+    query?: string;
+    sort?: string;
+    page?: string;
+  }
 }
 
-export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) {
+export default function TipsDocuments({ selectedCategory, queryParameters }: TipsDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDocuments = async () => {
-      const docs = await getDocuments(selectedCategory);
+      let docs
+      if (selectedCategory == '검색결과' && queryParameters) {
+        docs = await search(queryParameters.query || '', queryParameters.sort || '', queryParameters.page || '');
+      }
+      else {
+        docs = await getDocuments(selectedCategory);
+      }
       setDocuments(docs);
     };
 
     fetchDocuments();
-  }, [selectedCategory]);
+  }, [selectedCategory, queryParameters]);
 
   const handleDocumentClick = (id: number) => {
     navigate(`/tips/${id}`);
@@ -53,7 +66,7 @@ export default function TipsDocuments({ selectedCategory }: TipsDocumentsProps) 
                 </span>
               </div>
               <h3>{document.title}</h3>
-              <div className='document-content'>api/posts/all에서 내용을 가져와야합니다 내용이 전체가 아니라도 앞부분만이라도 잘라서 가져와야 할 듯 합니다api/posts/all에서 내용을 가져와야합니다 내용이 전체가 아니라도 앞부분만이라도 잘라서 가져와야 할 듯 합니다api/posts/all에서 내용을 가져와야합니다 내용이 전체가 아니라도 앞부분만이라도 잘라서 가져와야 할 듯 합니다</div>
+              <div className='document-content'>{document.content}</div>
               <div className='document-date'>{document.createDate}</div>
             </div>
         ))}

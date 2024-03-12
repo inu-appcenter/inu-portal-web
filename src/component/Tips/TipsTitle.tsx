@@ -10,8 +10,10 @@ const TipsTitle: React.FC<TipsTitleProps> = ({ selectedCategory }) => {
 
   return (
     <TipsTitleWrapper>
-      <span className='tips-title-text-1'>{selectedCategory}</span>
-      <span className='tips-title-text-2'> TIP</span>
+    <span className='tips-title-text-1'>{selectedCategory}</span>
+      {selectedCategory != '검색결과' && (
+        <span className='tips-title-text-2'> TIP</span>
+      )}
     </TipsTitleWrapper>
   );
 };
