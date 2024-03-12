@@ -1,15 +1,14 @@
 import { useSelector } from "react-redux";
 import styled from "styled-components";
-import ProfileImg from "../../resource/assets/profile-logo.png"
+
 
 export default function LoginInfo()  {
-    const token = useSelector((state: any) => state.user.token);
     const nickname = useSelector((state: any) => state.user.nickname);
-    console.log("token",token,"nickname",nickname);
+    const fireId = useSelector((state: any) => state.user.fireId);
 
     return (
         <InfoWrapper>
-            <MyProfileImg src={ProfileImg} alt="프로필 이미지"></MyProfileImg>
+            <MyProfileImg src={`https://portal.inuappcenter.kr/api/images/${fireId}`} alt="프로필 이미지"></MyProfileImg>
             <Nickname>{nickname}</Nickname>
         </InfoWrapper>
     )

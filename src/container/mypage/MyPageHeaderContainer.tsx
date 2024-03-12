@@ -5,24 +5,20 @@ import { useEffect } from 'react';
 import LoginInfo from '../../component/mypage/logininfo';
 import smallImg from "../../resource/assets/mypage-small-logo.png"
 import getUser from '../../utils/getUser';
-import { NicknameUser as NicknameUserAction } from '../../reducer/userSlice';
+import { NicknameUser as NicknameUserAction, ProfileUser as ProfileUserAction } from '../../reducer/userSlice';
 
 export default function MyPageHeaderContainer() {
   const token = useSelector((state: any) => state.user.token);
   const nickname = useSelector((state: any) => state.user.nickname);
+  const fireId = useSelector((state: any) => state.user.fireId);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const [currnetnickname, setCurrentNickname] = useState("");
   useEffect(() => {
     if (!token) {
       navigate('/home');
     }
   }, [token, navigate]);
 
-  // const handleNickName = (input: string) => {
-  //   setCurrentNickname(input);
-  //   alert(`닉네임 ${input} (검색 타입: ${currnetnickname})`);
-  // };
     useEffect(() => {
         handleUserInfo();
     }, []);
@@ -32,9 +28,11 @@ export default function MyPageHeaderContainer() {
     const handleUserInfo = async () => {
         try {
             const response = await getUser(token);
-            console.log(response);
-            dispatch(NicknameUserAction({"nickname":response}));
-            console.log(nickname);
+            console.log(response,"결과뭐야");
+            
+            dispatch(NicknameUserAction({"nickname":response.nickname}));
+            dispatch(ProfileUserAction({"fireId":response.fireId}));
+            console.log(nickname,fireId,"닉ㅔ임!!!");
         } catch (error) {
             console.error("회원을 가져오지 못했습니다.", error);
         }

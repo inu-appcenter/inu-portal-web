@@ -5,7 +5,8 @@ export const userSlice = createSlice({
     initialState: {
         email: "",
         token: "",
-        nickname:""
+        nickname:"",
+        fireId:0
     },
     reducers: {
         // login 성공 시
@@ -23,10 +24,14 @@ export const userSlice = createSlice({
         NicknameUser:(state,action) => {
             state.nickname = action.payload.nickname;
             return state;
+        },
+        ProfileUser:(state,action) => {
+            state.fireId = action.payload.fireId;
+            return state;
         }
     },
 });
 
-export const { loginUser, logoutUser ,NicknameUser } = userSlice.actions;
+export const { loginUser, logoutUser ,NicknameUser,ProfileUser } = userSlice.actions;
 export default userSlice.reducer;
 

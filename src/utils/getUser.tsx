@@ -13,7 +13,7 @@ const getUser = async (token: string) => {
       if (response.status == 200) {
         const data = await response.json();
         console.log(data);
-        return data.data.nickname;
+        return data.data;
       }
       else {
         throw new Error(`HTTP error! Status: ${response.status}`);

@@ -13,7 +13,12 @@ import ModifyTitle from './modifytitle';
 
 import getUser from '../../utils/getUser';
 import ModifyNickname from '../../utils/putNickname';
-import { NicknameUser as NicknameUserAction } from "../../reducer/userSlice";
+import { NicknameUser as NicknameUserAction, ProfileUser as ProfileUserAction } from "../../reducer/userSlice";
+
+// import getProfileImages from '../../utils/getProfileImage';
+import { profileimg } from '../../resource/string/profileImg';
+import { ProfileDropdown } from './profiledropdown';
+
 
 interface loginInfo {
     user: {
@@ -25,7 +30,15 @@ export default function ModifyMyInfo() {
     const token = useSelector((state: loginInfo) => state.user.token);
     const [currnetnickname, setCurrentNickname] = useState("");
     const [nickname, setNickname] = useState("");
+    const [currentfireid, setCurrentFireId] = useState(0);
+    // const [images,setImages] = useState<string[]>([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 표시 여부 상태
+    const [selectedImage, setSelectedImage] = useState<string>(profileimg[0]); 
     const dispatch = useDispatch();
+
+    const handleChangeImage = (image: string) => {
+      setSelectedImage(image);
+    };
 
     const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         console.log(e.target.value)
@@ -35,6 +48,9 @@ export default function ModifyMyInfo() {
     useEffect(() => {
       handleUserInfo();
   }, []);
+
+
+
 
   const handleUserInfo = async () => {
       try {
@@ -51,23 +67,44 @@ export default function ModifyMyInfo() {
     const handleModifyClick = async () => {
       try {
         console.log("닉네임",nickname);
-          const nicknameResponse = await ModifyNickname(token, nickname);
-          console.log(nicknameResponse, "닉네임 변경 성공");
-          setCurrentNickname(nickname);
-          dispatch(NicknameUserAction({"nickname":nickname}));
+        console.log(selectedImage,"현재 선택된 이미지 뭐양?");
+         const fireId = Number(selectedImage.match(/\d+/));
+         console.log("fire아이디뭐야",fireId);
+          const nicknameResponse = await ModifyNickname(token, nickname,fireId);
+          if (nicknameResponse === 400) {
+            alert('입력한 닉네임과 현재 닉네임이 동일합니다.');
+          }
+          else if(nicknameResponse === 404 ) {
+            alert('존재하지 않는 회원입니다.')
+          }
+          else {
+            console.log(nicknameResponse, "닉네임 변경 성공");
+            setCurrentNickname(currnetnickname);
+            setCurrentFireId(fireId);
+            dispatch(NicknameUserAction({"nickname":nickname}));
+            dispatch(ProfileUserAction({"fireId":fireId}));
+          }
+
       } catch (error) {
           console.error('닉네임 변경 실패:', error);
           alert('닉네임 변경에 실패했습니다.');
       } 
   };
-    
+  
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen); // 드롭다운 상태 반전
+  };
+
     
   return (
     <ModifyWrapper>
       <ModifyTitle/>
       <MyInfo />
       <ChangeWrapper>
-        <ProfileChange>프로필 변경</ProfileChange>
+      <ProfileChange onClick={toggleDropdown}>프로필 변경</ProfileChange>
+      {isDropdownOpen && (
+          <ProfileDropdown images={profileimg} onChange={handleChangeImage} />
+        )}
         <span>닉네임 변경</span>
         <NewNicknameInput value={nickname} onChange={handleNicknameChange}/>
       </ChangeWrapper>
