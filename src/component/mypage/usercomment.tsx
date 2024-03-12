@@ -3,6 +3,10 @@ import styled from 'styled-components';
 
 import { Link } from 'react-router-dom';
 import commentlogo from "../../resource/assets/comment-logo.png"
+import { useEffect, useState } from 'react';
+import getPost from '../../utils/getPost';
+import { useSelector } from 'react-redux';
+
 interface postinfoProps {
     postCommentInfo: {
       id:number;
@@ -12,8 +16,37 @@ interface postinfoProps {
     }[];
 }
 
+interface Post {
+
+  category: string;
+
+}
+
+
+interface loginInfo {
+  user: {
+    token: string;
+  };
+}
 export default function UserComment({postCommentInfo}:postinfoProps) {
-    
+  const [postInfo, setPostInfo] = useState<Post[]>([]);
+  const token = useSelector((state: loginInfo) => state.user.token);
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      const ids = postCommentInfo.map(comment => comment.postId);
+      const posts: Post[] = [];
+      for (const id of ids) {
+        const postDetail = await getPost(token, id);
+        posts.push({ category: postDetail.category });
+        console.log(posts, "gmdma");
+      }
+      setPostInfo(posts);
+      console.log(postInfo);
+    };
+
+    fetchPost();
+}, [postCommentInfo]);
   return (
     <UserCommentWrapper>
       <CountWrapper>
@@ -21,14 +54,14 @@ export default function UserComment({postCommentInfo}:postinfoProps) {
         <CommentCount>{postCommentInfo.length}</CommentCount>
       </CountWrapper>
       <Items>
-        {postCommentInfo.map((item) => (
-          <PostLink  to={`/tips/${item.postId}`}>
-            <CommentPostItem key={item.id}>
-              <p className='category'>{item.category}</p>
-              <p className='title'>{item.content}</p>
-          </CommentPostItem>
-          </PostLink>
-        ))}
+      {postCommentInfo.map((item,index) => (
+  <PostLink  to={`/tips/${item.postId}`} key={item.id}>
+    <CommentPostItem>
+    <p className='category'>{postInfo[index]?.category}</p>
+      <p className='title'>{item.content}</p>
+    </CommentPostItem>
+  </PostLink>
+))}
       </Items>
   </UserCommentWrapper>
   );
