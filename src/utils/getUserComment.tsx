@@ -1,5 +1,5 @@
-const getUserComment= async (token: string) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/members/replies`;
+const getUserComment= async (token: string,sort:string) => {
+  const apiURL = sort ==='date'?`https://portal.inuappcenter.kr/api/members/replies`:`https://portal.inuappcenter.kr/api/members/replies?sort=${sort}`;  
     try {
       const response = await fetch(apiURL, {
         method: 'GET',
