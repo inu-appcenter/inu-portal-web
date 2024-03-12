@@ -40,10 +40,16 @@ export default function ActiveInfo() {
   const [PostLikeInfo, setPostLikeInfo] = useState<PostInfo[]>([]); 
   const [PostCommentInfo, setPostCommentInfo] = useState<CommentInfo[]>([]); 
   const token = useSelector((state: loginInfo) => state.user.token);
+  const [searchType, setSearchType] = useState('date');
+  const handleSearchTypeChange = (type: string) => {
+    setSearchType(type);
+    console.log(searchType);
+  };
+
   useEffect(() => {
     const fetchPostInfo = async () => {
       try {
-        const PostInfo = await getUserPost(token);
+        const PostInfo = await getUserPost(token,searchType);
         setPostInfo(PostInfo.data); 
         console.log(PostInfo);
       } catch (error) {
@@ -58,7 +64,7 @@ export default function ActiveInfo() {
   useEffect(() => {
     const likePostInfo = async () => {
       try {
-        const LikeInfo = await getUserLikePost(token);
+        const LikeInfo = await getUserLikePost(token,searchType);
         setPostLikeInfo(LikeInfo.data); 
         console.log(LikeInfo);
       } catch (error) {
@@ -73,7 +79,7 @@ export default function ActiveInfo() {
   useEffect(() => {
     const CommentPostInfo = async () => {
       try {
-        const CommentInfo = await getUserComment(token);
+        const CommentInfo = await getUserComment(token,searchType);
         setPostCommentInfo(CommentInfo.data); 
         console.log(CommentInfo.data,'댓글');
 
@@ -90,9 +96,9 @@ export default function ActiveInfo() {
   return (
     <ActiveWrapper>
       <ActiveTitle/>
-      <LikePost postLikeInfo ={PostLikeInfo}/>
-      <UserComment postCommentInfo = {PostCommentInfo}/>
-      <UserPost postinfo={PostInfo}/>
+      <LikePost postLikeInfo ={PostLikeInfo} onSearchTypeChange={handleSearchTypeChange}/>
+      <UserComment postCommentInfo = {PostCommentInfo} onSearchTypeChange={handleSearchTypeChange}/>
+      <UserPost postinfo={PostInfo} onSearchTypeChange={handleSearchTypeChange} />
 
   </ActiveWrapper>
   );

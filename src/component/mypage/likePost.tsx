@@ -1,22 +1,33 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import likelogo from '.././../resource/assets/like-icon.png';
+import SortDropDown from './sortdropdown';
 
-interface postinfoProps {
-  postLikeInfo: {
+
+interface postLikeInfo {
     id: number;
     title: string;
     category: string;
-  }[];
 }
 
-export default function LikePost({ postLikeInfo }: postinfoProps) {
+
+interface likeinfoProps {
+  postLikeInfo: postLikeInfo[],
+  onSearchTypeChange:  (type: string) => void;
+}
+export default function LikePost({ postLikeInfo,onSearchTypeChange }: likeinfoProps) {
   return (
     <LikePostWrapper>
+      <Wrapper>
       <CountWrapper>
         <Likeimg src={likelogo} />
         <LikeCount>{postLikeInfo.length}</LikeCount>
       </CountWrapper>
+      <SortWrapper>
+        <ScrapText>sort by</ScrapText>
+        <SortDropDown onSearchTypeChange={onSearchTypeChange} />
+      </SortWrapper>
+      </Wrapper>
       <Items>
         {postLikeInfo.map((item) => (
           <PostLink  to={`/tips/${item.id}`}>
@@ -32,15 +43,44 @@ export default function LikePost({ postLikeInfo }: postinfoProps) {
   );
 }
 
-const LikePostWrapper = styled.div`
-
-`;
-
+const Wrapper = styled.div`
+  display: flex;
+`
+const SortWrapper = styled.div`
+    display: flex;
+  margin-top: 26px;
+  align-items: center;
+  font-family: Inter;
+font-size: 15px;
+font-weight: 600;
+line-height: 20px;
+letter-spacing: 0px;
+width: 100%;
+`
 const CountWrapper = styled.div`
   display: flex;
   margin-top: 26px;
   align-items: center;
+  font-family: Inter;
+font-size: 15px;
+font-weight: 600;
+line-height: 20px;
+letter-spacing: 0px;
+width: 100%;
 `
+const ScrapText = styled.p`
+color: #969696;
+
+
+`;
+
+
+
+const LikePostWrapper = styled.div`
+
+`;
+
+
 const Likeimg = styled.img`
   width: 24px;
   height: 20px;
