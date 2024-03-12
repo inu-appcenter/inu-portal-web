@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import getDocuments from '../../utils/getDocuments';
 import search from '../../utils/search';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './TipsDocuments.css'
 import Heart from '../../resource/assets/heart.png';
+import queryString from 'query-string';
 
 interface Document {
   id: number;
@@ -20,33 +21,35 @@ interface Document {
 
 interface TipsDocumentsProps {
   selectedCategory: string;
-  queryParameters?: {
-    query?: string;
-    sort?: string;
-    page?: string;
-  }
+  sortParam?: string;
+  pageParam?: string;
 }
 
-export default function TipsDocuments({ selectedCategory, queryParameters }: TipsDocumentsProps) {
+export default function TipsDocuments({ selectedCategory, sortParam, pageParam }: TipsDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [sort, setSort] = useState<string>(sortParam || 'date');
+  const [page, setPage] = useState<string>(pageParam || '1')
 
   useEffect(() => {
     console.log('UseEffect', selectedCategory);
     const fetchDocuments = async () => {
-      if (selectedCategory == '검색결과' && queryParameters) {
-        console.log('query', queryParameters.query);
-        const docs = await search(queryParameters.query || '', queryParameters.sort || 'like', queryParameters.page || '1');
+      if (selectedCategory == '검색결과') {
+        const query = queryString.parse(location.search).query;
+        console.log('query sort page : ', query, sort, page);
+        const docs = await search(query, sort, page);
         setDocuments(docs);
       }
       else if (selectedCategory) {
-        const docs = await getDocuments(selectedCategory, 'like', '1');
+        console.log('sort page : ', sort, page);
+        const docs = await getDocuments(selectedCategory, sort, page);
         setDocuments(docs);
       }
     };
 
     fetchDocuments();
-  }, [selectedCategory, queryParameters]);
+  }, [selectedCategory, sort, page]);
 
   const handleDocumentClick = (id: number) => {
     navigate(`/tips/${id}`);
@@ -55,6 +58,15 @@ export default function TipsDocuments({ selectedCategory, queryParameters }: Tip
   return (
     <TipsDocumentsWrapper>
       <div>
+        <div className='SortDropdown'>
+          <div className='dropdown'>
+            <button className='dropbtn'>{sort === 'date' ? '최신순' : '인기순'}</button>
+            <div className='dropdown-content'>
+              <span onClick={() => setSort('date')}>최신순</span>
+              <span onClick={() => setSort('like')}>인기순</span>
+            </div>
+          </div>
+        </div>
         {documents && (
           <div className='grid-container'>
           {documents.map((document) => (
