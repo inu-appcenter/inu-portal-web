@@ -32,15 +32,17 @@ export default function TipsDocuments({ selectedCategory, queryParameters }: Tip
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('UseEffect', selectedCategory);
     const fetchDocuments = async () => {
-      let docs
       if (selectedCategory == '검색결과' && queryParameters) {
-        docs = await search(queryParameters.query || '', queryParameters.sort || '', queryParameters.page || '');
+        console.log('query', queryParameters.query);
+        const docs = await search(queryParameters.query || '', queryParameters.sort || '', queryParameters.page || '');
+        setDocuments(docs);
       }
-      else {
-        docs = await getDocuments(selectedCategory);
+      else if (selectedCategory) {
+        const docs = await getDocuments(selectedCategory);
+        setDocuments(docs);
       }
-      setDocuments(docs);
     };
 
     fetchDocuments();
@@ -52,24 +54,28 @@ export default function TipsDocuments({ selectedCategory, queryParameters }: Tip
 
   return (
     <TipsDocumentsWrapper>
-      <div className='grid-container'>
-        {documents.map((document) => (
-            <div className='document-card' key={document.id} onClick={() => handleDocumentClick(document.id)}>
-              <div className='card-1'>
-                <div className='document-category'>
-                  <div className='category-text'>{document.category}</div>
-                  <div className='category-underbar'></div>
+      <div>
+        {documents && (
+          <div className='grid-container'>
+          {documents.map((document) => (
+              <div className='document-card' key={document.id} onClick={() => handleDocumentClick(document.id)}>
+                <div className='card-1'>
+                  <div className='document-category'>
+                    <div className='category-text'>{document.category}</div>
+                    <div className='category-underbar'></div>
+                  </div>
+                  <span className='document-like'>
+                    <img src={Heart}></img>
+                    <div className='like-num'>{document.like}</div>
+                  </span>
                 </div>
-                <span className='document-like'>
-                  <img src={Heart}></img>
-                  <div className='like-num'>{document.like}</div>
-                </span>
+                <h3>{document.title}</h3>
+                <div className='document-content'>{document.content}</div>
+                <div className='document-date'>{document.createDate}</div>
               </div>
-              <h3>{document.title}</h3>
-              <div className='document-content'>{document.content}</div>
-              <div className='document-date'>{document.createDate}</div>
-            </div>
-        ))}
+          ))}
+          </div>
+        )}
       </div>
     </TipsDocumentsWrapper>
   );
