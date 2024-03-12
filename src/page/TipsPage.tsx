@@ -10,16 +10,13 @@ import TipsTitle from '../component/tips/TipsTitle';
 import queryString from 'query-string';
 
 export default function TipsPage() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const location = useLocation();
   const queryParameters = queryString.parse(location.search);
 
   useEffect(() => {
     if (location.pathname.includes('/tips/search')) {
       setSelectedCategory('검색결과');
-    }
-    else {
-      setSelectedCategory('전체');
     }
   })
   return (

@@ -36,11 +36,11 @@ export default function TipsDocuments({ selectedCategory, queryParameters }: Tip
     const fetchDocuments = async () => {
       if (selectedCategory == '검색결과' && queryParameters) {
         console.log('query', queryParameters.query);
-        const docs = await search(queryParameters.query || '', queryParameters.sort || '', queryParameters.page || '');
+        const docs = await search(queryParameters.query || '', queryParameters.sort || 'like', queryParameters.page || '1');
         setDocuments(docs);
       }
       else if (selectedCategory) {
-        const docs = await getDocuments(selectedCategory);
+        const docs = await getDocuments(selectedCategory, 'like', '1');
         setDocuments(docs);
       }
     };
