@@ -1,58 +1,53 @@
 // TipsPage.tsx
 import styled from 'styled-components';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import TipsCatContainer from '../container/tips/TipsCatContainer';
 import TipsDocuments from '../component/Tips/TipsDocuments';
-import PostDetail from './PostDetailPage';
-import { useState } from 'react';
+import PostDetail from "./PostDetailPage";
+import { useEffect, useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
 import TipsTitle from '../component/tips/TipsTitle';
+import queryString from 'query-string';
 import PopularPosts from '../component/Tips/PopularPosts';
+
 
 export default function TipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
+  const location = useLocation();
+  const queryParameters = queryString.parse(location.search);
+
+  useEffect(() => {
+    if (location.pathname.includes('/tips/search')) {
+      setSelectedCategory('검색결과');
+    }
+  })
   return (
     <TipsPageWrapper>
-      <TipsCategoryWrapper>
-        <TipsCatContainer
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-        />
-      </TipsCategoryWrapper>
-
-      <TipsContentWrapper>
+      <TipsCatWrapper>
+        <TipsCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
+      </TipsCatWrapper>
+      <div>
         <TipsTitle selectedCategory={selectedCategory} />
-        <div>
-          <PopularPosts />
-        </div>
+        <PopularPosts/>
         <Routes>
-          <Route
-            index
-            element={<TipsDocuments selectedCategory={selectedCategory} />}
-          />
-          <Route path=':id' element={<PostDetail />} />
+          <Route index element={<TipsDocuments selectedCategory={selectedCategory} />} />
+          <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} queryParameters={queryParameters}/>} />
+          <Route path=":id" element={<PostDetail />} />
         </Routes>
-        <PostBotton />
-      </TipsContentWrapper>
-      
+      </div>
+      <PostBotton />
     </TipsPageWrapper>
-  );
+  )
 }
+
 
 const TipsPageWrapper = styled.div`
   display: flex;
   flex-dicrection: row;
-  margin: 20px;
-`;
 
-const TipsCategoryWrapper = styled.div`
-  display: flex;
-  flex-dicrection: row;
-  padding: 20px;
-  margin: 10px;
-`;
-const TipsContentWrapper = styled.div`
-margin: 10px;
-
-  padding: 20px;
-`;
+  height: calc(100vh - 120px);
+  margin-bottom: 120px;
+`
+const TipsCatWrapper = styled.div`
+ padding: 40px;
+`

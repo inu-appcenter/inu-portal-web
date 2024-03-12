@@ -17,4 +17,5 @@ export default function TipsCatContainer( { selectedCategory, setSelectedCategor
 const TipsContainerWraaper = styled.div`
   display: flex;
   flex-direction: row;
+  margin: 30px 0 0 0;
 `

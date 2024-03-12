@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import PostContentContainer from '../container/postdetail/PostContentContainer';
 import PostUtility from '../container/postdetail/PostUtilityContainer';
-import PostComment from '../container/postdetail/PostCommentContainer';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import getPost from '../utils/getPost';
@@ -9,6 +8,8 @@ import { useSelector } from 'react-redux';
 import DeletePostBtn from '../component/postdetail/post/deletpostbtn';
 import EditPostBtn from '../component/postdetail/post/editpostbtn';
 import ReturnButton from '../component/postdetail/post/ReturnButton';
+import CommentList from '../component/postdetail/comment/commentlist';
+import CommentInput from '../component/postdetail/comment/commentinput';
 
 
 interface Post {
@@ -26,7 +27,7 @@ interface Post {
     createDate: string;
     modifiedDate: string;
     imageCount: number;
-    bestReplies: Replies;
+    bestReplies: Replies[];
     replies: Replies[];
 }
 
@@ -85,7 +86,8 @@ export default function PostDetail(){
             </div>
             <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
             <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
-            <PostComment comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/> {/*댓글*/}
+            <CommentList bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/>
+            <CommentInput onCommentUpdate={() => setCommentUpdated(true)}></CommentInput>
         </PostWrapper>
     ) : (
             <div>Loading...</div>
@@ -95,5 +97,4 @@ export default function PostDetail(){
 }
 
 const PostWrapper = styled.div `
-    padding: 100px; // (임시)
 `

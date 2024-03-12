@@ -7,11 +7,11 @@ const StyledPopularPosts = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  margin-right:25px;
   background: linear-gradient(to bottom right, #9CAFE2, #AAC9EE);
 `;
 const PopularPosts: React.FC = () => {
     return (
-      // 스타일이 적용된 StyledPopularPosts 컴포넌트 사용
       <StyledPopularPosts>
         인기글 생성 중(뚝닥뚝닥🔨)
       </StyledPopularPosts>
