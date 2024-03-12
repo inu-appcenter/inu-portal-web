@@ -41,5 +41,7 @@ export default function TipsPage() {
 const TipsPageWrapper = styled.div`
   display: flex;
   flex-dicrection: row;
-  margin: 20px;
+
+  height: calc(100vh - 120px);
+  margin-bottom: 120px;
 `
