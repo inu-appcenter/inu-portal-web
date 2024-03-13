@@ -1,0 +1,40 @@
+.PostTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleText {
+  font-family: Inter;
+  font-size: 25px;
+  font-weight: 400;
+}
+
+.titleInfo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+}
+
+.infoText {
+  font-family: Inter;
+  font-size: 13px;
+  font-weight: 400;
+  color: #969696;
+}
+
+.writerInfo {
+  display: flex;
+  align-items: center;
+  height: 31px;
+  border-radius: 100px;
+  background: linear-gradient(270deg, #FFFFFF 24.49%, #AAC9EE 100%);
+  padding-left: 10px;
+  padding-right: 10px;
+
+  font-family: Inter;
+  font-size: 13px;
+  font-weight: 400;
+}

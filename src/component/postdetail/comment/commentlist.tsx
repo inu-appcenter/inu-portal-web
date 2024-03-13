@@ -5,6 +5,8 @@ import EditCommentButton from './editcommentbutton';
 import DeleteCommentButton from './deletecommentbutton';
 import ReCommentInput from './recommentinput';
 import ReCommentList from './recommentlist';
+import CommentsImg from '../../../resource/assets/comments-img.png';
+import './commentlist.css';
 
 interface Replies {
   id: number;
@@ -26,50 +28,49 @@ interface CommentListProps {
 }
 
 const CommentList: React.FC<CommentListProps> = ({ bestComment, comments, onCommentUpdate }) => {
-  console.log(comments);
-  
   const token = useSelector((state: any) => state.user?.token);
   const [showReCommentInputId, setShowReCommentInputId] = useState<number | null>(null);
-
+  const allComments =  bestComment ? [bestComment, ...comments.filter(comment => comment.id !== bestComment.id)] : comments;
+  console.log(allComments);
   return (
     <div>
-      <div>
-        {bestComment && (<div>
-          (베스트)
-          <strong>{bestComment.writer}</strong>: {bestComment.content}
-          <CommentLike id={bestComment.id} like={bestComment.like} isLikedProp={bestComment.isLiked} />
-          {bestComment.hasAuthority && (
-            <>
-              <EditCommentButton token={token} id={bestComment.id} currentContent={bestComment.content} isAnonymous={bestComment.isAnonymous} onCommentUpdate={onCommentUpdate} />
-              <DeleteCommentButton token={token} id={bestComment.id} onCommentUpdate={onCommentUpdate} />
-            </>
-          )}
-          <button onClick={() => setShowReCommentInputId(bestComment.id)}>대댓글</button>
-          {showReCommentInputId === bestComment.id && (
-            <ReCommentInput parentId={bestComment.id} onCommentUpdate={onCommentUpdate} />
-          )}
-        </div>)}
-      </div>
-      {comments.map((comment) => (
-        <div key={comment.id}>
-          {(!bestComment || (comment.id != bestComment.id)) && 
-          (<div>
-          <strong>{comment.writer}</strong>: {comment.content}
-          <CommentLike id={comment.id} like={comment.like} isLikedProp={comment.isLiked} />
-          {comment.hasAuthority && (
-            <>
-              <EditCommentButton token={token} id={comment.id} currentContent={comment.content} isAnonymous={comment.isAnonymous} onCommentUpdate={onCommentUpdate} />
-              <DeleteCommentButton token={token} id={comment.id} onCommentUpdate={onCommentUpdate} />
-            </>
-          )}
-          <button onClick={() => setShowReCommentInputId(comment.id)}>대댓글</button>
+      <img src={CommentsImg} />
+      <div className='commentlist-container'>
+      {allComments.map((comment, index) => (
+        <div key={comment.id} className='comment-container'>
+          <div className='profile-image-background'>
+            <img alt='프'/>
+          </div>
+          <div className='comment-container-mid'>
+            <div>
+              <span className='writer-text'>{comment.writer} </span>
+              {index === 0 && bestComment && (<span className='best-text'>Best</span>)}
+            </div> 
+            <span className='content-text'>{comment.content}</span>
+            <div className='commentUtility-container'>
+              <span className='commentUtility' onClick={() => setShowReCommentInputId(comment.id)}>답장</span>
+              {comment.hasAuthority && (
+              <>
+                <EditCommentButton token={token} id={comment.id} currentContent={comment.content} isAnonymous={comment.isAnonymous} onCommentUpdate={onCommentUpdate} />
+                <DeleteCommentButton token={token} id={comment.id} onCommentUpdate={onCommentUpdate} />
+              </>
+              )}
+            </div>
+          </div>
+          <div className='comment-container-right'>
+            <div className='commentUtility'>{comment.createDate}</div>
+            <CommentLike id={comment.id} like={comment.like} isLikedProp={comment.isLiked} />
+          </div>
+          {
+            /* 
           {showReCommentInputId === comment.id && (
             <ReCommentInput parentId={comment.id} onCommentUpdate={onCommentUpdate} />
           )}
-          <ReCommentList token={token} reReplies={comment.reReplies} onCommentUpdate={onCommentUpdate} />
-          </div>)}
+          {comment.reReplies && (<ReCommentList token={token} reReplies={comment.reReplies} onCommentUpdate={onCommentUpdate} />)}*/
+          }
         </div>
       ))}
+      </div>
     </div>
   );
 };

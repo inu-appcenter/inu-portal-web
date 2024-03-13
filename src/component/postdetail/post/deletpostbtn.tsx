@@ -33,7 +33,7 @@ const DeletePostBtn: React.FC<DeletePostBtnProps> = ({ token, id, onPostUpdate }
     }
   };
 
-  return <button onClick={handleDeleteClick}>게시글 삭제</button>;
+  return <button onClick={handleDeleteClick}>삭제하기</button>;
 };
 
 export default DeletePostBtn;

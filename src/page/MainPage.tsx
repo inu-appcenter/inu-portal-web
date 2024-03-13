@@ -20,7 +20,7 @@ export default function MainPage() {
             <nav>
                 <Nav />
             </nav>
-            <main>
+            <main style={{flexGrow: 1}}>
                 <Outlet />
             </main>
         </MainPageWrapper>

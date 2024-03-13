@@ -30,7 +30,7 @@ const EditCommentButton: React.FC<EditCommentButtonProps> = ({token, id, current
     }
   };
 
-  return <button onClick={handleEditClick}>수정</button>;
+  return <span className='commentUtility' onClick={handleEditClick}>수정</span>;
 };
 
 export default EditCommentButton;

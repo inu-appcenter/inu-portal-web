@@ -74,8 +74,11 @@ export default function PostDetail(){
     return(
     <>
     {post ? (
+        <>
         <PostWrapper>
             <ReturnButton />
+            <PostContentContainer id={post.id} title={post.title} createDate={post.createDate} view={post.view} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
+            <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
             <div key={post.id}>
                 {post.hasAuthority &&(
                 <>
@@ -84,11 +87,12 @@ export default function PostDetail(){
                 </>
                 )}
             </div>
-            <PostContentContainer id={post.id} title={post.title} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
-            <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
+        </PostWrapper>
+        <CommentWrapper>
             <CommentList bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/>
             <CommentInput onCommentUpdate={() => setCommentUpdated(true)}></CommentInput>
-        </PostWrapper>
+        </CommentWrapper>
+</>
     ) : (
             <div>Loading...</div>
         )}
@@ -97,4 +101,14 @@ export default function PostDetail(){
 }
 
 const PostWrapper = styled.div `
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+`
+
+const CommentWrapper = styled.div `
+    border-top: solid #EAEAEA 5px;
+    padding: 20px;
+    padding-bottom: 120px;
 `

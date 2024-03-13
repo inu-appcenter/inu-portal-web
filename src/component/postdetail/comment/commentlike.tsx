@@ -1,7 +1,8 @@
 import React, {useState} from 'react'
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import handleLike from '../../../utils/handleCommentLike'
+import heartEmptyImg from '../../../resource/assets/heart-empty-img.png';
+import heartFilledImg from '../../../resource/assets/heart-filled-img.png';
 
 interface PostLikeProps{
   id: number;
@@ -34,12 +35,14 @@ const PostLike: React.FC<PostLikeProps> = ({id, like, isLikedProp}) =>{
   };
 
   return(
-    <>
-      <button className='Like' onClick={handleLikeClick}>
-        {isLiked ? '❤️' :'🤍'}
-      </button>
-      {likes}
-    </>
+    <div className='likeContainer'>
+      <img className='UtilityImg'
+        src={isLiked?heartFilledImg:heartEmptyImg}
+        alt='heartImg'
+        onClick={handleLikeClick}
+      /> 
+      <span className='content-text'> {likes}</span>
+    </div>
     ); 
   };
 

@@ -31,7 +31,7 @@ const DeleteCommentButton: React.FC<DeleteCommentButtonProps> = ({ token, id, on
   }
   };
 
-  return <button onClick={handleDeleteClick}>삭제</button>;
+  return <span className='commentUtility' onClick={handleDeleteClick}>삭제</span>;
 };
 
 export default DeleteCommentButton;

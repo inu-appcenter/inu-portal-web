@@ -23,12 +23,9 @@ const EditPostBtn: React.FC<EditPostBtnProps> = ({ handleEditPost, id }) => {
   };
 
   return (
-    <EditPostBtnWrapper>
       <button onClick={handleEditButtonClick}>수정하기</button>
-    </EditPostBtnWrapper>
   );
 };
 
-const EditPostBtnWrapper = styled.div``;
 
 export default EditPostBtn;
