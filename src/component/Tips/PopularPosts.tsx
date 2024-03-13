@@ -9,7 +9,6 @@ const StyledPopularPosts = styled.div`
   font-size: 18px;
   margin-right:25px;
   background: linear-gradient(to bottom right, #9CAFE2, #AAC9EE);
-  border-bottom: 5px solid #eaeaea;
 `;
 const PopularPosts: React.FC = () => {
     return (

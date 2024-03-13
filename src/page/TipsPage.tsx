@@ -28,16 +28,18 @@ export default function TipsPage() {
       <TipsCatWrapper>
         <TipsCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
       </TipsCatWrapper>
-      <div>
+      <TipsContentWrapper>
         <TipsTitle selectedCategory={selectedCategory} />
         <PopularPosts/>
-        <Routes>
-          <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
-          <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
-          <Route path=":id" element={<PostDetail />} />
-          <Route path='update/:id' element={<EditPost />} />
-        </Routes>
-      </div>
+        <BorderWrapper>
+          <Routes>
+            <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route path=":id" element={<PostDetail />} />
+            <Route path='update/:id' element={<EditPost />} />
+          </Routes>
+        </BorderWrapper >
+      </TipsContentWrapper>
       <PostBotton />
     </TipsPageWrapper>
   )
@@ -53,4 +55,15 @@ const TipsPageWrapper = styled.div`
 `
 const TipsCatWrapper = styled.div`
  padding: 40px;
+`
+
+const TipsContentWrapper = styled.div`
+  flex-grow: 1;
+`
+
+const BorderWrapper = styled.div`
+  margin-right: 25px;
+  border-style: solid;
+  border-width: 5px 0 0 5px;
+  border-color: #EAEAEA;
 `
