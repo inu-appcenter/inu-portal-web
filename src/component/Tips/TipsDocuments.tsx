@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './TipsDocuments.css'
 import Heart from '../../resource/assets/heart.png';
 import queryString from 'query-string';
+import Pagination from './Pagination';
 
 interface Document {
   id: number;
@@ -31,6 +32,7 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
   const [documents, setDocuments] = useState<Document[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   useEffect(() => {
     console.log('UseEffect', selectedCategory);
@@ -39,12 +41,14 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
         const query = queryString.parse(location.search).query;
         console.log('query sort page : ', query, sort, page);
         const docs = await search(query, sort, page);
-        setDocuments(docs['posts'])
+        setDocuments(docs['posts']);
+        setTotalPages(docs['pages']);
       }
       else if (selectedCategory) {
         console.log('sort page : ', sort, page);
         const docs = await getDocuments(selectedCategory, sort, page);
-        setDocuments(docs['posts'])
+        setTotalPages(docs['pages']);
+        setDocuments(docs['posts']);
       }
     };
 
@@ -89,6 +93,7 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
           </div>
         )}
       </div>
+      <Pagination totalPages={totalPages} currentPage={parseInt(page)} setPage={setPage} />
     </TipsDocumentsWrapper>
   );
 }
