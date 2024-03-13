@@ -1,19 +1,26 @@
 .PostFormContainer {
   width: 80%;
-
   height: 500px;
-  background: linear-gradient(0deg, #FFFFFF 75.5%, #DBEBFF 96%);
+  background: linear-gradient(0deg, #ffffff 75.5%, #dbebff 96%);
 }
 
 .bar {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: right;
-
-
-  gap: 15px;
+  border-bottom: 5px solid #eaeaea;
+  gap: 20px;
   padding: 10px;
+  margin-left: 10px;
+}
+
+.line {
+  margin:0 30px 0 30px;
+  height: 38px;
+  top: 183px;
+  left: 549px;
+  border: solid 2px;
+  color: #FFFFFF;
 }
 
 .post-button {
@@ -25,19 +32,17 @@
   height: 26px;
   border-radius: 10px;
 
-  background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
+  background: linear-gradient(90deg, #6f84e2 0%, #7babe5 100%);
 
   font-family: Inter;
   font-size: 12px;
   font-weight: 700;
-  color: #FFFFFF;
-
+  color: #ffffff;
   cursor: pointer;
-
 }
 
 .container1 {
-  padding: 20px;
+  padding: 35px;
   display: flex;
   flex-direction: row;
   z-index: 1;
@@ -63,7 +68,7 @@
 
 #content {
   width: 90%;
-  height: 500px;
+  height: 400px;
 
   border: 0;
 

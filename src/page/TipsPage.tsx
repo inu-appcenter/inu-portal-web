@@ -7,11 +7,16 @@ import PostDetail from "./PostDetailPage";
 import { useEffect, useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
 import TipsTitle from '../component/tips/TipsTitle';
+import queryString from 'query-string';
+import PopularPosts from '../component/Tips/PopularPosts';
+import EditPost from './EditPostPage';
+
 
 export default function TipsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const location = useLocation();
-  
+  const [sort, setSort] = useState<string>('date');
+  const [page, setPage] = useState<string>('1');
 
   useEffect(() => {
     if (location.pathname.includes('/tips/search')) {
@@ -20,17 +25,21 @@ export default function TipsPage() {
   })
   return (
     <TipsPageWrapper>
-      <div>
+      <TipsCatWrapper>
         <TipsCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
-      </div>
-      <div>
+      </TipsCatWrapper>
+      <TipsContentWrapper>
         <TipsTitle selectedCategory={selectedCategory} />
-        <Routes>
-          <Route index element={<TipsDocuments selectedCategory={selectedCategory} sortParam='date' pageParam='1' />} />
-          <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sortParam='date' pageParam='1'/>} />
-          <Route path=":id" element={<PostDetail />} />
-        </Routes>
-      </div>
+        <PopularPosts/>
+        <BorderWrapper>
+          <Routes>
+            <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route path=":id" element={<PostDetail />} />
+            <Route path='update/:id' element={<EditPost />} />
+          </Routes>
+        </BorderWrapper >
+      </TipsContentWrapper>
       <PostBotton />
     </TipsPageWrapper>
   )
@@ -43,4 +52,18 @@ const TipsPageWrapper = styled.div`
 
   height: calc(100vh - 240px);
   margin-bottom: 120px;
+`
+const TipsCatWrapper = styled.div`
+ padding: 40px;
+`
+
+const TipsContentWrapper = styled.div`
+  flex-grow: 1;
+`
+
+const BorderWrapper = styled.div`
+  margin-right: 25px;
+  border-style: solid;
+  border-width: 5px 0 0 5px;
+  border-color: #EAEAEA;
 `
