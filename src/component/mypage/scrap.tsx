@@ -38,10 +38,11 @@ export default function ScrapInfo() {
       try {
         const info = await getScrapInfo(token, searchType);
         console.log(info);
-        setScrapInfo(info.data); 
+        setScrapInfo(info.data.posts); 
+        console.log("왜이래",scrapInfo);
       } catch (error) {
         console.error('에러가 발생했습니다.', error);
-        alert('게시에 실패하였습니다.');
+        // alert('게시에 실패하였습니다.');
       }
     };
   
