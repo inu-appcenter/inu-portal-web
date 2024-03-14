@@ -12,6 +12,10 @@
   gap: 10px;
 }
 
+.comment-container:not(:last-child) {
+  border-bottom: 2px solid #DEDEDE;
+}
+
 .profile-image-background {
   border-radius: 50%;
   width: 53px;

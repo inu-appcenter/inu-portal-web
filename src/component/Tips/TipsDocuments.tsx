@@ -33,7 +33,6 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
   const navigate = useNavigate();
   const location = useLocation();
   const [totalPages, setTotalPages] = useState<number>(1);
-
   useEffect(() => {
     console.log('UseEffect', selectedCategory);
     const fetchDocuments = async () => {
@@ -53,7 +52,7 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
     };
 
     fetchDocuments();
-  }, [selectedCategory, sort, page]);
+  }, [selectedCategory, location.search, sort, page]);
 
   const handleDocumentClick = (id: number) => {
     navigate(`/tips/${id}`);
@@ -62,15 +61,15 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
   return (
     <TipsDocumentsWrapper>
       <div>
-        <div className='SortDropdown'>
-          <div className='dropdown'>
+        <span className='SortDropdown'>
+          <span className='dropdown'>
             <button className='dropbtn'>{sort === 'date' ? '최신순' : '인기순'}</button>
-            <div className='dropdown-content'>
+            <span className='dropdown-content'>
               <span onClick={() => setSort('date')}>최신순</span>
               <span onClick={() => setSort('like')}>인기순</span>
-            </div>
-          </div>
-        </div>
+            </span>
+          </span>
+        </span>
         {documents && (
           <div className='grid-container'>
           {documents.map((document) => (
