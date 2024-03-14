@@ -20,6 +20,31 @@
   padding-bottom: 10px;
 }
 
+.item-0 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 20px;
+  margin-top: 30px;
+  gap: 20px;
+}
+
+.text인천대 {
+  font-family: Inter;
+  font-size: 30px;
+  font-weight: 500;
+  color: #0E4D9D;
+}
+
+.text공지사항 {
+  font-family: Inter;
+  font-size: 30px;
+  font-weight: 800;
+  color: #0E4D9D;
+
+  margin-left: 20px;
+}
+
 .notice-category {
   display: flex;
   flex-direction: column;
@@ -50,6 +75,11 @@
   font-weight: 700;
   color: #7AA7E5;
   text-align: center;
+}
+
+.img-container {
+  display: flex;
+  justify-content: center;
 }
 
 .hline {

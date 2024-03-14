@@ -1,8 +1,8 @@
-import styled from 'styled-components';
-import logoImg from "../../resource/assets/logo.png"
+import 횃불Logo from "../../resource/assets/횃불-logo.svg"
 import getNotices from '../../utils/getNotices';
 import { useEffect, useState } from 'react';
 import './noticeitems.css';
+import Homepage횃불Img from '../../resource/assets/homepage-횃불-img.svg';
  
 interface Notice {
     id: number;
@@ -23,7 +23,7 @@ export default function NoticeItems() {
     const updateItemsToShow = () => {
         const containerWidth = document.querySelector('.items-container').offsetWidth;
         const itemsByWidth = Math.floor(containerWidth / itemWidth);
-        setItemsToShow(itemsByWidth);
+        setItemsToShow(itemsByWidth-1);
     }
 
     const goPrevious = () => {
@@ -51,6 +51,19 @@ export default function NoticeItems() {
     return (
         <div className='slider-container'>
             <div className='items-container'>
+                <div className='item' onClick={() => window.open('https://www.inu.ac.kr/inu/1534/subview.do', '_blank')}>
+                    <div className='item-0'>
+                        <span>
+                            <span className='text인천대'>인천대</span>
+                            <div className='category-underbar'></div>
+                        </span>
+                        <img src={횃불Logo} />
+                    </div>
+                    <div>
+                        <div className='text공지사항'>공지사항</div>
+
+                    </div>
+                </div>
                 {notices.slice(currentIndex, currentIndex + itemsToShow).map((notice, index) => (
                     <div key={index} className='item' onClick={() => window.open('https://'+ notice.url, '_blank')}>
                     <div className='card-1'>
@@ -64,6 +77,7 @@ export default function NoticeItems() {
                     </div>
                 ))}
             </div>
+            <div className='img-container'><img src={Homepage횃불Img} /></div>
             <div className='hline' />
             <div className='PreviousNextContainer'>
                 <div className='PreviousNext' onClick={goPrevious}><h2>← 이전</h2></div>
