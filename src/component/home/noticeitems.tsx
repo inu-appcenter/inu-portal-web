@@ -52,7 +52,7 @@ export default function NoticeItems() {
         <div className='slider-container'>
             <div className='items-container'>
                 {notices.slice(currentIndex, currentIndex + itemsToShow).map((notice, index) => (
-                    <div key={index} className='item'>
+                    <div key={index} className='item' onClick={() => window.open('https://'+ notice.url, '_blank')}>
                     <div className='card-1'>
                       <div className='notice-category'>
                         <div className='category-text'>{notice.category}</div>
