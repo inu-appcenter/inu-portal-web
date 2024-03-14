@@ -1,5 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
-
+import cursorImage from '../assets/cursor.png';
 
 const CommonStyle = createGlobalStyle`
   //이 안에 전체 프로젝트에 적용될 css를 작성하면 됩니다~!
@@ -13,6 +13,7 @@ const CommonStyle = createGlobalStyle`
     -ms-overflow-style: none;
     height:100vh;
     overflow: hidden;
+    cursor: url(${cursorImage}), auto;
  }
  
 

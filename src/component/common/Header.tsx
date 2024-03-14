@@ -19,11 +19,11 @@ export default function Headerbar() {
         <React.Fragment>
             <Header>
                 {email ? (
-                    <> <div style={{ paddingRight: '26px' }}>
+                    <> 
                         <LoginInfo>{email}</LoginInfo>
                         <span> </span>
                         <span onClick={handleLogout} className='login'>로그아웃</span>
-                        </div>
+                       
                     </>
                 ) : (
                     <Link to='/login' className='login'>로그인</Link>
@@ -52,7 +52,9 @@ const Header = styled.header`
         color: #FFFFFF;
         text-decoration: none;
         cursor: pointer;
+        margin-right: 20px;
     }
+
 `;
 
 const LoginInfo = styled.span`
