@@ -54,8 +54,8 @@ const TipWrapper = styled.div`
         justify-content: space-between;
 
         height: 46px;
-
-        background-color: #d9d9d9;
+        border-radius: 10px;
+        background: linear-gradient(90deg, rgba(156, 175, 226, 0.7) 0%, rgba(181, 197, 242, 0.7) 50%, rgba(156, 175, 226, 0.7) 100%);
 
         padding-left: 8px;
         padding-right: 8px;
