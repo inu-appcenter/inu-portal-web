@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import getPostsImages from '../../../utils/getPostsImages';
+import './postcontent.css';
 
 interface PostContentProps {
   id: number;
-  writer: string;
   content: string;
   imageCount: number;
 }
 
-export default function PostContent({ id, writer, content, imageCount }: PostContentProps) {
+export default function PostContent({ id, content, imageCount }: PostContentProps) {
   const [images, setImages] = useState<string[]>([]);
 
   useEffect(() => {
@@ -32,11 +32,12 @@ export default function PostContent({ id, writer, content, imageCount }: PostCon
   return (
     <>
       <div className='post-contents'>
-        <h3>{writer}</h3>
-        <div className='contents'>{content}</div>
+        <div className='contents-img-container'>
         {images.map((image, index) => (
-          <img key={index} src={image} alt={`Image ${index + 1}`} />
+          <img className='contents-img' key={index} src={image} alt={`Image ${index + 1}`} />
         ))}
+        </div>
+        <div className='contents'>{content}</div>
       </div>
     </>
   );

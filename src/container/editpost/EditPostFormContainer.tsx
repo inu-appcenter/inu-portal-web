@@ -179,7 +179,7 @@ console.log(images);
           
   
           onPostUpdate();
-          navigate(`/tips/${id}`);
+          navigate(-1);
         }
       } catch (error) {
         console.error(error);

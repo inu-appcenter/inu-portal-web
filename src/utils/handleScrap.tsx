@@ -10,12 +10,12 @@ const handleScrap = async (token: string, postId: string) => {
     });
 
     console.log(response,'response');
-    if (response.status == 400) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    if (response.status == 200) {
+      const data = await response.json();
+      return data;
     }
     else {
-        const data = await response.json();
-        return data;
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
     
 

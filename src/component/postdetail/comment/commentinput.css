@@ -1,6 +1,7 @@
 .comment-input-container {
   position: absolute;
   bottom: 50px;
+  width: calc(100% - 500px);
 
   height: 56px;
   border-radius: 10px;

@@ -50,8 +50,7 @@ const TipsPageWrapper = styled.div`
   display: flex;
   flex-dicrection: row;
 
-  height: calc(100vh - 240px);
-  margin-bottom: 120px;
+  height: 100%;
 `
 const TipsCatWrapper = styled.div`
  padding: 40px;
@@ -59,6 +58,10 @@ const TipsCatWrapper = styled.div`
 
 const TipsContentWrapper = styled.div`
   flex-grow: 1;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
 `
 
 const BorderWrapper = styled.div`
@@ -66,4 +69,5 @@ const BorderWrapper = styled.div`
   border-style: solid;
   border-width: 5px 0 0 5px;
   border-color: #EAEAEA;
+  flex-grow: 1;
 `

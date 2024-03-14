@@ -2,7 +2,6 @@
 import SearchBar from '../../component/Tips/SearachBar';
 import MainTip from '../../component/home/tiplist'; // Adjust the path accordingly
 import TipTitle from '../../component/home/tiptitle';
-import TipPostBtn from '../../component/home/tippostbtn';
 import styled from 'styled-components';
 
 
@@ -16,7 +15,6 @@ export default function MainTips () {
         <SearchBar />
       </TipSearchTotalrapper>
       <MainTip />
-      <TipPostBtn/>
     </TipWrapper>
   );
 

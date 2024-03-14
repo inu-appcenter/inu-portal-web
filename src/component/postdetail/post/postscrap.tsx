@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import handleScrap from '../../../utils/handleScrap'
+import scrapEmptyImg from '../../../resource/assets/scrap-empty-img.png';
 
 interface PostScrapProps {
   scrap: number;
@@ -33,10 +34,18 @@ const PostScrap: React.FC<PostScrapProps> = ({ scrap, isScrapedProp }) => {
   };
 
   return (
-    <div className='Scraps' onClick={handleScrapClick} style={{fontSize:'45px'}}>
-    {isScraped ? '⭐️' :'☆'}
-    <span style={{fontSize:'18px'}}>{scraps}</span>
-    </div>
+    <span className='scrapContainer'>
+      <span className='scrapRectangle' onClick={handleScrapClick}>
+        <img className='UtilityImg'
+          src={isScraped?scrapEmptyImg:scrapEmptyImg}
+          alt='scrapImg'
+        />
+        <span className='UtilityText'>스크랩</span>
+      </span>
+      <span className='UtilityText'>
+        {scraps}
+      </span>
+    </span>
   );
 };
 
