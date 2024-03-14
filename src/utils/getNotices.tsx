@@ -1,8 +1,8 @@
-const getNotices = async (category: string, sort: string) => {
+const getNotices = async (category: string, sort: string, page:string) => {
   try {
     let response;
     if (category === '전체') {
-      const apiURL = `https://portal.inuappcenter.kr/api/notices?sort=${sort}`;
+      const apiURL = `https://portal.inuappcenter.kr/api/notices?sort=${sort}&page=${page}`;
       response = await fetch(apiURL, {
         method: 'GET',
         headers: {
@@ -11,7 +11,7 @@ const getNotices = async (category: string, sort: string) => {
       });
     }
     else {
-      const apiURL = `https://portal.inuappcenter.kr/api/notices?category=${category}&sort=${sort}`;
+      const apiURL = `https://portal.inuappcenter.kr/api/notices?category=${category}&sort=${sort}&page=${page}`;
       response = await fetch(apiURL, {
         method: 'GET',
         headers: {

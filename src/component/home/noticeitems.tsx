@@ -36,8 +36,8 @@ export default function NoticeItems() {
 
     useEffect(() => {
         const fetchNotices = async () => {
-            const notices = await getNotices('전체', 'date');
-            setNotices(notices);
+            const notices = await getNotices('전체', 'date', '1');
+            setNotices(notices['notices']);
         }
         fetchNotices();
         updateItemsToShow();
