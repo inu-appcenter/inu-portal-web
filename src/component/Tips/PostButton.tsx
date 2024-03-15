@@ -22,7 +22,7 @@ export default function PostBtn() {
       setOpenModal(true);
     } else {
       // 사용자가 로그인되어 있으면 글쓰기 페이지로 이동
-      navigate('/write');
+      navigate('/tips/write');
     }
   };
 
