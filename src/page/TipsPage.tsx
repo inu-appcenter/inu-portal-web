@@ -7,7 +7,7 @@ import PostDetail from "./PostDetailPage";
 import { useEffect, useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
 import TipsTitle from '../component/tips/TipsTitle';
-import queryString from 'query-string';
+import CreatePost from './CreatePostPage';
 import PopularPosts from '../component/Tips/PopularPosts';
 import EditPost from './EditPostPage';
 
@@ -36,6 +36,7 @@ export default function TipsPage() {
             <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
             <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
             <Route path=":id" element={<PostDetail />} />
+            <Route path='/write' element={<CreatePost />} />
             <Route path='update/:id' element={<EditPost />} />
           </Routes>
         </BorderWrapper >

@@ -11,17 +11,16 @@ const PaginationWrapper = styled.div`
     cursor: pointer;
     padding: 5px 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    font-weight: 600;
 
     &:hover {
-      background-color: #f0f0f0;
+      background-color: #7AA7E5;
+      color: #FFFFFF;
     }
   }
 
   .active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
+    color:#656565;
   }
 `;
 
