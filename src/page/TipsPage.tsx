@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
 import TipsTitle from '../component/tips/TipsTitle';
 import CreatePost from './CreatePostPage';
-import PopularPosts from '../component/Tips/PopularPosts';
+import TipsTopPosts from '../component/Tips/TipsTopPosts';
 import EditPost from './EditPostPage';
 
 
@@ -30,7 +30,7 @@ export default function TipsPage() {
       </TipsCatWrapper>
       <TipsContentWrapper>
         <TipsTitle selectedCategory={selectedCategory} />
-        <PopularPosts/>
+        <TipsTopPosts/>
         <BorderWrapper>
           <Routes>
             <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />

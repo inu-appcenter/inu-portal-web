@@ -5,7 +5,7 @@ import search from '../../utils/search';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './TipsDocuments.css'
 import Heart from '../../resource/assets/heart.png';
-import queryString from 'query-string';
+import queryString from 'query-string';  
 import Pagination from './Pagination';
 
 interface Document {
