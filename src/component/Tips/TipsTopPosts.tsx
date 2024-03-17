@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import getTopPosts from '../../utils/getTopPosts';
 import { useNavigate } from 'react-router-dom';
+import './TipsTopPosts.css';
+import image from '../../resource/assets/homepage-횃불-img.svg'
 
 interface Post {
   id: number;
@@ -11,19 +13,39 @@ interface Post {
 
 const TipsTopPostsWrapper = styled.div`
   height: 270px;
+   gap: 20px;
+  overflow-x: auto;
   display: flex;
   align-items: center;
-  justify-content: center;
   margin-right: 25px;
-  background: linear-gradient(to bottom right, #9CAFE2, #AAC9EE);
+  background: linear-gradient(to bottom, #DBEBFF 70%, #FFFFFF );
+  flex-wrap: nowrap;
+  padding-left: 30px;
 `;
 
 const PostCard = styled.div`
-  background-color: #fff;
+  width: 196px;
+  height: 140px;
+  border-radius: 20px;
   padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
+  margin: 30px;  
+ background: linear-gradient(to right, #C7DCFA 23.98%, #7AA7E5 100%);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 `;
+
+const TopPostTitle =styled.div`
+text-align: center;
+width: 194px;
+height: 29px;
+font-size: 20px;
+font-weight: 600;
+align-items: center;
+display: flex;
+justify-content: center;
+border-radius: 20px;
+background: #FFFFFF;
+position: bottom;
+`
 
 const TipsTopPosts: React.FC = () => {
   const [topPosts, setTopPosts] = useState<Post[]>([]);
@@ -50,7 +72,9 @@ const TipsTopPosts: React.FC = () => {
     <TipsTopPostsWrapper>
     {topPosts.map(post => (
       <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
-        <h3>{post.title}</h3>
+        {/*임시 이미지 */}
+        <img src={image} alt="햇불이" style={{ width: '100px', height: '100px', margin: '0 auto', display: 'felx' }} />
+        <TopPostTitle>{post.title}</TopPostTitle>
         {/* Render other post properties as needed */}
       </PostCard>
     ))}

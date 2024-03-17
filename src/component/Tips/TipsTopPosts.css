@@ -1,0 +1,12 @@
+.TopPostTitle{
+    width: 194px;
+    height: 29px;
+    font-size: 20px;
+    font-weight: 600;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    border-radius: 20px;
+    background: #FFFFFF;
+    position: bottom;
+}
