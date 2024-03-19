@@ -16,26 +16,32 @@ export default function NavItems() {
     const user = useSelector((state: loginInfo) => state.user);
     const [isOpenModal, setOpenModal] = useState<boolean>(false);
     const navigate = useNavigate();
+
     const handleToggle = (index: number) => {
         setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
     };
 
-    const handleItemClick = (index: number) => {
-        if (index === 3) {
+    const handleMyPageClick = (url: string) => {
             if(user.token == ""){
-                // alert("로그인 해주세요");
                 setOpenModal(!isOpenModal);
-                // navigate('/login');
             }
             else {
-                console.log('마이 페이지 클릭됨');
                 console.log(user.token);
-                navigate('/mypage');
+                navigate(url);
             }
 
-            
-        }
     };
+
+    const handleItemClick = (url: string) => {
+        if(user.token == ""){
+            setOpenModal(!isOpenModal);
+        }
+        else {
+            console.log(user.token);
+           window.open(url);
+        }
+
+};
 
     const closeModal = () => {
         setOpenModal(false); // 모달을 닫기 위해 상태 업데이트
@@ -48,7 +54,8 @@ export default function NavItems() {
                 <div onClick={() => {
                     handleToggle(index);
                     if (items.title === '마이 페이지') {
-                        handleItemClick(index);
+                        console.log('마이 페이지 클릭됨');
+                        handleMyPageClick('/mypage');
                     }
                     if(items.title === '메인 페이지') {
                         navigate('/home');
@@ -62,7 +69,7 @@ export default function NavItems() {
                         {toggleIndex === index &&
                             items.child &&
                             items.child.map((item, itemIndex) => (
-                                <ChildDetail key={itemIndex}>
+                                <ChildDetail key={itemIndex} onClick={() => handleItemClick(item.url)}> 
                                     {item.title}
                                 </ChildDetail>
                             ))}
