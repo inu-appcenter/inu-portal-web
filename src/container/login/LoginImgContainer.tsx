@@ -12,7 +12,7 @@ export default function LoginImg () {
 }
 
 const LoginImageWrapper = styled.div`
-    background-color: #0E4D9D;
+    background: linear-gradient(90deg, #C6D8F3 0%, #91A7E3 100%);
     border-radius: 40px 0px 0px 0px;
     height: 100%;
     width: 769px;

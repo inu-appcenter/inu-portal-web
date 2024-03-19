@@ -65,7 +65,7 @@ export default function LoginInput() {
         />
         <img src={loginUserImg} alt='loginUserImg'></img>
       </div>
-        <div className="line"></div>
+        <div className="login-input-line"></div>
 
       <div className='div-input'>
         <input
@@ -78,7 +78,7 @@ export default function LoginInput() {
         />
         <img src={loginPasswordImg} alt='loginPasswordImg'></img>
       </div>
-      <div className="line"></div>
+      <div className="login-input-line"></div>
 
       <div className='LoginClickButton' onClick={handleLoginClick}>로그인</div>
     </>

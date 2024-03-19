@@ -9,7 +9,7 @@
 
   font-family: Inter;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 24px;
   letter-spacing: 0em;
   text-align: left;
@@ -17,10 +17,11 @@
   border: 0;
 }
 
-.line {
+.login-input-line {
+  height: 0px;
   margin-top: 5px;
-  margin-bottom: 20px;
-  border: 1px solid #969696
+  margin-bottom: 40px;
+  border-top: 1px solid #969696
 }
 
 .LoginClickButton {
@@ -37,6 +38,7 @@
   font-family: Inter;
   font-size: 25px;
   font-weight: 600;
-  color: #FFFFFF;
+  background: linear-gradient(90deg, rgba(156, 175, 226, 0.7) 0%, rgba(181, 197, 242, 0.7) 55%, rgba(156, 175, 226, 0.7) 100%);
+  color: white;
   cursor: pointer;
 }

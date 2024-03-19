@@ -11,7 +11,7 @@ export default function RegisterTitle() {
 const RegisterInputText = styled.div`
   font-family: Inter;
   font-size: 40px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 48px;
   letter-spacing: 0em;
   text-align: left;

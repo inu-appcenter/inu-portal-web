@@ -1,6 +1,7 @@
 interface RegisterData {
   email: string,
   password: string
+  nickname: string;
 }
 
 const registerUser = async (data: RegisterData): Promise<string |void> => {

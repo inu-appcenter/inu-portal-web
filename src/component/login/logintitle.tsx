@@ -11,11 +11,9 @@ export default function LoginTitle() {
 const LoginInputText = styled.div`
   font-family: Inter;
   font-size: 40px;
-  font-weight: 500;
-  line-height: 48px;
-  letter-spacing: 0em;
+  font-weight: 400;
   text-align: left;
   
   color: #0E4D9D;
-  margin-bottom: 20px;
+  margin-bottom: 50px;
 `

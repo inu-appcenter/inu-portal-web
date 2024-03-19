@@ -79,13 +79,13 @@ export default function RegisterInput() {
   switch (verificationStatus) {
     case "codeVerified":
       return (
-        <div>
+        <div className='register-input-wrapper'>
           <div className='div-input'>
             <input
               className='register-input' type="email" value={email} readOnly />
               <img src={loginUserImg} alt='loginUserImg'></img>
           </div>
-          <div className='line'></div>
+          <div className='register-input-line'></div>
           <div className='div-input'>
             <input
               className='register-input'
@@ -96,7 +96,7 @@ export default function RegisterInput() {
             />
             <img src={loginPasswordImg} alt='loginPasswordImg'></img>
           </div>
-          <div className='line'></div>
+          <div className='register-input-line'></div>
           <div className='div-input'>
             <input
               className='register-input'
@@ -107,7 +107,7 @@ export default function RegisterInput() {
             />
             <img src={loginPasswordImg} alt='loginPasswordImg'></img>
           </div>
-          <div className='line'></div>
+          <div className='register-input-line'></div>
           <div className='div-input'>
             <input
               className='register-input'
@@ -117,13 +117,13 @@ export default function RegisterInput() {
               placeholder="닉네임 입력"
             />
           </div>
-          <div className='line'></div>
+          <div className='register-input-line'></div>
           <div className='RegisterClickButton' onClick={handleRegister}>가입하기</div>
         </div>
       );
     case "emailVerified":
       return (
-        <div>
+        <div className='register-input-wrapper'>
           <div className='div-input'>
             <input
               className='register-input'
@@ -133,14 +133,14 @@ export default function RegisterInput() {
               placeholder="인증번호 입력"
             />
           </div>
-          <div className='line'></div>
+          <div className='register-input-line'></div>
           <div className='RegisterClickButton' onClick={handleVerifyCode}>인증번호 확인</div>
         </div>
       );
     case "notVerified":
     default:
       return (
-        <div>
+        <div className='register-input-wrapper'>
           <div className='div-input'>
             <input
               className='register-input'
@@ -149,9 +149,9 @@ export default function RegisterInput() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="학교 이메일"
             />
-            <img src={loginUserImg} alt='loginUserImg'></img>
+            {/* <img src={loginUserImg} alt='loginUserImg'></img> */}
           </div>
-          <div className='line'></div>
+          <div className='register-input-line'></div>
           <div className='RegisterClickButton' onClick={handleVerifyEmail}>인증하기</div>
         </div>
       );
