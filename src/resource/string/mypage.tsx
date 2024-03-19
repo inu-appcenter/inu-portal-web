@@ -26,3 +26,4 @@ export const MypageList = [
     }
 ]
 
+export const MyPageCategory =["스크랩", "내 활동","비밀번호 변경","개인정보 수정","회원탈퇴"];
