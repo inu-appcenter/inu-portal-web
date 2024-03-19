@@ -41,7 +41,6 @@ export default function MainTip() {
             {topPosts.map((topPost) => (
                 <div className="article" key={topPost.id} onClick={() => handlePostClick(topPost.id)}>
                     <h3>{topPost.title}</h3>
-                    <p>{topPost.createDate}</p>
                 </div>
             ))}
             <TotalTip onClick={goToAllTips}>(임시)Tip 전체</TotalTip>
@@ -60,7 +59,7 @@ const TipWrapper = styled.div`
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
 
         height: 46px;
         border-radius: 10px;
