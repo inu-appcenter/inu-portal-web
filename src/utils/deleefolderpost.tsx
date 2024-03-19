@@ -1,6 +1,6 @@
 const deleteFolderPost = async (postId:number,folderId: number) => {
     console.log(postId,"aa",folderId,"bbb");
-    const apiURL = `https://portal.inuappcenter.kr/api/folders/post`;
+    const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}/posts`;
 
     try {
       const response = await fetch(apiURL, {
@@ -9,7 +9,6 @@ const deleteFolderPost = async (postId:number,folderId: number) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            'folderId': folderId,
             'postId': [postId]
         })
       });

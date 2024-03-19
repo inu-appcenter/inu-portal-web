@@ -11,7 +11,7 @@ const getFolderPost = async (folderId: number) => {
       console.log(response,'response');
       if (response.status === 200) {
         const data = await response.json();
-        return data.data;
+        return data.data.posts;
       } else {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }

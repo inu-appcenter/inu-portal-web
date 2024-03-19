@@ -1,5 +1,5 @@
-const getUserLikePost = async (token: string) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/members/likes`;
+const getUserLikePost = async (token: string,sort:string) => {
+  const apiURL = sort ==='date'?`https://portal.inuappcenter.kr/api/members/likes`:`https://portal.inuappcenter.kr/api/members/likes?sort=${sort}`;  
     try {
       const response = await fetch(apiURL, {
         method: 'GET',

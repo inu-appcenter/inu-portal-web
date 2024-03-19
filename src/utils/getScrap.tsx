@@ -1,6 +1,6 @@
-const getScrapInfo = async (token:string) => {
+const getScrap = async (token:string,sort:string,page:string) => {
     console.log(token,".");
-    const apiURL = `https://portal.inuappcenter.kr/api/members/scraps`;
+    const apiURL = `https://portal.inuappcenter.kr/api/members/scraps?sort=${sort}&page=${page}`;
     try {
         const response = await fetch(apiURL, {
             method: 'GET',
@@ -11,12 +11,13 @@ const getScrapInfo = async (token:string) => {
         });
 
         console.log(response, 'response');
-        if (response.status == 400) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        } else {
+        if (response.status == 200) {
             const data = await response.json();
             console.log(data);
-            return data;
+            return data['data'];  // data['msg']가 결과, data['data']가 글 목록
+          }
+          else {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
 
@@ -26,4 +27,4 @@ const getScrapInfo = async (token:string) => {
     }
 };
 
-export default getScrapInfo;
+export default getScrap;

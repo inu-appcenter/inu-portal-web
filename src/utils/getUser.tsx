@@ -1,29 +1,28 @@
-const getUser = async (token: string) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/members`;
-    try {
-      const response = await fetch(apiURL, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Auth: token} : {})
-        }
-      });
-  
-      console.log(response,'response');
-      if (response.status == 200) {
-        const data = await response.json();
-        console.log(data);
-        return data.data.nickname;
-      }
-      else {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      
-  
-    } catch (error) {
-      console.log("에러?", error);
-      throw error;
+const getUser = async (token: string): Promise<string> => {
+  try {
+    const response = await fetch('https://portal.inuappcenter.kr/api/members', {
+      method: 'GET',
+      headers: {
+        Auth: token,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.status === 200) {
+      const userData = await response.json();
+
+      return userData.data;
+    } else if (response.status === 404) {
+      console.error('존재하지 않는 회원입니다.');
+      throw new Error('존재하지 않는 회원입니다.');
+    } else {
+      console.error('회원 정보 가져오기 실패:', response.status);
+      throw new Error(`HTTP 에러! 상태 코드: ${response.status}`);
     }
-  };
-  
-  export default getUser;
+  } catch (error) {
+    console.error('에러가 발생했습니다:', error);
+    throw error;
+  }
+};
+
+export default getUser;

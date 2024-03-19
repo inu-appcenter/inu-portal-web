@@ -1,13 +1,14 @@
 
 const CreateFolder= async (token:string,foldername:string) => {
   try {
+    const data={"name":foldername};
     const response = await fetch('https://portal.inuappcenter.kr/api/folders', {
       method: 'POST',
       headers: {
         'Auth':token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(foldername),
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {

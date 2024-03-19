@@ -1,5 +1,5 @@
-const getUserPost = async (token: string) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/members/posts`;
+const getUserPost = async (token: string,sort:string) => {
+  const apiURL = sort ==='date'?`https://portal.inuappcenter.kr/api/members/posts`:`https://portal.inuappcenter.kr/api/members/posts?sort=${sort}`;
     try {
       const response = await fetch(apiURL, {
         method: 'GET',
