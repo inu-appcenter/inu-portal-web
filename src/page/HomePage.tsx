@@ -12,7 +12,7 @@ export default function HomePage() {
     
     return (
         <HomePageWrapper>
-            <Image/>
+            {/*<Image/>*/}
             <MainWrapper>
                 <Tip/>
                 <Calendar/>

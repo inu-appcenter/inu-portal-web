@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
+import VVector from '../../resource/assets/V-Vector.svg';
 
 import LoginModal from './LoginModal.tsx';
 interface loginInfo {
@@ -54,7 +55,10 @@ export default function NavItems() {
                     }
                 }}>
                     {items.title}
+                    {items.child && (
                     <div className={toggleIndex === index ? 'child toggle' : 'child'}>
+                        <img className='v-vector' src={VVector}/>
+                        <div className='line-vector'></div>
                         {toggleIndex === index &&
                             items.child &&
                             items.child.map((item, itemIndex) => (
@@ -63,6 +67,7 @@ export default function NavItems() {
                                 </ChildDetail>
                             ))}
                     </div>
+                    )}
                 </div>
             </ItemWrapper>
         ))}
@@ -72,27 +77,56 @@ export default function NavItems() {
 }
 
 const ItemWrapper = styled.div`
+    position: relative;
     font-weight: 700;
     font-size: 1rem;
     line-height: 2rem;
+        
+    font-family: Inter;
+    font-size: 17px;
+    font-weight: 300;
 
     .child {
         width: 5rem;
         position: absolute;
-        top:4.6rem;
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
+        left: 50%;
+        transform: translateX(-50%);
+
+        top: 2.5rem;
         transition: opacity 0.5s, visibility 0.5s;
         visibility: hidden;
         opacity: 0;
+
     }
 
     .child.toggle {
         visibility: visible;
         opacity: 1;
+        z-index: 10;
+
+
+        width: 187px;
+        padding: 20px;
+        border-radius: 10px;
+        
+        background: linear-gradient(180deg, #8DA6EC 4.5%, #9CAFE2 54%, #7590D9 100%);
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
     }
 
+    .v-vector {
+        height: 8px;
+        width: 14.6px;
+    }
+
+    .line-vector {
+        height: 0px;
+        width: 179px;
+        border: 1px solid white;
+    }
 `;
 
 const Items = styled.div`
@@ -107,7 +141,8 @@ const Items = styled.div`
 `;
 
 const ChildDetail = styled.div`
-width: 8rem;
-    background-color: #0000007d;
-    color:white;
+    font-family: Inter;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
 `

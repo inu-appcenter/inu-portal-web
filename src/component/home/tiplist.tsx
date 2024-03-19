@@ -43,7 +43,10 @@ export default function MainTip() {
                     <h3>{topPost.title}</h3>
                 </div>
             ))}
-            <TotalTip onClick={goToAllTips}>(임시)Tip 전체</TotalTip>
+            <TotalTip onClick={goToAllTips}>
+                <span className='TotalTip-text'>전체보기</span>
+                <span className='TotalTip-text'>+</span>
+            </TotalTip>
         </TipWrapper>
     )
 }
@@ -71,13 +74,22 @@ const TipWrapper = styled.div`
     }
 `
 
-const TotalTip = styled.button`
-    height: 46px;
-    background-color: #0E4D9D;
-    padding-left: 8px;
-    padding-right: 8px;
-    border:none;
-    color:white;
-    font-size: 12px;
-    font-weight: 800;
+const TotalTip = styled.span`
+    height: 26px;
+    width: 81px;
+    border-radius: 5px;
+    border: 1px solid #656565;
+
+    margin-left: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    .TotalTip-text {
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: 300;
+    }
+
 `

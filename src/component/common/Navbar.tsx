@@ -2,13 +2,14 @@ import styled from 'styled-components';
 import NavItems from './NavItem';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import inuLogoImg from '../../resource/assets/inu-logo-img.svg';
 
 export default function Navbar() {
     const navigate = useNavigate()
     return (
         <React.Fragment>
             <Nav>
-                <img onClick={() => {navigate('/')}} className= "logo" src="https://www.inu.ac.kr/sites/inu/images/common/logo-header.png" alt="INU logo" />
+                <img onClick={() => {navigate('/')}} className= "logo" src={inuLogoImg} alt="INU logo" />
                 <NavItems/>
             </Nav>
         </React.Fragment>
