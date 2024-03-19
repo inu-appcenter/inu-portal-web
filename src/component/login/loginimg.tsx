@@ -1,13 +1,11 @@
-import styled from "styled-components";
+import './loginimg.css';
+import LoginPageImg from '../../resource/assets/login-page-img.png';
 
 export default function LoginImage() {
     return (
         <>
-          <LoginImageTitle>홈페이지 활용법 간단하게 이미지와 함께 배치</LoginImageTitle>
+          <div className='login-page-intip-text'>INTIP</div>
+          <img className='login-page-img' src={LoginPageImg}/>
         </>
     )
 }
-
-const LoginImageTitle = styled.div`
-    
-`

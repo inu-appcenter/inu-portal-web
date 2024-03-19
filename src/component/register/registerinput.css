@@ -1,3 +1,10 @@
+.register-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  justify-content: center;
+}
+
 .div-input {
   display:flex;
   flex-direction: row;
@@ -9,7 +16,7 @@
 
   font-family: Inter;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 24px;
   letter-spacing: 0em;
   text-align: left;
@@ -17,10 +24,10 @@
   border: 0;
 }
 
-.line {
+.register-input-line {
   margin-top: 5px;
   margin-bottom: 20px;
-  border: 1px solid #969696
+  border-top: 1px solid #969696
 }
 
 .RegisterClickButton {
@@ -28,7 +35,7 @@
   top: 578px;
   left: 879px;
   border-radius: 8px;
-  background: #FCAF15;
+  background: linear-gradient(90deg, rgba(156, 175, 226, 0.7) 0%, rgba(181, 197, 242, 0.7) 55%, rgba(156, 175, 226, 0.7) 100%);
 
   display: flex;
   justify-content: center;

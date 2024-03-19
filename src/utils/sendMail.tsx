@@ -1,6 +1,6 @@
 const sendMail = async (email: string) => {
   try {
-    const apiURL = `https://portal.inuappcenter.kr/api/members/send-mails`;
+    const apiURL = `https://portal.inuappcenter.kr/api/members/code`;
     const response = await fetch(apiURL, {
       method: 'POST',
       headers: {
