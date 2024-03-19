@@ -39,8 +39,7 @@ export default function MyPage() {
 const MyPageWrapper = styled.div`
     display: flex;
     flex-direction: row;
-    height: calc(100vh - 240px);
-    margin-bottom: 120px;
+    height: calc(100vh - 140px);
 `;
 
 const MyPageCatWrapper = styled.div`
@@ -49,10 +48,11 @@ const MyPageCatWrapper = styled.div`
 
 const MyPageContentWrapper = styled.div`
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 `
 
 const BorderWrapper = styled.div`
-  margin-right: 25px;
-  background: linear-gradient(180deg, #b9c9fc 0%, #eaeaeb 100%);
-  height: 100%;
+ background: linear-gradient(to bottom, #DBEBFF 70%, #FFFFFF );
+  flex-grow: 1;
 `
