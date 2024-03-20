@@ -1,10 +1,9 @@
 export const navBarList = [
     {
-        title:'메인 페이지',
-    },
-    {
         title:'학교 홈페이지',
         child:[
+            {title: '인천대학교 홈페이지', url:'https://www.inu.ac.kr/inu/index.do?epTicket=LOG'},
+            {title: '이러닝 사이트', url:'https://cyber.inu.ac.kr/login.php'},
             {title: '포탈 바로가기', url:'https://portal.inu.ac.kr/'},
             {title: 'OCU 바로가기', url: 'https://cons.ocu.ac.kr/'},
             {title: '수강신청', url:'https://sugang.inu.ac.kr/'},
