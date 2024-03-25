@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import getTopPosts from '../../utils/getTopPosts';
 import { useNavigate } from 'react-router-dom';
-import image from '../../resource/assets/homepage-횃불-img.svg'
+import getNoticesTop from '../../utils/getNoticesTop';
 
-interface Post {
-  id: number;
-  title: string;
-  // Add more properties as needed
+ 
+interface Notice {
+    id: number;
+    category: string;
+    title: string;
+    writer: string;
+    date: string;
+    view: number;
+    url: string;
 }
 
-const TipsTopPostsWrapper = styled.div`
+
+const NoticesTopPostsWrapper = styled.div`
   height: 270px;
   gap: 30px;
   overflow-x: scroll;
@@ -47,14 +52,14 @@ position: bottom;
 padding: 2px 0 ;
 `
 
-const TipsTopPosts: React.FC = () => {
-  const [topPosts, setTopPosts] = useState<Post[]>([]);
-  const navigate = useNavigate();
+const NoticesTop: React.FC = () => {
+    const [topPosts, setTopPosts] = useState<Notice[]>([]);
+    const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
-        const posts = await getTopPosts();
+        const posts = await getNoticesTop();
         setTopPosts(posts);
       } catch (error) {
         console.error('Error fetching top posts:', error);
@@ -64,23 +69,21 @@ const TipsTopPosts: React.FC = () => {
     fetchTopPosts();
   }, []);
 
-  const handlePostClick = (postId: number) => {
-    navigate(`/tips/${postId}`);
+  const handlePostClick = (url: string) => { // 매개변수로 url을 추가하여 해당 URL을 사용할 수 있도록 함
+    window.open('https://' + url, '_blank');
   };
 
   return (
-    <TipsTopPostsWrapper>
+    <NoticesTopPostsWrapper>
     {topPosts.map(post => (
-      <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
-        {/*임시 이미지 */}
-        <img src={image} alt="햇불이" style={{ width: '110px', height: '110px', margin: '0 auto', display: 'flex' }} />
+       <PostCard key={post.id} onClick={() => handlePostClick(post.url)}>
         <TopPostTitle>{post.title}</TopPostTitle>
         {/* Render other post properties as needed */}
       </PostCard>
     ))}
     
-  </TipsTopPostsWrapper>
+  </NoticesTopPostsWrapper>
   );
 };
 
-export default TipsTopPosts;
+export default NoticesTop;

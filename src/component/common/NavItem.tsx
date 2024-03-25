@@ -139,7 +139,7 @@ const Items = styled.div`
   display: flex;
   max-width: 500px;
   -webkit-box-pack: justify;
-  justify-content: space-between;
+  justify-content: space-around;
   -webkit-box-align: center;
   align-items: center;
   -webkit-box-flex: 1;

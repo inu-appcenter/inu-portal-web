@@ -10,6 +10,7 @@ import TipsTitle from '../component/tips/TipsTitle';
 import CreatePost from './CreatePostPage';
 import TipsTopPosts from '../component/Tips/TipsTopPosts';
 import EditPost from './EditPostPage';
+import NoticesTop from '../component/Tips/NoticesTop';
 
 
 export default function TipsPage() {
@@ -33,7 +34,7 @@ export default function TipsPage() {
       </TipsCatWrapper>
       <TipsContentWrapper>
         <TipsTitle selectedCategory={selectedCategory} />
-        <TipsTopPosts/>
+        {selectedCategory === '공지사항' ? <NoticesTop /> : <TipsTopPosts />}
         <BorderWrapper>
           <Routes>
             <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
