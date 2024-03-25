@@ -7,6 +7,7 @@ import './TipsDocuments.css'
 import Heart from '../../resource/assets/heart.png';
 import queryString from 'query-string';  
 import Pagination from './Pagination';
+import getNotices from '../../utils/getNotices';
 
 interface Document {
   id: number;
@@ -18,6 +19,8 @@ interface Document {
   scrap: number;
   createDate: string;
   modifiedDate: string;
+
+  url: string;
 }
 
 interface TipsDocumentsProps {
@@ -40,8 +43,14 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
         const query = queryString.parse(location.search).query;
         console.log('query sort page : ', query, sort, page);
         const docs = await search(query, sort, page);
-        setDocuments(docs['posts']);
         setTotalPages(docs['pages']);
+        setDocuments(docs['posts']);
+      }
+      else if (selectedCategory == '공지사항') {
+        const docs = await getNotices('전체', sort, page);
+        setTotalPages(docs['pages']);
+        setDocuments(docs['notices']);
+        console.log(documents);
       }
       else if (selectedCategory) {
         console.log('sort page : ', sort, page);
@@ -54,8 +63,13 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
     fetchDocuments();
   }, [selectedCategory, location.search, sort, page]);
 
-  const handleDocumentClick = (id: number) => {
-    navigate(`/tips/${id}`);
+  const handleDocumentClick = (id: number, url: string) => {
+    if (selectedCategory == '공지사항') {
+      window.open('https://'+ url, '_blank');
+    }
+    else {
+      navigate(`/tips/${id}`);
+    }
   };
 
   return (
@@ -73,7 +87,7 @@ export default function TipsDocuments({ selectedCategory, sort, page, setSort, s
         {documents && (
           <div className='grid-container'>
           {documents.map((document) => (
-              <div className='document-card' key={document.id} onClick={() => handleDocumentClick(document.id)}>
+              <div className='document-card' key={document.id} onClick={() => handleDocumentClick(document.id, document.url)}>
                 <div className='card-1'>
                   <div className='document-category'>
                     <div className='category-text'>{document.category}</div>

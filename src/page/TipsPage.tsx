@@ -22,6 +22,9 @@ export default function TipsPage() {
     if (location.pathname.includes('/tips/search')) {
       setSelectedCategory('검색결과');
     }
+    else if (location.pathname.includes('/tips/notice')) {
+      setSelectedCategory('공지사항');
+    }
   })
   return (
     <TipsPageWrapper>
@@ -35,6 +38,7 @@ export default function TipsPage() {
           <Routes>
             <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
             <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route path='notice' element={<TipsDocuments selectedCategory={'공지사항'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
             <Route path=":id" element={<PostDetail />} />
             <Route path='/write' element={<CreatePost />} />
             <Route path='update/:id' element={<EditPost />} />

@@ -3,6 +3,7 @@ import getNotices from '../../utils/getNotices';
 import { useEffect, useState } from 'react';
 import './noticeitems.css';
 import Homepage횃불Img from '../../resource/assets/homepage-횃불-img.svg';
+import { useNavigate } from "react-router-dom";
  
 interface Notice {
     id: number;
@@ -19,6 +20,7 @@ export default function NoticeItems() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const itemWidth = 214+5+5 + 10; // ./noticeitems.css에서 item의 width, padding-left, padding-right 더하고 설정하고 싶은 gap 더하기
     const [itemsToShow, setItemsToShow] = useState(5);
+    const navigate = useNavigate()
 
     const updateItemsToShow = () => {
         const containerWidth = document.querySelector('.items-container').offsetWidth;
@@ -51,7 +53,7 @@ export default function NoticeItems() {
     return (
         <div className='slider-container'>
             <div className='items-container'>
-                <div className='item' onClick={() => window.open('https://www.inu.ac.kr/inu/1534/subview.do', '_blank')}>
+                <div className='item' onClick={() => /*window.open('https://www.inu.ac.kr/inu/1534/subview.do', '_blank')*/ navigate('/tips/notice')}>
                     <div className='item-0'>
                         <span>
                             <span className='text인천대'>인천대</span>

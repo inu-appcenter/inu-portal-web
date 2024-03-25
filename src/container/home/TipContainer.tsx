@@ -1,5 +1,5 @@
 //TipContainer.tsx
-import SearchBar from '../../component/Tips/SearachBar';
+import SearchBar from '../../component/Tips/SearchBar';
 import MainTip from '../../component/home/tiplist'; // Adjust the path accordingly
 import TipTitle from '../../component/home/tiptitle';
 import styled from 'styled-components';
