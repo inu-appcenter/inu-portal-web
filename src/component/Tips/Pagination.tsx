@@ -10,7 +10,6 @@ const PaginationWrapper = styled.div`
     margin: 0 5px;
     cursor: pointer;
     padding: 5px 10px;
-    border: 1px solid #ccc;
     font-weight: 600;
 
     &:hover {
@@ -20,7 +19,8 @@ const PaginationWrapper = styled.div`
   }
 
   .active {
-    color:#656565;
+    color: #FFFFFF;
+    background-color: #7AA7E5;
   }
 `;
 
