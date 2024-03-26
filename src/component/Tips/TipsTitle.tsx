@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import './TipsTitle.css';
 import SearchBar from './SearchBar';
 import { useNavigate } from 'react-router-dom';
+import MyPageUserInfo from '../mypage/common/MyPageUserInfo';
 
 interface TipsTitleProps {
   selectedCategory: string;
@@ -24,11 +25,14 @@ const TipsTitle: React.FC<TipsTitleProps> = ({ selectedCategory }) => {
 
   return (
     <TipsTitleWrapper>
-    <span onClick={() => navigate('/tips')}>
-      <span className='tips-title-text-1'>{selectedCategory}</span>
-      <span className='tips-title-text-2'> {getSecondaryText()}</span>
-    </span>
-    <SearchBar></SearchBar>
+      <span className='tips-title-text' onClick={() => navigate('/tips')}>
+        <span className='tips-title-text-1'>{selectedCategory}</span>
+        <span className='tips-title-text-2'> {getSecondaryText()}</span>
+      </span>
+      <SearchBarUserInfoWrapper>
+        <SearchBar />
+        <MyPageUserInfo />
+      </SearchBarUserInfoWrapper>
     </TipsTitleWrapper>
   );
 };
@@ -40,4 +44,13 @@ const TipsTitleWrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 15px;
+  padding-right: 30px;
+  gap: 20px;
 `;
+
+const SearchBarUserInfoWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+`
