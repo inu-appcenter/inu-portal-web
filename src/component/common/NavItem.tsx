@@ -4,9 +4,8 @@ import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import VVector from '../../resource/assets/V-Vector.svg';
-import round from '../../resource/assets/round.svg';
-
 import LoginModal from './LoginModal.tsx';
+
 interface loginInfo {
   user: {
     token: string;
@@ -16,12 +15,15 @@ export default function NavItems() {
   const [toggleIndex, setToggleIndex] = useState<number | null>(null);
   const user = useSelector((state: loginInfo) => state.user);
   const [isOpenModal, setOpenModal] = useState<boolean>(false);
+  const [selectedSubItems, setSelectedSubItems] = useState<any[]>([]);
   const navigate = useNavigate();
+
 
   const handleToggle = (index: number) => {
     setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
+  
   const handleMyPageClick = (url: string) => {
     if (user.token == '') {
       setOpenModal(!isOpenModal);
@@ -35,8 +37,16 @@ export default function NavItems() {
     window.open(url);
   };
 
+  const handleSubItemClick = (url: string) => {
+    console.log('클릭');
+    window.open(url);
+
+  };
+
+
   const closeModal = () => {
     setOpenModal(false); // 모달을 닫기 위해 상태 업데이트
+    setSelectedSubItems([]);
   };
 
   return (
@@ -62,9 +72,16 @@ export default function NavItems() {
                   items.child.map((item, itemIndex) => (
                     <ChildDetail
                       key={itemIndex}
-                      onClick={() => handleItemClick(item.url)}
+                      onClick={() => {
+                        // subItems 속성이 있는지 확인
+                        if ('subItems' in item) {
+                          
+                          handleSubItemClick(subItems.url);
+                        } else {
+                          handleItemClick(item.url);
+                        }
+                      }}
                     >
-                      {/* <img className='round' src={round} /> */}
                       {item.title}
                     </ChildDetail>
                   ))}
@@ -112,8 +129,8 @@ const ItemWrapper = styled.div`
     opacity: 1;
     z-index: 10;
     margin: 10px 0;
-    width: 187px;
-    padding: 20px;
+    width: 195px;
+    padding: 30px 20px;
     border-radius: 10px;
 
     background: linear-gradient(
