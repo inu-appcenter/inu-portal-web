@@ -27,6 +27,8 @@ export default function MyPageUserInfo()  {
 }
 
 const InfoWrapper = styled.div`
+flex-shrink: 0;
+
 display: flex;
 justify-content: flex-end;
 align-items: center;
