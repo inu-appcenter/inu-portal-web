@@ -11,6 +11,7 @@ interface loginInfo {
     token: string;
   };
 }
+
 export default function NavItems() {
   const [toggleIndex, setToggleIndex] = useState<number | null>(null);
   const user = useSelector((state: loginInfo) => state.user);
@@ -18,15 +19,13 @@ export default function NavItems() {
   const [selectedSubItems, setSelectedSubItems] = useState<any[]>([]);
   const navigate = useNavigate();
 
-
   const handleToggle = (index: number) => {
     setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
-  
   const handleMyPageClick = (url: string) => {
-    if (user.token == '') {
-      setOpenModal(!isOpenModal);
+    if (user.token === '') {
+      setOpenModal(true);
     } else {
       console.log(user.token);
       navigate(url);
@@ -37,15 +36,16 @@ export default function NavItems() {
     window.open(url);
   };
 
-  const handleSubItemClick = (url: string) => {
-    console.log('클릭');
-    window.open(url);
-
+  const handleSubItemClick = (item: any) => {
+    if (item.subItems) {
+      setSelectedSubItems(item.subItems);
+    } else {
+      window.open(item.url);
+    }
   };
 
-
   const closeModal = () => {
-    setOpenModal(false); // 모달을 닫기 위해 상태 업데이트
+    setOpenModal(false);
     setSelectedSubItems([]);
   };
 
@@ -57,43 +57,43 @@ export default function NavItems() {
             onClick={() => {
               handleToggle(index);
               if (items.title === '마이 페이지') {
-                console.log('마이 페이지 클릭됨');
                 handleMyPageClick('/mypage');
-              }
+              } 
             }}
           >
             {items.title}
-            {items.child && (
-              <div className={toggleIndex === index ? 'child toggle' : 'child'}>
+            {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && toggleIndex === index) && (
+              <div className='child toggle'>
                 <img className='v-vector' src={VVector} />
                 <div className='line-vector'></div>
-                {toggleIndex === index &&
-                  items.child &&
-                  items.child.map((item, itemIndex) => (
-                    <ChildDetail
-                      key={itemIndex}
-                      onClick={() => {
-                        // subItems 속성이 있는지 확인
-                        if ('subItems' in item) {
-                          
-                          handleSubItemClick(subItems.url);
-                        } else {
-                          handleItemClick(item.url);
-                        }
-                      }}
-                    >
-                      {item.title}
-                    </ChildDetail>
-                  ))}
+                {items.child.map((item, itemIndex) => (
+                  <ChildDetail
+                    key={itemIndex}
+                    onClick={() => handleSubItemClick(item)}
+                  >
+                    {item.title}
+                  </ChildDetail>
+                ))}
               </div>
             )}
           </div>
+          {selectedSubItems.length > 0 && (
+            <div className='child toggle'>
+              {selectedSubItems.map((subItem, subItemIndex) => (
+                <ChildDetail
+                  key={subItemIndex}
+                  onClick={() => handleItemClick(subItem.url)}
+                >
+                  {subItem.title}
+                </ChildDetail>
+              ))}
+            </div>
+          )}
         </ItemWrapper>
       ))}
       {isOpenModal && (
         <LoginModal setOpenModal={setOpenModal} closeModal={closeModal} />
-      )}{' '}
-      {/* isOpenModal 상태에 따라 모달을 렌더링 */}
+      )}
     </Items>
   );
 }
