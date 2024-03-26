@@ -1,10 +1,11 @@
-const getFolderPost = async (folderId: number) => {
+const getFolderPost = async (token:string,folderId: number) => {
     const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}`;
     try {
       const response = await fetch(apiURL, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Auth':token
         }
       });
   

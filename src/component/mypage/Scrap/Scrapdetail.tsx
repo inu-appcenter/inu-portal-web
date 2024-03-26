@@ -107,7 +107,8 @@ export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapS
 
   const handleAddClick = async (postId:number) => {
     try {
-      const response = await postInsertFolders(postId, selectedFolderIds);
+      console.log("넣기전",postId,selectedFolderIds);
+      const response = await postInsertFolders(token,postId, selectedFolderIds);
       console.log(response);
     } catch (error) {
       console.error("폴더에 추가하지 못했습니다.", error);

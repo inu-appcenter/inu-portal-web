@@ -1,6 +1,6 @@
 
 
-const postInsertFolders = async (postId:number,selectedFolderIds:number[]) => {
+const postInsertFolders = async (token:string,postId:number,selectedFolderIds:number[]) => {
 
     
     selectedFolderIds.map(async (folderId) => {
@@ -11,6 +11,7 @@ const postInsertFolders = async (postId:number,selectedFolderIds:number[]) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Auth':token
             }, 
             body: JSON.stringify({
               'postId': [postId]

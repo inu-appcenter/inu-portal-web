@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'; // React import 추가
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import deleteFolderPost from '../../../utils/deleefolderpost';
+import { useSelector } from 'react-redux';
 
 interface PostInfo {
   id: number;
@@ -14,8 +15,15 @@ interface ScrapFolderPostProps {
   folderId: number | undefined;
 }
 
+interface loginInfo {
+  user: {
+    token: string;
+  };
+}
+
 export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolderInfo, folderId }) => { 
   const [updatedPostScrapFolderInfo, setUpdatedPostScrapFolderInfo] = useState<PostInfo[]>(postScrapFolderInfo);
+  const token = useSelector((state: loginInfo) => state.user.token);
   useEffect(() => {
     setUpdatedPostScrapFolderInfo(postScrapFolderInfo);
   }, [postScrapFolderInfo]);
@@ -24,7 +32,7 @@ export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolde
   const handleRemoveClick = async (postId:number) => {
     if(folderId !== undefined) {
       try {
-        const response = await deleteFolderPost(postId, folderId);
+        const response = await deleteFolderPost(token,postId, folderId);
         if(response === 200) {
           const filteredPostScrapFolderInfo = updatedPostScrapFolderInfo.filter(item => item.id !== postId);
           setUpdatedPostScrapFolderInfo(filteredPostScrapFolderInfo);

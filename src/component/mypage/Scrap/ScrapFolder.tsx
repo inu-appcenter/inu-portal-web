@@ -71,7 +71,7 @@ export default function ScrapFolder() {
             try {
                 const newFolderPosts: PostInfo[] = [];
                 for (const folderId in folderData) {
-                    const response = await getFolderPost(Number(folderId));
+                    const response = await getFolderPost(token,Number(folderId));
                     newFolderPosts.push(...response);
                 }
                 setFolderPosts(newFolderPosts);
@@ -81,6 +81,8 @@ export default function ScrapFolder() {
         };
         fetchFolderPosts();
     }, [folderData]);
+
+
 
     const handleMakeFolder = () => {
         setOpenModal(true);
@@ -121,8 +123,10 @@ export default function ScrapFolder() {
     };
 
     const handleGetFolderPost = async (folderId: number) => {
+        console.log('클릭한 포스트아이디', folderId);
         try {
-            const response = await getFolderPost(folderId);
+            const response = await getFolderPost(token,folderId);
+            console.log("가지곤폴더에담겨있는게시글",response);
             const responseInfo: PostInfo[] = response.map((item: any) => ({
                 id: item.id,
                 title: item.title,
