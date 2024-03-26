@@ -43,6 +43,8 @@ interface ScrapDocumentsProps {
 export default function ScrapInfo({ scrapsort, page, setScrapSort, setPage }: ScrapDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [isscrap,setIsScrap] = useState(true);
+  const [isscrapfolderpost,setIsScrapFolderPost] = useState(false);
   const token = useSelector((state: loginInfo) => state.user.token);
 
 
@@ -69,7 +71,8 @@ export default function ScrapInfo({ scrapsort, page, setScrapSort, setPage }: Sc
         <ScrapTitle/>
         <ScrapFolder />
       </ScrapInfoWrapper>
-      <ScrapPost documents={documents} totalPages={totalPages} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>
+      {isscrap && 
+      <ScrapPost documents={documents} totalPages={totalPages} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>}
 
     </ScrapWrapper>
   );

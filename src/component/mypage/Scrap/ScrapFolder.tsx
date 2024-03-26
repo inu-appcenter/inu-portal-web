@@ -26,6 +26,12 @@ interface PostInfo {
     category: string;
 }
 
+// interface ScrapFolderInfoProps {
+//     setIsScrap:() => void;
+//     setIsScrapFolderPost:() => void;
+//   }
+  
+
 
 
 
@@ -41,9 +47,6 @@ export default function ScrapFolder() {
         console.log("업데이트된 폴더, 업데이트된 게시물", folderData, folderPosts,folders);
     }, [folderData, folderPosts,folders]);
 
-    // useEffect(() => {
-    //     console.log("redux0",folders);
-    // }, [folders]);
 
     useEffect(() => {
         const fetchFolders = async () => {
@@ -101,7 +104,7 @@ export default function ScrapFolder() {
 
     const handleFolderDelete = async (folderIdToDelete: number) => {
         try {
-            await deleteFolder(folderIdToDelete);
+            await deleteFolder(token,folderIdToDelete);
             setFolderData(prevData => {
                 const updatedData = { ...prevData };
                 delete updatedData[folderIdToDelete];
