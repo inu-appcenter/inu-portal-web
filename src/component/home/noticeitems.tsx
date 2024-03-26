@@ -10,7 +10,7 @@ interface Notice {
     category: string;
     title: string;
     writer: string;
-    date: string;
+    createDate: string;
     view: number;
     url: string;
 }
@@ -18,7 +18,7 @@ interface Notice {
 export default function NoticeItems() {
     const [notices, setNotices] = useState<Notice[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const itemWidth = 214+5+5 + 10; // ./noticeitems.css에서 item의 width, padding-left, padding-right 더하고 설정하고 싶은 gap 더하기
+    const itemWidth = 214+ 10; // ./noticeitems.css에서 item의 width, 설정하고 싶은 gap 더하기
     const [itemsToShow, setItemsToShow] = useState(5);
     const navigate = useNavigate()
 
@@ -63,19 +63,19 @@ export default function NoticeItems() {
                     </div>
                     <div>
                         <div className='text공지사항'>공지사항</div>
-
                     </div>
                 </div>
                 {notices.slice(currentIndex, currentIndex + itemsToShow).map((notice, index) => (
                     <div key={index} className='item' onClick={() => window.open('https://'+ notice.url, '_blank')}>
-                    <div className='card-1'>
+                    <span className='card-1'>
                       <div className='notice-category'>
                         <div className='category-text'>{notice.category}</div>
                         <div className='category-underbar'></div>
                       </div>
-                    </div>
+                    </span>
                     <div className='notice-title'>{notice.title}</div>
-                    <div className='notice-date'>{notice.date}</div>
+                    <div className='notice-date'>{notice.createDate}</div>
+
                     </div>
                 ))}
             </div>

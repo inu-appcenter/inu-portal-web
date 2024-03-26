@@ -10,10 +10,10 @@ export default function MainTips () {
 
   return (
     <TipWrapper>
-      <TipSearchTotalrapper>
+      <TipSearchTotalWrapper>
         <TipTitle/>
         <SearchBar />
-      </TipSearchTotalrapper>
+      </TipSearchTotalWrapper>
       <MainTip />
     </TipWrapper>
   );
@@ -26,13 +26,10 @@ const TipWrapper = styled.div`
     width: 50%;
 `
 
-const TipSearchTotalrapper = styled.div`
+const TipSearchTotalWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
-`
-
-
-const TipSearchWrapper = styled.div`
-  display: flex;
+  align-items: center;
+  gap: 10px;
 `
