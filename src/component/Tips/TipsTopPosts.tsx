@@ -30,6 +30,10 @@ const PostCard = styled.div`
   margin: 30px;  
   background: linear-gradient(90deg, #C7DCFA 21.17%, #7AA7E5 100%);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out; /* 호버 효과를 위한 변형 트랜지션 */
+  &:hover {
+    transform: scale(1.05); /* 호버 시 확대 효과 */
+  }
 `;
 
 const TopPostTitle =styled.div`

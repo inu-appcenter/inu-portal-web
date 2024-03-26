@@ -4,6 +4,7 @@ import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import VVector from '../../resource/assets/V-Vector.svg';
+import round from '../../resource/assets/round.svg';
 
 import LoginModal from './LoginModal.tsx';
 interface loginInfo {
@@ -63,6 +64,7 @@ export default function NavItems() {
                       key={itemIndex}
                       onClick={() => handleItemClick(item.url)}
                     >
+                      {/* <img className='round' src={round} /> */}
                       {item.title}
                     </ChildDetail>
                   ))}
@@ -88,6 +90,10 @@ const ItemWrapper = styled.div`
   font-family: Inter;
   font-size: 17px;
   font-weight: 300;
+  
+  &: hover{
+    font-weight: 500;
+  }
 
   .child {
     width: 5rem;
@@ -105,7 +111,7 @@ const ItemWrapper = styled.div`
     visibility: visible;
     opacity: 1;
     z-index: 10;
-
+    margin: 10px 0;
     width: 187px;
     padding: 20px;
     border-radius: 10px;
@@ -116,11 +122,12 @@ const ItemWrapper = styled.div`
       #9cafe2 54%,
       #7590d9 100%
     );
+    
 
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
   }
 
   .v-vector {
@@ -128,6 +135,12 @@ const ItemWrapper = styled.div`
     width: 14.6px;
   }
 
+  .round{
+    left: 10px;
+    position: absolute;
+    padding: 10px 10px 10px 12px;
+    
+  }
   .line-vector {
     height: 0px;
     width: 179px;
@@ -150,5 +163,12 @@ const ChildDetail = styled.div`
   font-family: Inter;
   font-size: 15px;
   font-weight: 600;
+  padding: 0 15px;
   color: white;
+  transition: background-color 0.3s; /* 배경색 변화에 대한 트랜지션 */
+  border-radius: 10px;
+  &:hover {
+    color: #000000; /* 호버 시 배경색을 변경 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
 `;
