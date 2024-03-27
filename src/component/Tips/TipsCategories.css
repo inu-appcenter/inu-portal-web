@@ -6,7 +6,8 @@
 }
 
 .categoryItem {
-  width: 193px;
+  width: 143px;
+  padding-left: 50px;
   height: 60px;
   border-radius: 10px;
 
@@ -16,8 +17,9 @@
   color: #656565;
 
   display: flex;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
+  gap: 10px;
 }
 
 .selected {
