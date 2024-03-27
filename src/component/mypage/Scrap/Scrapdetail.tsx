@@ -1,12 +1,11 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import getFolder from '../../../utils/getFolder';
 import postInsertFolders from '../../../utils/postinsertfolder';
-import getFolderPost from '../../../utils/getfolderpost';
 
-import Pagination from '../../Tips/Pagination';
+
+
 import ListImg from "../../../resource/assets/list-logo.png";
 import HeartImg from "../../../resource/assets/heart-logo.png"
 import CalendarImg from "../../../resource/assets/bx_calendar.png"
@@ -14,9 +13,16 @@ import arrowImg from "../../../resource/assets/arrow.png"
 import closeImg from "../../../resource/assets/close-img.png"
 import fileImg from "../../../resource/assets/file-img.png"
 import plusImg from "../../../resource/assets/plus-img.png"
+import Pagination from './Pagination';
 interface loginInfo {
   user: {
     token: string;
+  };
+}
+
+interface folderInfo {
+  folder: {
+    folders: { [key: number]: string };
   };
 }
 interface Document {
@@ -35,9 +41,9 @@ interface ScrapPostProps {
   documents: Document[];
   totalPages:number;
   scrapsort: string;
-  page: string;
+  page: number;
   setScrapSort: (sort: string) => void;
-  setPage: (page: string) => void;
+  setPage: (page: number) => void;
 }
 
 
@@ -46,49 +52,12 @@ interface ScrapPostProps {
 
 export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapSort,setPage}:ScrapPostProps) {
 
-  const [folderData, setFolderData] = useState<{[key:number]:string}>({0: "내 폴더"});
   const token = useSelector((state: loginInfo) => state.user.token);
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
-  const [folderPosts, setFolderPosts] = useState<Document[]>([]);
-  const folders = useSelector((state: any) => state.folder.folders);
+  const folders = useSelector((state: folderInfo) => state.folder.folders);
   const [showDropdown,setShowDropdown] = useState<number | null>(null);
-  // const [searchType, setSearchType] = useState('date');
-  console.log("folders 뭐야뭐야",folders);
-  // const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const response = await getFolder(token) as { id: number; name: string }[];
-        const data:{ [key:number]:string} = {};
-        response.forEach(item => {
-            data[item.id] = item.name;
-        })
-        setFolderData(prevFolderData => ({ ...prevFolderData,...data}));
 
-      } catch (error) {
-        console.error("폴더 이름을 가져오지 못했습니다.", error);
-      }
-    };
-    fetchFolders(); 
-  }, [token]);
-
-  useEffect(() => {
-    const fetchFolderPosts = async () => {
-      try {
-          const newFolderPosts: Document[] = [];
-          for (const folderId in folderData) {
-              const response = await getFolderPost(token,Number(folderId));
-              newFolderPosts.push(...response);
-          }
-          setFolderPosts(newFolderPosts);
-          console.log(folderPosts);
-      } catch (error) {
-          console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
-      }
-    };
-    fetchFolderPosts(); 
-  }, [folderData]);
 
   const handleSearchTypeClick = (index: number) => {
     setShowDropdown(prevIndex => (prevIndex === index ? null : index));
@@ -190,7 +159,7 @@ export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapS
           </PostDetailWrapper>
         ))}
         </PostWrapper>
-      <Pagination totalPages={totalPages} currentPage={parseInt(page)} setPage={setPage} />
+      <Pagination totalPages={totalPages} currentPage={page} setPage={setPage} />
     </ScrapWrapper>
   );
 }

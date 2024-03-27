@@ -25,7 +25,7 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
     }
     else {
         const responseData = await response.json();
-        const token = responseData['data'].accessToken;
+        const token = responseData['data'].refreshToken;
         console.log("로그인 성공", token);
 
         localStorage.setItem('token', token);

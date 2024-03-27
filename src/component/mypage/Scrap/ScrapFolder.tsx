@@ -14,40 +14,60 @@ import { addFolder, removeFolder } from '../../../reducer/folderSlice';
 import { ScrapFolderPost } from './ScrapFolderDetail';
 import MakeModal from './ScrapFolderModal';
 
+
+interface Document{
+    id: number;
+    title: string;
+    category: string;
+    writer: string;
+    content: string;
+    like: number;
+    scrap: number;
+    createDate: string;
+    modifiedDate: string;
+  }
+
 interface loginInfo {
     user: {
         token: string;
     };
 }
 
-interface PostInfo {
-    id: number;
-    title: string;
-    category: string;
-}
+interface folderInfo {
+    folder: {
+      folders: { [key: number]: string };
+    };
+  }
 
 interface ScrapFolderInfoProps {
-    setIsScrap:() => void;
-    setIsScrapFolderPost:() => void;
+    scrap:boolean;
+    setIsScrap:(scrap:boolean) => void;
   }
   
 
 
 
 
-export default function ScrapFolder() {
+export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
     const token = useSelector((state: loginInfo) => state.user.token);
     const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
     const [isOpenModal, setOpenModal] = useState<boolean>(false);
-    const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
-    const [currentFolderId, setCurrentFolderId] = useState<number | undefined>(undefined);
+    const [documents, setDocuments] = useState<Document[]>([]);
+    const [currentFolderId, setCurrentFolderId] = useState<number>(0);
+    const [isscrapfolderpost , setIsScrapFolderPost] = useState(false);
+    const [totalPages, setTotalPages] = useState<number>(1);
     const dispatch = useDispatch();
-    const folders = useSelector((state: any) => state.folder.folders);
+    const folders = useSelector((state: folderInfo) => state.folder.folders);
+
+    const [postsort, setPostSort] = useState<string>('date');
+  
+    const [page, setPage] = useState<string>('1');
     useEffect(() => {
-        console.log("업데이트된 폴더, 업데이트된 게시물", folderData, folderPosts,folders);
-    }, [folderData, folderPosts,folders]);
+        console.log("업데이트된 폴더, 업데이트된 게시물", folderData, documents,folders);
+    }, [folderData, documents,folders]);
 
 
+    // 처음 folder 정보 가져옴
     useEffect(() => {
         const fetchFolders = async () => {
             try {
@@ -59,6 +79,7 @@ export default function ScrapFolder() {
                 console.log("data형태",data);
                 setFolderData(prevFolderData => ({ ...prevFolderData, ...data }));
                 dispatch(addFolder(data));
+                
             } catch (error) {
                 console.error("폴더 이름을 가져오지 못했습니다.", error);
             }
@@ -69,18 +90,15 @@ export default function ScrapFolder() {
     useEffect(() => {
         const fetchFolderPosts = async () => {
             try {
-                const newFolderPosts: PostInfo[] = [];
-                for (const folderId in folderData) {
-                    const response = await getFolderPost(token,Number(folderId));
-                    newFolderPosts.push(...response);
-                }
-                setFolderPosts(newFolderPosts);
+                    const docs = await getFolderPost(token,currentFolderId,postsort,page);                
+                    setDocuments(docs['posts']);
+                    setTotalPages(docs['pages']);
             } catch (error) {
                 console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
             }
         };
         fetchFolderPosts();
-    }, [folderData]);
+    }, [postsort,page]);
 
 
 
@@ -114,8 +132,8 @@ export default function ScrapFolder() {
                 return updatedData;
             });
             if (currentFolderId === folderIdToDelete) {
-                setFolderPosts([]); 
-                setCurrentFolderId(undefined); 
+                setDocuments([]); 
+                setCurrentFolderId(0); 
             }
             dispatch(removeFolder({ [folderIdToDelete]: true }));
         } catch (error) {
@@ -124,16 +142,14 @@ export default function ScrapFolder() {
     };
 
     const handleGetFolderPost = async (folderId: number) => {
+        setIsScrapFolderPost(!isscrapfolderpost);
+        setIsScrap(!scrap);
         console.log('클릭한 포스트아이디', folderId);
         try {
-            const response = await getFolderPost(token,folderId);
-            console.log("가지곤폴더에담겨있는게시글",response);
-            const responseInfo: PostInfo[] = response.map((item: any) => ({
-                id: item.id,
-                title: item.title,
-                category: item.category
-            }));
-            setFolderPosts(responseInfo);
+            const docs = await getFolderPost(token,folderId,postsort,page);
+            console.log("가지곤폴더에담겨있는게시글",docs);
+            setDocuments(docs['posts']);
+            setTotalPages(docs['pages']);
             setCurrentFolderId(folderId);
         } catch (error) {
             console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
@@ -155,7 +171,7 @@ export default function ScrapFolder() {
                 </FolderAddWrapper>
                 {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate} />}
             </Container>
-            {folderPosts.length > 0 && <ScrapFolderPost postScrapFolderInfo={folderPosts} folderId={currentFolderId} />}
+            {documents.length > 0 &&  isscrapfolderpost && <ScrapFolderPost postScrapFolderInfo={documents} folderId={currentFolderId}  totalPages={totalPages} postsort={postsort} page={page} setPostSort={setPostSort} setPage={setPage}/>}
         </>
     );
 }
@@ -166,6 +182,7 @@ const Container = styled.div`
 
     flex-wrap:wrap;
     column-gap: 50px;
+    padding: 19px 77px;
 `
 const FolderWrapper = styled.div`
     display: flex;

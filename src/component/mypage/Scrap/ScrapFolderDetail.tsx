@@ -3,16 +3,28 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import deleteFolderPost from '../../../utils/deleefolderpost';
 import { useSelector } from 'react-redux';
+import Pagination from './Pagination';
 
-interface PostInfo {
+interface Document{
   id: number;
   title: string;
   category: string;
+  writer: string;
+  content: string;
+  like: number;
+  scrap: number;
+  createDate: string;
+  modifiedDate: string;
 }
 
 interface ScrapFolderPostProps {
-  postScrapFolderInfo: PostInfo[];
+  postScrapFolderInfo: Document[];
   folderId: number | undefined;
+  totalPages:number;
+  postsort: string;
+  page: number;
+  setPostSort: (sort: string) => void;
+  setPage: (page: number) => void;
 }
 
 interface loginInfo {
@@ -21,8 +33,8 @@ interface loginInfo {
   };
 }
 
-export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolderInfo, folderId }) => { 
-  const [updatedPostScrapFolderInfo, setUpdatedPostScrapFolderInfo] = useState<PostInfo[]>(postScrapFolderInfo);
+export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolderInfo, folderId,totalPages,postsort,page,setPostSort,setPage }) => { 
+  const [updatedPostScrapFolderInfo, setUpdatedPostScrapFolderInfo] = useState<Document[]>(postScrapFolderInfo);
   const token = useSelector((state: loginInfo) => state.user.token);
   useEffect(() => {
     setUpdatedPostScrapFolderInfo(postScrapFolderInfo);
@@ -44,14 +56,28 @@ export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolde
   }
 
   return (
-    <ScrapWrapper>
-      {updatedPostScrapFolderInfo.length !== 0 &&
+    <FolderWrapper>
+      <FolderDetailWrapper>
       <CountWrapper>
-        <ScrapText>All scraps</ScrapText>
-        <ScrapCount>{updatedPostScrapFolderInfo.length}</ScrapCount>
-      </CountWrapper>}
-      <Items>
+            <p className='title'>All scraps</p>
+            <p className='length'>{updatedPostScrapFolderInfo.length}</p>
+          </CountWrapper>
+                <DropBoxWrapper>
+                <span className='title'>sort by</span>
+                <div className='SortDropdown'>
+                  <div className='dropdown'>
+                    <button className='dropbtn'>{postsort === 'date' ? 'date' : 'like'}</button>
+                    <div className='dropdown-content'>
+                      <span onClick={() => setPostSort('date')}>date</span>
+                      <span onClick={() => setPostSort('like')}>like</span>
+                    </div>
+                  </div>
+                </div>
+        </DropBoxWrapper>
+        </FolderDetailWrapper>
+      <PostWrapper>
         {updatedPostScrapFolderInfo.map((item) => (
+          <PostDetailWrapper>
           <PostScrapItem  key={item.id}> 
             <PostLink to={`/tips/${item.id}`}>
               <PostScrapItem>
@@ -61,28 +87,75 @@ export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolde
             </PostLink>
             <TipDropDownBox onClick={() => handleRemoveClick(item.id)}>-</TipDropDownBox>
           </PostScrapItem>
+          </PostDetailWrapper>
         ))}
-      </Items>
-    </ScrapWrapper>
+      </PostWrapper>
+      <Pagination totalPages={totalPages} currentPage={page} setPage={setPage} />
+    </FolderWrapper>
   );
 };
 
 
 
-const ScrapWrapper = styled.div`
-  width: 100%;
+const FolderWrapper = styled.div`
+  box-sizing: border-box;
+    width: 100%;
+    border-style: solid;
+    border-width: 5px 0 0 5px;
+    border-color: #EAEAEA;
+    background-color: white;
+    padding: 5px 49px;
 `;
-
-const CountWrapper = styled.div`
+const FolderDetailWrapper = styled.div`
   display: flex;
-  margin-top: 26px;
+  justify-content: space-between;
+  .title {
+    color: #969696;
+    margin-right:10px;
+  }
+
+  .length {
+    color: #0E4D9D;
+    margin-left:10px;
+  }
+`
+
+
+const DropBoxWrapper = styled.div`
+    display: flex;
+
   align-items: center;
   font-family: Inter;
   font-size: 15px;
   font-weight: 600;
   line-height: 20px;
   letter-spacing: 0px;
-  width: 100%;
+
+
+  .dropdown .dropbtn{
+    background-color:white;
+    font-family: Inter;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0px;
+  text-align: left;
+  color: #0E4D9D;
+  border:none;
+
+  }
+
+  .dropdown .dropdown-content span {
+    background-color:white;
+    font-family: Inter;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0px;
+  text-align: left;
+  color: #0E4D9D;
+  border:none;
+}
 `
 const ScrapText = styled.p`
   color: #969696;
@@ -93,14 +166,28 @@ const ScrapCount = styled.p`
   margin-left:10px;
 `;
 
-const Items = styled.div`
+const CountWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-height: 150px; 
-  overflow-y: auto; 
+
+  align-items: center;
+  font-family: Inter;
+font-size: 15px;
+font-weight: 600;
+line-height: 20px;
+letter-spacing: 0px;
+
+
 `;
 
+
+const PostWrapper = styled.div`
+  height: 400px;
+  margin-top: 21px;
+`
+const PostDetailWrapper = styled.div`
+border:1px solid #AAC9EE;
+margin-bottom: 20px;
+`
 const PostScrapItem = styled.div`
   display: flex;
   gap:2px;

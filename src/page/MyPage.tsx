@@ -16,7 +16,7 @@ export default function MyPage() {
   const [commentsort, setCommentSort] = useState<string>('date');
   const [postsort, setPostSort] = useState<string>('date');
 
-  const [page, setPage] = useState<string>('1');
+  const [page, setPage] = useState<number>(1);
   return (
     <MyPageWrapper>
         <MyPageCatWrapper>

@@ -13,12 +13,12 @@ interface TipsDocumentsProps {
     likesort: string;
     commentsort: string;
     postsort: string;
-    page: string;
+    page: number;
     setScrapSort: (sort: string) => void;
     setLikeSort: (sort: string) => void;
     setCommentSort:(sort: string) => void;
     setPostSort:(sort: string) => void;
-    setPage: (page: string) => void;
+    setPage: (page: number) => void;
 }
 
 export const MyPageLists = ({ selectedCategory, scrapsort,likesort,commentsort,postsort, page, setScrapSort,setLikeSort,setCommentSort,setPostSort, setPage }: TipsDocumentsProps) => {

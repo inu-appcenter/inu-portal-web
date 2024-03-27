@@ -1,4 +1,4 @@
-const getScrap = async (token:string,sort:string,page:string) => {
+const getScrap = async (token:string,sort:string,page:number) => {
     console.log(token,".");
     const apiURL = `https://portal.inuappcenter.kr/api/members/scraps?sort=${sort}&page=${page}`;
     try {
