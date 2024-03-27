@@ -14,6 +14,7 @@ import NoticesTop from '../component/Tips/NoticesTop';
 
 
 export default function TipsPage() {
+  const [docType, setDocType] = useState<string>(''); // TIPS 또는 NOTICE
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const location = useLocation();
   const [sort, setSort] = useState<string>('date');
@@ -22,24 +23,28 @@ export default function TipsPage() {
   useEffect(() => {
     if (location.pathname.includes('/tips/search')) {
       setSelectedCategory('검색결과');
+      setDocType('TIPS');
     }
     else if (location.pathname.includes('/tips/notice')) {
-      setSelectedCategory('공지사항');
+      setDocType('NOTICE');
+    }
+    else {
+      setDocType('TIPS');
     }
   })
   return (
     <TipsPageWrapper>
       <TipsCatWrapper>
-        <TipsCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
+        <TipsCatContainer docType={docType} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
       </TipsCatWrapper>
       <TipsContentWrapper>
-        <TipsTitle selectedCategory={selectedCategory} />
-        {selectedCategory === '공지사항' ? <NoticesTop /> : <TipsTopPosts />}
+        <TipsTitle selectedCategory={selectedCategory} docType={docType} />
+        {docType === 'NOTICE' ? <NoticesTop /> : <TipsTopPosts />}
         <BorderWrapper>
           <Routes>
-            <Route index element={<TipsDocuments selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
-            <Route path='search' element={<TipsDocuments selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
-            <Route path='notice' element={<TipsDocuments selectedCategory={'공지사항'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route index element={<TipsDocuments docType={docType} selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route path='search' element={<TipsDocuments docType={docType} selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route path='notice' element={<TipsDocuments docType={docType} selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
             <Route path=":id" element={<PostDetail />} />
             <Route path='/write' element={<CreatePost />} />
             <Route path='update/:id' element={<EditPost />} />

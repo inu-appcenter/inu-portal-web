@@ -7,27 +7,17 @@ import MyPageUserInfo from '../mypage/common/MyPageUserInfo';
 
 interface TipsTitleProps {
   selectedCategory: string;
+  docType: string;
 }
 
-const TipsTitle: React.FC<TipsTitleProps> = ({ selectedCategory }) => {
+const TipsTitle: React.FC<TipsTitleProps> = ({ selectedCategory, docType }) => {
   const navigate = useNavigate();
-
-  const getSecondaryText = () => {
-    switch(selectedCategory) {
-      case '검색결과':
-        return 'SEARCH';
-      case '공지사항':
-        return 'NOTICE';
-      default:
-        return 'TIP';
-    }
-  }
 
   return (
     <TipsTitleWrapper>
       <span className='tips-title-text' onClick={() => navigate('/tips')}>
         <span className='tips-title-text-1'>{selectedCategory}</span>
-        <span className='tips-title-text-2'> {getSecondaryText()}</span>
+        <span className='tips-title-text-2'> {docType}</span>
       </span>
       <SearchBarUserInfoWrapper>
         <SearchBar />
