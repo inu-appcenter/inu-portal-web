@@ -78,7 +78,7 @@ export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapS
       try {
           const newFolderPosts: Document[] = [];
           for (const folderId in folderData) {
-              const response = await getFolderPost(Number(folderId));
+              const response = await getFolderPost(token,Number(folderId));
               newFolderPosts.push(...response);
           }
           setFolderPosts(newFolderPosts);
@@ -110,6 +110,7 @@ export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapS
       console.log("넣기전",postId,selectedFolderIds);
       const response = await postInsertFolders(token,postId, selectedFolderIds);
       console.log(response);
+      setSelectedFolderIds([]);
     } catch (error) {
       console.error("폴더에 추가하지 못했습니다.", error);
     }

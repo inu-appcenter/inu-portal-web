@@ -9,6 +9,7 @@ import getScrap from '../../../utils/getScrap';
 
 import ScrapPost from './Scrapdetail';
 import ScrapFolder from './ScrapFolder';
+// import getFolderPost from '../../../utils/getfolderpost';
 
 
 
@@ -37,14 +38,20 @@ interface ScrapDocumentsProps {
   setPage: (page: string) => void;
 }
 
-
+// interface PostInfo {
+//   id: number;
+//   title: string;
+//   category: string;
+// }
 
 
 export default function ScrapInfo({ scrapsort, page, setScrapSort, setPage }: ScrapDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isscrap,setIsScrap] = useState(true);
-  const [isscrapfolderpost,setIsScrapFolderPost] = useState(false);
+  // const [isscrapfolderpost,setIsScrapFolderPost] = useState(false);
+  // const [folderPosts, setFolderPosts] = useState<PostInfo[]>([]);
+  // const [currentFolderId, setCurrentFolderId] = useState<number | undefined>(undefined);
   const token = useSelector((state: loginInfo) => state.user.token);
 
 
@@ -69,8 +76,8 @@ export default function ScrapInfo({ scrapsort, page, setScrapSort, setPage }: Sc
     <ScrapWrapper>
       <ScrapInfoWrapper>
         <ScrapTitle/>
-        <ScrapFolder />
       </ScrapInfoWrapper>
+      <ScrapFolder />
       {isscrap && 
       <ScrapPost documents={documents} totalPages={totalPages} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>}
 

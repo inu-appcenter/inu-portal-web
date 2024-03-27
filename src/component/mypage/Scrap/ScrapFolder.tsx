@@ -26,12 +26,6 @@ interface PostInfo {
     category: string;
 }
 
-// interface ScrapFolderInfoProps {
-//     setIsScrap:() => void;
-//     setIsScrapFolderPost:() => void;
-//   }
-  
-
 
 
 
@@ -91,6 +85,7 @@ export default function ScrapFolder() {
     const closeModal = () => {
         setOpenModal(false);
     };
+    
 
     const handleFolderCreate = async (folderName: string) => {
         try {
