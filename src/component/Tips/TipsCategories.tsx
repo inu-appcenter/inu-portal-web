@@ -14,7 +14,7 @@ export default function TipsCategories({ selectedCategory, setSelectedCategory }
 
   const fetchCategories = async () => {
     const cats = await getCategory();
-    cats.push('전체');
+    cats.unshift('전체');
     setCategories(cats);
   };
 
