@@ -26,6 +26,12 @@ interface PostInfo {
     category: string;
 }
 
+interface ScrapFolderInfoProps {
+    setIsScrap:() => void;
+    setIsScrapFolderPost:() => void;
+  }
+  
+
 
 
 
