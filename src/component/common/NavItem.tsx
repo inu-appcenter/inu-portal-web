@@ -16,7 +16,7 @@ export default function NavItems() {
   const [toggleIndex, setToggleIndex] = useState<number | null>(null);
   const user = useSelector((state: loginInfo) => state.user);
   const [isOpenModal, setOpenModal] = useState<boolean>(false);
-  const [selectedSubItems, setSelectedSubItems] = useState<any[]>([]);
+  const [selectedChildItems, setSelectedChildItems] = useState<any[]>([]);
   const navigate = useNavigate();
 
   const handleToggle = (index: number) => {
@@ -38,7 +38,7 @@ export default function NavItems() {
 
   const handleSubItemClick = (item: any) => {
     if (item.subItems) {
-      setSelectedSubItems(item.subItems);
+      setSelectedChildItems(item.subItems); // 수정: 자식 항목의 모달 상태 업데이트
     } else {
       window.open(item.url);
     }
@@ -47,6 +47,7 @@ export default function NavItems() {
   const closeModal = () => {
     setOpenModal(false);
     setSelectedSubItems([]);
+    setSelectedChildItems([]); // 수정: 모달이 닫힐 때 자식 항목의 모달 상태 초기화
   };
 
   return (
@@ -62,6 +63,7 @@ export default function NavItems() {
             }}
           >
             {items.title}
+            
             {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && toggleIndex === index) && (
               <div className='child toggle'>
                 <img className='v-vector' src={VVector} />
@@ -77,12 +79,12 @@ export default function NavItems() {
               </div>
             )}
           </div>
-          {selectedSubItems.length > 0 && (
+          {(selectedChildItems.length > 0 && toggleIndex === index) && ( // 수정: 해당 항목의 자식 모달이 열려 있는 경우에만 렌더링
             <div className='child toggle'>
-              {selectedSubItems.map((subItem, subItemIndex) => (
+              {selectedChildItems.map((subItem, subItemIndex) => (
                 <ChildDetail
                   key={subItemIndex}
-                  onClick={() => handleItemClick(subItem.url)}
+                  onClick={() => handleSubItemClick(subItem.url)}
                 >
                   {subItem.title}
                 </ChildDetail>
