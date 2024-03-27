@@ -6,7 +6,7 @@ export default function UtilButtons() {
   const navigate = useNavigate();
 
   const handleRegisterClick = () => {
-    navigate('/register');
+    navigate('/login/register');
   };
 
   // const handleFindIdClick = () => {
