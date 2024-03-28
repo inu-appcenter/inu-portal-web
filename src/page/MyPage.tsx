@@ -23,6 +23,9 @@ export default function MyPage() {
     if (location.pathname.includes('/mypage/search')) {
       setSelectedCategory('검색결과');
     }
+    else if (location.pathname.includes('/mypage/searchfolder')) {
+      setSelectedCategory('폴더내검색결과');
+    }
   })
   
   return (
@@ -42,6 +45,7 @@ export default function MyPage() {
           <Routes>
             <Route index element={<MyPageLists selectedCategory={selectedCategory} scrapsort={scrapsort} likesort={likesort} commentsort={commentsort} postsort={postsort} page={page} setScrapSort={setScrapSort} setLikeSort={setLikeSort} setCommentSort={setCommentSort} setPostSort={setPostSort}  setPage={setPage}/>} />
             <Route path='search' element={<ScrapInfo  selectedCategory={'검색결과'} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
+            <Route path='searchfolder' element={<ScrapInfo  selectedCategory={'폴더내검색결과'} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
           </Routes>
         </BorderWrapper >
       </MyPageContentWrapper>
