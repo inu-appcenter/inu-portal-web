@@ -14,6 +14,7 @@ interface loginInfo {
 
 export default function NavItems() {
   const [toggleIndex, setToggleIndex] = useState<number | null>(null);
+  const [subToggleIndex, setSubToggleIndex] = useState<number | null>(null);
   const user = useSelector((state: loginInfo) => state.user);
   const [isOpenModal, setOpenModal] = useState<boolean>(false);
   const [selectedChildItems, setSelectedChildItems] = useState<any[]>([]);
@@ -37,10 +38,11 @@ export default function NavItems() {
     window.open(url);
   };
 
-  const handleSubItemClick = (item: any) => {
+  const handleSubItemClick = (item: any, index: number, event: any) => {
+    event.stopPropagation(); // 이벤트 전파 중지
     if (item.subItems) {
+      setSubToggleIndex(index);
       setSelectedChildItems(item.subItems); // 수정: 자식 항목의 모달 상태 업데이트
-      
     } else {
       window.open(item.url);
     }
@@ -57,9 +59,7 @@ export default function NavItems() {
     <Items>
       {navBarList.map((items, index) => (
         <ItemWrapper key={index}>
-          <div
-            onClick={() => {
-              handleToggle(index);
+          <div onClick={() => { handleToggle(index);
               if (items.title === '마이 페이지') {
                 handleMyPageClick('/mypage');
               } 
@@ -67,30 +67,24 @@ export default function NavItems() {
           >
             {items.title}
             
-            {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && toggleIndex === index) && (
+            {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && (toggleIndex === index)) && (
               <div className='child toggle'>
                 <img className='v-vector' src={VVector} />
                 <div className='line-vector'></div>
                 {items.child.map((item, itemIndex) => (
-                  <ChildDetail
-                  key={itemIndex}
-                  onClick={() => handleSubItemClick(item)}
-                >
-                  {item.title}
-                </ChildDetail>
-                
-                ))}{(items.title === '학과 홈페이지' && toggleIndex === index && selectedChildItems.length > 0) && (
-                  <div className='child toggle2' onClick={closeSubModal}> {/* 수정된 부분 */}
-                    {selectedChildItems.map((subItem, subItemIndex) => (
-                      <ChildDetail2
-                        key={subItemIndex}
-                        onClick={() => handleSubItemClick(subItem)}
-                      >
-                        {subItem.title}
-                      </ChildDetail2>
-                    ))}
-                  </div>
+                  <ChildDetail key={itemIndex} onClick={(event) => handleSubItemClick(item, itemIndex, event)} >
+                    {item.title}
+                    {((items.title === '학과 홈페이지') && (toggleIndex === index) && (selectedChildItems.length > 0)) && (itemIndex === subToggleIndex) && (
+                      <div className='child toggle2' onClick={closeSubModal}> {/* 수정된 부분 */}
+                        {selectedChildItems.map((subItem, subItemIndex) => (
+                          <ChildDetail2 key={subItemIndex} onClick={(event) => handleSubItemClick(subItem, subItemIndex, event)} >
+                            {subItem.title}
+                          </ChildDetail2>
+                      ))}
+                      </div>
                 )}
+                  </ChildDetail>
+                ))}
               </div>
             )}
           </div>
@@ -119,9 +113,6 @@ const ItemWrapper = styled.div`
 
   .child {
     width: 5rem;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
 
     top: 2.5rem;
     transition: opacity 0.5s, visibility 0.5s;
@@ -129,7 +120,11 @@ const ItemWrapper = styled.div`
     opacity: 0;
   }
 
-  .child.toggle {
+  .toggle {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+
     visibility: visible;
     opacity: 1;
     z-index: 10;
@@ -147,14 +142,13 @@ const ItemWrapper = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
   }
 
 
-  .child.toggle2 {
+  .toggle2 {
     position: absolute;
-    top:60px;
-    transform: translateX(35%);
+    left: 180px;
+    top: 0px;
     visibility: visible;
     opacity: 1;
     z-index: 10;
@@ -165,13 +159,14 @@ const ItemWrapper = styled.div`
     color: #656565; /* 글씨 색상 */
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 15px;
   }
   
   .v-vector {
     height: 8px;
     width: 14.6px;
+    padding-top: 7px;
+    padding-bottom: 7px;
   }
 
   .round{
@@ -184,6 +179,8 @@ const ItemWrapper = styled.div`
     height: 0px;
     width: 179px;
     border: 1px solid white;
+    margin-top: 7px;
+    margin-bottom: 7px;
   }
 `;
 
@@ -203,14 +200,17 @@ const ChildDetail = styled.div`
   font-family: Inter;
   font-size: 15px;
   font-weight: 600;
-  padding: 0 15px;
+  padding-top: 7px;
+  padding-bottom: 7px;
   color: white;
+  width: 100%;
   transition: background-color 0.3s; /* 배경색 변화에 대한 트랜지션 */
   border-radius: 10px;
   &:hover {
     color: #000000; /* 호버 시 배경색을 변경 */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   }
+  position: relative
 `;
 
 const ChildDetail2 = styled.div`
