@@ -78,19 +78,19 @@ export default function NavItems() {
                 ))}
               </div>
             )}
+            {(items.title === '학과 홈페이지' && toggleIndex === index && selectedChildItems.length > 0) && (
+              <div className='child toggle2'>
+                {selectedChildItems.map((subItem, subItemIndex) => (
+                  <ChildDetail
+                    key={subItemIndex}
+                    onClick={() => handleSubItemClick(subItem)}
+                  >
+                    {subItem.title}
+                  </ChildDetail>
+                ))}
+              </div>
+            )}
           </div>
-          {(selectedChildItems.length > 0 && toggleIndex === index) && ( // 수정: 해당 항목의 자식 모달이 열려 있는 경우에만 렌더링
-            <div className='child toggle'>
-              {selectedChildItems.map((subItem, subItemIndex) => (
-                <ChildDetail
-                  key={subItemIndex}
-                  onClick={() => handleSubItemClick(subItem.url)}
-                >
-                  {subItem.title}
-                </ChildDetail>
-              ))}
-            </div>
-          )}
         </ItemWrapper>
       ))}
       {isOpenModal && (
@@ -149,6 +149,30 @@ const ItemWrapper = styled.div`
     gap: 15px;
   }
 
+
+  .child.toggle2 {
+    position: absolute;
+    top: 0;
+    right: calc(100% + 20px); /* Child toggle 오른쪽에 배치합니다. */
+    visibility: visible;
+    opacity: 1;
+    z-index: 10;
+    margin: 10px 0;
+    width: 195px;
+    padding: 30px 20px;
+    border-radius: 10px;
+
+    background: linear-gradient(
+      180deg,
+      #8da6ec 4.5%,
+      #9cafe2 54%,
+      #7590d9 100%
+    );
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
   .v-vector {
     height: 8px;
     width: 14.6px;
