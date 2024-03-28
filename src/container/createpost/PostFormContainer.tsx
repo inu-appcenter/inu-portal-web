@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TitleInput from '../../component/createPost/TitleInput';
 import ContentInput from '../../component/createPost/ContentInput';
@@ -9,6 +9,9 @@ import ImageInput from '../../component/createPost/ImageInput';
 import launchPost from '../../utils/launchPost';
 import postImage from '../../utils/postImage';
 import './PostFormContainer.css'
+import CanCelWriteModal from '../../component/createPost/CanCelWriteModal';
+
+CanCelWriteModal
 
 interface PostFormProps {
   onPostSubmit: () => void;
@@ -22,10 +25,28 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   const [anonymous, setAnonymous] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const token = useSelector((state: any) => state.user.token); 
   const navigate = useNavigate();
+  
+  // 글 작성 중인지 여부를 확인하는 useEffect
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (title.trim() || content.trim() || category.trim() || images.length) {
+        event.preventDefault();
+        event.returnValue = '';
+        setShowCancelModal(true);
+      }
+    };
 
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [title, content, category, images]);
+  
   const handleTitleChange = (value: string) => {
     setTitle(value);
   };
@@ -93,7 +114,23 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       console.error('Error submitting post:', error);
     }
   };
+  const handleCloseModal = () => {
+    setShowCancelModal(false);
+  };
 
+  // 글 작성 취소 함수
+  const handleCancelWrite = () => {
+    setShowCancelModal(false);
+    // 글 작성 중이던 내용 초기화
+    setTitle('');
+    setContent('');
+    setCategory('');
+    setAnonymous(false);
+    setSelectedImage(null);
+    setImages([]);
+    // 이전 페이지로 이동
+    navigate('/tips');
+  };
   return (
     <div className='PostFormContainer'>
       <div className='bar'>
@@ -122,8 +159,9 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
             ))}
           </div>
         </div>
-        <CategorySelect value={category}  onChange={handleCategoryChange} />
+        <CategorySelect value={category} onChange={handleCategoryChange} />
       </div>
+      {showCancelModal && <CanCelWriteModal setOpenModal={handleCancelWrite} closeModal={handleCloseModal} />}
     </div>
   );
 };

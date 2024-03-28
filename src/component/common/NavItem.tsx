@@ -21,6 +21,7 @@ export default function NavItems() {
 
   const handleToggle = (index: number) => {
     setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
+    
   };
 
   const handleMyPageClick = (url: string) => {
@@ -39,6 +40,7 @@ export default function NavItems() {
   const handleSubItemClick = (item: any) => {
     if (item.subItems) {
       setSelectedChildItems(item.subItems); // 수정: 자식 항목의 모달 상태 업데이트
+      
     } else {
       window.open(item.url);
     }
@@ -46,10 +48,11 @@ export default function NavItems() {
 
   const closeModal = () => {
     setOpenModal(false);
-    setSelectedSubItems([]);
-    setSelectedChildItems([]); // 수정: 모달이 닫힐 때 자식 항목의 모달 상태 초기화
+     // 수정: 모달이 닫힐 때 자식 항목의 모달 상태 초기화
   };
-
+  const closeSubModal = () => {
+    setSelectedChildItems([]); // child toggle2가 닫힐 때 selectedChildItems 초기화
+  };
   return (
     <Items>
       {navBarList.map((items, index) => (
@@ -70,24 +73,24 @@ export default function NavItems() {
                 <div className='line-vector'></div>
                 {items.child.map((item, itemIndex) => (
                   <ChildDetail
-                    key={itemIndex}
-                    onClick={() => handleSubItemClick(item)}
-                  >
-                    {item.title}
-                  </ChildDetail>
-                ))}
-              </div>
-            )}
-            {(items.title === '학과 홈페이지' && toggleIndex === index && selectedChildItems.length > 0) && (
-              <div className='child toggle2'>
-                {selectedChildItems.map((subItem, subItemIndex) => (
-                  <ChildDetail
-                    key={subItemIndex}
-                    onClick={() => handleSubItemClick(subItem)}
-                  >
-                    {subItem.title}
-                  </ChildDetail>
-                ))}
+                  key={itemIndex}
+                  onClick={() => handleSubItemClick(item)}
+                >
+                  {item.title}
+                </ChildDetail>
+                
+                ))}{(items.title === '학과 홈페이지' && toggleIndex === index && selectedChildItems.length > 0) && (
+                  <div className='child toggle2' onClick={closeSubModal}> {/* 수정된 부분 */}
+                    {selectedChildItems.map((subItem, subItemIndex) => (
+                      <ChildDetail2
+                        key={subItemIndex}
+                        onClick={() => handleSubItemClick(subItem)}
+                      >
+                        {subItem.title}
+                      </ChildDetail2>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -139,9 +142,7 @@ const ItemWrapper = styled.div`
       180deg,
       #8da6ec 4.5%,
       #9cafe2 54%,
-      #7590d9 100%
-    );
-    
+      #7590d9 100%);
 
     display: flex;
     flex-direction: column;
@@ -152,27 +153,22 @@ const ItemWrapper = styled.div`
 
   .child.toggle2 {
     position: absolute;
-    top: 0;
-    right: calc(100% + 20px); /* Child toggle 오른쪽에 배치합니다. */
+    top:60px;
+    transform: translateX(35%);
     visibility: visible;
     opacity: 1;
     z-index: 10;
-    margin: 10px 0;
-    width: 195px;
-    padding: 30px 20px;
+    width: 170px;
+    padding: 20px 10px;
     border-radius: 10px;
-
-    background: linear-gradient(
-      180deg,
-      #8da6ec 4.5%,
-      #9cafe2 54%,
-      #7590d9 100%
-    );
+    background:  #FFFFFFCC;
+    color: #656565; /* 글씨 색상 */
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
   }
+  
   .v-vector {
     height: 8px;
     width: 14.6px;
@@ -202,12 +198,27 @@ const Items = styled.div`
   flex-grow: 1;
 `;
 
+
 const ChildDetail = styled.div`
   font-family: Inter;
   font-size: 15px;
   font-weight: 600;
   padding: 0 15px;
   color: white;
+  transition: background-color 0.3s; /* 배경색 변화에 대한 트랜지션 */
+  border-radius: 10px;
+  &:hover {
+    color: #000000; /* 호버 시 배경색을 변경 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+`;
+
+const ChildDetail2 = styled.div`
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 600;
+  color:#656565;
+  padding: 0 15px;
   transition: background-color 0.3s; /* 배경색 변화에 대한 트랜지션 */
   border-radius: 10px;
   &:hover {
