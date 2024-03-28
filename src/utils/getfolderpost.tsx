@@ -1,4 +1,4 @@
-const getFolderPost = async (token:string,folderId: number,sort:string,page:string) => {
+const getFolderPost = async (token:string,folderId: number,sort:string,page:number) => {
     const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}?sort=${sort}&page=${page}`;
     try {
       const response = await fetch(apiURL, {

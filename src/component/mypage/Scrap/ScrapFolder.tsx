@@ -61,7 +61,7 @@ export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
 
     const [postsort, setPostSort] = useState<string>('date');
   
-    const [page, setPage] = useState<string>('1');
+    const [page, setPage] = useState<number>(1);
     useEffect(() => {
         console.log("업데이트된 폴더, 업데이트된 게시물", folderData, documents,folders);
     }, [folderData, documents,folders]);
@@ -182,7 +182,6 @@ const Container = styled.div`
 
     flex-wrap:wrap;
     column-gap: 50px;
-    padding: 19px 77px;
 `
 const FolderWrapper = styled.div`
     display: flex;

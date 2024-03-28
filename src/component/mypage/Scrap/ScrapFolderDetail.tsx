@@ -157,14 +157,6 @@ const DropBoxWrapper = styled.div`
   border:none;
 }
 `
-const ScrapText = styled.p`
-  color: #969696;
-`;
-
-const ScrapCount = styled.p`
-  color: #0E4D9D;
-  margin-left:10px;
-`;
 
 const CountWrapper = styled.div`
   display: flex;
