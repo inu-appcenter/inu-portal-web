@@ -14,7 +14,7 @@ const Title = styled.div`
   font-family: Inter;
   font-size: 30px;
   font-weight: 600;
-  
+  margin-bottom: 41px;
 `;
 
 export default ScrapTitle;
