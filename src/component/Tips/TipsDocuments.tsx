@@ -24,6 +24,7 @@ interface Document {
 }
 
 interface TipsDocumentsProps {
+  docType: string;
   selectedCategory: string;
   sort: string;
   page: string;
@@ -31,37 +32,35 @@ interface TipsDocumentsProps {
   setPage: (page: string) => void;
 }
 
-export default function TipsDocuments({ selectedCategory, sort, page, setSort, setPage }: TipsDocumentsProps) {
+export default function TipsDocuments({ docType, selectedCategory, sort, page, setSort, setPage }: TipsDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const [totalPages, setTotalPages] = useState<number>(1);
   useEffect(() => {
-    console.log('UseEffect', selectedCategory);
     const fetchDocuments = async () => {
-      if (selectedCategory == '검색결과') {
-        const query = queryString.parse(location.search).query;
-        console.log('query sort page : ', query, sort, page);
-        const docs = await search(query, sort, page);
-        setTotalPages(docs['pages']);
-        setDocuments(docs['posts']);
-      }
-      else if (selectedCategory == '공지사항') {
-        const docs = await getNotices('전체', sort, page);
+      if (docType === 'NOTICE') {
+        const docs = await getNotices(selectedCategory, sort, page);
         setTotalPages(docs['pages']);
         setDocuments(docs['notices']);
-        console.log(documents);
       }
-      else if (selectedCategory) {
-        console.log('sort page : ', sort, page);
-        const docs = await getDocuments(selectedCategory, sort, page);
-        setTotalPages(docs['pages']);
-        setDocuments(docs['posts']);
+      else if (docType === 'TIPS') {
+        if (selectedCategory == '검색결과') {
+          const query = queryString.parse(location.search).query;
+          const docs = await search(query, sort, page);
+          setTotalPages(docs['pages']);
+          setDocuments(docs['posts']);
+        }
+        else if (selectedCategory) {
+          const docs = await getDocuments(selectedCategory, sort, page);
+          setTotalPages(docs['pages']);
+          setDocuments(docs['posts']);
+        }
       }
     };
 
     fetchDocuments();
-  }, [selectedCategory, location.search, sort, page]);
+  }, [docType, selectedCategory, location.search, sort, page]);
 
   const handleDocumentClick = (id: number, url: string) => {
     if (selectedCategory == '공지사항') {
