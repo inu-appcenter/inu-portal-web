@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 import folderImg from "../../../resource/assets/file-logo.png"
-import PlusImg from "../../../resource/assets/plus-logo.png";
+import PlusImg from "../../../resource/assets/+.png";
 import { useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,7 +13,7 @@ import deleteFolder from '../../../utils/deletefolder';
 import { addFolder, removeFolder } from '../../../reducer/folderSlice';
 import { ScrapFolderPost } from './ScrapFolderDetail';
 import MakeModal from './ScrapFolderModal';
-
+import deleteImg from "../../../resource/assets/delete-img.png"
 
 interface Document{
     id: number;
@@ -40,20 +40,22 @@ interface folderInfo {
   }
 
 interface ScrapFolderInfoProps {
-    scrap:boolean;
+    currentFolderId:number;
     setIsScrap:(scrap:boolean) => void;
+    setIsSearch:(search:boolean) => void;
+    setCurrentFolderId:(folderId:number) => void;
   }
   
 
 
 
 
-export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
+export default function ScrapFolder({setIsScrap,setIsSearch,currentFolderId,setCurrentFolderId}:ScrapFolderInfoProps) {
     const token = useSelector((state: loginInfo) => state.user.token);
     const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
     const [isOpenModal, setOpenModal] = useState<boolean>(false);
     const [documents, setDocuments] = useState<Document[]>([]);
-    const [currentFolderId, setCurrentFolderId] = useState<number>(0);
+    // const [currentFolderId, setCurrentFolderId] = useState<number>(0);
     const [isscrapfolderpost , setIsScrapFolderPost] = useState(false);
     const [totalPages, setTotalPages] = useState<number>(1);
     const dispatch = useDispatch();
@@ -64,7 +66,7 @@ export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
     const [page, setPage] = useState<number>(1);
     useEffect(() => {
         console.log("업데이트된 폴더, 업데이트된 게시물", folderData, documents,folders);
-    }, [folderData, documents,folders]);
+    }, [folderData, documents,folders,isscrapfolderpost]);
 
 
     // 처음 folder 정보 가져옴
@@ -102,6 +104,7 @@ export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
 
 
 
+
     const handleMakeFolder = () => {
         setOpenModal(true);
     };
@@ -124,6 +127,9 @@ export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
     };
 
     const handleFolderDelete = async (folderIdToDelete: number) => {
+        setIsScrapFolderPost(false);
+        setIsScrap(true);
+        setIsSearch(false);
         try {
             await deleteFolder(token,folderIdToDelete);
             setFolderData(prevData => {
@@ -142,8 +148,10 @@ export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
     };
 
     const handleGetFolderPost = async (folderId: number) => {
-        setIsScrapFolderPost(!isscrapfolderpost);
-        setIsScrap(!scrap);
+        setIsScrapFolderPost(true);
+        setIsScrap(false);
+        setIsSearch(true);
+        setCurrentFolderId(folderId);
         console.log('클릭한 포스트아이디', folderId);
         try {
             const docs = await getFolderPost(token,folderId,postsort,page);
@@ -160,10 +168,10 @@ export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
         <>
             <Container>
                 {Object.entries(folderData).map(([folderId, folderName]) => (
-                    <FolderWrapper key={folderId} onClick={() => handleGetFolderPost(Number(folderId))}>
-                        <Folder src={folderImg} alt="" />
+                    <FolderWrapper key={folderId}>
+                        <Folder src={folderImg} alt=""  onClick={() => handleGetFolderPost(Number(folderId))}/>
                         <FolderNameInput>{folderName}</FolderNameInput>
-                        <button onClick={() => handleFolderDelete(Number(folderId))}></button>
+                        <img className="delete" src={deleteImg} onClick={() => handleFolderDelete(Number(folderId))}></img>
                     </FolderWrapper>
                 ))}
                 <FolderAddWrapper>
@@ -171,7 +179,7 @@ export default function ScrapFolder({scrap,setIsScrap}:ScrapFolderInfoProps) {
                 </FolderAddWrapper>
                 {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate} />}
             </Container>
-            {documents.length > 0 &&  isscrapfolderpost && <ScrapFolderPost postScrapFolderInfo={documents} folderId={currentFolderId}  totalPages={totalPages} postsort={postsort} page={page} setPostSort={setPostSort} setPage={setPage}/>}
+            {  isscrapfolderpost && <ScrapFolderPost setIsScrap={setIsScrap} setIsScrapFolderPost={setIsScrapFolderPost} postScrapFolderInfo={documents} folderId={currentFolderId}  totalPages={totalPages} postsort={postsort} page={page} setPostSort={setPostSort} setPage={setPage} setIsSearch={setIsSearch}/>}
         </>
     );
 }
@@ -182,13 +190,14 @@ const Container = styled.div`
 
     flex-wrap:wrap;
     column-gap: 50px;
+    padding:19px 77px;
 `
 const FolderWrapper = styled.div`
     display: flex;
     align-items: center;
     margin-top: 20px;
     position: relative;
-    button {
+    .delete {
         border:none;
         width: 11px;
         height: 11px;
@@ -198,7 +207,7 @@ const FolderWrapper = styled.div`
         line-height: 11px;
         position: absolute;
         left: 80%;
-        top:10%;
+        top:8%;
     }
 
 `;

@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import deleteFolderPost from '../../../utils/deleefolderpost';
 import { useSelector } from 'react-redux';
 import Pagination from './Pagination';
+import ReturnScrapButton from './ReturnButton';
+
 
 interface Document{
   id: number;
@@ -25,7 +27,12 @@ interface ScrapFolderPostProps {
   page: number;
   setPostSort: (sort: string) => void;
   setPage: (page: number) => void;
+  setIsScrap:(scrap:boolean) => void;
+  setIsScrapFolderPost: (scrapfolder:boolean) => void;
+  setIsSearch:(search:boolean) => void;
 }
+
+
 
 interface loginInfo {
   user: {
@@ -33,7 +40,7 @@ interface loginInfo {
   };
 }
 
-export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolderInfo, folderId,totalPages,postsort,page,setPostSort,setPage }) => { 
+export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolderInfo, folderId,totalPages,postsort,page,setPostSort,setPage,setIsScrap,setIsScrapFolderPost,setIsSearch }) => { 
   const [updatedPostScrapFolderInfo, setUpdatedPostScrapFolderInfo] = useState<Document[]>(postScrapFolderInfo);
   const token = useSelector((state: loginInfo) => state.user.token);
   useEffect(() => {
@@ -62,6 +69,7 @@ export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolde
             <p className='title'>All scraps</p>
             <p className='length'>{updatedPostScrapFolderInfo.length}</p>
           </CountWrapper>
+          <ReturnScrapButton setIsScrap={setIsScrap} setIsScrapFolderPost={setIsScrapFolderPost} setIsSearch={setIsSearch}/>
                 <DropBoxWrapper>
                 <span className='title'>sort by</span>
                 <div className='SortDropdown'>

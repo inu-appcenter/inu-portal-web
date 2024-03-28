@@ -12,6 +12,8 @@ import ScrapFolder from './ScrapFolder';
 import queryString from 'query-string';
 import scrapsearch from '../../../utils/scrapsearch';
 import { useLocation } from 'react-router-dom'; 
+import SearchFolderScrapBar from './searchFolderScrapBar';
+import postscrapsearch from '../../../utils/postscrapsearch';
 
 
 interface loginInfo {
@@ -47,6 +49,8 @@ export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSo
   const [documents, setDocuments] = useState<Document[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [scrap,setIsScrap] = useState(true);
+  const [issearch,setIsSearch] = useState(false);
+  const [currentFolderId, setCurrentFolderId] = useState<number>(0);
   // const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
   const token = useSelector((state: loginInfo) => state.user.token);
   const location = useLocation(); 
@@ -58,6 +62,13 @@ export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSo
         const query = queryString.parse(location.search).query;
         console.log('query sort page : ', query, scrapsort, page);
         const docs = await scrapsearch(token,query, scrapsort, page);
+        setTotalPages(docs['pages']);
+        setDocuments(docs['posts']);
+      }
+      else if (selectedCategory === '폴더내검색결과') {
+        const query = queryString.parse(location.search).query;
+        console.log('query sort page : ', query, scrapsort, page);
+        const docs = await postscrapsearch(token,currentFolderId,query, scrapsort, page);
         setTotalPages(docs['pages']);
         setDocuments(docs['posts']);
       }
@@ -74,35 +85,19 @@ export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSo
     };
   
     fetchScrapInfo(); 
-  }, [token,selectedCategory,location.search, scrapsort,page]);
+  }, [token,selectedCategory,location.search, scrapsort,page,currentFolderId]);
 
 
-//   useEffect(() => {
-//     const fetchFolders = async () => {
-//         console.log("음음");
-//         try {
-//             const response = await getFolder(token) as { id: number; name: string }[];
-//             const data: { [key: number]: string } = {};
-//             response.forEach(item => {
-//                 data[item.id] = item.name;
-//             });
-//             console.log("data형태",data);
-//             setFolderData(prevFolderData => ({ ...prevFolderData, ...data }));
-//             dispatch(addFolder(data));
-//         } catch (error) {
-//             console.error("폴더 이름을 가져오지 못했습니다.", error);
-//         }
-//     };
-//     fetchFolders();
-// }, [token]);
 
 
   return (
     <ScrapWrapper>
       <ScrapInfoWrapper>
         <ScrapTitle/>
-        <ScrapFolder setIsScrap={setIsScrap} scrap={scrap}/>
+        {/* <ScrapFolder setIsScrap={setIsScrap} scrap={scrap}/> */}
+        {issearch && <SearchFolderScrapBar/>}
       </ScrapInfoWrapper>
+      <ScrapFolder currentFolderId={currentFolderId} setIsScrap={setIsScrap} setIsSearch={setIsSearch} setCurrentFolderId= {setCurrentFolderId}/>
       {scrap && 
       <ScrapPost documents={documents} totalPages={totalPages} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>}
 
