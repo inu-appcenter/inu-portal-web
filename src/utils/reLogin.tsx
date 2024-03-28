@@ -1,7 +1,9 @@
 import { loginUser as loginUserAction } from "../reducer/userSlice";
 import { Dispatch } from 'redux';
+import refresh from "./refresh";
 
 const reLogin = async (dispatch: Dispatch) => {
+  await refresh(dispatch);
   const token = localStorage.getItem('token');
   if (token) {
     try {
@@ -17,7 +19,7 @@ const reLogin = async (dispatch: Dispatch) => {
       console.log(response);
       if (response.status == 200) {
         const responseData = await response.json();
-        dispatch(loginUserAction({email: responseData.data.email, token:token}));
+        dispatch(loginUserAction({email: responseData.data.email}));
         console.log("reLogin 성공");
       }
       else {
@@ -25,8 +27,7 @@ const reLogin = async (dispatch: Dispatch) => {
       }
     }
     catch (error) {
-      localStorage.removeItem('token');
-      console.log("reLogin 에러?", error);
+      console.log("reLogin 에러", error);
     }
   }
 };

@@ -8,9 +8,15 @@ import { NicknameUser as NicknameUserAction , ProfileUser as ProfileuserAction} 
 import { MypageTitle } from '../../component/mypage/common/MyPageTitle';
 import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
 
+import SearchScrapBar from '../../component/mypage/Scrap/searchScrapBar';
 
+interface loginInfo {
+  user: {
+    token: string;
+  };
+}
 export default function MyPageTitleContainer() {
-  const token = useSelector((state: any) => state.user.token);
+  const token = useSelector((state: loginInfo) => state.user.token);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   useEffect(() => {
@@ -39,7 +45,10 @@ export default function MyPageTitleContainer() {
   return (
     <MyPageTitleWrapper>
       <MypageTitle/>
+      <SearchInfoWrapper>
+      <SearchScrapBar/>
       <MyPageUserInfo/>
+      </SearchInfoWrapper>
     </MyPageTitleWrapper>
   );
 }
@@ -51,3 +60,7 @@ const MyPageTitleWrapper = styled.div`
   padding: 15px;
 `;
 
+const SearchInfoWrapper = styled.div`
+  display: flex;
+  gap:20px;
+`

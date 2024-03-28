@@ -1,5 +1,6 @@
-const getFolderPost = async (token:string,folderId: number,sort:string,page:number) => {
-    const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}?sort=${sort}&page=${page}`;
+const scrapsearch = async (token:string,query: string, sort: string, page: string) => {
+    const apiURL = `https://portal.inuappcenter.kr/api/search/scrap?query=${query}&sort=${sort}&page=${page}`;
+    console.log("url몬가",apiURL);
     try {
       const response = await fetch(apiURL, {
         method: 'GET',
@@ -12,14 +13,18 @@ const getFolderPost = async (token:string,folderId: number,sort:string,page:numb
       console.log(response,'response');
       if (response.status === 200) {
         const data = await response.json();
+        console.log(data.data);
         return data.data;
-      } else {
+      }
+      else {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+      
+  
     } catch (error) {
       console.log("에러?", error);
       throw error;
     }
   };
   
-  export default getFolderPost;
+  export default scrapsearch;
