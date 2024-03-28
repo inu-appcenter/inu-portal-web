@@ -63,7 +63,7 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
   }, [docType, selectedCategory, location.search, sort, page]);
 
   const handleDocumentClick = (id: number, url: string) => {
-    if (selectedCategory == '공지사항') {
+    if (docType == 'NOTICE') {
       window.open('https://'+ url, '_blank');
     }
     else {
