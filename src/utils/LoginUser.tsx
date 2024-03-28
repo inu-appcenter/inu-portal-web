@@ -1,3 +1,5 @@
+
+
 import { loginUser as loginUserAction } from "../reducer/userSlice";
 import { Dispatch } from 'redux';
 
@@ -26,10 +28,16 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
     else {
         const responseData = await response.json();
         const token = responseData['data'].accessToken;
+        const tokenExpiredTime = responseData['data'].accessTokenExpiredTime;
+        const refreshToken = responseData['data'].refreshToken;
+        const refreshTokenExpiredTime = responseData['data'].refreshTokenExpiredTime;
         console.log("로그인 성공", token);
 
         localStorage.setItem('token', token);
-        dispatch(loginUserAction({email: data.email, token:token}));
+        localStorage.setItem('tokenExpiredTime', tokenExpiredTime);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('refreshTokenExpiredTime', refreshTokenExpiredTime);
+        dispatch(loginUserAction({email: data.email, token: token, tokenExpiredTime: tokenExpiredTime, refreshToken: refreshToken, refreshTokenExpiredTime: refreshTokenExpiredTime}));
 
         return token; 
     }
