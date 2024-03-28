@@ -24,7 +24,7 @@ interface TipsDocumentsProps {
 export const MyPageLists = ({ selectedCategory, scrapsort,likesort,commentsort,postsort, page, setScrapSort,setLikeSort,setCommentSort,setPostSort, setPage }: TipsDocumentsProps) => {
     return (
         <>
-                {selectedCategory === '스크랩' && <ScrapInfo scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>}
+                {selectedCategory === '스크랩' && <ScrapInfo selectedCategory={selectedCategory} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>}
                 {selectedCategory === '내 활동' && <ActiveInfo likesort={likesort} commentsort={commentsort} postsort={postsort} setLikeSort={setLikeSort} setCommentSort={setCommentSort} setPostSort={setPostSort}/>}
                 {selectedCategory === '비밀번호 변경' && <ModifyInfo />}
                 {selectedCategory === '개인정보 수정' && <ModifyMyInfo />}
