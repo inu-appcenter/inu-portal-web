@@ -1,6 +1,6 @@
 
 
-import { loginUser as loginUserAction } from "../reducer/userSlice";
+import { tokenUser as tokenUserAction, emailUser as emailUserAction, emailUser } from "../reducer/userSlice";
 import { Dispatch } from 'redux';
 
 interface LoginData {
@@ -37,7 +37,8 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
         localStorage.setItem('tokenExpiredTime', tokenExpiredTime);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('refreshTokenExpiredTime', refreshTokenExpiredTime);
-        dispatch(loginUserAction({email: data.email, token: token, tokenExpiredTime: tokenExpiredTime, refreshToken: refreshToken, refreshTokenExpiredTime: refreshTokenExpiredTime}));
+        dispatch(emailUserAction({email: data.email}));
+        dispatch(tokenUserAction({token: token, tokenExpiredTime: tokenExpiredTime, refreshToken: refreshToken, refreshTokenExpiredTime: refreshTokenExpiredTime}));
 
         return token; 
     }

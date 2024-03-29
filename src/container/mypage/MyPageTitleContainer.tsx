@@ -32,6 +32,7 @@ export default function MyPageTitleContainer() {
 
   
     const handleUserInfo = async () => {
+        console.log('ttt', token);
         try {
             const response = await getUser(token);
             console.log(response,"결과뭐야");

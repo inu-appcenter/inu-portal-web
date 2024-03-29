@@ -1,4 +1,4 @@
-import { loginUser as loginUserAction } from '../reducer/userSlice';
+import { tokenUser as tokenUserAction } from '../reducer/userSlice';
 import { Dispatch } from 'redux';
 
 const refresh = async (dispatch: Dispatch) => {
@@ -26,7 +26,7 @@ const refresh = async (dispatch: Dispatch) => {
         localStorage.setItem('tokenExpiredTime', tokenExpiredTime);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('refreshTokenExpiredTime', refreshTokenExpiredTime);
-        dispatch(loginUserAction({token: token, tokenExpiredTime: tokenExpiredTime, refreshToken: refreshToken, refreshTokenExpiredTime: refreshTokenExpiredTime}));
+        dispatch(tokenUserAction({token: token, tokenExpiredTime: tokenExpiredTime, refreshToken: refreshToken, refreshTokenExpiredTime: refreshTokenExpiredTime}));
       }
       else {
         throw new Error(`HTTP error! Status: ${response.status}`);

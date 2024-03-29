@@ -13,13 +13,14 @@ export const userSlice = createSlice({
     },
     reducers: {
         // login 성공 시
-        loginUser: (state, action) => {
-            state.email = action.payload.email;
+        tokenUser: (state, action) => {
             state.token = action.payload.token;
             state.tokenExpiredTime = action.payload.tokenExpiredTime;
             state.refreshToken = action.payload.refreshToken;
             state.refreshTokenExpiredTime = action.payload.refreshTokenExpiredTime;
-            state.nickname = action.payload.nickname;
+        },
+        emailUser: (state, action) => {
+            state.email = action.payload.email;
             return state;
         },
         logoutUser: (state) => {
@@ -38,6 +39,6 @@ export const userSlice = createSlice({
     },
 });
 
-export const { loginUser, logoutUser ,NicknameUser,ProfileUser } = userSlice.actions;
+export const { tokenUser, emailUser, logoutUser ,NicknameUser,ProfileUser } = userSlice.actions;
 export default userSlice.reducer;
 
