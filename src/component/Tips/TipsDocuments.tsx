@@ -8,6 +8,7 @@ import Heart from '../../resource/assets/heart.png';
 import queryString from 'query-string';  
 import Pagination from './Pagination';
 import getNotices from '../../utils/getNotices';
+import SortDropBox from '../common/SortDropBox';
 
 interface Document {
   id: number;
@@ -74,15 +75,7 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
   return (
     <TipsDocumentsWrapper>
       <div>
-        <span className='SortDropdown'>
-          <span className='dropdown'>
-            <button className='dropbtn'>{sort === 'date' ? '최신순' : '인기순'}</button>
-            <span className='dropdown-content'>
-              <span onClick={() => setSort('date')}>최신순</span>
-              <span onClick={() => setSort('like')}>인기순</span>
-            </span>
-          </span>
-        </span>
+        <SortDropBox sort={sort} setSort={setSort} />
         {documents && (
           <div className='grid-container'>
           {documents.map((document) => (

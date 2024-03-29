@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import likeImg from "../../../resource/assets/like-img.png"
 import HeartImg from "../../../resource/assets/heart-logo.png"
 import CalendarImg from "../../../resource/assets/bx_calendar.png"
+import SortDropBox from '../../common/SortDropBox';
 
 interface Document {
   id: number;
@@ -33,18 +34,7 @@ export default function LikePost({ postLikeInfo,likesort, setLikeSort}: likeinfo
           <Likeimg src={likeImg} />
           <LikeCount>{postLikeInfo.length}</LikeCount>
         </CountWrapper>
-        <DropBoxWrapper>
-          <span className='title'>sort by</span>
-          <div className='SortDropdown'>
-            <div className='dropdown'>
-              <span className='dropbtn'>{likesort === 'date' ? 'date' : 'like'}</span>
-              <div className='dropdown-content'>
-                <span onClick={() => setLikeSort('date')}>date</span>
-                <span onClick={() => setLikeSort('like')}>like</span>
-              </div>
-            </div>
-          </div>
-        </DropBoxWrapper>
+        <SortDropBox sort={likesort} setSort={setLikeSort} />
       </LikeWrapper>
       <PostWrapper>
         {postLikeInfo.map((item) => (
@@ -151,45 +141,7 @@ const PostListWrapper = styled.div`
 display: flex;
 align-items: center;
 gap:16px;
-`
-
-
-const DropBoxWrapper = styled.div`
-    display: flex;
-  align-items: center;
-  font-size: 15px;
-  font-weight: 600;
-
-.title {
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 20px;
-    margin-right: 6px;
-    color: #969696;
-
-    }
-    .dropdown .dropbtn{
-      font-family: Inter;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 20px;
-    letter-spacing: 0px;
-    text-align: left;
-    color: #0E4D9D;
-    border:none;
-
-    }
-
-    .dropdown .dropdown-content span {
-    font-size: 15px;
-    font-weight: 600;
-    color: #0E4D9D;
-    }
-    `
-
-
-
-
+`;
 
 const Likeimg = styled.img`
   width: 24px;

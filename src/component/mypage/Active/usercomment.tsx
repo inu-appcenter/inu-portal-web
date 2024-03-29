@@ -8,6 +8,7 @@ import getPost from '../../../utils/getPost';
 import { useSelector } from 'react-redux';
 import HeartImg from "../../../resource/assets/heart-logo.png"
 import CalendarImg from "../../../resource/assets/bx_calendar.png"
+import SortDropBox from '../../common/SortDropBox';
 
 interface Document {
       id:number;
@@ -67,18 +68,7 @@ export default function UserComment({postCommentInfo,commentsort,setCommentSort}
             <Commentimg src={commentlogo} />
             <CommentCount>{postCommentInfo.length}</CommentCount>
           </CountWrapper>
-          <DropBoxWrapper>
-            <span className='title'>sort by</span>
-            <div className='SortDropdown'>
-              <div className='dropdown'>
-                <span className='dropbtn'>{commentsort === 'date' ? 'date' : 'like'}</span>
-                <div className='dropdown-content'>
-                  <span onClick={() => setCommentSort('date')}>date</span>
-                  <span onClick={() => setCommentSort('like')}>like</span>
-                </div>
-              </div>
-            </div>
-      </DropBoxWrapper>
+          <SortDropBox sort={commentsort} setSort={setCommentSort} />
       </CommentWrapper>
       <PostWrapper>
         {postCommentInfo.map((item,index) => (
@@ -108,40 +98,7 @@ export default function UserComment({postCommentInfo,commentsort,setCommentSort}
 const CommentWrapper = styled.div`
     display: flex;
   justify-content: space-between;
-`
-const DropBoxWrapper = styled.div`
-    display: flex;
-  align-items: center;
-  font-size: 15px;
-  font-weight: 600;
-
-.title {
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 20px;
-    margin-right: 6px;
-    color: #969696;
-
-    }
-    .dropdown .dropbtn{
-      font-family: Inter;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 20px;
-    letter-spacing: 0px;
-    text-align: left;
-    color: #0E4D9D;
-    border:none;
-
-    }
-
-    .dropdown .dropdown-content span {
-    font-size: 15px;
-    font-weight: 600;
-    color: #0E4D9D;
-    }
-    `
-
+`;
 
 const PostWrapper = styled.div`
   max-height: 170px; 

@@ -5,6 +5,7 @@ import deleteFolderPost from '../../../utils/deleefolderpost';
 import { useSelector } from 'react-redux';
 import Pagination from './Pagination';
 import ReturnScrapButton from './ReturnButton';
+import SortDropBox from '../../common/SortDropBox';
 
 
 interface Document{
@@ -70,18 +71,7 @@ export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolde
             <p className='length'>{updatedPostScrapFolderInfo.length}</p>
           </CountWrapper>
           <ReturnScrapButton setIsScrap={setIsScrap} setIsScrapFolderPost={setIsScrapFolderPost} setIsSearch={setIsSearch}/>
-                <DropBoxWrapper>
-                <span className='title'>sort by</span>
-                <div className='SortDropdown'>
-                  <div className='dropdown'>
-                    <button className='dropbtn'>{postsort === 'date' ? 'date' : 'like'}</button>
-                    <div className='dropdown-content'>
-                      <span onClick={() => setPostSort('date')}>date</span>
-                      <span onClick={() => setPostSort('like')}>like</span>
-                    </div>
-                  </div>
-                </div>
-        </DropBoxWrapper>
+          <SortDropBox sort={postsort} setSort={setPostSort} />
         </FolderDetailWrapper>
       <PostWrapper>
         {updatedPostScrapFolderInfo.map((item) => (
@@ -126,45 +116,7 @@ const FolderDetailWrapper = styled.div`
     color: #0E4D9D;
     margin-left:10px;
   }
-`
-
-
-const DropBoxWrapper = styled.div`
-    display: flex;
-
-  align-items: center;
-  font-family: Inter;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: 0px;
-
-
-  .dropdown .dropbtn{
-    background-color:white;
-    font-family: Inter;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: 0px;
-  text-align: left;
-  color: #0E4D9D;
-  border:none;
-
-  }
-
-  .dropdown .dropdown-content span {
-    background-color:white;
-    font-family: Inter;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: 0px;
-  text-align: left;
-  color: #0E4D9D;
-  border:none;
-}
-`
+`;
 
 const CountWrapper = styled.div`
   display: flex;

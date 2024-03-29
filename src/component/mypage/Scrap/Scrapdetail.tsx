@@ -14,6 +14,7 @@ import closeImg from "../../../resource/assets/close-img.png"
 import fileImg from "../../../resource/assets/file-img.png"
 import plusImg from "../../../resource/assets/plus-img.png"
 import Pagination from './Pagination';
+import SortDropBox from '../../common/SortDropBox';
 interface loginInfo {
   user: {
     token: string;
@@ -92,18 +93,7 @@ export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapS
             <p className='title'>All scraps</p>
             <p className='length'>{documents.length}</p>
           </CountWrapper>
-          <DropBoxWrapper>
-            <span className='title'>sort by</span>
-            <div className='SortDropdown'>
-              <div className='dropdown'>
-                <button className='dropbtn'>{scrapsort === 'date' ? 'date' : 'like'}</button>
-                <div className='dropdown-content'>
-                  <span onClick={() => setScrapSort('date')}>date</span>
-                  <span onClick={() => setScrapSort('like')}>like</span>
-                </div>
-              </div>
-            </div>
-          </DropBoxWrapper>
+          <SortDropBox sort={scrapsort} setSort={setScrapSort} />
       </ScrapDetailWrapper>
       <PostWrapper>
         {documents.map((item,index) => (
@@ -188,42 +178,7 @@ const ScrapDetailWrapper = styled.div`
     margin-left:10px;
   }
 `
-const DropBoxWrapper = styled.div`
-    display: flex;
 
-  align-items: center;
-  font-family: Inter;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: 0px;
-
-
-  .dropdown .dropbtn{
-    background-color:white;
-    font-family: Inter;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: 0px;
-  text-align: left;
-  color: #0E4D9D;
-  border:none;
-
-  }
-
-  .dropdown .dropdown-content span {
-    background-color:white;
-    font-family: Inter;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: 0px;
-  text-align: left;
-  color: #0E4D9D;
-  border:none;
-}
-`
 const CountWrapper = styled.div`
   display: flex;
 
