@@ -8,6 +8,8 @@ import { useEffect } from 'react';
 import reLogin from './utils/reLogin';
 import { useDispatch } from 'react-redux';
 import refresh from './utils/refresh';
+import CreatePost from './page/CreatePostPage';
+import EditPost from './page/EditPostPage';
 
 
 
@@ -62,7 +64,8 @@ export default function App() {
 
           
         </Route>
-
+        <Route path='update/:id' element={<EditPost />} />
+        <Route path='/write' element={<CreatePost />} />
       </Routes>
     </BrowserRouter>
   );

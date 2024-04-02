@@ -56,9 +56,9 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
     setSelectedCategory(category);
   
     if (docType === 'TIPS') {
-      window.location.href = '/tips';
+      navigate('/tips');
     } else if (docType === 'NOTICE') {
-      window.location.href = '/tips/notice';
+      navigate('/tips/notice');
     }
   }
   

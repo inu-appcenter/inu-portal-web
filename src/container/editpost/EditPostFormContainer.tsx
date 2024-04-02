@@ -116,6 +116,20 @@ console.log(images);
     }
   }, [post])
 
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => { 
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+  
   const fetchImagesData = async () => {
     try {
       let images = [];

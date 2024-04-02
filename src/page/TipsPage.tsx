@@ -49,8 +49,8 @@ export default function TipsPage() {
             <Route path='search' element={<TipsDocuments docType={docType} selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
             <Route path='notice' element={<TipsDocuments docType={docType} selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
             <Route path=":id" element={<PostDetail />} />
-            <Route path='write' element={<CreatePost />} />
-            <Route path='update/:id' element={<EditPost />} />
+            {/* <Route path='write' element={<CreatePost />} />
+            <Route path='update/:id' element={<EditPost />} /> */}
           </Routes>
         </BorderWrapper >
       </TipsContentWrapper>

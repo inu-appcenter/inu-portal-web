@@ -33,8 +33,8 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   // 글 작성 중인지 여부를 확인하는 useEffect
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => { 
-        event.returnValue = '';
-        setShowCancelModal(true);
+      event.preventDefault();
+      event.returnValue = '';
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -43,7 +43,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
-  
+
   const handleTitleChange = (value: string) => {
     setTitle(value);
   };
@@ -126,7 +126,6 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     setSelectedImage(null);
     setImages([]);
     // 이전 페이지로 이동
-    window.location.href = '/tips';
   };
   return (
     <div className='PostFormContainer'>
