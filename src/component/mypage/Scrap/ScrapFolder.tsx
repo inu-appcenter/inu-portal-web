@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import folderImg from "../../../resource/assets/file-logo.png"
+import folderImg from "../../../resource/assets/folder-img.png"
 import PlusImg from "../../../resource/assets/+.png";
 import { useEffect, useState } from 'react';
 
@@ -14,6 +14,8 @@ import { addFolder, removeFolder } from '../../../reducer/folderSlice';
 import { ScrapFolderPost } from './ScrapFolderDetail';
 import MakeModal from './ScrapFolderModal';
 import deleteImg from "../../../resource/assets/delete-img.png"
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+// import {SearchFolderId} from '../../../reducer/folderId';
 
 interface Document{
     id: number;
@@ -40,34 +42,47 @@ interface folderInfo {
   }
 
 interface ScrapFolderInfoProps {
+    documents:Document[];
+    setDocuments:(document:Document[]) => void;
     currentFolderId:number;
     setIsScrap:(scrap:boolean) => void;
     setIsSearch:(search:boolean) => void;
     setCurrentFolderId:(folderId:number) => void;
+    setIsFolderSearch:(scrap:boolean) => void;
   }
   
+  interface SearchInfo {
+    folder: {
+      folderId: number;
+    }
+}
 
 
-
-
-export default function ScrapFolder({setIsScrap,setIsSearch,currentFolderId,setCurrentFolderId}:ScrapFolderInfoProps) {
+interface SearchInfo {
+    folderId: {
+      folderId: number;
+    }
+  }
+export default function ScrapFolder({documents,setDocuments,setIsScrap,setIsSearch,setIsFolderSearch,currentFolderId,setCurrentFolderId}:ScrapFolderInfoProps) {
     const token = useSelector((state: loginInfo) => state.user.token);
     const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
     const [isOpenModal, setOpenModal] = useState<boolean>(false);
-    const [documents, setDocuments] = useState<Document[]>([]);
+    // const [documents, setDocuments] = useState<Document[]>([]);
     // const [currentFolderId, setCurrentFolderId] = useState<number>(0);
     const [isscrapfolderpost , setIsScrapFolderPost] = useState(false);
     const [totalPages, setTotalPages] = useState<number>(1);
     const dispatch = useDispatch();
     const folders = useSelector((state: folderInfo) => state.folder.folders);
-
+    const folderId = useSelector((state: SearchInfo) => state.folderId.folderId);
     const [postsort, setPostSort] = useState<string>('date');
-  
+    const folderIds = useSelector((state: SearchInfo) => state.folder.folderId); // 폴더 ID 직접 가져오기
     const [page, setPage] = useState<number>(1);
+    const location = useLocation();
+    const navigate = useNavigate();
     useEffect(() => {
         console.log("업데이트된 폴더, 업데이트된 게시물", folderData, documents,folders);
     }, [folderData, documents,folders,isscrapfolderpost]);
-
+    
 
     // 처음 folder 정보 가져옴
     useEffect(() => {
@@ -92,7 +107,7 @@ export default function ScrapFolder({setIsScrap,setIsSearch,currentFolderId,setC
     useEffect(() => {
         const fetchFolderPosts = async () => {
             try {
-                    const docs = await getFolderPost(token,currentFolderId,postsort,page);                
+                    const docs = await getFolderPost(token,folderId,postsort,page);                
                     setDocuments(docs['posts']);
                     setTotalPages(docs['pages']);
             } catch (error) {
@@ -102,7 +117,9 @@ export default function ScrapFolder({setIsScrap,setIsSearch,currentFolderId,setC
         fetchFolderPosts();
     }, [postsort,page]);
 
-
+    useEffect(() => {
+        console.log("folderIds",folderIds);
+    }, [folderIds]);
 
 
     const handleMakeFolder = () => {
@@ -129,7 +146,8 @@ export default function ScrapFolder({setIsScrap,setIsSearch,currentFolderId,setC
     const handleFolderDelete = async (folderIdToDelete: number) => {
         setIsScrapFolderPost(false);
         setIsScrap(true);
-        setIsSearch(false);
+        setIsFolderSearch(false);
+        setIsSearch(true);
         try {
             await deleteFolder(token,folderIdToDelete);
             setFolderData(prevData => {
@@ -147,22 +165,27 @@ export default function ScrapFolder({setIsScrap,setIsSearch,currentFolderId,setC
         }
     };
 
-    const handleGetFolderPost = async (folderId: number) => {
-        setIsScrapFolderPost(true);
-        setIsScrap(false);
-        setIsSearch(true);
-        setCurrentFolderId(folderId);
-        console.log('클릭한 포스트아이디', folderId);
-        try {
-            const docs = await getFolderPost(token,folderId,postsort,page);
-            console.log("가지곤폴더에담겨있는게시글",docs);
-            setDocuments(docs['posts']);
-            setTotalPages(docs['pages']);
-            setCurrentFolderId(folderId);
-        } catch (error) {
-            console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
-        }
-    };
+const handleGetFolderPost = async (folderId: number) => {
+    if (location.pathname.includes('/mypage/searchfolder')) {
+        navigate('/mypage');
+    }
+    setIsScrapFolderPost(true);
+    setIsScrap(false);
+    setIsFolderSearch(true);
+    setIsSearch(false);
+    setCurrentFolderId(folderId);
+    console.log('클릭한 포스트아이디', folderId);
+    try {
+        const docs = await getFolderPost(token,folderId,postsort,page);
+        console.log("가지곤폴더에담겨있는게시글",docs);
+        setDocuments(docs['posts']);
+        setTotalPages(docs['pages']);
+        // console.log("하아ㅏ아",folderIds);
+    } catch (error) {
+        console.error("스크랩 폴더의 게시글을 가져오지 못했습니다.", error);
+    }
+};
+
 
     return (
         <>
@@ -191,6 +214,7 @@ const Container = styled.div`
     flex-wrap:wrap;
     column-gap: 50px;
     padding:19px 77px;
+    background: linear-gradient(#DBEBFF 10%, #FFFFFF);
 `
 const FolderWrapper = styled.div`
     display: flex;
