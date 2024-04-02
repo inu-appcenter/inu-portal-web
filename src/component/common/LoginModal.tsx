@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import loginImg from "../../resource/assets/login-logo.png";
-import bubbleImg from "../../resource/assets/bubble-logo.png"
+import loginImg from "../../resource/assets/login-logo.svg";
+import bubbleImg from "../../resource/assets/bubble-logo.svg"
 import { useNavigate } from 'react-router-dom';
 interface Props {
   setOpenModal: (isOpen: boolean) => void;
@@ -15,10 +15,12 @@ const LoginModal: React.FC<Props> = ({ setOpenModal,closeModal }) => {
       navigate('/login');
     }
     return (
-        <ModalWrapper >
+        <ModalWrapper onClick={closeModal} >
           <Modal>
+            <ModalImg>
               <ModalLoginImg src={loginImg} alt="로그인 횃불이 로고"/>
               <ModalLoginTitle/>
+            </ModalImg>
               <ModalContentWrapper>
                 <ModalLoginContent>접근 시, 로그인이 필요합니다.</ModalLoginContent>
                 <CloseButton onClick={closeModal}>x</CloseButton>
@@ -47,6 +49,9 @@ margin: 0 auto;
 text-align: center;
 `;
 
+const ModalImg = styled.div`
+  position: relative;
+`
 
 const ModalLoginTitle = styled.div`
   font-family: Inter;
@@ -55,26 +60,24 @@ const ModalLoginTitle = styled.div`
   line-height: 20px;
   letter-spacing: 0px;
   text-align: right;
-  position: absolute;
-  top:200px;
-  right: 700px;
-
-
+ 
   &::before {
-    content: "잠깐";
+    content: "잠깐!!";
     display: inline-block;
     background-image: url(${bubbleImg});
-
     vertical-align: middle;
-    margin-right: 20px;
-    width: 179px;
+    width: 186px;
     height: 135px;
     background-size: cover;
     background-repeat: no-repeat;
     text-align: center;
     line-height: 120px;
+    position: absolute; /* 수정: 위치를 조정하기 위해 절대 위치 지정 */
+    top: 0px; /* 원하는 위치로 조정 */
+    right: 30px; /* 원하는 위치로 조정 */
   }
 `;
+
 const ModalLoginImg = styled.img`
   position: relative;
 `;

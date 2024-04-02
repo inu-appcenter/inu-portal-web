@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from 'react-redux';
@@ -23,6 +23,22 @@ export default function NavItems() {
   const [selectedChildItems, setSelectedChildItems] = useState<any[]>([]);
   const navigate = useNavigate();
 
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent){
+      if(wrapperRef.current && !wrapperRef.current.contains(event.target)){
+        setToggleIndex(null);
+        setSubToggleIndex(null);
+        setSelectedChildItems([]);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () =>{
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [wrapperRef]);
+  
   const handleToggle = (index: number) => {
     setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
     
@@ -46,6 +62,10 @@ export default function NavItems() {
     if (item.subItems) {
       setSubToggleIndex(index);
       setSelectedChildItems(item.subItems); // 수정: 자식 항목의 모달 상태 업데이트
+      console.log(setSubToggleIndex);
+      console.log(setSelectedChildItems);
+      
+      
     } else {
       window.open(item.url);
       setSelectedChildItems([]);
@@ -53,16 +73,18 @@ export default function NavItems() {
     }
   };
 
-  const closeModal = () => {
+  const closeModal = () => {   
     setOpenModal(false);
      // 수정: 모달이 닫힐 때 자식 항목의 모달 상태 초기화
   };
   const closeSubModal = () => {
+    console.log('닫힘');
+    
     setSelectedChildItems([]); // child toggle2가 닫힐 때 selectedChildItems 초기화
   };
 
   return (
-    <Items >
+    <Items ref={wrapperRef}>
       {navBarList.map((items, index) => (
         <ItemWrapper key={index} >
           <div onClick={() => { handleToggle(index);
@@ -160,14 +182,14 @@ const ItemWrapper = styled.div`
     visibility: visible;
     opacity: 1;
     z-index: 10;
-    width: 170px;
+    width: max-content;
     padding: 10px;
     border-radius: 10px;
     background:  #FFFFFFCC;
     color: #656565; /* 글씨 색상 */
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
   }
   
   

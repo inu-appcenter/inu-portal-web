@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import loginImg from "../../resource/assets/login-logo.png";
-import bubbleImg from "../../resource/assets/bubble-logo.png"
+import bubbleImg from "../../resource/assets/bubble-logo.svg"
 import { useNavigate } from 'react-router-dom';
 
 interface Props {
@@ -19,8 +19,9 @@ const CanCelWriteModal: React.FC<Props> = ({ setOpenModal, closeModal }) => { //
         <ModalTitle/>
         <ModalContentWrapper>
           <ModalCancelContent>글쓰기를 취소하시겠습니까?</ModalCancelContent>
-          <CloseButton onClick={closeModal}>x</CloseButton>
         </ModalContentWrapper>
+        <CloseButton >취소</CloseButton>
+        <StayButton onClick={closeModal} >계속</StayButton>
       </Modal>
     </ModalWrapper>
   );
@@ -94,27 +95,44 @@ const ModalCancelContent = styled.p`
   padding: 35px 108px;
 `
 const CloseButton = styled.button`
-  background: none;
-  padding: 5px 20px;
-  font-size: 18px;
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 20px;
-  position: absolute;
-  border: none;
+width: 79px;
+height: 45px;
+top: 897px;
+left: 591px;
+border-radius: 10px;
+opacity: 0px;
+margin: 0 30px;
+background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
+border: none;
+font-family: Inter;
+font-size: 25px;
+font-weight: 600;
+text-align: center;
+color: #FFFFFF;
+&:hover{
+  cursor: pointer
+}
+
 `;
 
-const ModalLoginBtn = styled.button`
-  font-family: Inter;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 22px;
-  background-color: #0E4D9D;
-  color:white;
-  border-radius: 5px;
-  padding: 8px 15px;
-`
+const StayButton = styled.button`
+width: 79px;
+height: 45px;
+top: 897px;
+left: 591px;
+border-radius: 10px;
+opacity: 0px;
+margin: 0 30px;
+border: none;
+background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
+font-family: Inter;
+font-size: 25px;
+font-weight: 600;
+text-align: center;
+color: #FFFFFF;
+&:hover{
+  cursor: pointer
+}
 
+`
 export default CanCelWriteModal;
