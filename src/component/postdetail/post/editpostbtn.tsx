@@ -16,7 +16,7 @@ const EditPostBtn: React.FC<EditPostBtnProps> = ({ handleEditPost, id }) => {
       // 서버에 postId를 전송
       const response = await handleEditPost(id);
       // 수정 후 어떤 화면으로 이동할지에 대한 로직
-      navigate(`/tips/update/${id}`);
+      window.open(`/update/${id}`, '_blank');
     } catch (error) {
       console.error('에러?:', error);
     }

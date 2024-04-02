@@ -32,12 +32,9 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   
   // 글 작성 중인지 여부를 확인하는 useEffect
   useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (title.trim() || content.trim() || category.trim() || images.length) {
-        event.preventDefault();
-        event.returnValue = '';
-        setShowCancelModal(true);
-      }
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => { 
+      event.preventDefault();
+      event.returnValue = '';
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -45,8 +42,8 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [title, content, category, images]);
-  
+  }, []);
+
   const handleTitleChange = (value: string) => {
     setTitle(value);
   };
@@ -91,12 +88,12 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
         alert('카테고리를 선택하세요!');
       return;
       }
-
+      let postId;
       try {
         const response = await launchPost({ title, content, category, anonymous }, token);
         if (response) {
           console.log('Post submitted successfully');
-          const postId = response.data;
+          postId = response.data;
           
             const responseImage = await postImage(token, postId, images);
             if (responseImage) {
@@ -109,7 +106,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       }
       // 게시 성공 후 부모 컴포넌트에서 전달한 콜백 함수 호출
       onPostSubmit();
-      navigate(`/tips`);
+      navigate(`/tips/${postId}`);
     } catch (error) {
       console.error('Error submitting post:', error);
     }
@@ -129,18 +126,11 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     setSelectedImage(null);
     setImages([]);
     // 이전 페이지로 이동
-    navigate('/tips');
   };
   return (
     <div className='PostFormContainer'>
       <div className='bar'>
         <ImageInput onImageChange={handleImageChange} />
-        <div className='line'/>
-        <div> 글꼴 </div>
-        <div> 글자크기 </div>
-        <div> 색상 </div>
-        <div className='line'/>
-
         <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
         <div className='post-button' onClick={handlePostSubmit}>업로드</div>
       </div>

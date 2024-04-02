@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import VVector from '../../resource/assets/V-Vector.svg';
 import LoginModal from './LoginModal.tsx';
+import round from '../../resource/assets/round.svg'
+import lightround from '../../resource/assets/lightround.svg'
+import polygon from '../../resource/assets/polygon.svg'
 
 interface loginInfo {
   user: {
@@ -20,6 +23,22 @@ export default function NavItems() {
   const [selectedChildItems, setSelectedChildItems] = useState<any[]>([]);
   const navigate = useNavigate();
 
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent){
+      if(wrapperRef.current && !wrapperRef.current.contains(event.target)){
+        setToggleIndex(null);
+        setSubToggleIndex(null);
+        setSelectedChildItems([]);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () =>{
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [wrapperRef]);
+  
   const handleToggle = (index: number) => {
     setToggleIndex((prevIndex) => (prevIndex === index ? null : index));
     
@@ -43,22 +62,31 @@ export default function NavItems() {
     if (item.subItems) {
       setSubToggleIndex(index);
       setSelectedChildItems(item.subItems); // 수정: 자식 항목의 모달 상태 업데이트
+      console.log(setSubToggleIndex);
+      console.log(setSelectedChildItems);
+      
+      
     } else {
       window.open(item.url);
+      setSelectedChildItems([]);
+      setToggleIndex(null);
     }
   };
 
-  const closeModal = () => {
+  const closeModal = () => {   
     setOpenModal(false);
      // 수정: 모달이 닫힐 때 자식 항목의 모달 상태 초기화
   };
   const closeSubModal = () => {
+    console.log('닫힘');
+    
     setSelectedChildItems([]); // child toggle2가 닫힐 때 selectedChildItems 초기화
   };
+
   return (
-    <Items>
+    <Items ref={wrapperRef}>
       {navBarList.map((items, index) => (
-        <ItemWrapper key={index}>
+        <ItemWrapper key={index} >
           <div onClick={() => { handleToggle(index);
               if (items.title === '마이 페이지') {
                 handleMyPageClick('/mypage');
@@ -68,12 +96,14 @@ export default function NavItems() {
             {items.title}
             
             {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && (toggleIndex === index)) && (
-              <div className='child toggle'>
+              <div className='child toggle' >
                 <img className='v-vector' src={VVector} />
                 <div className='line-vector'></div>
                 {items.child.map((item, itemIndex) => (
                   <ChildDetail key={itemIndex} onClick={(event) => handleSubItemClick(item, itemIndex, event)} >
+                    <img src={lightround} alt='상단바 인덱스 디자인' style={{margin: '0 10px'}}/>
                     {item.title}
+                    
                     {((items.title === '학과 홈페이지') && (toggleIndex === index) && (selectedChildItems.length > 0)) && (itemIndex === subToggleIndex) && (
                       <div className='child toggle2' onClick={closeSubModal}> {/* 수정된 부분 */}
                         {selectedChildItems.map((subItem, subItemIndex) => (
@@ -129,7 +159,7 @@ const ItemWrapper = styled.div`
     opacity: 1;
     z-index: 10;
     margin: 10px 0;
-    width: 195px;
+    width: 210px;
     padding: 30px 20px;
     border-radius: 10px;
 
@@ -152,15 +182,16 @@ const ItemWrapper = styled.div`
     visibility: visible;
     opacity: 1;
     z-index: 10;
-    width: 170px;
-    padding: 20px 10px;
+    width: max-content;
+    padding: 10px;
     border-radius: 10px;
     background:  #FFFFFFCC;
     color: #656565; /* 글씨 색상 */
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
   }
+  
   
   .v-vector {
     height: 8px;
@@ -199,17 +230,23 @@ const Items = styled.div`
 const ChildDetail = styled.div`
   font-family: Inter;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   padding-top: 7px;
   padding-bottom: 7px;
-  color: white;
+  color: #FFFFFF99;
+
   width: 100%;
-  transition: background-color 0.3s; /* 배경색 변화에 대한 트랜지션 */
+  transition: color 0.2s; /* 배경색 변화에 대한 트랜지션 */
   border-radius: 10px;
   &:hover {
-    color: #000000; /* 호버 시 배경색을 변경 */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    color: #FFFFFF /* 호버 시 배경색을 변경 */
   }
+  &:hover{
+    img {
+      content: url(${round}); /* 호버 시 이미지 변경 */
+    }
+  }
+  cursor: pointer;
   position: relative
 `;
 
@@ -224,5 +261,12 @@ const ChildDetail2 = styled.div`
   &:hover {
     color: #000000; /* 호버 시 배경색을 변경 */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    img {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      content: url(${polygon}); /* 호버 시 polygon 이미지로 변경 */
+    }
   }
 `;

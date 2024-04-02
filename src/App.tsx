@@ -8,6 +8,8 @@ import { useEffect } from 'react';
 import reLogin from './utils/reLogin';
 import { useDispatch } from 'react-redux';
 import refresh from './utils/refresh';
+import CreatePost from './page/CreatePostPage';
+import EditPost from './page/EditPostPage';
 
 
 
@@ -53,16 +55,14 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Navigate to={'home'} />} />
         <Route path='/' element={<MainPage />}>
-          <Route path='/home' element={<HomePage />} />
-          <Route path='/login/*' element={<Login />} />
-          <Route path='/tips/*' element={<Tips />} />
-          <Route path='/mypage/*' element={<MyPage />} />
-
-          
-        </Route>
-
+        <Route path='/' element={<HomePage />} />
+        <Route path='/login/*' element={<Login />} />
+        <Route path='/tips/*' element={<Tips />} />
+        <Route path='/mypage/*' element={<MyPage />} />
+      </Route>
+        <Route path='update/:id' element={<EditPost />} />
+        <Route path='/write' element={<CreatePost />} />
       </Routes>
     </BrowserRouter>
   );

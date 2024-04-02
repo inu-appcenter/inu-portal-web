@@ -1,7 +1,7 @@
 import React from 'react';
 import deletePost from '../../../utils/deletePost';
 import { useNavigate } from 'react-router-dom';
-
+import deletebtn from '../../../resource/assets/deletbtn.svg'
 interface DeletePostBtnProps {
   token: string;
   id: number;
@@ -33,7 +33,9 @@ const DeletePostBtn: React.FC<DeletePostBtnProps> = ({ token, id, onPostUpdate }
     }
   };
 
-  return <button onClick={handleDeleteClick}>삭제하기</button>;
+  return <div onClick={handleDeleteClick} style={{margin: '2px'}}>
+    <img src={deletebtn} alt="삭제 아이콘" style={{padding:'3px'}}/>
+    삭제</div>;
 };
 
 export default DeletePostBtn;
