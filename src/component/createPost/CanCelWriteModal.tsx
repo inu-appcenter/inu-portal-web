@@ -15,8 +15,10 @@ const CanCelWriteModal: React.FC<Props> = ({ setOpenModal, closeModal }) => { //
   return (
     <ModalWrapper onClick={closeModal}> {/* 모달 외부를 클릭하면 모달이 닫히도록 설정 */}
       <Modal onClick={(e) => e.stopPropagation()}> {/* 모달 내부 클릭 시 닫히지 않도록 설정 */}
+      <ModalImg>
         <ModalLoginImg src={loginImg} alt="로그인 횃불이 로고"/>
-        <ModalTitle/>
+        <ModalLoginTitle/>
+      </ModalImg>
         <ModalContentWrapper>
           <ModalCancelContent>글쓰기를 취소하시겠습니까?</ModalCancelContent>
         </ModalContentWrapper>
@@ -48,30 +50,33 @@ const Modal = styled.div`
 `;
 
 
-const ModalTitle = styled.div`
+
+const ModalImg = styled.div`
+  position: relative;
+`
+
+const ModalLoginTitle = styled.div`
   font-family: Inter;
   font-size: 25px;
   font-weight: 600;
   line-height: 20px;
   letter-spacing: 0px;
   text-align: right;
-  position: absolute;
-  top: 200px;
-  right: 700px;
-  z-index: 10; /* 추가: 다른 요소 위로 올라오도록 설정 */
-
+ 
   &::before {
-    content: "잠깐";
+    content: "잠깐!!";
     display: inline-block;
     background-image: url(${bubbleImg});
     vertical-align: middle;
-    margin-right: 20px;
-    width: 179px;
+    width: 186px;
     height: 135px;
     background-size: cover;
     background-repeat: no-repeat;
     text-align: center;
     line-height: 120px;
+    position: absolute; /* 수정: 위치를 조정하기 위해 절대 위치 지정 */
+    top: 0px; /* 원하는 위치로 조정 */
+    right: 30px; /* 원하는 위치로 조정 */
   }
 `;
 const ModalLoginImg = styled.img`
