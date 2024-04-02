@@ -12,6 +12,10 @@ interface Props {
 const CanCelWriteModal: React.FC<Props> = ({ setOpenModal, closeModal }) => { // closeModal 추가
   const navigate = useNavigate();
 
+  const handleClose =() =>{
+    navigate('/tips');
+  }
+
   return (
     <ModalWrapper onClick={closeModal}> {/* 모달 외부를 클릭하면 모달이 닫히도록 설정 */}
       <Modal onClick={(e) => e.stopPropagation()}> {/* 모달 내부 클릭 시 닫히지 않도록 설정 */}
@@ -22,7 +26,7 @@ const CanCelWriteModal: React.FC<Props> = ({ setOpenModal, closeModal }) => { //
         <ModalContentWrapper>
           <ModalCancelContent>글쓰기를 취소하시겠습니까?</ModalCancelContent>
         </ModalContentWrapper>
-        <CloseButton >취소</CloseButton>
+        <CloseButton onClick={handleClose} >취소</CloseButton>
         <StayButton onClick={closeModal} >계속</StayButton>
       </Modal>
     </ModalWrapper>

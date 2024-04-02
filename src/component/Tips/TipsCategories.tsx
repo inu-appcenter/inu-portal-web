@@ -54,13 +54,14 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
 
   const handleClickCategory = (category: string) => {
     setSelectedCategory(category);
+  
     if (docType === 'TIPS') {
-      navigate('/tips');
-    }
-    else if (docType === 'NOTICE') {
-      navigate('/tips/notice');
+      window.location.href = '/tips';
+    } else if (docType === 'NOTICE') {
+      window.location.href = '/tips/notice';
     }
   }
+  
 
   return (
     <div className='categories'>

@@ -32,6 +32,9 @@ export default function TipsPage() {
       setDocType('TIPS');
     }
   })
+
+  const isWriteOrUpdatePath = location.pathname.includes('/tips/write') || location.pathname.includes('/tips/update');
+  
   return (
     <TipsPageWrapper>
       <TipsCatWrapper>
@@ -39,7 +42,7 @@ export default function TipsPage() {
       </TipsCatWrapper>
       <TipsContentWrapper>
         <TipsTitle selectedCategory={selectedCategory} docType={docType} />
-        {docType === 'NOTICE' ? <NoticesTop /> : <TipsTopPosts />}
+        {!isWriteOrUpdatePath && (docType === 'NOTICE' ? <NoticesTop /> : <TipsTopPosts />)}
         <BorderWrapper>
           <Routes>
             <Route index element={<TipsDocuments docType={docType} selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
@@ -51,7 +54,7 @@ export default function TipsPage() {
           </Routes>
         </BorderWrapper >
       </TipsContentWrapper>
-      <PostBotton />
+      <PostBotton  />
     </TipsPageWrapper>
   )
 }
@@ -77,8 +80,6 @@ const TipsContentWrapper = styled.div`
 
 const BorderWrapper = styled.div`
   margin-right: 25px;
-  border-style: solid;
-  border-width: 5px 0 0 5px;
-  border-color: #EAEAEA;
+
   flex-grow: 1;
 `
