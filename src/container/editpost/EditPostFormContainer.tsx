@@ -193,7 +193,7 @@ console.log(images);
           
   
           onPostUpdate();
-          navigate(-1);
+          navigate(`/tips/${postId}`);
         }
       } catch (error) {
         console.error(error);

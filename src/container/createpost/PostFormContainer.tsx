@@ -88,12 +88,12 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
         alert('카테고리를 선택하세요!');
       return;
       }
-
+      let postId;
       try {
         const response = await launchPost({ title, content, category, anonymous }, token);
         if (response) {
           console.log('Post submitted successfully');
-          const postId = response.data;
+          postId = response.data;
           
             const responseImage = await postImage(token, postId, images);
             if (responseImage) {
@@ -106,7 +106,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       }
       // 게시 성공 후 부모 컴포넌트에서 전달한 콜백 함수 호출
       onPostSubmit();
-      navigate(`/tips`);
+      navigate(`/tips/${postId}`);
     } catch (error) {
       console.error('Error submitting post:', error);
     }

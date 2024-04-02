@@ -80,6 +80,8 @@ const TipsContentWrapper = styled.div`
 
 const BorderWrapper = styled.div`
   margin-right: 25px;
-
+  border-style: solid;
+  border-width: 5px 0 0 5px;
+  border-color: #EAEAEA;
   flex-grow: 1;
 `

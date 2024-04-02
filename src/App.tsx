@@ -55,15 +55,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Navigate to={'home'} />} />
         <Route path='/' element={<MainPage />}>
-          <Route path='/home' element={<HomePage />} />
-          <Route path='/login/*' element={<Login />} />
-          <Route path='/tips/*' element={<Tips />} />
-          <Route path='/mypage/*' element={<MyPage />} />
-
-          
-        </Route>
+        <Route path='/' element={<HomePage />} />
+        <Route path='/login/*' element={<Login />} />
+        <Route path='/tips/*' element={<Tips />} />
+        <Route path='/mypage/*' element={<MyPage />} />
+      </Route>
         <Route path='update/:id' element={<EditPost />} />
         <Route path='/write' element={<CreatePost />} />
       </Routes>
