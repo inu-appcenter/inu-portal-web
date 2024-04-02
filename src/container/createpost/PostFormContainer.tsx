@@ -135,12 +135,6 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     <div className='PostFormContainer'>
       <div className='bar'>
         <ImageInput onImageChange={handleImageChange} />
-        <div className='line'/>
-        <div> 글꼴 </div>
-        <div> 글자크기 </div>
-        <div> 색상 </div>
-        <div className='line'/>
-
         <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
         <div className='post-button' onClick={handlePostSubmit}>업로드</div>
       </div>
