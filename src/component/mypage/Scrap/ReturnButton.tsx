@@ -1,15 +1,15 @@
+// import { useNavigate } from "react-router-dom";
+
 interface ReturnScrapButtonProps {
     setIsScrap:(scrap:boolean) => void;
     setIsScrapFolderPost:(scrapfolder:boolean) => void;
-    setIsSearch:(issearch:boolean) => void;
   }
   
-export default function ReturnScrapButton ({setIsScrap,setIsScrapFolderPost,setIsSearch}:ReturnScrapButtonProps) {
-
+export default function ReturnScrapButton ({setIsScrap,setIsScrapFolderPost}:ReturnScrapButtonProps) {
+    // const navigate = useNavigate();
     const handleopen = () => {
         setIsScrap(true);
         setIsScrapFolderPost(false);
-        setIsSearch(false);
     }
   return (
     <span>
