@@ -7,15 +7,21 @@ import getUser from '../../utils/getUser';
 import { NicknameUser as NicknameUserAction , ProfileUser as ProfileuserAction} from '../../reducer/userSlice';
 import { MypageTitle } from '../../component/mypage/common/MyPageTitle';
 import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
+import SearchBar from '../../component/Tips/SearchBar';
 
-import SearchScrapBar from '../../component/mypage/Scrap/searchScrapBar';
+// import SearchScrapBar from '../../component/mypage/Scrap/searchScrapBar';
 
 interface loginInfo {
   user: {
     token: string;
   };
 }
-export default function MyPageTitleContainer() {
+
+interface MyPageTitleContainerProps {
+  selectedCategory:string;
+}
+
+export default function MyPageTitleContainer({selectedCategory}:MyPageTitleContainerProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -47,7 +53,7 @@ export default function MyPageTitleContainer() {
     <MyPageTitleWrapper>
       <MypageTitle/>
       <SearchInfoWrapper>
-      <SearchScrapBar/>
+      {(selectedCategory ==='스크랩' || selectedCategory === "내 활동") && <SearchBar/>}
       <MyPageUserInfo/>
       </SearchInfoWrapper>
     </MyPageTitleWrapper>
