@@ -3,10 +3,10 @@ import searchImg from '../../../resource/assets/search.svg';
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
+
 export default function SearchFolderScrapBar() {
   const [searchInput, setSearchInput] = useState('');
   const navigate = useNavigate();
-
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       onSearch(searchInput);
