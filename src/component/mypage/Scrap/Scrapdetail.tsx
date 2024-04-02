@@ -15,6 +15,8 @@ import fileImg from "../../../resource/assets/file-img.png"
 import plusImg from "../../../resource/assets/plus-img.png"
 import Pagination from './Pagination';
 import SortDropBox from '../../common/SortDropBox';
+import ReturnScrapButton from './ReturnButton';
+
 interface loginInfo {
   user: {
     token: string;
@@ -39,19 +41,22 @@ interface Document {
 }
 
 interface ScrapPostProps {
+  selectedCategory:string;
   documents: Document[];
   totalPages:number;
   scrapsort: string;
   page: number;
   setScrapSort: (sort: string) => void;
   setPage: (page: number) => void;
+  setIsFolderSearch:(status: boolean) => void;
+  setIsSearch:(status: boolean) => void;
 }
 
 
 
 
 
-export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapSort,setPage}:ScrapPostProps) {
+export default function ScrapPost({selectedCategory,documents,totalPages,scrapsort,page,setScrapSort,setPage,setIsFolderSearch,setIsSearch}:ScrapPostProps) {
 
   const token = useSelector((state: loginInfo) => state.user.token);
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
@@ -93,6 +98,7 @@ export default function ScrapPost({documents,totalPages,scrapsort,page,setScrapS
             <p className='title'>All scraps</p>
             <p className='length'>{documents.length}</p>
           </CountWrapper>
+          {selectedCategory === '폴더내검색결과' && <ReturnScrapButton setIsScrap={setIsScrap} setIsScrapFolderPost={setIsScrapFolderPost} />}
           <SortDropBox sort={scrapsort} setSort={setScrapSort} />
       </ScrapDetailWrapper>
       <PostWrapper>
