@@ -1,6 +1,6 @@
 import  { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 
 import ScrapTitle from './ScrapTitle';
@@ -14,6 +14,9 @@ import scrapsearch from '../../../utils/scrapsearch';
 import { useLocation } from 'react-router-dom'; 
 import SearchFolderScrapBar from './searchFolderScrapBar';
 import postscrapsearch from '../../../utils/postscrapsearch';
+import SearchScrapBar from './searchScrapBar';
+import { SearchFolderId } from '../../../reducer/folderId';
+
 
 
 interface loginInfo {
@@ -43,20 +46,28 @@ interface ScrapDocumentsProps {
 }
 
 
-
-
+interface SearchInfo {
+  folderId: {
+    folderId: number;
+  }
+}
 export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSort, setPage }: ScrapDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [scrap,setIsScrap] = useState(true);
-  const [issearch,setIsSearch] = useState(false);
+  const [issearch,setIsSearch] = useState(true);
+  const [isFoldersearch,setIsFolderSearch] = useState(false);
   const [currentFolderId, setCurrentFolderId] = useState<number>(0);
+  const folderId = useSelector((state: SearchInfo) => state.folderId.folderId);
   // const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
   const token = useSelector((state: loginInfo) => state.user.token);
   const location = useLocation(); 
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   useEffect(() => {
     console.log('selectedCategory', location);
+    console.log(currentFolderId,"흠흠");
+    dispatch(SearchFolderId({ folderId: currentFolderId }));
+    // console.log("folderId",folderId);
     const fetchScrapInfo = async () => {
       if (selectedCategory === '검색결과') {
         const query = queryString.parse(location.search).query;
@@ -68,9 +79,11 @@ export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSo
       else if (selectedCategory === '폴더내검색결과') {
         const query = queryString.parse(location.search).query;
         console.log('query sort page : ', query, scrapsort, page);
-        const docs = await postscrapsearch(token,currentFolderId,query, scrapsort, page);
+        console.log("vfolderIdfolderId",folderId);
+        const docs = await postscrapsearch(token,folderId,query, scrapsort, page);
         setTotalPages(docs['pages']);
         setDocuments(docs['posts']);
+        console.log(documents,"d엥엥엥");
       }
       else {
         const docs = await getScrap(token, scrapsort,page);
@@ -79,36 +92,37 @@ export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSo
         setDocuments(docs['posts']);
       }
      
-        // const docs = await getScrap(token, scrapsort,page);
-        // setTotalPages(docs['pages']);
-        // setDocuments(docs['posts']);
     };
   
     fetchScrapInfo(); 
-  }, [token,selectedCategory,location.search, scrapsort,page,currentFolderId]);
+  }, [token,selectedCategory,location.search, scrapsort,page,currentFolderId,folderId]);
 
 
 
 
   return (
     <ScrapWrapper>
-      <ScrapInfoWrapper>
-        <ScrapTitle/>
-        {/* <ScrapFolder setIsScrap={setIsScrap} scrap={scrap}/> */}
-        {issearch && <SearchFolderScrapBar/>}
-      </ScrapInfoWrapper>
-      <ScrapFolder currentFolderId={currentFolderId} setIsScrap={setIsScrap} setIsSearch={setIsSearch} setCurrentFolderId= {setCurrentFolderId}/>
+      <BackgrounWrapper>
+        <ScrapInfoWrapper>
+          <ScrapTitle/>
+          {issearch && <SearchScrapBar/>}
+          {isFoldersearch && <SearchFolderScrapBar/>}
+        </ScrapInfoWrapper>
+        <ScrapFolder documents={documents} setDocuments={setDocuments} setCurrentFolderId={setCurrentFolderId} currentFolderId={currentFolderId} setIsScrap ={setIsScrap} setIsFolderSearch={setIsFolderSearch} setIsSearch={setIsSearch}/>
+      </BackgrounWrapper>
       {scrap && 
-      <ScrapPost documents={documents} totalPages={totalPages} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>}
+      <ScrapPost selectedCategory={selectedCategory} documents={documents} totalPages={totalPages} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage} setIsFolderSearch={setIsFolderSearch} setIsSearch={setIsSearch}/>}
 
     </ScrapWrapper>
   );
 }
 
 const ScrapWrapper = styled.div`
-
   flex-grow: 1;
   
+`
+const BackgrounWrapper = styled.div`
+  background: linear-gradient(#DBEBFF 40%, #FFFFFF);
 `
 
 const ScrapInfoWrapper = styled.div`
