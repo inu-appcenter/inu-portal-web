@@ -6,11 +6,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import userSlice from "./reducer/userSlice.tsx";
 import CommonStyle from './resource/style/CommonStyle.tsx';
 import folderSlice from './reducer/folderSlice.tsx';
+import  folderIdSlice  from './reducer/folderId.tsx';
+
 
 const store = configureStore({
     reducer: {
     user: userSlice,
-    folder: folderSlice
+    folder: folderSlice,
+    folderId:folderIdSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
