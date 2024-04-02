@@ -34,7 +34,7 @@ export default function MyPage() {
           <MypageCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
       </MyPageCatWrapper>
       <MyPageContentWrapper>
-            <MyPageTitleContainer />
+            <MyPageTitleContainer selectedCategory={selectedCategory}/>
       {/* <BorderWrapper>
           <Routes>
             <Route index element={<MyPageLists selectedCategory={selectedCategory} scrapsort={scrapsort} likesort={likesort} commentsort={commentsort} postsort={postsort} page={page} setScrapSort={setScrapSort} setLikeSort={setLikeSort} setCommentSort={setCommentSort} setPostSort={setPostSort}  setPage={setPage}/>} />
@@ -70,6 +70,6 @@ const MyPageContentWrapper = styled.div`
 `
 
 const BorderWrapper = styled.div`
- background: linear-gradient(to bottom, #DBEBFF 70%, #FFFFFF );
+ background: linear-gradient(#DBEBFF 0.1%, #FFFFFF 99.9%);
   flex-grow: 1;
 `
