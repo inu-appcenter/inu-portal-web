@@ -70,7 +70,7 @@ export const ScrapFolderPost: React.FC<ScrapFolderPostProps> = ({ postScrapFolde
             <p className='title'>All scraps</p>
             <p className='length'>{updatedPostScrapFolderInfo.length}</p>
           </CountWrapper>
-          <ReturnScrapButton setIsScrap={setIsScrap} setIsScrapFolderPost={setIsScrapFolderPost} setIsSearch={setIsSearch}/>
+          <ReturnScrapButton setIsScrap={setIsScrap} setIsScrapFolderPost={setIsScrapFolderPost} />
           <SortDropBox sort={postsort} setSort={setPostSort} />
         </FolderDetailWrapper>
       <PostWrapper>
