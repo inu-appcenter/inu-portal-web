@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-
+import newFileImg from "../../../resource/assets/file-img.png"
 
 interface Props {
   closeModal: () => void;
@@ -18,21 +18,22 @@ const MakeModal:  React.FC<Props> = ({ closeModal,onChange }) => {
     return (
         <ModalWrapper >
           <Modal>
-            <ModalFolderName>폴더 이름</ModalFolderName> 
+            <MoalFolderImg src={newFileImg}/>
+            <ModalFolderName>파일 이름</ModalFolderName> 
             <ModalFolderNameInput
                     type="text"
                     value={folderName}
                     onChange={(e) => setFolderName(e.target.value)} 
                 />
             <CloseButton onClick={closeModal}>x</CloseButton>
-            <ModalLoginBtn onClick={handleCreateFolder}>폴더 생성</ModalLoginBtn>
+            <ModalLoginBtn onClick={handleCreateFolder}>확인</ModalLoginBtn>
           </Modal>
       </ModalWrapper>
     );
 }
 const ModalWrapper = styled.div`
   align-items: center;
-  background-color: rgba(112, 112, 112, 0.473);
+  background-color: white;
   display: flex;
   height: 40vh;
   justify-content: center;
@@ -54,7 +55,11 @@ const Modal = styled.div`
   gap:30px;
 `;
 
-
+const MoalFolderImg = styled.img`
+width: 150px;
+  text-align:center;
+  margin:0 auto;
+`
 const ModalFolderName = styled.p`
   color:#0E4D9D;
   font-size: 18px;
