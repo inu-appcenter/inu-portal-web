@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import postInsertFolders from '../../../utils/postinsertfolder';
@@ -16,6 +16,7 @@ import plusImg from "../../../resource/assets/plus-img.png"
 import Pagination from './Pagination';
 import SortDropBox from '../../common/SortDropBox';
 import ReturnScrapButton from './ReturnButton';
+import deleteFolderPost from '../../../utils/deleefolderpost';
 
 interface loginInfo {
   user: {
@@ -43,26 +44,25 @@ interface Document {
 interface ScrapPostProps {
   selectedCategory:string;
   documents: Document[];
+  setDocuments:(document:Document[]) => void;
   totalPages:number;
   scrapsort: string;
   page: number;
   setScrapSort: (sort: string) => void;
   setPage: (page: number) => void;
-  setIsFolderSearch:(status: boolean) => void;
-  setIsSearch:(status: boolean) => void;
 }
 
 
 
 
 
-export default function ScrapPost({selectedCategory,documents,totalPages,scrapsort,page,setScrapSort,setPage,setIsFolderSearch,setIsSearch}:ScrapPostProps) {
+export default function ScrapPost({selectedCategory,setDocuments,documents,totalPages,scrapsort,page,setScrapSort,setPage}:ScrapPostProps) {
 
   const token = useSelector((state: loginInfo) => state.user.token);
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
   const folders = useSelector((state: folderInfo) => state.folder.folders);
   const [showDropdown,setShowDropdown] = useState<number | null>(null);
-
+  const { id } = useParams<{ id: string }>();
 
 
   const handleSearchTypeClick = (index: number) => {
@@ -91,6 +91,20 @@ export default function ScrapPost({selectedCategory,documents,totalPages,scrapso
     }
   }
 
+  const handleRemoveClick = async (postId:number) => {
+    if(id !== undefined) {
+      try {
+        const response = await deleteFolderPost(token,postId, id);
+        if(response === 200) {
+          const filteredPostScrapFolderInfo = documents.filter(item => item.id !== postId);
+          setDocuments(filteredPostScrapFolderInfo);
+        }
+      } catch (error) {
+        console.error("폴더 이름을 가져오지 못했습니다.", error);
+      }
+    }
+}
+
   return (
     <ScrapWrapper>
       <ScrapDetailWrapper>
@@ -98,7 +112,7 @@ export default function ScrapPost({selectedCategory,documents,totalPages,scrapso
             <p className='title'>All scraps</p>
             <p className='length'>{documents.length}</p>
           </CountWrapper>
-          {selectedCategory === '폴더내검색결과' && <ReturnScrapButton setIsScrap={setIsScrap} setIsScrapFolderPost={setIsScrapFolderPost} />}
+          {selectedCategory === '폴더' && <ReturnScrapButton/> }
           <SortDropBox sort={scrapsort} setSort={setScrapSort} />
       </ScrapDetailWrapper>
       <PostWrapper>
@@ -111,12 +125,12 @@ export default function ScrapPost({selectedCategory,documents,totalPages,scrapso
                   <p className='title'>{`[${item.title}]`}</p>
                 </PostScrapItem>
               </PostLink>
+              {selectedCategory === '폴더' && <TipDropDownBox onClick={() => handleRemoveClick(item.id)}>-</TipDropDownBox>}
               <PostListWrapper>
               <FolderListDropDownWrapper onClick={() => handleSearchTypeClick(index)}>
                 <FolderListDropDownBox>
                     <img src={ListImg} className='list-img'/>
                     <span>List</span>
-
                   <img src={arrowImg} alt="" className='arrow-img' onClick={hadleCloseModal}/>
                 </FolderListDropDownBox>
                 {showDropdown === index && (
@@ -404,3 +418,14 @@ text-align: left;
 margin: 0 26px 0 6px;
 }
 `
+
+
+const TipDropDownBox = styled.div`
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0em;
+
+  font-size: 50px;
+  line-height: 30px;
+  color:gray;
+`;
