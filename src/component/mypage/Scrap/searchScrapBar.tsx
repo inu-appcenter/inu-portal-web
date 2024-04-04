@@ -1,5 +1,5 @@
 import { useState } from "react";
-import searchImg from '../../../resource/assets/search.svg';
+import searchImg from '../../../resource/assets/search-img.png';
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -23,14 +23,15 @@ export default function SearchScrapBar() {
 
   return (
     <SerachBar>
+            <img src={searchImg} alt='search image' onClick={() => onSearch(searchInput)} />
       <SearchInput
         type='text'
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         onKeyDown={handleKeyPress}
-        placeholder='     Quick search ...' 
+        placeholder='     search by title, keyword ' 
       />
-      <img src={searchImg} alt='search image' onClick={() => onSearch(searchInput)} />
+
     </SerachBar>
   )
 }
@@ -54,4 +55,8 @@ flex-grow: 1;
   
     height: 28px;
     border: 0;
-    background-color: transparent;`
+    background-color: transparent;
+    ::placeholder {
+    color: #BEBEBE; /* 원하는 색상으로 변경 */
+  }
+`
