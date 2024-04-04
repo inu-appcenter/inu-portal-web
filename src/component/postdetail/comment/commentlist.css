@@ -7,6 +7,11 @@
 
 .comment-container {
   display: flex;
+  flex-direction: column;
+}
+
+.comment-main-container {
+  display: flex;
   flex-direction: row;
   padding: 10px;
   gap: 10px;
@@ -18,7 +23,7 @@
 
 .profile-image-background {
   border-radius: 50%;
-  width: 53px;
+  min-width: 53px;
   height: 53px;
   background-color: #FFFFFF;
 
@@ -32,6 +37,7 @@
 }
 
 .comment-container-right {
+  min-width: 70px;
   display: flex;
   flex-direction: column;
   gap: 5px;

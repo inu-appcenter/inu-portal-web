@@ -1,0 +1,37 @@
+.recomment-main-container {
+  padding-left: 80px;
+  border-top: 2px solid #DEDEDE;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+}
+
+.recomment-container-2 {
+  width: 90%;
+  gap: 15px;
+
+  display: flex;
+  align-items: center;
+}
+
+.recomment-writer-text {
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 600;
+
+  color: #4071B9;
+
+}
+
+.recomment-content-text {
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 400;
+
+  max-width: 50%;
+}
+
+.recomment-utility {
+  padding-left: 30px;
+}
