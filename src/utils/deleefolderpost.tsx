@@ -1,4 +1,4 @@
-const deleteFolderPost = async (token:string,postId:number,folderId: number) => {
+const deleteFolderPost = async (token:string,postId:number,folderId: string) => {
     console.log(postId,"aa",folderId,"bbb");
     const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}/posts`;
 
