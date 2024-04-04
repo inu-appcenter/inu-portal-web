@@ -1,19 +1,11 @@
-// import { useNavigate } from "react-router-dom";
-
-interface ReturnScrapButtonProps {
-    setIsScrap:(scrap:boolean) => void;
-    setIsScrapFolderPost:(scrapfolder:boolean) => void;
-  }
+import { useNavigate } from "react-router-dom";
   
-export default function ReturnScrapButton ({setIsScrap,setIsScrapFolderPost}:ReturnScrapButtonProps) {
-    // const navigate = useNavigate();
-    const handleopen = () => {
-        setIsScrap(true);
-        setIsScrapFolderPost(false);
-    }
+export default function ReturnScrapButton () {
+    const navigate = useNavigate();
+
   return (
     <span>
-      <button onClick={() =>handleopen() }>돌아가기</button>
+      <button onClick={() =>navigate('/mypage') }>돌아가기</button>
     </span>
   );
 }
