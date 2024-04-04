@@ -58,7 +58,7 @@ interface SearchInfo {
     folderId: number;
   }
 }
-export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSort, setPage,setSelectedCategory }: ScrapDocumentsProps) {
+export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSort, setPage }: ScrapDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isScrap,setIsScrap] = useState(true);
@@ -171,7 +171,7 @@ const ScrapWrapper = styled.div`
   
 `
 const BackgrounWrapper = styled.div`
-  background: linear-gradient(#DBEBFF 40%, #FFFFFF);
+ background: #DBEBFF;
 `
 
 const ScrapInfoWrapper = styled.div`
