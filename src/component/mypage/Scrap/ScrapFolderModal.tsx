@@ -32,19 +32,20 @@ const MakeModal:  React.FC<Props> = ({ closeModal,onChange }) => {
     );
 }
 const ModalWrapper = styled.div`
-  align-items: center;
+ align-items: center;
   background-color: white;
   display: flex;
-  height: 40vh;
   justify-content: center;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  top: 10%;
-  width: 50%;
+  position: fixed; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
   z-index: 100;
-  margin-left: 25%;
+  width: 709px;
+  height: 309px;
   border-radius: 10px;
+  border: 1px solid #AAC9EE;
+  padding: 20px 0;
 `;
 
 const Modal = styled.div`
@@ -52,25 +53,28 @@ const Modal = styled.div`
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap:30px;
 `;
 
 const MoalFolderImg = styled.img`
-width: 150px;
-  text-align:center;
-  margin:0 auto;
+width: 128px;
+height: 128px;
+margin:0 auto;
 `
 const ModalFolderName = styled.p`
   color:#0E4D9D;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 22px;
-  background-color: white;
-  border-radius: 5px;
+  color: #000;
 `
 const ModalFolderNameInput = styled.input`
-  padding:10px 50px;
+  width: 249px;
+  height: 32px;
   text-align: center;
+  background-color: #F3F3F3;
+  border-radius: 10px;
+  border:none;
+  margin-bottom: 46px;
 `
 const CloseButton = styled.button`
   background: none;
@@ -86,13 +90,16 @@ const CloseButton = styled.button`
 `;
 
 const ModalLoginBtn = styled.button`
-  font-family: Inter;
-font-size: 18px;
+font-size: 15px;
 font-weight: 600;
-line-height: 22px;
-background-color: #0E4D9D;
+background-color: #4071B9;
 color:white;
 border-radius: 5px;
+width:71px;
+height: 25px;
+border-radius: 10px;
+border: none;
+margin:0 auto;
 `
 
 export default MakeModal;

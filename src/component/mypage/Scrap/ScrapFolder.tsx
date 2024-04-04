@@ -115,8 +115,8 @@ const FolderWrapper = styled.div`
         color:white;
         line-height: 11px;
         position: absolute;
-        left: 80%;
-        top:8%;
+        left: 90%;
+        bottom:90%;
     }
 
 `;
