@@ -10,6 +10,7 @@ import { MyPageLists } from '../component/mypage/common/MyPageLists';
 import ScrapInfo from '../component/mypage/Scrap/Scrap';
 
 
+
 export default function MyPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('스크랩');
   const [scrapsort, setScrapSort] = useState<string>('date');
@@ -35,17 +36,13 @@ export default function MyPage() {
       </MyPageCatWrapper>
       <MyPageContentWrapper>
             <MyPageTitleContainer selectedCategory={selectedCategory}/>
-      {/* <BorderWrapper>
-          <Routes>
-            <Route index element={<MyPageLists selectedCategory={selectedCategory} scrapsort={scrapsort} likesort={likesort} commentsort={commentsort} postsort={postsort} page={page} setScrapSort={setScrapSort} setLikeSort={setLikeSort} setCommentSort={setCommentSort} setPostSort={setPostSort}  setPage={setPage}/>} />
-            <Route path='search' element={<ScrapInfo  selectedCategory={'검색결과'} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
-          </Routes>
-      </BorderWrapper > */}
+
         <BorderWrapper>
           <Routes>
             <Route index element={<MyPageLists selectedCategory={selectedCategory} scrapsort={scrapsort} likesort={likesort} commentsort={commentsort} postsort={postsort} page={page} setScrapSort={setScrapSort} setLikeSort={setLikeSort} setCommentSort={setCommentSort} setPostSort={setPostSort}  setPage={setPage}/>} />
-            <Route path='search' element={<ScrapInfo  selectedCategory={'검색결과'} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
-            <Route path='searchfolder' element={<ScrapInfo  selectedCategory={'폴더내검색결과'} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
+            <Route path=':id' element={<ScrapInfo  selectedCategory={'폴더'} setSelectedCategory={setSelectedCategory} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
+            <Route path='search' element={<ScrapInfo  selectedCategory={'검색결과'} setSelectedCategory={setSelectedCategory} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
+            <Route path='searchfolder' element={<ScrapInfo  selectedCategory={'폴더내검색결과'} setSelectedCategory={setSelectedCategory} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
           </Routes>
         </BorderWrapper >
       </MyPageContentWrapper>
