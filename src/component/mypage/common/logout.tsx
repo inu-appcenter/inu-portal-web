@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import logoutImg from  "../../resource/assets/logout-logo.png"
+import logoutImg from "../../../resource/assets/logout-logo.png"
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../../reducer/userSlice";
@@ -24,8 +24,10 @@ export default function  MypageLogout () {
 
 const MyPageLogpoutWrapper = styled.div`
     display: flex;
-    padding: 25px 20px;
+    padding: 20px 35px;
     margin-top: 72px;
+    position: absolute;
+    bottom: 10px;
 `
 const MyPageLogpoutImg= styled.img`
 display: inline-block;

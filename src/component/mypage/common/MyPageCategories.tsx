@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 // import './TipsCategories.css';
 import { MyPageCategory } from '../../../resource/string/mypage';
+import MypageLogout from './logout';
 
 interface Category {
   name: string;
@@ -59,6 +60,7 @@ export default function MyPageCategories({ selectedCategory, setSelectedCategory
           {category.name}
         </div>
       ))}
+      <MypageLogout/>
     </div>
   );
 }
