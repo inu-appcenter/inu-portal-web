@@ -49,7 +49,6 @@ interface ScrapDocumentsProps {
   page: number;
   setScrapSort: (sort: string) => void;
   setPage: (page: number) => void;
-  setSelectedCategory:(category:string) => void;
 }
 
 
