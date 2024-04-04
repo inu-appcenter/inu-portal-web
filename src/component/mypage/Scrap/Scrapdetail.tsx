@@ -13,6 +13,7 @@ import arrowImg from "../../../resource/assets/arrow.png"
 import closeImg from "../../../resource/assets/close-img.png"
 import fileImg from "../../../resource/assets/file-img.png"
 import plusImg from "../../../resource/assets/plus-img.png"
+import deleteImg from "../../../resource/assets/delete-img.png"
 import Pagination from './Pagination';
 import SortDropBox from '../../common/SortDropBox';
 import ReturnScrapButton from './ReturnButton';
@@ -125,8 +126,12 @@ export default function ScrapPost({selectedCategory,setDocuments,documents,total
                   <p className='title'>{`[${item.title}]`}</p>
                 </PostScrapItem>
               </PostLink>
-              {selectedCategory === '폴더' && <TipDropDownBox onClick={() => handleRemoveClick(item.id)}>-</TipDropDownBox>}
               <PostListWrapper>
+              {selectedCategory === '폴더' && 
+              <RemoveButton  onClick={() => handleRemoveClick(item.id)}>
+                <img src={deleteImg} alt="" />
+                <span>삭제</span>
+              </RemoveButton>}
               <FolderListDropDownWrapper onClick={() => handleSearchTypeClick(index)}>
                 <FolderListDropDownBox>
                     <img src={ListImg} className='list-img'/>
@@ -159,6 +164,7 @@ export default function ScrapPost({selectedCategory,setDocuments,documents,total
                 )}
               </FolderListDropDownWrapper>
               <PostInfoWrapper>
+                
                 <img src={CalendarImg} alt="" className='calender-image'/>
                 <p className='createdate'>{item.createDate}</p>
                 <img src={HeartImg} alt="" className='heart-image'/>
@@ -420,12 +426,10 @@ margin: 0 26px 0 6px;
 `
 
 
-const TipDropDownBox = styled.div`
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0em;
-
-  font-size: 50px;
-  line-height: 30px;
-  color:gray;
+const RemoveButton = styled.div`
+  span {
+    font-size: 15px;
+    color:#888888;
+    margin-left:5px;
+  }
 `;
