@@ -72,7 +72,7 @@ const MainTips: React.FC = () => {
               <div className="dropdown-menu">
                 <div onClick={() => handleOptionClick('제목+내용')}>제목+내용</div>
                 <div onClick={() => handleOptionClick('제목')}>제목</div>
-                <div onClick={() => handleOptionClick('내용')}>내용</div>
+                <div onClick={() => handleOptionClick('내용')}>내용</div> 
                 <div onClick={() => handleOptionClick('글쓴이')}>글쓴이</div>
               </div>
             )}
