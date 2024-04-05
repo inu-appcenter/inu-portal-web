@@ -1,0 +1,37 @@
+.comment-input-container {
+  position: absolute;
+  bottom: 50px;
+  width: calc(100% - 500px);
+
+  height: 56px;
+  border-radius: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: #EFF2F9;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.anonymous-text {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.vline {
+  width: 2px;
+  height: 28px;
+
+  background-color: #B3B3B3;
+}
+
+.comment-input {
+  flex-grow: 1;
+  font-size: 20px;
+  font-weight: 400;
+
+  height: 48px;
+  border: 0;
+  background-color: transparent;
+}

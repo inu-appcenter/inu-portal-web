@@ -1,0 +1,103 @@
+.items-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.item {
+  width: 194px;
+  height: 143px;
+  border-radius: 5px;
+  border: 3px solid #9CAFE2;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.item-0 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 20px;
+  margin-top: 25px;
+  gap: 20px;
+}
+
+.text인천대 {
+  font-family: Inter;
+  font-size: 30px;
+  font-weight: 500;
+  color: #0E4D9D;
+}
+
+.text공지사항 {
+  font-family: Inter;
+  font-size: 30px;
+  font-weight: 800;
+  color: #0E4D9D;
+
+  margin-left: 20px;
+}
+
+.notice-category {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-text {
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #0E4D9D;
+}
+
+.category-underbar {
+  height: 1px;
+  width: 100%;
+  background-color: #7AA7E5;
+}
+
+.notice-title {
+  margin-top: 10px;
+  flex-grow: 1;
+  font-family: Inter;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.notice-date {
+  font-family: Inter;
+  font-size: 30px;
+  font-weight: 700;
+  color: #7AA7E5;
+  text-align: center;
+}
+
+.img-container {
+  display: flex;
+  justify-content: center;
+}
+
+.hline {
+  border: 2px solid #9CAFE2
+}
+
+.PreviousNextContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.PreviousNext {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+
