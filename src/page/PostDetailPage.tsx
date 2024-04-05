@@ -4,12 +4,11 @@ import PostUtility from '../container/postdetail/PostUtilityContainer';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import getPost from '../utils/getPost';
-import { useSelector } from 'react-redux';
-import DeletePostBtn from '../component/postdetail/post/deletpostbtn';
-import EditPostBtn from '../component/postdetail/post/editpostbtn';
+
 import ReturnButton from '../component/postdetail/post/ReturnButton';
 import CommentList from '../component/postdetail/comment/commentlist';
 import CommentInput from '../component/postdetail/comment/commentinput';
+import { useSelector } from 'react-redux';
 
 
 interface Post {
@@ -61,15 +60,7 @@ export default function PostDetail(){
         }
     }, [id, commentUpdated]);
 
-    const handlePostUpdate = () => {
-        // 업데이트가 필요한 경우 여기에서 수행
-        // 예: 댓글 갱신, 상태 변경 등
-        setCommentUpdated(true);
-    };
-
-    const handleEditPost =() =>{
-        console.log('Edit button Clicked!');
-    };
+ 
 
     return(
     <>
@@ -77,16 +68,9 @@ export default function PostDetail(){
         <>
         <PostWrapper>
             <ReturnButton />
-            <PostContentContainer id={post.id} title={post.title} createDate={post.createDate} view={post.view} writer={post.writer} content={post.content} imageCount={post.imageCount}/>
+            <PostContentContainer id={post.id} title={post.title} createDate={post.createDate} view={post.view} writer={post.writer} content={post.content} imageCount={post.imageCount} category={post.category} hasAuthority={post.hasAuthority}/>
             <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
-            <div key={post.id}>
-                {post.hasAuthority &&(
-                <>
-                <DeletePostBtn token={token} id={post.id} onPostUpdate={handlePostUpdate} /> 
-                <EditPostBtn handleEditPost={handleEditPost} id={post.id} />
-                </>
-                )}
-            </div>
+            
         </PostWrapper>
         <CommentWrapper>
             <CommentList bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/>
@@ -104,7 +88,7 @@ const PostWrapper = styled.div `
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 `
 
 const CommentWrapper = styled.div `

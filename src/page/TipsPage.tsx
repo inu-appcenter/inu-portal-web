@@ -67,7 +67,7 @@ const TipsPageWrapper = styled.div`
   height: 100%;
 `
 const TipsCatWrapper = styled.div`
- padding: 40px;
+ padding: 30px;
 `
 
 const TipsContentWrapper = styled.div`

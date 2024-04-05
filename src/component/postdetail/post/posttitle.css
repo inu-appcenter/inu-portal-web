@@ -7,21 +7,28 @@
 
 .titleText {
   font-family: Inter;
+  margin: 30px 20px;
   font-size: 25px;
   font-weight: 400;
+  align-items: center;
+
 }
 
 .titleInfo {
+  margin: 0px 10px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 15px;
+  gap: 30px;
 }
 
 .infoText {
   font-family: Inter;
   font-size: 13px;
   font-weight: 400;
+  gap: 10px;
+  display: flex;
+  align-items: center;
   color: #969696;
 }
 
