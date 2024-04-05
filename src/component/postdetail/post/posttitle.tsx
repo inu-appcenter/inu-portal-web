@@ -28,6 +28,7 @@ const handleEditPost =() =>{
   return (
     <div className='PostTitle'>
       <span className='titleText'>{title}</span>
+      <PostInfo>
       <div key={id}>
                 {hasAuthority &&(
                 <EditPostWrapper>
@@ -44,14 +45,19 @@ const handleEditPost =() =>{
         {view}</span>
         <span className='writerInfo'>{writer}</span>
       </div>
+      </PostInfo>
     </div>
   )
 }
 
 const EditPostWrapper = styled.div`
-display: flex;
+display: inline-flex;
+margin: 0 10px;
 flex-direction: row;
 align-items: center;
-justify-content: end;
+justify-content: space-between;
 gap: 10px;
 `
+
+const PostInfo = styled.div`
+display: flex;`
