@@ -4,11 +4,11 @@
 }
 
 .grid-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 가로로 4개의 열 생성 */
   overflow-y: auto;
   gap: 20px;
-  padding: 20px 40px 40px 40px;
+  padding: 20px;
 }
 
 .document-card {
