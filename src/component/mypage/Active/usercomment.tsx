@@ -14,7 +14,7 @@ interface Document {
       id:number;
       content: string;
       like:number;
-      postId:number;
+      postId:string;
       createDate : string;
       modifiedDate: string;
 }
