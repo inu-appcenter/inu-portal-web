@@ -8,8 +8,8 @@ import { useEffect } from 'react';
 import reLogin from './utils/reLogin';
 import { useDispatch } from 'react-redux';
 import refresh from './utils/refresh';
-import CreatePost from './Page/CreatePostPage';
-import EditPost from './Page/EditPostPage';
+import CreatePost from './page/CreatePostPage';
+import EditPost from './page/EditPostPage';
 
 
 
