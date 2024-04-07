@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 
 
-import MypageCatContainer from '../container/mypage/MyPageCatContainer';
+import MypageCatContainer from '../Container/mypage/MyPageCatContainer';
 import { useEffect, useState } from 'react';
-import MyPageTitleContainer from '../container/mypage/MyPageTitleContainer';
+import MyPageTitleContainer from '../Container/mypage/MyPageTitleContainer';
 import { Route, Routes } from 'react-router-dom';
 // import TipsDocuments from '../component/Tips/TipsDocuments';
 import { MyPageLists } from '../component/mypage/common/MyPageLists';
@@ -40,9 +40,9 @@ export default function MyPage() {
         <BorderWrapper>
           <Routes>
             <Route index element={<MyPageLists selectedCategory={selectedCategory} scrapsort={scrapsort} likesort={likesort} commentsort={commentsort} postsort={postsort} page={page} setScrapSort={setScrapSort} setLikeSort={setLikeSort} setCommentSort={setCommentSort} setPostSort={setPostSort}  setPage={setPage}/>} />
-            <Route path=':id' element={<ScrapInfo  selectedCategory={'폴더'} setSelectedCategory={setSelectedCategory} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
-            <Route path='search' element={<ScrapInfo  selectedCategory={'검색결과'} setSelectedCategory={setSelectedCategory} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
-            <Route path='searchfolder' element={<ScrapInfo  selectedCategory={'폴더내검색결과'} setSelectedCategory={setSelectedCategory} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
+            <Route path=':id' element={<ScrapInfo  selectedCategory={'폴더'} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
+            <Route path='search' element={<ScrapInfo  selectedCategory={'검색결과'}  scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
+            <Route path='searchfolder' element={<ScrapInfo  selectedCategory={'폴더내검색결과'}  scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage}/>} />
           </Routes>
         </BorderWrapper >
       </MyPageContentWrapper>
