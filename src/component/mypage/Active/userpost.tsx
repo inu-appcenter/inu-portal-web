@@ -2,9 +2,9 @@
 import styled from 'styled-components';
 
 import { Link } from 'react-router-dom';
-import postImg from "../../../resource/assets/post-img.png"
-import HeartImg from "../../../resource/assets/heart-logo.png"
-import CalendarImg from "../../../resource/assets/bx_calendar.png"
+import postImg from "../../../resource/assets/post-img.svg"
+import HeartImg from "../../../resource/assets/heart-logo.svg"
+import CalendarImg from "../../../resource/assets/bx_calendar.svg"
 import SortDropBox from '../../common/SortDropBox';
 interface Document {
   id: number;

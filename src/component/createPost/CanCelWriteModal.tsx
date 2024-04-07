@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import loginImg from "../../resource/assets/login-logo.png";
+import loginImg from "../../resource/assets/login-logo.svg";
 import bubbleImg from "../../resource/assets/bubble-logo.svg"
 import { useNavigate } from 'react-router-dom';
 

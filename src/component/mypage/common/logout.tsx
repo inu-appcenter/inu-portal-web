@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import logoutImg from "../../../resource/assets/logout-logo.png"
+import logoutImg from "../../../resource/assets/logout-logo.svg"
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../../reducer/userSlice";

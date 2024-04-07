@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import { Routes, Route } from 'react-router-dom';
 import UniversityBuildingImg from '../../resource/assets/university-building.png';
-import ElipseImg from '../../resource/assets/Ellipse.png';
 import LoginImgContainer from '../../container/login/LoginImgContainer';
 import LoginDetailContainer from '../../container/login/LoginDetailContainer';
 import RegisterDetailContainer from '../../container/register/RegisterDetailContainer';
@@ -17,7 +16,6 @@ export default function LoginPage() {
           <Route index element={<LoginDetailContainer/>} />
           <Route path='register' element={<RegisterDetailContainer/>} />  
         </Routes>
-        <img src={ElipseImg} className='ElipseImg' alt='ElipsImg'></img>
         <img src={UniversityBuildingImg} className='UniversityBuildingImg' alt='대학건물이미지'></img>
       </LoginWrapper>
     </>

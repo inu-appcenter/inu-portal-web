@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import handleScrap from '../../../utils/handleScrap'
-import scrapEmptyImg from '../../../resource/assets/scrap-empty-img.png';
+import scrapEmptyImg from '../../../resource/assets/scrap-empty-img.svg';
 
 interface PostScrapProps {
   scrap: number;

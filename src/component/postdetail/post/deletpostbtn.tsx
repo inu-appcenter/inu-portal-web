@@ -1,7 +1,7 @@
 import React from 'react';
 import deletePost from '../../../utils/deletePost';
 import { useNavigate } from 'react-router-dom';
-import deletebtn from '../../../resource/assets/deletbtn.svg';
+import deletebtn from '../../../resource/assets/deletebtn.svg';
 interface DeletePostBtnProps {
   token: string;
   id: number;

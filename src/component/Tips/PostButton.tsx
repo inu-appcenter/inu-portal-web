@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import pencilImg from '../../resource/assets/Pencil.png';
+import pencilImg from '../../resource/assets/Pencil.svg';
 
 import { useSelector } from 'react-redux';
 import { useState } from 'react';

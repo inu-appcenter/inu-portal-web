@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import registerUser from "../../utils/RegisterUser";
 import { useNavigate } from 'react-router-dom';
 import './registerinput.css';
-import loginUserImg from '../../resource/assets/login-user.png';
-import loginPasswordImg from '../../resource/assets/login-password.png';
+import loginUserImg from '../../resource/assets/login-user.svg';
+import loginPasswordImg from '../../resource/assets/login-password.svg';
 import sendMail from '../../utils/sendMail';
 import checkMail from '../../utils/checkMail';
 

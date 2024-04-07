@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 
-import smallImg from "../../../resource/assets/mypage-small-logo.png"
+import smallImg from "../../../resource/assets/mypage-small-logo.svg"
 
 
 export const MypageTitle = () => {

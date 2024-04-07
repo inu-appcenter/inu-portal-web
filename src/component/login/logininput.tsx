@@ -4,8 +4,8 @@ import { useDispatch } from 'react-redux';
 import loginUser from "../../utils/LoginUser";
 import { useNavigate } from 'react-router-dom'; // useNavigate 추가
 import './logininput.css';
-import loginUserImg from '../../resource/assets/login-user.png';
-import loginPasswordImg from '../../resource/assets/login-password.png';
+import loginUserImg from '../../resource/assets/login-user.svg';
+import loginPasswordImg from '../../resource/assets/login-password.svg';
 
 
 
