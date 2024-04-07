@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import getPostsImages from '../../utils/getPostsImages';
 import editImage from '../../utils/editImage';
 import ImageInput from '../../component/createPost/ImageInput';
+import inuLogoImg from '../../resource/assets/inu-logo-img.svg';
 
 
 
@@ -203,10 +204,22 @@ console.log(images);
     }
   };
   
+  const handleGetOut = () =>{
+    const result = window.confirm('해당 페이지를 나가시겠습니까? 변경사항이 저장되지 않을 수 있습니다.')
+    if (result) {
+      navigate('/');
+  } else {
+     
+  }
+  }
   
   return (
     <div className='EditPostFormContainer'>
       <div className='bar'>
+      <img onClick={handleGetOut} 
+      src={inuLogoImg} 
+      alt="INU logo" 
+      style={{ width: '180px',cursor: 'pointer'}} />
       <ImageInput onImageChange={handleImageChange} />
       <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
       <div className='post-button' onClick={handleEditSubmit}>수정 완료</div>
@@ -226,8 +239,9 @@ console.log(images);
             ))}
           </div>
         </div>
-        </div>
       <CategorySelect value={category} onChange={handleCategoryChange} />
+
+        </div>
       </div>
       
   );
