@@ -101,7 +101,7 @@ export default function ModifyInfo() {
         <CheckNewPasswordInput value={checkpassword} onChange={handleCheckNewPasswordChange}/>
       </ChangeWrapper>
       <ModifyButton onClick={handleModifyClick}/>
-      <LostBtn to="/home">비밀번호를 잊으셨나요?</LostBtn>
+      <LostBtn to="/">비밀번호를 잊으셨나요?</LostBtn>
     </ModifyWrapper>
   );
 }
