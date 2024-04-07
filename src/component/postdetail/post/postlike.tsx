@@ -9,29 +9,21 @@ import styled from 'styled-components';
 interface PostLikeProps{
   like: number
   isLikedProp: boolean;
-  hasAuthority: boolean
 }
 
-const PostLike: React.FC<PostLikeProps> = ({like, isLikedProp, hasAuthority}) =>{
+const PostLike: React.FC<PostLikeProps> = ({like, isLikedProp}) =>{
   const [likes, setLikes] = useState(like);
   const { id } = useParams<{ id: string }>();
   const [isLiked, setIsLiked] = useState(isLikedProp);
   const token = useSelector((state: any) => state.user.token);
-  const [showError, setShowError] = useState<boolean>(true);
   
   const handleLikeClick = async() => {
-    if (hasAuthority) {
-      setShowError(true); // 본인 게시글인 경우 에러 표시
-      setTimeout(() => setShowError(false), 5000); // 5초 후 에러 메시지 숨김
-      return;
-    }
       if (token) {
         const result = await handleLike(token, id);
         setIsLiked(!isLiked);
         console.log(result);
         if (result['data'] === -1) {
           setLikes(likes - 1);
-          
         }
         else {
           setLikes(likes + 1);
@@ -53,7 +45,6 @@ const PostLike: React.FC<PostLikeProps> = ({like, isLikedProp, hasAuthority}) =>
       <span className='UtilityText'>
         {likes}
       </span>
-      {showError && <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>}
     </span>
     ); 
   };

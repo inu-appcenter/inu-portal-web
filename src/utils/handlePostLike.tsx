@@ -10,11 +10,12 @@ const handleLike = async (token: string, postId: string) => {
     });
 
     console.log(response,'response');
-    if (response.status == 200) {
+    if (response.status === 200) {
       const data = await response.json();
       return data;
-    }
-    else {
+    } else if (response.status === 400) {
+      window.alert('본인의 게시글에는 좋아요를 누를 수 없습니다.');
+    } else {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     
