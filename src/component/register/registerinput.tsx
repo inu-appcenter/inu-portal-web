@@ -1,5 +1,5 @@
 // RegisterInput.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import registerUser from "../../utils/RegisterUser";
 import { useNavigate } from 'react-router-dom';
 import './registerinput.css';

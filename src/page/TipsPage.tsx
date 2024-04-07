@@ -6,10 +6,8 @@ import TipsDocuments from '../component/Tips/TipsDocuments';
 import PostDetail from "./PostDetailPage";
 import { useEffect, useState } from 'react';
 import PostBotton from '../component/Tips/PostButton';
-import TipsTitle from '../component/tips/TipsTitle';
-import CreatePost from './CreatePostPage';
+import TipsTitle from '../component/Tips/TipsTitle';
 import TipsTopPosts from '../component/Tips/TipsTopPosts';
-import EditPost from './EditPostPage';
 import NoticesTop from '../component/Tips/NoticesTop';
 
 

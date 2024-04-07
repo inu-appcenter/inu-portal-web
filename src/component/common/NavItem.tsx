@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { navBarList } from '../../resource/string/navbar';
 import { useSelector } from 'react-redux';
@@ -23,11 +23,11 @@ export default function NavItems() {
   const [selectedChildItems, setSelectedChildItems] = useState<any[]>([]);
   const navigate = useNavigate();
 
-  const wrapperRef = useRef(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent){
-      if(wrapperRef.current && !wrapperRef.current.contains(event.target)){
+      if(wrapperRef.current && !wrapperRef.current.contains(event.target as Node)){
         setToggleIndex(null);
         setSubToggleIndex(null);
         setSelectedChildItems([]);
@@ -51,10 +51,6 @@ export default function NavItems() {
       console.log(user.token);
       navigate(url);
     }
-  };
-
-  const handleItemClick = (url: string) => {
-    window.open(url);
   };
 
   const handleSubItemClick = (item: any, index: number, event: any) => {
@@ -99,7 +95,7 @@ export default function NavItems() {
               <div className='child toggle' >
                 <img className='v-vector' src={VVector} />
                 <div className='line-vector'></div>
-                {items.child.map((item, itemIndex) => (
+                {items.child?.map((item, itemIndex) => (
                   <ChildDetail key={itemIndex} onClick={(event) => handleSubItemClick(item, itemIndex, event)} >
                     <img src={lightround} alt='상단바 인덱스 디자인' style={{margin: '0 10px'}}/>
                     {item.title}

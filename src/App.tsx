@@ -1,9 +1,9 @@
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
-import MainPage from './Page/MainPage';
-import HomePage from './Page/HomePage';
-import Login from './Page/LoginPage/LoginPage';
-import Tips from './Page/TipsPage';
-import MyPage from './Page/MyPage';
+import MainPage from './page/MainPage';
+import HomePage from './page/HomePage';
+import Login from './page/LoginPage/LoginPage';
+import Tips from './page/TipsPage';
+import MyPage from './page/MyPage';
 import { useEffect } from 'react';
 import reLogin from './utils/reLogin';
 import { useDispatch } from 'react-redux';

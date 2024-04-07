@@ -1,6 +1,6 @@
 
 
-import { tokenUser as tokenUserAction, emailUser as emailUserAction, emailUser } from "../reducer/userSlice";
+import { tokenUser as tokenUserAction, emailUser as emailUserAction } from "../reducer/userSlice";
 import { Dispatch } from 'redux';
 
 interface LoginData {

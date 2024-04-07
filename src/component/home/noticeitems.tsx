@@ -23,9 +23,12 @@ export default function NoticeItems() {
     const navigate = useNavigate()
 
     const updateItemsToShow = () => {
-        const containerWidth = document.querySelector('.items-container').offsetWidth;
-        const itemsByWidth = Math.floor(containerWidth / itemWidth);
-        setItemsToShow(itemsByWidth-1);
+        const container = document.querySelector('.items-container') as HTMLElement;
+        if (container) {
+            const containerWidth = container.offsetWidth;
+            const itemsByWidth = Math.floor(containerWidth / itemWidth);
+            setItemsToShow(itemsByWidth-1);
+        }
     }
 
     const goPrevious = () => {

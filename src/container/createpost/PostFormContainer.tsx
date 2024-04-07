@@ -21,9 +21,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [ selectedCategory, setSelectedCategory ] = useState('');
   const [anonymous, setAnonymous] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
@@ -62,7 +60,6 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   };
 
   const handleImageChange = (file: File | null) => {
-    setSelectedImage(file);
     if (file) {
       setImages((prevImages) => [...prevImages, file]);
     }
@@ -123,7 +120,6 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     setContent('');
     setCategory('');
     setAnonymous(false);
-    setSelectedImage(null);
     setImages([]);
     // 이전 페이지로 이동
   };

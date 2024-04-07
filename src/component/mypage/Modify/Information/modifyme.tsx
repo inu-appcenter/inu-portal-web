@@ -16,7 +16,7 @@ import { NicknameUser as NicknameUserAction, ProfileUser as ProfileUserAction } 
 
 
 // import { profileimg } from '../../../../Resource/string/profileImg';
-import { profileimg } from '../../../../Resource/string/profileImg';
+import { profileimg } from '../../../../resource/string/profileImg';
 import { ProfileDropdown } from './profiledropdown';
 import Title from '../../common/title';
 import ModifyUserInfo from './modifyuserinfo';
