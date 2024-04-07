@@ -47,7 +47,7 @@ export default function ScrapFolder({folderData,handleFolderClick,setFolderData,
         try {
             const response = await CreateFolder(token, folderName);
             const newFolderId = response.data;
-            setFolderData(prevData => ({ ...prevData, [newFolderId]: folderName }));
+            setFolderData((prevData:{ [key: number]: string }) => ({ ...prevData, [newFolderId]: folderName }));
             dispatch(addFolder({[newFolderId]: folderName}));
         } catch (error) {
             console.error("폴더를 생성하지 못했습니다.", error);
@@ -60,7 +60,7 @@ export default function ScrapFolder({folderData,handleFolderClick,setFolderData,
 const handleFolderDelete = async (folderIdToDelete: number) => {
     try {
         await deleteFolder(token,folderIdToDelete);
-        setFolderData(prevData => {
+        setFolderData((prevData: { [key: number]: string })=> {
             const updatedData = { ...prevData };
             delete updatedData[folderIdToDelete];
             return updatedData;
