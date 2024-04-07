@@ -10,6 +10,7 @@ import launchPost from '../../utils/launchPost';
 import postImage from '../../utils/postImage';
 import './PostFormContainer.css'
 import CanCelWriteModal from '../../component/createPost/CanCelWriteModal';
+import inuLogoImg from '../../resource/assets/inu-logo-img.svg';
 
 CanCelWriteModal
 
@@ -115,6 +116,15 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
     setShowCancelModal(false);
   };
 
+  const handleGetOut = () =>{
+    const result = window.confirm('해당 페이지를 나가시겠습니까? 변경사항이 저장되지 않을 수 있습니다.')
+    if (result) {
+      navigate('/');
+  } else {
+     
+  }
+  }
+
   // 글 작성 취소 함수
   const handleCancelWrite = () => {
     setShowCancelModal(false);
@@ -130,6 +140,10 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
   return (
     <div className='PostFormContainer'>
       <div className='bar'>
+      <img onClick={handleGetOut} 
+      src={inuLogoImg} 
+      alt="INU logo" 
+      style={{ width: '180px',cursor: 'pointer'}} />
         <ImageInput onImageChange={handleImageChange} />
         <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
         <div className='post-button' onClick={handlePostSubmit}>업로드</div>
