@@ -9,7 +9,7 @@ export default function Navbar() {
     return (
         <React.Fragment>
             <Nav>
-                <img onClick={() => {navigate('/')}} className= "logo" src={inuLogoImg} alt="INU logo" />
+                <Logo onClick={() => {navigate('/')}} src={inuLogoImg} alt="INU logo" />
                 <NavItems/>
             </Nav>
         </React.Fragment>
@@ -37,3 +37,8 @@ const Nav = styled.nav`
 
 
 `;
+
+const Logo = styled.img`
+    width: 200px;
+    cursor: pointer;
+`
