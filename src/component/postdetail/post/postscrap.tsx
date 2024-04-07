@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import handleScrap from '../../../utils/handleScrap'
-import scrapEmptyImg from '../../../resource/assets/scrap-empty-img.png';
+import scrapEmptyImg from '../../../resource/assets/scrap-empty-img.svg';
 
 interface PostScrapProps {
   scrap: number;
@@ -16,6 +16,10 @@ const PostScrap: React.FC<PostScrapProps> = ({ scrap, isScrapedProp }) => {
   const token = useSelector((state: any) => state.user.token);
 
   const handleScrapClick = async() => {
+    if (id === undefined) {
+      console.error('ID is undefined');
+      return;
+    }
     if (token) {
       const result = await handleScrap(token, id);
       setIsScraped(!isScraped);

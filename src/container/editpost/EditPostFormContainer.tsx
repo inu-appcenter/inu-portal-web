@@ -60,9 +60,7 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
   const [category, setCategory] = useState('');
   const [anonymous, setAnonymous] = useState(false);
 
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
-  const [fetchImages, setfetchImages] = useState<string[]>([]);
   const [imageCount, setImageCount] = useState<number>(0);
 
 
@@ -84,7 +82,6 @@ const EditPostFormContainer: React.FC<EditPostBtnProps> = ({ onPostUpdate}) => {
   };
 
   const handleImageChange = (file: File | null) => {
-    setSelectedImage(file);
     if (file) {
       setImages((prevImages) => [...prevImages, file]);
     }
@@ -97,7 +94,6 @@ console.log(images);
   };
 
   useEffect(() => {
-    console.log('id', id);
       if (id) {
           const fetchPost = async () => {
             const postDetail = await getPost(token, id);
@@ -132,6 +128,10 @@ console.log(images);
   }, []);
   
   const fetchImagesData = async () => {
+    if (id === undefined) {
+      console.error('ID is undefined');
+      return;
+    }
     try {
       let images = [];
       for (let imageId = 1; imageId <= imageCount; imageId++) {
@@ -159,6 +159,10 @@ console.log(images);
   }, [id, imageCount]);
 
   const handleEditSubmit = async () => {
+    if (id === undefined) {
+      console.error('ID is undefined');
+      return;
+    }
     try {
       if (!title.trim() || !content.trim()) {
         console.error('모든 필드를 입력하세요.');

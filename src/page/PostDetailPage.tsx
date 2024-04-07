@@ -12,7 +12,7 @@ import { useSelector } from 'react-redux';
 
 
 interface Post {
-    id: number;
+    id: string;
     title: string;
     category: string;
     writer: string;
@@ -69,7 +69,7 @@ export default function PostDetail(){
         <PostWrapper>
             <ReturnButton />
             <PostContentContainer id={post.id} title={post.title} createDate={post.createDate} view={post.view} writer={post.writer} content={post.content} imageCount={post.imageCount} category={post.category} hasAuthority={post.hasAuthority}/>
-            <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped}/> {/*기능버튼(스크랩, 좋아요...)*/}
+            <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped} hasAuthority={post.hasAuthority}/> {/*기능버튼(스크랩, 좋아요...)*/}
             
         </PostWrapper>
         <CommentWrapper>

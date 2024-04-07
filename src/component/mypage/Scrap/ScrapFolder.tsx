@@ -2,8 +2,8 @@
 
 import styled from 'styled-components';
 
-import folderImg from "../../../resource/assets/file-img.png"
-import PlusImg from "../../../resource/assets/+.png";
+import folderImg from "../../../resource/assets/file-img.svg"
+import PlusImg from "../../../resource/assets/+.svg";
 import {  useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,7 +12,7 @@ import CreateFolder from '../../../utils/postMakeFolder';
 import deleteFolder from '../../../utils/deletefolder';
 import { addFolder, removeFolder } from '../../../reducer/folderSlice';
 import MakeModal from './ScrapFolderModal';
-import deleteImg from "../../../resource/assets/delete-img.png"
+import deleteImg from "../../../resource/assets/deletebtn.svg"
 
 interface loginInfo {
     user: {
@@ -24,7 +24,7 @@ interface loginInfo {
 interface ScrapFolderInfoProps {
     folderData:{ [key: number]: string };
     handleFolderClick: (folderId: number) => void;
-    setFolderData: (folder: { [key: number]: string }) => void;
+   setFolderData: (folder: { [key: number]: string }) => void;
     setIsScrap:(status:boolean) => void;
     setIsFolderScrap:(status:boolean) => void;
   }
@@ -47,7 +47,7 @@ export default function ScrapFolder({folderData,handleFolderClick,setFolderData,
         try {
             const response = await CreateFolder(token, folderName);
             const newFolderId = response.data;
-            setFolderData(prevData => ({ ...prevData, [newFolderId]: folderName }));
+            setFolderData({ ...folderData, [newFolderId]: folderName });
             dispatch(addFolder({[newFolderId]: folderName}));
         } catch (error) {
             console.error("폴더를 생성하지 못했습니다.", error);
@@ -60,11 +60,9 @@ export default function ScrapFolder({folderData,handleFolderClick,setFolderData,
 const handleFolderDelete = async (folderIdToDelete: number) => {
     try {
         await deleteFolder(token,folderIdToDelete);
-        setFolderData(prevData => {
-            const updatedData = { ...prevData };
-            delete updatedData[folderIdToDelete];
-            return updatedData;
-        });
+        const updatedData = { ...folderData };
+        delete updatedData[folderIdToDelete];
+        setFolderData(updatedData);
         dispatch(removeFolder({ [folderIdToDelete]: true }));
         setIsScrap(true);
         setIsFolderScrap(false);

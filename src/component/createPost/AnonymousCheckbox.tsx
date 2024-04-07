@@ -1,6 +1,6 @@
 import React from 'react';
-import checkedCheckbox from '../../resource/assets/checked-checkbox.png';
-import uncheckedCheckbox from '../../resource/assets/unchecked-checkbox.png';
+import checkedCheckbox from '../../resource/assets/checked-checkbox.svg';
+import uncheckedCheckbox from '../../resource/assets/unchecked-checkbox.svg';
 import './AnonymousCheckbox.css';
 
 interface AnonymousCheckboxProps {

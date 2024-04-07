@@ -5,7 +5,7 @@ import EditCommentButton from './editcommentbutton';
 import DeleteCommentButton from './deletecommentbutton';
 import ReCommentInput from './recommentinput';
 import ReCommentList from './recommentlist';
-import CommentsImg from '../../../resource/assets/comments-img.png';
+import CommentsImg from '../../../resource/assets/comments-img.svg';
 import './commentlist.css';
 
 interface Replies {

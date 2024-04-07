@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import loginImg from "../../resource/assets/login-logo.png";
+import loginImg from "../../resource/assets/login-logo.svg";
 import bubbleImg from "../../resource/assets/bubble-logo.svg"
 import { useNavigate } from 'react-router-dom';
 
@@ -9,7 +9,7 @@ interface Props {
   closeModal: () => void;
 }
 
-const CanCelWriteModal: React.FC<Props> = ({ setOpenModal, closeModal }) => { // closeModal 추가
+const CanCelWriteModal: React.FC<Props> = ({ closeModal }) => { // closeModal 추가
   const navigate = useNavigate();
 
   const handleClose =() =>{

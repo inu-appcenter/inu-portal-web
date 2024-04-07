@@ -1,5 +1,5 @@
 import { useState } from "react";
-import searchImg from '../../../Resource/assets/search-img.png';
+import searchImg from '../../../Resource/assets/search-img.svg';
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 

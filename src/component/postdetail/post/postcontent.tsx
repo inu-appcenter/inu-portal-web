@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import getPostsImages from '../../../utils/getPostsImages';
 import './postcontent.css';
 
 interface PostContentProps {
-  id: number;
+  id: string;
   content: string;
   imageCount: number;
 }

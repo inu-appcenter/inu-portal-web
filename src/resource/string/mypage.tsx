@@ -1,28 +1,18 @@
-import scrapImg from "../assets/scrap-logo.png"
-import activeImg from "../assets/active-logo.png"
-import passwordImg from "../assets/password-logo.png"
-import deleteImg from "../assets/delete-logo.png"
-import modifyImg from "../assets/modify-logo.png"
 export const MypageList = [
     {
-        title:'스크랩',
-        img:scrapImg
+        title:'스크랩'
     },
     {
-        title:'내 활동',
-        img:activeImg
+        title:'내 활동'
     },
     {
-        title:'비밀번호 변경',
-        img:passwordImg
+        title:'비밀번호 변경'
     },
     {
-        title:'개인정보 수정',
-        img:modifyImg
+        title:'개인정보 수정'
     },
     {
-        title:'회원탈퇴',
-        img:deleteImg
+        title:'회원탈퇴'
     }
 ]
 

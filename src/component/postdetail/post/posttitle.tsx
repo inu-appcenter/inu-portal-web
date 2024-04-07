@@ -1,5 +1,6 @@
 import './posttitle.css'
-import eyeImg from '../../../resource/assets/eye-img.png';
+import eyeImg from '../../../resource/assets/eye-img.svg';
+import datePencilImg from '../../../resource/assets/date-pencil-img.svg';
 import { useSelector } from 'react-redux';
 
 import styled from 'styled-components';
@@ -22,9 +23,6 @@ export default function PostTitle({ title, createDate, view, writer,id, hasAutho
     //
 };
 
-const handleEditPost =() =>{
-    console.log('Edit button Clicked!');
-};
   return (
     <div className='PostTitle'>
       <span className='titleText'>{title}</span>
@@ -32,13 +30,13 @@ const handleEditPost =() =>{
       <div key={id}>
                 {hasAuthority &&(
                 <EditPostWrapper>
-                <DeletePostBtn token={token} id={id} onPostUpdate={handlePostUpdate} /> 
-                <EditPostBtn handleEditPost={handleEditPost} id={id} />
-                
+                  <DeletePostBtn token={token} id={id} onPostUpdate={handlePostUpdate} /> 
+                  <EditPostBtn id={id} />
                 </EditPostWrapper>
                 )}
             </div>
       <div className='titleInfo'>
+        <img src={datePencilImg} />
         <span className='infoText'>{createDate}</span>
         <span className='infoText'>
         <img src={eyeImg} />

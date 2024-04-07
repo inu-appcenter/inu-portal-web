@@ -1,13 +1,13 @@
 import styled from "styled-components";
 import { useEffect } from "react";
-import Header from "../Container/common/HeaderContainer"
-import Nav from "../Container/common/NavContainer"
+import Header from "../container/common/HeaderContainer";
+import Nav from "../container/common/NavContainer";
 import { Outlet, useLocation } from 'react-router-dom';
 export default function MainPage() {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        if (pathname !== '/home') {
+        if (pathname !== '/') {
             window.scrollTo(0, 0);
         }
     }, [pathname]);
