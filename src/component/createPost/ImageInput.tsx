@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import pictureImg from '../../resource/assets/picture-img.png';
+import pictureImg from '../../resource/assets/picture-img.svg';
 import './ImageInput.css';
 
 interface ImageInputProps {

@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import postReComment from "../../../utils/postReComment";
 import './recommentinput.css';
-import checkedCheckbox from '../../../resource/assets/checked-checkbox.png';
-import uncheckedCheckbox from '../../../resource/assets/unchecked-checkbox.png';
-import enterImage from '../../../resource/assets/enter-image.png';
+import checkedCheckbox from '../../../resource/assets/checked-checkbox.svg';
+import uncheckedCheckbox from '../../../resource/assets/unchecked-checkbox.svg';
+import enterImage from '../../../resource/assets/enter-img.svg';
 
 interface ReCommentInputProps {
   parentId: number;

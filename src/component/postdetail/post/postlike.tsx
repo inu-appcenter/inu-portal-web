@@ -2,8 +2,8 @@ import React, {useState} from 'react'
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import handleLike from '../../../utils/handlePostLike';
-import heartEmptyImg from '../../../resource/assets/heart-empty-img.png';
-import heartFilledImg from '../../../resource/assets/heart-filled-img.png';
+import heartEmptyImg from '../../../resource/assets/heart-empty-img.svg';
+import heartFilledImg from '../../../resource/assets/heart-filled-img.svg';
 import styled from 'styled-components';
 
 interface PostLikeProps{

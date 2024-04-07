@@ -1,5 +1,6 @@
 import './posttitle.css'
-import eyeImg from '../../../resource/assets/eye-img.png';
+import eyeImg from '../../../resource/assets/eye-img.svg';
+import datePencilImg from '../../../resource/assets/date-pencil-img.svg';
 import { useSelector } from 'react-redux';
 
 import styled from 'styled-components';
@@ -39,6 +40,7 @@ const handleEditPost =() =>{
                 )}
             </div>
       <div className='titleInfo'>
+        <img src={datePencilImg} />
         <span className='infoText'>{createDate}</span>
         <span className='infoText'>
         <img src={eyeImg} />

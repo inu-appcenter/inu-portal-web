@@ -1,8 +1,8 @@
 import React, {useState} from 'react'
 import { useSelector } from 'react-redux';
 import handleLike from '../../../utils/handleCommentLike'
-import heartEmptyImg from '../../../resource/assets/heart-empty-img.png';
-import heartFilledImg from '../../../resource/assets/heart-filled-img.png';
+import heartEmptyImg from '../../../resource/assets/heart-empty-img.svg';
+import heartFilledImg from '../../../resource/assets/heart-filled-img.svg';
 
 interface PostLikeProps{
   id: number;

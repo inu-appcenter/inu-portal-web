@@ -3,9 +3,9 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import postComment from "../../../utils/postComment";
 import './commentinput.css';
-import checkedCheckbox from '../../../resource/assets/checked-checkbox.png';
-import uncheckedCheckbox from '../../../resource/assets/unchecked-checkbox.png';
-import enterImage from '../../../resource/assets/enter-image.png';
+import checkedCheckbox from '../../../resource/assets/checked-checkbox.svg';
+import uncheckedCheckbox from '../../../resource/assets/unchecked-checkbox.svg';
+import enterImage from '../../../resource/assets/enter-img.svg';
 
 interface CommentInputProps {
   onCommentUpdate: () => void;

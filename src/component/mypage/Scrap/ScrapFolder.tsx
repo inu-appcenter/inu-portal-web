@@ -2,8 +2,8 @@
 
 import styled from 'styled-components';
 
-import folderImg from "../../../resource/assets/file-img.png"
-import PlusImg from "../../../resource/assets/+.png";
+import folderImg from "../../../resource/assets/file-img.svg"
+import PlusImg from "../../../resource/assets/+.svg";
 import {  useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,7 +12,7 @@ import CreateFolder from '../../../utils/postMakeFolder';
 import deleteFolder from '../../../utils/deletefolder';
 import { addFolder, removeFolder } from '../../../reducer/folderSlice';
 import MakeModal from './ScrapFolderModal';
-import deleteImg from "../../../resource/assets/delete-img.png"
+import deleteImg from "../../../resource/assets/deletebtn.svg"
 
 interface loginInfo {
     user: {

@@ -2,12 +2,12 @@
 import styled from 'styled-components';
 
 import { Link } from 'react-router-dom';
-import commentlogo from "../../../resource/assets//comment-img.png"
+import commentlogo from "../../../resource/assets/comment-img.svg"
 import { useEffect, useState } from 'react';
 import getPost from '../../../utils/getPost';
 import { useSelector } from 'react-redux';
-import HeartImg from "../../../resource/assets/heart-logo.png"
-import CalendarImg from "../../../resource/assets/bx_calendar.png"
+import HeartImg from "../../../resource/assets/heart-logo.svg"
+import CalendarImg from "../../../resource/assets/bx_calendar.svg"
 import SortDropBox from '../../common/SortDropBox';
 
 interface Document {

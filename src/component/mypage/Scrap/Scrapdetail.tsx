@@ -6,14 +6,14 @@ import postInsertFolders from '../../../utils/postinsertfolder';
 
 
 
-import ListImg from "../../../resource/assets/list-logo.png";
-import HeartImg from "../../../resource/assets/heart-logo.png"
-import CalendarImg from "../../../resource/assets/bx_calendar.png"
-import arrowImg from "../../../resource/assets/arrow.png"
-import closeImg from "../../../resource/assets/close-img.png"
-import fileImg from "../../../resource/assets/file-img.png"
-import plusImg from "../../../resource/assets/plus-img.png"
-import deleteImg from "../../../resource/assets/delete-img.png"
+import ListImg from "../../../resource/assets/list-logo.svg";
+import HeartImg from "../../../resource/assets/heart-logo.svg"
+import CalendarImg from "../../../resource/assets/bx_calendar.svg"
+import arrowImg from "../../../resource/assets/arrow.svg"
+import closeImg from "../../../resource/assets/close-img.svg"
+import fileImg from "../../../resource/assets/file-img.svg"
+import plusImg from "../../../resource/assets/plus-img.svg"
+import deleteImg from "../../../resource/assets/deletebtn.svg"
 import Pagination from './Pagination';
 import SortDropBox from '../../common/SortDropBox';
 import ReturnScrapButton from './ReturnButton';
