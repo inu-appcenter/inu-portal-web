@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
 import getNoticesTop from '../../utils/getNoticesTop';
 
  
@@ -64,7 +63,6 @@ const TopPostTitle = styled.div`
 
 const NoticesTop: React.FC = () => {
     const [topPosts, setTopPosts] = useState<Notice[]>([]);
-    const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTopPosts = async () => {

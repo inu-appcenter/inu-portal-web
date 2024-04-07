@@ -9,11 +9,9 @@ import { MypageTitle } from '../../component/mypage/common/MyPageTitle';
 import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
 import SearchBar from '../../component/Tips/SearchBar';
 
-// import SearchScrapBar from '../../component/mypage/Scrap/searchScrapBar';
 interface UserInfo {
   nickname: string;
   fireId: string;
-  // 다른 필요한 속성들도 여기에 추가할 수 있습니다.
 }
 interface loginInfo {
   user: {
@@ -31,7 +29,7 @@ export default function MyPageTitleContainer({selectedCategory}:MyPageTitleConta
   const dispatch = useDispatch();
   useEffect(() => {
     if (!token) {
-      navigate('/home');
+      navigate('/');
     }
   }, [token, navigate]);
 

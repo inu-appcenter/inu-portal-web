@@ -6,7 +6,7 @@ interface PostData {
 }
 
 
-const editPost = async (data: PostData, token: string, postId:number) => {
+const editPost = async (data: PostData, token: string, postId: string) => {
   const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}`;
   try {
     const response = await fetch(apiURL, {

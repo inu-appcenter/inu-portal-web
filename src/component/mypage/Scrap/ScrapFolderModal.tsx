@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import newFileImg from "../../../resource/assets/file-img.png"
+import newFileImg from "../../../resource/assets/file-img.svg"
 
 interface Props {
   closeModal: () => void;

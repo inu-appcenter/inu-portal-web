@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import getCategory from '../../utils/getCategory';
-import dropdownImg from '../../resource/assets/dropdown-img.png';
+import dropdownImg from '../../resource/assets/CategorySelectDropdown-img.svg';
 import './CategorySelect.css';
 
 interface CategorySelectProps {

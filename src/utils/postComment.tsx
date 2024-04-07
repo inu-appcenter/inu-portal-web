@@ -1,4 +1,4 @@
-const postComment = async (token: string, postId: number, content: string, anonymous: boolean) => {
+const postComment = async (token: string, postId: string, content: string, anonymous: boolean) => {
   const apiURL = `https://portal.inuappcenter.kr/api/replies/${postId}`;
   try {
     const response = await fetch(apiURL, {

@@ -47,7 +47,7 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
       }
       else if (docType === 'TIPS') {
         if (selectedCategory == '검색결과') {
-          const query = queryString.parse(location.search).query;
+          const query = queryString.parse(location.search).query as string;
           const docs = await search(query, sort, page);
           setTotalPages(docs['pages']);
           setDocuments(docs['posts']);

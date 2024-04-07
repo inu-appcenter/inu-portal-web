@@ -1,4 +1,4 @@
-const deletePost = async (token: string, postId: number) => {
+const deletePost = async (token: string, postId: string) => {
     const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}`;
     try {
       const response = await fetch(apiURL, {

@@ -1,6 +1,5 @@
 import EditPostFormContainer from '../container/editpost/EditPostFormContainer';
 import styled from 'styled-components';
-import { useParams } from 'react-router-dom';
 
 export default function EditPost() {
  
