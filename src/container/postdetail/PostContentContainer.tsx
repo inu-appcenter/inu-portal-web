@@ -1,10 +1,9 @@
-import styled from 'styled-components';
 import PostContent from '../../component/postdetail/post/postcontent';
 import PostTitle from '../../component/postdetail/post/posttitle';
 import PostCategory from '../../component/postdetail/post/postcategory';
 
 interface PostContentContainerProps {
-    id: number;
+    id: string;
     title: string;
     createDate: string;
     view: number;

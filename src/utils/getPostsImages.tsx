@@ -1,4 +1,4 @@
-const getPostsImages = async (postId: number, imageId: number) => {
+const getPostsImages = async (postId: string, imageId: number) => {
   const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/images/${imageId}`;
   try {
     const response = await fetch(apiURL, {

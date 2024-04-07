@@ -24,6 +24,10 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
       alert("댓글 내용을 입력해주세요.");
       return;
     }
+    if (id === undefined) {
+      console.error('ID is undefined');
+      return;
+    }
     try {
       const response = await postComment(token, id, content, isAnonymous);
       if (response === 201) {

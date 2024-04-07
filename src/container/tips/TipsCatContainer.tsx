@@ -1,4 +1,4 @@
-import TipsCategories from '../../component/tips/TipsCategories';
+import TipsCategories from '../../component/Tips/TipsCategories';
 import styled from 'styled-components';
 
 interface TipsCatContainerProps {

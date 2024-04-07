@@ -9,7 +9,7 @@ interface Props {
   closeModal: () => void;
 }
 
-const CanCelWriteModal: React.FC<Props> = ({ setOpenModal, closeModal }) => { // closeModal 추가
+const CanCelWriteModal: React.FC<Props> = ({ closeModal }) => { // closeModal 추가
   const navigate = useNavigate();
 
   const handleClose =() =>{

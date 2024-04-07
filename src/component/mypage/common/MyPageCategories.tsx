@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 
 // import './TipsCategories.css';
-import { MyPageCategory } from '../../../Resource/string/mypage.tsx';
+import { MyPageCategory } from '../../../resource/string/mypage.tsx';
 import MypageLogout from './logout';
 
 interface Category {

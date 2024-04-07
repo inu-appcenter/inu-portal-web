@@ -9,13 +9,14 @@ interface PostUtilityProps {
   isLiked: boolean;
   scrap: number;
   isScraped: boolean;
+  hasAuthority: boolean;
 }
 
-export default function PostUtility({ like, isLiked, scrap, isScraped }: PostUtilityProps) {
+export default function PostUtility({ like, isLiked, scrap, isScraped, hasAuthority }: PostUtilityProps) {
 
   return (
     <div className='UtilityWrapper'>
-      <PostLike like={like} isLikedProp={isLiked} />
+      <PostLike like={like} isLikedProp={isLiked} hasAuthority={hasAuthority} />
       <PostScrap scrap={scrap} isScrapedProp={isScraped} />
     </div>
   );

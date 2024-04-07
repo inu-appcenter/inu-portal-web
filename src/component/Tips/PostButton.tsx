@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import pencilImg from '../../resource/assets/Pencil.svg';
 
@@ -12,7 +11,6 @@ interface loginInfo {
   };
 }
 export default function PostBtn() {
-  const navigate = useNavigate();
   const user = useSelector((state: loginInfo) => state.user);
   const [isOpenModal, setOpenModal] = useState<boolean>(false);
   

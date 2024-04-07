@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 
 
-import MypageCatContainer from '../Container/mypage/MyPageCatContainer';
+import MypageCatContainer from '../container/mypage/MyPageCatContainer';
 import { useEffect, useState } from 'react';
-import MyPageTitleContainer from '../Container/mypage/MyPageTitleContainer';
+import MyPageTitleContainer from '../container/mypage/MyPageTitleContainer';
 import { Route, Routes } from 'react-router-dom';
 // import TipsDocuments from '../component/Tips/TipsDocuments';
 import { MyPageLists } from '../component/mypage/common/MyPageLists';

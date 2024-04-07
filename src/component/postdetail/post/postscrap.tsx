@@ -16,6 +16,10 @@ const PostScrap: React.FC<PostScrapProps> = ({ scrap, isScrapedProp }) => {
   const token = useSelector((state: any) => state.user.token);
 
   const handleScrapClick = async() => {
+    if (id === undefined) {
+      console.error('ID is undefined');
+      return;
+    }
     if (token) {
       const result = await handleScrap(token, id);
       setIsScraped(!isScraped);

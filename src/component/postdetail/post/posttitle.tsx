@@ -23,9 +23,6 @@ export default function PostTitle({ title, createDate, view, writer,id, hasAutho
     //
 };
 
-const handleEditPost =() =>{
-    console.log('Edit button Clicked!');
-};
   return (
     <div className='PostTitle'>
       <span className='titleText'>{title}</span>
@@ -33,9 +30,8 @@ const handleEditPost =() =>{
       <div key={id}>
                 {hasAuthority &&(
                 <EditPostWrapper>
-                <DeletePostBtn token={token} id={id} onPostUpdate={handlePostUpdate} /> 
-                <EditPostBtn handleEditPost={handleEditPost} id={id} />
-                
+                  <DeletePostBtn token={token} id={id} onPostUpdate={handlePostUpdate} /> 
+                  <EditPostBtn id={id} />
                 </EditPostWrapper>
                 )}
             </div>
