@@ -29,7 +29,7 @@ export default function MyPageTitleContainer({selectedCategory}:MyPageTitleConta
   const dispatch = useDispatch();
   useEffect(() => {
     if (!token) {
-      navigate('/home');
+      navigate('/');
     }
   }, [token, navigate]);
 

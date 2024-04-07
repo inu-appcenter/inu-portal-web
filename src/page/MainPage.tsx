@@ -7,7 +7,7 @@ export default function MainPage() {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        if (pathname !== '/home') {
+        if (pathname !== '/') {
             window.scrollTo(0, 0);
         }
     }, [pathname]);
