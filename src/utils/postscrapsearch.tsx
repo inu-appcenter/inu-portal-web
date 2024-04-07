@@ -1,4 +1,4 @@
-const postscrapsearch = async (token:string,folderId:number,query: string, sort: string, page: string) => {
+const postscrapsearch = async (token:string,folderId:number,query: string, sort: string, page: number) => {
     
     const apiURL = `https://portal.inuappcenter.kr/api/search/folder/${folderId}?query=${query}&sort=${sort}&page=${page}`;
     console.log("url몬가",apiURL,folderId);
