@@ -31,9 +31,11 @@ const ReCommentList: React.FC<ReCommentListProps> = ({ reReplies, onCommentUpdat
       {reReplies.map((reply) => (
         <div key={reply.id} className='recomment-main-container'>
           <div className='recomment-container-2'>
-            <img src={recommenticon} />
-            <span className='recomment-writer-text'>{reply.writer}</span>
-            <span className='recomment-content-text'>{reply.content}</span>
+            <div className='recomment-container-3'>
+              <img src={recommenticon} />
+              <span className='recomment-writer-text'>{reply.writer}</span>
+              <span className='recomment-content-text'>{reply.content}</span>
+            </div>
             <CommentLike id={reply.id} like={reply.like} isLikedProp={reply.isLiked} />
           </div>
           {reply.hasAuthority && (

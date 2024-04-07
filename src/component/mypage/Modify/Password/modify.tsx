@@ -56,7 +56,7 @@ export default function ModifyInfo() {
       try {
           const response = await getUser(token);
           console.log(response);
-          setCurrentNickname(response);
+          setCurrentNickname(response.nickname);
           console.log("닉네임이름",currnetnickname);
       } catch (error) {
           console.error("회원을 가져오지 못했습니다.", error);
