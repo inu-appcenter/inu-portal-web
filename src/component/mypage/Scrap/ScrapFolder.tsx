@@ -24,7 +24,7 @@ interface loginInfo {
 interface ScrapFolderInfoProps {
     folderData:{ [key: number]: string };
     handleFolderClick: (folderId: number) => void;
-    setFolderData: (folder: { [key: number]: string }) => void;
+   setFolderData: (folder: { [key: number]: string }) => void;
     setIsScrap:(status:boolean) => void;
     setIsFolderScrap:(status:boolean) => void;
   }
@@ -47,7 +47,7 @@ export default function ScrapFolder({folderData,handleFolderClick,setFolderData,
         try {
             const response = await CreateFolder(token, folderName);
             const newFolderId = response.data;
-            setFolderData((prevData:{ [key: number]: string }) => ({ ...prevData, [newFolderId]: folderName }));
+            setFolderData({ ...folderData, [newFolderId]: folderName });
             dispatch(addFolder({[newFolderId]: folderName}));
         } catch (error) {
             console.error("폴더를 생성하지 못했습니다.", error);
@@ -60,11 +60,9 @@ export default function ScrapFolder({folderData,handleFolderClick,setFolderData,
 const handleFolderDelete = async (folderIdToDelete: number) => {
     try {
         await deleteFolder(token,folderIdToDelete);
-        setFolderData((prevData: { [key: number]: string })=> {
-            const updatedData = { ...prevData };
-            delete updatedData[folderIdToDelete];
-            return updatedData;
-        });
+        const updatedData = { ...folderData };
+        delete updatedData[folderIdToDelete];
+        setFolderData(updatedData);
         dispatch(removeFolder({ [folderIdToDelete]: true }));
         setIsScrap(true);
         setIsFolderScrap(false);
