@@ -4,11 +4,12 @@ import { useParams } from 'react-router-dom';
 import handleLike from '../../../utils/handlePostLike';
 import heartEmptyImg from '../../../resource/assets/heart-empty-img.svg';
 import heartFilledImg from '../../../resource/assets/heart-filled-img.svg';
+import styled from 'styled-components';
 
 interface PostLikeProps{
   like: number
   isLikedProp: boolean;
-  hasAuthority: number;
+  hasAuthority: boolean
 }
 
 const PostLike: React.FC<PostLikeProps> = ({like, isLikedProp, hasAuthority}) =>{
@@ -57,8 +58,21 @@ const PostLike: React.FC<PostLikeProps> = ({like, isLikedProp, hasAuthority}) =>
       <span className='UtilityText'>
         {likes}
       </span>
+      {showError && <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>}
     </span>
     ); 
   };
 
   export default PostLike;
+
+
+  const ErrorMessage = styled.div`
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+`;
