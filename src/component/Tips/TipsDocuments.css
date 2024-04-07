@@ -1,10 +1,14 @@
+.sort-drop-box {
+  margin-top: 20px;
+  margin-left: 20px;
+}
+
 .grid-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 가로로 4개의 열 생성 */
   overflow-y: auto;
   gap: 20px;
-  padding: 40px; 
-  margin-right: 25px;
+  padding: 20px;
 }
 
 .document-card {
@@ -13,64 +17,67 @@
   cursor: pointer;
   width: 226px;
   height: 271px;
-  
   display: flex;
   flex-direction: column;
-}
-
-.card-1 {
-  display: flex;
-  flex-direction: row;
   justify-content: space-between;
-  
-}
-
-.document-category {
-  display: flex;
-  flex-direction: column;
-}
-
-.category-text {
-  font-family: Inter;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 20px;
-  color: #0E4D9D;
-  margin-bottom: 4px;
-}
-
-.category-underbar {
-  height: 1px;
-  width: 100%;
-  background-color: #7AA7E5;
-}
-
-.document-like {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.like-num {
-  font-family: Inter;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.document-content {
-  height: 144px;
-  font-family: Inter;
-  font-size: 15px;
-  font-weight: 500;
-  color: #888888;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.document-date {
-  font-family: Inter;
-  font-size: 30px;
-  font-weight: 700;
-  color: #7AA7E5;
-  text-align: center;
+  gap: 20px;
+  .card-1 {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    .document-category {
+      display: flex;
+      flex-direction: column;
+      .category-text {
+        font-family: Inter;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 20px;
+        color: #0E4D9D;
+        margin-bottom: 4px;
+      }
+      .category-underbar {
+        height: 1px;
+        width: 100%;
+        background-color: #7AA7E5;
+      }
+    }
+    .document-like {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      .like-num {
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: 600;
+      }
+    }
+  }
+  .card-2 {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    .document-title {
+      font-family: Inter;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    
+    .document-content {
+      font-family: Inter;
+      font-size: 15px;
+      font-weight: 500;
+      color: #888888;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+  }
+  .document-date {
+    font-family: Inter;
+    font-size: 30px;
+    font-weight: 700;
+    color: #7AA7E5;
+    text-align: center;
+  }
 }

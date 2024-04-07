@@ -1,18 +1,22 @@
 import React from 'react';
 import deletePost from '../../../utils/deletePost';
 import { useNavigate } from 'react-router-dom';
-import deletebtn from '../../../resource/assets/deletbtn.svg'
+import deletebtn from '../../../resource/assets/deletbtn.svg';
 interface DeletePostBtnProps {
   token: string;
   id: number;
   onPostUpdate: () => void;
 }
 
-const DeletePostBtn: React.FC<DeletePostBtnProps> = ({ token, id, onPostUpdate }) => {
+const DeletePostBtn: React.FC<DeletePostBtnProps> = ({
+  token,
+  id,
+  onPostUpdate,
+}) => {
   const navigate = useNavigate(); // useNavigate 훅 사용
   const handleDeleteClick = async () => {
-    const confirmDelete = window.confirm("게시글을 삭제하시겠습니까?");
-    if(confirmDelete){
+    const confirmDelete = window.confirm('게시글을 삭제하시겠습니까?');
+    if (confirmDelete) {
       try {
         const response = await deletePost(token, id);
         if (response === 200) {
@@ -27,15 +31,18 @@ const DeletePostBtn: React.FC<DeletePostBtnProps> = ({ token, id, onPostUpdate }
           alert('삭제 에러');
         }
       } catch (error) {
-        console.error("삭제 에러", error);
+        console.error('삭제 에러', error);
         alert('삭제 에러');
       }
     }
   };
 
-  return <div onClick={handleDeleteClick} style={{margin: '2px'}}>
-    <img src={deletebtn} alt="삭제 아이콘" style={{padding:'3px'}}/>
-    삭제</div>;
+  return (
+    <span onClick={handleDeleteClick} style={{ margin: '2px' }}>
+      <img src={deletebtn} alt='삭제 아이콘' style={{ padding: '3px' }} />
+      삭제
+    </span>
+  );
 };
 
 export default DeletePostBtn;

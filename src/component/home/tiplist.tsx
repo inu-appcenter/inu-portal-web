@@ -90,6 +90,7 @@ const TotalTip = styled.span`
         font-family: Inter;
         font-size: 12px;
         font-weight: 300;
+        cursor: pointer;
     }
 
 `

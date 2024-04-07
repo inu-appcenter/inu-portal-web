@@ -4,7 +4,7 @@ import getDocuments from '../../utils/getDocuments';
 import search from '../../utils/search';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './TipsDocuments.css'
-import Heart from '../../resource/assets/heart.png';
+import Heart from '../../resource/assets/heart.svg';
 import queryString from 'query-string';  
 import Pagination from './Pagination';
 import getNotices from '../../utils/getNotices';
@@ -75,7 +75,9 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
   return (
     <TipsDocumentsWrapper>
       <div>
-        <SortDropBox sort={sort} setSort={setSort} />
+        <div className='sort-drop-box'>
+          <SortDropBox sort={sort} setSort={setSort} />
+        </div>
         {documents && (
           <div className='grid-container'>
           {documents.map((document) => (
@@ -85,13 +87,23 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
                     <div className='category-text'>{document.category}</div>
                     <div className='category-underbar'></div>
                   </div>
-                  <span className='document-like'>
-                    <img src={Heart}></img>
-                    <div className='like-num'>{document.like}</div>
-                  </span>
+                  {docType=='TIPS'?
+                    (
+                      <span className='document-like'>
+                        <img src={Heart}></img>
+                        <div className='like-num'>{document.like}</div>
+                      </span>):(<></>)}
                 </div>
-                <h3>{document.title}</h3>
-                <div className='document-content'>{document.content}</div>
+                {docType=='TIPS'?
+                  (<div className='card-2'>
+                    <div className='document-title'>{document.title}</div>
+                    <div className='document-content'>{document.content}</div>
+                  </div>)
+                  :
+                  (<div className='card-2'>
+                    <div className='document-content'>{document.writer}</div>
+                    <div className='document-title'>{document.title}</div>
+                  </div>)}
                 <div className='document-date'>{document.createDate}</div>
               </div>
           ))}
