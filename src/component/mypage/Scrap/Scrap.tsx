@@ -88,7 +88,7 @@ export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSo
       }
       else if (selectedCategory === '검색결과') {
         console.log("여기로 온거야", selectedCategory);
-        const query = queryString.parse(location.search).query;
+        const query = (queryString.parse(location.search).query as string) || '';
         console.log('query sort page : ', query, scrapsort, page);
         const docs = await scrapsearch(token, query, scrapsort, page);
         console.log(docs, "결과는>>");
@@ -98,7 +98,7 @@ export default function ScrapInfo({ selectedCategory,scrapsort, page, setScrapSo
       }
       else if (selectedCategory === '폴더내검색결과') {
               console.log("여기여기여기");
-              const query = queryString.parse(location.search).query;
+              const query = (queryString.parse(location.search).query as string) || '';
               console.log('query sort page : ', query, scrapsort, page);
               const docs = await postscrapsearch(token,currentId,query, scrapsort, page);
               setTotalPages(docs['pages']);

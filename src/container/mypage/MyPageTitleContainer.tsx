@@ -10,7 +10,11 @@ import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
 import SearchBar from '../../component/Tips/SearchBar';
 
 // import SearchScrapBar from '../../component/mypage/Scrap/searchScrapBar';
-
+interface UserInfo {
+  nickname: string;
+  fireId: string;
+  // 다른 필요한 속성들도 여기에 추가할 수 있습니다.
+}
 interface loginInfo {
   user: {
     token: string;
@@ -40,7 +44,7 @@ export default function MyPageTitleContainer({selectedCategory}:MyPageTitleConta
     const handleUserInfo = async () => {
         console.log('ttt', token);
         try {
-            const response = await getUser(token);
+            const response: UserInfo = await getUser(token);
             console.log(response,"결과뭐야");
             dispatch(NicknameUserAction({"nickname":response.nickname}));
             dispatch(ProfileuserAction({"fireId":response.fireId}));

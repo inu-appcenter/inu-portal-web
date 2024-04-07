@@ -15,7 +15,7 @@ import ModifyNickname from '../../../../utils/putNickname';
 import { NicknameUser as NicknameUserAction, ProfileUser as ProfileUserAction } from "../../../../reducer/userSlice";
 
 
-import { profileimg } from '../../../../resource/string/profileImg';
+import { profileimg } from '../../../../Resource/string/profileImg';
 import { ProfileDropdown } from './profiledropdown';
 import Title from '../../common/title';
 import ModifyUserInfo from './modifyuserinfo';
@@ -56,7 +56,7 @@ export default function ModifyMyInfo() {
       try {
           const response = await getUser(token);
           console.log(response);
-          setCurrentNickname(response);
+          setCurrentNickname(response.nickname);
           console.log("닉네임이름",currnetnickname);
           
       } catch (error) {
