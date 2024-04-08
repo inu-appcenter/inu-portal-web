@@ -24,8 +24,8 @@ export default function MyPageCategories({ selectedCategory, setSelectedCategory
   const fetchCategories = async () => {
     const cats = MyPageCategory.map((cat: string) => ({
       name: cat,
-      iconWhite: `/assets/categoryImages/${cat}_white.svg`,
-      iconGray: `/assets/categoryImages/${cat}_gray.svg`
+      iconWhite: `/categoryIcons/${cat}_white.svg`,
+      iconGray: `/categoryIcons/${cat}_gray.svg`
     }));
     setCategories(cats);
   };
