@@ -15,7 +15,7 @@ interface Notice {
 
 
 const NoticesTopPostsWrapper = styled.div`
-  height: 270px;
+  height: 240px;
   gap: 30px;
   overflow-x: scroll;
   display: flex;
