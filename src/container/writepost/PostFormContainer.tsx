@@ -104,6 +104,7 @@ const PostFormContainer: React.FC = () => {
         setPost(postDetail);
         if (!postDetail.hasAuthority) {
           window.alert('수정 권한이 없습니다');
+          window.close();
         }
       };
       fetchPost();
