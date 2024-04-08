@@ -43,7 +43,7 @@ const TipsTopPosts: React.FC = () => {
         </PostLike>
         <TopPostsCat>
           <CategoryIcon
-          src={`/assets/categoryImages/${post.category}_white.svg`} 
+          src={`/categoryIcons/${post.category}_white.svg`} 
           alt="카테고리 이모지" />
           <PostCat>
           {post.category}
