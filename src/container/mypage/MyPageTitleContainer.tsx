@@ -55,18 +55,20 @@ export default function MyPageTitleContainer({selectedCategory}:MyPageTitleConta
     <MyPageTitleWrapper>
       <MypageTitle/>
       <SearchInfoWrapper>
-      {(selectedCategory ==='스크랩' || selectedCategory === "내 활동") && <SearchBar/>}
-      <MyPageUserInfo/>
+        {(selectedCategory ==='스크랩' || selectedCategory === "내 활동") && <SearchBar/>}
+        <MyPageUserInfo/>
       </SearchInfoWrapper>
     </MyPageTitleWrapper>
   );
 }
 
 const MyPageTitleWrapper = styled.div`
-    display: flex;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 15px;
+  padding-right: 30px;
+  gap: 20px;
 `;
 
 const SearchInfoWrapper = styled.div`
