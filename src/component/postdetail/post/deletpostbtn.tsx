@@ -2,6 +2,7 @@ import React from 'react';
 import deletePost from '../../../utils/deletePost';
 import { useNavigate } from 'react-router-dom';
 import deletebtn from '../../../resource/assets/deletebtn.svg';
+import styled from 'styled-components';
 interface DeletePostBtnProps {
   token: string;
   id: string;
@@ -38,11 +39,24 @@ const DeletePostBtn: React.FC<DeletePostBtnProps> = ({
   };
 
   return (
-    <span onClick={handleDeleteClick} style={{ margin: '2px' }}>
+    <DeleteBtn onClick={handleDeleteClick}>
       <img src={deletebtn} alt='삭제 아이콘' style={{ padding: '3px' }} />
       삭제
-    </span>
+    </DeleteBtn>
   );
 };
 
 export default DeletePostBtn;
+
+const DeleteBtn = styled.div`
+  align-items: center;
+  width: 76px;
+  height: 30px;
+  border-radius: 10px;
+  background: #EFF2F9;
+  font-size: 15px;
+  font-weight: 500;
+  color: #757575;
+  display: flex;
+  justify-content: center;
+`

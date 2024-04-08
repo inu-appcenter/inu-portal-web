@@ -26,24 +26,23 @@ export default function PostTitle({ title, createDate, view, writer,id, hasAutho
   return (
     <div className='PostTitle'>
       <span className='titleText'>{title}</span>
-      <PostInfo>
-      <div key={id}>
+      <div className='PostInfo'key={id}>
                 {hasAuthority &&(
                 <EditPostWrapper>
                   <DeletePostBtn token={token} id={id} onPostUpdate={handlePostUpdate} /> 
                   <EditPostBtn id={id} />
                 </EditPostWrapper>
                 )}
-            </div>
       <div className='titleInfo'>
-        <img src={datePencilImg} />
-        <span className='infoText'>{createDate}</span>
+        
+        <div className='infoText'>
+          <img src={datePencilImg} />{createDate}</div>
         <span className='infoText'>
         <img src={eyeImg} />
         {view}</span>
         <span className='writerInfo'>{writer}</span>
+        </div>
       </div>
-      </PostInfo>
     </div>
   )
 }
@@ -56,6 +55,3 @@ align-items: center;
 justify-content: space-between;
 gap: 10px;
 `
-
-const PostInfo = styled.div`
-display: flex;`

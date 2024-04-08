@@ -140,8 +140,8 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
       src={inuLogoImg} 
       alt="INU logo" 
       style={{ width: '180px',cursor: 'pointer'}} />
-        <ImageInput onImageChange={handleImageChange} />
         <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
+        <ImageInput onImageChange={handleImageChange} />
         <div className='post-button' onClick={handlePostSubmit}>업로드</div>
       </div>
       <div className='container1'>
@@ -150,6 +150,7 @@ const PostFormContainer: React.FC<PostFormProps> = ({ onPostSubmit }) => {
           <div className='write-line'></div>
           <ContentInput value={content} onChange={handleContentChange} />
           <div className='write-line'></div>
+        
           <div>
             {images.map((image, index) => (
               <div key={index} style={{ position: 'relative', display: 'inline-block', margin: '10px' }}>

@@ -33,8 +33,15 @@ const TipsTopPosts: React.FC = () => {
     navigate(`/tips/${postId}`);
   };
 
+  const handleScroll = (event: React.WheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const delta = Math.max(-1, Math.min(1, event.deltaY)); // Normalize delta
+    const element = event.currentTarget;
+    element.scrollLeft -= delta * 40; // Adjust scroll speed here
+  };
+
   return (
-    <TipsTopPostsWrapper>
+    <TipsTopPostsWrapper onWheel={handleScroll}>
     {topPosts.map(post => (
         <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
         <PostLike>
@@ -49,7 +56,6 @@ const TipsTopPosts: React.FC = () => {
           {post.category}
           </PostCat>
         </TopPostsCat>
-        <Line/>
         <TopPostTitle>{post.title}</TopPostTitle>
         {/* Render other post properties as needed */}
       </PostCard>
@@ -144,11 +150,4 @@ const CategoryIcon = styled.img`
   width: 30px;
   padding-left: 10px;
 
-`
-const Line = styled.div`
-width: 0px;
-height:77px;
-border: 1px solid #FFFFFF;
-left: 60px;
-position: absolute;
 `

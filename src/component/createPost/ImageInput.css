@@ -1,7 +1,7 @@
 .image-input-label {
   display: flex;
   flex-direction: column;
-  margin-left: 25px;
+  margin:0 20px ;
   cursor: pointer;
 }
 
