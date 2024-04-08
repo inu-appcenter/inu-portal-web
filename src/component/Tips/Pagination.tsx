@@ -4,10 +4,9 @@ import styled from 'styled-components';
 const PaginationWrapper = styled.div`
   display: flex;
   justify-content: center;
-  padding: 20px;
+  gap: 5px;
 
   .page-item {
-    margin: 0 5px;
     cursor: pointer;
     padding: 5px 10px;
     font-weight: 600;

@@ -62,7 +62,7 @@ const TipsTopPosts: React.FC = () => {
 export default TipsTopPosts;
 
 const TipsTopPostsWrapper = styled.div`
-  height: 270px;
+  height: 240px;
   gap: 30px;
   overflow-x: scroll;
   display: -webkit-inline-box;

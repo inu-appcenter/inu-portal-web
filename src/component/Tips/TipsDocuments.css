@@ -1,8 +1,3 @@
-.sort-drop-box {
-  margin-top: 20px;
-  margin-left: 20px;
-}
-
 .grid-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* 가로로 4개의 열 생성 */
@@ -80,4 +75,11 @@
     color: #7AA7E5;
     text-align: center;
   }
+}
+
+.bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 10px;
 }
