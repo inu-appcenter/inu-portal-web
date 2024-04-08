@@ -28,16 +28,16 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
       getCats.unshift('전체');
       const cats = getCats.map((cat: string) => ({
         name: cat,
-        iconWhite: `/src/resource/assets/categoryIcons/${encodeURIComponent(cat)}_white.svg`,
-        iconGray: `/src/resource/assets/categoryIcons/${encodeURIComponent(cat)}_gray.svg`
+        iconWhite: `/assets/categoryImages/${cat}_white.svg`,
+        iconGray: `/assets/categoryImages/${cat}_gray.svg`
       }));
       setCategories(cats);
     } 
     else if (docType === 'NOTICE') {
       const cats = ['전체', '학사', '모집', '학점교류', '교육시험'].map(cat => ({
         name: cat,
-        iconWhite: `/src/resource/assets/categoryIcons/${cat}_white.svg`,
-        iconGray: `/src/resource/assets/categoryIcons/${cat}_gray.svg`
+        iconWhite: `/assets/categoryImages/${cat}_white.svg`,
+        iconGray: `/assets/categoryImages/${cat}_gray.svg`
       }));
       setCategories(cats);
     }
