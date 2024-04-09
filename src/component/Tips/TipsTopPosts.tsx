@@ -12,10 +12,9 @@ interface Post {
 }
 interface CategoriesProps {
   selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
 }
 
-  const TipsTopPosts: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCategory }) => {
+  const TipsTopPosts: React.FC<CategoriesProps> = ({ selectedCategory }) => {
   // 컴포넌트 내용
 
   const [topPosts, setTopPosts] = useState<Post[]>([]);
