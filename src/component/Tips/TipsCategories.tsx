@@ -53,6 +53,7 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
   };
 
   const handleClickCategory = (category: string) => {
+    console.log(category);
     setSelectedCategory(category);
   
     if (docType === 'TIPS') {

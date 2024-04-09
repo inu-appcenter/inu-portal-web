@@ -1,5 +1,10 @@
-const getTopPosts =  async () => {
-    const apiURL = `https://portal.inuappcenter.kr/api/posts/top`;
+const getTopPosts = async (category: string = '전체') => {
+  let apiURL = 'https://portal.inuappcenter.kr/api/posts/top';
+  
+  if (category !== '전체') {
+      apiURL += `?category=${category}`;
+  }
+
     try {
       const response = await fetch(apiURL, {
         method: 'GET',
