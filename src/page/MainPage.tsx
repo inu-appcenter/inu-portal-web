@@ -1,9 +1,12 @@
 import styled from "styled-components";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "../container/common/HeaderContainer";
 import Nav from "../container/common/NavContainer";
 import { Outlet, useLocation } from 'react-router-dom';
+import IntroPage from "./IntroPage";
+
 export default function MainPage() {
+    const [showIntro, setShowIntro] = useState(true);
     const { pathname } = useLocation();
 
     useEffect(() => {
@@ -11,6 +14,15 @@ export default function MainPage() {
             window.scrollTo(0, 0);
         }
     }, [pathname]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+          setShowIntro(false);
+        }, 3000);
+    
+        return () => clearTimeout(timer);
+      }, [])
+      
     return (
         <MainPageWrapper>
             <header>
@@ -20,6 +32,7 @@ export default function MainPage() {
                 <Nav />
             </nav>
             <main style={{flexGrow: 1}}>
+                {showIntro ? (<IntroPage/>) : (<></>)}
                 <Outlet />
             </main>
         </MainPageWrapper>

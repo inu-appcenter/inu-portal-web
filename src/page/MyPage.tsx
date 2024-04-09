@@ -31,12 +31,11 @@ export default function MyPage() {
   
   return (
     <MyPageWrapper>
-        <MyPageCatWrapper>
-          <MypageCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
+      <MyPageCatWrapper>
+        <MypageCatContainer selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
       </MyPageCatWrapper>
       <MyPageContentWrapper>
-            <MyPageTitleContainer selectedCategory={selectedCategory}/>
-
+        <MyPageTitleContainer selectedCategory={selectedCategory}/>
         <BorderWrapper>
           <Routes>
             <Route index element={<MyPageLists selectedCategory={selectedCategory} scrapsort={scrapsort} likesort={likesort} commentsort={commentsort} postsort={postsort} page={page} setScrapSort={setScrapSort} setLikeSort={setLikeSort} setCommentSort={setCommentSort} setPostSort={setPostSort}  setPage={setPage}/>} />
@@ -51,13 +50,13 @@ export default function MyPage() {
 }
 
 const MyPageWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-    height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 150px);
 `;
 
 const MyPageCatWrapper = styled.div`
- padding: 40px;
+ padding: 30px;
 `
 
 const MyPageContentWrapper = styled.div`
@@ -67,6 +66,7 @@ const MyPageContentWrapper = styled.div`
 `
 
 const BorderWrapper = styled.div`
- background: linear-gradient(#DBEBFF 0.1%, #FFFFFF 99.9%);
+  margin-right: 25px;
+  background: linear-gradient(#DBEBFF 0.1%, #FFFFFF 99.9%);
   flex-grow: 1;
 `
