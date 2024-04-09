@@ -40,7 +40,7 @@ export default function TipsPage() {
       </TipsCatWrapper>
       <TipsContentWrapper>
         <TipsTitle selectedCategory={selectedCategory} docType={docType} />
-        {!isWriteOrUpdatePath && (docType === 'NOTICE' ? <NoticesTop /> : <TipsTopPosts />)}
+        {!isWriteOrUpdatePath && (docType === 'NOTICE' ? <NoticesTop /> : <TipsTopPosts selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />)}
         <BorderWrapper>
           <Routes>
             <Route index element={<TipsDocuments docType={docType} selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />

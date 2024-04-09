@@ -75,9 +75,6 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
   return (
     <TipsDocumentsWrapper>
       <div>
-        <div className='sort-drop-box'>
-          <SortDropBox sort={sort} setSort={setSort} />
-        </div>
         {documents && (
           <div className='grid-container'>
           {documents.map((document) => (
@@ -110,7 +107,11 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
           </div>
         )}
       </div>
-      <Pagination totalPages={totalPages} currentPage={parseInt(page)} setPage={setPage} />
+      <div className='bottom'>
+        <div style={{flexGrow: 1}}><SortDropBox sort={sort} setSort={setSort} /></div>
+        <div style={{flexGrow: 1}}><Pagination totalPages={totalPages} currentPage={parseInt(page)} setPage={setPage} /></div>
+        <div style={{flexGrow: 1}} />
+      </div>
     </TipsDocumentsWrapper>
   );
 }
