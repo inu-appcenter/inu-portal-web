@@ -104,7 +104,6 @@ const PostLike = styled.div`
   font-weight: 500;
 `
 const TopPostTitle =styled.span`
-text-align: center;
 width: 210px;
 height: 40px;
 font-size: 17px;
@@ -113,7 +112,7 @@ align-items: center;
 bottom: 0;
 font-weight: 600;
 display: flex;
-justify-content: center;
+justify-content: space-around;
 border-radius: 0 0 20px 20px;
 background: linear-gradient( #E9F0FA 5%, #FFFFFF 100%);
 padding: 2px 0 ;
