@@ -19,6 +19,7 @@ const fadeOut = keyframes`
 `;
 
 const IntroPageWrapper = styled.div`
+  background-color: rgba(255, 255, 255, 0.8);
   height: 100%;
   width: 100%;
   display: flex;

@@ -4,17 +4,13 @@ import HomePage from './page/HomePage';
 import Login from './page/LoginPage/LoginPage';
 import Tips from './page/TipsPage';
 import MyPage from './page/MyPage';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import reLogin from './utils/reLogin';
 import { useDispatch } from 'react-redux';
 import refresh from './utils/refresh';
-import IntroPage from './page/IntroPage';
 import WritePost from './page/WritePostPage';
 
-
-
 export default function App() {
-  const [showIntro, setShowIntro] = useState(true);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -53,19 +49,12 @@ export default function App() {
     return () => clearInterval(interval);
   }, [dispatch]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowIntro(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [])
+  
 
   return (
     <BrowserRouter>
         <Routes>
           <Route path='/' element={<MainPage />}>
-          {showIntro ? (<Route path='/' element={<IntroPage />} />) : (<></>)}
           <Route path='/' element={<HomePage />} />
           <Route path='/login/*' element={<Login />} />
           <Route path='/tips/*' element={<Tips />} />
