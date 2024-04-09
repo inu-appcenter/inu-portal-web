@@ -10,38 +10,37 @@ interface Post {
   like:number;
   // Add more properties as needed
 }
+interface CategoriesProps {
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+}
 
+  const TipsTopPosts: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCategory }) => {
+  // 컴포넌트 내용
 
-const TipsTopPosts: React.FC = () => {
   const [topPosts, setTopPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
-        const posts = await getTopPosts();
+        const posts = await getTopPosts(selectedCategory);
         setTopPosts(posts);
+        
       } catch (error) {
         console.error('Error fetching top posts:', error);
       }
     };
 
     fetchTopPosts();
-  }, []);
+  }, [selectedCategory]);
 
   const handlePostClick = (postId: number) => {
     navigate(`/tips/${postId}`);
   };
 
-  const handleScroll = (event: React.WheelEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const delta = Math.max(-1, Math.min(1, event.deltaY)); // Normalize delta
-    const element = event.currentTarget;
-    element.scrollLeft -= delta * 40; // Adjust scroll speed here
-  };
-
   return (
-    <TipsTopPostsWrapper onWheel={handleScroll}>
+    <TipsTopPostsWrapper >
     {topPosts.map(post => (
         <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
         <PostLike>
