@@ -6,38 +6,48 @@ import { Outlet, useLocation } from 'react-router-dom';
 import IntroPage from "./IntroPage";
 
 export default function MainPage() {
-    const [showIntro, setShowIntro] = useState(true);
-    const { pathname } = useLocation();
+  const [showIntro, setShowIntro] = useState(true);
+  const { pathname } = useLocation();
 
-    useEffect(() => {
-        if (pathname !== '/') {
-            window.scrollTo(0, 0);
-        }
-    }, [pathname]);
+  useEffect(() => {
+    if (pathname !== '/') {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-          setShowIntro(false);
-        }, 3000);
-    
-        return () => clearTimeout(timer);
-      }, [])
+  useEffect(() => {
+    // 세션 스토리지에서 'introShown' 키 확인
+    const introShown = sessionStorage.getItem('introShown');
+    if (introShown) {
+      // 'introShown' 키가 있으면, 새로고침으로 간주하고 IntroPage를 보여주지 않음
+      setShowIntro(false);
+    }
+    else {
+      // 처음 로드시, 'introShown' 키를 세션 스토리지에 추가
+      sessionStorage.setItem('introShown', 'true');
       
-    return (
-        <MainPageWrapper>
-            <header>
-                <Header />
-            </header>
-            <nav>
-                <Nav />
-            </nav>
-            <main style={{flexGrow: 1}}>
-                {showIntro ? (<IntroPage/>) : (<></>)}
-                <Outlet />
-            </main>
-        </MainPageWrapper>
-
-    )
+      const timer = setTimeout(() => {
+        setShowIntro(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [])
+      
+  return (
+    <MainPageWrapper>
+      <header>
+        <Header />
+      </header>
+      <nav>
+        <Nav />
+      </nav>
+      <main style={{flexGrow: 1}}>
+        {showIntro ? (<IntroPage/>) : (<></>)}
+        <Outlet />
+      </main>
+    </MainPageWrapper>
+  )
 }
 
 const MainPageWrapper = styled.div`
