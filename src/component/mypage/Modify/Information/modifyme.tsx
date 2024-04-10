@@ -32,9 +32,11 @@ export default function ModifyMyInfo() {
     const [currnetnickname, setCurrentNickname] = useState("");
     const [nickname, setNickname] = useState("");
     const [currentfireid, setCurrentFireId] = useState(0);
+    const fireId = useSelector((state: any) => state.user.fireId);
     // const [images,setImages] = useState<string[]>([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 표시 여부 상태
-    const [selectedImage, setSelectedImage] = useState<string>(profileimg[0]); 
+
+    const [selectedImage, setSelectedImage] = useState<string>(fireId); 
     const dispatch = useDispatch();
 
     const handleChangeImage = (image: string) => {
@@ -71,7 +73,10 @@ export default function ModifyMyInfo() {
         console.log(selectedImage,"현재 선택된 이미지 뭐양?");
          const fireId = Number(selectedImage.match(/\d+/));
          console.log("fire아이디뭐야",fireId);
-          const nicknameResponse = await ModifyNickname(token, nickname,fireId);
+         if (nickname === '') {
+          alert("닉네임을 입력해주세요.");
+        } else {
+         const nicknameResponse = await ModifyNickname(token, nickname,fireId);
           if (nicknameResponse === 400) {
             alert('입력한 닉네임과 현재 닉네임이 동일합니다.');
           }
@@ -87,7 +92,7 @@ export default function ModifyMyInfo() {
             dispatch(ProfileUserAction({"fireId":fireId}));
           }
 
-      } catch (error) {
+      }} catch (error) {
           console.error('닉네임 변경 실패:', error);
           alert('닉네임 변경에 실패했습니다.');
       } 
@@ -113,7 +118,7 @@ export default function ModifyMyInfo() {
             
       </ChangeWrapper>
       {isDropdownOpen && (
-          <ProfileDropdown images={profileimg} onChange={handleChangeImage} />
+          <ProfileDropdown images={profileimg} selectedImage={selectedImage} onChange={handleChangeImage} />
         )}
         <ButtonWrapper>
         <Modify onClick={handleModifyClick}>수정</Modify>
@@ -150,16 +155,14 @@ flex-direction: column;
 `
 
 const Modify = styled.button`
-  position: absolute;
-  bottom: 50px;
   background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
   border: 1px solid #fff;
   border-radius: 5px;
   color:white;
 font-size: 17px;
 font-weight: 700;
-
-padding:6px 44px;
+  margin-top: 20px;
+  padding:6px 44px;
 `
 
 

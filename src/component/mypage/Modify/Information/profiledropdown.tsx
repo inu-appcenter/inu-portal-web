@@ -1,14 +1,12 @@
 import styled from "styled-components";
 
-
-
-
 interface ProfileDropdownProps {
+  selectedImage: string;
   images: string[]; 
   onChange: (image: string) => void; 
 }
 
-export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ images, onChange }) => {
+export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ images, selectedImage, onChange }) => {
   const handleImageClick = (image: string) => {
     onChange(image); 
   };
@@ -16,23 +14,46 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ images, onChan
   return (
     <DropdownWrapper>
       {images.map((image, index) => (
-        <img key={index} src={image} alt="" onClick={() => handleImageClick(image)} />
+        <GridItem key={index} isSelected={image === selectedImage}>
+          <img 
+            src={image} 
+            alt=""  
+            onClick={() => handleImageClick(image)} 
+          />
+        </GridItem>
       ))}
     </DropdownWrapper>
   );
 };
 
-
 const DropdownWrapper = styled.div`
-  position: absolute;
+  margin-top: 44px;
   bottom: 100px;
   display: grid;
-  grid-template-columns: repeat(6, 1fr); /* 6개의 열로 구성 */
-  gap: 20px; /* 열과 행 사이의 간격 설정 */
+  grid-template-columns: repeat(6, 1fr); 
+  gap: 10px;
   border: 1px solid #4071B9;
-  padding:30px;
+  padding: 30px;
+  justify-items: center;
+  height: 307px;
+  box-sizing: border-box;
+`;
+
+interface GridItemProps {
+  isSelected: boolean;
+}
+
+const GridItem = styled.div<GridItemProps>`
+  width: 58px; 
+  height: 99px; 
+  position: relative; 
+  
   img {
-    width: 68px;
-    height: 109px;
+    width: 100%; 
+    height: 100%; 
+    border: ${({ isSelected }) => isSelected ? '1px solid #4072B9' : 'none'}; 
+    border-radius: 5%;
+    padding:20px;
+    cursor: pointer;
   }
 `;
