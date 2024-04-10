@@ -82,7 +82,7 @@ const DropBoxWrapper = styled.div`
     color: #0E4D9D;
     border: none;
     display: block;
-    cursor: url('/pointers/cursor-pointer.svg'), pointer;;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;
   }
 `;
 

@@ -40,5 +40,5 @@ const Nav = styled.nav`
 
 const Logo = styled.img`
     width: 200px;
-    cursor: url('/pointers/cursor-pointer.svg'), pointer;;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;
 `
