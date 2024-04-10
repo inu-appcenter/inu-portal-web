@@ -43,7 +43,7 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
-  cursor: url('/pointers/cursor-pointer.svg'), pointer;;
+  cursor: url('/pointers/cursor-pointer.svg'), pointer;
   transition: border-color 0.25s;
 }
 button:hover {

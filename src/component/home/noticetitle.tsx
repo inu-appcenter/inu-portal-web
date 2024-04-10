@@ -11,7 +11,9 @@ export default function NoticeTitle() {
 
     return (
 
-        <NoticeWrapper onClick={handleNoticeClick}>📌 NOTICE</NoticeWrapper>
+        <NoticeWrapper>
+            <NoticeTitleText onClick={handleNoticeClick}>📌 NOTICE</NoticeTitleText>
+        </NoticeWrapper>
     )
 }
 
@@ -24,7 +26,9 @@ const NoticeWrapper = styled.div`
     text-align: left;
     color: #0E4D9D;
     margin-bottom: 10px;
-    cursor: url('/pointers/cursor-pointer.svg'), pointer;;
     padding: 5px;
 
+`
+const NoticeTitleText = styled.span`
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;
 `

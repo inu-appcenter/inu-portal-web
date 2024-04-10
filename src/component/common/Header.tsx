@@ -51,7 +51,7 @@ const Header = styled.header`
         line-height: 20px;
         color: #FFFFFF;
         text-decoration: none;
-        cursor: url('/pointers/cursor-pointer.svg'), pointer;;
+        cursor: url('/pointers/cursor-pointer.svg'), pointer;
         margin-right: 20px;
     }
 
