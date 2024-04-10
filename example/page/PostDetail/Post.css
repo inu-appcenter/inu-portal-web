@@ -72,7 +72,7 @@
     border: none;
     background-color: transparent;
     font-size: 18px;
-    cursor: pointer;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;;
     outline: none;
   }
   

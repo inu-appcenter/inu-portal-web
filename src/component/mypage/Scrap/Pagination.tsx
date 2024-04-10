@@ -8,7 +8,7 @@ const PaginationWrapper = styled.div`
 
   .page-item {
     margin: 0 5px;
-    cursor: pointer;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;
     padding: 5px 10px;
     font-weight: 600;
 

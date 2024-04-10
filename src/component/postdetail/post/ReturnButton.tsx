@@ -18,5 +18,5 @@ font-size: 15px;
 padding: 3px 6px;
 margin-left: 15px;
 border : 1px solid #888888;
-cursor: pointer;
+cursor: url('/pointers/cursor-pointer.svg'), pointer;
 `

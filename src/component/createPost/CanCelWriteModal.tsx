@@ -119,7 +119,7 @@ font-weight: 600;
 text-align: center;
 color: #FFFFFF;
 &:hover{
-  cursor: pointer
+  cursor: url('/pointers/cursor-pointer.svg'), pointer;
 }
 
 `;
@@ -140,7 +140,7 @@ font-weight: 600;
 text-align: center;
 color: #FFFFFF;
 &:hover{
-  cursor: pointer
+  cursor: url('/pointers/cursor-pointer.svg'), pointer;
 }
 
 `

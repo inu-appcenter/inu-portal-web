@@ -24,7 +24,7 @@ const NoticeWrapper = styled.div`
     text-align: left;
     color: #0E4D9D;
     margin-bottom: 10px;
-    cursor: pointer;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;;
     padding: 5px;
 
 `
