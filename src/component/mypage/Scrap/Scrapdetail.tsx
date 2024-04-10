@@ -113,8 +113,10 @@ export default function ScrapPost({selectedCategory,setDocuments,documents,total
             <p className='title'>All scraps</p>
             <p className='length'>{documents.length}</p>
           </CountWrapper>
+          <BackSortWrapper>
           {selectedCategory === '폴더' && <ReturnScrapButton/> }
           <SortDropBox sort={scrapsort} setSort={setScrapSort} />
+          </BackSortWrapper>
       </ScrapDetailWrapper>
       <PostWrapper>
         {documents.map((item,index) => (
@@ -219,6 +221,11 @@ letter-spacing: 0px;
 `;
 
 
+const BackSortWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap:20px;
+`
 const PostWrapper = styled.div`
   height: 400px;
   margin-top: 21px;
