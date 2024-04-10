@@ -80,7 +80,7 @@ const CalendarWrapper = styled.div`
 
 
   .fc-event {
-    cursor: pointer;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;
     padding: 5px 8px;
     margin-bottom: 5px;
     border-radius: 4px;

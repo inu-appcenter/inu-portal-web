@@ -39,7 +39,7 @@ const PostCard = styled.div`
   flex-direction: column;
   justify-content: center; 
   align-items: center; 
-  cursor: pointer; 
+  cursor: url('/pointers/cursor-pointer.svg'), pointer;
   transition: transform 0.2s ease-in-out; /* 호버 효과를 위한 변형 트랜지션 */
   &:hover {
     transform: scale(1.05); /* 호버 시 확대 효과 */

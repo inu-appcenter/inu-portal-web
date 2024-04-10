@@ -242,7 +242,7 @@ const ChildDetail = styled.div`
       content: url(${round}); /* 호버 시 이미지 변경 */
     }
   }
-  cursor: pointer;
+  cursor: url('/pointers/cursor-pointer.svg'), pointer;;
   position: relative
 `;
 

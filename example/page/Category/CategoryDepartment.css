@@ -43,7 +43,7 @@
   
   .category-item {
     padding: 10px;
-    cursor: pointer;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;;
     transition: background-color 0.3s ease;
     font-weight: 700;
   }
@@ -55,7 +55,7 @@
   
   .category-items {
     padding: 8px 20px;
-    cursor: pointer;
+    cursor: url('/pointers/cursor-pointer.svg'), pointer;;
     transition: background-color 0.3s ease;
   }
   

@@ -1,6 +1,4 @@
 import { createGlobalStyle } from 'styled-components';
-import cursorImg from '../assets/cursor.svg';
-import cursorpointerImg from '../assets/cursor-pointer.svg';
 
 const CommonStyle = createGlobalStyle`
   //이 안에 전체 프로젝트에 적용될 css를 작성하면 됩니다~!
@@ -14,14 +12,8 @@ const CommonStyle = createGlobalStyle`
     -ms-overflow-style: none;
     height:100vh;
     overflow: hidden;
-    cursor: url(${cursorImg}), auto; // 기본 커서 이미지 설정
+    cursor: url('/pointers/cursor.svg'), auto; // 기본 커서 이미지 설정
   }
-
-  .cursor-pointer {
-    cursor: url(${cursorpointerImg}), pointer; // pointer 클래스에 대한 커서 이미지 설정
-  }
-
-
 
   // 스크롤바 커스텀 스타일링
   ::-webkit-scrollbar {

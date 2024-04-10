@@ -24,7 +24,7 @@ const TipTile = styled.div`
     text-align: left;
     color: #0E4D9D;
     &:hover{
-        cursor: pointer;
+        cursor: url('/pointers/cursor-pointer.svg'), pointer;
     }
 
 `

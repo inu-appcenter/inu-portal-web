@@ -9,7 +9,7 @@
 .document-card {
   padding: 20px;
   border: 2px solid #AAC9EE;
-  cursor: pointer;
+  cursor: url('/pointers/cursor-pointer.svg'), pointer;
   width: 226px;
   height: 271px;
   display: flex;

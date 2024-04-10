@@ -5,5 +5,5 @@
 }
 
 .btn {
-  cursor: pointer;
+  cursor: url('/pointers/cursor-pointer.svg'), pointer;
 }
