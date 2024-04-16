@@ -25,39 +25,41 @@ interface Document {
 }
 
 interface TipsDocumentsProps {
-  docType: string;
-  selectedCategory: string;
-  sort: string;
-  page: string;
-  setSort: (sort: string) => void;
-  setPage: (page: string) => void;
+  docState: DocState;
+  setDocState: (docState: DocState) => void;
 }
 
-export default function TipsDocuments({ docType, selectedCategory, sort, page, setSort, setPage }: TipsDocumentsProps) {
+export default function TipsDocuments({ docState, setDocState }: TipsDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const [totalPages, setTotalPages] = useState<number>(1);
-  // page를 제외한 useEffect
+
+  const setSort = (sort: string) => {
+    setDocState({docType: docState.docType, selectedCategory: docState.selectedCategory, sort: sort, page: docState.page});
+  }
+
+  const setPage = (page: string) => {
+    setDocState({docType: docState.docType, selectedCategory: docState.selectedCategory, sort: docState.sort, page: page});
+  }
+
   useEffect(() => {
     const fetchDocuments = async () => {
-      console.log('bb');
-      setPage('1');
-      console.log('cc');
-      if (docType === 'NOTICE') {
-        const docs = await getNotices(selectedCategory, sort, page);
+      console.log('랜');
+      if (docState.docType === 'NOTICE') {
+        const docs = await getNotices(docState.selectedCategory, docState.sort, docState.page);
         setTotalPages(docs['pages']);
         setDocuments(docs['notices']);
       }
-      else if (docType === 'TIPS') {
-        if (selectedCategory == '검색결과') {
+      else if (docState.docType === 'TIPS') {
+        if (docState.selectedCategory == '검색결과') {
           const query = queryString.parse(location.search).query as string;
-          const docs = await search(query, sort, page);
+          const docs = await search(query, docState.sort, docState.page);
           setTotalPages(docs['pages']);
           setDocuments(docs['posts']);
         }
-        else if (selectedCategory) {
-          const docs = await getDocuments(selectedCategory, sort, page);
+        else if (docState.selectedCategory) {
+          const docs = await getDocuments(docState.selectedCategory, docState.sort, docState.page);
           setTotalPages(docs['pages']);
           setDocuments(docs['posts']);
         }
@@ -65,37 +67,10 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
     };
 
     fetchDocuments();
-  }, [docType, selectedCategory, location.search, sort]);
-
-  // page의 useEffect
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      console.log('aa');
-      if (docType === 'NOTICE') {
-        const docs = await getNotices(selectedCategory, sort, page);
-        setTotalPages(docs['pages']);
-        setDocuments(docs['notices']);
-      }
-      else if (docType === 'TIPS') {
-        if (selectedCategory == '검색결과') {
-          const query = queryString.parse(location.search).query as string;
-          const docs = await search(query, sort, page);
-          setTotalPages(docs['pages']);
-          setDocuments(docs['posts']);
-        }
-        else if (selectedCategory) {
-          const docs = await getDocuments(selectedCategory, sort, page);
-          setTotalPages(docs['pages']);
-          setDocuments(docs['posts']);
-        }
-      }
-    };
-
-    if (page !== '1') fetchDocuments();
-  }, [page]);
+  }, [docState, location.search]);
 
   const handleDocumentClick = (id: number, url: string) => {
-    if (docType == 'NOTICE') {
+    if (docState.docType == 'NOTICE') {
       window.open('https://'+ url, '_blank');
     }
     else {
@@ -115,14 +90,14 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
                     <div className='category-text'>{document.category}</div>
                     <div className='category-underbar'></div>
                   </div>
-                  {docType=='TIPS'?
+                  {docState.docType=='TIPS'?
                     (
                       <span className='document-like'>
                         <img src={Heart}></img>
                         <div className='like-num'>{document.like}</div>
                       </span>):(<></>)}
                 </div>
-                {docType=='TIPS'?
+                {docState.docType=='TIPS'?
                   (<div className='card-2'>
                     <div className='document-title'>{document.title}</div>
                     <div className='document-content'>{document.content}</div>
@@ -139,8 +114,8 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
         )}
       </div>
       <div className='bottom'>
-        <div style={{flexGrow: 1}}><SortDropBox sort={sort} setSort={setSort} /></div>
-        <div style={{flexGrow: 1}}><Pagination totalPages={totalPages} currentPage={parseInt(page)} setPage={setPage} /></div>
+        <div style={{flexGrow: 1}}><SortDropBox sort={docState.sort} setSort={setSort} /></div>
+        <div style={{flexGrow: 1}}><Pagination totalPages={totalPages} currentPage={parseInt(docState.page)} setPage={setPage} /></div>
         <div style={{flexGrow: 1}} />
       </div>
     </TipsDocumentsWrapper>

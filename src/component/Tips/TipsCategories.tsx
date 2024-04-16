@@ -11,19 +11,18 @@ interface Category {
 }
 
 interface TipsCategoriesProps {
-  docType: string;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  docState: DocState;
+  setDocState: (docState: DocState) => void;
 }
 
 
 
-export default function TipsCategories({ docType, selectedCategory, setSelectedCategory }: TipsCategoriesProps) {
+export default function TipsCategories({ docState, setDocState }: TipsCategoriesProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
 
   const fetchCategories = async () => {
-    if (docType === 'TIPS') {
+    if (docState.docType === 'TIPS') {
       const getCats = await getCategory();
       getCats.unshift('전체');
       const cats = getCats.map((cat: string) => ({
@@ -33,7 +32,7 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
       }));
       setCategories(cats);
     } 
-    else if (docType === 'NOTICE') {
+    else if (docState.docType === 'NOTICE') {
       const cats = ['전체', '학사', '모집', '학점교류', '교육시험'].map(cat => ({
         name: cat,
         iconWhite: `/categoryIcons/${cat}_white.svg`,
@@ -45,7 +44,8 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
 
   useEffect(() => {
     fetchCategories();
-  }, [docType]);
+    
+  }, [docState.docType]);
 
    // 이미지 로드 실패 시 호출될 핸들러
    const handleImageError = (index: number) => {
@@ -54,11 +54,11 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
 
   const handleClickCategory = (category: string) => {
     console.log(category);
-    setSelectedCategory(category);
+    setDocState({docType: docState.docType, selectedCategory: category, sort: 'date', page: '1'});
   
-    if (docType === 'TIPS') {
+    if (docState.docType === 'TIPS') {
       navigate('/tips');
-    } else if (docType === 'NOTICE') {
+    } else if (docState.docType === 'NOTICE') {
       navigate('/tips/notice');
     }
   }
@@ -67,12 +67,12 @@ export default function TipsCategories({ docType, selectedCategory, setSelectedC
   return (
     <div className='categories'>
       {categories.map((category, index) => (
-        <div className={`categoryItem ${selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
+        <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
           {category.hasError ? (
             <div style={{ width: '25px', height: '25px' }}> {/* 이미지 로드 실패 시 공백을 위한 div */}</div>
           ) : (
             <img 
-              src={selectedCategory === category.name ? category.iconWhite : category.iconGray} 
+              src={docState.selectedCategory === category.name ? category.iconWhite : category.iconGray} 
               alt={category.name} 
               onError={() => handleImageError(index)}
             />

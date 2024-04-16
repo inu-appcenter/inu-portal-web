@@ -12,43 +12,43 @@ import NoticesTop from '../component/Tips/NoticesTop';
 
 
 export default function TipsPage() {
-  const [docType, setDocType] = useState<string>(''); // TIPS 또는 NOTICE
-  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const location = useLocation();
-  const [sort, setSort] = useState<string>('date');
-  const [page, setPage] = useState<string>('1');
+  const [docState, setDocState] = useState<DocState>({
+    docType: '', // TIPS 또는 NOTICE
+    selectedCategory: '전체',
+    sort: 'date',
+    page: '1'
+  });
 
   useEffect(() => {
+    console.log(docState);
     if (location.pathname.includes('/tips/search')) {
-      setSelectedCategory('검색결과');
-      setDocType('TIPS');
+      setDocState((prev)=>({...prev, docType: 'TIPS', selectedCategory: '검색결과'}));
     }
     else if (location.pathname.includes('/tips/notice')) {
-      setDocType('NOTICE');
+      setDocState((prev)=>({...prev, docType: 'NOTICE' }));
     }
     else {
-      setDocType('TIPS');
+      setDocState((prev)=>({...prev, docType: 'TIPS' }));
     }
-  })
+  }, [location.pathname]);
 
   const isWriteOrUpdatePath = location.pathname.includes('/tips/write') || location.pathname.includes('/tips/update');
   
   return (
     <TipsPageWrapper>
       <TipsCatWrapper>
-        <TipsCatContainer docType={docType} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}/>
+        <TipsCatContainer docState={docState} setDocState={setDocState} />
       </TipsCatWrapper>
       <TipsContentWrapper>
-        <TipsTitle selectedCategory={selectedCategory} docType={docType} />
-        {!isWriteOrUpdatePath && (docType === 'NOTICE' ? <NoticesTop /> : <TipsTopPosts selectedCategory={selectedCategory} />)}
+        <TipsTitle docState={docState} />
+        {!isWriteOrUpdatePath && (docState.docType === 'NOTICE' ? <NoticesTop /> : <TipsTopPosts selectedCategory={docState.selectedCategory} />)}
         <BorderWrapper>
           <Routes>
-            <Route index element={<TipsDocuments docType={docType} selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
-            <Route path='search' element={<TipsDocuments docType={docType} selectedCategory={'검색결과'} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
-            <Route path='notice' element={<TipsDocuments docType={docType} selectedCategory={selectedCategory} sort={sort} page={page} setSort={setSort} setPage={setPage}/>} />
+            <Route index element={<TipsDocuments docState={docState} setDocState={setDocState}/> } />
+            <Route path='search' element={<TipsDocuments docState={docState} setDocState={setDocState}/> } />
+            <Route path='notice' element={<TipsDocuments docState={docState} setDocState={setDocState}/> } />
             <Route path=":id" element={<PostDetail />} />
-            {/* <Route path='write' element={<CreatePost />} />
-            <Route path='update/:id' element={<EditPost />} /> */}
           </Routes>
         </BorderWrapper >
       </TipsContentWrapper>
