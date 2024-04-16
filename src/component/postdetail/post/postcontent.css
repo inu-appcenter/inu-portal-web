@@ -21,11 +21,18 @@
 
 .image-modal {
   position: fixed;
-  top: 25%;
-  left: 20%;
-  max-width: calc(80vw - 20%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 80vh;
   height: auto;
   z-index: 100;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .modal-button-wrapper {
@@ -59,7 +66,8 @@
 }
 
 .image-modal img {
-  max-width: 100%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 1);
+  min-width: 300px;
+  max-width: 75vw;
+  max-height: 75vh;
+  object-fit: contain;
 }
