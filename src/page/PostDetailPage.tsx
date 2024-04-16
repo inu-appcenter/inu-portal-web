@@ -70,13 +70,12 @@ export default function PostDetail(){
             <ReturnButton />
             <PostContentContainer id={post.id} title={post.title} createDate={post.createDate} view={post.view} writer={post.writer} content={post.content} imageCount={post.imageCount} category={post.category} hasAuthority={post.hasAuthority}/>
             <PostUtility like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped} hasAuthority={post.hasAuthority}/> {/*기능버튼(스크랩, 좋아요...)*/}
-            
         </PostWrapper>
         <CommentWrapper>
             <CommentList bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)}/>
             <CommentInput onCommentUpdate={() => setCommentUpdated(true)}></CommentInput>
         </CommentWrapper>
-</>
+        </>
     ) : (
             <div>Loading...</div>
         )}
@@ -93,6 +92,6 @@ const PostWrapper = styled.div `
 
 const CommentWrapper = styled.div `
     border-top: solid #EAEAEA 5px;
-    padding: 20px;
-    padding-bottom: 120px;
+    padding-top: 20px;
+    padding-bottom: 80px;
 `

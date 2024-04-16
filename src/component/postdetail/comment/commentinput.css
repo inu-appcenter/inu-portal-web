@@ -1,17 +1,29 @@
-.comment-input-container {
+.comment-area-container {
   position: absolute;
-  bottom: 50px;
-  width: calc(100% - 500px);
+  bottom: 0px;
 
-  height: 56px;
-  border-radius: 10px;
+  height: 80px;
+  width: calc(100% - 253px);
+
+  background-color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comment-input-container {
+  flex-grow: 1;
+  margin-left: 20px;
+  margin-right: 120px;
   padding-left: 10px;
   padding-right: 10px;
-  background-color: #EFF2F9;
 
   display: flex;
   align-items: center;
   gap: 10px;
+  border-radius: 10px;
+  background-color: #EFF2F9;
 }
 
 .anonymous-text {
