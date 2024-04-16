@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import CommentLike from './commentlike';
 import EditCommentButton from './editcommentbutton';
@@ -7,6 +7,7 @@ import ReCommentInput from './recommentinput';
 import ReCommentList from './recommentlist';
 import CommentsImg from '../../../resource/assets/comments-img.svg';
 import './commentlist.css';
+import getFireImage from '../../../utils/getFireImage';
 
 interface Replies {
   id: number;
@@ -29,6 +30,19 @@ interface CommentListProps {
 
 const CommentList: React.FC<CommentListProps> = ({ bestComment, comments, onCommentUpdate }) => {
   const token = useSelector((state: any) => state.user?.token);
+  let fireId = useSelector((state: any) => state.user.fireId);
+  console.log(fireId,"현재 횃불이 아이디");
+  const [image, setImage] = useState<string | undefined>("");
+  const fetchImage = async () => {
+      if(!fireId) {fireId = 0;}
+      const imageUrl = await getFireImage(token,fireId);
+      setImage(imageUrl);
+    };
+  
+    useEffect(() => {
+      fetchImage();
+    }, [token,fireId]);
+    
   const [showReCommentInputId, setShowReCommentInputId] = useState<number | null>(null);
   const allComments =  bestComment ? [bestComment, ...comments.filter(comment => comment.id !== bestComment.id)] : comments;
   console.log(allComments);
@@ -40,7 +54,7 @@ const CommentList: React.FC<CommentListProps> = ({ bestComment, comments, onComm
         <div key={comment.id} className='comment-container'>
           <div className='comment-main-container'>
             <div className='profile-image-background'>
-              <img alt='프'/>
+              <img src={image} alt='프로필'/>
             </div>
             <div className='comment-container-mid'>
               <div>
