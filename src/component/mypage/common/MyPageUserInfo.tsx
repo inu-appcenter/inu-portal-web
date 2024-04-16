@@ -17,7 +17,7 @@ export default function MyPageUserInfo()  {
     
       useEffect(() => {
         fetchImage();
-      }, [token,fireId]);
+      }, [token,fireId,nickname]);
     return (
         <InfoWrapper>
             <MyProfileImg src={image} alt="프로필 이미지"></MyProfileImg>
