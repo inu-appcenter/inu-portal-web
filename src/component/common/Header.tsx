@@ -34,7 +34,8 @@ export default function Headerbar() {
 }
 
 const Header = styled.header`
-    position: fixed;
+    position: absolute;
+    z-index: 1000;
     top:0;
     height: 30px;
     left:32px;
