@@ -40,11 +40,11 @@ export default function PostBtn() {
 
 const PostButtonWrapper = styled.div`
   position: absolute;
-  bottom: 50px;
-  right: 50px;
+  bottom: 10px;
+  right: 35px;
 
-  width: 65px;
-  height: 65px;
+  width: 60px;
+  height: 60px;
   border-radius: 100px;
 
   background: linear-gradient(90deg, rgba(111, 132, 226, 0.6) 0%, rgba(123, 171, 229, 0.6) 100%);

@@ -47,7 +47,7 @@ const CommentList: React.FC<CommentListProps> = ({ bestComment, comments, onComm
   const allComments =  bestComment ? [bestComment, ...comments.filter(comment => comment.id !== bestComment.id)] : comments;
   console.log(allComments);
   return (
-    <div>
+    <div style={{marginLeft: 20}}>
       <img src={CommentsImg} />
       <div className='commentlist-container'>
       {allComments.map((comment, index) => (

@@ -52,6 +52,7 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
   };
 
   return (
+    <div className='comment-area-container'>
     <div className='comment-input-container'>
       <img
         src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
@@ -72,6 +73,7 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
         alt='enter'
         onClick={handleCommentSubmit}
       />
+    </div>
     </div>
   );
 }
