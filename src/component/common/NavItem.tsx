@@ -58,8 +58,6 @@ export default function NavItems() {
     if (item.subItems) {
       setSubToggleIndex(index);
       setSelectedChildItems(item.subItems); // 수정: 자식 항목의 모달 상태 업데이트
-      console.log(setSubToggleIndex);
-      console.log(setSelectedChildItems);
       
       
     } else {
@@ -74,8 +72,6 @@ export default function NavItems() {
      // 수정: 모달이 닫힐 때 자식 항목의 모달 상태 초기화
   };
   const closeSubModal = () => {
-    console.log('닫힘');
-    
     setSelectedChildItems([]); // child toggle2가 닫힐 때 selectedChildItems 초기화
   };
 
@@ -89,7 +85,7 @@ export default function NavItems() {
               } 
             }}
           >
-            <div onMouseEnter={() => { handleToggle(index)}}>
+            <div onMouseEnter={() => { handleToggle(index)}} onMouseLeave={() => closeSubModal()}>
             {items.title}
             
             {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && (toggleIndex === index)) && (
