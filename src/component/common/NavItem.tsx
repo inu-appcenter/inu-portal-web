@@ -128,6 +128,8 @@ export default function NavItems() {
 }
 
 const ItemWrapper = styled.div`
+  user-select: none;
+
   position: relative;
   font-weight: 700;
   font-size: 1rem;
