@@ -4,14 +4,21 @@ import './TipsTitle.css';
 import SearchBar from './SearchBar';
 import { useNavigate } from 'react-router-dom';
 import MyPageUserInfo from '../mypage/common/MyPageUserInfo';
+import { useSelector } from 'react-redux';
 
 interface TipsTitleProps {
   docState: DocState;
 }
 
+interface loginInfo {
+  user: {
+    token: string;
+  };
+}
+
 const TipsTitle: React.FC<TipsTitleProps> = ({ docState }) => {
   const navigate = useNavigate();
-
+  const user = useSelector((state: loginInfo) => state.user);
   return (
     <TipsTitleWrapper>
       <span className='tips-title-text' onClick={() => navigate('/tips')}>
@@ -20,7 +27,7 @@ const TipsTitle: React.FC<TipsTitleProps> = ({ docState }) => {
       </span>
       <SearchBarUserInfoWrapper>
         <SearchBar />
-        <MyPageUserInfo />
+        {user.token && <MyPageUserInfo />}
       </SearchBarUserInfoWrapper>
     </TipsTitleWrapper>
   );
