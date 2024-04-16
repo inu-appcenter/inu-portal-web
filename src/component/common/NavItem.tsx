@@ -89,10 +89,13 @@ export default function NavItems() {
               } 
             }}
           >
+            <div onMouseEnter={() => { handleToggle(index)}}>
             {items.title}
             
             {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && (toggleIndex === index)) && (
-              <div className='child toggle' >
+              <div className='child toggle' 
+              onMouseEnter={() => handleToggle(index)}
+              onMouseLeave={() => handleToggle(0)}>
                 <img className='v-vector' src={VVector} />
                 <div className='line-vector'></div>
                 {items.child?.map((item, itemIndex) => (
@@ -113,6 +116,7 @@ export default function NavItems() {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </ItemWrapper>
       ))}
