@@ -38,8 +38,12 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
   const navigate = useNavigate();
   const location = useLocation();
   const [totalPages, setTotalPages] = useState<number>(1);
+  // page를 제외한 useEffect
   useEffect(() => {
     const fetchDocuments = async () => {
+      console.log('bb');
+      setPage('1');
+      console.log('cc');
       if (docType === 'NOTICE') {
         const docs = await getNotices(selectedCategory, sort, page);
         setTotalPages(docs['pages']);
@@ -61,7 +65,34 @@ export default function TipsDocuments({ docType, selectedCategory, sort, page, s
     };
 
     fetchDocuments();
-  }, [docType, selectedCategory, location.search, sort, page]);
+  }, [docType, selectedCategory, location.search, sort]);
+
+  // page의 useEffect
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      console.log('aa');
+      if (docType === 'NOTICE') {
+        const docs = await getNotices(selectedCategory, sort, page);
+        setTotalPages(docs['pages']);
+        setDocuments(docs['notices']);
+      }
+      else if (docType === 'TIPS') {
+        if (selectedCategory == '검색결과') {
+          const query = queryString.parse(location.search).query as string;
+          const docs = await search(query, sort, page);
+          setTotalPages(docs['pages']);
+          setDocuments(docs['posts']);
+        }
+        else if (selectedCategory) {
+          const docs = await getDocuments(selectedCategory, sort, page);
+          setTotalPages(docs['pages']);
+          setDocuments(docs['posts']);
+        }
+      }
+    };
+
+    if (page !== '1') fetchDocuments();
+  }, [page]);
 
   const handleDocumentClick = (id: number, url: string) => {
     if (docType == 'NOTICE') {
