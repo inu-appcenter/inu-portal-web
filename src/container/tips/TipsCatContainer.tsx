@@ -2,15 +2,14 @@ import TipsCategories from '../../component/Tips/TipsCategories';
 import styled from 'styled-components';
 
 interface TipsCatContainerProps {
-  docType: string;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  docState: DocState;
+  setDocState: (docState: DocState) => void;
 }
 
-export default function TipsCatContainer( { docType, selectedCategory, setSelectedCategory }: TipsCatContainerProps) {
+export default function TipsCatContainer({ docState, setDocState }: TipsCatContainerProps) {
   return (
     <TipsContainerWraaper>
-      <TipsCategories docType={docType} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+      <TipsCategories docState={docState} setDocState={setDocState} />
     </TipsContainerWraaper>
   );
 }

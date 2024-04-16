@@ -6,18 +6,17 @@ import { useNavigate } from 'react-router-dom';
 import MyPageUserInfo from '../mypage/common/MyPageUserInfo';
 
 interface TipsTitleProps {
-  selectedCategory: string;
-  docType: string;
+  docState: DocState;
 }
 
-const TipsTitle: React.FC<TipsTitleProps> = ({ selectedCategory, docType }) => {
+const TipsTitle: React.FC<TipsTitleProps> = ({ docState }) => {
   const navigate = useNavigate();
 
   return (
     <TipsTitleWrapper>
       <span className='tips-title-text' onClick={() => navigate('/tips')}>
-        <span className='tips-title-text-1'>{selectedCategory}</span>
-        <span className='tips-title-text-2'> {docType}</span>
+        <span className='tips-title-text-1'>{docState.selectedCategory}</span>
+        <span className='tips-title-text-2'> {docState.docType}</span>
       </span>
       <SearchBarUserInfoWrapper>
         <SearchBar />
