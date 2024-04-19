@@ -9,6 +9,7 @@ import reLogin from './utils/reLogin';
 import { useDispatch } from 'react-redux';
 import refresh from './utils/refresh';
 import WritePost from './page/WritePostPage';
+import AiPage from './page/AiPage';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -63,6 +64,7 @@ export default function App() {
         </Route>
           <Route path='update/:id' element={<WritePost />} />
           <Route path='/write' element={<WritePost />} />
+          <Route path='/ai' element={<AiPage />} />
         </Routes>
     </BrowserRouter>
   );
