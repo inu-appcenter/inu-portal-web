@@ -11,6 +11,7 @@ export default function Headerbar() {
     const navigate = useNavigate();
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         dispatch(logoutUser());
         navigate('/');
     };
