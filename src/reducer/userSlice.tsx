@@ -26,7 +26,8 @@ export const userSlice = createSlice({
         logoutUser: (state) => {
             state.email = "";
             state.token = "";
-            state.nickname="";
+            state.nickname = "";
+            state.refreshToken = "";
         },
         NicknameUser:(state,action) => {
             state.nickname = action.payload.nickname;
