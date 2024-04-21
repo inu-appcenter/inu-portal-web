@@ -1,0 +1,12 @@
+.Ai-title-wrapper {
+  padding: 30px;
+  font-family: Inter;
+  font-size: 60px;
+  font-weight: 800;
+  .Ai-title-2 {
+    background: linear-gradient(270deg, #FFE5AE 24.95%, #FED2A7 30.62%, #FDC1A1 38.27%, #FB9291 47.42%, #D192C0 54.6%, #9892FF 63.63%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
