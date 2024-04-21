@@ -2,11 +2,20 @@ import './AiIntroContainer.css'
 import AiExampleImage1 from '../../resource/assets/AiExampleImage/AiExampleImage1.svg';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
+interface loginInfo {
+  user: {
+    token: string;
+  };
+}
 
 export default function AiIntroContainer() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const user = useSelector((state: loginInfo) => state.user);
+  console.log(user);
 
   const handleGenerateClick = () => {
     if (!inputValue.trim()) {
@@ -67,7 +76,11 @@ export default function AiIntroContainer() {
                 <div className='Ai-input-line'/>
                 <input className='Ai-input' placeholder='명령어를 입력하세요.' value={inputValue} onChange={handleInputChange}/>
               </div>
+              {user.token ? 
               <div className='Ai-generate-button' onClick={handleGenerateClick}>생성하기</div>
+              :
+              <div className='Ai-generate-button' onClick={() => navigate('/login')}>로그인 필요</div>
+              }
             </div>
           </div>
         </div>

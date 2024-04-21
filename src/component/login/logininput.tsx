@@ -39,7 +39,7 @@ export default function LoginInput() {
       const token = await loginUser(dispatch, data);
 
       if (token) {
-        navigate('/');
+        navigate(-1);
       }
 
     } catch (error) {
