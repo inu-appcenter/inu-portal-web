@@ -64,7 +64,7 @@ export default function App() {
         </Route>
           <Route path='update/:id' element={<WritePost />} />
           <Route path='/write' element={<WritePost />} />
-          <Route path='/ai' element={<AiPage />} />
+          <Route path='/ai/*' element={<AiPage />} />
         </Routes>
     </BrowserRouter>
   );
