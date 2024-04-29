@@ -6,7 +6,6 @@ import Calendar from '../container/home/CalendarContainer';
 import Tip from '../container/home/TipContainer';
 import Notice from '../container/home/NoticeContainer';
 
-
 export default function HomePage() {
     
     return (
