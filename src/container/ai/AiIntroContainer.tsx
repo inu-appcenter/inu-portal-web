@@ -3,6 +3,7 @@ import AiExampleImage1 from '../../resource/assets/AiExampleImage/AiExampleImage
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import AiLoading from '../../component/ai/AiLoading';
 
 interface loginInfo {
   user: {
@@ -45,11 +46,7 @@ export default function AiIntroContainer() {
   return (
     <>
       {isLoading ? (
-        // 로딩 중
-        <div className='Ai-loading-wrapper'>
-          <div>옆으로 넘기면 AI 횃불이 그림을 볼 수 있습니다.</div>
-          <div>AI 그림 생성중 ...</div>
-        </div>
+        <AiLoading/>
       ) : (
         // 로딩 X
         <div className='Ai-intro-wrapper'>

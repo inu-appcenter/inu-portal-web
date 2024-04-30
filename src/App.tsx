@@ -61,10 +61,8 @@ export default function App() {
           <Route path='/tips/*' element={<Tips />} />
           <Route path='/mypage/*' element={<MyPage />} />
           {/*<Route path='/intro' element={<IntroPage />} />*/}
-        <Route>
+        </Route>
           <Route path='/ai/*' element={<AiPage />} />
-        </Route>
-        </Route>
           <Route path='update/:id' element={<WritePost />} />
           <Route path='/write' element={<WritePost />} />
         </Routes>
