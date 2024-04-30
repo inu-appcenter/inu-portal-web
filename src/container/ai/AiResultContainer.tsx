@@ -16,8 +16,8 @@ export default function AiResultContainer() {
   return (
     <AiResultContainerWrapper>
      <AiImgViewer imageUrl={`imageUrl`}/>
-     <AiImgScore/>
      <AiImgRetry/>
+     <AiImgScore/>
      </AiResultContainerWrapper>
   )
 }
