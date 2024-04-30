@@ -2,12 +2,12 @@ import { createGlobalStyle } from 'styled-components';
 
 const CommonStyle = createGlobalStyle`
   //이 안에 전체 프로젝트에 적용될 css를 작성하면 됩니다~!
-  * {
-    font-family: 'Pretendard', sans-serif;
-   
+  @font-face {
+    font-family: 'CustomFont';
+    src: url('/fonts/SF-Pro.ttf') format('truetype'); // format에 ttf은 'truetype' otf는 'opentype'
   }
-
   body{
+    font-family: 'CustomFont', sans-serif;
     margin: 0;
     -ms-overflow-style: none;
     height:100vh;
