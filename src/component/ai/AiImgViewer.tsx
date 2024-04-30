@@ -35,12 +35,11 @@ const AiImgViewerWrapper = styled.div`
   align-items: center;
   justify-content: center;
   width: 766px;
+  top:20%;
   height: 424px;
   gap: 0px;
   border-radius: 20px;
   position: absolute;
-  left: 50%;
-  transform: translate( -50%);
   border: 1px solid #fff;
   background-color: rgba(255, 255, 255, 0.5);
 
