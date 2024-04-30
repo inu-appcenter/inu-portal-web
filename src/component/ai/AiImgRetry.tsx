@@ -21,7 +21,8 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({ onRetry }) => {
   position: absolute; 
   line-height: 40px; 
   text-align: center; 
-  top: 85%;
+  top: 75%;
+  margin-top: 20px;
   
   .retry-button{
     width: 190px;

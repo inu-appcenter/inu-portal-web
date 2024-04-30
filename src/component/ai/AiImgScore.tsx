@@ -5,26 +5,30 @@ import starFilled from '../../resource/assets/starfilled.svg';
 
 const AiImgScore: React.FC = () => {
   const [rating, setRating] = useState<number>(0);
+  const [hoveredRating, setHoveredRating] = useState<number>(0);
 
   const handleStarClick = (index: number) => {
-    setRating(index + 1);
+    const newRating = index + 1;
+    setRating(newRating === rating ? 0 : newRating);
+    setHoveredRating(0);
   };
 
   const handleStarHover = (index: number) => {
-    setRating(index + 1);
+    setHoveredRating(index + 1);
   };
 
   const handleMouseLeave = () => {
-    setRating(0);
+    if (rating === 0) {
+      setHoveredRating(0);
+    }
   };
-
   return (
     <AiImgScoreWrapper>
       <div className="score">
         {[...Array(5)].map((_, index) => (
-          <img
+          <StarImg
             key={index}
-            src={index < rating ?  starFilled: starEmpty}
+            src={(index < rating || index < hoveredRating) ? starFilled : starEmpty}
             alt="별점"
             onClick={() => handleStarClick(index)}
             onMouseOver={() => handleStarHover(index)}
@@ -40,10 +44,13 @@ const AiImgScoreWrapper = styled.div`
 display: flex;
 justify-content: center;
 align-items: center;
-margin-top: 20px; 
+margin-top: 10px; 
 position: absolute;
 height:fit-content;
-top: 75%;
+top: 85%;
 `;
 
+const StarImg = styled.img`
+  margin: 0 5px; /* 이미지 사이의 공백을 조절합니다. */
+`;
 export default AiImgScore;
