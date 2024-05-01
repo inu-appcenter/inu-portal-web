@@ -9,15 +9,13 @@ import getFires from '../../utils/getFires';
 
 export default function AiResultContainer() {
   const { imageId } = useParams<{imageId: string }>();
-  const [image, setImage] = useState<File>();
+  const [imageUrl, setImageUrl] = useState<string>('');
   useEffect(() => {
     if (!imageId) return;
     const fetchImage = async () => {
       try {
         const imageUrl = await getFires(imageId);
-        const imageBlob = await fetch(imageUrl).then((res) => res.blob());
-        const imageFile = new File([imageBlob], `fires_${imageId}.png`);
-        setImage(imageFile);
+        setImageUrl(imageUrl);
       } catch (error) {
         console.error(`Error fetching image`);
       }
@@ -27,7 +25,7 @@ export default function AiResultContainer() {
 
   return (
     <AiResultContainerWrapper>
-     {image && <AiImgViewer image={image}/> }
+     {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
      <AiImgRetry/>
      <AiImgScore/>
      </AiResultContainerWrapper>
