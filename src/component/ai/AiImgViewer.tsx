@@ -4,10 +4,10 @@ import imgshare from '../../resource/assets/imgshare.svg'
 import imgsave from '../../resource/assets/imgsave.svg'
 import dot from '../../resource/assets/dot.svg'
 interface AiImgViewerProps {
-  image: File;
+  imageUrl: string;
 }
 
-const AiImgViewer: React.FC<AiImgViewerProps> = ({ image }) => {
+const AiImgViewer: React.FC<AiImgViewerProps> = ({ imageUrl }) => {
   return (
     <AiImgViewerWrapper >
       <div className='completed'>생성완료!</div>
@@ -21,7 +21,7 @@ const AiImgViewer: React.FC<AiImgViewerProps> = ({ image }) => {
         공유</div>
       </AiImgViewUtility>
       <AiImg >
-        <img src={URL.createObjectURL(image)} alt="AI generated image" />
+        <img src={imageUrl} alt="AI generated image" />
       </AiImg>
     </AiImgViewerWrapper>
   );
