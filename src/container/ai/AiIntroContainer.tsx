@@ -1,9 +1,10 @@
 import './AiIntroContainer.css';
 import AiExampleImage1 from '../../resource/assets/AiExampleImage/AiExampleImage1.svg';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import AiLoading from '../../component/ai/AiLoading';
+import postFires from '../../utils/postFires';
 
 interface loginInfo {
   user: {
@@ -12,35 +13,29 @@ interface loginInfo {
 }
 
 export default function AiIntroContainer() {
-  const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const user = useSelector((state: loginInfo) => state.user);
   console.log(user);
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      handleGenerateClick();
-    }
-  };
-
-  const handleGenerateClick = () => {
-    if (!inputValue.trim()) {
+  const handleGenerateClick = async () => {
+    if (inputRef.current && !inputRef.current.value.trim()) {
       alert('명령어를 입력해주세요.');
       return;
     }
     setIsLoading(true);
-    // api 호출 구현 필요
+    try {
+      const resultId = await postFires(inputRef.current!.value, user.token);
+      navigate(`/ai/result/${resultId}`);
+    } catch (error) {
+      setIsLoading(false);
+    }
+    /* 로딩 화면 테스트를 위한 setTimeout
     setTimeout(() => {
       navigate('/ai/result/0'); // 0 대신 api 호출 결과를 넣기
-    }, 2000); // 2초 동안 로딩 가정
-    // 로딩 실패 시 초기 화면으로
-    // setIsLoading(false);
-    // setInputValue('');
-  };
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
+    }, 20000); // 20초 동안 로딩 가정
+    */
   };
 
   return (
@@ -89,11 +84,14 @@ export default function AiIntroContainer() {
               <div className='Ai-input-wrapper'>
                 <div className='Ai-input-line' />
                 <input
+                  ref={inputRef}
                   className='Ai-input'
                   placeholder='명령어를 입력하세요.'
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyPress}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      handleGenerateClick();
+                    }
+                  }}
                 />
               </div>
               {user.token ? (
