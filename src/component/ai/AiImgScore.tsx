@@ -47,7 +47,7 @@ align-items: center;
 margin-top: 10px; 
 position: absolute;
 height:fit-content;
-top: 85%;
+top: 80%;
 `;
 
 const StarImg = styled.img`

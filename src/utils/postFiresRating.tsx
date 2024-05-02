@@ -1,4 +1,4 @@
-const postImgRating = async(token:string, rating:number, fireId:number) =>{
+const postFiresRating = async(token:string, rating:number, fireId:number) =>{
     const apiURL = `https://portal.inuappcenter.kr/api/fires/images/${fireId}`
     try{
         const response = await fetch(apiURL,{

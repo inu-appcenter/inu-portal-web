@@ -10,11 +10,11 @@ export default function AIEnter() {
 
     <AiEnterWrapper onClick={handleAiBtnClick}>
       <AiEnter>
-          <div className='enter-frame'/> 
+          <div className='enter-frame'>
           <img src={aienterimg1} alt="aienter-btn-img" />
           <div className='enter-title'> 횃불이 AI 생성 ✨   지금 바로 만드러 가기</div>
           <img src={aienterimg2} alt="aienter-btn-img" />
-
+          </div>
       </AiEnter>
     </AiEnterWrapper>
   )
@@ -22,13 +22,13 @@ export default function AIEnter() {
 
 const AiEnterWrapper = styled.div`
   display: flex;
-  justify-content: center;
-  align-items:center;
+  position:relative;
+  left: 70%;
+  margin: 20px 10px;
 `
 
 const AiEnter = styled.div`
 display:flex;
-position: absolute;
 width: 411px;
 height: 50px;
 background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
@@ -37,8 +37,9 @@ justify-content: center;
 align-items:center;
 gap: 10px;
   .enter-frame{
+    justify-content: center;
+  align-items:center;
     display:flex;
-    position:absolute;
     width: 407px;
     height: 46px;
     border: 1px solid #FFFFFF;

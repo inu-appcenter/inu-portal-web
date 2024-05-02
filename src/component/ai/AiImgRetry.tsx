@@ -23,7 +23,7 @@ const AiImgRetry: React.FC = () => {
   position: absolute; 
   line-height: 40px; 
   text-align: center; 
-  top: 75%;
+  top: 70%;
   margin-top: 20px;
   
   .retry-button{
