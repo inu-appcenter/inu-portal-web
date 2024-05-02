@@ -5,9 +5,9 @@ import './utilbuttons.css'
 export default function UtilButtons() {
   const navigate = useNavigate();
 
-  const handleRegisterClick = () => {
-    navigate('/login/register');
-  };
+  // const handleRegisterClick = () => {
+  //   navigate('/login/register');
+  // };
 
   // const handleFindIdClick = () => {
   //   navigate('/');  // 페이지 url 입력 필요
@@ -17,9 +17,9 @@ export default function UtilButtons() {
   //   navigate('/');  // 페이지 url 입력 필요
   // };
 
-  return(
+  return (
     <UtilButtonsWrapper>
-      <div className='text btn' onClick={handleRegisterClick}>회원가입 &gt;</div>
+      {/* <div className='text btn' onClick={handleRegisterClick}>회원가입 &gt;</div> */}
       <span>
         <span className='text btn'>아이디 찾기</span>
         <span className='text'> | </span>
