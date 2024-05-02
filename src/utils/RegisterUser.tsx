@@ -1,5 +1,5 @@
 interface RegisterData {
-  email: string,
+  studentId: string,
   password: string
   nickname: string;
 }
