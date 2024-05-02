@@ -59,7 +59,7 @@ export default function LoginInput() {
         <input
           className='login-input'
           type="text"  // Corrected from "username" to "text"
-          placeholder="이메일"
+          placeholder="학번"
           value={username}
           onChange={handleUsernameChange}
         />

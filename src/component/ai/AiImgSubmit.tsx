@@ -1,29 +1,49 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
+import postFiresRating from '../../utils/postFiresRating';
+import { useSelector } from 'react-redux';
 
-interface AiImgViewerProps {
-    imageUrl: string;
-  }
-
-  const AiImgSubmit: React.FC<AiImgViewerProps> =()=>{
-
-    return (
-    <AIImgSubmitWrapper>
-        <div className='submit'>제출</div></AIImgSubmitWrapper>
-  )
+interface AiSubmitProps {
+  rating: number;
+  fireId: number;
+  
 }
-  
-  
 
+interface loginInfo {
+  user: {
+    token: string;
+  };
+}
+
+const AiImgSubmit: React.FC<AiSubmitProps> = ({ rating, fireId }) => {
+  const user = useSelector((state: loginInfo) => state.user);
+
+  const handleSubmitClick = async () => {
+    try {
+      // postFiresRating 함수를 호출할 때 필요한 fireId를 전달합니다.
+      const data = await postFiresRating(user.token, rating, fireId);
+      console.log(data); // 성공한 경우 서버 응답을 확인합니다.
+    } catch (error) {
+      console.error('평점 추가 실패:', error); // 실패한 경우 오류를 처리합니다.
+    }
+  };
+
+  return (
+    <AIImgSubmitWrapper>
+      {/* 제출 버튼 클릭 시 onSubmit 함수 실행 */}
+      <div className='submit' onClick={handleSubmitClick}>제출</div>
+    </AIImgSubmitWrapper>
+  );
+};
 const AIImgSubmitWrapper = styled.div`
-    display: flex;
-    position: absolute;
-    top: 90%;
-    align-items:center;
-    justify-content: center;
-    margin-top: 20px;
+  display: flex;
+  position: absolute;
+  top: 90%;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
 
-    .submit{
+  .submit {
     margin: 50px;
     position: absolute;
     width: 93px;
@@ -36,8 +56,10 @@ const AIImgSubmitWrapper = styled.div`
     line-height: 20px;
     text-align: left;
     display: flex;
-    align-items:center;
+    align-items: center;
     justify-content: center;
-    }
-`
+    cursor: pointer; /* 마우스 커서 변경 */
+  }
+`;
+
 export default AiImgSubmit;

@@ -26,3 +26,5 @@ const postFiresRating = async(token:string, rating:number, fireId:number) =>{
         throw error;
     }
 }
+
+export default postFiresRating;
