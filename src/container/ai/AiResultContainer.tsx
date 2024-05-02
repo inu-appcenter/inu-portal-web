@@ -6,6 +6,7 @@ import AiImgRetry from '../../component/ai/AiImgRetry';
 import styled from 'styled-components';
 import AiImgScore from '../../component/ai/AiImgScore';
 import getFires from '../../utils/getFires';
+import AiImgSubmit from '../../component/ai/AiImgSubmit';
 
 export default function AiResultContainer() {
   const { imageId } = useParams<{imageId: string }>();
@@ -28,6 +29,7 @@ export default function AiResultContainer() {
      {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
      <AiImgRetry/>
      <AiImgScore/>
+     <AiImgSubmit/>
      </AiResultContainerWrapper>
   )
 }
@@ -36,4 +38,5 @@ const AiResultContainerWrapper=styled.div`
   display: flex;
   justify-content: center;
   align-content:center;
+  overflow: auto;
 `
