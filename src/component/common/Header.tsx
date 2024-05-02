@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../../reducer/userSlice';
 
 export default function Headerbar() {
-    const email = useSelector((state: any) => state.user.email);
+    const nickname = useSelector((state: any) => state.user.nickname);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleLogout = () => {
@@ -19,9 +19,9 @@ export default function Headerbar() {
     return (
         <React.Fragment>
             <Header>
-                {email ? (
+                {nickname ? (
                     <> 
-                        <LoginInfo>{email}</LoginInfo>
+                        <LoginInfo>{nickname}</LoginInfo>
                         <span> </span>
                         <span onClick={handleLogout} className='login'>로그아웃</span>
                        
