@@ -1,4 +1,4 @@
-import { emailUser as emailUserAction } from "../reducer/userSlice";
+import { studentIdUser as studentIdUserAction } from "../reducer/userSlice";
 import { Dispatch } from 'redux';
 import refresh from "./refresh";
 
@@ -19,7 +19,7 @@ const reLogin = async (dispatch: Dispatch) => {
       console.log(response);
       if (response.status == 200) {
         const responseData = await response.json();
-        dispatch(emailUserAction({email: responseData.data.email}));
+        dispatch(studentIdUserAction({studentId: responseData.data.studentId}));
         console.log("reLogin 성공");
       }
       else {

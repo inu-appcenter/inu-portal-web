@@ -31,7 +31,7 @@ export default function LoginInput() {
   const handleLoginClick = async () => {
     console.log('로그인', username, password);
     const data = {
-      email: username,
+      studentId: username,
       password: password
     };
 
