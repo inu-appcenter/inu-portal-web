@@ -11,17 +11,17 @@ export default function LoginPage() {
   return (
     <>
       <LoginWrapper>
-        <LoginImgContainer/>
+        <LoginImgContainer />
         <Routes>
-          <Route index element={<LoginDetailContainer/>} />
-          <Route path='register' element={<RegisterDetailContainer/>} />  
+          <Route index element={<LoginDetailContainer />} />
+          <Route path='register' element={<RegisterDetailContainer />} />
         </Routes>
         <img src={UniversityBuildingImg} className='UniversityBuildingImg' alt='대학건물이미지'></img>
       </LoginWrapper>
     </>
   )
 }
-const LoginWrapper = styled.div `
+const LoginWrapper = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
