@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const userSlice = createSlice({
     name: "user",
     initialState: {
-        email: "",
+        studentId: "",
         token: "",
         tokenExpiredTime: "",
         refreshToken: "",
@@ -19,12 +19,12 @@ export const userSlice = createSlice({
             state.refreshToken = action.payload.refreshToken;
             state.refreshTokenExpiredTime = action.payload.refreshTokenExpiredTime;
         },
-        emailUser: (state, action) => {
-            state.email = action.payload.email;
+        studentIdUser: (state, action) => {
+            state.studentId = action.payload.studentId;
             return state;
         },
         logoutUser: (state) => {
-            state.email = "";
+            state.studentId = "";
             state.token = "";
             state.nickname = "";
             state.refreshToken = "";
@@ -40,6 +40,6 @@ export const userSlice = createSlice({
     },
 });
 
-export const { tokenUser, emailUser, logoutUser ,NicknameUser,ProfileUser } = userSlice.actions;
+export const { tokenUser, studentIdUser, logoutUser ,NicknameUser,ProfileUser } = userSlice.actions;
 export default userSlice.reducer;
 

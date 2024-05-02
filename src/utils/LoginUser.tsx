@@ -1,10 +1,8 @@
-
-
-import { tokenUser as tokenUserAction, emailUser as emailUserAction } from "../reducer/userSlice";
+import { tokenUser as tokenUserAction, studentIdUser as studentIdUserAction } from "../reducer/userSlice";
 import { Dispatch } from 'redux';
 
 interface LoginData {
-  email: string,
+  studentId: string,
   password: string
 }
 
@@ -37,7 +35,7 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
         localStorage.setItem('tokenExpiredTime', tokenExpiredTime);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('refreshTokenExpiredTime', refreshTokenExpiredTime);
-        dispatch(emailUserAction({email: data.email}));
+        dispatch(studentIdUserAction({studentId: data.studentId}));
         dispatch(tokenUserAction({token: token, tokenExpiredTime: tokenExpiredTime, refreshToken: refreshToken, refreshTokenExpiredTime: refreshTokenExpiredTime}));
 
         return token; 
