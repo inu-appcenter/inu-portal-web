@@ -8,9 +8,12 @@ import AiImgScore from '../../component/ai/AiImgScore';
 import getFires from '../../utils/getFires';
 import AiImgSubmit from '../../component/ai/AiImgSubmit';
 
+
 export default function AiResultContainer() {
   const { imageId } = useParams<{imageId: string }>();
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [rating, setRating] = useState<number>(0);
+
   useEffect(() => {
     if (!imageId) return;
     const fetchImage = async () => {
@@ -28,8 +31,8 @@ export default function AiResultContainer() {
     <AiResultContainerWrapper>
      {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
      <AiImgRetry/>
-     <AiImgScore/>
-     <AiImgSubmit/>
+     <AiImgScore rating={rating} onRatingChange={setRating}/>
+     <AiImgSubmit rating={rating} fireId={fireId} />
      </AiResultContainerWrapper>
   )
 }

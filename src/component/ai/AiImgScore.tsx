@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import starEmpty from '../../resource/assets/starempty.svg';
 import starFilled from '../../resource/assets/starfilled.svg'; 
+interface AiImgScoreProps {
+  rating: number;
+  onRatingChange: (newRating: number) => void;
+}
 
-const AiImgScore: React.FC = () => {
-  const [rating, setRating] = useState<number>(0);
+const AiImgScore: React.FC<AiImgScoreProps> = ({ rating, onRatingChange }) => {
   const [hoveredRating, setHoveredRating] = useState<number>(0);
 
   const handleStarClick = (index: number) => {
     const newRating = index + 1;
-    setRating(newRating === rating ? 0 : newRating);
+    onRatingChange(newRating === rating ? 0 : newRating);
     setHoveredRating(0);
   };
 
@@ -22,6 +25,7 @@ const AiImgScore: React.FC = () => {
       setHoveredRating(0);
     }
   };
+
   return (
     <AiImgScoreWrapper>
       <div className="score">

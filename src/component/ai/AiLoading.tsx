@@ -11,16 +11,17 @@ const AiLoading: React.FC = () => {
     return (
     <AiLoadingWrapper>
     <AiPreViewer>
+    <div className='preview-title'>
         <img src={dot} />
       <div>옆으로 넘기면 AI 횃불이 그림을 볼 수 있습니다.</div>
-      {/*이미지 예시 추가 */}
+    </div>
     </AiPreViewer>
     <AiRandomImgWrapper>
-        <AiRandomImgs>
+        <div className='ai-random-img'>
             <img src={randomImg2} alt="횃불 randomImg2" />
             <img src={randomImg1} alt="횃불 randomImg1" />
             <img src={randomImg3} alt="횃불 randomImg3" />
-        </AiRandomImgs>
+        </div>
 <img src={greaterthan} alt=">" className='greaterthan'/>
     </AiRandomImgWrapper>
     <LoadingSpinner>
@@ -38,7 +39,6 @@ const AiLoading: React.FC = () => {
 export default AiLoading;
 
 const AiLoadingWrapper = styled.div`
-
 `
 
 const AiPreViewer = styled.div`
@@ -46,13 +46,17 @@ const AiPreViewer = styled.div`
     position: absolute;
     top: 200px;
     padding: 10px 30px;
-    gap: 10px;
-    font-family: Inter;
+   
+    .preview-title{
+        display:flex;
+        font-family: Inter;
     font-size: 17px;
     font-weight: 500;
     line-height: 20px;
     text-align: left;
-
+    gap: 10px;
+    
+    }
 `
 const AiRandomImgWrapper = styled.div`
     display: flex;
@@ -65,18 +69,23 @@ const AiRandomImgWrapper = styled.div`
         position: absolute;
         left: 80%;
         top: 40%;
+        margin: 20px;
+    }
+
+    .ai-random-img{
+        gap: 50px;
+        display: flex;
+         img {
+        width: auto; 
+        height: auto; 
     }
 `
-const AiRandomImgs = styled.div`
-    gap: 50px;
-    display: flex;
-`
+
 const LoadingSpinner = styled.div`
     display: flex;
     position: relative;
     content-align:center;
     justify-content: center;
-    top: 5%;
 `
 
 const LoadingTitle = styled.div`
@@ -84,6 +93,7 @@ display:flex;
 content-align: center;
 justify-content: flex-end;
 position: relative;
+top: -10%;
 .loading-title{
     width: 200px;
     height: 49px;
