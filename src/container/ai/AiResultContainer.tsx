@@ -22,7 +22,7 @@ export default function AiResultContainer() {
     };
     fetchImage();
   }, [imageId]);
-
+ 
   return (
     <AiResultContainerWrapper>
      {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
@@ -31,7 +31,7 @@ export default function AiResultContainer() {
      </AiResultContainerWrapper>
   )
 }
-
+ 
 const AiResultContainerWrapper=styled.div`
   display: flex;
   justify-content: center;
