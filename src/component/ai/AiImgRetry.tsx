@@ -1,14 +1,16 @@
 import styled from 'styled-components';
 import retry from '../../resource/assets/retry.svg'
+import { useNavigate } from 'react-router-dom';
 
-interface AiImgRetryProps {
-  onRetry: () => void;
-}
+const AiImgRetry: React.FC = () => {
+  const navigate = useNavigate();
+  const handleRetryClick = () =>{
+    navigate(`/ai`);
+  }
 
-const AiImgRetry: React.FC<AiImgRetryProps> = ({ onRetry }) => {
     return (
       <AiImgRetryWrapper>
-        <div className="retry-button" onClick={onRetry}>
+        <div className="retry-button" onClick={handleRetryClick}>
           <img src={retry}/>다시 그리기</div>
       </AiImgRetryWrapper>
     );
@@ -21,7 +23,7 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({ onRetry }) => {
   position: absolute; 
   line-height: 40px; 
   text-align: center; 
-  top: 75%;
+  top: 70%;
   margin-top: 20px;
   
   .retry-button{

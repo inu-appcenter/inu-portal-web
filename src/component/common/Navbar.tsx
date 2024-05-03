@@ -3,7 +3,6 @@ import NavItems from './NavItem';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import inuLogoImg from '../../resource/assets/inu-logo-img.svg';
-import AiEnter from '../../container/home/AiEnter';
 
 export default function Navbar() {
     const navigate = useNavigate()
@@ -11,7 +10,6 @@ export default function Navbar() {
         <React.Fragment>
             <Nav>
                 <Logo onClick={() => {navigate('/')}} src={inuLogoImg} alt="INU logo" />
-                <AiEnter/>
                 <NavItems/>
             </Nav>
         </React.Fragment>

@@ -1,24 +1,41 @@
-import { useEffect } from 'react';
-import './AiResultContainer.css';
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { useParams } from "react-router-dom";
+import getFires from '../../utils/getFires';
 import AiImgViewer from '../../component/ai/AiImgViewer';
 import AiImgRetry from '../../component/ai/AiImgRetry';
-import styled from 'styled-components';
 import AiImgScore from '../../component/ai/AiImgScore';
+import AiImgSubmit from '../../component/ai/AiImgSubmit';
 
 export default function AiResultContainer() {
   const { imageId } = useParams<{imageId: string }>();
-  const navigate = useNavigate();
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [rating, setRating] = useState<number>(0);
+
   useEffect(() => {
-    // api 호출로 img src 가져오기 구현 필요
+    if (!imageId) return;
+    const fetchImage = async () => {
+      try {
+        const imageUrl = await getFires(imageId);
+        setImageUrl(imageUrl);
+      } catch (error) {
+        console.error(`Error fetching image`);
+      }
+    };
+    fetchImage();
   }, [imageId]);
+
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating);
+  };
 
   return (
     <AiResultContainerWrapper>
-     <AiImgViewer imageUrl={`imageUrl`}/>
+     {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
      <AiImgRetry/>
-     <AiImgScore/>
-     </AiResultContainerWrapper>
+     <AiImgScore rating={rating} onRatingChange={handleRatingChange}/>
+     {imageId && <AiImgSubmit rating={rating} fireId={imageId} /> }
+    </AiResultContainerWrapper>
   )
 }
 
@@ -26,4 +43,5 @@ const AiResultContainerWrapper=styled.div`
   display: flex;
   justify-content: center;
   align-content:center;
-`
+  overflow: auto;
+`;

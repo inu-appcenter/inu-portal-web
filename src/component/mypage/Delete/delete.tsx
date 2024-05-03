@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useNavigate } from 'react-router-dom';
 import DeleteUser from '../../../utils/deleteUser';
-import { tokenUser as tokenUserAction, emailUser as emailUserAction } from "../../../reducer/userSlice";
+import { tokenUser as tokenUserAction, studentIdUser as studentIdUserAction } from "../../../reducer/userSlice";
 
 import Title from "../common/title"
 interface loginInfo {
@@ -38,7 +38,7 @@ interface loginInfo {
               try {
                 const response = await DeleteUser(token);
                 console.log(response);
-                dispatch(emailUserAction({email: ""}))
+                dispatch(studentIdUserAction({studentId: ""}))
                 dispatch(tokenUserAction({token:""}));
                 navigate('/');
       

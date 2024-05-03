@@ -6,4 +6,6 @@
   overflow-y: scroll;
   background: linear-gradient(90deg, #6084D7 0%, #C294EB 100%);
   color: white;
+  border-radius:10px;
+  margin: 60px 30px 0px 30px; 
 }

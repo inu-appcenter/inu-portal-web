@@ -31,7 +31,7 @@ export default function LoginInput() {
   const handleLoginClick = async () => {
     console.log('로그인', username, password);
     const data = {
-      email: username,
+      studentId: username,
       password: password
     };
 
@@ -59,7 +59,7 @@ export default function LoginInput() {
         <input
           className='login-input'
           type="text"  // Corrected from "username" to "text"
-          placeholder="이메일"
+          placeholder="학번"
           value={username}
           onChange={handleUsernameChange}
         />
