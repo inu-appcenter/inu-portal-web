@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
-import './AiResultContainer.css';
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import { useParams } from "react-router-dom";
+import getFires from '../../utils/getFires';
 import AiImgViewer from '../../component/ai/AiImgViewer';
 import AiImgRetry from '../../component/ai/AiImgRetry';
-import styled from 'styled-components';
 import AiImgScore from '../../component/ai/AiImgScore';
-import getFires from '../../utils/getFires';
 import AiImgSubmit from '../../component/ai/AiImgSubmit';
-
 
 export default function AiResultContainer() {
   const { imageId } = useParams<{imageId: string }>();
@@ -26,20 +24,24 @@ export default function AiResultContainer() {
     };
     fetchImage();
   }, [imageId]);
- 
+
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating);
+  };
+
   return (
     <AiResultContainerWrapper>
      {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
      <AiImgRetry/>
-     <AiImgScore rating={rating} onRatingChange={setRating}/>
-     <AiImgSubmit rating={rating} fireId={fireId} />
-     </AiResultContainerWrapper>
+     <AiImgScore rating={rating} onRatingChange={handleRatingChange}/>
+     <AiImgSubmit rating={rating} fireId={imageId} />
+    </AiResultContainerWrapper>
   )
 }
- 
+
 const AiResultContainerWrapper=styled.div`
   display: flex;
   justify-content: center;
   align-content:center;
   overflow: auto;
-`
+`;
