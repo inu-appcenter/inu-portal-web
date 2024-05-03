@@ -33,6 +33,7 @@ interface Post {
 interface Replies {
     id: number;
     writer: string;
+    fireId:number;
     content: string;
     like: number;
     isLiked: boolean;
