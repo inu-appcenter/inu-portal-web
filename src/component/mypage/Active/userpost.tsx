@@ -144,7 +144,8 @@ max-width: 500px;
   }
 
   .close-title {
-    font-size: 20px;
+    font-family: Inter;
+font-size: 20px;
 font-weight: 600;
 line-height: 20px;
 letter-spacing: 0px;
