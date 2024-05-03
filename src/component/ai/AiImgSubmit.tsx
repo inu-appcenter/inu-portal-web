@@ -5,8 +5,7 @@ import { useSelector } from 'react-redux';
 
 interface AiSubmitProps {
   rating: number;
-  fireId: number;
-  
+  fireId: string;
 }
 
 interface loginInfo {
