@@ -77,7 +77,8 @@ export default function UserComment({postCommentInfo,commentsort,setCommentSort}
               <PostLink to={`/tips/${item.postId}`}>
                 <PostScrapItem>
                   <p className='category'>{postInfo[index]?.category}</p>
-                  <p className='title'>{`[${item.content}]`}</p>
+                  <p className='title'>{`[${item.content}`}</p>
+                  <p className='close-title'>{`]`}</p>
                 </PostScrapItem>
               </PostLink>
               <PostListWrapper>
@@ -139,6 +140,7 @@ const PostScrapItem = styled.div`
   background-color:white;
   justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
   .category {
     background-color: #a4c8e4; 
     padding:10px;
@@ -146,10 +148,11 @@ const PostScrapItem = styled.div`
     color:white;
     font-weight: 600;
     border-radius: 10px;
+    font-size:15px;
   }
   .title {
-    padding:10px;
-    margin:10px;
+    padding:10px 0 10px 10px;
+    margin: 10px 0 10px 10px;
     color:black;
 font-size: 15px;
 
@@ -160,7 +163,19 @@ line-height: 20px;
 letter-spacing: 0px;
 text-align: left;
 color: #656565;
+max-width: 500px;
+    white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; 
+  }
 
+  .close-title {
+    font-size: 20px;
+font-weight: 600;
+line-height: 20px;
+letter-spacing: 0px;
+text-align: left;
+color: #656565;
   }
 
 `;
