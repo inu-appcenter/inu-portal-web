@@ -59,21 +59,25 @@ export default function ModifyMyInfo() {
               alert( "이미지 변경 성공");
               dispatch(ProfileUserAction({"fireId":Number(newFireId.match(/\d+/))}));
               setNewNickname("");
+              setNewFireId("");
         }
         else if (Response === 201) {
             alert("닉네임 변경 성공");
             dispatch(NicknameUserAction({"nickname":newNickname}));
             setNewNickname("");
+            setNewFireId("");
         }
         else if (Response === 202) {
           alert("이미지 , 닉네임 변경 성공");
           dispatch(ProfileUserAction({"fireId":Number(newFireId.match(/\d+/))}));
           dispatch(NicknameUserAction({"nickname":newNickname}));
           setNewNickname("");
+          setNewFireId("");
         }
         else {
           alert(Response);
           setNewNickname("");
+          setNewFireId("");
         }
 
       } catch (error) {
