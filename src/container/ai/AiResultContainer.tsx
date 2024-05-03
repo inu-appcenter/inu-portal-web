@@ -32,9 +32,9 @@ export default function AiResultContainer() {
   return (
     <AiResultContainerWrapper>
      {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
-     <AiImgRetry/>
+     {imageId && <AiImgRetry rating={rating} id={imageId}/> }
      <AiImgScore rating={rating} onRatingChange={handleRatingChange}/>
-     {imageId && <AiImgSubmit rating={rating} fireId={imageId} /> }
+     {imageId && <AiImgSubmit rating={rating} id={imageId} /> }
     </AiResultContainerWrapper>
   )
 }

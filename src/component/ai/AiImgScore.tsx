@@ -16,10 +16,6 @@ const AiImgScore: React.FC<AiImgScoreProps> = ({ rating, onRatingChange }) => {
     setHoveredRating(0);
   };
 
-  const handleStarHover = (index: number) => {
-    setHoveredRating(index + 1);
-  };
-
   const handleMouseLeave = () => {
     if (rating === 0) {
       setHoveredRating(0);
@@ -35,7 +31,7 @@ const AiImgScore: React.FC<AiImgScoreProps> = ({ rating, onRatingChange }) => {
             src={(index < rating || index < hoveredRating) ? starFilled : starEmpty}
             alt="별점"
             onClick={() => handleStarClick(index)}
-            onMouseOver={() => handleStarHover(index)}
+           
             onMouseLeave={handleMouseLeave}
           />
         ))}
