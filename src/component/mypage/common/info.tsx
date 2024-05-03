@@ -1,14 +1,31 @@
 import styled from "styled-components"
 import {  useSelector } from "react-redux"
-
+import getFireImage from "../../../utils/getFireImage";
+import { useEffect, useState } from "react";
+interface Info {
+    user: {
+      token: string;
+      nickname:string;
+      fireId:number;
+    };
+  }
 export default function  MyInfo () {
-    const nickname = useSelector((state: any) => state.user.nickname);
-    const fireId = useSelector((state: any) => state.user.fireId);
-
+    const token = useSelector((state: Info) => state.user.token);
+    const nickname = useSelector((state: Info) => state.user.nickname);
+    const fireId = useSelector((state: Info) => state.user.fireId);
+    const [image, setImage] = useState<string | undefined>("");
+    const fetchImage = async () => {
+        const imageUrl = await getFireImage(token,fireId);
+        setImage(imageUrl);
+      };
+    
+      useEffect(() => {
+        fetchImage();
+      }, [token,fireId]);
     return (
         <InfoWrapper>
-            <MyProfileImg src={`https://portal.inuappcenter.kr/api/images/${fireId}`} alt="프로필 이미지"></MyProfileImg>
             <Nickname>{nickname}</Nickname>
+            <MyProfileImg src={image} alt="프로필 이미지"></MyProfileImg>
         </InfoWrapper>
     )
 }
@@ -16,17 +33,18 @@ export default function  MyInfo () {
 
 const InfoWrapper = styled.div`
 display: flex;
-margin:49px 0 54px 104px;
 `
 const Nickname = styled.div`
-font-family: Inter;
-font-size: 25px;
-font-weight: 700;
-margin-left:13px;
-line-height: 47px;
+    font-family: Inter;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 30px;
+    letter-spacing: 0px;
+    margin-left: 36px;
 `
 
 const MyProfileImg=styled.img`
-width: 50px;
-    height: 50px;
+    width: 30px;
+    height: 30px;
+    margin-lefT:13px;
 `
