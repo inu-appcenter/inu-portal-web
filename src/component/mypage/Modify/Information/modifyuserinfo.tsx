@@ -4,11 +4,20 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import getFireImage from "../../../../utils/getFireImage";
 
+interface Info {
+  user: {
+    token: string;
+    nickname:string;
+    fireId:number;
+  };
+}
+
+
 
 export default function ModifyUserInfo()  {
-    const nickname = useSelector((state: any) => state.user.nickname);
-    const token = useSelector((state: any) => state.user.token);
-    const fireId = useSelector((state: any) => state.user.fireId);
+    const nickname = useSelector((state: Info) => state.user.nickname);
+    const token = useSelector((state: Info) => state.user.token);
+    const fireId = useSelector((state: Info) => state.user.fireId);
     console.log(fireId,"현재 횃불이 아이디");
     const [image, setImage] = useState<string | undefined>("");
     const fetchImage = async () => {
