@@ -2,17 +2,17 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 interface   NewPasswordInputProps {
-    value: string;
+    newNickname: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const NewNicknameInput: React.FC<NewPasswordInputProps> = ({ value, onChange }) => {
+const NewNicknameInput: React.FC<NewPasswordInputProps> = ({ newNickname,onChange }) => {
     return (
         <Wrapper>
             <NewNicknameTitle>닉네임 변경</NewNicknameTitle>
             <Input
                 type="text"
-                value={value}
+                value={newNickname}
                 onChange={onChange}
             />
         </Wrapper>
