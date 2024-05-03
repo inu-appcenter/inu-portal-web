@@ -5,9 +5,9 @@ import { useEffect } from 'react';
 
 
 import { MypageTitle } from '../../component/mypage/common/MyPageTitle';
-import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
+// import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
 import SearchBar from '../../component/Tips/SearchBar';
-
+import MyInfo from '../../component/mypage/common/info';
 interface loginInfo {
   user: {
     token: string;
@@ -34,7 +34,7 @@ export default function MyPageTitleContainer({ selectedCategory }: MyPageTitleCo
       <MypageTitle />
       <SearchInfoWrapper>
         {(selectedCategory ==='스크랩' || selectedCategory === "내 활동") && <SearchBar/>}
-        {user.token && <MyPageUserInfo />}
+        {user.token && <MyInfo />}
       </SearchInfoWrapper>
     </MyPageTitleWrapper>
   );

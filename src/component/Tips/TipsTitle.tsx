@@ -3,9 +3,9 @@ import styled from 'styled-components';
 import './TipsTitle.css';
 import SearchBar from './SearchBar';
 import { useNavigate } from 'react-router-dom';
-import MyPageUserInfo from '../mypage/common/MyPageUserInfo';
+// import MyPageUserInfo from '../mypage/common/MyPageUserInfo';
 import { useSelector } from 'react-redux';
-
+import MyInfo from '../mypage/common/info';
 interface TipsTitleProps {
   docState: DocState;
 }
@@ -27,7 +27,7 @@ const TipsTitle: React.FC<TipsTitleProps> = ({ docState }) => {
       </span>
       <SearchBarUserInfoWrapper>
         <SearchBar />
-        {user.token && <MyPageUserInfo />}
+        {user.token && <MyInfo />}
       </SearchBarUserInfoWrapper>
     </TipsTitleWrapper>
   );
