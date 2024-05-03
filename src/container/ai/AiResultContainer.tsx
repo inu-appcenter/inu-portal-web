@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useParams } from "react-router-dom";
 import getFires from '../../utils/getFires';
@@ -34,7 +34,7 @@ export default function AiResultContainer() {
      {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
      <AiImgRetry/>
      <AiImgScore rating={rating} onRatingChange={handleRatingChange}/>
-     <AiImgSubmit rating={rating} fireId={imageId} />
+     {imageId && <AiImgSubmit rating={rating} fireId={imageId} /> }
     </AiResultContainerWrapper>
   )
 }
