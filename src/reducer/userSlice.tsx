@@ -9,7 +9,7 @@ export const userSlice = createSlice({
         refreshToken: "",
         refreshTokenExpiredTime: "",
         nickname:"",
-        fireId:0
+        fireId:1
     },
     reducers: {
         // login 성공 시
