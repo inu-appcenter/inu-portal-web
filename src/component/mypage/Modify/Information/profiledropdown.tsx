@@ -1,12 +1,12 @@
 import styled from "styled-components";
 
 interface ProfileDropdownProps {
-  selectedImage: string;
+  newFireId: string;
   images: string[]; 
   onChange: (image: string) => void; 
 }
 
-export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ images, selectedImage, onChange }) => {
+export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ images, newFireId, onChange }) => {
   const handleImageClick = (image: string) => {
     onChange(image); 
   };
@@ -14,11 +14,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ images, select
   return (
     <DropdownWrapper>
       {images.map((image, index) => (
-        <GridItem key={index} isSelected={image === selectedImage}>
+        <GridItem key={index} isSelected={image === newFireId} onClick={() => handleImageClick(image)}>
           <img 
             src={image} 
             alt=""  
-            onClick={() => handleImageClick(image)} 
           />
         </GridItem>
       ))}
