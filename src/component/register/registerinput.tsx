@@ -9,7 +9,7 @@ import sendMail from '../../utils/sendMail';
 import checkMail from '../../utils/checkMail';
 
 export default function RegisterInput() {
-  const [email, setEmail] = useState('');
+  const [studentId, setStudentId] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,13 +18,13 @@ export default function RegisterInput() {
 
   const navigate = useNavigate();
 
-  const handleVerifyEmail = async () => {
-    if (email.endsWith('@inu.ac.kr')) {
+  const handleVerifyStudentId = async () => {
+    if (studentId.endsWith('@inu.ac.kr')) {
       try {
-        const response = await sendMail(email);
+        const response = await sendMail(studentId);
         console.log(response);
-        if (response.data === email) {
-          setVerificationStatus("emailVerified");
+        if (response.data === studentId) {
+          setVerificationStatus("studentIdVerified");
         }
       }
       catch (error) {
@@ -37,7 +37,7 @@ export default function RegisterInput() {
 
   const handleVerifyCode = async () => {
     try {
-      const response = await checkMail(email, verificationCode);
+      const response = await checkMail(studentId, verificationCode);
       console.log(response);
       if (response.data) {
         setVerificationStatus("codeVerified");
@@ -57,7 +57,7 @@ export default function RegisterInput() {
       return;
     }
     const data = {
-      email: email,
+      studentId: studentId,
       password: password,
       nickname: nickname
     };
@@ -66,7 +66,7 @@ export default function RegisterInput() {
       const token = await registerUser(data);
 
       if (token) {
-        alert(email+' 회원가입 성공');
+        alert(studentId+' 회원가입 성공');
         navigate('/login');
       }
     } catch (error) {
@@ -82,7 +82,7 @@ export default function RegisterInput() {
         <div className='register-input-wrapper'>
           <div className='div-input'>
             <input
-              className='register-input' type="email" value={email} readOnly />
+              className='register-input' value={studentId} readOnly />
               <img src={loginUserImg} alt='loginUserImg'></img>
           </div>
           <div className='register-input-line'></div>
@@ -121,7 +121,7 @@ export default function RegisterInput() {
           <div className='RegisterClickButton' onClick={handleRegister}>가입하기</div>
         </div>
       );
-    case "emailVerified":
+    case "studentIdVerified":
       return (
         <div className='register-input-wrapper'>
           <div className='div-input'>
@@ -144,15 +144,14 @@ export default function RegisterInput() {
           <div className='div-input'>
             <input
               className='register-input'
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
               placeholder="학교 이메일"
             />
             {/* <img src={loginUserImg} alt='loginUserImg'></img> */}
           </div>
           <div className='register-input-line'></div>
-          <div className='RegisterClickButton' onClick={handleVerifyEmail}>인증하기</div>
+          <div className='RegisterClickButton' onClick={handleVerifyStudentId}>인증하기</div>
         </div>
       );
   }

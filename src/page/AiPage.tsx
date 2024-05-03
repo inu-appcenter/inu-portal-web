@@ -6,14 +6,16 @@ export default function AiPage() {
   return (
     <><header>
       <Header />
-    </header><AiWrapper>
-        <AiContainer />
-      </AiWrapper></>
+    </header>
+    <AiWrapper>
+      <AiContainer />
+    </AiWrapper></>
   )
 }
 
 const AiWrapper = styled.div`
   display: flex;
   justify-content: center;
+
 
 `

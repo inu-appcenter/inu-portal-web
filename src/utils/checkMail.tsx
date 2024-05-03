@@ -1,4 +1,4 @@
-const checkMail = async (email: string, numbers: string) => {
+const checkMail = async (studentId: string, numbers: string) => {
   try {
     const apiURL = `https://portal.inuappcenter.kr/api/members/verify`;
     const response = await fetch(apiURL, {
@@ -7,7 +7,7 @@ const checkMail = async (email: string, numbers: string) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        'email': email,
+        'studentId': studentId,
         'numbers': numbers,
       }),
     });

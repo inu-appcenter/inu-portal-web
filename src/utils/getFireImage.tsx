@@ -6,7 +6,7 @@ const getFireImage= async (token:string,fireId:number) => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Auth:token
+          'Auth':token
         },
       });
   

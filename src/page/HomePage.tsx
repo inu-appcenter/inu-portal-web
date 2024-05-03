@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import Calendar from '../container/home/CalendarContainer';
 import Tip from '../container/home/TipContainer';
 import Notice from '../container/home/NoticeContainer';
+import AIEnter from '../container/home/AiEnter';
 
 export default function HomePage() {
     
@@ -15,6 +16,7 @@ export default function HomePage() {
                 <Tip/>
                 <Calendar/>
             </MainWrapper>
+            <AIEnter/>
             <Notice/>
         </HomePageWrapper>
     );
