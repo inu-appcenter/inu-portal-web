@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 
@@ -10,8 +10,9 @@ import NewNicknameInput from './nickname';
 
 
 
-import getUser from '../../../../utils/getUser';
-import ModifyNickname from '../../../../utils/putNickname';
+// import getUser from '../../../../utils/getUser';
+import ModifyInfo from '../../../../utils/putNickname';
+
 import { NicknameUser as NicknameUserAction, ProfileUser as ProfileUserAction } from "../../../../reducer/userSlice";
 
 
@@ -21,6 +22,7 @@ import { ProfileDropdown } from './profiledropdown';
 import Title from '../../common/title';
 import ModifyUserInfo from './modifyuserinfo';
 
+
 interface loginInfo {
     user: {
       token: string;
@@ -29,67 +31,50 @@ interface loginInfo {
 
 export default function ModifyMyInfo() {
     const token = useSelector((state: loginInfo) => state.user.token);
-    const [currnetnickname, setCurrentNickname] =useSelector((state: any) => state.user.nickname);
-    const [nickname, setNickname] = useState("");
-    const [currentfireid, setCurrentFireId] = useState(0);
-    const fireId = useSelector((state: any) => state.user.fireId);
-    // const nickname = useSelector((state: any) => state.user.nickname);
-    // const [images,setImages] = useState<string[]>([]);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 표시 여부 상태
 
-    const [selectedImage, setSelectedImage] = useState<string>(fireId); 
+
+
+    const [newNickname, setNewNickname] = useState<string>("");
+    const [newFireId, setNewFireId] = useState<string>(""); 
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); 
+
+    
     const dispatch = useDispatch();
 
     const handleChangeImage = (image: string) => {
-      setSelectedImage(image);
+      console.log("선택한 이미지", Number(image.match(/\d+/)));
+      setNewFireId(image);
     };
 
     const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         console.log(e.target.value)
-        setNickname(e.target.value);
+        setNewNickname(e.target.value);
     };
-
-    useEffect(() => {
-      handleUserInfo();
-  }, []);
-
-
-
-
-  const handleUserInfo = async () => {
-      try {
-          const response = await getUser(token);
-          console.log(response);
-          setCurrentNickname(response.nickname);
-          console.log("닉네임이름",currnetnickname);
-          
-      } catch (error) {
-          console.error("회원을 가져오지 못했습니다.", error);
-      }
-  };
 
     const handleModifyClick = async () => {
       try {
-        console.log("닉네임",nickname);
-        console.log(selectedImage,"현재 선택된 이미지 뭐양?");
-         const fireId = Number(selectedImage.match(/\d+/));
-         console.log("fire아이디뭐야",fireId);
-         
-         const nicknameResponse = await ModifyNickname(token, nickname,fireId);
-          if (nicknameResponse === 400) {
-            alert('입력한 닉네임과 현재 닉네임이 동일합니다.');
-          }
-          else if(nicknameResponse === 404 ) {
-            alert('존재하지 않는 회원입니다.')
-          }
-          else {
-            console.log(nicknameResponse, "닉네임 변경 성공");
-            setCurrentNickname(currnetnickname);
-            setCurrentFireId(fireId);
-            console.log(currentfireid);
-            dispatch(NicknameUserAction({"nickname":nickname}));
-            dispatch(ProfileUserAction({"fireId":fireId}));
-          }
+        console.log("new nickname , fireid ", newNickname, newFireId !== ""?String(newFireId.match(/\d+/)):"");
+        const Response = await ModifyInfo(token,newNickname,newFireId !== ""?String(newFireId.match(/\d+/)):"");
+        if (Response === 200) {
+              alert( "이미지 변경 성공");
+              dispatch(ProfileUserAction({"fireId":Number(newFireId.match(/\d+/))}));
+              setNewNickname("");
+        }
+        else if (Response === 201) {
+            alert("닉네임 변경 성공");
+            dispatch(NicknameUserAction({"nickname":newNickname}));
+            setNewNickname("");
+        }
+        else if (Response === 202) {
+          alert("이미지 , 닉네임 변경 성공");
+          dispatch(ProfileUserAction({"fireId":Number(newFireId.match(/\d+/))}));
+          dispatch(NicknameUserAction({"nickname":newNickname}));
+          setNewNickname("");
+        }
+        else {
+          alert(Response);
+          setNewNickname("");
+        }
 
       } catch (error) {
           console.error('닉네임 변경 실패:', error);
@@ -112,12 +97,12 @@ export default function ModifyMyInfo() {
       <ProfileChange onClick={toggleDropdown}>프로필 변경</ProfileChange>
       </ProfileChangeWrapper>
       <NicknameChangeWrapper>
-        <NewNicknameInput value={nickname} onChange={handleNicknameChange}/>
+        <NewNicknameInput onChange={handleNicknameChange} newNickname={newNickname}/>
       </NicknameChangeWrapper>
             
       </ChangeWrapper>
       {isDropdownOpen && (
-          <ProfileDropdown images={profileimg} selectedImage={selectedImage} onChange={handleChangeImage} />
+          <ProfileDropdown images={profileimg} newFireId={newFireId} onChange={handleChangeImage} />
         )}
         <ButtonWrapper>
         <Modify onClick={handleModifyClick}>수정</Modify>
