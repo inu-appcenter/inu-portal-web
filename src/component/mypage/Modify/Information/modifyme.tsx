@@ -29,10 +29,11 @@ interface loginInfo {
 
 export default function ModifyMyInfo() {
     const token = useSelector((state: loginInfo) => state.user.token);
-    const [currnetnickname, setCurrentNickname] = useState("");
+    const [currnetnickname, setCurrentNickname] =useSelector((state: any) => state.user.nickname);
     const [nickname, setNickname] = useState("");
     const [currentfireid, setCurrentFireId] = useState(0);
     const fireId = useSelector((state: any) => state.user.fireId);
+    // const nickname = useSelector((state: any) => state.user.nickname);
     // const [images,setImages] = useState<string[]>([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 표시 여부 상태
 
@@ -73,9 +74,7 @@ export default function ModifyMyInfo() {
         console.log(selectedImage,"현재 선택된 이미지 뭐양?");
          const fireId = Number(selectedImage.match(/\d+/));
          console.log("fire아이디뭐야",fireId);
-         if (nickname === '') {
-          alert("닉네임을 입력해주세요.");
-        } else {
+         
          const nicknameResponse = await ModifyNickname(token, nickname,fireId);
           if (nicknameResponse === 400) {
             alert('입력한 닉네임과 현재 닉네임이 동일합니다.');
@@ -92,7 +91,7 @@ export default function ModifyMyInfo() {
             dispatch(ProfileUserAction({"fireId":fireId}));
           }
 
-      }} catch (error) {
+      } catch (error) {
           console.error('닉네임 변경 실패:', error);
           alert('닉네임 변경에 실패했습니다.');
       } 

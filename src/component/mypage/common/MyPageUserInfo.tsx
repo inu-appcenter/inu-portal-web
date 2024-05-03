@@ -6,10 +6,12 @@ import { useEffect, useState } from "react";
 
 export default function MyPageUserInfo()  {
     const nickname = useSelector((state: any) => state.user.nickname);
+    
     const token = useSelector((state: any) => state.user.token);
     const fireId = useSelector((state: any) => state.user.fireId);
     console.log(fireId,"현재 횃불이 아이디");
     const [image, setImage] = useState<string | undefined>("");
+    console.log("닉네임",fireId);
     const fetchImage = async () => {
         const imageUrl = await getFireImage(token,fireId);
         setImage(imageUrl);
@@ -17,7 +19,7 @@ export default function MyPageUserInfo()  {
     
       useEffect(() => {
         fetchImage();
-      }, [token,fireId,nickname]);
+      }, [token,image]);
     return (
         <InfoWrapper>
             <MyProfileImg src={image} alt="프로필 이미지"></MyProfileImg>

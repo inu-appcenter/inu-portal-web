@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
 import getUser from '../../utils/getUser';
-import { NicknameUser as NicknameUserAction , ProfileUser as ProfileuserAction} from '../../reducer/userSlice';
+import  { NicknameUser as NicknameUserAction , ProfileUser as ProfileuserAction} from '../../reducer/userSlice';
 import { MypageTitle } from '../../component/mypage/common/MyPageTitle';
 import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
 import SearchBar from '../../component/Tips/SearchBar';
@@ -25,6 +25,7 @@ interface MyPageTitleContainerProps {
 
 export default function MyPageTitleContainer({selectedCategory}:MyPageTitleContainerProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
+  const user = useSelector((state: loginInfo) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   useEffect(() => {
@@ -56,7 +57,7 @@ export default function MyPageTitleContainer({selectedCategory}:MyPageTitleConta
       <MypageTitle/>
       <SearchInfoWrapper>
         {(selectedCategory ==='스크랩' || selectedCategory === "내 활동") && <SearchBar/>}
-        <MyPageUserInfo/>
+        {user.token && <MyPageUserInfo />}
       </SearchInfoWrapper>
     </MyPageTitleWrapper>
   );
