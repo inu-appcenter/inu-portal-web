@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import './utilbuttons.css'
 
 export default function UtilButtons() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   // const handleRegisterClick = () => {
   //   navigate('/login/register');
