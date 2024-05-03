@@ -1,5 +1,9 @@
-const ModifyNickname= async (token: string, nickname: string,fireId:number) => {
+const ModifyInfo= async (token: string, nickname: string,fireId:string) => {
     const apiURL = `https://portal.inuappcenter.kr/api/members`;
+    const data: { nickname?: string; fireId?: string } = {};
+    if (nickname) data.nickname = nickname;
+    if (fireId) data.fireId = fireId;
+    console.log("data 가 어떻게 되여있니", data);
     try {
       const response = await fetch(apiURL, {
         method: 'PUT',
@@ -7,24 +11,24 @@ const ModifyNickname= async (token: string, nickname: string,fireId:number) => {
           'Content-Type': 'application/json',
           'Auth': token
         },
-        body: JSON.stringify({
-            'nickname': nickname,
-            'fireId': fireId
-          })
+        body: JSON.stringify(data)
       });
   
       console.log(response,'response');
       if (response.status == 400) {
-        console.error('입력한 닉네임과 현재 닉네임이 동일합니다.', response.status);
-        return 400;
+        const data = await response.json();
+        console.log(data.msg);
+        return data.msg;
       }
       else if(response.status == 404) {
-        console.error('존재하지 않는 회원입니다.', response.status);
-        return 404;
+        const data = await response.json();
+        console.log(data.msg);
+        return data.msg;
       }
       else {
-          const data = await response.json();
-          return data;
+        if(data.nickname === undefined && data.fireId !== undefined) return 200;
+        else if(data.nickname !== undefined && data.fireId === undefined) return 201;
+        else return 202;
       }
       
   
@@ -34,4 +38,4 @@ const ModifyNickname= async (token: string, nickname: string,fireId:number) => {
     }
   };
   
-  export default ModifyNickname;
+  export default ModifyInfo;
