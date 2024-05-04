@@ -110,7 +110,7 @@
   }
 }
 @media (max-width: 1400px) {
-  .bottom-wrapper img[src*="glasscube.svg"],
+  .bottom-wrapper .GlassCube,
   .Ai-intro-text-wrapper .dummy-div {
     display: none;
   }
