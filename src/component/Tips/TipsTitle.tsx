@@ -42,6 +42,11 @@ const TipsTitleWrapper = styled.div`
   padding: 15px;
   padding-right: 30px;
   gap: 20px;
+  @media (max-width: 768px) { /* 모바일 */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
 `;
 
 const SearchBarUserInfoWrapper = styled.div`
@@ -49,4 +54,10 @@ const SearchBarUserInfoWrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  @media (max-width: 768px) { /* 모바일 */
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 5px;
+  }
 `

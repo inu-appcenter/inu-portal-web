@@ -11,7 +11,7 @@ const CommonStyle = createGlobalStyle`
     margin: 0;
     -ms-overflow-style: none;
     height:100vh;
-    overflow: hidden;
+    overflow: auto;
     cursor: url('/pointers/cursor.svg'), auto; // 기본 커서 이미지 설정
   }
 
