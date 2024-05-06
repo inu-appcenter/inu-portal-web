@@ -3,17 +3,17 @@ import styled from 'styled-components';
 import QRCode from 'qrcode.react';
 
 interface ShareModalProps {
-  imageUrl: string;
+  url: string;
   onClose: () => void;
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({ imageUrl, onClose }) => {
+const ShareModal: React.FC<ShareModalProps> = ({ url, onClose }) => {
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
         <CloseButton onClick={onClose}>X</CloseButton>
-        <p style={{color: 'black'}}>{imageUrl}</p>
-        <QRCode value={imageUrl} size={256} />
+        <p style={{color: 'black'}}>{url}</p>
+        <QRCode value={url} size={256} />
       </ModalContent>
     </ModalOverlay>
   );

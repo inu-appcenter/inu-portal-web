@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useLocation } from 'react-router-dom';
 import imgshare from '../../resource/assets/imgshare.svg'
 import imgsave from '../../resource/assets/imgsave.svg'
 import dot from '../../resource/assets/dot.svg'
@@ -11,6 +12,7 @@ interface AiImgViewerProps {
 
 const AiImgViewer: React.FC<AiImgViewerProps> = ({ imageUrl }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const location = useLocation();
   const openModal = () => { setModalIsOpen(true); };
   const closeModal = () => { setModalIsOpen(false); };
 
@@ -42,7 +44,7 @@ const AiImgViewer: React.FC<AiImgViewerProps> = ({ imageUrl }) => {
       <AiImg >
         <img src={imageUrl} alt="AI generated image" style={{height: "250px"}}/>
       </AiImg>
-      {modalIsOpen && <ShareModal imageUrl={imageUrl} onClose={closeModal} />}
+      {modalIsOpen && <ShareModal url={window.location.href} onClose={closeModal} />}
     </AiImgViewerWrapper>
   );
 };
