@@ -16,6 +16,10 @@ export default function TipsCatContainer({ docState, setDocState }: TipsCatConta
 
 const TipsContainerWraaper = styled.div`
   display: flex;
-  flex-direction: row;
-  margin: 30px 0 0 0;
+  flex-direction: column;
+  @media (max-width: 768px) { /* 모바일 */
+    align-items: center;
+    width: 100%;
+    margin: 0;
+  }
 `

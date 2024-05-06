@@ -20,6 +20,7 @@ interface TipsCategoriesProps {
 export default function TipsCategories({ docState, setDocState }: TipsCategoriesProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [college, setCollege] = useState<Category[]>([]);
+  const [isVisible, setIsVisible] = useState(true);
   const [isCollegeOpened, setIsCollegeOpened] = useState(false);
   const navigate = useNavigate();
 
@@ -84,40 +85,42 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
   
 
   return (
-    <div>
-      <div className='categories'>
-        {categories.map((category, index) => (
-          <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
-            {category.hasError ? (
-              <div style={{ width: '25px', height: '25px' }}> {/* 이미지 로드 실패 시 공백을 위한 div */}</div>
-            ) : (
-              <img 
-                src={docState.selectedCategory === category.name ? category.iconWhite : category.iconGray} 
-                alt={category.name} 
-                onError={() => handleImageError(index, 'categories')}
-              />
-            )}
-            {category.name}
-          </div>
-        ))}
-    </div>
-    <div>
-    <div className='line'/>
-      {docState.docType === 'TIPS' &&
-       <div className='College' onClick={() => setIsCollegeOpened(!isCollegeOpened)}>단과대 </div>}
-        {isCollegeOpened &&
-        <div className='colleges'>
-          {college.map((category, index) => (
+    <>
+      <div className='category-open' onClick={() => setIsVisible(!isVisible)}>카테고리 ▼</div>
+      {isVisible &&
+      (<>
+        <div className='categories'>
+          {categories.map((category, index) => (
             <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
-                <img 
-                  src={round} 
-                  alt={round} 
-                />
+              {category.hasError ? (
+                <div style={{ width: '25px', height: '25px' }}> {/* 이미지 로드 실패 시 공백을 위한 div */}</div>
+              ) : (
+                <img
+                  src={docState.selectedCategory === category.name ? category.iconWhite : category.iconGray}
+                  alt={category.name}
+                  onError={() => handleImageError(index, 'categories')} />
+              )}
               {category.name}
             </div>
-        ))}
-      </div>}
-    </div>
-    </div>
+          ))}
+        </div>
+        <>
+          <div className='line' />
+          {docState.docType === 'TIPS' &&
+            <div className='College' onClick={() => setIsCollegeOpened(!isCollegeOpened)}>단과대 ▼</div>}
+          {isCollegeOpened &&
+            <div className='colleges'>
+              {college.map((category, index) => (
+                <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
+                  <img
+                    src={round}
+                    alt={round} />
+                  {category.name}
+                </div>
+              ))}
+            </div>}
+          </>
+        </>)}
+    </>
   );
 }
