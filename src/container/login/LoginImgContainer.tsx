@@ -16,6 +16,9 @@ const LoginImageWrapper = styled.div`
     border-radius: 40px 0px 0px 0px;
     height: 100%;
     width: 769px;
+    @media (max-width: 768px) { // 모바일
+      display: none;
+    }
 `
 
 

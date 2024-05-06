@@ -24,4 +24,7 @@ const LoginDetaileWrapper = styled.div`
 
     display: flex;
     flex-direction: column;
+    @media (max-width: 768px) { /* 모바일 */
+      padding-left: 0;
+    }
 `
