@@ -22,8 +22,39 @@
   gap: 10px;
 }
 
+.line{
+  flex-grow: 0.1;
+  height: 1px;
+  background-color: #888888;
+  width: 100px;
+  
+}
+
 .selected {
   background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
   font-weight: 700;
   color: #FFFFFF;
+}
+
+.College{
+  width: 173px;
+  padding-left: 70px;
+  height: 80px;
+  border-radius: 10px;
+  cursor: url(/pointers/cursor-pointer.svg), pointer;
+    font-family: Inter;
+    font-size: 16px;
+    font-weight: 500;
+    color: #656565;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.colleges{
+  background-color:#EFF5FE;
+  width: 193px;
+  border-radius: 10px;
+  padding-bottom: 20px;
+  padding-top: 10px;
 }
