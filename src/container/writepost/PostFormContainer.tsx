@@ -228,10 +228,12 @@ const PostFormContainer: React.FC = () => {
       src={inuLogoImg} 
       alt="INU logo" 
       style={{ width: '180px',cursor: 'pointer'}} />
-        <ImageInput onImageChange={handleImageChange} />
-        <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
-        <div className='post-button' onClick={handlePostSubmit}>
-          {type=='create'? <span>업로드</span> : <span>수정 완료</span>}
+        <div className='PostForm-buttons'>
+          <ImageInput onImageChange={handleImageChange} />
+          <AnonymousCheckbox checked={anonymous} onChange={handleAnonymousChange} />
+          <div className='post-button' onClick={handlePostSubmit}>
+            {type=='create'? <span>업로드</span> : <span>수정 완료</span>}
+          </div>
         </div>
       </div>
       <div className='container1'>
