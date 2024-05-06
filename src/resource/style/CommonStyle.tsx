@@ -4,7 +4,7 @@ const CommonStyle = createGlobalStyle`
   //이 안에 전체 프로젝트에 적용될 css를 작성하면 됩니다~!
   @font-face {
     font-family: 'CustomFont';
-    src: url('/fonts/AppleSDGothicNeo.ttc') format('truetype'); // format에 ttc, ttf은 'truetype' otf는 'opentype'
+    src: url('/fonts/AppleSDGothicNeoM.ttf') format('truetype'); // format에 ttc, ttf은 'truetype' otf는 'opentype'
   }
   body{
     font-family: 'CustomFont', sans-serif;
