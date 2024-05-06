@@ -37,16 +37,16 @@ width: 411px;
 height: 50px;
 background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
 border-radius: 10px;
+border: 1px solid #FFFFFF;
 justify-content: center;
 align-items:center;
 gap: 10px;
   .enter-frame{
     justify-content: center;
-  align-items:center;
+    align-items:center;
     display:flex;
     width: 407px;
     height: 46px;
-    border: 1px solid #FFFFFF;
     border-radius: 10px;
     
   }
