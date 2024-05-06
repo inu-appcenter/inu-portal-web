@@ -45,6 +45,7 @@ export default function MainPage() {
       <main style={{flexGrow: 1}}>
         {showIntro ? (<IntroPage/>) : (<></>)}
         <Outlet />
+        <MobileMargin />
       </main>
     </MainPageWrapper>
   )
@@ -53,6 +54,9 @@ export default function MainPage() {
 const MainPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-    height: 100vh;
+  height: 100vh;
   overflow-y: scroll;
 `;
+const MobileMargin = styled.div`
+  height: 100px;
+`
