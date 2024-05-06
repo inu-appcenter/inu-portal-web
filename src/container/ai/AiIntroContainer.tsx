@@ -113,7 +113,7 @@ const AiIntroText: React.FC = () => {
   return (
     <div className='Ai-intro-text-wrapper'>
       <div className='Ai-intro-text'>
-        <span style={{ fontSize: '15px', lineHeight: '20px' }}>
+        <span style={{ fontSize: '16px', lineHeight: '20px' }}>
           <b style={{ fontSize: '20px' }}>AI 횃불이</b> 는 창의적이고
           재미있는 캐릭터를 AI로 생성하는 앱입니다.
           <br />
