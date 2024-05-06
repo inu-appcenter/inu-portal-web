@@ -8,11 +8,24 @@ interface AiImgViewerProps {
 }
 
 const AiImgViewer: React.FC<AiImgViewerProps> = ({ imageUrl }) => {
+  const downloadImage = (url: string, filename:string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownload = () => {
+    const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+    downloadImage(imageUrl, filename);
+  }
   return (
     <AiImgViewerWrapper >
       <div className='completed'>생성완료!</div>
       <AiImgViewUtility >
-        <div className="image-save">
+        <div className="image-save" onClick={handleDownload}>
           <img src={imgsave} alt="이미지저장 이모지" />
         이미지 저장</div>
         <img src={dot}/>
