@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import imgshare from '../../resource/assets/imgshare.svg'
 import imgsave from '../../resource/assets/imgsave.svg'
 import dot from '../../resource/assets/dot.svg'
+import ShareModal from './ShareModal';
+
 interface AiImgViewerProps {
   imageUrl: string;
 }
 
 const AiImgViewer: React.FC<AiImgViewerProps> = ({ imageUrl }) => {
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const openModal = () => { setModalIsOpen(true); };
+  const closeModal = () => { setModalIsOpen(false); };
+
   const downloadImage = (url: string, filename:string) => {
     const link = document.createElement('a');
     link.href = url;
@@ -26,16 +32,17 @@ const AiImgViewer: React.FC<AiImgViewerProps> = ({ imageUrl }) => {
       <div className='completed'>생성완료!</div>
       <AiImgViewUtility >
         <div className="image-save" onClick={handleDownload}>
-          <img src={imgsave} alt="이미지저장 이모지" />
-        이미지 저장</div>
+          <img src={imgsave} alt="이미지저장 이모지" />이미지 저장
+        </div>
         <img src={dot}/>
-        <div className="image-share">
-          <img src={imgshare} alt="이미지공유 이모지" />
-        공유</div>
+        <div className="image-share" onClick={openModal}>
+          <img src={imgshare} alt="이미지공유 이모지" />공유
+        </div>
       </AiImgViewUtility>
       <AiImg >
         <img src={imageUrl} alt="AI generated image" style={{height: "250px"}}/>
       </AiImg>
+      {modalIsOpen && <ShareModal imageUrl={imageUrl} onClose={closeModal} />}
     </AiImgViewerWrapper>
   );
 };
