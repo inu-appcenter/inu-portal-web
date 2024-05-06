@@ -92,6 +92,9 @@
 .PreviousNextContainer {
   display: flex;
   flex-direction: row;
+  @media (max-width: 768px) { /* 모바일 */
+    display: none;
+  }
 }
 
 .PreviousNext {
