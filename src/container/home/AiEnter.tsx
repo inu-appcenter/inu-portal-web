@@ -25,6 +25,10 @@ const AiEnterWrapper = styled.div`
   position:relative;
   left: 70%;
   margin: 20px 10px;
+  @media (max-width: 768px) { // 모바일
+    left: 0;
+    margin: 20px 0px 20px 0px;
+  }
 `
 
 const AiEnter = styled.div`
@@ -45,5 +49,8 @@ gap: 10px;
     border: 1px solid #FFFFFF;
     border-radius: 10px;
     
+  }
+  @media (max-width: 768px) { // 모바일
+    width: 100%;
   }
 `

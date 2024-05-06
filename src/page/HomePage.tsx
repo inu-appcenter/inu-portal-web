@@ -26,8 +26,10 @@ const HomePageWrapper = styled.div`
     display: grid;
     grid-template-columns: 100%;
     margin: 0 2rem;
-    @media (max-width: 350px) {
-        padding: 0 1rem;
+    @media (max-width: 768px) { // 모바일
+        display: flex;
+        flex-direction: column;
+        margin: 0px 10px 10px 10px;
     }
 `;
 
@@ -35,5 +37,8 @@ const MainWrapper = styled.div`
     display: flex;
     justify-content: space-between;
     margin-top:20px;
+    @media (max-width: 768px) { // 모바일
+        flex-direction: column;
+      }
 `;
 
