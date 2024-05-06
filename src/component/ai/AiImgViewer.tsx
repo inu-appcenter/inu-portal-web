@@ -21,7 +21,7 @@ const AiImgViewer: React.FC<AiImgViewerProps> = ({ imageUrl }) => {
         공유</div>
       </AiImgViewUtility>
       <AiImg >
-        <img src={imageUrl} alt="AI generated image" />
+        <img src={imageUrl} alt="AI generated image" style={{height: "250px"}}/>
       </AiImg>
     </AiImgViewerWrapper>
   );
