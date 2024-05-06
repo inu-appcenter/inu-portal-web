@@ -9,10 +9,21 @@
   flex-direction: row;
   align-items: center;
   border-bottom: 5px solid #eaeaea;
-  gap: 20px;
+  justify-content: space-between;
   padding: 10px 20px;
-  margin-left: 10px;
   height: 50px;
+
+  @media (max-width: 768px) { /* 모바일 */
+    flex-direction: column;
+    height: 140px;
+  }
+
+  .PostForm-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
 }
 
 .post-button {
@@ -39,6 +50,10 @@
   flex-direction: row;
   z-index: 1;
   background-color: white;
+  @media (max-width: 768px) { /* 모바일 */
+    flex-direction: column;
+    padding: 20px;
+  }
 }
 
 .container2 {
@@ -69,6 +84,9 @@
   font-weight: 500;
 
   resize: none;
+  @media (max-width: 768px) { /* 모바일 */
+    height: calc(100vh - 400px);
+  }
 }
 
 .write-line {
