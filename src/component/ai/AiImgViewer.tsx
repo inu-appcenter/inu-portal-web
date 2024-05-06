@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import imgshare from '../../resource/assets/imgshare.svg'
 import imgsave from '../../resource/assets/imgsave.svg'
