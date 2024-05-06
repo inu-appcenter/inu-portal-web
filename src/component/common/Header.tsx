@@ -60,7 +60,7 @@ const Header = styled.header`
 `;
 
 const LoginInfo = styled.span`
-    font-size: 17x;
+    font-size: 17px;
     font-weight: 300;
     line-height: 20px;
     color: #FFFFFF;
