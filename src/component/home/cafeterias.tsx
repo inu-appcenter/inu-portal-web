@@ -8,6 +8,7 @@ import breakfastImg from "../../resource/assets/Sunrise.png";
 export default function Cafeteria() {
   const [cafeteriaType, setCafeteriaType] = useState("학생식당");
   const [cafeteriaInfo , setCageteriaInfo] = useState([]); 
+  const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([]);
   const [currentDate, setCurrentDate] = useState("");
   useEffect(() => {
     const fetchTopPosts = async () => {
@@ -34,49 +35,59 @@ export default function Cafeteria() {
     setCurrentDate(formattedDate);
   }, [cafeteriaType]);
 
-  const handleCafeteriaType = (title: string) => {
+  const handleCafeteriaType = (title: string,info:string[]) => {
     setCafeteriaType(title);
-    
+    setCafeteriaTypes(info);
   };
 
   return (
     <>
       <CafeteriaWrapper>
         <p className="date">{currentDate}</p>
-        <div className="title">
-          <div className="circle"></div>
-          <h1 className="cafeteria-type">{cafeteriaType}</h1>
-          <h1 className="today">Today</h1>
-        </div>
-        <div className="cafeteria-list">
-        <CafetriaInfo>
-            <div className="breakfast">
-                <div className="detail">
+                <div className="title">
+                <div className="circle"></div>
+                <h1 className="cafeteria-type">{cafeteriaType}</h1>
+                <h1 className="today">Today</h1>
+                </div>
+                <div className="cafeteria-list">
+                <CafetriaInfo>
+                <div className="breakfast">
+        <div className="detail">
+            <div className="wrapper">
+                {cafeteriaTypes[0]!== '없음' && (
+                    <>
                     <img src={breakfastImg} alt="조식" />
-                    <p>조식</p>
-                </div>
-
-                <p>{cafeteriaInfo[0]}</p>
-            </div>
-            <div className="lunch">
-                <div className="detail">
-                    <img src={lunchImg} alt="중식" />
-                    <p>중식</p>
-                </div>
-                <p>{cafeteriaInfo[1]}</p>
-            </div>
-            <div className="dinner">
-                <div className="detail">
+                    <p className="type">{cafeteriaTypes[0]}</p>
+                    </>)}
+           </div>
+            {cafeteriaTypes[0]!== '없음' && <p className="info">{cafeteriaInfo[0]}</p>}
+        </div>
+        </div>
+        <div className="lunch">
+        <div className="detail">
+            <div className="wrapper">
+                <img src={lunchImg} alt="중식" />
+                <p className="type">{cafeteriaTypes[1]}</p>
+           </div>
+            <p className="info">{cafeteriaInfo[1]}</p>
+        </div>
+        </div>
+        <div className="dinner">
+            <div className="detail">
+                <div className="wrapper">
                     <img src={dinnerImg} alt="석식" />
-                    <p>석식</p>
-                </div>
-                <p>{cafeteriaInfo[2]}</p>
+                    <p className="type">{cafeteriaTypes[2]}</p>
             </div>
+                <p className="info">{cafeteriaInfo[2]}</p>
+            </div>
+</div>
+
+
         </CafetriaInfo>
         <CafetriaType>
 
         {cafeteriasList.map((cafeteria) => (
-          <Cafeterias className="cafeteria"key={cafeteria.id} onClick={() => handleCafeteriaType(cafeteria.title)}>
+          <Cafeterias className="cafeteria"key={cafeteria.id} onClick={() => handleCafeteriaType(cafeteria.title,cafeteria.info)}>
             <p className="cafeteria-title">{cafeteria.title}</p>
           </Cafeterias>
         ))}
@@ -144,29 +155,32 @@ const CafetriaInfo = styled.div`
 
         .detail {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            p {
+
+            img {
+            width:25px;
+            height:25px;
+        }
+            .type {
                 font-family: inter ;
                 font-size: 8px;
                 color:#969696;
                 font-weight: bold;
                 margin:0;
             }
+            .info {
+                font-family: inter;
+                font-size:12px;
+                font-weight: bold;
+                margin-left:15px;
+            }
         }
-        img {
-            width:18px;
-            height:18px;
-        }
-        p {
-            font-family: inter;
-            font-size:12px;
-            font-weight: bold;
-            margin-left:15px;
-        }
+       
+       
         
     }
     min-width: 250px;
+    justify-content: space-evenly;
     .breakfast, .lunch , .dinner {
         justify-content: flex-start;
     }
