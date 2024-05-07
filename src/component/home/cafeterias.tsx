@@ -8,6 +8,7 @@ import breakfastImg from "../../resource/assets/Sunrise.png";
 export default function Cafeteria() {
   const [cafeteriaType, setCafeteriaType] = useState("학생식당");
   const [cafeteriaInfo , setCageteriaInfo] = useState([]); 
+  const [currentDate, setCurrentDate] = useState("");
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
@@ -21,6 +22,11 @@ export default function Cafeteria() {
     };
 
     fetchTopPosts();
+
+    const date = new Date();
+    const options = { month: "long", day: "numeric", year: "numeric" };
+    const formattedDate = date.toLocaleDateString("en-US", options);
+    setCurrentDate(formattedDate);
   }, [cafeteriaType]);
 
   const handleCafeteriaType = (title: string) => {
@@ -31,7 +37,7 @@ export default function Cafeteria() {
   return (
     <>
       <CafeteriaWrapper>
-        <p className="date">May 5, 2024</p>
+        <p className="date">{currentDate}</p>
         <div className="title">
           <div className="circle"></div>
           <h1 className="cafeteria-type">{cafeteriaType}</h1>
