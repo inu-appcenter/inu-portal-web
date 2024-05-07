@@ -23,7 +23,8 @@ export default function MainTips () {
 const TipWrapper = styled.div`
     padding-left: 10px;
     box-sizing: border-box;
-    width: 50%;
+    width: 40%;
+    
 `
 
 const TipSearchTotalWrapper = styled.div`
