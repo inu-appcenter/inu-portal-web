@@ -8,6 +8,10 @@
   padding-left: 10px;
   padding-right: 10px;
   border-radius: 18px;
+  @media (max-width: 768px) { /* 모바일 */
+    padding-left: 0px;
+    width: 90%;
+  }
 }
 
 .search-input {

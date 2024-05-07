@@ -10,6 +10,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  @media (max-width: 768px) { /* 모바일 */
+    position: absolute;
+    margin-left: 10px;
+    width: calc(90vw);
+  }
 }
 
 .comment-input-container {
@@ -24,11 +29,17 @@
   gap: 10px;
   border-radius: 10px;
   background-color: #EFF2F9;
+  @media (max-width: 768px) { /* 모바일 */
+    margin: 0;
+  }
 }
 
 .anonymous-text {
   font-size: 20px;
   font-weight: 400;
+  @media (max-width: 768px) { /* 모바일 */
+    font-size: 16px;
+  }
 }
 
 .vline {
@@ -46,4 +57,7 @@
   height: 48px;
   border: 0;
   background-color: transparent;
+  @media (max-width: 768px) { /* 모바일 */
+    font-size: 16px;
+  }
 }

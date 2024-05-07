@@ -24,7 +24,9 @@ const TipWrapper = styled.div`
     padding-left: 10px;
     box-sizing: border-box;
     width: 40%;
-    
+    @media (max-width: 768px) { // 모바일
+      width: 100%;
+    }
 `
 
 const TipSearchTotalWrapper = styled.div`

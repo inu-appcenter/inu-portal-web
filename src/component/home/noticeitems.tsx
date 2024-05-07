@@ -69,7 +69,7 @@ export default function NoticeItems() {
                     </div>
                 </div>
                 {notices.slice(currentIndex, currentIndex + itemsToShow).map((notice, index) => (
-                    <div key={index} className='item' onClick={() => window.open('https://'+ notice.url, '_blank')}>
+                    <div key={index} className='item item-1' onClick={() => window.open('https://'+ notice.url, '_blank')}>
                     <span className='card-1'>
                       <div className='notice-category'>
                         <div className='category-text'>{notice.category}</div>

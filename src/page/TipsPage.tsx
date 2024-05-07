@@ -63,9 +63,15 @@ const TipsPageWrapper = styled.div`
   flex-dicrection: row;
 
   height: 100%;
+  @media (max-width: 768px) { /* 모바일 */
+    flex-direction: column;
+  }
 `
 const TipsCatWrapper = styled.div`
- padding: 30px;
+  padding: 30px;
+  @media (max-width: 768px) { /* 모바일 */
+    padding: 0 5px 0 5px;
+  }
 `
 
 const TipsContentWrapper = styled.div`
@@ -82,4 +88,9 @@ const BorderWrapper = styled.div`
   border-width: 5px 0 0 5px;
   border-color: #EAEAEA;
   flex-grow: 1;
+  @media (max-width: 768px) { /* 모바일 */
+    border: none;
+    margin-right: 0px;
+    width: 90%;
+  }
 `

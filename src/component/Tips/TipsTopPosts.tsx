@@ -75,7 +75,9 @@ const TipsTopPostsWrapper = styled.div`
   background: linear-gradient(to bottom, #DBEBFF 70%, #FFFFFF );
   flex-wrap: nowrap;
   padding-left: 40px;
-
+  @media (max-width: 768px) { /* 모바일 */
+    display: none;
+  }
 `;
 
 const PostCard = styled.div`

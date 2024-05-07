@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import getCategory from '../../utils/getCategory';
 import './TipsCategories.css';
-
+import round from '../../resource/assets/round.svg';
 interface Category {
   name: string;
   iconWhite: string;
@@ -19,6 +19,9 @@ interface TipsCategoriesProps {
 
 export default function TipsCategories({ docState, setDocState }: TipsCategoriesProps) {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [college, setCollege] = useState<Category[]>([]);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isCollegeOpened, setIsCollegeOpened] = useState(false);
   const navigate = useNavigate();
 
   const fetchCategories = async () => {
@@ -30,7 +33,19 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
         iconWhite: `/categoryIcons/${cat}_white.svg`,
         iconGray: `/categoryIcons/${cat}_gray.svg`
       }));
-      setCategories(cats);
+      const collegeCats: Category[] = [];
+      const otherCats: Category[] = [];
+    
+      cats.forEach((cat: Category) => {
+        if (cat.name.endsWith('대학') || cat.name === '동북아국제통상물류학부' || cat.name === '법학부') {
+          collegeCats.push(cat);
+        } else {
+          otherCats.push(cat);
+        }
+      });
+    
+      setCollege(collegeCats);
+      setCategories(otherCats);
     } 
     else if (docState.docType === 'NOTICE') {
       const cats = ['전체', '학사', '모집', '학점교류', '교육시험'].map(cat => ({
@@ -48,8 +63,13 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
   }, [docState.docType]);
 
    // 이미지 로드 실패 시 호출될 핸들러
-   const handleImageError = (index: number) => {
-    setCategories(prevCategories => prevCategories.map((cat, idx) => idx === index ? { ...cat, hasError: true } : cat));
+   const handleImageError = (index: number, type: 'college' | 'categories') => {
+    if (type === 'categories') {
+      setCategories(prevCategories => prevCategories.map((cat, idx) => idx === index ? { ...cat, hasError: true } : cat));
+    }
+    else {
+      setCollege(prevCategories => prevCategories.map((cat, idx) => idx === index ? { ...cat, hasError: true } : cat));
+    }
   };
 
   const handleClickCategory = (category: string) => {
@@ -65,21 +85,42 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
   
 
   return (
-    <div className='categories'>
-      {categories.map((category, index) => (
-        <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
-          {category.hasError ? (
-            <div style={{ width: '25px', height: '25px' }}> {/* 이미지 로드 실패 시 공백을 위한 div */}</div>
-          ) : (
-            <img 
-              src={docState.selectedCategory === category.name ? category.iconWhite : category.iconGray} 
-              alt={category.name} 
-              onError={() => handleImageError(index)}
-            />
-          )}
-          {category.name}
+    <>
+      <div className='category-open' onClick={() => setIsVisible(!isVisible)}>카테고리 ▼</div>
+      {isVisible &&
+      (<>
+        <div className='categories'>
+          {categories.map((category, index) => (
+            <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
+              {category.hasError ? (
+                <div style={{ width: '25px', height: '25px' }}> {/* 이미지 로드 실패 시 공백을 위한 div */}</div>
+              ) : (
+                <img
+                  src={docState.selectedCategory === category.name ? category.iconWhite : category.iconGray}
+                  alt={category.name}
+                  onError={() => handleImageError(index, 'categories')} />
+              )}
+              {category.name}
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+        <>
+          <div className='line' />
+          {docState.docType === 'TIPS' &&
+            <div className='College' onClick={() => setIsCollegeOpened(!isCollegeOpened)}>단과대 ▼</div>}
+          {isCollegeOpened &&
+            <div className='colleges'>
+              {college.map((category, index) => (
+                <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
+                  <img
+                    src={round}
+                    alt={round} />
+                  {category.name}
+                </div>
+              ))}
+            </div>}
+          </>
+        </>)}
+    </>
   );
 }

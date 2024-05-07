@@ -35,6 +35,9 @@ const Nav = styled.nav`
     height: 35px;
     }
 
+    @media (max-width: 768px) { // 모바일
+        flex-direction: column;
+    }
 
 `;
 

@@ -29,6 +29,12 @@
   gap: 20px;
 }
 
+.item-1 {
+  @media (max-width: 768px) { /* 모바일 */
+    display: none;
+  }
+}
+
 .text인천대 {
   font-family: Inter;
   font-size: 30px;
@@ -92,6 +98,9 @@
 .PreviousNextContainer {
   display: flex;
   flex-direction: row;
+  @media (max-width: 768px) { /* 모바일 */
+    display: none;
+  }
 }
 
 .PreviousNext {

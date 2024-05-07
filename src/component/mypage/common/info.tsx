@@ -32,7 +32,11 @@ export default function  MyInfo () {
 
 
 const InfoWrapper = styled.div`
-display: flex;
+  display: flex;
+
+  @media (max-width: 768px) { /* 모바일 */
+    display: none;
+  }
 `
 const Nickname = styled.div`
     font-family: Inter;
@@ -41,10 +45,13 @@ const Nickname = styled.div`
     line-height: 30px;
     letter-spacing: 0px;
     margin-left: 36px;
+    @media (max-width: 768px) { /* 모바일 */
+      margin-left: 0px;
+    }
 `
 
 const MyProfileImg=styled.img`
     width: 30px;
     height: 30px;
-    margin-lefT:13px;
+    margin-left:13px;
 `
