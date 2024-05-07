@@ -26,9 +26,14 @@ const AiImgSubmit: React.FC<AiSubmitProps> = ({ rating, id }) => {
       // postFiresRating 함수를 호출할 때 필요한 fireId를 전달합니다.
       const data = await postFiresRating(user.token, rating, id);
       console.log(data);
-      alert('별점 평가가 완료되었습니다.') // 성공한 경우 서버 응답을 확인합니다.
+      if (data === 200) {
+        alert('별점 평가가 완료되었습니다.') // 성공한 경우 서버 응답을 확인합니다.
+      }
+      else {
+        throw new Error(`HTTP error! Status: ${data}`);
+      }
     } catch (error) {
-      console.error('평점 추가 실패:', error); // 실패한 경우 오류를 처리합니다.
+      alert(error); // 실패한 경우 오류를 처리합니다.
     }
   };
 
