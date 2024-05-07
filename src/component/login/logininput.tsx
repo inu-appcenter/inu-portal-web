@@ -19,17 +19,14 @@ export default function LoginInput() {
 
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Username changed:', e.target.value);
     setUsername(e.target.value);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Password changed:', e.target.value);
     setPassword(e.target.value);
   };
 
   const handleLoginClick = async () => {
-    console.log('로그인', username, password);
     const data = {
       studentId: username,
       password: password
