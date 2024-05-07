@@ -30,11 +30,27 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({rating,id}) => {
       navigate(`/ai`);
     }
   }
+  const handleIntroMoveClick = async () => {
+    if (rating===0){
+      alert("별점 평가 후 다시 그리기가 가능합니다!")
+    }else{
+      try{
+        const data = await postFiresRating(user.token, rating, id);
+        console.log(data);
+      } catch (error) {
+        console.error('평점 추가 실패:', error); // 실패한 경우 오류를 처리합니다.
+      }
+      sessionStorage.removeItem('lastInput');
+      navigate(`/ai`);
+    }
+  }
 
     return (
       <AiImgRetryWrapper>
         <div className="retry-button" onClick={handleRetryClick}>
           <img src={retry} alt="Retry Icon" />다시 그리기</div>
+        <div className="retry-button" onClick={handleIntroMoveClick}>
+          <img src={retry} alt="Retry Icon" />인트로</div>
       </AiImgRetryWrapper>
     );
   };
@@ -48,6 +64,7 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({rating,id}) => {
   text-align: center; 
   top: 70%;
   margin-top: 20px;
+  gap: 10px;
   
   .retry-button{
     width: 190px;

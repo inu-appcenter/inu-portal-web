@@ -1,7 +1,7 @@
 import './AiIntroContainer.css';
 import GlassCube from '../../resource/assets/glasscube.svg';
 import AiExampleImage1 from '../../resource/assets/AiExampleImage/AiExampleImage1.svg';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import AiLoading from '../../component/ai/AiLoading';
@@ -25,19 +25,24 @@ export default function AiIntroContainer() {
       alert('명령어를 입력해주세요.');
       return;
     }
-    setIsLoading(true);
-    try {
-      const resultId = await postFires(inputRef.current!.value, user.token);
-      navigate(`/ai/result/${resultId}`);
-    } catch (error) {
-      setIsLoading(false);
+    if (inputRef.current) {
+      sessionStorage.setItem('lastInput', inputRef.current.value); // Save input
+      setIsLoading(true);
+      try {
+        const resultId = await postFires(inputRef.current!.value, user.token);
+        navigate(`/ai/result/${resultId}`);
+      } catch (error) {
+        setIsLoading(false);
+      }
     }
-    /* 로딩 화면 테스트를 위한 setTimeout
-    setTimeout(() => {
-      navigate('/ai/result/0'); // 0 대신 api 호출 결과를 넣기
-    }, 20000); // 20초 동안 로딩 가정
-    */
   };
+  
+  useEffect(() => {
+    const lastInput = sessionStorage.getItem('lastInput');
+    if (lastInput && inputRef.current) {
+      inputRef.current.value = lastInput;
+    }
+  }, []);
 
   return (
     <>
@@ -58,8 +63,7 @@ export default function AiIntroContainer() {
                 <div className='HowToUse-line' />
                 <div className='HowToUse-text'>
                   <span style={{ fontSize: '20px', lineHeight: '30px' }}>
-                    1. 원하는 행동 또는 상황을 입력합니다. 예를 들어, "운동하는
-                    횃불이", "공부하는 횃불이" 등을 입력하세요.
+                    1. 원하는 행동 또는 상황을 입력합니다. 예를 들어, "exercising", "studying" 등을 입력하세요.
                     <br />
                     2. 앱은 입력된 내용을 바탕으로 AI로 캐릭터 이미지를
                     생성합니다.
