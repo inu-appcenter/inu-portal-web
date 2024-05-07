@@ -52,5 +52,8 @@ const PostButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  @media (max-width: 768px) { /* 모바일 */
+    bottom: 75px;
+  }
 
   `

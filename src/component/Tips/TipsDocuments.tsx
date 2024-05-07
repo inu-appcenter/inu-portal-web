@@ -114,8 +114,8 @@ export default function TipsDocuments({ docState, setDocState }: TipsDocumentsPr
         )}
       </div>
       <div className='bottom'>
-        <div style={{flexGrow: 1}}><SortDropBox sort={docState.sort} setSort={setSort} /></div>
-        <div style={{flexGrow: 1}}><Pagination totalPages={totalPages} currentPage={parseInt(docState.page)} setPage={setPage} /></div>
+        <div style={{flexGrow: 1, alignSelf: 'center' }}><SortDropBox sort={docState.sort} setSort={setSort} /></div>
+        <div style={{flexGrow: 1, alignSelf: 'center' }}><Pagination totalPages={totalPages} currentPage={parseInt(docState.page)} setPage={setPage} /></div>
         <div style={{flexGrow: 1}} />
       </div>
     </TipsDocumentsWrapper>

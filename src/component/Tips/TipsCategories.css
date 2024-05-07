@@ -1,8 +1,26 @@
+.category-open {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-size: 20px;
+  border: 1px solid gray;
+  border-radius: 8px;
+  padding: 5px;
+  width: 90%;
+  @media (min-width: 768px) { /* 모바일 아닐 때 */
+    display: none;
+  }
+}
+
 .categories {
   display: flex;
   flex-direction: column;
   gap: 10px;
-
+  @media (max-width: 768px) { /* 모바일 */
+    align-items: center;
+    gap: 0px;
+    width: 80%;
+  }
 }
 
 .categoryItem {
@@ -20,10 +38,52 @@
   justify-content: start;
   align-items: center;
   gap: 10px;
+  @media (max-width: 768px) { /* 모바일 */
+    width: 100%;
+    height: 40px;
+  }
+}
+
+.line{
+  flex-grow: 0.1;
+  height: 1px;
+  background-color: #888888;
+  width: 143px;
+  @media (max-width: 768px) { /* 모바일 */
+    width: 80%;
+  }
 }
 
 .selected {
   background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
   font-weight: 700;
   color: #FFFFFF;
+}
+
+.College{
+  width: 143px;
+  height: 80px;
+  border-radius: 10px;
+  cursor: url(/pointers/cursor-pointer.svg), pointer;
+  font-family: Inter;
+  font-size: 16px;
+  font-weight: 500;
+  color: #656565;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @media (max-width: 768px) { /* 모바일 */
+    height: 50px;
+  }
+}
+
+.colleges{
+  background-color:#EFF5FE;
+  width: 193px;
+  border-radius: 10px;
+  padding-bottom: 20px;
+  padding-top: 10px;
+  @media (max-width: 768px) { /* 모바일 */
+    width: 90%;
+  }
 }

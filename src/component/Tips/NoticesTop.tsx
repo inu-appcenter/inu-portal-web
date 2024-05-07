@@ -25,6 +25,9 @@ const NoticesTopPostsWrapper = styled.div`
   flex-wrap: nowrap;
   padding-left: 40px;
 
+  @media (max-width: 768px) { /* 모바일 */
+    display: none;
+  }
 `;
 
 const PostCard = styled.div`

@@ -29,7 +29,6 @@ const loginUser = async (dispatch: Dispatch, data: LoginData): Promise<string | 
         const tokenExpiredTime = responseData['data'].accessTokenExpiredTime;
         const refreshToken = responseData['data'].refreshToken;
         const refreshTokenExpiredTime = responseData['data'].refreshTokenExpiredTime;
-        console.log("로그인 성공", token);
 
         localStorage.setItem('token', token);
         localStorage.setItem('tokenExpiredTime', tokenExpiredTime);

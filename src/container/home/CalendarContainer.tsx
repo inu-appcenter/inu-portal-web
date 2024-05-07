@@ -15,6 +15,10 @@ const CalendarWrapper = styled.div`
     height: 500px;
   display: flex;
   justify-content: center;
+  @media (max-width: 768px) { // 모바일
+    width: 100%;
+    margin-top: 20px;
+  }
 
   .fc {
     width: 100%;

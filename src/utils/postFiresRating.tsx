@@ -1,5 +1,5 @@
-const postFiresRating = async(token:string, rating:number, fireId:string) =>{
-    const apiURL = `https://portal.inuappcenter.kr/api/fires/rating/${fireId}`
+const postFiresRating = async(token:string, rating:number, id:string) =>{
+    const apiURL = `https://portal.inuappcenter.kr/api/fires/rating/${id}`
     try{
         const response = await fetch(apiURL,{
             method: 'POST',

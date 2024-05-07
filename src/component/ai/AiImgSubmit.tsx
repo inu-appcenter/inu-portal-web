@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 
 interface AiSubmitProps {
   rating: number;
-  fireId: string;
+  id: string;
 }
 
 interface loginInfo {
@@ -14,14 +14,19 @@ interface loginInfo {
   };
 }
 
-const AiImgSubmit: React.FC<AiSubmitProps> = ({ rating, fireId }) => {
+const AiImgSubmit: React.FC<AiSubmitProps> = ({ rating, id }) => {
   const user = useSelector((state: loginInfo) => state.user);
 
   const handleSubmitClick = async () => {
     try {
+      if (!rating || rating < 0) {
+        alert('별점을 평가하세요!');
+        return;
+      }
       // postFiresRating 함수를 호출할 때 필요한 fireId를 전달합니다.
-      const data = await postFiresRating(user.token, rating, fireId);
-      console.log(data); // 성공한 경우 서버 응답을 확인합니다.
+      const data = await postFiresRating(user.token, rating, id);
+      console.log(data);
+      alert('별점 평가가 완료되었습니다.') // 성공한 경우 서버 응답을 확인합니다.
     } catch (error) {
       console.error('평점 추가 실패:', error); // 실패한 경우 오류를 처리합니다.
     }

@@ -18,6 +18,7 @@ const postFires = async (param: string, token: string) => {
     else {
       if (response.status === 401) { alert('로그인 후 이용이 가능합니다.'); }
       else if (response.status === 400) { alert('이미지 생성 실패'); }
+      else if (response.status === 403) { alert('축제 기간에는 관리자만 이미지 생성 가능!'); }
       else { alert('unknown error'); }
       throw new Error(`HTTP error! Status: ${response.status}`)
     }

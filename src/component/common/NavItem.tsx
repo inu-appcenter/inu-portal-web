@@ -222,6 +222,9 @@ const Items = styled.div`
   align-items: center;
   -webkit-box-flex: 1;
   flex-grow: 1;
+  @media (max-width: 768px) { // 모바일
+    gap: 10px;
+  }
 `;
 
 
