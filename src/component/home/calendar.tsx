@@ -9,8 +9,8 @@ import "./calendar.css";
 export default function Calendarbar() {
   const calendarRef = useRef<FullCalendar>(null);
   const [events, setEvents] = useState<EventInput[]>([]);
-  const [month, setMonth] = useState<number>(undefined);
-  const [year, setYear] = useState<number>(undefined);
+  const [month, setMonth] = useState<number>(0);
+  const [year, setYear] = useState<number>(0);
 
   useEffect(() => {
     getCurrentMonth();
