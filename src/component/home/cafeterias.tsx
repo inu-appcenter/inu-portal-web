@@ -11,7 +11,7 @@ export default function Cafeteria() {
   const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([]);
   const [currentDate, setCurrentDate] = useState("");
   useEffect(() => {
-    const fetchTopPosts = async () => {
+    const fetchCafeteria = async () => {
       try {
         const response = await getCafeteria(cafeteriaType);
         console.log(response,"return 값");
@@ -22,7 +22,7 @@ export default function Cafeteria() {
       }
     };
 
-    fetchTopPosts();
+    fetchCafeteria();
 
     const date = new Date();
     const monthNames = ["January", "February", "March", "April", "May", "June",
