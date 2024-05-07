@@ -1,0 +1,113 @@
+/* FullCalendar 컨테이너 스타일 */
+.fc-calendar-container {
+    font-family: Arial, sans-serif;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* FullCalendar 헤더 스타일 */
+.fc-header-toolbar {
+    background-color: #fff!important;
+    padding-left: 10px!important;
+}
+
+.fc-toolbar-title {
+    color: #0E4D9D;
+    font-size:24px;
+    font-family: inter;
+    font-weight: bold;
+    width: 119px;
+
+}
+
+/* FullCalendar 이전/다음 버튼 스타일 */
+.fc-prev-button, .fc-next-button {
+    color: #0E4D9D!important;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.fc-prev-button:hover, .fc-next-button:hover {
+    background-color: #2e5bff;
+}
+
+.fc-theme-standard th {
+    background-color: #fff!important;
+}
+
+/* FullCalendar 이벤트 스타일 */
+.fc-event {
+    background-color: #f9fafb;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+/* FullCalendar 이벤트 타이틀 스타일 */
+.fc-event-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* FullCalendar 이벤트 시간 스타일 */
+.fc-event-time {
+    font-size: 12px;
+    color: #666;
+}
+
+/* FullCalendar 날짜 셀 스타일 */
+.fc-day {
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* FullCalendar 날짜 셀 내부 스타일 */
+.fc-day-content {
+    font-size: 14px;
+    color: #333;
+}
+
+/* FullCalendar 오늘 날짜 스타일 */
+.fc-today {
+    background-color: #fff!important;
+    border-radius: 50%;
+}
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: #fff!important;
+    color: #356eff;
+}
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    color:#f2a806;
+    font-weight: bolder;
+}
+.important 
+/* FullCalendar 선택된 날짜 스타일 */
+.fc-highlight {
+    background-color: #E92C2C!important;
+}
+
+/* FullCalendar 이벤트 배경색 스타일 */
+.fc-event-bg {
+    background-color: #ff4081!important;
+    border-radius: 4px;
+}
+
+.fc-event {
+    background-color: rgba(0, 133, 255, 0.1)!important;
+}
+
+.fc-event-title  {
+    color: rgba(0, 133, 255, 1)!important;
+}
+/* FullCalendar 이벤트 배경색에 대한 텍스트 스타일 */
+.fc-event-inner {
+    color: #E92C2C;
+    font-weight: bold;
+}
