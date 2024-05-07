@@ -29,7 +29,6 @@ export default function App() {
   const token = useSelector((state: loginInfo) => state.user.token);
 
   const handleUserInfo = async () => {
-    console.log('ttt', token);
     if (token) {
       try {
         const response: UserInfo = await getUser(token);
