@@ -24,8 +24,13 @@ export default function Cafeteria() {
     fetchTopPosts();
 
     const date = new Date();
-    const options = { month: "long", day: "numeric", year: "numeric" };
-    const formattedDate = date.toLocaleDateString("en-US", options);
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"];
+    const month = monthNames[date.getMonth()]; // 현재 월 이름
+    const day = date.getDate(); // 현재 일
+    const year = date.getFullYear(); // 현재 년도
+    
+    const formattedDate = `${month} ${day}, ${year}`;
     setCurrentDate(formattedDate);
   }, [cafeteriaType]);
 
