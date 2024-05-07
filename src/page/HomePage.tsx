@@ -18,9 +18,7 @@ export default function HomePage() {
                     <Weather/>
                     <Cafeteria/>
                 </Wrapper>
-                
                 <Tip/>
-                
                 <Calendar/>
             </MainWrapper>
             <AIEnter/>
@@ -41,6 +39,7 @@ const HomePageWrapper = styled.div`
 `;
 
 const MainWrapper = styled.div`
+    width: 100%;
     display: flex;
     /* justify-content: space-between; */
     gap:32px;
@@ -54,4 +53,7 @@ const Wrapper = styled.div`
 display: flex;
 flex-direction: column;
 gap:29px;
+@media (max-width: 768px) { // 모바일 임시..
+    display: none;
+  }
 `

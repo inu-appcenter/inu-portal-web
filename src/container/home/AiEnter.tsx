@@ -22,8 +22,6 @@ export default function AIEnter() {
 
 const AiEnterWrapper = styled.div`
   display: flex;
-  position:relative;
-  left: 70%;
   margin: 20px 10px;
   @media (max-width: 768px) { // 모바일
     left: 0;
