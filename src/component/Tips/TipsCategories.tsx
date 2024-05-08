@@ -111,7 +111,7 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
           {isCollegeOpened &&
             <div className='colleges'>
               {college.map((category, index) => (
-                <div className={`categoryItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
+                <div className={`collegeItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
                   <img
                     src={round}
                     alt={round} />
