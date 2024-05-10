@@ -106,7 +106,7 @@ const WeatherWrapper = styled.div `
         height: 200px;
         background-image: url(${sunImg}); 
         background-size: cover; 
-        opacity: 0.5; 
+        opacity: 0.8; 
     }
 
     &.Snow::after {
