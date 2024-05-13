@@ -1,13 +1,12 @@
 .PostInfo{
   display: flex;
-  margin-left: auto;
   align-items: center;
   gap: 15px;
 }
 
 .PostTitle {
   display: grid;
-  align-items: center;
+  flex-direction: column ;
   justify-content: space-between;
 }
 
@@ -25,7 +24,6 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-left: auto;
   gap: 30px;
 }
 
