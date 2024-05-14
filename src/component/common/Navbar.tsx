@@ -10,7 +10,7 @@ export default function Navbar() {
         <React.Fragment>
             <Nav>
                 <Logo onClick={() => {navigate('/')}} src={inuLogoImg} alt="INU logo" />
-                <NavItems/>
+                <NavItems isInFooter={false}/>
             </Nav>
         </React.Fragment>
     )

@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import Header from "../container/common/HeaderContainer";
 import Nav from "../container/common/NavContainer";
+import Footer from "../container/common/FooterContainer";
 import { Outlet, useLocation } from 'react-router-dom';
 import IntroPage from "./IntroPage";
 
@@ -47,6 +48,9 @@ export default function MainPage() {
         <Outlet />
         <MobileMargin />
       </main>
+      <footer>
+        <Footer />
+      </footer>
     </MainPageWrapper>
   )
 }
@@ -58,5 +62,7 @@ const MainPageWrapper = styled.div`
   overflow-y: scroll;
 `;
 const MobileMargin = styled.div`
-  height: 100px;
+  @media (max-width: 768px) { /* 모바일 */
+    height: 100px;
+  }
 `
