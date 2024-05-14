@@ -83,6 +83,9 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
     }
   }
   
+  const truncateText = (category: string) => {
+    return category.length > 8 ? category.slice(0,7) + '...' : category;
+  };
 
   return (
     <>
@@ -112,10 +115,8 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
             <div className='colleges'>
               {college.map((category, index) => (
                 <div className={`collegeItem ${docState.selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
-                  <img
-                    src={round}
-                    alt={round} />
-                  {category.name}
+                   <img src={round} alt="icon" />
+              {truncateText(category.name)}                  
                 </div>
               ))}
             </div>}

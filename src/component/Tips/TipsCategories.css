@@ -48,9 +48,10 @@
   flex-grow: 0.1;
   height: 1px;
   background-color: #888888;
-  width: 143px;
+  width: auto;
+  margin: 10px 0;
   @media (max-width: 768px) { /* 모바일 */
-    width: 80%;
+    width: 70%;
   }
 }
 .collegeItem{
@@ -79,12 +80,12 @@
   background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
   font-weight: 700;
   color: #FFFFFF;
-  width:170px;
+  width:auto;
 }
 
 .College{
   width: 143px;
-  height: 80px;
+  height: 50px;
   border-radius: 10px;
   cursor: url(/pointers/cursor-pointer.svg), pointer;
   font-family: Inter;
@@ -106,6 +107,6 @@
   padding-bottom: 20px;
   padding-top: 10px;
   @media (max-width: 768px) { /* 모바일 */
-    width: 90%;
+    width: 70%;
   }
 }
