@@ -36,7 +36,6 @@
       display: flex;
       flex-direction: column;
       .category-text {
-        font-family: Inter;
         font-size: 15px;
         font-weight: 500;
         line-height: 20px;
@@ -54,7 +53,6 @@
       align-items: center;
       gap: 4px;
       .like-num {
-        font-family: Inter;
         font-size: 12px;
         font-weight: 600;
       }
@@ -66,13 +64,11 @@
     flex-direction: column;
     gap: 10px;
     .document-title {
-      font-family: Inter;
       font-size: 15px;
       font-weight: 600;
     }
     
     .document-content {
-      font-family: Inter;
       font-size: 15px;
       font-weight: 500;
       color: #888888;
@@ -84,7 +80,6 @@
     }
   }
   .document-date {
-    font-family: Inter;
     font-size: 30px;
     font-weight: 700;
     color: #7AA7E5;

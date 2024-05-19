@@ -101,7 +101,6 @@ const Input = styled.input`
 `;
 
 const Checkbox = styled.div`
-font-family: Inter;
 font-size: 15px;
 font-weight: 400;
 margin-top: 35px;
@@ -115,7 +114,6 @@ margin-top: 35px;
 
 const ModifyClickButton = styled.button`
 background-color: #0E4D9D;
-font-family: Inter;
 font-size: 15px;
 font-weight: 400;
 line-height: 20px;

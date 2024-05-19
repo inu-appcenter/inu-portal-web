@@ -60,7 +60,6 @@ const ModalImg = styled.div`
 `
 
 const ModalLoginTitle = styled.div`
-  font-family: Inter;
   font-size: 25px;
   font-weight: 600;
   line-height: 20px;
@@ -88,7 +87,6 @@ const ModalLoginImg = styled.img`
 `;
 const ModalContentWrapper = styled.div`
   box-shadow: 0px 4px 4px 0px #00000040;
-  font-family: Inter;
   font-size: 25px;
   font-weight: 700;
   line-height: 34px;
@@ -113,7 +111,6 @@ opacity: 0px;
 margin: 0 30px;
 background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
 border: none;
-font-family: Inter;
 font-size: 25px;
 font-weight: 600;
 text-align: center;
@@ -134,7 +131,6 @@ opacity: 0px;
 margin: 0 30px;
 border: none;
 background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
-font-family: Inter;
 font-size: 25px;
 font-weight: 600;
 text-align: center;

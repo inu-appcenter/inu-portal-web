@@ -35,14 +35,12 @@
 }
 
 .text인천대 {
-  font-family: Inter;
   font-size: 30px;
   font-weight: 500;
   color: #0E4D9D;
 }
 
 .text공지사항 {
-  font-family: Inter;
   font-size: 30px;
   font-weight: 800;
   color: #0E4D9D;
@@ -56,7 +54,6 @@
 }
 
 .category-text {
-  font-family: Inter;
   font-size: 15px;
   font-weight: 500;
   line-height: 20px;
@@ -72,13 +69,11 @@
 .notice-title {
   margin-top: 10px;
   flex-grow: 1;
-  font-family: Inter;
   font-size: 15px;
   font-weight: 600;
 }
 
 .notice-date {
-  font-family: Inter;
   font-size: 30px;
   font-weight: 700;
   color: #7AA7E5;

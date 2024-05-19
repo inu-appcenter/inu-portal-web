@@ -7,7 +7,6 @@
 .login-input {
   flex-grow: 1;
 
-  font-family: Inter;
   font-size: 20px;
   font-weight: 400;
   line-height: 24px;
@@ -35,7 +34,6 @@
   justify-content: center;
   align-items: center;
   
-  font-family: Inter;
   font-size: 25px;
   font-weight: 600;
   background: linear-gradient(90deg, rgba(156, 175, 226, 0.7) 0%, rgba(181, 197, 242, 0.7) 55%, rgba(156, 175, 226, 0.7) 100%);

@@ -52,7 +52,6 @@
 }
 
 .writer-text {
-  font-family: Inter;
   font-size: 15px;
   font-weight: 600;
 
@@ -60,7 +59,6 @@
 }
 
 .best-text {
-  font-family: Inter;
   font-size: 15px;
   font-weight: 600;
 
@@ -68,13 +66,11 @@
 }
 
 .content-text {
-  font-family: Inter;
   font-size: 15px;
   font-weight: 400;
 }
 
 .commentUtility {
-  font-family: Inter;
   font-size: 10px;
   font-weight: 500;
 

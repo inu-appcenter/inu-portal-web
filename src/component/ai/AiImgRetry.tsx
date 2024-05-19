@@ -70,7 +70,6 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({rating,id}) => {
     width: 190px;
     height: 40px;
     border: 1px solid #FFFFFF;
-    font-family: Inter;
     font-size: 20px;
     font-weight: 900;
     line-height: 20px;

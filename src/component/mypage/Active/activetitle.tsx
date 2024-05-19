@@ -11,7 +11,6 @@ const ActiveTitle: React.FC = () => {
 
 const Title = styled.div`
   color: #0E4D9D;
-  font-family: Inter;
   font-size: 30px;
   font-weight: 600;
   margin-bottom: 24px;
