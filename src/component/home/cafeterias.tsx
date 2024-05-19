@@ -198,7 +198,6 @@ const CafetriaType = styled.div`
 `
 
 const Cafeterias  = styled.div`
-   font-family : inter;
   font-weight: bold;
   font-size: 10px;
   line-height: 25px;
