@@ -43,7 +43,7 @@ const MainWrapper = styled.div`
     display: flex;
     /* justify-content: space-between; */
     gap:32px;
-    margin-top:20px;
+    padding-top: 20px;
     @media (max-width: 768px) { // 모바일
         flex-direction: column;
       }
@@ -54,6 +54,7 @@ const Wrapper = styled.div`
 display: flex;
 flex-direction: column;
 gap:29px;
+padding-top: 20px;
 @media (max-width: 768px) { // 모바일 임시..
     display: none;
   }
