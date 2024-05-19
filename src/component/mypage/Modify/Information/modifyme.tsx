@@ -131,7 +131,6 @@ const ProfileChangeWrapper = styled.div`
 `
 
 const NicknameChangeWrapper=styled.ul`
-  font-family: Inter;
 font-size: 20px;
 font-weight: 700;
 line-height: 20px;
@@ -163,7 +162,6 @@ const ProfileChange = styled.button`
     margin-top: 48px;
     background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
     color: white;
-    font-family: Inter;
 font-size: 20px;
 font-weight: 700;
 border: 1px solid #fff;

@@ -18,7 +18,6 @@ export default function NoticeTitle() {
 }
 
 const NoticeWrapper = styled.div`
-    font-family: Inter;
     font-size: 27px;
     font-weight: 700;
     line-height: 29px;

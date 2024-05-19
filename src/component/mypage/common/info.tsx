@@ -39,7 +39,6 @@ const InfoWrapper = styled.div`
   }
 `
 const Nickname = styled.div`
-    font-family: Inter;
     font-size: 15px;
     font-weight: 600;
     line-height: 30px;

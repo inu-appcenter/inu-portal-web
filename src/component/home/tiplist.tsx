@@ -87,7 +87,6 @@ const TotalTip = styled.span`
     justify-content: space-around;
 
     .TotalTip-text {
-        font-family: Inter;
         font-size: 12px;
         font-weight: 300;
         cursor: url('/pointers/cursor-pointer.svg'), pointer;

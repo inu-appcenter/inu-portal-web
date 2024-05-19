@@ -31,7 +31,6 @@ const DropBoxWrapper = styled.div`
   align-items: center;
 
   .dropdown-title {
-    font-family: Inter;
     font-size: 15px;
     font-weight: 600;
     line-height: 20px;
@@ -52,7 +51,6 @@ const DropBoxWrapper = styled.div`
 
   .dropbtn{
     background-color: rgba(255, 255, 255, 0);
-    font-family: Inter;
     font-size: 15px;
     font-weight: 600;
     line-height: 20px;
@@ -73,7 +71,6 @@ const DropBoxWrapper = styled.div`
   }
 
   .dropdown-content span {
-    font-family: Inter;
     font-size: 15px;
     font-weight: 600;
     line-height: 20px;

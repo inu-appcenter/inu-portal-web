@@ -16,7 +16,6 @@ const TipTile = styled.div`
     flex-grow: 0;
     flex-shrink: 0;
 
-    font-family: Inter;
     font-size: 28px;
     font-weight: 700;
     line-height: 29px;

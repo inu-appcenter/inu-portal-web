@@ -59,10 +59,8 @@ const AIImgSubmitWrapper = styled.div`
     height: 33px;
     background: #6D4DC7;
     border-radius: 10px;
-    font-family: Inter;
     font-size: 18px;
     font-weight: 800;
-    line-height: 20px;
     text-align: left;
     display: flex;
     align-items: center;

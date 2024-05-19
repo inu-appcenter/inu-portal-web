@@ -128,7 +128,6 @@ const PostScrapItem = styled.div`
     color:black;
 font-size: 15px;
 
-font-family: Inter;
 font-size: 20px;
 font-weight: 600;
 line-height: 20px;
@@ -142,7 +141,6 @@ max-width: 500px;
   }
 
   .close-title {
-    font-family: Inter;
     font-size: 20px;
     font-weight: 600;
     line-height: 20px;
@@ -184,7 +182,6 @@ display:flex;
 align-items: center;
 
 .createdate {
-  font-family: Inter;
 font-size: 10px;
 font-weight: 500;
 line-height: 20px;
@@ -195,7 +192,6 @@ margin: 0 26px 0 3px;
 }
 
 .like {
-  font-family: Inter;
 font-size: 8px;
 font-weight: 600;
 line-height: 20px;

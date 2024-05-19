@@ -11,7 +11,6 @@
 }
 
 .titleText {
-  font-family: Inter;
   margin: 30px 20px;
   font-size: 25px;
   font-weight: 400;
@@ -28,7 +27,6 @@
 }
 
 .infoText {
-  font-family: Inter;
   font-size: 13px;
   font-weight: 400;
   gap: 10px;
@@ -47,7 +45,6 @@
   padding-left: 10px;
   padding-right: 10px;
 
-  font-family: Inter;
   font-size: 13px;
   font-weight: 400;
 }
