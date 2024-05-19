@@ -8,8 +8,8 @@ export default function AIEnter() {
       };
   return (
 
-    <AiEnterWrapper onClick={handleAiBtnClick}>
-      <AiEnter>
+    <AiEnterWrapper>
+      <AiEnter onClick={handleAiBtnClick}>
           <div className='enter-frame'>
           <img src={aienterimg1} alt="aienter-btn-img" />
           <div className='enter-title'> 횃불이 AI 생성 ✨   지금 바로 만드러 가기</div>
