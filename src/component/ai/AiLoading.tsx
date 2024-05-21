@@ -48,8 +48,7 @@ const AiLoadingWrapper = styled.div`
 //     padding: 10px 30px;
    
 //     .preview-title{
-//         display:flex;
-//         font-family: Inter;
+//     display:flex;
 //     font-size: 17px;
 //     font-weight: 500;
 //     line-height: 20px;
@@ -100,7 +99,6 @@ top: 10%;
     height: 49px;
     border-radius: 15px;
     border: 1px solid #FFFFFF;
-    font-family: Inter;
     font-size: 22px;
     font-weight: 500;
     line-height: 20px;

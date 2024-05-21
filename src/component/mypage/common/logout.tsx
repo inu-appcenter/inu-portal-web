@@ -38,7 +38,6 @@ height: 24px;
 
 const MyPageLogpoutTitle = styled.button`
 display: inline;
-font-family: Inter;
 font-size: 17px;
 font-weight: 500;
 line-height: 20px;

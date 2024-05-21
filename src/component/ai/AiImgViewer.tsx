@@ -70,7 +70,6 @@ const AiImgViewerWrapper = styled.div`
     top:20px;
     background-color:#6D4DC7;
     width: 110px;
-    font-family: Inter;
     font-size: 20px;
     font-weight: 800;
     line-height: 20px;
@@ -86,7 +85,6 @@ const AiImgViewerWrapper = styled.div`
 const AiImgViewUtility = styled.div`
   display: flex;
   gap: 10px;
-  font-family: Inter;
   font-size: 15px;
   font-weight: 700;
   line-height: 20px;

@@ -54,7 +54,6 @@ const ModalImg = styled.div`
 `
 
 const ModalLoginTitle = styled.div`
-  font-family: Inter;
   font-size: 25px;
   font-weight: 600;
   line-height: 20px;
@@ -83,7 +82,6 @@ const ModalLoginImg = styled.img`
 `;
 const ModalContentWrapper = styled.div`
   box-shadow:0px 4px 4px 0px #00000040;
-  font-family: Inter;
   font-size: 25px;
   font-weight: 700;
   line-height: 34px;
@@ -111,7 +109,6 @@ const CloseButton = styled.button`
 `;
 
 const ModalLoginBtn = styled.button`
-  font-family: Inter;
 font-size: 18px;
 font-weight: 600;
 line-height: 22px;

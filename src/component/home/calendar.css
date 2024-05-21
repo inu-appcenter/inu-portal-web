@@ -1,6 +1,5 @@
 /* FullCalendar 컨테이너 스타일 */
 .fc-calendar-container {
-    font-family: Arial, sans-serif;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -14,7 +13,6 @@
 .fc-toolbar-title {
     color: #0E4D9D;
     font-size:24px;
-    font-family: inter;
     font-weight: bold;
     width: 119px;
 

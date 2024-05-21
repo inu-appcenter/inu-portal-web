@@ -135,7 +135,6 @@ const ItemWrapper = styled.div`
   font-weight: 700;
   font-size: 1rem;
   line-height: 2rem;
-  font-family: Inter;
   font-size: 17px;
   font-weight: 300;
 
@@ -224,7 +223,6 @@ const Items = styled.div`
 `;
 
 const ChildDetail = styled.div`
-  font-family: Inter;
   font-size: 15px;
   font-weight: 700;
   padding-top: 7px;
@@ -247,7 +245,6 @@ const ChildDetail = styled.div`
 `;
 
 const ChildDetail2 = styled.div`
-  font-family: Inter;
   font-size: 15px;
   font-weight: 600;
   color: #656565;

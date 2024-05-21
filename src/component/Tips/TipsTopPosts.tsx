@@ -100,7 +100,6 @@ const PostLike = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: Inter;
   font-size: 12px;
   font-weight: 500;
 `
@@ -135,7 +134,6 @@ const TopPostsCat = styled.span`
   height: 70px;
   left: 20px;
   color: #0E4D9D;
-  font-family: Inter;
   font-size: 15px;
   font-weight: 500;
   line-height: 20px;

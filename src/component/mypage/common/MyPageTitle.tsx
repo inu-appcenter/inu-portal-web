@@ -22,14 +22,12 @@ const MyPageLogo = styled.img`
 `;
 
 const MyPageTitleOne = styled.span`
-        font-family: Inter;
     font-size: 24px;
     font-weight: 700;
     margin: 5px;
 `;
 
 const MyPageTitleTwo =styled.span`
-    font-family: Inter;
     font-size: 24px;
     font-weight: 700;
     color: #AAC9EE;

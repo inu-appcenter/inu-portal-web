@@ -186,7 +186,6 @@ const WeatherWrapper = styled.div `
 
     .temperature {
         width: 100px;
-        font-family: inter;
         font-size:50px;
         font-weight: normal;
         color:white;
@@ -214,7 +213,6 @@ const WeatherWrapper = styled.div `
 
 
     .day {
-        font-family: inter;
         font-size:15px;
         font-weight: normal;
         color:white;
@@ -222,7 +220,6 @@ const WeatherWrapper = styled.div `
     }
 
     .date {
-        font-family: inter;
         font-size:15px;
         font-weight: normal;
         color:white;
