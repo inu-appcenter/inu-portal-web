@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import LoginBackground from '../../resource/assets/LoginBackground.svg';
 import LoginTipImage from '../../component/login/LoginTipImage';
-import LoginBackgroundElement1 from '../../resource/assets/LoginBackgroundElement1.svg';
+
 import LoginBackgroundElement2 from '../../resource/assets/LoginBackgroundElement2.svg';
 
 export default function LoginImg () {
@@ -10,7 +10,7 @@ export default function LoginImg () {
       <LoginBackgroundComponent />
       <LoginBackgroundImageComponent src={LoginBackground} />
       <LoginTipImage />
-      <LoginBackgroundElement1Wrapper src={LoginBackgroundElement1} />
+
       <LoginBackgroundElement2Wrapper src={LoginBackgroundElement2} />
     </LoginImageWrapper>
   );

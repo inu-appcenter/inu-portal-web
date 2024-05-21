@@ -145,7 +145,6 @@ function extractMenu(input: string): string | null {
 }
 
 const CafeteriaWrapper = styled.div`
-  width: 550px;
   box-sizing: border-box;
   border-radius: 10px;
   border: 2px solid transparent;
