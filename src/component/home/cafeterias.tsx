@@ -9,20 +9,26 @@ export default function Cafeteria() {
   const [cafeteriaType, setCafeteriaType] = useState("학생식당");
   const [cafeteriaInfo , setCageteriaInfo] = useState([]); 
   const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([]);
+  const [cafeteriaDetail, setCafeteriaDetail] = useState<{ 구성원가: string, 칼로리: string }[]>([]);
   const [currentDate, setCurrentDate] = useState("");
   useEffect(() => {
     const fetchCafeteria = async () => {
       try {
         const response = await getCafeteria(cafeteriaType);
+        const processedData = response.data.map((info: string) => extractValues(info));
+        const infoData = response.data.map((info: string) => extractMenu(info));
+        console.log(processedData,"여기여기여기",infoData);
         console.log(response,"return 값");
-        setCageteriaInfo(response.data);
-        console.log(cafeteriaInfo);
+        setCageteriaInfo(infoData);
+        setCafeteriaDetail(processedData);
+        console.log(cafeteriaInfo,processedData,"wwww");
       } catch (error) {
         console.error('학식 정보 조회 안됨');
       }
     };
 
     fetchCafeteria();
+
 
     const date = new Date();
     const monthNames = ["January", "February", "March", "April", "May", "June",
@@ -33,12 +39,39 @@ export default function Cafeteria() {
     
     const formattedDate = `${month} ${day}, ${year}`;
     setCurrentDate(formattedDate);
+    console.log("타입들",cafeteriaTypes);
   }, [cafeteriaType]);
+
 
   const handleCafeteriaType = (title: string,info:string[]) => {
     setCafeteriaType(title);
     setCafeteriaTypes(info);
   };
+
+
+  function extractValues(input: string): { 구성원가: string, 칼로리: string } | null {
+    const price= input.match(/([0-9,]+)원/);
+    const calory = input.match(/[0-9,]+kcal/);
+    console.log("구성원가,칼로리",price,calory);
+    if (price && calory) {
+        return {
+            구성원가: price[0],
+            칼로리: calory[0]
+        };
+    }
+
+    return null;
+}
+
+useEffect(() => {
+  console.log("타입들", cafeteriaTypes);
+}, [cafeteriaTypes]); 
+
+
+function extractMenu(input: string): string | null {
+  const match = input.match(/^(.*?)(?=\s[0-9,]+원)/);
+  return match ? match[1].trim() : input;
+}
 
   return (
     <>
@@ -52,16 +85,17 @@ export default function Cafeteria() {
                 <div className="cafeteria-list">
                 <CafetriaInfo>
                 <div className="breakfast">
-        <div className="detail">
-            <div className="wrapper">
-                {cafeteriaTypes[0]!== '없음' && (
+<div className="detail">
+                <div className="wrapper">
+                  {cafeteriaTypes[0] !== '없음' && (
                     <>
-                    <img src={breakfastImg} alt="조식" />
-                    <p className="type">{cafeteriaTypes[0]}</p>
-                    </>)}
-           </div>
-            {cafeteriaTypes[0]!== '없음' && <p className="info">{cafeteriaInfo[0]}</p>}
-        </div>
+                      <img src={breakfastImg} alt="조식" />
+                      <p className="type">{cafeteriaTypes[0]}</p>
+                    </>
+                  )}
+                </div>
+                {cafeteriaTypes[0] !== '없음' && <p className="info">{cafeteriaInfo[0]}</p>}
+              </div>
         </div>
         <div className="lunch">
         <div className="detail">
@@ -77,6 +111,7 @@ export default function Cafeteria() {
                 <div className="wrapper">
                     <img src={dinnerImg} alt="석식" />
                     <p className="type">{cafeteriaTypes[2]}</p>
+                    
             </div>
                 <p className="info">{cafeteriaInfo[2]}</p>
             </div>
@@ -84,6 +119,17 @@ export default function Cafeteria() {
 
 
         </CafetriaInfo>
+        <CafeteriaDetail>
+          {cafeteriaDetail.map((detail, index) => (
+            detail && (
+              <div key={index} className="detail-wrapper">
+                <p className="price">{detail.칼로리}</p>
+                <TinyCircle/>
+                <p className="calory">{detail.구성원가}</p>
+              </div>
+            )
+          ))}
+        </CafeteriaDetail>
         <CafetriaType>
 
         {cafeteriasList.map((cafeteria) => (
@@ -149,8 +195,7 @@ const CafeteriaWrapper = styled.div`
 const CafetriaInfo = styled.div`
     display: flex;
     flex-direction: column;
-    gap:20px;
-    
+    /* gap:20px;     */
     .breakfast, .lunch , .dinner {
         display: flex;
         align-items: center;
@@ -182,18 +227,43 @@ const CafetriaInfo = styled.div`
                 font-weight: bold;
                 margin-left:15px;
             }
+
+            
         }
        
        
         
     }
-    min-width: 250px;
-    justify-content: space-evenly;
+    width: 325px;
+    /* justify-content: space-evenly; */
     .breakfast, .lunch , .dinner {
         justify-content: flex-start;
     }
 `;
 
+const CafeteriaDetail = styled.div`
+display: flex;
+flex-direction: column;
+/* justify-content: space-evenly; */
+gap: 44px;
+margin-top: 17px;
+  .detail-wrapper {
+              border: 0.5px solid #D6D7D9;
+              border-radius: 3px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap:4px;
+              width: 45px;
+              
+              .price , .calory {
+                font-size: 4px;
+                color: #888888;
+              }
+
+            }
+
+`;
 const CafetriaType = styled.div`
     display: flex;
     flex-direction: column;
@@ -217,3 +287,10 @@ const Cafeterias  = styled.div`
     margin: 5px;
   }
 `
+
+const TinyCircle = styled.div`
+  width: 1px;
+  height: 1px;
+  background-color: black;
+  border-radius: 50%; /* 원 모양을 만들기 위해 사용합니다. */
+`;
