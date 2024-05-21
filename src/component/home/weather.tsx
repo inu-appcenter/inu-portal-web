@@ -78,7 +78,6 @@ export default function Weather () {
 }
     
 const WeatherWrapper = styled.div `
-    width: 550px;
     height: 145px;
     background-color:#8CE3D6;
     height: 141px;

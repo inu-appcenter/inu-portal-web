@@ -11,7 +11,7 @@ export default function Calendar() {
 }
 
 const CalendarWrapper = styled.div`
-    width:30%;
+    width:40%;
     height: 500px;
   display: flex;
   justify-content: center;

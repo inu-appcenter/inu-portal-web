@@ -28,8 +28,11 @@ export default function HomePage() {
 }
 
 const HomePageWrapper = styled.div`
-    display: grid;
-    grid-template-columns: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    flex-wrap: wrap;
+    align-content: space-around;
     margin: 0 2rem;
     @media (max-width: 768px) { // 모바일
         display: flex;
@@ -39,7 +42,6 @@ const HomePageWrapper = styled.div`
 `;
 
 const MainWrapper = styled.div`
-    width: 100%;
     display: flex;
     /* justify-content: space-between; */
     gap:32px;
@@ -51,6 +53,7 @@ const MainWrapper = styled.div`
 `;
 
 const Wrapper = styled.div`
+width: 40%;
 display: flex;
 flex-direction: column;
 gap:29px;
