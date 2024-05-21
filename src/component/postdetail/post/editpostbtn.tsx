@@ -26,7 +26,6 @@ width: 76px;
 height: 30px;
 border-radius: 10px;
 background: #EFF2F9;
-font-family: Inter;
 font-size: 15px;
 font-weight: 500;
 color: #757575;

@@ -173,13 +173,11 @@ const CafeteriaWrapper = styled.div`
   }
 
   .cafeteria-type {
-    font-family: inter;
     font-size: 20px;
     font-weight: bold;
   }
 
   .today {
-    font-family: inter;
     font-size: 15px;
     font-weight: bold;
     margin-left: auto; 
@@ -214,7 +212,6 @@ const CafetriaInfo = styled.div`
             }
 
             .type {
-                font-family: inter ;
                 font-size: 8px;
                 color:#969696;
                
@@ -222,7 +219,6 @@ const CafetriaInfo = styled.div`
                 margin:0;
             }
             .info {
-                font-family: inter;
                 font-size:12px;
                 font-weight: bold;
                 margin-left:15px;
@@ -272,7 +268,6 @@ const CafetriaType = styled.div`
 `
 
 const Cafeterias  = styled.div`
-   font-family : inter;
   font-weight: bold;
   font-size: 10px;
   line-height: 25px;

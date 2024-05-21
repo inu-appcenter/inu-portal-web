@@ -133,7 +133,6 @@ const FolderNameInput = styled.p`
     border-radius: 5px;
     background-color:  #FFFFFFB2;
     text-align: center;
-    font-family: Inter;
     font-size: 12px;
     font-weight: 700;
 `;
