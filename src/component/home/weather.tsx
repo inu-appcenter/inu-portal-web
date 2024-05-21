@@ -4,6 +4,10 @@ import snowImg from "../../resource/assets/snow.png"
 import cloudImg from "../../resource/assets/cloud.png"
 import sleetImg from "../../resource/assets/sleet.png"
 import rainImg from "../../resource/assets/rain.png"
+import pmGradeGood from '../../resource/assets/pmGrade-good.svg'
+import pmGradeNormal from '../../resource/assets/pmGrade-normal.svg'
+import pmGradeHarm from '../../resource/assets/pmGrade-harm.svg'
+import pmGradeverHarm from '../../resource/assets/pmGrade-veryharm.svg'
 
 import { useEffect, useState } from "react";
 
@@ -11,8 +15,7 @@ import back from "../../resource/assets/back.png"
 import getWeather from "../../utils/getWeather";
 
 export default function Weather () {
-    const [currentDate, setCurrentDate] = useState("");
-    const [weather, setWeather] = useState<{ sky: string; temperature: string }>({ sky: "", temperature: "" });
+    const [weather, setWeather] = useState<{ sky: string; temperature: string, pm10Grade:string }>({ sky: "", temperature: "", pm10Grade:"" });
     useEffect(() => {
         const fetchWeather = async () => {
             try {
@@ -23,17 +26,8 @@ export default function Weather () {
               console.error('학식 정보 조회 안됨');
             }
           };
-      
           fetchWeather();
-        const date = new Date();
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-          "July", "August", "September", "October", "November", "December"];
-        const month = monthNames[date.getMonth()]; 
-        const day = date.getDate(); 
-
-        const formattedDate = `${month} ${day}`;
-        setCurrentDate(formattedDate);
-      }, []);
+        }, []);
 
       const getSky = (sky:string) => {
         switch (sky) {
@@ -51,19 +45,38 @@ export default function Weather () {
             return '';
         }
       };  
+
+      const getPm10Grade = (pm10Grade:string)=>{
+        switch(pm10Grade){
+          case '좋음':
+            return pmGradeGood;
+          case '보통':
+            return pmGradeNormal;
+          case '나쁨':
+            return pmGradeHarm;
+          case '매우나쁨':
+            return pmGradeverHarm;
+          default:
+            return;
+        }
+      }
+
+      const pm10GradeImage = getPm10Grade(weather.pm10Grade);
     return (
         <>
             <WeatherWrapper className={getSky(weather.sky)}>
                 <Wrapper>
                     <p className="temperature">{weather.temperature}</p>
-                    <p className="day">{getSky(weather.sky)}</p>
-                    <p className="date">{`${currentDate} , Incheon`}</p>
+                    <p className='pm10grade'>
+                    <img className='pmGradeColor' src={pm10GradeImage} alt={weather.pm10Grade} />
+                    미세먼지 : {weather.pm10Grade}</p>
+                    <p className="location">연수구 송도동</p>
                </Wrapper>
             </WeatherWrapper>
         </>
     )
 }
-
+    
 const WeatherWrapper = styled.div `
     width: 550px;
     height: 145px;
@@ -98,15 +111,15 @@ const WeatherWrapper = styled.div `
     &.Sun::after {
         content: "";
         position: absolute;
-        top: -60px;
+        top: -80px;
         right: 0;
         bottom: 0;
         left: 0;
-        width: 200px;
-        height: 200px;
+        width: 250px;
+        height: 250px;
         background-image: url(${sunImg}); 
         background-size: cover; 
-        opacity: 0.8; 
+        opacity: 0.9; 
     }
 
     &.Snow::after {
@@ -189,10 +202,11 @@ const WeatherWrapper = styled.div `
         font-size:50px;
         font-weight: normal;
         color:white;
-        margin:0;
+        margin:0 20px 0 0;
         border-bottom: 2px solid #FFF;
         position:relative;
-        margin-right: 45px;
+        padding-right: 40px;
+
         &::after {
         content: " ";
         position: absolute;
@@ -209,18 +223,19 @@ const WeatherWrapper = styled.div `
     }
 
     }
-
-
-
-    .day {
-        font-size:15px;
-        font-weight: normal;
-        color:white;
-        margin:10px 0 5px 0;
+    .pm10grade{
+      font-size:12px;
+      font-weight: normal;
+      color:white;
+      margin-bottom: 1em;
+      
+}
+    .pmGradeColor{
+      margin:0 5px;
     }
 
-    .date {
-        font-size:15px;
+    .location {
+        font-size:20px;
         font-weight: normal;
         color:white;
         margin:0;
