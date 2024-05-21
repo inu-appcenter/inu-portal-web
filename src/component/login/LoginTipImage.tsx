@@ -41,7 +41,7 @@ const fadeout = keyframes`
 `;
 
 const LoginTipImageComponent = styled.img`
-  z-index: 3;
+  z-index: 4;
   position: absolute;
   left: 50%;
   top: 180px;
@@ -53,7 +53,7 @@ const LoginTipImageComponent = styled.img`
 `;
 
 const Indicators = styled.div`
-  z-index: 4;
+  z-index: 5;
   position: absolute;
   bottom: 50px;
   left: 50%;
