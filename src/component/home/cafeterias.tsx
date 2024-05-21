@@ -8,7 +8,7 @@ import breakfastImg from "../../resource/assets/Sunrise.png";
 export default function Cafeteria() {
   const [cafeteriaType, setCafeteriaType] = useState("학생식당");
   const [cafeteriaInfo , setCageteriaInfo] = useState([]); 
-  const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([]);
+  const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>(['중식(백반)','중식(일품)','석식']);
   const [cafeteriaDetail, setCafeteriaDetail] = useState<{ 구성원가: string, 칼로리: string }[]>([]);
   const [currentDate, setCurrentDate] = useState("");
   useEffect(() => {
@@ -173,11 +173,13 @@ const CafeteriaWrapper = styled.div`
   }
 
   .cafeteria-type {
+    font-family: inter;
     font-size: 20px;
     font-weight: bold;
   }
 
   .today {
+    font-family: inter;
     font-size: 15px;
     font-weight: bold;
     margin-left: auto; 
@@ -212,6 +214,7 @@ const CafetriaInfo = styled.div`
             }
 
             .type {
+                font-family: inter ;
                 font-size: 8px;
                 color:#969696;
                
@@ -219,6 +222,7 @@ const CafetriaInfo = styled.div`
                 margin:0;
             }
             .info {
+                font-family: inter;
                 font-size:12px;
                 font-weight: bold;
                 margin-left:15px;
@@ -242,7 +246,7 @@ display: flex;
 flex-direction: column;
 /* justify-content: space-evenly; */
 gap: 44px;
-margin-top: 17px;
+margin-top: 1px;
   .detail-wrapper {
               border: 0.5px solid #D6D7D9;
               border-radius: 3px;
@@ -268,6 +272,7 @@ const CafetriaType = styled.div`
 `
 
 const Cafeterias  = styled.div`
+   font-family : inter;
   font-weight: bold;
   font-size: 10px;
   line-height: 25px;
