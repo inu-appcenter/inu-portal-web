@@ -35,15 +35,14 @@ export default function Headerbar() {
 }
 
 const Header = styled.header`
-    position: absolute;
-    z-index: 1000;
+    width: 1500px;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
     top:0;
     height: 30px;
-    left:32px;
-    right:32px;
     background: linear-gradient(to right, #9CAFE2 0%, #AAC9EE 100%);
-    text-align: right;
-    display: flex;
     justify-content: flex-end;
     align-items: center;
 
