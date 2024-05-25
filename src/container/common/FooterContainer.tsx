@@ -13,15 +13,18 @@ export default function Footer() {
 }
 
 const FooterWrapper = styled.div`
+  width: 1500px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  margin-top: 50px;
 `
 
 const FooterLine = styled.div`
-  width: 90%;
+  width: 100%;
   height: 0px;
   border: 2px solid #BEBEBE
 `

@@ -17,13 +17,15 @@ export default function Navbar() {
 }
 
 const Nav = styled.nav`
-    margin-top: 22px;
-    max-width: 100vw;
-    padding: 1rem 2.5rem;
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    justify-content: space-between;
+width: 1500px;
+position: relative;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+flex-direction: row;
+align-items: center;
+justify-content: space-between;
+
     &.logo {
         display: flex;
     -webkit-box-align: center;
