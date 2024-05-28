@@ -41,12 +41,12 @@ const LoginBackgroundImageComponent = styled.img`
   top: 30px;
 `
 
-const LoginBackgroundElement1Wrapper = styled.img`
-  z-index: 3;
-  position: fixed;
-  left: 0;
-  bottom: 0;
-`
+// const LoginBackgroundElement1Wrapper = styled.img`
+//   z-index: 3;
+//   position: fixed;
+//   left: 0;
+//   bottom: 0;
+// `
 
 const LoginBackgroundElement2Wrapper = styled.img`
   z-index: 3;
