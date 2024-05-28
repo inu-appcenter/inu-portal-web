@@ -1,4 +1,8 @@
 /* FullCalendar 컨테이너 스타일 */
+
+.fc {
+    height: 100%;
+}
 .fc-calendar-container {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -99,6 +103,7 @@
 
 .fc-event {
     background-color: rgba(0, 133, 255, 0.1)!important;
+
 }
 
 .fc-event-title  {
@@ -108,4 +113,15 @@
 .fc-event-inner {
     color: #E92C2C;
     font-weight: bold;
+}
+
+.event-tooltip {
+    background: linear-gradient(to right, #eef4fc 0%,#c3dcfa 50%, #AAC9EE 100%);
+    width: 250px;
+    margin-top: 10px;
+    padding:2px;
+    border-radius: 10px;
+    position: absolute!important;
+    margin: 0 auto;
+    text-align: center;
 }
