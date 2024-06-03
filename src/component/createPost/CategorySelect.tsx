@@ -1,5 +1,6 @@
+// CategorySelect.tsx
 import React, { useState, useEffect } from 'react';
-import getCategory from '../../utils/getCategory';
+import getCategories from '../../utils/getCategories';
 import dropdownImg from '../../resource/assets/CategorySelectDropdown-img.svg';
 import './CategorySelect.css';
 
@@ -15,7 +16,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const categories = await getCategory();
+        const categories = await getCategories();
         setOptions(categories);
       } catch (error) {
         console.error('카테고리를 불러오는 중 에러가 발생했습니다:', error);
@@ -39,7 +40,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange }) => {
       <div className={`dropdown-container ${isOpen ? 'open' : 'close'}`}>
         <div className="dropdown-selected" onClick={handleDropdownToggle}>
           <div className='dropdown-text'> {value || "카테고리 선택"} </div>
-          <img className='dropdown-img' src={dropdownImg}></img>
+          <img className='dropdown-img' src={dropdownImg} alt="dropdown"/>
         </div>
         {isOpen && (
           <div className="dropdown-options">
