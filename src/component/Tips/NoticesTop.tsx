@@ -1,18 +1,17 @@
+// NoticesTop.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import getNoticesTop from '../../utils/getNoticesTop';
+import getNoticesTop from '../../utils/Notices/getNoticesTop';
 
- 
 interface Notice {
-    id: number;
-    category: string;
-    title: string;
-    writer: string;
-    date: string;
-    view: number;
-    url: string;
+  id: number;
+  category: string;
+  title: string;
+  writer: string;
+  date: string;
+  view: number;
+  url: string;
 }
-
 
 const NoticesTopPostsWrapper = styled.div`
   height: 240px;
@@ -62,10 +61,8 @@ const TopPostTitle = styled.div`
   text-overflow: ellipsis;
 `;
 
-
-
 const NoticesTop: React.FC = () => {
-    const [topPosts, setTopPosts] = useState<Notice[]>([]);
+  const [topPosts, setTopPosts] = useState<Notice[]>([]);
 
   useEffect(() => {
     const fetchTopPosts = async () => {
@@ -80,20 +77,19 @@ const NoticesTop: React.FC = () => {
     fetchTopPosts();
   }, []);
 
-  const handlePostClick = (url: string) => { // 매개변수로 url을 추가하여 해당 URL을 사용할 수 있도록 함
+  const handlePostClick = (url: string) => {
     window.open('https://' + url, '_blank');
   };
 
   return (
     <NoticesTopPostsWrapper>
-    {topPosts.map(post => (
-       <PostCard key={post.id} onClick={() => handlePostClick(post.url)}>
-        <TopPostTitle>{post.title}</TopPostTitle>
-        {/* Render other post properties as needed */}
-      </PostCard>
-    ))}
-    
-  </NoticesTopPostsWrapper>
+      {topPosts.map(post => (
+        <PostCard key={post.id} onClick={() => handlePostClick(post.url)}>
+          <TopPostTitle>{post.title}</TopPostTitle>
+          {/* Render other post properties as needed */}
+        </PostCard>
+      ))}
+    </NoticesTopPostsWrapper>
   );
 };
 
