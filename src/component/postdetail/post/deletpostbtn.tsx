@@ -1,8 +1,9 @@
 import React from 'react';
-import deletePost from '../../../utils/deletePost';
+import { deletePost } from '../../../utils/API/Posts';
 import { useNavigate } from 'react-router-dom';
 import deletebtn from '../../../resource/assets/deletebtn.svg';
 import styled from 'styled-components';
+
 interface DeletePostBtnProps {
   token: string;
   id: string;
@@ -15,17 +16,18 @@ const DeletePostBtn: React.FC<DeletePostBtnProps> = ({
   onPostUpdate,
 }) => {
   const navigate = useNavigate(); // useNavigate 훅 사용
+
   const handleDeleteClick = async () => {
     const confirmDelete = window.confirm('게시글을 삭제하시겠습니까?');
     if (confirmDelete) {
       try {
         const response = await deletePost(token, id);
-        if (response === 200) {
+        if (response.status === 200) {
           // 삭제 성공 시 부모 컴포넌트에게 업데이트를 알립니다.
           onPostUpdate();
           // 삭제 후 /tips로 navigate
           navigate('/tips');
-        } else if (response === 403) {
+        } else if (response.status === 403) {
           alert('이 글의 삭제에 대한 권한이 없습니다.');
         } else {
           // 삭제 에러 시 알림
@@ -59,4 +61,4 @@ const DeleteBtn = styled.div`
   color: #757575;
   display: flex;
   justify-content: center;
-`
+`;

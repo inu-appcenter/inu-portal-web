@@ -1,6 +1,5 @@
-// noticeitems.tsx
 import 횃불Logo from "../../resource/assets/횃불-logo.svg";
-import getNotices from '../../utils/Notices/getNotices';
+import { getNotices } from '../../utils/API/Notices';
 import { useEffect, useState } from 'react';
 import './noticeitems.css';
 import Homepage횃불Img from '../../resource/assets/homepage-횃불-img.svg';
@@ -42,8 +41,10 @@ export default function NoticeItems() {
 
   useEffect(() => {
     const fetchNotices = async () => {
-      const notices = await getNotices('전체', 'date', '1');
-      setNotices(notices['notices']);
+      const response = await getNotices('전체', 'date', '1');
+      if (response.status === 200) {
+        setNotices(response.body.data.notices);
+      }
     };
     fetchNotices();
     updateItemsToShow();

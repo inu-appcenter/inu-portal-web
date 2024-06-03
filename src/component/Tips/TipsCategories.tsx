@@ -1,7 +1,7 @@
 // TipsCategories.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import getCategories from '../../utils/Categories/getCategories';
+import { getCategories } from '../../utils/API/Categories';
 import './TipsCategories.css';
 import round from '../../resource/assets/round.svg';
 
@@ -27,7 +27,8 @@ export default function TipsCategories({ docState, setDocState }: TipsCategories
   const fetchCategories = async () => {
     try {
       if (docState.docType === 'TIPS') {
-        const getCats = await getCategories();
+        const response = await getCategories();
+        const getCats = response.body.data;
         getCats.unshift('전체');
         const cats = getCats.map((cat: string) => ({
           name: cat,

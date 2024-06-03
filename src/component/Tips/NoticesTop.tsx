@@ -1,7 +1,6 @@
-// NoticesTop.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import getNoticesTop from '../../utils/Notices/getNoticesTop';
+import { getNoticesTop } from '../../utils/API/Notices';
 
 interface Notice {
   id: number;
@@ -67,8 +66,10 @@ const NoticesTop: React.FC = () => {
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
-        const posts = await getNoticesTop();
-        setTopPosts(posts);
+        const response = await getNoticesTop();
+        if (response.status === 200) {
+          setTopPosts(response.body.data);
+        }
       } catch (error) {
         console.error('Error fetching top posts:', error);
       }

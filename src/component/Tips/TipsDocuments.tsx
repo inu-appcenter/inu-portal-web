@@ -1,14 +1,13 @@
-// TipsDocuments.tsx
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import getDocuments from '../../utils/getDocuments';
+import { getPosts } from '../../utils/API/Posts';
+import { getNotices } from '../../utils/API/Notices';
 import search from '../../utils/search';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './TipsDocuments.css';
 import Heart from '../../resource/assets/heart.svg';
 import queryString from 'query-string';
 import Pagination from './Pagination';
-import getNotices from '../../utils/Notices/getNotices';
 import SortDropBox from '../common/SortDropBox';
 
 interface Document {
@@ -37,29 +36,31 @@ export default function TipsDocuments({ docState, setDocState }: TipsDocumentsPr
 
   const setSort = (sort: string) => {
     setDocState({ docType: docState.docType, selectedCategory: docState.selectedCategory, sort, page: docState.page });
-  }
+  };
 
   const setPage = (page: string) => {
     setDocState({ docType: docState.docType, selectedCategory: docState.selectedCategory, sort: docState.sort, page });
-  }
+  };
 
   useEffect(() => {
     const fetchDocuments = async () => {
       console.log('랜');
       if (docState.docType === 'NOTICE') {
         const docs = await getNotices(docState.selectedCategory, docState.sort, docState.page);
-        setTotalPages(docs['pages']);
-        setDocuments(docs['notices']);
+        if (docs.status === 200) {
+          setTotalPages(docs.body.data.pages);
+          setDocuments(docs.body.data.notices);
+        }
       } else if (docState.docType === 'TIPS') {
-        if (docState.selectedCategory == '검색결과') {
+        if (docState.selectedCategory === '검색결과') {
           const query = queryString.parse(location.search).query as string;
           const docs = await search(query, docState.sort, docState.page);
-          setTotalPages(docs['pages']);
-          setDocuments(docs['posts']);
+          setTotalPages(docs.body.pages);
+          setDocuments(docs.body.posts);
         } else if (docState.selectedCategory) {
-          const docs = await getDocuments(docState.selectedCategory, docState.sort, docState.page);
-          setTotalPages(docs['pages']);
-          setDocuments(docs['posts']);
+          const docs = await getPosts(docState.selectedCategory, docState.sort, docState.page);
+          setTotalPages(docs.body.data.pages);
+          setDocuments(docs.body.data.posts);
         }
       }
     };
@@ -68,7 +69,7 @@ export default function TipsDocuments({ docState, setDocState }: TipsDocumentsPr
   }, [docState, location.search]);
 
   const handleDocumentClick = (id: number, url: string) => {
-    if (docState.docType == 'NOTICE') {
+    if (docState.docType === 'NOTICE') {
       window.open('https://' + url, '_blank');
     } else {
       navigate(`/tips/${id}`);
@@ -87,13 +88,13 @@ export default function TipsDocuments({ docState, setDocState }: TipsDocumentsPr
                     <div className='category-text'>{document.category}</div>
                     <div className='category-underbar'></div>
                   </div>
-                  {docState.docType == 'TIPS' ? (
+                  {docState.docType === 'TIPS' ? (
                     <span className='document-like'>
-                      <img src={Heart}></img>
+                      <img src={Heart} alt="Heart" />
                       <div className='like-num'>{document.like}</div>
                     </span>) : (<></>)}
                 </div>
-                {docState.docType == 'TIPS' ? (
+                {docState.docType === 'TIPS' ? (
                   <div className='card-2'>
                     <div className='document-title'>{document.title}</div>
                     <div className='document-content'>{document.content}</div>
