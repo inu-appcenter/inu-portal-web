@@ -1,7 +1,7 @@
 // TipsCategories.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import getCategories from '../../utils/getCategories';
+import getCategories from '../../utils/Categories/getCategories';
 import './TipsCategories.css';
 import round from '../../resource/assets/round.svg';
 

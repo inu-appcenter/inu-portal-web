@@ -1,5 +1,5 @@
 // getCategories.tsx
-import apiClient from './apiClient';
+import apiClient from '../apiClient';
 
 const getCategories = async () => {
   const apiURL = `https://portal.inuappcenter.kr/api/categories`;

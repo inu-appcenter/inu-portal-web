@@ -1,6 +1,6 @@
 // CategorySelect.tsx
 import React, { useState, useEffect } from 'react';
-import getCategories from '../../utils/getCategories';
+import getCategories from '../../utils/Categories/getCategories';
 import dropdownImg from '../../resource/assets/CategorySelectDropdown-img.svg';
 import './CategorySelect.css';
 
