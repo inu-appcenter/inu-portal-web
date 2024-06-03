@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { getPosts } from '../../utils/API/Posts';
 import { getNotices } from '../../utils/API/Notices';
-import search from '../../utils/search';
+import { search } from '../../utils/API/Search';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './TipsDocuments.css';
 import Heart from '../../resource/assets/heart.svg';
@@ -55,8 +55,8 @@ export default function TipsDocuments({ docState, setDocState }: TipsDocumentsPr
         if (docState.selectedCategory === '검색결과') {
           const query = queryString.parse(location.search).query as string;
           const docs = await search(query, docState.sort, docState.page);
-          setTotalPages(docs.body.pages);
-          setDocuments(docs.body.posts);
+          setTotalPages(docs.body.data.pages);
+          setDocuments(docs.body.data.posts);
         } else if (docState.selectedCategory) {
           const docs = await getPosts(docState.selectedCategory, docState.sort, docState.page);
           setTotalPages(docs.body.data.pages);
