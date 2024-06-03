@@ -1,6 +1,6 @@
 // CategorySelect.tsx
 import React, { useState, useEffect } from 'react';
-import getCategories from '../../utils/Categories/getCategories';
+import { getCategories } from '../../utils/API/Categories';
 import dropdownImg from '../../resource/assets/CategorySelectDropdown-img.svg';
 import './CategorySelect.css';
 
@@ -17,7 +17,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange }) => {
     const fetchCategories = async () => {
       try {
         const categories = await getCategories();
-        setOptions(categories);
+        setOptions(categories.body.data);
       } catch (error) {
         console.error('카테고리를 불러오는 중 에러가 발생했습니다:', error);
       }
