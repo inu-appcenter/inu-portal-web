@@ -1,12 +1,12 @@
 import styled from 'styled-components';
-import retry from '../../resource/assets/retry.svg'
+import retry from '../../resource/assets/retry.svg';
 import { useNavigate } from 'react-router-dom';
-import postFiresRating from '../../utils/postFiresRating';
+import { postFiresRating } from '../../utils/API/Fires';
 import { useSelector } from 'react-redux';
 
 interface AiImgRetryProps {
   rating: number;
-  id:string;
+  id: string;
 }
 
 interface loginInfo {
@@ -14,48 +14,59 @@ interface loginInfo {
     token: string;
   };
 }
-const AiImgRetry: React.FC<AiImgRetryProps> = ({rating,id}) => {
+
+const AiImgRetry: React.FC<AiImgRetryProps> = ({ rating, id }) => {
   const user = useSelector((state: loginInfo) => state.user);
   const navigate = useNavigate();
-  const handleRetryClick = async () =>{
-    if (rating===0){
-      alert("별점 평가 후 다시 그리기가 가능합니다!")
-    }else{
-      try{
-        const data = await postFiresRating(user.token, rating, id);
-        console.log(data);
-      } catch (error) {
-        console.error('평점 추가 실패:', error); // 실패한 경우 오류를 처리합니다.
-      }
-      navigate(`/ai`);
-    }
-  }
-  const handleIntroMoveClick = async () => {
-    if (rating===0){
-      alert("별점 평가 후 다시 그리기가 가능합니다!")
-    }else{
-      try{
-        const data = await postFiresRating(user.token, rating, id);
-        console.log(data);
-      } catch (error) {
-        console.error('평점 추가 실패:', error); // 실패한 경우 오류를 처리합니다.
-      }
-      sessionStorage.removeItem('lastInput');
-      navigate(`/ai`);
-    }
-  }
 
-    return (
-      <AiImgRetryWrapper>
-        <div className="retry-button" onClick={handleRetryClick}>
-          <img src={retry} alt="Retry Icon" />다시 그리기</div>
-        <div className="retry-button" onClick={handleIntroMoveClick}>
-          <img src={retry} alt="Retry Icon" />인트로</div>
-      </AiImgRetryWrapper>
-    );
+  const handleRetryClick = async () => {
+    if (rating === 0) {
+      alert("별점 평가 후 다시 그리기가 가능합니다!");
+    } else {
+      try {
+        const response = await postFiresRating(user.token, rating, id);
+        if (response.status === 200) {
+          navigate(`/ai`);
+        } else {
+          console.error('평점 추가 실패:', response.status);
+        }
+      } catch (error) {
+        console.error('평점 추가 실패:', error);
+      }
+    }
   };
-  
-  const AiImgRetryWrapper = styled.div`
+
+  const handleIntroMoveClick = async () => {
+    if (rating === 0) {
+      alert("별점 평가 후 다시 그리기가 가능합니다!");
+    } else {
+      try {
+        const response = await postFiresRating(user.token, rating, id);
+        if (response.status === 200) {
+          sessionStorage.removeItem('lastInput');
+          navigate(`/ai`);
+        } else {
+          console.error('평점 추가 실패:', response.status);
+        }
+      } catch (error) {
+        console.error('평점 추가 실패:', error);
+      }
+    }
+  };
+
+  return (
+    <AiImgRetryWrapper>
+      <div className="retry-button" onClick={handleRetryClick}>
+        <img src={retry} alt="Retry Icon" />다시 그리기
+      </div>
+      <div className="retry-button" onClick={handleIntroMoveClick}>
+        <img src={retry} alt="Retry Icon" />인트로
+      </div>
+    </AiImgRetryWrapper>
+  );
+};
+
+const AiImgRetryWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -65,8 +76,8 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({rating,id}) => {
   top: 70%;
   margin-top: 20px;
   gap: 10px;
-  
-  .retry-button{
+
+  .retry-button {
     width: 190px;
     height: 40px;
     border: 1px solid #FFFFFF;
@@ -81,6 +92,5 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({rating,id}) => {
     border-radius: 15px;
   }
 `;
-
 
 export default AiImgRetry;

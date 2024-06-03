@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useParams } from "react-router-dom";
-import getFires from '../../utils/getFires';
+import { getFires } from '../../utils/API/Fires';
 import AiImgViewer from '../../component/ai/AiImgViewer';
 import AiImgRetry from '../../component/ai/AiImgRetry';
 import AiImgScore from '../../component/ai/AiImgScore';
@@ -16,10 +16,17 @@ export default function AiResultContainer() {
     if (!imageId) return;
     const fetchImage = async () => {
       try {
-        const imageUrl = await getFires(imageId);
-        setImageUrl(imageUrl);
+        const response = await getFires(imageId);
+        if (response.status === 200) {
+          const imageURL = URL.createObjectURL(response.body);
+          setImageUrl(imageURL);
+        } else if (response.status === 404) {
+          alert('존재하지 않는 이미지 번호입니다.');
+        } else {
+          alert('이미지 불러오기 실패');
+        }
       } catch (error) {
-        console.error(`Error fetching image`);
+        console.error('Error fetching image', error);
       }
     };
     fetchImage();
@@ -39,7 +46,7 @@ export default function AiResultContainer() {
   )
 }
 
-const AiResultContainerWrapper=styled.div`
+const AiResultContainerWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-content:center;
