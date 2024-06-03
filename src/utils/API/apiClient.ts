@@ -1,5 +1,5 @@
 // apiClient.ts - status와 body를 return
-const apiClient = async (url: string, method: string, token: string, body?: any) => {
+const apiClient = async (url: string, method: string, token: string, body?: any, responseType: 'json' | 'blob' = 'json') => {
   const headers: HeadersInit = {};
 
   if (token) {
@@ -13,7 +13,7 @@ const apiClient = async (url: string, method: string, token: string, body?: any)
 
   if (body instanceof FormData) {
     options.body = body;
-    // FormData 사용 시 Content-Type에 application/json 사용하지 않음.
+    // FormData 사용 시 Content-Type에 application/json 사용하지 않음
   } else if (body) {
     headers['Content-Type'] = 'application/json';
     options.body = JSON.stringify(body);
@@ -21,7 +21,13 @@ const apiClient = async (url: string, method: string, token: string, body?: any)
 
   try {
     const response = await fetch(url, options);
-    const responseBody = await response.json();
+    let responseBody;
+    // responseType이 blob과 json의 경우로 나누어짐
+    if (responseType === 'blob') {
+      responseBody = await response.blob();
+    } else {
+      responseBody = await response.json();
+    }
 
     return {
       status: response.status,

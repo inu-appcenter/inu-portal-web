@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import postFiresRating from '../../utils/postFiresRating';
+import { postFiresRating } from '../../utils/API/Fires';
 import { useSelector } from 'react-redux';
 
 interface AiSubmitProps {
@@ -23,27 +23,24 @@ const AiImgSubmit: React.FC<AiSubmitProps> = ({ rating, id }) => {
         alert('별점을 평가하세요!');
         return;
       }
-      // postFiresRating 함수를 호출할 때 필요한 fireId를 전달합니다.
-      const data = await postFiresRating(user.token, rating, id);
-      console.log(data);
-      if (data === 200) {
-        alert('별점 평가가 완료되었습니다.') // 성공한 경우 서버 응답을 확인합니다.
-      }
-      else {
-        throw new Error(`HTTP error! Status: ${data}`);
+      const response = await postFiresRating(user.token, rating, id);
+      if (response.status === 200) {
+        alert('별점 평가가 완료되었습니다.'); // 성공한 경우
+      } else {
+        console.error('평점 추가 실패:', response.status);
       }
     } catch (error) {
-      alert(error); // 실패한 경우 오류를 처리합니다.
+      console.error('평점 추가 실패:', error);
     }
   };
 
   return (
     <AIImgSubmitWrapper>
-      {/* 제출 버튼 클릭 시 onSubmit 함수 실행 */}
       <div className='submit' onClick={handleSubmitClick}>제출</div>
     </AIImgSubmitWrapper>
   );
 };
+
 const AIImgSubmitWrapper = styled.div`
   display: flex;
   position: absolute;
@@ -65,7 +62,7 @@ const AIImgSubmitWrapper = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer; /* 마우스 커서 변경 */
+    cursor: pointer;
   }
 `;
 
