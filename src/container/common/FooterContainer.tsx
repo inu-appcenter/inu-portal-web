@@ -24,7 +24,7 @@ const FooterWrapper = styled.div`
 `
 
 const FooterLine = styled.div`
-  width: 100%;
+  width: 90%;
   height: 0px;
   border: 2px solid #BEBEBE
 `
