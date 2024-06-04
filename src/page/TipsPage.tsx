@@ -60,9 +60,11 @@ export default function TipsPage() {
 
 const TipsPageWrapper = styled.div`
   display: flex;
+  width: 1500px;
   flex-dicrection: row;
-
-  height: 100%;
+    height: 100%;
+  justify-content: space-around;
+  margin: auto;
   @media (max-width: 768px) { /* 모바일 */
     flex-direction: column;
   }

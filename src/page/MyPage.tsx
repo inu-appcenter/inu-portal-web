@@ -52,7 +52,14 @@ export default function MyPage() {
 const MyPageWrapper = styled.div`
   display: flex;
   flex-direction: row;
+  width: 1500px;
   height: calc(100vh - 150px);
+  margin: auto;
+  justify-content: space-around;
+  @media (max-width: 768px) { /* 모바일 */
+    flex-direction: column;
+}
+}
 `;
 
 const MyPageCatWrapper = styled.div`
@@ -63,6 +70,9 @@ const MyPageContentWrapper = styled.div`
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  @media (max-width: 768px) { /* 모바일 */
+    display: flex;
+}
 `
 
 const BorderWrapper = styled.div`
