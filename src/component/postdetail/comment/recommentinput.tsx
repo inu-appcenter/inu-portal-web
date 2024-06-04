@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import postReComment from "../../../utils/postReComment";
+import { postReReplies } from "../../../utils/API/Replies";
 import './recommentinput.css';
 import checkedCheckbox from '../../../resource/assets/checked-checkbox.svg';
 import uncheckedCheckbox from '../../../resource/assets/unchecked-checkbox.svg';
@@ -24,18 +24,16 @@ export default function ReCommentInput({ parentId, onCommentUpdate }: ReCommentI
       return;
     }
     try {
-      const response = await postReComment(token, parentId, content, isAnonymous);
-      if (response === 201) {
+      const response = await postReReplies(token, parentId, content, isAnonymous);
+      if (response.status === 201) {
         alert("대댓글 등록 성공");
         setContent("");
         setIsAnonymous(false);
         onCommentUpdate();
-      }
-      else {
+      } else {
         alert('대댓글 등록 실패');
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('대댓글 등록 에러', error);
       alert('대댓글 등록 에러');
     }
@@ -52,7 +50,7 @@ export default function ReCommentInput({ parentId, onCommentUpdate }: ReCommentI
       <img
         src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
         alt="Anonymous"
-        onClick={toggleAnonymous} 
+        onClick={toggleAnonymous}
       />
       <span className='recomment-anonymous-text'>익명</span>
       <div className='recomment-vline'></div>
