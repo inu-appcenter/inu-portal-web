@@ -1,5 +1,5 @@
 import React from 'react';
-import editComment from '../../../utils/editComment';
+import { putReplies } from '../../../utils/API/Replies';
 
 interface EditCommentButtonProps {
   token: string;
@@ -9,16 +9,15 @@ interface EditCommentButtonProps {
   onCommentUpdate: () => void;
 }
 
-const EditCommentButton: React.FC<EditCommentButtonProps> = ({token, id, currentContent, isAnonymous, onCommentUpdate,}) => {
+const EditCommentButton: React.FC<EditCommentButtonProps> = ({ token, id, currentContent, isAnonymous, onCommentUpdate }) => {
   const handleEditClick = async () => {
     const newContent = prompt('수정:', currentContent);
     if (newContent !== null && newContent !== currentContent) {
       try {
-        const response = await editComment(token, id, newContent, isAnonymous);
-        if (response === 200) {
-          // alert("수정 성공");
+        const response = await putReplies(token, id, newContent, isAnonymous);
+        if (response.status === 200) {
           onCommentUpdate();
-        } else if (response === 403) {
+        } else if (response.status === 403) {
           alert('이 댓글의 수정에 대한 권한이 없습니다.');
         } else {
           alert('수정 에러');
