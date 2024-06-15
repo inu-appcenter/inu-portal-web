@@ -66,7 +66,9 @@ const Indicators = styled.div`
   padding: 5px;
 `;
 
-const Indicator = styled.div<{ isActive: boolean }>`
+const Indicator = styled.div.withConfig({
+  shouldForwardProp: (prop) => prop !== 'isActive',
+})<{ isActive: boolean }>`
   width: 10px;
   height: 10px;
   border-radius: 50%;
