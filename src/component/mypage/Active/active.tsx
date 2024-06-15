@@ -1,13 +1,8 @@
-// import  { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
-import getUserPost from '../../../utils/getUserPost';
 import { useEffect, useState } from 'react';
 
-
-import getUserLikePost from '../../../utils/getUserLikePost';
-
-import getUserComment from '../../../utils/getUserComment';
+import { getMembersReplies, getMembersPosts, getMembersLikes } from '../../../utils/API/Members';
 
 import UserComment from './usercomment';
 import ActiveTitle from './activetitle';
@@ -20,7 +15,7 @@ interface loginInfo {
     };
   }
 
-  interface PostInfo {
+interface PostInfo {
     id: number;
     title: string;
     category: string;
@@ -32,7 +27,7 @@ interface loginInfo {
     modifiedDate: string;
   }
 
-  interface CommentInfo {
+interface CommentInfo {
     id:number;
     content: string;
     like:number;
@@ -47,11 +42,9 @@ interface ActiveDocumentsProps {
   postsort: string;
 
   setLikeSort: (sort: string) => void;
-  setCommentSort:(sort: string) => void;
-  setPostSort:(sort: string) => void;
+  setCommentSort: (sort: string) => void;
+  setPostSort: (sort: string) => void;
 }
-
-
 
 export default function ActiveInfo({likesort,commentsort,postsort,setLikeSort,setCommentSort,setPostSort}:ActiveDocumentsProps) {
   const [PostInfo, setPostInfo] = useState<PostInfo[]>([]); 
@@ -62,63 +55,67 @@ export default function ActiveInfo({likesort,commentsort,postsort,setLikeSort,se
   useEffect(() => {
     const fetchPostInfo = async () => {
       try {
-        const PostInfo = await getUserPost(token,postsort);
-        setPostInfo(PostInfo.data); 
-        console.log(PostInfo);
+        const response = await getMembersPosts(token, postsort);
+        if (response.status === 200) {
+          setPostInfo(response.body.data); 
+        } else {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
       } catch (error) {
         console.error('에러가 발생했습니다.', error);
-        alert('게시에 실패하였습니다.');
+        alert('게시글을 가져오는데 실패하였습니다.');
       }
     };
 
     fetchPostInfo(); 
-  }, [token,postsort]); 
+  }, [token, postsort]); 
 
   useEffect(() => {
     const likePostInfo = async () => {
       try {
-        const LikeInfo = await getUserLikePost(token,likesort);
-        setPostLikeInfo(LikeInfo.data); 
-        console.log(LikeInfo);
+        const response = await getMembersLikes(token, likesort);
+        if (response.status === 200) {
+          setPostLikeInfo(response.body.data); 
+        } else {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
       } catch (error) {
         console.error('에러가 발생했습니다.', error);
-        alert('게시에 실패하였습니다.');
+        alert('좋아요한 게시글을 가져오는데 실패하였습니다.');
       }
     };
 
     likePostInfo(); 
-  }, [token,likesort]); 
+  }, [token, likesort]); 
 
   useEffect(() => {
     const CommentPostInfo = async () => {
       try {
-        const CommentInfo = await getUserComment(token,commentsort);
-        setPostCommentInfo(CommentInfo.data); 
-        console.log(CommentInfo.data,'댓글');
-
+        const response = await getMembersReplies(token, commentsort);
+        if (response.status === 200) {
+          setPostCommentInfo(response.body.data); 
+        } else {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
       } catch (error) {
         console.error('에러가 발생했습니다.', error);
-        alert('게시에 실패하였습니다.');
+        alert('댓글을 가져오는데 실패하였습니다.');
       }
     };
 
     CommentPostInfo(); 
-  }, [token,commentsort]); 
-
+  }, [token, commentsort]); 
 
   return (
     <ActiveWrapper>
       <ActiveTitle/>
-      <LikePost postLikeInfo ={PostLikeInfo} likesort={likesort} setLikeSort={setLikeSort}/>
-      <UserComment postCommentInfo = {PostCommentInfo}  commentsort={commentsort} setCommentSort={setCommentSort}/>
-      <UserPost postinfo={PostInfo}  postsort={postsort} setPostSort={setPostSort} />
-
-  </ActiveWrapper>
+      <LikePost postLikeInfo={PostLikeInfo} likesort={likesort} setLikeSort={setLikeSort}/>
+      <UserComment postCommentInfo={PostCommentInfo} commentsort={commentsort} setCommentSort={setCommentSort}/>
+      <UserPost postinfo={PostInfo} postsort={postsort} setPostSort={setPostSort} />
+    </ActiveWrapper>
   );
 }
 
-
-
 const ActiveWrapper = styled.div`
   padding:20px 76px;
-`
+`;

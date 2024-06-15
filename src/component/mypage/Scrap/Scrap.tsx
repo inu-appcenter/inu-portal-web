@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 
 import ScrapTitle from './ScrapTitle';
-import getScrap from '../../../utils/getScrap';
+import { getMembersScraps } from '../../../utils/API/Members';
 import ScrapPost from './Scrapdetail';
 import ScrapFolder from './ScrapFolder';
 import queryString from 'query-string';
@@ -69,10 +69,11 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
         if (selectedCategory === '스크랩') {
           try {
             console.log(location, "gmgmgm");
-            const docs = await getScrap(token, scrapsort, page);
+            const response = await getMembersScraps(token, scrapsort, page);
+            const docs = response.body.data;
             console.log(docs, "어케되있노");
-            setTotalPages(docs['pages']);
-            setDocuments(docs['posts']);
+            setTotalPages(docs.pages);
+            setDocuments(docs.posts);
           } catch (error) {
             console.error("스크랩 정보를 가져오지 못했습니다.", error);
           }
