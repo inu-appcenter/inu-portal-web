@@ -7,13 +7,11 @@ import { getMembersScraps } from '../../../utils/API/Members';
 import ScrapPost from './Scrapdetail';
 import ScrapFolder from './ScrapFolder';
 import queryString from 'query-string';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { searchScrap, searchFolder } from '../../../utils/API/Search';
 import { SearchFolderId } from '../../../reducer/folderId';
-import { useParams } from 'react-router-dom';
-import getFolderPost from '../../../utils/getfolderpost';
 import { addFolder } from '../../../reducer/folderSlice';
-import getFolder from '../../../utils/getFolder';
+import { getFolders, getFoldersPosts } from '../../../utils/API/Folders';
 import SearchScrapBar from './searchScrapBar';
 import SearchFolderScrapBar from './searchFolderScrapBar';
 
@@ -101,14 +99,15 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await getFolder(token) as { id: number; name: string }[];
-        const data: { [key: number]: string } = {};
-        response.forEach(item => {
-          data[item.id] = item.name;
+        const response = await getFolders(token);
+        const data = response.body.data as { id: number; name: string }[];
+        const folderData: { [key: number]: string } = {};
+        data.forEach(item => {
+          folderData[item.id] = item.name;
         });
-        console.log("data형태", data);
-        setFolderData(prevFolderData => ({ ...prevFolderData, ...data }));
-        dispatch(addFolder(data));
+        console.log("data형태", folderData);
+        setFolderData(prevFolderData => ({ ...prevFolderData, ...folderData }));
+        dispatch(addFolder(folderData));
       } catch (error) {
         console.error("폴더 이름을 가져오지 못했습니다.", error);
       }
@@ -119,9 +118,9 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
   useEffect(() => {
     if (id) {
       const fetchPost = async () => {
-        const docs = await getFolderPost(token, Number(id), scrapsort, page);
-        setDocuments(docs['posts']);
-        setTotalPages(docs['pages']);
+        const response = await getFoldersPosts(token, Number(id), scrapsort, page);
+        setDocuments(response.body.data.posts);
+        setTotalPages(response.body.data.pages);
       };
       fetchPost();
     }

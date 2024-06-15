@@ -2,22 +2,19 @@ import styled from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import postInsertFolders from '../../../utils/postinsertfolder';
-
-
+import { postFoldersPosts, deleteFoldersPosts } from '../../../utils/API/Folders';
 
 import ListImg from "../../../resource/assets/list-logo.svg";
-import HeartImg from "../../../resource/assets/heart-logo.svg"
-import CalendarImg from "../../../resource/assets/bx_calendar.svg"
-import arrowImg from "../../../resource/assets/arrow.svg"
-import closeImg from "../../../resource/assets/close-img.svg"
-import fileImg from "../../../resource/assets/file-img.svg"
-import plusImg from "../../../resource/assets/plus-img.svg"
-import deleteImg from "../../../resource/assets/deletebtn.svg"
+import HeartImg from "../../../resource/assets/heart-logo.svg";
+import CalendarImg from "../../../resource/assets/bx_calendar.svg";
+import arrowImg from "../../../resource/assets/arrow.svg";
+import closeImg from "../../../resource/assets/close-img.svg";
+import fileImg from "../../../resource/assets/file-img.svg";
+import plusImg from "../../../resource/assets/plus-img.svg";
+import deleteImg from "../../../resource/assets/deletebtn.svg";
 import Pagination from './Pagination';
 import SortDropBox from '../../common/SortDropBox';
 import ReturnScrapButton from './ReturnButton';
-import deleteFolderPost from '../../../utils/deleefolderpost';
 
 interface loginInfo {
   user: {
@@ -43,85 +40,87 @@ interface Document {
 }
 
 interface ScrapPostProps {
-  selectedCategory:string;
+  selectedCategory: string;
   documents: Document[];
-  setDocuments:(document:Document[]) => void;
-  totalPages:number;
+  setDocuments: (document: Document[]) => void;
+  totalPages: number;
   scrapsort: string;
   page: number;
   setScrapSort: (sort: string) => void;
   setPage: (page: number) => void;
 }
 
-
-
-
-
-export default function ScrapPost({selectedCategory,setDocuments,documents,totalPages,scrapsort,page,setScrapSort,setPage}:ScrapPostProps) {
-
+export default function ScrapPost({ selectedCategory, setDocuments, documents, totalPages, scrapsort, page, setScrapSort, setPage }: ScrapPostProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
-  const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]); 
+  const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]);
   const folders = useSelector((state: folderInfo) => state.folder.folders);
-  const [showDropdown,setShowDropdown] = useState<number | null>(null);
+  const [showDropdown, setShowDropdown] = useState<number | null>(null);
   const { id } = useParams<{ id: string }>();
-
 
   const handleSearchTypeClick = (index: number) => {
     setShowDropdown(prevIndex => (prevIndex === index ? null : index));
   };
 
-  const handleOptionClick = (folderId:number) => {
+  const handleOptionClick = (folderId: number) => {
     if (!selectedFolderIds.includes(folderId)) {
       setSelectedFolderIds(prevIds => [...prevIds, folderId]);
     }
     setShowDropdown(null);
   };
 
-  const hadleCloseModal = () => {
+  const handleCloseModal = () => {
     setShowDropdown(null);
-  }
+  };
 
-  const handleAddClick = async (postId:number) => {
+  const handleAddClick = async (postId: number) => {
     try {
-      console.log("넣기전",postId,selectedFolderIds);
-      const response = await postInsertFolders(token,postId, selectedFolderIds);
-      console.log(response);
+      console.log("넣기전", postId, selectedFolderIds);
+      const responses = await postFoldersPosts(token, postId, selectedFolderIds);
+      responses.forEach(response => {
+        if (response.status === 201) {
+          console.log("폴더에 추가 성공:", response.body);
+        } else {
+          console.error("폴더에 추가 실패:", response.status);
+        }
+      });
       setSelectedFolderIds([]);
     } catch (error) {
       console.error("폴더에 추가하지 못했습니다.", error);
     }
-  }
+  };
 
-  const handleRemoveClick = async (postId:number) => {
-    if(id !== undefined) {
+  const handleRemoveClick = async (postId: number) => {
+    if (id !== undefined) {
       try {
-        const response = await deleteFolderPost(token,postId, id);
-        if(response === 200) {
+        const response = await deleteFoldersPosts(token, postId, id);
+        if (response.status === 200) {
           const filteredPostScrapFolderInfo = documents.filter(item => item.id !== postId);
           setDocuments(filteredPostScrapFolderInfo);
+        } else {
+          console.error("폴더에서 삭제 실패:", response.status);
         }
       } catch (error) {
-        console.error("폴더 이름을 가져오지 못했습니다.", error);
+        console.error("폴더에서 게시글을 삭제하지 못했습니다.", error);
       }
     }
-}
+  };
 
   return (
     <ScrapWrapper>
       <ScrapDetailWrapper>
-          <CountWrapper>
-            <p className='title'>All scraps</p>
-            <p className='length'>{documents.length}</p>
-          </CountWrapper>
-          <BackSortWrapper>
-          {selectedCategory === '폴더' && <ReturnScrapButton/> }
+        <CountWrapper>
+          <p className='title'>All scraps</p>
+          <p className='length'>{documents.length}</p>
+        </CountWrapper>
+        <BackSortWrapper>
+          {selectedCategory === '폴더' && <ReturnScrapButton />}
           <SortDropBox sort={scrapsort} setSort={setScrapSort} />
-          </BackSortWrapper>
+        </BackSortWrapper>
       </ScrapDetailWrapper>
       <PostWrapper>
-        {documents.map((item,index) => (
-          <PostDetailWrapper>
-            <PostScrapItem  key={item.id}> 
+        {documents.map((item, index) => (
+          <PostDetailWrapper key={item.id}>
+            <PostScrapItem>
               <PostLink to={`/tips/${item.id}`}>
                 <PostScrapItem>
                   <p className='category'>{item.category}</p>
@@ -130,68 +129,66 @@ export default function ScrapPost({selectedCategory,setDocuments,documents,total
                 </PostScrapItem>
               </PostLink>
               <PostListWrapper>
-              {selectedCategory === '폴더' && 
-              <RemoveButton  onClick={() => handleRemoveClick(item.id)}>
-                <img src={deleteImg} alt="" />
-                <span>삭제</span>
-              </RemoveButton>}
-              <FolderListDropDownWrapper onClick={() => handleSearchTypeClick(index)}>
-                <FolderListDropDownBox>
-                    <img src={ListImg} className='list-img'/>
+                {selectedCategory === '폴더' &&
+                  <RemoveButton onClick={() => handleRemoveClick(item.id)}>
+                    <img src={deleteImg} alt="" />
+                    <span>삭제</span>
+                  </RemoveButton>}
+                <FolderListDropDownWrapper onClick={() => handleSearchTypeClick(index)}>
+                  <FolderListDropDownBox>
+                    <img src={ListImg} className='list-img' />
                     <span>List</span>
-                  <img src={arrowImg} alt="" className='arrow-img' onClick={hadleCloseModal}/>
-                </FolderListDropDownBox>
-                {showDropdown === index && (
-                  <FolderListDropDowns className="dropdown-menu">
-                    <FolderListClose>
-                      <div>
-                      <img src={ListImg} className='list-img'/>
-                      <span>List</span>
-                      </div>
-                      <img src={closeImg} className='close-img'/>
-                    </FolderListClose>
-                    <FolderListDetail>
-                    {Object.entries(folders).map(([folderId, folderName]) => (
-                      <label key={folderId}>
-                          <input type="checkbox" onClick={() => handleOptionClick(Number(folderId))} />
-                          <img src={fileImg} alt="" />
-                          <FolderListDropDownDetail>{folderName as string}</FolderListDropDownDetail>
-                      </label>
-                  ))}
-                     </FolderListDetail>
-                    <FolderListButton>
-                      <img src={plusImg} alt="" />
-                      <button onClick={() => handleAddClick(item.id)}>Create list</button>
-                    </FolderListButton>
-                  </FolderListDropDowns>
-                )}
-              </FolderListDropDownWrapper>
-              <PostInfoWrapper>
-                
-                <img src={CalendarImg} alt="" className='calender-image'/>
-                <p className='createdate'>{item.createDate}</p>
-                <img src={HeartImg} alt="" className='heart-image'/>
-                <p className='like'>{item.like}</p>
-              </PostInfoWrapper>
+                    <img src={arrowImg} alt="" className='arrow-img' onClick={handleCloseModal} />
+                  </FolderListDropDownBox>
+                  {showDropdown === index && (
+                    <FolderListDropDowns className="dropdown-menu">
+                      <FolderListClose>
+                        <div>
+                          <img src={ListImg} className='list-img' />
+                          <span>List</span>
+                        </div>
+                        <img src={closeImg} className='close-img' />
+                      </FolderListClose>
+                      <FolderListDetail>
+                        {Object.entries(folders).map(([folderId, folderName]) => (
+                          <label key={folderId}>
+                            <input type="checkbox" onClick={() => handleOptionClick(Number(folderId))} />
+                            <img src={fileImg} alt="" />
+                            <FolderListDropDownDetail>{folderName as string}</FolderListDropDownDetail>
+                          </label>
+                        ))}
+                      </FolderListDetail>
+                      <FolderListButton>
+                        <img src={plusImg} alt="" />
+                        <button onClick={() => handleAddClick(item.id)}>Create list</button>
+                      </FolderListButton>
+                    </FolderListDropDowns>
+                  )}
+                </FolderListDropDownWrapper>
+                <PostInfoWrapper>
+                  <img src={CalendarImg} alt="" className='calender-image' />
+                  <p className='createdate'>{item.createDate}</p>
+                  <img src={HeartImg} alt="" className='heart-image' />
+                  <p className='like'>{item.like}</p>
+                </PostInfoWrapper>
               </PostListWrapper>
             </PostScrapItem>
           </PostDetailWrapper>
         ))}
-        </PostWrapper>
+      </PostWrapper>
       <Pagination totalPages={totalPages} currentPage={page} setPage={setPage} />
     </ScrapWrapper>
   );
 }
 
-
 const ScrapWrapper = styled.div`
-  box-sizing:border-box;
-  width:100%;
+  box-sizing: border-box;
+  width: 100%;
   border-style: solid;
   border-width: 5px 0 0 5px;
   border-color: #EAEAEA;
-  background-color:white;
-  padding:5px 49px;
+  background-color: white;
+  padding: 5px 49px;
 `;
 
 const ScrapDetailWrapper = styled.div`
@@ -199,75 +196,71 @@ const ScrapDetailWrapper = styled.div`
   justify-content: space-between;
   .title {
     color: #969696;
-    margin-right:10px;
+    margin-right: 10px;
   }
 
   .length {
     color: #0E4D9D;
-    margin-left:10px;
+    margin-left: 10px;
   }
-`
+`;
 
 const CountWrapper = styled.div`
   display: flex;
-
   align-items: center;
-font-size: 15px;
-font-weight: 600;
-line-height: 20px;
-letter-spacing: 0px;
-
-
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0px;
 `;
-
 
 const BackSortWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap:20px;
-`
+  gap: 20px;
+`;
+
 const PostWrapper = styled.div`
   height: 400px;
   margin-top: 21px;
-`
+`;
 
 const PostDetailWrapper = styled.div`
-border:1px solid #AAC9EE;
-margin-bottom: 20px;
-`
+  border: 1px solid #AAC9EE;
+  margin-bottom: 20px;
+`;
 
 const PostScrapItem = styled.div`
   display: flex;
-  gap:2px;
-  background-color:white;
+  gap: 2px;
+  background-color: white;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
   .category {
-    background-color: #a4c8e4; 
-    padding:10px;
-    margin:10px;
-    color:white;
+    background-color: #a4c8e4;
+    padding: 10px;
+    margin: 10px;
+    color: white;
     font-weight: 600;
     border-radius: 10px;
-    font-size:15px;
+    font-size: 15px;
   }
   .title {
-    padding:10px 0 10px 10px;
+    padding: 10px 0 10px 10px;
     margin: 10px 0 10px 10px;
-    color:black;
-font-size: 15px;
-
-font-size: 20px;
-font-weight: 600;
-line-height: 20px;
-letter-spacing: 0px;
-text-align: left;
-color: #656565;
-max-width: 500px;
+    color: black;
+    font-size: 15px;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 20px;
+    letter-spacing: 0px;
+    text-align: left;
+    color: #656565;
+    max-width: 500px;
     white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; 
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .close-title {
@@ -278,66 +271,58 @@ max-width: 500px;
     text-align: left;
     color: #656565;
   }
-
 `;
 
 const PostListWrapper = styled.div`
-display: flex;
-align-items: center;
-gap:16px;
-`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
 
 const PostLink = styled(Link)`
-    text-decoration:none;
-  color:black;
+  text-decoration: none;
+  color: black;
   box-sizing: border-box;
 `;
 
 const FolderListDropDownWrapper = styled.div`
-
   position: relative;
-
-
 `;
 
 const FolderListDropDownBox = styled.div`
-display: flex;
-align-content: center;
-align-items: center;
-padding:6px 9px;
-border: 0.5px solid #888888;
-border-radius:5px;
-gap:6px;
+  display: flex;
+  align-content: center;
+  align-items: center;
+  padding: 6px 9px;
+  border: 0.5px solid #888888;
+  border-radius: 5px;
+  gap: 6px;
 
-
-
-span {
-font-size: 12px;
-font-weight: 600;
-line-height: 15px;
-letter-spacing: 0em;
-text-align: left;
-
-}
+  span {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 15px;
+    letter-spacing: 0em;
+    text-align: left;
+  }
 `;
 
 const FolderListDropDowns = styled.div`
   z-index: 1000;
   position: absolute;
-  left:0;
-  right:0;
-  top:30px;
-
+  left: 0;
+  right: 0;
+  top: 30px;
   width: 207px;
-border-radius: 5px;   
+  border-radius: 5px;
+  border: 0.5px solid #969696;
+  background-color: white;
 
-border: 0.5px solid #969696;
-background-color: white;
   button {
     background-color: black;
-    color:white;
+    color: white;
     display: block;
-    margin:0 auto;
+    margin: 0 auto;
     text-align: center;
     border: none;
   }
@@ -357,10 +342,10 @@ background-color: white;
 const FolderListClose = styled.div`
   display: flex;
   align-items: center;
-  padding:7px 8px;
+  padding: 7px 8px;
   justify-content: space-between;
   border-bottom: 0.5px solid #969696;
-  
+
   div {
     display: flex;
     align-items: center;
@@ -371,80 +356,73 @@ const FolderListClose = styled.div`
     margin-right: 3px;
   }
   span {
-      font-size: 10px;
-      font-weight: 500;
-      line-height: 20px;
-      letter-spacing: 0px;
-      text-align: left;
-
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0px;
+    text-align: left;
   }
-`
+`;
 
 const FolderListDropDownDetail = styled.div`
- 
   font-size: 10px;
   font-weight: 800;
   color: #656565;
-
-  
 `;
 
 const FolderListDetail = styled.div`
   padding: 11px;
-
-`
+`;
 
 const FolderListButton = styled.div`
   display: flex;
   align-items: center;
   border-top: 0.5px solid #969696;
-  padding:5px 9px;
+  padding: 5px 9px;
 
   button {
     background-color: white;
-    color:black;
-    margin:0;
-font-size: 10px;
-font-weight: 500;
-line-height: 20px;
-letter-spacing: 0px;
-text-align: left;
-
+    color: black;
+    margin: 0;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0px;
+    text-align: left;
   }
 
   img {
-
   }
-`
+`;
+
 const PostInfoWrapper = styled.div`
-display:flex;
-align-items: center;
+  display: flex;
+  align-items: center;
 
-.createdate {
-font-size: 10px;
-font-weight: 500;
-line-height: 20px;
-letter-spacing: 0px;
-text-align: left;
-color: #969696;
-margin: 0 26px 0 3px;
-}
+  .createdate {
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0px;
+    text-align: left;
+    color: #969696;
+    margin: 0 26px 0 3px;
+  }
 
-.like {
-font-size: 8px;
-font-weight: 600;
-line-height: 20px;
-letter-spacing: 0px;
-text-align: left;
-margin: 0 26px 0 6px;
-}
-`
-
+  .like {
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 20px;
+    letter-spacing: 0px;
+    text-align: left;
+    margin: 0 26px 0 6px;
+  }
+`;
 
 const RemoveButton = styled.div`
   span {
     font-size: 15px;
-    color:#888888;
-    margin-left:5px;
+    color: #888888;
+    margin-left: 5px;
   }
 `;
