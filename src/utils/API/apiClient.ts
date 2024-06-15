@@ -1,5 +1,5 @@
 // apiClient.ts - status와 body를 return
-const apiClient = async (url: string, method: string, token: string, body?: any, responseType: 'json' | 'blob' = 'json') => {
+const apiClient = async (url: string, method: string, token: string, body?: any, responseType: 'json' | 'blob' | 'url' = 'json') => {
   const headers: HeadersInit = {};
 
   if (token) {
@@ -22,9 +22,11 @@ const apiClient = async (url: string, method: string, token: string, body?: any,
   try {
     const response = await fetch(url, options);
     let responseBody;
-    // responseType이 blob과 json의 경우로 나누어짐
+    // responseType이 blob, json, url의 경우로 나누어짐
     if (responseType === 'blob') {
       responseBody = await response.blob();
+    } else if (responseType === 'url') {
+      responseBody = response.url;
     } else {
       responseBody = await response.json();
     }
