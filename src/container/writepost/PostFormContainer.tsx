@@ -6,12 +6,9 @@ import CategorySelect from '../../component/createPost/CategorySelect';
 import AnonymousCheckbox from '../../component/createPost/AnonymousCheckbox';
 import { useSelector } from 'react-redux';
 import ImageInput from '../../component/createPost/ImageInput';
-import { postPosts, getPost, putPost } from '../../utils/API/Posts';
-import postImage from '../../utils/postImage';
+import { postPosts, getPost, putPost, putImages, getImages, postImages } from '../../utils/API/Posts';
 import './PostFormContainer.css';
 import inuLogoImg from '../../resource/assets/inu-logo-img.svg';
-import editImage from '../../utils/editImage';
-import getPostsImages from '../../utils/getPostsImages';
 
 interface Post {
   id: number;
@@ -126,13 +123,15 @@ const PostFormContainer: React.FC = () => {
         return;
       }
       try {
-        let images = [];
+        let images: File[] = [];
         for (let imageId = 1; imageId <= imageCount; imageId++) {
           try {
-            const imageUrl = await getPostsImages(id, imageId);
-            const imageBlob = await fetch(imageUrl).then((res) => res.blob());
-            const imageFile = new File([imageBlob], `image_${imageId}.png`);
-            images.push(imageFile);
+            const response = await getImages(id, imageId);
+            if (response.status === 200) {
+              const imageBlob = response.body;
+              const imageFile = new File([imageBlob], `image_${imageId}.png`);
+              images.push(imageFile);
+            }
           } catch (error) {
             console.error(`Error fetching image:`, error);
             // 이미지를 찾지 못해도 계속 진행
@@ -168,8 +167,8 @@ const PostFormContainer: React.FC = () => {
         if (response.status === 201) {
           postId = response.body.data;
           if (images.length) {
-            const responseImage = await postImage(token, postId, images);
-            if (responseImage) {
+            const responseImage = await postImages(token, postId, images);
+            if (responseImage.status === 201) {
               window.alert('게시글 등록 성공');
               window.close();
             }
@@ -192,8 +191,8 @@ const PostFormContainer: React.FC = () => {
         const response = await putPost({ title, content, category, anonymous }, token, postId);
         if (response.status === 200) {
           if (images.length) {
-            const responseImage = await editImage(token, postId, images);
-            if (responseImage) {
+            const responseImage = await putImages(token, postId, images);
+            if (responseImage.status === 200) {
               window.alert('게시글 수정 성공');
               window.close();
             }
