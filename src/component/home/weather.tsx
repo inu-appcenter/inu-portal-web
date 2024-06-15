@@ -12,18 +12,21 @@ import pmGradeverHarm from '../../resource/assets/pmGrade-veryharm.svg'
 import { useEffect, useState } from "react";
 
 import back from "../../resource/assets/back.png"
-import getWeather from "../../utils/getWeather";
+import { getWeathers } from "../../utils/API/Weathers";
 
 export default function Weather () {
     const [weather, setWeather] = useState<{ sky: string; temperature: string, pm10Grade:string }>({ sky: "", temperature: "", pm10Grade:"" });
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-              const response = await getWeather();
-              console.log(response,"return 값");
-              setWeather(response.data);
+              const response = await getWeathers();
+              if (response.status === 200) {
+                setWeather(response.body.data);
+              } else {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
             } catch (error) {
-              console.error('학식 정보 조회 안됨');
+              console.error('날씨 정보 조회 안됨', error);
             }
           };
           fetchWeather();
@@ -177,8 +180,6 @@ const WeatherWrapper = styled.div `
         opacity: 0.5; 
     }
 
-
-
     &::before {
         content: "";
         position: absolute;
@@ -194,7 +195,6 @@ const WeatherWrapper = styled.div `
         background-size: cover; 
         background-position: center; 
     }
-
 
     .temperature {
         width: 100px;
@@ -239,15 +239,10 @@ const WeatherWrapper = styled.div `
         color:white;
         margin:0;
     }
-
 `
-
 
 const Wrapper = styled.div`
     display: flex;
     flex-direction: column;
-
-
-
-
 `
+
