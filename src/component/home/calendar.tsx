@@ -1,9 +1,9 @@
-import  { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
 import { EventInput } from "@fullcalendar/core/index.js";
 
-import getCalendar from "../../utils/getCalendar";
+import { getSchedules } from "../../utils/API/Schedules";
 import "./calendar.css";
 
 export default function Calendarbar() {
@@ -23,10 +23,14 @@ export default function Calendarbar() {
 
   const fetchCalendarData = async () => {
     try {
-      const response = await getCalendar(year, month);
-      setEvents(response.data);
+      const response = await getSchedules(year, month);
+      if (response.status === 200) {
+        setEvents(response.body.data);
+      } else {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
     } catch (error) {
-      console.error("학식 정보 조회 안됨");
+      console.error("일정 정보 조회 안됨", error);
     }
   };
 
@@ -45,9 +49,8 @@ export default function Calendarbar() {
     getCurrentMonth();
   };
 
-  const handleEventMouseEnter = (event:EventInput) => {
+  const handleEventMouseEnter = (event: EventInput) => {
     const element = event.el.children[0].children[0].children[0].children[0].innerText;
-    
     setHoveredEvent(element);
   };
 
