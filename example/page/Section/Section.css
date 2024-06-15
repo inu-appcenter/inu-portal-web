@@ -1,9 +1,0 @@
-.homepage-img {
-    box-sizing: border-box;
-    display: block;
-    width: calc(100% - 54px); /* 전체 너비에서 좌우 마진을 뺀 값으로 설정 (24px * 2) */
-    margin: 27px;
-    margin-top: 0px;
-    margin-bottom: 10px;
-    height: auto;
-}
