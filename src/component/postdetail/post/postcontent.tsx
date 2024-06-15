@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import getPostsImages from '../../../utils/getPostsImages';
+import { getImages } from '../../../utils/API/Posts';
 import './postcontent.css';
 
 interface PostContentProps {
@@ -30,12 +30,14 @@ export default function PostContent({ id, content, imageCount }: PostContentProp
       try {
         let fetchedImages = [];
         for (let imageId = 1; imageId <= imageCount; imageId++) {
-          const imageUrl = await getPostsImages(id, imageId);
-          fetchedImages.push(imageUrl);
+          const response = await getImages(id, imageId);
+          if (response.status === 200) {
+            const imageUrl = URL.createObjectURL(response.body);
+            fetchedImages.push(imageUrl);
+          }
         }
         setImages(fetchedImages);
-      }
-      catch (error) {
+      } catch (error) {
         console.log(error);
       }
     };

@@ -33,9 +33,27 @@ export const handlePostLike = async (token: string, postId: string) => {
   return await apiClient(`https://portal.inuappcenter.kr/api/posts/${postId}/like`, 'PUT', token);
 };
 
-// 게시글의 이미지 수정 : TODO
+// 게시글의 이미지 수정
+export const putImages = async (token: string, postId: string, images: File[] = []) => {
+  const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/images`;
+  const formData = new FormData();
+  images.forEach((image, index) => {
+    formData.append('images', image, `image${index}`);
+  });
 
-// 이미지 등록 : TODO
+  return await apiClient(apiURL, 'PUT', token, formData);
+};
+
+// 이미지 등록
+export const postImages = async (token: string, postId: number, images: File[]) => {
+  const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/images`;
+  const formData = new FormData();
+  images.forEach((image, index) => {
+    formData.append('images', image, `image${index}`);
+  });
+
+  return await apiClient(apiURL, 'POST', token, formData);
+};
 
 // 모든 게시글 가져오기
 export const getPosts = async (category: string, sort: string, page: string) => {
@@ -50,7 +68,11 @@ export const postPosts = async (data: PostData, token: string) => {
   return await apiClient(`https://portal.inuappcenter.kr/api/posts`, 'POST', token, data);
 };
 
-// 게시글의 이미지 가져오기 : TODO
+// 게시글의 이미지 가져오기
+export const getImages = async (postId: string, imageId: number) => {
+  const apiURL = `https://portal.inuappcenter.kr/api/posts/${postId}/images/${imageId}`;
+  return await apiClient(apiURL, 'GET', '', undefined, 'blob');
+};
 
 // 상단부 인기 게시글 12개 가져오기
 export const getPostsTop = async (category: string = '전체') => {
