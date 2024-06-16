@@ -22,6 +22,7 @@ function App() {
     <Routes>
       <Route path='/m' element={<MobileMainPage />}>
         <Route path='/m/write' element={<MobileWritePage />} />
+        <Route path='/m/update/:id' element={<MobileWritePage />} />
       </Route>
       <Route path='/m/login' element={<MobileLoginPage />} />
       <Route path='/' element={<MainPage />}>
