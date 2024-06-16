@@ -47,14 +47,11 @@ export default function LoginInput() {
         dispatch(tokenUserAction({ token, tokenExpiredTime, refreshToken, refreshTokenExpiredTime }));
 
         navigate(-1);
-      } else if (response.status === 400) {
-        alert("잘못된 요청입니다. 다시 입력해주세요.");
       } else if (response.status === 401) {
         alert("학번 또는 비밀번호가 틀립니다.");
       } else if (response.status === 404) {
-        alert("	재하지 않는 회원입니다.")
-      }
-        else {
+        alert("존재하지 않는 회원입니다.")
+      } else {
         alert("알 수 없는 오류가 발생했습니다.");
       }
     } catch (error) {
