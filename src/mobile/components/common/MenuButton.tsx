@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import menuButtonImage from '../../../resource/assets/mobile/menu-button.svg'
+import menuButtonImage from '../../../resource/assets/mobile/common/menu-button.svg'
 
 export default function MenuButton() {
   return (
