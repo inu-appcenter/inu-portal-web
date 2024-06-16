@@ -12,7 +12,7 @@ import useUser from './hooks/useUser';
 import useAuth from './hooks/useAuth';
 import MobileMainPage from './mobile/pages/MobileMainPage';
 import MobileLoginPage from './mobile/pages/MobileLoginPage';
-// import MobileHomePage from './mobile/pages/MobileHomePage';
+import MobileWritePage from './mobile/pages/MobileWritePage';
 
 function App() {
   useUser();
@@ -21,7 +21,7 @@ function App() {
   return (
     <Routes>
       <Route path='/m' element={<MobileMainPage />}>
-        {/* <Route path='/m/home' element={<MobileHomePage />} /> */}
+        <Route path='/m/write' element={<MobileWritePage />} />
       </Route>
       <Route path='/m/login' element={<MobileLoginPage />} />
       <Route path='/' element={<MainPage />}>
