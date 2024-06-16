@@ -4,7 +4,6 @@ import MobileHeader from "../containers/common/MobileHeader";
 import { Outlet } from "react-router-dom";
 
 export default function MobileMainPage() {
-      
   return (
     <MobileMainPageWrapper>
       <header>
@@ -17,7 +16,7 @@ export default function MobileMainPage() {
         <MobileNav />
       </nav>
     </MobileMainPageWrapper>
-  )
+  );
 }
 
 const MobileMainPageWrapper = styled.div`

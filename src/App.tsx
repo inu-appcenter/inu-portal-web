@@ -11,6 +11,7 @@ import AiPage from './page/AiPage';
 import useUser from './hooks/useUser';
 import useAuth from './hooks/useAuth';
 import MobileMainPage from './mobile/pages/MobileMainPage';
+import MobileLoginPage from './mobile/pages/MobileLoginPage';
 // import MobileHomePage from './mobile/pages/MobileHomePage';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
       <Route path='/m' element={<MobileMainPage />}>
         {/* <Route path='/m/home' element={<MobileHomePage />} /> */}
       </Route>
+      <Route path='/m/login' element={<MobileLoginPage />} />
       <Route path='/' element={<MainPage />}>
         <Route path='/' element={<HomePage />} />
         <Route path='/login/*' element={<Login />} />
