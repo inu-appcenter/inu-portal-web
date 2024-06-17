@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getCategories } from '../../../utils/API/Categories';
 import dropdownIcon from '../../../resource/assets/CategorySelectDropdown-img.svg';
@@ -30,13 +30,12 @@ export default function CategorySelector({ value, onChange }: CategorySelectorPr
   }, []);
 
   return (
-    <CategorySelectorWrapper isOpen={isOpen} onClick={() => setIsOpen(!isOpen)}>
+    <CategorySelectorWrapper onClick={() => setIsOpen(!isOpen)}>
       {isOpen ? (
         <DropdownOptions>
           {categories.map((category, index) => (
-            <>
+            <React.Fragment key={category}>
               <DropdownOption
-                key={category}
                 onClick={() => {
                   onChange(category);
                   setIsOpen(false);
@@ -45,7 +44,7 @@ export default function CategorySelector({ value, onChange }: CategorySelectorPr
                 <div>{category}</div>
               </DropdownOption>
               {index < categories.length - 1 && <DropdownOptionLine />}
-            </>
+            </React.Fragment>
           ))}
         </DropdownOptions>
       ) : (
@@ -58,11 +57,11 @@ export default function CategorySelector({ value, onChange }: CategorySelectorPr
   );
 }
 
-const CategorySelectorWrapper = styled.div<{ isOpen: boolean }>`
-  font-size: 7px;
+const CategorySelectorWrapper = styled.div`
+  font-size: 8px;
   font-weight: 300;
-  width: 88px;
-  height: 20px;
+  width: 112px;
+  height: 32px;
   position: relative;
 `;
 
@@ -70,7 +69,7 @@ const Dropdown = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-around;
-  height: 20px;
+  height: 32px;
   border-radius: 100px;
   background: linear-gradient(180deg, #FFFFFF -21.86%, #D5E4F7 100%, #AAC9EE 100%);
 `;
@@ -106,4 +105,3 @@ const DropdownOptionLine = styled.div`
   width: 80%;
   background-color: #969696;
 `;
-

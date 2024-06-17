@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -9,15 +8,21 @@ interface NavItemProps {
   label: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, activeIcon, label }) => {
+export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const isActive = location.pathname === to;
+  const isActive = location.pathname.includes(to);
+
+  const handleClick = () => {
+    if (!isActive) {
+      navigate(to);
+    }
+  };
 
   return (
-    <NavItemWrapper onClick={() => { navigate(to); }}>
+    <NavItemWrapper onClick={handleClick}>
       <Icon src={isActive ? activeIcon : icon} alt={label} />
-      <Label isActive={isActive}>{label}</Label>
+      <Label $isActive={isActive}>{label}</Label>
     </NavItemWrapper>
   );
 };
@@ -35,9 +40,7 @@ const Icon = styled.img`
   height: 24px;
 `;
 
-const Label = styled.div<{ isActive: boolean }>`
+const Label = styled.div<{ $isActive: boolean }>`
   font-size: 12px;
-  color: ${({ isActive }) => (isActive ? '#9CAFE2' : '#D6D1D5')};
+  color: ${({ $isActive }) => ($isActive ? '#9CAFE2' : '#D6D1D5')};
 `;
-
-export default NavItem;

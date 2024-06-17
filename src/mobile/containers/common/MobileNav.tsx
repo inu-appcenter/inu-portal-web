@@ -13,7 +13,7 @@ import mypageIconActive from '../../../resource/assets/mobile/common/mypage-gray
 export default function MobileNav() {
   return (
     <MobileNavWrapper>
-      <NavItem to="/m" icon={homeIcon} activeIcon={homeIconActive} label="Home" />
+      <NavItem to="/m/home" icon={homeIcon} activeIcon={homeIconActive} label="Home" />
       <NavItem to="/m/save" icon={saveIcon} activeIcon={saveIconActive} label="Save" />
       <NavItem to="/m/write" icon={writeIcon} activeIcon={writeIconActive} label="Write" />
       <NavItem to="/m/mypage" icon={mypageIcon} activeIcon={mypageIconActive} label="Mypage" />

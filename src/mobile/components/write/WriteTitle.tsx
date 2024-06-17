@@ -1,10 +1,16 @@
 import styled from 'styled-components';
 
-export default function WriteTitle() {
+interface WriteTitleProps {
+  idProps?: string;
+  value: string;
+}
+
+export default function WriteTitle({ idProps, value }: WriteTitleProps) {
+  const id = idProps;
   return(
-    <>
-      <WriteTitleWrapper>TIP 글쓰기</WriteTitleWrapper>
-    </>
+    <WriteTitleWrapper>
+      {value === 'create' ? 'TIP 글쓰기' : `TIP 수정하기 (${id})`}
+    </WriteTitleWrapper>
   );
 }
 
