@@ -4,42 +4,32 @@ import PhotoUpload from '../../components/write/PhotoUpload';
 import AnonymousCheck from '../../components/write/AnonymousCheck';
 import { useEffect, useState } from 'react';
 import { getImages, getPost, postImages, postPosts, putImages, putPost } from '../../../utils/API/Posts';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 interface WriteFormProps {
-  categoryProps: string;
+  idProps?: string;
+  category: string;
+  setCategory: (value: string) => void;
+  typeProps: string;
 }
 
-export default function WriteForm({ categoryProps }: WriteFormProps) {
-  const { id } = useParams<{ id: string }>();
+export default function WriteForm({ idProps, category, setCategory, typeProps }: WriteFormProps) {
   const token = useSelector((state: any) => state.user.token);
-  const [type, setType] = useState('');
+  const id = idProps;
+  const type = typeProps;
   const [post, setPost] = useState<Post | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [category, setCategory] = useState(categoryProps);
   const [anonymous, setAnonymous] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imageCount, setImageCount] = useState<number>(0);
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    if (location.pathname.includes('/m/write')) {
-      setType('create');
-    } else {
-      setType('update');
-    }
-  }, [location.pathname]);
-
-  useEffect(() => {
-    setCategory(categoryProps);
-  }, [categoryProps]);
 
   // setPost, 수정 권한 확인
   useEffect(() => {
     if (type === 'update' && id) {
-      const fetchPost = async() => {
+      const fetchPost = async () => {
         const response = await getPost(token, id);
         if (response.status === 200) {
           if (!response.body.data.hasAuthority) {
@@ -48,11 +38,17 @@ export default function WriteForm({ categoryProps }: WriteFormProps) {
           } else {
             setPost(response.body.data);
           }
+        } else {
+          alert(`${response.status} (${response.body.msg})`);
+          navigate(-1);
         }
-      }
+      };
       fetchPost();
     }
-  }, [id, token]);
+    else {
+      setPost(null);
+    }
+  }, [type, id]);
 
   // post 변경 시 set
   useEffect(() => {
@@ -62,11 +58,21 @@ export default function WriteForm({ categoryProps }: WriteFormProps) {
       setCategory(post.category);
       setImageCount(post.imageCount);
     }
+    else {
+      setTitle('');
+      setContent('');
+      setCategory('');
+      setImageCount(0);
+    }
   }, [post]);
 
   // 이미지 찾기
   useEffect(() => {
     const fetchImages = async () => {
+      if (imageCount === 0) {
+        setImages([]);
+        return;
+      }
       if (id === undefined) {
         return;
       }
@@ -91,7 +97,6 @@ export default function WriteForm({ categoryProps }: WriteFormProps) {
 
   // 업로드 버튼 클릭
   const handleUpload = async () => {
-    console.log('handleUpload');
     if (content.length > 1999) {
       alert('내용은 2000자 이하로 작성해 주세요.');
       return;
@@ -155,7 +160,7 @@ export default function WriteForm({ categoryProps }: WriteFormProps) {
       console.error(error);
     }
   };
-  
+
   const handleImageChange = (file: File | null) => {
     if (file) {
       setImages((prevImages) => [...prevImages, file]);
@@ -168,10 +173,10 @@ export default function WriteForm({ categoryProps }: WriteFormProps) {
 
   return (
     <WriteFormWrapper>
-      <TitleContentInput title={title} onTitleChange={(value: string) => setTitle(value)} content={content} onContentChange={(value: string) => setContent(value)}/>
+      <TitleContentInput title={title} onTitleChange={(value: string) => setTitle(value)} content={content} onContentChange={(value: string) => setContent(value)} />
       <PhotoUpload images={images} onImageChange={handleImageChange} onImageRemove={handleImageRemove} />
-      <AnonymousCheck checked={anonymous} onChange={(checked: boolean) => setAnonymous(checked)}/>
-      <UploadButton onClick={() => handleUpload()}>업로드</UploadButton>
+      <AnonymousCheck checked={anonymous} onChange={(checked: boolean) => setAnonymous(checked)} />
+      <UploadButton onClick={handleUpload}>업로드</UploadButton>
     </WriteFormWrapper>
   );
 }
@@ -193,5 +198,5 @@ const UploadButton = styled.div`
   font-size: 18px;
   font-weight: 700;
   color: white;
-  background: #ADC7EC; 
-`
+  background: #ADC7EC;
+`;
