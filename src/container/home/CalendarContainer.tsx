@@ -11,10 +11,10 @@ export default function Calendar() {
 }
 
 const CalendarWrapper = styled.div`
-    width:40%;
-    height: 500px;
+    width:33%;
   display: flex;
   justify-content: center;
+  position:relative;
   @media (max-width: 768px) { // 모바일
     width: 100%;
     margin-top: 20px;
