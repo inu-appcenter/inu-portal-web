@@ -49,11 +49,10 @@ const MainWrapper = styled.div`
     @media (max-width: 768px) { // 모바일
         flex-direction: column;
       }
-    overflow-x: scroll;
 `;
 
 const Wrapper = styled.div`
-width: 40%;
+width: 33%;
 display: flex;
 flex-direction: column;
 gap:29px;
