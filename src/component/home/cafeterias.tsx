@@ -78,6 +78,7 @@ export default function Cafeteria() {
           <h1 className="today">Today</h1>
         </div>
         <span className="date">{currentDate}</span>
+        <div className="total-wrapper">
         <div className="cafeteria-list">
           <CafetriaInfo>
             <div className="breakfast">
@@ -91,7 +92,13 @@ export default function Cafeteria() {
                   )}
                 </div>
                 {cafeteriaTypes[0] !== '없음' && <p className="info">{cafeteriaInfo[0]}</p>}
+                {cafeteriaDetail[0] && (<div className="detail-wrapper">
+                  <p className="price">{cafeteriaDetail[0].칼로리}</p>
+                  <TinyCircle />
+                  <p className="calory">{cafeteriaDetail[0].구성원가}</p>
+                </div>)}
               </div>
+
             </div>
             <div className="lunch">
               <div className="detail">
@@ -100,6 +107,11 @@ export default function Cafeteria() {
                   <p className="type">{cafeteriaTypes[1]}</p>
                 </div>
                 <p className="info">{cafeteriaInfo[1]}</p>
+                {cafeteriaDetail[1] && (<div className="detail-wrapper">
+                  <p className="price">{cafeteriaDetail[1].칼로리}</p>
+                  <TinyCircle />
+                  <p className="calory">{cafeteriaDetail[1].구성원가}</p>
+                </div>)}
               </div>
             </div>
             <div className="dinner">
@@ -109,20 +121,15 @@ export default function Cafeteria() {
                   <p className="type">{cafeteriaTypes[2]}</p>
                 </div>
                 <p className="info">{cafeteriaInfo[2]}</p>
+                {cafeteriaDetail[2] && (<div className="detail-wrapper">
+                  <p className="price">{cafeteriaDetail[2].칼로리}</p>
+                  <TinyCircle />
+                  <p className="calory">{cafeteriaDetail[2].구성원가}</p>
+                </div>)}
               </div>
             </div>
           </CafetriaInfo>
-          <CafeteriaDetail>
-            {cafeteriaDetail.map((detail, index) => (
-              detail && (
-                <div key={index} className="detail-wrapper">
-                  <p className="price">{detail.칼로리}</p>
-                  <TinyCircle />
-                  <p className="calory">{detail.구성원가}</p>
-                </div>
-              )
-            ))}
-          </CafeteriaDetail>
+          </div>
           <CafetriaType>
             {cafeteriasList.map((cafeteria) => (
               <Cafeterias className="cafeteria" key={cafeteria.id} onClick={() => handleCafeteriaType(cafeteria.title, cafeteria.info)}>
@@ -130,7 +137,7 @@ export default function Cafeteria() {
               </Cafeterias>
             ))}
           </CafetriaType>
-        </div>
+          </div>
       </CafeteriaWrapper>
     </>
   );
@@ -142,7 +149,11 @@ const CafeteriaWrapper = styled.div`
   border: 2px solid transparent;
   box-shadow: 0 0 0 2px #6f84e2 inset;
   padding: 20px 18px;
-
+  width: 100%;
+  height: 350px;
+  .total-wrapper {
+    display: flex;
+  }
   .date {
     font-size: 12px;
     color: #656565;
@@ -186,7 +197,6 @@ const CafeteriaWrapper = styled.div`
 const CafetriaInfo = styled.div`
     display: flex;
     flex-direction: column;
-    /* gap:20px;     */
     .breakfast, .lunch , .dinner {
         display: flex;
         align-items: center;
@@ -218,54 +228,45 @@ const CafetriaInfo = styled.div`
                 font-weight: bold;
                 margin-left:15px;
             }
-
-            
-        }
-       
-       
-        
-    }
-    width: 325px;
-    /* justify-content: space-evenly; */
-    .breakfast, .lunch , .dinner {
-        justify-content: flex-start;
-    }
-`;
-
-const CafeteriaDetail = styled.div`
-display: flex;
-flex-direction: column;
-/* justify-content: space-evenly; */
-gap: 44px;
-margin-top: 1px;
-  .detail-wrapper {
+            .detail-wrapper {
+              display: flex;
+              margin-left:10px;
               border: 0.5px solid #D6D7D9;
               border-radius: 3px;
               display: flex;
               align-items: center;
               justify-content: center;
               gap:4px;
-              width: 45px;
-              
+              min-width: 90px;
               .price , .calory {
-                font-size: 4px;
-                color: #888888;
+                font-size: 10px;
+                color: #000000;
               }
 
             }
-
+            
+        }
+       
+       
+        
+    }
+    width: 245px;
+    box-sizing: border-box;
+    /* justify-content: space-evenly; */
+    .breakfast, .lunch , .dinner {
+        justify-content: flex-start;
+    }
 `;
 const CafetriaType = styled.div`
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    justify-content: space-between;
+    gap:10px;
 `
 
 const Cafeterias  = styled.div`
    font-family : inter;
   font-weight: bold;
-  font-size: 10px;
+  font-size: 9px;
   line-height: 25px;
   text-align:center;
   color:#fff;
@@ -274,7 +275,7 @@ const Cafeterias  = styled.div`
     padding:2px 20px;
     background:linear-gradient(90deg, #83CBD9 0%, #99C7E1 50%, #A1C9F1 100%);
     border-radius: 5px;
-    width: 93px;
+    width: 78px;
     margin: 5px;
   }
 `

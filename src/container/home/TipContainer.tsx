@@ -23,7 +23,7 @@ export default function MainTips () {
 const TipWrapper = styled.div`
     padding-left: 10px;
     box-sizing: border-box;
-    width: 40%;
+    width: 33%;
     @media (max-width: 768px) { // 모바일
       width: 100%;
     }
