@@ -32,6 +32,7 @@ const HomePageWrapper = styled.div`
     flex-direction: column;
     position: relative;
     flex-wrap: wrap;
+    z-index:0;
     align-content: space-around;
     margin: 0 2rem;
     @media (max-width: 768px) { // 모바일
