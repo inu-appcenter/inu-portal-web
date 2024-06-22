@@ -178,7 +178,7 @@ const ItemWrapper = styled.div`
     top: 0px;
     visibility: visible;
     opacity: 1;
-    z-index: 10;
+    z-index: 999;
     width: max-content;
     padding: 10px;
     border-radius: 10px;
