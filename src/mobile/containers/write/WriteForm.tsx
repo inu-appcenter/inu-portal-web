@@ -36,7 +36,7 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
         if (response.status === 200) {
           if (!response.body.data.hasAuthority) {
             window.alert('수정 권한이 없습니다');
-            navigate(-1);
+            navigate('/m/write');
           } else {
             setPost(response.body.data);
           }

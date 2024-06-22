@@ -18,6 +18,8 @@ export default function MobileWritePage() {
       setId(location.pathname.split('/')[4]);
     } else {
       setType('create');
+      setId('');
+      setCategory('');
     }
   }, [location.pathname]);
 
