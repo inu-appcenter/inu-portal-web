@@ -59,7 +59,7 @@ export default function Calendarbar() {
   };
 
   return (
-    <div>
+    <>
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin]}
@@ -76,6 +76,6 @@ export default function Calendarbar() {
           <p>{hoveredEvent}</p>
         </div>
       )}
-    </div>
+    </>
   );
 }
