@@ -28,7 +28,9 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
 
   // setPost, 수정 권한 확인
   useEffect(() => {
+    console.log(type, id);
     if (type === 'update' && id) {
+      console.log(type, id);
       const fetchPost = async () => {
         const response = await getPost(token, id);
         if (response.status === 200) {
@@ -48,7 +50,7 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
     else {
       setPost(null);
     }
-  }, [type, id]);
+  }, [id]);
 
   // post 변경 시 set
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
       setImages(images);
     };
     fetchImages();
-  }, [id, imageCount]);
+  }, [imageCount]);
 
   // 업로드 버튼 클릭
   const handleUpload = async () => {
