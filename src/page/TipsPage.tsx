@@ -70,7 +70,7 @@ const TipsPageWrapper = styled.div`
   }
 `
 const TipsCatWrapper = styled.div`
-  padding: 30px;
+  padding:70px 30px;
   @media (max-width: 768px) { /* 모바일 */
     padding: 0 5px 0 5px;
   }
