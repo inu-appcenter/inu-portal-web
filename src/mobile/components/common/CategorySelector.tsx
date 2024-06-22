@@ -17,7 +17,7 @@ export default function CategorySelector({ value, onChange }: CategorySelectorPr
       try {
         const response = await getCategories();
         if (response.status === 200) {
-          setCategories(response.body.data);
+          setCategories(['전체'].concat(response.body.data));
         } else {
           alert(`${response.status} 모든 카테고리 가져오기 실패`);
         }
