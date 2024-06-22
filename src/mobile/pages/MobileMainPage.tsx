@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MobileNav from '../containers/common/MobileNav';
 import MobileHeader from '../containers/common/MobileHeader';
 import MobileWritePage from './MobileWritePage';
 // import MobileSavePage from './MobileSavePage';
 // import MobileMypage from './MobileMypage';
 import MobileLoginPage from './MobileLoginPage';
+import { usePreviousPage } from '../../hooks/usePreviousPage';
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'block' : 'none')};
@@ -16,6 +17,7 @@ const Page = styled.div<{ $active: boolean }>`
 
 export default function MobileMainPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activePage, setActivePage] = useState('/m');
   const [pagesLoaded, setPagesLoaded] = useState<Record<string, boolean>>({
     home: true,
@@ -24,6 +26,8 @@ export default function MobileMainPage() {
     mypage: false,
     login: false,
   });
+
+  const previousPages = usePreviousPage();
 
   useEffect(() => {
     const path = location.pathname.split('/')[2] || 'home';
@@ -47,6 +51,9 @@ export default function MobileMainPage() {
       )}
       <main style={{ flexGrow: 1 }}>
         <Page $active={activePage.includes('/m/home')}>
+          <button onClick={() => navigate('/m/home/tip')}>tip</button>
+          <button onClick={() => navigate('/m/home/notice')}>notice</button>
+          <button onClick={() => navigate('/m/write/update/122')}>update</button>
         </Page>
         {pagesLoaded.write && (
           <Page $active={activePage.includes('/m/write')}>
@@ -71,7 +78,7 @@ export default function MobileMainPage() {
       </main>
       {!isLoginPage && (
         <nav>
-          <MobileNav />
+          <MobileNav previousPages={previousPages} />
         </nav>
       )}
     </MobileMainPageWrapper>

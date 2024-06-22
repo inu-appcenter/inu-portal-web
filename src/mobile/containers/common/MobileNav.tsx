@@ -4,19 +4,23 @@ import NavItem from '../../components/common/NavItem';
 import homeIcon from '../../../resource/assets/mobile/common/home-gray.svg';
 import homeIconActive from '../../../resource/assets/mobile/common/home-blue.svg';
 import saveIcon from '../../../resource/assets/mobile/common/save-gray.svg';
-import saveIconActive from '../../../resource/assets/mobile/common/save-gray.svg';  // blue 아직
+import saveIconActive from '../../../resource/assets/mobile/common/save-blue.svg';
 import writeIcon from '../../../resource/assets/mobile/common/write-gray.svg';
 import writeIconActive from '../../../resource/assets/mobile/common/write-blue.svg';
 import mypageIcon from '../../../resource/assets/mobile/common/mypage-gray.svg';
-import mypageIconActive from '../../../resource/assets/mobile/common/mypage-gray.svg'; // blue 아직
+import mypageIconActive from '../../../resource/assets/mobile/common/mypage-blue.svg';
 
-export default function MobileNav() {
+interface MobileNavProps {
+  previousPages: Record<string, string>;
+}
+
+export default function MobileNav({ previousPages }: MobileNavProps) {
   return (
     <MobileNavWrapper>
-      <NavItem to="/m/home" icon={homeIcon} activeIcon={homeIconActive} label="Home" />
-      <NavItem to="/m/save" icon={saveIcon} activeIcon={saveIconActive} label="Save" />
-      <NavItem to="/m/write" icon={writeIcon} activeIcon={writeIconActive} label="Write" />
-      <NavItem to="/m/mypage" icon={mypageIcon} activeIcon={mypageIconActive} label="Mypage" />
+      <NavItem to={previousPages.home} icon={homeIcon} activeIcon={homeIconActive} label="Home" />
+      <NavItem to={previousPages.save} icon={saveIcon} activeIcon={saveIconActive} label="Save" />
+      <NavItem to={previousPages.write} icon={writeIcon} activeIcon={writeIconActive} label="Write" />
+      <NavItem to={previousPages.mypage} icon={mypageIcon} activeIcon={mypageIconActive} label="Mypage" />
     </MobileNavWrapper>
   );
 }
