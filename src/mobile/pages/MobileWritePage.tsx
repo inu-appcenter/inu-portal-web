@@ -35,7 +35,7 @@ export default function MobileWritePage() {
       <TitleCategorySelectorWrapper>
         <WritePageTitle idProps={id} value={type} />
         {type=='update' && <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>}
-        <CategorySelector value={category} onChange={setCategory} />
+        <CategorySelector value={category} onChange={setCategory} docType={'TIPS'} />
       </TitleCategorySelectorWrapper>
       <WriteForm idProps={id} category={category} setCategory={setCategory} typeProps={type} />
     </MobileWritePageWrapper>
