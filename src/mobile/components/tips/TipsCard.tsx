@@ -1,16 +1,27 @@
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 interface TipsCardContainerProps {
-  post: Post,
+  post: Post;
   viewMode: 'grid' | 'list';
+  docType: string;
 }
 
-export default function({ post, viewMode }: TipsCardContainerProps) {
+export default function({ post, viewMode, docType }: TipsCardContainerProps) {
+  const navigate = useNavigate();
+  
+  const handleDocumentClick = () => {
+    if (docType === 'NOTICE') {
+      window.open('https://' + post.url, '_blank');
+    } else {
+      navigate(`/tips/${post.id}`);
+    }
+  };
 
   return (
     <>
       {viewMode == "grid" ? (
-      <TipsCardGridWrapper>
+      <TipsCardGridWrapper onClick={handleDocumentClick}>
         <GridTopWrapper>
           <GridTopTopWrapper>
             <Category>{post.category}</Category>
@@ -25,7 +36,7 @@ export default function({ post, viewMode }: TipsCardContainerProps) {
         </GridBottomWrapper>
       </TipsCardGridWrapper>
       ) : (
-        <TipsCardListWrapper>
+        <TipsCardListWrapper onClick={handleDocumentClick}>
           <ListLeftWrapper>
             <Category>{post.category}</Category>
             <Date>{post.createDate}</Date>
