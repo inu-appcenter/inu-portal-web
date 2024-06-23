@@ -88,7 +88,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
               <PageMarker>Page {currentPage}</PageMarker>
               <TipsCardWrapper $viewMode={viewMode}>
                 {pagePosts.map((p, i) => (
-                  <TipsCard key={`post-${index}-${i}`} post={p as Post} viewMode={viewMode} />
+                  <TipsCard key={`post-${index}-${i}`} post={p as Post} viewMode={viewMode} docType={docType} />
                 ))}
               </TipsCardWrapper>
             </PageGroup>
@@ -107,7 +107,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
           <PageMarker>Page {currentPage}</PageMarker>
           <TipsCardWrapper $viewMode={viewMode}>
             {pagePosts.map((p, i) => (
-              <TipsCard key={`post-${currentPage}-${i}`} post={p as Post} viewMode={viewMode} />
+              <TipsCard key={`post-${currentPage}-${i}`} post={p as Post} viewMode={viewMode} docType={docType}/>
             ))}
           </TipsCardWrapper>
         </PageGroup>

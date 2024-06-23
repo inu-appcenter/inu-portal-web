@@ -24,6 +24,7 @@ declare global {
     imageCount: number;
     bestReplies: Replies;
     replies: Replies[];
+    url: string;
   }
 
   interface Replies {
