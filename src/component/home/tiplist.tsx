@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { getPostsTop } from '../../utils/API/Posts';
+import { getPostsMain } from '../../utils/API/Posts';
 
 interface Post {
   id: number;
@@ -16,9 +16,9 @@ export default function MainTip() {
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
-        const response = await getPostsTop();
+        const response = await getPostsMain();
         if (response.status === 200) {
-          setTopPosts(response.body.data.slice(0, 7));
+          setTopPosts(response.body.data);
         }
       } catch (error) {
         console.error('Error fetching top posts:', error);
