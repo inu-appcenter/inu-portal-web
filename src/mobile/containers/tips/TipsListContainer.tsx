@@ -17,6 +17,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
   const [totalPages, setTotalPages] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // 데이터 가져오기 함수
   const fetchData = useCallback(async (pageToLoad: number) => {
     setLoading(true);
     try {
@@ -41,6 +42,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
     setLoading(false);
   }, [category, docType]);
 
+  // 데이터 더 가져오기 함수
   const loadMoreData = useCallback(async () => {
     if (page <= totalPages) {
       await fetchData(page);
@@ -48,11 +50,17 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
     }
   }, [fetchData, page, totalPages]);
 
+  // 카테고리 변경 시 데이터 리셋 및 첫 페이지 로드
   useEffect(() => {
     setPage(1);
     fetchData(1);
+    // 스크롤 맨 위로 올리기
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
   }, [category, fetchData]);
 
+  // 스크롤 핸들러
   const handleScroll = () => {
     if (containerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
@@ -62,6 +70,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
     }
   };
 
+  // 스크롤 이벤트 리스너 추가 및 제거
   useEffect(() => {
     const currentRef = containerRef.current;
     if (currentRef) {
@@ -131,11 +140,12 @@ const TipsListContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: calc(100svh - 72px - 64px - 16px - 32px);
+  height: calc(100svh - 72px - 64px - 16px - 32px); // 100% 로 하면 안먹혀서 header, nav, padding, TitleCategorySelectorWrapper 크기 직접 빼주기
   overflow-y: auto;
 `;
 
 const PageGroup = styled.div`
+
 `;
 
 const TipsCardWrapper = styled.div<{ $viewMode: 'grid' | 'list' }>`
