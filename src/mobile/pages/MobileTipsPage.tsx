@@ -15,7 +15,7 @@ export default function MobileTipsPage() {
   useEffect(() => {
     if (location.pathname.includes('/tips')) {
       if (location.pathname.includes('/tips/notice')) {
-        setDocType('NOTICE')
+        setDocType('NOTICE');
       }
       else {
         setDocType('TIPS');
@@ -23,13 +23,17 @@ export default function MobileTipsPage() {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    setCategory('전체');
+  }, [docType]);
+
   return (
     <MobileTipsPageWrapper>
       <TitleCategorySelectorWrapper>
         <TipsPageTitle value={docType} />
         <ViewModeButtonCategorySelectorWrapper>
           <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
-          <CategorySelector value={category} onChange={setCategory} />
+          <CategorySelector value={category} onChange={setCategory} docType={docType} />
         </ViewModeButtonCategorySelectorWrapper>
       </TitleCategorySelectorWrapper>
       <Wrapper>
