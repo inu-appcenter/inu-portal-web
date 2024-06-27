@@ -6,20 +6,26 @@ import dropdownIcon from '../../../resource/assets/CategorySelectDropdown-img.sv
 interface CategorySelectorProps {
   value: string;
   onChange: (value: string) => void;
+  docType: string;
 }
 
-export default function CategorySelector({ value, onChange }: CategorySelectorProps) {
+export default function CategorySelector({ value, onChange, docType }: CategorySelectorProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await getCategories();
-        if (response.status === 200) {
-          setCategories(response.body.data);
-        } else {
-          alert(`${response.status} 모든 카테고리 가져오기 실패`);
+        if (docType === 'NOTICE') {
+          setCategories(['전체', '학사', '모집', '학점교류', '교육시험']);
+        }
+        else {
+          const response = await getCategories();
+          if (response.status === 200) {
+            setCategories(['전체'].concat(response.body.data));
+          } else {
+            alert(`${response.status} 모든 카테고리 가져오기 실패`);
+          }
         }
       } catch (error) {
         console.error(error);
@@ -27,7 +33,7 @@ export default function CategorySelector({ value, onChange }: CategorySelectorPr
     };
 
     fetchCategories();
-  }, []);
+  }, [docType]);
 
   return (
     <CategorySelectorWrapper onClick={() => setIsOpen(!isOpen)}>
@@ -84,7 +90,7 @@ const DropdownOptions = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 8px 0 8px 0;
+  padding: 12px 0 12px 0;
 
   position: absolute;
   top: 0; /* Dropdown과 같은 위치로 설정 */

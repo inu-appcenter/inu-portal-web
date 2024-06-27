@@ -19,6 +19,7 @@ export default function Navbar() {
 const Nav = styled.nav`
 width: 1500px;
 position: relative;
+z-index:1;
 left: 50%;
 transform: translateX(-50%);
 display: flex;
