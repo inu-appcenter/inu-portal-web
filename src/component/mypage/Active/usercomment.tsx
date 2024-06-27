@@ -57,7 +57,7 @@ export default function UserComment({ postCommentInfo, commentsort, setCommentSo
   }, [postCommentInfo, token]);
 
   return (
-    <>
+    <TotalWrapper>
       <CommentWrapper>
         <CountWrapper>
           <Commentimg src={commentlogo} />
@@ -88,10 +88,11 @@ export default function UserComment({ postCommentInfo, commentsort, setCommentSo
           </PostDetailWrapper>
         ))}
       </PostWrapper>
-    </>
+    </TotalWrapper>
   );
 }
 
+const TotalWrapper = styled.div``
 const CommentWrapper = styled.div`
   display: flex;
   justify-content: space-between;
@@ -172,7 +173,6 @@ const PostListWrapper = styled.div`
 
 const CountWrapper = styled.div`
   display: flex;
-  margin-top: 26px;
   align-items: center;
 `;
 

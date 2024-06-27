@@ -28,7 +28,7 @@ interface likeinfoProps {
 
 export default function LikePost({ postLikeInfo,likesort, setLikeSort}: likeinfoProps) {
   return (
-    <>
+    <TotalWrapper>
       <LikeWrapper>
         <CountWrapper>
           <Likeimg src={likeImg} />
@@ -59,9 +59,13 @@ export default function LikePost({ postLikeInfo,likesort, setLikeSort}: likeinfo
           </PostDetailWrapper>
         ))}
 </PostWrapper>
-    </>
+    </TotalWrapper>
   );
 }
+
+const TotalWrapper = styled.div`
+  
+`
 
 const LikeWrapper = styled.div`
   display: flex;

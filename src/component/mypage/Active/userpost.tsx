@@ -30,7 +30,7 @@ interface PostinfoProps {
 export default function UserPost({postinfo,postsort,setPostSort}:PostinfoProps) {
     
   return (
-    <>
+    <TotalWrapper>
 <PostsWrapper>
         <CountWrapper>
           <Likeimg src={postImg} />
@@ -61,9 +61,11 @@ export default function UserPost({postinfo,postsort,setPostSort}:PostinfoProps) 
           </PostDetailWrapper>
         ))}
 </PostWrapper>
-</>
+</TotalWrapper>
   );
 }
+
+const TotalWrapper = styled.div``
 
 const PostsWrapper = styled.div`
   display: flex;
