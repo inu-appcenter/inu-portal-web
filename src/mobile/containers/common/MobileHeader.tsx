@@ -40,6 +40,7 @@ const MobileHeaderWrapper = styled.div`
   align-items: center;
   height: 72px;
   padding: 0 16px;
+  position:relative;
 `;
 
 const AppLogoWrapper = styled.div`
