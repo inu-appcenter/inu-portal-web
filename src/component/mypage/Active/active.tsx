@@ -109,9 +109,11 @@ export default function ActiveInfo({likesort,commentsort,postsort,setLikeSort,se
   return (
     <ActiveWrapper>
       <ActiveTitle/>
+      <ActiveDetailWrapper>
       <LikePost postLikeInfo={PostLikeInfo} likesort={likesort} setLikeSort={setLikeSort}/>
       <UserComment postCommentInfo={PostCommentInfo} commentsort={commentsort} setCommentSort={setCommentSort}/>
       <UserPost postinfo={PostInfo} postsort={postsort} setPostSort={setPostSort} />
+      </ActiveDetailWrapper>
     </ActiveWrapper>
   );
 }
@@ -119,3 +121,9 @@ export default function ActiveInfo({likesort,commentsort,postsort,setLikeSort,se
 const ActiveWrapper = styled.div`
   padding:20px 76px;
 `;
+
+const ActiveDetailWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`
