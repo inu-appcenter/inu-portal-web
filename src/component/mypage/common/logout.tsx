@@ -25,9 +25,8 @@ export default function  MypageLogout () {
 const MyPageLogpoutWrapper = styled.div`
     display: flex;
     padding: 20px 35px;
-    margin-bottom: 72px;
-    position: absolute;
-    bottom: 10px;
+    margin-top:  calc(100% + 300px)
+
 `
 const MyPageLogpoutImg= styled.img`
 display: inline-block;
