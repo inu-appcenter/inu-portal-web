@@ -1,20 +1,20 @@
 import styled from 'styled-components';
 
-interface WriteTitleProps {
+interface WritePageTitleProps {
   idProps?: string;
   value: string;
 }
 
-export default function WriteTitle({ idProps, value }: WriteTitleProps) {
+export default function WritePageTitle({ idProps, value }: WritePageTitleProps) {
   const id = idProps;
-  return(
-    <WriteTitleWrapper>
+  return (
+    <WritePageTitleWrapper>
       {value === 'create' ? 'TIP 글쓰기' : `TIP 수정하기 (${id})`}
-    </WriteTitleWrapper>
+    </WritePageTitleWrapper>
   );
 }
 
-const WriteTitleWrapper = styled.div`
+const WritePageTitleWrapper = styled.div`
   font-size: 14px;
   font-weight: 600;
 `

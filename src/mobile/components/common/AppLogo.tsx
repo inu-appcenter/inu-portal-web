@@ -7,7 +7,7 @@ export default function AppLogo() {
 
   return (
     <>
-      <Logo onClick={() => {navigate('/m')}} src={intipLogo} alt="INTIP Logo" />
+      <Logo onClick={() => {navigate('/m/home')}} src={intipLogo} alt="INTIP Logo" />
     </>
   );
 }

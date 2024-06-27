@@ -81,3 +81,9 @@ export const getPostsTop = async (category: string = '전체') => {
     : `https://portal.inuappcenter.kr/api/posts/top?category=${category}`;
   return await apiClient(apiURL, 'GET', '');
 };
+
+// 메인 페이지 게시글 7개 가져오기
+export const getPostsMain = async() => {
+  const apiURL = `https://portal.inuappcenter.kr/api/posts/main`
+  return await apiClient(apiURL, 'GET', '');
+}

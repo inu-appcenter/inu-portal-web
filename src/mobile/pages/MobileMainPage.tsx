@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import MobileNav from '../containers/common/MobileNav';
 import MobileHeader from '../containers/common/MobileHeader';
-import MobileWritePage from './MobileWritePage';
+import MobileHomePage from './MobileHomePage';
+import MobileTipsPage from './MobileTipsPage';
 // import MobileSavePage from './MobileSavePage';
+import MobileWritePage from './MobileWritePage';
 // import MobileMypage from './MobileMypage';
 import MobileLoginPage from './MobileLoginPage';
 import { usePreviousPage } from '../../hooks/usePreviousPage';
@@ -12,17 +14,17 @@ import WeatherForm from '../containers/home/Weather';
 import SerachForm from '../containers/home/SerachForm';
 
 const Page = styled.div<{ $active: boolean }>`
-  display: ${props => (props.$active ? 'block' : 'none')};
+  display: ${props => (props.$active ? 'flex' : 'none')};
   width: 100%;
   height: 100%;
 `;
 
 export default function MobileMainPage() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [activePage, setActivePage] = useState('/m');
   const [pagesLoaded, setPagesLoaded] = useState<Record<string, boolean>>({
     home: true,
+    tips: false,
     write: false,
     save: false,
     mypage: false,
@@ -52,12 +54,13 @@ export default function MobileMainPage() {
         </header>
       )}
       <main style={{ flexGrow: 1 }}>
-        <Page $active={activePage.includes('/m/home')}>
+        <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips')}>
         <WeatherForm/>
         <SerachForm/>
-          <button onClick={() => navigate('/m/home/tip')}>tip</button>
-          <button onClick={() => navigate('/m/home/notice')}>notice</button>
-          <button onClick={() => navigate('/m/write/update/122')}>update</button>
+          <MobileHomePage />
+        </Page>
+        <Page $active={activePage.includes('/m/home/tips')}>
+          <MobileTipsPage />
         </Page>
         {pagesLoaded.write && (
           <Page $active={activePage.includes('/m/write')}>

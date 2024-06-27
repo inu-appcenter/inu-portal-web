@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import WriteTitle from '../components/write/WriteTitle';
-import CategorySelector from '../components/write/CategorySelector';
+import WritePageTitle from '../components/write/WritePageTitle';
+import CategorySelector from '../components/common/CategorySelector';
 import WriteForm from '../containers/write/WriteForm';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -33,9 +33,9 @@ export default function MobileWritePage() {
   return (
     <MobileWritePageWrapper>
       <TitleCategorySelectorWrapper>
-        <WriteTitle idProps={id} value={type} />
+        <WritePageTitle idProps={id} value={type} />
         {type=='update' && <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>}
-        <CategorySelector value={category} onChange={setCategory} />
+        <CategorySelector value={category} onChange={setCategory} docType={'TIPS'} />
       </TitleCategorySelectorWrapper>
       <WriteForm idProps={id} category={category} setCategory={setCategory} typeProps={type} />
     </MobileWritePageWrapper>
@@ -47,8 +47,9 @@ const MobileWritePageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin: 16px 32px 0 32px;
-  height: 92%;
+  padding: 0 16px 0 16px;
+  height: 96%;
+  width: 100%;
 `;
 
 const TitleCategorySelectorWrapper = styled.div`
