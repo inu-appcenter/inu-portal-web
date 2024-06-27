@@ -8,6 +8,8 @@ import MobileWritePage from './MobileWritePage';
 // import MobileMypage from './MobileMypage';
 import MobileLoginPage from './MobileLoginPage';
 import { usePreviousPage } from '../../hooks/usePreviousPage';
+import WeatherForm from '../containers/home/Weather';
+import SerachForm from '../containers/home/SerachForm';
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'block' : 'none')};
@@ -51,6 +53,8 @@ export default function MobileMainPage() {
       )}
       <main style={{ flexGrow: 1 }}>
         <Page $active={activePage.includes('/m/home')}>
+        <WeatherForm/>
+        <SerachForm/>
           <button onClick={() => navigate('/m/home/tip')}>tip</button>
           <button onClick={() => navigate('/m/home/notice')}>notice</button>
           <button onClick={() => navigate('/m/write/update/122')}>update</button>
