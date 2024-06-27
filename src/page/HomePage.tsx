@@ -30,7 +30,6 @@ export default function HomePage() {
 const HomePageWrapper = styled.div`
     display: flex;
     flex-direction: column;
-    width: 1500px;
     position: relative;
     flex-wrap: wrap;
     z-index:0;
@@ -51,7 +50,7 @@ const MainWrapper = styled.div`
     padding-top: 20px;
     @media (max-width: 768px) { // 모바일
         flex-direction: column;
-      }
+    }
 `;
 
 const Wrapper = styled.div`
