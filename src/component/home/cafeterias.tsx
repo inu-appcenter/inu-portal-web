@@ -153,6 +153,7 @@ const CafeteriaWrapper = styled.div`
   height: 350px;
   .total-wrapper {
     display: flex;
+    justify-content: space-between;
   }
   .date {
     font-size: 12px;
@@ -227,6 +228,7 @@ const CafetriaInfo = styled.div`
                 font-size:12px;
                 font-weight: bold;
                 margin-left:15px;
+  
             }
             .detail-wrapper {
               display: flex;
@@ -250,7 +252,7 @@ const CafetriaInfo = styled.div`
        
         
     }
-    width: 245px;
+    justify-content: space-around;
     box-sizing: border-box;
     /* justify-content: space-evenly; */
     .breakfast, .lunch , .dinner {

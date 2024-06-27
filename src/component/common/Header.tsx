@@ -35,7 +35,6 @@ export default function Headerbar() {
 }
 
 const Header = styled.header`
-    width: 1500px;
     position: relative;
     left: 50%;
     transform: translateX(-50%);
