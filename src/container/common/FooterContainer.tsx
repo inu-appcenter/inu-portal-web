@@ -13,7 +13,6 @@ export default function Footer() {
 }
 
 const FooterWrapper = styled.div`
-  width: 1500px;
   position: relative;
   left: 50%;
   transform: translateX(-50%);

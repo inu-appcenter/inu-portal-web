@@ -60,8 +60,7 @@ export default function TipsPage() {
 
 const TipsPageWrapper = styled.div`
   display: flex;
-  width: 1500px;
-  flex-dicrection: row;
+  flex-direction: row;
     height: 100%;
   justify-content: space-around;
   margin: auto;
