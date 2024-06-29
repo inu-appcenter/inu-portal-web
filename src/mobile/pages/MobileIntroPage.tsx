@@ -1,0 +1,39 @@
+import styled, { keyframes } from 'styled-components';
+import logoWithText from '../../resource/assets/mobile/login/logo-with-text.svg';
+
+export default function MobileIntroPage() {
+  return (
+    <IntroPageWrapper>
+      <IntroImage src={logoWithText} />
+      <div />
+    </IntroPageWrapper>
+  )
+}
+
+const fadeOut = keyframes`
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+`;
+
+const IntroPageWrapper = styled.div`
+  background-color: rgba(255, 255, 255);
+  height: 100%;
+  width: 100%;
+  display: flex;
+  position: absolute;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 100;
+
+  animation: ${fadeOut} 3s ease forwards;
+  animation-delay: 1s;
+`;
+
+const IntroImage = styled.img`
+  width: 75%;
+`;
