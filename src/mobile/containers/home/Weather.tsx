@@ -85,7 +85,7 @@ const WeatherWrapper = styled.div `
     display:flex;
     align-items: flex-end;
     flex-direction: column;
-    padding:20px 0 10px 0;
+    padding:20px 0 40px 0;
     justify-content: flex-end;
     position: absolute;
     top:0;
