@@ -11,7 +11,7 @@ import AiPage from './page/AiPage';
 import useUser from './hooks/useUser';
 import useAuth from './hooks/useAuth';
 import MobileMainPage from './mobile/pages/MobileMainPage';
-import InstallPrompt from './component/InstallPrompt';
+import InstallPage from './mobile/pages/InstallPage';
 
 function App() {
   useUser();
@@ -19,8 +19,8 @@ function App() {
 
   return (
     <>
-      <InstallPrompt />
       <Routes>
+        <Route path='/install' element={<InstallPage />} />
         <Route path='/m/*' element={<MobileMainPage />} />
         <Route path='/' element={<MainPage />}>
           <Route path='/' element={<HomePage />} />
