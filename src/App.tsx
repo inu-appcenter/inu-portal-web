@@ -11,24 +11,28 @@ import AiPage from './page/AiPage';
 import useUser from './hooks/useUser';
 import useAuth from './hooks/useAuth';
 import MobileMainPage from './mobile/pages/MobileMainPage';
+import InstallPrompt from './component/InstallPrompt';
 
 function App() {
   useUser();
   useAuth();
 
   return (
-    <Routes>
-      <Route path='/m/*' element={<MobileMainPage />} />
-      <Route path='/' element={<MainPage />}>
-        <Route path='/' element={<HomePage />} />
-        <Route path='/login/*' element={<Login />} />
-        <Route path='/tips/*' element={<Tips />} />
-        <Route path='/mypage/*' element={<MyPage />} />
-      </Route>
-      <Route path='/ai/*' element={<AiPage />} />
-      <Route path='update/:id' element={<WritePost />} />
-      <Route path='/write' element={<WritePost />} />
-    </Routes>
+    <>
+      <InstallPrompt />
+      <Routes>
+        <Route path='/m/*' element={<MobileMainPage />} />
+        <Route path='/' element={<MainPage />}>
+          <Route path='/' element={<HomePage />} />
+          <Route path='/login/*' element={<Login />} />
+          <Route path='/tips/*' element={<Tips />} />
+          <Route path='/mypage/*' element={<MyPage />} />
+        </Route>
+        <Route path='/ai/*' element={<AiPage />} />
+        <Route path='update/:id' element={<WritePost />} />
+        <Route path='/write' element={<WritePost />} />
+      </Routes>
+    </>
   );
 }
 
