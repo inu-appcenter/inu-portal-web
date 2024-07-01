@@ -1,18 +1,17 @@
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
+import ReactDOM from 'react-dom/client';
+import App from './App';
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import userSlice from "./reducer/userSlice.tsx";
-import CommonStyle from './resource/style/CommonStyle.tsx';
-import folderSlice from './reducer/folderSlice.tsx';
-import folderIdSlice  from './reducer/folderId.tsx';
-
+import userSlice from "./reducer/userSlice";
+import CommonStyle from './resource/style/CommonStyle';
+import folderSlice from './reducer/folderSlice';
+import folderIdSlice  from './reducer/folderId';
 
 const store = configureStore({
-    reducer: {
+  reducer: {
     user: userSlice,
     folder: folderSlice,
-    folderId:folderIdSlice
+    folderId: folderIdSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -22,7 +21,7 @@ const store = configureStore({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
-    <CommonStyle/>
+    <CommonStyle />
     <App />
   </Provider>
-)
+);
