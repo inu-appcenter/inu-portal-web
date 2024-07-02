@@ -1,5 +1,5 @@
 // SortDropBox.tsx
-import React, { useEffect } from 'react';
+import  { useEffect } from 'react';
 import styled from 'styled-components';
 import { getNotices } from '../../../utils/API/Notices';
 
