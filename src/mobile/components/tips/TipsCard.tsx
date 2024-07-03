@@ -60,6 +60,7 @@ const Category = styled.div`
   width: fit-content;
 
   border-bottom: 2px solid #7AA7E5;
+  padding-bottom: 2px;
 `;
 
 const Date = styled.div`
@@ -87,7 +88,7 @@ const Writer = styled.div`
   font-size: 8px;
   font-weight: 500;
   color: #303030;
-  width: 64px;
+  padding: 0 8px 0 8px;
   height: 16px;
   background-color: #ECF4FF;
   border-radius: 8px;
