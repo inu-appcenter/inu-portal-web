@@ -11,6 +11,12 @@ export default function SerachForm() {
     navigate(`/m/home/tips/search?query=${query}`);
   };
 
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <SearchFormWrapper>
       <div>
@@ -19,6 +25,7 @@ export default function SerachForm() {
           placeholder='검색어를 입력하세요.' 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyPress={handleKeyPress}
         />
         <img src={searchImg} alt="검색 이미지" onClick={handleSearch} />
       </div>
@@ -43,6 +50,9 @@ const SearchFormWrapper = styled.div`
       color:#888888;
       font-weight: 500;
       flex-grow: 1;
+    }
+    img {
+      cursor: pointer;
     }
   }
 `;
