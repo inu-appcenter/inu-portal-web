@@ -12,20 +12,21 @@ export default function MobileTipsPage() {
   const [category, setCategory] = useState('전체');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [docType, setDocType] = useState('');  // TIPS 또는 NOTICE
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     if (location.pathname.includes('/tips')) {
       if (location.pathname.includes('/tips/notice')) {
         setDocType('NOTICE');
-      }
-      else if (location.pathname.includes('/tips/search')) {
+      } else if (location.pathname.includes('/tips/search')) {
         setDocType('SEARCH');
-      }
-      else {
+        const params = new URLSearchParams(location.search);
+        setQuery(params.get('query') || '');
+      } else {
         setDocType('TIPS');
       }
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     setCategory('전체');
@@ -33,16 +34,16 @@ export default function MobileTipsPage() {
 
   return (
     <MobileTipsPageWrapper>
-      {(docType != 'NOTICE') && (<SerachForm />)}
+      {(docType !== 'NOTICE') && (<SerachForm />)}
       <TitleCategorySelectorWrapper>
-        <TipsPageTitle value={docType} />
+        <TipsPageTitle value={docType + (query ? ` - ${query}` : '')} />
         <ViewModeButtonCategorySelectorWrapper>
           <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
-          {(docType != 'SEARCH') && (<CategorySelector value={category} onChange={setCategory} docType={docType} />)}
+          {(docType !== 'SEARCH') && (<CategorySelector value={category} onChange={setCategory} docType={docType} />)}
         </ViewModeButtonCategorySelectorWrapper>
       </TitleCategorySelectorWrapper>
       <Wrapper>
-        <TipsListContainer viewMode={viewMode} docType={docType} category={category} />
+        <TipsListContainer viewMode={viewMode} docType={docType} category={category} query={query} />
       </Wrapper>
     </MobileTipsPageWrapper>
   );
@@ -76,4 +77,4 @@ const Wrapper = styled.div`
   display: flex;
   width: 100%;
   height: 100%;
-`
+`;
