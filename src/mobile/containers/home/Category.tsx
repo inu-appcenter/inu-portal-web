@@ -27,6 +27,7 @@ const navigate = useNavigate();
 const CategoryFormmWrapper = styled.div`
     display: flex;
     justify-content: space-between;
+    margin-top: 40px;
     .category {
         display: flex;
         flex-direction: column;

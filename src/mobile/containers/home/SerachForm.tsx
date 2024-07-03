@@ -1,10 +1,7 @@
 import styled from 'styled-components';
 import searchImg from "../../../resource/assets/mobile/home/input.png";
 
-
-
 export default function SerachForm() {
-
 
   return (
     <SearchFormWrapper>
@@ -17,7 +14,6 @@ export default function SerachForm() {
 }
 
 const SearchFormWrapper = styled.div`
-  margin-bottom:40px;
   div {
     box-sizing: border-box;
     border-radius: 10px;
@@ -32,6 +28,7 @@ const SearchFormWrapper = styled.div`
       font-size: 14px;
       color:#888888;
       font-weight: 500;
+      flex-grow: 1;
     }
   }
 `;
