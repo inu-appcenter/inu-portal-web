@@ -18,12 +18,14 @@ export default function MobileTipsPage() {
     if (location.pathname.includes('/tips')) {
       if (location.pathname.includes('/tips/notice')) {
         setDocType('NOTICE');
+        setQuery('');
       } else if (location.pathname.includes('/tips/search')) {
         setDocType('SEARCH');
         const params = new URLSearchParams(location.search);
         setQuery(params.get('query') || '');
       } else {
         setDocType('TIPS');
+        setQuery('');
       }
     }
   }, [location.pathname, location.search]);
