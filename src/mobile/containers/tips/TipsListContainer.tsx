@@ -143,8 +143,8 @@ const TipsListContainerWrapper = styled.div<{ $docType: string }>`
   width: 100%;
   height: ${({ $docType }) => 
     $docType === 'NOTICE' 
-    ? 'calc(100svh - 72px - 64px - 16px - 32px - 16px)' // DocType이 NOTICE 일 때는 SearchForm 없음
-    : 'calc(100svh - 72px - 64px - 32px - 32px - 49px)'}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
+    ? 'calc(100svh - 72px - 64px - 16px - 32px)' // DocType이 NOTICE 일 때는 SearchForm 없음
+    : 'calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)'}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
   overflow-y: auto;
 `;
 

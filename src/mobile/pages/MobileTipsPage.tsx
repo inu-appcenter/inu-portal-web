@@ -40,8 +40,8 @@ export default function MobileTipsPage() {
       <TitleCategorySelectorWrapper>
         <TipsPageTitle value={docType + (query ? ` - ${query}` : '')} />
         <ViewModeButtonCategorySelectorWrapper>
-          <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
           {(docType !== 'SEARCH') && (<CategorySelector value={category} onChange={setCategory} docType={docType} />)}
+          <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
         </ViewModeButtonCategorySelectorWrapper>
       </TitleCategorySelectorWrapper>
       <Wrapper>
@@ -63,7 +63,7 @@ const MobileTipsPageWrapper = styled.div`
 
 const TitleCategorySelectorWrapper = styled.div`
   width: 100%;
-  height: 32px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
