@@ -88,7 +88,7 @@ const WeatherWrapper = styled.div `
     padding:20px 0 40px 0;
     justify-content: flex-end;
     position: absolute;
-    top:0;
+    top: -244px;
     width:100%;
     z-index:-1;
     &.Sun {

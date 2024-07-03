@@ -34,6 +34,7 @@ const MobileHomePageWrapper = styled.div`
   flex-direction: column;
   margin-top: 170px;
   width: 100%;
+  position: relative;
 `;
 
 const ContainerWrapper = styled.div`

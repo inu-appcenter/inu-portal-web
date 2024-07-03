@@ -67,52 +67,55 @@ export default function MobileMainPage() {
   const isLoginPage = location.pathname === '/m/login';
 
   return (
-    <MobileMainPageWrapper>
-      {showIntro ? (<MobileIntroPage/>) : (<></>)}
-      {!isLoginPage && (
-        <header>
-          <MobileHeader />
-        </header>
-      )}
-      <main style={{ flexGrow: 1 }}>
-        <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips')}>
-          <MobileHomePage />
-        </Page>
-        <Page $active={activePage.includes('/m/home/tips')}>
-          <MobileTipsPage />
-        </Page>
-        {pagesLoaded.write && (
-          <Page $active={activePage.includes('/m/write')}>
-            <MobileWritePage />
-          </Page>
+    <>
+      <MobileMainPageWrapper>
+        {showIntro ? (<MobileIntroPage/>) : (<></>)}
+        {!isLoginPage && (
+          <header>
+            <MobileHeader />
+          </header>
         )}
-        {pagesLoaded.save && (
-          <Page $active={activePage.includes('/m/save')}>
-            { /* <MobileSavePage /> */}
+        <main style={{ flexGrow: 1 }}>
+          <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips')}>
+            <MobileHomePage />
           </Page>
-        )}
-        {pagesLoaded.mypage && (
-          <Page $active={activePage.includes('/m/mypage')}>
-            {/* <MobileMypage /> */}
+          <Page $active={activePage.includes('/m/home/tips')}>
+            <MobileTipsPage />
           </Page>
+          {pagesLoaded.write && (
+            <Page $active={activePage.includes('/m/write')}>
+              <MobileWritePage />
+            </Page>
+          )}
+          {pagesLoaded.save && (
+            <Page $active={activePage.includes('/m/save')}>
+              { /* <MobileSavePage /> */}
+            </Page>
+          )}
+          {pagesLoaded.mypage && (
+            <Page $active={activePage.includes('/m/mypage')}>
+              {/* <MobileMypage /> */}
+            </Page>
+          )}
+          {pagesLoaded.login && (
+            <Page $active={activePage === '/m/login'}>
+              <MobileLoginPage />
+            </Page>
+          )}
+        </main>
+      </MobileMainPageWrapper>
+        {!isLoginPage && (
+          <nav>
+            <MobileNav previousPages={previousPages} />
+          </nav>
         )}
-        {pagesLoaded.login && (
-          <Page $active={activePage === '/m/login'}>
-            <MobileLoginPage />
-          </Page>
-        )}
-      </main>
-      {!isLoginPage && (
-        <nav>
-          <MobileNav previousPages={previousPages} />
-        </nav>
-      )}
-    </MobileMainPageWrapper>
+    </>
   );
 }
 
 const MobileMainPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100svh;
+  height: calc(100svh - 64px); // nav 만큼 빼기
+  overflow-y: auto;
 `;
