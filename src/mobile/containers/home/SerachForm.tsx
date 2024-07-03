@@ -14,6 +14,7 @@ export default function SerachForm() {
 }
 
 const SearchFormWrapper = styled.div`
+  width: 100%;
   div {
     box-sizing: border-box;
     border-radius: 10px;

@@ -5,6 +5,7 @@ import CategorySelector from '../components/common/CategorySelector';
 import { useLocation } from 'react-router-dom';
 import ViewModeButtons from '../components/tips/ViewModeButtons';
 import TipsListContainer from '../containers/tips/TipsListContainer';
+import SerachForm from '../containers/home/SerachForm';
 
 export default function MobileTipsPage() {
   const location = useLocation();
@@ -16,6 +17,9 @@ export default function MobileTipsPage() {
     if (location.pathname.includes('/tips')) {
       if (location.pathname.includes('/tips/notice')) {
         setDocType('NOTICE');
+      }
+      else if (location.pathname.includes('/tips/search')) {
+        setDocType('SEARCH');
       }
       else {
         setDocType('TIPS');
@@ -29,11 +33,12 @@ export default function MobileTipsPage() {
 
   return (
     <MobileTipsPageWrapper>
+      {(docType != 'NOTICE') && (<SerachForm />)}
       <TitleCategorySelectorWrapper>
         <TipsPageTitle value={docType} />
         <ViewModeButtonCategorySelectorWrapper>
           <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
-          <CategorySelector value={category} onChange={setCategory} docType={docType} />
+          {(docType != 'SEARCH') && (<CategorySelector value={category} onChange={setCategory} docType={docType} />)}
         </ViewModeButtonCategorySelectorWrapper>
       </TitleCategorySelectorWrapper>
       <Wrapper>
