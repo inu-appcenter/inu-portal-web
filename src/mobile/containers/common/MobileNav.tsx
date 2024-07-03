@@ -26,6 +26,10 @@ export default function MobileNav({ previousPages }: MobileNavProps) {
 }
 
 const MobileNavWrapper = styled.div`
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  background-color: white;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
