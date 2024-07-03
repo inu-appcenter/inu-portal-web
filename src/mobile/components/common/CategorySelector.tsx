@@ -99,6 +99,8 @@ const DropdownOptions = styled.div`
   border-radius: 16px;
   background: linear-gradient(180deg, #FFFFFF -21.86%, #D5E4F7 100%, #AAC9EE 100%);
   z-index: 10;
+  height: 50svh;
+  overflow-y: scroll;
 `;
 
 const DropdownOption = styled.div`
