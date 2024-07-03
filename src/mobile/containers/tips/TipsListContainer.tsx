@@ -4,30 +4,20 @@ import TipsCard from '../../components/tips/TipsCard';
 import { getPosts } from '../../../utils/API/Posts';
 import { getNotices } from '../../../utils/API/Notices';
 import { search } from '../../../utils/API/Search';
-import { useLocation } from 'react-router-dom';
 
 interface TipsListContainerProps {
   viewMode: 'grid' | 'list';
   docType: string;
   category: string;
+  query: string;
 }
 
-export default function TipsListContainer({ viewMode, docType, category }: TipsListContainerProps) {
+export default function TipsListContainer({ viewMode, docType, category, query }: TipsListContainerProps) {
   const [posts, setPosts] = useState<(Post | { page: number })[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
-
-  const getQueryParams = (search: string) => {
-    const params = new URLSearchParams(search);
-    return {
-      query: params.get('query') || '',
-    };
-  };
-
-  const { query } = getQueryParams(location.search);
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(async (pageToLoad: number) => {
