@@ -1,13 +1,26 @@
+import { useState } from 'react';
 import styled from 'styled-components';
 import searchImg from "../../../resource/assets/mobile/home/input.png";
+import { useNavigate } from 'react-router-dom';
 
 export default function SerachForm() {
+  const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    navigate(`/m/home/tips/search?query=${query}`);
+  };
 
   return (
     <SearchFormWrapper>
       <div>
-        <input type="text" placeholder='검색어를 입력하세요.'/>
-        <img src={searchImg} alt="검색 이미지" />
+        <input 
+          type="text" 
+          placeholder='검색어를 입력하세요.' 
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <img src={searchImg} alt="검색 이미지" onClick={handleSearch} />
       </div>
     </SearchFormWrapper>
   );
@@ -33,4 +46,3 @@ const SearchFormWrapper = styled.div`
     }
   }
 `;
-

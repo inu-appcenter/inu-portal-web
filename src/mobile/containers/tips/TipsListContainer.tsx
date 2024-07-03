@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import TipsCard from '../../components/tips/TipsCard';
 import { getPosts } from '../../../utils/API/Posts';
 import { getNotices } from '../../../utils/API/Notices';
+import { search } from '../../../utils/API/Search';
+import { useLocation } from 'react-router-dom';
 
 interface TipsListContainerProps {
   viewMode: 'grid' | 'list';
@@ -16,31 +18,40 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  const getQueryParams = (search: string) => {
+    const params = new URLSearchParams(search);
+    return {
+      query: params.get('query') || '',
+    };
+  };
+
+  const { query } = getQueryParams(location.search);
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(async (pageToLoad: number) => {
     setLoading(true);
     try {
+      let response;
       if (docType === 'TIPS') {
-        const response = await getPosts(category, 'date', pageToLoad.toString());
-        if (response.status === 200) {
-          const newPosts = response.body.data.posts;
-          setPosts((prev) => pageToLoad === 1 ? [{ page: pageToLoad }, ...newPosts] : [...prev, { page: pageToLoad }, ...newPosts]);
-          setTotalPages(response.body.data.pages);
-        }
+        response = await getPosts(category, 'date', pageToLoad.toString());
       } else if (docType === 'NOTICE') {
-        const response = await getNotices(category, 'date', pageToLoad.toString());
-        if (response.status === 200) {
-          const newNotices = response.body.data.notices;
-          setPosts((prev) => pageToLoad === 1 ? [{ page: pageToLoad }, ...newNotices] : [...prev, { page: pageToLoad }, ...newNotices]);
-          setTotalPages(response.body.data.pages);
-        }
+        response = await getNotices(category, 'date', pageToLoad.toString());
+      } else if (docType === 'SEARCH' && query) {
+        response = await search(query, 'date', pageToLoad.toString());
+      }
+
+      if (response && response.status === 200) {
+        const newPosts = response.body.data.posts || response.body.data.notices;
+        setPosts((prev) => pageToLoad === 1 ? [{ page: pageToLoad }, ...newPosts] : [...prev, { page: pageToLoad }, ...newPosts]);
+        setTotalPages(response.body.data.pages);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
     setLoading(false);
-  }, [category, docType]);
+  }, [category, docType, query]);
 
   // 데이터 더 가져오기 함수
   const loadMoreData = useCallback(async () => {
@@ -50,7 +61,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
     }
   }, [fetchData, page, totalPages]);
 
-  // 카테고리 변경 시 데이터 리셋 및 첫 페이지 로드
+  // 카테고리 또는 검색어 변경 시 데이터 리셋 및 첫 페이지 로드
   useEffect(() => {
     setPage(1);
     fetchData(1);
@@ -58,7 +69,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
     }
-  }, [category, fetchData]);
+  }, [category, fetchData, query]);
 
   // 스크롤 핸들러
   const handleScroll = () => {
@@ -143,7 +154,7 @@ const TipsListContainerWrapper = styled.div<{ $docType: string }>`
   height: ${({ $docType }) => 
     $docType === 'NOTICE' 
     ? 'calc(100svh - 72px - 64px - 16px - 32px - 16px)' // DocType이 NOTICE 일 때는 SearchForm 없음
-    : 'calc(100svh - 72px - 64px - 32px - 32px - 16px - 49px)'}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
+    : 'calc(100svh - 72px - 64px - 32px - 32px - 49px)'}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
   overflow-y: auto;
 `;
 
