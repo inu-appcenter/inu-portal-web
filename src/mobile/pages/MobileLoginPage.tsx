@@ -21,6 +21,7 @@ const MobileLoginPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100%;
 `;
 
 const BackButtonWrapper = styled.div`
