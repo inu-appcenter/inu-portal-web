@@ -127,7 +127,7 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
   };
 
   return (
-    <TipsListContainerWrapper ref={containerRef}>
+    <TipsListContainerWrapper $docType={docType} ref={containerRef}>
       {renderPosts()}
       {loading && <Loader>Loading...</Loader>}
       {!loading && page > totalPages && <EndMarker>End of Content</EndMarker>}
@@ -135,17 +135,20 @@ export default function TipsListContainer({ viewMode, docType, category }: TipsL
   );
 }
 
-const TipsListContainerWrapper = styled.div`
+const TipsListContainerWrapper = styled.div<{ $docType: string }>`
   flex: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: calc(100svh - 72px - 64px - 16px - 32px); // 100% 로 하면 안먹혀서 header, nav, padding, TitleCategorySelectorWrapper 크기 직접 빼주기
+  height: ${({ $docType }) => 
+    $docType === 'NOTICE' 
+    ? 'calc(100svh - 72px - 64px - 16px - 32px - 16px)' // DocType이 NOTICE 일 때는 SearchForm 없음
+    : 'calc(100svh - 72px - 64px - 32px - 32px - 16px - 49px)'}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
   overflow-y: auto;
 `;
 
 const PageGroup = styled.div`
-
+  margin-bottom: 16px;
 `;
 
 const TipsCardWrapper = styled.div<{ $viewMode: 'grid' | 'list' }>`
