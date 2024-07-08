@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Route, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import MobileIntroPage from './MobileIntroPage';
 import MobileHeader from '../containers/common/MobileHeader';
 import MobileNav from '../containers/common/MobileNav';
@@ -77,16 +77,20 @@ export default function MobileMainPage() {
           </header>
         )}
         <main style={{ flexGrow: 1 }}>
-        <Page $active={activePage === '/m/home'}>
-        <MobileHomePage />
-      </Page>
+          <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips')}>
+            <MobileHomePage />
+          </Page>
           <Page $active={activePage.includes('/m/home/tips') && !activePage.includes('/m/home/tips/postdetail')}>
-        <MobileTipsPage />
-      </Page>
-      <Page $active={activePage.includes('/m/home/tips/postdetail')}>
-        <MobilePostDetailPage  />
-      </Page>
-          
+            <MobileTipsPage />
+          </Page>
+          <Page $active={activePage.includes('/m/home/tips/postdetail')}>
+            <MobilePostDetailPage  />
+          </Page>
+          {pagesLoaded.write && (
+            <Page $active={activePage.includes('/m/write')}>
+              <MobileWritePage />
+            </Page>
+          )}
           {pagesLoaded.save && (
             <Page $active={activePage.includes('/m/save')}>
               { /* <MobileSavePage /> */}
