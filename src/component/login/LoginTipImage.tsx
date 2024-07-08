@@ -9,14 +9,34 @@ const images = [LoginTipImg1, LoginTipImg2, LoginTipImg3, LoginTipImg4];
 
 export default function LoginTipImage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000);
+    const loadImage = (src: string) =>
+      new Promise<void>((resolve) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve();
+      });
 
-    return () => clearInterval(interval);
+    Promise.all(images.map((src) => loadImage(src))).then(() => {
+      setImagesLoaded(true);
+    });
   }, []);
+
+  useEffect(() => {
+    if (imagesLoaded) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [imagesLoaded]);
+
+  if (!imagesLoaded) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <>
@@ -73,4 +93,23 @@ const Indicator = styled.div.withConfig({
   height: 10px;
   border-radius: 50%;
   background-color: ${({ isActive }) => (isActive ? 'black' : 'white')};
+`;
+
+const LoadingSpinner = styled.div`
+  z-index: 4;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 `;
