@@ -61,7 +61,7 @@ export default function PostDetail() {
       setCommentUpdated(false);
       fetchPost();
     }
-  }, [id,  token]);
+  }, [id, commentUpdated, token]);
 
   return (
     <>

@@ -1,5 +1,4 @@
-import React from 'react'
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import eyeImg from '../../../../resource/assets/eye-img.svg'
 
@@ -12,10 +11,8 @@ interface PostTitleProps {
     hasAuthority: boolean;
   }
   
-export default function PostTitle({ title, createDate, view, writer,id, hasAuthority }: PostTitleProps) {
-const token = useSelector((state: any) => state.user.token);
-  
-  
+export default function PostTitle({ title, /*createDate,*/ view, writer,id, /*hasAuthority*/ }: PostTitleProps) {
+  // const token = useSelector((state: any) => state.user.token);
   return (<>
     <PostTitleWrapper>
       <span className='m-title'>제목: </span>

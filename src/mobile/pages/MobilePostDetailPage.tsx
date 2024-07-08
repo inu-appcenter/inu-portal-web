@@ -1,9 +1,5 @@
 import styled from 'styled-components';
-PostContentContainer
-
-import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-
 import { useSelector } from 'react-redux';
 import { getPost } from '../../utils/API/Posts';
 import PostContentContainer from '../containers/postdetail/PostContentContainer';
