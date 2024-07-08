@@ -33,6 +33,7 @@ export default function TipsListContainer({ viewMode, docType, category, query }
       }
 
       if (response && response.status === 200) {
+        console.log('정보 갖고옴');
         const newPosts = response.body.data.posts || response.body.data.notices;
         setPosts((prev) => pageToLoad === 1 ? [{ page: pageToLoad }, ...newPosts] : [...prev, { page: pageToLoad }, ...newPosts]);
         setTotalPages(response.body.data.pages);

@@ -8,7 +8,7 @@ declare global {
   }
 
   interface Post {
-    id: number;
+    id: string;
     title: string;
     category: string;
     writer: string;

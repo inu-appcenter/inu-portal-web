@@ -12,6 +12,7 @@ import useUser from './hooks/useUser';
 import useAuth from './hooks/useAuth';
 import MobileMainPage from './mobile/pages/MobileMainPage';
 import InstallPage from './mobile/pages/InstallPage';
+import MobilePostDetailPage from './mobile/pages/MobilePostDetailPage';
 
 function App() {
   useUser();
@@ -22,6 +23,7 @@ function App() {
       <Routes>
         <Route path='/install' element={<InstallPage />} />
         <Route path='/m/*' element={<MobileMainPage />} />
+        {/* <Route path="/m/home/tips/postdetail/:id" element={<MobilePostDetailPage />} /> */}
         <Route path='/' element={<MainPage />}>
           <Route path='/' element={<HomePage />} />
           <Route path='/login/*' element={<Login />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useLocation } from 'react-router-dom';
+import { Route, useLocation } from 'react-router-dom';
 import MobileIntroPage from './MobileIntroPage';
 import MobileHeader from '../containers/common/MobileHeader';
 import MobileNav from '../containers/common/MobileNav';
@@ -11,6 +11,7 @@ import MobileWritePage from './MobileWritePage';
 // import MobileMypage from './MobileMypage';
 import MobileLoginPage from './MobileLoginPage';
 import { usePreviousPage } from '../../hooks/usePreviousPage';
+import MobilePostDetailPage from './MobilePostDetailPage';
 
 
 const Page = styled.div<{ $active: boolean }>`
@@ -76,17 +77,16 @@ export default function MobileMainPage() {
           </header>
         )}
         <main style={{ flexGrow: 1 }}>
-          <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips')}>
-            <MobileHomePage />
-          </Page>
-          <Page $active={activePage.includes('/m/home/tips')}>
-            <MobileTipsPage />
-          </Page>
-          {pagesLoaded.write && (
-            <Page $active={activePage.includes('/m/write')}>
-              <MobileWritePage />
-            </Page>
-          )}
+        <Page $active={activePage === '/m/home'}>
+        <MobileHomePage />
+      </Page>
+          <Page $active={activePage.includes('/m/home/tips') && !activePage.includes('/m/home/tips/postdetail')}>
+        <MobileTipsPage />
+      </Page>
+      <Page $active={activePage.includes('/m/home/tips/postdetail')}>
+        <MobilePostDetailPage  />
+      </Page>
+          
           {pagesLoaded.save && (
             <Page $active={activePage.includes('/m/save')}>
               { /* <MobileSavePage /> */}

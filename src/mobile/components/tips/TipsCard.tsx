@@ -14,7 +14,7 @@ export default function({ post, viewMode, docType }: TipsCardContainerProps) {
     if (docType === 'NOTICE') {
       window.open('https://' + post.url, '_blank');
     } else {
-      navigate(`/tips/${post.id}`);
+      navigate(`/m/home/tips/postdetail/${post.id}`);
     }
   };
 
