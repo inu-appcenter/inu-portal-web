@@ -93,9 +93,9 @@ export default function Cafeteria() {
                 </div>
                 {cafeteriaTypes[0] !== '없음' && <p className="info">{cafeteriaInfo[0]}</p>}
                 {cafeteriaDetail[0] && (<div className="detail-wrapper">
-                  <p className="price">{cafeteriaDetail[0].칼로리}</p>
+                  <div className="price">{cafeteriaDetail[0].칼로리}</div>
                   <TinyCircle />
-                  <p className="calory">{cafeteriaDetail[0].구성원가}</p>
+                  <div className="calory">{cafeteriaDetail[0].구성원가}</div>
                 </div>)}
               </div>
 
@@ -108,9 +108,9 @@ export default function Cafeteria() {
                 </div>
                 <p className="info">{cafeteriaInfo[1]}</p>
                 {cafeteriaDetail[1] && (<div className="detail-wrapper">
-                  <p className="price">{cafeteriaDetail[1].칼로리}</p>
+                  <div className="price">{cafeteriaDetail[1].칼로리}</div>
                   <TinyCircle />
-                  <p className="calory">{cafeteriaDetail[1].구성원가}</p>
+                  <div className="calory">{cafeteriaDetail[1].구성원가}</div>
                 </div>)}
               </div>
             </div>
@@ -122,9 +122,9 @@ export default function Cafeteria() {
                 </div>
                 <p className="info">{cafeteriaInfo[2]}</p>
                 {cafeteriaDetail[2] && (<div className="detail-wrapper">
-                  <p className="price">{cafeteriaDetail[2].칼로리}</p>
+                  <div className="price">{cafeteriaDetail[2].칼로리}</div>
                   <TinyCircle />
-                  <p className="calory">{cafeteriaDetail[2].구성원가}</p>
+                  <div className="calory">{cafeteriaDetail[2].구성원가}</div>
                 </div>)}
               </div>
             </div>
@@ -231,15 +231,14 @@ const CafetriaInfo = styled.div`
   
             }
             .detail-wrapper {
-              display: flex;
               margin-left:10px;
               border: 0.5px solid #D6D7D9;
               border-radius: 3px;
-              display: flex;
+              display: grid;
               align-items: center;
               justify-content: center;
-              gap:4px;
-              min-width: 90px;
+              min-width: 60px;
+              padding: 3px;
               .price , .calory {
                 font-size: 10px;
                 color: #000000;

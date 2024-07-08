@@ -1,13 +1,13 @@
 import styled from 'styled-components';
-import PostContentContainer from '../container/postdetail/PostContentContainer';
-import PostUtility from '../container/postdetail/PostUtilityContainer';
+PostContentContainer
+
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getPost } from '../utils/API/Posts';
-import ReturnButton from '../component/postdetail/post/ReturnButton';
-import CommentList from '../component/postdetail/comment/commentlist';
-import CommentInput from '../component/postdetail/comment/commentinput';
+
 import { useSelector } from 'react-redux';
+import { getPost } from '../../utils/API/Posts';
+import PostContentContainer from '../containers/postdetail/PostContentContainer';
+
 
 interface Post {
   id: string;
@@ -28,47 +28,38 @@ interface Post {
   replies: Replies[];
 }
 
-interface Replies {
-  id: number;
-  writer: string;
-  fireId: number;
-  content: string;
-  like: number;
-  isLiked: boolean;
-  isAnonymous: boolean;
-  hasAuthority: boolean;
-  createDate: string;
-  modifiedDate: string;
-  reReplies: Replies[];
-}
-
 export default function PostDetail() {
   const token = useSelector((state: any) => state.user.token);
-  const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
-  const [commentUpdated, setCommentUpdated] = useState(false);
+
+
+const pathname = location.pathname; 
+const pathParts = pathname.split('/'); 
+const id = pathParts[pathParts.length - 1];
+
+console.log(id); 
 
   useEffect(() => {
-    console.log(id);
-    
+    console.log(location.pathname);
     if (id) {
       const fetchPost = async () => {
         const response = await getPost(token, id);
         if (response.status === 200) {
           setPost(response.body.data);
+    console.log(id);
         }
       };
-      setCommentUpdated(false);
+      
       fetchPost();
     }
-  }, [id,  token]);
+  }, [location.pathname, id]);
 
   return (
     <>
       {post ? (
         <>
           <PostWrapper>
-            <ReturnButton />
+
             <PostContentContainer
               id={post.id}
               title={post.title}
@@ -80,18 +71,9 @@ export default function PostDetail() {
               category={post.category}
               hasAuthority={post.hasAuthority}
             />
-            <PostUtility
-              like={post.like}
-              isLiked={post.isLiked}
-              scrap={post.scrap}
-              isScraped={post.isScraped}
-              hasAuthority={post.hasAuthority}
-            />
+            
           </PostWrapper>
-          <CommentWrapper>
-            <CommentList bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)} />
-            <CommentInput onCommentUpdate={() => setCommentUpdated(true)} />
-          </CommentWrapper>
+          
         </>
       ) : (
         <div>Loading...</div>
@@ -105,10 +87,4 @@ const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
-`;
-
-const CommentWrapper = styled.div`
-  border-top: solid #eaeaea 5px;
-  padding-top: 20px;
-  padding-bottom: 80px;
 `;

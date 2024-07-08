@@ -2,10 +2,10 @@ import './posttitle.css'
 import eyeImg from '../../../resource/assets/eye-img.svg';
 import datePencilImg from '../../../resource/assets/date-pencil-img.svg';
 import { useSelector } from 'react-redux';
-
 import styled from 'styled-components';
 import DeletePostBtn from './deletpostbtn';
 import EditPostBtn from './editpostbtn';
+
 interface PostTitleProps {
   title: string; // title prop 추가
   createDate: string;
