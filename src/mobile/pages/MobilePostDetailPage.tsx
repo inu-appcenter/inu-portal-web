@@ -56,7 +56,7 @@ console.log(id);
       {post ? (
         <>
           <PostWrapper>
-            <PostUtilContainer/>
+            <PostUtilContainer like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped} hasAuthority={post.hasAuthority} />
             <PostContentContainer
               id={post.id}
               title={post.title}
