@@ -22,7 +22,7 @@ interface Notice {
   
 
 export default function NoticeForm() {
-   const [sort,setSort] = useState('date');
+   const [sort,setSort] = useState('view');
    const [notices, setNotices] = useState<Notice[]>([]);
 
    const fetchNotices = async (sort: string) => {
@@ -43,7 +43,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-    fetchNotices('date');
+    fetchNotices(sort);
 }, [sort]);
 
 
@@ -51,7 +51,7 @@ useEffect(() => {
         <NoticeFormWrapper>
             <NoticeTitleWrapper>
                 <h1>Notice</h1>
-                <SortDropBox setSort={setSort} />
+                <SortDropBox sort={sort} setSort={setSort} />
                 {/* <SortNotice sort={sort} setNotices={setNotices}/> */}
             </NoticeTitleWrapper>
             
@@ -66,7 +66,7 @@ useEffect(() => {
           >
              {notices.map((notice, index) => (
                 <SwiperSlide key={index}>
-                    <div className='notice-wrapper'>
+                    <div className='notice-wrapper' onClick={() => window.open('https://' + notice.url, '_blank')}>
                         <h1>{notice.category}</h1>
                         <p className='title'>{notice.title}</p>
                         <p className='createdate'>{notice.createDate}</p>
