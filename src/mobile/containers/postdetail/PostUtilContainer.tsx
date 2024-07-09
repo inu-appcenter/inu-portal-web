@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import backbtn from '../../../resource/assets/backbtn.svg';
@@ -33,7 +33,7 @@ export default function PostUtilContainer({
           isLikedProp={isLiked}
           hasAuthority={hasAuthority}
         />
-        <PostScrap />
+        <PostScrap scrap={scrap} isScrapedProp={isScraped} />
       </UtilWrapper>
       </Wrapper>
     </>
@@ -53,7 +53,7 @@ const BackBtn = styled.div`
   cursor: url('/pointers/cursor-pointer.svg'), pointer;
 `;
 
-const BackBtnImg = styled.div``;
+
 
 const UtilWrapper = styled.div`
     margin-left: auto;
