@@ -34,6 +34,7 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
       const fetchPost = async () => {
         const response = await getPost(token, id);
         if (response.status === 200) {
+          console.log(response.body.data);
           if (!response.body.data.hasAuthority) {
             window.alert('수정 권한이 없습니다');
             navigate('/m/write');
