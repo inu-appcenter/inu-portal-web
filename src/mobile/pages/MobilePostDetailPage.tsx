@@ -1,12 +1,9 @@
 import styled from 'styled-components';
-PostContentContainer
-
-import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-
 import { useSelector } from 'react-redux';
 import { getPost } from '../../utils/API/Posts';
 import PostContentContainer from '../containers/postdetail/PostContentContainer';
+import PostUtilContainer from '../containers/postdetail/PostUtilContainer';
 
 
 interface Post {
@@ -59,7 +56,7 @@ console.log(id);
       {post ? (
         <>
           <PostWrapper>
-
+            <PostUtilContainer/>
             <PostContentContainer
               id={post.id}
               title={post.title}
@@ -82,8 +79,8 @@ console.log(id);
   );
 }
 
+
 const PostWrapper = styled.div`
-  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 15px;
