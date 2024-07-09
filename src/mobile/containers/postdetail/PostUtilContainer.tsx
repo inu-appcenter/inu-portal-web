@@ -6,6 +6,7 @@ import PostLike from '../../components/postdetail/util/m.postlike';
 import PostScrap from '../../components/postdetail/util/m.postscrap';
 
 interface PostUtilityProps {
+  id: string;
   like: number;
   isLiked: boolean;
   scrap: number;
@@ -13,6 +14,7 @@ interface PostUtilityProps {
   hasAuthority: boolean;
 }
 export default function PostUtilContainer({
+  id, 
   like,
   isLiked,
   scrap,
@@ -28,6 +30,7 @@ export default function PostUtilContainer({
         <img src={backbtn} alt='뒤로가기 버튼' />
       </BackBtn>
       <UtilWrapper>
+        {hasAuthority && (<div onClick={() =>navigate(`/m/write/update?id=${id}`)}>수정하기</div>)}
         <PostLike
           like={like}
           isLikedProp={isLiked}
