@@ -2,14 +2,15 @@
 import styled from 'styled-components';
 
 interface SortDropBoxProps {
+  sort:string;
   setSort: (sort: string) => void;
 }
 
-export default function SortDropBox({setSort}:SortDropBoxProps) {
+export default function SortDropBox({sort, setSort}:SortDropBoxProps) {
     return (
         <DropBoxWrapper>
-            <p onClick={() => setSort('like')}>인기순</p>
-            <p onClick={() => setSort('date')}>최신순</p>
+            <p className={sort === 'view' ? 'point' : ''}  onClick={() => setSort('view')}>인기순</p>
+            <p className={sort === 'date' ? 'point' : ''}  onClick={() => setSort('date')}>최신순</p>
       </DropBoxWrapper>
     )
 
@@ -36,6 +37,13 @@ const DropBoxWrapper = styled.div`
   display: flex;
   align-items: center;
   margin-right: 10px;
+  gap:10px;
+
+  .point {
+    color:#20559e;
+    font-weight: 900;
+  }
+
   /* p::before {
     content: " ";
     display:block;
