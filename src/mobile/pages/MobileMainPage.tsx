@@ -18,6 +18,7 @@ const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
   width: 100%;
   height: 100%;
+  justify-content: center;
 `;
 
 export default function MobileMainPage() {
