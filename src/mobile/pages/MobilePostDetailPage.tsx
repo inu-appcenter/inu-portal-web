@@ -28,26 +28,21 @@ interface Post {
 export default function PostDetail() {
   const token = useSelector((state: any) => state.user.token);
   const [post, setPost] = useState<Post | null>(null);
-
-
-const pathname = location.pathname; 
-const pathParts = pathname.split('/'); 
-const id = pathParts[pathParts.length - 1];
-
-console.log(id); 
+  const [id, setId] = useState('');
 
   useEffect(() => {
-    console.log(location.pathname);
-    if (id) {
-      const fetchPost = async () => {
-        const response = await getPost(token, id);
-        if (response.status === 200) {
-          setPost(response.body.data);
-    console.log(id);
-        }
-      };
-      
-      fetchPost();
+    if (location.pathname.includes('/tips/postdetail')) {
+      const params = new URLSearchParams(location.search);
+      setId(params.get('id') || '');
+      if (id) {
+        const fetchPost = async () => {
+          const response = await getPost(token, id);
+          if (response.status === 200) {
+            setPost(response.body.data);
+          }
+        };
+        fetchPost();
+      }
     }
   }, [location.pathname, id]);
 
