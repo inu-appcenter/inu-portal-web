@@ -122,11 +122,11 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
             const responseImage = await postImages(token, postId, images);
             if (responseImage.status === 201) {
               window.alert('게시글 등록 성공');
-              navigate(`/m/home/tips/${postId}`);
+              navigate(`/m/home/tips`);
             }
           } else {
             window.alert('게시글 등록 성공');
-            navigate(`/m/home/tips/${postId}`);
+            navigate(`/m/home/tips`);
           }
         } else if (response.status === 404) {
           console.error('존재하지 않는 회원입니다.', response.status);
@@ -146,11 +146,11 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
             const responseImage = await putImages(token, postId, images);
             if (responseImage.status === 200) {
               window.alert('게시글 수정 성공');
-              navigate(`/m/home/tips/${postId}`);
+              navigate(-1);
             }
           } else {
             window.alert('게시글 수정 성공');
-            navigate(`/m/home/tips/${postId}`);
+            navigate(-1);
           }
         } else if (response.status === 403) {
           console.error('이 게시글의 수정/삭제에 대한 권한이 없습니다.', response.status);
