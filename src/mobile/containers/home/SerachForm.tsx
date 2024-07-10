@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import searchImg from "../../../resource/assets/mobile/home/input.png";
+import searchImg from "../../../resource/assets/mobile/home/input.svg";
 import { useNavigate } from 'react-router-dom';
 
 export default function SerachForm() {
