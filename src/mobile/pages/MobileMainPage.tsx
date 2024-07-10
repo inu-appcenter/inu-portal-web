@@ -23,6 +23,7 @@ const Page = styled.div<{ $active: boolean }>`
 
 export default function MobileMainPage() {
   const [showIntro, setShowIntro] = useState(true);
+
   const location = useLocation();
   const [activePage, setActivePage] = useState('/m');
   const [pagesLoaded, setPagesLoaded] = useState<Record<string, boolean>>({
@@ -67,12 +68,12 @@ export default function MobileMainPage() {
   }, [location.pathname, pagesLoaded]);
 
   const isLoginPage = location.pathname === '/m/login';
-
+  const isPostDetailPage = location.pathname.includes('/m/home/tips/postdetail');
   return (
     <>
       <MobileMainPageWrapper>
         {showIntro ? (<MobileIntroPage/>) : (<></>)}
-        {!isLoginPage && (
+        {(!isLoginPage && !isPostDetailPage )&& (
           <header>
             <MobileHeader />
           </header>
