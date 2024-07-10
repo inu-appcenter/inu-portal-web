@@ -32,7 +32,7 @@ export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped,
 }
 const Wrapper = styled.div`
     display: flex;
-    justify-cotent: space-between;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
 `
