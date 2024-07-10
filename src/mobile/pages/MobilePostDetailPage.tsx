@@ -58,4 +58,6 @@ const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
+  padding: 20px;
+  margin-top: 20px;
 `;
