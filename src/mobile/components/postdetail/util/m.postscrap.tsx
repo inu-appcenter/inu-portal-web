@@ -1,23 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
-// import { useParams } from 'react-router-dom';
-// import scrapEmptyImg from '../../../../resource/assets/scrap-empty-img.svg';
+import scrapEmptyImg from '../../../../resource/assets/scrap.svg'
+import scrapFilledImg from '../../../../resource/assets/scrap-filled-img.svg';
 import { handlePostScrap } from '../../../../utils/API/Posts';
-import scrapImg from '../../../../resource/assets/scrap.svg'
+
 interface PostScrapProps {
+  id: string;
   scrap: number;
   isScrapedProp: boolean;
 }
 
-const PostScrap: React.FC<PostScrapProps> = ({ scrap, isScrapedProp }) => {
+export default function PostScrap({ id, scrap, isScrapedProp }: PostScrapProps) {
   const [scraps, setScraps] = useState(scrap);
   const [isScraped, setIsScraped] = useState(isScrapedProp);
   const token = useSelector((state: any) => state.user.token);
-
-  const pathname = location.pathname; 
-  const pathParts = pathname.split('/'); 
-  const id = pathParts[pathParts.length - 1];
-
   const handleScrapClick = async () => {
     if (id === undefined) {
       console.error('ID is undefined');
@@ -48,11 +44,9 @@ const PostScrap: React.FC<PostScrapProps> = ({ scrap, isScrapedProp }) => {
     
         <img onClick={handleScrapClick}
           className='UtilityImg'
-          src={isScraped ? scrapImg : scrapImg}
+          src={isScraped ? scrapFilledImg : scrapEmptyImg}
           alt='scrapImg'
         />
     </span>
   );
 };
-
-export default PostScrap;

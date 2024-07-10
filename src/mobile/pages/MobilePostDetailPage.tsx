@@ -5,26 +5,6 @@ import { getPost } from '../../utils/API/Posts';
 import PostContentContainer from '../containers/postdetail/PostContentContainer';
 import PostUtilContainer from '../containers/postdetail/PostUtilContainer';
 
-
-interface Post {
-  id: string;
-  title: string;
-  category: string;
-  writer: string;
-  content: string;
-  like: number;
-  scrap: number;
-  view: number;
-  isLiked: boolean;
-  isScraped: boolean;
-  hasAuthority: boolean;
-  createDate: string;
-  modifiedDate: string;
-  imageCount: number;
-  bestReplies: Replies[];
-  replies: Replies[];
-}
-
 export default function PostDetail() {
   const token = useSelector((state: any) => state.user.token);
   const [post, setPost] = useState<Post | null>(null);
@@ -65,7 +45,6 @@ export default function PostDetail() {
             />
             
           </PostWrapper>
-          
         </>
       ) : (
         <div>Loading...</div>
