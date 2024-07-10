@@ -12,7 +12,7 @@ import MobileWritePage from './MobileWritePage';
 import MobileLoginPage from './MobileLoginPage';
 import { usePreviousPage } from '../../hooks/usePreviousPage';
 import MobilePostDetailPage from './MobilePostDetailPage';
-
+import UpperBackgroundImg from '../../resource/assets/mobile/common/upperBackgroundImg.svg';
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
@@ -71,6 +71,7 @@ export default function MobileMainPage() {
   return (
     <>
       <MobileMainPageWrapper>
+        <UpperBackground src={UpperBackgroundImg} />
         {showIntro ? (<MobileIntroPage/>) : (<></>)}
         {!isLoginPage && (
           <header>
@@ -124,3 +125,9 @@ const MobileMainPageWrapper = styled.div`
   height: calc(100svh - 64px); // nav 만큼 빼기
   overflow-y: auto;
 `;
+
+const UpperBackground = styled.img`
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+`
