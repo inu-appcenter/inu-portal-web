@@ -13,31 +13,19 @@ interface PostUtilityProps {
   isScraped: boolean;
   hasAuthority: boolean;
 }
-export default function PostUtilContainer({
-  id, 
-  like,
-  isLiked,
-  scrap,
-  isScraped,
-  hasAuthority,
-}: PostUtilityProps) {
+export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped, hasAuthority }: PostUtilityProps) {
   const navigate = useNavigate();
-
   return (
     <>
-    <Wrapper>
-      <BackBtn onClick={() => navigate(-1)}>
-        <img src={backbtn} alt='뒤로가기 버튼' />
-      </BackBtn>
-      <UtilWrapper>
-        {hasAuthority && (<div onClick={() =>navigate(`/m/write/update?id=${id}`)}>수정하기</div>)}
-        <PostLike
-          like={like}
-          isLikedProp={isLiked}
-          hasAuthority={hasAuthority}
-        />
-        <PostScrap scrap={scrap} isScrapedProp={isScraped} />
-      </UtilWrapper>
+      <Wrapper>
+        <BackBtn onClick={() => navigate(-1)}>
+          <img src={backbtn} alt='뒤로가기 버튼' />
+        </BackBtn>
+        <UtilWrapper>
+          {hasAuthority && (<div onClick={() =>navigate(`/m/write/update?id=${id}`)}>수정하기</div>)}
+          <PostLike id={id} like={like} isLikedProp={isLiked} hasAuthority={hasAuthority} />
+          <PostScrap id = {id} scrap={scrap} isScrapedProp={isScraped} />
+        </UtilWrapper>
       </Wrapper>
     </>
   );
