@@ -6,7 +6,7 @@ import MobileHeader from '../containers/common/MobileHeader';
 import MobileNav from '../containers/common/MobileNav';
 import MobileHomePage from './MobileHomePage';
 import MobileTipsPage from './MobileTipsPage';
-// import MobileSavePage from './MobileSavePage';
+import MobileSavePage from './MobileSavePage';
 import MobileWritePage from './MobileWritePage';
 // import MobileMypage from './MobileMypage';
 import MobileLoginPage from './MobileLoginPage';
@@ -96,7 +96,7 @@ export default function MobileMainPage() {
           )}
           {pagesLoaded.save && (
             <Page $active={activePage.includes('/m/save')}>
-              { /* <MobileSavePage /> */}
+              <MobileSavePage />
             </Page>
           )}
           {pagesLoaded.mypage && (
