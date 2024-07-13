@@ -4,9 +4,10 @@ interface ScrapFoldersProps {
   folders: { id: number; name: string }[];
   selectedFolder: { id: number; name: string } | null;
   onSelectFolder: (folder: { id: number; name: string }) => void;
+  onAddFolderClick: () => void;
 }
 
-export default function ScrapFolders({ folders, selectedFolder, onSelectFolder }: ScrapFoldersProps) {
+export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, onAddFolderClick }: ScrapFoldersProps) {
   return (
     <ScrapFoldersWrapper>
       {folders.map((folder) => (
@@ -18,7 +19,7 @@ export default function ScrapFolders({ folders, selectedFolder, onSelectFolder }
           {folder.name}
         </FolderItem>
       ))}
-      <AddFolderButton>+</AddFolderButton>
+      <AddFolderButton onClick={onAddFolderClick}>+</AddFolderButton>
     </ScrapFoldersWrapper>
   );
 }
@@ -49,6 +50,7 @@ const FolderItem = styled.div<{ selected: boolean }>`
   border-bottom: 2px solid ${({ selected }) => (selected ? '#4071B9' : '#E0E0E0')};
   font-size: 14px;
   font-weight: 700;
+  cursor: pointer;
 `;
 
 const AddFolderButton = styled.div`
@@ -61,5 +63,5 @@ const AddFolderButton = styled.div`
   font-size: 30px;
   font-weight: 500;
   border-bottom: 2px solid #E0E0E0;
-
-`
+  cursor: pointer;
+`;

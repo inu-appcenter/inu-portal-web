@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import ScrapFolders from '../containers/save/ScrapFolders';
 import ScrapContents from '../containers/save/ScrapContents';
+import AddFolder from '../containers/save/AddFolder';
 import { getFolders } from '../../utils/API/Folders';
 
 interface Folder {
@@ -14,6 +15,7 @@ export default function MobileSavePage() {
   const token = useSelector((state: any) => state.user.token);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
+  const [isAddingFolder, setIsAddingFolder] = useState(false); // 폴더 추가 상태
 
   const fetchFolders = async () => {
     try {
@@ -34,6 +36,15 @@ export default function MobileSavePage() {
     }
   }, [token]);
 
+  const handleAddFolderClick = () => {
+    setIsAddingFolder(true);
+  };
+
+  const handleFolderAdded = () => {
+    setIsAddingFolder(false);
+    fetchFolders();
+  };
+
   return (
     <MobileSavePageWrapper>
       {token ? (
@@ -42,8 +53,13 @@ export default function MobileSavePage() {
             folders={folders} 
             selectedFolder={selectedFolder}
             onSelectFolder={setSelectedFolder}
+            onAddFolderClick={handleAddFolderClick} // 폴더 추가 버튼 클릭 핸들러
           />
-          <ScrapContents folder={selectedFolder} />
+          {isAddingFolder ? (
+            <AddFolder token={token} onFolderAdded={handleFolderAdded} />
+          ) : (
+            <ScrapContents folder={selectedFolder} />
+          )}
         </>
       ) : (
         <div>로그인이 필요합니다.</div>
