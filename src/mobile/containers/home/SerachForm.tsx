@@ -8,6 +8,10 @@ export default function SerachForm() {
   const navigate = useNavigate();
 
   const handleSearch = () => {
+    if (!query.trim()) {
+      alert('검색어는 두 글자 이상이어야 합니다.');
+      return;
+    }
     navigate(`/m/home/tips/search?query=${query}`);
   };
 
