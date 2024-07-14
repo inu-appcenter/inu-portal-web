@@ -1,6 +1,6 @@
 // App.tsx - 애플리케이션의 루트 컴포넌트
 
-import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import { Route, Routes, BrowserRouter, useLocation } from 'react-router-dom';
 import MainPage from './page/MainPage';
 import HomePage from './page/HomePage';
 import Login from './page/LoginPage/LoginPage';
@@ -12,13 +12,16 @@ import useUser from './hooks/useUser';
 import useAuth from './hooks/useAuth';
 import MobileMainPage from './mobile/pages/MobileMainPage';
 import InstallPage from './mobile/pages/InstallPage';
+import ScrollBarStyle from './resource/style/ScrollBarStyle';
 
 function App() {
   useUser();
   useAuth();
+  const location = useLocation();
 
   return (
     <>
+      {location.pathname.startsWith('/m') ? null : <ScrollBarStyle />}
       <Routes>
         <Route path='/install' element={<InstallPage />} />
         <Route path='/m/*' element={<MobileMainPage />} />

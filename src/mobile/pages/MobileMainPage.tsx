@@ -6,13 +6,13 @@ import MobileHeader from '../containers/common/MobileHeader';
 import MobileNav from '../containers/common/MobileNav';
 import MobileHomePage from './MobileHomePage';
 import MobileTipsPage from './MobileTipsPage';
-// import MobileSavePage from './MobileSavePage';
+import MobileSavePage from './MobileSavePage';
 import MobileWritePage from './MobileWritePage';
 // import MobileMypage from './MobileMypage';
 import MobileLoginPage from './MobileLoginPage';
 import { usePreviousPage } from '../../hooks/usePreviousPage';
 import MobilePostDetailPage from './MobilePostDetailPage';
-
+import UpperBackgroundImg from '../../resource/assets/mobile/common/upperBackgroundImg.svg';
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
@@ -23,6 +23,7 @@ const Page = styled.div<{ $active: boolean }>`
 
 export default function MobileMainPage() {
   const [showIntro, setShowIntro] = useState(true);
+
   const location = useLocation();
   const [activePage, setActivePage] = useState('/m');
   const [pagesLoaded, setPagesLoaded] = useState<Record<string, boolean>>({
@@ -67,12 +68,13 @@ export default function MobileMainPage() {
   }, [location.pathname, pagesLoaded]);
 
   const isLoginPage = location.pathname === '/m/login';
-
+  const isPostDetailPage = location.pathname.includes('/m/home/tips/postdetail');
   return (
     <>
       <MobileMainPageWrapper>
+        <UpperBackground src={UpperBackgroundImg} />
         {showIntro ? (<MobileIntroPage/>) : (<></>)}
-        {!isLoginPage && (
+        {(!isLoginPage && !isPostDetailPage )&& (
           <header>
             <MobileHeader />
           </header>
@@ -94,7 +96,7 @@ export default function MobileMainPage() {
           )}
           {pagesLoaded.save && (
             <Page $active={activePage.includes('/m/save')}>
-              { /* <MobileSavePage /> */}
+              <MobileSavePage />
             </Page>
           )}
           {pagesLoaded.mypage && (
@@ -124,3 +126,9 @@ const MobileMainPageWrapper = styled.div`
   height: calc(100svh - 64px); // nav 만큼 빼기
   overflow-y: auto;
 `;
+
+const UpperBackground = styled.img`
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+`

@@ -6,42 +6,33 @@ import PostLike from '../../components/postdetail/util/m.postlike';
 import PostScrap from '../../components/postdetail/util/m.postscrap';
 
 interface PostUtilityProps {
+  id: string;
   like: number;
   isLiked: boolean;
   scrap: number;
   isScraped: boolean;
   hasAuthority: boolean;
 }
-export default function PostUtilContainer({
-  like,
-  isLiked,
-  scrap,
-  isScraped,
-  hasAuthority,
-}: PostUtilityProps) {
+export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped, hasAuthority }: PostUtilityProps) {
   const navigate = useNavigate();
-
   return (
     <>
-    <Wrapper>
-      <BackBtn onClick={() => navigate(-1)}>
-        <img src={backbtn} alt='뒤로가기 버튼' />
-      </BackBtn>
-      <UtilWrapper>
-        <PostLike
-          like={like}
-          isLikedProp={isLiked}
-          hasAuthority={hasAuthority}
-        />
-        <PostScrap scrap={scrap} isScrapedProp={isScraped} />
-      </UtilWrapper>
+      <Wrapper>
+        <BackBtn onClick={() => navigate(-1)}>
+          <img src={backbtn} alt='뒤로가기 버튼' />
+        </BackBtn>
+        <UtilWrapper>
+          {hasAuthority && (<div onClick={() =>navigate(`/m/write/update?id=${id}`)}>수정하기</div>)}
+          <PostLike id={id} like={like} isLikedProp={isLiked} hasAuthority={hasAuthority} />
+          <PostScrap id = {id} scrap={scrap} isScrapedProp={isScraped} />
+        </UtilWrapper>
       </Wrapper>
     </>
   );
 }
 const Wrapper = styled.div`
     display: flex;
-    justify-cotent: space-between;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
 `

@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
-// import { useParams } from 'react-router-dom';
 import heartEmptyImg from '../../../../resource/assets/heart-empty-img.svg';
 import heartFilledImg from '../../../../resource/assets/heart-filled-img.svg';
 import styled from 'styled-components';
 import { handlePostLike } from '../../../../utils/API/Posts';
 
 interface PostLikeProps {
+  id: string;
   like: number;
   isLikedProp: boolean;
   hasAuthority: boolean;
 }
 
-const PostLike: React.FC<PostLikeProps> = ({ like, isLikedProp, hasAuthority }) => {
+export default function PostLike({ id, like, isLikedProp, hasAuthority }: PostLikeProps) {
   const [likes, setLikes] = useState(like);
   const [isLiked, setIsLiked] = useState(isLikedProp);
   const token = useSelector((state: any) => state.user.token);
   const [showError, setShowError] = useState<boolean>(false);
-  const pathname = location.pathname; 
-  const pathParts = pathname.split('/'); 
-  const id = pathParts[pathParts.length - 1];
-
   const handleLikeClick = async () => {
     if (hasAuthority) {
       setShowError(true); // 본인 게시글인 경우 에러 표시
@@ -65,8 +61,6 @@ const PostLike: React.FC<PostLikeProps> = ({ like, isLikedProp, hasAuthority }) 
     </span>
   );
 };
-
-export default PostLike;
 
 const ErrorMessage = styled.div`
   position: absolute;
