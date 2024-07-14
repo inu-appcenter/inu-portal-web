@@ -112,9 +112,10 @@ const ModalLoginBtn = styled.button`
 font-size: 18px;
 font-weight: 600;
 line-height: 22px;
-background-color: #0E4D9D;
+background: linear-gradient(90deg, #6F84E2 0%, #7BABE5 100%);
 color:white;
 border-radius: 5px;
+border: none;
 padding:8px 15px;
 `
 

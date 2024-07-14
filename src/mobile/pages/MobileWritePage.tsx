@@ -15,7 +15,8 @@ export default function MobileWritePage() {
   useEffect(() => {
     if (location.pathname.includes('update')) {
       setType('update');
-      setId(location.pathname.split('/')[4]);
+      const params = new URLSearchParams(location.search);
+      setId(params.get('id') || '');
     } else {
       setType('create');
       setId('');
