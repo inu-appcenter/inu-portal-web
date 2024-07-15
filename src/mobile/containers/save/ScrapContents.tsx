@@ -5,6 +5,7 @@ import { getFoldersPosts } from '../../../utils/API/Folders';
 import { getMembersScraps } from '../../../utils/API/Members';
 import { searchScrap, searchFolder } from '../../../utils/API/Search';
 import SaveSearchForm from '../../components/save/SaveSearchForm';
+import editButton from '../../../resource/assets/mobile/save/editButton.svg';
 
 interface ScrapContentsProps {
   folder: { id: number; name: string } | null;
@@ -181,9 +182,15 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
     <ScrapContentsContainerWrapper>
       <SaveSearchForm onSearch={handleSearch} />
       <ScrapHeader>
-        <div className='AllScraps'>All Scraps</div>
-        <div className='total'>{total}</div>
+        <div className='AllScrapsWrapper'>
+          <div className='AllScraps'>All Scraps</div>
+          <div className='total'>{total}</div>
+        </div>
         {query && <ResetButton onClick={handleResetSearch}>검색 초기화 ↺</ResetButton>}
+        <div className='editWrapper'>
+          <img src={editButton} />
+          <div className='edit'>편집</div>
+        </div>
       </ScrapHeader>
       <Wrapper>
         <ScrapContentsWrapper ref={containerRef}>
@@ -209,14 +216,32 @@ const ScrapHeader = styled.div`
   font-weight: 600;
   display: flex;
   height: 16px;
-  width: 100%;
+  width: calc(100% - 16px);
+  padding-right: 16px;
   align-items: center;
-  gap: 8px;
-  .AllScraps {
-    color: #969696;
+  justify-content: space-between;
+  .AllScrapsWrapper {
+    display: flex;
+    align-items: center;
+    height: 16px;
+    gap: 8px;
+    .AllScraps {
+      color: #969696;
+    }
+    .total {
+      color: #0E4D9D;
+    }
   }
-  .total {
-    color: #0E4D9D;
+  .editWrapper {
+    display: flex;
+    align-items: center;
+    height: 16px;
+    gap: 10px;
+    .edit {
+      font-size: 14px;
+      font-weight: 400;
+      color: #4071B9;
+    }
   }
 `;
 
