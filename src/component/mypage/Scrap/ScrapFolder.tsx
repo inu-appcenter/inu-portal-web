@@ -1,11 +1,9 @@
 import styled from 'styled-components';
 import folderImg from "../../../resource/assets/file-img.svg";
 import PlusImg from "../../../resource/assets/+.svg";
-import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { postFolders, deleteFolders } from '../../../utils/API/Folders';
-import { addFolder, removeFolder } from '../../../reducer/folderSlice';
-import MakeModal from './ScrapFolderModal';
+import { deleteFolders } from '../../../utils/API/Folders';
+import { removeFolder } from '../../../reducer/folderSlice';
 import deleteImg from "../../../resource/assets/deletebtn.svg";
 
 interface loginInfo {
@@ -19,38 +17,12 @@ interface ScrapFolderInfoProps {
     handleFolderClick: (folderId: number) => void;
     setFolderData: (folder: { [key: number]: string }) => void;
     setIsScrap: (status: boolean) => void;
-    setIsFolderScrap: (status: boolean) => void;
+    onMakeFolder: () => void;
 }
 
-export default function ScrapFolder({ folderData, handleFolderClick, setFolderData, setIsScrap, setIsFolderScrap }: ScrapFolderInfoProps) {
+export default function ScrapFolder({ folderData, handleFolderClick, setFolderData, setIsScrap, onMakeFolder }: ScrapFolderInfoProps) {
     const token = useSelector((state: loginInfo) => state.user.token);
-    const [isOpenModal, setOpenModal] = useState<boolean>(false);
     const dispatch = useDispatch();
-
-    const handleMakeFolder = () => {
-        console.log("폴더 생성");
-        setOpenModal(true);
-    };
-
-    const closeModal = () => {
-        setOpenModal(false);
-    };
-
-    const handleFolderCreate = async (folderName: string) => {
-        try {
-            const response = await postFolders(token, folderName);
-            if (response.status === 201) {
-                const newFolderId = response.body.data;
-                setFolderData({ ...folderData, [newFolderId]: folderName });
-                dispatch(addFolder({ [newFolderId]: folderName }));
-                console.log('폴더 생성 성공:', response.body);
-            } else {
-                console.error('폴더 생성 실패:', response.status);
-            }
-        } catch (error) {
-            console.error("폴더를 생성하지 못했습니다.", error);
-        }
-    };
 
     const handleFolderDelete = async (folderIdToDelete: number) => {
         try {
@@ -61,7 +33,6 @@ export default function ScrapFolder({ folderData, handleFolderClick, setFolderDa
                 setFolderData(updatedData);
                 dispatch(removeFolder({ [folderIdToDelete]: true }));
                 setIsScrap(true);
-                setIsFolderScrap(false);
                 console.log('폴더 삭제 성공:', response.body);
             } else {
                 console.error('폴더 삭제 실패:', response.status);
@@ -82,9 +53,8 @@ export default function ScrapFolder({ folderData, handleFolderClick, setFolderDa
                     </FolderWrapper>
                 ))}
                 <FolderAddWrapper>
-                    <Plus src={PlusImg} onClick={handleMakeFolder} />
+                    <Plus src={PlusImg} onClick={onMakeFolder} />
                 </FolderAddWrapper>
-                {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate} />}
             </Container>
         </>
     );
