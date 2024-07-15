@@ -7,6 +7,13 @@ export const getFoldersPosts = async (token: string, folderId: number, sort: str
   return await apiClient(apiURL, 'GET', token);
 };
 
+// 스크랩폴더명 수정
+export const putFolders = async (token: string, folderId: number, name: string) => {
+  const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}`;
+  const data = { name: name };
+  return await apiClient(apiURL, 'PUT', token, data);
+}
+
 // 스크랩폴더 삭제
 export const deleteFolders = async (token: string, folderId: number) => {
   const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}`;
