@@ -83,10 +83,17 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
           setDocuments(docs.body.data.posts);
         } else if (selectedCategory === '폴더내검색결과') {
           const query = (queryString.parse(location.search).query as string) || '';
-          const docs = await searchFolder(token, currentId, query, scrapsort, page);
-          setTotalPages(docs.body.data.pages);
-          setTotal(docs.body.data.total);
-          setDocuments(docs.body.data.posts);
+          if (currentId === 0) {
+            const docs = await searchScrap(token, query, scrapsort, page);
+            setTotalPages(docs.body.data.pages);
+            setTotal(docs.body.data.total);
+            setDocuments(docs.body.data.posts);
+          } else {
+            const docs = await searchFolder(token, currentId, query, scrapsort, page);
+            setTotalPages(docs.body.data.pages);
+            setTotal(docs.body.data.total);
+            setDocuments(docs.body.data.posts);
+          }
         }
       }
     };
