@@ -28,6 +28,7 @@ const ScrapFoldersWrapper = styled.div`
   display: flex;
   align-items: center;
   width: 100svw;
+  min-height: 42px;
   overflow-x: auto;
 
   /* Hide scrollbar for Chrome, Safari and Opera */

@@ -45,6 +45,11 @@ export default function MobileSavePage() {
     fetchFolders();
   };
 
+  const handleSelectFolder = (folder: Folder) => {
+    setSelectedFolder(folder);
+    setIsAddingFolder(false);
+  };
+
   return (
     <MobileSavePageWrapper>
       {token ? (
@@ -52,13 +57,13 @@ export default function MobileSavePage() {
           <ScrapFolders 
             folders={folders} 
             selectedFolder={selectedFolder}
-            onSelectFolder={setSelectedFolder}
+            onSelectFolder={handleSelectFolder}
             onAddFolderClick={handleAddFolderClick} // 폴더 추가 버튼 클릭 핸들러
           />
           {isAddingFolder ? (
             <AddFolder token={token} onFolderAdded={handleFolderAdded} />
           ) : (
-            <ScrapContents folder={selectedFolder} />
+            <ScrapContents folder={selectedFolder} token={token} />
           )}
         </>
       ) : (
