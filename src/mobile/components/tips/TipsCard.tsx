@@ -5,12 +5,14 @@ interface TipsCardContainerProps {
   post: Post;
   viewMode: 'grid' | 'list';
   docType: string;
+  isEditing?: boolean;
 }
 
-export default function({ post, viewMode, docType }: TipsCardContainerProps) {
+export default function({ post, viewMode, docType, isEditing }: TipsCardContainerProps) {
   const navigate = useNavigate();
   
   const handleDocumentClick = () => {
+    if (isEditing) return;
     if (docType === 'NOTICE') {
       window.open('https://' + post.url, '_blank');
     } else {
