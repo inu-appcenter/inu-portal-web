@@ -47,6 +47,41 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
     setLoading(false);
   }, [folder, token]);
 
+  const fetchInitialData = useCallback(async (searchQuery = '') => {
+    if (!folder) return;
+    setLoading(true);
+    try {
+      let responsePage1;
+      let responsePage2;
+
+      if (folder.id === 0) {  // '전체' 폴더
+        responsePage1 = searchQuery
+          ? await searchScrap(token, searchQuery, 'date', 1)
+          : await getMembersScraps(token, 'date', 1);
+        responsePage2 = searchQuery
+          ? await searchScrap(token, searchQuery, 'date', 2)
+          : await getMembersScraps(token, 'date', 2);
+      } else {
+        responsePage1 = searchQuery
+          ? await searchFolder(token, folder.id, searchQuery, 'date', 1)
+          : await getFoldersPosts(token, folder.id, 'date', 1);
+        responsePage2 = searchQuery
+          ? await searchFolder(token, folder.id, searchQuery, 'date', 2)
+          : await getFoldersPosts(token, folder.id, 'date', 2);
+      }
+      if (responsePage1?.status === 200 && responsePage2?.status === 200) {
+        const newPostsPage1 = responsePage1.body.data.posts;
+        const newPostsPage2 = responsePage2.body.data.posts;
+        setPosts([{ page: 1 }, ...newPostsPage1, { page: 2 }, ...newPostsPage2]);
+        setTotalPages(responsePage1.body.data.pages);
+        setTotal(responsePage1.body.data.total);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    setLoading(false);
+  }, [folder, token]);
+
   // 데이터 더 가져오기 함수
   const loadMoreData = useCallback(async () => {
     if (page <= totalPages) {
@@ -57,13 +92,13 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
 
   useEffect(() => {
     if (folder) {
-      setPage(1);
-      fetchData(1, query);
+      setPage(3); // 초기 로드 시 두 페이지를 로드하기 때문에 페이지 번호를 3으로 설정합니다.
+      fetchInitialData(query);
       if (containerRef.current) {
         containerRef.current.scrollTop = 0;
       }
     }
-  }, [folder, fetchData, query]);
+  }, [folder, fetchInitialData, query]);
 
   // 스크롤 핸들러
   const handleScroll = () => {
@@ -132,14 +167,14 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
 
   const handleSearch = (searchQuery: string) => {
     setQuery(searchQuery);
-    setPage(1);
-    fetchData(1, searchQuery);
+    setPage(3); // 초기 로드 시 두 페이지를 로드하기 때문에 페이지 번호를 3으로 설정합니다.
+    fetchInitialData(searchQuery);
   };
 
   const handleResetSearch = () => {
     setQuery('');
-    setPage(1);
-    fetchData(1);
+    setPage(3); // 초기 로드 시 두 페이지를 로드하기 때문에 페이지 번호를 3으로 설정합니다.
+    fetchInitialData();
   };
 
   return (
@@ -188,6 +223,7 @@ const ScrapHeader = styled.div`
 const ResetButton = styled.div`
   font-size: 12px;
   color: #0E4D9D;
+  cursor: pointer;
 `;
 
 const Wrapper = styled.div`

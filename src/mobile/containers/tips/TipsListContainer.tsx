@@ -44,6 +44,35 @@ export default function TipsListContainer({ viewMode, docType, category, query }
     setLoading(false);
   }, [category, docType, query]);
 
+  const fetchInitialData = useCallback(async () => {
+    setLoading(true);
+    try {
+      let responsePage1;
+      let responsePage2;
+
+      if (docType === 'TIPS') {
+        responsePage1 = await getPosts(category, 'date', '1');
+        responsePage2 = await getPosts(category, 'date', '2');
+      } else if (docType === 'NOTICE') {
+        responsePage1 = await getNotices(category, 'date', '1');
+        responsePage2 = await getNotices(category, 'date', '2');
+      } else if (docType === 'SEARCH' && query) {
+        responsePage1 = await search(query, 'date', '1');
+        responsePage2 = await search(query, 'date', '2');
+      }
+
+      if (responsePage1?.status === 200 && responsePage2?.status === 200) {
+        const newPostsPage1 = responsePage1.body.data.posts || responsePage1.body.data.notices;
+        const newPostsPage2 = responsePage2.body.data.posts || responsePage2.body.data.notices;
+        setPosts([{ page: 1 }, ...newPostsPage1, { page: 2 }, ...newPostsPage2]);
+        setTotalPages(responsePage1.body.data.pages);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    setLoading(false);
+  }, [category, docType, query]);
+
   // 데이터 더 가져오기 함수
   const loadMoreData = useCallback(async () => {
     if (page <= totalPages) {
@@ -54,13 +83,13 @@ export default function TipsListContainer({ viewMode, docType, category, query }
 
   // 카테고리 또는 검색어 변경 시 데이터 리셋 및 첫 페이지 로드
   useEffect(() => {
-    setPage(1);
-    fetchData(1);
+    setPage(3); // 초기 로드 시 두 페이지를 로드하기 때문에 페이지 번호를 3으로 설정합니다.
+    fetchInitialData();
     // 스크롤 맨 위로 올리기
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
     }
-  }, [category, fetchData, query]);
+  }, [category, fetchInitialData, query]);
 
   // 스크롤 핸들러
   const handleScroll = () => {
