@@ -121,6 +121,7 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
                       postId={item.id}
                       token={token}
                       handleCreateListClick={() => handleCreateListClick()}
+                      handleAddPosts={() => setShowDropdown(null)}
                       onClose={() => setShowDropdown(null)}
                     />
                   )}
