@@ -12,10 +12,11 @@ interface FolderListDropDownsProps {
   postId?: number;
   token: string;
   handleCreateListClick: () => void;
+  handleAddPosts: () => void;
   onClose: () => void;
 }
 
-export default function FolderListDropDowns({ folders, postIds, postId, token, handleCreateListClick, onClose }: FolderListDropDownsProps) {
+export default function FolderListDropDowns({ folders, postIds, postId, token, handleCreateListClick, handleAddPosts, onClose }: FolderListDropDownsProps) {
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]);
 
   const handleOptionClick = (folderId: number) => {
@@ -23,33 +24,37 @@ export default function FolderListDropDowns({ folders, postIds, postId, token, h
   };
 
   const handleAddClick = async () => {
-    try {
-      if (postIds && postIds.length > 0) {
-        for (const postId of postIds) {
-          for (const folderId of selectedFolderIds) {
+    if (postIds && postIds.length > 0) {
+      for (const postId of postIds) {
+        for (const folderId of selectedFolderIds) {
+          try {
             const response = await postFoldersPosts(token, postId, folderId);
             if (response.status === 201) {
               console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
             } else {
               console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
             }
+          } catch (error) {
+            console.error("폴더에 추가하지 못했습니다.", error);
           }
         }
-      } else if (postId) {
-        for (const folderId of selectedFolderIds) {
+      }
+    } else if (postId) {
+      for (const folderId of selectedFolderIds) {
+        try {
           const response = await postFoldersPosts(token, postId, folderId);
           if (response.status === 201) {
             console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
           } else {
             console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
           }
+        } catch (error) {
+          console.error("폴더에 추가하지 못했습니다.", error);
         }
       }
-      setSelectedFolderIds([]);
-      onClose();
-    } catch (error) {
-      console.error("폴더에 추가하지 못했습니다.", error);
     }
+    setSelectedFolderIds([]);
+    handleAddPosts();
   };
 
   return (

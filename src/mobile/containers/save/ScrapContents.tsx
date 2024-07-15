@@ -56,6 +56,8 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
   }, [folder, token]);
 
   const fetchInitialData = useCallback(async (searchQuery = '') => {
+    setIsEditing(false);
+    setSelectedPosts([]);
     if (!folder) return;
     setLoading(true);
     try {
@@ -142,13 +144,19 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
     );
   };
 
-  const handleAddToFolder = () => {
+  const handleShowDropDown = () => {
     if (selectedPosts.length === 0) {
       alert('선택된 게시물이 없습니다.');
       return;
     }
     setIsDropdownVisible(true);
   };
+
+  const handleAddPosts = () => {
+    setIsDropdownVisible(false)
+    setIsEditing(false);
+    setSelectedPosts([]);
+  }
 
   const handleRemovePosts = async () => {
     if (!folder) return;
@@ -260,7 +268,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
         {query && <ResetButton onClick={handleResetSearch}>검색 초기화 ↺</ResetButton>}
         {isEditing ? (
           <EditingButtons>
-            <Button onClick={handleAddToFolder}>담기</Button>
+            <Button onClick={handleShowDropDown}>담기</Button>
             <Button onClick={handleRemovePosts}>빼기</Button>
             <Button onClick={() => setIsEditing(false)}>취소</Button>
           </EditingButtons>
@@ -280,6 +288,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                 postIds={selectedPosts}
                 token={token}
                 handleCreateListClick={() => handleManageFoldersClick()}
+                handleAddPosts={() => handleAddPosts()}
                 onClose={() => setIsDropdownVisible(false)}
               />
             </DropdownWrapper>
