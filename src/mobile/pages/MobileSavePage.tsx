@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import ScrapFolders from '../containers/save/ScrapFolders';
 import ScrapContents from '../containers/save/ScrapContents';
-import AddFolder from '../containers/save/AddFolder';
+import ManageFolder from '../containers/save/ManageFolder';
 import { getFolders } from '../../utils/API/Folders';
 
 interface Folder {
@@ -15,7 +15,7 @@ export default function MobileSavePage() {
   const token = useSelector((state: any) => state.user.token);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
-  const [isAddingFolder, setIsAddingFolder] = useState(false); // 폴더 추가 상태
+  const [isManagingFolders, setIsManagingFolders] = useState(false); // 폴더 관리 상태
 
   const fetchFolders = async () => {
     try {
@@ -36,18 +36,18 @@ export default function MobileSavePage() {
     }
   }, [token]);
 
-  const handleAddFolderClick = () => {
-    setIsAddingFolder(true);
+  const handleManageFoldersClick = () => {
+    setIsManagingFolders(true);
+    setSelectedFolder(null);
   };
 
-  const handleFolderAdded = () => {
-    setIsAddingFolder(false);
+  const handleFolderManaged = () => {
     fetchFolders();
   };
 
   const handleSelectFolder = (folder: Folder) => {
     setSelectedFolder(folder);
-    setIsAddingFolder(false);
+    setIsManagingFolders(false);
   };
 
   return (
@@ -58,10 +58,11 @@ export default function MobileSavePage() {
             folders={folders} 
             selectedFolder={selectedFolder}
             onSelectFolder={handleSelectFolder}
-            onAddFolderClick={handleAddFolderClick} // 폴더 추가 버튼 클릭 핸들러
+            onManageFoldersClick={handleManageFoldersClick} // 폴더 관리 버튼 클릭 핸들러
+            isManagingFolders={isManagingFolders}
           />
-          {isAddingFolder ? (
-            <AddFolder token={token} onFolderAdded={handleFolderAdded} />
+          {isManagingFolders ? (
+            <ManageFolder token={token} onFolderManaged={handleFolderManaged} />
           ) : (
             <ScrapContents folder={selectedFolder} token={token} />
           )}

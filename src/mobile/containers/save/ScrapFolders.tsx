@@ -4,25 +4,39 @@ interface ScrapFoldersProps {
   folders: { id: number; name: string }[];
   selectedFolder: { id: number; name: string } | null;
   onSelectFolder: (folder: { id: number; name: string }) => void;
-  onAddFolderClick: () => void;
+  onManageFoldersClick: () => void;
+  isManagingFolders: boolean;
 }
 
-export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, onAddFolderClick }: ScrapFoldersProps) {
+export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, onManageFoldersClick, isManagingFolders }: ScrapFoldersProps) {
   return (
-    <ScrapFoldersWrapper>
-      {folders.map((folder) => (
-        <FolderItem 
-          key={folder.id}
-          selected={selectedFolder?.id === folder.id}
-          onClick={() => onSelectFolder(folder)}
-        >
-          {folder.name}
-        </FolderItem>
-      ))}
-      <AddFolderButton onClick={onAddFolderClick}>+</AddFolderButton>
-    </ScrapFoldersWrapper>
+    <ScrapFoldersContainer>
+      <ScrapFoldersWrapper>
+        {folders.map((folder) => (
+          <FolderWrapper key={folder.id}>
+            <FolderItem 
+              selected={selectedFolder?.id === folder.id}
+              onClick={() => onSelectFolder(folder)}
+            >
+              {folder.name}
+            </FolderItem>
+            {selectedFolder?.id === folder.id && <SelectedBar />}
+          </FolderWrapper>
+        ))}
+        <FolderWrapper>
+          <ManageFolderButton onClick={onManageFoldersClick} selected={isManagingFolders}>+</ManageFolderButton>
+          {isManagingFolders && <SelectedBar />}
+        </FolderWrapper>
+      </ScrapFoldersWrapper>
+      <BottomBorder />
+    </ScrapFoldersContainer>
   );
 }
+
+const ScrapFoldersContainer = styled.div`
+  position: relative;
+  width: 100%;
+`;
 
 const ScrapFoldersWrapper = styled.div`
   display: flex;
@@ -41,28 +55,52 @@ const ScrapFoldersWrapper = styled.div`
   scrollbar-width: none;  /* Firefox */
 `;
 
+const BottomBorder = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #E0E0E0;
+  z-index: 1;
+`;
+
+const FolderWrapper = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
 const FolderItem = styled.div<{ selected: boolean }>`
   min-width: 100px;
-  height: 40px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${({ selected }) => (selected ? '#4071B9' : '#000')};
-  border-bottom: 2px solid ${({ selected }) => (selected ? '#4071B9' : '#E0E0E0')};
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
 `;
 
-const AddFolderButton = styled.div`
+const ManageFolderButton = styled.div<{ selected: boolean }>`
   min-width: 100px;
-  height: 40px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #E0E0E0;
+  color: ${({ selected }) => (selected ? '#4071B9' : '#E0E0E0')};
   font-size: 30px;
   font-weight: 500;
-  border-bottom: 2px solid #E0E0E0;
   cursor: pointer;
+`;
+
+const SelectedBar = styled.div`
+  width: 100%;
+  height: 2px;
+  background-color: #4071B9;
+  position: absolute;
+  bottom: 0px;
+  z-index: 10;
 `;
