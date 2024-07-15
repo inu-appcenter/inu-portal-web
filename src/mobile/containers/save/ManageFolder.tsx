@@ -23,6 +23,8 @@ export default function ManageFolder({ token, onFolderManaged }: ManageFolderPro
       const response = await getFolders(token);
       if (response.status === 200) {
         setFolders(response.body.data);
+      } else {
+        throw new Error(String(response.status));
       }
     } catch (error) {
       console.error('폴더 목록 가져오기 오류', error);
@@ -35,11 +37,16 @@ export default function ManageFolder({ token, onFolderManaged }: ManageFolderPro
       return;
     }
     try {
-      await postFolders(token, newFolderName);
-      setNewFolderName('');
-      fetchFolders();
-      onFolderManaged();
+      const response = await postFolders(token, newFolderName);
+      if (response.status === 201) {
+        setNewFolderName('');
+        fetchFolders();
+        onFolderManaged();
+      } else {
+        throw new Error(String(response.status));
+      }
     } catch (error) {
+      alert('폴더 생성 오류' + error);
       console.error('폴더 생성 오류', error);
     }
   };
@@ -50,12 +57,17 @@ export default function ManageFolder({ token, onFolderManaged }: ManageFolderPro
       return;
     }
     try {
-      await putFolders(token, folderId, editingFolderName);
-      setEditingFolderId(null);
-      setEditingFolderName('');
-      fetchFolders();
-      onFolderManaged();
+      const response = await putFolders(token, folderId, editingFolderName);
+      if (response.status === 200) {
+        setEditingFolderId(null);
+        setEditingFolderName('');
+        fetchFolders();
+        onFolderManaged();
+      } else {
+        throw new Error(String(response.status));
+      }
     } catch (error) {
+      alert('폴더 수정 오류' + error);
       console.error('폴더 수정 오류', error);
     }
   };
@@ -63,10 +75,15 @@ export default function ManageFolder({ token, onFolderManaged }: ManageFolderPro
   const handleDeleteFolder = async (folderId: number) => {
     if (window.confirm('폴더를 삭제하시겠습니까?')) {
       try {
-        await deleteFolders(token, folderId);
-        fetchFolders();
-        onFolderManaged();
+        const response = await deleteFolders(token, folderId);
+        if (response.status === 200) {
+          fetchFolders();
+          onFolderManaged();
+        } else {
+          throw new Error(String(response.status));
+        }
       } catch (error) {
+        alert('폴더 삭제 오류' + error);
         console.error('폴더 삭제 오류', error);
       }
     }
@@ -165,66 +182,76 @@ const FolderList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
+  min-width: 300px;
+  width: 50%;
+  font-size: 14px;
 `;
 
 const FolderItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: calc(100% - 8px);
-  padding-left: 8px;
+  height: 24px;
+  gap: 4px;
 `;
 
 const EditFolderWrapper = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
 `;
 
 const FolderEditInput = styled.input`
   flex-grow: 1;
-  padding: 8px;
   border-radius: 4px;
   border: 1px solid #ddd;
+  padding-left: 4px;
 `;
 
 const FolderName = styled.span`
   flex-grow: 1;
 `;
 
-const EditButton = styled.button`
+const EditButton = styled.div`
   background-color: #FFA500;
   color: white;
-  border: none;
   border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
+  height: 24px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
-const SaveButton = styled.button`
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-`;
-
-const CancelButton = styled.button`
-  background-color: #888;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-`;
-
-const DeleteButton = styled.button`
+const DeleteButton = styled.div`
   background-color: #FF0000;
   color: white;
-  border: none;
   border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
+  height: 24px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const SaveButton = styled.div`
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 4px;
+  height: 24px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CancelButton = styled.div`
+  background-color: #888;
+  color: white;
+  border-radius: 4px;
+  height: 24px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
