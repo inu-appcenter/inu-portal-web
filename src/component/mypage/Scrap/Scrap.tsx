@@ -110,9 +110,15 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
   useEffect(() => {
     if (id) {
       const fetchPost = async () => {
-        const response = await getFoldersPosts(token, Number(id), scrapsort, page);
-        setDocuments(response.body.data.posts);
-        setTotalPages(response.body.data.pages);
+        if (Number(id) === 0) {
+          const response = await getMembersScraps(token, scrapsort, page);
+          setDocuments(response.body.data.posts);
+          setTotalPages(response.body.data.pages);
+        } else {
+          const response = await getFoldersPosts(token, Number(id), scrapsort, page);
+          setDocuments(response.body.data.posts);
+          setTotalPages(response.body.data.pages);
+        }
       };
       fetchPost();
     }
