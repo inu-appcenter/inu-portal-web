@@ -51,6 +51,7 @@ interface SearchInfo {
 export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapSort, setPage }: ScrapDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
   const [isScrap, setIsScrap] = useState(true);
   const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
   const [isOpenModal, setOpenModal] = useState<boolean>(false);
@@ -69,6 +70,7 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
             const response = await getMembersScraps(token, scrapsort, page);
             const docs = response.body.data;
             setTotalPages(docs.pages);
+            setTotal(docs.total);
             setDocuments(docs.posts);
           } catch (error) {
             console.error("스크랩 정보를 가져오지 못했습니다.", error);
@@ -77,11 +79,13 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
           const query = (queryString.parse(location.search).query as string) || '';
           const docs = await searchScrap(token, query, scrapsort, page);
           setTotalPages(docs.body.data.pages);
+          setTotal(docs.body.data.total);
           setDocuments(docs.body.data.posts);
         } else if (selectedCategory === '폴더내검색결과') {
           const query = (queryString.parse(location.search).query as string) || '';
           const docs = await searchFolder(token, currentId, query, scrapsort, page);
           setTotalPages(docs.body.data.pages);
+          setTotal(docs.body.data.total);
           setDocuments(docs.body.data.posts);
         }
       }
@@ -114,10 +118,12 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
           const response = await getMembersScraps(token, scrapsort, page);
           setDocuments(response.body.data.posts);
           setTotalPages(response.body.data.pages);
+          setTotal(response.body.data.total);
         } else {
           const response = await getFoldersPosts(token, Number(id), scrapsort, page);
           setDocuments(response.body.data.posts);
           setTotalPages(response.body.data.pages);
+          setTotal(response.body.data.total);
         }
       };
       fetchPost();
@@ -174,6 +180,7 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
         setDocuments={setDocuments}
         documents={documents}
         totalPages={totalPages}
+        total={total}
         scrapsort={scrapsort}
         page={page}
         setScrapSort={setScrapSort}
