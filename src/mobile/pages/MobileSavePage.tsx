@@ -41,8 +41,9 @@ export default function MobileSavePage() {
     setSelectedFolder(null);
   };
 
-  const handleFolderManaged = () => {
-    fetchFolders();
+  const handleFolderManaged = async () => {
+    await fetchFolders();
+    setSelectedFolder(null);
   };
 
   const handleSelectFolder = (folder: Folder) => {
