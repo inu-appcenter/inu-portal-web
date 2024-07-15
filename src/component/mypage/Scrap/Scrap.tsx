@@ -11,9 +11,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { searchScrap, searchFolder } from '../../../utils/API/Search';
 import { SearchFolderId } from '../../../reducer/folderId';
 import { addFolder } from '../../../reducer/folderSlice';
-import { getFolders, getFoldersPosts } from '../../../utils/API/Folders';
+import { getFolders, getFoldersPosts, postFolders } from '../../../utils/API/Folders';
 import SearchScrapBar from './searchScrapBar';
 import SearchFolderScrapBar from './searchFolderScrapBar';
+import MakeModal from './ScrapFolderModal';
 
 interface loginInfo {
   user: {
@@ -52,7 +53,6 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isScrap, setIsScrap] = useState(true);
   const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
-  const [isFolderScrap, setIsFolderScrap] = useState(false);
   const [isOpenModal, setOpenModal] = useState<boolean>(false);
   const currentId = useSelector((state: SearchInfo) => state.folderId.folderId);
   const { id } = useParams<{ id: string }>();
@@ -63,31 +63,23 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
 
   useEffect(() => {
     const fetchScrapInfo = async () => {
-      console.log("지금 여기온거맞니1?", isFolderScrap);
       if (isScrap) {
         if (selectedCategory === '스크랩') {
           try {
-            console.log(location, "gmgmgm");
             const response = await getMembersScraps(token, scrapsort, page);
             const docs = response.body.data;
-            console.log(docs, "어케되있노");
             setTotalPages(docs.pages);
             setDocuments(docs.posts);
           } catch (error) {
             console.error("스크랩 정보를 가져오지 못했습니다.", error);
           }
         } else if (selectedCategory === '검색결과') {
-          console.log("여기로 온거야", selectedCategory);
           const query = (queryString.parse(location.search).query as string) || '';
-          console.log('query sort page : ', query, scrapsort, page);
           const docs = await searchScrap(token, query, scrapsort, page);
-          console.log(docs, "결과는>>");
           setTotalPages(docs.body.data.pages);
           setDocuments(docs.body.data.posts);
         } else if (selectedCategory === '폴더내검색결과') {
-          console.log("여기여기여기");
           const query = (queryString.parse(location.search).query as string) || '';
-          console.log('query sort page : ', query, scrapsort, page);
           const docs = await searchFolder(token, currentId, query, scrapsort, page);
           setTotalPages(docs.body.data.pages);
           setDocuments(docs.body.data.posts);
@@ -106,7 +98,6 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
         data.forEach(item => {
           folderData[item.id] = item.name;
         });
-        console.log("data형태", folderData);
         setFolderData(prevFolderData => ({ ...prevFolderData, ...folderData }));
         dispatch(addFolder(folderData));
       } catch (error) {
@@ -132,6 +123,30 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
     navigate(`/mypage/${folderId}`);
   };
 
+  const handleMakeFolder = () => {
+    setOpenModal(true);
+  };
+
+  const closeModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleFolderCreate = async (folderName: string) => {
+    try {
+      const response = await postFolders(token, folderName);
+      if (response.status === 201) {
+        const newFolderId = response.body.data;
+        setFolderData({ ...folderData, [newFolderId]: folderName });
+        dispatch(addFolder({ [newFolderId]: folderName }));
+        console.log('폴더 생성 성공:', response.body);
+      } else {
+        console.error('폴더 생성 실패:', response.status);
+      }
+    } catch (error) {
+      console.error("폴더를 생성하지 못했습니다.", error);
+    }
+  };
+
   return (
     <ScrapWrapper>
       <BackgrounWrapper>
@@ -140,9 +155,26 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
           {id === undefined && <SearchScrapBar />}
           {id !== undefined && <SearchFolderScrapBar />}
         </ScrapInfoWrapper>
-        <ScrapFolder folderData={folderData} handleFolderClick={handleFolderClick} setFolderData={setFolderData} setIsScrap={setIsScrap} setIsFolderScrap={setIsFolderScrap} />
+        <ScrapFolder
+          folderData={folderData}
+          handleFolderClick={handleFolderClick}
+          setFolderData={setFolderData}
+          setIsScrap={setIsScrap}
+          onMakeFolder={handleMakeFolder}
+        />
       </BackgrounWrapper>
-      <ScrapPost selectedCategory={selectedCategory} setDocuments={setDocuments} documents={documents} totalPages={totalPages} scrapsort={scrapsort} page={page} setScrapSort={setScrapSort} setPage={setPage} />
+      <ScrapPost
+        selectedCategory={selectedCategory}
+        setDocuments={setDocuments}
+        documents={documents}
+        totalPages={totalPages}
+        scrapsort={scrapsort}
+        page={page}
+        setScrapSort={setScrapSort}
+        setPage={setPage}
+        handleCreateListClick={handleMakeFolder}
+      />
+      {isOpenModal && <MakeModal closeModal={closeModal} onChange={handleFolderCreate} />}
     </ScrapWrapper>
   );
 }
