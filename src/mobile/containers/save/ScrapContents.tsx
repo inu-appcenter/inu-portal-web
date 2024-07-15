@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import TipsCard from '../../components/tips/TipsCard';
-import { getFoldersPosts } from '../../../utils/API/Folders';
+import { getFoldersPosts, deleteFoldersPosts } from '../../../utils/API/Folders';
 import { getMembersScraps } from '../../../utils/API/Members';
 import { searchScrap, searchFolder } from '../../../utils/API/Search';
+import { handlePostScrap } from '../../../utils/API/Posts';
 import SaveSearchForm from '../../components/save/SaveSearchForm';
 import editButton from '../../../resource/assets/mobile/save/editButton.svg';
 
@@ -19,6 +20,8 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [query, setQuery] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 데이터 가져오기 함수
@@ -123,6 +126,37 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
     };
   }, [handleScroll]);
 
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+    setSelectedPosts([]);
+  };
+
+  const handlePostSelect = (postId: number) => {
+    setSelectedPosts((prev) =>
+      prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId]
+    );
+  };
+
+  const handleRemovePosts = async () => {
+    if (!folder) return;
+    if (window.confirm('선택한 게시물을 삭제하시겠습니까?')) {
+      try {
+        for (const postId of selectedPosts) {
+          if (folder.id === 0) {
+            await handlePostScrap(token, postId.toString());
+          } else {
+            await deleteFoldersPosts(token, postId, folder.id.toString());
+          }
+        }
+        fetchInitialData(query);
+        setIsEditing(false);
+        setSelectedPosts([]);
+      } catch (error) {
+        console.error('Error removing posts:', error);
+      }
+    }
+  };
+
   // 페이지별로 그룹화된 데이터를 렌더링
   const renderPosts = () => {
     const groupedPosts: JSX.Element[] = [];
@@ -137,7 +171,17 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
               <PageMarker>Page {currentPage}</PageMarker>
               <TipsCardWrapper $viewMode="list">
                 {pagePosts.map((p, i) => (
-                  <TipsCard key={`post-${index}-${i}`} post={p as Post} docType='TIPS' viewMode="list" />
+                  <PostWrapper key={`post-${index}-${i}`} onClick={() => handlePostSelect(Number((p as Post).id))}>
+                    {isEditing && (
+                      <CheckBox checked={selectedPosts.includes(Number((p as Post).id))} />
+                    )}
+                    <TipsCard
+                      post={p as Post}
+                      docType='TIPS'
+                      viewMode="list"
+                      isEditing={isEditing}
+                    />
+                  </PostWrapper>
                 ))}
               </TipsCardWrapper>
             </PageGroup>
@@ -156,7 +200,17 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
           <PageMarker>Page {currentPage}</PageMarker>
           <TipsCardWrapper $viewMode="list">
             {pagePosts.map((p, i) => (
-              <TipsCard key={`post-${currentPage}-${i}`} post={p as Post} docType='TIPS' viewMode="list"/>
+              <PostWrapper key={`post-${currentPage}-${i}`} onClick={() => handlePostSelect(Number((p as Post).id))}>
+                {isEditing && (
+                  <CheckBox checked={selectedPosts.includes(Number((p as Post).id))} />
+                )}
+                <TipsCard
+                  post={p as Post}
+                  docType='TIPS'
+                  viewMode="list"
+                  isEditing={isEditing}
+                />
+              </PostWrapper>
             ))}
           </TipsCardWrapper>
         </PageGroup>
@@ -187,10 +241,17 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
           <div className='total'>{total}</div>
         </div>
         {query && <ResetButton onClick={handleResetSearch}>검색 초기화 ↺</ResetButton>}
-        <div className='editWrapper'>
-          <img src={editButton} />
-          <div className='edit'>편집</div>
-        </div>
+        {isEditing ? (
+          <EditingButtons>
+            <Button onClick={handleRemovePosts}>빼기</Button>
+            <Button onClick={() => setIsEditing(false)}>취소</Button>
+          </EditingButtons>
+        ) : (
+          <div className='editWrapper' onClick={handleEditToggle}>
+            <img src={editButton} />
+            <div className='edit'>편집</div>
+          </div>
+        )}
       </ScrapHeader>
       <Wrapper>
         <ScrapContentsWrapper ref={containerRef}>
@@ -248,7 +309,6 @@ const ScrapHeader = styled.div`
 const ResetButton = styled.div`
   font-size: 12px;
   color: #0E4D9D;
-  cursor: pointer;
 `;
 
 const Wrapper = styled.div`
@@ -278,6 +338,38 @@ const TipsCardWrapper = styled.div<{ $viewMode: 'grid' | 'list' }>`
   grid-template-columns: ${({ $viewMode }) => ($viewMode === 'grid' ? 'repeat(2, 1fr)' : 'unset')};
 `;
 
+const PostWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const CheckBox = styled.div<{ checked: boolean }>`
+  position: absolute;
+  top: 8px;
+  right: calc(5% + 4px);
+  width: 16px;
+  height: 16px;
+  border: 1px solid #4071B9;
+  border-radius: 50%;
+  background-color: #fff;
+  z-index: 1;
+  
+  ${({ checked }) =>
+    checked &&
+    `
+      &::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #6F84E2;
+      }
+    `}
+`;
+
 const Loader = styled.div`
   width: 100%;
   padding: 4px 0;
@@ -297,4 +389,20 @@ const EndMarker = styled.div`
   text-align: center;
   font-weight: bold;
   padding: 4px 0;
+`;
+
+const EditingButtons = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const Button = styled.button`
+  background-color: #4071B9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  &:hover {
+    background-color: #305A90;
+  }
 `;

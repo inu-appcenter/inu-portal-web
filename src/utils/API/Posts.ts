@@ -10,9 +10,7 @@ interface PostData {
 
 // 게시글 가져오기
 export const getPost = async (token: string, postId: string) => {
-  console.log('송신');
   return await apiClient(`https://portal.inuappcenter.kr/api/posts/${postId}`, 'GET', token);
-  
 };
 
 // 게시글 수정
