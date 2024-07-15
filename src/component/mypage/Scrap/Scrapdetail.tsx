@@ -43,6 +43,7 @@ interface ScrapPostProps {
   documents: Document[];
   setDocuments: (document: Document[]) => void;
   totalPages: number;
+  total: number;
   scrapsort: string;
   page: number;
   setScrapSort: (sort: string) => void;
@@ -50,7 +51,7 @@ interface ScrapPostProps {
   handleCreateListClick: () => void;
 }
 
-export default function ScrapPost({ selectedCategory, setDocuments, documents, totalPages, scrapsort, page, setScrapSort, setPage, handleCreateListClick }: ScrapPostProps) {
+export default function ScrapPost({ selectedCategory, setDocuments, documents, totalPages, total, scrapsort, page, setScrapSort, setPage, handleCreateListClick }: ScrapPostProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
   const folders = useSelector((state: folderInfo) => state.folder.folders);
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
@@ -84,7 +85,7 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
       <ScrapDetailWrapper>
         <CountWrapper>
           <p className='title'>All scraps</p>
-          <p className='length'>{documents.length}</p>
+          <p className='length'>{total}</p>
         </CountWrapper>
         <BackSortWrapper>
           {selectedCategory === '폴더' && <ReturnScrapButton />}
