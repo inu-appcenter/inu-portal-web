@@ -39,6 +39,11 @@ declare global {
     modifiedDate: string;
     reReplies: Replies[];
   }
+
+  interface Folder {
+    id: number;
+    name: string;
+  }
 }
 
 export {};

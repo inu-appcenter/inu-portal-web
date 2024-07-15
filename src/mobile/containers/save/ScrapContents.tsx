@@ -7,13 +7,16 @@ import { searchScrap, searchFolder } from '../../../utils/API/Search';
 import { handlePostScrap } from '../../../utils/API/Posts';
 import SaveSearchForm from '../../components/save/SaveSearchForm';
 import editButton from '../../../resource/assets/mobile/save/editButton.svg';
+import FolderListDropDowns from '../../../component/mypage/Scrap/FolderListDropDowns';
 
 interface ScrapContentsProps {
-  folder: { id: number; name: string } | null;
+  folders: Folder[]
+  folder: Folder | null;
   token: string;
+  handleManageFoldersClick: () => void;
 }
 
-export default function ScrapContents({ folder, token }: ScrapContentsProps) {
+export default function ScrapContents({ folders, folder, token, handleManageFoldersClick }: ScrapContentsProps) {
   const [posts, setPosts] = useState<(Post | { page: number })[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -23,6 +26,7 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(async (pageToLoad: number, searchQuery = '') => {
@@ -129,12 +133,17 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
     setSelectedPosts([]);
+    setIsDropdownVisible(false);
   };
 
   const handlePostSelect = (postId: number) => {
     setSelectedPosts((prev) =>
       prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId]
     );
+  };
+
+  const handleAddToFolder = () => {
+    setIsDropdownVisible(true);
   };
 
   const handleRemovePosts = async () => {
@@ -243,6 +252,7 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
         {query && <ResetButton onClick={handleResetSearch}>검색 초기화 ↺</ResetButton>}
         {isEditing ? (
           <EditingButtons>
+            <Button onClick={handleAddToFolder}>담기</Button>
             <Button onClick={handleRemovePosts}>빼기</Button>
             <Button onClick={() => setIsEditing(false)}>취소</Button>
           </EditingButtons>
@@ -260,6 +270,15 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
           {!loading && page > totalPages && <EndMarker>End of Content</EndMarker>}
         </ScrapContentsWrapper>
       </Wrapper>
+      {isDropdownVisible && (
+        <FolderListDropDowns
+          folders={folders}
+          postIds={selectedPosts}
+          token={token}
+          handleCreateListClick={() => handleManageFoldersClick()}
+          onClose={() => setIsDropdownVisible(false)}
+        />
+      )}
     </ScrapContentsContainerWrapper>
   );
 }

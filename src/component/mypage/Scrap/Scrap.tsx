@@ -53,6 +53,7 @@ export default function ScrapInfo({ selectedCategory, scrapsort, page, setScrapS
   const [isScrap, setIsScrap] = useState(true);
   const [folderData, setFolderData] = useState<{ [key: number]: string }>({ 0: "내 폴더" });
   const [isFolderScrap, setIsFolderScrap] = useState(false);
+  const [isOpenModal, setOpenModal] = useState<boolean>(false);
   const currentId = useSelector((state: SearchInfo) => state.folderId.folderId);
   const { id } = useParams<{ id: string }>();
   const token = useSelector((state: loginInfo) => state.user.token);

@@ -65,7 +65,7 @@ export default function MobileSavePage() {
           {isManagingFolders ? (
             <ManageFolder token={token} onFolderManaged={handleFolderManaged} />
           ) : (
-            <ScrapContents folder={selectedFolder} token={token} />
+            <ScrapContents folders={folders} folder={selectedFolder} token={token} handleManageFoldersClick={handleManageFoldersClick}/>
           )}
         </>
       ) : (
