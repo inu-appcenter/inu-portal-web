@@ -143,11 +143,19 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
   };
 
   const handleAddToFolder = () => {
+    if (selectedPosts.length === 0) {
+      alert('선택된 게시물이 없습니다.');
+      return;
+    }
     setIsDropdownVisible(true);
   };
 
   const handleRemovePosts = async () => {
     if (!folder) return;
+    if (selectedPosts.length === 0) {
+      alert('선택된 게시물이 없습니다.');
+      return;
+    }
     if (window.confirm('선택한 게시물을 삭제하시겠습니까?')) {
       try {
         for (const postId of selectedPosts) {
@@ -265,20 +273,22 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
       </ScrapHeader>
       <Wrapper>
         <ScrapContentsWrapper ref={containerRef}>
+          {isDropdownVisible && (
+            <DropdownWrapper>
+              <FolderListDropDowns
+                folders={folders}
+                postIds={selectedPosts}
+                token={token}
+                handleCreateListClick={() => handleManageFoldersClick()}
+                onClose={() => setIsDropdownVisible(false)}
+              />
+            </DropdownWrapper>
+          )}
           {renderPosts()}
           {loading && <Loader>Loading...</Loader>}
           {!loading && page > totalPages && <EndMarker>End of Content</EndMarker>}
         </ScrapContentsWrapper>
       </Wrapper>
-      {isDropdownVisible && (
-        <FolderListDropDowns
-          folders={folders}
-          postIds={selectedPosts}
-          token={token}
-          handleCreateListClick={() => handleManageFoldersClick()}
-          onClose={() => setIsDropdownVisible(false)}
-        />
-      )}
     </ScrapContentsContainerWrapper>
   );
 }
@@ -343,6 +353,7 @@ const ScrapContentsWrapper = styled.div`
   width: 100%;
   height: calc(100svh - 72px - 64px - 16px - 32px - 42px - 49px - 16px); // 100% 로 하면 안먹혀서 header, nav, gap, ScrapFolders, SearchForm, ScrapHeader 크기 직접 빼주기
   overflow-y: auto;
+  position: relative;
 `;
 
 const PageGroup = styled.div`
@@ -424,4 +435,11 @@ const Button = styled.button`
   &:hover {
     background-color: #305A90;
   }
+`;
+
+const DropdownWrapper = styled.div`
+  position: absolute;
+  top: -30px;
+  right: calc(207px + 4%);
+  z-index: 1000;
 `;
