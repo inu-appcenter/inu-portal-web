@@ -2,15 +2,13 @@ import styled from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { postFoldersPosts, deleteFoldersPosts } from '../../../utils/API/Folders';
+import { deleteFoldersPosts } from '../../../utils/API/Folders';
+import FolderListDropDowns from './FolderListDropDowns';
 
 import ListImg from "../../../resource/assets/list-logo.svg";
 import HeartImg from "../../../resource/assets/heart-logo.svg";
 import CalendarImg from "../../../resource/assets/bx_calendar.svg";
 import arrowImg from "../../../resource/assets/arrow.svg";
-import closeImg from "../../../resource/assets/close-img.svg";
-import fileImg from "../../../resource/assets/file-img.svg";
-import plusImg from "../../../resource/assets/plus-img.svg";
 import deleteImg from "../../../resource/assets/deletebtn.svg";
 import Pagination from './Pagination';
 import SortDropBox from '../../common/SortDropBox';
@@ -27,6 +25,7 @@ interface folderInfo {
     folders: { [key: number]: string };
   };
 }
+
 interface Document {
   id: number;
   title: string;
@@ -48,45 +47,17 @@ interface ScrapPostProps {
   page: number;
   setScrapSort: (sort: string) => void;
   setPage: (page: number) => void;
+  handleCreateListClick: () => void;
 }
 
-export default function ScrapPost({ selectedCategory, setDocuments, documents, totalPages, scrapsort, page, setScrapSort, setPage }: ScrapPostProps) {
+export default function ScrapPost({ selectedCategory, setDocuments, documents, totalPages, scrapsort, page, setScrapSort, setPage, handleCreateListClick }: ScrapPostProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
-  const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]);
   const folders = useSelector((state: folderInfo) => state.folder.folders);
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
   const { id } = useParams<{ id: string }>();
 
   const handleSearchTypeClick = (index: number) => {
     setShowDropdown(prevIndex => (prevIndex === index ? null : index));
-  };
-
-  const handleOptionClick = (folderId: number) => {
-    if (!selectedFolderIds.includes(folderId)) {
-      setSelectedFolderIds(prevIds => [...prevIds, folderId]);
-    }
-    setShowDropdown(null);
-  };
-
-  const handleCloseModal = () => {
-    setShowDropdown(null);
-  };
-
-  const handleAddClick = async (postId: number) => {
-    try {
-      for (const folderId of selectedFolderIds) {
-        const response = await postFoldersPosts(token, postId, folderId);
-        console.log(`PostID: ${postId}, FolderID: ${folderId}`, response);
-        if (response.status === 201) {
-          console.log("폴더에 추가 성공:", response.body);
-        } else {
-          console.error("폴더에 추가 실패:", response.status);
-        }
-      }
-      setSelectedFolderIds([]);
-    } catch (error) {
-      console.error("폴더에 추가하지 못했습니다.", error);
-    }
   };
 
   const handleRemoveClick = async (postId: number) => {
@@ -104,6 +75,9 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
       }
     }
   };
+
+  // Folder object를 Folder[] 타입으로 변환
+  const folderArray = Object.entries(folders).map(([id, name]) => ({ id: Number(id), name }));
 
   return (
     <ScrapWrapper>
@@ -134,35 +108,20 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
                     <img src={deleteImg} alt="" />
                     <span>삭제</span>
                   </RemoveButton>}
-                <FolderListDropDownWrapper onClick={() => handleSearchTypeClick(index)}>
-                  <FolderListDropDownBox>
+                <FolderListDropDownWrapper>
+                  <FolderListDropDownBox onClick={() => handleSearchTypeClick(index)}>
                     <img src={ListImg} className='list-img' />
                     <span>List</span>
-                    <img src={arrowImg} alt="" className='arrow-img' onClick={handleCloseModal} />
+                    <img src={arrowImg} alt="" className='arrow-img' />
                   </FolderListDropDownBox>
                   {showDropdown === index && (
-                    <FolderListDropDowns className="dropdown-menu">
-                      <FolderListClose>
-                        <div>
-                          <img src={ListImg} className='list-img' />
-                          <span>List</span>
-                        </div>
-                        <img src={closeImg} className='close-img' />
-                      </FolderListClose>
-                      <FolderListDetail>
-                        {Object.entries(folders).map(([folderId, folderName]) => (
-                          <label key={folderId}>
-                            <input type="checkbox" onClick={() => handleOptionClick(Number(folderId))} />
-                            <img src={fileImg} alt="" />
-                            <FolderListDropDownDetail>{folderName as string}</FolderListDropDownDetail>
-                          </label>
-                        ))}
-                      </FolderListDetail>
-                      <FolderListButton>
-                        <img src={plusImg} alt="" />
-                        <button onClick={() => handleAddClick(item.id)}>Create list</button>
-                      </FolderListButton>
-                    </FolderListDropDowns>
+                    <FolderListDropDowns
+                      folders={folderArray}
+                      postId={item.id}
+                      token={token}
+                      handleCreateListClick={() => handleCreateListClick()}
+                      onClose={() => setShowDropdown(null)}
+                    />
                   )}
                 </FolderListDropDownWrapper>
                 <PostInfoWrapper>
@@ -304,94 +263,6 @@ const FolderListDropDownBox = styled.div`
     line-height: 15px;
     letter-spacing: 0em;
     text-align: left;
-  }
-`;
-
-const FolderListDropDowns = styled.div`
-  z-index: 1000;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 30px;
-  width: 207px;
-  border-radius: 5px;
-  border: 0.5px solid #969696;
-  background-color: white;
-
-  button {
-    background-color: black;
-    color: white;
-    display: block;
-    margin: 0 auto;
-    text-align: center;
-    border: none;
-  }
-
-  label {
-    display: flex;
-    align-items: center;
-  }
-
-  img {
-    width: 16px;
-    height: 16px;
-    margin: 0 3px;
-  }
-`;
-
-const FolderListClose = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 7px 8px;
-  justify-content: space-between;
-  border-bottom: 0.5px solid #969696;
-
-  div {
-    display: flex;
-    align-items: center;
-  }
-  .list-img {
-    width: 13px;
-    height: 13px;
-    margin-right: 3px;
-  }
-  span {
-    font-size: 10px;
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: 0px;
-    text-align: left;
-  }
-`;
-
-const FolderListDropDownDetail = styled.div`
-  font-size: 10px;
-  font-weight: 800;
-  color: #656565;
-`;
-
-const FolderListDetail = styled.div`
-  padding: 11px;
-`;
-
-const FolderListButton = styled.div`
-  display: flex;
-  align-items: center;
-  border-top: 0.5px solid #969696;
-  padding: 5px 9px;
-
-  button {
-    background-color: white;
-    color: black;
-    margin: 0;
-    font-size: 10px;
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: 0px;
-    text-align: left;
-  }
-
-  img {
   }
 `;
 
