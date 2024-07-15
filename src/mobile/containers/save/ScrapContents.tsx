@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import TipsCard from '../../components/tips/TipsCard';
 import { getFoldersPosts } from '../../../utils/API/Folders';
 import { getMembersScraps } from '../../../utils/API/Members';
-import SerachForm from '../home/SerachForm';
+import { searchScrap, searchFolder } from '../../../utils/API/Search';
+import SaveSearchForm from '../../components/save/SaveSearchForm';
 
 interface ScrapContentsProps {
   folder: { id: number; name: string } | null;
@@ -16,18 +17,23 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [query, setQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 데이터 가져오기 함수
-  const fetchData = useCallback(async (pageToLoad: number) => {
+  const fetchData = useCallback(async (pageToLoad: number, searchQuery = '') => {
     if (!folder) return;
     setLoading(true);
     try {
       let response;
       if (folder.id === 0) {  // '전체' 폴더
-        response = await getMembersScraps(token, 'date', pageToLoad);
+        response = searchQuery
+          ? await searchScrap(token, searchQuery, 'date', pageToLoad)
+          : await getMembersScraps(token, 'date', pageToLoad);
       } else {
-        response = await getFoldersPosts(token, folder.id, 'date', pageToLoad);
+        response = searchQuery
+          ? await searchFolder(token, folder.id, searchQuery, 'date', pageToLoad)
+          : await getFoldersPosts(token, folder.id, 'date', pageToLoad);
       }
       if (response.status === 200) {
         const newPosts = response.body.data.posts;
@@ -44,20 +50,20 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
   // 데이터 더 가져오기 함수
   const loadMoreData = useCallback(async () => {
     if (page <= totalPages) {
-      await fetchData(page);
+      await fetchData(page, query);
       setPage((prev) => prev + 1);
     }
-  }, [fetchData, page, totalPages]);
+  }, [fetchData, page, totalPages, query]);
 
   useEffect(() => {
     if (folder) {
       setPage(1);
-      fetchData(1);
+      fetchData(1, query);
       if (containerRef.current) {
         containerRef.current.scrollTop = 0;
       }
     }
-  }, [folder, fetchData]);
+  }, [folder, fetchData, query]);
 
   // 스크롤 핸들러
   const handleScroll = () => {
@@ -124,12 +130,25 @@ export default function ScrapContents({ folder, token }: ScrapContentsProps) {
     return groupedPosts;
   };
 
+  const handleSearch = (searchQuery: string) => {
+    setQuery(searchQuery);
+    setPage(1);
+    fetchData(1, searchQuery);
+  };
+
+  const handleResetSearch = () => {
+    setQuery('');
+    setPage(1);
+    fetchData(1);
+  };
+
   return (
     <ScrapContentsContainerWrapper>
-      <SerachForm />
+      <SaveSearchForm onSearch={handleSearch} />
       <ScrapHeader>
         <div className='AllScraps'>All Scraps</div>
         <div className='total'>{total}</div>
+        {query && <ResetButton onClick={handleResetSearch}>검색 초기화 ↺</ResetButton>}
       </ScrapHeader>
       <Wrapper>
         <ScrapContentsWrapper ref={containerRef}>
@@ -148,7 +167,7 @@ const ScrapContentsContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-`
+`;
 
 const ScrapHeader = styled.div`
   font-size: 15px;
@@ -164,7 +183,13 @@ const ScrapHeader = styled.div`
   .total {
     color: #0E4D9D;
   }
-`
+`;
+
+const ResetButton = styled.div`
+  font-size: 12px;
+  color: #0E4D9D;
+`;
+
 const Wrapper = styled.div`
   display: flex;
   width: 100%;
