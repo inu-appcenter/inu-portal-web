@@ -74,15 +74,15 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
 
   const handleAddClick = async (postId: number) => {
     try {
-      console.log("넣기전", postId, selectedFolderIds);
-      const responses = await postFoldersPosts(token, postId, selectedFolderIds);
-      responses.forEach(response => {
+      for (const folderId of selectedFolderIds) {
+        const response = await postFoldersPosts(token, postId, folderId);
+        console.log(`PostID: ${postId}, FolderID: ${folderId}`, response);
         if (response.status === 201) {
           console.log("폴더에 추가 성공:", response.body);
         } else {
           console.error("폴더에 추가 실패:", response.status);
         }
-      });
+      }
       setSelectedFolderIds([]);
     } catch (error) {
       console.error("폴더에 추가하지 못했습니다.", error);

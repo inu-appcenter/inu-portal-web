@@ -1,3 +1,4 @@
+// Folders.ts
 // utils/API/Folders.ts - 스크랩폴더 API
 import apiClient from './apiClient';
 
@@ -34,15 +35,10 @@ export const postFolders = async (token: string, foldername: string) => {
 };
 
 // 스크랩폴더에 게시글 담기
-export const postFoldersPosts = async (token: string, postId: number, selectedFolderIds: number[]) => {
-  const responses = await Promise.all(
-    selectedFolderIds.map(async (folderId) => {
-      const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}/posts`;
-      const data = { postId: [postId] };
-      return await apiClient(apiURL, 'POST', token, data);
-    })
-  );
-  return responses;
+export const postFoldersPosts = async (token: string, postId: number, folderId: number) => {
+  const apiURL = `https://portal.inuappcenter.kr/api/folders/${folderId}/posts`;
+  const data = { postId: [postId] };
+  return await apiClient(apiURL, 'POST', token, data);
 };
 
 // 스크랩폴더에서 게시글 빼기
