@@ -13,7 +13,8 @@ import MobileLoginPage from './MobileLoginPage';
 import { usePreviousPage } from '../../hooks/usePreviousPage';
 import MobilePostDetailPage from './MobilePostDetailPage';
 import UpperBackgroundImg from '../../resource/assets/mobile/common/upperBackgroundImg.svg';
-
+import MobileMyPage from './MobileMyPage';
+import MobileProfilePage from './MobileProfilePage';
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
   width: 100%;
@@ -99,10 +100,14 @@ export default function MobileMainPage() {
               <MobileSavePage />
             </Page>
           )}
-          {pagesLoaded.mypage && (
-            <Page $active={activePage.includes('/m/mypage')}>
-              {/* <MobileMypage /> */}
-            </Page>
+          {pagesLoaded.mypage && activePage.includes('/m/mypage/profile') ?(
+            <Page $active={activePage.includes('/m/mypage/profile')}>
+            <MobileProfilePage />
+          </Page>
+          ): (
+           <Page $active={activePage.includes('/m/mypage')}>
+                      <MobileMyPage />
+                    </Page>
           )}
           {pagesLoaded.login && (
             <Page $active={activePage === '/m/login'}>
