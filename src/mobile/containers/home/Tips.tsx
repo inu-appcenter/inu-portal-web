@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { getPostsTop } from '../../../utils/API/Posts';
+import { getPostsMain } from '../../../utils/API/Posts';
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
@@ -20,7 +20,7 @@ export default function TipForm() {
     useEffect(() => {
         const fetchTopPosts = async () => {
             try {
-                const response = await getPostsTop('전체');
+                const response = await getPostsMain();
                 if (response.status === 200) {
                     const posts: Post[] = response.body.data;  // Adjust this line if necessary based on actual response structure
                     const chunkedPosts: Post[][] = [];
