@@ -29,7 +29,7 @@ export default function FolderListDropDowns({ folders, postIds, postId, token, h
         for (const folderId of selectedFolderIds) {
           try {
             const response = await postFoldersPosts(token, postId, folderId);
-            if (response.status === 201) {
+            if (response.status === 200) {
               console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
             } else {
               console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
@@ -43,7 +43,7 @@ export default function FolderListDropDowns({ folders, postIds, postId, token, h
       for (const folderId of selectedFolderIds) {
         try {
           const response = await postFoldersPosts(token, postId, folderId);
-          if (response.status === 201) {
+          if (response.status === 200) {
             console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
           } else {
             console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
