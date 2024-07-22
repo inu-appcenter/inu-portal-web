@@ -42,6 +42,7 @@ export default function ReCommentInput({ parentId, onCommentUpdate }: ReCommentI
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       handleReCommentSubmit();
+      e.preventDefault();
     }
   };
 
@@ -61,11 +62,7 @@ export default function ReCommentInput({ parentId, onCommentUpdate }: ReCommentI
         onKeyDown={handleKeyPress}
         placeholder="대댓글을 입력하세요."
       />
-      <img
-        src={enterImage}
-        alt='enter'
-        onClick={handleReCommentSubmit}
-      />
+      <img src={enterImage} alt='enter' onClick={handleReCommentSubmit} />
     </div>
   );
 }

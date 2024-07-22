@@ -25,7 +25,7 @@ interface ReCommentListProps {
 }
 
 const ReCommentList: React.FC<ReCommentListProps> = ({ reReplies, onCommentUpdate, token }) => {
-
+  
   return (
     <div>
       {reReplies.map((reply) => (
@@ -33,7 +33,7 @@ const ReCommentList: React.FC<ReCommentListProps> = ({ reReplies, onCommentUpdat
           <div className='recomment-container-2'>
             <div className='recomment-container-3'>
               <img src={recommenticon} />
-              <span className='recomment-writer-text'>{reply.writer}</span>
+              <span className='recomment-writer-text'>{reply.isAnonymous ? "횃불이" : reply.writer}</span>
               <span className='recomment-content-text'>{reply.content}</span>
             </div>
             <CommentLike id={reply.id} like={reply.like} isLikedProp={reply.isLiked} />

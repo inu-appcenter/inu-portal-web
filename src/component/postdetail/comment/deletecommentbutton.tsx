@@ -15,6 +15,7 @@ const DeleteCommentButton: React.FC<DeleteCommentButtonProps> = ({ token, id, on
         const response = await deleteReplies(token, id);
         if (response.status === 200) {
           onCommentUpdate();
+
         } else if (response.status === 403) {
           alert('이 댓글의 삭제에 대한 권한이 없습니다.');
         } else {
