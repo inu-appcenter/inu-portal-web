@@ -2,19 +2,15 @@
   padding-left: 80px;
   width: 100% - 80px;
   border-top: 2px solid #DEDEDE;
-
   padding-top: 10px;
   padding-bottom: 10px;
-
 }
 
 .recomment-container-2 {
   gap: 15px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding-right: 40px;
 }
 

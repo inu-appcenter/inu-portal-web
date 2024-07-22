@@ -12,7 +12,7 @@ interface PostTitleProps {
     hasAuthority: boolean;
   }
   
-export default function PostTitle({ title, /*createDate,*/ view, writer,id, /*hasAuthority*/ }: PostTitleProps) {
+export default function PostTitle({ title, createDate, view, writer,id, /*hasAuthority*/ }: PostTitleProps) {
   // const token = useSelector((state: any) => state.user.token);
   return (<>
     <PostTitleWrapper>
@@ -34,9 +34,14 @@ export default function PostTitle({ title, /*createDate,*/ view, writer,id, /*ha
 
          
     <PostInfo>
+    <div className='postinfo1'>
+    <span className='infoText'>{createDate}</span>
+    </div>
+    <div className='postinfo2'>
       <img src={eyeImg} />
       <span className='viewInfo'>{view}</span>
       <span className='m-writerInfo'>{writer}</span>
+      </div>
     </PostInfo>
       </div>
       </>
@@ -65,25 +70,33 @@ border-top: 1px solid #ccc; /* 1픽셀 두께의 실선 구분선, 색상은 회
 `
 const PostInfo= styled.div`
 display: flex;
-justify-content: flex-end;
+justify-content: space-between;
 align-items: center;
 margin-left: auto;
-gap: 10px;
+gap: 15px;
 img {
   margin-right: 5px;
-  height: 20px; /* 이미지 높이 설정 */
+  top: 10px;
+  width: 16px;
 }
+  .postinfo2{
+  display: flex;
+  top: 10px;
+  }
 
 .viewInfo {
   margin-right: 10px;
-  font-size: 14px;
-  color: #666;
+  font-size: 10px;
+  color: #969696;
+  display: flex;
+  position: relative;
+  top: 10px;
 }
 
 .m-writerInfo {
   font-size: 14px;
   color: #666;
-   display: flex;
+  display: flex;
   align-items: center;
   height: 31px;
   width: auto;

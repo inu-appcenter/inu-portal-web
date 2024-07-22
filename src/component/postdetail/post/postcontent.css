@@ -11,11 +11,16 @@
   width: 90%;
   margin: 10px;
   padding:10px;
-
+  margin-bottom: 50px;
 }
 @media screen and (max-width: 600px) {
   .contents {
+    min-width: 350px;
     width: 100%; /* 너비를 100%로 설정 */
+    margin: 0px;
+    padding:0px;
+    margin-bottom: 50px;
+
   }
 }
 
