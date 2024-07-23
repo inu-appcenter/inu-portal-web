@@ -8,6 +8,7 @@ import { handlePostScrap } from '../../../utils/API/Posts';
 import SaveSearchForm from '../../components/save/SaveSearchForm';
 import editButton from '../../../resource/assets/mobile/save/editButton.svg';
 import FolderListDropDowns from '../../../component/mypage/Scrap/FolderListDropDowns';
+import DeleteConfirmModal from '../../components/save/DeleteConfirmModal';
 
 interface ScrapContentsProps {
   folders: Folder[]
@@ -27,6 +28,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(async (pageToLoad: number, searchQuery = '') => {
@@ -153,33 +155,41 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
   };
 
   const handleAddPosts = () => {
-    setIsDropdownVisible(false)
+    setIsDropdownVisible(false);
     setIsEditing(false);
     setSelectedPosts([]);
-  }
+  };
 
-  const handleRemovePosts = async () => {
+  const handleRemovePosts = () => {
     if (!folder) return;
     if (selectedPosts.length === 0) {
       alert('선택된 게시물이 없습니다.');
       return;
     }
-    if (window.confirm('선택한 게시물을 삭제하시겠습니까?')) {
-      try {
-        for (const postId of selectedPosts) {
-          if (folder.id === 0) {
-            await handlePostScrap(token, postId.toString());
-          } else {
-            await deleteFoldersPosts(token, postId, folder.id.toString());
-          }
+    setShowConfirmModal(true);
+  };
+
+  const confirmRemovePosts = async () => {
+    if (!folder) return;
+    try {
+      for (const postId of selectedPosts) {
+        if (folder.id === 0) {
+          await handlePostScrap(token, postId.toString());
+        } else {
+          await deleteFoldersPosts(token, postId, folder.id.toString());
         }
-        fetchInitialData(query);
-        setIsEditing(false);
-        setSelectedPosts([]);
-      } catch (error) {
-        console.error('Error removing posts:', error);
       }
+      fetchInitialData(query);
+      setIsEditing(false);
+      setSelectedPosts([]);
+    } catch (error) {
+      console.error('Error removing posts:', error);
     }
+    setShowConfirmModal(false);
+  };
+
+  const cancelRemovePosts = () => {
+    setShowConfirmModal(false);
   };
 
   // 페이지별로 그룹화된 데이터를 렌더링
@@ -269,7 +279,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
         {isEditing ? (
           <EditingButtons>
             <Button onClick={handleShowDropDown}>담기</Button>
-            <Button onClick={handleRemovePosts}>빼기</Button>
+            <Button onClick={handleRemovePosts}>삭제</Button>
             <Button onClick={() => setIsEditing(false)}>취소</Button>
           </EditingButtons>
         ) : (
@@ -298,6 +308,12 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
           {!loading && page > totalPages && <EndMarker>End of Content</EndMarker>}
         </ScrapContentsWrapper>
       </Wrapper>
+      {showConfirmModal && (
+        <DeleteConfirmModal
+          onConfirm={confirmRemovePosts}
+          onCancel={cancelRemovePosts}
+        />
+      )}
     </ScrapContentsContainerWrapper>
   );
 }
@@ -432,18 +448,14 @@ const EndMarker = styled.div`
 
 const EditingButtons = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 12px;
 `;
 
-const Button = styled.button`
-  background-color: #4071B9;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  &:hover {
-    background-color: #305A90;
-  }
+const Button = styled.div`
+  color: #4071B9;
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: 400;
 `;
 
 const DropdownWrapper = styled.div`
