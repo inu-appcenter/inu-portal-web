@@ -39,7 +39,29 @@ const CommentListMobile: React.FC<CommentListProps> = ({ bestComment, comments, 
   const [showReCommentInputId, setShowReCommentInputId] = useState<number | null>(null);
   const allComments = bestComment ? [bestComment, ...comments.filter(comment => comment.id !== bestComment.id)] : comments;
 
-  
+  const formatDate = (dateString:string):string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    const units = [
+        { name: '년', seconds: 60 * 60 * 24 * 365 },
+        { name: '달', seconds: 60 * 60 * 24 * 30 },
+        { name: '일', seconds: 60 * 60 * 24 },
+        { name: '시간', seconds: 60 * 60 },
+        { name: '분', seconds: 60 },
+        { name: '초', seconds: 1 },
+    ];
+    
+    for (const unit of units) {
+        const interval = Math.floor(diffInSeconds / unit.seconds);
+        if (interval >= 1) {
+            return `${interval}${unit.name} 전`;
+        }
+    }
+    return '방금 전';
+};
+
   return (
     <div>
         <CommentWrapper>
@@ -72,7 +94,7 @@ const CommentListMobile: React.FC<CommentListProps> = ({ bestComment, comments, 
               </CommentDetail>
               <CommentUtil>
                 <CommentLike id={comment.id} like={comment.like} isLikedProp={comment.isLiked} />
-                <CommentDate>{comment.createDate}</CommentDate>
+                <CommentDate>{formatDate(comment.createDate)}</CommentDate>
               </CommentUtil>
             </Comments>
             {showReCommentInputId === comment.id && (
@@ -113,7 +135,6 @@ const CommentListWrapper = styled.div`
 const Comments = styled.div`
  display: flex;
   flex-direction: row;
- padding: 0 10px;
 position: relative; 
 `
 
@@ -143,15 +164,16 @@ const CommentDetail = styled.div`
 const CommentUtil = styled.div`
 min-width: 70px;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  top: auto;
+  flex-direction: row;
+  gap: 10px;
+  top: 0;
   position: absolute; 
-  bottom: 0; /* 부모 요소의 맨 아래에 배치 */
+  align-items:center;
+  margin-top:10px;
   right: 0; /* 부모 요소의 맨 오른쪽에 배치 */
   `
 
 const CommentDate = styled.span`
-    font-size: 8px;
+    font-size: 10px;
     color:#888888;
 `

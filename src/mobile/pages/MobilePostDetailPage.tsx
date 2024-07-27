@@ -7,6 +7,39 @@ import PostUtilContainer from '../containers/postdetail/PostUtilContainer';
 import CommentListMobile from '../containers/postdetail/CommentListContainer';
 import CommentInput from '../components/postdetail/comment/m.commentInput';
 
+interface Post {
+  id: string;
+  title: string;
+  category: string;
+  writer: string;
+  content: string;
+  like: number;
+  scrap: number;
+  view: number;
+  isLiked: boolean;
+  isScraped: boolean;
+  hasAuthority: boolean;
+  createDate: string;
+  modifiedDate: string;
+  imageCount: number;
+  bestReplies: Replies[];
+  replies: Replies[];
+}
+
+interface Replies {
+  id: number;
+  writer: string;
+  fireId: number;
+  content: string;
+  like: number;
+  isLiked: boolean;
+  isAnonymous: boolean;
+  hasAuthority: boolean;
+  createDate: string;
+  modifiedDate: string;
+  reReplies: Replies[];
+}
+
 
 export default function PostDetail() {
   const token = useSelector((state: any) => state.user.token);
@@ -63,7 +96,7 @@ export default function PostDetail() {
   );
 }
 const Wrapper = styled.div`
-
+  width:100%;
 `
 
 const PostWrapper = styled.div`
