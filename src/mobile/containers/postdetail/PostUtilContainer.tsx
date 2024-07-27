@@ -20,7 +20,7 @@ interface PostUtilityProps {
 export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped, hasAuthority }: PostUtilityProps) {
   const navigate = useNavigate();
   const token = useSelector((state: any) => state.user.token);
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(true);
   const popupRef = useRef<HTMLDivElement>(null);
   
   const handleFolderClick = ()=>{
@@ -46,28 +46,30 @@ export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped,
     <>
       <Wrapper>
         <BackBtn onClick={() => navigate(-1)}>
-          <img src={backbtn} alt='뒤로가기 버튼' />
+          <img src={backbtn} alt="뒤로가기 버튼" />
         </BackBtn>
         <UtilWrapper>
           <PostLike id={id} like={like} isLikedProp={isLiked} hasAuthority={hasAuthority} />
-          <PostScrap id = {id} scrap={scrap} isScrapedProp={isScraped} />
-          <DelOrModifyWrapper>
-            <img
-              src={utilfolder}
-              alt="del or modify folder"
-              onClick={handleFolderClick}
-              style={{ cursor: 'pointer' }}
-            />
-            {showPopup && hasAuthority && (
-              <Popup ref={popupRef}>
-                <DeletePostBtn token={token} id={id} onPostUpdate={handlePostUpdate} />
-                <EditPostBtn id={id} />
-              </Popup>
-            )}
-          </DelOrModifyWrapper>
+          <PostScrap id={id} scrap={scrap} isScrapedProp={isScraped} />
+          {hasAuthority && (
+            <DelOrModifyWrapper>
+              <img
+                src={utilfolder}
+                alt="del or modify folder"
+                onClick={handleFolderClick}
+                style={{ cursor: 'pointer' }}
+              />
+              {showPopup && (
+                <Popup ref={popupRef}>
+                  <DeletePostBtn token={token} id={id} onPostUpdate={handlePostUpdate} />
+                  <EditPostBtn id={id} />
+                </Popup>
+              )}
+            </DelOrModifyWrapper>
+          )}
         </UtilWrapper>
       </Wrapper>
-      <Line/>
+      <Line />
     </>
   );
 }
