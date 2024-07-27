@@ -24,6 +24,9 @@
   gap: 10px;
   align-items: center;
   cursor: url('/pointers/cursor-pointer.svg'), pointer;
+  @media{
+    gap: 7px;
+  }
 }
 
 .scrapContainer {

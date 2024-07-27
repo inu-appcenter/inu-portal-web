@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { postReplies} from "../../../../utils/API/Replies";
 import checkedCheckbox from '../../../../resource/assets/checked-checkbox.svg';
