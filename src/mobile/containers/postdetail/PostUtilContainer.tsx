@@ -5,7 +5,7 @@ import backbtn from '../../../resource/assets/backbtn.svg';
 import PostLike from '../../components/postdetail/util/m.postlike';
 import PostScrap from '../../components/postdetail/util/m.postscrap';
 import utilfolder from '../../../resource/assets/utilfolder.svg';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import DeletePostBtn from '../../../component/postdetail/post/deletpostbtn';
 import EditPostBtn from '../../../component/postdetail/post/editpostbtn';
 import { useSelector } from 'react-redux';
@@ -31,6 +31,13 @@ export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped,
       setShowPopup(false);
     }
   };
+
+  useEffect(()=>{
+    document.addEventListener('mousedown', handleClickOutside);
+    return ()=>{
+      document.removeEventListener('mousedown', handleClickOutside)
+    };
+  },[]);
   const handlePostUpdate = () => {
     //
 };
