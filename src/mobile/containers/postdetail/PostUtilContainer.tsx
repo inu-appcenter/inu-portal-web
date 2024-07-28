@@ -20,7 +20,7 @@ interface PostUtilityProps {
 export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped, hasAuthority }: PostUtilityProps) {
   const navigate = useNavigate();
   const token = useSelector((state: any) => state.user.token);
-  const [showPopup, setShowPopup] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
   
   const handleFolderClick = ()=>{
@@ -69,16 +69,17 @@ export default function PostUtilContainer({ id, like, isLiked, scrap, isScraped,
           )}
         </UtilWrapper>
       </Wrapper>
-      <Line />
     </>
   );
 }
 
 const Wrapper = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  margin-top: 20px;
+  gap: 15px; 
 `
 
 const BackBtn = styled.div`
@@ -97,10 +98,7 @@ const UtilWrapper = styled.div`
 const DelOrModifyWrapper =styled.div`
 `
 
-const Line = styled.div`
-border-top: 1px solid #ccc; 
-left:0;
-right: 0;`
+
 
 const Popup = styled.div`
   position: absolute;

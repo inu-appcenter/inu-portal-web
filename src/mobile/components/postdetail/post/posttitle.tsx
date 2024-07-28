@@ -65,8 +65,6 @@ text-align: left;
 `
 const Line = styled.div`
 border-top: 1px solid #ccc; /* 1픽셀 두께의 실선 구분선, 색상은 회색 */
-  margin: 0 5px;
-  width: 340px;
 `
 const PostInfo= styled.div`
 display: flex;

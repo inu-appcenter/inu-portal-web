@@ -68,8 +68,10 @@ export default function PostDetail() {
       {post ? (
         <>
         <Wrapper>
-          <PostWrapper>
+          
             <PostUtilContainer id={post.id} like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped} hasAuthority={post.hasAuthority} />
+            <Line />
+            <PostWrapper>
             <PostContentContainer
               id={post.id}
               title={post.title}
@@ -104,7 +106,10 @@ const PostWrapper = styled.div`
   flex-direction: column;
   gap: 15px;
   padding: 20px;
-  margin-top: 20px;
 `;
 const CommentWrapper = styled.div`
 `;
+
+const Line = styled.div`
+  border-top: 1px solid #ccc; 
+`
