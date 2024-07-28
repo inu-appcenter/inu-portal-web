@@ -23,12 +23,12 @@ export default function PostScrap({ id, scrap, isScrapedProp }: PostScrapProps) 
       try {
         const result = await handlePostScrap(token, id);
         setIsScraped(!isScraped);
-        if (result.body.data === -1) {
-          setScraps(scraps - 1);
-          alert('스크랩 취소');
-        } else {
+        if (result.body.data === +1) {
           setScraps(scraps + 1);
           alert('스크랩 성공');
+        } else {
+          setScraps(scraps - 1);
+          alert('스크랩 취소');
         }
       } catch (error) {
         console.error('스크랩 처리 에러', error);
