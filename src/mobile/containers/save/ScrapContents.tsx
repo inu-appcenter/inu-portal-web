@@ -9,6 +9,7 @@ import SaveSearchForm from '../../components/save/SaveSearchForm';
 import editButton from '../../../resource/assets/mobile/save/editButton.svg';
 import FolderListDropDowns from '../../../component/mypage/Scrap/FolderListDropDowns';
 import DeleteConfirmModal from '../../components/save/DeleteConfirmModal';
+import Trash from '../../../resource/assets/mobile/save/Trash.svg';
 
 interface ScrapContentsProps {
   folders: Folder[]
@@ -216,6 +217,9 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                       viewMode="list"
                       isEditing={isEditing}
                     />
+                    <DeleteButton>
+                      <img src={Trash} />
+                    </DeleteButton>
                   </PostWrapper>
                 ))}
               </TipsCardWrapper>
@@ -366,8 +370,10 @@ const ResetButton = styled.div`
 `;
 
 const Wrapper = styled.div`
+  position: relative;
+  left: -16px;
   display: flex;
-  width: 100%;
+  width: 100svw;
   height: 100%;
 `;
 
@@ -395,7 +401,18 @@ const TipsCardWrapper = styled.div<{ $viewMode: 'grid' | 'list' }>`
 
 const PostWrapper = styled.div`
   position: relative;
-  width: 100%;
+  width: calc(100%-32px);
+  padding-left: 16px;
+  display: flex;
+  flex-direction: row;
+  overflow-x: scroll;
+  /* 스크롤바 숨기기 */
+  scrollbar-width: none;  // Firefox용
+  -ms-overflow-style: none;  // IE 및 Edge용
+
+  &::-webkit-scrollbar {
+    display: none;  // WebKit 기반 브라우저(Chrome, Safari)용
+  }
 `;
 
 const CheckBox = styled.div<{ checked: boolean }>`
@@ -463,4 +480,21 @@ const DropdownWrapper = styled.div`
   top: -30px;
   right: calc(207px + 4%);
   z-index: 1000;
+`;
+
+const DeleteButton = styled.div`
+  position: absolute;
+  top: 0;
+  right: -30px;
+  width: 51px;
+  height: 97px;
+  border-radius: 10px;
+  background: linear-gradient(148.85deg, #D5E7FD 10.65%, #AABAFE 89.35%);
+  border: 1px solid #7AA7E5;
+  z-index: 10;
+  transform: translateX(50%);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
