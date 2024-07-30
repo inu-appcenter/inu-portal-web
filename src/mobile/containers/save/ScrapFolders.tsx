@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import Gear from '../../../resource/assets/mobile/save/Gear.svg';
 
 interface ScrapFoldersProps {
   folders: { id: number; name: string }[];
@@ -24,7 +25,9 @@ export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, 
           </FolderWrapper>
         ))}
         <FolderWrapper>
-          <ManageFolderButton onClick={onManageFoldersClick} selected={isManagingFolders}>+</ManageFolderButton>
+          <ManageFolderButton onClick={onManageFoldersClick} selected={isManagingFolders}>
+            <img src={Gear} />
+          </ManageFolderButton>
           {isManagingFolders && <SelectedBar />}
         </FolderWrapper>
       </ScrapFoldersWrapper>
