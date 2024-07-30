@@ -30,6 +30,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<number | null>(null); // 삭제할 게시물 ID 상태 추가
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(async (pageToLoad: number, searchQuery = '') => {
@@ -193,6 +194,27 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
     setShowConfirmModal(false);
   };
 
+  const handleDeleteButtonClick = (postId: number) => {
+    setPostToDelete(postId);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!folder || postToDelete === null) return;
+    try {
+      if (folder.id === 0) {
+        await handlePostScrap(token, postToDelete.toString());
+      } else {
+        await deleteFoldersPosts(token, postToDelete, folder.id.toString());
+      }
+      fetchInitialData(query);
+      setPostToDelete(null);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+    setShowConfirmModal(false);
+  };
+
   // 페이지별로 그룹화된 데이터를 렌더링
   const renderPosts = () => {
     const groupedPosts: JSX.Element[] = [];
@@ -217,7 +239,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                       viewMode="list"
                       isEditing={isEditing}
                     />
-                    <DeleteButton>
+                    <DeleteButton onClick={() => handleDeleteButtonClick(Number((p as Post).id))}>
                       <img src={Trash} />
                     </DeleteButton>
                   </PostWrapper>
@@ -249,6 +271,9 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                   viewMode="list"
                   isEditing={isEditing}
                 />
+                <DeleteButton onClick={() => handleDeleteButtonClick(Number((p as Post).id))}>
+                  <img src={Trash} />
+                </DeleteButton>
               </PostWrapper>
             ))}
           </TipsCardWrapper>
@@ -314,7 +339,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
       </Wrapper>
       {showConfirmModal && (
         <DeleteConfirmModal
-          onConfirm={confirmRemovePosts}
+          onConfirm={postToDelete === null ? confirmRemovePosts : confirmDeletePost} // postToDelete가 null이면 다중 삭제, 아니면 단일 삭제
           onCancel={cancelRemovePosts}
         />
       )}
