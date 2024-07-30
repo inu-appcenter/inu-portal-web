@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import ListImg from '../../../resource/assets/list-logo.svg';
 import closeImg from '../../../resource/assets/close-img.svg';
 import fileImg from '../../../resource/assets/file-img.svg';
-import plusImg from '../../../resource/assets/plus-img.svg';
 import { useState } from 'react';
 import { postFoldersPosts } from '../../../utils/API/Folders';
 
@@ -11,12 +10,11 @@ interface MobileFolderListDropDownsProps {
   postIds?: number[];
   postId?: number;
   token: string;
-  handleCreateListClick: () => void;
   handleAddPosts: () => void;
   onClose: () => void;
 }
 
-export default function MobileFolderListDropDowns({ folders, postIds, postId, token, handleCreateListClick, handleAddPosts, onClose }: MobileFolderListDropDownsProps) {
+export default function MobileFolderListDropDowns({ folders, postIds, postId, token, handleAddPosts, onClose }: MobileFolderListDropDownsProps) {
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]);
 
   const handleOptionClick = (folderId: number) => {
@@ -76,12 +74,6 @@ export default function MobileFolderListDropDowns({ folders, postIds, postId, to
             </label>
           ))}
         </FolderListDetail>
-        <FolderListButton>
-          <div onClick={() => handleCreateListClick()}>
-            <img src={plusImg} alt="" />
-            <button>Create list</button>
-          </div>
-        </FolderListButton>
       </MobileFolderListDropDownsWrapper>
       <ConfirmButton onClick={handleAddClick}>확인</ConfirmButton>
       <Overlay />
@@ -165,32 +157,6 @@ const FolderListDropDownDetail = styled.div`
 const FolderListDetail = styled.div`
   padding: 11px;
 `;
-
-const FolderListButton = styled.div`
-  display: flex;
-  flex-direction: column;
-  div {
-    display: flex;
-    align-items: center;
-    border-top: 0.5px solid #969696;
-    padding: 5px 9px;
-  }
-
-  button {
-    background-color: white;
-    color: black;
-    margin: 0;
-    font-size: 10px;
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: 0px;
-    text-align: left;
-  }
-
-  img {
-  }
-`;
-
 
 const ConfirmButton = styled.button`
   z-index: 1001;
