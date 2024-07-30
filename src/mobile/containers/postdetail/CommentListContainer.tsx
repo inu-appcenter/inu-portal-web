@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import CommentImg from '../../../resource/assets/comment-img2.svg'
-import ReCommentList from '../../../component/postdetail/comment/recommentlist';
 import ReCommentInput from '../../../component/postdetail/comment/recommentinput';
 import DeleteCommentButton from '../../../component/postdetail/comment/deletecommentbutton';
 import EditCommentButton from '../../../component/postdetail/comment/editcommentbutton';
 import CommentLike from '../../../component/postdetail/comment/commentlike';
 import styled from 'styled-components';
+import ReCommentList from '../../components/postdetail/comment/m.recommentlist';
 
 interface Replies {
   id: number;
@@ -38,29 +38,27 @@ const CommentListMobile: React.FC<CommentListProps> = ({ bestComment, comments, 
   const token = useSelector((state: loginInfo) => state.user?.token);
   const [showReCommentInputId, setShowReCommentInputId] = useState<number | null>(null);
   const allComments = bestComment ? [bestComment, ...comments.filter(comment => comment.id !== bestComment.id)] : comments;
-
-  const formatDate = (dateString:string):string => {
-    const date = new Date(dateString);
+  const formatDate = (dateString: string): string => {
+    // '2024.07.30' 형태를 Date 객체로 변환
+    const [year, month, day] = dateString.split('.').map(Number);
+    const commentDate = new Date(year, month - 1, day); // 시간은 기본적으로 00:00:00
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    const units = [
-        { name: '년', seconds: 60 * 60 * 24 * 365 },
-        { name: '달', seconds: 60 * 60 * 24 * 30 },
-        { name: '일', seconds: 60 * 60 * 24 },
-        { name: '시간', seconds: 60 * 60 },
-        { name: '분', seconds: 60 },
-        { name: '초', seconds: 1 },
-    ];
-    
-    for (const unit of units) {
-        const interval = Math.floor(diffInSeconds / unit.seconds);
-        if (interval >= 1) {
-            return `${interval}${unit.name} 전`;
-        }
+
+    // 현재 날짜와 댓글 날짜 비교
+    const diffInDays = Math.floor((now.getTime() - commentDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) {
+      return '오늘';
+    } else if (diffInDays < 30) {
+      return `${diffInDays}일 전`;
+    } else if (diffInDays < 365) {
+      const diffInMonths = Math.floor(diffInDays / 30);
+      return `${diffInMonths}개월 전`;
+    } else {
+      const diffInYears = Math.floor(diffInDays / 365);
+      return `${diffInYears}년 전`;
     }
-    return '방금 전';
-};
+  };
 
   return (
     <div>
@@ -141,6 +139,7 @@ position: relative;
 const ProfileWrapper = styled.div`
     border-radius: 50%;
     min-width: 53px;
+    max-width: 60px;
     height: 53px;
     background-color: #FFFFFF;
     display: flex;
