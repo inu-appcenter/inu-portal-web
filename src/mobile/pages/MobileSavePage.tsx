@@ -16,6 +16,7 @@ export default function MobileSavePage() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [isManagingFolders, setIsManagingFolders] = useState(false); // 폴더 관리 상태
+  const [manageMode, setManageMode] = useState<'add' | 'manage'>('manage'); // 폴더 관리 모드
 
   const fetchFolders = async () => {
     try {
@@ -36,7 +37,8 @@ export default function MobileSavePage() {
     }
   }, [token]);
 
-  const handleManageFoldersClick = () => {
+  const handleManageFoldersClick = (mode: 'add' | 'manage') => {
+    setManageMode(mode);
     setIsManagingFolders(true);
     setSelectedFolder(null);
   };
@@ -63,9 +65,9 @@ export default function MobileSavePage() {
             isManagingFolders={isManagingFolders}
           />
           {isManagingFolders ? (
-            <ManageFolder token={token} onFolderManaged={handleFolderManaged} />
+            <ManageFolder token={token} onFolderManaged={handleFolderManaged} mode={manageMode} />
           ) : (
-            <ScrapContents folders={folders} folder={selectedFolder} token={token} handleManageFoldersClick={handleManageFoldersClick}/>
+            <ScrapContents folders={folders} folder={selectedFolder} token={token} />
           )}
         </>
       ) : (

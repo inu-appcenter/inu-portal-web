@@ -15,10 +15,9 @@ interface ScrapContentsProps {
   folders: Folder[]
   folder: Folder | null;
   token: string;
-  handleManageFoldersClick: () => void;
 }
 
-export default function ScrapContents({ folders, folder, token, handleManageFoldersClick }: ScrapContentsProps) {
+export default function ScrapContents({ folders, folder, token }: ScrapContentsProps) {
   const [posts, setPosts] = useState<(Post | { page: number })[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -326,7 +325,6 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                 folders={folders}
                 postIds={selectedPosts}
                 token={token}
-                handleCreateListClick={() => handleManageFoldersClick()}
                 handleAddPosts={() => handleAddPosts()}
                 onClose={() => setIsDropdownVisible(false)}
               />
