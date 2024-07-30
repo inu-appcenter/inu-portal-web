@@ -68,9 +68,10 @@ export default function PostDetail() {
       {post ? (
         <>
         <Wrapper>
-          
+          <PostTopWrapper>
             <PostUtilContainer id={post.id} like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped} hasAuthority={post.hasAuthority} />
-            <Line />
+          </PostTopWrapper>
+          {/* <Line /> */}
             <PostWrapper>
             <PostContentContainer
               id={post.id}
@@ -100,16 +101,28 @@ export default function PostDetail() {
 const Wrapper = styled.div`
   width:100%;
 `
+const PostTopWrapper = styled.div`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+  background: 
+  url('/src/resource/assets/mobile/common/upperBackgroundImg.svg') center/cover no-repeat, 
+  white; /* 첫 번째 배경으로 이미지를, 두 번째 배경으로 하얀색을 설정 */
+  `
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
   padding: 20px;
+  margin-top: 80px;
+  z-index: 1;
 `;
 const CommentWrapper = styled.div`
 `;
 
-const Line = styled.div`
-  border-top: 1px solid #ccc; 
-`
+// const Line = styled.div`
+//   border-top: 1px solid #ccc; 
+//   margin-top:100px;
+// `
