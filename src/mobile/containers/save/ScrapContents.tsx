@@ -7,7 +7,7 @@ import { searchScrap, searchFolder } from '../../../utils/API/Search';
 import { handlePostScrap } from '../../../utils/API/Posts';
 import SaveSearchForm from '../../components/save/SaveSearchForm';
 import editButton from '../../../resource/assets/mobile/save/editButton.svg';
-import FolderListDropDowns from '../../../component/mypage/Scrap/FolderListDropDowns';
+import FolderListDropDowns from '../../../mobile/components/save/MobileFolderListDropDowns';
 import DeleteConfirmModal from '../../components/save/DeleteConfirmModal';
 import Trash from '../../../resource/assets/mobile/save/Trash.svg';
 
