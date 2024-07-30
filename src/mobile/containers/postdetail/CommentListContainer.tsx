@@ -141,6 +141,7 @@ position: relative;
 const ProfileWrapper = styled.div`
     border-radius: 50%;
     min-width: 53px;
+    max-width: 60px;
     height: 53px;
     background-color: #FFFFFF;
     display: flex;
