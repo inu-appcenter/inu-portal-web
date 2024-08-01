@@ -1,9 +1,9 @@
 import React from 'react';
-import CommentLike from './commentlike';
-import EditCommentButton from './editcommentbutton';
-import DeleteCommentButton from './deletecommentbutton';
-import recommenticon from '../../../resource/assets/recommenticon.svg';
-import './recommentlist.css';
+import recommenticon from '../../../../resource/assets/recommenticon.svg';
+import styled from 'styled-components';
+import CommentLike from '../../../../component/postdetail/comment/commentlike';
+import EditCommentButton from '../../../../component/postdetail/comment/editcommentbutton';
+import DeleteCommentButton from '../../../../component/postdetail/comment/deletecommentbutton';
 
 interface Replies {
   id: number;
@@ -25,7 +25,30 @@ interface ReCommentListProps {
 }
 
 const ReCommentList: React.FC<ReCommentListProps> = ({ reReplies, onCommentUpdate, token }) => {
-  
+  const formatDate = (dateString: string): string => {
+    const [year, month, day] = dateString.split('.').map(Number);
+    const commentDate = new Date(year, month - 1, day); // 시간은 기본적으로 00:00:00
+    const now = new Date();
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        return '잘못된 날짜';
+      }      
+    
+    // 현재 날짜와 댓글 날짜 비교
+    const diffInDays = Math.floor((now.getTime() - commentDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) {
+      return '오늘';
+    } else if (diffInDays < 30) {
+      return `${diffInDays}일 전`;
+    } else if (diffInDays < 365) {
+      const diffInMonths = Math.floor(diffInDays / 30);
+      return `${diffInMonths}개월 전`;
+    } else {
+      const diffInYears = Math.floor(diffInDays / 365);
+      return `${diffInYears}년 전`;
+    }
+  };
+
   return (
     <div>
       {reReplies.map((reply) => (
@@ -37,6 +60,7 @@ const ReCommentList: React.FC<ReCommentListProps> = ({ reReplies, onCommentUpdat
               <span className='recomment-content-text'>{reply.content}</span>
             </div>
             <CommentLike id={reply.id} like={reply.like} isLikedProp={reply.isLiked} />
+            <CommentDate>{formatDate(reply.createDate)}</CommentDate>
           </div>
           {reply.hasAuthority && (
             <div className='recomment-utility'>
@@ -51,3 +75,7 @@ const ReCommentList: React.FC<ReCommentListProps> = ({ reReplies, onCommentUpdat
 };
 
 export default ReCommentList;
+const CommentDate = styled.span`
+    font-size: 10px;
+    color:#888888;
+`

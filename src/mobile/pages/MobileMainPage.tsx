@@ -123,7 +123,7 @@ export default function MobileMainPage() {
           )}
         </main>
       </MobileMainPageWrapper>
-        {!isLoginPage && (
+        {!isLoginPage && !isPostDetailPage &&(
           <nav>
             <MobileNav previousPages={previousPages} />
           </nav>

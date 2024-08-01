@@ -1,10 +1,13 @@
+// ManageFolder.tsx
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { getFolders, postFolders, putFolders, deleteFolders } from '../../../utils/API/Folders';
+import DeleteConfirmModal from '../../components/save/DeleteConfirmModal';
 
 interface ManageFolderProps {
   token: string;
   onFolderManaged: () => void; // 폴더 관리 후 호출되는 콜백 함수
+  mode: 'add' | 'manage';
 }
 
 interface Folder {
@@ -12,11 +15,13 @@ interface Folder {
   name: string;
 }
 
-export default function ManageFolder({ token, onFolderManaged }: ManageFolderProps) {
+export default function ManageFolder({ token, onFolderManaged, mode }: ManageFolderProps) {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [newFolderName, setNewFolderName] = useState('');
   const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
   const [editingFolderName, setEditingFolderName] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // 폴더 삭제 모달 상태
+  const [folderToDelete, setFolderToDelete] = useState<number | null>(null); // 삭제할 폴더 ID
 
   const fetchFolders = async () => {
     try {
@@ -73,20 +78,36 @@ export default function ManageFolder({ token, onFolderManaged }: ManageFolderPro
   };
 
   const handleDeleteFolder = async (folderId: number) => {
-    if (window.confirm('폴더를 삭제하시겠습니까?')) {
-      try {
-        const response = await deleteFolders(token, folderId);
-        if (response.status === 200) {
-          fetchFolders();
-          onFolderManaged();
-        } else {
-          throw new Error(String(response.status));
-        }
-      } catch (error) {
-        alert('폴더 삭제 오류' + error);
-        console.error('폴더 삭제 오류', error);
+    try {
+      const response = await deleteFolders(token, folderId);
+      if (response.status === 200) {
+        fetchFolders();
+        onFolderManaged();
+      } else {
+        throw new Error(String(response.status));
       }
+    } catch (error) {
+      alert('폴더 삭제 오류' + error);
+      console.error('폴더 삭제 오류', error);
     }
+  };
+
+  const confirmDeleteFolder = (folderId: number) => {
+    setFolderToDelete(folderId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (folderToDelete !== null) {
+      handleDeleteFolder(folderToDelete);
+    }
+    setShowDeleteModal(false);
+    setFolderToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setFolderToDelete(null);
   };
 
   const handleCancelEdit = () => {
@@ -100,39 +121,48 @@ export default function ManageFolder({ token, onFolderManaged }: ManageFolderPro
 
   return (
     <ManageFolderWrapper>
-      <FolderInputWrapper>
-        <FolderAddInput
-          type="text"
-          value={newFolderName}
-          onChange={(e) => setNewFolderName(e.target.value)}
-          placeholder="폴더 이름을 입력하세요."
+      {mode === 'add' ? (
+        <FolderInputWrapper>
+          <FolderAddInput
+            type="text"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            placeholder="폴더 이름을 입력하세요."
+          />
+          <AddButton onClick={handleAddFolder}>확인</AddButton>
+        </FolderInputWrapper>
+      ) : (
+        <FolderList>
+          {folders.map((folder) => (
+            <FolderItem key={folder.id}>
+              {editingFolderId === folder.id ? (
+                <EditFolderWrapper>
+                  <FolderEditInput
+                    type="text"
+                    value={editingFolderName}
+                    onChange={(e) => setEditingFolderName(e.target.value)}
+                    placeholder="폴더 이름을 입력하세요."
+                  />
+                  <SaveButton onClick={() => handleEditFolder(folder.id)}>저장</SaveButton>
+                  <CancelButton onClick={handleCancelEdit}>취소</CancelButton>
+                </EditFolderWrapper>
+              ) : (
+                <>
+                  <FolderName>{folder.name}</FolderName>
+                  <EditButton onClick={() => { setEditingFolderId(folder.id); setEditingFolderName(folder.name); }}>수정</EditButton>
+                  <DeleteButton onClick={() => confirmDeleteFolder(folder.id)}>삭제</DeleteButton>
+                </>
+              )}
+            </FolderItem>
+          ))}
+        </FolderList>
+      )}
+      {showDeleteModal && (
+        <DeleteConfirmModal
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
         />
-        <AddButton onClick={handleAddFolder}>확인</AddButton>
-      </FolderInputWrapper>
-      <FolderList>
-        {folders.map((folder) => (
-          <FolderItem key={folder.id}>
-            {editingFolderId === folder.id ? (
-              <EditFolderWrapper>
-                <FolderEditInput
-                  type="text"
-                  value={editingFolderName}
-                  onChange={(e) => setEditingFolderName(e.target.value)}
-                  placeholder="폴더 이름을 입력하세요."
-                />
-                <SaveButton onClick={() => handleEditFolder(folder.id)}>저장</SaveButton>
-                <CancelButton onClick={handleCancelEdit}>취소</CancelButton>
-              </EditFolderWrapper>
-            ) : (
-              <>
-                <FolderName>{folder.name}</FolderName>
-                <EditButton onClick={() => { setEditingFolderId(folder.id); setEditingFolderName(folder.name); }}>수정</EditButton>
-                <DeleteButton onClick={() => handleDeleteFolder(folder.id)}>삭제</DeleteButton>
-              </>
-            )}
-          </FolderItem>
-        ))}
-      </FolderList>
+      )}
     </ManageFolderWrapper>
   );
 }
@@ -213,7 +243,7 @@ const FolderName = styled.span`
 `;
 
 const EditButton = styled.div`
-  background-color: #FFA500;
+  background-color: #9CAFE2;
   color: white;
   border-radius: 4px;
   height: 24px;
@@ -224,7 +254,7 @@ const EditButton = styled.div`
 `;
 
 const DeleteButton = styled.div`
-  background-color: #FF0000;
+  background-color: #9CAFE2;
   color: white;
   border-radius: 4px;
   height: 24px;
@@ -235,7 +265,7 @@ const DeleteButton = styled.div`
 `;
 
 const SaveButton = styled.div`
-  background-color: #4CAF50;
+  background-color: #9CAFE2;
   color: white;
   border-radius: 4px;
   height: 24px;
@@ -246,7 +276,7 @@ const SaveButton = styled.div`
 `;
 
 const CancelButton = styled.div`
-  background-color: #888;
+  background-color: #9CAFE2;
   color: white;
   border-radius: 4px;
   height: 24px;

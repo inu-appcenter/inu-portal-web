@@ -7,16 +7,17 @@ import { searchScrap, searchFolder } from '../../../utils/API/Search';
 import { handlePostScrap } from '../../../utils/API/Posts';
 import SaveSearchForm from '../../components/save/SaveSearchForm';
 import editButton from '../../../resource/assets/mobile/save/editButton.svg';
-import FolderListDropDowns from '../../../component/mypage/Scrap/FolderListDropDowns';
+import FolderListDropDowns from '../../../mobile/components/save/MobileFolderListDropDowns';
+import DeleteConfirmModal from '../../components/save/DeleteConfirmModal';
+import Trash from '../../../resource/assets/mobile/save/Trash.svg';
 
 interface ScrapContentsProps {
   folders: Folder[]
   folder: Folder | null;
   token: string;
-  handleManageFoldersClick: () => void;
 }
 
-export default function ScrapContents({ folders, folder, token, handleManageFoldersClick }: ScrapContentsProps) {
+export default function ScrapContents({ folders, folder, token }: ScrapContentsProps) {
   const [posts, setPosts] = useState<(Post | { page: number })[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -27,6 +28,8 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<number | null>(null); // 삭제할 게시물 ID 상태 추가
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(async (pageToLoad: number, searchQuery = '') => {
@@ -153,33 +156,62 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
   };
 
   const handleAddPosts = () => {
-    setIsDropdownVisible(false)
+    setIsDropdownVisible(false);
     setIsEditing(false);
     setSelectedPosts([]);
-  }
+  };
 
-  const handleRemovePosts = async () => {
+  const handleRemovePosts = () => {
     if (!folder) return;
     if (selectedPosts.length === 0) {
       alert('선택된 게시물이 없습니다.');
       return;
     }
-    if (window.confirm('선택한 게시물을 삭제하시겠습니까?')) {
-      try {
-        for (const postId of selectedPosts) {
-          if (folder.id === 0) {
-            await handlePostScrap(token, postId.toString());
-          } else {
-            await deleteFoldersPosts(token, postId, folder.id.toString());
-          }
+    setShowConfirmModal(true);
+  };
+
+  const confirmRemovePosts = async () => {
+    if (!folder) return;
+    try {
+      for (const postId of selectedPosts) {
+        if (folder.id === 0) {
+          await handlePostScrap(token, postId.toString());
+        } else {
+          await deleteFoldersPosts(token, postId, folder.id.toString());
         }
-        fetchInitialData(query);
-        setIsEditing(false);
-        setSelectedPosts([]);
-      } catch (error) {
-        console.error('Error removing posts:', error);
       }
+      fetchInitialData(query);
+      setIsEditing(false);
+      setSelectedPosts([]);
+    } catch (error) {
+      console.error('Error removing posts:', error);
     }
+    setShowConfirmModal(false);
+  };
+
+  const cancelRemovePosts = () => {
+    setShowConfirmModal(false);
+  };
+
+  const handleDeleteButtonClick = (postId: number) => {
+    setPostToDelete(postId);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDeletePost = async () => {
+    if (!folder || postToDelete === null) return;
+    try {
+      if (folder.id === 0) {
+        await handlePostScrap(token, postToDelete.toString());
+      } else {
+        await deleteFoldersPosts(token, postToDelete, folder.id.toString());
+      }
+      fetchInitialData(query);
+      setPostToDelete(null);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+    setShowConfirmModal(false);
   };
 
   // 페이지별로 그룹화된 데이터를 렌더링
@@ -206,6 +238,9 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                       viewMode="list"
                       isEditing={isEditing}
                     />
+                    <DeleteButton onClick={() => handleDeleteButtonClick(Number((p as Post).id))}>
+                      <img src={Trash} />
+                    </DeleteButton>
                   </PostWrapper>
                 ))}
               </TipsCardWrapper>
@@ -235,6 +270,9 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                   viewMode="list"
                   isEditing={isEditing}
                 />
+                <DeleteButton onClick={() => handleDeleteButtonClick(Number((p as Post).id))}>
+                  <img src={Trash} />
+                </DeleteButton>
               </PostWrapper>
             ))}
           </TipsCardWrapper>
@@ -269,7 +307,7 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
         {isEditing ? (
           <EditingButtons>
             <Button onClick={handleShowDropDown}>담기</Button>
-            <Button onClick={handleRemovePosts}>빼기</Button>
+            <Button onClick={handleRemovePosts}>삭제</Button>
             <Button onClick={() => setIsEditing(false)}>취소</Button>
           </EditingButtons>
         ) : (
@@ -287,7 +325,6 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
                 folders={folders}
                 postIds={selectedPosts}
                 token={token}
-                handleCreateListClick={() => handleManageFoldersClick()}
                 handleAddPosts={() => handleAddPosts()}
                 onClose={() => setIsDropdownVisible(false)}
               />
@@ -298,6 +335,12 @@ export default function ScrapContents({ folders, folder, token, handleManageFold
           {!loading && page > totalPages && <EndMarker>End of Content</EndMarker>}
         </ScrapContentsWrapper>
       </Wrapper>
+      {showConfirmModal && (
+        <DeleteConfirmModal
+          onConfirm={postToDelete === null ? confirmRemovePosts : confirmDeletePost} // postToDelete가 null이면 다중 삭제, 아니면 단일 삭제
+          onCancel={cancelRemovePosts}
+        />
+      )}
     </ScrapContentsContainerWrapper>
   );
 }
@@ -350,8 +393,10 @@ const ResetButton = styled.div`
 `;
 
 const Wrapper = styled.div`
+  position: relative;
+  left: -16px;
   display: flex;
-  width: 100%;
+  width: 100svw;
   height: 100%;
 `;
 
@@ -379,7 +424,18 @@ const TipsCardWrapper = styled.div<{ $viewMode: 'grid' | 'list' }>`
 
 const PostWrapper = styled.div`
   position: relative;
-  width: 100%;
+  width: calc(100%-32px);
+  padding-left: 16px;
+  display: flex;
+  flex-direction: row;
+  overflow-x: scroll;
+  /* 스크롤바 숨기기 */
+  scrollbar-width: none;  // Firefox용
+  -ms-overflow-style: none;  // IE 및 Edge용
+
+  &::-webkit-scrollbar {
+    display: none;  // WebKit 기반 브라우저(Chrome, Safari)용
+  }
 `;
 
 const CheckBox = styled.div<{ checked: boolean }>`
@@ -432,18 +488,14 @@ const EndMarker = styled.div`
 
 const EditingButtons = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 12px;
 `;
 
-const Button = styled.button`
-  background-color: #4071B9;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  &:hover {
-    background-color: #305A90;
-  }
+const Button = styled.div`
+  color: #4071B9;
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: 400;
 `;
 
 const DropdownWrapper = styled.div`
@@ -451,4 +503,21 @@ const DropdownWrapper = styled.div`
   top: -30px;
   right: calc(207px + 4%);
   z-index: 1000;
+`;
+
+const DeleteButton = styled.div`
+  position: absolute;
+  top: 0;
+  right: -30px;
+  width: 51px;
+  height: 97px;
+  border-radius: 10px;
+  background: linear-gradient(148.85deg, #D5E7FD 10.65%, #AABAFE 89.35%);
+  border: 1px solid #7AA7E5;
+  z-index: 10;
+  transform: translateX(50%);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;

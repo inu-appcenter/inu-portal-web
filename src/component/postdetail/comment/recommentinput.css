@@ -1,20 +1,28 @@
 .recomment-input-container {
   border-top: 2px solid #DEDEDE;
-
   height: 42px;
   border-radius: 8px;
-
   padding-left: 20px;
   padding-right: 20px;
-
   margin-left: 60px;
   margin-right: 140px;
   margin-bottom: 10px;
-
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
+  top: 0;
 
+  @media (max-width:768px){ /* 모바일 */
+    flex-direction: row;
+    border-top:none;
+    display: flex;
+    position: relative;
+    margin:0;
+    margin-left: 50px;
+    margin-right:20px;
+    padding:0;
+  }
   img {
     width: 15px;
     height: 15px;
