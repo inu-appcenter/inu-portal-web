@@ -15,6 +15,8 @@ import MobilePostDetailPage from './MobilePostDetailPage';
 import UpperBackgroundImg from '../../resource/assets/mobile/common/upperBackgroundImg.svg';
 import MobileMyPage from './MobileMyPage';
 import MobileProfilePage from './MobileProfilePage';
+import MobileMenuPage from './MobileMenuPage';
+
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
   width: 100%;
@@ -29,6 +31,7 @@ export default function MobileMainPage() {
   const [activePage, setActivePage] = useState('/m');
   const [pagesLoaded, setPagesLoaded] = useState<Record<string, boolean>>({
     home: true,
+    menu: false,
     tips: false,
     write: false,
     save: false,
@@ -58,6 +61,7 @@ export default function MobileMainPage() {
   }, [])
 
   useEffect(() => {
+    console.log("왓니");
     const path = location.pathname.split('/')[2] || 'home';
     setActivePage(location.pathname);
     if (path && !pagesLoaded[path]) {
@@ -83,6 +87,9 @@ export default function MobileMainPage() {
         <main style={{ flexGrow: 1 }}>
           <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips')}>
             <MobileHomePage />
+          </Page>
+          <Page $active={activePage.includes('/m/home/menu')}>
+            <MobileMenuPage />
           </Page>
           <Page $active={activePage.includes('/m/home/tips') && !activePage.includes('/m/home/tips/postdetail')}>
             <MobileTipsPage />

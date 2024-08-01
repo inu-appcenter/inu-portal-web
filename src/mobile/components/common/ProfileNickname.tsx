@@ -13,5 +13,5 @@ export default function ProfileNickname({ nickname }: ProfileNicknameProps) {
 }
 
 const ProfileNicknameWrapper = styled.div`
-  color: #aaa;
+  color: white;
 `;
