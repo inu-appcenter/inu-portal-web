@@ -1,14 +1,30 @@
 import styled from 'styled-components';
+import Gear from '../../../resource/assets/mobile/save/Gear.svg';
+import { useState } from 'react';
+import FolderActionModal from './FolderActionModal';
 
 interface ScrapFoldersProps {
   folders: { id: number; name: string }[];
   selectedFolder: { id: number; name: string } | null;
   onSelectFolder: (folder: { id: number; name: string }) => void;
-  onManageFoldersClick: () => void;
+  onManageFoldersClick: (mode: 'add' | 'manage') => void;
   isManagingFolders: boolean;
 }
 
 export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, onManageFoldersClick, isManagingFolders }: ScrapFoldersProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+  const handleAddFolder = () => {
+    onManageFoldersClick('add');
+    setIsModalOpen(false);
+  };
+  const handleManageFolders = () => {
+    onManageFoldersClick('manage');
+    setIsModalOpen(false);
+  };
+
   return (
     <ScrapFoldersContainer>
       <ScrapFoldersWrapper>
@@ -24,11 +40,20 @@ export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, 
           </FolderWrapper>
         ))}
         <FolderWrapper>
-          <ManageFolderButton onClick={onManageFoldersClick} selected={isManagingFolders}>+</ManageFolderButton>
+          <ManageFolderButton onClick={handleOpenModal} selected={isManagingFolders}>
+            <img src={Gear} />
+          </ManageFolderButton>
           {isManagingFolders && <SelectedBar />}
         </FolderWrapper>
       </ScrapFoldersWrapper>
       <BottomBorder />
+      {isModalOpen && (
+        <FolderActionModal 
+          onAddFolder={handleAddFolder} 
+          onManageFolders={handleManageFolders} 
+          onClose={handleCloseModal} 
+        />
+      )}
     </ScrapFoldersContainer>
   );
 }

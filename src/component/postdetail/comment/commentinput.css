@@ -1,21 +1,22 @@
 .comment-area-container {
   position: absolute;
   bottom: 0px;
-
   z-index: 100;
-
   height: 80px;
   width: calc(100% - 253px);
-
   background-color: white;
 
   display: flex;
   align-items: center;
   justify-content: center;
   @media (max-width: 768px) { /* 모바일 */
-    position: absolute;
-    margin-left: 10px;
-    width: calc(90vw);
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    margin-right:5px;
   }
 }
 
@@ -33,6 +34,8 @@
   background-color: #EFF2F9;
   @media (max-width: 768px) { /* 모바일 */
     margin: 0;
+    background-color: #fff;
+    position: relative;
   }
 }
 
@@ -40,15 +43,17 @@
   font-size: 20px;
   font-weight: 400;
   @media (max-width: 768px) { /* 모바일 */
-    font-size: 16px;
+    font-size:15px ;
   }
 }
 
 .vline {
   width: 2px;
   height: 28px;
-
   background-color: #B3B3B3;
+  @media (max-width: 768px) { /* 모바일 */
+    background-color:#fff;
+  }
 }
 
 .comment-input {
@@ -61,5 +66,8 @@
   background-color: transparent;
   @media (max-width: 768px) { /* 모바일 */
     font-size: 16px;
+    background-color: #EFF2F9;
+    border-radius: 16.5px;
+    padding: 0 0 0 15px;
   }
 }
