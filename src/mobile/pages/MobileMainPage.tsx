@@ -8,13 +8,14 @@ import MobileHomePage from './MobileHomePage';
 import MobileTipsPage from './MobileTipsPage';
 import MobileSavePage from './MobileSavePage';
 import MobileWritePage from './MobileWritePage';
-// import MobileMypage from './MobileMypage';
 import MobileLoginPage from './MobileLoginPage';
 import { usePreviousPage } from '../../hooks/usePreviousPage';
 import MobilePostDetailPage from './MobilePostDetailPage';
 import UpperBackgroundImg from '../../resource/assets/mobile/common/upperBackgroundImg.svg';
 import MobileMyPage from './MobileMyPage';
 import MobileProfilePage from './MobileProfilePage';
+import MobileUserActivePage from './MobileUserActivePage';
+
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
   width: 100%;
@@ -100,14 +101,24 @@ export default function MobileMainPage() {
               <MobileSavePage />
             </Page>
           )}
-          {pagesLoaded.mypage && activePage.includes('/m/mypage/profile') ?(
-            <Page $active={activePage.includes('/m/mypage/profile')}>
-            <MobileProfilePage />
-          </Page>
-          ): (
-           <Page $active={activePage.includes('/m/mypage')}>
-                      <MobileMyPage />
-                    </Page>
+          {pagesLoaded.mypage && (
+            <>
+              <Page $active={activePage.includes('/m/mypage/profile')}>
+                <MobileProfilePage />
+              </Page>
+              <Page $active={activePage.includes('/m/mypage/active')}>
+                <MobileUserActivePage />
+              </Page>
+              <Page
+                $active={
+                  activePage.includes('/m/mypage') &&
+                  !activePage.includes('/m/mypage/profile') &&
+                  !activePage.includes('/m/mypage/active')
+                }
+              >
+                <MobileMyPage />
+              </Page>
+            </>
           )}
           {pagesLoaded.login && (
             <Page $active={activePage === '/m/login'}>

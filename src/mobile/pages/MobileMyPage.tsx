@@ -46,20 +46,26 @@ export default function MobileMyPage() {
 
     const handleClick = (title:string) => {
         switch (title) {
+            case '내가 쓴 글':
+                navigate('/m/mypage/active/posts');
+                break;
+            case '좋아요 한 글':
+                navigate('/m/mypage/active/likes');
+                break;
+            case '작성한 댓글':
+                navigate('/m/mypage/active/replies');
+                break;
             case '프로필 편집':
-                
-                navigate('/m/mypage/profile')
+                navigate('/m/mypage/profile');
                 break;
             case '스크랩':
                 navigate('/m/save');
-            break;
+                break;
             case '로그아웃':
                 handleLogout();
-            break;
+                break;
             case '회원탈퇴':
-                
-            break;
-
+                break;
             default:
                 break;
         }
@@ -80,7 +86,7 @@ export default function MobileMyPage() {
                 </UserWrapper>
                 <ActiveWrapper>
                     {MyPageActive.map((active,index)=> (
-                        <div key={index}>
+                        <div key={index} onClick={() => handleClick(active.title)}>
                                             <img src={active.image}/>
                             <p>{active.title}</p>
                             </div>
