@@ -146,8 +146,8 @@ export default function Cafeteria() {
 
 const CafeteriaWrapper = styled.div`
  ::-webkit-scrollbar {
-    width: 10px; // 스크롤바의 너비
 		height: 10px;
+    width: 5%;
   }
 
   ::-webkit-scrollbar-track {
@@ -155,7 +155,7 @@ const CafeteriaWrapper = styled.div`
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #82ADE899; // 스크롤바 썸(움직이는 부분)의 색상
+    background: #fff; // 스크롤바 썸(움직이는 부분)의 색상
 		border-radius: 5px;
   }
 
@@ -212,6 +212,7 @@ const CafeteriaWrapper = styled.div`
     display: flex;
     justify-content: space-between;
     gap:10px;
+    margin:10px 0;
   }
 `;
 
@@ -232,7 +233,10 @@ const CafetriaInfo = styled.div`
         }
 
             .wrapper{
-              
+              min-width: 40px;
+              display: flex;
+              align-items: center;
+              flex-direction: column;
             }
 
             .type {
