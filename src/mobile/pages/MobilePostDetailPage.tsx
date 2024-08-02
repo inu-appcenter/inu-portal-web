@@ -71,7 +71,6 @@ export default function PostDetail() {
           <PostTopWrapper>
             <PostUtilContainer id={post.id} like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped} hasAuthority={post.hasAuthority} />
           </PostTopWrapper>
-          {/* <Line /> */}
             <PostWrapper>
             <PostContentContainer
               id={post.id}
@@ -84,12 +83,11 @@ export default function PostDetail() {
               category={post.category}
               hasAuthority={post.hasAuthority}
             />
-            
-          </PostWrapper>
           <CommentWrapper>
             <CommentListMobile bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)} />
             <CommentInput id={post.id} onCommentUpdate={() => setCommentUpdated(true)}/>
           </CommentWrapper>
+          </PostWrapper>
           </Wrapper>
         </>
       ) : (
@@ -113,10 +111,10 @@ const PostTopWrapper = styled.div`
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 20px;
   padding-bottom:30px;
-  top: 6%;
-
+  top: 10%;
+  height: calc(100svh - 100px);
+  overflow-y: auto;
   position: relative;
   z-index: 1;
 `;
@@ -125,9 +123,5 @@ const CommentWrapper = styled.div`
   flex-direction: column;
   gap: 15px;
   padding-bottom: 20px;
+  position: relative;
 `;
-
-// const Line = styled.div`
-//   border-top: 1px solid #ccc; 
-//   margin-top:100px;
-// `
