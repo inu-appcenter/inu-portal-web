@@ -12,7 +12,7 @@ export default function Cafeteria() {
   const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>(['중식(백반)','중식(일품)','석식']);
   const [cafeteriaDetail, setCafeteriaDetail] = useState<{ 구성원가: string, 칼로리: string }[]>([]);
   const [currentDate, setCurrentDate] = useState("");
-
+  const [day, setDay] = useState<number>(new Date().getDate());
   useEffect(() => {
     fetchCafeteriaData();
   }, [cafeteriaType]);
@@ -32,7 +32,7 @@ export default function Cafeteria() {
 
   const fetchCafeteriaData = async () => {
     try {
-      const response = await getCafeterias(cafeteriaType);
+      const response = await getCafeterias(cafeteriaType, day);
       if (response.status === 200) {
         const processedData = response.body.data.map((info: string) => extractValues(info));
         const infoData = response.body.data.map((info: string) => extractMenu(info));
