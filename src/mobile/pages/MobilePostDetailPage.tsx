@@ -100,24 +100,24 @@ export default function PostDetail() {
 }
 const Wrapper = styled.div`
   width:100%;
+  height: 100%;
 `
 const PostTopWrapper = styled.div`
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 10;
-  border-bottom: 1px solid #ccc; 
-  background: 
-  url('/src/resource/assets/mobile/common/upperBackgroundImg.svg') center/cover no-repeat, 
-  white; /* 첫 번째 배경으로 이미지를, 두 번째 배경으로 하얀색을 설정 */
+  border-bottom: 1px solid #ccc;  
   `
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  padding: 20px;
-  margin-top: 80px;
+  margin: 20px;
+  padding-bottom:30px;
+  top: 6%;
+
+  position: relative;
   z-index: 1;
 `;
 const CommentWrapper = styled.div`

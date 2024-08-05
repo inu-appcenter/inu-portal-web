@@ -79,6 +79,13 @@ export default function Cafeteria() {
         </div>
         <span className="date">{currentDate}</span>
         <div className="total-wrapper">
+        <CafetriaType>
+            {cafeteriasList.map((cafeteria) => (
+              <Cafeterias className="cafeteria" key={cafeteria.id} onClick={() => handleCafeteriaType(cafeteria.title, cafeteria.info)} selected={cafeteria.title === cafeteriaType}>
+                <div className="cafeteria-title">{cafeteria.title}</div>
+              </Cafeterias>
+            ))}
+          </CafetriaType>
         <div className="cafeteria-list">
           <CafetriaInfo>
             <div className="breakfast">
@@ -129,14 +136,8 @@ export default function Cafeteria() {
               </div>
             </div>
           </CafetriaInfo>
-          </div>
-          <CafetriaType>
-            {cafeteriasList.map((cafeteria) => (
-              <Cafeterias className="cafeteria" key={cafeteria.id} onClick={() => handleCafeteriaType(cafeteria.title, cafeteria.info)}>
-                <div className="cafeteria-title">{cafeteria.title}</div>
-              </Cafeterias>
-            ))}
-          </CafetriaType>
+        </div>
+          
           </div>
       </CafeteriaWrapper>
     </>
@@ -144,6 +145,24 @@ export default function Cafeteria() {
 }
 
 const CafeteriaWrapper = styled.div`
+ ::-webkit-scrollbar {
+    width: 10px; // 스크롤바의 너비
+		height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent; // 스크롤바 배경색
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #82ADE899; // 스크롤바 썸(움직이는 부분)의 색상
+		border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #82ADE8FF; // 스크롤바 썸에 마우스를 올렸을 때의 색상
+  }
+    
   box-sizing: border-box;
   border-radius: 10px;
   border: 2px solid transparent;
@@ -154,6 +173,7 @@ const CafeteriaWrapper = styled.div`
   .total-wrapper {
     display: flex;
     justify-content: space-between;
+    flex-direction: column;
   }
   .date {
     font-size: 12px;
@@ -260,26 +280,29 @@ const CafetriaInfo = styled.div`
 `;
 const CafetriaType = styled.div`
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
     gap:10px;
 `
 
-const Cafeterias  = styled.div`
-   font-family : inter;
+const Cafeterias = styled.div<{ selected?: boolean }>`
+  font-family: inter;
   font-weight: bold;
   font-size: 9px;
   line-height: 25px;
-  text-align:center;
-  color:#fff;
+  text-align: center;
+  color: #fff;
+  background: ${({ selected }) =>
+    selected
+      ? 'linear-gradient(90deg, #83CBD9 0%, #99C7E1 50%, #A1C9F1 100%)'
+      : '#DBDBDB'};
+  border-radius: 5px;
+  width: fit-content;
+  margin: 5px;
+  padding: 2px 20px;
+`;
 
-  .cafeteria-title {
-    padding:2px 20px;
-    background:linear-gradient(90deg, #83CBD9 0%, #99C7E1 50%, #A1C9F1 100%);
-    border-radius: 5px;
-    width: 78px;
-    margin: 5px;
-  }
-`
 
 const TinyCircle = styled.div`
   width: 1px;
