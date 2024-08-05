@@ -31,19 +31,15 @@ const UserInfoWrapper = styled.div`
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    margin-top: 70px;
+    margin-top: 80px;
+    width:135px;
+    height: 135px;
     img {
-        width:57px;
-        height: 57px;
+      width: 100%;
+      height: 100%;
+      margin-bottom: 10px;
     }
-    
-    p {
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 700;
 
-        color:white;
-    }
 
 `
 

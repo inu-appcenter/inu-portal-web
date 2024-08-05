@@ -15,6 +15,11 @@ import MobilePostDetailPage from './MobilePostDetailPage';
 import UpperBackgroundImg from '../../resource/assets/mobile/common/upperBackgroundImg.svg';
 import MobileMyPage from './MobileMyPage';
 import MobileProfilePage from './MobileProfilePage';
+import MobileMenuPage from './MobileMenuPage';
+import MobileMyPagePost from './MobileMyPagePost';
+import MobileMyPageComment from './MobileMyPageComment';
+import MobileMyPageLike from './MobileMyPageLike';
+
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
   width: 100%;
@@ -29,6 +34,7 @@ export default function MobileMainPage() {
   const [activePage, setActivePage] = useState('/m');
   const [pagesLoaded, setPagesLoaded] = useState<Record<string, boolean>>({
     home: true,
+    menu: false,
     tips: false,
     write: false,
     save: false,
@@ -58,6 +64,7 @@ export default function MobileMainPage() {
   }, [])
 
   useEffect(() => {
+    console.log("왓니");
     const path = location.pathname.split('/')[2] || 'home';
     setActivePage(location.pathname);
     if (path && !pagesLoaded[path]) {
@@ -81,8 +88,11 @@ export default function MobileMainPage() {
           </header>
         )}
         <main style={{ flexGrow: 1 }}>
-          <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips')}>
+          <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips') && !activePage.includes('/m/home/menu')}>
             <MobileHomePage />
+          </Page>
+          <Page $active={activePage.includes('/m/home/menu')}>
+            <MobileMenuPage />
           </Page>
           <Page $active={activePage.includes('/m/home/tips') && !activePage.includes('/m/home/tips/postdetail')}>
             <MobileTipsPage />
@@ -100,15 +110,23 @@ export default function MobileMainPage() {
               <MobileSavePage />
             </Page>
           )}
-          {pagesLoaded.mypage && activePage.includes('/m/mypage/profile') ?(
-            <Page $active={activePage.includes('/m/mypage/profile')}>
-            <MobileProfilePage />
-          </Page>
-          ): (
-           <Page $active={activePage.includes('/m/mypage')}>
-                      <MobileMyPage />
-                    </Page>
-          )}
+            {pagesLoaded.mypage ? (
+            activePage.includes('/m/mypage/profile') ? (
+              <Page $active={activePage.includes('/m/mypage/profile')}>
+                <MobileProfilePage />
+              </Page>
+            ) : activePage.includes('/m/mypage/post') ? (
+                <MobileMyPagePost />
+            ) : activePage.includes('/m/mypage/like') ? (
+                <MobileMyPageLike />
+            ) : activePage.includes('/m/mypage/comment') ? (
+                <MobileMyPageComment />
+            ) : (
+              <Page $active={activePage.includes('/m/mypage')}>
+                <MobileMyPage />
+              </Page>
+            )
+          ) : null}
           {pagesLoaded.login && (
             <Page $active={activePage === '/m/login'}>
               <MobileLoginPage />
