@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import menuButtonImage from '../../../resource/assets/mobile/common/menu-button.svg'
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { navBarList as originalNavBarList } from '../../../resource/string/navbar';
 
 export default function MenuButton() {
@@ -9,13 +9,26 @@ export default function MenuButton() {
   const handleSubItemClick = (url: string) => {
     window.open(url, '_blank');
   };
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsVisible(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [wrapperRef]);
 
   const College = originalNavBarList.find(item => item.title === '학과 홈페이지');
   return (
     <>
       <MenuButtonImg src={menuButtonImage} alt="MenuButtonImg" onClick={() => setIsVisible(!isVisible)} />
       {isVisible && College&& College.child &&(
-        <Sidebar>
+        <Sidebar ref={wrapperRef}>
           <CloseButton onClick={() => setIsVisible(false)}>×</CloseButton>
           <NavList>
             {College.child.map((childItem, childIndex) => (
