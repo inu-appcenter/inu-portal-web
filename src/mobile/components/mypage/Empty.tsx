@@ -17,6 +17,6 @@ const EmptyWrapper = styled.div`
         font-family: Roboto;
         font-size: 14px;
         font-weight: 400;
-        color: #acabab;
+        color: #999898;
     }
 `
