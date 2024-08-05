@@ -25,6 +25,7 @@ interface userInfo {
 export default function MobileMyPage() {
     const token = useSelector((state: loginInfo) => state.user.token);
     const [user,setUser] = useState<userInfo|null>(null);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const getMember = async () => {
@@ -42,6 +43,13 @@ export default function MobileMyPage() {
         localStorage.removeItem('refreshToken');
         dispatch(logoutUser());
         navigate('/m/home');
+    };
+    const handleLogoutModalClick = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+        setIsModalOpen(false);
     };
 
     const handleClick = (title:string) => {
@@ -62,7 +70,7 @@ export default function MobileMyPage() {
                 navigate('/m/save');
             break;
             case '로그아웃':
-                handleLogout();
+                handleLogoutModalClick();
             break;
             case '회원탈퇴':
                 
@@ -102,6 +110,19 @@ export default function MobileMyPage() {
                         </div>
                     ))}
                 </CategoryWrapper>
+                {isModalOpen && (
+                        <ModalOverlay>
+                            <ModalContent>
+                                <Title>INTIP에서 <br />
+                                    로그아웃 하시겠어요?</Title>
+                                <ButtonContainer>
+                                    <CancelButton onClick={handleModalClose}>취소</CancelButton>
+                                    <Divider />
+                                    <LogoutButton onClick={handleLogout}>확인</LogoutButton>
+                                </ButtonContainer>
+                            </ModalContent>
+                        </ModalOverlay>
+                    )}
             </MyPageWrapper>
             
       ) : (
@@ -176,3 +197,72 @@ const CategoryWrapper = styled.div`
         }
     }
 `
+
+const ModalOverlay = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+    background: white;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 90%;
+    padding-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    
+`;
+
+const Title = styled.div`
+    font-size: 16px;
+    font-weight: bold;
+
+    text-align: center;
+    height: 70px;
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-content: space-evenly;
+    height:50px;
+border-top: 1px solid #D9D9D9; 
+
+`;
+
+const CancelButton = styled.div`
+
+    cursor: pointer;
+    font-size: 14px;
+font-family: Roboto;
+color: #0E4D9D;
+font-weight: 600;
+line-height: 20px;
+text-align: center;
+
+`;
+
+const LogoutButton = styled.div`
+
+    cursor: pointer;
+    font-size: 14px;
+    &:hover {
+        background: #0056b3;
+    }
+`;
+
+const Divider = styled.div`
+    height: 50px;
+    width: 1px;
+    background: #D9D9D9;
+`;
