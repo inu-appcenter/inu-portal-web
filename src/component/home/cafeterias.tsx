@@ -12,7 +12,9 @@ export default function Cafeteria() {
   const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>(['중식(백반)','중식(일품)','석식']);
   const [cafeteriaDetail, setCafeteriaDetail] = useState<{ 구성원가: string, 칼로리: string }[]>([]);
   const [currentDate, setCurrentDate] = useState("");
-  const [day, setDay] = useState<number>(new Date().getDate());
+  const date = new Date();
+  const day = date.getDay(); 
+
   useEffect(() => {
     fetchCafeteriaData();
   }, [cafeteriaType]);
