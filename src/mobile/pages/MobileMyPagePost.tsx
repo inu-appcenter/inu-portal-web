@@ -44,8 +44,7 @@ interface Replies {
 
 export default function MobileMyPagePost() {
   const token = useSelector((state: any) => state.user.token);
-  const [posts, setPosts] = useState<Post[]>([]); // Renamed to `posts`
-  const [sort, setSort] = useState("date");
+  const [posts, setPosts] = useState<Post[]>([]); 
 
   useEffect(() => {
     fetchPosts();
@@ -53,11 +52,11 @@ export default function MobileMyPagePost() {
 
   useEffect(() => {
     console.log(token);
-    console.log("posts", posts.length); // Updated to log `posts`
-  }, [posts]); // Updated dependency
+    console.log("posts", posts.length); 
+  }, [posts]);
 
   const fetchPosts = async () => {
-    const response = await getMembersPosts(token, sort);
+    const response = await getMembersPosts(token, "date");
     if (response.status === 200) {
       console.log(response.body.data, "ㅎ역");
       setPosts(response.body.data);
@@ -70,13 +69,12 @@ export default function MobileMyPagePost() {
       {posts.length === 0 ? (
          <Empty/>
       ) : (
-        <Card post={posts} /> // Pass the array to Card
+        <Card post={posts} /> 
       )}
     </MobileMyPagePostWrapper>
   );
 }
 
 const MobileMyPagePostWrapper = styled.div`
-  /* Add styles here */
 `;
 

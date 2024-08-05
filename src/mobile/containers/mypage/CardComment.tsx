@@ -89,11 +89,7 @@ const Date = styled.div`
   color: #7aa7e5;
 `;
 
-const Title = styled.div`
-  font-size: 14px;
-  font-weight: 600;
-  color: #221112;
-`;
+
 
 const Content = styled.div`
   font-size: 10px;
@@ -101,21 +97,6 @@ const Content = styled.div`
   color: #888888;
 `;
 
-const Writer = styled.div`
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  font-size: 8px;
-  font-weight: 500;
-  color: #303030;
-  padding: 0 8px 0 8px;
-  height: 16px;
-  background-color: #ecf4ff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
 
 const TipsCardListWrapper = styled.div`
   height: 96px;
@@ -123,27 +104,5 @@ const TipsCardListWrapper = styled.div`
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
-`;
-
-const ListLeftWrapper = styled.div`
-  padding-left: 12px;
-  flex: 3;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-`;
-
-const ListLine = styled.div`
-  height: 100%;
-  border: 1px solid #7aa7e5;
-`;
-
-const ListRightWrapper = styled.div`
-  position: relative;
-  padding: 8px 8px 0 12px;
-  flex: 7;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 `;
 
