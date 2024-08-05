@@ -17,9 +17,7 @@ export default function MobileHeader() {
       <AppLogoWrapper>
         <AppLogo />
       </AppLogoWrapper>
-      {!location.pathname.includes(`/m/mypage`) && 
-      <ProfileMenuWrapper>
-        
+      <ProfileMenuWrapper>     
         {token ? (
           <>
             <ProfileImage fireId={fireId} />
@@ -32,7 +30,7 @@ export default function MobileHeader() {
         )}
         <MenuButton />
       </ProfileMenuWrapper>
-   }
+   
     </MobileHeaderWrapper>
   );
 }

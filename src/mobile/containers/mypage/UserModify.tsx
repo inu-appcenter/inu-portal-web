@@ -1,106 +1,126 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { getMembers } from "../../../utils/API/Members";
-import ModifyPassword from "../../../utils/putPassword";
-import styled from "styled-components";
-import ModifyButton from "../../components/mypage/modifybutton";
-import NewPasswordInput from "../../components/mypage/newpassword";
-import CheckNewPasswordInput from "../../components/mypage/checknewpassword";
-import CurrentpasswordInput from "../../components/mypage/currentpassword";
+import styled from 'styled-components';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
+import { NicknameUser as NicknameUserAction, ProfileUser as ProfileUserAction } from "../../../reducer/userSlice";
+import NewNicknameInput from '../../components/mypage/Nickname';
+import { profileimg } from '../../../resource/string/profileImg';
+import { putMembers } from '../../../utils/API/Members';
+import { ProfileDropdown } from '../../components/mypage/ProfielImg';
+import { useNavigate } from 'react-router-dom';
+import BackImg from "../../../resource/assets/backbtn.svg"
 interface loginInfo {
     user: {
       token: string;
     };
-  }
-  
+}
 
-export default function UserModify () {
-
+export default function UserModify() {
     const token = useSelector((state: loginInfo) => state.user.token);
-    const [currentpassword, setCurrentpassword] = useState("");
-    const [newpassword, setNewpassword] = useState("");
-    const [checkpassword, setCheckPassword] = useState("");
-    const [currnetnickname, setCurrentNickname] = useState("");
+    const [newNickname, setNewNickname] = useState<string>("");
+    const [newFireId, setNewFireId] = useState<string>("");   
     const navigate = useNavigate();
-  
-    const handleCurrentPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setCurrentpassword(e.target.value);
-      console.log(currentpassword);
+    const dispatch = useDispatch();
+
+    const handleChangeImage = (image: string) => {
+      console.log("선택한 이미지", Number(image.match(/\d+/)));
+      setNewFireId(image);
     };
-  
-    const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setNewpassword(e.target.value);
+
+    const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(e.target.value);
+        setNewNickname(e.target.value);
     };
-  
-    const handleCheckNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setCheckPassword(e.target.value);
-    };
-  
-    useEffect(() => {
-      handleUserInfo();
-    }, []);
-  
-    const handleUserInfo = async () => {
+
+    const handleModifyClick = async () => {
       try {
-        const response = await getMembers(token);
+        console.log("new nickname , fireid ", newNickname, newFireId !== "" ? String(newFireId.match(/\d+/)) : "");
+        const response = await putMembers(token, newNickname, newFireId !== "" ? String(newFireId.match(/\d+/)) : "");
+        
         if (response.status === 200) {
-          const userInfo = response.body.data;
-          setCurrentNickname(userInfo.nickname);
-          console.log("닉네임이름", currnetnickname);
-        } else if (response.status === 404) {
-          console.error('존재하지 않는 회원입니다.');
+          alert(response.body.msg);
+          if (newNickname) {
+            dispatch(NicknameUserAction({ nickname: newNickname }));
+          }
+          if (newFireId) {
+            dispatch(ProfileUserAction({ fireId: Number(newFireId.match(/\d+/)) }));
+          }
+          setNewNickname("");
+          setNewFireId("");
+        } else if (response.status === 400 || response.status === 404) {
+          alert(response.body.msg);
+          setNewNickname("");
+          setNewFireId("");
         } else {
-          console.error('회원 정보 가져오기 실패:', response.status);
+          alert("알 수 없는 오류가 발생했습니다.");
+          setNewNickname("");
+          setNewFireId("");
         }
       } catch (error) {
-        console.error("회원을 가져오지 못했습니다.", error);
+          console.error('닉네임 변경 실패:', error);
+          alert('닉네임 변경에 실패했습니다.');
       }
-    };
+  };
   
-    const handleModifyClick = async () => {
-      if (newpassword !== checkpassword) {
-        alert("비밀번호가 일치하지 않습니다.");
-      } else {
-        try {
-          const response = await ModifyPassword(token, currentpassword, newpassword);
-          console.log(response, "비밀번호 변경 결과:", response);
-          if (response.status === 401) {
-            alert('비밀번호가 틀립니다.');
-          } else if (response.status === 404) {
-            alert('존재하지 않는 회원입니다.');
-          } else {
-            alert('비밀번호 변경 성공');
-            navigate('/mypage');
-          }
-        } catch (error) {
-          console.error('비밀번호 변경 에러:', error);
-          alert('비밀번호 변경에 실패했습니다.');
-        }
-      }
-    };
-
-    
-    return (
-        <UserModifyWrapper>
-            <CurrentpasswordInput onChange={handleCurrentPasswordChange} currentpassword={currentpassword}/>
-             <NewPasswordInput onChange={handleNewPasswordChange} newpassword={newpassword} />
-             <CheckNewPasswordInput  onChange={handleCheckNewPasswordChange} checkpassword={checkpassword}/>
-            <ModifyButton onClick={handleModifyClick}/>
-        </UserModifyWrapper>
-    )
+  return (
+    <UserModifyWrapper>
+          <BackButton onClick={()=>navigate(-1)}>
+            <img src={BackImg} alt="뒤로가기 버튼" />
+          </BackButton>
+          <NewNicknameInput onChange={handleNicknameChange} newNickname={newNickname} />
+        <ProfileDropdown images={profileimg} newFireId={newFireId} onChange={handleChangeImage} />
+        <ButtonWrapper>
+        <Modify onClick={handleModifyClick}>수정</Modify>
+        </ButtonWrapper>
+    </UserModifyWrapper>
+  );
 }
 
 const UserModifyWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    justify-content: flex-end;
-    height: 85%;
-    input {
-        padding: 10px;
-        border-radius: 5px;
-    }
+position: absolute;
+top:30%;
+width: 100%;
+  /* padding: 20px 76px;
+  height: 100%; */
+`;
+
+const BackButton = styled.div`
+  margin:10px 24px 0;
+  background-color: white;
+  font-size: 14px;
+font-weight: 700;
+line-height: 16.94px;
+img {
+  width: 15px;
+  height: 15px;
+}
 `
+
+
+const ButtonWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`
+
+const Modify = styled.button`
+  /* background: linear-graient(90deg, #6F84E2 0%, #7BABE5 100%);
+  border: 1px solid #fff;
+  border-radius: 5px;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  margin-top: 20px;
+  padding: 6px 44px; */
+  margin:0 24px;
+  box-sizing: border-box;
+  margin-bottom: 90px;
+  background-color: #0E4D9D;
+  border: 1px solid white;
+  color:white;
+  width: 100%;
+  padding:5px;
+  border-radius: 5px;
+`;
+
+

@@ -38,7 +38,7 @@ const StyledButton = styled.button`
     width: 100%;
     background-color: #0E4D9D;
     border-radius: 5px;
-    padding:10px;
+
 `;
 
 const ModifyButtonText = styled.div`

@@ -26,7 +26,7 @@ export default function MobileNav({ previousPages }: MobileNavProps) {
 }
 
 const MobileNavWrapper = styled.div`
-  position: absolute;
+  position: fixed;
   z-index: 1;
   bottom: 0px;
   width: 100%;
