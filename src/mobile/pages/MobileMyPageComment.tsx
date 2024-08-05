@@ -15,6 +15,7 @@ interface Comment {
     content: string;
     like: number;
     scrap: number;
+    imageCount:number;
     createDate: string;
     modifiedDate: string;
 
