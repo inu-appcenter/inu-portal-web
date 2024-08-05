@@ -1,12 +1,7 @@
 
 import styled from "styled-components";
-import { cafeteriasList } from "../../resource/string/cafeterias";
 import { useEffect, useState } from "react";
 import { getCafeterias } from "../../utils/API/Cafeterias";
-import dinnerImg from "../../resource/assets/Sunset.png";
-import lunchImg from "../../resource/assets/Sun.png";
-import breakfastImg from "../../resource/assets/Sunrise.png";
-import { FaTrashCan } from 'react-icons/fa';
 import CafeteriaTitleContainer from "../../container/cafeteria/CafeteriaTitleContainer";
 import CafeteriaInfoContainer from "../../container/cafeteria/CafeteriaInfoContainer";
 

@@ -24,7 +24,6 @@ interface Comment {
 export default function MobileMyPageComment() {
   const token = useSelector((state: any) => state.user.token);
   const [comments, setComments] = useState<Comment[]>([]); // Renamed to `comments`
-  const [sort, setSort] = useState("date");
 
   useEffect(() => {
     fetchComments();
@@ -36,7 +35,7 @@ export default function MobileMyPageComment() {
   }, [comments]); // Updated dependency
 
   const fetchComments = async () => {
-    const response = await getMembersReplies(token, sort);
+    const response = await getMembersReplies(token, "date");
     if (response.status === 200) {
       console.log(response.body.data, "durldurl여기");
       setComments(response.body.data);
@@ -49,13 +48,13 @@ export default function MobileMyPageComment() {
       {comments.length === 0 ? (
         <Empty/>
       ) : (
-        <CardComment post={comments} /> // Pass the array to Card
+        <CardComment post={comments} /> 
       )}
     </MobileMyPageCommentWrapper>
   );
 }
 
 const MobileMyPageCommentWrapper = styled.div`
-  /* Add styles here */
+
 `;
 
