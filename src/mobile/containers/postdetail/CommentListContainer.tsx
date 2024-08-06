@@ -154,7 +154,8 @@ const Profile = styled.img`
     height: 100%;
     object-fit: cover;
     object-position: center;
-    align-item:center;`
+    align-items:center;
+`
 
 const CommentDetail = styled.div`
   flex-direction: column;
