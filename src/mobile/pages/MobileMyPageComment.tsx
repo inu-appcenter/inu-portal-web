@@ -31,10 +31,19 @@ export default function MobileMyPageComment() {
   }, [comments]); // Updated dependency
 
   const fetchComments = async () => {
-    const response = await getMembersReplies(token, "date");
-    if (response.status === 200) {
-      console.log(response.body.data, "durldurl여기");
-      setComments(response.body.data);
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    try {
+      const response = await getMembersReplies(token, "date");
+      if (response.status === 200) {
+        console.log(response.body.data, "durldurl여기");
+        setComments(response.body.data);
+      }
+    } catch (error) {
+      console.error("댓글 가져오기 오류:", error);
+      alert("댓글을 가져오는 중 오류가 발생했습니다.");
     }
   };
 
@@ -44,7 +53,7 @@ export default function MobileMyPageComment() {
       {comments.length === 0 ? (
         <Empty/>
       ) : (
-        <CardComment posts={comments} /> 
+        <CardComment posts={comments} onCommentsUpdate={fetchComments} /> 
       )}
     </MobileMyPageCommentWrapper>
   );
