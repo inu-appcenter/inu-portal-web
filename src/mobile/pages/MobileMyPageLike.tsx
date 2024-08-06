@@ -50,7 +50,7 @@ export default function MobileMyPageLike() {
 
   return (
     <MobileMyPageLikeWrapper>
-      <CommontTitle title={"좋아요한 글"} />
+      <CommontTitle title={"좋아요 한 글"} />
       {likes.length === 0 ? (
         <Empty/>
       ) : (
