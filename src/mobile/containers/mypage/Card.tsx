@@ -135,8 +135,8 @@ const CardWrapper = styled.div`
 
 const XButton = styled.img`
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 10px;
+  right: 10px;
   width: 10px;
   height: 10px;
   cursor: pointer;
@@ -188,11 +188,12 @@ const Writer = styled.div`
 const TipsCardListWrapper = styled.div`
   position: relative;
   height: 96px;
-  width: 95%;
+  width: 90%;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
   padding-right: 20px;
+  margin-bottom: 12px;
 `;
 
 const ListLeftWrapper = styled.div`
