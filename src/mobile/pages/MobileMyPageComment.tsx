@@ -7,23 +7,9 @@ import Empty from "../components/mypage/Empty";
 import CardComment from "../containers/mypage/CardComment";
 
 
-interface Comment {
-    id: string;
-    title: string;
-    category: string;
-    writer: string;
-    content: string;
-    like: number;
-    scrap: number;
-    imageCount:number;
-    createDate: string;
-    modifiedDate: string;
-
-}
-
 export default function MobileMyPageComment() {
   const token = useSelector((state: any) => state.user.token);
-  const [comments, setComments] = useState<Comment[]>([]); // Renamed to `comments`
+  const [comments, setComments] = useState<Post[]>([]);
 
   useEffect(() => {
     fetchComments();
@@ -48,7 +34,7 @@ export default function MobileMyPageComment() {
       {comments.length === 0 ? (
         <Empty/>
       ) : (
-        <CardComment post={comments} /> 
+        <CardComment posts={comments} /> 
       )}
     </MobileMyPageCommentWrapper>
   );
