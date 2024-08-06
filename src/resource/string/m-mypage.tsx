@@ -5,7 +5,7 @@ import logoutImg from "../assets/mobile/mypage/logout.svg"
 import removeImg from "../assets/mobile/mypage/remove.png"
 export const MyPageActive = [
     {title:'내가 쓴 글',image: `${writeImg}`},
-    {title:'좋아요한 글',image: `${writeImg}`},
+    {title:'좋아요 한 글',image: `${writeImg}`},
     {title:'작성한 댓글',image: `${writeImg}`},]
 
 

@@ -57,7 +57,7 @@ export default function MobileMyPage() {
             case '내가 쓴 글':
                 navigate('m/mypage/post')
                 break;
-            case '좋아요한 글':
+            case '좋아요 한 글':
                 navigate('m/mypage/like')
                 break;
             case '작성한 댓글':
