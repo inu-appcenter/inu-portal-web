@@ -3,14 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import HeartFilledImg from '../../../resource/assets/heart-filled-img.svg';
 
+interface Comment {
+  id: number;
+  title: string;
+  replyCount: number;
+  content: string;
+  like: number;
+  postId: number;
+  createDate: string;
+  modifiedDate: string;
+}
+
 interface TipsCardContainerProps {
-  posts: Post[];
+  posts: Comment[];
 }
 
 export default function CardComment({ posts }: TipsCardContainerProps) {
   const navigate = useNavigate();
 
-  const handleDocumentClick = (id: string) => {
+  const handleDocumentClick = (id: number) => {
     navigate(`/m/home/tips/postdetail?id=${id}`);
   };
 
@@ -23,14 +34,16 @@ export default function CardComment({ posts }: TipsCardContainerProps) {
       <p><span>All</span> {posts.length}</p>
       <TipsCardListWrapper>
         {posts.map((p) => (
-          <TipsCardWrapper key={p.id} onClick={() => handleDocumentClick(p.id)}>
+          <TipsCardWrapper key={p.id} onClick={() => handleDocumentClick(p.postId)}>
             <Date>{p.createDate}</Date>
             <Content>{p.content}</Content>
             <LikeWrapper>
               <img src={HeartFilledImg} />
               <Like>{p.like}</Like>
+              <Like>·</Like>
+              <Like>댓글 {p.replyCount}</Like>
             </LikeWrapper>
-            <Title>제목</Title>
+            <Title>{p.title}</Title>
           </TipsCardWrapper>
         ))}
       </TipsCardListWrapper>
