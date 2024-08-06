@@ -6,10 +6,20 @@ import styled from "styled-components";
 import Empty from "../components/mypage/Empty";
 import CardComment from "../containers/mypage/CardComment";
 
+interface Comment {
+  id: number;
+  title: string;
+  replyCount: number;
+  content: string;
+  like: number;
+  postId: number;
+  createDate: string;
+  modifiedDate: string;
+}
 
 export default function MobileMyPageComment() {
   const token = useSelector((state: any) => state.user.token);
-  const [comments, setComments] = useState<Post[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
     fetchComments();
