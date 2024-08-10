@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import heartEmptyImg from '../../../../resource/assets/heart-empty-img.svg';
 import heartFilledImg from '../../../../resource/assets/heart-filled-img.svg';
@@ -17,6 +17,15 @@ export default function PostLike({ id, like, isLikedProp, hasAuthority }: PostLi
   const [isLiked, setIsLiked] = useState(isLikedProp);
   const token = useSelector((state: any) => state.user.token);
   const [showError, setShowError] = useState<boolean>(false);
+  
+  useEffect(() => {
+    setLikes(like);
+  }, [like]);
+
+  useEffect(() => {
+    setIsLiked(isLikedProp);
+  }, [isLikedProp]);
+
   const handleLikeClick = async () => {
     if (hasAuthority) {
       setShowError(true); // 본인 게시글인 경우 에러 표시
@@ -64,7 +73,7 @@ export default function PostLike({ id, like, isLikedProp, hasAuthority }: PostLi
 
 const ErrorMessage = styled.div`
   position: absolute;
-  bottom: 50%;
+  bottom: -100%;
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(255, 0, 0, 0.7);

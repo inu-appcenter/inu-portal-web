@@ -24,7 +24,7 @@ export default function PostContentContainer({ id, title, createDate, view, writ
 }
 
 const Wrapper = styled.div`
-  margin: 20px;
+  margin: 10px 20px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 15px;

@@ -113,7 +113,7 @@ const PostWrapper = styled.div`
   flex-direction: column;
   padding-bottom:30px;
   top: 10%;
-  height: calc(100svh - 100px);
+  height: calc(100svh - 150px);
   overflow-y: auto;
   position: relative;
   z-index: 1;
