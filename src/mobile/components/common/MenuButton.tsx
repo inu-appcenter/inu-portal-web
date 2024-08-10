@@ -32,21 +32,28 @@ export default function MenuButton() {
           <CloseButton onClick={() => setIsVisible(false)}>×</CloseButton>
           <NavList>
             {College.child.map((childItem, childIndex) => (
-              <NavSubSection key={childIndex}>
-                {childItem.url ? (
+              <NavSubSection className={childItem.title} key={childIndex}>
+                {childItem.title === "법학부" ? (
+                  <NavSubTitle>{childItem.title}</NavSubTitle>
+                ) : childItem.url ? (
                   <NavItem onClick={() => handleSubItemClick(childItem.url)}>
                     {childItem.title}
                   </NavItem>
                 ) : (
                   <>
                     <NavSubTitle>{childItem.title}</NavSubTitle>
-                    {childItem.subItems && childItem.subItems.map((subItem, subIndex) => (
-                      <NavItem key={subIndex} onClick={() => handleSubItemClick(subItem.url)}>
-                        {subItem.title}
-                      </NavItem>
-                    ))}
+                    {childItem.subItems &&
+                      childItem.subItems.map((subItem, subIndex) => (
+                        <NavItem
+                          key={subIndex}
+                          onClick={() => handleSubItemClick(subItem.url)}
+                        >
+                          {subItem.title}
+                        </NavItem>
+                      ))}
                   </>
                 )}
+                <br />
               </NavSubSection>
             ))}
           </NavList>
@@ -63,17 +70,17 @@ const MenuButtonImg = styled.img`
 
 const Sidebar = styled.div`
   position: fixed;
-  top: 0;
-  right: 0;
-  height: 100%;
+  bottom:0;
+  left: 0;
+  height: 70%;
+  width: 100%;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  padding: 20px;
   overflow-y: auto;
-  border-radius: 20px 0 0 20px;
+
 `;
 
 const CloseButton = styled.button`
@@ -83,40 +90,37 @@ const CloseButton = styled.button`
   font-size: 24px;
   color: #888888;
   cursor: pointer;
+  margin: 10px;
 `;
 
 const NavList = styled.ul`
-  list-style-type: none;
+ display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 0;
   margin: 20px 0 0 0;
-`;
-
-const NavSection = styled.li`
-  margin-bottom: 15px;
-`;
-
-const NavTitle = styled.div`
-  font-weight: bold;
-  margin-bottom: 10px;
+  margin: 0 10px;
 `;
 
 const NavSubSection = styled.div`
+  flex: 1 1 100px; 
   margin-left: 10px;
   margin-bottom: 10px;
-  padding-bottom:5px;
+   box-sizing: border-box;
+    min-width: 100px;
 `;
 
 const NavSubTitle = styled.div`
   font-weight: bold;
-  margin-bottom: 5px;
-  color: #888888;
+  margin-bottom: 10px;
+  color:#0E4D9D;
+;
 
 `;
 
 const NavItem = styled.div`
-  margin-left: 10px;
   color: #888888;
-
+  font-size: 15px;
   cursor: pointer;
   &:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
