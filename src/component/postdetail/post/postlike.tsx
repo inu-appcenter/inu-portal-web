@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { handlePostLike } from '../../../utils/API/Posts';
@@ -18,6 +18,14 @@ const PostLike: React.FC<PostLikeProps> = ({ like, isLikedProp, hasAuthority }) 
   const [isLiked, setIsLiked] = useState(isLikedProp);
   const token = useSelector((state: any) => state.user.token);
   const [showError, setShowError] = useState<boolean>(false);
+  
+  useEffect(() => {
+    setLikes(like);
+  }, [like]);
+
+  useEffect(() => {
+    setIsLiked(isLikedProp);
+  }, [isLikedProp]);
 
   const handleLikeClick = async () => {
     if (hasAuthority) {
