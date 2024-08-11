@@ -7,6 +7,7 @@ import { MyPageActive,MyPageCategory } from '../../resource/string/m-mypage';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../reducer/userSlice';
 import UserInfo from '../containers/mypage/UserInfo';
+import arrowImg from '../../resource/assets/mobile/mypage/arrow.svg';
 
 
 interface loginInfo {
@@ -105,8 +106,11 @@ export default function MobileMyPage() {
                 <CategoryWrapper>
                     {MyPageCategory.map((category,index)=> (
                         <div key={index} onClick={()=>handleClick(category.title)}>
-                        <img src={category.image}/>
-                        <p>{category.title}</p>
+                            <span>
+                                <img src={category.image}/>
+                                <p>{category.title}</p>
+                            </span>
+                            <Arrow src={arrowImg} />
                         </div>
                     ))}
                 </CategoryWrapper>
@@ -171,31 +175,37 @@ box-sizing: border-box;
 `
 
 const CategoryWrapper = styled.div`
-     position: absolute;
-     top:48%;
+    position: absolute;
+    top:48%;
     display: flex;
     z-index: 15;
     /* row-gap:30px; */
     border-radius:10px;
     flex-direction: column;
-    margin:0 26px;
     width: 80%;
+    gap: 16px;
     div {
-        width: 100%;
+        width: calc(100% - 32px);
         display:flex;
         align-items: center;
-        justify-content: flex-start;
+        justify-content: space-between;
         background-color: #fff;
-        padding:10px;
+        padding: 10px 16px 10px 16px;
         border-radius:10px;
-        border-bottom: line ar-gradient(0deg, #DF5532, #DF5532),
-        linear-gradient(0deg, #E0E0E0, #E0E0E0);
-        img {
-            width:36px;
-            height:36px;
-            margin-right:18px;
+        span {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            img {
+                width:36px;
+                height:36px;
+            }
         }
     }
+`
+
+const Arrow = styled.img`
+    width: 8px;
 `
 
 const ModalOverlay = styled.div`
