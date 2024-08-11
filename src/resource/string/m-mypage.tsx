@@ -1,8 +1,8 @@
-import writeImg from "../assets/mobile/mypage/write.png"
-import scrapImg from "../assets/mobile/mypage/scrap.png"
-import profileImg from "../assets/mobile/mypage/profile.png"
+import writeImg from "../assets/mobile/mypage/write.svg"
+import scrapImg from "../assets/mobile/mypage/scrap.svg"
+import profileImg from "../assets/mobile/mypage/profile.svg"
 import logoutImg from "../assets/mobile/mypage/logout.svg"
-import removeImg from "../assets/mobile/mypage/remove.png"
+import removeImg from "../assets/mobile/mypage/remove.svg"
 export const MyPageActive = [
     {title:'내가 쓴 글',image: `${writeImg}`},
     {title:'좋아요 한 글',image: `${writeImg}`},
