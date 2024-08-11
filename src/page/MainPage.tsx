@@ -22,8 +22,7 @@ export default function MainPage() {
     if (introShown) {
       // 'introShown' 키가 있으면, 새로고침으로 간주하고 IntroPage를 보여주지 않음
       setShowIntro(false);
-    }
-    else {
+    } else {
       // 처음 로드시, 'introShown' 키를 세션 스토리지에 추가
       sessionStorage.setItem('introShown', 'true');
       
@@ -33,8 +32,10 @@ export default function MainPage() {
       
       return () => clearTimeout(timer);
     }
-  }, [])
-      
+  }, []);
+
+  const hideFooter = pathname.includes('/tips');
+
   return (
     <MainPageWrapper>
       <header>
@@ -43,16 +44,18 @@ export default function MainPage() {
       <nav>
         <Nav />
       </nav>
-      <main style={{flexGrow: 1}}>
-        {showIntro ? (<IntroPage/>) : (<></>)}
+      <main style={{ flexGrow: 1 }}>
+        {showIntro ? (<IntroPage />) : (<></>)}
         <Outlet />
         <MobileMargin />
       </main>
-      <footer>
-        <Footer />
-      </footer>
+      {!hideFooter && ( // 'tips/*' 경로에 없을 때만 Footer 렌더링
+        <footer>
+          <Footer />
+        </footer>
+      )}
     </MainPageWrapper>
-  )
+  );
 }
 
 const MainPageWrapper = styled.div`
@@ -61,8 +64,9 @@ const MainPageWrapper = styled.div`
   height: 100vh;
   overflow-y: scroll;
 `;
+
 const MobileMargin = styled.div`
   @media (max-width: 768px) { /* 모바일 */
     height: 100px;
   }
-`
+`;
