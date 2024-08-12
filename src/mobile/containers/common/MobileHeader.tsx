@@ -5,13 +5,11 @@ import ProfileImage from '../../components/common/ProfileImage';
 import MenuButton from '../../components/common/MenuButton';
 import ProfileNickname from '../../components/common/ProfileNickname';
 import LoginNavigateButton from '../../components/common/LoginNavigateButton';
-import { useLocation } from 'react-router-dom';
 
 export default function MobileHeader() {
   const fireId: number = useSelector((state: any) => state.user.fireId);
   const nickname: string = useSelector((state: any) => state.user.nickname);
   const token: string = useSelector((state: any) => state.user.token);
-  const location = useLocation();
   return (
     <MobileHeaderWrapper>
       <AppLogoWrapper>
