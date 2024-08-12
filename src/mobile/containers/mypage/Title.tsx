@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import BackButton from "../../components/mypage/BackButton"
-import Title from "../../components/mypage/title"
+import Title from "../../components/mypage/Title";
 
 interface CommentTitleProps {
     title:string;
