@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { cafeteriasList } from "../../resource/string/cafeterias";
-import CafeteriaBreakfast from "../../component/cafeteria/CafeteriaBreakfast";
-import CafeteriaDinner from "../../component/cafeteria/CafeteriaDinner";
-import CafeteriaLunch from "../../component/cafeteria/CafeteriaLunch";
-
+import { cafeteriasList } from "../../../resource/string/cafeterias";
+import CafeteriaBreakfast from "../../components/cafeteria/CafeteriaBreakfast";
+import CafeteriaDinner from "../../components/cafeteria/CafeteriaDinner";
+import CafeteriaLunch from "../../components/cafeteria/CafeteriaLunch";
 
 interface CafeteriaDeatilProps {
     구성원가: string;

@@ -74,7 +74,7 @@ export default function MobileMyPage() {
                 handleLogoutModalClick();
             break;
             case '회원탈퇴':
-                
+                navigate('/m/mypage/delete');
             break;
 
             default:

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import breakfastImg from "../../resource/assets/Sunrise.png"
+import breakfastImg from "../../../resource/assets/Sunrise.png"
 // import dinnerImg from "../../resource/assets/Sunset.png";
 // import lunchImg from "../../resource/assets/Sun.png";
 // import breakfastImg from "../../resource/assets/Sunrise.png";

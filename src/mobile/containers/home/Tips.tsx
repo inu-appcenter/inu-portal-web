@@ -51,7 +51,7 @@ export default function TipForm() {
                 {topPosts.map((chunk, index) => (
                     <SwiperSlide key={index}>
                         {chunk.map((topPost) => (
-                            <PostWrapper key={topPost.id} onClick={()=>navigate(`/tips/${topPost.id}`)}>
+                            <PostWrapper key={topPost.id} onClick={()=>navigate(`/m/home/tips/postdetail?id=${topPost.id}`)}>
                                 <p className='category'>{topPost.category}</p>
                                 <p className='title'>{topPost.title}</p>
                             </PostWrapper>

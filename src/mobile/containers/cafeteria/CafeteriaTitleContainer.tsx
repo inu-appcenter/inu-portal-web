@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import CafeteriaDate from "../../component/cafeteria/CafeteriaDate"
-import CafeteriaToggle from "../../component/cafeteria/CafeteriaList"
+import CafeteriaDate from "../../components/cafeteria/CafeteriaDate"
+import CafeteriaToggle from "../../components/cafeteria/CafeteriaList"
 import styled from "styled-components";
 
 interface weekDatesProps {
