@@ -19,6 +19,7 @@ import MobileMenuPage from './MobileMenuPage';
 import MobileMyPagePost from './MobileMyPagePost';
 import MobileMyPageComment from './MobileMyPageComment';
 import MobileMyPageLike from './MobileMyPageLike';
+import MobileDeletePage from './MobileDelete';
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
@@ -121,7 +122,10 @@ export default function MobileMainPage() {
                 <MobileMyPageLike />
             ) : activePage.includes('/m/mypage/comment') ? (
                 <MobileMyPageComment />
-            ) : (
+            ) : activePage.includes('/m/mypage/delete') ? (
+              <MobileDeletePage />
+            ) :
+            (
               <Page $active={activePage.includes('/m/mypage')}>
                 <MobileMyPage />
               </Page>

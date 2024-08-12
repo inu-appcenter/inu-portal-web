@@ -2,8 +2,10 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { getCafeterias } from "../../utils/API/Cafeterias";
-import CafeteriaTitleContainer from "../../container/cafeteria/CafeteriaTitleContainer";
-import CafeteriaInfoContainer from "../../container/cafeteria/CafeteriaInfoContainer";
+import CafeteriaInfoContainer from "../containers/cafeteria/CafeteriaInfoContainer";
+import CafeteriaTitleContainer from "../containers/cafeteria/CafeteriaTitleContainer";
+// import CafeteriaTitleContainer from "../../container/cafeteria/CafeteriaTitleContainer";
+// import CafeteriaInfoContainer from "../../container/cafeteria/CafeteriaInfoContainer";
 
 export default function MobileMenuPage() {
   const [title, setTitle] = useState("학생식당");

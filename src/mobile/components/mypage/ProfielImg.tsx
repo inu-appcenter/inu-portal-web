@@ -70,8 +70,8 @@ const GridItem = styled.div<GridItemProps>`
    img {
     width: 68px;
     height: 109px;
-    border: ${({ isSelected }) => isSelected ? '1px solid #4072B9' : 'none'}; 
-    border-radius: 5px;
+    border: ${({ isSelected }) => isSelected ? '1px solid #4072B9;padding:10px' : 'none'}; 
+    border-radius: 50%;
     padding:5px;
    }
 `;
