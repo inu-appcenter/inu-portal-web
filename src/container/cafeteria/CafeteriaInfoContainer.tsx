@@ -104,6 +104,3 @@ font-weight: 700;
       }
     }
 `
-const CafetriaInfo = styled.div`
-    
-`
