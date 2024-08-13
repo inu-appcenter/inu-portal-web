@@ -13,6 +13,7 @@ import useAuth from './hooks/useAuth';
 import MobileMainPage from './mobile/pages/MobileMainPage';
 import InstallPage from './mobile/pages/InstallPage';
 import ScrollBarStyle from './resource/style/ScrollBarStyle';
+import MobileAiPage from './mobile/pages/MobileAiPage';
 
 function App() {
   useUser();
@@ -32,6 +33,7 @@ function App() {
           <Route path='/mypage/*' element={<MyPage />} />
         </Route>
         <Route path='/ai/*' element={<AiPage />} />
+        <Route path='/m/ai/*' element={<MobileAiPage />} />
         <Route path='update/:id' element={<WritePost />} />
         <Route path='/write' element={<WritePost />} />
       </Routes>
