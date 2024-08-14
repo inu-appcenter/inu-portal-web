@@ -43,16 +43,14 @@ interface GridItemProps {
 }
 
 const GridItem = styled.div<GridItemProps>`
-  width: 58px; 
   height: 99px; 
   position: relative; 
   
   img {
-    width: 100%; 
     height: 100%; 
     border: ${({ isSelected }) => isSelected ? '1px solid #4072B9' : 'none'}; 
     border-radius: 5%;
-    padding:20px;
     cursor: pointer;
+    align-items: center;
   }
 `;
