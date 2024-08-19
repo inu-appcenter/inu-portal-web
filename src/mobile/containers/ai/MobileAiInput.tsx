@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiChat } from '../../components/ai/AiChat';
 import { UserChat } from '../../components/ai/UserChat';
 import { getFireImages } from '../../../utils/API/Images';
+import { postFires } from '../../../utils/API/Fires';
 
 interface loginInfo {
   user: {
@@ -18,6 +19,8 @@ export default function MobileAiInput() {
   const navigate = useNavigate();
   const user = useSelector((state: loginInfo) => state.user);
   const [userImage, setUserImage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user.token) {
@@ -59,6 +62,33 @@ export default function MobileAiInput() {
                       2. 앱은 입력된 내용을 바탕으로 AI로 캐릭터 이미지를 생성합니다.\n
                       3. 생성된 이미지를 즐겨보세요! 필요에 따라 저장하거나 공유할 수 있습니다.`
 
+  const handleGenerateClick = async () => {
+    if (inputRef.current && !inputRef.current.value.trim()) {
+      alert('명령어를 입력해주세요.');
+      return;
+    }
+    if (inputRef.current) {
+      setIsLoading(true);
+      try {
+        const response = await postFires(inputRef.current.value, user.token);
+        if (response.status === 201) {
+          navigate(`/m/ai/result/${response.body.data}`);
+        } else if (response.status === 401) {
+          alert('로그인 후 이용이 가능합니다.');
+        } else if (response.status === 400) {
+          alert('이미지 생성 실패');
+        } else if (response.status === 403) {
+          alert('축제 기간에는 관리자만 이미지 생성 가능!');
+        } else {
+          console.error('이미지 생성 실패:', response.status);
+        }
+      } catch (error) {
+        setIsLoading(false);
+        console.error('이미지 생성 실패:', error);
+      }
+    }
+  }
+
   return (
     <MobileAiInputWrapper>
       <DateWrapper>
@@ -72,12 +102,14 @@ export default function MobileAiInput() {
         <AiChat message={description} />
         <UserChat message="응 알겠어!" userImage={userImage} />
         <AiChat message={`원하시는 이미지를 설명해주세요!`} />
+        {isLoading && (<AiChat message='AI 이미지 생성중 ...'/>)}
       </ChatWrapper>
       <ChatInputWrapper>
-        <ChatInput placeholder='수박을 들고 있는 횃불이 생성해줘'/>
+        <ChatInput placeholder='수박을 들고 있는 횃불이 생성해줘'
+                    ref={inputRef}/>
       </ChatInputWrapper>
       <SendButtonWrapper>
-        <SendButton>보내기</SendButton>
+        <SendButton onClick={handleGenerateClick}>보내기</SendButton>
       </SendButtonWrapper>
     </MobileAiInputWrapper>
   );
@@ -141,6 +173,7 @@ const ChatInput = styled.input`
   color: white;
   font-size: 12px;
   font-weight: 500;
+  overflow-x: scroll;
 `
 
 const SendButtonWrapper = styled.div`
