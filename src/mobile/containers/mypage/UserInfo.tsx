@@ -31,7 +31,7 @@ const UserInfoWrapper = styled.div`
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    margin-top: 80px;
+    margin-top: 97px;
     width:135px;
     height: 135px;
     img {

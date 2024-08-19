@@ -12,6 +12,8 @@ export default function BackButton() {
 }
 
 const Img = styled.img`
+    margin-top: 10px;
+    margin-left: 35px;
     width: 18px;
     height: 18px;
 `
