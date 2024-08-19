@@ -22,8 +22,7 @@ export default function MobileAiIntro() {
         <img src={AiProfile} />
         <StartContainer onClick={() => navigate('/m/ai/input')}>
           <StartText>시작하기</StartText>
-          <DragSquare
-          />
+          {/* <DragSquare /> */}
         </StartContainer>
       </ImageWrapper>
     </MobileAiIntroWrapper>
@@ -94,6 +93,7 @@ const StartText = styled.span`
   color: white;
 `;
 
+/*
 const DragSquare = styled.div`
   position: absolute;
   left: 8px;
@@ -103,3 +103,4 @@ const DragSquare = styled.div`
   border-radius: 100%;
   z-index: 2;
 `;
+*/
