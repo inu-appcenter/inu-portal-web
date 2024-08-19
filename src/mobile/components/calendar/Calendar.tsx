@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import FullCalendar, { EventInput } from "@fullcalendar/react";
+import FullCalendar from "@fullcalendar/react";
+import { EventInput } from "@fullcalendar/core";
 import { getSchedules } from "../../../utils/API/Schedules";
 import styled from "styled-components";
 
