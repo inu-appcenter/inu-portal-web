@@ -20,6 +20,7 @@ import MobileMyPagePost from './MobileMyPagePost';
 import MobileMyPageComment from './MobileMyPageComment';
 import MobileMyPageLike from './MobileMyPageLike';
 import MobileDeletePage from './MobileDelete';
+import MobileCalendarPage from './MobileCalendarPage';
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${props => (props.$active ? 'flex' : 'none')};
@@ -89,11 +90,14 @@ export default function MobileMainPage() {
           </header>
         )}
         <main style={{ flexGrow: 1 }}>
-          <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips') && !activePage.includes('/m/home/menu')}>
+          <Page $active={activePage.includes('/m/home') && !activePage.includes('/m/home/tips') && !activePage.includes('/m/home/menu') && !activePage.includes('/m/home/calendar')}>
             <MobileHomePage />
           </Page>
           <Page $active={activePage.includes('/m/home/menu')}>
             <MobileMenuPage />
+          </Page>
+          <Page $active={activePage.includes('/m/home/calendar')}>
+            <MobileCalendarPage />
           </Page>
           <Page $active={activePage.includes('/m/home/tips') && !activePage.includes('/m/home/tips/postdetail')}>
             <MobileTipsPage />

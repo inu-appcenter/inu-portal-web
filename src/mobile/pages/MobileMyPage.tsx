@@ -161,6 +161,7 @@ box-sizing: border-box;
      background-color: #fff;
      position: absolute;
      padding:27px 38px;
+     padding-bottom: 11px;
      top:28%;
     display: flex;
     z-index: 15;
@@ -176,7 +177,7 @@ box-sizing: border-box;
 
 const CategoryWrapper = styled.div`
     position: absolute;
-    top:48%;
+    top:46%;
     display: flex;
     z-index: 15;
     /* row-gap:30px; */
