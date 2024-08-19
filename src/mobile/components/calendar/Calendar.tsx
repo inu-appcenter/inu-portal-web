@@ -10,10 +10,9 @@ export default function Calendarbar() {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [month, setMonth] = useState<number>(0);
   const [year, setYear] = useState<number>(0);
-  const [hoveredEvent, setHoveredEvent] = useState<string | null>("");
+  const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
  
   useEffect(() => {
-
     getCurrentMonth();
   }, []);
 
@@ -57,16 +56,33 @@ export default function Calendarbar() {
   };
 
   const handleEventMouseLeave = () => {
-    setHoveredEvent("");
+    setHoveredEvent(null);
   };
 
+  const formatDate = (date?: Date | string | number): string => {
+    if (date === undefined || date === null) return "";
 
-  const formatDate = (date: Date | string) => {
+    // Convert numeric date (timestamp) to Date
+    if (typeof date === "number") {
+      date = new Date(date);
+    } else if (typeof date === "string") {
+      date = new Date(date);
+    } else if (!(date instanceof Date)) {
+      return "";
+    }
+
     const d = new Date(date);
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0'); 
+    const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}.${month}.${day}`;
+  };
+
+  const handleEventDate = (date: EventInput['start']) => {
+    if (typeof date === 'string' || typeof date === 'number' || date instanceof Date) {
+      return formatDate(date);
+    }
+    return "";
   };
 
   return (
@@ -95,11 +111,12 @@ export default function Calendarbar() {
         {events.length > 0 ? (
           events.map((event, index) => (
             <EventItem key={index}>
-                <div>
-                    <EventDot/>
-                    <span>{formatDate(event.start)} ~ {formatDate(event.end)}
-                    </span>
-                </div>
+              <div>
+                <EventDot/>
+                <span>
+                  {handleEventDate(event.start)} ~ {handleEventDate(event.end)}
+                </span>
+              </div>
               <strong>{event.title}</strong> 
             </EventItem>
           ))
@@ -148,10 +165,10 @@ const EventsList = styled.div`
 `;
 
 const EventItem = styled.div`
-margin-bottom: 1px solid black;
- div {
+  margin-bottom: 1px solid black;
+  div {
     display: flex;
- }
+  }
   strong {
     display: block;
     font-size: 16px;
