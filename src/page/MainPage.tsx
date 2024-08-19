@@ -63,6 +63,7 @@ const MainPageWrapper = styled.div`
   flex-direction: column;
   height: 100vh;
   overflow-y: scroll;
+  min-width: 1340px;
 `;
 
 const MobileMargin = styled.div`
