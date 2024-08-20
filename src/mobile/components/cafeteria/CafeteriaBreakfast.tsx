@@ -19,6 +19,7 @@ export default function CafeteriaBreakfast({cafeteriaTypes,cafeteriaDetail,cafet
         <div className="total-wrapper">
             {cafeteriaInfo[0] !== "-" && (
                 <>
+                <div className="info-wrapper">
                 <div className="type-wrapper">
                     {cafeteriaTypes[0] !== '없음' && (
                     <>
@@ -26,9 +27,8 @@ export default function CafeteriaBreakfast({cafeteriaTypes,cafeteriaDetail,cafet
                         <p className="time">*08:00~09:30</p>
                     </>
                     )}
-                </div>
-                <div className="info-wrapper">
                     <img src={breakfastImg} alt="조식 이미지" />
+                </div>
                     <div className="detail-info-wrapper"> 
                         {cafeteriaTypes[0] !== '없음'  && <p className="info">{cafeteriaInfo[0]}</p>}
                         {cafeteriaDetail[0] && (<div className="detail-wrapper">

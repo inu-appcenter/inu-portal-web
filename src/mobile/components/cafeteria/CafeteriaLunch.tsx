@@ -14,11 +14,12 @@ interface CafeteriaBreakfastProps {
 export default function CafeteriaLunch({cafeteriaTypes,cafeteriaDetail,cafeteriaInfo}:CafeteriaBreakfastProps) {
     return (
         <div className="total-wrapper">
-          <div className="type-wrapper">
-            <p className="type">{cafeteriaTypes[1]}</p>
-          </div>
+          
           <div className="info-wrapper">
+            <div className="type-wrapper">
+            <p className="type">{cafeteriaTypes[1]}</p>
             <img src={dinnerImg} alt="석식 이미지" />
+          </div>
             <div className="detail-info-wrapper">
                 <p className="info">{cafeteriaInfo[1]}</p>
                 {cafeteriaDetail[1] && (<div className="detail-wrapper">

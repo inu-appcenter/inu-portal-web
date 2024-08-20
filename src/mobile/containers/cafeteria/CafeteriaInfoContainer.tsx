@@ -38,13 +38,21 @@ const CafeteriaInfoWrapper = styled.div`
   width: 100%;
   background-color: #F3F7FE;
   box-sizing: border-box;
-  padding:40px 16px 0;
+  padding:20px 16px 0;
   height: 100%;
   margin-top:40px;
+
+.total-wrapper{
+  margin: 20px 0;
+}
+
   .type-wrapper {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
     .type {
       font-family: Inter;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     margin-bottom:6px;
     }
@@ -61,7 +69,7 @@ const CafeteriaInfoWrapper = styled.div`
   .info-wrapper {
     display: flex;
     align-items: center;
-    gap:30px;
+    gap:20px;
     img {
       width: 37px;
       height: 39px;
@@ -73,11 +81,12 @@ const CafeteriaInfoWrapper = styled.div`
     background-color: white;
     padding:10px;
     box-sizing: border-box;
-
+    border-radius: 10px;
     .info {
       font-family: Inter;
-font-size: 13px;
-font-weight: 700;
+      font-size: 13px;
+      font-weight: 600;
+      color:#404040;
     
     }
   }
@@ -87,6 +96,7 @@ font-weight: 700;
       gap: 6px;
       justify-content: flex-end;
       align-items: center;
+      min-width: 280px;
       .sub-detail-wrapper {
         display: flex;
         border: 0.5px solid #DFDFDF;
