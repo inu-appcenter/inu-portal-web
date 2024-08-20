@@ -2,9 +2,9 @@ import styled from "styled-components";
 import { cafeteriasList } from "../../resource/string/cafeterias";
 import { useEffect, useState } from "react";
 import { getCafeterias } from "../../utils/API/Cafeterias";
-import dinnerImg from "../../resource/assets/Sunset.png";
-import lunchImg from "../../resource/assets/Sun.png";
-import breakfastImg from "../../resource/assets/Sunrise.png";
+import dinnerImg from "../../resource/assets/Sunset.svg";
+import lunchImg from "../../resource/assets/Sun.svg";
+import breakfastImg from "../../resource/assets/Sunrise.svg";
 
 export default function Cafeteria() {
   const [cafeteriaType, setCafeteriaType] = useState("학생식당");
