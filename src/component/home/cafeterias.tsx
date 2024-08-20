@@ -254,6 +254,7 @@ const CafetriaInfo = styled.div`
                 font-size:12px;
                 font-weight: bold;
                 margin-left:15px;
+                color: #404040;
   
             }
             .detail-wrapper {
