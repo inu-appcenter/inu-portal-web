@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import dinnerImg from "../../../resource/assets/Sunset.png";
+import lunchImg from "../../../resource/assets/Sun.svg";
 
 interface CafeteriaDeatilProps {
     구성원가: string;
@@ -18,7 +18,7 @@ export default function CafeteriaLunch({cafeteriaTypes,cafeteriaDetail,cafeteria
           <div className="info-wrapper">
             <div className="type-wrapper">
             <p className="type">{cafeteriaTypes[1]}</p>
-            <img src={dinnerImg} alt="석식 이미지" />
+            <img src={lunchImg} alt="석식 이미지" />
           </div>
             <div className="detail-info-wrapper">
                 <p className="info">{cafeteriaInfo[1]}</p>

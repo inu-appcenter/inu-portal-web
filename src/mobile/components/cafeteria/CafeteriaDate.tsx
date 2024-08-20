@@ -37,7 +37,10 @@ const CafeteriaDateWrapper = styled.div`
     justify-content: space-between;
     gap: 15px;
     .date {
+        width: 40px;
+        height: 40px;
         display: flex;
+        justify-content:center;
         flex-direction: column;
         align-items: center;
         box-shadow: 0px 4px 4px 0px #00000040;

@@ -64,12 +64,13 @@ const ToggleWrapper = styled.div`
     display: flex;
     cursor: pointer;
     gap: 20px;
-
+    padding: 10px 0;
     h1 {
       font-family: Inter, sans-serif;
       font-size: 30px;
       font-weight: 700;
       line-height: 20px;
+      color: #404040;
     }
   }
 

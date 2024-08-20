@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import breakfastImg from "../../../resource/assets/Sunrise.png"
+import breakfastImg from "../../../resource/assets/Sunrise.svg"
 // import dinnerImg from "../../resource/assets/Sunset.png";
 // import lunchImg from "../../resource/assets/Sun.png";
 // import breakfastImg from "../../resource/assets/Sunrise.png";
@@ -24,7 +24,6 @@ export default function CafeteriaBreakfast({cafeteriaTypes,cafeteriaDetail,cafet
                     {cafeteriaTypes[0] !== '없음' && (
                     <>
                         <p className="type">{cafeteriaTypes[0]}</p>
-                        <p className="time">*08:00~09:30</p>
                     </>
                     )}
                     <img src={breakfastImg} alt="조식 이미지" />

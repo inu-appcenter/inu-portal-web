@@ -96,7 +96,6 @@ export default function MobileMenuPage() {
 const CafeteriaWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
   width: 100%;
 `;
 
