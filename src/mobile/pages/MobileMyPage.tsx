@@ -139,17 +139,21 @@ export default function MobileMyPage() {
 
 
 const MyPageWrapper = styled.div`
+position: relative;
 background: #F3F7FE;
 width: 100%;
 display: flex;
 justify-content: center;
+flex-direction: column;
+justify-content: center;
+align-items: center;
 `;
 
 const UserWrapper = styled.div`
-    position: absolute;
+    position: fixed;
     top:0;
     width:100%;
-    height: 35%;
+    height: 310px;
     background: #A1C3FF;
     z-index:10;
     display: flex;
@@ -159,12 +163,14 @@ const UserWrapper = styled.div`
 const ActiveWrapper = styled.div`
 box-sizing: border-box;
      background-color: #fff;
-     position: absolute;
+     position: relative;
      padding:27px 38px;
      padding-bottom: 11px;
-     top:28%;
+      transform: translateY(50%);
+     bottom:-55px;
+     height: 110px;
     display: flex;
-    z-index: 15;
+    z-index: 100;
     gap:30px;
     border-radius:10px;
     div {
@@ -176,13 +182,14 @@ box-sizing: border-box;
 `
 
 const CategoryWrapper = styled.div`
-    position: absolute;
-    top:46%;
+    position: relative;
     display: flex;
     z-index: 15;
     /* row-gap:30px; */
     border-radius:10px;
     flex-direction: column;
+      transform: translateY(40%);
+    justify-content: center;
     width: 80%;
     gap: 16px;
     div {
