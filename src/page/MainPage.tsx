@@ -62,7 +62,6 @@ const MainPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow-y: scroll;
   min-width: 1340px;
 `;
 
