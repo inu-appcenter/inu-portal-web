@@ -64,7 +64,7 @@ export default function UserModify() {
   
   return (
     <UserModifyWrapper>
-          <BackButton onClick={()=>navigate(-1)}>
+          <BackButton onClick={()=>navigate('/m/mypage')}>
             <img src={BackImg} alt="뒤로가기 버튼" />
           </BackButton>
           <NewNicknameInput onChange={handleNicknameChange} newNickname={newNickname} />

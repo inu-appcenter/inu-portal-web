@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getFireImages } from '../../../utils/API/Images';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfileImageProps {
   fireId: number;
@@ -8,7 +9,7 @@ interface ProfileImageProps {
 
 export default function ProfileImage({ fireId }: ProfileImageProps) {
   const [imageUrl, setImageUrl] = useState<string>('');
-
+  const nav = useNavigate();
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -29,7 +30,7 @@ export default function ProfileImage({ fireId }: ProfileImageProps) {
   return (
     <>
       {imageUrl ? (
-        <ProfileImg src={imageUrl} alt={`Profile Image`} />
+        <ProfileImg src={imageUrl} alt={`Profile Image`} onClick={()=>{nav('mypage')}}/>
       ) : (
         <></>
       )}
