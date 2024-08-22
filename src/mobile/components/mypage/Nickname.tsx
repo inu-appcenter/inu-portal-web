@@ -14,6 +14,7 @@ const NewNicknameInput: React.FC<NewPasswordInputProps> = ({ newNickname,onChang
                 type="text"
                 value={newNickname}
                 onChange={onChange}
+                placeholder='새로운 닉네임을 입력하세요!'
             />
         </Wrapper>
     );
@@ -33,9 +34,11 @@ line-height: 16.94px;
 `;
 
 const Input = styled.input`
-    padding:10px 5px;
+    padding:10px 5px 10px 10px;
     border-radius: 5px;
     margin-top: 13px;
+    color: #404040;
+    font-size: 10px;
 `;
 
 export default NewNicknameInput;
