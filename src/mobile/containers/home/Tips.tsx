@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { getPostsMain } from '../../../utils/API/Posts';
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation } from 'swiper/modules';
+import { Pagination } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
 import 'swiper/css/navigation';
 import 'swiper/css';
@@ -42,12 +42,7 @@ export default function TipForm() {
     return (
         <TipFormWrapper>
             <p><span>TIP</span>인기글</p>
-            <Swiper
-                slidesPerView={1}
-                navigation={true}
-                modules={[Navigation]}
-                className="mySwiper"
-            >
+            <Swiper pagination={true} modules={[Pagination]} className="mySwiper">
                 {topPosts.map((chunk, index) => (
                     <SwiperSlide key={index}>
                         {chunk.map((topPost) => (
@@ -67,7 +62,7 @@ const TipFormWrapper = styled.div`
     font-size: 12px;
     font-weight: 500;
     margin-top: 32px;
-
+    height:150px;
     span {
         margin-right: 4px;
         color: #4071B9;
@@ -75,7 +70,7 @@ const TipFormWrapper = styled.div`
 
     .swiper {
         width: 100%;
-        height: auto;
+        height: 100%;
     }
 
     .swiper-slide {
@@ -84,7 +79,6 @@ const TipFormWrapper = styled.div`
         background: #fff;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
         align-items: center;
     }
 
