@@ -1,25 +1,22 @@
-import React from 'react';
-import styled from 'styled-components';
-import QRCode from 'qrcode.react';
+import styled from "styled-components";
+import QRCode from "qrcode.react";
 
 interface ShareModalProps {
   url: string;
   onClose: () => void;
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({ url, onClose }) => {
+export default function ShareModal({ url, onClose }: ShareModalProps) {
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={e => e.stopPropagation()}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>X</CloseButton>
-        <p style={{color: 'black'}}>{url}</p>
+        <p style={{ color: "black" }}>{url}</p>
         <QRCode value={url} size={256} />
       </ModalContent>
     </ModalOverlay>
   );
-};
-
-export default ShareModal;
+}
 
 const ModalOverlay = styled.div`
   position: fixed;
