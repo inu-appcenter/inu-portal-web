@@ -1,27 +1,4 @@
-import React from 'react';
-import styled from 'styled-components';
-
-const PaginationWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-
-  .page-item {
-    cursor: url('/pointers/cursor-pointer.svg'), pointer;
-    padding: 5px 10px;
-    font-weight: 600;
-
-    &:hover {
-      background-color: #7AA7E5;
-      color: #FFFFFF;
-    }
-  }
-
-  .active {
-    color: #FFFFFF;
-    background-color: #7AA7E5;
-  }
-`;
+import styled from "styled-components";
 
 interface PaginationProps {
   totalPages: number;
@@ -29,7 +6,11 @@ interface PaginationProps {
   setPage: (page: string) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ totalPages, currentPage, setPage }) => {
+export default function Pagination({
+  totalPages,
+  currentPage,
+  setPage,
+}: PaginationProps) {
   const pageNumbers: number[] = [];
 
   for (let i = 1; i <= totalPages; i++) {
@@ -38,15 +19,38 @@ const Pagination: React.FC<PaginationProps> = ({ totalPages, currentPage, setPag
 
   return (
     <PaginationWrapper>
-      {pageNumbers.map(number => (
-        <span key={number} 
-              className={`page-item ${number === currentPage ? 'active' : ''}`} 
-              onClick={() => setPage(number.toString())}>
+      {pageNumbers.map((number) => (
+        <span
+          key={number}
+          className={`page-item ${number === currentPage ? "active" : ""}`}
+          onClick={() => setPage(number.toString())}
+        >
           {number}
         </span>
       ))}
     </PaginationWrapper>
   );
-};
+}
 
-export default Pagination;
+// Styled Components
+const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+
+  .page-item {
+    cursor: url("/pointers/cursor-pointer.svg"), pointer;
+    padding: 5px 10px;
+    font-weight: 600;
+
+    &:hover {
+      background-color: #7aa7e5;
+      color: #ffffff;
+    }
+  }
+
+  .active {
+    color: #ffffff;
+    background-color: #7aa7e5;
+  }
+`;

@@ -1,13 +1,12 @@
-import styled from 'styled-components';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import styled from "styled-components";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-
-import { MypageTitle } from '../../component/mypage/common/MyPageTitle';
+import { MypageTitle } from "../../component/mypage/common/MyPageTitle";
 // import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
-import SearchBar from '../../component/Tips/SearchBar';
-import MyInfo from '../../component/mypage/common/info';
+import SearchBar from "../../component/tips/SearchBar";
+import MyInfo from "../../component/mypage/common/info";
 interface loginInfo {
   user: {
     token: string;
@@ -18,14 +17,16 @@ interface MyPageTitleContainerProps {
   selectedCategory: string;
 }
 
-export default function MyPageTitleContainer({ selectedCategory }: MyPageTitleContainerProps) {
+export default function MyPageTitleContainer({
+  selectedCategory,
+}: MyPageTitleContainerProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
   const user = useSelector((state: loginInfo) => state.user);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!token) {
-      navigate('/');
+      navigate("/");
     }
   }, [token, navigate]);
 
@@ -33,7 +34,9 @@ export default function MyPageTitleContainer({ selectedCategory }: MyPageTitleCo
     <MyPageTitleWrapper>
       <MypageTitle />
       <SearchInfoWrapper>
-        {(selectedCategory ==='스크랩' || selectedCategory === "내 활동") && <SearchBar/>}
+        {(selectedCategory === "스크랩" || selectedCategory === "내 활동") && (
+          <SearchBar />
+        )}
         {user.token && <MyInfo />}
       </SearchInfoWrapper>
     </MyPageTitleWrapper>
@@ -51,5 +54,5 @@ const MyPageTitleWrapper = styled.div`
 
 const SearchInfoWrapper = styled.div`
   display: flex;
-  gap:20px;
-`
+  gap: 20px;
+`;
