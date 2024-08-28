@@ -83,11 +83,7 @@ export default function MobileMainPage() {
       <MobileMainPageWrapper>
         <UpperBackground src={UpperBackgroundImg} />
         {showIntro ? <MobileIntroPage /> : <></>}
-        {!isLoginPage && !isPostDetailPage && (
-          <header>
-            <MobileHeader />
-          </header>
-        )}
+        {!isLoginPage && !isPostDetailPage && <MobileHeader />}
         <main style={{ flexGrow: 1 }}>
           <Page
             $active={
@@ -148,9 +144,7 @@ export default function MobileMainPage() {
         </main>
       </MobileMainPageWrapper>
       {!isLoginPage && !isPostDetailPage && (
-        <nav>
-          <MobileNav previousPages={previousPages} />
-        </nav>
+        <MobileNav previousPages={previousPages} />
       )}
     </>
   );
