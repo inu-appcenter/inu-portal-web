@@ -1,10 +1,14 @@
-import styled from 'styled-components';
-import { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { deleteMembers } from '../../../utils/API/Members';
-import { tokenUser as tokenUserAction, studentIdUser as studentIdUserAction } from "../../../reducer/userSlice";
+import styled from "styled-components";
+import { useCallback, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { deleteMembers } from "../../../utils/API/Members";
+import {
+  tokenUser as tokenUserAction,
+  studentIdUser as studentIdUserAction,
+} from "../../../reducer/userSlice";
 import Title from "../common/title";
+import SubContent from "../../../mobile/components/delete/SubContent";
 
 interface loginInfo {
   user: {
@@ -18,12 +22,9 @@ export default function DeleteInfo() {
   const navigate = useNavigate();
   const [checkedList, setCheckedList] = useState(false);
 
-  const onCheckedItem = useCallback(
-    (checked: boolean) => {
-      setCheckedList(checked);
-    },
-    []
-  );
+  const onCheckedItem = useCallback((checked: boolean) => {
+    setCheckedList(checked);
+  }, []);
 
   const handleModifyClick = async () => {
     if (checkedList) {
@@ -33,15 +34,15 @@ export default function DeleteInfo() {
           console.log(response);
           dispatch(studentIdUserAction({ studentId: "" }));
           dispatch(tokenUserAction({ token: "" }));
-          navigate('/');
+          navigate("/");
         } else {
-          alert('탈퇴 실패');
+          alert("탈퇴 실패");
         }
       } catch (error) {
-        console.error('회원 탈퇴 에러:', error);
+        console.error("회원 탈퇴 에러:", error);
       }
     } else {
-      alert('체크박스를 선택해주세요');
+      alert("체크박스를 선택해주세요");
     }
   };
 
@@ -50,10 +51,10 @@ export default function DeleteInfo() {
       <Title title={"회원탈퇴"} />
       <DeleteTotalWrapper>
         <Check>📌 INTIP 회원탈퇴 시 유의사항</Check>
-        <Input readOnly value="회원 탈퇴 시 주의사항을 여기에 작성하세요." />
+        <SubContent />
         <Checkbox>
           <input
-            type='checkbox'
+            type="checkbox"
             onChange={(e) => onCheckedItem(e.target.checked)}
           />
           회원탈퇴 후 3일간 재가입 불가에 대해 동의합니다
@@ -82,13 +83,6 @@ const Check = styled.div`
   font-weight: 700;
 `;
 
-const Input = styled.input`
-  width: 672px;
-  height: 381px;
-  border: none;
-  margin-top: 40px;
-`;
-
 const Checkbox = styled.div`
   font-size: 15px;
   font-weight: 400;
@@ -99,7 +93,7 @@ const Checkbox = styled.div`
 `;
 
 const ModifyClickButton = styled.button`
-  background-color: #0E4D9D;
+  background-color: #0e4d9d;
   font-size: 15px;
   font-weight: 400;
   line-height: 20px;
