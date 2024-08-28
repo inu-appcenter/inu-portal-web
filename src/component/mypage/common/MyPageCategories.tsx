@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-// import './TipsCategories.css';
-import { MyPageCategory } from '../../../resource/string/mypage.tsx';
-import MypageLogout from './logout';
+import { MyPageCategory } from "../../../resource/string/mypage.tsx";
+import MypageLogout from "./logout";
+import styled from "styled-components";
 
 interface Category {
   name: string;
@@ -17,7 +16,10 @@ interface MyPageCategoriesProps {
   setSelectedCategory: (category: string) => void;
 }
 
-export default function MyPageCategories({ selectedCategory, setSelectedCategory }: MyPageCategoriesProps) {
+export default function MyPageCategories({
+  selectedCategory,
+  setSelectedCategory,
+}: MyPageCategoriesProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ export default function MyPageCategories({ selectedCategory, setSelectedCategory
     const cats = MyPageCategory.map((cat: string) => ({
       name: cat,
       iconWhite: `/categoryIcons/${cat}_white.svg`,
-      iconGray: `/categoryIcons/${cat}_gray.svg`
+      iconGray: `/categoryIcons/${cat}_gray.svg`,
     }));
     setCategories(cats);
   };
@@ -34,33 +36,84 @@ export default function MyPageCategories({ selectedCategory, setSelectedCategory
     fetchCategories();
   }, []);
 
-  // 이미지 로드 실패 시 호출될 핸들러
   const handleImageError = (index: number) => {
-    setCategories(prevCategories => prevCategories.map((cat, idx) => idx === index ? { ...cat, hasError: true } : cat));
+    setCategories((prevCategories) =>
+      prevCategories.map((cat, idx) =>
+        idx === index ? { ...cat, hasError: true } : cat
+      )
+    );
   };
-  
+
   const handleClickCategory = (category: string) => {
     setSelectedCategory(category);
     navigate(`/mypage`);
   };
 
   return (
-    <div className='categories'>
+    <Categories>
       {categories.map((category, index) => (
-        <div className={`categoryItem ${selectedCategory === category.name ? 'selected' : ''}`} key={index} onClick={() => handleClickCategory(category.name)}>
+        <CategoryItem
+          key={index}
+          className={selectedCategory === category.name ? "selected" : ""}
+          onClick={() => handleClickCategory(category.name)}
+        >
           {category.hasError ? (
-            <div style={{ width: '25px', height: '25px' }}> {/* 이미지 로드 실패 시 공백을 위한 div */}</div>
+            <div style={{ width: "25px", height: "25px" }} />
           ) : (
-            <img 
-              src={selectedCategory === category.name ? category.iconWhite : category.iconGray} 
-              alt={category.name} 
+            <img
+              src={
+                selectedCategory === category.name
+                  ? category.iconWhite
+                  : category.iconGray
+              }
+              alt={category.name}
               onError={() => handleImageError(index)}
             />
           )}
           {category.name}
-        </div>
+        </CategoryItem>
       ))}
-      <MypageLogout/>
-    </div>
+      <MypageLogout />
+    </Categories>
   );
 }
+
+// Styled Components
+const Categories = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 768px) {
+    align-items: center;
+    gap: 0px;
+    width: 80%;
+  }
+`;
+
+const CategoryItem = styled.div`
+  width: 143px;
+  padding-left: 50px;
+  height: 60px;
+  border-radius: 10px;
+  cursor: url("/pointers/cursor-pointer.svg"), pointer;
+  font-size: 17px;
+  font-weight: 500;
+  color: #656565;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 40px;
+  }
+
+  &.selected {
+    background: linear-gradient(90deg, #6f84e2 0%, #7babe5 100%);
+    font-weight: 700;
+    color: #ffffff;
+    width: auto;
+  }
+`;
