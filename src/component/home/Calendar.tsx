@@ -50,7 +50,8 @@ export default function Calendarbar() {
   };
 
   const handleEventMouseEnter = (event: EventInput) => {
-    const element = event.el.children[0].children[0].children[0].children[0].innerText;
+    const element =
+      event.el.children[0].children[0].children[0].children[0].innerText;
     setHoveredEvent(element);
   };
 

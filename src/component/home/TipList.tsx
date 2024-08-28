@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import { getPostsMain } from '../../utils/API/Posts';
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { getPostsMain } from "../../utils/API/Posts";
 
 interface Post {
   id: number;
@@ -21,7 +21,7 @@ export default function MainTip() {
           setTopPosts(response.body.data);
         }
       } catch (error) {
-        console.error('Error fetching top posts:', error);
+        console.error("Error fetching top posts:", error);
       }
     };
 
@@ -33,19 +33,23 @@ export default function MainTip() {
   };
 
   const goToAllTips = () => {
-    navigate('/tips');
+    navigate("/tips");
   };
 
   return (
     <TipWrapper>
       {topPosts.map((topPost) => (
-        <div className="article" key={topPost.id} onClick={() => handlePostClick(topPost.id)}>
+        <div
+          className="article"
+          key={topPost.id}
+          onClick={() => handlePostClick(topPost.id)}
+        >
           <h3>{topPost.title}</h3>
         </div>
       ))}
       <TotalTip onClick={goToAllTips}>
-        <span className='TotalTip-text'>전체보기</span>
-        <span className='TotalTip-text'>+</span>
+        <span className="TotalTip-text">전체보기</span>
+        <span className="TotalTip-text">+</span>
       </TotalTip>
     </TipWrapper>
   );
@@ -65,7 +69,12 @@ const TipWrapper = styled.div`
 
     height: 46px;
     border-radius: 10px;
-    background: linear-gradient(90deg, rgba(156, 175, 226, 0.7) 0%, rgba(181, 197, 242, 0.7) 50%, rgba(156, 175, 226, 0.7) 100%);
+    background: linear-gradient(
+      90deg,
+      rgba(156, 175, 226, 0.7) 0%,
+      rgba(181, 197, 242, 0.7) 50%,
+      rgba(156, 175, 226, 0.7) 100%
+    );
 
     padding-left: 8px;
     padding-right: 8px;
@@ -86,6 +95,6 @@ const TotalTip = styled.span`
   .TotalTip-text {
     font-size: 12px;
     font-weight: 300;
-    cursor: url('/pointers/cursor-pointer.svg'), pointer;
+    cursor: url("/pointers/cursor-pointer.svg"), pointer;
   }
 `;
