@@ -98,14 +98,14 @@ export default function UserModify() {
 
 const UserModifyWrapper = styled.div`
   position: absolute;
-  top: 30%;
+  top: 310px;
   width: 100%;
   /* padding: 20px 76px;
   height: 100%; */
 `;
 
 const BackButton = styled.div`
-  margin: 10px 24px 0;
+  margin: 20px 24px 0;
   background-color: white;
   font-size: 14px;
   font-weight: 700;
