@@ -5,8 +5,8 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getPost } from "../utils/API/Posts";
 import ReturnButton from "../component/postdetail/post/ReturnButton";
-import CommentList from "../component/postdetail/comment/commentlist";
-import CommentInput from "../component/postdetail/comment/commentinput";
+import CommentList from "../component/postdetail/comment/CommentList";
+import CommentInput from "../component/postdetail/comment/CommentInput";
 import { useSelector } from "react-redux";
 
 interface Post {
