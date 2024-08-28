@@ -1,5 +1,5 @@
-import styled from 'styled-components';
-import PostFormContainer from '../container/writepost/PostFormContainer';
+import styled from "styled-components";
+import PostFormContainer from "../container/writepost/PostFormContainer";
 
 export default function WritePost() {
   return (
@@ -10,7 +10,6 @@ export default function WritePost() {
 }
 
 const WritePostWrapper = styled.div`
-
   display: flex;
   justify-content: center;
 `;
