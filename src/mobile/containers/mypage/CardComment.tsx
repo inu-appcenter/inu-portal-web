@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import styled from 'styled-components';
-import HeartFilledImg from '../../../resource/assets/heart-filled-img.svg';
-import X_Vector from '../../../resource/assets/X-Vector.svg';
-import { deleteReplies } from '../../../utils/API/Replies';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import styled from "styled-components";
+import HeartFilledImg from "../../../resource/assets/heart-filled-img.svg";
+import X_Vector from "../../../resource/assets/X-Vector.svg";
+import { deleteReplies } from "../../../utils/API/Replies";
 
 interface loginInfo {
   user: {
@@ -28,7 +28,10 @@ interface TipsCardContainerProps {
   onCommentsUpdate: () => void; // 댓글 업데이트 콜백 함수
 }
 
-export default function CardComment({ posts, onCommentsUpdate }: TipsCardContainerProps) {
+export default function CardComment({
+  posts,
+  onCommentsUpdate,
+}: TipsCardContainerProps) {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [activeCardId, setActiveCardId] = useState<number | null>(null); // Active card state
@@ -37,7 +40,7 @@ export default function CardComment({ posts, onCommentsUpdate }: TipsCardContain
   const token = useSelector((state: loginInfo) => state.user?.token);
 
   const handleDocumentClick = (id: number) => {
-    navigate(`/m/home/tips/postdetail?id=${id}`);
+    navigate(`/m/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: number) => {
@@ -80,17 +83,22 @@ export default function CardComment({ posts, onCommentsUpdate }: TipsCardContain
 
   return (
     <CardWrapper>
-      <p><span>All</span> {posts.length}</p>
+      <p>
+        <span>All</span> {posts.length}
+      </p>
       <TipsCardListWrapper>
         {posts.map((p) => (
           <TipsCardWrapper
             key={p.id}
             onClick={() => handleDocumentClick(p.postId)}
           >
-            <XButton src={X_Vector} onClick={(e) => {
-              e.stopPropagation(); // Prevent card click when X is clicked
-              handleXButtonClick(p.id);
-            }} />
+            <XButton
+              src={X_Vector}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent card click when X is clicked
+                handleXButtonClick(p.id);
+              }}
+            />
             <Date>{p.createDate}</Date>
             <Content>{p.content}</Content>
             <LikeWrapper>
@@ -109,7 +117,9 @@ export default function CardComment({ posts, onCommentsUpdate }: TipsCardContain
         <ModalOverlay>
           <ModalWrapper>
             <ModalTop>
-              <Description>작성한 댓글은 목록과 게시물에서 삭제되어 복구할 수 없습니다</Description>
+              <Description>
+                작성한 댓글은 목록과 게시물에서 삭제되어 복구할 수 없습니다
+              </Description>
               <span></span>
               <DeleteButton onClick={handleDelete}>삭제</DeleteButton>
             </ModalTop>
@@ -125,7 +135,7 @@ const CardWrapper = styled.div`
   font-family: Inter;
   font-size: 15px;
   font-weight: 600;
-  color: #0E4D9D;
+  color: #0e4d9d;
   span {
     color: #969696;
   }
@@ -135,7 +145,7 @@ const CardWrapper = styled.div`
 `;
 
 const TipsCardListWrapper = styled.div`
-  background-color: #F6F9FF;
+  background-color: #f6f9ff;
   min-height: calc(100svh - 72px - 49px - 18px - 64px - 78px);
   height: 100%;
   padding-top: 24px;
@@ -205,7 +215,7 @@ const Title = styled.div`
   font-size: 8px;
   font-weight: 600;
   color: #000000;
-  background-color: #F3F3F3;
+  background-color: #f3f3f3;
   display: flex;
   align-items: center;
 `;
@@ -244,7 +254,7 @@ const ModalTop = styled.div`
   span {
     height: 1px;
     width: 100%;
-    background-color: #D9D9D9;
+    background-color: #d9d9d9;
   }
 `;
 
@@ -255,7 +265,7 @@ const Description = styled.div`
 `;
 
 const DeleteButton = styled.div`
-  color: #DF5532;
+  color: #df5532;
   font-size: 16px;
   font-weight: 500;
   width: 100%;
@@ -271,8 +281,7 @@ const ModalBottom = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #0E4D9D;
+  color: #0e4d9d;
   font-size: 16px;
   font-weight: 500;
 `;
-

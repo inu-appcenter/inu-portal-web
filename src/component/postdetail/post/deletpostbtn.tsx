@@ -1,8 +1,8 @@
-import React from 'react';
-import { deletePost } from '../../../utils/API/Posts';
-import { useNavigate } from 'react-router-dom';
-import deletebtn from '../../../resource/assets/deletebtn.svg';
-import styled from 'styled-components';
+import React from "react";
+import { deletePost } from "../../../utils/API/Posts";
+import { useNavigate } from "react-router-dom";
+import deletebtn from "../../../resource/assets/deletebtn.svg";
+import styled from "styled-components";
 
 interface DeletePostBtnProps {
   token: string;
@@ -19,48 +19,47 @@ const DeletePostBtn: React.FC<DeletePostBtnProps> = ({
   const currentPath = window.location.pathname;
 
   const handleDeleteClick = async () => {
-    const confirmDelete = window.confirm('게시글을 삭제하시겠습니까?');
+    const confirmDelete = window.confirm("게시글을 삭제하시겠습니까?");
     if (confirmDelete) {
-      if (currentPath.includes('/m/home/tips/postdetail')) {
-      try {
-        const response = await deletePost(token, id);
-        if (response.status === 200) {
-          onPostUpdate();
-          navigate('/m/home/tips');
-          }  else if (response.status === 403) {
-          alert('이 글의 삭제에 대한 권한이 없습니다.');
-        } else {
-          // 삭제 에러 시 알림
-          alert('삭제 에러');
+      if (currentPath.includes("/m/postdetail")) {
+        try {
+          const response = await deletePost(token, id);
+          if (response.status === 200) {
+            onPostUpdate();
+            navigate("/m/home/tips");
+          } else if (response.status === 403) {
+            alert("이 글의 삭제에 대한 권한이 없습니다.");
+          } else {
+            // 삭제 에러 시 알림
+            alert("삭제 에러");
+          }
+        } catch (error) {
+          console.error("삭제 에러", error);
+          alert("삭제 에러");
         }
-      } catch (error) {
-        console.error('삭제 에러', error);
-        alert('삭제 에러');
-      }
-    }
-    else{
-      try {
-        const response = await deletePost(token, id);
-        if (response.status === 200) {
-          onPostUpdate();
-          navigate('/tips');
-          }  else if (response.status === 403) {
-          alert('이 글의 삭제에 대한 권한이 없습니다.');
-        } else {
-          // 삭제 에러 시 알림
-          alert('삭제 에러');
+      } else {
+        try {
+          const response = await deletePost(token, id);
+          if (response.status === 200) {
+            onPostUpdate();
+            navigate("/tips");
+          } else if (response.status === 403) {
+            alert("이 글의 삭제에 대한 권한이 없습니다.");
+          } else {
+            // 삭제 에러 시 알림
+            alert("삭제 에러");
+          }
+        } catch (error) {
+          console.error("삭제 에러", error);
+          alert("삭제 에러");
         }
-      } catch (error) {
-        console.error('삭제 에러', error);
-        alert('삭제 에러');
       }
-    }
     }
   };
 
   return (
     <DeleteBtn onClick={handleDeleteClick}>
-      <img src={deletebtn} alt='삭제 아이콘' style={{ padding: '3px' }} />
+      <img src={deletebtn} alt="삭제 아이콘" style={{ padding: "3px" }} />
       삭제
     </DeleteBtn>
   );
@@ -73,7 +72,7 @@ const DeleteBtn = styled.div`
   width: 76px;
   height: 30px;
   border-radius: 10px;
-  background: #EFF2F9;
+  background: #eff2f9;
   font-size: 15px;
   font-weight: 500;
   color: #757575;
