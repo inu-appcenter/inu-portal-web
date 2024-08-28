@@ -1,13 +1,13 @@
-import styled from 'styled-components';
-import PostContentContainer from '../container/postdetail/PostContentContainer';
-import PostUtility from '../container/postdetail/PostUtilityContainer';
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { getPost } from '../utils/API/Posts';
-import ReturnButton from '../component/postdetail/post/ReturnButton';
-import CommentList from '../component/postdetail/comment/commentlist';
-import CommentInput from '../component/postdetail/comment/commentinput';
-import { useSelector } from 'react-redux';
+import styled from "styled-components";
+import PostContentContainer from "../container/postdetail/PostContentContainer";
+import PostUtility from "../container/postdetail/PostUtilityContainer";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getPost } from "../utils/API/Posts";
+import ReturnButton from "../component/postdetail/post/ReturnButton";
+import CommentList from "../component/postdetail/comment/commentlist";
+import CommentInput from "../component/postdetail/comment/commentinput";
+import { useSelector } from "react-redux";
 
 interface Post {
   id: string;
@@ -49,8 +49,6 @@ export default function PostDetail() {
   const [commentUpdated, setCommentUpdated] = useState(false);
 
   useEffect(() => {
-    console.log(id);
-    
     if (id) {
       const fetchPost = async () => {
         const response = await getPost(token, id);
@@ -89,7 +87,11 @@ export default function PostDetail() {
             />
           </PostWrapper>
           <CommentWrapper>
-            <CommentList bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)} />
+            <CommentList
+              bestComment={post.bestReplies[0]}
+              comments={post.replies}
+              onCommentUpdate={() => setCommentUpdated(true)}
+            />
             <CommentInput onCommentUpdate={() => setCommentUpdated(true)} />
           </CommentWrapper>
         </>

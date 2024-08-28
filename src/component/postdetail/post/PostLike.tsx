@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { handlePostLike } from '../../../utils/API/Posts';
-import heartEmptyImg from '../../../resource/assets/heart-empty-img.svg';
-import heartFilledImg from '../../../resource/assets/heart-filled-img.svg';
-import styled from 'styled-components';
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import { handlePostLike } from "../../../utils/API/Posts";
+import heartEmptyImg from "../../../resource/assets/heart-empty-img.svg";
+import heartFilledImg from "../../../resource/assets/heart-filled-img.svg";
+import styled from "styled-components";
 
 interface PostLikeProps {
   like: number;
@@ -12,13 +12,17 @@ interface PostLikeProps {
   hasAuthority: boolean;
 }
 
-const PostLike: React.FC<PostLikeProps> = ({ like, isLikedProp, hasAuthority }) => {
+export default function PostLike({
+  like,
+  isLikedProp,
+  hasAuthority,
+}: PostLikeProps) {
   const [likes, setLikes] = useState(like);
   const { id } = useParams<{ id: string }>();
   const [isLiked, setIsLiked] = useState(isLikedProp);
   const token = useSelector((state: any) => state.user.token);
   const [showError, setShowError] = useState<boolean>(false);
-  
+
   useEffect(() => {
     setLikes(like);
   }, [like]);
@@ -34,14 +38,14 @@ const PostLike: React.FC<PostLikeProps> = ({ like, isLikedProp, hasAuthority }) 
       return;
     }
     if (id === undefined) {
-      console.error('ID is undefined');
+      console.error("ID is undefined");
       return;
     }
     if (token) {
       try {
         const result = await handlePostLike(token, id);
         if (result.status === 400) {
-          alert('본인의 게시글에는 좋아요를 누를 수 없습니다.');
+          alert("본인의 게시글에는 좋아요를 누를 수 없습니다.");
           return;
         }
         setIsLiked(!isLiked);
@@ -51,32 +55,30 @@ const PostLike: React.FC<PostLikeProps> = ({ like, isLikedProp, hasAuthority }) 
           setLikes(likes + 1);
         }
       } catch (error) {
-        console.error('좋아요 처리 에러', error);
-        alert('좋아요 처리 에러');
+        console.error("좋아요 처리 에러", error);
+        alert("좋아요 처리 에러");
       }
     } else {
-      alert('로그인 필요');
+      alert("로그인 필요");
     }
   };
 
   return (
-    <span className='likeContainer'>
-      <img
-        className='UtilityImg'
+    <LikeContainer>
+      <UtilityImg
         src={isLiked ? heartFilledImg : heartEmptyImg}
-        alt='heartImg'
+        alt="heartImg"
         onClick={handleLikeClick}
       />
-      <span className='UtilityText'>
-        {likes}
-      </span>
-      {showError && <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>}
-    </span>
+      <UtilityText>{likes}</UtilityText>
+      {showError && (
+        <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>
+      )}
+    </LikeContainer>
   );
-};
+}
 
-export default PostLike;
-
+// Styled Components
 const ErrorMessage = styled.div`
   position: absolute;
   bottom: 50%;
@@ -86,4 +88,26 @@ const ErrorMessage = styled.div`
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
+`;
+
+const LikeContainer = styled.span`
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  cursor: url("/pointers/cursor-pointer.svg"), pointer;
+
+  @media (max-width: 768px) {
+    gap: 7px;
+  }
+`;
+
+const UtilityImg = styled.img`
+  height: 15px;
+  width: auto;
+`;
+
+const UtilityText = styled.span`
+  font-size: 15px;
+  font-weight: 400;
 `;
