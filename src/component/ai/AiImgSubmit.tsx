@@ -1,7 +1,6 @@
-import React from 'react';
-import styled from 'styled-components';
-import { postFiresRating } from '../../utils/API/Fires';
-import { useSelector } from 'react-redux';
+import styled from "styled-components";
+import { postFiresRating } from "../../utils/API/Fires";
+import { useSelector } from "react-redux";
 
 interface AiSubmitProps {
   rating: number;
@@ -14,32 +13,34 @@ interface loginInfo {
   };
 }
 
-const AiImgSubmit: React.FC<AiSubmitProps> = ({ rating, id }) => {
+export default function AiImgSubmit({ rating, id }: AiSubmitProps) {
   const user = useSelector((state: loginInfo) => state.user);
 
   const handleSubmitClick = async () => {
     try {
       if (!rating || rating < 0) {
-        alert('별점을 평가하세요!');
+        alert("별점을 평가하세요!");
         return;
       }
       const response = await postFiresRating(user.token, rating, id);
       if (response.status === 200) {
-        alert('별점 평가가 완료되었습니다.'); // 성공한 경우
+        alert("별점 평가가 완료되었습니다."); // 성공한 경우
       } else {
-        console.error('평점 추가 실패:', response.status);
+        console.error("평점 추가 실패:", response.status);
       }
     } catch (error) {
-      console.error('평점 추가 실패:', error);
+      console.error("평점 추가 실패:", error);
     }
   };
 
   return (
     <AIImgSubmitWrapper>
-      <div className='submit' onClick={handleSubmitClick}>제출</div>
+      <div className="submit" onClick={handleSubmitClick}>
+        제출
+      </div>
     </AIImgSubmitWrapper>
   );
-};
+}
 
 const AIImgSubmitWrapper = styled.div`
   display: flex;
@@ -54,7 +55,7 @@ const AIImgSubmitWrapper = styled.div`
     position: absolute;
     width: 93px;
     height: 33px;
-    background: #6D4DC7;
+    background: #6d4dc7;
     border-radius: 10px;
     font-size: 18px;
     font-weight: 800;
@@ -65,5 +66,3 @@ const AIImgSubmitWrapper = styled.div`
     cursor: pointer;
   }
 `;
-
-export default AiImgSubmit;
