@@ -1,33 +1,30 @@
 //TipContainer.tsx
-import SearchBar from '../../component/Tips/SearchBar';
-import MainTip from '../../component/home/tiplist'; // Adjust the path accordingly
-import TipTitle from '../../component/home/tiptitle';
-import styled from 'styled-components';
+import SearchBar from "../../component/tips/SearchBar";
+import MainTip from "../../component/home/tiplist"; // Adjust the path accordingly
+import TipTitle from "../../component/home/tiptitle";
+import styled from "styled-components";
 
-
-export default function MainTips () {
-
-
+export default function MainTips() {
   return (
     <TipWrapper>
       <TipSearchTotalWrapper>
-        <TipTitle/>
+        <TipTitle />
         <SearchBar />
       </TipSearchTotalWrapper>
       <MainTip />
     </TipWrapper>
   );
-
 }
 
 const TipWrapper = styled.div`
-    padding-left: 10px;
-    box-sizing: border-box;
-    width: 36%;
-    @media (max-width: 768px) { // 모바일
-      width: 100%;
-    }
-`
+  padding-left: 10px;
+  box-sizing: border-box;
+  width: 36%;
+  @media (max-width: 768px) {
+    // 모바일
+    width: 100%;
+  }
+`;
 
 const TipSearchTotalWrapper = styled.div`
   width: 100%;
@@ -35,4 +32,4 @@ const TipSearchTotalWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-`
+`;

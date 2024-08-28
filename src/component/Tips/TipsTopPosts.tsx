@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { getPostsTop } from "../../utils/API/Posts";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ interface CategoriesProps {
   selectedCategory: string;
 }
 
-const TipsTopPosts: React.FC<CategoriesProps> = ({ selectedCategory }) => {
+export default function TipsTopPosts({ selectedCategory }: CategoriesProps) {
   const [topPosts, setTopPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
 
@@ -43,7 +43,11 @@ const TipsTopPosts: React.FC<CategoriesProps> = ({ selectedCategory }) => {
       {topPosts.map((post) => (
         <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
           <PostLike>
-            <img src={Heart} style={{ width: "15px", height: "15px" }} />
+            <img
+              src={Heart}
+              style={{ width: "15px", height: "15px" }}
+              alt="Heart Icon"
+            />
             <div className="like-num">{post.like}</div>
           </PostLike>
           <TopPostsCat>
@@ -58,10 +62,9 @@ const TipsTopPosts: React.FC<CategoriesProps> = ({ selectedCategory }) => {
       ))}
     </TipsTopPostsWrapper>
   );
-};
+}
 
-export default TipsTopPosts;
-
+// Styled Components
 const TipsTopPostsWrapper = styled.div`
   height: 240px;
   gap: 30px;
@@ -73,7 +76,6 @@ const TipsTopPostsWrapper = styled.div`
   flex-wrap: nowrap;
   padding-left: 40px;
   @media (max-width: 768px) {
-    /* 모바일 */
     display: none;
   }
 `;
@@ -86,10 +88,11 @@ const PostCard = styled.div`
   position: relative;
   background: linear-gradient(90deg, #c7dcfa 21.17%, #7aa7e5 100%);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease-in-out; /* 호버 효과를 위한 변형 트랜지션 */
+  transition: transform 0.2s ease-in-out;
   &:hover {
-    transform: scale(1.05); /* 호버 시 확대 효과 */
+    transform: scale(1.05);
   }
 `;
 
@@ -115,9 +118,9 @@ const TopPostTitle = styled.span`
   border-radius: 0 0 20px 20px;
   background: linear-gradient(#e9f0fa 5%, #ffffff 100%);
   padding: 2px 0;
-  overflow: hidden; /* 넘치는 텍스트 숨김 */
-  white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
-  text-overflow: ellipsis; /* 넘치는 텍스트를 생략 부호(...)로 표시 */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `;
 
 const PostCat = styled.span`
@@ -137,7 +140,6 @@ const TopPostsCat = styled.span`
   font-weight: 500;
   line-height: 20px;
   text-align: left;
-  border: 1px;
 `;
 
 const CategoryIcon = styled.img`

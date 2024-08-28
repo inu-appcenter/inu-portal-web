@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { getNoticesTop } from '../../utils/API/Notices';
+import { useState, useEffect } from "react";
+import styled from "styled-components";
+import { getNoticesTop } from "../../utils/API/Notices";
 
 interface Notice {
   id: number;
@@ -12,6 +12,40 @@ interface Notice {
   url: string;
 }
 
+export default function NoticesTop() {
+  const [topPosts, setTopPosts] = useState<Notice[]>([]);
+
+  useEffect(() => {
+    const fetchTopPosts = async () => {
+      try {
+        const response = await getNoticesTop();
+        if (response.status === 200) {
+          setTopPosts(response.body.data);
+        }
+      } catch (error) {
+        console.error("Error fetching top posts:", error);
+      }
+    };
+
+    fetchTopPosts();
+  }, []);
+
+  const handlePostClick = (url: string) => {
+    window.open("https://" + url, "_blank");
+  };
+
+  return (
+    <NoticesTopPostsWrapper>
+      {topPosts.map((post) => (
+        <PostCard key={post.id} onClick={() => handlePostClick(post.url)}>
+          <TopPostTitle>{post.title}</TopPostTitle>
+        </PostCard>
+      ))}
+    </NoticesTopPostsWrapper>
+  );
+}
+
+// Styled Components
 const NoticesTopPostsWrapper = styled.div`
   height: 240px;
   gap: 30px;
@@ -19,11 +53,11 @@ const NoticesTopPostsWrapper = styled.div`
   display: flex;
   align-items: center;
   margin-right: 25px;
-  background: linear-gradient(to bottom, #DBEBFF 70%, #FFFFFF );
+  background: linear-gradient(to bottom, #dbebff 70%, #ffffff);
   flex-wrap: nowrap;
   padding-left: 40px;
 
-  @media (max-width: 768px) { /* 모바일 */
+  @media (max-width: 768px) {
     display: none;
   }
 `;
@@ -32,18 +66,18 @@ const PostCard = styled.div`
   width: 210px;
   height: 140px;
   border-radius: 20px;
-  margin: 30px;  
+  margin: 30px;
   padding: 0 15px;
-  background: linear-gradient(90deg, #C7DCFA 21.17%, #7AA7E5 100%);
+  background: linear-gradient(90deg, #c7dcfa 21.17%, #7aa7e5 100%);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  display: flex; 
+  display: flex;
   flex-direction: column;
-  justify-content: center; 
-  align-items: center; 
-  cursor: url('/pointers/cursor-pointer.svg'), pointer;
-  transition: transform 0.2s ease-in-out; /* 호버 효과를 위한 변형 트랜지션 */
+  justify-content: center;
+  align-items: center;
+  cursor: url("/pointers/cursor-pointer.svg"), pointer;
+  transition: transform 0.2s ease-in-out;
   &:hover {
-    transform: scale(1.05); /* 호버 시 확대 효과 */
+    transform: scale(1.05);
   }
 `;
 
@@ -59,39 +93,3 @@ const TopPostTitle = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 `;
-
-const NoticesTop: React.FC = () => {
-  const [topPosts, setTopPosts] = useState<Notice[]>([]);
-
-  useEffect(() => {
-    const fetchTopPosts = async () => {
-      try {
-        const response = await getNoticesTop();
-        if (response.status === 200) {
-          setTopPosts(response.body.data);
-        }
-      } catch (error) {
-        console.error('Error fetching top posts:', error);
-      }
-    };
-
-    fetchTopPosts();
-  }, []);
-
-  const handlePostClick = (url: string) => {
-    window.open('https://' + url, '_blank');
-  };
-
-  return (
-    <NoticesTopPostsWrapper>
-      {topPosts.map(post => (
-        <PostCard key={post.id} onClick={() => handlePostClick(post.url)}>
-          <TopPostTitle>{post.title}</TopPostTitle>
-          {/* Render other post properties as needed */}
-        </PostCard>
-      ))}
-    </NoticesTopPostsWrapper>
-  );
-};
-
-export default NoticesTop;
