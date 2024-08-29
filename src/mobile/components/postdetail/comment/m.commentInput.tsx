@@ -1,21 +1,26 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { postReplies} from "../../../../utils/API/Replies";
-import checkedCheckbox from '../../../../resource/assets/checked-checkbox.svg';
-import uncheckedCheckbox from '../../../../resource/assets/unchecked-checkbox.svg';
-import enterImage from '../../../../resource/assets/enter-img.svg';
+import { postReplies } from "../../../../utils/API/Replies";
+import styled from "styled-components";
+import checkedCheckbox from "../../../../resource/assets/checked-checkbox.svg";
+import uncheckedCheckbox from "../../../../resource/assets/unchecked-checkbox.svg";
+import enterImage from "../../../../resource/assets/enter-img.svg";
 
 interface CommentInputProps {
-  id:string;
+  id: string;
   onCommentUpdate: () => void;
-  
 }
+
 interface loginInfo {
   user: {
     token: string;
   };
 }
-export default function CommentInput({ id, onCommentUpdate }: CommentInputProps) {
+
+export default function CommentInput({
+  id,
+  onCommentUpdate,
+}: CommentInputProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -28,7 +33,7 @@ export default function CommentInput({ id, onCommentUpdate }: CommentInputProps)
       return;
     }
     if (id === undefined) {
-      console.error('ID is undefined');
+      console.error("ID is undefined");
       return;
     }
     try {
@@ -39,27 +44,124 @@ export default function CommentInput({ id, onCommentUpdate }: CommentInputProps)
         setContent("");
         setIsAnonymous(false);
       } else {
-        alert('등록 실패');
+        alert("등록 실패");
       }
     } catch (error) {
-      console.error('등록 에러', error);
-      alert('등록 에러');
+      console.error("등록 에러", error);
+      alert("등록 에러");
     }
   };
 
   return (
-    <div className='comment-area-container'>
-      <div className='comment-input-container'>
-        <img
+    <CommentAreaContainer>
+      <CommentInputContainer>
+        <CheckboxImage
           src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
           alt="Anonymous"
           onClick={toggleAnonymous}
         />
-        <span className='anonymous-text'>익명</span>
-        <div className='vline'></div>
-        <input className='comment-input' value={content} onChange={(e) => setContent(e.target.value)}  placeholder="댓글을 입력하세요."/>
-        <img src={enterImage} alt='enter' onClick={handleCommentSubmit}/>
-      </div>
-    </div>
+        <AnonymousText>익명</AnonymousText>
+        <VerticalLine />
+        <CommentInputField
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="댓글을 입력하세요."
+        />
+        <EnterImage
+          src={enterImage}
+          alt="enter"
+          onClick={handleCommentSubmit}
+        />
+      </CommentInputContainer>
+    </CommentAreaContainer>
   );
 }
+
+// Styled Components
+const CommentAreaContainer = styled.div`
+  border-top: 1px solid #dadada;
+  position: fixed;
+  bottom: 0px;
+  z-index: 100;
+  height: 64px;
+  width: calc(100% - 253px);
+  background-color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    margin-right: 5px;
+  }
+`;
+
+const CommentInputContainer = styled.div`
+  flex-grow: 1;
+  margin-left: 20px;
+  margin-right: 120px;
+  padding-left: 10px;
+  padding-right: 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  background-color: #eff2f9;
+
+  @media (max-width: 768px) {
+    margin: 0;
+    background-color: #fff;
+    position: relative;
+  }
+`;
+
+const CheckboxImage = styled.img`
+  cursor: pointer;
+`;
+
+const AnonymousText = styled.span`
+  font-size: 20px;
+  font-weight: 400;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+`;
+
+const VerticalLine = styled.div`
+  width: 2px;
+  height: 28px;
+  background-color: #b3b3b3;
+
+  @media (max-width: 768px) {
+    background-color: #fff;
+  }
+`;
+
+const CommentInputField = styled.input`
+  flex-grow: 1;
+  font-size: 20px;
+  font-weight: 400;
+
+  height: 48px;
+  border: 0;
+  background-color: transparent;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+    background-color: #eff2f9;
+    border-radius: 16.5px;
+    padding: 0 0 0 15px;
+  }
+`;
+
+const EnterImage = styled.img`
+  cursor: pointer;
+`;
