@@ -5,6 +5,7 @@ import ScrapFolders from '../containers/save/ScrapFolders';
 import ScrapContents from '../containers/save/ScrapContents';
 import ManageFolder from '../containers/save/ManageFolder';
 import { getFolders } from '../../utils/API/Folders';
+import loginImg from '../../resource/assets/login-logo.svg';
 
 interface Folder {
   id: number;
@@ -71,7 +72,10 @@ export default function MobileSavePage() {
           )}
         </>
       ) : (
-        <div>로그인이 필요합니다.</div>
+        <ErrorWrapper>
+        <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
+        <div className='error'>로그인이 필요합니다!</div>
+        </ErrorWrapper>
       )}
     </MobileSavePageWrapper>
   );
@@ -85,3 +89,18 @@ const MobileSavePageWrapper = styled.div`
   height: 100%;
   width: 100%;
 `;
+
+const ErrorWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+  margin-top: 100px;
+  div{
+  font-size: 20px;}
+`
+
+const LoginImg = styled.img`
+  width: 150px;
+
+`
