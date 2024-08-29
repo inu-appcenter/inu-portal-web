@@ -1,18 +1,23 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import styled from 'styled-components';
-import TipsCard from '../../components/tips/TipsCard';
-import { getPosts } from '../../../utils/API/Posts';
-import { getNotices } from '../../../utils/API/Notices';
-import { search } from '../../../utils/API/Search';
+import { useState, useEffect, useRef, useCallback } from "react";
+import styled from "styled-components";
+import TipsCard from "../../components/tips/TipsCard";
+import { getPosts } from "../../../utils/API/Posts";
+import { getNotices } from "../../../utils/API/Notices";
+import { search } from "../../../utils/API/Search";
 
 interface TipsListContainerProps {
-  viewMode: 'grid' | 'list';
+  viewMode: "grid" | "list";
   docType: string;
   category: string;
   query: string;
 }
 
-export default function TipsListContainer({ viewMode, docType, category, query }: TipsListContainerProps) {
+export default function TipsListContainer({
+  viewMode,
+  docType,
+  category,
+  query,
+}: TipsListContainerProps) {
   const [posts, setPosts] = useState<(Post | { page: number })[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -20,29 +25,37 @@ export default function TipsListContainer({ viewMode, docType, category, query }
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 데이터 가져오기 함수
-  const fetchData = useCallback(async (pageToLoad: number) => {
-    setLoading(true);
-    try {
-      let response;
-      if (docType === 'TIPS') {
-        response = await getPosts(category, 'date', pageToLoad.toString());
-      } else if (docType === 'NOTICE') {
-        response = await getNotices(category, 'date', pageToLoad.toString());
-      } else if (docType === 'SEARCH' && query) {
-        response = await search(query, 'date', pageToLoad.toString());
-      }
+  const fetchData = useCallback(
+    async (pageToLoad: number) => {
+      setLoading(true);
+      try {
+        let response;
+        if (docType === "TIPS") {
+          response = await getPosts(category, "date", pageToLoad.toString());
+        } else if (docType === "NOTICE") {
+          response = await getNotices(category, "date", pageToLoad.toString());
+        } else if (docType === "SEARCH" && query) {
+          response = await search(query, "date", pageToLoad.toString());
+        }
 
-      if (response && response.status === 200) {
-        console.log('정보 갖고옴');
-        const newPosts = response.body.data.posts || response.body.data.notices;
-        setPosts((prev) => pageToLoad === 1 ? [{ page: pageToLoad }, ...newPosts] : [...prev, { page: pageToLoad }, ...newPosts]);
-        setTotalPages(response.body.data.pages);
+        if (response && response.status === 200) {
+          console.log("정보 갖고옴");
+          const newPosts =
+            response.body.data.posts || response.body.data.notices;
+          setPosts((prev) =>
+            pageToLoad === 1
+              ? [{ page: pageToLoad }, ...newPosts]
+              : [...prev, { page: pageToLoad }, ...newPosts]
+          );
+          setTotalPages(response.body.data.pages);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-    setLoading(false);
-  }, [category, docType, query]);
+      setLoading(false);
+    },
+    [category, docType, query]
+  );
 
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
@@ -50,25 +63,32 @@ export default function TipsListContainer({ viewMode, docType, category, query }
       let responsePage1;
       let responsePage2;
 
-      if (docType === 'TIPS') {
-        responsePage1 = await getPosts(category, 'date', '1');
-        responsePage2 = await getPosts(category, 'date', '2');
-      } else if (docType === 'NOTICE') {
-        responsePage1 = await getNotices(category, 'date', '1');
-        responsePage2 = await getNotices(category, 'date', '2');
-      } else if (docType === 'SEARCH' && query) {
-        responsePage1 = await search(query, 'date', '1');
-        responsePage2 = await search(query, 'date', '2');
+      if (docType === "TIPS") {
+        responsePage1 = await getPosts(category, "date", "1");
+        responsePage2 = await getPosts(category, "date", "2");
+      } else if (docType === "NOTICE") {
+        responsePage1 = await getNotices(category, "date", "1");
+        responsePage2 = await getNotices(category, "date", "2");
+      } else if (docType === "SEARCH" && query) {
+        responsePage1 = await search(query, "date", "1");
+        responsePage2 = await search(query, "date", "2");
       }
 
       if (responsePage1?.status === 200 && responsePage2?.status === 200) {
-        const newPostsPage1 = responsePage1.body.data.posts || responsePage1.body.data.notices;
-        const newPostsPage2 = responsePage2.body.data.posts || responsePage2.body.data.notices;
-        setPosts([{ page: 1 }, ...newPostsPage1, { page: 2 }, ...newPostsPage2]);
+        const newPostsPage1 =
+          responsePage1.body.data.posts || responsePage1.body.data.notices;
+        const newPostsPage2 =
+          responsePage2.body.data.posts || responsePage2.body.data.notices;
+        setPosts([
+          { page: 1 },
+          ...newPostsPage1,
+          { page: 2 },
+          ...newPostsPage2,
+        ]);
         setTotalPages(responsePage1.body.data.pages);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
     setLoading(false);
   }, [category, docType, query]);
@@ -105,11 +125,11 @@ export default function TipsListContainer({ viewMode, docType, category, query }
   useEffect(() => {
     const currentRef = containerRef.current;
     if (currentRef) {
-      currentRef.addEventListener('scroll', handleScroll);
+      currentRef.addEventListener("scroll", handleScroll);
     }
     return () => {
       if (currentRef) {
-        currentRef.removeEventListener('scroll', handleScroll);
+        currentRef.removeEventListener("scroll", handleScroll);
       }
     };
   }, [handleScroll]);
@@ -121,14 +141,19 @@ export default function TipsListContainer({ viewMode, docType, category, query }
     let pagePosts: (Post | { page: number })[] = [];
 
     posts.forEach((post, index) => {
-      if ('page' in post) {
+      if ("page" in post) {
         if (pagePosts.length > 0) {
           groupedPosts.push(
             <PageGroup key={`page-${currentPage}`}>
               <PageMarker>Page {currentPage}</PageMarker>
               <TipsCardWrapper $viewMode={viewMode}>
                 {pagePosts.map((p, i) => (
-                  <TipsCard key={`post-${index}-${i}`} post={p as Post} viewMode={viewMode} docType={docType} />
+                  <TipsCard
+                    key={`post-${index}-${i}`}
+                    post={p as Post}
+                    viewMode={viewMode}
+                    docType={docType}
+                  />
                 ))}
               </TipsCardWrapper>
             </PageGroup>
@@ -147,7 +172,12 @@ export default function TipsListContainer({ viewMode, docType, category, query }
           <PageMarker>Page {currentPage}</PageMarker>
           <TipsCardWrapper $viewMode={viewMode}>
             {pagePosts.map((p, i) => (
-              <TipsCard key={`post-${currentPage}-${i}`} post={p as Post} viewMode={viewMode} docType={docType}/>
+              <TipsCard
+                key={`post-${currentPage}-${i}`}
+                post={p as Post}
+                viewMode={viewMode}
+                docType={docType}
+              />
             ))}
           </TipsCardWrapper>
         </PageGroup>
@@ -171,10 +201,10 @@ const TipsListContainerWrapper = styled.div<{ $docType: string }>`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: ${({ $docType }) => 
-    $docType === 'NOTICE' 
-    ? 'calc(100svh - 72px - 64px - 16px - 32px)' // DocType이 NOTICE 일 때는 SearchForm 없음
-    : 'calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)'}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
+  height: ${({ $docType }) =>
+    $docType === "NOTICE"
+      ? "calc(100svh - 72px - 64px - 16px - 32px)" // DocType이 NOTICE 일 때는 SearchForm 없음
+      : "calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)"}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
   overflow-y: auto;
 `;
 
@@ -182,12 +212,14 @@ const PageGroup = styled.div`
   margin-bottom: 16px;
 `;
 
-const TipsCardWrapper = styled.div<{ $viewMode: 'grid' | 'list' }>`
-  display: ${({ $viewMode }) => ($viewMode === 'grid' ? 'grid' : 'flex')};
-  flex-direction: ${({ $viewMode }) => ($viewMode === 'list' ? 'column' : 'unset')};
+const TipsCardWrapper = styled.div<{ $viewMode: "grid" | "list" }>`
+  display: ${({ $viewMode }) => ($viewMode === "grid" ? "grid" : "flex")};
+  flex-direction: ${({ $viewMode }) =>
+    $viewMode === "list" ? "column" : "unset"};
   gap: 8px;
   width: 100%;
-  grid-template-columns: ${({ $viewMode }) => ($viewMode === 'grid' ? 'repeat(2, 1fr)' : 'unset')};
+  grid-template-columns: ${({ $viewMode }) =>
+    $viewMode === "grid" ? "repeat(2, 1fr)" : "unset"};
 `;
 
 const Loader = styled.div`
@@ -198,6 +230,7 @@ const Loader = styled.div`
 `;
 
 const PageMarker = styled.div`
+  display: none; // 개발용
   width: 100%;
   text-align: center;
   font-weight: bold;
