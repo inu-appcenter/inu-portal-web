@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { getMembers } from "../../utils/API/Members";
 import { useEffect, useState } from "react";
-
+import loginImg from '../../resource/assets/login-logo.svg';
 import { MyPageActive, MyPageCategory } from "../../resource/string/m-mypage";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../reducer/userSlice";
@@ -122,13 +122,16 @@ export default function MobileMyPage() {
                   <CancelButton onClick={handleModalClose}>취소</CancelButton>
                   <Divider />
                   <LogoutButton onClick={handleLogout}>확인</LogoutButton>
-                </ButtonContainer>
+                </ButtonContainer>  
               </ModalContent>
             </ModalOverlay>
           )}
         </MyPageWrapper>
       ) : (
-        <div>로그인이 필요합니다.</div>
+        <ErrorWrapper>
+        <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
+        <div className='error'>로그인이 필요합니다!</div>
+        </ErrorWrapper>
       )}
     </>
   );
@@ -282,3 +285,18 @@ const Divider = styled.div`
   width: 1px;
   background: #d9d9d9;
 `;
+
+const ErrorWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+  margin-top: 100px;
+  div{
+  font-size: 20px;}
+`
+
+const LoginImg = styled.img`
+  width: 150px;
+
+`
