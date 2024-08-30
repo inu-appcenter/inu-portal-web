@@ -1,7 +1,7 @@
-import { useSelector } from 'react-redux';
-import ProfileNickname from '../../components/common/ProfileNickname';
-import ProfileImage from '../../components/common/ProfileImage';
-import styled from 'styled-components';
+import { useSelector } from "react-redux";
+import ProfileNickname from "../../components/common/ProfileNickname";
+import ProfileImage from "../../components/common/ProfileImage";
+import styled from "styled-components";
 
 interface loginInfo {
   user: {
@@ -19,7 +19,7 @@ export default function UserInfo() {
       {token && (
         <>
           <ProfileImage fireId={fireId} />
-          <ProfileNickname nickname={nickname}/>
+          <ProfileNickname nickname={nickname} />
         </>
       )}
     </UserInfoWrapper>
@@ -27,20 +27,16 @@ export default function UserInfo() {
 }
 
 const UserInfoWrapper = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 110px;
-    width:125px;
-    height: 125px;
-    position: relative;
-    img {
-      width: 100%;
-      height: 100%;
-      margin-bottom: 10px;
-    }
-
-
-`
-
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 125px;
+  height: 125px;
+  position: relative;
+  img {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 10px;
+  }
+`;

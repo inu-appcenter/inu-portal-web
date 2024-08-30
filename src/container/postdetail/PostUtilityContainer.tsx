@@ -1,8 +1,6 @@
-// Like, 스크랩
-
-import PostLike from '../../component/postdetail/post/postlike';
-import PostScrap from '../../component/postdetail/post/postscrap';
-import './PostUtilityContainer.css';
+import PostLike from "../../component/postdetail/post/PostLike";
+import PostScrap from "../../component/postdetail/post/PostScrap";
+import styled from "styled-components";
 
 interface PostUtilityProps {
   like: number;
@@ -12,12 +10,27 @@ interface PostUtilityProps {
   hasAuthority: boolean;
 }
 
-export default function PostUtility({ like, isLiked, scrap, isScraped, hasAuthority }: PostUtilityProps) {
-
+export default function PostUtility({
+  like,
+  isLiked,
+  scrap,
+  isScraped,
+  hasAuthority,
+}: PostUtilityProps) {
   return (
-    <div className='UtilityWrapper'>
+    <UtilityWrapper>
       <PostLike like={like} isLikedProp={isLiked} hasAuthority={hasAuthority} />
       <PostScrap scrap={scrap} isScrapedProp={isScraped} />
-    </div>
+    </UtilityWrapper>
   );
 }
+
+// Styled Components
+const UtilityWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: end;
+  gap: 10px;
+  height: 34px;
+`;

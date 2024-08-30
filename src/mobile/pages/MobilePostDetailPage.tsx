@@ -1,11 +1,11 @@
-import styled from 'styled-components';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { getPost } from '../../utils/API/Posts';
-import PostContentContainer from '../containers/postdetail/PostContentContainer';
-import PostUtilContainer from '../containers/postdetail/PostUtilContainer';
-import CommentListMobile from '../containers/postdetail/CommentListContainer';
-import CommentInput from '../components/postdetail/comment/m.commentInput';
+import styled from "styled-components";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { getPost } from "../../utils/API/Posts";
+import PostContentContainer from "../containers/postdetail/PostContentContainer";
+import PostUtilContainer from "../containers/postdetail/PostUtilContainer";
+import CommentListMobile from "../containers/postdetail/CommentListContainer";
+import CommentInput from "../components/postdetail/comment/m.commentInput";
 
 interface Post {
   id: string;
@@ -40,17 +40,16 @@ interface Replies {
   reReplies: Replies[];
 }
 
-
 export default function PostDetail() {
   const token = useSelector((state: any) => state.user.token);
   const [post, setPost] = useState<Post | null>(null);
-  const [id, setId] = useState('');
+  const [id, setId] = useState("");
   const [commentUpdated, setCommentUpdated] = useState(false);
 
   useEffect(() => {
-    if (location.pathname.includes('/tips/postdetail')) {
+    if (location.pathname.includes("/postdetail")) {
       const params = new URLSearchParams(location.search);
-      setId(params.get('id') || '');
+      setId(params.get("id") || "");
       if (id) {
         const fetchPost = async () => {
           const response = await getPost(token, id);
@@ -67,27 +66,41 @@ export default function PostDetail() {
     <>
       {post ? (
         <>
-        <Wrapper>
-          <PostTopWrapper>
-            <PostUtilContainer id={post.id} like={post.like} isLiked={post.isLiked} scrap={post.scrap} isScraped={post.isScraped} hasAuthority={post.hasAuthority} />
-          </PostTopWrapper>
+          <Wrapper>
+            <PostTopWrapper>
+              <PostUtilContainer
+                id={post.id}
+                like={post.like}
+                isLiked={post.isLiked}
+                scrap={post.scrap}
+                isScraped={post.isScraped}
+                hasAuthority={post.hasAuthority}
+              />
+            </PostTopWrapper>
             <PostWrapper>
-            <PostContentContainer
-              id={post.id}
-              title={post.title}
-              createDate={post.createDate}
-              view={post.view}
-              writer={post.writer}
-              content={post.content}
-              imageCount={post.imageCount}
-              category={post.category}
-              hasAuthority={post.hasAuthority}
-            />
-          <CommentWrapper>
-            <CommentListMobile bestComment={post.bestReplies[0]} comments={post.replies} onCommentUpdate={() => setCommentUpdated(true)} />
-            <CommentInput id={post.id} onCommentUpdate={() => setCommentUpdated(true)}/>
-          </CommentWrapper>
-          </PostWrapper>
+              <PostContentContainer
+                id={post.id}
+                title={post.title}
+                createDate={post.createDate}
+                view={post.view}
+                writer={post.writer}
+                content={post.content}
+                imageCount={post.imageCount}
+                category={post.category}
+                hasAuthority={post.hasAuthority}
+              />
+              <CommentWrapper>
+                <CommentListMobile
+                  bestComment={post.bestReplies[0]}
+                  comments={post.replies}
+                  onCommentUpdate={() => setCommentUpdated(true)}
+                />
+                <CommentInput
+                  id={post.id}
+                  onCommentUpdate={() => setCommentUpdated(true)}
+                />
+              </CommentWrapper>
+            </PostWrapper>
           </Wrapper>
         </>
       ) : (
@@ -97,21 +110,21 @@ export default function PostDetail() {
   );
 }
 const Wrapper = styled.div`
-  width:100%;
+  width: 100%;
   height: 100%;
-`
+`;
 const PostTopWrapper = styled.div`
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 10;
-  border-bottom: 1px solid #ccc;  
-  `
+  border-bottom: 1px solid #ccc;
+`;
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding-bottom:30px;
+  padding-bottom: 30px;
   top: 10%;
   height: calc(100svh - 150px);
   overflow-y: auto;

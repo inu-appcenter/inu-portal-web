@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import styled, { keyframes } from 'styled-components';
-import LoginTipImg1 from '../../resource/assets/LoginTipImg1.svg';
-import LoginTipImg2 from '../../resource/assets/LoginTipImg2.svg';
-import LoginTipImg3 from '../../resource/assets/LoginTipImg3.svg';
-import LoginTipImg4 from '../../resource/assets/LoginTipImg4.svg';
+import { useEffect, useState } from "react";
+import styled, { keyframes } from "styled-components";
+import LoginTipImg1 from "../../resource/assets/LoginTipImg1.svg";
+import LoginTipImg2 from "../../resource/assets/LoginTipImg2.svg";
+import LoginTipImg3 from "../../resource/assets/LoginTipImg3.svg";
+import LoginTipImg4 from "../../resource/assets/LoginTipImg4.svg";
 
 const images = [LoginTipImg1, LoginTipImg2, LoginTipImg3, LoginTipImg4];
 
@@ -40,7 +40,10 @@ export default function LoginTipImage() {
 
   return (
     <>
-      <LoginTipImageComponent src={images[currentImageIndex]} key={currentImageIndex} />
+      <LoginTipImageComponent
+        src={images[currentImageIndex]}
+        key={currentImageIndex}
+      />
       <Indicators>
         {images.map((_, index) => (
           <Indicator key={index} isActive={index === currentImageIndex} />
@@ -82,17 +85,17 @@ const Indicators = styled.div`
   justify-content: center;
   gap: 10px;
   border-radius: 8px;
-  background-color: rgba(0,0,0,0.25);
+  background-color: rgba(0, 0, 0, 0.25);
   padding: 5px;
 `;
 
 const Indicator = styled.div.withConfig({
-  shouldForwardProp: (prop) => prop !== 'isActive',
+  shouldForwardProp: (prop) => prop !== "isActive",
 })<{ isActive: boolean }>`
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: ${({ isActive }) => (isActive ? 'black' : 'white')};
+  background-color: ${({ isActive }) => (isActive ? "black" : "white")};
 `;
 
 const LoadingSpinner = styled.div`
@@ -109,7 +112,11 @@ const LoadingSpinner = styled.div`
   animation: spin 1s linear infinite;
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;

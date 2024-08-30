@@ -1,8 +1,8 @@
-import styled from 'styled-components';
-import retry from '../../resource/assets/retry.svg';
-import { useNavigate } from 'react-router-dom';
-import { postFiresRating } from '../../utils/API/Fires';
-import { useSelector } from 'react-redux';
+import styled from "styled-components";
+import retry from "../../resource/assets/retry.svg";
+import { useNavigate } from "react-router-dom";
+import { postFiresRating } from "../../utils/API/Fires";
+import { useSelector } from "react-redux";
 
 interface AiImgRetryProps {
   rating: number;
@@ -15,7 +15,7 @@ interface loginInfo {
   };
 }
 
-const AiImgRetry: React.FC<AiImgRetryProps> = ({ rating, id }) => {
+export default function AiImgRetry({ rating, id }: AiImgRetryProps) {
   const user = useSelector((state: loginInfo) => state.user);
   const navigate = useNavigate();
 
@@ -28,10 +28,10 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({ rating, id }) => {
         if (response.status === 200) {
           navigate(`/ai`);
         } else {
-          console.error('평점 추가 실패:', response.status);
+          console.error("평점 추가 실패:", response.status);
         }
       } catch (error) {
-        console.error('평점 추가 실패:', error);
+        console.error("평점 추가 실패:", error);
       }
     }
   };
@@ -43,13 +43,13 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({ rating, id }) => {
       try {
         const response = await postFiresRating(user.token, rating, id);
         if (response.status === 200) {
-          sessionStorage.removeItem('lastInput');
+          sessionStorage.removeItem("lastInput");
           navigate(`/ai`);
         } else {
-          console.error('평점 추가 실패:', response.status);
+          console.error("평점 추가 실패:", response.status);
         }
       } catch (error) {
-        console.error('평점 추가 실패:', error);
+        console.error("평점 추가 실패:", error);
       }
     }
   };
@@ -57,22 +57,24 @@ const AiImgRetry: React.FC<AiImgRetryProps> = ({ rating, id }) => {
   return (
     <AiImgRetryWrapper>
       <div className="retry-button" onClick={handleRetryClick}>
-        <img src={retry} alt="Retry Icon" />다시 그리기
+        <img src={retry} alt="Retry Icon" />
+        다시 그리기
       </div>
       <div className="retry-button" onClick={handleIntroMoveClick}>
-        <img src={retry} alt="Retry Icon" />인트로
+        <img src={retry} alt="Retry Icon" />
+        인트로
       </div>
     </AiImgRetryWrapper>
   );
-};
+}
 
 const AiImgRetryWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  position: absolute; 
-  line-height: 40px; 
-  text-align: center; 
+  position: absolute;
+  line-height: 40px;
+  text-align: center;
   top: 70%;
   margin-top: 20px;
   gap: 10px;
@@ -80,7 +82,7 @@ const AiImgRetryWrapper = styled.div`
   .retry-button {
     width: 190px;
     height: 40px;
-    border: 1px solid #FFFFFF;
+    border: 1px solid #ffffff;
     font-size: 20px;
     font-weight: 900;
     line-height: 20px;
@@ -92,5 +94,3 @@ const AiImgRetryWrapper = styled.div`
     border-radius: 15px;
   }
 `;
-
-export default AiImgRetry;
