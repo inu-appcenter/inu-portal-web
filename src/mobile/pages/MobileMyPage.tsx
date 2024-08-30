@@ -161,14 +161,14 @@ const UserWrapper = styled.div`
 `
 
 const ActiveWrapper = styled.div`
-box-sizing: border-box;
-     background-color: #fff;
-     position: relative;
-     padding:27px 38px;
-     padding-bottom: 11px;
-      transform: translateY(50%);
-     bottom:-55px;
-     height: 110px;
+    box-sizing: border-box;
+    background-color: #fff;
+    position: relative;
+    padding:27px 38px;
+    padding-bottom: 11px;
+    transform: translateY(50%);
+    bottom:-55px;
+    height: 110px;
     display: flex;
     z-index: 100;
     gap:30px;
@@ -176,8 +176,16 @@ box-sizing: border-box;
     div {
         display:flex;
         flex-direction: column;
-    align-items: center;
-    justify-content: center;
+        align-items: center;
+        gap:10px;
+        img {
+            width:20px;
+            height: 20px;
+        }
+        p {
+            padding:0;
+            margin:0;
+        }
     }
 `
 
