@@ -1,36 +1,27 @@
 import styled from "styled-components";
 import { cafeteriasList } from "../../../resource/string/cafeterias";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import arrowImg from "../../../resource/assets/mobile/cafeteria/Vector.svg";
 
 interface CafeteriaTitleContainerProps {
-    title:string;
-    setTitle:(title:string) => void;
+  title: string;
+  setTitle: (title: string) => void;
 }
 
-export default function CafeteriaToggle({title,setTitle}:CafeteriaTitleContainerProps) {
+export default function CafeteriaToggle({
+  title,
+  setTitle,
+}: CafeteriaTitleContainerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleItemClick = (title:string) => {
+  const handleItemClick = (title: string) => {
     setTitle(title);
     setIsOpen(false); // Optionally close the list after selecting an item
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"; // Disable scroll when modal is open
-    } else {
-      document.body.style.overflow = "auto"; // Re-enable scroll when modal is closed
-    }
-
-    return () => {
-      document.body.style.overflow = "auto"; // Cleanup on component unmount
-    };
-  }, [isOpen]);
 
   return (
     <ToggleWrapper>
@@ -75,25 +66,24 @@ const ToggleWrapper = styled.div`
   }
 
   .list {
-    position: absolute;
+    position: fixed;
     z-index: 1001;
-    bottom:0;
-    left:0;
-    width:100%;
-    display: inline-block;
-    border: 1px solid #DADADA;
-    padding:16px 30px;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    padding: 16px 0 16px 0;
     background-color: white;
     margin-top: 20px;
   }
 
   .list-item {
+    padding-left: 30px;
     font-family: Inter;
     font-size: 14px;
     font-weight: 700;
     line-height: 16.94px;
     text-align: left;
-    color:#9F9F9F;
+    color: #9f9f9f;
     margin-bottom: 15px;
   }
 `;

@@ -1,8 +1,8 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 // import ModifyInfo from '../components/mypage/Password/modify';
-import { useSelector } from 'react-redux';
-import UserInfo from '../containers/mypage/UserInfo';
-import UserModify from '../containers/mypage/UserModify';
+import { useSelector } from "react-redux";
+import UserInfo from "../containers/mypage/UserInfo";
+import UserModify from "../containers/mypage/UserModify";
 
 interface loginInfo {
   user: {
@@ -10,22 +10,19 @@ interface loginInfo {
   };
 }
 
-
-
 export default function MobileProfilePage() {
   const token = useSelector((state: loginInfo) => state.user.token);
 
   return (
-    <MobileWritePageWrapper>
-       <UserWrapper>
-            {token && <UserInfo/>}
-        </UserWrapper>
-      <UserModify/>
-    </MobileWritePageWrapper>
+    <MobileProfilePageWrapper>
+      <Background />
+      <UserWrapper>{token && <UserInfo />}</UserWrapper>
+      <UserModify />
+    </MobileProfilePageWrapper>
   );
 }
 
-const MobileWritePageWrapper = styled.div`
+const MobileProfilePageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,14 +32,18 @@ const MobileWritePageWrapper = styled.div`
   width: 100%;
 `;
 
-const UserWrapper = styled.div`
-    position: absolute;
-    top:0;
-    width:100%;
-    height: 30%;
-    background: #A1C3FF;
-    z-index:10;
-    display: flex;
-    justify-content: center;
-`
+const Background = styled.div`
+  background-color: #a1c3ff;
+  height: 310px;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: -1;
+`;
 
+const UserWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+`;

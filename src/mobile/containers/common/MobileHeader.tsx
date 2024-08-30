@@ -1,10 +1,10 @@
-import styled from 'styled-components';
-import { useSelector } from 'react-redux';
-import AppLogo from '../../components/common/AppLogo';
-import ProfileImage from '../../components/common/ProfileImage';
-import MenuButton from '../../components/common/MenuButton';
-import ProfileNickname from '../../components/common/ProfileNickname';
-import LoginNavigateButton from '../../components/common/LoginNavigateButton';
+import styled from "styled-components";
+import { useSelector } from "react-redux";
+import AppLogo from "../../components/common/AppLogo";
+import ProfileImage from "../../components/common/ProfileImage";
+import MenuButton from "../../components/common/MenuButton";
+import ProfileNickname from "../../components/common/ProfileNickname";
+import LoginNavigateButton from "../../components/common/LoginNavigateButton";
 
 export default function MobileHeader() {
   const fireId: number = useSelector((state: any) => state.user.fireId);
@@ -15,7 +15,7 @@ export default function MobileHeader() {
       <AppLogoWrapper>
         <AppLogo />
       </AppLogoWrapper>
-      <ProfileMenuWrapper>     
+      <ProfileMenuWrapper>
         {token ? (
           <>
             <ProfileImage fireId={fireId} />
@@ -28,20 +28,19 @@ export default function MobileHeader() {
         )}
         <MenuButton />
       </ProfileMenuWrapper>
-   
     </MobileHeaderWrapper>
   );
 }
 
-const MobileHeaderWrapper = styled.div`
+const MobileHeaderWrapper = styled.header`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  height: 72px;
+  min-height: 72px;
   padding: 0 16px;
-  position:relative;
-    z-index:20;
+  position: relative;
+  z-index: 20;
 `;
 
 const AppLogoWrapper = styled.div`

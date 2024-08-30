@@ -1,42 +1,47 @@
-import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
 
 interface TipsCardContainerProps {
   post: Post;
-  viewMode: 'grid' | 'list';
+  viewMode: "grid" | "list";
   docType: string;
   isEditing?: boolean;
 }
 
-export default function({ post, viewMode, docType, isEditing }: TipsCardContainerProps) {
+export default function ({
+  post,
+  viewMode,
+  docType,
+  isEditing,
+}: TipsCardContainerProps) {
   const navigate = useNavigate();
-  
+
   const handleDocumentClick = () => {
     if (isEditing) return;
-    if (docType === 'NOTICE') {
-      window.open('https://' + post.url, '_blank');
+    if (docType === "NOTICE") {
+      window.open("https://" + post.url, "_blank");
     } else {
-      navigate(`/m/home/tips/postdetail?id=${post.id}`);
+      navigate(`/m/postdetail?id=${post.id}`);
     }
   };
 
   return (
     <>
       {viewMode == "grid" ? (
-      <TipsCardGridWrapper onClick={handleDocumentClick}>
-        <GridTopWrapper>
-          <GridTopTopWrapper>
-            <Category>{post.category}</Category>
-            <Date>{post.createDate}</Date>
-          </GridTopTopWrapper>
-          <Content>{post.content}</Content>
-        </GridTopWrapper>
-        <GridLine />
-        <GridBottomWrapper>
-          <Title>{post.title}</Title>
-          <Writer>{post.writer}</Writer>
-        </GridBottomWrapper>
-      </TipsCardGridWrapper>
+        <TipsCardGridWrapper onClick={handleDocumentClick}>
+          <GridTopWrapper>
+            <GridTopTopWrapper>
+              <Category>{post.category}</Category>
+              <Date>{post.createDate}</Date>
+            </GridTopTopWrapper>
+            <Content>{post.content}</Content>
+          </GridTopWrapper>
+          <GridLine />
+          <GridBottomWrapper>
+            <Title>{post.title}</Title>
+            <Writer>{post.writer}</Writer>
+          </GridBottomWrapper>
+        </TipsCardGridWrapper>
       ) : (
         <TipsCardListWrapper onClick={handleDocumentClick}>
           <ListLeftWrapper>
@@ -58,17 +63,17 @@ export default function({ post, viewMode, docType, isEditing }: TipsCardContaine
 const Category = styled.div`
   font-size: 14px;
   font-weight: 500;
-  color: #0E4D9D;
+  color: #0e4d9d;
   width: fit-content;
 
-  border-bottom: 2px solid #7AA7E5;
+  border-bottom: 2px solid #7aa7e5;
   padding-bottom: 2px;
 `;
 
 const Date = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #7AA7E5;
+  color: #7aa7e5;
 `;
 
 const Title = styled.div`
@@ -92,7 +97,7 @@ const Writer = styled.div`
   color: #303030;
   padding: 0 8px 0 8px;
   height: 16px;
-  background-color: #ECF4FF;
+  background-color: #ecf4ff;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -102,7 +107,7 @@ const Writer = styled.div`
 const TipsCardGridWrapper = styled.div`
   height: 196px;
   width: 95%;
-  border: 2px solid #7AA7E5;
+  border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -124,8 +129,8 @@ const GridTopTopWrapper = styled.div`
 
 const GridLine = styled.div`
   width: 100%;
-  border: 1px solid #7AA7E5;
-`
+  border: 1px solid #7aa7e5;
+`;
 
 const GridBottomWrapper = styled.div`
   position: relative;
@@ -138,7 +143,7 @@ const GridBottomWrapper = styled.div`
 const TipsCardListWrapper = styled.div`
   height: 96px;
   width: 95%;
-  border: 2px solid #7AA7E5;
+  border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
 `;
@@ -153,7 +158,7 @@ const ListLeftWrapper = styled.div`
 
 const ListLine = styled.div`
   height: 100%;
-  border: 1px solid #7AA7E5;
+  border: 1px solid #7aa7e5;
 `;
 
 const ListRightWrapper = styled.div`

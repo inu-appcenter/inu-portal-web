@@ -1,21 +1,21 @@
-
-import styled from 'styled-components';
-import Calendarbar from '../../component/home/calendar';
+import styled from "styled-components";
+import Calendarbar from "../../component/home/Calendar";
 
 export default function Calendar() {
-    return (
-        <CalendarWrapper>
-            <Calendarbar/>
-        </CalendarWrapper>
-    )
+  return (
+    <CalendarWrapper>
+      <Calendarbar />
+    </CalendarWrapper>
+  );
 }
 
 const CalendarWrapper = styled.div`
-    width:33%;
+  width: 33%;
   display: flex;
   justify-content: center;
-  position:relative;
-  @media (max-width: 768px) { // 모바일
+  position: relative;
+  @media (max-width: 768px) {
+    // 모바일
     width: 100%;
     margin-top: 20px;
   }
@@ -51,7 +51,7 @@ const CalendarWrapper = styled.div`
 
   .fc-h-event {
     background-color: #fff8bd;
-    border:none;
+    border: none;
   }
 
   .fc-theme-standard th {
@@ -65,26 +65,22 @@ const CalendarWrapper = styled.div`
     color: #7b7b7b;
   }
 
-
   .fc .fc-daygrid-day.fc-day-today {
     background-color: #59acfa;
     color: #356eff;
   }
 
-
   .fc .fc-daygrid-day-frame {
     padding: 10px;
   }
-
 
   .fc .fc-daygrid-day-top {
     flex-direction: row;
     margin-bottom: 3px;
   }
 
-
   .fc-event {
-    cursor: url('/pointers/cursor-pointer.svg'), pointer;
+    cursor: url("/pointers/cursor-pointer.svg"), pointer;
     padding: 5px 8px;
     margin-bottom: 5px;
     border-radius: 4px;
@@ -92,11 +88,11 @@ const CalendarWrapper = styled.div`
     font-size: 14px;
   }
 
-.fc-event-title-container {
-    color:black;
-}
+  .fc-event-title-container {
+    color: black;
+  }
 
   .fc-day-sun a {
     color: red;
-}
-`
+  }
+`;

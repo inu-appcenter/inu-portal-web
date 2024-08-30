@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import styled from 'styled-components';
-import { deletePost, handlePostLike } from '../../../utils/API/Posts';
-import X_Vector from '../../../resource/assets/X-Vector.svg'; // X 버튼 이미지
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import styled from "styled-components";
+import { deletePost, handlePostLike } from "../../../utils/API/Posts";
+import X_Vector from "../../../resource/assets/X-Vector.svg"; // X 버튼 이미지
 
 // Define a base interface for shared properties
 export interface BaseContent {
@@ -20,7 +20,7 @@ export interface BaseContent {
 interface TipsCardContainerProps {
   post: BaseContent[]; // Using BaseContent ensures 'id' is always present
   onUpdate: () => void; // 콜백 함수
-  type: 'like' | 'post'; // Card 타입을 정의하여 컨텍스트를 명확히 함
+  type: "like" | "post"; // Card 타입을 정의하여 컨텍스트를 명확히 함
 }
 
 export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
@@ -32,7 +32,7 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
 
   // Function to handle document click and navigate to the post detail page
   const handleDocumentClick = (id: string) => {
-    navigate(`/m/home/tips/postdetail?id=${id}`);
+    navigate(`/m/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: string) => {
@@ -81,13 +81,22 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
 
   return (
     <CardWrapper>
-      <p><span>All</span> {post.length}</p>
+      <p>
+        <span>All</span> {post.length}
+      </p>
       {post.map((p) => (
-        <TipsCardListWrapper key={p.id} onClick={() => handleDocumentClick(p.id)}>
-          <XButton src={X_Vector} alt="delete" onClick={(e) => {
-            e.stopPropagation(); // Prevent card click when X is clicked
-            handleXButtonClick(p.id);
-          }} />
+        <TipsCardListWrapper
+          key={p.id}
+          onClick={() => handleDocumentClick(p.id)}
+        >
+          <XButton
+            src={X_Vector}
+            alt="delete"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click when X is clicked
+              handleXButtonClick(p.id);
+            }}
+          />
           <ListLeftWrapper>
             <Category>{p.category}</Category>
             <Date>{p.createDate}</Date>
@@ -123,11 +132,11 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
 }
 
 const CardWrapper = styled.div`
-  padding:0 8px 10px 28px;
+  padding: 0 8px 10px 28px;
   font-family: Inter;
   font-size: 15px;
   font-weight: 600;
-  color: #0E4D9D;
+  color: #0e4d9d;
   span {
     color: #969696;
   }
@@ -252,7 +261,7 @@ const ModalTop = styled.div`
   span {
     height: 1px;
     width: 100%;
-    background-color: #D9D9D9;
+    background-color: #d9d9d9;
   }
 `;
 
@@ -263,7 +272,7 @@ const Description = styled.div`
 `;
 
 const DeleteButton = styled.div`
-  color: #DF5532;
+  color: #df5532;
   font-size: 16px;
   font-weight: 500;
   width: 100%;
@@ -279,8 +288,7 @@ const ModalBottom = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #0E4D9D;
+  color: #0e4d9d;
   font-size: 16px;
   font-weight: 500;
 `;
-
