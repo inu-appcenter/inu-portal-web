@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import CommentImg from "../../../resource/assets/comment-img2.svg";
 import ReCommentInput from "../../../component/postdetail/comment/ReCommentInput";
@@ -34,27 +34,28 @@ interface loginInfo {
   };
 }
 
-const CommentListMobile: React.FC<CommentListProps> = ({
+export default function CommentListMobile({
   bestComment,
   comments,
   onCommentUpdate,
-}) => {
+}: CommentListProps) {
   const token = useSelector((state: loginInfo) => state.user?.token);
   const [showReCommentInputId, setShowReCommentInputId] = useState<
     number | null
   >(null);
+
   const allComments = bestComment
     ? [
         bestComment,
         ...comments.filter((comment) => comment.id !== bestComment.id),
       ]
     : comments;
+
   const formatDate = (dateString: string): string => {
     // '2024.07.30' 형태를 Date 객체로 변환
     const [year, month, day] = dateString.split(".").map(Number);
-    const commentDate = new Date(year, month - 1, day); // 시간은 기본적으로 00:00:00
+    const commentDate = new Date(year, month - 1, day);
     const now = new Date();
-
     // 현재 날짜와 댓글 날짜 비교
     const diffInDays = Math.floor(
       (now.getTime() - commentDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -76,18 +77,13 @@ const CommentListMobile: React.FC<CommentListProps> = ({
   return (
     <div>
       <CommentWrapper>
-        <Commentheader>
-          <img
-            className="commentImg"
-            src={CommentImg}
-            alt="Comments"
-            style={{ width: "14px" }}
-          />
+        <CommentHeader>
+          <img src={CommentImg} alt="Comments" style={{ width: "14px" }} />
           <span className="comment">댓글</span>
-        </Commentheader>
+        </CommentHeader>
         <CommentListWrapper>
           {allComments.map((comment, index) => (
-            <div key={comment.id} className="comment-container">
+            <CommentContainer key={comment.id}>
               <Comments>
                 <ProfileWrapper>
                   <Profile
@@ -96,20 +92,27 @@ const CommentListMobile: React.FC<CommentListProps> = ({
                   />
                 </ProfileWrapper>
                 <CommentDetail>
-                  <div>
-                    <span className="writer-text">{comment.writer} </span>
-                    {index === 0 && bestComment && (
-                      <span className="best-text">Best</span>
-                    )}
-                  </div>
-                  <span className="content-text">{comment.content}</span>
-                  <div className="commentUtility-container">
-                    <span
-                      className="commentUtility"
+                  <CommentDetailHeader>
+                    <WriterText>{comment.writer}</WriterText>
+                    {index === 0 && bestComment && <BestText>Best</BestText>}
+                    <CommentUtil>
+                      <CommentLike
+                        id={comment.id}
+                        like={comment.like}
+                        isLikedProp={comment.isLiked}
+                      />
+                      <CommentDate>
+                        {formatDate(comment.createDate)}
+                      </CommentDate>
+                    </CommentUtil>
+                  </CommentDetailHeader>
+                  <ContentText>{comment.content}</ContentText>
+                  <CommentUtilityContainer>
+                    <CommentUtility
                       onClick={() => setShowReCommentInputId(comment.id)}
                     >
                       답장
-                    </span>
+                    </CommentUtility>
                     {comment.hasAuthority && (
                       <>
                         <EditCommentButton
@@ -126,16 +129,8 @@ const CommentListMobile: React.FC<CommentListProps> = ({
                         />
                       </>
                     )}
-                  </div>
+                  </CommentUtilityContainer>
                 </CommentDetail>
-                <CommentUtil>
-                  <CommentLike
-                    id={comment.id}
-                    like={comment.like}
-                    isLikedProp={comment.isLiked}
-                  />
-                  <CommentDate>{formatDate(comment.createDate)}</CommentDate>
-                </CommentUtil>
               </Comments>
               {showReCommentInputId === comment.id && (
                 <ReCommentInput
@@ -150,19 +145,18 @@ const CommentListMobile: React.FC<CommentListProps> = ({
                   onCommentUpdate={onCommentUpdate}
                 />
               )}
-            </div>
+            </CommentContainer>
           ))}
         </CommentListWrapper>
       </CommentWrapper>
     </div>
   );
-};
+}
 
-export default CommentListMobile;
-
+// Styled Components
 const CommentWrapper = styled.div``;
 
-const Commentheader = styled.div`
+const CommentHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -174,6 +168,17 @@ const Commentheader = styled.div`
 
 const CommentListWrapper = styled.div`
   width: 100%;
+`;
+
+const CommentContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2px solid #dedede;
+  padding: 5px 0;
+
+  @media (max-width: 768px) {
+    margin: 0 10px;
+  }
 `;
 
 const Comments = styled.div`
@@ -202,19 +207,56 @@ const Profile = styled.img`
 `;
 
 const CommentDetail = styled.div`
+  display: flex;
   flex-direction: column;
+  flex: 1;
   padding-left: 15px;
 `;
+
+const CommentDetailHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const WriterText = styled.span`
+  font-size: 15px;
+  font-weight: 600;
+  color: #4071b9;
+  flex: 1;
+`;
+
+const BestText = styled.span`
+  font-size: 15px;
+  font-weight: 600;
+  color: #fcaf15;
+`;
+
+const ContentText = styled.span`
+  font-size: 15px;
+  font-weight: 400;
+`;
+
+const CommentUtilityContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const CommentUtility = styled.span`
+  font-size: 10px;
+  font-weight: 500;
+  color: #888888;
+  padding-right: 5px;
+  cursor: pointer;
+`;
+
 const CommentUtil = styled.div`
   min-width: 70px;
   display: flex;
   flex-direction: row;
   gap: 10px;
   top: 0;
-  position: absolute;
   align-items: center;
-  margin-top: 10px;
-  right: 0; /* 부모 요소의 맨 오른쪽에 배치 */
+  right: 0;
 `;
 
 const CommentDate = styled.span`

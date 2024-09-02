@@ -171,8 +171,8 @@ const UserWrapper = styled.div`
 `;
 
 const ActiveWrapper = styled.div`
-  margin-top: 40px;
-  box-sizing: border-box;
+    margin-top: 40px;
+    box-sizing: border-box;
   background-color: #fff;
   padding: 27px 38px;
   padding-bottom: 11px;
@@ -181,13 +181,21 @@ const ActiveWrapper = styled.div`
   display: flex;
   gap: 30px;
   border-radius: 10px;
-  div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-`;
+    div {
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        gap:10px;
+        img {
+            width:20px;
+            height: 20px;
+        }
+        p {
+            padding:0;
+            margin:0;
+        }
+    }
+`
 
 const CategoryWrapper = styled.div`
   display: flex;
