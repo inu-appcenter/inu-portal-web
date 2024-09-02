@@ -66,15 +66,17 @@ export default function ReCommentList({
               </ReCommentWriterText>
               <ReCommentContentText>{reply.content}</ReCommentContentText>
             </ReCommentContainer3>
+            <ReCommentUtility>
             <CommentLike
               id={reply.id}
               like={reply.like}
               isLikedProp={reply.isLiked}
             />
             <CommentDate>{formatDate(reply.createDate)}</CommentDate>
+            </ReCommentUtility>
           </ReCommentContainer2>
           {reply.hasAuthority && (
-            <ReCommentUtility>
+            <MyReCommentUtility>
               <EditCommentButton
                 token={token}
                 id={reply.id}
@@ -87,7 +89,7 @@ export default function ReCommentList({
                 id={reply.id}
                 onCommentUpdate={onCommentUpdate}
               />
-            </ReCommentUtility>
+            </MyReCommentUtility>
           )}
         </ReCommentMainContainer>
       ))}
@@ -108,7 +110,7 @@ const ReCommentContainer2 = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-right: 40px;
+  padding-right: 10px;
 `;
 
 const ReCommentContainer3 = styled.div`
@@ -131,9 +133,14 @@ const ReCommentContentText = styled.span`
 `;
 
 const ReCommentUtility = styled.div`
-  padding-left: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap:3px;
 `;
+const MyReCommentUtility = styled.div`
 
+`
 const CommentDate = styled.span`
   font-size: 10px;
   color: #888888;

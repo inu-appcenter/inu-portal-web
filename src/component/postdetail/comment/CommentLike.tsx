@@ -66,10 +66,16 @@ const UtilityImg = styled.img`
   width: 20px;
   height: 20px;
   margin-right: 5px;
+   @media (max-width: 767px) {
+    width: 15px; 
+  }
 `;
 
 const ContentText = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: #757575;
+   @media (max-width: 767px) {
+    font-size:10px; 
+  }
 `;
