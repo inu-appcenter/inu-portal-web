@@ -59,7 +59,7 @@ export default function PostLike({ id, like, isLikedProp, hasAuthority }: PostLi
   };
 
   return (
-    <span className='likeContainer'>
+    <LikeContainer>
       <img
         className='UtilityImg'
         src={isLiked ? heartFilledImg : heartEmptyImg}
@@ -67,9 +67,18 @@ export default function PostLike({ id, like, isLikedProp, hasAuthority }: PostLi
         onClick={handleLikeClick}
       />
       {showError && <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>}
-    </span>
+    </LikeContainer>
   );
 };
+
+const LikeContainer = styled.div`
+  img.UtilityImg {
+    width: 23px;
+    height: 100%
+    display: flex;
+    align-items: center;
+  }
+`
 
 const ErrorMessage = styled.div`
   position: absolute;
