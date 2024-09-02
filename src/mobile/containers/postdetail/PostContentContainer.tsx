@@ -45,5 +45,4 @@ const Wrapper = styled.div`
   flex-direction: column;
   gap: 15px;
   height: calc(100vh - 150px);
-  overflow-y: auto;
 `;
