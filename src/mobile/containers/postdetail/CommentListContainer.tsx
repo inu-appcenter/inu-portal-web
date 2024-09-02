@@ -189,18 +189,16 @@ const Comments = styled.div`
 
 const ProfileWrapper = styled.div`
   border-radius: 50%;
-  min-width: 53px;
-  max-width: 60px;
-  height: 53px;
   background-color: #ffffff;
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: center;
+  margin-left: 10px;
 `;
 
 const Profile = styled.img`
-  width: 100%;
-  height: 100%;
+  width: 35px;
+  height: 35px;
   object-fit: cover;
   object-position: center;
   align-items: center;

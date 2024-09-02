@@ -64,8 +64,7 @@ export default function ReCommentList({
               <ReCommentWriterText>
                 {reply.isAnonymous ? "횃불이" : reply.writer}
               </ReCommentWriterText>
-              <ReCommentContentText>{reply.content}</ReCommentContentText>
-            </ReCommentContainer3>
+           </ReCommentContainer3>
             <ReCommentUtility>
             <CommentLike
               id={reply.id}
@@ -75,6 +74,7 @@ export default function ReCommentList({
             <CommentDate>{formatDate(reply.createDate)}</CommentDate>
             </ReCommentUtility>
           </ReCommentContainer2>
+          <ReCommentContentText>{reply.content}</ReCommentContentText>
           {reply.hasAuthority && (
             <MyReCommentUtility>
               <EditCommentButton
@@ -99,10 +99,11 @@ export default function ReCommentList({
 
 // Styled Components
 const ReCommentMainContainer = styled.div`
-  padding-left: 50px;
+  padding-left: 10px;
   border-top: 2px solid #dedede;
   padding-top: 10px;
-  padding-bottom: 10px;
+  display: flex;
+  flex-direction: column;
 `;
 
 const ReCommentContainer2 = styled.div`
@@ -120,16 +121,17 @@ const ReCommentContainer3 = styled.div`
 `;
 
 const ReCommentWriterText = styled.span`
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   color: #4071b9;
 `;
 
-const ReCommentContentText = styled.span`
-  font-size: 15px;
+const ReCommentContentText = styled.div`
+  font-size: 12px;
   font-weight: 400;
   max-width: 50%;
   flex-grow: 1;
+  padding-left:30px;
 `;
 
 const ReCommentUtility = styled.div`
@@ -139,7 +141,7 @@ const ReCommentUtility = styled.div`
   gap:3px;
 `;
 const MyReCommentUtility = styled.div`
-
+  padding-left: 30px;
 `
 const CommentDate = styled.span`
   font-size: 10px;
