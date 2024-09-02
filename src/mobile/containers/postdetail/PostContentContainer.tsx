@@ -44,5 +44,5 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
-  height: calc(100vh - 150px);
+  min-height: 250px;
 `;
