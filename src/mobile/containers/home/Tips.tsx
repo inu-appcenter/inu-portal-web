@@ -139,6 +139,6 @@ const PostWrapper = styled.div`
     font-weight: 600;
     text-align: center;
     color: #656565;
-    padding-ri-ght: 35px;
+    padding-right: 35px;
   }
 `;
