@@ -7,6 +7,12 @@ import lunchImg from "../../resource/assets/Sun.svg";
 import breakfastImg from "../../resource/assets/Sunrise.svg";
 
 export default function Cafeteria() {
+  const [nowday,setNowDay] = useState(()=>{
+    const date = new Date();
+    const day = date.getDay();
+    return day === 0 ? 7 : day;
+  });
+  const day = new Date().getDay();
   const [cafeteriaType, setCafeteriaType] = useState("학생식당");
   const [cafeteriaInfo, setCafeteriaInfo] = useState([]);
   const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([
@@ -17,41 +23,20 @@ export default function Cafeteria() {
   const [cafeteriaDetail, setCafeteriaDetail] = useState<
     { 구성원가: string; 칼로리: string }[]
   >([]);
-  const [currentDate, setCurrentDate] = useState("");
-  const date = new Date();
-  const day = date.getDay();
+  const days =['Mon', 'Tue', 'Wnd', 'Thur', 'Fri', 'Sat','Sun' ];
 
   useEffect(() => {
     fetchCafeteriaData();
-  }, [cafeteriaType]);
+  }, [cafeteriaType, nowday]);
 
-  useEffect(() => {
-    const date = new Date();
-    const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    const month = monthNames[date.getMonth()]; // 현재 월 이름
-    const day = date.getDate(); // 현재 일
-    const year = date.getFullYear(); // 현재 년도
-
-    const formattedDate = `${month} ${day}, ${year}`;
-    setCurrentDate(formattedDate);
-  }, []);
+  const handleDayChange = (index: number) => {
+    console.log(`day index: ${index + 1}, Day: ${days[index]}`);
+    setNowDay(index+1);
+  };
 
   const fetchCafeteriaData = async () => {
     try {
-      const response = await getCafeterias(cafeteriaType, day);
+      const response = await getCafeterias(cafeteriaType, nowday);
       if (response.status === 200) {
         const processedData = response.body.data.map((info: string) =>
           extractValues(info)
@@ -96,12 +81,23 @@ export default function Cafeteria() {
   return (
     <>
       <CafeteriaWrapper>
+        <div className='type-wrapper'>
         <div className="title">
           <div className="circle"></div>
           <div className="cafeteria-type">{cafeteriaType}</div>
-          <h1 className="today">Today</h1>
         </div>
-        <span className="date">{currentDate}</span>
+        <DayButtons>
+            {days.map((dayName, index)=>(
+              <DayButton
+              key = {index}
+              onClick = {()=>handleDayChange(index)}>
+                {dayName}
+              </DayButton>
+            ))}
+          </DayButtons>
+        
+        </div>
+        
         <div className="total-wrapper">
           <CafetriaType>
             {cafeteriasList.map((cafeteria) => (
@@ -228,7 +224,11 @@ const CafeteriaWrapper = styled.div`
     display: flex;
     align-items: center;
   }
+  .type-wrapper{
+    display: flex;
+    flex-direction: row;
 
+  }
   .circle {
     width: 15px;
     height: 15px;
@@ -258,6 +258,16 @@ const CafeteriaWrapper = styled.div`
     margin: 10px 0;
   }
 `;
+
+const DayButtons = styled.div`
+  display: flex;
+  flex-direction: row;
+  `
+  
+
+const DayButton = styled.div`
+
+`
 
 const CafetriaInfo = styled.div`
   display: flex;

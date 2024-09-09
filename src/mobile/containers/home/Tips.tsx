@@ -122,7 +122,7 @@ const PostWrapper = styled.div`
     background-color: #aac9ee;
     color: white;
     font-family: Inter;
-    font-size: 7px;
+    font-size: 8px;
     font-weight: 600;
     border-radius: 2px;
     display: flex;
