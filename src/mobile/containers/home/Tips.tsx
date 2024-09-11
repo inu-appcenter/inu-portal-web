@@ -44,7 +44,7 @@ export default function TipForm() {
 
   return (
     <TipFormWrapper>
-      <p>
+      <p onClick={() => navigate("/m/home/tips")}>
         <span>TIP</span>인기글
       </p>
       <Swiper pagination={true} modules={[Pagination]} className="mySwiper">
