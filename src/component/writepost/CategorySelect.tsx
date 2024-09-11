@@ -63,8 +63,8 @@ export default function CategorySelect({
 // Styled Components
 const DropdownContainer = styled.div<{ isOpen: boolean }>`
   width: 176px;
-  padding: 10px;
-  border-radius: 100px;
+  padding: ${({ isOpen }) => (isOpen ? "10px 10px 20px 10px" : "10px")};
+  border-radius: ${({ isOpen }) => (isOpen ? "40px" : "100px")};
   background: linear-gradient(
     180deg,
     #ffffff -21.86%,
