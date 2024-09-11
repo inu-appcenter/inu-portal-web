@@ -50,6 +50,7 @@ export default function MobileWritePage() {
               <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>
             )}
             <CategorySelector
+              write={true}
               value={category}
               onChange={setCategory}
               docType={"TIPS"}
