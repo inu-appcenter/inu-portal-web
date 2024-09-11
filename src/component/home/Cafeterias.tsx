@@ -227,7 +227,9 @@ const CafeteriaWrapper = styled.div`
   .type-wrapper{
     display: flex;
     flex-direction: row;
-
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
   }
   .circle {
     width: 15px;
@@ -262,11 +264,19 @@ const CafeteriaWrapper = styled.div`
 const DayButtons = styled.div`
   display: flex;
   flex-direction: row;
+  gap:12px;
+  margin-right: 10px;
   `
   
 
 const DayButton = styled.div`
-
+  border-bottom: solid #A4C5E7;
+  font-weight: 600;
+  font-size: 11px;
+  color: #404040;
+  width: 30px;
+  display: flex;
+  justify-content: center;
 `
 
 const CafetriaInfo = styled.div`
