@@ -207,7 +207,7 @@ const CafeteriaWrapper = styled.div`
   box-shadow: 0 0 0 2px #6f84e2 inset;
   padding: 20px 18px;
   width: 100%;
-  height: 350px;
+  height: 320px;
   .total-wrapper {
     display: flex;
     justify-content: space-between;
@@ -256,7 +256,9 @@ const CafeteriaWrapper = styled.div`
     display: flex;
     justify-content: space-between;
     gap: 10px;
-    margin: 10px 0;
+    padding: 10px 15px;
+    background-color: #F8F9FD;
+    border-radius: 5px;
   }
 `;
 
