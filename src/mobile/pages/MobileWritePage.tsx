@@ -1,45 +1,74 @@
-import styled from 'styled-components';
-import WritePageTitle from '../components/write/WritePageTitle';
-import CategorySelector from '../components/common/CategorySelector';
-import WriteForm from '../containers/write/WriteForm';
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import styled from "styled-components";
+import { useSelector } from "react-redux";
+import WritePageTitle from "../components/write/WritePageTitle";
+import CategorySelector from "../components/common/CategorySelector";
+import WriteForm from "../containers/write/WriteForm";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import loginImg from "../../resource/assets/login-logo.svg";
+
+interface loginInfo {
+  user: {
+    token: string;
+  };
+}
 
 export default function MobileWritePage() {
-  const [category, setCategory] = useState('');
-  const [type, setType] = useState('');
-  const [id, setId] = useState('');
+  const token = useSelector((state: loginInfo) => state.user.token);
+  const [category, setCategory] = useState("");
+  const [type, setType] = useState("");
+  const [id, setId] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (location.pathname.includes('update')) {
-      setType('update');
+    if (location.pathname.includes("update")) {
+      setType("update");
       const params = new URLSearchParams(location.search);
-      setId(params.get('id') || '');
+      setId(params.get("id") || "");
     } else {
-      setType('create');
-      setId('');
-      setCategory('');
+      setType("create");
+      setId("");
+      setCategory("");
     }
   }, [location.pathname]);
 
   const handleNewPost = () => {
-    navigate('/m/write');
-    setType('create');
-    setId('');
-    setCategory('');
+    navigate("/m/write");
+    setType("create");
+    setId("");
+    setCategory("");
   };
 
   return (
-    <MobileWritePageWrapper>
-      <TitleCategorySelectorWrapper>
-        <WritePageTitle idProps={id} value={type} />
-        {type=='update' && <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>}
-        <CategorySelector value={category} onChange={setCategory} docType={'TIPS'} />
-      </TitleCategorySelectorWrapper>
-      <WriteForm idProps={id} category={category} setCategory={setCategory} typeProps={type} />
-    </MobileWritePageWrapper>
+    <>
+      {token ? (
+        <MobileWritePageWrapper>
+          <TitleCategorySelectorWrapper>
+            <WritePageTitle idProps={id} value={type} />
+            {type == "update" && (
+              <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>
+            )}
+            <CategorySelector
+              value={category}
+              onChange={setCategory}
+              docType={"TIPS"}
+            />
+          </TitleCategorySelectorWrapper>
+          <WriteForm
+            idProps={id}
+            category={category}
+            setCategory={setCategory}
+            typeProps={type}
+          />
+        </MobileWritePageWrapper>
+      ) : (
+        <ErrorWrapper>
+          <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
+          <div className="error">로그인이 필요합니다!</div>
+        </ErrorWrapper>
+      )}
+    </>
   );
 }
 
@@ -66,4 +95,18 @@ const NewPostButton = styled.div`
   color: white;
   background-color: #007bff;
   border-radius: 4px;
+`;
+const ErrorWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+  margin-top: 100px;
+  div {
+    font-size: 20px;
+  }
+`;
+
+const LoginImg = styled.img`
+  width: 150px;
 `;
