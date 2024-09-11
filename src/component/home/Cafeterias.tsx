@@ -12,7 +12,6 @@ export default function Cafeteria() {
     const day = date.getDay();
     return day === 0 ? 7 : day;
   });
-  const day = new Date().getDay();
   const [cafeteriaType, setCafeteriaType] = useState("학생식당");
   const [cafeteriaInfo, setCafeteriaInfo] = useState([]);
   const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([
