@@ -13,6 +13,7 @@ import {
 } from "../../../utils/API/Posts";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useResetTipsStore } from "../../../reducer/resetTipsStore";
 
 interface WriteFormProps {
   idProps?: string;
@@ -38,6 +39,7 @@ export default function WriteForm({
   const [imageCount, setImageCount] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
+  const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
   // setPost, 수정 권한 확인
   useEffect(() => {
@@ -138,10 +140,14 @@ export default function WriteForm({
             const responseImage = await postImages(token, postId, images);
             if (responseImage.status === 201) {
               window.alert("게시글 등록 성공");
+              setIsUploading(false);
+              triggerReset();
               navigate(`/m/home/tips`);
             }
           } else {
             window.alert("게시글 등록 성공");
+            setIsUploading(false);
+            triggerReset();
             navigate(`/m/home/tips`);
           }
         } else if (response.status === 404) {
@@ -166,10 +172,14 @@ export default function WriteForm({
             const responseImage = await putImages(token, postId, images);
             if (responseImage.status === 200) {
               window.alert("게시글 수정 성공");
+              triggerReset();
+              setIsUploading(false);
               navigate(-1);
             }
           } else {
             window.alert("게시글 수정 성공");
+            triggerReset();
+            setIsUploading(false);
             navigate(-1);
           }
         } else if (response.status === 403) {
@@ -184,8 +194,6 @@ export default function WriteForm({
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      setIsUploading(false);
     }
   };
 

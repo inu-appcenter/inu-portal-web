@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { deletePost } from "../../../utils/API/Posts";
 import deletebtn from "../../../resource/assets/deletebtn.svg";
 import styled from "styled-components";
+import { useResetTipsStore } from "../../../reducer/resetTipsStore";
 
 interface DeletePostBtnProps {
   token: string;
@@ -16,6 +17,7 @@ export default function DeletePostBtn({
 }: DeletePostBtnProps) {
   const navigate = useNavigate();
   const currentPath = window.location.pathname;
+  const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
   const handleDeleteClick = async () => {
     const confirmDelete = window.confirm("게시글을 삭제하시겠습니까?");
@@ -24,6 +26,7 @@ export default function DeletePostBtn({
         const response = await deletePost(token, id);
         if (response.status === 200) {
           onPostUpdate();
+          triggerReset();
           navigate(
             currentPath.includes("/m/postdetail") ? "/m/home/tips" : "/tips"
           );
