@@ -67,7 +67,7 @@ export default function TipForm() {
 }
 
 const TipFormWrapper = styled.div`
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 500;
   margin-top: 32px;
   height: 150px;
