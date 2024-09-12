@@ -1,11 +1,18 @@
-import styled from 'styled-components';
-import TitleContentInput from '../../components/write/TitleContentInput';
-import PhotoUpload from '../../components/write/PhotoUpload';
-import AnonymousCheck from '../../components/write/AnonymousCheck';
-import { useEffect, useState } from 'react';
-import { getImages, getPost, postImages, postPosts, putImages, putPost } from '../../../utils/API/Posts';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import styled from "styled-components";
+import TitleContentInput from "../../components/write/TitleContentInput";
+import PhotoUpload from "../../components/write/PhotoUpload";
+import AnonymousCheck from "../../components/write/AnonymousCheck";
+import { useEffect, useState } from "react";
+import {
+  getImages,
+  getPost,
+  postImages,
+  postPosts,
+  putImages,
+  putPost,
+} from "../../../utils/API/Posts";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 interface WriteFormProps {
   idProps?: string;
@@ -14,41 +21,46 @@ interface WriteFormProps {
   typeProps: string;
 }
 
-export default function WriteForm({ idProps, category, setCategory, typeProps }: WriteFormProps) {
+export default function WriteForm({
+  idProps,
+  category,
+  setCategory,
+  typeProps,
+}: WriteFormProps) {
   const token = useSelector((state: any) => state.user.token);
   const id = idProps;
   const type = typeProps;
   const [post, setPost] = useState<Post | null>(null);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imageCount, setImageCount] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
 
   // setPost, 수정 권한 확인
   useEffect(() => {
     console.log(type, id);
-    if (type === 'update' && id) {
+    if (type === "update" && id) {
       console.log(type, id);
       const fetchPost = async () => {
         const response = await getPost(token, id);
         if (response.status === 200) {
           console.log(response.body.data);
           if (!response.body.data.hasAuthority) {
-            window.alert('수정 권한이 없습니다');
-            navigate('/m/write');
+            window.alert("수정 권한이 없습니다");
+            navigate("/m/write");
           } else {
             setPost(response.body.data);
           }
         } else {
           alert(`${response.status} (${response.body.msg})`);
-          navigate('/m/write');
+          navigate("/m/write");
         }
       };
       fetchPost();
-    }
-    else {
+    } else {
       setPost(null);
     }
   }, [id]);
@@ -60,11 +72,10 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
       setContent(post.content);
       setCategory(post.category);
       setImageCount(post.imageCount);
-    }
-    else {
-      setTitle('');
-      setContent('');
-      setCategory('');
+    } else {
+      setTitle("");
+      setContent("");
+      setCategory("");
       setImageCount(0);
     }
   }, [post]);
@@ -101,66 +112,80 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
   // 업로드 버튼 클릭
   const handleUpload = async () => {
     if (content.length > 1999) {
-      alert('내용은 2000자 이하로 작성해 주세요.');
+      alert("내용은 2000자 이하로 작성해 주세요.");
       return;
     }
     if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 모두 작성해 주세요.');
+      alert("제목과 내용을 모두 작성해 주세요.");
       return;
     }
-    if (category.trim() === '') {
-      alert('카테고리를 선택해 주세요.');
+    if (category.trim() === "") {
+      alert("카테고리를 선택해 주세요.");
       return;
     }
     try {
-      if (type === 'create') {
+      if (isUploading) return;
+      setIsUploading(true);
+      if (type === "create") {
         let postId;
-        const response = await postPosts({ title, content, category, anonymous }, token);
+        const response = await postPosts(
+          { title, content, category, anonymous },
+          token
+        );
         if (response.status === 201) {
           postId = response.body.data;
           if (images.length) {
             const responseImage = await postImages(token, postId, images);
             if (responseImage.status === 201) {
-              window.alert('게시글 등록 성공');
+              window.alert("게시글 등록 성공");
               navigate(`/m/home/tips`);
             }
           } else {
-            window.alert('게시글 등록 성공');
+            window.alert("게시글 등록 성공");
             navigate(`/m/home/tips`);
           }
         } else if (response.status === 404) {
-          console.error('존재하지 않는 회원입니다.', response.status);
-          alert('존재하지 않는 회원입니다.');
+          console.error("존재하지 않는 회원입니다.", response.status);
+          alert("존재하지 않는 회원입니다.");
         } else {
-          console.error('게시글 등록 실패:', response.status);
+          console.error("게시글 등록 실패:", response.status);
         }
-      } else if (type === 'update') {
+      } else if (type === "update") {
         if (id === undefined) {
-          console.error('ID is undefined');
+          console.error("ID is undefined");
           return;
         }
         let postId = id;
-        const response = await putPost({ title, content, category, anonymous }, token, postId);
+        const response = await putPost(
+          { title, content, category, anonymous },
+          token,
+          postId
+        );
         if (response.status === 200) {
           if (images.length) {
             const responseImage = await putImages(token, postId, images);
             if (responseImage.status === 200) {
-              window.alert('게시글 수정 성공');
+              window.alert("게시글 수정 성공");
               navigate(-1);
             }
           } else {
-            window.alert('게시글 수정 성공');
+            window.alert("게시글 수정 성공");
             navigate(-1);
           }
         } else if (response.status === 403) {
-          console.error('이 게시글의 수정/삭제에 대한 권한이 없습니다.', response.status);
-          alert('이 게시글의 수정/삭제에 대한 권한이 없습니다.');
+          console.error(
+            "이 게시글의 수정/삭제에 대한 권한이 없습니다.",
+            response.status
+          );
+          alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
         } else {
-          console.error('게시글 수정 실패:', response.status);
+          console.error("게시글 수정 실패:", response.status);
         }
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -176,10 +201,24 @@ export default function WriteForm({ idProps, category, setCategory, typeProps }:
 
   return (
     <WriteFormWrapper>
-      <TitleContentInput title={title} onTitleChange={(value: string) => setTitle(value)} content={content} onContentChange={(value: string) => setContent(value)} />
-      <PhotoUpload images={images} onImageChange={handleImageChange} onImageRemove={handleImageRemove} />
-      <AnonymousCheck checked={anonymous} onChange={(checked: boolean) => setAnonymous(checked)} />
-      <UploadButton onClick={handleUpload}>업로드</UploadButton>
+      <TitleContentInput
+        title={title}
+        onTitleChange={(value: string) => setTitle(value)}
+        content={content}
+        onContentChange={(value: string) => setContent(value)}
+      />
+      <PhotoUpload
+        images={images}
+        onImageChange={handleImageChange}
+        onImageRemove={handleImageRemove}
+      />
+      <AnonymousCheck
+        checked={anonymous}
+        onChange={(checked: boolean) => setAnonymous(checked)}
+      />
+      <UploadButton $disabled={isUploading} onClick={handleUpload}>
+        {isUploading ? "업로드 중..." : "업로드"}
+      </UploadButton>
     </WriteFormWrapper>
   );
 }
@@ -192,7 +231,7 @@ const WriteFormWrapper = styled.div`
   gap: 16px;
 `;
 
-const UploadButton = styled.div`
+const UploadButton = styled.div<{ $disabled: boolean }>`
   height: 48px;
   display: flex;
   align-items: center;
@@ -201,5 +240,5 @@ const UploadButton = styled.div`
   font-size: 18px;
   font-weight: 700;
   color: white;
-  background: #ADC7EC;
+  background: ${({ $disabled }) => ($disabled ? "#CCC" : "#ADC7EC")};
 `;
