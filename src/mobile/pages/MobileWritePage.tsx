@@ -6,6 +6,7 @@ import WriteForm from "../containers/write/WriteForm";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import loginImg from "../../resource/assets/login-logo.svg";
+import { useResetWriteStore } from "../../reducer/resetWriteStore";
 
 interface loginInfo {
   user: {
@@ -20,15 +21,15 @@ export default function MobileWritePage() {
   const [id, setId] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
+  const resetKey = useResetWriteStore((state) => state.resetKey);
 
   useEffect(() => {
     if (location.pathname.includes("update")) {
-      setType("update");
       const params = new URLSearchParams(location.search);
       setId(params.get("id") || "");
+      setType("update");
     } else {
       setType("create");
-      setId("");
       setCategory("");
     }
   }, [location.pathname]);
@@ -57,6 +58,7 @@ export default function MobileWritePage() {
             />
           </TitleCategorySelectorWrapper>
           <WriteForm
+            key={resetKey}
             idProps={id}
             category={category}
             setCategory={setCategory}

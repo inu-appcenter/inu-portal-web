@@ -44,7 +44,7 @@ export default function MobileMainPage() {
     login: false,
   });
 
-  const previousPages = usePreviousPage();
+  const { previousPages } = usePreviousPage();
 
   useEffect(() => {
     // 세션 스토리지에서 'introShown' 키 확인

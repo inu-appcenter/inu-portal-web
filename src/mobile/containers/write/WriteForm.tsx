@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useResetTipsStore } from "../../../reducer/resetTipsStore";
+import { useResetWriteStore } from "../../../reducer/resetWriteStore";
 
 interface WriteFormProps {
   idProps?: string;
@@ -39,17 +40,15 @@ export default function WriteForm({
   const [imageCount, setImageCount] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
-  const triggerReset = useResetTipsStore((state) => state.triggerReset);
+  const triggerResetTips = useResetTipsStore((state) => state.triggerReset);
+  const triggerResetWrite = useResetWriteStore((state) => state.triggerReset);
 
   // setPost, 수정 권한 확인
   useEffect(() => {
-    console.log(type, id);
     if (type === "update" && id) {
-      console.log(type, id);
       const fetchPost = async () => {
         const response = await getPost(token, id);
         if (response.status === 200) {
-          console.log(response.body.data);
           if (!response.body.data.hasAuthority) {
             window.alert("수정 권한이 없습니다");
             navigate("/m/write");
@@ -141,13 +140,15 @@ export default function WriteForm({
             if (responseImage.status === 201) {
               window.alert("게시글 등록 성공");
               setIsUploading(false);
-              triggerReset();
+              triggerResetTips();
+              triggerResetWrite();
               navigate(`/m/home/tips`);
             }
           } else {
             window.alert("게시글 등록 성공");
             setIsUploading(false);
-            triggerReset();
+            triggerResetTips();
+            triggerResetWrite();
             navigate(`/m/home/tips`);
           }
         } else if (response.status === 404) {
@@ -172,13 +173,15 @@ export default function WriteForm({
             const responseImage = await putImages(token, postId, images);
             if (responseImage.status === 200) {
               window.alert("게시글 수정 성공");
-              triggerReset();
+              triggerResetTips();
+              triggerResetWrite();
               setIsUploading(false);
               navigate(-1);
             }
           } else {
             window.alert("게시글 수정 성공");
-            triggerReset();
+            triggerResetTips();
+            triggerResetWrite();
             setIsUploading(false);
             navigate(-1);
           }

@@ -1,13 +1,14 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-
 interface EditPostBtnProps {
   id: string;
 }
 
 export default function EditPostBtn({ id }: EditPostBtnProps) {
+  const navigate = useNavigate();
   const handleEditButtonClick = () => {
     try {
-      window.open(`/update/${id}`, "_blank");
+      navigate(`/m/write/update?id=${id}`);
     } catch (error) {
       console.error("에러?:", error);
     }
