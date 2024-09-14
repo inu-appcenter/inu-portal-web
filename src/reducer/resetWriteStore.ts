@@ -1,11 +1,11 @@
 import { create } from "zustand";
 
-interface ResetTipsStore {
+interface ResetWriteStore {
   resetKey: number;
   triggerReset: () => void;
 }
 
-export const useResetTipsStore = create<ResetTipsStore>((set) => ({
+export const useResetWriteStore = create<ResetWriteStore>((set) => ({
   resetKey: 0, // 초기 key 값
   triggerReset: () => {
     set((state) => ({ resetKey: state.resetKey + 1 }));
