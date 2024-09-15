@@ -111,22 +111,18 @@ export default function PostDetail() {
 }
 const Wrapper = styled.div`
   width: 100%;
-  height: 100%;
+  height: calc(100svh - 65px);
 `;
 const PostTopWrapper = styled.div`
-  position: fixed;
-  top: 0;
   width: 100%;
-  z-index: 10;
+  height: 70px;
   border-bottom: 1px solid #ccc;
 `;
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding-bottom: 30px;
-  top: 10%;
-  height: calc(100svh - 150px);
+  height: calc(100svh - 135px);
   overflow-y: auto;
   position: relative;
   z-index: 1;

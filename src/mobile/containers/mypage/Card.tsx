@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { deletePost, handlePostLike } from "../../../utils/API/Posts";
 import X_Vector from "../../../resource/assets/X-Vector.svg"; // X 버튼 이미지
+import { useResetTipsStore } from "../../../reducer/resetTipsStore";
 
 // Define a base interface for shared properties
 export interface BaseContent {
@@ -27,6 +28,7 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [activePostId, setActivePostId] = useState<string | null>(null); // Active post state
+  const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
   const token = useSelector((state: any) => state.user.token);
 
@@ -57,6 +59,7 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
         const response = await deletePost(token, activePostId);
         if (response.status === 200) {
           alert("게시글이 성공적으로 삭제되었습니다.");
+          triggerReset();
           onUpdate(); // 콜백 함수 호출하여 목록 갱신
         } else {
           alert("게시글 삭제에 실패했습니다.");

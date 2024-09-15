@@ -93,8 +93,8 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  margin-top: 20px;
+  padding: 30px 20px 10px 20px;
+  height: 30px;
   gap: 15px;
 `;
 
