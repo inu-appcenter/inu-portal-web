@@ -1,9 +1,11 @@
 import styled from "styled-components";
-import sunImg from "../../resource/assets/weather.png";
-import snowImg from "../../resource/assets/snow.png";
-import cloudImg from "../../resource/assets/cloud.png";
-import sleetImg from "../../resource/assets/sleet.png";
-import rainImg from "../../resource/assets/rain.png";
+import sunImg from "../../resource/assets/weather/sun.svg";
+import snowImg from "../../resource/assets/weather/snow.svg";
+import cloudImg from "../../resource/assets/weather/cloud.svg";
+import sleetImg from "../../resource/assets/weather/sleet.svg";
+import rainImg from "../../resource/assets/weather/rain.svg";
+import moonImg from "../../resource/assets/weather/moon.svg";
+import cloud_moonImg from "../../resource/assets/weather/cloud_moon.svg";
 import pmGradeGood from "../../resource/assets/pmGrade-good.svg";
 import pmGradeNormal from "../../resource/assets/pmGrade-normal.svg";
 import pmGradeHarm from "../../resource/assets/pmGrade-harm.svg";
@@ -19,7 +21,9 @@ export default function Weather() {
     sky: string;
     temperature: string;
     pm10Grade: string;
-  }>({ sky: "", temperature: "", pm10Grade: "" });
+    day: string;
+  }>({ sky: "", temperature: "", pm10Grade: "", day: "" });
+
   useEffect(() => {
     const fetchWeather = async () => {
       try {
@@ -36,21 +40,72 @@ export default function Weather() {
     fetchWeather();
   }, []);
 
-  const getSky = (sky: string) => {
+  const getSky = (sky: string, day: string) => {
+    let image = "";
+    let gradient = "";
+    let isShiftedIcon = false;
+
     switch (sky) {
       case "맑음":
-        return "Sun";
+        if (day === "night") {
+          image = moonImg;
+          gradient =
+            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+        } else {
+          image = sunImg;
+          gradient = "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)";
+        }
+        break;
       case "구름":
-        return "Cloudy";
+        if (day === "night") {
+          image = cloud_moonImg;
+          gradient =
+            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+        } else {
+          image = cloudImg;
+          gradient = "linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%)";
+        }
+        break;
       case "눈":
-        return "Snow";
+        if (day === "night") {
+          image = snowImg;
+          gradient =
+            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+        } else {
+          image = snowImg;
+          gradient = "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)";
+        }
+        isShiftedIcon = true;
+        break;
       case "진눈깨비":
-        return "Sleet";
+        if (day === "night") {
+          image = sleetImg;
+          gradient =
+            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+        } else {
+          image = sleetImg;
+          gradient = "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)";
+        }
+        isShiftedIcon = true;
+        break;
       case "비":
-        return "Rain";
+        if (day === "night") {
+          image = rainImg;
+          gradient =
+            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+        } else {
+          image = rainImg;
+          gradient = "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)";
+        }
+        isShiftedIcon = true;
+        break;
       default:
-        return "";
+        image = "";
+        gradient = "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)";
+        break;
     }
+
+    return { image, gradient, isShiftedIcon };
   };
 
   const getPm10Grade = (pm10Grade: string) => {
@@ -68,10 +123,14 @@ export default function Weather() {
     }
   };
 
+  const { image, gradient, isShiftedIcon } = getSky(weather.sky, weather.day);
   const pm10GradeImage = getPm10Grade(weather.pm10Grade);
+
   return (
-    <>
-      <WeatherWrapper className={getSky(weather.sky)}>
+    <WeatherWrapper>
+      <WeatherBackground gradient={gradient}>
+        <BackImage src={back} alt="" />
+        <WeatherIcon src={image} alt={weather.sky} isShifted={isShiftedIcon} />
         <Wrapper>
           <p className="temperature">{weather.temperature}</p>
           <p className="pm10grade">
@@ -84,126 +143,57 @@ export default function Weather() {
           </p>
           <p className="location">연수구 송도동</p>
         </Wrapper>
-      </WeatherWrapper>
-    </>
+      </WeatherBackground>
+    </WeatherWrapper>
   );
 }
 
 const WeatherWrapper = styled.div`
-  height: 145px;
-  background-color: #8ce3d6;
   height: 141px;
+  width: 100%;
   position: relative;
   display: flex;
-  align-items: flex-end;
-  flex-direction: column;
-  padding: 20px 0 10px 0;
   border-radius: 10px;
-  &.Sun {
-    background: linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%);
-  }
+  margin-bottom: 20px;
+`;
 
-  &.Snow {
-    background: linear-gradient(90deg, #a9cbf8 0%, #6c8cbd 100%);
-  }
+const WeatherBackground = styled.div<{ gradient: string }>`
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 20px 0 10px 0;
+  justify-content: space-around;
+  border-radius: 10px;
+  background: ${(props) => props.gradient};
+`;
 
-  &.Sleet {
-    background: linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%);
-  }
+const BackImage = styled.img`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+`;
 
-  &.Rain {
-    background: linear-gradient(90deg, #a2b9e3 0%, #2e549b 100%);
-  }
+const WeatherIcon = styled.img<{ isShifted: boolean }>`
+  position: absolute;
+  top: ${(props) => (props.isShifted ? "0" : "-60px")};
+  left: 0;
+  height: ${(props) => (props.isShifted ? "160px" : "220px")};
+  object-fit: cover;
+  margin-left: ${(props) => (props.isShifted ? "20px" : "0")};
+`;
 
-  &.Cloudy {
-    background: linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%);
-  }
-
-  &.Sun::after {
-    content: "";
-    position: absolute;
-    top: -80px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 250px;
-    height: 250px;
-    background-image: url(${sunImg});
-    background-size: cover;
-    opacity: 0.9;
-  }
-
-  &.Snow::after {
-    content: "";
-    position: absolute;
-    top: -60px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 200px;
-    height: 200px;
-    background-image: url(${snowImg});
-    background-size: cover;
-    opacity: 0.5;
-  }
-
-  &.Sleet::after {
-    content: "";
-    position: absolute;
-    top: -60px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 200px;
-    height: 200px;
-    background-image: url(${sleetImg});
-    background-size: cover;
-    opacity: 0.5;
-  }
-
-  &.Rain::after {
-    content: "";
-    position: absolute;
-    top: -60px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 200px;
-    height: 200px;
-    background-image: url(${rainImg});
-    background-size: cover;
-    opacity: 0.5;
-  }
-
-  &.Cloudy::after {
-    content: "";
-    position: absolute;
-    top: -60px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 200px;
-    height: 200px;
-    background-image: url(${cloudImg});
-    background-size: cover;
-    opacity: 0.5;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    height: 100%;
-    background-image: url(${back});
-    background-size: cover;
-    background-position: center;
-  }
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
 
   .temperature {
     width: 100px;
@@ -219,7 +209,6 @@ const WeatherWrapper = styled.div`
       content: " ";
       position: absolute;
       top: 0;
-      /* right: 0; */
       bottom: 0;
       left: 20;
       width: 10px;
@@ -230,12 +219,14 @@ const WeatherWrapper = styled.div`
       margin-right: 8px;
     }
   }
+
   .pm10grade {
     font-size: 12px;
     font-weight: normal;
     color: white;
     margin-bottom: 1em;
   }
+
   .pmGradeColor {
     margin: 0 5px;
   }
@@ -246,9 +237,4 @@ const WeatherWrapper = styled.div`
     color: white;
     margin: 0;
   }
-`;
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
 `;

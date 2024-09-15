@@ -56,6 +56,7 @@ const MobileNavWrapper = styled.nav`
   justify-content: space-around;
   align-items: center;
   height: 64px;
+  padding-bottom: 8px;
   border-radius: 20px 20px 0px 0px;
   box-shadow: 0px -3px 6px 0px #3030301a;
 `;

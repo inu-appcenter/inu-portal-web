@@ -27,7 +27,8 @@
     "react-spinners": "^0.13.8",
     "redux": "^5.0.1",
     "styled-components": "^6.1.8",
-    "swiper": "^11.1.4"
+    "swiper": "^11.1.4",
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
