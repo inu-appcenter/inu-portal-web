@@ -7,11 +7,10 @@ export default function AppLogo() {
 
   return (
     <>
-      <Logo onClick={() => {navigate('/m/home')}} data={intipLogo}  />
+      <Logo onClick={() => {navigate('/m/home')}} src={intipLogo}  />
     </>
   );
 }
 
-const Logo = styled.object`
-  height: 56px;
+const Logo = styled.img`
 `;
