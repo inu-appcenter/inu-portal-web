@@ -23,6 +23,7 @@ export default function Cafeteria() {
     { 구성원가: string; 칼로리: string }[]
   >([]);
   const days =['Mon', 'Tue', 'Wnd', 'Thur', 'Fri', 'Sat','Sun' ];
+  const [selectedDay, setSelectedDay] = useState<number>(nowday-1);
 
   useEffect(() => {
     fetchCafeteriaData();
@@ -31,6 +32,7 @@ export default function Cafeteria() {
   const handleDayChange = (index: number) => {
     console.log(`day index: ${index + 1}, Day: ${days[index]}`);
     setNowDay(index+1);
+    setSelectedDay(index);
   };
 
   const fetchCafeteriaData = async () => {
@@ -89,7 +91,8 @@ export default function Cafeteria() {
             {days.map((dayName, index)=>(
               <DayButton
               key = {index}
-              onClick = {()=>handleDayChange(index)}>
+              onClick = {()=>handleDayChange(index)}
+              isSelected={selectedDay === index}>
                 {dayName}
               </DayButton>
             ))}
@@ -265,20 +268,26 @@ const CafeteriaWrapper = styled.div`
 const DayButtons = styled.div`
   display: flex;
   flex-direction: row;
-  gap:12px;
+  gap: 12px;
   margin-right: 10px;
-  `
-  
+`;
 
-const DayButton = styled.div`
-  border-bottom: solid #A4C5E7;
+const DayButton = styled.div<{ isSelected: boolean }>`
+  border-bottom: solid 2px ${({ isSelected }) => (isSelected ? "#A4C5E7" : "#fff")};
   font-weight: 600;
   font-size: 11px;
   color: #404040;
   width: 30px;
   display: flex;
   justify-content: center;
-`
+  cursor: pointer;
+  padding-bottom: 5px;
+  transition: border-bottom 0.3s ease;
+
+  &:hover {
+    border-bottom-color: #A4C5E7; // 마우스 호버 시 색상 변경
+  }
+`;
 
 const CafetriaInfo = styled.div`
   display: flex;
