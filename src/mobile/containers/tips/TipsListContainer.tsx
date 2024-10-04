@@ -33,7 +33,7 @@ export default function TipsListContainer({
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log(docType, page, category, lastPostId);
+      console.log(docType, query, page, category, lastPostId);
       try {
         let response;
         if (docType === "TIPS") {
@@ -72,7 +72,8 @@ export default function TipsListContainer({
 
   const setNext = () => {
     if (docType === "TIPS") {
-      setLastPostId(Number(posts[posts.length - 1]?.id));
+      const lpi = Number(posts[posts.length - 1]?.id);
+      setLastPostId(Number.isNaN(lpi) ? undefined : lpi);
     } else {
       setPage((page) => page + 1);
     }
