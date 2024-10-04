@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import heartEmptyImg from '../../../../resource/assets/heart-empty-img.svg';
-import heartFilledImg from '../../../../resource/assets/heart-filled-img.svg';
-import styled from 'styled-components';
-import { handlePostLike } from '../../../../utils/API/Posts';
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import heartEmptyImg from "../../../../resource/assets/heart-empty-img.svg";
+import heartFilledImg from "../../../../resource/assets/heart-filled-img.svg";
+import styled from "styled-components";
+import { handlePostLike } from "../../../../utils/API/Posts";
 
 interface PostLikeProps {
   id: string;
@@ -12,15 +12,21 @@ interface PostLikeProps {
   hasAuthority: boolean;
 }
 
-export default function PostLike({ id, like, isLikedProp, hasAuthority }: PostLikeProps) {
+export default function PostLike({
+  id,
+  like,
+  isLikedProp,
+  hasAuthority,
+}: PostLikeProps) {
   const [likes, setLikes] = useState(like);
   const [isLiked, setIsLiked] = useState(isLikedProp);
   const token = useSelector((state: any) => state.user.token);
   const [showError, setShowError] = useState<boolean>(false);
-  
+
   useEffect(() => {
     setLikes(like);
-  }, [like]);
+    setIsLiked(isLikedProp);
+  }, [id]);
 
   useEffect(() => {
     setIsLiked(isLikedProp);
@@ -28,57 +34,61 @@ export default function PostLike({ id, like, isLikedProp, hasAuthority }: PostLi
 
   const handleLikeClick = async () => {
     if (hasAuthority) {
+      alert("본인의 게시글에는 좋아요를 누를 수 없습니다.");
       setShowError(true); // 본인 게시글인 경우 에러 표시
       setTimeout(() => setShowError(false), 5000); // 5초 후 에러 메시지 숨김
       return;
     }
     if (id === undefined) {
-      console.error('ID is undefined');
+      console.error("ID is undefined");
       return;
     }
     if (token) {
       try {
         const result = await handlePostLike(token, id);
         if (result.status === 400) {
-          alert('본인의 게시글에는 좋아요를 누를 수 없습니다.');
+          alert("본인의 게시글에는 좋아요를 누를 수 없습니다.");
           return;
         }
         setIsLiked(!isLiked);
         if (result.body.data === -1) {
           setLikes(likes - 1);
+          setIsLiked(false);
         } else {
           setLikes(likes + 1);
+          setIsLiked(true);
         }
       } catch (error) {
-        console.error('좋아요 처리 에러', error);
-        alert('좋아요 처리 에러');
+        console.error("좋아요 처리 에러", error);
+        alert("좋아요 처리 에러");
       }
     } else {
-      alert('로그인 필요');
+      alert("로그인 필요");
     }
   };
 
   return (
     <LikeContainer>
       <img
-        className='UtilityImg'
+        className="UtilityImg"
         src={isLiked ? heartFilledImg : heartEmptyImg}
-        alt='heartImg'
+        alt="heartImg"
         onClick={handleLikeClick}
       />
-      {showError && <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>}
+      {showError && (
+        <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>
+      )}
     </LikeContainer>
   );
-};
+}
 
 const LikeContainer = styled.div`
   img.UtilityImg {
     width: 23px;
-    height: 100%
     display: flex;
     align-items: center;
   }
-`
+`;
 
 const ErrorMessage = styled.div`
   position: absolute;
