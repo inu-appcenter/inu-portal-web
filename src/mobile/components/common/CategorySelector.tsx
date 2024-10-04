@@ -118,7 +118,6 @@ const DropdownOptions = styled.div`
     #aac9ee 100%
   );
   z-index: 10;
-  height: 50svh;
   overflow-y: scroll;
 `;
 
