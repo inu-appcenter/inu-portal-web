@@ -44,7 +44,7 @@ export default function TipsListContainer({
           response = await search(query, "date", page.toString());
         }
         if (response && response.status === 200) {
-          let newPosts;
+          let newPosts: Post[] = [];
           if (docType === "TIPS") {
             newPosts = response.body.data;
           } else if (docType === "NOTICE") {
