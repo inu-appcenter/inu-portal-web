@@ -91,7 +91,7 @@ export default function MobileMenuPage() {
   };
 
   const extractMenu = (input: string): string | null => {
-    const match = input.match(/^(.*?)(?=\s[0-9,]+원)/);
+    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
     return match ? match[1].trim() : input;
   };
 
