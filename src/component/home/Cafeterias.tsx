@@ -7,7 +7,7 @@ import lunchImg from "../../resource/assets/Sun.svg";
 import breakfastImg from "../../resource/assets/Sunrise.svg";
 
 export default function Cafeteria() {
-  const [nowday,setNowDay] = useState(()=>{
+  const [nowday, setNowDay] = useState(() => {
     const date = new Date();
     const day = date.getDay();
     return day === 0 ? 7 : day;
@@ -22,8 +22,8 @@ export default function Cafeteria() {
   const [cafeteriaDetail, setCafeteriaDetail] = useState<
     { 구성원가: string; 칼로리: string }[]
   >([]);
-  const days =['Mon', 'Tue', 'Wnd', 'Thur', 'Fri', 'Sat','Sun' ];
-  const [selectedDay, setSelectedDay] = useState<number>(nowday-1);
+  const days = ["Mon", "Tue", "Wnd", "Thur", "Fri", "Sat", "Sun"];
+  const [selectedDay, setSelectedDay] = useState<number>(nowday - 1);
 
   useEffect(() => {
     fetchCafeteriaData();
@@ -31,7 +31,7 @@ export default function Cafeteria() {
 
   const handleDayChange = (index: number) => {
     console.log(`day index: ${index + 1}, Day: ${days[index]}`);
-    setNowDay(index+1);
+    setNowDay(index + 1);
     setSelectedDay(index);
   };
 
@@ -74,32 +74,32 @@ export default function Cafeteria() {
     return null;
   }
 
-  function extractMenu(input: string): string | null {
-    const match = input.match(/^(.*?)(?=\s[0-9,]+원)/);
+  const extractMenu = (input: string): string | null => {
+    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
     return match ? match[1].trim() : input;
-  }
+  };
 
   return (
     <>
       <CafeteriaWrapper>
-        <div className='type-wrapper'>
-        <div className="title">
-          <div className="circle"></div>
-          <div className="cafeteria-type">{cafeteriaType}</div>
-        </div>
-        <DayButtons>
-            {days.map((dayName, index)=>(
+        <div className="type-wrapper">
+          <div className="title">
+            <div className="circle"></div>
+            <div className="cafeteria-type">{cafeteriaType}</div>
+          </div>
+          <DayButtons>
+            {days.map((dayName, index) => (
               <DayButton
-              key = {index}
-              onClick = {()=>handleDayChange(index)}
-              isSelected={selectedDay === index}>
+                key={index}
+                onClick={() => handleDayChange(index)}
+                isSelected={selectedDay === index}
+              >
                 {dayName}
               </DayButton>
             ))}
           </DayButtons>
-        
         </div>
-        
+
         <div className="total-wrapper">
           <CafetriaType>
             {cafeteriasList.map((cafeteria) => (
@@ -226,7 +226,7 @@ const CafeteriaWrapper = styled.div`
     display: flex;
     align-items: center;
   }
-  .type-wrapper{
+  .type-wrapper {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -260,7 +260,7 @@ const CafeteriaWrapper = styled.div`
     justify-content: space-between;
     gap: 10px;
     padding: 10px 15px;
-    background-color: #F8F9FD;
+    background-color: #f8f9fd;
     border-radius: 5px;
   }
 `;
@@ -273,7 +273,8 @@ const DayButtons = styled.div`
 `;
 
 const DayButton = styled.div<{ isSelected: boolean }>`
-  border-bottom: solid 2px ${({ isSelected }) => (isSelected ? "#A4C5E7" : "#fff")};
+  border-bottom: solid 2px
+    ${({ isSelected }) => (isSelected ? "#A4C5E7" : "#fff")};
   font-weight: 600;
   font-size: 11px;
   color: #404040;
@@ -285,7 +286,7 @@ const DayButton = styled.div<{ isSelected: boolean }>`
   transition: border-bottom 0.3s ease;
 
   &:hover {
-    border-bottom-color: #A4C5E7; // 마우스 호버 시 색상 변경
+    border-bottom-color: #a4c5e7; // 마우스 호버 시 색상 변경
   }
 `;
 
