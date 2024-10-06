@@ -13,6 +13,11 @@ interface TipsListContainerProps {
   query: string;
 }
 
+interface FetchState {
+  lastPostId: number | undefined;
+  page: number;
+}
+
 export default function TipsListContainer({
   viewMode,
   docType,
@@ -20,70 +25,115 @@ export default function TipsListContainer({
   query,
 }: TipsListContainerProps) {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [lastPostId, setLastPostId] = useState<number | undefined>(undefined);
-  const [page, setPage] = useState(1);
+  const [fetchState, setFetchState] = useState<FetchState>({
+    lastPostId: undefined,
+    page: 1,
+  });
   const [hasMore, setHasMore] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // 초기화
   useEffect(() => {
-    setPage(1);
-    setLastPostId(undefined);
+    const scrollableDiv = document.getElementById("scrollableDiv");
+    if (scrollableDiv) {
+      scrollableDiv.scrollTop = 0;
+    }
+    setFetchState({
+      lastPostId: undefined,
+      page: 1,
+    });
     setHasMore(true);
     setPosts([]);
+    setIsInitialLoad(true);
+    console.log("초기화 fetchData", docType, query, category, fetchState);
+    fetchData();
   }, [query, docType, setPosts, category]);
 
+  // 첫 번째 로드 후 추가 데이터를 불러오도록 설정
   useEffect(() => {
-    const fetchData = async () => {
-      console.log(docType, query, page, category, lastPostId);
-      try {
-        let response;
-        if (docType === "TIPS") {
-          response = await getPostsMobile(lastPostId, category);
-        } else if (docType === "NOTICE") {
-          response = await getNotices(category, "date", page.toString());
-        } else if (docType === "SEARCH" && query) {
-          response = await search(query, "date", page.toString());
+    if (isInitialLoad) {
+      if (docType === "TIPS") {
+        if (fetchState.lastPostId !== undefined) {
+          setIsInitialLoad(false);
+          console.log("두번째 fetchData", docType, query, category, fetchState);
+          fetchData();
         }
-        if (response && response.status === 200) {
-          let newPosts: Post[] = [];
+      } else {
+        if (fetchState.page !== 1) {
+          setIsInitialLoad(false);
+          console.log("두번째 fetchData", docType, query, category, fetchState);
+          fetchData();
+        }
+      }
+    }
+  }, [fetchState]);
+
+  const fetchData = async () => {
+    try {
+      let response;
+      if (docType === "TIPS") {
+        response = await getPostsMobile(fetchState.lastPostId, category);
+      } else if (docType === "NOTICE") {
+        response = await getNotices(
+          category,
+          "date",
+          fetchState.page.toString()
+        );
+      } else if (docType === "SEARCH" && query) {
+        response = await search(query, "date", fetchState.page.toString());
+      }
+
+      if (response && response.status === 200) {
+        let newPosts: Post[] = [];
+        if (docType === "TIPS") {
+          newPosts = response.body.data;
+        } else if (docType === "NOTICE") {
+          newPosts = response.body.data.notices;
+        } else if (docType === "SEARCH") {
+          newPosts = response.body.data.posts;
+        }
+
+        if (newPosts && newPosts.length > 0) {
+          setPosts((prev) => [...prev, ...newPosts]);
+
+          // lastPostId 및 페이지 수 업데이트
           if (docType === "TIPS") {
-            newPosts = response.body.data;
-          } else if (docType === "NOTICE") {
-            newPosts = response.body.data.notices;
-          } else if (docType === "SEARCH") {
-            newPosts = response.body.data.posts;
-          }
-          if (newPosts && newPosts.length > 0) {
-            setPosts((prev) =>
-              posts.length === 0 ? newPosts : [...prev, ...newPosts]
-            );
+            const lpi = Number(newPosts[newPosts.length - 1]?.id);
+            setFetchState((prev) => ({
+              ...prev,
+              lastPostId: Number.isNaN(lpi) ? undefined : lpi,
+            }));
           } else {
-            setHasMore(false);
+            setFetchState((prev) => ({
+              ...prev,
+              page: prev.page + 1,
+            }));
           }
         } else {
           setHasMore(false);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } else {
         setHasMore(false);
       }
-    };
-    fetchData();
-  }, [category, docType, query, page, lastPostId]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setHasMore(false);
+    }
+  };
 
-  const setNext = () => {
-    if (docType === "TIPS") {
-      const lpi = Number(posts[posts.length - 1]?.id);
-      setLastPostId(Number.isNaN(lpi) ? undefined : lpi);
-    } else {
-      setPage((page) => page + 1);
+  const handleNext = () => {
+    if (!isInitialLoad && hasMore) {
+      console.log("handleNext fetchData", docType, query, category, fetchState);
+      fetchData();
     }
   };
 
   return (
     <TipsListContainerWrapper id="scrollableDiv" $docType={docType}>
       <InfiniteScroll
+        key={docType}
         dataLength={posts.length}
-        next={setNext}
+        next={handleNext}
         hasMore={hasMore}
         loader={<h4 style={{ textAlign: "center" }}>Loading...</h4>}
         endMessage={
