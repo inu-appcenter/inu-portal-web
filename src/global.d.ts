@@ -1,6 +1,7 @@
 // global.d.ts
 declare global {
   interface DocState {
+    query: string;
     docType: string;
     selectedCategory: string;
     sort: string;

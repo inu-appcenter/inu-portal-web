@@ -1,6 +1,6 @@
 // TipsPage.tsx
 import styled from "styled-components";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useParams } from "react-router-dom";
 import TipsCatContainer from "../container/tips/TipsCatContainer";
 import TipsDocuments from "../component/tips/TipsDocuments";
 import PostDetail from "./PostDetailPage";
@@ -11,8 +11,10 @@ import TipsTopPosts from "../component/tips/TipsTopPosts";
 import NoticesTop from "../component/tips/NoticesTop";
 
 export default function TipsPage() {
+  const { id } = useParams();
   const location = useLocation();
   const [docState, setDocState] = useState<DocState>({
+    query: "",
     docType: "", // TIPS 또는 NOTICE
     selectedCategory: "전체",
     sort: "date",
@@ -20,11 +22,14 @@ export default function TipsPage() {
   });
 
   useEffect(() => {
-    if (location.pathname.includes("/tips/search")) {
+    const queryParam = new URLSearchParams(location.search).get("query");
+    if (queryParam) {
       setDocState((prev) => ({
         ...prev,
+        query: queryParam,
         docType: "TIPS",
         selectedCategory: "검색결과",
+        page: "1",
       }));
     } else if (location.pathname.includes("/tips/notice")) {
       setDocState((prev) => ({ ...prev, docType: "NOTICE" }));
@@ -53,24 +58,18 @@ export default function TipsPage() {
         <BorderWrapper>
           <Routes>
             <Route
-              index
+              path="*"
               element={
-                <TipsDocuments docState={docState} setDocState={setDocState} />
+                id ? (
+                  <PostDetail />
+                ) : (
+                  <TipsDocuments
+                    docState={docState}
+                    setDocState={setDocState}
+                  />
+                )
               }
             />
-            <Route
-              path="search"
-              element={
-                <TipsDocuments docState={docState} setDocState={setDocState} />
-              }
-            />
-            <Route
-              path="notice"
-              element={
-                <TipsDocuments docState={docState} setDocState={setDocState} />
-              }
-            />
-            <Route path=":id" element={<PostDetail />} />
           </Routes>
         </BorderWrapper>
       </TipsContentWrapper>
