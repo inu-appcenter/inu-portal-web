@@ -3,9 +3,8 @@ import styled from "styled-components";
 import { getPosts } from "../../utils/API/Posts";
 import { getNotices } from "../../utils/API/Notices";
 import { search } from "../../utils/API/Search";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Heart from "../../resource/assets/heart.svg";
-import queryString from "query-string";
 import Pagination from "./Pagination";
 import SortDropBox from "../common/SortDropBox";
 
@@ -33,11 +32,11 @@ export default function TipsDocuments({
 }: TipsDocumentsProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const navigate = useNavigate();
-  const location = useLocation();
   const [totalPages, setTotalPages] = useState<number>(1);
 
   const setSort = (sort: string) => {
     setDocState({
+      query: docState.query,
       docType: docState.docType,
       selectedCategory: docState.selectedCategory,
       sort,
@@ -47,6 +46,7 @@ export default function TipsDocuments({
 
   const setPage = (page: string) => {
     setDocState({
+      query: docState.query,
       docType: docState.docType,
       selectedCategory: docState.selectedCategory,
       sort: docState.sort,
@@ -68,8 +68,11 @@ export default function TipsDocuments({
         }
       } else if (docState.docType === "TIPS") {
         if (docState.selectedCategory === "검색결과") {
-          const query = queryString.parse(location.search).query as string;
-          const docs = await search(query, docState.sort, docState.page);
+          const docs = await search(
+            docState.query,
+            docState.sort,
+            docState.page
+          );
           setTotalPages(docs.body.data.pages);
           setDocuments(docs.body.data.posts);
         } else if (docState.selectedCategory) {
@@ -85,7 +88,7 @@ export default function TipsDocuments({
     };
 
     fetchDocuments();
-  }, [docState, location.search]);
+  }, [docState]);
 
   const handleDocumentClick = (id: number, url: string) => {
     if (docState.docType === "NOTICE") {

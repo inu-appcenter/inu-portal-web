@@ -91,6 +91,7 @@ export default function TipsCategories({
 
   const handleClickCategory = (category: string) => {
     setDocState({
+      query: docState.query,
       docType: docState.docType,
       selectedCategory: category,
       sort: "date",
