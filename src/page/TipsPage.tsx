@@ -1,6 +1,6 @@
 // TipsPage.tsx
 import styled from "styled-components";
-import { Routes, Route, useLocation, useParams } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import TipsCatContainer from "../container/tips/TipsCatContainer";
 import TipsDocuments from "../component/tips/TipsDocuments";
 import PostDetail from "./PostDetailPage";
@@ -11,7 +11,6 @@ import TipsTopPosts from "../component/tips/TipsTopPosts";
 import NoticesTop from "../component/tips/NoticesTop";
 
 export default function TipsPage() {
-  const { id } = useParams();
   const location = useLocation();
   const [docState, setDocState] = useState<DocState>({
     query: "",
@@ -20,6 +19,7 @@ export default function TipsPage() {
     sort: "date",
     page: "1",
   });
+  const combinedLocation = `${location.pathname}${location.search}`;
 
   useEffect(() => {
     const queryParam = new URLSearchParams(location.search).get("query");
@@ -36,7 +36,7 @@ export default function TipsPage() {
     } else {
       setDocState((prev) => ({ ...prev, docType: "TIPS" }));
     }
-  }, [location.pathname]);
+  }, [combinedLocation]);
 
   const isWriteOrUpdatePath =
     location.pathname.includes("/tips/write") ||
@@ -58,18 +58,24 @@ export default function TipsPage() {
         <BorderWrapper>
           <Routes>
             <Route
-              path="*"
+              index
               element={
-                id ? (
-                  <PostDetail />
-                ) : (
-                  <TipsDocuments
-                    docState={docState}
-                    setDocState={setDocState}
-                  />
-                )
+                <TipsDocuments docState={docState} setDocState={setDocState} />
               }
             />
+            <Route
+              path="search"
+              element={
+                <TipsDocuments docState={docState} setDocState={setDocState} />
+              }
+            />
+            <Route
+              path="notice"
+              element={
+                <TipsDocuments docState={docState} setDocState={setDocState} />
+              }
+            />
+            <Route path=":id" element={<PostDetail />} />
           </Routes>
         </BorderWrapper>
       </TipsContentWrapper>
