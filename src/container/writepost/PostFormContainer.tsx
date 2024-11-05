@@ -60,23 +60,13 @@ export default function PostFormContainer() {
   const [anonymous, setAnonymous] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imageCount, setImageCount] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleTitleChange = (value: string) => {
-    setTitle(value);
-  };
-
-  const handleContentChange = (value: string) => {
-    setContent(value);
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setCategory(value);
-  };
-
-  const handleAnonymousChange = (checked: boolean) => {
-    setAnonymous(checked);
-  };
+  const handleTitleChange = (value: string) => setTitle(value);
+  const handleContentChange = (value: string) => setContent(value);
+  const handleCategoryChange = (value: string) => setCategory(value);
+  const handleAnonymousChange = (checked: boolean) => setAnonymous(checked);
 
   const handleImageChange = (file: File | null) => {
     if (file) {
@@ -144,7 +134,6 @@ export default function PostFormContainer() {
           }
         }
         setImages(images);
-        console.log(images);
       } catch (error) {
         console.error(error);
       }
@@ -154,6 +143,7 @@ export default function PostFormContainer() {
 
   // 버튼 클릭
   const handlePostSubmit = async () => {
+    if (loading) return;
     if (content.length > 1999) {
       alert("내용은 2000자 이하로 작성해 주세요.");
       return;
@@ -166,6 +156,8 @@ export default function PostFormContainer() {
       alert("카테고리를 선택해 주세요.");
       return;
     }
+
+    setLoading(true);
     try {
       if (type === "create") {
         let postId;
@@ -217,6 +209,8 @@ export default function PostFormContainer() {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -247,7 +241,7 @@ export default function PostFormContainer() {
             checked={anonymous}
             onChange={handleAnonymousChange}
           />
-          <PostButton onClick={handlePostSubmit}>
+          <PostButton onClick={handlePostSubmit} disabled={loading}>
             {type === "create" ? <span>업로드</span> : <span>수정 완료</span>}
           </PostButton>
         </PostFormButtons>
@@ -318,7 +312,7 @@ const PostFormButtons = styled.div`
   gap: 20px;
 `;
 
-const PostButton = styled.div`
+const PostButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -329,7 +323,9 @@ const PostButton = styled.div`
   font-size: 12px;
   font-weight: 700;
   color: #ffffff;
-  cursor: url("/pointers/cursor-pointer.svg"), pointer;
+  cursor: pointer;
+  border: none;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 `;
 
 const Container1 = styled.div`
