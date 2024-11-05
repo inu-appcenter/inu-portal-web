@@ -24,10 +24,13 @@ export default function CommentInput({
   const token = useSelector((state: loginInfo) => state.user.token);
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const toggleAnonymous = () => setIsAnonymous(!isAnonymous);
 
   const handleCommentSubmit = async () => {
+    if (loading) return; // Prevent additional clicks during submission
+
     if (!content.trim()) {
       alert("댓글 내용을 입력해주세요.");
       return;
@@ -36,19 +39,22 @@ export default function CommentInput({
       console.error("ID is undefined");
       return;
     }
+
+    setLoading(true); // Start loading state
     try {
       const response = await postReplies(token, id, content, isAnonymous);
-      console.log(id);
       if (response.status === 201) {
         onCommentUpdate();
         setContent("");
         setIsAnonymous(false);
       } else {
-        alert("등록 실패");
+        alert(`등록 실패: ${response.body.msg}`);
       }
     } catch (error) {
       console.error("등록 에러", error);
       alert("등록 에러");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,6 +77,8 @@ export default function CommentInput({
           src={enterImage}
           alt="enter"
           onClick={handleCommentSubmit}
+          disabled={loading}
+          style={{ opacity: loading ? 0.5 : 1 }}
         />
       </CommentInputContainer>
     </CommentAreaContainer>
@@ -162,6 +170,6 @@ const CommentInputField = styled.input`
   }
 `;
 
-const EnterImage = styled.img`
-  cursor: pointer;
+const EnterImage = styled.img<{ disabled: boolean }>`
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
 `;
