@@ -16,10 +16,12 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
   const { id } = useParams<{ id: string }>();
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const toggleAnonymous = () => setIsAnonymous(!isAnonymous);
 
   const handleCommentSubmit = async () => {
+    if (loading) return; // 이미 요청 중이면 중복 요청 방지
     if (!content.trim()) {
       alert("댓글 내용을 입력해주세요.");
       return;
@@ -28,6 +30,8 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
       console.error("ID is undefined");
       return;
     }
+
+    setLoading(true); // 로딩 상태 시작
     try {
       const response = await postReplies(token, id, content, isAnonymous);
       if (response.status === 201) {
@@ -35,11 +39,13 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
         setIsAnonymous(false);
         onCommentUpdate();
       } else {
-        alert("등록 실패");
+        alert(`등록 실패: ${response.body.msg}`);
       }
     } catch (error) {
       console.error("등록 에러", error);
       alert("등록 에러");
+    } finally {
+      setLoading(false); // 로딩 상태 종료
     }
   };
 
@@ -69,6 +75,8 @@ export default function CommentInput({ onCommentUpdate }: CommentInputProps) {
           src={enterImage}
           alt="enter"
           onClick={handleCommentSubmit}
+          disabled={loading} // 로딩 중이면 비활성화
+          style={{ opacity: loading ? 0.5 : 1 }} // 로딩 시 시각적 효과
         />
       </CommentInputContainer>
     </CommentAreaContainer>
@@ -159,6 +167,6 @@ const CommentInputField = styled.input`
   }
 `;
 
-const EnterImage = styled.img`
-  cursor: pointer;
+const EnterImage = styled.img<{ disabled: boolean }>`
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
 `;
