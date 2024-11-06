@@ -28,8 +28,10 @@ export default function AiGallery() {
   const user = useSelector((state: loginInfo) => state.user);
 
   useEffect(() => {
-    fetchImageRequests();
-  }, [page]);
+    if (user.token) {
+      fetchImageRequests();
+    }
+  }, [page, user]);
 
   // ETA 감소를 위한 useEffect
   useEffect(() => {
