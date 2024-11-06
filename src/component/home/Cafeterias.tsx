@@ -331,6 +331,7 @@ const CafetriaInfo = styled.div`
         font-weight: bold;
         margin-left: 15px;
         color: #404040;
+        flex: 1;
       }
       .detail-wrapper {
         margin-left: 10px;
