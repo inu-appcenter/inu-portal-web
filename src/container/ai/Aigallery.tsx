@@ -177,7 +177,7 @@ export default function AiGallery() {
                       <SmallRefreshButton
                         onClick={() => fetchResultForRequest(req)}
                       >
-                        새로고침
+                        확인 !
                       </SmallRefreshButton>
                     )
                   )}
@@ -193,7 +193,7 @@ export default function AiGallery() {
                       <SmallRefreshButton
                         onClick={() => fetchResultForRequest(req)}
                       >
-                        새로고침
+                        확인 !
                       </SmallRefreshButton>
                     )
                   )}
