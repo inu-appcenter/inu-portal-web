@@ -5,15 +5,21 @@ import Header from "../container/common/HeaderContainer";
 export default function AiPage() {
   return (
     <>
-      <header>
+      <StyledHeader>
         <Header />
-      </header>
+      </StyledHeader>
       <AiWrapper>
         <AiContainer />
       </AiWrapper>
     </>
   );
 }
+
+const StyledHeader = styled.header`
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
 
 const AiWrapper = styled.div`
   display: flex;

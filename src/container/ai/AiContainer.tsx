@@ -3,6 +3,7 @@ import styled from "styled-components";
 import AiIntroContainer from "./AiIntroContainer";
 import AiTitleContainer from "./AiTitleContainer";
 import AiResultContainer from "./AiResultContainer";
+import AiGallery from "./Aigallery";
 
 export default function AiContainer() {
   return (
@@ -11,6 +12,7 @@ export default function AiContainer() {
       <Routes>
         <Route index element={<AiIntroContainer />} />
         <Route path="result/:imageId" element={<AiResultContainer />} />
+        <Route path="gallery" element={<AiGallery />} />
       </Routes>
     </Container>
   );
@@ -27,4 +29,10 @@ const Container = styled.div`
   color: white;
   border-radius: 10px;
   margin: 60px 30px 0px 30px;
+
+  @media (max-width: 768px) {
+    margin: 0;
+    border-radius: 0;
+    height: 100svh;
+  }
 `;
