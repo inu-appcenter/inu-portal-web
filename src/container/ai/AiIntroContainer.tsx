@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AiLoading from "../../component/ai/AiLoading";
-import { postFires } from "../../utils/API/Fires";
+import { predict } from "../../utils/API/Fires";
 
 interface loginInfo {
   user: {
@@ -25,20 +25,32 @@ export default function AiIntroContainer() {
       return;
     }
     if (inputRef.current) {
-      sessionStorage.setItem("lastInput", inputRef.current.value); // Save input
+      // sessionStorage.setItem("lastInput", inputRef.current.value); // Save input
       setIsLoading(true);
       try {
-        const response = await postFires(inputRef.current.value, user.token);
-        if (response.status === 201) {
-          navigate(`/ai/result/${response.body.data}`);
-        } else if (response.status === 401) {
-          alert("로그인 후 이용이 가능합니다.");
+        // const response = await postFires(inputRef.current.value, user.token);
+        // if (response.status === 201) {
+        //   navigate(`/ai/result/${response.body.data}`);
+        // } else if (response.status === 401) {
+        //   alert("로그인 후 이용이 가능합니다.");
+        // } else if (response.status === 400) {
+        //   alert("이미지 생성 실패");
+        // } else if (response.status === 403) {
+        //   alert("축제 기간에는 관리자만 이미지 생성 가능!");
+        // } else {
+        //   console.error("이미지 생성 실패:", response.status);
+        // }
+        const response = await predict(user.token, inputRef.current.value);
+        if (response.status === 200) {
+          navigate("/ai/gallery");
         } else if (response.status === 400) {
-          alert("이미지 생성 실패");
-        } else if (response.status === 403) {
-          alert("축제 기간에는 관리자만 이미지 생성 가능!");
+          alert("잘못된 요청입니다.");
         } else {
-          console.error("이미지 생성 실패:", response.status);
+          console.error(
+            "이미지 생성 요청 실패:",
+            response.status,
+            response.body.msg
+          );
         }
       } catch (error) {
         setIsLoading(false);
@@ -97,15 +109,27 @@ export default function AiIntroContainer() {
                     }}
                   />
                 </AiInputWrapper>
-                {user.token ? (
-                  <AiGenerateButton onClick={handleGenerateClick}>
-                    생성하기
-                  </AiGenerateButton>
-                ) : (
-                  <AiGenerateButton onClick={() => navigate("/login")}>
-                    로그인 필요
-                  </AiGenerateButton>
-                )}
+                <div className="buttons-wrapper">
+                  {user.token ? (
+                    <>
+                      <AiGenerateButton onClick={handleGenerateClick}>
+                        생성하기
+                      </AiGenerateButton>
+                      <AiGenerateButton onClick={() => navigate("/ai/gallery")}>
+                        내가 만든 횃불이
+                      </AiGenerateButton>
+                    </>
+                  ) : (
+                    <>
+                      <DesktopLoginButton onClick={() => navigate("/login")}>
+                        로그인
+                      </DesktopLoginButton>
+                      <MobileLoginButton onClick={() => navigate("/m/login")}>
+                        로그인
+                      </MobileLoginButton>
+                    </>
+                  )}
+                </div>
               </AiFunctionWrapper>
             </RightWrapper>
           </BottomWrapper>
@@ -224,6 +248,13 @@ const AiFunctionWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  .buttons-wrapper {
+    display: flex;
+    gap: 12px;
+    @media (max-width: 425px) {
+      flex-direction: column;
+    }
+  }
 `;
 
 const AiInputWrapper = styled.div`
@@ -263,6 +294,7 @@ const AiInput = styled.input`
 
 const AiGenerateButton = styled.div`
   width: 143px;
+  padding: 0 20px;
   height: 46px;
   border-radius: 10px;
   background: #6d4dc7;
@@ -272,4 +304,17 @@ const AiGenerateButton = styled.div`
   font-size: 20px;
   font-weight: 800;
   cursor: pointer;
+`;
+
+const DesktopLoginButton = styled(AiGenerateButton)`
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileLoginButton = styled(AiGenerateButton)`
+  display: none;
+  @media (max-width: 768px) {
+    display: flex;
+  }
 `;
