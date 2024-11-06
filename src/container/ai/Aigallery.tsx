@@ -18,28 +18,32 @@ interface ImageRequest {
   eta: number;
   prompt: string;
   isLoading: boolean;
+  canRefresh: boolean; // 수동 새로고침 버튼 표시 여부
 }
 
 export default function AiGallery() {
   const [imageRequests, setImageRequests] = useState<ImageRequest[]>([]);
-  const [page, setPage] = useState(1); // 현재 페이지
-  const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const user = useSelector((state: loginInfo) => state.user);
 
   useEffect(() => {
     fetchImageRequests();
   }, [page]);
 
-  // ETA 감소 및 결과 갱신을 위한 useEffect
+  // ETA 감소를 위한 useEffect
   useEffect(() => {
     const interval = setInterval(() => {
       setImageRequests((prevRequests) =>
         prevRequests.map((req) => {
-          if (req.status === "generating" && req.eta > -1) {
+          if (
+            (req.status === "generating" || req.status === "queued") &&
+            req.eta > 0
+          ) {
             const newEta = req.eta - 1;
-            if (newEta < 0) {
-              // ETA가 -1 이하가 되면 result 함수 호출
-              fetchResultForRequest(req);
+            if (newEta <= 0) {
+              // ETA가 0 이하가 되면 canRefresh를 true로 설정
+              return { ...req, eta: 0, canRefresh: true };
             }
             return { ...req, eta: newEta };
           }
@@ -49,7 +53,7 @@ export default function AiGallery() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [imageRequests]);
+  }, []); // 빈 배열로 설정하여 컴포넌트 마운트 시 한 번만 실행
 
   const fetchImageRequests = async () => {
     try {
@@ -65,6 +69,7 @@ export default function AiGallery() {
             prompt: fire.prompt,
             eta: 0,
             isLoading: true,
+            canRefresh: false,
           })
         );
         setImageRequests(initialRequests);
@@ -81,6 +86,13 @@ export default function AiGallery() {
 
   const fetchResultForRequest = async (req: ImageRequest) => {
     try {
+      // 새로고침 시 canRefresh를 false로 설정하고 로딩 상태로 전환
+      setImageRequests((prevRequests) =>
+        prevRequests.map((r) =>
+          r.id === req.id ? { ...r, isLoading: true, canRefresh: false } : r
+        )
+      );
+
       const response = await result(req.id);
       if (response.status === 201) {
         setImageRequests((prevRequests) =>
@@ -91,6 +103,7 @@ export default function AiGallery() {
                   status: "success",
                   b64_img: response.body.b64_img,
                   isLoading: false,
+                  canRefresh: false,
                 }
               : r
           )
@@ -105,6 +118,7 @@ export default function AiGallery() {
                   request_ahead: response.body.requests_ahead,
                   eta: response.body.eta ?? 0,
                   isLoading: false,
+                  canRefresh: false,
                 }
               : r
           )
@@ -113,7 +127,12 @@ export default function AiGallery() {
         setImageRequests((prevRequests) =>
           prevRequests.map((r) =>
             r.id === req.id
-              ? { ...r, status: "not_found", isLoading: false }
+              ? {
+                  ...r,
+                  status: "not_found",
+                  isLoading: false,
+                  canRefresh: false,
+                }
               : r
           )
         );
@@ -150,14 +169,34 @@ export default function AiGallery() {
               {req.status === "queued" ? (
                 <>
                   <p>대기 중</p>
-                  <p>앞선 요청 수: {req.request_ahead}</p>
-                  <p>예상 대기 시간: {req.eta}초</p>
+                  <p>대기열: {req.request_ahead}</p>
+                  {req.eta > 0 ? (
+                    <p>예상 완료 시간: {req.eta}초</p>
+                  ) : (
+                    req.canRefresh && (
+                      <SmallRefreshButton
+                        onClick={() => fetchResultForRequest(req)}
+                      >
+                        새로고침
+                      </SmallRefreshButton>
+                    )
+                  )}
                 </>
               ) : req.status === "generating" ? (
                 <>
                   <p>생성 중</p>
-                  <p>남은 요청 수: {req.request_ahead}</p>
-                  <p>예상 완료 시간: {req.eta}초</p>
+                  <p>대기열: {req.request_ahead}</p>
+                  {req.eta > 0 ? (
+                    <p>예상 완료 시간: {req.eta}초</p>
+                  ) : (
+                    req.canRefresh && (
+                      <SmallRefreshButton
+                        onClick={() => fetchResultForRequest(req)}
+                      >
+                        새로고침
+                      </SmallRefreshButton>
+                    )
+                  )}
                 </>
               ) : (
                 <p>이미지를 찾을 수 없습니다</p>
@@ -248,6 +287,17 @@ const GalleryStatus = styled.div`
     font-size: 14px;
     color: #555;
   }
+`;
+
+const SmallRefreshButton = styled.button`
+  padding: 5px 10px;
+  font-size: 14px;
+  background-color: #6d4dc7;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
 `;
 
 const PaginationWrapper = styled.div`
