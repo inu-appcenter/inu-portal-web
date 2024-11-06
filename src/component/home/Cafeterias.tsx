@@ -300,8 +300,10 @@ const CafetriaInfo = styled.div`
     align-items: center;
 
     .detail {
+      width: 100%;
       display: flex;
       align-items: center;
+      justify-content: space-between;
 
       .img {
         width: 25px;
