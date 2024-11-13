@@ -1,6 +1,6 @@
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle } from "styled-components";
 
-const CommonStyle = createGlobalStyle`
+const ScrollBarStyles = createGlobalStyle`
   // 스크롤바 커스텀 스타일링
   ::-webkit-scrollbar {
     width: 10px; // 스크롤바의 너비
@@ -21,4 +21,4 @@ const CommonStyle = createGlobalStyle`
   }
 `;
 
-export default CommonStyle;
+export default ScrollBarStyles;

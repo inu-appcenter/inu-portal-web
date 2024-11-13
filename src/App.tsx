@@ -1,34 +1,56 @@
-// App.tsx - 애플리케이션의 루트 컴포넌트
-
 import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
-import MainPage from "./page/MainPage";
-import HomePage from "./page/HomePage";
-import Login from "./page/LoginPage";
+import RootPage from "pages/RootPage";
+import HomePage from "pages/HomePage";
+import LoginPage from "pages/LoginPage";
+
 import Tips from "./page/TipsPage";
 import MyPage from "./page/MyPage";
 import WritePost from "./page/WritePostPage";
 import AiPage from "./page/AiPage";
-import useUser from "./hooks/useUser";
-import useAuth from "./hooks/useAuth";
 import MobileMainPage from "./mobile/pages/MobileMainPage";
 import InstallPage from "./mobile/pages/InstallPage";
-import ScrollBarStyle from "./resource/style/ScrollBarStyle";
+import ScrollBarStyles from "resources/styles/ScrollBarStyles";
 import MobileAiPage from "./mobile/pages/MobileAiPage";
+import { useEffect } from "react";
+import useUserStore from "stores/useUserStore";
+import { getMembers } from "apis/members";
 
 function App() {
-  useUser();
-  useAuth();
   const location = useLocation();
+  const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
+
+  useEffect(() => {
+    const storedTokenInfo = localStorage.getItem("tokenInfo"); // 로컬스토리지에서 tokenInfo 가져오기
+    if (storedTokenInfo) {
+      const parsedTokenInfo = JSON.parse(storedTokenInfo);
+      setTokenInfo(parsedTokenInfo);
+    }
+  }, [setTokenInfo]);
+
+  useEffect(() => {
+    const initializeUser = async () => {
+      try {
+        const response = await getMembers();
+        setUserInfo(response.data);
+      } catch (error) {
+        console.error("회원 가져오기 실패", error);
+      }
+    };
+
+    if (tokenInfo.accessToken) {
+      initializeUser();
+    }
+  }, [tokenInfo, setUserInfo]);
 
   return (
     <>
-      {location.pathname.startsWith("/m") ? null : <ScrollBarStyle />}
+      {location.pathname.startsWith("/m") ? null : <ScrollBarStyles />}
       <Routes>
         <Route path="/install" element={<InstallPage />} />
         <Route path="/m/*" element={<MobileMainPage />} />
-        <Route path="/" element={<MainPage />}>
+        <Route path="/" element={<RootPage />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/login/*" element={<Login />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/tips/*" element={<Tips />} />
           <Route path="/mypage/*" element={<MyPage />} />
         </Route>
