@@ -9,7 +9,7 @@ export default function RootPage() {
     <RootPageWrapper>
       <Header />
       <Nav />
-      <main>
+      <main style={{ minHeight: 1024 }}>
         <Outlet />
       </main>
       <Footer />
