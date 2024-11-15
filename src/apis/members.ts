@@ -28,7 +28,7 @@ export const login = async (
 
 // 토큰 재발급
 export const refresh = async (): Promise<ApiResponse<TokenInfo>> => {
-  const response = await tokenInstance.post<ApiResponse<TokenInfo>>(
+  const response = await axiosInstance.post<ApiResponse<TokenInfo>>(
     `/api/members/refresh`
   );
   return response.data;
