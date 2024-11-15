@@ -2,8 +2,8 @@ import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
 import RootPage from "pages/RootPage";
 import HomePage from "pages/HomePage";
 import LoginPage from "pages/LoginPage";
+import PostsPage from "pages/PostsPage";
 
-import Tips from "./page/TipsPage";
 import MyPage from "./page/MyPage";
 import WritePost from "./page/WritePostPage";
 import AiPage from "./page/AiPage";
@@ -51,7 +51,8 @@ function App() {
         <Route path="/" element={<RootPage />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/tips/*" element={<Tips />} />
+          <Route path="/posts" element={<PostsPage />} />
+
           <Route path="/mypage/*" element={<MyPage />} />
         </Route>
         <Route path="/ai/*" element={<AiPage />} />

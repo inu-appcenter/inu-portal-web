@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getPostsMain } from "apis/posts";
 import { Post } from "types/posts";
 import { useEffect, useState } from "react";
+import SearchBar from "components/posts/SearchBar";
 
 export default function Tips() {
   const [mainPosts, setMainPosts] = useState<Post[]>([]);
@@ -23,19 +24,20 @@ export default function Tips() {
   return (
     <StyledTips>
       <TipsTitle>
-        <Title onClick={() => navigate("/tips")}>🍯 TIPS</Title>
+        <Title onClick={() => navigate("/posts")}>🍯 TIPS</Title>
+        <SearchBar />
       </TipsTitle>
       <MainTips>
         {mainPosts.map((mainPost) => (
           <button
             className="article"
             key={mainPost.id}
-            onClick={() => navigate(`tips?id=${mainPost.id}`)}
+            onClick={() => navigate(`posts?id=${mainPost.id}`)}
           >
             {mainPost.title}
           </button>
         ))}
-        <button className="total" onClick={() => navigate("/tips")}>
+        <button className="total" onClick={() => navigate("/posts")}>
           전체보기 +
         </button>
       </MainTips>
@@ -51,7 +53,7 @@ const StyledTips = styled.div`
 const TipsTitle = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
   margin-bottom: 12px;
 `;
 

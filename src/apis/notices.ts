@@ -20,3 +20,11 @@ export const getNotices = async (
   >("/api/notices", { params });
   return response.data;
 };
+
+// 상단부 인기 공지 12개 가져오기
+export const getNoticesTop = async (): Promise<ApiResponse<Notice[]>> => {
+  const response = await axiosInstance.get<ApiResponse<Notice[]>>(
+    "/api/notices/top"
+  );
+  return response.data;
+};
