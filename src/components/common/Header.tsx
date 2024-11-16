@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AppcenterLogo from "resources/assets/appcenter-logo.svg";
 
 export default function Header() {
-  const { userInfo, setUserInfo } = useUserStore();
+  const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -12,8 +12,14 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("tokenInfo");
     setUserInfo({ id: 0, nickname: "", fireId: 0 });
+    setTokenInfo({
+      accessToken: "",
+      accessTokenExpiredTime: "",
+      refreshToken: "",
+      refreshTokenExpiredTime: "",
+    });
+    localStorage.removeItem("tokenInfo");
     navigate("/");
   };
 

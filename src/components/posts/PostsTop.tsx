@@ -13,6 +13,9 @@ export default function PostsTop() {
   const [topPosts, setTopPosts] = useState<Post[]>([]);
   const [topNotices, setTopNotices] = useState<Notice[]>([]);
 
+  const [type, setType] = useState(""); // 이전 상태와 동일한지 확인
+  const [category, setCategory] = useState(""); // 이전 상태와 동일한지 확인
+
   useEffect(() => {
     const fetchTops = async () => {
       try {
@@ -39,6 +42,15 @@ export default function PostsTop() {
     };
 
     const params = new URLSearchParams(location.search);
+    const tmpType = params.get("type") ? params.get("type") : "tips";
+    const tmpCategory = params.get("category")
+      ? params.get("category")
+      : "전체";
+    if (tmpType === type && tmpCategory === category) {
+      return; // 이전 상태와 동일한지 확인
+    }
+    setType(tmpType || "tips");
+    setCategory(tmpCategory || "전체");
     fetchTops();
   }, [location.search]);
 

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import useUserStore from "stores/useUserStore";
 import { refresh } from "apis/members";
 
@@ -12,12 +12,13 @@ tokenInstance.interceptors.request.use(
     const { accessToken } = useUserStore.getState().tokenInfo;
     if (accessToken) {
       config.headers["Auth"] = accessToken;
-    } else {
-      alert("로그인이 필요합니다. 로그인해 주세요.");
-      return Promise.reject(
-        new axios.Cancel("토큰이 없어 요청이 취소되었습니다.")
-      );
     }
+    // else {
+    //   alert("로그인이 필요합니다. 로그인해 주세요.");
+    //   return Promise.reject(
+    //     new axios.Cancel("토큰이 없어 요청이 취소되었습니다.")
+    //   );
+    // }
     return config;
   },
   (error) => {
@@ -66,6 +67,9 @@ tokenInstance.interceptors.response.use(
           refreshTokenExpiredTime: "",
         });
         localStorage.removeItem("tokenInfo");
+        (
+          refreshError as AxiosError & { isRefreshError?: boolean }
+        ).isRefreshError = true;
         return Promise.reject(refreshError);
       }
     }

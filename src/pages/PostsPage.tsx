@@ -1,4 +1,5 @@
 import Categories from "components/posts/Categories";
+import PostsDetails from "components/posts/PostDetails";
 import PostsList from "components/posts/PostsList";
 import PostsTitle from "components/posts/PostsTitle";
 import PostsTop from "components/posts/PostsTop";
@@ -21,7 +22,7 @@ export default function PostsPage() {
       <ContentsWrapper>
         <PostsTitle />
         <PostsTop />
-        {id ? <></> : <PostsList />}
+        {id ? <PostsDetails postId={id} /> : <PostsList />}
       </ContentsWrapper>
     </PostsPageWrapper>
   );
