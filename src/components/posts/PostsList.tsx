@@ -17,6 +17,11 @@ export default function PostsList() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [pages, setPages] = useState(1);
 
+  const [type, setType] = useState(""); // 이전 상태와 동일한지 확인
+  const [category, setCategory] = useState(""); // 이전 상태와 동일한지 확인
+  const [page, setPage] = useState(""); // 이전 상태와 동일한지 확인
+  const [sort, setSort] = useState(""); // 이전 상태와 동일한지 확인
+
   const handleClickPost = (postId: number) => {
     const params = new URLSearchParams(location.search);
     params.set("id", String(postId));
@@ -61,6 +66,24 @@ export default function PostsList() {
     };
 
     const params = new URLSearchParams(location.search);
+    const tmpType = params.get("type") ? params.get("type") : "tips";
+    const tmpCategory = params.get("category")
+      ? params.get("category")
+      : "전체";
+    const tmpPage = params.get("page") ? params.get("page") : "1";
+    const tmpSort = params.get("sort") ? params.get("sort") : "date";
+    if (
+      tmpType === type &&
+      tmpCategory === category &&
+      tmpPage === page &&
+      tmpSort === sort
+    ) {
+      return; // 이전 상태와 동일한지 확인
+    }
+    setType(tmpType || "tips");
+    setCategory(tmpCategory || "전체");
+    setPage(tmpPage || "1");
+    setSort(tmpSort || "date");
     fetchData();
   }, [location.search]);
 
