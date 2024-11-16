@@ -284,6 +284,7 @@ const PostRepliesWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-bottom: 120px; // ReplyInput을 위한 공간
   .replyImage {
     width: 36px;
   }

@@ -20,7 +20,8 @@ export default function LoginPage() {
 
 const LoginPageWrapper = styled.div`
   padding: 0 32px;
-  height: 1024px;
+  height: calc(1024px - 100px);
+  padding-bottom: 100px;
   display: flex;
 `;
 

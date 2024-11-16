@@ -2,9 +2,14 @@ import styled from "styled-components";
 import NavMenu from "components/common/NavMenu";
 import CopyRightText from "resources/assets/CopyRightText.svg";
 import AppcenterLogo from "resources/assets/appcenter-logo.svg";
+import { useLocation } from "react-router-dom";
 
 export default function Footer() {
-  return (
+  const location = useLocation();
+
+  return location.pathname === "/posts" ? (
+    <> </>
+  ) : (
     <StyledFooter>
       <div className="footer-top">
         <h1>INTIP</h1>
