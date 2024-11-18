@@ -49,7 +49,6 @@ export default function PostsSort() {
 }
 
 const PostsSortWrapper = styled.div`
-  margin: 16px 24px;
   display: flex;
   gap: 4px;
 

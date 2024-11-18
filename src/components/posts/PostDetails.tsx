@@ -1,4 +1,4 @@
-import { getPostDetail } from "apis/posts";
+import { deletePost, getPostDetail } from "apis/posts";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -55,6 +55,39 @@ export default function PostDetails({ postId }: { postId: number }) {
     navigate(`/posts?${params.toString()}`);
   };
 
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("정말 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    try {
+      await deletePost(postId);
+      navigate(-1);
+    } catch (error) {
+      console.error("게시글 삭제 실패", error);
+
+      if (
+        axios.isAxiosError(error) &&
+        (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+      ) {
+        console.warn("refreshError");
+        return;
+      }
+      if (axios.isAxiosError(error) && error.response) {
+        switch (error.response.status) {
+          case 403:
+            alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+            break;
+          case 404:
+            alert("존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("게시글 삭제 실패");
+            break;
+        }
+      }
+    }
+  };
+
   return (
     <>
       <PostDetailWrapper>
@@ -68,8 +101,18 @@ export default function PostDetails({ postId }: { postId: number }) {
               <div className="utils">
                 {post.hasAuthority && (
                   <>
-                    <button className="util-button">삭제</button>
-                    <button className="util-button">수정</button>
+                    <button
+                      onClick={() => handleDelete()}
+                      className="util-button"
+                    >
+                      삭제
+                    </button>
+                    <button
+                      className="util-button"
+                      onClick={() => navigate(`/write?id=${post.id}`)}
+                    >
+                      수정
+                    </button>
                   </>
                 )}
                 <span className="createDate">
@@ -98,6 +141,13 @@ export default function PostDetails({ postId }: { postId: number }) {
                     post.id
                   }/images/${index + 1}`}
                   alt={`이미지 ${index + 1}`}
+                  onClick={() =>
+                    window.open(
+                      `https://portal.inuappcenter.kr/api/posts/${
+                        post.id
+                      }/images/${index + 1}`
+                    )
+                  }
                 />
               ))}
             </div>
