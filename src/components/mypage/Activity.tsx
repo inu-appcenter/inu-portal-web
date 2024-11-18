@@ -92,7 +92,7 @@ export default function Activity() {
               </div>
               <div className="date-like">
                 <img src={calendarImage} alt="" />
-                <span>{post.createDate}</span>
+                <span className="date">{post.createDate}</span>
                 <img src={likeImage} alt="" />
                 <span>{post.like}</span>
               </div>
@@ -130,7 +130,7 @@ export default function Activity() {
               </div>
               <div className="date-like">
                 <img src={calendarImage} alt="" />
-                <span>{post.createDate}</span>
+                <span className="date">{post.createDate}</span>
                 <img src={likeImage} alt="" />
                 <span>{post.like}</span>
               </div>
@@ -168,7 +168,7 @@ export default function Activity() {
               </div>
               <div className="date-like">
                 <img src={calendarImage} alt="" />
-                <span>{post.createDate}</span>
+                <span className="date">{post.createDate}</span>
                 <img src={likeImage} alt="" />
                 <span>{post.like}</span>
               </div>
@@ -231,7 +231,7 @@ const ActivityWrapper = styled.div`
           button {
             background: transparent;
             border: none;
-            padding: 4px 0;
+            padding: 4px;
             font-size: 20px;
             color: #0e4d9d;
 
@@ -250,6 +250,7 @@ const ActivityWrapper = styled.div`
     overflow-x: scroll;
     gap: 16px;
     button {
+      font-weight: 500;
       padding: 16px;
       margin-right: 8px;
       background: transparent;
@@ -279,6 +280,9 @@ const ActivityWrapper = styled.div`
       .date-like {
         img {
           height: 14px;
+        }
+        .date {
+          color: rgba(150, 150, 150, 1);
         }
         display: flex;
         align-items: center;
