@@ -138,10 +138,11 @@ const PostDetailWrapper = styled.div`
 `;
 
 const PostCard = styled.div`
+  height: calc(100% - 32px);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 16px;
+  padding: 16px 0;
   .category-utils {
     display: flex;
     align-items: center;
@@ -211,5 +212,6 @@ const PostCard = styled.div`
     }
   }
   .content {
+    flex: 1;
   }
 `;
