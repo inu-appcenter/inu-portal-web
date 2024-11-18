@@ -283,7 +283,7 @@ const PostRepliesWrapper = styled.div`
   padding: 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
   padding-bottom: 120px; // ReplyInput을 위한 공간
   .replyImage {
     width: 36px;
@@ -298,7 +298,7 @@ const RepliesContainer = styled.div`
 `;
 
 const ReplyContainer = styled.div<{ $isFirst: boolean }>`
-  padding: 16px;
+  padding: 16px 32px;
   border-top: ${({ $isFirst }) => ($isFirst ? "none" : "2px solid #dedede")};
   display: flex;
   align-items: center;
@@ -344,7 +344,7 @@ const ReplyContainer = styled.div<{ $isFirst: boolean }>`
 `;
 
 const ReReplyContainer = styled.div`
-  padding: 16px;
+  padding: 16px 32px;
   padding-left: 88px;
   border-top: 2px solid #dedede;
   display: flex;
