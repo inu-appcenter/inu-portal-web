@@ -82,7 +82,7 @@ export default function NavMenu({ isInFooter }: NavMenuProps) {
               } else if (items.title === "공지사항") {
                 navigate("/posts?type=notice");
               } else if (items.title === "TIPS") {
-                navigate("/posts?type=tips");
+                navigate("/posts");
               }
             }}
           >
