@@ -258,12 +258,16 @@ export default function PostReplies({
           </EditOrReplyBanner>
         )}
         <div className="wrapper">
-          <img
-            src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
-            alt=""
+          <span
+            className="anonymous-wrapper"
             onClick={() => setIsAnonymous(!isAnonymous)}
-          />
-          <span>익명</span>
+          >
+            <img
+              src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
+              alt=""
+            />
+            <span>익명</span>
+          </span>
           <input
             placeholder="댓글을 입력해주세요."
             value={replyContent}
@@ -284,7 +288,6 @@ const PostRepliesWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-bottom: 120px; // ReplyInput을 위한 공간
   .replyImage {
     width: 36px;
   }
@@ -362,7 +365,7 @@ const ReReplyContainer = styled.div`
 `;
 
 const ReplyInput = styled.div`
-  position: fixed;
+  position: sticky;
   bottom: 0;
   z-index: 100;
   height: 100px;
@@ -381,6 +384,11 @@ const ReplyInput = styled.div`
     border-radius: 12px;
     background-color: #eff2f9;
 
+    .anonymous-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     span {
       font-size: 20px;
     }

@@ -32,6 +32,7 @@ const PostsPageWrapper = styled.div`
   padding: 0 32px;
   display: flex;
   gap: 16px;
+  position: relative;
 `;
 
 const ContentsWrapper = styled.div`

@@ -38,7 +38,6 @@ export default function Pagination({ pages }: { pages: number }) {
 const PaginationWrapper = styled.div`
   display: flex;
   gap: 8px;
-  margin-top: 16px;
   justify-content: center;
 `;
 

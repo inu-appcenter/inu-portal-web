@@ -3,9 +3,9 @@ import RootPage from "pages/RootPage";
 import HomePage from "pages/HomePage";
 import LoginPage from "pages/LoginPage";
 import PostsPage from "pages/PostsPage";
+import WritePage from "pages/WritePage";
 
 import MyPage from "./page/MyPage";
-import WritePost from "./page/WritePostPage";
 import AiPage from "./page/AiPage";
 import MobileMainPage from "./mobile/pages/MobileMainPage";
 import InstallPage from "./mobile/pages/InstallPage";
@@ -52,13 +52,12 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/posts" element={<PostsPage />} />
+          <Route path="write" element={<WritePage />} />
 
           <Route path="/mypage/*" element={<MyPage />} />
         </Route>
         <Route path="/ai/*" element={<AiPage />} />
         <Route path="/m/ai/*" element={<MobileAiPage />} />
-        <Route path="update/:id" element={<WritePost />} />
-        <Route path="/write" element={<WritePost />} />
       </Routes>
     </>
   );

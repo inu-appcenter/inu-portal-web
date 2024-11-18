@@ -13,6 +13,31 @@ export const getPostDetail = async (
   return response.data;
 };
 
+// 게시글 수정
+export const putPost = async (
+  postId: number,
+  title: string,
+  content: string,
+  category: string,
+  anonymous: boolean
+): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.put<ApiResponse<number>>(
+    `/api/posts/${postId}`,
+    { title, content, category, anonymous }
+  );
+  return response.data;
+};
+
+// 게시글 삭제
+export const deletePost = async (
+  postId: number
+): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.delete<ApiResponse<number>>(
+    `/api/posts/${postId}`
+  );
+  return response.data;
+};
+
 // 스크랩 여부 변경
 export const putScrap = async (
   postId: number
@@ -55,6 +80,62 @@ export const getPosts = async (
   const response = await axiosInstance.get<
     ApiResponse<{ pages: number; posts: Post[] }>
   >("/api/posts", { params });
+  return response.data;
+};
+
+// 게시글의 이미지 수정
+export const putImages = async (
+  postId: number,
+  images: File[]
+): Promise<ApiResponse<number>> => {
+  const formData = new FormData();
+  images.forEach((image) => formData.append("images", image));
+
+  const response = await tokenInstance.put<ApiResponse<number>>(
+    `/api/posts/${postId}/images`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+// 이미지 등록
+export const postImages = async (
+  postId: number,
+  images: File[]
+): Promise<ApiResponse<number>> => {
+  const formData = new FormData();
+  images.forEach((image) => formData.append("images", image));
+
+  const response = await tokenInstance.post<ApiResponse<number>>(
+    `/api/posts/${postId}/images`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+// 게시글 등록
+export const postPost = async (
+  title: string,
+  content: string,
+  category: string,
+  anonymous: boolean
+): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.post<ApiResponse<number>>(`/api/posts`, {
+    title,
+    content,
+    category,
+    anonymous,
+  });
   return response.data;
 };
 

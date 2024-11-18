@@ -9,6 +9,7 @@ import { getSearch } from "apis/search";
 import { getPosts } from "apis/posts";
 import heart from "resources/assets/posts/posts-heart.svg";
 import Pagination from "components/posts/Pagination";
+import WriteButton from "components/posts/WriteButton";
 
 export default function PostsList() {
   const location = useLocation();
@@ -126,7 +127,11 @@ export default function PostsList() {
           </PostCard>
         ))}
       </CardsWrapper>
-      <Pagination pages={pages} />
+      <div className="pagination-writebutton">
+        <span />
+        <Pagination pages={pages} />
+        <WriteButton />
+      </div>
     </PostsListWrapper>
   );
 }
@@ -134,15 +139,23 @@ export default function PostsList() {
 const PostsListWrapper = styled.div`
   border: 6px solid #eaeaea;
   border-width: 6px 0 0 6px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  .pagination-writebutton {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 `;
 
 const CardsWrapper = styled.div`
-  padding-left: 24px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  min-height: 560px; // Pagination 위치를 위해
-  margin-bottom: 32px; // Pagination 위치를 위해
+  min-height: 560px;
 `;
 
 const PostCard = styled.button`
