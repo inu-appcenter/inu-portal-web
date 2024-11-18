@@ -1,8 +1,10 @@
 import styled from "styled-components";
 import SearchBar from "components/posts/SearchBar";
 import { useEffect, useState } from "react";
+import useUserStore from "stores/useUserStore";
 
 export default function PostsTitle() {
+  const { userInfo } = useUserStore();
   const [type, setType] = useState("tips");
   const [category, setCategory] = useState("전체");
 
@@ -22,7 +24,18 @@ export default function PostsTitle() {
         <span>{category}</span>
         <span className="color">{type}</span>
       </TipsTitleText>
-      {type != "NOTICE" && <SearchBar />}
+      <div>
+        {type != "NOTICE" && <SearchBar />}
+        {userInfo.id != 0 && (
+          <div className="userInfo">
+            <span>{userInfo.nickname}</span>
+            <img
+              src={`https://portal.inuappcenter.kr/api/images/${userInfo.fireId}`}
+              alt=""
+            />
+          </div>
+        )}
+      </div>
     </TipsTitleWrapper>
   );
 }
@@ -32,6 +45,19 @@ const TipsTitleWrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .userInfo {
+    font-size: 20px;
+    img {
+      height: 44px;
+      border-radius: 100px;
+    }
+  }
 `;
 
 const TipsTitleText = styled.div`

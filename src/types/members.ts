@@ -10,3 +10,14 @@ export interface UserInfo {
   nickname: string;
   fireId: number;
 }
+
+export interface MembersReplies {
+  id: number;
+  title: string;
+  replyCount: number;
+  content: string;
+  like: number;
+  postId: number;
+  createDate: string;
+  modifiedDate: string;
+}

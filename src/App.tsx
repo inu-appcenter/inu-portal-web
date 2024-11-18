@@ -4,8 +4,8 @@ import HomePage from "pages/HomePage";
 import LoginPage from "pages/LoginPage";
 import PostsPage from "pages/PostsPage";
 import WritePage from "pages/WritePage";
+import MyPage from "pages/MyPage";
 
-import MyPage from "./page/MyPage";
 import AiPage from "./page/AiPage";
 import MobileMainPage from "./mobile/pages/MobileMainPage";
 import InstallPage from "./mobile/pages/InstallPage";
@@ -44,7 +44,7 @@ function App() {
 
   return (
     <>
-      {location.pathname.startsWith("/m") ? null : <ScrollBarStyles />}
+      {location.pathname.startsWith("/m/") ? null : <ScrollBarStyles />}
       <Routes>
         <Route path="/install" element={<InstallPage />} />
         <Route path="/m/*" element={<MobileMainPage />} />
@@ -52,9 +52,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/posts" element={<PostsPage />} />
-          <Route path="write" element={<WritePage />} />
-
-          <Route path="/mypage/*" element={<MyPage />} />
+          <Route path="/write" element={<WritePage />} />
+          <Route path="/mypage" element={<MyPage />} />
         </Route>
         <Route path="/ai/*" element={<AiPage />} />
         <Route path="/m/ai/*" element={<MobileAiPage />} />

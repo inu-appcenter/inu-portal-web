@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 export default function Footer() {
   const location = useLocation();
 
-  return location.pathname === "/posts" ? (
+  return location.pathname === "/posts" || location.pathname === "/write" ? (
     <> </>
   ) : (
     <StyledFooter>
