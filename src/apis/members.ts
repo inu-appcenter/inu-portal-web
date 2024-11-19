@@ -1,5 +1,6 @@
 import axiosInstance from "apis/axiosInstance";
 import tokenInstance from "apis/tokenInstance";
+import refreshInstance from "apis/refreshInstance";
 import { ApiResponse } from "types/common";
 import { TokenInfo, UserInfo, MembersReplies } from "types/members";
 import { Post } from "types/posts";
@@ -24,6 +25,14 @@ export const putMembers = async (
   return response.data;
 };
 
+// 회원 삭제
+export const deleteMembers = async (): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.delete<ApiResponse<number>>(
+    `/api/members`
+  );
+  return response.data;
+};
+
 // 로그인
 export const login = async (
   studentId: string,
@@ -41,7 +50,7 @@ export const login = async (
 
 // 토큰 재발급
 export const refresh = async (): Promise<ApiResponse<TokenInfo>> => {
-  const response = await axiosInstance.post<ApiResponse<TokenInfo>>(
+  const response = await refreshInstance.post<ApiResponse<TokenInfo>>(
     `/api/members/refresh`
   );
   return response.data;
@@ -59,10 +68,11 @@ export const getMembersReplies = async (
 
 // 회원이 작성한 모든 글 가져오기
 export const getMembersPosts = async (
-  sort: string
+  sort: string,
+  page: number
 ): Promise<ApiResponse<Post[]>> => {
   const response = await tokenInstance.get<ApiResponse<Post[]>>(
-    `/api/members/posts?sort=${sort}`
+    `/api/members/posts?sort=${sort}&page=${page}`
   );
   return response.data;
 };

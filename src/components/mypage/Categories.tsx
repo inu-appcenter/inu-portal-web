@@ -9,7 +9,7 @@ interface Category {
   hasError?: boolean;
 }
 
-const allCategories = ["스크랩", "내 활동", "개인정보 수정"];
+const allCategories = ["스크랩", "내 활동", "개인정보 수정", "회원 탈퇴"];
 
 export default function Categories() {
   const location = useLocation();

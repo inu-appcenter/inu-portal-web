@@ -1,5 +1,6 @@
 import Activity from "components/mypage/Activity";
 import Categories from "components/mypage/Categories";
+import Delete from "components/mypage/Delete";
 import Modify from "components/mypage/Modify";
 import MyPageTitle from "components/mypage/MyPageTitle";
 import Scrap from "components/mypage/Scrap";
@@ -24,6 +25,7 @@ export default function MyPage() {
         {category === "스크랩" && <Scrap />}
         {category === "내 활동" && <Activity />}
         {category === "개인정보 수정" && <Modify />}
+        {category === "회원 탈퇴" && <Delete />}
       </ContentsWrapper>
     </MyPageWrapper>
   );
