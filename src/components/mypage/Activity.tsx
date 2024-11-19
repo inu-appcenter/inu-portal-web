@@ -50,7 +50,7 @@ export default function Activity() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getMembersPosts(postSort);
+        const response = await getMembersPosts(postSort, 1);
         setPostPost(response.data);
       } catch (error) {
         console.error("회원이 작성한 모든 글 가져오기 실패", error);

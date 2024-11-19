@@ -24,6 +24,7 @@ export default function PostReplies({
   const [replyContent, setReplyContent] = useState("");
   const [replyToEdit, setReplyToEdit] = useState<Reply | null>(null);
   const [replyToReply, setReplyToReply] = useState<Reply | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -32,10 +33,14 @@ export default function PostReplies({
   };
 
   const handleCreateReply = async () => {
+    if (loading) {
+      return;
+    }
     if (!replyContent) {
       alert("댓글 내용을 작성해주세요.");
       return;
     }
+    setLoading(true);
     if (replyToReply) {
       // 대댓글 등록
       try {
@@ -130,6 +135,7 @@ export default function PostReplies({
       }
     }
     setReplyContent("");
+    setLoading(false);
   };
 
   const handleDeleteReply = async (replyId: number) => {
@@ -227,6 +233,18 @@ export default function PostReplies({
                     <img src={rereplyImage} alt="" />
                     <span className="writer">{reReply.writer}</span>
                     <p>{reReply.content}</p>
+                    <div className="util-buttons">
+                      {reReply.hasAuthority && (
+                        <>
+                          <button onClick={() => handleEditReply(reReply)}>
+                            수정
+                          </button>
+                          <button onClick={() => handleDeleteReply(reReply.id)}>
+                            삭제
+                          </button>
+                        </>
+                      )}
+                    </div>
                     <ReplyLikeButton
                       id={reReply.id}
                       like={reply.like}
@@ -358,6 +376,17 @@ const ReReplyContainer = styled.div`
     color: #4071b9;
   }
 
+  .util-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    button {
+      font-size: 14px;
+      color: #888888;
+      background-color: transparent;
+      border: none;
+    }
+  }
   p {
     flex: 1;
     margin: 0;
