@@ -67,6 +67,9 @@ export default function LoginInputs() {
         <img src={loginPassword} alt="" />
       </span>
       <button onClick={handleLogin}>로그인</button>
+      <span className="info">
+        인천대학교 포털시스템 계정으로 로그인 할 수 있습니다.
+      </span>
     </LoginInputsWrapper>
   );
 }
@@ -120,5 +123,8 @@ const LoginInputsWrapper = styled.div`
     font-weight: 600;
     font-size: 24px;
     color: white;
+  }
+  .info {
+    width: 360px;
   }
 `;
