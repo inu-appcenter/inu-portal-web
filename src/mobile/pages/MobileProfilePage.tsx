@@ -1,22 +1,15 @@
 import styled from "styled-components";
-// import ModifyInfo from '../components/mypage/Password/modify';
-import { useSelector } from "react-redux";
-import UserInfo from "../containers/mypage/UserInfo";
-import UserModify from "../containers/mypage/UserModify";
-
-interface loginInfo {
-  user: {
-    token: string;
-  };
-}
+import UserInfo from "mobile/containers/mypage/UserInfo";
+import UserModify from "mobile/containers/mypage/UserModify";
+import useUserStore from "stores/useUserStore";
 
 export default function MobileProfilePage() {
-  const token = useSelector((state: loginInfo) => state.user.token);
+  const { userInfo } = useUserStore();
 
   return (
     <MobileProfilePageWrapper>
       <Background />
-      <UserWrapper>{token && <UserInfo />}</UserWrapper>
+      <UserWrapper>{userInfo.id && <UserInfo />}</UserWrapper>
       <UserModify />
     </MobileProfilePageWrapper>
   );

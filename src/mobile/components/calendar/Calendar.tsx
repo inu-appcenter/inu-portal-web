@@ -1,37 +1,35 @@
 import { useRef, useEffect, useState } from "react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
-import { EventInput } from "@fullcalendar/core";
-import { getSchedules } from "../../../utils/API/Schedules";
+import { EventInput } from "@fullcalendar/core/index.js";
+import { getSchedules } from "apis/schedules";
 import styled from "styled-components";
 
 export default function Calendarbar() {
   const calendarRef = useRef<FullCalendar>(null);
   const [events, setEvents] = useState<EventInput[]>([]);
-  const [month, setMonth] = useState<number>(0);
-  const [year, setYear] = useState<number>(0);
-  const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
- 
+  const [day, setDay] = useState<{ year: number; month: number }>({
+    year: 0,
+    month: 0,
+  });
+  const [hoveredEvent, setHoveredEvent] = useState<string | null>("");
+
   useEffect(() => {
     getCurrentMonth();
   }, []);
 
   useEffect(() => {
-    if (year && month) {
-      fetchCalendarData(); 
+    if (day.year && day.month) {
+      fetchCalendarData();
     }
-  }, [year, month]);
+  }, [day]);
 
   const fetchCalendarData = async () => {
     try {
-      const response = await getSchedules(year, month);
-      if (response.status === 200) {
-        setEvents(response.body.data);
-      } else {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      const response = await getSchedules(day.year, day.month);
+      setEvents(response.data);
     } catch (error) {
-      console.error("일정 정보 조회 안됨", error);
+      console.error("학사일정 가져오기 실패", error);
     }
   };
 
@@ -41,8 +39,7 @@ export default function Calendarbar() {
       const currentDate = calendarApi.getDate();
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
-      setYear(year);
-      setMonth(month);
+      setDay({ year: year, month: month });
     }
   };
 
@@ -51,7 +48,8 @@ export default function Calendarbar() {
   };
 
   const handleEventMouseEnter = (event: any) => {
-    const element = event.el?.children[0]?.children[0]?.children[0]?.children[0]?.innerText;
+    const element =
+      event.el?.children[0]?.children[0]?.children[0]?.children[0]?.innerText;
     setHoveredEvent(element);
   };
 
@@ -73,13 +71,17 @@ export default function Calendarbar() {
 
     const d = new Date(date);
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
     return `${year}.${month}.${day}`;
   };
 
-  const handleEventDate = (date: EventInput['start']) => {
-    if (typeof date === 'string' || typeof date === 'number' || date instanceof Date) {
+  const handleEventDate = (date: EventInput["start"]) => {
+    if (
+      typeof date === "string" ||
+      typeof date === "number" ||
+      date instanceof Date
+    ) {
       return formatDate(date);
     }
     return "";
@@ -94,7 +96,7 @@ export default function Calendarbar() {
         headerToolbar={{
           left: "prev",
           center: "title",
-          right: "next"
+          right: "next",
         }}
         events={events}
         eventTextColor="gray"
@@ -112,12 +114,12 @@ export default function Calendarbar() {
           events.map((event, index) => (
             <EventItem key={index}>
               <div>
-                <EventDot/>
+                <EventDot />
                 <span>
                   {handleEventDate(event.start)} ~ {handleEventDate(event.end)}
                 </span>
               </div>
-              <strong>{event.title}</strong> 
+              <strong>{event.title}</strong>
             </EventItem>
           ))
         ) : (
@@ -129,8 +131,9 @@ export default function Calendarbar() {
 }
 
 const CalendarWrapper = styled.div`
-  padding: 20px;
-  height: 60%;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
 
   .fc-event {
     background-color: rgba(26, 36, 44, 0.1) !important;
@@ -160,7 +163,6 @@ const EventsList = styled.div`
   padding: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  height: 40%;
   overflow: auto;
 `;
 
@@ -177,7 +179,7 @@ const EventItem = styled.div`
   span {
     font-size: 11px;
     line-height: 8px;
-    color:#535353;
+    color: #535353;
     margin-bottom: 10px;
   }
 `;
@@ -185,7 +187,7 @@ const EventItem = styled.div`
 const EventDot = styled.div`
   width: 8px;
   height: 8px;
-  background-color: #9CAFE2; 
+  background-color: #9cafe2;
   border-radius: 50%;
   margin-right: 10px;
 `;

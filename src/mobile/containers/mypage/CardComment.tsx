@@ -1,30 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
-import HeartFilledImg from "../../../resource/assets/heart-filled-img.svg";
-import X_Vector from "../../../resource/assets/X-Vector.svg";
-import { deleteReplies } from "../../../utils/API/Replies";
-
-interface loginInfo {
-  user: {
-    token: string;
-  };
-}
-
-interface Comment {
-  id: number;
-  title: string;
-  replyCount: number;
-  content: string;
-  like: number;
-  postId: number;
-  createDate: string;
-  modifiedDate: string;
-}
+import HeartFilledImg from "resources/assets/mobile-mypage/heart-filled-img.svg";
+import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
+import { MembersReplies } from "types/members";
+import { deleteReply } from "apis/replies";
+import axios, { AxiosError } from "axios";
 
 interface TipsCardContainerProps {
-  posts: Comment[];
+  posts: MembersReplies[];
   onCommentsUpdate: () => void; // 댓글 업데이트 콜백 함수
 }
 
@@ -35,9 +19,6 @@ export default function CardComment({
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [activeCardId, setActiveCardId] = useState<number | null>(null); // Active card state
-
-  // Redux에서 token 가져오기
-  const token = useSelector((state: loginInfo) => state.user?.token);
 
   const handleDocumentClick = (id: number) => {
     navigate(`/m/postdetail?id=${id}`);
@@ -54,32 +35,37 @@ export default function CardComment({
   };
 
   const handleDelete = async () => {
-    if (!token || activeCardId === null) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
-    try {
-      const response = await deleteReplies(token, activeCardId);
-      if (response.status === 200) {
-        alert("댓글이 성공적으로 삭제되었습니다.");
-        // 삭제 후 상태 업데이트가 필요하다면 여기서 수행
-        // 예: 상태를 필터링하여 삭제된 댓글을 제거
-        onCommentsUpdate(); // 댓글 목록을 업데이트하도록 콜백 함수 호출
+    if (activeCardId) {
+      try {
+        await deleteReply(activeCardId);
+        alert("댓글이 삭제되었습니다.");
+        onCommentsUpdate();
         setActiveCardId(null);
         setShowModal(false);
-      } else {
-        alert("댓글 삭제에 실패했습니다.");
+      } catch (error) {
+        console.error("댓글 삭제 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 403:
+              alert("이 댓글의 수정/삭제에 대한 권한이 없습니다.");
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다. / 존재하지 않는 댓글입니다.");
+              break;
+            default:
+              alert("댓글 삭제 실패");
+              break;
+          }
+        }
       }
-    } catch (error) {
-      console.error("댓글 삭제 중 오류 발생:", error);
-      alert("댓글 삭제 중 오류가 발생했습니다.");
     }
   };
-
-  useEffect(() => {
-    console.log("comment", posts);
-  }, [posts]); // Add posts as a dependency
 
   return (
     <CardWrapper>
