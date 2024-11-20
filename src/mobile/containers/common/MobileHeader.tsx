@@ -1,25 +1,29 @@
 import styled from "styled-components";
-import { useSelector } from "react-redux";
-import AppLogo from "../../components/common/AppLogo";
-import ProfileImage from "../../components/common/ProfileImage";
-import MenuButton from "../../components/common/MenuButton";
-import ProfileNickname from "../../components/common/ProfileNickname";
-import LoginNavigateButton from "../../components/common/LoginNavigateButton";
+import intipLogo from "resources/assets/intip-logo.svg";
+import ProfileImage from "mobile/components/common/ProfileImage";
+import ProfileNickname from "mobile/components/common/ProfileNickname";
+import MenuButton from "mobile/components/common/MenuButton";
+import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
+import useUserStore from "stores/useUserStore";
+import { useNavigate } from "react-router-dom";
 
 export default function MobileHeader() {
-  const fireId: number = useSelector((state: any) => state.user.fireId);
-  const nickname: string = useSelector((state: any) => state.user.nickname);
-  const token: string = useSelector((state: any) => state.user.token);
+  const { userInfo } = useUserStore();
+  const navigate = useNavigate();
+
   return (
     <MobileHeaderWrapper>
-      <AppLogoWrapper>
-        <AppLogo />
-      </AppLogoWrapper>
+      <img
+        onClick={() => {
+          navigate("/m/home");
+        }}
+        src={intipLogo}
+      />
       <ProfileMenuWrapper>
-        {token ? (
+        {userInfo.nickname ? (
           <>
-            <ProfileImage fireId={fireId} />
-            <ProfileNickname nickname={nickname} />
+            <ProfileImage fireId={userInfo.fireId} />
+            <ProfileNickname nickname={userInfo.nickname} />
           </>
         ) : (
           <>
@@ -37,14 +41,10 @@ const MobileHeaderWrapper = styled.header`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  min-height: 72px;
-  padding: 0 16px;
+  height: 72px;
+  padding: 0 24px;
   position: relative;
   z-index: 20;
-`;
-
-const AppLogoWrapper = styled.div`
-  flex: 1;
 `;
 
 const ProfileMenuWrapper = styled.div`

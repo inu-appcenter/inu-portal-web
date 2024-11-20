@@ -1,4 +1,8 @@
 import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { getMembers } from "apis/members";
+import useUserStore from "stores/useUserStore";
+import ScrollBarStyles from "resources/styles/ScrollBarStyles";
 import RootPage from "pages/RootPage";
 import HomePage from "pages/HomePage";
 import LoginPage from "pages/LoginPage";
@@ -6,13 +10,9 @@ import PostsPage from "pages/PostsPage";
 import WritePage from "pages/WritePage";
 import MyPage from "pages/MyPage";
 import AiPage from "pages/AiPage";
+import MobileRootPage from "mobile/pages/MobileRootPage";
 
-import MobileMainPage from "./mobile/pages/MobileMainPage";
 import InstallPage from "./mobile/pages/InstallPage";
-import ScrollBarStyles from "resources/styles/ScrollBarStyles";
-import { useEffect } from "react";
-import useUserStore from "stores/useUserStore";
-import { getMembers } from "apis/members";
 
 function App() {
   const location = useLocation();
@@ -46,7 +46,7 @@ function App() {
       {location.pathname.startsWith("/m/") ? null : <ScrollBarStyles />}
       <Routes>
         <Route path="/install" element={<InstallPage />} />
-        <Route path="/m/*" element={<MobileMainPage />} />
+        <Route path="/m/*" element={<MobileRootPage />} />
         <Route path="/" element={<RootPage />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />

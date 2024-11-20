@@ -1,18 +1,14 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 interface ProfileNicknameProps {
   nickname: string;
 }
 
 export default function ProfileNickname({ nickname }: ProfileNicknameProps) {
-  return (
-    <>
-      <ProfileNicknameWrapper>{nickname}</ProfileNicknameWrapper>
-    </>
-  );
+  return <ProfileNicknameWrapper>{nickname}</ProfileNicknameWrapper>;
 }
 
-const ProfileNicknameWrapper = styled.div`
+const ProfileNicknameWrapper = styled.span`
   color: white;
   font-size: 12px;
 `;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import searchImg from "../../../resource/assets/mobile/home/input.svg";
+import searchImg from "resources/assets/mobile-home/input.svg";
 import { useNavigate } from "react-router-dom";
 
 export default function SerachForm() {
@@ -29,9 +29,9 @@ export default function SerachForm() {
           placeholder="검색어를 입력하세요."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
         />
-        <img src={searchImg} alt="검색 이미지" onClick={handleSearch} />
+        <img src={searchImg} alt="" onClick={handleSearch} />
       </div>
     </SearchFormWrapper>
   );
@@ -54,9 +54,6 @@ const SearchFormWrapper = styled.div`
       color: #888888;
       font-weight: 500;
       flex-grow: 1;
-    }
-    img {
-      cursor: pointer;
     }
   }
 `;

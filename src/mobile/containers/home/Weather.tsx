@@ -1,38 +1,38 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import sunImg from "../../../resource/assets/weather/sun.svg";
-import snowImg from "../../../resource/assets/weather/snow.svg";
-import cloudImg from "../../../resource/assets/weather/cloud.svg";
-import sleetImg from "../../../resource/assets/weather/sleet.svg";
-import rainImg from "../../../resource/assets/weather/rain.svg";
-import moonImg from "../../../resource/assets/weather/moon.svg";
-import cloud_moonImg from "../../../resource/assets/weather/cloud_moon.svg";
-import pmGradeGood from "../../../resource/assets/pmGrade-good.svg";
-import pmGradeNormal from "../../../resource/assets/pmGrade-normal.svg";
-import pmGradeHarm from "../../../resource/assets/pmGrade-harm.svg";
-import pmGradeverHarm from "../../../resource/assets/pmGrade-veryharm.svg";
-import back from "../../../resource/assets/back.png";
-import { getWeathers } from "../../../utils/API/Weathers";
+import sunImg from "resources/assets/weather/sun.svg";
+import snowImg from "resources/assets/weather/snow.svg";
+import cloudImg from "resources/assets/weather/cloud.svg";
+import sleetImg from "resources/assets/weather/sleet.svg";
+import rainImg from "resources/assets/weather/rain.svg";
+import moonImg from "resources/assets/weather/moon.svg";
+import cloud_moonImg from "resources/assets/weather/cloud_moon.svg";
+import pmGradeGood from "resources/assets/weather/pmGrade-good.svg";
+import pmGradeNormal from "resources/assets/weather/pmGrade-normal.svg";
+import pmGradeHarm from "resources/assets/weather/pmGrade-harm.svg";
+import pmGradeverHarm from "resources/assets/weather/pmGrade-veryharm.svg";
+import back from "resources/assets/weather/weather-background.svg";
+import { getWeathers } from "apis/weathers";
+import { WeatherInfo } from "types/weathers";
 
 export default function WeatherForm() {
-  const [weather, setWeather] = useState<{
-    sky: string;
-    temperature: string;
-    pm10Grade: string;
-    day: string;
-  }>({ sky: "", temperature: "", pm10Grade: "", day: "" });
+  const [weather, setWeather] = useState<WeatherInfo>({
+    sky: "",
+    temperature: "",
+    pm10Value: "",
+    pm10Grade: "",
+    pm25Value: "",
+    pm25Grade: "",
+    day: "",
+  });
 
   useEffect(() => {
     const fetchWeather = async () => {
       try {
         const response = await getWeathers();
-        if (response.status === 200) {
-          setWeather(response.body.data);
-        } else {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        setWeather(response.data);
       } catch (error) {
-        console.error("날씨 정보 조회 안됨", error);
+        console.error("날씨 가져오기 실패", error);
       }
     };
     fetchWeather();
