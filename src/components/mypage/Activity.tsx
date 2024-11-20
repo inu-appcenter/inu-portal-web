@@ -7,12 +7,12 @@ import {
   getMembersPosts,
 } from "apis/members";
 import { useEffect, useState } from "react";
-import sortDrop from "resources/assets/mypage/sort-drop.svg";
 import likeImage from "resources/assets/mypage/like.svg";
 import replyImage from "resources/assets/mypage/reply.svg";
 import postImage from "resources/assets/mypage/post.svg";
 import calendarImage from "resources/assets/mypage/calendar.svg";
 import { useNavigate } from "react-router-dom";
+import SortDropdown from "components/mypage/SortDropdown";
 
 export default function Activity() {
   const [likeSort, setLikeSort] = useState("date");
@@ -50,7 +50,7 @@ export default function Activity() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getMembersPosts(postSort, 1);
+        const response = await getMembersPosts(postSort);
         setPostPost(response.data);
       } catch (error) {
         console.error("회원이 작성한 모든 글 가져오기 실패", error);
@@ -68,17 +68,11 @@ export default function Activity() {
             <img src={likeImage} alt="" />
             <span>{likePost.length}</span>
           </div>
-          <div className="sort-dropdown">
-            <span className="sortby">Sort by</span>
-            <span className="dropdown">
-              <span>{likeSort}</span>
-              <div className="dropdown-menu">
-                <button onClick={() => setLikeSort("date")}>date</button>
-                <button onClick={() => setLikeSort("like")}>like</button>
-              </div>
-            </span>
-            <img src={sortDrop} alt="" />
-          </div>
+          <SortDropdown
+            selectedSort={likeSort}
+            options={["date", "like"]}
+            onSortChange={setLikeSort}
+          />
         </div>
         <div className="posts-wrapper">
           {likePost.map((post) => (
@@ -106,17 +100,11 @@ export default function Activity() {
             <img src={replyImage} alt="" />
             <span>{replyPost.length}</span>
           </div>
-          <div className="sort-dropdown">
-            <span className="sortby">Sort by</span>
-            <span className="dropdown">
-              <span>{replySort}</span>
-              <div className="dropdown-menu">
-                <button onClick={() => setReplySort("date")}>date</button>
-                <button onClick={() => setReplySort("like")}>like</button>
-              </div>
-            </span>
-            <img src={sortDrop} alt="" />
-          </div>
+          <SortDropdown
+            selectedSort={replySort}
+            options={["date", "like"]}
+            onSortChange={setReplySort}
+          />
         </div>
         <div className="posts-wrapper">
           {replyPost.map((post) => (
@@ -144,17 +132,11 @@ export default function Activity() {
             <img src={postImage} alt="" />
             <span>{postPost.length}</span>
           </div>
-          <div className="sort-dropdown">
-            <span className="sortby">Sort by</span>
-            <span className="dropdown">
-              <span>{postSort}</span>
-              <div className="dropdown-menu">
-                <button onClick={() => setPostSort("date")}>date</button>
-                <button onClick={() => setPostSort("like")}>like</button>
-              </div>
-            </span>
-            <img src={sortDrop} alt="" />
-          </div>
+          <SortDropdown
+            selectedSort={postSort}
+            options={["date", "like"]}
+            onSortChange={setPostSort}
+          />
         </div>
         <div className="posts-wrapper">
           {postPost.map((post) => (
@@ -205,43 +187,6 @@ const ActivityWrapper = styled.div`
       align-items: center;
       gap: 8px;
     }
-    .sort-dropdown {
-      position: relative;
-
-      .sortby {
-        color: rgba(150, 150, 150, 1);
-      }
-      .dropdown {
-        display: inline-block;
-        position: relative;
-
-        &:hover .dropdown-menu {
-          display: flex;
-        }
-
-        .dropdown-menu {
-          display: none;
-          flex-direction: column;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          background: rgba(255, 255, 255, 0.5);
-          z-index: 10;
-
-          button {
-            background: transparent;
-            border: none;
-            padding: 4px;
-            font-size: 20px;
-            color: #0e4d9d;
-
-            &:hover {
-              background: rgba(122, 167, 229, 0.1);
-            }
-          }
-        }
-      }
-    }
   }
   .posts-wrapper {
     display: flex;
@@ -254,7 +199,7 @@ const ActivityWrapper = styled.div`
       padding: 16px;
       margin-right: 8px;
       background: transparent;
-      border: 1px solid rgba(122, 167, 229, 1);
+      border: 2px solid rgba(122, 167, 229, 1);
       border-radius: 12px;
       display: flex;
       align-items: center;

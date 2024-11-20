@@ -15,7 +15,7 @@ export default function Pagination({ pages }: { pages: number }) {
   const handleClickPage = (page: number) => {
     const params = new URLSearchParams(location.search);
     params.set("page", String(page));
-    navigate(`/posts?${params.toString()}`);
+    navigate(`${location.pathname}?${params.toString()}`);
   };
 
   return (

@@ -1,7 +1,7 @@
 import axiosInstance from "apis/axiosInstance";
 import tokenInstance from "apis/tokenInstance";
 import refreshInstance from "apis/refreshInstance";
-import { ApiResponse } from "types/common";
+import { ApiResponse, Pagination } from "types/common";
 import { TokenInfo, UserInfo, MembersReplies } from "types/members";
 import { Post } from "types/posts";
 
@@ -56,6 +56,17 @@ export const refresh = async (): Promise<ApiResponse<TokenInfo>> => {
   return response.data;
 };
 
+// 회원이 스크랩한 모든 글 가져오기
+export const getMembersScraps = async (
+  sort: string,
+  page: number
+): Promise<ApiResponse<Pagination<Post[]>>> => {
+  const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
+    `/api/members/scraps?sort=${sort}&page=${page}`
+  );
+  return response.data;
+};
+
 // 회원이 작성한 모든 댓글 가져오기
 export const getMembersReplies = async (
   sort: string
@@ -68,11 +79,10 @@ export const getMembersReplies = async (
 
 // 회원이 작성한 모든 글 가져오기
 export const getMembersPosts = async (
-  sort: string,
-  page: number
+  sort: string
 ): Promise<ApiResponse<Post[]>> => {
   const response = await tokenInstance.get<ApiResponse<Post[]>>(
-    `/api/members/posts?sort=${sort}&page=${page}`
+    `/api/members/posts?sort=${sort}`
   );
   return response.data;
 };
