@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { cafeteriasList } from "../../../resource/string/cafeterias";
+import { cafeterias } from "resources/strings/cafeterias";
 import { useState } from "react";
-import arrowImg from "../../../resource/assets/mobile/cafeteria/Vector.svg";
+import arrowImg from "resources/assets/mobile-cafeteria/Vector.svg";
 
 interface CafeteriaTitleContainerProps {
   title: string;
@@ -33,7 +33,7 @@ export default function CafeteriaToggle({
         <>
           <Backdrop onClick={handleToggle} />
           <div className="list">
-            {cafeteriasList.map((item, index) => (
+            {cafeterias.map((item, index) => (
               <div
                 key={index}
                 className="list-item"
@@ -50,7 +50,6 @@ export default function CafeteriaToggle({
 }
 
 const ToggleWrapper = styled.div`
-  margin-bottom: 10px;
   .title {
     display: flex;
     cursor: pointer;
@@ -70,21 +69,22 @@ const ToggleWrapper = styled.div`
     z-index: 1001;
     bottom: 0;
     left: 0;
-    width: 100vw;
-    padding: 16px 0 16px 0;
+    width: 100%;
+    padding: 16px;
     background-color: white;
-    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
   }
 
   .list-item {
-    padding-left: 30px;
+    padding-left: 32px;
     font-family: Inter;
     font-size: 14px;
     font-weight: 700;
     line-height: 16.94px;
     text-align: left;
     color: #9f9f9f;
-    margin-bottom: 15px;
+    padding: 8px;
   }
 `;
 

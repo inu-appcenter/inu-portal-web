@@ -1,19 +1,22 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { getCafeterias } from "../../utils/API/Cafeterias";
-import CafeteriaInfoContainer from "../containers/cafeteria/CafeteriaInfoContainer";
-import CafeteriaTitleContainer from "../containers/cafeteria/CafeteriaTitleContainer";
-// import CafeteriaTitleContainer from "../../container/cafeteria/CafeteriaTitleContainer";
-// import CafeteriaInfoContainer from "../../container/cafeteria/CafeteriaInfoContainer";
-import BackImg from "../../resource/assets/backbtn.svg";
+import { getCafeterias } from "apis/cafeterias";
+import CafeteriaInfoContainer from "mobile/containers/cafeteria/CafeteriaInfoContainer";
+import CafeteriaTitleContainer from "mobile/containers/cafeteria/CafeteriaTitleContainer";
+import BackImg from "resources/assets/mobile-common/backbtn.svg";
 import { useNavigate } from "react-router-dom";
+
+interface CafeteriaDetail {
+  구성원가: string;
+  칼로리: string;
+}
 
 export default function MobileMenuPage() {
   const [title, setTitle] = useState("학생식당");
   const [cafeteriaDetail, setCafeteriaDetail] = useState<
-    { 구성원가: string; 칼로리: string }[]
+    (CafeteriaDetail | null)[]
   >([]);
-  const [cafeteriaInfo, setCafeteriaInfo] = useState([]);
+  const [cafeteriaInfo, setCafeteriaInfo] = useState<(string | null)[]>([]);
   const [nowday, setNowDay] = useState(new Date().getDay());
   const [weekDates, setWeekDates] = useState<
     { dayName: string; date: string }[]
@@ -58,27 +61,18 @@ export default function MobileMenuPage() {
   const fetchCafeteriaData = async (date: number) => {
     try {
       const response = await getCafeterias(title, date);
-      if (response.status === 200) {
-        const processedData = response.body.data.map((info: string) =>
-          extractValues(info)
-        );
-        const infoData = response.body.data.map((info: string) =>
-          extractMenu(info)
-        );
-        console.log(processedData, "여기여기여기", infoData);
-        setCafeteriaInfo(infoData);
-        setCafeteriaDetail(processedData);
-      } else {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      const processedData = response.data.map((info: string) =>
+        extractValues(info)
+      );
+      const infoData = response.data.map((info: string) => extractMenu(info));
+      setCafeteriaInfo(infoData);
+      setCafeteriaDetail(processedData);
     } catch (error) {
       console.error("학식 정보 조회 안됨", error);
     }
   };
 
-  const extractValues = (
-    input: string
-  ): { 구성원가: string; 칼로리: string } | null => {
+  const extractValues = (input: string): CafeteriaDetail | null => {
     const price = input.match(/([0-9,]+)원/);
     const calory = input.match(/[0-9,]+kcal/);
     if (price && calory) {
@@ -127,7 +121,6 @@ const BackButton = styled.div`
   padding: 20px 0 0 20px;
   width: 80px;
   font-size: 14px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
