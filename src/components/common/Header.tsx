@@ -26,7 +26,7 @@ export default function Header() {
   return (
     <StyledHeader>
       <div>
-        <button onClick={() => navigate("/m")}>모바일</button>
+        {/* <button onClick={() => navigate("/m")}>모바일</button> */}
         <img
           src={AppcenterLogo}
           onClick={() => window.open("https://home.inuappcenter.kr/")}

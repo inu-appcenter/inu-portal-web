@@ -5,12 +5,11 @@ import LoginPage from "pages/LoginPage";
 import PostsPage from "pages/PostsPage";
 import WritePage from "pages/WritePage";
 import MyPage from "pages/MyPage";
+import AiPage from "pages/AiPage";
 
-import AiPage from "./page/AiPage";
 import MobileMainPage from "./mobile/pages/MobileMainPage";
 import InstallPage from "./mobile/pages/InstallPage";
 import ScrollBarStyles from "resources/styles/ScrollBarStyles";
-import MobileAiPage from "./mobile/pages/MobileAiPage";
 import { useEffect } from "react";
 import useUserStore from "stores/useUserStore";
 import { getMembers } from "apis/members";
@@ -56,7 +55,6 @@ function App() {
           <Route path="/mypage" element={<MyPage />} />
         </Route>
         <Route path="/ai/*" element={<AiPage />} />
-        <Route path="/m/ai/*" element={<MobileAiPage />} />
       </Routes>
     </>
   );
