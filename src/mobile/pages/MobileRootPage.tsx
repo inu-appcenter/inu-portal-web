@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import MobileIntroPage from "./MobileIntroPage";
-import MobileHeader from "../containers/common/MobileHeader";
-import MobileNav from "../containers/common/MobileNav";
-import MobileHomePage from "./MobileHomePage";
+import MobileIntroPage from "mobile/pages/MobileIntroPage";
+import MobileHeader from "mobile/containers/common/MobileHeader";
+import MobileNav from "mobile/containers/common/MobileNav";
+import MobileHomePage from "mobile/pages/MobileHomePage";
+
 import MobileTipsPage from "./MobileTipsPage";
 import MobileSavePage from "./MobileSavePage";
 import MobileWritePage from "./MobileWritePage";
@@ -29,9 +30,8 @@ const Page = styled.div<{ $active: boolean }>`
   justify-content: center;
 `;
 
-export default function MobileMainPage() {
+export default function MobileRootPage() {
   const [showIntro, setShowIntro] = useState(true);
-
   const location = useLocation();
   const [activePage, setActivePage] = useState("/m");
   const [pagesLoaded, setPagesLoaded] = useState<Record<string, boolean>>({
@@ -65,7 +65,6 @@ export default function MobileMainPage() {
   }, []);
 
   useEffect(() => {
-    console.log("왓니");
     const path = location.pathname.split("/")[2] || "home";
     setActivePage(location.pathname);
     if (path && !pagesLoaded[path]) {
@@ -79,81 +78,79 @@ export default function MobileMainPage() {
   const isLoginPage = location.pathname === "/m/login";
   const isPostDetailPage = location.pathname.includes("/m/postdetail");
   return (
-    <>
-      <MobileMainPageWrapper>
-        <UpperBackground src={UpperBackgroundImg} />
-        {showIntro ? <MobileIntroPage /> : <></>}
-        {!isLoginPage && !isPostDetailPage && <MobileHeader />}
-        <main style={{ flexGrow: 1 }}>
-          <Page
-            $active={
-              activePage.includes("/m/home") &&
-              !activePage.includes("/m/home/tips") &&
-              !activePage.includes("/m/home/menu") &&
-              !activePage.includes("/m/home/calendar")
-            }
-          >
-            <MobileHomePage />
+    <MobileRootPageWrapper>
+      <UpperBackground src={UpperBackgroundImg} />
+      {showIntro && <MobileIntroPage />}
+      {!isLoginPage && !isPostDetailPage && <MobileHeader />}
+      <main>
+        <Page
+          $active={
+            activePage.includes("/m/home") &&
+            !activePage.includes("/m/home/tips") &&
+            !activePage.includes("/m/home/menu") &&
+            !activePage.includes("/m/home/calendar")
+          }
+        >
+          <MobileHomePage />
+        </Page>
+        <Page $active={activePage.includes("/m/home/menu")}>
+          <MobileMenuPage />
+        </Page>
+        <Page $active={activePage.includes("/m/home/calendar")}>
+          <MobileCalendarPage />
+        </Page>
+        <Page $active={activePage.includes("/m/home/tips")}>
+          <MobileTipsPage />
+        </Page>
+        <Page $active={activePage.includes("/m/postdetail")}>
+          <MobilePostDetailPage />
+        </Page>
+        {pagesLoaded.write && (
+          <Page $active={activePage.includes("/m/write")}>
+            <MobileWritePage />
           </Page>
-          <Page $active={activePage.includes("/m/home/menu")}>
-            <MobileMenuPage />
+        )}
+        {pagesLoaded.save && (
+          <Page $active={activePage.includes("/m/save")}>
+            <MobileSavePage />
           </Page>
-          <Page $active={activePage.includes("/m/home/calendar")}>
-            <MobileCalendarPage />
-          </Page>
-          <Page $active={activePage.includes("/m/home/tips")}>
-            <MobileTipsPage />
-          </Page>
-          <Page $active={activePage.includes("/m/postdetail")}>
-            <MobilePostDetailPage />
-          </Page>
-          {pagesLoaded.write && (
-            <Page $active={activePage.includes("/m/write")}>
-              <MobileWritePage />
+        )}
+        {pagesLoaded.mypage ? (
+          activePage.includes("/m/mypage/profile") ? (
+            <Page $active={activePage.includes("/m/mypage/profile")}>
+              <MobileProfilePage />
             </Page>
-          )}
-          {pagesLoaded.save && (
-            <Page $active={activePage.includes("/m/save")}>
-              <MobileSavePage />
+          ) : activePage.includes("/m/mypage/post") ? (
+            <MobileMyPagePost />
+          ) : activePage.includes("/m/mypage/like") ? (
+            <MobileMyPageLike />
+          ) : activePage.includes("/m/mypage/comment") ? (
+            <MobileMyPageComment />
+          ) : activePage.includes("/m/mypage/delete") ? (
+            <MobileDeletePage />
+          ) : (
+            <Page $active={activePage.includes("/m/mypage")}>
+              <MobileMyPage />
             </Page>
-          )}
-          {pagesLoaded.mypage ? (
-            activePage.includes("/m/mypage/profile") ? (
-              <Page $active={activePage.includes("/m/mypage/profile")}>
-                <MobileProfilePage />
-              </Page>
-            ) : activePage.includes("/m/mypage/post") ? (
-              <MobileMyPagePost />
-            ) : activePage.includes("/m/mypage/like") ? (
-              <MobileMyPageLike />
-            ) : activePage.includes("/m/mypage/comment") ? (
-              <MobileMyPageComment />
-            ) : activePage.includes("/m/mypage/delete") ? (
-              <MobileDeletePage />
-            ) : (
-              <Page $active={activePage.includes("/m/mypage")}>
-                <MobileMyPage />
-              </Page>
-            )
-          ) : null}
-          {pagesLoaded.login && (
-            <Page $active={activePage === "/m/login"}>
-              <MobileLoginPage />
-            </Page>
-          )}
-        </main>
-      </MobileMainPageWrapper>
+          )
+        ) : null}
+        {pagesLoaded.login && (
+          <Page $active={activePage === "/m/login"}>
+            <MobileLoginPage />
+          </Page>
+        )}
+      </main>
       {!isLoginPage && !isPostDetailPage && (
         <MobileNav previousPages={previousPages} />
       )}
-    </>
+    </MobileRootPageWrapper>
   );
 }
 
-const MobileMainPageWrapper = styled.div`
+const MobileRootPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: calc(100svh - 64px); // nav 만큼 빼기
+  padding-bottom: 72px; // Nav
   overflow-y: auto;
 `;
 

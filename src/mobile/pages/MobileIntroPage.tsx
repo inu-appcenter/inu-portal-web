@@ -1,13 +1,13 @@
-import styled, { keyframes } from 'styled-components';
-import logoWithText from '../../resource/assets/mobile/login/logo-with-text.svg';
+import styled, { keyframes } from "styled-components";
+import logoWithText from "resources/assets/mobile-login/logo-with-text.svg";
 
 export default function MobileIntroPage() {
   return (
     <IntroPageWrapper>
-      <IntroImage src={logoWithText} />
+      <IntroImage src={logoWithText} alt="" />
       <div />
     </IntroPageWrapper>
-  )
+  );
 }
 
 const fadeOut = keyframes`

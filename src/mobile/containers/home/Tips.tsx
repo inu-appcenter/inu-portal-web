@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { getPostsMain } from "../../../utils/API/Posts";
+import { getPostsMain } from "apis/posts";
+import { Post } from "types/posts";
 import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
@@ -8,37 +9,24 @@ import "swiper/css/navigation";
 import "swiper/css";
 import { useNavigate } from "react-router-dom";
 
-interface Post {
-  id: number;
-  title: string;
-  category: string;
-}
-
 export default function TipForm() {
   const [topPosts, setTopPosts] = useState<Post[][]>([]);
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
         const response = await getPostsMain();
-        if (response.status === 200) {
-          const posts: Post[] = response.body.data; // Adjust this line if necessary based on actual response structure
-          const chunkedPosts: Post[][] = [];
-          for (let i = 0; i < posts.length; i += 3) {
-            chunkedPosts.push(posts.slice(i, i + 3));
-          }
-          setTopPosts(chunkedPosts);
-        } else {
-          console.error(
-            "Failed to fetch top posts, status code:",
-            response.status
-          );
+        const posts: Post[] = response.data; // Adjust this line if necessary based on actual response structure
+        const chunkedPosts: Post[][] = [];
+        for (let i = 0; i < posts.length; i += 3) {
+          chunkedPosts.push(posts.slice(i, i + 3));
         }
+        setTopPosts(chunkedPosts);
       } catch (error) {
-        console.error("Error fetching top posts:", error);
+        console.error("메인 페이지 게시글 7개 가져오기 실패", error);
       }
     };
-
     fetchTopPosts();
   }, []);
 
@@ -111,14 +99,16 @@ const TipFormWrapper = styled.div`
 
 const PostWrapper = styled.div`
   display: flex;
+  align-items: center;
   border: 1.5px solid #7aa7e5;
   padding: 0 11px;
   border-radius: 5px;
   margin-bottom: 8px;
   width: 90%;
+  margin-bottom: 4px;
 
   .category {
-    width: 20%;
+    width: 52px;
     background-color: #aac9ee;
     color: white;
     font-family: Inter;
@@ -128,17 +118,15 @@ const PostWrapper = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3px;
-    margin-bottom: 5px;
+    padding: 4px;
   }
 
   .title {
-    width: 100%;
+    flex: 1;
     font-family: Inter;
     font-size: 9px;
     font-weight: 600;
     text-align: center;
     color: #656565;
-    padding-right: 35px;
   }
 `;
