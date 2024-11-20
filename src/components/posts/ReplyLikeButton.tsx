@@ -24,14 +24,12 @@ export default function ReplyLikeButton({ id, like, isLiked }: Props) {
       }
     } catch (error) {
       console.error("댓글 좋아요 여부 변경 실패", error);
+      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
-        (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
       ) {
-        console.warn("refreshError");
-        return;
-      }
-      if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 400:
             alert("자신의 댓글에는 추천을 할 수 없습니다.");

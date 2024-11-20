@@ -49,14 +49,13 @@ export default function PostReplies({
         refreshReplies();
       } catch (error) {
         console.error("대댓글 등록 실패", error);
+        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
-          (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
         ) {
-          console.warn("refreshError");
-          return;
-        }
-        if (axios.isAxiosError(error) && error.response) {
           switch (error.response.status) {
             case 400:
               alert(
@@ -82,14 +81,13 @@ export default function PostReplies({
         refreshReplies();
       } catch (error) {
         console.error("댓글 수정 실패", error);
+        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
-          (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
         ) {
-          console.warn("refreshError");
-          return;
-        }
-        if (axios.isAxiosError(error) && error.response) {
           switch (error.response.status) {
             case 403:
               alert("이 댓글의 수정/삭제에 대한 권한이 없습니다.");
@@ -110,14 +108,13 @@ export default function PostReplies({
         refreshReplies();
       } catch (error) {
         console.error("댓글 등록 실패", error);
+        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
-          (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
         ) {
-          console.warn("refreshError");
-          return;
-        }
-        if (axios.isAxiosError(error) && error.response) {
           switch (error.response.status) {
             case 400:
               alert(
@@ -146,14 +143,13 @@ export default function PostReplies({
         refreshReplies();
       } catch (error) {
         console.error("댓글 삭제 실패", error);
+        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
-          (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
         ) {
-          console.warn("refreshError");
-          return;
-        }
-        if (axios.isAxiosError(error) && error.response) {
           switch (error.response.status) {
             case 403:
               alert("이 댓글의 수정/삭제에 대한 권한이 없습니다.");

@@ -1,7 +1,7 @@
 import { deletePost, getPostDetail } from "apis/posts";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { /* useLocation , */ useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { PostDetail } from "types/posts";
 import pencil from "resources/assets/posts/pencil.svg";
@@ -10,7 +10,7 @@ import LikeScrapButtons from "./LikeScrapButtons";
 import PostReplies from "./PostReplies";
 
 export default function PostDetails({ postId }: { postId: number }) {
-  const location = useLocation();
+  // const location = useLocation();
   const navigate = useNavigate();
   const [post, setPost] = useState<PostDetail>();
 
@@ -22,15 +22,12 @@ export default function PostDetails({ postId }: { postId: number }) {
       }
     } catch (error) {
       console.error("게시글 가져오기 실패", error);
-
+      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
-        (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
       ) {
-        console.warn("refreshError");
-        return;
-      }
-      if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
@@ -50,9 +47,12 @@ export default function PostDetails({ postId }: { postId: number }) {
   }, [postId]);
 
   const handleClickBefore = () => {
-    const params = new URLSearchParams(location.search);
-    params.delete("id");
-    navigate(`/posts?${params.toString()}`);
+    // 이전 페이지로
+    navigate(-1);
+    // id만 제거
+    // const params = new URLSearchParams(location.search);
+    // params.delete("id");
+    // navigate(`/posts?${params.toString()}`);
   };
 
   const handleDelete = async () => {
@@ -64,15 +64,12 @@ export default function PostDetails({ postId }: { postId: number }) {
       navigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
-
+      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
-        (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
       ) {
-        console.warn("refreshError");
-        return;
-      }
-      if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 403:
             alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");

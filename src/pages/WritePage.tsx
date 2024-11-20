@@ -62,15 +62,12 @@ export default function WritePage() {
       }
     } catch (error) {
       console.error("게시글 가져오기 실패", error);
-
+      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
-        (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
       ) {
-        console.warn("refreshError");
-        return;
-      }
-      if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
@@ -152,14 +149,13 @@ export default function WritePage() {
         navigate(`/posts?id=${response.data}`);
       } catch (error) {
         console.error("게시글 수정 실패", error);
+        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
-          (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
         ) {
-          console.warn("refreshError");
-          return;
-        }
-        if (axios.isAxiosError(error) && error.response) {
           switch (error.response.status) {
             case 403:
               alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
@@ -182,14 +178,13 @@ export default function WritePage() {
         navigate(`/posts?id=${response.data}`);
       } catch (error) {
         console.error("게시글 등록 실패", error);
+        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
-          (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
         ) {
-          console.warn("refreshError");
-          return;
-        }
-        if (axios.isAxiosError(error) && error.response) {
           switch (error.response.status) {
             case 400:
               alert(

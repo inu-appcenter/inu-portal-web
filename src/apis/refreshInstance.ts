@@ -19,4 +19,13 @@ refreshInstance.interceptors.request.use(
   }
 );
 
+// 응답 인터셉터
+refreshInstance.interceptors.response.use((response) => {
+  // 모든 응답의 response.data.msg 콘솔 출력
+  if (response.data && response.data.msg) {
+    console.log(response.data.msg);
+  }
+  return response;
+});
+
 export default refreshInstance;

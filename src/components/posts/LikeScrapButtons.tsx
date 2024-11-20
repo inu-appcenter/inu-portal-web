@@ -39,14 +39,12 @@ export default function LikeScrapButtons({
       }
     } catch (error) {
       console.error("게시글 좋아요 여부 변경 실패", error);
+      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
-        (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
       ) {
-        console.warn("refreshError");
-        return;
-      }
-      if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 400:
             alert("자신의 게시글에는 추천을 할 수 없습니다.");
@@ -74,14 +72,12 @@ export default function LikeScrapButtons({
       }
     } catch (error) {
       console.error("스크랩 여부 변경 실패", error);
+      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
-        (error as AxiosError & { isRefreshError?: boolean }).isRefreshError
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
       ) {
-        console.warn("refreshError");
-        return;
-      }
-      if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다.");

@@ -1,6 +1,6 @@
 import axiosInstance from "apis/axiosInstance";
 import tokenInstance from "apis/tokenInstance";
-import { ApiResponse } from "types/common";
+import { ApiResponse, Pagination } from "types/common";
 import { Post, PostDetail } from "types/posts";
 
 // 게시글 가져오기
@@ -69,7 +69,7 @@ export const getPosts = async (
   category: string,
   sort: string,
   page: number
-): Promise<ApiResponse<{ pages: number; posts: Post[] }>> => {
+): Promise<ApiResponse<Pagination<Post[]>>> => {
   const params: { [key: string]: string | number } = {
     sort,
     page,
@@ -77,9 +77,10 @@ export const getPosts = async (
   if (category !== "전체") {
     params.category = category;
   }
-  const response = await axiosInstance.get<
-    ApiResponse<{ pages: number; posts: Post[] }>
-  >("/api/posts", { params });
+  const response = await axiosInstance.get<ApiResponse<Pagination<Post[]>>>(
+    "/api/posts",
+    { params }
+  );
   return response.data;
 };
 
