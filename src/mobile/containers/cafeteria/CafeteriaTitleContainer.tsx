@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import CafeteriaDate from "mobile/components/cafeteria/CafeteriaDate";
 import CafeteriaToggle from "mobile/components/cafeteria/CafeteriaList";
 import styled from "styled-components";
@@ -22,10 +21,6 @@ export default function CafeteriaTitleContainer({
   setNowDay,
   weekDates,
 }: CafeteriaTitleContainerProps) {
-  useEffect(() => {
-    console.log("하이", weekDates, nowday);
-  }, [weekDates, nowday]);
-
   return (
     <CafeteriaTitleWrapper>
       <CafeteriaToggle title={title} setTitle={setTitle} />

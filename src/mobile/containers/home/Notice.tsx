@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 // import SortNotice from '../../components/notice/SortNotice';
 
 export default function NoticeForm() {
-  const [sort, setSort] = useState("view");
+  const [sort, setSort] = useState("date");
   const [notices, setNotices] = useState<Notice[]>([]);
   const navigate = useNavigate();
 
@@ -25,10 +25,6 @@ export default function NoticeForm() {
       console.error("모든 공지사항 가져오기 실패", error);
     }
   };
-
-  useEffect(() => {
-    fetchNotices("date");
-  }, []);
 
   useEffect(() => {
     fetchNotices(sort);

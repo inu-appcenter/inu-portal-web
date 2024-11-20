@@ -1,65 +1,37 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getMembersLikes } from "../../utils/API/Members";
-import CommontTitle from "../containers/mypage/Title";
+import { getMembersLikes } from "apis/members";
+import CommontTitle from "mobile/containers/mypage/Title";
 import styled from "styled-components";
-import Card from "../containers/mypage/Card";
-import Empty from "../components/mypage/Empty";
-
-interface BaseContent {
-  id: string;
-  title: string;
-  category: string;
-  writer: string;
-  content: string;
-  createDate: string;
-  modifiedDate: string;
-}
-
-interface Like extends BaseContent {
-  like: number;
-  scrap: number;
-  imageCount: number;
-}
+import Card from "mobile/containers/mypage/Card";
+import Empty from "mobile/components/mypage/Empty";
+import { Post } from "types/posts";
 
 export default function MobileMyPageLike() {
-  const token = useSelector((state: any) => state.user.token);
-  const [likes, setLikes] = useState<Like[]>([]); 
+  const [likePost, setLikePost] = useState<Post[]>([]);
 
   useEffect(() => {
-    fetchLikes();
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log(token);
-    console.log("likes", likes.length); 
-  }, [likes]); 
-
-  const fetchLikes = async () => {
+  const fetchData = async () => {
     try {
-      const response = await getMembersLikes(token, "date");
-      if (response.status === 200) {
-        console.log(response.body.data, "ㅎ역");
-        setLikes(response.body.data);
-      }
+      const response = await getMembersLikes("date");
+      setLikePost(response.data);
     } catch (error) {
-      console.error("좋아요 가져오기 오류:", error);
-      alert("좋아요를 가져오는 중 오류가 발생했습니다.");
+      console.error("회원이 좋아요한 모든 글 가져오기 실패", error);
     }
   };
 
   return (
     <MobileMyPageLikeWrapper>
       <CommontTitle title={"좋아요 한 글"} />
-      {likes.length === 0 ? (
-        <Empty/>
+      {likePost.length === 0 ? (
+        <Empty />
       ) : (
-        <Card post={likes} onUpdate={fetchLikes} type="like" /> 
+        <Card post={likePost} onUpdate={fetchData} type="like" />
       )}
     </MobileMyPageLikeWrapper>
   );
 }
 
-const MobileMyPageLikeWrapper = styled.div`
-`;
-
+const MobileMyPageLikeWrapper = styled.div``;

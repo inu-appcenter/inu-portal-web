@@ -1,7 +1,7 @@
-import styled from 'styled-components';
-import BackButton from '../components/login/BackButton';
-import LoginLogo from '../components/login/LoginLogo';
-import LoginForm from '../components/login/LoginForm';
+import styled from "styled-components";
+import BackButton from "mobile/components/login/BackButton";
+import LoginLogo from "mobile/components/login/LoginLogo";
+import LoginForm from "mobile/components/login/LoginForm";
 
 export default function MobileLoginPage() {
   return (
@@ -32,6 +32,5 @@ const Content = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-grow: 1;
   gap: 128px;
 `;

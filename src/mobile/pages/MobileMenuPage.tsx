@@ -26,23 +26,15 @@ export default function MobileMenuPage() {
   const navigate = useNavigate();
   useEffect(() => {
     setWeekDates(getWeekDates(date)); // 주의 날짜 설정
-    console.log(weekDates, "현재 주의 날짜");
   }, []);
 
   useEffect(() => {
-    console.log(nowday);
-    fetchCafeteriaData(nowday);
-  }, []);
-
-  useEffect(() => {
-    console.log(nowday);
     fetchCafeteriaData(nowday);
   }, [title, nowday]);
 
   const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
     const weekDates = [];
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    console.log(day, "datat");
     const diffToMonday = (day === 0 ? -6 : 1) - day; // 월요일까지의 차이
     const monday = new Date(date);
     monday.setDate(date.getDate() + diffToMonday); // 이번 주 월요일 날짜
@@ -68,7 +60,7 @@ export default function MobileMenuPage() {
       setCafeteriaInfo(infoData);
       setCafeteriaDetail(processedData);
     } catch (error) {
-      console.error("학식 정보 조회 안됨", error);
+      console.error("학식 메뉴 가져오기 실패", error);
     }
   };
 

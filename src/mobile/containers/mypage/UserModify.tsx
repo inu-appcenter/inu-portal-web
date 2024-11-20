@@ -1,77 +1,29 @@
 import styled from "styled-components";
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
-import {
-  NicknameUser as NicknameUserAction,
-  ProfileUser as ProfileUserAction,
-} from "../../../reducer/userSlice";
-import NewNicknameInput from "../../components/mypage/Nickname";
-import { profileimg } from "../../../resource/string/profileImg";
-import { putMembers } from "../../../utils/API/Members";
-import { ProfileDropdown } from "../../components/mypage/ProfielImg";
+import { putMembers } from "apis/members";
 import { useNavigate } from "react-router-dom";
-import BackImg from "../../../resource/assets/backbtn.svg";
-interface loginInfo {
-  user: {
-    token: string;
-  };
-}
+import BackImg from "resources/assets/mobile-common/backbtn.svg";
+import useUserStore from "stores/useUserStore";
 
 export default function UserModify() {
-  const token = useSelector((state: loginInfo) => state.user.token);
-  const [newNickname, setNewNickname] = useState<string>("");
-  const [newFireId, setNewFireId] = useState<string>("");
+  const { setUserInfo, userInfo } = useUserStore();
+  const [nickname, setNickname] = useState(userInfo.nickname);
+  const [fireId, setFireId] = useState(userInfo.fireId);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const handleChangeImage = (image: string) => {
-    console.log("선택한 이미지", Number(image.match(/\d+/)));
-    setNewFireId(image);
-  };
-
-  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
-    setNewNickname(e.target.value);
-  };
 
   const handleModifyClick = async () => {
     try {
-      console.log(
-        "new nickname , fireid ",
-        newNickname,
-        newFireId !== "" ? String(newFireId.match(/\d+/)) : ""
-      );
-      const response = await putMembers(
-        token,
-        newNickname,
-        newFireId !== "" ? String(newFireId.match(/\d+/)) : ""
-      );
+      const response = await putMembers(nickname, fireId);
 
-      if (response.status === 200) {
-        alert(response.body.msg);
-        if (newNickname) {
-          dispatch(NicknameUserAction({ nickname: newNickname }));
-        }
-        if (newFireId) {
-          dispatch(
-            ProfileUserAction({ fireId: Number(newFireId.match(/\d+/)) })
-          );
-        }
-        setNewNickname("");
-        setNewFireId("");
-      } else if (response.status === 400 || response.status === 404) {
-        alert(response.body.msg);
-        setNewNickname("");
-        setNewFireId("");
-      } else {
-        alert("알 수 없는 오류가 발생했습니다.");
-        setNewNickname("");
-        setNewFireId("");
-      }
+      setUserInfo({
+        id: response.data,
+        nickname: nickname,
+        fireId: Number(fireId),
+      });
+      alert("성공적으로 수정되었습니다.");
     } catch (error) {
-      console.error("닉네임 변경 실패:", error);
-      alert("닉네임 변경에 실패했습니다.");
+      console.error("회원정보 수정 실패", error);
+      alert("회원정보 수정에 실패했습니다.");
     }
   };
 
@@ -80,15 +32,28 @@ export default function UserModify() {
       <BackButton onClick={() => navigate("/m/mypage")}>
         <img src={BackImg} alt="뒤로가기 버튼" />
       </BackButton>
-      <NewNicknameInput
-        onChange={handleNicknameChange}
-        newNickname={newNickname}
-      />
-      <ProfileDropdown
-        images={profileimg}
-        newFireId={newFireId}
-        onChange={handleChangeImage}
-      />
+      <div className="nickname">
+        <h4>닉네임</h4>
+        <input
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          placeholder="새로운 닉네임을 입력하세요!"
+        />
+      </div>
+      <ImageSelection>
+        {Array.from({ length: 12 }, (_, i) => i + 1).map((id) => (
+          <ImageOption
+            key={id}
+            selected={id === fireId}
+            onClick={() => setFireId(id)}
+          >
+            <img
+              src={`https://portal.inuappcenter.kr/api/images/${id}`}
+              alt={`이미지 ${id}`}
+            />
+          </ImageOption>
+        ))}
+      </ImageSelection>
       <ButtonWrapper>
         <Modify onClick={handleModifyClick}>수정</Modify>
       </ButtonWrapper>
@@ -100,11 +65,26 @@ const UserModifyWrapper = styled.div`
   position: absolute;
   top: 310px;
   width: 100%;
-  /* padding: 20px 76px;
-  height: 100%; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .nickname {
+    width: 90%;
+    h4 {
+      margin-bottom: 8px;
+    }
+    input {
+      width: 90%;
+      padding: 12px;
+      border-radius: 8px;
+      color: #404040;
+      font-size: 10px;
+    }
+  }
 `;
 
 const BackButton = styled.div`
+  align-self: flex-start;
   margin: 20px 24px 0;
   background-color: white;
   font-size: 14px;
@@ -122,15 +102,25 @@ const ButtonWrapper = styled.div`
   justify-content: center;
 `;
 
+const ImageSelection = styled.div`
+  margin: 24px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+`;
+
+const ImageOption = styled.div<{ selected: boolean }>`
+  width: 100px;
+  height: 100px;
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    border: ${({ selected }) => (selected ? "3px solid #4071B9" : "none")};
+  }
+`;
+
 const Modify = styled.button`
-  /* background: linear-graient(90deg, #6F84E2 0%, #7BABE5 100%);
-  border: 1px solid #fff;
-  border-radius: 5px;
-  color: white;
-  font-size: 17px;
-  font-weight: 700;
-  margin-top: 20px;
-  padding: 6px 44px; */
   margin: 0 24px;
   box-sizing: border-box;
   margin-bottom: 90px;

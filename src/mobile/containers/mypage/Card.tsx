@@ -1,43 +1,28 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
-import { deletePost, handlePostLike } from "../../../utils/API/Posts";
-import X_Vector from "../../../resource/assets/X-Vector.svg"; // X 버튼 이미지
+import { deletePost, putLike } from "apis/posts";
+import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
 import { useResetTipsStore } from "../../../reducer/resetTipsStore";
+import { Post } from "types/posts";
 
-// Define a base interface for shared properties
-export interface BaseContent {
-  id: string;
-  title: string;
-  category: string;
-  writer: string;
-  content: string;
-  createDate: string;
-  modifiedDate: string;
-}
-
-// Define types for the props accepted by the Card component
 interface TipsCardContainerProps {
-  post: BaseContent[]; // Using BaseContent ensures 'id' is always present
+  post: Post[];
   onUpdate: () => void; // 콜백 함수
-  type: "like" | "post"; // Card 타입을 정의하여 컨텍스트를 명확히 함
+  type: "like" | "post";
 }
 
 export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false); // Modal visibility state
-  const [activePostId, setActivePostId] = useState<string | null>(null); // Active post state
+  const [showModal, setShowModal] = useState(false);
+  const [activePostId, setActivePostId] = useState<number | null>(null);
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
-  const token = useSelector((state: any) => state.user.token);
-
-  // Function to handle document click and navigate to the post detail page
-  const handleDocumentClick = (id: string) => {
+  const handleDocumentClick = (id: number) => {
     navigate(`/m/postdetail?id=${id}`);
   };
 
-  const handleXButtonClick = (id: string) => {
+  const handleXButtonClick = (id: number) => {
     setActivePostId(id);
     setShowModal(true);
   };
@@ -48,37 +33,26 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
   };
 
   const handleConfirm = async () => {
-    if (!token || !activePostId) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
-    try {
-      if (type === "post") {
-        // 글 삭제
-        const response = await deletePost(token, activePostId);
-        if (response.status === 200) {
+    if (activePostId) {
+      try {
+        if (type === "post") {
+          // 글 삭제
+          await deletePost(activePostId);
           alert("게시글이 성공적으로 삭제되었습니다.");
           triggerReset();
           onUpdate(); // 콜백 함수 호출하여 목록 갱신
-        } else {
-          alert("게시글 삭제에 실패했습니다.");
-        }
-      } else if (type === "like") {
-        // 좋아요 삭제
-        const response = await handlePostLike(token, activePostId);
-        if (response.status === 200) {
+        } else if (type === "like") {
+          // 좋아요 삭제
+          await putLike(activePostId);
           alert("좋아요가 성공적으로 삭제되었습니다.");
           onUpdate(); // 콜백 함수 호출하여 목록 갱신
-        } else {
-          alert("좋아요 삭제에 실패했습니다.");
         }
+      } catch (error) {
+        console.error("작업 중 오류 발생:", error);
+        alert("작업 중 오류가 발생했습니다.");
+      } finally {
+        handleCancel(); // 작업 후 모달 닫기
       }
-    } catch (error) {
-      console.error("작업 중 오류 발생:", error);
-      alert("작업 중 오류가 발생했습니다.");
-    } finally {
-      handleCancel(); // 작업 후 모달 닫기
     }
   };
 
@@ -241,7 +215,7 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: end;
   justify-content: center;
-  z-index: 1000; /* Ensure it overlays above everything else */
+  z-index: 1000;
 `;
 
 const ModalWrapper = styled.div`

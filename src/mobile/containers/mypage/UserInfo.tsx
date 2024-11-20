@@ -1,25 +1,17 @@
-import { useSelector } from "react-redux";
-import ProfileNickname from "../../components/common/ProfileNickname";
-import ProfileImage from "../../components/common/ProfileImage";
+import ProfileNickname from "mobile/components/common/ProfileNickname";
+import ProfileImage from "mobile/components/common/ProfileImage";
 import styled from "styled-components";
-
-interface loginInfo {
-  user: {
-    token: string;
-  };
-}
+import useUserStore from "stores/useUserStore";
 
 export default function UserInfo() {
-  const token = useSelector((state: loginInfo) => state.user.token);
-  const fireId: number = useSelector((state: any) => state.user.fireId);
-  const nickname: string = useSelector((state: any) => state.user.nickname);
+  const { userInfo } = useUserStore();
 
   return (
     <UserInfoWrapper>
-      {token && (
+      {userInfo.id && (
         <>
-          <ProfileImage fireId={fireId} />
-          <ProfileNickname nickname={nickname} />
+          <ProfileImage fireId={userInfo.fireId} />
+          <ProfileNickname nickname={userInfo.nickname} />
         </>
       )}
     </UserInfoWrapper>
