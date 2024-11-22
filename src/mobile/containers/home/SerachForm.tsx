@@ -12,7 +12,7 @@ export default function SerachForm() {
       alert("검색어는 두 글자 이상이어야 합니다.");
       return;
     }
-    navigate(`/m/home/tips/search?query=${query}`);
+    navigate(`/m/home/tips?search=${query}`);
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {

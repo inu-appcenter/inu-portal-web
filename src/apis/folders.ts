@@ -22,7 +22,7 @@ export const putFolders = async (
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.put<ApiResponse<number>>(
     `/api/folders/${folderId}`,
-    name
+    { name }
   );
   return response.data;
 };

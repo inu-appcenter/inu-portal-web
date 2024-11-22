@@ -1,30 +1,25 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import styled from "styled-components";
-import TipsCard from "../../components/tips/TipsCard";
-import {
-  getFoldersPosts,
-  deleteFoldersPosts,
-} from "../../../utils/API/Folders";
-import { getMembersScraps } from "../../../utils/API/Members";
-import { searchScrap, searchFolder } from "../../../utils/API/Search";
-import { handlePostScrap } from "../../../utils/API/Posts";
-import SaveSearchForm from "../../components/save/SaveSearchForm";
-import editButton from "../../../resource/assets/mobile/save/editButton.svg";
-import FolderListDropDowns from "../../../mobile/components/save/MobileFolderListDropDowns";
-import DeleteConfirmModal from "../../components/save/DeleteConfirmModal";
-import Trash from "../../../resource/assets/mobile/save/Trash.svg";
+import TipsCard from "mobile/components/tips/TipsCard";
+import { getFoldersPosts, deleteFoldersPosts } from "apis/folders";
+import { getMembersScraps } from "apis/members";
+import { getSearchScrap, getSearchFolderScrap } from "apis/search";
+import { putScrap } from "apis/posts";
+import SaveSearchForm from "mobile/components/save/SaveSearchForm";
+import editButton from "resources/assets/mobile-save/editButton.svg";
+import FolderListDropDowns from "mobile/components/save/MobileFolderListDropDowns";
+import DeleteConfirmModal from "mobile/components/save/DeleteConfirmModal";
+import Trash from "resources/assets/mobile-save/Trash.svg";
+import { Folder } from "types/folders";
+import { Post } from "types/posts";
+import axios, { AxiosError } from "axios";
 
 interface ScrapContentsProps {
   folders: Folder[];
   folder: Folder | null;
-  token: string;
 }
 
-export default function ScrapContents({
-  folders,
-  folder,
-  token,
-}: ScrapContentsProps) {
+export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
   const [posts, setPosts] = useState<(Post | { page: number })[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -48,35 +43,32 @@ export default function ScrapContents({
         if (folder.id === 0) {
           // '전체' 폴더
           response = searchQuery
-            ? await searchScrap(token, searchQuery, "date", pageToLoad)
-            : await getMembersScraps(token, "date", pageToLoad);
+            ? await getSearchScrap(searchQuery, "date", pageToLoad)
+            : await getMembersScraps("date", pageToLoad);
         } else {
           response = searchQuery
-            ? await searchFolder(
-                token,
-                folder.id,
+            ? await getSearchFolderScrap(
                 searchQuery,
                 "date",
-                pageToLoad
+                pageToLoad,
+                folder.id
               )
-            : await getFoldersPosts(token, folder.id, "date", pageToLoad);
+            : await getFoldersPosts(folder.id, "date", pageToLoad);
         }
-        if (response.status === 200) {
-          const newPosts = response.body.data.posts;
-          setPosts((prev) =>
-            pageToLoad === 1
-              ? [{ page: pageToLoad }, ...newPosts]
-              : [...prev, { page: pageToLoad }, ...newPosts]
-          );
-          setTotalPages(response.body.data.pages);
-          setTotal(response.body.data.total);
-        }
+        const newPosts = response.data.posts;
+        setPosts((prev) =>
+          pageToLoad === 1
+            ? [{ page: pageToLoad }, ...newPosts]
+            : [...prev, { page: pageToLoad }, ...newPosts]
+        );
+        setTotalPages(response.data.pages);
+        setTotal(response.data.total);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
       setLoading(false);
     },
-    [folder, token]
+    [folder]
   );
 
   const fetchInitialData = useCallback(
@@ -92,37 +84,35 @@ export default function ScrapContents({
         if (folder.id === 0) {
           // '전체' 폴더
           responsePage1 = searchQuery
-            ? await searchScrap(token, searchQuery, "date", 1)
-            : await getMembersScraps(token, "date", 1);
+            ? await getSearchScrap(searchQuery, "date", 1)
+            : await getMembersScraps("date", 1);
           responsePage2 = searchQuery
-            ? await searchScrap(token, searchQuery, "date", 2)
-            : await getMembersScraps(token, "date", 2);
+            ? await getSearchScrap(searchQuery, "date", 2)
+            : await getMembersScraps("date", 2);
         } else {
           responsePage1 = searchQuery
-            ? await searchFolder(token, folder.id, searchQuery, "date", 1)
-            : await getFoldersPosts(token, folder.id, "date", 1);
+            ? await getSearchFolderScrap(searchQuery, "date", 1, folder.id)
+            : await getFoldersPosts(folder.id, "date", 1);
           responsePage2 = searchQuery
-            ? await searchFolder(token, folder.id, searchQuery, "date", 2)
-            : await getFoldersPosts(token, folder.id, "date", 2);
+            ? await getSearchFolderScrap(searchQuery, "date", 2, folder.id)
+            : await getFoldersPosts(folder.id, "date", 2);
         }
-        if (responsePage1?.status === 200 && responsePage2?.status === 200) {
-          const newPostsPage1 = responsePage1.body.data.posts;
-          const newPostsPage2 = responsePage2.body.data.posts;
-          setPosts([
-            { page: 1 },
-            ...newPostsPage1,
-            { page: 2 },
-            ...newPostsPage2,
-          ]);
-          setTotalPages(responsePage1.body.data.pages);
-          setTotal(responsePage1.body.data.total);
-        }
+        const newPostsPage1 = responsePage1.data.posts;
+        const newPostsPage2 = responsePage2.data.posts;
+        setPosts([
+          { page: 1 },
+          ...newPostsPage1,
+          { page: 2 },
+          ...newPostsPage2,
+        ]);
+        setTotalPages(responsePage1.data.pages);
+        setTotal(responsePage1.data.total);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
       setLoading(false);
     },
-    [folder, token]
+    [folder]
   );
 
   // 데이터 더 가져오기 함수
@@ -202,21 +192,30 @@ export default function ScrapContents({
     setShowConfirmModal(true);
   };
 
+  // 다중 삭제
   const confirmRemovePosts = async () => {
     if (!folder) return;
     try {
       for (const postId of selectedPosts) {
         if (folder.id === 0) {
-          await handlePostScrap(token, postId.toString());
+          await putScrap(postId);
         } else {
-          await deleteFoldersPosts(token, postId, folder.id.toString());
+          await deleteFoldersPosts(folder.id, [postId]);
         }
       }
       fetchInitialData(query);
       setIsEditing(false);
       setSelectedPosts([]);
     } catch (error) {
-      console.error("Error removing posts:", error);
+      console.error("스크랩폴더에서 게시글 빼기 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        alert("스크랩폴더에서 게시글 빼기 실패");
+      }
     }
     setShowConfirmModal(false);
   };
@@ -230,18 +229,27 @@ export default function ScrapContents({
     setShowConfirmModal(true);
   };
 
+  // 단일 삭제
   const confirmDeletePost = async () => {
     if (!folder || postToDelete === null) return;
     try {
       if (folder.id === 0) {
-        await handlePostScrap(token, postToDelete.toString());
+        await putScrap(postToDelete);
       } else {
-        await deleteFoldersPosts(token, postToDelete, folder.id.toString());
+        await deleteFoldersPosts(postToDelete, [folder.id]);
       }
       fetchInitialData(query);
       setPostToDelete(null);
     } catch (error) {
-      console.error("Error deleting post:", error);
+      console.error("스크랩폴더에서 게시글 빼기 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        alert("스크랩폴더에서 게시글 빼기 실패");
+      }
     }
     setShowConfirmModal(false);
   };
@@ -376,7 +384,6 @@ export default function ScrapContents({
               <FolderListDropDowns
                 folders={folders}
                 postIds={selectedPosts}
-                token={token}
                 handleAddPosts={() => handleAddPosts()}
                 onClose={() => setIsDropdownVisible(false)}
               />

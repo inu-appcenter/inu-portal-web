@@ -149,3 +149,22 @@ export const getPostsTop = async (
   );
   return response.data;
 };
+
+// 모바일용 게시글 리스트 가져오기
+export const getPostsMobile = async (
+  lastPostId: number | undefined,
+  category: string
+): Promise<ApiResponse<Post[]>> => {
+  const params: { [key: string]: string | number } = {};
+  if (category !== "전체") {
+    params.category = category;
+  }
+  if (typeof lastPostId === "number") {
+    params.lastPostId = lastPostId;
+  }
+  const response = await axiosInstance.get<ApiResponse<Post[]>>(
+    "/api/posts/mobile",
+    { params }
+  );
+  return response.data;
+};

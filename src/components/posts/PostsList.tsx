@@ -22,6 +22,7 @@ export default function PostsList() {
   const [category, setCategory] = useState(""); // 이전 상태와 동일한지 확인
   const [page, setPage] = useState(""); // 이전 상태와 동일한지 확인
   const [sort, setSort] = useState(""); // 이전 상태와 동일한지 확인
+  const [query, setQuery] = useState("");
 
   const handleClickPost = (postId: number) => {
     const params = new URLSearchParams(location.search);
@@ -73,11 +74,14 @@ export default function PostsList() {
       : "전체";
     const tmpPage = params.get("page") ? params.get("page") : "1";
     const tmpSort = params.get("sort") ? params.get("sort") : "date";
+    const tmpQuery = params.get("search") ? params.get("search") : "";
+    console.log(tmpQuery, query);
     if (
       tmpType === type &&
       tmpCategory === category &&
       tmpPage === page &&
-      tmpSort === sort
+      tmpSort === sort &&
+      tmpQuery === query
     ) {
       return; // 이전 상태와 동일한지 확인
     }
@@ -85,6 +89,7 @@ export default function PostsList() {
     setCategory(tmpCategory || "전체");
     setPage(tmpPage || "1");
     setSort(tmpSort || "date");
+    setQuery(tmpQuery || "");
     fetchData();
   }, [location.search]);
 
