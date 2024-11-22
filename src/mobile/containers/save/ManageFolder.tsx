@@ -1,94 +1,88 @@
 // ManageFolder.tsx
-import styled from 'styled-components';
-import { useEffect, useState } from 'react';
-import { getFolders, postFolders, putFolders, deleteFolders } from '../../../utils/API/Folders';
-import DeleteConfirmModal from '../../components/save/DeleteConfirmModal';
+import styled from "styled-components";
+import { useState } from "react";
+import { postFolders, putFolders, deleteFolders } from "apis/folders";
+import DeleteConfirmModal from "mobile/components/save/DeleteConfirmModal";
+import axios, { AxiosError } from "axios";
+import { Folder } from "types/folders";
 
 interface ManageFolderProps {
-  token: string;
+  folders: Folder[];
   onFolderManaged: () => void; // 폴더 관리 후 호출되는 콜백 함수
-  mode: 'add' | 'manage';
+  mode: "add" | "manage";
 }
 
-interface Folder {
-  id: number;
-  name: string;
-}
-
-export default function ManageFolder({ token, onFolderManaged, mode }: ManageFolderProps) {
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [newFolderName, setNewFolderName] = useState('');
+export default function ManageFolder({
+  folders,
+  onFolderManaged,
+  mode,
+}: ManageFolderProps) {
+  const [newFolderName, setNewFolderName] = useState("");
   const [editingFolderId, setEditingFolderId] = useState<number | null>(null);
-  const [editingFolderName, setEditingFolderName] = useState('');
+  const [editingFolderName, setEditingFolderName] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false); // 폴더 삭제 모달 상태
   const [folderToDelete, setFolderToDelete] = useState<number | null>(null); // 삭제할 폴더 ID
 
-  const fetchFolders = async () => {
-    try {
-      const response = await getFolders(token);
-      if (response.status === 200) {
-        setFolders(response.body.data);
-      } else {
-        throw new Error(String(response.status));
-      }
-    } catch (error) {
-      console.error('폴더 목록 가져오기 오류', error);
-    }
-  };
-
   const handleAddFolder = async () => {
-    if (newFolderName.trim() === '') {
-      alert('폴더 이름을 입력해주세요.');
+    if (newFolderName.trim() === "") {
+      alert("폴더 이름을 입력해주세요.");
       return;
     }
     try {
-      const response = await postFolders(token, newFolderName);
-      if (response.status === 201) {
-        setNewFolderName('');
-        fetchFolders();
-        onFolderManaged();
-      } else {
-        throw new Error(String(response.status));
-      }
+      await postFolders(newFolderName);
+      setNewFolderName("");
+      onFolderManaged();
     } catch (error) {
-      alert('폴더 생성 오류' + error);
-      console.error('폴더 생성 오류', error);
+      console.error("폴더 생성 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        alert("폴더 생성 실패");
+      }
     }
   };
 
   const handleEditFolder = async (folderId: number) => {
-    if (editingFolderName.trim() === '') {
-      alert('폴더 이름을 입력해주세요.');
+    if (editingFolderName.trim() === "") {
+      alert("폴더 이름을 입력해주세요.");
       return;
     }
     try {
-      const response = await putFolders(token, folderId, editingFolderName);
-      if (response.status === 200) {
-        setEditingFolderId(null);
-        setEditingFolderName('');
-        fetchFolders();
-        onFolderManaged();
-      } else {
-        throw new Error(String(response.status));
-      }
+      await putFolders(folderId, editingFolderName);
+
+      setEditingFolderId(null);
+      setEditingFolderName("");
+      onFolderManaged();
     } catch (error) {
-      alert('폴더 수정 오류' + error);
-      console.error('폴더 수정 오류', error);
+      console.error("폴더 수정 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        alert("폴더 수정 실패");
+      }
     }
   };
 
   const handleDeleteFolder = async (folderId: number) => {
     try {
-      const response = await deleteFolders(token, folderId);
-      if (response.status === 200) {
-        fetchFolders();
-        onFolderManaged();
-      } else {
-        throw new Error(String(response.status));
-      }
+      await deleteFolders(folderId);
+      onFolderManaged();
     } catch (error) {
-      alert('폴더 삭제 오류' + error);
-      console.error('폴더 삭제 오류', error);
+      console.error("폴더 삭제 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        alert("폴더 삭제 실패");
+      }
     }
   };
 
@@ -112,16 +106,12 @@ export default function ManageFolder({ token, onFolderManaged, mode }: ManageFol
 
   const handleCancelEdit = () => {
     setEditingFolderId(null);
-    setEditingFolderName('');
+    setEditingFolderName("");
   };
-
-  useEffect(() => {
-    fetchFolders();
-  }, []);
 
   return (
     <ManageFolderWrapper>
-      {mode === 'add' ? (
+      {mode === "add" ? (
         <FolderInputWrapper>
           <FolderAddInput
             type="text"
@@ -143,14 +133,25 @@ export default function ManageFolder({ token, onFolderManaged, mode }: ManageFol
                     onChange={(e) => setEditingFolderName(e.target.value)}
                     placeholder="폴더 이름을 입력하세요."
                   />
-                  <SaveButton onClick={() => handleEditFolder(folder.id)}>저장</SaveButton>
+                  <SaveButton onClick={() => handleEditFolder(folder.id)}>
+                    저장
+                  </SaveButton>
                   <CancelButton onClick={handleCancelEdit}>취소</CancelButton>
                 </EditFolderWrapper>
               ) : (
                 <>
                   <FolderName>{folder.name}</FolderName>
-                  <EditButton onClick={() => { setEditingFolderId(folder.id); setEditingFolderName(folder.name); }}>수정</EditButton>
-                  <DeleteButton onClick={() => confirmDeleteFolder(folder.id)}>삭제</DeleteButton>
+                  <EditButton
+                    onClick={() => {
+                      setEditingFolderId(folder.id);
+                      setEditingFolderName(folder.name);
+                    }}
+                  >
+                    수정
+                  </EditButton>
+                  <DeleteButton onClick={() => confirmDeleteFolder(folder.id)}>
+                    삭제
+                  </DeleteButton>
                 </>
               )}
             </FolderItem>
@@ -190,9 +191,9 @@ const FolderAddInput = styled.input`
   padding-left: 16px;
   height: 72px;
   border-radius: 10px;
-  background-color: #F9F9F9;
+  background-color: #f9f9f9;
   border: none;
-  box-shadow: 0px 2px 8px 0px #0000001A;
+  box-shadow: 0px 2px 8px 0px #0000001a;
   font-size: 14px;
   font-weight: 500;
 `;
@@ -201,7 +202,7 @@ const AddButton = styled.button`
   width: 80px;
   height: 32px;
   border: none;
-  background-color: #9CAFE2;
+  background-color: #9cafe2;
   color: white;
   border-radius: 10px;
   font-size: 14px;
@@ -243,7 +244,7 @@ const FolderName = styled.span`
 `;
 
 const EditButton = styled.div`
-  background-color: #9CAFE2;
+  background-color: #9cafe2;
   color: white;
   border-radius: 4px;
   height: 24px;
@@ -254,7 +255,7 @@ const EditButton = styled.div`
 `;
 
 const DeleteButton = styled.div`
-  background-color: #9CAFE2;
+  background-color: #9cafe2;
   color: white;
   border-radius: 4px;
   height: 24px;
@@ -265,7 +266,7 @@ const DeleteButton = styled.div`
 `;
 
 const SaveButton = styled.div`
-  background-color: #9CAFE2;
+  background-color: #9cafe2;
   color: white;
   border-radius: 4px;
   height: 24px;
@@ -276,7 +277,7 @@ const SaveButton = styled.div`
 `;
 
 const CancelButton = styled.div`
-  background-color: #9CAFE2;
+  background-color: #9cafe2;
   color: white;
   border-radius: 4px;
   height: 24px;

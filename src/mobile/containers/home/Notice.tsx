@@ -33,7 +33,7 @@ export default function NoticeForm() {
   return (
     <NoticeFormWrapper>
       <NoticeTitleWrapper>
-        <h1 onClick={() => navigate("/m/home/tips/notice")}>Notice</h1>
+        <h1 onClick={() => navigate("/m/home/tips?type=notice")}>Notice</h1>
         <SortDropBox sort={sort} setSort={setSort} />
         {/* <SortNotice sort={sort} setNotices={setNotices}/> */}
       </NoticeTitleWrapper>

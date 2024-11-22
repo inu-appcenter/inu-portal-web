@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-
+import { Post } from "types/posts";
+import { Notice } from "types/notices";
 interface TipsCardContainerProps {
-  post: Post;
+  post?: Post;
+  notice?: Notice;
   viewMode: "grid" | "list";
   docType: string;
   isEditing?: boolean;
@@ -10,6 +12,7 @@ interface TipsCardContainerProps {
 
 export default function ({
   post,
+  notice,
   viewMode,
   docType,
   isEditing,
@@ -19,42 +22,80 @@ export default function ({
   const handleDocumentClick = () => {
     if (isEditing) return;
     if (docType === "NOTICE") {
-      window.open("https://" + post.url, "_blank");
+      notice && window.open("https://" + notice.url, "_blank");
     } else {
-      navigate(`/m/postdetail?id=${post.id}`);
+      post && navigate(`/m/postdetail?id=${post.id}`);
     }
   };
 
   return (
     <>
       {viewMode == "grid" ? (
-        <TipsCardGridWrapper onClick={handleDocumentClick}>
-          <GridTopWrapper>
-            <GridTopTopWrapper>
-              <Category>{post.category}</Category>
-              <Date>{post.createDate}</Date>
-            </GridTopTopWrapper>
-            <Content>{post.content}</Content>
-          </GridTopWrapper>
-          <GridLine />
-          <GridBottomWrapper>
-            <Title>{post.title}</Title>
-            <Writer>{post.writer}</Writer>
-          </GridBottomWrapper>
-        </TipsCardGridWrapper>
+        <>
+          {post && (
+            <TipsCardGridWrapper onClick={handleDocumentClick}>
+              <GridTopWrapper>
+                <GridTopTopWrapper>
+                  <Category>{post.category}</Category>
+                  <Date>{post.createDate}</Date>
+                </GridTopTopWrapper>
+                <Content>{post.content}</Content>
+              </GridTopWrapper>
+              <GridLine />
+              <GridBottomWrapper>
+                <Title>{post.title}</Title>
+                <Writer>{post.writer}</Writer>
+              </GridBottomWrapper>
+            </TipsCardGridWrapper>
+          )}
+          {notice && (
+            <TipsCardGridWrapper onClick={handleDocumentClick}>
+              <GridTopWrapper>
+                <GridTopTopWrapper>
+                  <Category>{notice.category}</Category>
+                  <Date>{notice.createDate}</Date>
+                </GridTopTopWrapper>
+                <Content></Content>
+              </GridTopWrapper>
+              <GridLine />
+              <GridBottomWrapper>
+                <Title>{notice.title}</Title>
+                <Writer>{notice.writer}</Writer>
+              </GridBottomWrapper>
+            </TipsCardGridWrapper>
+          )}
+        </>
       ) : (
-        <TipsCardListWrapper onClick={handleDocumentClick}>
-          <ListLeftWrapper>
-            <Category>{post.category}</Category>
-            <Date>{post.createDate}</Date>
-          </ListLeftWrapper>
-          <ListLine />
-          <ListRightWrapper>
-            <Title>{post.title}</Title>
-            <Content>{post.content}</Content>
-            <Writer>{post.writer}</Writer>
-          </ListRightWrapper>
-        </TipsCardListWrapper>
+        <>
+          {post && (
+            <TipsCardListWrapper onClick={handleDocumentClick}>
+              <ListLeftWrapper>
+                <Category>{post.category}</Category>
+                <Date>{post.createDate}</Date>
+              </ListLeftWrapper>
+              <ListLine />
+              <ListRightWrapper>
+                <Title>{post.title}</Title>
+                <Content>{post.content}</Content>
+                <Writer>{post.writer}</Writer>
+              </ListRightWrapper>
+            </TipsCardListWrapper>
+          )}
+          {notice && (
+            <TipsCardListWrapper onClick={handleDocumentClick}>
+              <ListLeftWrapper>
+                <Category>{notice.category}</Category>
+                <Date>{notice.createDate}</Date>
+              </ListLeftWrapper>
+              <ListLine />
+              <ListRightWrapper>
+                <Title>{notice.title}</Title>
+                <Content></Content>
+                <Writer>{notice.writer}</Writer>
+              </ListRightWrapper>
+            </TipsCardListWrapper>
+          )}
+        </>
       )}
     </>
   );

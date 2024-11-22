@@ -17,7 +17,7 @@ export default function CategoryForm() {
 
   const handleClick = (title: string) => {
     if (title === "notice") {
-      navigate("/m/home/tips/notice");
+      navigate("/m/home/tips?type=notice");
     } else {
       navigate(`/m/home/${title}`);
     }
