@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { result } from "../../utils/API/GenTorchy";
+import { result } from "apis/genTorch";
 import useUserStore from "stores/useUserStore";
 import { getFires } from "apis/fires";
 
