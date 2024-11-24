@@ -54,7 +54,7 @@ function App() {
           <Route path="/write" element={<WritePage />} />
           <Route path="/mypage" element={<MyPage />} />
         </Route>
-        <Route path="/ai/*" element={<AiPage />} />
+        <Route path="/ai" element={<AiPage />} />
       </Routes>
     </>
   );
