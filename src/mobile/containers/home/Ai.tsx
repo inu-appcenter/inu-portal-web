@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import aienterimg1 from "../../../resource/assets/횃불-aienter1.svg";
-import aienterimg2 from "../../../resource/assets/횃불-aienter2.svg";
+import aienterimg1 from "resources/assets/ai/횃불-ai-enter-1.svg";
+import aienterimg2 from "resources/assets/ai/횃불-ai-enter-2.svg";
 
 export default function AiForm() {
   const handleAiBtnClick = () => {

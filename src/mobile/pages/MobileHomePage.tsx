@@ -3,8 +3,8 @@ import WeatherForm from "mobile/containers/home/Weather";
 import SerachForm from "mobile/containers/home/SerachForm";
 import CategoryForm from "mobile/containers/home/Category";
 import TipForm from "mobile/containers/home/Tips";
-import AiForm from "../containers/home/Ai";
-import NoticeForm from "../containers/home/Notice";
+import AiForm from "mobile/containers/home/Ai";
+import NoticeForm from "mobile/containers/home/Notice";
 import AppcenterLogo from "resources/assets/appcenter-logo.svg";
 
 export default function MobileHomePage() {
