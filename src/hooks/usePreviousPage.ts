@@ -21,7 +21,7 @@ export function usePreviousPage() {
       ...prev,
       [path]: location.pathname + location.search,
     }));
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   return { previousPages, setPreviousPages };
 }

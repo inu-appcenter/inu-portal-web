@@ -1,11 +1,14 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 interface DeleteConfirmModalProps {
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export default function DeleteConfirmModal({ onConfirm, onCancel }: DeleteConfirmModalProps){
+export default function DeleteConfirmModal({
+  onConfirm,
+  onCancel,
+}: DeleteConfirmModalProps) {
   return (
     <ModalOverlay>
       <ModalContent>
@@ -17,7 +20,7 @@ export default function DeleteConfirmModal({ onConfirm, onCancel }: DeleteConfir
       </ModalContent>
     </ModalOverlay>
   );
-};
+}
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -33,7 +36,7 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: #F9F9F9;
+  background: #f9f9f9;
   box-shadow: 0px 4px 4px 0px #00000040;
   border-radius: 10px;
   width: 90%;
@@ -60,7 +63,7 @@ const ButtonGroup = styled.div`
 const Button = styled.div`
   height: 26px;
   width: 64px;
-  background-color: #9CAFE2;
+  background-color: #9cafe2;
   color: white;
   border-radius: 10px;
   display: flex;

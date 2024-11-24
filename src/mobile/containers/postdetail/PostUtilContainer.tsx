@@ -1,16 +1,15 @@
 // import React from 'react';
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import backbtn from "../../../resource/assets/backbtn.svg";
-import PostLike from "../../components/postdetail/util/m.postlike";
-import PostScrap from "../../components/postdetail/util/m.postscrap";
-import utilfolder from "../../../resource/assets/utilfolder.svg";
+import backbtn from "resources/assets/mobile-common/backbtn.svg";
+import PostLike from "mobile/components/postdetail/util/m.postlike";
+import PostScrap from "mobile/components/postdetail/util/m.postscrap";
+import utilfolder from "resources/assets/mobile-tips/utilfolder.svg";
 import { useEffect, useRef, useState } from "react";
-import DeletePostBtn from "../../../component/postdetail/post/DeletePostBtn";
-import EditPostBtn from "../../../component/postdetail/post/EditPostBtn";
-import { useSelector } from "react-redux";
+import DeletePostBtn from "mobile/components/postdetail/util/DeletePostBtn";
+import EditPostBtn from "mobile/components/postdetail/util/EditPostBtn";
 interface PostUtilityProps {
-  id: string;
+  id: number;
   like: number;
   isLiked: boolean;
   scrap: number;
@@ -26,7 +25,6 @@ export default function PostUtilContainer({
   hasAuthority,
 }: PostUtilityProps) {
   const navigate = useNavigate();
-  const token = useSelector((state: any) => state.user.token);
   const [showPopup, setShowPopup] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -52,16 +50,11 @@ export default function PostUtilContainer({
   return (
     <>
       <Wrapper>
-        <BackBtn onClick={() => navigate(-1)}>
+        <BackBtn onClick={() => navigate("/m/home/tips")}>
           <img src={backbtn} alt="뒤로가기 버튼" />
         </BackBtn>
         <UtilWrapper>
-          <PostLike
-            id={id}
-            like={like}
-            isLikedProp={isLiked}
-            hasAuthority={hasAuthority}
-          />
+          <PostLike id={id} like={like} isLikedProp={isLiked} />
           <PostScrap id={id} scrap={scrap} isScrapedProp={isScraped} />
           {hasAuthority && (
             <DelOrModifyWrapper>
@@ -73,11 +66,7 @@ export default function PostUtilContainer({
               />
               {showPopup && (
                 <Popup ref={popupRef}>
-                  <DeletePostBtn
-                    token={token}
-                    id={id}
-                    onPostUpdate={handlePostUpdate}
-                  />
+                  <DeletePostBtn id={id} onPostUpdate={handlePostUpdate} />
                   <EditPostBtn id={id} />
                 </Popup>
               )}

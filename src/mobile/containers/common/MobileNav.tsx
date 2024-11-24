@@ -1,14 +1,13 @@
 import styled from "styled-components";
-import NavItem from "../../components/common/NavItem";
-
-import homeIcon from "../../../resource/assets/mobile/common/home-gray.svg";
-import homeIconActive from "../../../resource/assets/mobile/common/home-blue.svg";
-import saveIcon from "../../../resource/assets/mobile/common/save-gray.svg";
-import saveIconActive from "../../../resource/assets/mobile/common/save-blue.svg";
-import writeIcon from "../../../resource/assets/mobile/common/write-gray.svg";
-import writeIconActive from "../../../resource/assets/mobile/common/write-blue.svg";
-import mypageIcon from "../../../resource/assets/mobile/common/mypage-gray.svg";
-import mypageIconActive from "../../../resource/assets/mobile/common/mypage-blue.svg";
+import NavItem from "mobile/components/common/NavItem";
+import homeIcon from "resources/assets/mobile-common/home-gray.svg";
+import homeIconActive from "resources/assets/mobile-common/home-blue.svg";
+import saveIcon from "resources/assets/mobile-common/save-gray.svg";
+import saveIconActive from "resources/assets/mobile-common/save-blue.svg";
+import writeIcon from "resources/assets/mobile-common/write-gray.svg";
+import writeIconActive from "resources/assets/mobile-common/write-blue.svg";
+import mypageIcon from "resources/assets/mobile-common/mypage-gray.svg";
+import mypageIconActive from "resources/assets/mobile-common/mypage-blue.svg";
 
 interface MobileNavProps {
   previousPages: Record<string, string>;

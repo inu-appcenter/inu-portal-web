@@ -1,20 +1,31 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
-import gridViewIcon from '../../../resource/assets/mobile/tips/grid-view-icon-gray.svg';
-import gridViewIconActive from '../../../resource/assets/mobile/tips/grid-view-icon-blue.svg';
-import listViewIcon from '../../../resource/assets/mobile/tips/list-view-icon-gray.svg';
-import listViewIconActive from '../../../resource/assets/mobile/tips/list-view-icon-blue.svg';
+import gridViewIcon from "resources/assets/mobile-tips/grid-view-icon-gray.svg";
+import gridViewIconActive from "resources/assets/mobile-tips/grid-view-icon-blue.svg";
+import listViewIcon from "resources/assets/mobile-tips/list-view-icon-gray.svg";
+import listViewIconActive from "resources/assets/mobile-tips/list-view-icon-blue.svg";
 
 interface ViewModeButtonsProps {
-  viewMode: 'grid' | 'list';
-  setViewMode: (mode: 'grid' | 'list') => void;
+  viewMode: "grid" | "list";
+  setViewMode: (mode: "grid" | "list") => void;
 }
 
-export default function ViewModeButtons({ viewMode, setViewMode }: ViewModeButtonsProps) {
+export default function ViewModeButtons({
+  viewMode,
+  setViewMode,
+}: ViewModeButtonsProps) {
   return (
     <ViewModeButtonsWrapper>
-      <ViewButton onClick={() => setViewMode('grid')} src={viewMode === 'grid' ? gridViewIconActive : gridViewIcon} alt="Grid View" />
-      <ViewButton onClick={() => setViewMode('list')} src={viewMode === 'list' ? listViewIconActive : listViewIcon} alt="List View" />
+      <ViewButton
+        onClick={() => setViewMode("grid")}
+        src={viewMode === "grid" ? gridViewIconActive : gridViewIcon}
+        alt="Grid View"
+      />
+      <ViewButton
+        onClick={() => setViewMode("list")}
+        src={viewMode === "list" ? listViewIconActive : listViewIcon}
+        alt="List View"
+      />
     </ViewModeButtonsWrapper>
   );
 }

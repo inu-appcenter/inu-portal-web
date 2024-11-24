@@ -1,48 +1,60 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getCategories } from "../../../utils/API/Categories";
-import dropdownIcon from "../../../resource/assets/CategorySelectDropdown-img.svg";
+import { getCategories } from "apis/categories";
+import dropdownIcon from "resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
+import { useLocation, useNavigate } from "react-router-dom";
 
-interface CategorySelectorProps {
-  write?: boolean;
-  value: string;
-  onChange: (value: string) => void;
-  docType: string;
-}
-
-export default function CategorySelector({
-  write,
-  value,
-  onChange,
-  docType,
-}: CategorySelectorProps) {
+export default function CategorySelector() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [type, setType] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (location.pathname === "/m/write") {
+      setType("write");
+    } else if (params.get("type") != type) {
+      if (params.get("type") === "notice") {
+        setType("notice");
+      } else {
+        setType("tips");
+      }
+    }
+    if (params.get("search")) {
+      setSelectedCategory("");
+    } else {
+      setSelectedCategory(params.get("category") || "전체");
+    }
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
-        if (docType === "NOTICE") {
-          setCategories(["전체", "학사", "모집", "학점교류", "교육시험"]);
-        } else {
+        if (type == "tips") {
           const response = await getCategories();
-          if (response.status === 200) {
-            if (write) {
-              setCategories(response.body.data);
-            } else {
-              setCategories(["전체"].concat(response.body.data));
-            }
-          } else {
-            alert(`${response.status} 모든 카테고리 가져오기 실패`);
-          }
+          setCategories(["전체", ...response.data]);
+        } else if (type == "write") {
+          const response = await getCategories();
+          setCategories(response.data);
+        } else if (type === "notice") {
+          setCategories(["전체", "학사", "모집", "학점교류", "교육시험"]);
         }
       } catch (error) {
-        console.error(error);
+        console.error("모든 카테고리 가져오기 실패", error);
       }
     };
-
     fetchCategories();
-  }, [docType]);
+  }, [type]);
+
+  const handleClickCategory = (category: string) => {
+    const params = new URLSearchParams(location.search);
+    params.delete("search");
+    params.set("category", category);
+    navigate(`${location.pathname}?${params.toString()}`);
+  };
 
   return (
     <CategorySelectorWrapper onClick={() => setIsOpen(!isOpen)}>
@@ -52,7 +64,7 @@ export default function CategorySelector({
             <React.Fragment key={category}>
               <DropdownOption
                 onClick={() => {
-                  onChange(category);
+                  handleClickCategory(category);
                   setIsOpen(false);
                 }}
               >
@@ -64,7 +76,7 @@ export default function CategorySelector({
         </DropdownOptions>
       ) : (
         <Dropdown>
-          <div>{value || "카테고리 선택"}</div>
+          <div>{selectedCategory || "카테고리 선택"}</div>
           <DropdownImg src={dropdownIcon} alt="dropdownIcon" />
         </Dropdown>
       )}

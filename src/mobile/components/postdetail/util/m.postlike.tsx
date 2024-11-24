@@ -1,69 +1,55 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import heartEmptyImg from "../../../../resource/assets/heart-empty-img.svg";
-import heartFilledImg from "../../../../resource/assets/heart-filled-img.svg";
+import heartEmptyImg from "resources/assets/posts/heart-empty.svg";
+import heartFilledImg from "resources/assets/posts/heart-filled.svg";
 import styled from "styled-components";
-import { handlePostLike } from "../../../../utils/API/Posts";
+import { putLike } from "apis/posts";
+import axios, { AxiosError } from "axios";
 
 interface PostLikeProps {
-  id: string;
+  id: number;
   like: number;
   isLikedProp: boolean;
-  hasAuthority: boolean;
 }
 
-export default function PostLike({
-  id,
-  like,
-  isLikedProp,
-  hasAuthority,
-}: PostLikeProps) {
-  const [likes, setLikes] = useState(like);
-  const [isLiked, setIsLiked] = useState(isLikedProp);
-  const token = useSelector((state: any) => state.user.token);
-  const [showError, setShowError] = useState<boolean>(false);
+export default function PostLike({ id, like, isLikedProp }: PostLikeProps) {
+  const [likeState, setLikeState] = useState(like);
+  const [isLikedState, setIsLikedState] = useState(isLikedProp);
 
   useEffect(() => {
-    setLikes(like);
-    setIsLiked(isLikedProp);
-  }, [id]);
+    setLikeState(like);
+    setIsLikedState(isLikedProp);
+  }, [like, isLikedProp]);
 
-  useEffect(() => {
-    setIsLiked(isLikedProp);
-  }, [isLikedProp]);
-
-  const handleLikeClick = async () => {
-    if (hasAuthority) {
-      alert("본인의 게시글에는 좋아요를 누를 수 없습니다.");
-      setShowError(true); // 본인 게시글인 경우 에러 표시
-      setTimeout(() => setShowError(false), 5000); // 5초 후 에러 메시지 숨김
-      return;
-    }
-    if (id === undefined) {
-      console.error("ID is undefined");
-      return;
-    }
-    if (token) {
-      try {
-        const result = await handlePostLike(token, id);
-        if (result.status === 400) {
-          alert("본인의 게시글에는 좋아요를 누를 수 없습니다.");
-          return;
-        }
-        setIsLiked(!isLiked);
-        if (result.body.data === -1) {
-          setLikes(likes - 1);
-          setIsLiked(false);
-        } else {
-          setLikes(likes + 1);
-          setIsLiked(true);
-        }
-      } catch (error) {
-        console.error("좋아요 처리 에러", error);
-        alert("좋아요 처리 에러");
+  const handleLike = async () => {
+    try {
+      const response = await putLike(id);
+      if (response.data === 1) {
+        setLikeState(likeState + 1);
+        setIsLikedState(!isLikedState);
+      } else {
+        setLikeState(likeState - 1);
+        setIsLikedState(!isLikedState);
       }
-    } else {
-      alert("로그인 필요");
+    } catch (error) {
+      console.error("게시글 좋아요 여부 변경 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 400:
+            alert("자신의 게시글에는 추천을 할 수 없습니다.");
+            break;
+          case 404:
+            alert("존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("게시글 좋아요 여부 변경 실패");
+            break;
+        }
+      }
     }
   };
 
@@ -71,32 +57,20 @@ export default function PostLike({
     <LikeContainer>
       <img
         className="UtilityImg"
-        src={isLiked ? heartFilledImg : heartEmptyImg}
+        src={isLikedState ? heartFilledImg : heartEmptyImg}
         alt="heartImg"
-        onClick={handleLikeClick}
+        onClick={handleLike}
       />
-      {showError && (
-        <ErrorMessage>본인 게시글에는 좋아요를 누를 수 없습니다.</ErrorMessage>
-      )}
+      <span>{likeState}</span>
     </LikeContainer>
   );
 }
 
 const LikeContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
   img.UtilityImg {
     width: 23px;
-    display: flex;
-    align-items: center;
   }
-`;
-
-const ErrorMessage = styled.div`
-  position: absolute;
-  bottom: -100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(255, 0, 0, 0.7);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
 `;

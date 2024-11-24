@@ -1,27 +1,33 @@
-import styled from 'styled-components';
-import Gear from '../../../resource/assets/mobile/save/Gear.svg';
-import { useState } from 'react';
-import FolderActionModal from './FolderActionModal';
+import styled from "styled-components";
+import Gear from "resources/assets/mobile-save/Gear.svg";
+import { useState } from "react";
+import FolderActionModal from "mobile/containers/save/FolderActionModal";
 
 interface ScrapFoldersProps {
   folders: { id: number; name: string }[];
   selectedFolder: { id: number; name: string } | null;
   onSelectFolder: (folder: { id: number; name: string }) => void;
-  onManageFoldersClick: (mode: 'add' | 'manage') => void;
+  onManageFoldersClick: (mode: "add" | "manage") => void;
   isManagingFolders: boolean;
 }
 
-export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, onManageFoldersClick, isManagingFolders }: ScrapFoldersProps) {
+export default function ScrapFolders({
+  folders,
+  selectedFolder,
+  onSelectFolder,
+  onManageFoldersClick,
+  isManagingFolders,
+}: ScrapFoldersProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const handleAddFolder = () => {
-    onManageFoldersClick('add');
+    onManageFoldersClick("add");
     setIsModalOpen(false);
   };
   const handleManageFolders = () => {
-    onManageFoldersClick('manage');
+    onManageFoldersClick("manage");
     setIsModalOpen(false);
   };
 
@@ -30,7 +36,7 @@ export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, 
       <ScrapFoldersWrapper>
         {folders.map((folder) => (
           <FolderWrapper key={folder.id}>
-            <FolderItem 
+            <FolderItem
               selected={selectedFolder?.id === folder.id}
               onClick={() => onSelectFolder(folder)}
             >
@@ -40,7 +46,10 @@ export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, 
           </FolderWrapper>
         ))}
         <FolderWrapper>
-          <ManageFolderButton onClick={handleOpenModal} selected={isManagingFolders}>
+          <ManageFolderButton
+            onClick={handleOpenModal}
+            selected={isManagingFolders}
+          >
             <img src={Gear} />
           </ManageFolderButton>
           {isManagingFolders && <SelectedBar />}
@@ -48,10 +57,10 @@ export default function ScrapFolders({ folders, selectedFolder, onSelectFolder, 
       </ScrapFoldersWrapper>
       <BottomBorder />
       {isModalOpen && (
-        <FolderActionModal 
-          onAddFolder={handleAddFolder} 
-          onManageFolders={handleManageFolders} 
-          onClose={handleCloseModal} 
+        <FolderActionModal
+          onAddFolder={handleAddFolder}
+          onManageFolders={handleManageFolders}
+          onClose={handleCloseModal}
         />
       )}
     </ScrapFoldersContainer>
@@ -76,8 +85,8 @@ const ScrapFoldersWrapper = styled.div`
   }
 
   /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 `;
 
 const BottomBorder = styled.div`
@@ -86,7 +95,7 @@ const BottomBorder = styled.div`
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #E0E0E0;
+  background-color: #e0e0e0;
   z-index: 1;
 `;
 
@@ -103,7 +112,7 @@ const FolderItem = styled.div<{ selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ selected }) => (selected ? '#4071B9' : '#000')};
+  color: ${({ selected }) => (selected ? "#4071B9" : "#000")};
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -115,7 +124,7 @@ const ManageFolderButton = styled.div<{ selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ selected }) => (selected ? '#4071B9' : '#E0E0E0')};
+  color: ${({ selected }) => (selected ? "#4071B9" : "#E0E0E0")};
   font-size: 30px;
   font-weight: 500;
   cursor: pointer;
@@ -124,7 +133,7 @@ const ManageFolderButton = styled.div<{ selected: boolean }>`
 const SelectedBar = styled.div`
   width: 100%;
   height: 2px;
-  background-color: #4071B9;
+  background-color: #4071b9;
   position: absolute;
   bottom: 0px;
   z-index: 10;

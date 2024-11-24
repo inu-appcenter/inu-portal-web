@@ -1,12 +1,11 @@
-import BackButton from "../../components/delete/BackButton"
-import Title from "../../components/delete/Title"
+import BackButton from "mobile/components/delete/BackButton";
+import Title from "mobile/components/delete/Title";
 
-
-export default function  DeleteTitle() {
-    return (
-        <>
-            <BackButton/>
-            <Title/>
-        </>
-    )
+export default function DeleteTitle() {
+  return (
+    <>
+      <BackButton />
+      <Title />
+    </>
+  );
 }

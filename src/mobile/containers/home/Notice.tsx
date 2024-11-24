@@ -6,42 +6,25 @@ import "swiper/css/scrollbar";
 import { Scrollbar } from "swiper/modules";
 
 import { useEffect, useState } from "react";
-import { getNotices } from "../../../utils/API/Notices";
-import SortDropBox from "../../components/notice/Sort";
+import { getNotices } from "apis/notices";
+import { Notice } from "types/notices";
+import SortDropBox from "mobile/components/notice/Sort";
 import { useNavigate } from "react-router-dom";
 // import SortNotice from '../../components/notice/SortNotice';
 
-interface Notice {
-  id: number;
-  category: string;
-  title: string;
-  writer: string;
-  createDate: string;
-  view: number;
-  url: string;
-}
-
 export default function NoticeForm() {
-  const [sort, setSort] = useState("view");
+  const [sort, setSort] = useState("date");
   const [notices, setNotices] = useState<Notice[]>([]);
   const navigate = useNavigate();
 
   const fetchNotices = async (sort: string) => {
     try {
-      const response = await getNotices("전체", sort, "1");
-      if (response.status === 200) {
-        setNotices(response.body.data.notices);
-      } else {
-        console.error("Failed to fetch notices: ", response);
-      }
+      const response = await getNotices("전체", sort, 1);
+      setNotices(response.data.notices);
     } catch (error) {
-      console.error("Error fetching notices: ", error);
+      console.error("모든 공지사항 가져오기 실패", error);
     }
   };
-
-  useEffect(() => {
-    fetchNotices("date");
-  }, []);
 
   useEffect(() => {
     fetchNotices(sort);
@@ -50,7 +33,7 @@ export default function NoticeForm() {
   return (
     <NoticeFormWrapper>
       <NoticeTitleWrapper>
-        <h1 onClick={() => navigate("/m/home/tips/notice")}>Notice</h1>
+        <h1 onClick={() => navigate("/m/home/tips?type=notice")}>Notice</h1>
         <SortDropBox sort={sort} setSort={setSort} />
         {/* <SortNotice sort={sort} setNotices={setNotices}/> */}
       </NoticeTitleWrapper>
@@ -118,8 +101,10 @@ const NoticeFormWrapper = styled.div`
         font-size: 10px;
         font-weight: 500;
         color: #0e4d9d;
+        margin-bottom: 0;
       }
       .title {
+        flex: 1;
         font-family: Inter;
         font-size: 10px;
         font-weight: 600;
@@ -132,6 +117,7 @@ const NoticeFormWrapper = styled.div`
         font-size: 15px;
         font-weight: 700;
         color: #7aa7e5;
+        margin: 0;
       }
     }
   }
@@ -165,7 +151,6 @@ const NoticeTitleWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   h1 {
-    font-family: Roboto;
     font-size: 18px;
     font-weight: 500;
   }

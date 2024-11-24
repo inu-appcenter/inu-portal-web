@@ -1,65 +1,37 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getMembersReplies } from "../../utils/API/Members";
-import CommontTitle from "../containers/mypage/Title";
+import { getMembersReplies } from "apis/members";
+import { MembersReplies } from "types/members";
+import CommontTitle from "mobile/containers/mypage/Title";
 import styled from "styled-components";
-import Empty from "../components/mypage/Empty";
-import CardComment from "../containers/mypage/CardComment";
-
-interface Comment {
-  id: number;
-  title: string;
-  replyCount: number;
-  content: string;
-  like: number;
-  postId: number;
-  createDate: string;
-  modifiedDate: string;
-}
+import Empty from "mobile/components/mypage/Empty";
+import CardComment from "mobile/containers/mypage/CardComment";
 
 export default function MobileMyPageComment() {
-  const token = useSelector((state: any) => state.user.token);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [replyPost, setReplyPost] = useState<MembersReplies[]>([]);
 
   useEffect(() => {
-    fetchComments();
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log(token);
-    console.log("comments", comments.length); // Updated to log `comments`
-  }, [comments]); // Updated dependency
-
-  const fetchComments = async () => {
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
+  const fetchData = async () => {
     try {
-      const response = await getMembersReplies(token, "date");
-      if (response.status === 200) {
-        console.log(response.body.data, "durldurl여기");
-        setComments(response.body.data);
-      }
+      const response = await getMembersReplies("date");
+      setReplyPost(response.data);
     } catch (error) {
-      console.error("댓글 가져오기 오류:", error);
-      alert("댓글을 가져오는 중 오류가 발생했습니다.");
+      console.error("회원이 작성한 모든 댓글 가져오기 실패", error);
     }
   };
 
   return (
     <MobileMyPageCommentWrapper>
       <CommontTitle title={"작성한 댓글"} />
-      {comments.length === 0 ? (
-        <Empty/>
+      {replyPost.length === 0 ? (
+        <Empty />
       ) : (
-        <CardComment posts={comments} onCommentsUpdate={fetchComments} /> 
+        <CardComment posts={replyPost} onCommentsUpdate={fetchData} />
       )}
     </MobileMyPageCommentWrapper>
   );
 }
 
-const MobileMyPageCommentWrapper = styled.div`
-
-`;
-
+const MobileMyPageCommentWrapper = styled.div``;

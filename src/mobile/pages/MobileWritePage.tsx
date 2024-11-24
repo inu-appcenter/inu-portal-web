@@ -1,68 +1,45 @@
 import styled from "styled-components";
-import { useSelector } from "react-redux";
-import WritePageTitle from "../components/write/WritePageTitle";
-import CategorySelector from "../components/common/CategorySelector";
-import WriteForm from "../containers/write/WriteForm";
+import WritePageTitle from "mobile/components/write/WritePageTitle";
+import WriteForm from "mobile/containers/write/WriteForm";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import loginImg from "../../resource/assets/login-logo.svg";
-import { useResetWriteStore } from "../../reducer/resetWriteStore";
-
-interface loginInfo {
-  user: {
-    token: string;
-  };
-}
+import loginImg from "resources/assets/login/login-modal-logo.svg";
+import { useResetWriteStore } from "reducer/resetWriteStore";
+import useUserStore from "stores/useUserStore";
+import CategorySelect from "mobile/components/write/CategorySelect";
 
 export default function MobileWritePage() {
-  const token = useSelector((state: loginInfo) => state.user.token);
-  const [category, setCategory] = useState("");
-  const [type, setType] = useState("");
-  const [id, setId] = useState("");
+  const { tokenInfo } = useUserStore();
+  const [id, setId] = useState(0);
+  const [category, setCategory] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
   const resetKey = useResetWriteStore((state) => state.resetKey);
 
   useEffect(() => {
-    if (location.pathname.includes("update")) {
-      const params = new URLSearchParams(location.search);
-      setId(params.get("id") || "");
-      setType("update");
-    } else {
-      setType("create");
-      setCategory("");
-    }
-  }, [location.pathname]);
+    const params = new URLSearchParams(location.search);
+    setId(Number(params.get("id")) || 0);
+  }, [location]);
 
   const handleNewPost = () => {
     navigate("/m/write");
-    setType("create");
-    setId("");
-    setCategory("");
   };
 
   return (
     <>
-      {token ? (
+      {tokenInfo.accessToken ? (
         <MobileWritePageWrapper>
           <TitleCategorySelectorWrapper>
-            <WritePageTitle idProps={id} value={type} />
-            {type == "update" && (
+            <WritePageTitle idProps={id} />
+            {id != 0 && (
               <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>
             )}
-            <CategorySelector
-              write={true}
-              value={category}
-              onChange={setCategory}
-              docType={"TIPS"}
-            />
+            <CategorySelect category={category} setCategory={setCategory} />
           </TitleCategorySelectorWrapper>
           <WriteForm
             key={resetKey}
-            idProps={id}
             category={category}
             setCategory={setCategory}
-            typeProps={type}
           />
         </MobileWritePageWrapper>
       ) : (
@@ -81,7 +58,7 @@ const MobileWritePageWrapper = styled.div`
   align-items: center;
   gap: 8px;
   padding: 0 16px 0 16px;
-  height: 96%;
+  min-height: calc(100svh - 72px - 72px - 24px);
   width: 100%;
 `;
 
