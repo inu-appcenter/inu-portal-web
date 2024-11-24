@@ -1,33 +1,42 @@
-import styled from 'styled-components';
-import menuButtonImage from '../../../resource/assets/mobile/common/menu-button.svg'
-import { useEffect, useRef, useState } from 'react';
-import { navBarList as originalNavBarList } from '../../../resource/string/navbar';
+import styled from "styled-components";
+import menuButtonImage from "resources/assets/mobile-common/menu-button.svg";
+import { useEffect, useRef, useState } from "react";
+import { navItems as originalNavBarList } from "resources/strings/navItems";
 
 export default function MenuButton() {
-  const [isVisible, setIsVisible]= useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const handleSubItemClick = (url: string) => {
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setIsVisible(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [wrapperRef]);
 
-  const College = originalNavBarList.find(item => item.title === '학과 홈페이지');
+  const College = originalNavBarList.find(
+    (item) => item.title === "학과 홈페이지"
+  );
   return (
     <>
-      <MenuButtonImg src={menuButtonImage} alt="MenuButtonImg" onClick={() => setIsVisible(!isVisible)} />
-      {isVisible && College&& College.child &&(
+      <MenuButtonImg
+        src={menuButtonImage}
+        alt="MenuButtonImg"
+        onClick={() => setIsVisible(!isVisible)}
+      />
+      {isVisible && College && College.child && (
         <Sidebar ref={wrapperRef}>
           <CloseButton onClick={() => setIsVisible(false)}>×</CloseButton>
           <NavList>
@@ -64,13 +73,12 @@ export default function MenuButton() {
 }
 
 const MenuButtonImg = styled.img`
-  padding-top: 2px;
-  height: 16px;
+  height: 18px;
 `;
 
 const Sidebar = styled.div`
   position: fixed;
-  bottom:0;
+  bottom: 0;
   left: 0;
   height: 70%;
   width: 100%;
@@ -80,7 +88,6 @@ const Sidebar = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-
 `;
 
 const CloseButton = styled.button`
@@ -94,7 +101,7 @@ const CloseButton = styled.button`
 `;
 
 const NavList = styled.ul`
- display: flex;
+  display: flex;
   flex-wrap: wrap;
   gap: 10px;
   padding: 0;
@@ -103,19 +110,17 @@ const NavList = styled.ul`
 `;
 
 const NavSubSection = styled.div`
-  flex: 1 1 100px; 
+  flex: 1 1 100px;
   margin-left: 10px;
   margin-bottom: 10px;
-   box-sizing: border-box;
-    min-width: 100px;
+  box-sizing: border-box;
+  min-width: 100px;
 `;
 
 const NavSubTitle = styled.div`
   font-weight: bold;
   margin-bottom: 10px;
-  color:#0E4D9D;
-;
-
+  color: #0e4d9d;
 `;
 
 const NavItem = styled.div`
@@ -123,11 +128,9 @@ const NavItem = styled.div`
   font-size: 15px;
   cursor: pointer;
   &:hover {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  width: fit-content;
-  padding: 0 3px 0 3px;
-  color: #000;
-
-
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    width: fit-content;
+    padding: 0 3px 0 3px;
+    color: #000;
   }
 `;

@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 interface TitleContentInputProps {
   title: string;
@@ -7,7 +7,12 @@ interface TitleContentInputProps {
   onContentChange: (value: string) => void;
 }
 
-export default function TitleContentInput({ title, content, onTitleChange, onContentChange }: TitleContentInputProps) {
+export default function TitleContentInput({
+  title,
+  content,
+  onTitleChange,
+  onContentChange,
+}: TitleContentInputProps) {
   return (
     <TitleContentInputWrapper>
       <TitleInput
@@ -31,7 +36,7 @@ const TitleContentInputWrapper = styled.div`
   display: flex;
   flex-direction: column;
   border-radius: 1px;
-  border: 1px solid #E0E0E0
+  border: 1px solid #e0e0e0;
 `;
 
 const TitleInput = styled.input`
@@ -44,8 +49,8 @@ const TitleInput = styled.input`
 const Line = styled.div`
   margin-left: 8px;
   width: 40%;
-  border: 1px solid #BEBEBE
-`
+  border: 1px solid #bebebe;
+`;
 
 const ContentTextarea = styled.textarea`
   margin: 8px;

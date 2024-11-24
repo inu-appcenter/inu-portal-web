@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getFireImages } from "../../../utils/API/Images";
 import { useNavigate } from "react-router-dom";
 
 interface ProfileImageProps {
@@ -8,39 +6,16 @@ interface ProfileImageProps {
 }
 
 export default function ProfileImage({ fireId }: ProfileImageProps) {
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const nav = useNavigate();
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const response = await getFireImages("", fireId);
-        if (response.status === 200) {
-          setImageUrl(response.body);
-        } else {
-          console.error("Failed to fetch image:", response.status);
-        }
-      } catch (error) {
-        console.error("Error fetching image:", error);
-      }
-    };
-
-    fetchImage();
-  }, [fireId]);
+  const navvigate = useNavigate();
 
   return (
-    <>
-      {imageUrl ? (
-        <ProfileImg
-          src={imageUrl}
-          alt={`Profile Image`}
-          onClick={() => {
-            nav("/m/mypage");
-          }}
-        />
-      ) : (
-        <></>
-      )}
-    </>
+    <ProfileImg
+      src={`https://portal.inuappcenter.kr/api/images/${fireId}`}
+      alt={`Profile Image`}
+      onClick={() => {
+        navvigate("/m/mypage");
+      }}
+    />
   );
 }
 

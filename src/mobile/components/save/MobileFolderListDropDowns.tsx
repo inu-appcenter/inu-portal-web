@@ -1,56 +1,77 @@
-import styled from 'styled-components';
-import ListImg from '../../../resource/assets/list-logo.svg';
-import closeImg from '../../../resource/assets/close-img.svg';
-import fileImg from '../../../resource/assets/file-img.svg';
-import { useState } from 'react';
-import { postFoldersPosts } from '../../../utils/API/Folders';
+import styled from "styled-components";
+import ListImg from "resources/assets/mypage/like.svg";
+import closeImg from "resources/assets/mobile-save/close-img.svg";
+import fileImg from "resources/assets/mypage/folder.svg";
+import { useState } from "react";
+import { postFoldersPosts } from "apis/folders";
+import axios from "axios";
+import { Folder } from "types/folders";
 
 interface MobileFolderListDropDownsProps {
   folders: Folder[];
   postIds?: number[];
   postId?: number;
-  token: string;
   handleAddPosts: () => void;
   onClose: () => void;
 }
 
-export default function MobileFolderListDropDowns({ folders, postIds, postId, token, handleAddPosts, onClose }: MobileFolderListDropDownsProps) {
+export default function MobileFolderListDropDowns({
+  folders,
+  postIds,
+  postId,
+  handleAddPosts,
+  onClose,
+}: MobileFolderListDropDownsProps) {
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]);
 
   const handleOptionClick = (folderId: number) => {
-    setSelectedFolderIds(prevIds => prevIds.includes(folderId) ? prevIds.filter(id => id !== folderId) : [...prevIds, folderId]);
+    setSelectedFolderIds((prevIds) =>
+      prevIds.includes(folderId)
+        ? prevIds.filter((id) => id !== folderId)
+        : [...prevIds, folderId]
+    );
   };
 
   const handleAddClick = async () => {
+    let alreadyExistsCount = 0;
+    let successCount = 0;
+    let errorCount = 0;
     if (postIds && postIds.length > 0) {
       for (const postId of postIds) {
         for (const folderId of selectedFolderIds) {
           try {
-            const response = await postFoldersPosts(token, postId, folderId);
-            if (response.status === 200) {
-              console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
-            } else {
-              console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
-            }
+            await postFoldersPosts(folderId, [postId]);
+            successCount++;
           } catch (error) {
-            console.error("폴더에 추가하지 못했습니다.", error);
+            if (axios.isAxiosError(error) && error.response?.status === 400) {
+              // 이미 담겨있는 경우
+              alreadyExistsCount++;
+            } else {
+              // 기타 에러
+              errorCount++;
+            }
           }
         }
       }
     } else if (postId) {
       for (const folderId of selectedFolderIds) {
         try {
-          const response = await postFoldersPosts(token, postId, folderId);
-          if (response.status === 200) {
-            console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
-          } else {
-            console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
-          }
+          await postFoldersPosts(folderId, [postId]);
+          successCount++;
         } catch (error) {
-          console.error("폴더에 추가하지 못했습니다.", error);
+          if (axios.isAxiosError(error) && error.response?.status === 400) {
+            // 이미 담겨있는 경우
+            alreadyExistsCount++;
+          } else {
+            // 기타 에러
+            errorCount++;
+          }
         }
       }
     }
+    alert(
+      `담기 결과:\n- 이미 담겨있는 폴더: ${alreadyExistsCount}개\n- 담기 성공: ${successCount}개\n- 에러: ${errorCount}개`
+    );
     setSelectedFolderIds([]);
     handleAddPosts();
   };
@@ -60,19 +81,26 @@ export default function MobileFolderListDropDowns({ folders, postIds, postId, to
       <MobileFolderListDropDownsWrapper className="dropdown-menu">
         <FolderListClose>
           <div>
-            <img src={ListImg} className='list-img' />
+            <img src={ListImg} className="list-img" />
             <span>List</span>
           </div>
-          <img src={closeImg} className='close-img' onClick={onClose} />
+          <img src={closeImg} className="close-img" onClick={onClose} />
         </FolderListClose>
         <FolderListDetail>
-          {folders.filter((_, index) => index !== 0).map((folder) => (
-            <label key={folder.id}>
-              <input type="checkbox" onClick={() => handleOptionClick(folder.id)} />
-              <img src={fileImg} alt="" />
-              <FolderListDropDownDetail>{folder.name}</FolderListDropDownDetail>
-            </label>
-          ))}
+          {folders
+            .filter((_, index) => index !== 0)
+            .map((folder) => (
+              <label key={folder.id}>
+                <input
+                  type="checkbox"
+                  onClick={() => handleOptionClick(folder.id)}
+                />
+                <img src={fileImg} alt="" />
+                <FolderListDropDownDetail>
+                  {folder.name}
+                </FolderListDropDownDetail>
+              </label>
+            ))}
         </FolderListDetail>
       </MobileFolderListDropDownsWrapper>
       <ConfirmButton onClick={handleAddClick}>확인</ConfirmButton>
@@ -161,7 +189,7 @@ const FolderListDetail = styled.div`
 const ConfirmButton = styled.button`
   z-index: 1001;
   position: fixed;
-  background-color: #9CAFE2;
+  background-color: #9cafe2;
   left: 50%;
   bottom: 10%;
   transform: translateX(-50%);

@@ -1,48 +1,29 @@
-import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-import { getMembers } from "../../utils/API/Members";
-import { useEffect, useState } from "react";
-import loginImg from '../../resource/assets/login-logo.svg';
-import { MyPageActive, MyPageCategory } from "../../resource/string/m-mypage";
+import useUserStore from "stores/useUserStore";
+import { useState } from "react";
+import loginImg from "resources/assets/login/login-modal-logo.svg";
+import { MyPageActive, MyPageCategory } from "resources/strings/m-mypage";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../reducer/userSlice";
-import UserInfo from "../containers/mypage/UserInfo";
-import arrowImg from "../../resource/assets/mobile/mypage/arrow.svg";
-
-interface loginInfo {
-  user: {
-    token: string;
-  };
-}
-
-interface userInfo {
-  id: number;
-  nickname: string;
-  fireId: number;
-}
+import UserInfo from "mobile/containers/mypage/UserInfo";
+import arrowImg from "resources/assets/mobile-mypage/arrow.svg";
 
 export default function MobileMyPage() {
-  const token = useSelector((state: loginInfo) => state.user.token);
-  const [user, setUser] = useState<userInfo | null>(null);
+  const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const getMember = async () => {
-    try {
-      const response = await getMembers(token);
-      if (response.status === 200) {
-        setUser(response.body.data);
-      }
-    } catch (error) {
-      console.error("error");
-    }
-  };
+
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    dispatch(logoutUser());
+    setUserInfo({ id: 0, nickname: "", fireId: 0 });
+    setTokenInfo({
+      accessToken: "",
+      accessTokenExpiredTime: "",
+      refreshToken: "",
+      refreshTokenExpiredTime: "",
+    });
+    localStorage.removeItem("tokenInfo");
     navigate("/m/home");
   };
+
   const handleLogoutModalClick = () => {
     setIsModalOpen(true);
   };
@@ -54,13 +35,13 @@ export default function MobileMyPage() {
   const handleClick = (title: string) => {
     switch (title) {
       case "내가 쓴 글":
-        navigate("m/mypage/post");
+        navigate("/m/mypage/post");
         break;
       case "좋아요 한 글":
-        navigate("m/mypage/like");
+        navigate("/m/mypage/like");
         break;
       case "작성한 댓글":
-        navigate("m/mypage/comment");
+        navigate("/m/mypage/comment");
         break;
       case "프로필 편집":
         navigate("/m/mypage/profile");
@@ -79,19 +60,14 @@ export default function MobileMyPage() {
         break;
     }
   };
-  useEffect(() => {
-    if (token) {
-      getMember();
-    }
-  }, [token]);
 
   return (
     <>
-      {token ? (
+      {userInfo.id ? (
         <MyPageWrapper>
           <Background />
           <TopBackground />
-          <UserWrapper>{user && <UserInfo />}</UserWrapper>
+          <UserWrapper>{userInfo.id && <UserInfo />}</UserWrapper>
           <ActiveWrapper>
             {MyPageActive.map((active, index) => (
               <div key={index} onClick={() => handleClick(active.title)}>
@@ -121,16 +97,23 @@ export default function MobileMyPage() {
                 <ButtonContainer>
                   <CancelButton onClick={handleModalClose}>취소</CancelButton>
                   <Divider />
-                  <LogoutButton onClick={handleLogout}>확인</LogoutButton>
-                </ButtonContainer>  
+                  <LogoutButton
+                    onClick={() => {
+                      handleModalClose();
+                      handleLogout();
+                    }}
+                  >
+                    확인
+                  </LogoutButton>
+                </ButtonContainer>
               </ModalContent>
             </ModalOverlay>
           )}
         </MyPageWrapper>
       ) : (
         <ErrorWrapper>
-        <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
-        <div className='error'>로그인이 필요합니다!</div>
+          <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
+          <div className="error">로그인이 필요합니다!</div>
         </ErrorWrapper>
       )}
     </>
@@ -142,7 +125,6 @@ const MyPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
   width: 100%;
 `;
 
@@ -171,8 +153,8 @@ const UserWrapper = styled.div`
 `;
 
 const ActiveWrapper = styled.div`
-    margin-top: 40px;
-    box-sizing: border-box;
+  margin-top: 40px;
+  box-sizing: border-box;
   background-color: #fff;
   padding: 27px 38px;
   padding-bottom: 11px;
@@ -181,21 +163,21 @@ const ActiveWrapper = styled.div`
   display: flex;
   gap: 30px;
   border-radius: 10px;
-    div {
-        display:flex;
-        flex-direction: column;
-        align-items: center;
-        gap:10px;
-        img {
-            width:20px;
-            height: 20px;
-        }
-        p {
-            padding:0;
-            margin:0;
-        }
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    img {
+      width: 20px;
+      height: 20px;
     }
-`
+    p {
+      padding: 0;
+      margin: 0;
+    }
+  }
+`;
 
 const CategoryWrapper = styled.div`
   display: flex;
@@ -300,11 +282,11 @@ const ErrorWrapper = styled.div`
   gap: 30px;
   align-items: center;
   margin-top: 100px;
-  div{
-  font-size: 20px;}
-`
+  div {
+    font-size: 20px;
+  }
+`;
 
 const LoginImg = styled.img`
   width: 150px;
-
-`
+`;

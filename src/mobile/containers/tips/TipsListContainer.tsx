@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import styled from "styled-components";
-import TipsCard from "../../components/tips/TipsCard";
-import { getPostsMobile } from "../../../utils/API/Posts";
-import { getNotices } from "../../../utils/API/Notices";
-import { search } from "../../../utils/API/Search";
+import TipsCard from "mobile/components/tips/TipsCard";
+import { getPostsMobile } from "apis/posts";
+import { getNotices } from "apis/notices";
+import { getSearch } from "apis/search";
+import { Post } from "types/posts";
+import { Notice } from "types/notices";
 
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
@@ -25,6 +27,7 @@ export default function TipsListContainer({
   query,
 }: TipsListContainerProps) {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [fetchState, setFetchState] = useState<FetchState>({
     lastPostId: undefined,
     page: 1,
@@ -44,10 +47,11 @@ export default function TipsListContainer({
     });
     setHasMore(true);
     setPosts([]);
+    setNotices([]);
     setIsInitialLoad(true);
-    console.log("초기화 fetchData", docType, query, category, fetchState);
+    // console.log("초기화 fetchData", docType, query, category, fetchState);
     fetchData();
-  }, [query, docType, setPosts, category]);
+  }, [query, docType, setPosts, setNotices, category]);
 
   // 첫 번째 로드 후 추가 데이터를 불러오도록 설정
   useEffect(() => {
@@ -55,13 +59,13 @@ export default function TipsListContainer({
       if (docType === "TIPS") {
         if (fetchState.lastPostId !== undefined) {
           setIsInitialLoad(false);
-          console.log("두번째 fetchData", docType, query, category, fetchState);
+          // console.log("두번째 fetchData", docType, query, category, fetchState);
           fetchData();
         }
       } else {
         if (fetchState.page !== 1) {
           setIsInitialLoad(false);
-          console.log("두번째 fetchData", docType, query, category, fetchState);
+          // console.log("두번째 fetchData", docType, query, category, fetchState);
           fetchData();
         }
       }
@@ -70,60 +74,57 @@ export default function TipsListContainer({
 
   const fetchData = async () => {
     try {
-      let response;
       if (docType === "TIPS") {
-        response = await getPostsMobile(fetchState.lastPostId, category);
-      } else if (docType === "NOTICE") {
-        response = await getNotices(
-          category,
-          "date",
-          fetchState.page.toString()
-        );
-      } else if (docType === "SEARCH" && query) {
-        response = await search(query, "date", fetchState.page.toString());
-      }
-
-      if (response && response.status === 200) {
-        let newPosts: Post[] = [];
-        if (docType === "TIPS") {
-          newPosts = response.body.data;
-        } else if (docType === "NOTICE") {
-          newPosts = response.body.data.notices;
-        } else if (docType === "SEARCH") {
-          newPosts = response.body.data.posts;
-        }
-
+        const response = await getPostsMobile(fetchState.lastPostId, category);
+        const newPosts: Post[] = response.data;
         if (newPosts && newPosts.length > 0) {
           setPosts((prev) => [...prev, ...newPosts]);
-
           // lastPostId 및 페이지 수 업데이트
-          if (docType === "TIPS") {
-            const lpi = Number(newPosts[newPosts.length - 1]?.id);
-            setFetchState((prev) => ({
-              ...prev,
-              lastPostId: Number.isNaN(lpi) ? undefined : lpi,
-            }));
-          } else {
-            setFetchState((prev) => ({
-              ...prev,
-              page: prev.page + 1,
-            }));
-          }
+          const lpi = Number(newPosts[newPosts.length - 1]?.id);
+          setFetchState((prev) => ({
+            ...prev,
+            lastPostId: Number.isNaN(lpi) ? undefined : lpi,
+          }));
         } else {
           setHasMore(false);
         }
-      } else {
-        setHasMore(false);
+      } else if (docType === "NOTICE") {
+        const response = await getNotices(category, "date", fetchState.page);
+        const newNotices: Notice[] = response.data.notices;
+        if (newNotices && newNotices.length > 0) {
+          setNotices((prev) => [...prev, ...newNotices]);
+          // lastPostId 및 페이지 수 업데이트
+          setFetchState((prev) => ({
+            ...prev,
+            page: prev.page + 1,
+          }));
+        } else {
+          setHasMore(false);
+        }
+      } else if (docType === "SEARCH" && query) {
+        const response = await getSearch(query, "date", fetchState.page);
+        const newPosts: Post[] = response.data.posts;
+        if (newPosts && newPosts.length > 0) {
+          setPosts((prev) => [...prev, ...newPosts]);
+          // lastPostId 및 페이지 수 업데이트
+          const lpi = Number(newPosts[newPosts.length - 1]?.id);
+          setFetchState((prev) => ({
+            ...prev,
+            lastPostId: Number.isNaN(lpi) ? undefined : lpi,
+          }));
+        } else {
+          setHasMore(false);
+        }
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("게시글/공지 가져오기 실패", error);
       setHasMore(false);
     }
   };
 
   const handleNext = () => {
     if (!isInitialLoad && hasMore) {
-      console.log("handleNext fetchData", docType, query, category, fetchState);
+      // console.log("handleNext fetchData", docType, query, category, fetchState);
       fetchData();
     }
   };
@@ -143,9 +144,13 @@ export default function TipsListContainer({
       >
         <TipsCardWrapper $viewMode={viewMode}>
           {posts.map((p, i) => (
+            <TipsCard key={i} post={p} viewMode={viewMode} docType={docType} />
+          ))}
+
+          {notices.map((n, i) => (
             <TipsCard
               key={i}
-              post={p as Post}
+              notice={n}
               viewMode={viewMode}
               docType={docType}
             />

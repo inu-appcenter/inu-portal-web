@@ -1,55 +1,32 @@
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import CommentImg from "../../../resource/assets/comment-img2.svg";
-import ReCommentInput from "../../../component/postdetail/comment/ReCommentInput";
-import DeleteCommentButton from "../../../component/postdetail/comment/DeleteCommentButton";
-import EditCommentButton from "../../../component/postdetail/comment/EditCommentButton";
-import CommentLike from "../../../component/postdetail/comment/CommentLike";
 import styled from "styled-components";
-import ReCommentList from "../../components/postdetail/comment/m.recommentlist";
-
-interface Replies {
-  id: number;
-  writer: string;
-  fireId: number;
-  content: string;
-  like: number;
-  isLiked: boolean;
-  isAnonymous: boolean;
-  hasAuthority: boolean;
-  createDate: string;
-  modifiedDate: string;
-  reReplies: Replies[];
-}
+import { useState } from "react";
+import { Reply } from "types/posts";
+import CommentImg from "resources/assets/mobile-tips/comment-img.svg";
+import rereplyImage from "resources/assets/posts/rereply.svg";
+import ReplyLikeButton from "components/posts/ReplyLikeButton";
+import checkedCheckbox from "resources/assets/posts/checked-checkbox.svg";
+import uncheckedCheckbox from "resources/assets/posts/unchecked-checkbox.svg";
+import enter from "resources/assets/posts/enter.svg";
+import React from "react";
+import axios, { AxiosError } from "axios";
+import { deleteReply, postReply, postReReply, putReply } from "apis/replies";
 
 interface CommentListProps {
-  bestComment: Replies;
-  comments: Replies[];
+  postId: number;
+  bestReply: Reply;
+  replies: Reply[];
   onCommentUpdate: () => void;
 }
 
-interface loginInfo {
-  user: {
-    token: string;
-  };
-}
-
 export default function CommentListMobile({
-  bestComment,
-  comments,
+  postId,
+  bestReply,
+  replies,
   onCommentUpdate,
 }: CommentListProps) {
-  const token = useSelector((state: loginInfo) => state.user?.token);
-  const [showReCommentInputId, setShowReCommentInputId] = useState<
-    number | null
-  >(null);
-
-  const allComments = bestComment
-    ? [
-        bestComment,
-        ...comments.filter((comment) => comment.id !== bestComment.id),
-      ]
-    : comments;
+  const allComments = bestReply
+    ? [bestReply, ...replies.filter((reply) => reply.id !== bestReply.id)]
+    : replies;
 
   const formatDate = (dateString: string): string => {
     // '2024.07.30' 형태를 Date 객체로 변환
@@ -73,191 +50,431 @@ export default function CommentListMobile({
       return `${diffInYears}년 전`;
     }
   };
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const [replyToEdit, setReplyToEdit] = useState<Reply | null>(null);
+  const [replyToReply, setReplyToReply] = useState<Reply | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      handleCreateReply();
+    }
+  };
+
+  const handleCreateReply = async () => {
+    if (loading) {
+      return;
+    }
+    if (!replyContent) {
+      alert("댓글 내용을 작성해주세요.");
+      return;
+    }
+    setLoading(true);
+    if (replyToReply) {
+      // 대댓글 등록
+      try {
+        await postReReply(replyToReply.id, replyContent, isAnonymous);
+        setReplyToReply(null);
+        onCommentUpdate();
+      } catch (error) {
+        console.error("대댓글 등록 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 400:
+              alert(
+                "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다."
+              );
+              break;
+            case 404:
+              alert(
+                "존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다. / 존재하지 않는 댓글입니다."
+              );
+              break;
+            default:
+              alert("대댓글 등록 실패");
+              break;
+          }
+        }
+      }
+    } else if (replyToEdit) {
+      // 댓글 수정
+      try {
+        await putReply(replyToEdit.id, replyContent, isAnonymous);
+        setReplyToEdit(null);
+        onCommentUpdate();
+      } catch (error) {
+        console.error("댓글 수정 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 403:
+              alert("이 댓글의 수정/삭제에 대한 권한이 없습니다.");
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다. / 존재하지 않는 댓글입니다.");
+              break;
+            default:
+              alert("댓글 수정 실패");
+              break;
+          }
+        }
+      }
+    } else {
+      // 일반 댓글 작성
+      try {
+        await postReply(postId, replyContent, isAnonymous);
+        onCommentUpdate();
+      } catch (error) {
+        console.error("댓글 등록 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 400:
+              alert(
+                "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다."
+              );
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다.");
+              break;
+            default:
+              alert("댓글 등록 실패");
+              break;
+          }
+        }
+      }
+    }
+    setReplyContent("");
+    setLoading(false);
+  };
+
+  const handleDeleteReply = async (replyId: number) => {
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      try {
+        await deleteReply(replyId);
+        alert("댓글이 삭제되었습니다.");
+        onCommentUpdate();
+      } catch (error) {
+        console.error("댓글 삭제 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 403:
+              alert("이 댓글의 수정/삭제에 대한 권한이 없습니다.");
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다. / 존재하지 않는 댓글입니다.");
+              break;
+            default:
+              alert("댓글 삭제 실패");
+              break;
+          }
+        }
+      }
+    }
+  };
+
+  const handleReplyTo = (reply: Reply) => {
+    setReplyToReply(reply);
+    setReplyToEdit(null);
+    setReplyContent("");
+  };
+
+  const handleEditReply = (reply: Reply) => {
+    setReplyToReply(null);
+    setReplyToEdit(reply);
+    setReplyContent(reply.content);
+  };
+
+  const cancelEditOrReply = () => {
+    setReplyToEdit(null);
+    setReplyToReply(null);
+    setReplyContent("");
+  };
 
   return (
-    <div>
-      <CommentWrapper>
-        <CommentHeader>
-          <img src={CommentImg} alt="Comments" style={{ width: "14px" }} />
-          <span className="comment">댓글</span>
-        </CommentHeader>
-        <CommentListWrapper>
-          {allComments.map((comment, index) => (
-            <CommentContainer key={comment.id}>
-              <Comments>
-                <ProfileWrapper>
-                  <Profile
-                    src={`https://portal.inuappcenter.kr/api/images/${comment.fireId}`}
-                    alt="프로필"
+    <PostRepliesWrapper>
+      <div className="repliesTop">
+        <img src={CommentImg} className="replyImage" alt="" />
+        댓글
+      </div>
+      <RepliesContainer>
+        {allComments.length > 0 ? (
+          <>
+            {allComments.map((reply, index) => (
+              <React.Fragment key={reply.id}>
+                <ReplyContainer $isFirst={index === 0}>
+                  <img
+                    className="fire"
+                    src={`https://portal.inuappcenter.kr/api/images/${reply.fireId}`}
+                    alt=""
                   />
-                </ProfileWrapper>
-                <CommentDetail>
-                  <CommentDetailHeader>
-                    <WriterText>{comment.writer}</WriterText>
-                    {index === 0 && bestComment && <BestText>Best</BestText>}
-                    <CommentUtil>
-                      <CommentLike
-                        id={comment.id}
-                        like={comment.like}
-                        isLikedProp={comment.isLiked}
-                      />
-                      <CommentDate>
-                        {formatDate(comment.createDate)}
-                      </CommentDate>
-                    </CommentUtil>
-                  </CommentDetailHeader>
-                  <ContentText>{comment.content}</ContentText>
-                  <CommentUtilityContainer>
-                    <CommentUtility
-                      onClick={() => setShowReCommentInputId(comment.id)}
-                    >
-                      답장
-                    </CommentUtility>
-                    {comment.hasAuthority && (
-                      <>
-                        <EditCommentButton
-                          token={token}
-                          id={comment.id}
-                          currentContent={comment.content}
-                          isAnonymous={comment.isAnonymous}
-                          onCommentUpdate={onCommentUpdate}
-                        />
-                        <DeleteCommentButton
-                          token={token}
-                          id={comment.id}
-                          onCommentUpdate={onCommentUpdate}
-                        />
-                      </>
-                    )}
-                  </CommentUtilityContainer>
-                </CommentDetail>
-              </Comments>
-              {showReCommentInputId === comment.id && (
-                <ReCommentInput
-                  parentId={comment.id}
-                  onCommentUpdate={onCommentUpdate}
-                />
-              )}
-              {comment.reReplies && (
-                <ReCommentList
-                  token={token}
-                  reReplies={comment.reReplies}
-                  onCommentUpdate={onCommentUpdate}
-                />
-              )}
-            </CommentContainer>
-          ))}
-        </CommentListWrapper>
-      </CommentWrapper>
-    </div>
+                  <div className="main">
+                    <span className="writer">{reply.writer}</span>
+                    <p>{reply.content}</p>
+                    <div className="util-buttons">
+                      <button onClick={() => handleReplyTo(reply)}>답장</button>
+                      {reply.hasAuthority && (
+                        <>
+                          <button onClick={() => handleEditReply(reply)}>
+                            수정
+                          </button>
+                          <button onClick={() => handleDeleteReply(reply.id)}>
+                            삭제
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="date-like">
+                    <span className="date">{formatDate(reply.createDate)}</span>
+                    <ReplyLikeButton
+                      id={reply.id}
+                      like={reply.like}
+                      isLiked={reply.isLiked}
+                    />
+                  </div>
+                </ReplyContainer>
+                {reply.reReplies?.map((reReply) => (
+                  <ReReplyContainer key={reReply.id}>
+                    <img src={rereplyImage} alt="" />
+                    <span className="writer">{reReply.writer}</span>
+                    <p>{reReply.content}</p>
+                    <div className="util-buttons">
+                      {reReply.hasAuthority && (
+                        <>
+                          <button onClick={() => handleEditReply(reReply)}>
+                            수정
+                          </button>
+                          <button onClick={() => handleDeleteReply(reReply.id)}>
+                            삭제
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <ReplyLikeButton
+                      id={reReply.id}
+                      like={reply.like}
+                      isLiked={reply.isLiked}
+                    />
+                  </ReReplyContainer>
+                ))}
+              </React.Fragment>
+            ))}
+          </>
+        ) : (
+          <ReplyContainer $isFirst={true}>아직 댓글이 없어요 🤫</ReplyContainer>
+        )}
+      </RepliesContainer>
+      <ReplyInput>
+        {(replyToEdit || replyToReply) && (
+          <EditOrReplyBanner>
+            {replyToEdit && (
+              <>
+                댓글 수정 중<button onClick={cancelEditOrReply}>취소</button>
+              </>
+            )}
+            {replyToReply && (
+              <>
+                {replyToReply.writer}에게 답장 중
+                <button onClick={cancelEditOrReply}>취소</button>
+              </>
+            )}
+          </EditOrReplyBanner>
+        )}
+        <div className="wrapper">
+          <span
+            className="anonymous-wrapper"
+            onClick={() => setIsAnonymous(!isAnonymous)}
+          >
+            <img
+              src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
+              alt=""
+            />
+            <span>익명</span>
+          </span>
+          <input
+            placeholder="댓글을 입력해주세요."
+            value={replyContent}
+            onChange={(e) => setReplyContent(e.target.value)}
+            onKeyDown={handleKeyPress}
+          />
+          <img src={enter} alt="전송" onClick={handleCreateReply} />
+        </div>
+      </ReplyInput>
+    </PostRepliesWrapper>
   );
 }
 
-// Styled Components
-const CommentWrapper = styled.div``;
-
-const CommentHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
-  font-size: 12px;
-  background-color: #f6f9ff;
-  padding-left: 30px;
-`;
-
-const CommentListWrapper = styled.div`
-  width: 100%;
-`;
-
-const CommentContainer = styled.div`
+const PostRepliesWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  border-bottom: 2px solid #dedede;
-  padding: 5px 0;
-
-  @media (max-width: 768px) {
-    margin: 0 10px;
+  .repliesTop {
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #eff2f9;
+    .replyImage {
+      width: 14px;
+    }
   }
 `;
 
-const Comments = styled.div`
-  display: flex;
-  flex-direction: row;
-  position: relative;
-`;
-
-const ProfileWrapper = styled.div`
-  border-radius: 50%;
-  background-color: #ffffff;
-  display: flex;
-  align-items: start;
-  justify-content: center;
-  margin-left: 10px;
-`;
-
-const Profile = styled.img`
-  width: 35px;
-  height: 35px;
-  object-fit: cover;
-  object-position: center;
-  align-items: center;
-`;
-
-const CommentDetail = styled.div`
+const RepliesContainer = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
-  padding-left: 15px;
 `;
 
-const CommentDetailHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-`;
-
-const WriterText = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-  color: #4071b9;
-  flex: 1;
-`;
-
-const BestText = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-  color: #fcaf15;
-`;
-
-const ContentText = styled.span`
-  font-size: 15px;
-  font-weight: 400;
-`;
-
-const CommentUtilityContainer = styled.div`
+const ReplyContainer = styled.div<{ $isFirst: boolean }>`
+  padding: 12px 24px;
+  border-top: ${({ $isFirst }) => ($isFirst ? "none" : "2px solid #dedede")};
   display: flex;
   align-items: center;
+  gap: 16px;
+  .fire {
+    width: 52px;
+    border-radius: 100px;
+  }
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    .writer {
+      font-weight: 600;
+      color: #4071b9;
+    }
+    p {
+      margin: 0;
+    }
+    .util-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+      button {
+        font-size: 14px;
+        color: #888888;
+        background-color: transparent;
+        border: none;
+        padding: 0;
+      }
+    }
+  }
+  .date-like {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    .date {
+      font-size: 14px;
+      color: #888888;
+    }
+  }
 `;
 
-const CommentUtility = styled.span`
-  font-size: 10px;
-  font-weight: 500;
-  color: #888888;
-  padding-right: 5px;
-  cursor: pointer;
-`;
-
-const CommentUtil = styled.div`
-  min-width: 70px;
+const ReReplyContainer = styled.div`
+  padding: 16px 32px;
+  border-top: 2px solid #dedede;
   display: flex;
-  flex-direction: row;
-  gap: 10px;
+  align-items: center;
+  gap: 16px;
+  .writer {
+    font-weight: 600;
+    color: #4071b9;
+  }
+
+  .util-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    button {
+      font-size: 14px;
+      color: #888888;
+      background-color: transparent;
+      border: none;
+    }
+  }
+  p {
+    flex: 1;
+    margin: 0;
+  }
+`;
+
+const ReplyInput = styled.div`
+  border-top: 4px solid #eaeaea;
+  position: fixed;
+  bottom: 0;
+  z-index: 100;
+  height: 64px;
+  width: 100vw;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .wrapper {
+    flex: 1;
+    padding: 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .anonymous-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    span {
+      font-size: 16px;
+    }
+
+    input {
+      flex: 1;
+      font-size: 14px;
+      height: 36px;
+      border: none;
+      padding-left: 12px;
+      border-radius: 12px;
+      background-color: #eff2f9;
+    }
+  }
+`;
+
+const EditOrReplyBanner = styled.div`
+  position: absolute;
   top: 0;
-  align-items: center;
-  right: 0;
-`;
-
-const CommentDate = styled.span`
-  font-size: 10px;
-  color: #888888;
+  left: 16px;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  background-color: white;
+  button {
+    font-size: 14px;
+    padding: 0;
+    color: #888;
+    background-color: transparent;
+    border: none;
+  }
 `;
