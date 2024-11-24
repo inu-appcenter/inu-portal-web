@@ -5,6 +5,7 @@ import fileImg from "resources/assets/mypage/folder.svg";
 import { useState } from "react";
 import { postFoldersPosts } from "apis/folders";
 import axios from "axios";
+import { Folder } from "types/folders";
 
 interface MobileFolderListDropDownsProps {
   folders: Folder[];
