@@ -1,19 +1,28 @@
 // SortDropBox.tsx
-import styled from 'styled-components';
+import styled from "styled-components";
 
 interface SortDropBoxProps {
-  sort:string;
+  sort: string;
   setSort: (sort: string) => void;
 }
 
-export default function SortDropBox({sort, setSort}:SortDropBoxProps) {
-    return (
-        <DropBoxWrapper>
-            <p className={sort === 'view' ? 'point' : ''}  onClick={() => setSort('view')}>인기순</p>
-            <p className={sort === 'date' ? 'point' : ''}  onClick={() => setSort('date')}>최신순</p>
-      </DropBoxWrapper>
-    )
-
+export default function SortDropBox({ sort, setSort }: SortDropBoxProps) {
+  return (
+    <DropBoxWrapper>
+      <p
+        className={sort === "view" ? "point" : ""}
+        onClick={() => setSort("view")}
+      >
+        인기순
+      </p>
+      <p
+        className={sort === "date" ? "point" : ""}
+        onClick={() => setSort("date")}
+      >
+        최신순
+      </p>
+    </DropBoxWrapper>
+  );
 }
 // const SortDropBox: React.FC<SortDropBoxProps> = ({ sort, setSort }) => {
 //   return (
@@ -37,10 +46,10 @@ const DropBoxWrapper = styled.div`
   display: flex;
   align-items: center;
   margin-right: 10px;
-  gap:10px;
+  gap: 10px;
 
   .point {
-    color:#20559e;
+    color: #20559e;
     font-weight: 900;
   }
 
@@ -105,4 +114,3 @@ const DropBoxWrapper = styled.div`
     cursor: url('/pointers/cursor-pointer.svg'), pointer;
   } */
 `;
-
