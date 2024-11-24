@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import scrapEmptyImg from "../../../../resource/assets/scrap.svg";
-import scrapFilledImg from "../../../../resource/assets/scrap-filled-img.svg";
-import { handlePostScrap } from "../../../../utils/API/Posts";
+import { useEffect, useState } from "react";
+import scrapEmptyImg from "resources/assets/posts/scrap-empty.svg";
+import scrapFilledImg from "resources/assets/posts/scrap-filled.svg";
+import styled from "styled-components";
+import { putScrap } from "apis/posts";
+import axios, { AxiosError } from "axios";
 
 interface PostScrapProps {
-  id: string;
+  id: number;
   scrap: number;
   isScrapedProp: boolean;
 }
@@ -15,48 +16,62 @@ export default function PostScrap({
   scrap,
   isScrapedProp,
 }: PostScrapProps) {
-  const [scraps, setScraps] = useState(scrap);
-  const [isScraped, setIsScraped] = useState(isScrapedProp);
-  const token = useSelector((state: any) => state.user.token);
+  const [scrapState, setScrapState] = useState(scrap);
+  const [isScrapedState, setIsScrapedState] = useState(isScrapedProp);
 
   useEffect(() => {
-    setIsScraped(isScrapedProp);
-  }, [id]);
+    setScrapState(scrap);
+    setIsScrapedState(isScrapedProp);
+  }, [scrap, isScrapedProp]);
 
-  const handleScrapClick = async () => {
-    if (!id) {
-      console.error("ID is undefined");
-      return;
-    }
-    if (token) {
-      try {
-        const result = await handlePostScrap(token, id);
-        if (result.body.data === +1) {
-          setScraps(scraps + 1);
-          setIsScraped(true);
-          alert("스크랩 성공");
-        } else {
-          setScraps(scraps - 1);
-          setIsScraped(false);
-          alert("스크랩 취소");
-        }
-      } catch (error) {
-        console.error("스크랩 처리 에러", error);
-        alert("스크랩 처리 에러");
+  const handleScrap = async () => {
+    try {
+      const response = await putScrap(id);
+      if (response.data === 1) {
+        setScrapState(scrapState + 1);
+        setIsScrapedState(!isScrapedState);
+      } else {
+        setScrapState(scrapState - 1);
+        setIsScrapedState(!isScrapedState);
       }
-    } else {
-      alert("로그인 필요");
+    } catch (error) {
+      console.error("스크랩 여부 변경 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 404:
+            alert("존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("스크랩 여부 변경 실패");
+            break;
+        }
+      }
     }
   };
 
   return (
-    <span className="scrapContainer">
+    <ScrapContainer>
       <img
-        onClick={handleScrapClick}
         className="UtilityImg"
-        src={isScraped ? scrapFilledImg : scrapEmptyImg}
+        src={isScrapedState ? scrapFilledImg : scrapEmptyImg}
         alt="scrapImg"
+        onClick={handleScrap}
       />
-    </span>
+      <span>{scrapState}</span>
+    </ScrapContainer>
   );
 }
+
+const ScrapContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  img.UtilityImg {
+    width: 14px;
+  }
+`;

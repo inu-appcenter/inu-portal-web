@@ -1,117 +1,124 @@
 import styled from "styled-components";
-import TitleContentInput from "../../components/write/TitleContentInput";
-import PhotoUpload from "../../components/write/PhotoUpload";
-import AnonymousCheck from "../../components/write/AnonymousCheck";
+import TitleContentInput from "mobile/components/write/TitleContentInput";
+import PhotoUpload from "mobile/components/write/PhotoUpload";
+import AnonymousCheck from "mobile/components/write/AnonymousCheck";
 import { useEffect, useState } from "react";
 import {
-  getImages,
-  getPost,
+  getPostDetail,
   postImages,
-  postPosts,
+  postPost,
   putImages,
   putPost,
-} from "../../../utils/API/Posts";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { useResetTipsStore } from "../../../reducer/resetTipsStore";
-import { useResetWriteStore } from "../../../reducer/resetWriteStore";
+} from "apis/posts";
+import { useBeforeUnload, useNavigate } from "react-router-dom";
+import { useResetTipsStore } from "reducer/resetTipsStore";
+import { useResetWriteStore } from "reducer/resetWriteStore";
+import axios, { AxiosError } from "axios";
 
-interface WriteFormProps {
-  idProps?: string;
+interface Props {
   category: string;
   setCategory: (value: string) => void;
-  typeProps: string;
 }
 
-export default function WriteForm({
-  idProps,
-  category,
-  setCategory,
-  typeProps,
-}: WriteFormProps) {
-  const token = useSelector((state: any) => state.user.token);
-  const id = idProps;
-  const type = typeProps;
-  const [post, setPost] = useState<Post | null>(null);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [anonymous, setAnonymous] = useState(false);
-  const [images, setImages] = useState<File[]>([]);
-  const [imageCount, setImageCount] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState(false);
+export default function WriteForm({ category, setCategory }: Props) {
   const navigate = useNavigate();
+  const [postId, setPostId] = useState<number>(0);
+  const [title, setTitle] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [anonymous, setAnonymous] = useState<boolean>(false);
+  const [images, setImages] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
   const triggerResetTips = useResetTipsStore((state) => state.triggerReset);
   const triggerResetWrite = useResetWriteStore((state) => state.triggerReset);
 
-  // setPost, 수정 권한 확인
+  // postId 가져오기
   useEffect(() => {
-    if (type === "update" && id) {
-      const fetchPost = async () => {
-        const response = await getPost(token, id);
-        if (response.status === 200) {
-          if (!response.body.data.hasAuthority) {
-            window.alert("수정 권한이 없습니다");
-            navigate("/m/write");
-          } else {
-            setPost(response.body.data);
-          }
-        } else {
-          alert(`${response.status} (${response.body.msg})`);
+    if (location.pathname.includes("/write")) {
+      const params = new URLSearchParams(location.search);
+      setPostId(Number(params.get("id")) || 0);
+    }
+  }, [location.pathname, location.search]);
+
+  // 수정 시 기존 내용 가져오기
+  const fetchPost = async () => {
+    try {
+      if (postId) {
+        const response = await getPostDetail(postId);
+        if (!response.data.hasAuthority) {
+          alert("수정 권한이 없습니다.");
           navigate("/m/write");
         }
-      };
-      fetchPost();
-    } else {
-      setPost(null);
-    }
-  }, [id]);
+        setTitle(response.data.title);
+        setContent(response.data.content);
+        setCategory(response.data.category);
+        setAnonymous(response.data.writer === "횃불이");
 
-  // post 변경 시 set
-  useEffect(() => {
-    if (post) {
-      setTitle(post.title);
-      setContent(post.content);
-      setCategory(post.category);
-      setImageCount(post.imageCount);
-    } else {
-      setTitle("");
-      setContent("");
-      setCategory("");
-      setImageCount(0);
-    }
-  }, [post]);
+        const fetchedImages: File[] = [];
+        for (let imageId = 0; imageId < response.data.imageCount; imageId++) {
+          const response = await fetch(
+            `https://portal.inuappcenter.kr/api/posts/${postId}/images/${
+              imageId + 1
+            }`
+          );
+          const blob = await response.blob();
+          const file = new File([blob], `image_${imageId}.png`, {
+            type: blob.type,
+          });
+          fetchedImages.push(file);
+        }
 
-  // 이미지 찾기
-  useEffect(() => {
-    const fetchImages = async () => {
-      if (imageCount === 0) {
+        setImages(fetchedImages);
+      } else {
+        setTitle("");
+        setContent("");
+        setCategory("");
+        setAnonymous(false);
         setImages([]);
-        return;
       }
-      if (id === undefined) {
-        return;
-      }
-      let images: File[] = [];
-      for (let imageId = 1; imageId <= imageCount; imageId++) {
-        try {
-          const response = await getImages(id, imageId);
-          if (response.status === 200) {
-            const imageBlob = response.body;
-            const imageFile = new File([imageBlob], `image_${imageId}.png`);
-            images.push(imageFile);
-          }
-        } catch (error) {
-          console.error(`Error fetching image:`, error);
-          // 이미지를 찾지 못해도 계속 진행
+    } catch (error) {
+      console.error("게시글 가져오기 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 404:
+            alert("존재하지 않는 게시글입니다.");
+            navigate(-1);
+            break;
+          default:
+            alert("게시글 가져오기 실패");
+            navigate(-1);
+            break;
         }
       }
-      setImages(images);
-    };
-    fetchImages();
-  }, [imageCount]);
+    }
+  };
 
-  // 업로드 버튼 클릭
-  const handleUpload = async () => {
+  useEffect(() => {
+    fetchPost();
+  }, [postId]);
+
+  // 나갈 때 경고
+  useBeforeUnload((event) => {
+    event.preventDefault();
+  });
+
+  // 이미지 업로드
+  const handleImageUpload = (files: File[]) => {
+    setImages((prevImages) => [...prevImages, ...files]);
+  };
+
+  // 이미지 삭제
+  const handleImageRemove = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
+  // 업로드/수정 완료 버튼
+  const handleSubmit = async () => {
+    if (loading) alert("업로드 진행 중");
     if (content.length > 1999) {
       alert("내용은 2000자 이하로 작성해 주세요.");
       return;
@@ -124,90 +131,81 @@ export default function WriteForm({
       alert("카테고리를 선택해 주세요.");
       return;
     }
-    try {
-      if (isUploading) return;
-      setIsUploading(true);
-      if (type === "create") {
-        let postId;
-        const response = await postPosts(
-          { title, content, category, anonymous },
-          token
-        );
-        if (response.status === 201) {
-          postId = response.body.data;
-          if (images.length) {
-            const responseImage = await postImages(token, postId, images);
-            if (responseImage.status === 201) {
-              window.alert("게시글 등록 성공");
-              setIsUploading(false);
-              triggerResetTips();
-              triggerResetWrite();
-              navigate(`/m/home/tips`);
-            }
-          } else {
-            window.alert("게시글 등록 성공");
-            setIsUploading(false);
-            triggerResetTips();
-            triggerResetWrite();
-            navigate(`/m/home/tips`);
-          }
-        } else if (response.status === 404) {
-          console.error("존재하지 않는 회원입니다.", response.status);
-          alert("존재하지 않는 회원입니다.");
-        } else {
-          console.error("게시글 등록 실패:", response.status);
-        }
-      } else if (type === "update") {
-        if (id === undefined) {
-          console.error("ID is undefined");
-          return;
-        }
-        let postId = id;
+    setLoading(true);
+    if (postId) {
+      try {
         const response = await putPost(
-          { title, content, category, anonymous },
-          token,
-          postId
+          postId,
+          title,
+          content,
+          category,
+          anonymous
         );
-        if (response.status === 200) {
-          if (images.length) {
-            const responseImage = await putImages(token, postId, images);
-            if (responseImage.status === 200) {
-              window.alert("게시글 수정 성공");
-              triggerResetTips();
-              triggerResetWrite();
-              setIsUploading(false);
-              navigate(-1);
-            }
-          } else {
-            window.alert("게시글 수정 성공");
-            triggerResetTips();
-            triggerResetWrite();
-            setIsUploading(false);
-            navigate(-1);
-          }
-        } else if (response.status === 403) {
-          console.error(
-            "이 게시글의 수정/삭제에 대한 권한이 없습니다.",
-            response.status
-          );
-          alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+        if (images.length > 0) {
+          await putImages(response.data, images);
         } else {
-          console.error("게시글 수정 실패:", response.status);
+          await putImages(response.data, []);
+        }
+        triggerResetTips();
+        triggerResetWrite();
+        navigate(`/m/postdetail?id=${response.data}`);
+      } catch (error) {
+        console.error("게시글 수정 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 403:
+              alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다.");
+              break;
+            default:
+              alert("게시글 수정 실패");
+              break;
+          }
         }
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      try {
+        const response = await postPost(title, content, category, anonymous);
+        if (images.length > 0) {
+          await postImages(response.data, images);
+        }
+        triggerResetTips();
+        triggerResetWrite();
+        navigate(`/m/postdetail?id=${response.data}`);
+      } catch (error) {
+        console.error("게시글 등록 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 400:
+              alert(
+                "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다."
+              );
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다.");
+              break;
+            default:
+              alert("게시글 등록 실패");
+              break;
+          }
+        }
+      }
     }
-  };
-
-  const handleImageChange = (file: File | null) => {
-    if (file) {
-      setImages((prevImages) => [...prevImages, file]);
-    }
-  };
-
-  const handleImageRemove = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+    setLoading(false);
   };
 
   return (
@@ -220,15 +218,15 @@ export default function WriteForm({
       />
       <PhotoUpload
         images={images}
-        onImageChange={handleImageChange}
+        onImageChange={handleImageUpload}
         onImageRemove={handleImageRemove}
       />
       <AnonymousCheck
         checked={anonymous}
         onChange={(checked: boolean) => setAnonymous(checked)}
       />
-      <UploadButton $disabled={isUploading} onClick={handleUpload}>
-        {isUploading ? "업로드 중..." : "업로드"}
+      <UploadButton $disabled={loading} onClick={handleSubmit}>
+        {loading ? "업로드 중..." : "업로드"}
       </UploadButton>
     </WriteFormWrapper>
   );
