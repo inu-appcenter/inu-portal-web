@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import styled from 'styled-components';
-import { AiChat } from '../../components/ai/AiChat';
-import { getFires } from '../../../utils/API/Fires';
-import AiImgViewer from '../../../component/ai/AiImgViewer';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import styled from "styled-components";
+import { AiChat } from "../../../../old/mobile/components/ai/AiChat";
+import { getFires } from "../../../../src/utils/API/Fires";
+import AiImgViewer from "../../../component/ai/AiImgViewer";
 
 export default function MobileAiResult() {
-  const { imageId } = useParams<{imageId: string }>();
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const { imageId } = useParams<{ imageId: string }>();
+  const [imageUrl, setImageUrl] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,12 +19,12 @@ export default function MobileAiResult() {
           const imageURL = URL.createObjectURL(response.body);
           setImageUrl(imageURL);
         } else if (response.status === 404) {
-          alert('존재하지 않는 이미지 번호입니다.');
+          alert("존재하지 않는 이미지 번호입니다.");
         } else {
-          alert('이미지 불러오기 실패');
+          alert("이미지 불러오기 실패");
         }
       } catch (error) {
-        console.error('Error fetching image', error);
+        console.error("Error fetching image", error);
       }
     };
     fetchImage();
@@ -34,23 +34,23 @@ export default function MobileAiResult() {
   const getFormattedDate = () => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
     return `${year}.${month}.${day}`;
   };
 
   return (
     <MobileAiInputWrapper>
       <DateWrapper>
-        <DateLine /> 
-        <DateDisplay>{getFormattedDate()}</DateDisplay> 
+        <DateLine />
+        <DateDisplay>{getFormattedDate()}</DateDisplay>
         <DateLine />
       </DateWrapper>
       <ChatWrapper>
-        <AiChat message='AI 이미지 생성중 ...'/>
+        <AiChat message="AI 이미지 생성중 ..." />
       </ChatWrapper>
-      {imageUrl && <AiImgViewer imageUrl={imageUrl}/> }
-      <button onClick={() => navigate('/m/ai/input')}>다시 그리기</button>
+      {imageUrl && <AiImgViewer imageUrl={imageUrl} />}
+      <button onClick={() => navigate("/m/ai/input")}>다시 그리기</button>
     </MobileAiInputWrapper>
   );
 }
