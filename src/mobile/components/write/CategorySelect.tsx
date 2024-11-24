@@ -2,69 +2,46 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getCategories } from "apis/categories";
 import dropdownIcon from "resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
-import { useLocation, useNavigate } from "react-router-dom";
 
-export default function CategorySelector() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [type, setType] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+interface CategorySelectProps {
+  category: string;
+  setCategory: (value: string) => void;
+}
+
+export default function CategorySelector({
+  category,
+  setCategory,
+}: CategorySelectProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (location.pathname === "/m/write") {
-      setType("write");
-    } else if (params.get("type") != type) {
-      if (params.get("type") === "notice") {
-        setType("notice");
-      } else {
-        setType("tips");
-      }
-    }
-    if (params.get("search")) {
-      setSelectedCategory("");
-    } else {
-      setSelectedCategory(params.get("category") || "전체");
-    }
-  }, [location.pathname, location.search]);
-
-  useEffect(() => {
     const fetchCategories = async () => {
       try {
-        if (type == "tips") {
-          const response = await getCategories();
-          setCategories(["전체", ...response.data]);
-        } else if (type == "write") {
-          const response = await getCategories();
-          setCategories(response.data);
-        } else if (type === "notice") {
-          setCategories(["전체", "학사", "모집", "학점교류", "교육시험"]);
-        }
+        const response = await getCategories();
+        setCategories(response.data);
       } catch (error) {
         console.error("모든 카테고리 가져오기 실패", error);
       }
     };
-    fetchCategories();
-  }, [type]);
 
-  const handleClickCategory = (category: string) => {
-    const params = new URLSearchParams(location.search);
-    params.delete("search");
-    params.set("category", category);
-    navigate(`${location.pathname}?${params.toString()}`);
+    fetchCategories();
+  }, []);
+
+  const handleCategoryClick = (category: string) => {
+    setCategory(category);
+    setIsOpen(false);
   };
 
   return (
-    <CategorySelectorWrapper onClick={() => setIsOpen(!isOpen)}>
+    <CategorySelectorWrapper>
       {isOpen ? (
         <DropdownOptions>
           {categories.map((category, index) => (
             <React.Fragment key={category}>
               <DropdownOption
                 onClick={() => {
-                  handleClickCategory(category);
+                  handleCategoryClick(category);
                   setIsOpen(false);
                 }}
               >
@@ -75,9 +52,13 @@ export default function CategorySelector() {
           ))}
         </DropdownOptions>
       ) : (
-        <Dropdown>
-          <div>{selectedCategory || "카테고리 선택"}</div>
-          <DropdownImg src={dropdownIcon} alt="dropdownIcon" />
+        <Dropdown
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+        >
+          <div>{category || "카테고리 선택"}</div>
+          <DropdownImg src={dropdownIcon} alt="" />
         </Dropdown>
       )}
     </CategorySelectorWrapper>

@@ -2,7 +2,8 @@ import { useState } from "react";
 import styled from "styled-components";
 import heartEmpty from "resources/assets/posts/heart-empty.svg";
 import heartFilled from "resources/assets/posts/heart-filled.svg";
-import scrapImage from "resources/assets/posts/scrap.svg";
+import scrapEmpty from "resources/assets/posts/scrap-empty.svg";
+import scrapFilled from "resources/assets/posts/scrap-filled.svg";
 import { putLike } from "apis/posts";
 import { putScrap } from "apis/posts";
 import axios, { AxiosError } from "axios";
@@ -102,8 +103,8 @@ export default function LikeScrapButtons({
       </div>
       <div>
         <button onClick={handleScrap}>
-          <img src={scrapImage} alt="" />
-          {isScrapedState ? "스크랩 취소" : "스크랩"}
+          <img src={isScrapedState ? scrapFilled : scrapEmpty} alt="" />
+          스크랩
         </button>
         <span>{scrapState}</span>
       </div>

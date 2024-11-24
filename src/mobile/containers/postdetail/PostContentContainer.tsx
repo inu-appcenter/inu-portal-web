@@ -1,40 +1,30 @@
-import PostTitle from "../../components/postdetail/post/posttitle";
-import PostContent from "../../components/postdetail/post/postcontent";
+import PostTitle from "mobile/components/postdetail/post/posttitle";
+import PostContent from "mobile/components/postdetail/post/postcontent";
 import styled from "styled-components";
+import { PostDetail } from "types/posts";
 
 interface PostContentContainerProps {
-  id: string;
-  title: string;
-  createDate: string;
-  view: number;
-  writer: string;
-  content: string;
-  imageCount: number;
-  category: string;
-  hasAuthority: boolean;
+  post: PostDetail;
 }
 
 export default function PostContentContainer({
-  id,
-  title,
-  createDate,
-  view,
-  writer,
-  content,
-  imageCount,
-  /*category,*/ hasAuthority,
+  post,
 }: PostContentContainerProps) {
   return (
     <Wrapper>
       <PostTitle
-        title={title}
-        createDate={createDate}
-        view={view}
-        writer={writer}
-        id={id}
-        hasAuthority={hasAuthority}
+        id={post.id}
+        title={post.title}
+        createDate={post.createDate}
+        view={post.view}
+        writer={post.writer}
+        hasAuthority={post.hasAuthority}
       />
-      <PostContent id={id} content={content} imageCount={imageCount} />
+      <PostContent
+        id={post.id}
+        content={post.content}
+        imageCount={post.imageCount}
+      />
     </Wrapper>
   );
 }

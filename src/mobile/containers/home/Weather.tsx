@@ -122,7 +122,7 @@ export default function WeatherForm() {
 
   return (
     <WeatherWrapper>
-      <WeatherBackground gradient={gradient}>
+      <WeatherBackground $gradient={gradient}>
         <BackImage src={back} alt="" />
         <WeatherIcon src={image} alt={weather.sky} />
         <Wrapper>
@@ -152,7 +152,7 @@ const WeatherWrapper = styled.div`
   z-index: -1;
 `;
 
-const WeatherBackground = styled.div<{ gradient: string }>`
+const WeatherBackground = styled.div<{ $gradient: string }>`
   width: 100%;
   height: 100%;
   position: relative;
@@ -160,7 +160,7 @@ const WeatherBackground = styled.div<{ gradient: string }>`
   align-items: flex-end;
   padding: 20px 0 40px 0;
   justify-content: space-around;
-  background: ${(props) => props.gradient};
+  background: ${(props) => props.$gradient};
 `;
 
 const BackImage = styled.img`

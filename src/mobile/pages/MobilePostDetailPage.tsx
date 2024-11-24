@@ -1,66 +1,52 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getPost } from "../../utils/API/Posts";
-import PostContentContainer from "../containers/postdetail/PostContentContainer";
-import PostUtilContainer from "../containers/postdetail/PostUtilContainer";
-import CommentListMobile from "../containers/postdetail/CommentListContainer";
-import CommentInput from "../components/postdetail/comment/m.commentInput";
+import { getPostDetail } from "apis/posts";
+import PostUtilContainer from "mobile/containers/postdetail/PostUtilContainer";
+import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
+import CommentListMobile from "mobile/containers/postdetail/CommentListContainer";
+import { PostDetail } from "types/posts";
+import axios, { AxiosError } from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
-interface Post {
-  id: string;
-  title: string;
-  category: string;
-  writer: string;
-  content: string;
-  like: number;
-  scrap: number;
-  view: number;
-  isLiked: boolean;
-  isScraped: boolean;
-  hasAuthority: boolean;
-  createDate: string;
-  modifiedDate: string;
-  imageCount: number;
-  bestReplies: Replies[];
-  replies: Replies[];
-}
-
-interface Replies {
-  id: number;
-  writer: string;
-  fireId: number;
-  content: string;
-  like: number;
-  isLiked: boolean;
-  isAnonymous: boolean;
-  hasAuthority: boolean;
-  createDate: string;
-  modifiedDate: string;
-  reReplies: Replies[];
-}
-
-export default function PostDetail() {
-  const token = useSelector((state: any) => state.user.token);
-  const [post, setPost] = useState<Post | null>(null);
-  const [id, setId] = useState("");
+export default function PostDetailPage() {
+  const [post, setPost] = useState<PostDetail>();
   const [commentUpdated, setCommentUpdated] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const fetchPost = async (id: number) => {
+    try {
+      const response = await getPostDetail(id);
+      setPost(response.data);
+      setCommentUpdated(false);
+    } catch (error) {
+      console.error("게시글 가져오기 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 404:
+            alert("존재하지 않는 게시글입니다.");
+            navigate(-1);
+            break;
+          default:
+            alert("게시글 가져오기 실패");
+            navigate(-1);
+            break;
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     if (location.pathname.includes("/postdetail")) {
       const params = new URLSearchParams(location.search);
-      setId(params.get("id") || "");
-      if (id) {
-        const fetchPost = async () => {
-          const response = await getPost(token, id);
-          if (response.status === 200) {
-            setPost(response.body.data);
-          }
-        };
-        fetchPost();
-      }
+      fetchPost(Number(params.get("id")) || 0);
     }
-  }, [location.pathname, id, commentUpdated]);
+  }, [location.pathname, commentUpdated]);
 
   return (
     <>
@@ -78,25 +64,12 @@ export default function PostDetail() {
               />
             </PostTopWrapper>
             <PostWrapper>
-              <PostContentContainer
-                id={post.id}
-                title={post.title}
-                createDate={post.createDate}
-                view={post.view}
-                writer={post.writer}
-                content={post.content}
-                imageCount={post.imageCount}
-                category={post.category}
-                hasAuthority={post.hasAuthority}
-              />
+              <PostContentContainer post={post} />
               <CommentWrapper>
                 <CommentListMobile
-                  bestComment={post.bestReplies[0]}
-                  comments={post.replies}
-                  onCommentUpdate={() => setCommentUpdated(true)}
-                />
-                <CommentInput
-                  id={post.id}
+                  postId={post.id}
+                  bestReply={post.bestReplies[0]}
+                  replies={post.replies}
                   onCommentUpdate={() => setCommentUpdated(true)}
                 />
               </CommentWrapper>

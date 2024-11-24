@@ -1,17 +1,23 @@
-import { ChangeEvent } from 'react';
-import styled from 'styled-components';
-import cameraIcon from '../../../resource/assets/mobile/write/camera-icon.svg';
+import { ChangeEvent } from "react";
+import styled from "styled-components";
+import cameraIcon from "resources/assets/mobile-write/camera-icon.svg";
 
 interface PhotoUploadProps {
-  onImageChange: (file: File | null) => void;
+  onImageChange: (files: File[]) => void;
   images: File[];
   onImageRemove: (index: number) => void;
 }
 
-export default function PhotoUpload({ onImageChange, images, onImageRemove }: PhotoUploadProps) {
+export default function PhotoUpload({
+  onImageChange,
+  images,
+  onImageRemove,
+}: PhotoUploadProps) {
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    onImageChange(file);
+    const files = e.target.files;
+    if (files) {
+      onImageChange(Array.from(files));
+    }
   };
 
   return (
@@ -24,14 +30,23 @@ export default function PhotoUpload({ onImageChange, images, onImageRemove }: Ph
               <div>사진 추가</div>
             </AddImageButton>
           </label>
-          <input type="file" id="imageUpload" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+          <input
+            type="file"
+            id="imageUpload"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            style={{ display: "none" }}
+          />
         </CenteredAddImageWrapper>
       ) : (
         <ImagePreviewWrapper>
           {images.map((image, index) => (
             <ImageContainer key={index}>
               <img src={URL.createObjectURL(image)} alt={`preview ${index}`} />
-              <RemoveButton onClick={() => onImageRemove(index)}>X</RemoveButton>
+              <RemoveButton onClick={() => onImageRemove(index)}>
+                X
+              </RemoveButton>
             </ImageContainer>
           ))}
           {images.length < 10 && (
@@ -42,7 +57,14 @@ export default function PhotoUpload({ onImageChange, images, onImageRemove }: Ph
                   <div>사진 추가</div>
                 </AddImageButton>
               </label>
-              <input type="file" id="imageUpload" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+              <input
+                type="file"
+                id="imageUpload"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
             </AddImageWrapper>
           )}
         </ImagePreviewWrapper>
@@ -56,7 +78,7 @@ const PhotoUploadWrapper = styled.div`
   display: flex;
   flex-direction: column;
   border-radius: 1px;
-  border: 1px solid #E0E0E0;
+  border: 1px solid #e0e0e0;
   position: relative;
   overflow-y: scroll;
 `;
@@ -93,7 +115,7 @@ const AddImageButton = styled.div`
 const ImagePreviewWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr); /* 5열 */
-  grid-template-rows: repeat(2, 1fr);  /* 2행 */
+  grid-template-rows: repeat(2, 1fr); /* 2행 */
   gap: 8px;
   padding: 8px;
   box-sizing: border-box;

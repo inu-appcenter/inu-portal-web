@@ -35,13 +35,13 @@ export default function MobileMyPage() {
   const handleClick = (title: string) => {
     switch (title) {
       case "내가 쓴 글":
-        navigate("m/mypage/post");
+        navigate("/m/mypage/post");
         break;
       case "좋아요 한 글":
-        navigate("m/mypage/like");
+        navigate("/m/mypage/like");
         break;
       case "작성한 댓글":
-        navigate("m/mypage/comment");
+        navigate("/m/mypage/comment");
         break;
       case "프로필 편집":
         navigate("/m/mypage/profile");
