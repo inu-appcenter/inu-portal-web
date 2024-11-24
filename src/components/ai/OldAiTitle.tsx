@@ -9,17 +9,17 @@ export default function AiTitle() {
 
   return (
     <AiTitleWrapper>
-      <div className="buttons">
-        <button onClick={() => navigate(isGalleryPage ? "/ai" : "/")}>
-          {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 으로 돌아가기"}
-        </button>
+      {/* 768px 이상 화면에서만 보이는 버튼 */}
+      <DesktopButton onClick={() => navigate(isGalleryPage ? "/ai" : "/")}>
+        {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP으로 돌아가기"}
+      </DesktopButton>
 
-        <button onClick={() => navigate(isGalleryPage ? "/ai" : "/m/home")}>
-          {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 모바일로 돌아가기"}
-        </button>
-      </div>
+      {/* 768px 이하 화면에서만 보이는 버튼 */}
+      <MobileButton onClick={() => navigate(isGalleryPage ? "/ai" : "/m/home")}>
+        {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 모바일로 돌아가기"}
+      </MobileButton>
 
-      <div className="title">
+      <div>
         <AiTitle1>Hello, </AiTitle1>
         <AiTitle2>AI 횃불이</AiTitle2>
       </div>
@@ -35,11 +35,7 @@ const AiTitleWrapper = styled.div`
   align-items: flex-start;
   gap: 16px;
 
-  .buttons {
-    display: flex;
-    gap: 32px;
-  }
-  .title {
+  div {
     @media (max-width: 768px) {
       font-size: 36px;
     }
@@ -53,19 +49,19 @@ const AiTitleWrapper = styled.div`
   }
 `;
 
-// // 1440px 이상에서 보이는 버튼
-// const DesktopButton = styled.button`
-//   @media (max-width: 1440px) {
-//     display: none;
-//   }
-// `;
+// 1440px 이상에서 보이는 버튼
+const DesktopButton = styled.button`
+  @media (max-width: 1440px) {
+    display: none;
+  }
+`;
 
-// // 1440px 이하에서 보이는 버튼
-// const MobileButton = styled.button`
-//   @media (min-width: 1440px) {
-//     display: none;
-//   }
-// `;
+// 1440px 이하에서 보이는 버튼
+const MobileButton = styled.button`
+  @media (min-width: 1440px) {
+    display: none;
+  }
+`;
 
 const AiTitle1 = styled.span`
   color: white; /* 기본 텍스트 색상 */

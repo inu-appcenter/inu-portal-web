@@ -1,4 +1,3 @@
-// AiGallery.tsx
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { result } from "apis/genTorch";
@@ -13,7 +12,7 @@ interface ImageRequest {
   eta: number;
   prompt: string;
   isLoading: boolean;
-  canRefresh: boolean;
+  canRefresh: boolean; // 수동 새로고침 버튼 표시 여부
 }
 
 export default function AiGallery() {
@@ -50,17 +49,7 @@ export default function AiGallery() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  // 로컬스토리지에서 이미지 가져오기
-  const getImageFromLocalStorage = (requestId: string): string | null => {
-    return localStorage.getItem(`image_${requestId}`);
-  };
-
-  // 로컬스토리지에 이미지 저장하기
-  const saveImageToLocalStorage = (requestId: string, b64Img: string) => {
-    localStorage.setItem(`image_${requestId}`, b64Img);
-  };
+  }, []); // 빈 배열로 설정하여 컴포넌트 마운트 시 한 번만 실행
 
   const fetchImageRequests = async () => {
     try {
@@ -89,26 +78,7 @@ export default function AiGallery() {
 
   const fetchResultForRequest = async (req: ImageRequest) => {
     try {
-      // 로컬스토리지에서 이미지 확인
-      const cachedImage = getImageFromLocalStorage(req.id);
-      if (cachedImage) {
-        setImageRequests((prevRequests) =>
-          prevRequests.map((r) =>
-            r.id === req.id
-              ? {
-                  ...r,
-                  status: "success",
-                  b64_img: cachedImage,
-                  isLoading: false,
-                  canRefresh: false,
-                }
-              : r
-          )
-        );
-        return;
-      }
-
-      // 로컬스토리지에 없으면 API 호출
+      // 새로고침 시 canRefresh를 false로 설정하고 로딩 상태로 전환
       setImageRequests((prevRequests) =>
         prevRequests.map((r) =>
           r.id === req.id ? { ...r, isLoading: true, canRefresh: false } : r
@@ -117,15 +87,13 @@ export default function AiGallery() {
 
       const response = await result(req.id);
       if (response.status === 201) {
-        const b64Img = response.body.b64_img;
-        saveImageToLocalStorage(req.id, b64Img);
         setImageRequests((prevRequests) =>
           prevRequests.map((r) =>
             r.id === req.id
               ? {
                   ...r,
                   status: "success",
-                  b64_img: b64Img,
+                  b64_img: response.body.b64_img,
                   isLoading: false,
                   canRefresh: false,
                 }
@@ -196,7 +164,7 @@ export default function AiGallery() {
                         <SmallRefreshButton
                           onClick={() => fetchResultForRequest(req)}
                         >
-                          확인!
+                          확인 !
                         </SmallRefreshButton>
                       )
                     )}
@@ -212,7 +180,7 @@ export default function AiGallery() {
                         <SmallRefreshButton
                           onClick={() => fetchResultForRequest(req)}
                         >
-                          확인!
+                          확인 !
                         </SmallRefreshButton>
                       )
                     )}
@@ -261,7 +229,7 @@ const GalleryWrapper = styled.div`
 
 const PromptText = styled.p`
   font-size: 14px;
-  color: #fff;
+  color: #333;
   text-align: center;
 `;
 
@@ -323,7 +291,7 @@ const GalleryStatus = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #6d4dc7;
+  background-color: #f0f0f0;
   border-radius: 12px;
   padding: 8px;
   text-align: center;
@@ -331,15 +299,15 @@ const GalleryStatus = styled.div`
   p {
     margin: 5px 0;
     font-size: 14px;
-    color: #fff;
+    color: #555;
   }
 `;
 
 const SmallRefreshButton = styled.button`
   padding: 5px 10px;
   font-size: 14px;
-  background-color: #fff;
-  color: #6d4dc7;
+  background-color: #6d4dc7;
+  color: white;
   border: none;
   border-radius: 8px;
   margin-top: 10px;

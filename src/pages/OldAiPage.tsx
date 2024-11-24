@@ -1,9 +1,8 @@
-// AiPage.tsx
+import AiGallery from "components/ai/OldAiGallery";
+import AiIntro from "components/ai/AiIntro";
+import AiTitle from "components/ai/OldAiTitle";
 import Header from "components/common/Header";
-import AiGenerate from "components/ai/AiGenerate";
-import AiTitle from "components/ai/AiTitle";
-import AiIntroText from "components/ai/AiIntroText";
-import HowToUse from "components/ai/HowToUse";
+import { Route, Routes } from "react-router-dom";
 import styled from "styled-components";
 
 export default function AiPage() {
@@ -12,9 +11,10 @@ export default function AiPage() {
       <Header />
       <AiContents>
         <AiTitle />
-        <AiIntroText />
-        <HowToUse />
-        <AiGenerate />
+        <Routes>
+          <Route index element={<AiIntro />} />
+          <Route path="gallery" element={<AiGallery />} />
+        </Routes>
         <h2>made by dnltjdwls1@naver.com</h2>
       </AiContents>
     </AiPageWrapper>
@@ -31,11 +31,9 @@ const AiContents = styled.div`
   background: linear-gradient(90deg, #6084d7 0%, #c294eb 100%);
   border-radius: 12px;
   margin: 32px 16px;
-  padding: 48px 32px;
+  padding: 64px 32px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
 
   h2 {
     color: white;
