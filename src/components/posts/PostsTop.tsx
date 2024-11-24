@@ -69,11 +69,15 @@ export default function PostsTop() {
             <span>{post.like}</span>
           </PostLike>
           <PostCategory>
-            <img
-              src={`/categoryIcons/${post.category}_white.svg`}
-              style={{ width: "32px", height: "32px" }}
-              alt=""
-            />
+            <ImageWrapper>
+              <img
+                src={`/categoryIcons/${post.category}_white.svg`}
+                alt=""
+                onError={(e) => {
+                  e.currentTarget.style.visibility = "hidden"; // 이미지 숨기기 (공간 유지)
+                }}
+              />
+            </ImageWrapper>
             <span>{post.category}</span>
           </PostCategory>
           <PostTitle>
@@ -167,4 +171,17 @@ const NoticeTitle = styled.div`
   display: flex;
   height: 100%;
   align-items: center;
+`;
+
+const ImageWrapper = styled.div`
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 32px;
+    height: 32px;
+  }
 `;
