@@ -5,23 +5,21 @@ import MobileIntroPage from "mobile/pages/MobileIntroPage";
 import MobileHeader from "mobile/containers/common/MobileHeader";
 import MobileNav from "mobile/containers/common/MobileNav";
 import MobileHomePage from "mobile/pages/MobileHomePage";
-
-import MobileTipsPage from "./MobileTipsPage";
-import MobileSavePage from "./MobileSavePage";
-import MobileWritePage from "./MobileWritePage";
-// import MobileMypage from './MobileMypage';
-import MobileLoginPage from "./MobileLoginPage";
-import { usePreviousPage } from "../../hooks/usePreviousPage";
-import MobilePostDetailPage from "./MobilePostDetailPage";
-import UpperBackgroundImg from "../../resource/assets/mobile/common/upperBackgroundImg.svg";
-import MobileMyPage from "./MobileMyPage";
-import MobileProfilePage from "./MobileProfilePage";
-import MobileMenuPage from "./MobileMenuPage";
-import MobileMyPagePost from "./MobileMyPagePost";
-import MobileMyPageComment from "./MobileMyPageComment";
-import MobileMyPageLike from "./MobileMyPageLike";
-import MobileDeletePage from "./MobileDelete";
-import MobileCalendarPage from "./MobileCalendarPage";
+import MobileTipsPage from "mobile/pages/MobileTipsPage";
+import MobileSavePage from "mobile/pages/MobileSavePage";
+import MobileWritePage from "mobile/pages/MobileWritePage";
+import MobileLoginPage from "mobile/pages/MobileLoginPage";
+import { usePreviousPage } from "hooks/usePreviousPage";
+import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
+import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundImg.svg";
+import MobileMyPage from "mobile/pages/MobileMyPage";
+import MobileProfilePage from "mobile/pages/MobileProfilePage";
+import MobileMenuPage from "mobile/pages/MobileMenuPage";
+import MobileMyPagePost from "mobile/pages/MobileMyPagePost";
+import MobileMyPageComment from "mobile/pages/MobileMyPageComment";
+import MobileMyPageLike from "mobile/pages/MobileMyPageLike";
+import MobileDeletePage from "mobile/pages/MobileDelete";
+import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "flex" : "none")};
