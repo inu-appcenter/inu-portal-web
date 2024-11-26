@@ -167,7 +167,10 @@ export default function AiGenerate() {
             생성하기
           </GenerateButton>
         ) : (
-          <LoginButton href="/login">로그인</LoginButton>
+          <>
+            <MobileLoginButton href="/m/login">로그인</MobileLoginButton>
+            <DesktopLoginButton href="/login">로그인</DesktopLoginButton>
+          </>
         )}
       </InputWrapper>
       {/* 하단 갤러리 */}
@@ -265,7 +268,8 @@ const GenerateButton = styled.button`
   font-weight: bold;
 `;
 
-const LoginButton = styled.a`
+const MobileLoginButton = styled.a`
+  display: flex;
   height: 44px;
   padding: 0 20px;
   border-radius: 12px;
@@ -278,4 +282,28 @@ const LoginButton = styled.a`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+`;
+
+const DesktopLoginButton = styled.a`
+  display: flex;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: none;
+  background: #6d4dc7;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
 `;

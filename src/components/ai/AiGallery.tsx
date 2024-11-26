@@ -230,7 +230,7 @@ export default function AiGallery() {
           (pageNumber) => (
             <PageNumber
               key={pageNumber}
-              active={pageNumber === page}
+              $active={pageNumber === page}
               onClick={() => handlePageClick(pageNumber)}
             >
               {pageNumber}
@@ -354,11 +354,11 @@ const PaginationWrapper = styled.div`
   gap: 8px;
 `;
 
-const PageNumber = styled.button<{ active: boolean }>`
+const PageNumber = styled.button<{ $active: boolean }>`
   padding: 8px 12px;
   font-size: 16px;
-  background-color: ${(props) => (props.active ? "#6d4dc7" : "#e0e0e0")};
-  color: ${(props) => (props.active ? "white" : "#333")};
+  background-color: ${(props) => (props.$active ? "#6d4dc7" : "#e0e0e0")};
+  color: ${(props) => (props.$active ? "white" : "#333")};
   border: none;
   border-radius: 6px;
 `;
