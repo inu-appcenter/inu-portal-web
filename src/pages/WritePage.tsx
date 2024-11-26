@@ -291,6 +291,7 @@ const WritePageWrapper = styled.div`
     padding: 0 32px;
     justify-content: space-between;
     .image-input {
+      padding-top: 4px;
       display: flex;
       flex-direction: column;
       align-items: center;
