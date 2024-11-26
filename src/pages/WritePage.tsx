@@ -349,6 +349,7 @@ const WritePageWrapper = styled.div`
     resize: none;
     border-bottom: 2px solid #969696;
     padding: 16px;
+    font-family: inherit;
   }
 `;
 
