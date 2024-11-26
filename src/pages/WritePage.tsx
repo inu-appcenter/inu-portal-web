@@ -24,6 +24,11 @@ export default function WritePage() {
   const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // 스크롤 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, []);
+
   // postId 가져오기
   useEffect(() => {
     const params = new URLSearchParams(location.search);
