@@ -10,6 +10,9 @@ import axios from "axios";
 export default function LoginForm() {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordType, setPasswordType] = useState<"password" | "text">(
+    "password"
+  );
   const { setTokenInfo } = useUserStore();
   const navigate = useNavigate();
 
@@ -43,6 +46,10 @@ export default function LoginForm() {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setPasswordType((prev) => (prev === "password" ? "text" : "password"));
+  };
+
   return (
     <FormWrapper>
       <FormItemWrapper>
@@ -63,17 +70,25 @@ export default function LoginForm() {
         <Label>비밀번호</Label>
         <FormInputWrapper>
           <Input
-            type="password"
-            placeholder=""
+            type={passwordType}
+            placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={handleKeyPress}
           />
-          <FormIcon src={LoginPassword} alt="LoginPassword" />
+          <FormIcon
+            src={LoginPassword}
+            alt="LoginPassword"
+            onClick={togglePasswordVisibility}
+          />
         </FormInputWrapper>
         <InputLine />
       </FormItemWrapper>
       <LoginButton onClick={handleLogin}>로그인</LoginButton>
+
+      <span className="info">
+        인천대학교 포털시스템 계정으로 로그인 할 수 있습니다.
+      </span>
     </FormWrapper>
   );
 }
