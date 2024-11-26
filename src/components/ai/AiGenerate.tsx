@@ -230,6 +230,7 @@ const RefreshButton = styled.button`
 
 const InputWrapper = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
 `;
