@@ -179,10 +179,19 @@ export default function AiGallery() {
             {req.isLoading ? (
               <Skeleton />
             ) : req.status === "success" && req.b64_img ? (
-              <img
-                src={`data:image/png;base64,${req.b64_img}`}
-                alt="AI 생성 이미지"
-              />
+              <>
+                <img
+                  src={`data:image/png;base64,${req.b64_img}`}
+                  alt="AI 생성 이미지"
+                />
+                <a
+                  href={`data:image/png;base64,${req.b64_img}`}
+                  download={`image_${req.id}.png`}
+                  className="save-button"
+                >
+                  이미지 저장
+                </a>
+              </>
             ) : (
               <GalleryStatus>
                 {req.status === "queued" ? (
@@ -307,6 +316,21 @@ const ImageContainer = styled.div`
     }
     border-radius: 12px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .save-button {
+    margin-top: 8px;
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: #6d4dc7;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+
+    &:hover {
+      background-color: #5836a5;
+    }
   }
 `;
 
