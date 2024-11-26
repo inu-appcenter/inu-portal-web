@@ -204,6 +204,50 @@ export default function ScrapList({ folders }: Props) {
                 <img src={listImage} alt="" />
                 Add
                 <img src={sortDropdownImage} alt="" />
+                {openedModalId === post.id && (
+                  <Modal>
+                    <div className="title">
+                      <img src={listImage} alt="" />
+                      <span>List</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenedModalId(null);
+                        }}
+                      >
+                        X
+                      </button>
+                    </div>
+                    <ul>
+                      {folders.map((folder) => (
+                        <li key={folder.id}>
+                          <label className="folder">
+                            <input
+                              type="checkbox"
+                              value={folder.id}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setSelectedFolders((prev) =>
+                                  prev.includes(value)
+                                    ? prev.filter((id) => id !== value)
+                                    : [...prev, value]
+                                );
+                              }}
+                            />
+                            <img src={folderImage} alt="" />
+                            {folder.name}
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      className="save"
+                      onClick={() => handleAddToFolders(post.id)}
+                    >
+                      Save
+                    </button>
+                  </Modal>
+                )}
               </button>
               <div className="date-like">
                 <img src={calendarImage} alt="" />
@@ -211,43 +255,6 @@ export default function ScrapList({ folders }: Props) {
                 <img src={likeImage} alt="" />
                 <span>{post.like}</span>
               </div>
-              {openedModalId === post.id && (
-                <Modal>
-                  <div className="title">
-                    <img src={listImage} alt="" />
-                    <span>List</span>
-                    <button onClick={() => setOpenedModalId(null)}>X</button>
-                  </div>
-                  <ul>
-                    {folders.map((folder) => (
-                      <li key={folder.id}>
-                        <label className="folder">
-                          <input
-                            type="checkbox"
-                            value={folder.id}
-                            onChange={(e) => {
-                              const value = Number(e.target.value);
-                              setSelectedFolders((prev) =>
-                                prev.includes(value)
-                                  ? prev.filter((id) => id !== value)
-                                  : [...prev, value]
-                              );
-                            }}
-                          />
-                          <img src={folderImage} alt="" />
-                          {folder.name}
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    className="save"
-                    onClick={() => handleAddToFolders(post.id)}
-                  >
-                    Save
-                  </button>
-                </Modal>
-              )}
             </div>
           </div>
         ))}
@@ -322,6 +329,7 @@ const ScrapListWrapper = styled.div`
           background-color: transparent;
         }
         .add {
+          position: relative;
           display: flex;
           align-items: center;
           gap: 8px;
@@ -349,7 +357,8 @@ const ScrapListWrapper = styled.div`
 
 const Modal = styled.div`
   position: absolute;
-  top: 100%;
+  top: 112%;
+  right: 0;
   z-index: 100;
   background: white;
   border-radius: 8px;
