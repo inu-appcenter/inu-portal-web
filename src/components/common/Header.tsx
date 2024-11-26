@@ -7,10 +7,6 @@ export default function Header() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
   const handleLogout = () => {
     setUserInfo({ id: 0, nickname: "", fireId: 0 });
     setTokenInfo({
@@ -41,7 +37,12 @@ export default function Header() {
           </>
         ) : (
           <>
-            <button onClick={handleLogin}>로그인</button>
+            <button className="mobile" onClick={() => navigate("/m/login")}>
+              로그인
+            </button>
+            <button className="desktop" onClick={() => navigate("/login")}>
+              로그인
+            </button>
           </>
         )}
       </div>
@@ -74,5 +75,15 @@ const StyledHeader = styled.header`
     border: none;
     color: white;
     padding: 0;
+  }
+  .mobile {
+    @media (min-width: 1024px) {
+      display: none;
+    }
+  }
+  .desktop {
+    @media (max-width: 1024px) {
+      display: none;
+    }
   }
 `;
