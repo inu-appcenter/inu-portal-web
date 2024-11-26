@@ -10,6 +10,9 @@ import loginPassword from "resources/assets/login/login-password.svg";
 export default function LoginInputs() {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordType, setPasswordType] = useState<"password" | "text">(
+    "password"
+  );
   const { setTokenInfo } = useUserStore();
   const navigate = useNavigate();
 
@@ -25,8 +28,8 @@ export default function LoginInputs() {
       return;
     }
     try {
-      const reponse = await login(studentId, password);
-      setTokenInfo(reponse.data);
+      const response = await login(studentId, password);
+      setTokenInfo(response.data);
       navigate(-1);
     } catch (error) {
       console.error("로그인 실패", error);
@@ -41,6 +44,10 @@ export default function LoginInputs() {
         }
       }
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordType((prev) => (prev === "password" ? "text" : "password"));
   };
 
   return (
@@ -58,13 +65,13 @@ export default function LoginInputs() {
       </span>
       <span>
         <input
-          type="password"
+          type={passwordType}
           placeholder="비밀번호"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={handleKeyPress}
         />
-        <img src={loginPassword} alt="" />
+        <img src={loginPassword} alt="" onClick={togglePasswordVisibility} />
       </span>
       <button onClick={handleLogin}>로그인</button>
       <span className="info">
