@@ -205,9 +205,9 @@ const Colleges = styled.div`
 const CollegeItem = styled.button`
   width: 100%;
   padding-left: 48px;
-  height: 60px;
+  height: 56px;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: #656565;
   background-color: transparent;
