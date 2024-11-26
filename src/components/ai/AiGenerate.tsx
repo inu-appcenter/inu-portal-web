@@ -145,7 +145,7 @@ export default function AiGenerate() {
             alt="AI 생성 이미지"
           />
         ) : eta > 0 ? (
-          <EtaText>남은 시간: {eta}초</EtaText>
+          <EtaText>남은 시간: {Math.trunc(eta)}초</EtaText>
         ) : canRefresh ? (
           <RefreshButton onClick={handleRefreshClick}>확인!</RefreshButton>
         ) : (

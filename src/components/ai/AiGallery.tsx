@@ -199,7 +199,7 @@ export default function AiGallery() {
                     <p>대기 중</p>
                     <p>대기열: {req.request_ahead}</p>
                     {req.eta > 0 ? (
-                      <p>예상 완료 시간: {req.eta}초</p>
+                      <p>예상 완료 시간: {Math.trunc(req.eta)}초</p>
                     ) : (
                       req.canRefresh && (
                         <SmallRefreshButton
@@ -215,7 +215,7 @@ export default function AiGallery() {
                     <p>생성 중</p>
                     <p>대기열: {req.request_ahead}</p>
                     {req.eta > 0 ? (
-                      <p>예상 완료 시간: {req.eta}초</p>
+                      <p>예상 완료 시간: {Math.trunc(req.eta)}초</p>
                     ) : (
                       req.canRefresh && (
                         <SmallRefreshButton
