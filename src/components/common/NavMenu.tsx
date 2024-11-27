@@ -163,9 +163,11 @@ const ItemWrapper = styled.div`
   position: relative;
   line-height: 2rem;
   font-size: 18px;
+  transition: text-shadow 0.3s;
 
   &:hover {
-    font-weight: 500;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* 그림자 추가 */
+    cursor: pointer; /* 클릭 가능함을 나타내는 커서 */
   }
 
   .child {
