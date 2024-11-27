@@ -99,7 +99,7 @@ const Dropdown = styled.div`
     #d5e4f7 100%,
     #aac9ee 100%
   );
-  border-radius: 40px;
+  border-radius: 20px;
   max-height: 500px;
   overflow-y: scroll;
 `;
@@ -113,6 +113,10 @@ const DropdownOption = styled.button`
   font-size: 16px;
   font-weight: 500;
   color: #656565;
+
+  &:hover {
+    text-shadow: 2px 2px 5px rgba(111, 132, 226, 0.5); /* 그림자 추가 */
+  }
 
   border-top: 1px solid #969696;
   &:first-of-type {
