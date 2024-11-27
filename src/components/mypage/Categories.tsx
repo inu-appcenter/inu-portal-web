@@ -81,6 +81,10 @@ const CategoryItem = styled.button`
   align-items: center;
   gap: 12px;
 
+  &:hover {
+    text-shadow: 2px 2px 5px rgba(111, 132, 226, 0.5); /* 그림자 추가 */
+  }
+
   &.selected {
     background: linear-gradient(90deg, #6f84e2 0%, #7babe5 100%);
     font-weight: 700;
