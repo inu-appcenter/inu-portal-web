@@ -9,7 +9,9 @@ import styled from "styled-components";
 export default function AiPage() {
   return (
     <AiPageWrapper>
-      <Header />
+      <div className="header-wrapper">
+        <Header />
+      </div>
       <AiContents>
         <AiTitle />
         <AiIntroText />
@@ -24,6 +26,12 @@ export default function AiPage() {
 const AiPageWrapper = styled.div`
   max-width: 1440px;
   margin: auto;
+
+  .header-wrapper {
+    @media (max-width: 425px) {
+      display: none;
+    }
+  }
 `;
 
 const AiContents = styled.div`
