@@ -4,6 +4,8 @@ import { getPostDetail } from "apis/posts";
 import PostUtilContainer from "mobile/containers/postdetail/PostUtilContainer";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
 import CommentListMobile from "mobile/containers/postdetail/CommentListContainer";
+import ReplyInput from "mobile/containers/postdetail/ReplyInput";
+import { Reply } from "types/posts";
 import { PostDetail } from "types/posts";
 import axios, { AxiosError } from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -11,6 +13,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
   const [commentUpdated, setCommentUpdated] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const [replyToEdit, setReplyToEdit] = useState<Reply | null>(null);
+  const [replyToReply, setReplyToReply] = useState<Reply | null>(null);
+
+  const cancelEditOrReply = () => {
+    setReplyToEdit(null);
+    setReplyToReply(null);
+    setReplyContent("");
+  };
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -67,13 +80,28 @@ export default function PostDetailPage() {
               <PostContentContainer post={post} />
               <CommentWrapper>
                 <CommentListMobile
-                  postId={post.id}
                   bestReply={post.bestReplies[0]}
                   replies={post.replies}
+                  setReplyToReply={setReplyToReply}
+                  setReplyToEdit={setReplyToEdit}
+                  setReplyContent={setReplyContent}
                   onCommentUpdate={() => setCommentUpdated(true)}
                 />
               </CommentWrapper>
             </PostWrapper>
+            <ReplyInput
+              postId={post.id}
+              replyContent={replyContent}
+              isAnonymous={isAnonymous}
+              replyToEdit={replyToEdit}
+              replyToReply={replyToReply}
+              setReplyToReply={setReplyToReply}
+              setReplyToEdit={setReplyToEdit}
+              setReplyContent={setReplyContent}
+              setIsAnonymous={setIsAnonymous}
+              cancelEditOrReply={cancelEditOrReply}
+              onCommentUpdate={() => setCommentUpdated(true)}
+            />
           </Wrapper>
         </>
       ) : (

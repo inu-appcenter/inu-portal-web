@@ -91,7 +91,7 @@ const BackBtn = styled.div`
   color: #888888;
   margin-right: auto;
   display: flex;
-  cursor: url("/pointers/cursor-pointer.svg"), pointer;
+  padding: 8px;
 `;
 
 const UtilWrapper = styled.div`
