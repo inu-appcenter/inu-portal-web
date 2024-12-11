@@ -1,11 +1,13 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function LoginNavigateButton() {
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   return (
-    <LoginNavigateButtonWrapper onClick={() => navigate("/m/login")}>
+    <LoginNavigateButtonWrapper onClick={() => navigate(`${isAppUrl}/login`)}>
       Login
     </LoginNavigateButtonWrapper>
   );

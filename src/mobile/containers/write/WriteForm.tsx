@@ -14,6 +14,7 @@ import { useBeforeUnload, useNavigate } from "react-router-dom";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import { useResetWriteStore } from "reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
+import useAppStateStore from "stores/useAppStateStore";
 
 interface Props {
   category: string;
@@ -30,6 +31,7 @@ export default function WriteForm({ category, setCategory }: Props) {
   const [loading, setLoading] = useState(false);
   const triggerResetTips = useResetTipsStore((state) => state.triggerReset);
   const triggerResetWrite = useResetWriteStore((state) => state.triggerReset);
+  const { isAppUrl } = useAppStateStore();
 
   // postId 가져오기
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         const response = await getPostDetail(postId);
         if (!response.data.hasAuthority) {
           alert("수정 권한이 없습니다.");
-          navigate("/m/write");
+          navigate(`${isAppUrl}/write`);
         }
         setTitle(response.data.title);
         setContent(response.data.content);
@@ -148,7 +150,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         }
         triggerResetTips();
         triggerResetWrite();
-        navigate(`/m/postdetail?id=${response.data}`);
+        navigate(`${isAppUrl}/postdetail?id=${response.data}`);
       } catch (error) {
         console.error("게시글 수정 실패", error);
         // refreshError가 아닌 경우 처리
@@ -179,7 +181,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         }
         triggerResetTips();
         triggerResetWrite();
-        navigate(`/m/postdetail?id=${response.data}`);
+        navigate(`${isAppUrl}/postdetail?id=${response.data}`);
       } catch (error) {
         console.error("게시글 등록 실패", error);
         // refreshError가 아닌 경우 처리

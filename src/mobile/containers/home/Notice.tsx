@@ -11,11 +11,13 @@ import { Notice } from "types/notices";
 import SortDropBox from "mobile/components/notice/Sort";
 import { useNavigate } from "react-router-dom";
 // import SortNotice from '../../components/notice/SortNotice';
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function NoticeForm() {
   const [sort, setSort] = useState("date");
   const [notices, setNotices] = useState<Notice[]>([]);
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   const fetchNotices = async (sort: string) => {
     try {
@@ -33,7 +35,9 @@ export default function NoticeForm() {
   return (
     <NoticeFormWrapper>
       <NoticeTitleWrapper>
-        <h1 onClick={() => navigate("/m/home/tips?type=notice")}>Notice</h1>
+        <h1 onClick={() => navigate(`${isAppUrl}/home/tips?type=notice`)}>
+          Notice
+        </h1>
         <SortDropBox sort={sort} setSort={setSort} />
         {/* <SortNotice sort={sort} setNotices={setNotices}/> */}
       </NoticeTitleWrapper>

@@ -8,6 +8,7 @@ import utilfolder from "resources/assets/mobile-tips/utilfolder.svg";
 import { useEffect, useRef, useState } from "react";
 import DeletePostBtn from "mobile/components/postdetail/util/DeletePostBtn";
 import EditPostBtn from "mobile/components/postdetail/util/EditPostBtn";
+
 interface PostUtilityProps {
   id: number;
   like: number;
@@ -50,7 +51,7 @@ export default function PostUtilContainer({
   return (
     <>
       <Wrapper>
-        <BackBtn onClick={() => navigate("/m/home/tips")}>
+        <BackBtn onClick={() => navigate(-1)}>
           <img src={backbtn} alt="뒤로가기 버튼" />
         </BackBtn>
         <UtilWrapper>

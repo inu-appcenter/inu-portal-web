@@ -1,13 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import useAppStateStore from "stores/useAppStateStore";
+
 interface EditPostBtnProps {
   id: number;
 }
 
 export default function EditPostBtn({ id }: EditPostBtnProps) {
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
   const handleEditButtonClick = () => {
-    navigate(`/m/write?id=${id}`);
+    navigate(`${isAppUrl}/write?id=${id}`);
   };
 
   return <EditBtn onClick={handleEditButtonClick}>수정하기</EditBtn>;

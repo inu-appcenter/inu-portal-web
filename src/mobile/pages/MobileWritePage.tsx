@@ -7,6 +7,7 @@ import loginImg from "resources/assets/login/login-modal-logo.svg";
 import { useResetWriteStore } from "reducer/resetWriteStore";
 import useUserStore from "stores/useUserStore";
 import CategorySelect from "mobile/components/write/CategorySelect";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileWritePage() {
   const { tokenInfo } = useUserStore();
@@ -14,6 +15,7 @@ export default function MobileWritePage() {
   const [category, setCategory] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
   const resetKey = useResetWriteStore((state) => state.resetKey);
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export default function MobileWritePage() {
   }, [location]);
 
   const handleNewPost = () => {
-    navigate("/m/write");
+    navigate(`${isAppUrl}/write`);
   };
 
   return (

@@ -6,11 +6,13 @@ import { MyPageActive, MyPageCategory } from "resources/strings/m-mypage";
 import { useNavigate } from "react-router-dom";
 import UserInfo from "mobile/containers/mypage/UserInfo";
 import arrowImg from "resources/assets/mobile-mypage/arrow.svg";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   const handleLogout = () => {
     setUserInfo({ id: 0, nickname: "", fireId: 0 });
@@ -21,7 +23,7 @@ export default function MobileMyPage() {
       refreshTokenExpiredTime: "",
     });
     localStorage.removeItem("tokenInfo");
-    navigate("/m/home");
+    navigate(`${isAppUrl}/home`);
   };
 
   const handleLogoutModalClick = () => {
@@ -35,25 +37,25 @@ export default function MobileMyPage() {
   const handleClick = (title: string) => {
     switch (title) {
       case "내가 쓴 글":
-        navigate("/m/mypage/post");
+        navigate(`${isAppUrl}/mypage/post`);
         break;
       case "좋아요 한 글":
-        navigate("/m/mypage/like");
+        navigate(`${isAppUrl}/mypage/like`);
         break;
       case "작성한 댓글":
-        navigate("/m/mypage/comment");
+        navigate(`${isAppUrl}/mypage/comment`);
         break;
       case "프로필 편집":
-        navigate("/m/mypage/profile");
+        navigate(`${isAppUrl}/mypage/profile`);
         break;
       case "스크랩":
-        navigate("/m/save");
+        navigate(`${isAppUrl}/save`);
         break;
       case "로그아웃":
         handleLogoutModalClick();
         break;
       case "회원탈퇴":
-        navigate("/m/mypage/delete");
+        navigate(`${isAppUrl}/mypage/delete`);
         break;
 
       default:

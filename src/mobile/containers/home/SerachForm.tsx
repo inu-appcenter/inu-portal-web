@@ -2,17 +2,19 @@ import { useState } from "react";
 import styled from "styled-components";
 import searchImg from "resources/assets/mobile-home/input.svg";
 import { useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function SerachForm() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   const handleSearch = () => {
     if (query.trim().length < 2) {
       alert("검색어는 두 글자 이상이어야 합니다.");
       return;
     }
-    navigate(`/m/home/tips?search=${query}`);
+    navigate(`${isAppUrl}/home/tips?search=${query}`);
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {

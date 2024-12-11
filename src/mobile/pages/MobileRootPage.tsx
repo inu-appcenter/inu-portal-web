@@ -20,6 +20,7 @@ import MobileMyPageComment from "mobile/pages/MobileMyPageComment";
 import MobileMyPageLike from "mobile/pages/MobileMyPageLike";
 import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
+import useAppStateStore from "stores/useAppStateStore";
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "flex" : "none")};
@@ -29,6 +30,12 @@ const Page = styled.div<{ $active: boolean }>`
 `;
 
 export default function MobileRootPage() {
+  const { setIsAppUrl } = useAppStateStore();
+
+  useEffect(() => {
+    setIsAppUrl("/m"); // MobileRootPage에 진입하면 isAppUrl 상태 설정
+  }, [setIsAppUrl]);
+
   const [showIntro, setShowIntro] = useState(true);
   const location = useLocation();
   const [activePage, setActivePage] = useState("/m");

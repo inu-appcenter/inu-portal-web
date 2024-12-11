@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Post } from "types/posts";
 import { Notice } from "types/notices";
+import useAppStateStore from "stores/useAppStateStore";
+
 interface TipsCardContainerProps {
   post?: Post;
   notice?: Notice;
@@ -18,13 +20,14 @@ export default function ({
   isEditing,
 }: TipsCardContainerProps) {
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   const handleDocumentClick = () => {
     if (isEditing) return;
     if (docType === "NOTICE") {
       notice && window.open("https://" + notice.url, "_blank");
     } else {
-      post && navigate(`/m/postdetail?id=${post.id}`);
+      post && navigate(`${isAppUrl}/postdetail?id=${post.id}`);
     }
   };
 

@@ -5,6 +5,7 @@ import { deletePost, putLike } from "apis/posts";
 import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
 import { useResetTipsStore } from "../../../reducer/resetTipsStore";
 import { Post } from "types/posts";
+import useAppStateStore from "stores/useAppStateStore";
 
 interface TipsCardContainerProps {
   post: Post[];
@@ -17,9 +18,10 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
   const [showModal, setShowModal] = useState(false);
   const [activePostId, setActivePostId] = useState<number | null>(null);
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
+  const { isAppUrl } = useAppStateStore();
 
   const handleDocumentClick = (id: number) => {
-    navigate(`/m/postdetail?id=${id}`);
+    navigate(`${isAppUrl}/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: number) => {
