@@ -115,8 +115,7 @@ const DropdownOptions = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px 0 12px 0;
+  padding: 4px 0;
 
   position: absolute;
   top: 0; /* Dropdown과 같은 위치로 설정 */
@@ -135,6 +134,7 @@ const DropdownOptions = styled.div`
 
 const DropdownOption = styled.div`
   width: 100%;
+  padding: 8px 0;
   text-align: center;
 `;
 
