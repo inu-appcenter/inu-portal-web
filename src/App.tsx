@@ -11,6 +11,7 @@ import WritePage from "pages/WritePage";
 import MyPage from "pages/MyPage";
 import AiPage from "pages/AiPage";
 import MobileRootPage from "mobile/pages/MobileRootPage";
+import AppRootPage from "mobile/pages/AppRoutePage";
 
 import InstallPage from "./mobile/pages/InstallPage";
 
@@ -43,9 +44,13 @@ function App() {
 
   return (
     <>
-      {location.pathname.startsWith("/m/") ? null : <ScrollBarStyles />}
+      {location.pathname.startsWith("/m/") ||
+      location.pathname.startsWith("/app/") ? null : (
+        <ScrollBarStyles />
+      )}
       <Routes>
         <Route path="/install" element={<InstallPage />} />
+        <Route path="/app/*" element={<AppRootPage />} />
         <Route path="/m/*" element={<MobileRootPage />} />
         <Route path="/" element={<RootPage />}>
           <Route path="/" element={<HomePage />} />

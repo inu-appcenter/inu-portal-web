@@ -6,16 +6,18 @@ import MenuButton from "mobile/components/common/MenuButton";
 import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
 import useUserStore from "stores/useUserStore";
 import { useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileHeader() {
   const { userInfo } = useUserStore();
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   return (
     <MobileHeaderWrapper>
       <img
         onClick={() => {
-          navigate("/m/home");
+          navigate(`${isAppUrl}/home`);
         }}
         src={intipLogo}
       />

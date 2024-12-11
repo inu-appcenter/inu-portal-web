@@ -2,13 +2,15 @@ import styled from "styled-components";
 import Calendarbar from "mobile/components/calendar/Calendar";
 import BackImg from "resources/assets/mobile-common/backbtn.svg";
 import { useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileCalendarPage() {
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   return (
     <MobileWritePageWrapper>
-      <BackButton onClick={() => navigate("/m/home")}>
+      <BackButton onClick={() => navigate(`${isAppUrl}/home`)}>
         <img src={BackImg} alt="뒤로가기 버튼" />
         <span>Back</span>
       </BackButton>

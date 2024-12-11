@@ -4,6 +4,7 @@ import noticeImg from "resources/assets/mobile-home/notice.svg";
 import TipImg from "resources/assets/mobile-home/tip.svg";
 import calendarImg from "resources/assets/mobile-home/calendar.svg";
 import { useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 const categorys = [
   { title: "menu", img: menuImg },
@@ -14,12 +15,13 @@ const categorys = [
 
 export default function CategoryForm() {
   const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   const handleClick = (title: string) => {
     if (title === "notice") {
-      navigate("/m/home/tips?type=notice");
+      navigate(`${isAppUrl}/home/tips?type=notice`);
     } else {
-      navigate(`/m/home/${title}`);
+      navigate(`${isAppUrl}/home/${title}`);
     }
   };
 

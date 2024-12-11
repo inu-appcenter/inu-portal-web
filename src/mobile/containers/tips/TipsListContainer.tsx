@@ -7,6 +7,7 @@ import { getNotices } from "apis/notices";
 import { getSearch } from "apis/search";
 import { Post } from "types/posts";
 import { Notice } from "types/notices";
+import useAppStateStore from "stores/useAppStateStore";
 
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
@@ -34,6 +35,7 @@ export default function TipsListContainer({
   });
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const { isAppUrl } = useAppStateStore();
 
   // 초기화
   useEffect(() => {
@@ -130,7 +132,11 @@ export default function TipsListContainer({
   };
 
   return (
-    <TipsListContainerWrapper id="scrollableDiv" $docType={docType}>
+    <TipsListContainerWrapper
+      id="scrollableDiv"
+      $docType={docType}
+      $isAppUrl={isAppUrl}
+    >
       <InfiniteScroll
         key={docType}
         dataLength={posts.length}
@@ -161,15 +167,24 @@ export default function TipsListContainer({
   );
 }
 
-const TipsListContainerWrapper = styled.div<{ $docType: string }>`
+const TipsListContainerWrapper = styled.div<{
+  $docType: string;
+  $isAppUrl: string;
+}>`
   flex: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: ${({ $docType }) =>
-    $docType === "NOTICE"
-      ? "calc(100svh - 72px - 64px - 16px - 32px)" // DocType이 NOTICE 일 때는 SearchForm 없음
-      : "calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)"}; // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
+  height: ${
+    ({ $docType, $isAppUrl }) =>
+      $docType === "NOTICE"
+        ? $isAppUrl === "/m"
+          ? "calc(100svh - 72px - 64px - 16px - 32px)" // DocType이 NOTICE 일 때는 SearchForm 없음
+          : "calc(100svh - 64px - 16px - 32px)" // isAppUrl이 "/app" 이면 nav는 없음
+        : $isAppUrl === "/m"
+        ? "calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)" // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
+        : "calc(100svh - 64px - 16px - 32px - 16px - 49px)" // isAppUrl이 "/app" 이면 nav는 없음
+  };
   overflow-y: auto;
 `;
 

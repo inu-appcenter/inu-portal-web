@@ -25,7 +25,7 @@ export default function DeletePostBtn({
       await deletePost(id);
       onPostUpdate();
       triggerReset();
-      navigate("/m/home/tips");
+      navigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
       // refreshError가 아닌 경우 처리

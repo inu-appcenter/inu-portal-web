@@ -13,6 +13,7 @@ import Trash from "resources/assets/mobile-save/Trash.svg";
 import { Folder } from "types/folders";
 import { Post } from "types/posts";
 import axios, { AxiosError } from "axios";
+import useAppStateStore from "stores/useAppStateStore";
 
 interface ScrapContentsProps {
   folders: Folder[];
@@ -32,6 +33,7 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null); // 삭제할 게시물 ID 상태 추가
+  const { isAppUrl } = useAppStateStore();
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(
@@ -378,7 +380,7 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
         )}
       </ScrapHeader>
       <Wrapper>
-        <ScrapContentsWrapper ref={containerRef}>
+        <ScrapContentsWrapper ref={containerRef} $isAppUrl={isAppUrl}>
           {isDropdownVisible && (
             <DropdownWrapper>
               <FolderListDropDowns
@@ -463,14 +465,19 @@ const Wrapper = styled.div`
   height: 100%;
 `;
 
-const ScrapContentsWrapper = styled.div`
+const ScrapContentsWrapper = styled.div<{
+  $isAppUrl: string;
+}>`
   flex: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: calc(
-    100svh - 72px - 64px - 16px - 32px - 42px - 49px - 16px
-  ); // 100% 로 하면 안먹혀서 header, nav, gap, ScrapFolders, SearchForm, ScrapHeader 크기 직접 빼주기
+  height: ${
+    ({ $isAppUrl }) =>
+      $isAppUrl === "/m"
+        ? " calc(100svh - 72px - 64px - 16px - 32px - 42px - 49px - 16px)" // 100% 로 하면 안먹혀서 header, nav, gap, ScrapFolders, SearchForm, ScrapHeader 크기 직접 빼주기
+        : " calc(100svh - 64px - 16px - 32px - 42px - 49px - 16px)" // isAppUrl이 "/app" 이면 nav는 없음
+  };
   overflow-y: auto;
   position: relative;
 `;

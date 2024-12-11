@@ -6,6 +6,7 @@ import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
 import { MembersReplies } from "types/members";
 import { deleteReply } from "apis/replies";
 import axios, { AxiosError } from "axios";
+import useAppStateStore from "stores/useAppStateStore";
 
 interface TipsCardContainerProps {
   posts: MembersReplies[];
@@ -19,9 +20,10 @@ export default function CardComment({
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [activeCardId, setActiveCardId] = useState<number | null>(null); // Active card state
+  const { isAppUrl } = useAppStateStore();
 
   const handleDocumentClick = (id: number) => {
-    navigate(`/m/postdetail?id=${id}`);
+    navigate(`${isAppUrl}/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: number) => {

@@ -34,4 +34,6 @@ export default function MobileMyPagePost() {
   );
 }
 
-const MobileMyPagePostWrapper = styled.div``;
+const MobileMyPagePostWrapper = styled.div`
+  width: 100%;
+`;
