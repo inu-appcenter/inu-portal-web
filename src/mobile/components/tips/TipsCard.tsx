@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Post } from "types/posts";
 import { Notice } from "types/notices";
 import useAppStateStore from "stores/useAppStateStore";
+import heart from "resources/assets/posts/posts-heart.svg";
 
 interface TipsCardContainerProps {
   post?: Post;
@@ -47,7 +48,16 @@ export default function ({
               <GridLine />
               <GridBottomWrapper>
                 <Title>{post.title}</Title>
-                <Writer>{post.writer}</Writer>
+                <LikeCommentWriterWrapper>
+                  <span className="like-comment">
+                    <img src={heart} alt="" />
+                    <span>{post.like}</span>
+                    <span></span>
+                    <span>댓글</span>
+                    <span>{post.replyCount}</span>
+                  </span>
+                  <span className="writer">{post.writer}</span>
+                </LikeCommentWriterWrapper>
               </GridBottomWrapper>
             </TipsCardGridWrapper>
           )}
@@ -63,7 +73,9 @@ export default function ({
               <GridLine />
               <GridBottomWrapper>
                 <Title>{notice.title}</Title>
-                <Writer>{notice.writer}</Writer>
+                <LikeCommentWriterWrapper>
+                  <span className="writer">{notice.writer}</span>
+                </LikeCommentWriterWrapper>
               </GridBottomWrapper>
             </TipsCardGridWrapper>
           )}
@@ -80,7 +92,16 @@ export default function ({
               <ListRightWrapper>
                 <Title>{post.title}</Title>
                 <Content>{post.content}</Content>
-                <Writer>{post.writer}</Writer>
+                <LikeCommentWriterWrapper>
+                  <span className="like-comment">
+                    <img src={heart} alt="" />
+                    <span>{post.like}</span>
+                    <span></span>
+                    <span>댓글</span>
+                    <span>{post.replyCount}</span>
+                  </span>
+                  <span className="writer">{post.writer}</span>
+                </LikeCommentWriterWrapper>
               </ListRightWrapper>
             </TipsCardListWrapper>
           )}
@@ -94,7 +115,9 @@ export default function ({
               <ListRightWrapper>
                 <Title>{notice.title}</Title>
                 <Content></Content>
-                <Writer>{notice.writer}</Writer>
+                <LikeCommentWriterWrapper>
+                  <span className="writer">{notice.writer}</span>
+                </LikeCommentWriterWrapper>
               </ListRightWrapper>
             </TipsCardListWrapper>
           )}
@@ -132,20 +155,32 @@ const Content = styled.div`
   color: #888888;
 `;
 
-const Writer = styled.div`
+const LikeCommentWriterWrapper = styled.div`
   position: absolute;
   right: 8px;
   bottom: 8px;
-  font-size: 8px;
-  font-weight: 500;
-  color: #303030;
-  padding: 0 8px 0 8px;
-  height: 16px;
-  background-color: #ecf4ff;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  .like-comment {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    img {
+      height: 10px;
+    }
+  }
+  .writer {
+    font-size: 10px;
+    font-weight: 500;
+    color: #303030;
+    padding: 2px 8px;
+    background-color: #ecf4ff;
+    border-radius: 8px;
+  }
 `;
 
 const TipsCardGridWrapper = styled.div`

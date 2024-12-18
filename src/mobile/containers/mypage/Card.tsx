@@ -6,6 +6,7 @@ import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
 import { useResetTipsStore } from "../../../reducer/resetTipsStore";
 import { Post } from "types/posts";
 import useAppStateStore from "stores/useAppStateStore";
+import heart from "resources/assets/posts/posts-heart.svg";
 
 interface TipsCardContainerProps {
   post: Post[];
@@ -84,7 +85,16 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
           <ListRightWrapper>
             <Title>{p.title}</Title>
             <Content>{p.content}</Content>
-            <Writer>{p.writer}</Writer>
+            <LikeCommentWriterWrapper>
+              <span className="like-comment">
+                <img src={heart} alt="" />
+                <span>{p.like}</span>
+                <span></span>
+                <span>댓글</span>
+                <span>{p.replyCount}</span>
+              </span>
+              <span className="writer">{p.writer}</span>
+            </LikeCommentWriterWrapper>
           </ListRightWrapper>
         </TipsCardListWrapper>
       ))}
@@ -157,20 +167,32 @@ const Content = styled.div`
   color: #888888;
 `;
 
-const Writer = styled.div`
+const LikeCommentWriterWrapper = styled.div`
   position: absolute;
   right: 8px;
   bottom: 8px;
-  font-size: 8px;
-  font-weight: 500;
-  color: #303030;
-  padding: 0 8px 0 8px;
-  height: 16px;
-  background-color: #ecf4ff;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  .like-comment {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    img {
+      height: 10px;
+    }
+  }
+  .writer {
+    font-size: 10px;
+    font-weight: 500;
+    color: #303030;
+    padding: 2px 8px;
+    background-color: #ecf4ff;
+    border-radius: 8px;
+  }
 `;
 
 const TipsCardListWrapper = styled.div`
