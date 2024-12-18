@@ -139,7 +139,7 @@ export default function TipsListContainer({
     >
       <InfiniteScroll
         key={docType}
-        dataLength={posts.length}
+        dataLength={docType === "NOTICE" ? notices.length : posts.length}
         next={handleNext}
         hasMore={hasMore}
         loader={<h4 style={{ textAlign: "center" }}>Loading...</h4>}

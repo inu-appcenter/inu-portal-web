@@ -41,7 +41,7 @@ export default function PostsList() {
           );
           setNotices(response.data.notices);
           setPosts([]);
-          setPages(response.data.page);
+          setPages(response.data.pages);
         } else {
           if (params.get("search")) {
             const response = await getSearch(

@@ -1,5 +1,5 @@
 import axiosInstance from "apis/axiosInstance";
-import { ApiResponse } from "types/common";
+import { ApiResponse, NoticesPagination } from "types/common";
 import { Notice } from "types/notices";
 
 // 모든 공지사항 가져오기
@@ -7,7 +7,7 @@ export const getNotices = async (
   category: string,
   sort: string,
   page: number
-): Promise<ApiResponse<{ page: number; notices: Notice[] }>> => {
+): Promise<ApiResponse<NoticesPagination<Notice[]>>> => {
   const params: { [key: string]: string | number } = {
     sort,
     page,
@@ -16,7 +16,7 @@ export const getNotices = async (
     params.category = category;
   }
   const response = await axiosInstance.get<
-    ApiResponse<{ page: number; notices: Notice[] }>
+    ApiResponse<NoticesPagination<Notice[]>>
   >("/api/notices", { params });
   return response.data;
 };
