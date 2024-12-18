@@ -8,3 +8,8 @@ export interface Pagination<T = any> {
   total: number;
   posts: T;
 }
+export interface NoticesPagination<T = any> {
+  pages: number;
+  total: number;
+  notices: T;
+}
