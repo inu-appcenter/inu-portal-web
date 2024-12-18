@@ -227,7 +227,7 @@ const StyledReplyInput = styled.div`
 
 const EditOrReplyBanner = styled.div`
   position: absolute;
-  top: 0;
+  top: -22px;
   left: 16px;
   font-size: 14px;
   display: flex;
