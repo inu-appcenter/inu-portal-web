@@ -155,8 +155,8 @@ export default function CommentListMobile({
                     </div>
                     <ReplyLikeButton
                       id={reReply.id}
-                      like={reply.like}
-                      isLiked={reply.isLiked}
+                      like={reReply.like}
+                      isLiked={reReply.isLiked}
                     />
                   </ReReplyContainer>
                 ))}
