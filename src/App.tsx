@@ -10,6 +10,8 @@ import PostsPage from "pages/PostsPage";
 import WritePage from "pages/WritePage";
 import MyPage from "pages/MyPage";
 import AiPage from "pages/AiPage";
+import MapPage from "pages/MapPage";
+
 import MobileRootPage from "mobile/pages/MobileRootPage";
 import AppRootPage from "mobile/pages/AppRoutePage";
 
@@ -58,6 +60,7 @@ function App() {
           <Route path="/posts" element={<PostsPage />} />
           <Route path="/write" element={<WritePage />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="/map" element={<MapPage />} />
         </Route>
         <Route path="/ai" element={<AiPage />} />
       </Routes>
