@@ -21,6 +21,7 @@ import MobileMyPageLike from "mobile/pages/MobileMyPageLike";
 import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
+import MobileMapPage from "mobile/pages/MobileMapPage";
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "flex" : "none")};
@@ -106,6 +107,9 @@ export default function MobileRootPage() {
         </Page>
         <Page $active={activePage.includes("/m/home/tips")}>
           <MobileTipsPage />
+        </Page>{" "}
+        <Page $active={activePage.includes("/m/map")}>
+          <MobileMapPage />
         </Page>
         <Page $active={activePage.includes("/m/postdetail")}>
           <MobilePostDetailPage />
