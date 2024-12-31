@@ -6,10 +6,5 @@ export interface ApiResponse<T = any> {
 export interface Pagination<T = any> {
   pages: number;
   total: number;
-  posts: T;
-}
-export interface NoticesPagination<T = any> {
-  pages: number;
-  total: number;
-  notices: T;
+  contents: T;
 }

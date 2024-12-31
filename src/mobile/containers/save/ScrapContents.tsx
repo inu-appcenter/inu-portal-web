@@ -57,7 +57,7 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
               )
             : await getFoldersPosts(folder.id, "date", pageToLoad);
         }
-        const newPosts = response.data.posts;
+        const newPosts = response.data.contents;
         setPosts((prev) =>
           pageToLoad === 1
             ? [{ page: pageToLoad }, ...newPosts]
@@ -99,8 +99,8 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
             ? await getSearchFolderScrap(searchQuery, "date", 2, folder.id)
             : await getFoldersPosts(folder.id, "date", 2);
         }
-        const newPostsPage1 = responsePage1.data.posts;
-        const newPostsPage2 = responsePage2.data.posts;
+        const newPostsPage1 = responsePage1.data.contents;
+        const newPostsPage2 = responsePage2.data.contents;
         setPosts([
           { page: 1 },
           ...newPostsPage1,

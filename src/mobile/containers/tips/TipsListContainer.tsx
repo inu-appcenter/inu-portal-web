@@ -92,7 +92,7 @@ export default function TipsListContainer({
         }
       } else if (docType === "NOTICE") {
         const response = await getNotices(category, "date", fetchState.page);
-        const newNotices: Notice[] = response.data.notices;
+        const newNotices: Notice[] = response.data.contents;
         if (newNotices && newNotices.length > 0) {
           setNotices((prev) => [...prev, ...newNotices]);
           // lastPostId 및 페이지 수 업데이트
@@ -105,7 +105,7 @@ export default function TipsListContainer({
         }
       } else if (docType === "SEARCH" && query) {
         const response = await getSearch(query, "date", fetchState.page);
-        const newPosts: Post[] = response.data.posts;
+        const newPosts: Post[] = response.data.contents;
         if (newPosts && newPosts.length > 0) {
           setPosts((prev) => [...prev, ...newPosts]);
           // lastPostId 및 페이지 수 업데이트

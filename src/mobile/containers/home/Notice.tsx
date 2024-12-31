@@ -22,7 +22,7 @@ export default function NoticeForm() {
   const fetchNotices = async (sort: string) => {
     try {
       const response = await getNotices("전체", sort, 1);
-      setNotices(response.data.notices);
+      setNotices(response.data.contents);
     } catch (error) {
       console.error("모든 공지사항 가져오기 실패", error);
     }

@@ -47,7 +47,7 @@ export default function ScrapList({ folders }: Props) {
               Number(params.get("page")) || 1,
               Number(params.get("folderId")) || 0
             );
-            setPosts(response.data.posts);
+            setPosts(response.data.contents);
             setPages(response.data.pages);
             setTotal(response.data.total);
           } else {
@@ -58,7 +58,7 @@ export default function ScrapList({ folders }: Props) {
             );
             console.log("getSearchScrap");
             console.log(response.data);
-            setPosts(response.data.posts);
+            setPosts(response.data.contents);
             setPages(response.data.pages);
             setTotal(response.data.total);
           }
@@ -69,7 +69,7 @@ export default function ScrapList({ folders }: Props) {
               params.get("sort") || "date",
               Number(params.get("page")) || 1
             );
-            setPosts(response.data.posts);
+            setPosts(response.data.contents);
             setPages(response.data.pages);
             setTotal(response.data.total);
           } else {
@@ -77,7 +77,7 @@ export default function ScrapList({ folders }: Props) {
               params.get("sort") || "date",
               Number(params.get("page")) || 1
             );
-            setPosts(response.data.posts);
+            setPosts(response.data.contents);
             setPages(response.data.pages);
             setTotal(response.data.total);
           }
