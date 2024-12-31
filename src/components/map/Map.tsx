@@ -117,7 +117,7 @@ const KakaoMap: React.FC = () => {
   };
 
   // 키워드 검색 완료 시 호출되는 콜백함수 입니다
-  function placesSearchCB(data: any[], status: any, pagination: any) {
+  function placesSearchCB(data: any[], status: any /*pagination: any*/) {
     if (status === window.kakao.maps.services.Status.OK) {
       // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기 위해
       // LatLngBounds 객체에 좌표를 추가합니다
