@@ -8,6 +8,7 @@ import utilfolder from "resources/assets/mobile-tips/utilfolder.svg";
 import { useEffect, useRef, useState } from "react";
 import DeletePostBtn from "mobile/components/postdetail/util/DeletePostBtn";
 import EditPostBtn from "mobile/components/postdetail/util/EditPostBtn";
+import ReportsPostBtn from "mobile/components/postdetail/util/ReportsPostBtn";
 
 interface PostUtilityProps {
   id: number;
@@ -57,22 +58,25 @@ export default function PostUtilContainer({
         <UtilWrapper>
           <PostLike id={id} like={like} isLikedProp={isLiked} />
           <PostScrap id={id} scrap={scrap} isScrapedProp={isScraped} />
-          {hasAuthority && (
-            <DelOrModifyWrapper>
-              <img
-                src={utilfolder}
-                alt="del or modify folder"
-                onClick={handleFolderClick}
-                style={{ cursor: "pointer" }}
-              />
-              {showPopup && (
-                <Popup ref={popupRef}>
-                  <DeletePostBtn id={id} onPostUpdate={handlePostUpdate} />
-                  <EditPostBtn id={id} />
-                </Popup>
-              )}
-            </DelOrModifyWrapper>
-          )}
+          <DelOrModifyWrapper>
+            <img
+              src={utilfolder}
+              alt="del or modify folder"
+              onClick={handleFolderClick}
+              style={{ cursor: "pointer" }}
+            />
+            {showPopup && (
+              <Popup ref={popupRef}>
+                {hasAuthority && (
+                  <>
+                    <DeletePostBtn id={id} onPostUpdate={handlePostUpdate} />
+                    <EditPostBtn id={id} />
+                  </>
+                )}
+                <ReportsPostBtn id={id} />
+              </Popup>
+            )}
+          </DelOrModifyWrapper>
         </UtilWrapper>
       </Wrapper>
     </>
