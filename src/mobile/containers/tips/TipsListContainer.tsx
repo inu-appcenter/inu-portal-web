@@ -5,8 +5,10 @@ import TipsCard from "mobile/components/tips/TipsCard";
 import { getPostsMobile } from "apis/posts";
 import { getNotices } from "apis/notices";
 import { getSearch } from "apis/search";
+import { getCouncilNoticesList } from "apis/councilNotices";
 import { Post } from "types/posts";
 import { Notice } from "types/notices";
+import { CouncilNotice } from "types/councilNotices";
 import useAppStateStore from "stores/useAppStateStore";
 
 interface TipsListContainerProps {
@@ -29,6 +31,7 @@ export default function TipsListContainer({
 }: TipsListContainerProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [councilNotices, setCouncilNotices] = useState<CouncilNotice[]>([]);
   const [fetchState, setFetchState] = useState<FetchState>({
     lastPostId: undefined,
     page: 1,
@@ -50,10 +53,10 @@ export default function TipsListContainer({
     setHasMore(true);
     setPosts([]);
     setNotices([]);
+    setCouncilNotices([]);
     setIsInitialLoad(true);
-    // console.log("초기화 fetchData", docType, query, category, fetchState);
     fetchData();
-  }, [query, docType, setPosts, setNotices, category]);
+  }, [query, docType, setPosts, setNotices, setCouncilNotices, category]);
 
   // 첫 번째 로드 후 추가 데이터를 불러오도록 설정
   useEffect(() => {
@@ -61,13 +64,11 @@ export default function TipsListContainer({
       if (docType === "TIPS") {
         if (fetchState.lastPostId !== undefined) {
           setIsInitialLoad(false);
-          // console.log("두번째 fetchData", docType, query, category, fetchState);
           fetchData();
         }
       } else {
         if (fetchState.page !== 1) {
           setIsInitialLoad(false);
-          // console.log("두번째 fetchData", docType, query, category, fetchState);
           fetchData();
         }
       }
@@ -117,6 +118,19 @@ export default function TipsListContainer({
         } else {
           setHasMore(false);
         }
+      } else if (docType === "COUNCILNOTICE") {
+        const response = await getCouncilNoticesList("date", fetchState.page);
+        const newCouncilNotices: CouncilNotice[] = response.data.contents;
+        if (newCouncilNotices && newCouncilNotices.length > 0) {
+          setCouncilNotices((prev) => [...prev, ...newCouncilNotices]);
+          // lastPostId 및 페이지 수 업데이트
+          setFetchState((prev) => ({
+            ...prev,
+            page: prev.page + 1,
+          }));
+        } else {
+          setHasMore(false);
+        }
       }
     } catch (error) {
       console.error("게시글/공지 가져오기 실패", error);
@@ -161,6 +175,14 @@ export default function TipsListContainer({
               docType={docType}
             />
           ))}
+          {councilNotices.map((cn, i) => (
+            <TipsCard
+              key={i}
+              councilNotice={cn}
+              viewMode={viewMode}
+              docType={docType}
+            />
+          ))}
         </TipsCardWrapper>
       </InfiniteScroll>
     </TipsListContainerWrapper>
@@ -177,7 +199,7 @@ const TipsListContainerWrapper = styled.div<{
   width: 100%;
   height: ${
     ({ $docType, $isAppUrl }) =>
-      $docType === "NOTICE"
+      $docType === "NOTICE" || $docType === "COUNCILNOTICE"
         ? $isAppUrl === "/m"
           ? "calc(100svh - 72px - 64px - 16px - 32px)" // DocType이 NOTICE 일 때는 SearchForm 없음
           : "calc(100svh - 64px - 16px - 32px)" // isAppUrl이 "/app" 이면 nav는 없음

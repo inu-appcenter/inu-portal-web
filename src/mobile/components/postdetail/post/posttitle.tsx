@@ -6,8 +6,7 @@ interface PostTitleProps {
   title: string;
   createDate: string;
   view: number;
-  writer: string;
-  hasAuthority: boolean;
+  writer?: string;
 }
 
 export default function PostTitle({
@@ -34,7 +33,7 @@ export default function PostTitle({
           <div className="postinfo2">
             <img src={eyeImg} />
             <span className="viewInfo">{view}</span>
-            <span className="m-writerInfo">{writer}</span>
+            <span className="m-writerInfo">{writer || "총학생회"}</span>
           </div>
         </PostInfo>
       </div>

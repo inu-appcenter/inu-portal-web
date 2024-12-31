@@ -4,12 +4,14 @@ interface PostContentProps {
   id: number;
   content: string;
   imageCount: number;
+  type: string;
 }
 
 export default function PostContent({
   id,
   content,
   imageCount,
+  type,
 }: PostContentProps) {
   return (
     <>
@@ -18,15 +20,25 @@ export default function PostContent({
           {Array.from({ length: imageCount }, (_, index) => (
             <ContentImg
               key={index}
-              src={`https://portal.inuappcenter.kr/api/posts/${id}/images/${
-                index + 1
-              }`}
+              src={
+                type === "TIPS"
+                  ? `https://portal.inuappcenter.kr/api/posts/${id}/images/${
+                      index + 1
+                    }`
+                  : `https://portal.inuappcenter.kr/api/councilNotices/${id}/images/${
+                      index + 1
+                    }`
+              }
               alt={`이미지 ${index + 1}`}
               onClick={() =>
                 window.open(
-                  `https://portal.inuappcenter.kr/api/posts/${id}/images/${
-                    index + 1
-                  }`
+                  type === "TIPS"
+                    ? `https://portal.inuappcenter.kr/api/posts/${id}/images/${
+                        index + 1
+                      }`
+                    : `https://portal.inuappcenter.kr/api/councilNotices/${id}/images/${
+                        index + 1
+                      }`
                 )
               }
             />
