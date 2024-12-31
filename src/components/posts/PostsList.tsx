@@ -39,7 +39,7 @@ export default function PostsList() {
             params.get("sort") === "like" ? "view" : "date",
             Number(params.get("page")) || 1
           );
-          setNotices(response.data.notices);
+          setNotices(response.data.contents);
           setPosts([]);
           setPages(response.data.pages);
         } else {
@@ -49,7 +49,7 @@ export default function PostsList() {
               params.get("sort") || "date",
               Number(params.get("page")) || 1
             );
-            setPosts(response.data.posts);
+            setPosts(response.data.contents);
             setPages(response.data.pages);
           } else {
             const response = await getPosts(
@@ -57,7 +57,7 @@ export default function PostsList() {
               params.get("sort") || "date",
               Number(params.get("page")) || 1
             );
-            setPosts(response.data.posts);
+            setPosts(response.data.contents);
             setPages(response.data.pages);
           }
           setNotices([]);

@@ -18,7 +18,7 @@ export default function Notices() {
     const fetchNotices = async () => {
       try {
         const response = await getNotices("전체", "date", 1);
-        setNotices(response.data.notices);
+        setNotices(response.data.contents);
       } catch (error) {
         console.error("모든 공지사항 가져오기 실패", error);
       }
