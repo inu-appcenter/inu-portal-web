@@ -11,6 +11,10 @@ const categorys = [
   { title: "notice", img: noticeImg },
   { title: "tips", img: TipImg },
   { title: "calendar", img: calendarImg },
+  { title: "총학생회", img: "" },
+  { title: "복지", img: "" },
+  { title: "동아리", img: "" },
+  { title: "유틸", img: "" },
 ];
 
 export default function CategoryForm() {
@@ -20,6 +24,8 @@ export default function CategoryForm() {
   const handleClick = (title: string) => {
     if (title === "notice") {
       navigate(`${isAppUrl}/home/tips?type=notice`);
+    } else if (title === "총학생회") {
+      navigate(`${isAppUrl}/home/tips?type=councilNotice`);
     } else {
       navigate(`${isAppUrl}/home/${title}`);
     }
@@ -43,12 +49,15 @@ export default function CategoryForm() {
 
 const CategoryFormmWrapper = styled.div`
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
-  margin-top: 40px;
+  gap: 1px;
   .category {
+    margin-top: 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 20%;
 
     img {
       width: 40px;

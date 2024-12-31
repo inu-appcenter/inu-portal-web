@@ -4,10 +4,12 @@ import { Post } from "types/posts";
 import { Notice } from "types/notices";
 import useAppStateStore from "stores/useAppStateStore";
 import heart from "resources/assets/posts/posts-heart.svg";
+import { CouncilNotice } from "types/councilNotices";
 
 interface TipsCardContainerProps {
   post?: Post;
   notice?: Notice;
+  councilNotice?: CouncilNotice;
   viewMode: "grid" | "list";
   docType: string;
   isEditing?: boolean;
@@ -16,6 +18,7 @@ interface TipsCardContainerProps {
 export default function ({
   post,
   notice,
+  councilNotice,
   viewMode,
   docType,
   isEditing,
@@ -27,6 +30,9 @@ export default function ({
     if (isEditing) return;
     if (docType === "NOTICE") {
       notice && window.open("https://" + notice.url, "_blank");
+    } else if (docType === "COUNCILNOTICE") {
+      councilNotice &&
+        navigate(`${isAppUrl}/councilnoticedetail?id=${councilNotice.id}`);
     } else {
       post && navigate(`${isAppUrl}/postdetail?id=${post.id}`);
     }
@@ -79,6 +85,27 @@ export default function ({
               </GridBottomWrapper>
             </TipsCardGridWrapper>
           )}
+          {councilNotice && (
+            <TipsCardGridWrapper onClick={handleDocumentClick}>
+              <GridTopWrapper>
+                <GridTopTopWrapper>
+                  <Category>{"총학생회"}</Category>
+                  <Date>{councilNotice.createDate}</Date>
+                </GridTopTopWrapper>
+                <Content>{councilNotice.content}</Content>
+              </GridTopWrapper>
+              <GridLine />
+              <GridBottomWrapper>
+                <Title>{councilNotice.title}</Title>
+                <LikeCommentWriterWrapper>
+                  <span className="like-comment">
+                    <span>조회수</span>
+                    <span>{councilNotice.view}</span>
+                  </span>
+                </LikeCommentWriterWrapper>
+              </GridBottomWrapper>
+            </TipsCardGridWrapper>
+          )}
         </>
       ) : (
         <>
@@ -117,6 +144,25 @@ export default function ({
                 <Content></Content>
                 <LikeCommentWriterWrapper>
                   <span className="writer">{notice.writer}</span>
+                </LikeCommentWriterWrapper>
+              </ListRightWrapper>
+            </TipsCardListWrapper>
+          )}
+          {councilNotice && (
+            <TipsCardListWrapper onClick={handleDocumentClick}>
+              <ListLeftWrapper>
+                <Category>{"총학생회"}</Category>
+                <Date>{councilNotice.createDate}</Date>
+              </ListLeftWrapper>
+              <ListLine />
+              <ListRightWrapper>
+                <Title>{councilNotice.title}</Title>
+                <Content>{councilNotice.content}</Content>
+                <LikeCommentWriterWrapper>
+                  <span className="like-comment">
+                    <span>조회수</span>
+                    <span>{councilNotice.view}</span>
+                  </span>
                 </LikeCommentWriterWrapper>
               </ListRightWrapper>
             </TipsCardListWrapper>

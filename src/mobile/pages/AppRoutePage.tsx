@@ -9,6 +9,7 @@ import MobileSavePage from "mobile/pages/MobileSavePage";
 import MobileWritePage from "mobile/pages/MobileWritePage";
 import MobileLoginPage from "mobile/pages/MobileLoginPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
+import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
 import MobileMyPage from "mobile/pages/MobileMyPage";
 import MobileProfilePage from "mobile/pages/MobileProfilePage";
 import MobileMenuPage from "mobile/pages/MobileMenuPage";
@@ -36,7 +37,9 @@ export default function AppRoutePage() {
   const location = useLocation();
 
   const isLoginPage = location.pathname === "/app/login";
-  const isPostDetailPage = location.pathname.includes("/app/postdetail");
+  const isPostDetailPage =
+    location.pathname.includes("/app/postdetail") ||
+    location.pathname.includes("/app/councilnoticedetail");
 
   return (
     <MobileRootPageWrapper>
@@ -50,6 +53,10 @@ export default function AppRoutePage() {
             <Route path="/home/menu" element={<MobileMenuPage />} />
             <Route path="/home/calendar" element={<MobileCalendarPage />} />
             <Route path="/postdetail" element={<MobilePostDetailPage />} />
+            <Route
+              path="/councilnoticedetail"
+              element={<MobileCouncilNoticeDetailPage />}
+            />
             <Route path="/write" element={<MobileWritePage />} />
             <Route path="/save" element={<MobileSavePage />} />
             <Route path="/mypage" element={<MobileMyPage />} />

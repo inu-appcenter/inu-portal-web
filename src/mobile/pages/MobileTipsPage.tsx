@@ -19,16 +19,18 @@ export default function MobileTipsPage() {
     docType = "SEARCH";
   } else if (params.get("type") === "notice") {
     docType = "NOTICE";
+  } else if (params.get("type") === "councilNotice") {
+    docType = "COUNCILNOTICE";
   }
   const category = params.get("category") || "전체";
 
   return (
     <MobileTipsPageWrapper>
-      {!(docType === "NOTICE") && <SerachForm />}
+      {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
       <TitleCategorySelectorWrapper>
         <TipsPageTitle value={docType + (query ? ` - ${query}` : "")} />
         <ViewModeButtonCategorySelectorWrapper>
-          {docType !== "SEARCH" && <CategorySelector />}
+          {(docType === "TIPS" || docType === "NOTICE") && <CategorySelector />}
           <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
         </ViewModeButtonCategorySelectorWrapper>
       </TitleCategorySelectorWrapper>
