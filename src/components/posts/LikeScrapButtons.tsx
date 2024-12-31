@@ -6,6 +6,8 @@ import scrapEmpty from "resources/assets/posts/scrap-empty.svg";
 import scrapFilled from "resources/assets/posts/scrap-filled.svg";
 import { putLike } from "apis/posts";
 import { putScrap } from "apis/posts";
+import { postReports } from "apis/reports";
+import { reportsReasons } from "resources/strings/reportsReasons";
 import axios, { AxiosError } from "axios";
 
 interface Props {
@@ -27,6 +29,8 @@ export default function LikeScrapButtons({
   const [isLikedState, setIsLikedState] = useState(isLiked);
   const [scrapState, setScrapState] = useState(scrap);
   const [isScrapedState, setIsScrapedState] = useState(isScraped);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
 
   const handleLike = async () => {
     try {
@@ -91,8 +95,71 @@ export default function LikeScrapButtons({
     }
   };
 
+  const handleReports = async () => {
+    if (!selectedReason) {
+      alert("신고 사유를 선택해주세요.");
+      return;
+    }
+
+    const comment = prompt("추가 의견을 입력해주세요. (선택 사항)");
+
+    try {
+      await postReports(id, selectedReason, comment || "");
+      alert("신고가 완료되었습니다.");
+      setSelectedReason("");
+      setShowDropdown(false);
+    } catch (error) {
+      console.error("신고하기 실패", error);
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          default:
+            alert("신고하기 실패");
+            break;
+        }
+      }
+    }
+  };
+
   return (
     <LikeScrapButtonsWrapper>
+      <button
+        onClick={() => setShowDropdown((prev) => !prev)}
+        className="reports-button"
+      >
+        신고하기
+      </button>
+
+      {showDropdown && (
+        <DropdownWrapper>
+          <select
+            value={selectedReason}
+            onChange={(e) => setSelectedReason(e.target.value)}
+          >
+            <option value="">신고 사유를 선택하세요</option>
+            {reportsReasons.map((reason, index) => (
+              <option key={index} value={reason}>
+                {reason}
+              </option>
+            ))}
+          </select>
+          <div>
+            <button className="reports-button" onClick={handleReports}>
+              제출
+            </button>
+            <button
+              className="cancel-button"
+              onClick={() => setShowDropdown(false)}
+            >
+              취소
+            </button>
+          </div>
+        </DropdownWrapper>
+      )}
+
       <div>
         <img
           src={isLikedState ? heartFilled : heartEmpty}
@@ -102,7 +169,7 @@ export default function LikeScrapButtons({
         <span>{likeState}</span>
       </div>
       <div>
-        <button onClick={handleScrap}>
+        <button className="scrap-button" onClick={handleScrap}>
           <img src={isScrapedState ? scrapFilled : scrapEmpty} alt="" />
           스크랩
         </button>
@@ -117,12 +184,19 @@ const LikeScrapButtonsWrapper = styled.span`
   display: flex;
   gap: 24px;
   align-items: center;
+  position: relative;
+  .reports-button {
+    color: red;
+    background-color: transparent;
+    border: 1px solid;
+    border-radius: 4px;
+  }
   div {
     font-size: 24px;
     display: flex;
     align-items: center;
     gap: 16px;
-    button {
+    .scrap-button {
       width: 120px;
       height: 32px;
       display: flex;
@@ -146,5 +220,24 @@ const LikeScrapButtonsWrapper = styled.span`
     span {
       min-width: 24px;
     }
+  }
+`;
+
+const DropdownWrapper = styled.div`
+  position: absolute;
+  top: -120px;
+  right: 0;
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  select {
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  .cancel-button {
   }
 `;
