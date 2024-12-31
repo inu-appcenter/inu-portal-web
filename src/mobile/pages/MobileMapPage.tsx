@@ -4,16 +4,16 @@ import TipsPageTitle from "mobile/components/tips/TipsPageTitle";
 import CategorySelector from "mobile/components/common/CategorySelector";
 import { useLocation } from "react-router-dom";
 import ViewModeButtons from "mobile/components/tips/ViewModeButtons";
-import TipsListContainer from "mobile/containers/tips/TipsListContainer";
+// import TipsListContainer from "mobile/containers/tips/TipsListContainer";
 import SerachForm from "mobile/containers/home/SerachForm";
-import { useResetTipsStore } from "reducer/resetTipsStore";
+// import { useResetTipsStore } from "reducer/resetTipsStore";
 
 import Map from "components/map/Map";
 
 export default function MobileTipsPage() {
   const location = useLocation();
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const resetKey = useResetTipsStore((state) => state.resetKey); // 전역 상태에서 resetKey 구독
+  // const resetKey = useResetTipsStore((state) => state.resetKey); // 전역 상태에서 resetKey 구독
   const params = new URLSearchParams(location.search);
   const query = params.get("search") || "";
   let docType = "캠퍼스맵";
@@ -22,7 +22,7 @@ export default function MobileTipsPage() {
   } else if (params.get("type") === "notice") {
     docType = "NOTICE";
   }
-  const category = params.get("category") || "전체";
+  // const category = params.get("category") || "전체";
 
   return (
     <MobileTipsPageWrapper>
