@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import {Place, places, restPlaces} from './DB.tsx';
 
 const KakaoMap: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null); // 지도를 표시할 div의 레퍼런스
@@ -11,48 +12,6 @@ const KakaoMap: React.FC = () => {
     "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
   ];
 
-  // 장소 객체의 타입 정의
-  interface Place {
-    y: string; // 위도
-    x: string; // 경도
-    place_name: string; // 장소명
-    // 필요시 추가적인 프로퍼티를 여기에 정의할 수 있습니다.
-  }
-
-  // Place 타입 배열 생성
-  const places: Place[] = [
-    {
-      y: "37.3768675", // 위도
-      x: "126.6347546", // 경도
-      place_name: "1호관", // 장소명
-    },
-    {
-      y: "37.37754246",
-      x: "126.6337663",
-      place_name: "2호관",
-    },
-    {
-      y: "37.37739016",
-      x: "126.6340465",
-      place_name: "3호관",
-    },
-  ];
-
-  const cafePlaces: Place[] = [
-    {
-      y: "37.37501993",
-      x: "126.6338717",
-      place_name: "카페드림",
-    },
-    {
-      y: "37.37432268",
-      x: "126.630584",
-      place_name: "카페아이엔지",
-    },
-  ];
-
-  // 마커를 클릭하면 장소명을 표출할 인포윈도우 입니다
-  var infowindow = new window.kakao.maps.InfoWindow({ zIndex: 1 });
   useEffect(() => {
     // Kakao Maps API가 로드된 후에 실행
     if (window.kakao && mapContainer.current) {
@@ -93,27 +52,9 @@ const KakaoMap: React.FC = () => {
 
   const handleSearch = () => {
     // 장소 검색 객체를 생성합니다
-    var ps = new window.kakao.maps.services.Places();
+    const ps = new window.kakao.maps.services.Places();
     // 키워드로 장소를 검색합니다
     ps.keywordSearch(searchQuery, placesSearchCB);
-  };
-
-  //장소 목록에서 선택했을 때 지도에 표시해주는 함수
-  const handleClickPlace = (place: any) => {
-    var bounds = new window.kakao.maps.LatLngBounds();
-    bounds.extend(new window.kakao.maps.LatLng(place.y, place.x));
-    map.setBounds(bounds);
-
-    // 마커를 생성하고 지도에 표시합니다
-    var marker = new window.kakao.maps.Marker({
-      map: map,
-      position: new window.kakao.maps.LatLng(place.y, place.x),
-    });
-
-    infowindow.setContent(
-      '<div style="padding:5px;font-size:12px;">' + place.place_name + "</div>"
-    );
-    infowindow.open(map, marker);
   };
 
   // 키워드 검색 완료 시 호출되는 콜백함수 입니다
@@ -134,48 +75,103 @@ const KakaoMap: React.FC = () => {
   }
 
   //DB에 있는 위, 경도에 따라 마커를 찍는다
-  function placesMarkDB(places: Place[], imageSrc: String) {
+  function placesMarkDB(places: Place[], imageSrc: string, mode:number) {
     places.forEach((place) => {
-      console.log(`${place.place_name}: 위도(${place.y}), 경도(${place.x})`);
-      displayMarker(place, imageSrc);
+      console.log(`${place.place_name}: 위도(${place.latitude}), 경도(${place.longitude})`);
+      displayMarker(place, imageSrc, mode);
     });
   }
-  placesMarkDB(places, imageSources[0]);
-  placesMarkDB(cafePlaces, imageSources[1]);
 
   // 지도에 마커를 표시하는 함수입니다
-  function displayMarker(place: Place, imageSrc: String) {
-    var imageSize = new window.kakao.maps.Size(24, 35); // 마커이미지의 크기입니다
-
+  function displayMarker(place: Place, imageSrc: string, mode:number) {
+    const imageSize = new window.kakao.maps.Size(24, 35); // 마커이미지의 크기입니다
     // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
-    var markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize);
-
+    const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize);
     // 마커를 생성하고 지도에 표시합니다
-    var marker = new window.kakao.maps.Marker({
+    const marker = new window.kakao.maps.Marker({
       map: map,
-      position: new window.kakao.maps.LatLng(place.y, place.x),
+      position: new window.kakao.maps.LatLng(place.latitude, place.longitude),
       title: place.place_name, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
-
       image: markerImage, // 마커 이미지
     });
 
+    let iwContent;
+    if(mode===1) {
+      iwContent = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 200px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); padding: 15px; background-color: #fff;">
+          <h3 style="border-bottom: 2px solid #f1f1f1; padding-bottom: 8px; margin-bottom: 20px; font-size: 18px; color: #555;">${place.category}</h3>
+          <div style="margin-bottom: 12px;">
+              <strong style="display: inline-block; width: 80px; color: #444;">위치:</strong>
+              <span>${place.place_name} </span>
+          </div>
+      </div>`;
+    }
+    if(mode===2) {
+      iwContent = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 200px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); padding: 15px; background-color: #fff;">
+          <h3 style="border-bottom: 2px solid #f1f1f1; padding-bottom: 8px; margin-bottom: 20px; font-size: 18px; color: #555;">${place.category}</h3>
+          <div style="margin-bottom: 12px;">
+              <strong style="display: inline-block; width: 80px; color: #444;">위치:</strong>
+              <span>${place.place_name} ${place.restareaInfo.roomNumber}</span>
+          </div>
+          <div style="margin-bottom: 12px;">
+              <strong style="display: inline-block; width: 80px; color: #444;">여성용품:</strong>
+              <span>${place.restareaInfo.hasFemaleProducts ? "있음" : "없음"}</span>
+          </div>
+          <div style="margin-bottom: 12px;">
+              <strong style="display: inline-block; width: 80px; color: #444;">침대:</strong>
+              <span>${place.restareaInfo.bedCount}개</span>
+          </div>
+          <div style="margin-bottom: 12px;">
+              <strong style="display: inline-block; width: 80px; color: #444;">탈의실:</strong>
+              <span>${place.restareaInfo.hasChangingRoom ? "있음" : "없음"}</span>
+          </div>
+          <div style="margin-bottom: 12px;">
+              <strong style="display: inline-block; width: 80px; color: #444;">샤워실:</strong>
+              <span>${place.restareaInfo.hasShowerRoom ? "있음" : "없음"}</span>
+          </div>
+      </div>`;
+    }
+
+
+
+    const iwRemoveable = true;
+
+    const infowindow = new window.kakao.maps.InfoWindow({
+      content: iwContent,
+      removable: iwRemoveable
+    })
+
     // 마커에 클릭이벤트를 등록합니다
     window.kakao.maps.event.addListener(marker, "click", function () {
-      // 마커를 클릭하면 장소명이 인포윈도우에 표출됩니다
-      infowindow.setContent(
-        '<div style="padding:5px;font-size:12px;">' +
-          place.place_name +
-          "</div>"
-      );
       infowindow.open(map, marker);
     });
   }
 
+  const handleFilter = (filter: string) => {
+    // filter 값에 맞는 places를 필터링
+    const filteredPlaces = restPlaces.filter(place => {
+      if (filter === "여자휴게실") {
+        return place.category === "여자휴게실";
+      } else if (filter === "남자휴게실") {
+        return place.category === "남자휴게실";
+      } else if (filter === "남녀공용휴게실") {
+        return place.category === "남녀공용휴게실";
+      } else {
+        return true; // 필터가 "여자휴게실", "남자휴게실", "남녀공용휴게실"이 아닐 경우 모두 반환
+      }
+    });
+
+    // 필터링된 places와 imageSources[0]을 placesMarkDB 함수에 전달
+    placesMarkDB(filteredPlaces, imageSources[0], 2);
+  };
+
+  placesMarkDB(places, imageSources[1], 1);
   return (
     <div>
       <div
         ref={mapContainer}
-        style={{ width: "1000px", height: "500px" }}
+        style={{ width: "50%", height: "500px" }}
       ></div>
       <p>
         <button onClick={zoomIn}>지도레벨 - 1</button>
@@ -192,18 +188,16 @@ const KakaoMap: React.FC = () => {
         <button onClick={handleSearch}>검색</button>
       </div>
       <div>
+        <h3>필터</h3>
+        <div onClick={()=>handleFilter("여자휴게실")}>여자휴게실</div>
+        <div onClick={()=>handleFilter("남자휴게실")}>남자휴게실</div>
+        <div onClick={()=>handleFilter("남녀공용휴게실")}>남녀공용휴게실</div>
         <h2>장소 목록</h2>
         <ul>
-          {places.map((place, index) => (
-            <li key={index} onClick={() => handleClickPlace(place)}>
-              <strong>{place.place_name}</strong>: 위도({place.y}), 경도(
-              {place.x})
-            </li>
-          ))}
-          {cafePlaces.map((place, index) => (
-            <li key={index} onClick={() => handleClickPlace(place)}>
-              <strong>{place.place_name}</strong>: 위도({place.y}), 경도(
-              {place.x})
+          {restPlaces.map((place, index) => (
+            <li key={index} >
+              <strong>{place.place_name}</strong>: 위도({place.latitude}), 경도(
+              {place.longitude})
             </li>
           ))}
         </ul>
