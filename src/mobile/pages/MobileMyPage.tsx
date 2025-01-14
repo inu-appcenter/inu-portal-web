@@ -15,7 +15,7 @@ export default function MobileMyPage() {
   const { isAppUrl } = useAppStateStore();
 
   const handleLogout = () => {
-    setUserInfo({ id: 0, nickname: "", fireId: 0 });
+    setUserInfo({ id: 0, nickname: "", role: "", fireId: 0 });
     setTokenInfo({
       accessToken: "",
       accessTokenExpiredTime: "",

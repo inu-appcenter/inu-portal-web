@@ -20,6 +20,7 @@ export default function UserModify() {
       setUserInfo({
         id: response.data,
         nickname: nickname,
+        role: userInfo.role,
         fireId: Number(fireId),
       });
       alert("성공적으로 수정되었습니다.");

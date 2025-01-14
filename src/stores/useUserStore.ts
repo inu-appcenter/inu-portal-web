@@ -19,6 +19,7 @@ const useUserStore = create<UserState>((set) => ({
     id: 0,
     nickname: "",
     fireId: 0,
+    role: "",
   },
 
   setTokenInfo: (tokenInfo) => {

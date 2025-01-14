@@ -1,14 +1,18 @@
 import styled from "styled-components";
 import backbtn from "resources/assets/mobile-common/backbtn.svg";
 import { useEffect, useState } from "react";
-import { getCouncilNotices } from "apis/councilNotices";
+import { deleteCouncilNotices, getCouncilNotices } from "apis/councilNotices";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
 import { CouncilNotice } from "types/councilNotices";
 import axios, { AxiosError } from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import useUserStore from "stores/useUserStore";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileCouncilDetailPage() {
+  const { userInfo } = useUserStore();
   const [councilNotice, setCouncilNotice] = useState<CouncilNotice>();
+  const { isAppUrl } = useAppStateStore();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,6 +50,37 @@ export default function MobileCouncilDetailPage() {
     }
   }, [location.pathname]);
 
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("정말 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    try {
+      const params = new URLSearchParams(location.search);
+      await deleteCouncilNotices(Number(params.get("id")));
+      navigate(`${isAppUrl}/home/tips?type=councilNotice`);
+    } catch (error) {
+      console.error("게시글 삭제 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 403:
+            alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+            break;
+          case 404:
+            alert("존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("게시글 삭제 실패");
+            break;
+        }
+      }
+    }
+  };
+
   return (
     <>
       {councilNotice ? (
@@ -56,6 +91,20 @@ export default function MobileCouncilDetailPage() {
                 <BackBtn onClick={() => navigate(-1)}>
                   <img src={backbtn} alt="뒤로가기 버튼" />
                 </BackBtn>
+                {userInfo.role == "admin" && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        navigate(
+                          `${isAppUrl}/write?type=councilNotice&councilNoticeId=${councilNotice.id}`
+                        );
+                      }}
+                    >
+                      수정
+                    </Button>
+                    <Button onClick={handleDelete}>삭제</Button>
+                  </>
+                )}
               </PostUtilWrapper>
             </PostTopWrapper>
             <PostWrapper>
@@ -103,3 +152,5 @@ const BackBtn = styled.div`
   display: flex;
   padding: 8px;
 `;
+
+const Button = styled.button``;
