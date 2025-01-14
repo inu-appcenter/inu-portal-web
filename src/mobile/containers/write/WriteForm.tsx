@@ -230,6 +230,9 @@ export default function WriteForm({ category, setCategory }: Props) {
       <UploadButton $disabled={loading} onClick={handleSubmit}>
         {loading ? "업로드 중..." : "업로드"}
       </UploadButton>
+      <Desc>
+        부적절하거나 불쾌감을 줄 수 있는 컨텐츠는 제재를 받을 수 있습니다.
+      </Desc>
     </WriteFormWrapper>
   );
 }
@@ -252,4 +255,10 @@ const UploadButton = styled.div<{ $disabled: boolean }>`
   font-weight: 700;
   color: white;
   background: ${({ $disabled }) => ($disabled ? "#CCC" : "#ADC7EC")};
+`;
+
+const Desc = styled.span`
+  color: gray;
+  font-size: 10px;
+  text-align: center;
 `;

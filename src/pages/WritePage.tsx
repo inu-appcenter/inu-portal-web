@@ -263,6 +263,9 @@ export default function WritePage() {
           </div>
         ))}
       </ImagesWrapper>
+      <Desc>
+        부적절하거나 불쾌감을 줄 수 있는 컨텐츠는 제재를 받을 수 있습니다.
+      </Desc>
     </WritePageWrapper>
   );
 }
@@ -384,4 +387,10 @@ const ImagesWrapper = styled.div`
     height: 32px;
     background-color: rgba(234, 109, 91);
   }
+`;
+
+const Desc = styled.span`
+  color: gray;
+  font-size: 16px;
+  text-align: center;
 `;
