@@ -9,6 +9,7 @@ export interface UserInfo {
   id: number;
   nickname: string;
   fireId: number;
+  role: string; // "admin" | ""
 }
 
 export interface MembersReplies {

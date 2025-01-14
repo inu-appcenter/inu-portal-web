@@ -8,7 +8,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    setUserInfo({ id: 0, nickname: "", fireId: 0 });
+    setUserInfo({ id: 0, nickname: "", role: "", fireId: 0 });
     setTokenInfo({
       accessToken: "",
       accessTokenExpiredTime: "",
