@@ -6,6 +6,7 @@ import LoginUser from "resources/assets/login/login-user.svg";
 import LoginPassword from "resources/assets/login/login-password.svg";
 import useUserStore from "stores/useUserStore";
 import axios from "axios";
+import TermOfUse from "components/login/TermsOfUse";
 
 export default function LoginForm() {
   const [studentId, setStudentId] = useState("");
@@ -53,6 +54,9 @@ export default function LoginForm() {
   return (
     <FormWrapper>
       <FormItemWrapper>
+        <span className="info">
+          인천대학교 포털시스템 계정으로 로그인 할 수 있습니다.
+        </span>
         <Label>학번</Label>
         <FormInputWrapper>
           <Input
@@ -85,9 +89,8 @@ export default function LoginForm() {
         <InputLine />
       </FormItemWrapper>
       <LoginButton onClick={handleLogin}>로그인</LoginButton>
-
-      <span className="info">
-        인천대학교 포털시스템 계정으로 로그인 할 수 있습니다.
+      <span className="termofuse">
+        <TermOfUse />
       </span>
     </FormWrapper>
   );
@@ -99,6 +102,9 @@ const FormWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 24px;
+  .termofuse {
+    width: 360px;
+  }
 `;
 
 const FormItemWrapper = styled.div`
