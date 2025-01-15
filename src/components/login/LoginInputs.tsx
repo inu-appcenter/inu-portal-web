@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import loginUser from "resources/assets/login/login-user.svg";
 import loginPassword from "resources/assets/login/login-password.svg";
+import TermOfUse from "./TermsOfUse";
 
 export default function LoginInputs() {
   const [studentId, setStudentId] = useState("");
@@ -53,6 +54,9 @@ export default function LoginInputs() {
   return (
     <LoginInputsWrapper>
       <h1>로그인</h1>
+      <span className="info">
+        인천대학교 포털시스템 계정으로 로그인 할 수 있습니다.
+      </span>
       <span>
         <input
           type="text"
@@ -74,9 +78,7 @@ export default function LoginInputs() {
         <img src={loginPassword} alt="" onClick={togglePasswordVisibility} />
       </span>
       <button onClick={handleLogin}>로그인</button>
-      <span className="info">
-        인천대학교 포털시스템 계정으로 로그인 할 수 있습니다.
-      </span>
+      <TermOfUse />
     </LoginInputsWrapper>
   );
 }
