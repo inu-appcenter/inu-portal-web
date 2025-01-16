@@ -6,28 +6,26 @@ import { Book, BookSummary } from "types/books";
 // 책 리스트 조회
 export const getBooksList = async (
   page: number
-): Promise<Pagination<BookSummary[]>> => {
+): Promise<ApiResponse<Pagination<BookSummary[]>>> => {
   const params: { [key: string]: string | number } = {
     page,
   };
-  const response = await axiosInstance.get<Pagination<BookSummary[]>>(
-    "/api/books",
-    { params }
-  );
+  const response = await axiosInstance.get<
+    ApiResponse<Pagination<BookSummary[]>>
+  >("/api/books", { params });
   return response.data;
 };
 
 // 판매 가능한 책 리스트 조회
 export const getBoksListAvailable = async (
   page: number
-): Promise<Pagination<BookSummary[]>> => {
+): Promise<ApiResponse<Pagination<BookSummary[]>>> => {
   const params: { [key: string]: string | number } = {
     page,
   };
-  const response = await axiosInstance.get<Pagination<BookSummary[]>>(
-    "/api/books/available",
-    { params }
-  );
+  const response = await axiosInstance.get<
+    ApiResponse<Pagination<BookSummary[]>>
+  >("/api/books/available", { params });
   return response.data;
 };
 
