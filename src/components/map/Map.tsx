@@ -77,9 +77,9 @@ const KakaoMap: React.FC = () => {
   //DB에 있는 위, 경도에 따라 마커를 찍는다
   function placesMarkDB(places: Place[], imageSrc: string, mode: number) {
     places.forEach((place) => {
-      console.log(
-        `${place.place_name}: 위도(${place.latitude}), 경도(${place.longitude})`
-      );
+      // console.log(
+      //   `${place.place_name}: 위도(${place.latitude}), 경도(${place.longitude})`
+      // );
       displayMarker(place, imageSrc, mode);
     });
   }

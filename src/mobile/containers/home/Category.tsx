@@ -26,6 +26,10 @@ export default function CategoryForm() {
       navigate(`${isAppUrl}/home/tips?type=notice`);
     } else if (title === "총학생회") {
       navigate(`${isAppUrl}/home/tips?type=councilNotice`);
+    } else if (title === "복지") {
+      navigate(`${isAppUrl}/home/map`);
+    } else if (title === "유틸") {
+      navigate(`${isAppUrl}/home/util`);
     } else {
       navigate(`${isAppUrl}/home/${title}`);
     }
