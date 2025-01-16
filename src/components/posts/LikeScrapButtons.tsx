@@ -139,7 +139,8 @@ export default function LikeScrapButtons({
             신고 사유에 맞지 않는 신고일 경우, 해당 신고는 처리되지 않습니다.
           </span>
           <span className="desc">
-            누적 신고횟수가 3회 이상인 유저는 글 작성을 할 수 없게 됩니다.
+            신고 접수 시 관리자의 검토 후, 해당 사용자는 서비스 이용이 제한될 수
+            있습니다.
           </span>
           <select
             value={selectedReason}
