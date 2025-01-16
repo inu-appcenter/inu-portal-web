@@ -105,7 +105,7 @@ export default function LikeScrapButtons({
 
     try {
       await postReports(id, selectedReason, comment || "");
-      alert("신고가 완료되었습니다.");
+      alert("신고가 완료되었습니다. 검토까지는 최대 24시간 소요됩니다.");
       setSelectedReason("");
       setShowDropdown(false);
     } catch (error) {
@@ -135,6 +135,12 @@ export default function LikeScrapButtons({
 
       {showDropdown && (
         <DropdownWrapper>
+          <span className="desc">
+            신고 사유에 맞지 않는 신고일 경우, 해당 신고는 처리되지 않습니다.
+          </span>
+          <span className="desc">
+            누적 신고횟수가 3회 이상인 유저는 글 작성을 할 수 없게 됩니다.
+          </span>
           <select
             value={selectedReason}
             onChange={(e) => setSelectedReason(e.target.value)}
@@ -233,6 +239,9 @@ const DropdownWrapper = styled.div`
   background-color: #f9f9f9;
   display: flex;
   flex-direction: column;
+  .desc {
+    font-size: 14px;
+  }
   select {
     padding: 4px;
     border-radius: 4px;
