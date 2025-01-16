@@ -12,6 +12,8 @@ import MobileLoginPage from "mobile/pages/MobileLoginPage";
 import { usePreviousPage } from "hooks/usePreviousPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
 import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
+import MobileMapPage from "mobile/pages/MobileMapPage";
+import MobileUtilPage from "mobile/pages/MobileUtilPage";
 import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundImg.svg";
 import MobileMyPage from "mobile/pages/MobileMyPage";
 import MobileProfilePage from "mobile/pages/MobileProfilePage";
@@ -22,7 +24,6 @@ import MobileMyPageLike from "mobile/pages/MobileMyPageLike";
 import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
-import MobileMapPage from "mobile/pages/MobileMapPage";
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "flex" : "none")};
@@ -97,7 +98,9 @@ export default function MobileRootPage() {
             activePage.includes("/m/home") &&
             !activePage.includes("/m/home/tips") &&
             !activePage.includes("/m/home/menu") &&
-            !activePage.includes("/m/home/calendar")
+            !activePage.includes("/m/home/calendar") &&
+            !activePage.includes("/m/home/map") &&
+            !activePage.includes("/m/home/util")
           }
         >
           <MobileHomePage />
@@ -110,12 +113,15 @@ export default function MobileRootPage() {
         </Page>
         <Page $active={activePage.includes("/m/home/tips")}>
           <MobileTipsPage />
-        </Page>{" "}
-        <Page $active={activePage.includes("/m/map")}>
+        </Page>
+        <Page $active={activePage.includes("/m/home/map")}>
           <MobileMapPage />
         </Page>
         <Page $active={activePage.includes("/m/postdetail")}>
           <MobilePostDetailPage />
+        </Page>
+        <Page $active={activePage.includes("/m/home/util")}>
+          <MobileUtilPage />
         </Page>
         <Page $active={activePage.includes("/m/councilnoticedetail")}>
           <MobileCouncilNoticeDetailPage />

@@ -10,6 +10,8 @@ import MobileWritePage from "mobile/pages/MobileWritePage";
 import MobileLoginPage from "mobile/pages/MobileLoginPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
 import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
+import MobileMapPage from "mobile/pages/MobileMapPage";
+import MobileUtilPage from "mobile/pages/MobileUtilPage";
 import MobileMyPage from "mobile/pages/MobileMyPage";
 import MobileProfilePage from "mobile/pages/MobileProfilePage";
 import MobileMenuPage from "mobile/pages/MobileMenuPage";
@@ -52,6 +54,8 @@ export default function AppRoutePage() {
             <Route path="/home/tips" element={<MobileTipsPage />} />
             <Route path="/home/menu" element={<MobileMenuPage />} />
             <Route path="/home/calendar" element={<MobileCalendarPage />} />
+            <Route path="/home/map" element={<MobileMapPage />} />
+            <Route path="/home/util" element={<MobileUtilPage />} />
             <Route path="/postdetail" element={<MobilePostDetailPage />} />
             <Route
               path="/councilnoticedetail"
