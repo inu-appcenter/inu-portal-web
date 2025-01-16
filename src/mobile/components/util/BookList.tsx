@@ -5,10 +5,6 @@ import { getBooksList, getBoksListAvailable } from "apis/books";
 import styled from "styled-components";
 import BookDetail from "./BookDetail";
 
-function decodeBase64(base64String: string): string {
-  return `data:image/jpeg;base64,${base64String}`;
-}
-
 export default function BookList({ reloadKey }: { reloadKey: number }) {
   const [available, setAvailable] = useState(true);
   const [books, setBooks] = useState<BookSummary[]>([]);
@@ -22,10 +18,10 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
       const response = available
         ? await getBoksListAvailable(currentPage)
         : await getBooksList(currentPage);
-      const newBooks = response.contents;
+      const newBooks = response.data.contents;
       console.log(response);
       setBooks((prevBooks) => (reset ? newBooks : [...prevBooks, ...newBooks]));
-      setHasMore(currentPage < response.pages);
+      setHasMore(currentPage < response.data.pages);
     } catch (error) {
       console.error("Error fetching books:", error);
     }
@@ -77,7 +73,10 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
         >
           {books.map((book) => (
             <BookCard key={book.id} onClick={() => setSelectedBookId(book.id)}>
-              <img src={decodeBase64(book.thumbnail)} alt={book.name} />
+              <img
+                src={`https://portal.inuappcenter.kr/images/book/thumbnail/${book.id}`}
+                alt={book.name}
+              />
               <div>
                 <h3>{book.name}</h3>
                 <p>{book.author}</p>
