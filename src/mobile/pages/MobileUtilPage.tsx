@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import UploadBook from "mobile/components/util/UploadBook";
 import BookList from "mobile/components/util/BookList";
+import UploadPetition from "mobile/components/util/UploadPetition";
+import PetitionList from "mobile/components/util/PetitionList";
 import { useState } from "react";
 import useUserStore from "stores/useUserStore";
 
@@ -13,19 +15,17 @@ export default function MobileUtilPage() {
   let type = params.get("type") || "book";
 
   const [reloadKey, setReloadKey] = useState(0);
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isBookUploadOpen, setIsBookUploadOpen] = useState(false);
+  const [isPetitionUploadOpen, setIsPetitionUploadOpen] = useState(false);
 
   const handleBookUploaded = () => {
     setReloadKey((prevKey) => prevKey + 1);
-    setIsUploadOpen(false); // 책 등록 후 창 닫기
+    setIsBookUploadOpen(false);
   };
 
-  const handleOpenUpload = () => {
-    setIsUploadOpen(true);
-  };
-
-  const handleCloseUpload = () => {
-    setIsUploadOpen(false);
+  const handlePatitionUploaded = () => {
+    setReloadKey((prevKey) => prevKey + 1);
+    setIsPetitionUploadOpen(false);
   };
 
   return (
@@ -34,14 +34,37 @@ export default function MobileUtilPage() {
       {type === "book" && (
         <>
           {userInfo.role == "admin" && (
-            <button onClick={handleOpenUpload}>책 등록</button>
+            <button
+              onClick={() => {
+                setIsBookUploadOpen(true);
+              }}
+            >
+              책 등록
+            </button>
           )}
           <UploadBook
-            isOpen={isUploadOpen}
-            onClose={handleCloseUpload}
+            isOpen={isBookUploadOpen}
+            onClose={() => {
+              setIsBookUploadOpen(false);
+            }}
             onBookUploaded={handleBookUploaded}
-          />{" "}
+          />
           <BookList reloadKey={reloadKey} />
+        </>
+      )}
+      {type === "petition" && (
+        <>
+          <button onClick={() => setIsPetitionUploadOpen(true)}>
+            청원 등록
+          </button>
+          <UploadPetition
+            isOpen={isPetitionUploadOpen}
+            onClose={() => {
+              setIsPetitionUploadOpen(false);
+            }}
+            onPetitionUpload={handlePatitionUploaded}
+          />
+          <PetitionList reloadKey={reloadKey} />
         </>
       )}
     </MobileUtilPageWrapper>
