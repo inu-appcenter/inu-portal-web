@@ -6,6 +6,9 @@ const KakaoMap: React.FC = () => {
   const [map, setMap] = useState<any>(null); // 지도 객체를 상태로 저장
   const [level, setLevel] = useState<number>(3); // 현재 지도 레벨을 상태로 저장
   const [searchQuery, setSearchQuery] = useState<string>(""); // 검색어 상태 저장
+  const [isChecked1, setChecked1] = useState(false);
+  const [isChecked2, setChecked2] = useState(false);
+  const [isChecked3, setChecked3] = useState(false);
 
   const imageSources = [
     "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png", // 마커이미지의 주소입니다
@@ -160,10 +163,15 @@ const KakaoMap: React.FC = () => {
     // filter 값에 맞는 places를 필터링
     const filteredPlaces = restPlaces.filter((place) => {
       if (filter === "여자휴게실") {
+        setChecked1(!isChecked1);
         return place.category === "여자휴게실";
       } else if (filter === "남자휴게실") {
+        setChecked2(!isChecked2);
+
         return place.category === "남자휴게실";
       } else if (filter === "남녀공용 휴게실") {
+        setChecked3(!isChecked3);
+
         return place.category === "남녀공용 휴게실";
       } else {
         return true; // 필터가 "여자휴게실", "남자휴게실", "남녀공용 휴게실"이 아닐 경우 모두 반환
@@ -177,7 +185,7 @@ const KakaoMap: React.FC = () => {
   placesMarkDB(places, imageSources[1], 1);
   return (
     <div>
-      <div ref={mapContainer} style={{ width: "50%", height: "500px" }}></div>
+      <div ref={mapContainer} style={{ width: "100%", height: "500px" }}></div>
       <p>
         <button onClick={zoomIn}>지도레벨 - 1</button>
         <button onClick={zoomOut}>지도레벨 + 1</button>
@@ -194,18 +202,37 @@ const KakaoMap: React.FC = () => {
       </div>
       <div>
         <h3>필터</h3>
-        <div onClick={() => handleFilter("여자휴게실")}>여자휴게실</div>
-        <div onClick={() => handleFilter("남자휴게실")}>남자휴게실</div>
-        <div onClick={() => handleFilter("남녀공용 휴게실")}>
+        <label>
+          <input
+              type="checkbox"
+              checked={isChecked1}
+              onChange={() => handleFilter("여자휴게실")}
+          />
+          여자휴게실
+        </label>
+        <label>
+          <input
+              type="checkbox"
+              checked={isChecked2}
+              onChange={() => handleFilter("남자휴게실")}
+          />
+          남자휴게실
+        </label>
+        <label>
+          <input
+              type="checkbox"
+              checked={isChecked3}
+              onChange={() => handleFilter("남녀공용 휴게실")}
+          />
           남녀공용 휴게실
-        </div>
+        </label>
         <h2>장소 목록</h2>
         <ul>
           {restPlaces.map((place, index) => (
-            <li key={index}>
-              <strong>{place.place_name}</strong>: 위도({place.latitude}), 경도(
-              {place.longitude})
-            </li>
+              <li key={index}>
+                <strong>{place.place_name}</strong>: 위도({place.latitude}), 경도(
+                {place.longitude})
+              </li>
           ))}
         </ul>
       </div>
