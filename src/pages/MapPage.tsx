@@ -1,7 +1,7 @@
 import Categories from "components/posts/Categories";
 
 import PostsTitle from "components/map/MapTitle";
-import Map from "components/map/Map";
+import Map from "components/map/components/KakaoMap.tsx";
 import { useEffect /*useState*/ } from "react";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
