@@ -9,7 +9,9 @@ import PlaceListPanel from "./PlaceListPanel.tsx";
 const KakaoMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const [map, setMap] = useState<any>(null);
-    const [setLevel] = useState<number>(3);
+    const [level, setLevel] = useState<number>(3);
+
+    level;
 
     useEffect(() => {
         if (window.kakao && mapContainer.current) {
