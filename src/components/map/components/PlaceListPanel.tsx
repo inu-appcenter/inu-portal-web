@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import styled from "styled-components";
-import {Place, places, restPlaces} from "../DB";
+import {places, restPlaces} from "../DB";
 
 
 // TabButton을 함수형 컴포넌트로 정의

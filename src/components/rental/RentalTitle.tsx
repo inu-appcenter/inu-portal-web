@@ -1,12 +1,11 @@
 import styled from "styled-components";
-import SearchBar from "components/posts/SearchBar";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import useUserStore from "stores/useUserStore";
 
 export default function PostsTitle() {
     const {userInfo} = useUserStore();
-    const [type, setType] = useState("Rental");
-    const [category, setCategory] = useState("물품 대여");
+    const [type] = useState("Rental");
+    const [category] = useState("물품 대여");
 
     // useEffect(() => {
     //     // const params = new URLSearchParams(location.search);
