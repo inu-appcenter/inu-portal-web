@@ -1,8 +1,6 @@
-import React, {useEffect, useState /*useState*/} from "react";
-import {useLocation} from "react-router-dom";
+import {useState /*useState*/} from "react";
 import styled from "styled-components";
 
-import {ThemeProvider} from "styled-components";
 import {broadcasting, tents, athleticGoods, elses} from "./DB.tsx";
 
 
@@ -17,7 +15,6 @@ const TabButton = ({text, isSelected, onClick}: { text: string, isSelected: bool
 
 
 export default function RentalPage() {
-    const location = useLocation();
     const [selectedTab, setSelectedTab] = useState<string>("학교");
 
     const handleTabClick = (tab: string) => {
@@ -91,7 +88,7 @@ const TabWrapper = styled.div`
     flex-direction: row;
     gap: 10px;
     padding-top: 15px;
-    
+
 `;
 
 

@@ -1,10 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Place, places, restPlaces} from "../DB";
+import {places} from "../DB";
 import {zoomIn, zoomOut, displayLevel, setMapType} from "../utils/mapUtils";
 import {placesMarkDB} from "../utils/markerUtils";
-import FilterPanel from "./FilterPanel";
-import SearchBar from "./SearchBar";
-import MapControls from "./MapControls";
 import {imageSources} from "../constants/markerImages.ts";
 import "./kakaomap.css";
 import PlaceListPanel from "./PlaceListPanel.tsx";
@@ -12,7 +9,7 @@ import PlaceListPanel from "./PlaceListPanel.tsx";
 const KakaoMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const [map, setMap] = useState<any>(null);
-    const [level, setLevel] = useState<number>(3);
+    const [setLevel] = useState<number>(3);
 
     useEffect(() => {
         if (window.kakao && mapContainer.current) {
