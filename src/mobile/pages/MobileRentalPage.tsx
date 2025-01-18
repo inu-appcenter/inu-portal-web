@@ -8,9 +8,9 @@ import ViewModeButtons from "mobile/components/tips/ViewModeButtons";
 import SerachForm from "mobile/containers/home/SerachForm";
 // import { useResetTipsStore } from "reducer/resetTipsStore";
 
-import Map from "components/map/components/KakaoMap.tsx";
+import Rental from "../../../src/components/rental/Rental.tsx";
 
-export default function MobileMapPage() {
+export default function MobileTipsPage() {
     const location = useLocation();
     const [viewMode, setViewMode] = useState<"grid" | "list">("list");
     // const resetKey = useResetTipsStore((state) => state.resetKey); // 전역 상태에서 resetKey 구독
@@ -35,7 +35,7 @@ export default function MobileMapPage() {
                 </ViewModeButtonCategorySelectorWrapper>
             </TitleCategorySelectorWrapper>
             <Wrapper>
-                <Map/>
+                <Rental/>
             </Wrapper>
         </MobileTipsPageWrapper>
     );

@@ -5,18 +5,18 @@ import useUserStore from "stores/useUserStore";
 
 export default function PostsTitle() {
     const {userInfo} = useUserStore();
-    const [type, setType] = useState("Campus Map");
-    const [category, setCategory] = useState("캠퍼스맵");
+    const [type, setType] = useState("Rental");
+    const [category, setCategory] = useState("물품 대여");
 
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        setType(params.get("type") ? "NOTICE" : "Campus Map");
-        if (params.get("search")) {
-            setCategory("검색결과");
-        } else {
-            setCategory(params.get("category") || "캠퍼스맵");
-        }
-    }, [location.search]);
+    // useEffect(() => {
+    //     // const params = new URLSearchParams(location.search);
+    //     // setType(params.get("type") ? "NOTICE" : "Campus Map");
+    //     // if (params.get("search")) {
+    //     //     setCategory("검색결과");
+    //     // } else {
+    //     //     setCategory(params.get("category") || "캠퍼스맵");
+    //     // }
+    // }, [location.search]);
 
     return (
         <TipsTitleWrapper>
@@ -25,7 +25,7 @@ export default function PostsTitle() {
                 <span className="color">{type}</span>
             </TipsTitleText>
             <div>
-                {(type != "NOTICE" && type != "CampusMap") && <SearchBar/>}
+                {/*{(type != "NOTICE" && type != "CampusMap") && <SearchBar/>}*/}
                 {userInfo.id != 0 && (
                     <div className="userInfo">
                         <span>{userInfo.nickname}</span>
