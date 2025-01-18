@@ -72,13 +72,13 @@ const PlacesListWrapper = styled.div`
     width: 100%;
     height: fit-content;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* 화면 크기에 따라 150px 이상의 칸을 자동으로 채움 */
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     margin-top: 20px;
     gap: 15px;
 `
 
 const PlaceWrapper = styled.div`
-    width: 136px;
+    width: 120px;
     height: 35px;
     left: 304px;
     top: 741px;
