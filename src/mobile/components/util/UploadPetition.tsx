@@ -4,7 +4,7 @@ import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 
-export default function UploadBook({
+export default function UploadPetition({
   onPetitionUpload,
   initialData,
   isOpen,
@@ -39,10 +39,10 @@ export default function UploadBook({
     }
   };
 
-  // 책 등록 핸들러
-  const handlePostBooks = async () => {
-    if (!title || !content || selectedImages.length < 1) {
-      alert("모든 필드를 입력하고 이미지를 선택하세요.");
+  // 청원 등록 핸들러
+  const handlePostPetitions = async () => {
+    if (!title || !content) {
+      alert("모든 필드를 입력해주세요.");
       return;
     }
 
@@ -55,17 +55,17 @@ export default function UploadBook({
           isPrivate,
           selectedImages
         );
-        alert("책이 수정되었습니다!");
+        alert("청원이 수정되었습니다!");
       } else {
         await postPetitions(title, content, isPrivate, selectedImages);
-        alert("책이 등록되었습니다!");
+        alert("청원이 등록되었습니다!");
       }
       resetForm();
       onPetitionUpload();
       onClose(); // 닫기
     } catch (error) {
       console.error("Error posting book:", error);
-      alert("책 등록 중 오류가 발생했습니다.");
+      alert("청원 등록 중 오류가 발생했습니다.");
     }
   };
 
@@ -88,7 +88,7 @@ export default function UploadBook({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="책 제목을 입력하세요"
+              placeholder="청원 제목을 입력하세요"
             />
           </InputWrapper>
           <InputWrapper>
@@ -129,7 +129,7 @@ export default function UploadBook({
             </ImagePreview>
           </FileInputWrapper>
           <ButtonWrapper>
-            <button onClick={handlePostBooks}>
+            <button onClick={handlePostPetitions}>
               {initialData ? "수정 완료" : "등록 완료"}
             </button>{" "}
             <button onClick={onClose}>닫기</button>
