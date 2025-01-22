@@ -1,10 +1,10 @@
-import { postBooks, putBooks } from "apis/books";
+import { postPetitions, putPetitions } from "apis/petitions";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 
-export default function UploadBook({
+export default function UploadPetition({
   onUploaded,
   initialData,
   isOpen,
@@ -15,19 +15,19 @@ export default function UploadBook({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const [name, setName] = useState(initialData?.name || "");
-  const [author, setAuthor] = useState(initialData?.author || "");
+  const [title, setTitle] = useState(initialData?.title || "");
   const [content, setContent] = useState(initialData?.content || "");
-  const [price, setPrice] = useState<number | "">(initialData?.price || "");
+  const [isPrivate, setIsPrivate] = useState<boolean>(
+    initialData?.isPrivate || false
+  );
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   useEffect(() => {
     // 초기 데이터를 변경 시 필드 업데이트
     if (initialData) {
-      setName(initialData.name);
-      setAuthor(initialData.author);
+      setTitle(initialData.title);
       setContent(initialData.content);
-      setPrice(initialData.price || "");
+      setIsPrivate(initialData.price || false);
     }
   }, [initialData]);
 
@@ -39,43 +39,41 @@ export default function UploadBook({
     }
   };
 
-  // 등록 핸들러
+  // 청원 등록 핸들러
   const handlePost = async () => {
-    if (!name || !author || !content || !price || selectedImages.length < 1) {
-      alert("모든 필드를 입력하고 이미지를 선택하세요.");
+    if (!title || !content) {
+      alert("모든 필드를 입력해주세요.");
       return;
     }
 
     try {
       if (initialData) {
-        await putBooks(
+        await putPetitions(
           initialData.id,
-          name,
-          author,
+          title,
           content,
-          Number(price),
+          isPrivate,
           selectedImages
         );
-        alert("책이 수정되었습니다!");
+        alert("청원이 수정되었습니다!");
       } else {
-        await postBooks(name, author, content, Number(price), selectedImages);
-        alert("책이 등록되었습니다!");
+        await postPetitions(title, content, isPrivate, selectedImages);
+        alert("청원이 등록되었습니다!");
       }
       resetForm();
       onUploaded();
-      onClose();
+      onClose(); // 닫기
     } catch (error) {
       console.error("Error posting book:", error);
-      alert("책 등록 중 오류가 발생했습니다.");
+      alert("청원 등록 중 오류가 발생했습니다.");
     }
   };
 
   // 입력 필드 초기화
   const resetForm = () => {
-    setName("");
-    setAuthor("");
+    setTitle("");
     setContent("");
-    setPrice("");
+    setIsPrivate(false);
     setSelectedImages([]);
   };
 
@@ -83,23 +81,14 @@ export default function UploadBook({
     isOpen && (
       <BottomSheet open={isOpen} onDismiss={onClose}>
         <FormWrapper>
-          <h2>{initialData ? "책 수정" : "책 등록"}</h2>
+          <h2>{initialData ? "청원 수정" : "청원 등록"}</h2>
           <InputWrapper>
-            <label>책 제목</label>
+            <label>제목</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="책 제목을 입력하세요"
-            />
-          </InputWrapper>
-          <InputWrapper>
-            <label>저자</label>
-            <input
-              type="text"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="저자를 입력하세요"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="청원 제목을 입력하세요"
             />
           </InputWrapper>
           <InputWrapper>
@@ -110,17 +99,16 @@ export default function UploadBook({
               placeholder="내용을 입력하세요"
             ></textarea>
           </InputWrapper>
-          <InputWrapper>
-            <label>가격</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) =>
-                setPrice(e.target.value ? Number(e.target.value) : "")
-              }
-              placeholder="가격을 입력하세요"
-            />
-          </InputWrapper>
+          <CheckboxWrapper>
+            <label>
+              <input
+                type="checkbox"
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+              />
+              익명 여부
+            </label>
+          </CheckboxWrapper>
           <FileInputWrapper>
             <label htmlFor="imageInput">이미지 선택</label>
             <input
@@ -190,6 +178,25 @@ const FileInputWrapper = styled.div`
 
   input[type="file"] {
     margin-top: 8px;
+  }
+`;
+
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  label {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    gap: 4px;
+  }
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
   }
 `;
 
