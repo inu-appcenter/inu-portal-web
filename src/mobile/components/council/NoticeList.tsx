@@ -63,6 +63,7 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
                 <h3>{notice.title}</h3>
               </div>
               <div>{notice.createDate}</div>
+              <div>조회수: {notice.view}</div>
             </BookCard>
           ))}
         </InfiniteScroll>
