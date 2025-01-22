@@ -245,7 +245,12 @@ export default function WriteForm({ type, category, setCategory }: Props) {
     } else if (type === "councilNotice") {
       if (postId) {
         try {
-          const response = await putCouncilNotices(postId, title, content);
+          const response = await putCouncilNotices(
+            postId,
+            title,
+            content,
+            images
+          );
           if (images.length > 0) {
             await putCouncilNoticesImages(response.data, images);
           } else {
@@ -280,7 +285,7 @@ export default function WriteForm({ type, category, setCategory }: Props) {
         }
       } else {
         try {
-          const response = await postCouncilNotices(title, content);
+          const response = await postCouncilNotices(title, content, images);
           if (images.length > 0) {
             await postCouncilNoticesImages(response.data, images);
           }
