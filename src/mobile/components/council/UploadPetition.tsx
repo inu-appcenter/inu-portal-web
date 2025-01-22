@@ -142,6 +142,7 @@ export default function UploadPetition({
 
 const FormWrapper = styled.div`
   padding: 16px;
+  margin-bottom: 80px;
   display: flex;
   flex-direction: column;
   gap: 16px;
