@@ -9,6 +9,7 @@ interface Props {
 const buttons = [
   { type: "notice", label: "총학생회 공지" },
   { type: "petition", label: "총학생회 청원" },
+  { type: "HelloBus", label: "헬로버스" },
 ];
 
 export default function MobileCouncilHeader({ selectedType }: Props) {

@@ -7,6 +7,7 @@ import UploadPetition from "mobile/components/council/UploadPetition";
 import PetitionList from "mobile/components/council/PetitionList";
 import { useState } from "react";
 import useUserStore from "stores/useUserStore";
+import HelloBus from "mobile/components/council/HelloBus";
 
 export default function MobileCouncilPage() {
   const { userInfo } = useUserStore();
@@ -61,6 +62,11 @@ export default function MobileCouncilPage() {
             onUploaded={handlePatitionUploaded}
           />
           <PetitionList reloadKey={reloadKey} />
+        </>
+      )}
+      {type === "HelloBus" && (
+        <>
+          <HelloBus />
         </>
       )}
     </MobileCouncilPageWrapper>
