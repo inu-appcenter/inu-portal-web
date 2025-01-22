@@ -3,33 +3,19 @@ import TitleContentInput from "mobile/components/write/TitleContentInput";
 import PhotoUpload from "mobile/components/write/PhotoUpload";
 import AnonymousCheck from "mobile/components/write/AnonymousCheck";
 import { useEffect, useState } from "react";
-import {
-  getPostDetail,
-  postImages,
-  postPost,
-  putImages,
-  putPost,
-} from "apis/posts";
+import { getPostDetail, postPost, putPost } from "apis/posts";
 import { useBeforeUnload, useNavigate } from "react-router-dom";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import { useResetWriteStore } from "reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
 import useAppStateStore from "stores/useAppStateStore";
-import {
-  getCouncilNotices,
-  postCouncilNotices,
-  postCouncilNoticesImages,
-  putCouncilNotices,
-  putCouncilNoticesImages,
-} from "apis/councilNotices";
 
 interface Props {
-  type: string;
   category: string;
   setCategory: (value: string) => void;
 }
 
-export default function WriteForm({ type, category, setCategory }: Props) {
+export default function WriteForm({ category, setCategory }: Props) {
   const navigate = useNavigate();
   const [postId, setPostId] = useState<number>(0);
   const [title, setTitle] = useState<string>("");
@@ -45,18 +31,14 @@ export default function WriteForm({ type, category, setCategory }: Props) {
   useEffect(() => {
     if (location.pathname.includes("/write")) {
       const params = new URLSearchParams(location.search);
-      if (params.get("type") === "") {
-        setPostId(Number(params.get("id")) || 0);
-      } else if (params.get("type") === "councilNotice") {
-        setPostId(Number(params.get("councilNoticeId")) || 0);
-      }
+      setPostId(Number(params.get("id")) || 0);
     }
   }, [location.pathname, location.search]);
 
   // 수정 시 기존 내용 가져오기
   const fetchPost = async () => {
     try {
-      if (type === "" && postId) {
+      if (postId) {
         const response = await getPostDetail(postId);
         if (!response.data.hasAuthority) {
           alert("수정 권한이 없습니다.");
@@ -71,26 +53,6 @@ export default function WriteForm({ type, category, setCategory }: Props) {
         for (let imageId = 0; imageId < response.data.imageCount; imageId++) {
           const response = await fetch(
             `https://portal.inuappcenter.kr/api/posts/${postId}/images/${
-              imageId + 1
-            }`
-          );
-          const blob = await response.blob();
-          const file = new File([blob], `image_${imageId}.png`, {
-            type: blob.type,
-          });
-          fetchedImages.push(file);
-        }
-
-        setImages(fetchedImages);
-      } else if (type === "councilNotice" && postId) {
-        const response = await getCouncilNotices(postId);
-        setTitle(response.data.title);
-        setContent(response.data.content);
-
-        const fetchedImages: File[] = [];
-        for (let imageId = 0; imageId < response.data.imageCount; imageId++) {
-          const response = await fetch(
-            `https://portal.inuappcenter.kr/api/councilNotices/${postId}/images/${
               imageId + 1
             }`
           );
@@ -161,159 +123,79 @@ export default function WriteForm({ type, category, setCategory }: Props) {
       alert("제목과 내용을 모두 작성해 주세요.");
       return;
     }
-    if (type === "" && category.trim() === "") {
+    if (category.trim() === "") {
       alert("카테고리를 선택해 주세요.");
       return;
     }
     setLoading(true);
-    if (type === "") {
-      if (postId) {
-        try {
-          const response = await putPost(
-            postId,
-            title,
-            content,
-            category,
-            anonymous
-          );
-          if (images.length > 0) {
-            await putImages(response.data, images);
-          } else {
-            await putImages(response.data, []);
-          }
-          triggerResetTips();
-          triggerResetWrite();
-          navigate(`${isAppUrl}/postdetail?id=${response.data}`);
-        } catch (error) {
-          console.error("게시글 수정 실패", error);
-          // refreshError가 아닌 경우 처리
-          if (
-            axios.isAxiosError(error) &&
-            !(error as AxiosError & { isRefreshError?: boolean })
-              .isRefreshError &&
-            error.response
-          ) {
-            switch (error.response.status) {
-              case 403:
-                alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
-                break;
-              case 404:
-                alert(
-                  "존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다."
-                );
-                break;
-              default:
-                alert("게시글 수정 실패");
-                break;
-            }
-          }
-        }
-      } else {
-        try {
-          const response = await postPost(title, content, category, anonymous);
-          if (images.length > 0) {
-            await postImages(response.data, images);
-          }
-          triggerResetTips();
-          triggerResetWrite();
-          navigate(`${isAppUrl}/postdetail?id=${response.data}`);
-        } catch (error) {
-          console.error("게시글 등록 실패", error);
-          // refreshError가 아닌 경우 처리
-          if (
-            axios.isAxiosError(error) &&
-            !(error as AxiosError & { isRefreshError?: boolean })
-              .isRefreshError &&
-            error.response
-          ) {
-            switch (error.response.status) {
-              case 400:
-                alert(
-                  "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다."
-                );
-                break;
-              case 404:
-                alert("존재하지 않는 회원입니다.");
-                break;
-              default:
-                alert("게시글 등록 실패");
-                break;
-            }
+    if (postId) {
+      try {
+        const response = await putPost(
+          postId,
+          title,
+          content,
+          category,
+          anonymous,
+          images
+        );
+        triggerResetTips();
+        triggerResetWrite();
+        navigate(`${isAppUrl}/postdetail?id=${response.data}`);
+      } catch (error) {
+        console.error("게시글 수정 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 403:
+              alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다.");
+              break;
+            default:
+              alert("게시글 수정 실패");
+              break;
           }
         }
       }
-    } else if (type === "councilNotice") {
-      if (postId) {
-        try {
-          const response = await putCouncilNotices(
-            postId,
-            title,
-            content,
-            images
-          );
-          if (images.length > 0) {
-            await putCouncilNoticesImages(response.data, images);
-          } else {
-            await putCouncilNoticesImages(response.data, []);
-          }
-          triggerResetTips();
-          triggerResetWrite();
-          navigate(`${isAppUrl}/councilnoticedetail?id=${response.data}`);
-        } catch (error) {
-          console.error("총학생회 공지사항 수정 실패", error);
-          // refreshError가 아닌 경우 처리
-          if (
-            axios.isAxiosError(error) &&
-            !(error as AxiosError & { isRefreshError?: boolean })
-              .isRefreshError &&
-            error.response
-          ) {
-            switch (error.response.status) {
-              case 403:
-                alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
-                break;
-              case 404:
-                alert(
-                  "존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다."
-                );
-                break;
-              default:
-                alert("게시글 수정 실패");
-                break;
-            }
-          }
-        }
-      } else {
-        try {
-          const response = await postCouncilNotices(title, content, images);
-          if (images.length > 0) {
-            await postCouncilNoticesImages(response.data, images);
-          }
-          triggerResetTips();
-          triggerResetWrite();
-          navigate(`${isAppUrl}/councilnoticedetail?id=${response.data}`);
-        } catch (error) {
-          console.error("총학생회 공지사항 등록 실패", error);
-          // refreshError가 아닌 경우 처리
-          if (
-            axios.isAxiosError(error) &&
-            !(error as AxiosError & { isRefreshError?: boolean })
-              .isRefreshError &&
-            error.response
-          ) {
-            switch (error.response.status) {
-              case 400:
-                alert(
-                  "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다."
-                );
-                break;
-              case 404:
-                alert("존재하지 않는 회원입니다.");
-                break;
-              default:
-                alert("게시글 등록 실패");
-                break;
-            }
+    } else {
+      try {
+        const response = await postPost(
+          title,
+          content,
+          category,
+          anonymous,
+          images
+        );
+        triggerResetTips();
+        triggerResetWrite();
+        navigate(`${isAppUrl}/postdetail?id=${response.data}`);
+      } catch (error) {
+        console.error("게시글 등록 실패", error);
+        // refreshError가 아닌 경우 처리
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
+          error.response
+        ) {
+          switch (error.response.status) {
+            case 400:
+              alert(
+                "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다."
+              );
+              break;
+            case 404:
+              alert("존재하지 않는 회원입니다.");
+              break;
+            default:
+              alert("게시글 등록 실패");
+              break;
           }
         }
       }
@@ -335,12 +217,10 @@ export default function WriteForm({ type, category, setCategory }: Props) {
         onImageChange={handleImageUpload}
         onImageRemove={handleImageRemove}
       />
-      {type != "councilNotice" && (
-        <AnonymousCheck
-          checked={anonymous}
-          onChange={(checked: boolean) => setAnonymous(checked)}
-        />
-      )}
+      <AnonymousCheck
+        checked={anonymous}
+        onChange={(checked: boolean) => setAnonymous(checked)}
+      />
       <UploadButton $disabled={loading} onClick={handleSubmit}>
         {loading ? "업로드 중..." : "업로드"}
       </UploadButton>

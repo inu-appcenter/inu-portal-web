@@ -56,7 +56,7 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
           {notices.map((notice) => (
             <BookCard key={notice.id} onClick={() => setSelectedId(notice.id)}>
               <img
-                src={`https://portal.inuappcenter.kr/images/councilNotices/thumbnail/${notice.id}`}
+                src={`https://portal.inuappcenter.kr/images/councilNotice/thumbnail/${notice.id}`}
                 alt={notice.title}
               />
               <div>

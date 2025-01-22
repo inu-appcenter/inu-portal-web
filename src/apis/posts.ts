@@ -19,11 +19,32 @@ export const putPost = async (
   title: string,
   content: string,
   category: string,
-  anonymous: boolean
+  anonymous: boolean,
+  images: File[]
 ): Promise<ApiResponse<number>> => {
+  const jsonData = {
+    title,
+    content,
+    category,
+    anonymous,
+  };
+
+  const formData = new FormData();
+
+  const jsonBlob = new Blob([JSON.stringify(jsonData)], {
+    type: "application/json",
+  });
+  formData.append("postDto", jsonBlob);
+  images.forEach((image) => formData.append("images", image));
+
   const response = await tokenInstance.put<ApiResponse<number>>(
     `/api/posts/${postId}`,
-    { title, content, category, anonymous }
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
   return response.data;
 };
@@ -84,59 +105,38 @@ export const getPosts = async (
   return response.data;
 };
 
-// 게시글의 이미지 수정
-export const putImages = async (
-  postId: number,
-  images: File[]
-): Promise<ApiResponse<number>> => {
-  const formData = new FormData();
-  images.forEach((image) => formData.append("images", image));
-
-  const response = await tokenInstance.put<ApiResponse<number>>(
-    `/api/posts/${postId}/images`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return response.data;
-};
-
-// 이미지 등록
-export const postImages = async (
-  postId: number,
-  images: File[]
-): Promise<ApiResponse<number>> => {
-  const formData = new FormData();
-  images.forEach((image) => formData.append("images", image));
-
-  const response = await tokenInstance.post<ApiResponse<number>>(
-    `/api/posts/${postId}/images`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return response.data;
-};
-
 // 게시글 등록
 export const postPost = async (
   title: string,
   content: string,
   category: string,
-  anonymous: boolean
+  anonymous: boolean,
+  images: File[]
 ): Promise<ApiResponse<number>> => {
-  const response = await tokenInstance.post<ApiResponse<number>>(`/api/posts`, {
+  const jsonData = {
     title,
     content,
     category,
     anonymous,
+  };
+
+  const formData = new FormData();
+
+  const jsonBlob = new Blob([JSON.stringify(jsonData)], {
+    type: "application/json",
   });
+  formData.append("postDto", jsonBlob);
+  images.forEach((image) => formData.append("images", image));
+
+  const response = await tokenInstance.post<ApiResponse<number>>(
+    `/api/posts`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 

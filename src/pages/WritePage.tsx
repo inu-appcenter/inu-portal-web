@@ -1,10 +1,4 @@
-import {
-  getPostDetail,
-  postImages,
-  postPost,
-  putImages,
-  putPost,
-} from "apis/posts";
+import { getPostDetail, postPost, putPost } from "apis/posts";
 import axios, { AxiosError } from "axios";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useBeforeUnload, useNavigate } from "react-router-dom";
@@ -144,13 +138,9 @@ export default function WritePage() {
           title,
           content,
           category,
-          anonymous
+          anonymous,
+          images
         );
-        if (images.length > 0) {
-          await putImages(response.data, images);
-        } else {
-          await putImages(response.data, []);
-        }
         navigate(`/posts?id=${response.data}`);
       } catch (error) {
         console.error("게시글 수정 실패", error);
@@ -176,10 +166,14 @@ export default function WritePage() {
       }
     } else {
       try {
-        const response = await postPost(title, content, category, anonymous);
-        if (images.length > 0) {
-          await postImages(response.data, images);
-        }
+        const response = await postPost(
+          title,
+          content,
+          category,
+          anonymous,
+          images
+        );
+
         navigate(`/posts?id=${response.data}`);
       } catch (error) {
         console.error("게시글 등록 실패", error);
