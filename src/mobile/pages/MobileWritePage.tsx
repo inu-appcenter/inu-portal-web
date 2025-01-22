@@ -10,10 +10,8 @@ import CategorySelect from "mobile/components/write/CategorySelect";
 import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileWritePage() {
-  const { tokenInfo, userInfo } = useUserStore();
-  const [type, setType] = useState(""); // "" | "councilNotice"
+  const { tokenInfo } = useUserStore();
   const [id, setId] = useState(0);
-  const [councilNoticeId, setCouncilNoticeId] = useState(-1);
   const [category, setCategory] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,16 +21,10 @@ export default function MobileWritePage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     setId(Number(params.get("id")) || 0);
-    setCouncilNoticeId(Number(params.get("councilNoticeId")) || 0);
-    setType(params.get("type") || "");
   }, [location]);
 
   const handleNewPost = () => {
     navigate(`${isAppUrl}/write`);
-  };
-
-  const handleNewCouncilNotice = () => {
-    navigate(`${isAppUrl}/write?type=councilNotice`);
   };
 
   return (
@@ -40,31 +32,16 @@ export default function MobileWritePage() {
       {tokenInfo.accessToken ? (
         <MobileWritePageWrapper>
           <TitleCategorySelectorWrapper>
-            <WritePageTitle
-              type={type}
-              id={id}
-              councilNoticeId={councilNoticeId}
-            />
-            {(id != 0 || type != "") && (
+            <WritePageTitle id={id} />
+            {id != 0 && (
               <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>
             )}
-            {userInfo.role == "admin" &&
-              (type != "councilNotice" || councilNoticeId != 0) && (
-                <>
-                  <NewPostButton onClick={handleNewCouncilNotice}>
-                    새 총학생회 공지 작성
-                  </NewPostButton>
-                </>
-              )}
-            {type != "councilNotice" && (
-              <CategorySelect category={category} setCategory={setCategory} />
-            )}
+            <CategorySelect category={category} setCategory={setCategory} />
           </TitleCategorySelectorWrapper>
           <WriteForm
             key={resetKey}
             category={category}
             setCategory={setCategory}
-            type={type}
           />
         </MobileWritePageWrapper>
       ) : (

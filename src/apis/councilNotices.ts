@@ -34,14 +34,28 @@ export const postCouncilNotices = async (
   content: string,
   images: File[]
 ): Promise<ApiResponse<number>> => {
+  const jsonData = {
+    title,
+    content,
+  };
+
+  const formData = new FormData();
+
+  const jsonBlob = new Blob([JSON.stringify(jsonData)], {
+    type: "application/json",
+  });
+  formData.append("councilNoticeRequestDto", jsonBlob);
+  images.forEach((image) => formData.append("images", image));
+
   const response = await tokenInstance.post<ApiResponse<number>>(
     `/api/councilNotices`,
+    formData,
     {
-      title,
-      content,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     }
   );
-  console.log(images);
   return response.data;
 };
 
@@ -52,11 +66,28 @@ export const putCouncilNotices = async (
   content: string,
   images: File[]
 ): Promise<ApiResponse<number>> => {
+  const jsonData = {
+    title,
+    content,
+  };
+
+  const formData = new FormData();
+
+  const jsonBlob = new Blob([JSON.stringify(jsonData)], {
+    type: "application/json",
+  });
+  formData.append("councilNoticeRequestDto", jsonBlob);
+  images.forEach((image) => formData.append("images", image));
+
   const response = await tokenInstance.put<ApiResponse<number>>(
     `/api/councilNotices/${councilNoticeId}`,
-    { title, content }
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
-  console.log(images);
   return response.data;
 };
 
@@ -66,46 +97,6 @@ export const deleteCouncilNotices = async (
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.delete<ApiResponse<number>>(
     `/api/councilNotices/${councilNoticeId}`
-  );
-  return response.data;
-};
-
-// 총학생회 공지사항 이미지 등록
-export const postCouncilNoticesImages = async (
-  councilNoticeId: number,
-  images: File[]
-): Promise<ApiResponse<number>> => {
-  const formData = new FormData();
-  images.forEach((image) => formData.append("images", image));
-
-  const response = await tokenInstance.post<ApiResponse<number>>(
-    `/api/councilNotices/${councilNoticeId}/images`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return response.data;
-};
-
-// 총학생회 공지사항 이미지 수정
-export const putCouncilNoticesImages = async (
-  councilNoticeId: number,
-  images: File[]
-): Promise<ApiResponse<number>> => {
-  const formData = new FormData();
-  images.forEach((image) => formData.append("images", image));
-
-  const response = await tokenInstance.put<ApiResponse<number>>(
-    `/api/councilNotices/${councilNoticeId}/images`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
   );
   return response.data;
 };
