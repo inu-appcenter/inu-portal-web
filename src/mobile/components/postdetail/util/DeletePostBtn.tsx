@@ -60,7 +60,7 @@ export default function DeletePostBtn({
 // Styled Component
 const DeleteBtn = styled.div`
   align-items: center;
-  width: 76px;
+  width: 84px;
   height: 30px;
   border-radius: 10px;
   background: #eff2f9;

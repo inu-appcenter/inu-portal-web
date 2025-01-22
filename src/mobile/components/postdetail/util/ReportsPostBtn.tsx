@@ -44,7 +44,7 @@ export default function EditPostBtn({ id }: ReportsPostBtnProps) {
   return (
     <>
       <ReportsBtn onClick={() => setShowDropdown((prev) => !prev)}>
-        신고하기
+        신고 및 차단
       </ReportsBtn>
       {showDropdown && (
         <>
@@ -56,6 +56,9 @@ export default function EditPostBtn({ id }: ReportsPostBtnProps) {
             <span className="desc">
               신고 접수 시 관리자의 검토 후, 해당 사용자는 서비스 이용이 제한될
               수 있습니다.
+            </span>
+            <span className="desc">
+              신고 대상 게시글은 차단되어 나타나지 않게 됩니다.
             </span>
             <select
               value={selectedReason}
@@ -88,7 +91,7 @@ export default function EditPostBtn({ id }: ReportsPostBtnProps) {
 
 // Styled Component
 const ReportsBtn = styled.span`
-  width: 76px;
+  width: 84px;
   height: 30px;
   border-radius: 10px;
   background: #eff2f9;
