@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { getCategories } from "apis/categories";
 import dropdownIcon from "resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
 import { useLocation, useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function CategorySelector() {
   const location = useLocation();
@@ -11,11 +12,14 @@ export default function CategorySelector() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const { isAppUrl } = useAppStateStore();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (location.pathname === "/m/write") {
+    if (location.pathname === `${isAppUrl}/write`) {
       setType("write");
+    } else if (location.pathname === `${isAppUrl}/home/club`) {
+      setType("club");
     } else if (params.get("type") != type) {
       if (params.get("type") === "notice") {
         setType("notice");
@@ -41,6 +45,16 @@ export default function CategorySelector() {
           setCategories(response.data);
         } else if (type === "notice") {
           setCategories(["전체", "학사", "모집", "학점교류", "교육시험"]);
+        } else if (type === "club") {
+          setCategories([
+            "전체",
+            "교양학술",
+            "문화",
+            "봉사",
+            "종교",
+            "체육",
+            "취미·전시",
+          ]);
         }
       } catch (error) {
         console.error("모든 카테고리 가져오기 실패", error);

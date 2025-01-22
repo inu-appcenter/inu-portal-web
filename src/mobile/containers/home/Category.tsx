@@ -24,6 +24,8 @@ export default function CategoryForm() {
   const handleClick = (title: string) => {
     if (title === "notice") {
       navigate(`${isAppUrl}/home/tips?type=notice`);
+    } else if (title === "동아리") {
+      navigate(`${isAppUrl}/home/club`);
     } else if (title === "총학생회") {
       navigate(`${isAppUrl}/home/council`);
     } else if (title === "복지") {
