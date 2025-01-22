@@ -98,7 +98,7 @@ export const getPosts = async (
   if (category !== "전체") {
     params.category = category;
   }
-  const response = await axiosInstance.get<ApiResponse<Pagination<Post[]>>>(
+  const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
     "/api/posts",
     { params }
   );
@@ -162,7 +162,7 @@ export const getPostsMobile = async (
   if (typeof lastPostId === "number") {
     params.lastPostId = lastPostId;
   }
-  const response = await axiosInstance.get<ApiResponse<Post[]>>(
+  const response = await tokenInstance.get<ApiResponse<Post[]>>(
     "/api/posts/mobile",
     { params }
   );
