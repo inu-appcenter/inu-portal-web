@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosInstance";
+// import axiosInstance from "./axiosInstance";
 import { ApiResponse, Pagination } from "types/common";
 import tokenInstance from "./tokenInstance";
 import { Petition, PetitionSummary } from "types/petitions";
@@ -10,7 +10,7 @@ export const getPetitionsList = async (
   const params: { [key: string]: string | number } = {
     page,
   };
-  const response = await axiosInstance.get<
+  const response = await tokenInstance.get<
     ApiResponse<Pagination<PetitionSummary[]>>
   >("/api/petitions", { params });
   return response.data;

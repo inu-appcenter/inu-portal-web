@@ -59,10 +59,12 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
               key={petition.id}
               onClick={() => setSelectedId(petition.id)}
             >
-              <img
-                src={`https://portal.inuappcenter.kr/images/petition/thumbnail/${petition.id}`}
-                alt={petition.title}
-              />
+              {petition.title !== "비밀청원입니다." && (
+                <img
+                  src={`https://portal.inuappcenter.kr/images/petition/thumbnail/${petition.id}`}
+                  alt={petition.title}
+                />
+              )}
               <div>
                 <h3>{petition.title}</h3>
                 <p>{petition.writer}</p>
