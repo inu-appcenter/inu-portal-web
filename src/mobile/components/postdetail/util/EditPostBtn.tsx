@@ -18,7 +18,7 @@ export default function EditPostBtn({ id }: EditPostBtnProps) {
 
 // Styled Component
 const EditBtn = styled.span`
-  width: 76px;
+  width: 84px;
   height: 30px;
   border-radius: 10px;
   background: #eff2f9;

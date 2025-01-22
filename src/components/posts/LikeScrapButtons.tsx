@@ -142,6 +142,9 @@ export default function LikeScrapButtons({
             신고 접수 시 관리자의 검토 후, 해당 사용자는 서비스 이용이 제한될 수
             있습니다.
           </span>
+          <span className="desc">
+            신고 대상 게시글은 차단되어 나타나지 않게 됩니다.
+          </span>
           <select
             value={selectedReason}
             onChange={(e) => setSelectedReason(e.target.value)}

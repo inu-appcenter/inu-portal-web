@@ -110,7 +110,7 @@ const DelOrModifyWrapper = styled.div``;
 const Popup = styled.div`
   position: absolute;
   top: 10%;
-  right: 0;
+  right: 12px;
   background-color: #fff;
   border: 1px solid #ccc;
   padding: 10px;
