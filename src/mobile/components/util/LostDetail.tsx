@@ -75,12 +75,11 @@ export default function LostDetail({ lostId, onClose }: LostDetailProps) {
       <DetailWrapper>
         <h2>{lost.name}</h2>
         <p>내용: {lost.content}</p>
+        <ButtonWrapper>
+          <button onClick={() => setIsEditOpen(true)}>수정</button>
+          <button onClick={handleDelete}>삭제</button>
+        </ButtonWrapper>
       </DetailWrapper>
-
-      <ButtonWrapper>
-        <button onClick={() => setIsEditOpen(true)}>수정</button>
-        <button onClick={handleDelete}>삭제</button>
-      </ButtonWrapper>
 
       <UploadLost
         isOpen={isEditOpen}
@@ -94,6 +93,7 @@ export default function LostDetail({ lostId, onClose }: LostDetailProps) {
 
 const DetailWrapper = styled.div`
   padding: 16px;
+  margin-bottom: 80px;
   display: flex;
   flex-direction: column;
   gap: 16px;

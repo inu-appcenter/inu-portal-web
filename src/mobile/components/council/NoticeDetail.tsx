@@ -6,6 +6,7 @@ import { getCouncilNotices, deleteCouncilNotices } from "apis/councilNotices";
 import UploadNotice from "./UploadNotice";
 import { CouncilNotice } from "types/councilNotices";
 import axios, { AxiosError } from "axios";
+import useUserStore from "stores/useUserStore";
 
 interface NoticeDetailProps {
   councilNoticeId: number;
@@ -16,6 +17,7 @@ export default function NoticeDetail({
   councilNoticeId,
   onClose,
 }: NoticeDetailProps) {
+  const { userInfo } = useUserStore();
   const [notice, setNotice] = useState<CouncilNotice>({
     id: -1,
     title: "",
@@ -79,12 +81,13 @@ export default function NoticeDetail({
       <DetailWrapper>
         <h2>{notice.title}</h2>
         <p>내용: {notice.content}</p>
+        {userInfo.role == "admin" && (
+          <ButtonWrapper>
+            <button onClick={() => setIsEditOpen(true)}>수정</button>
+            <button onClick={handleDelete}>삭제</button>
+          </ButtonWrapper>
+        )}
       </DetailWrapper>
-
-      <ButtonWrapper>
-        <button onClick={() => setIsEditOpen(true)}>수정</button>
-        <button onClick={handleDelete}>삭제</button>
-      </ButtonWrapper>
 
       <UploadNotice
         isOpen={isEditOpen}
@@ -98,6 +101,7 @@ export default function NoticeDetail({
 
 const DetailWrapper = styled.div`
   padding: 16px;
+  margin-bottom: 80px;
   display: flex;
   flex-direction: column;
   gap: 16px;
