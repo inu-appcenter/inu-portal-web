@@ -26,6 +26,7 @@ import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
 import MobileRentalPage from "mobile/pages/MobileRentalPage";
+import MobileClubPage from "./MobileClubPage";
 
 const Page = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "flex" : "none")};
@@ -103,6 +104,7 @@ export default function MobileRootPage() {
             !activePage.includes("/m/home/calendar") &&
             !activePage.includes("/m/home/map") &&
             !activePage.includes("/m/home/council") &&
+            !activePage.includes("/m/home/club") &&
             !activePage.includes("/m/home/util")
           }
         >
@@ -128,6 +130,9 @@ export default function MobileRootPage() {
         </Page>
         <Page $active={activePage.includes("/m/home/council")}>
           <MobileCouncilPage />
+        </Page>
+        <Page $active={activePage.includes("/m/home/club")}>
+          <MobileClubPage />
         </Page>
         <Page $active={activePage.includes("/m/home/util")}>
           <MobileUtilPage />
