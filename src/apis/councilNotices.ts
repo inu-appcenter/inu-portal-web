@@ -31,7 +31,8 @@ export const getCouncilNotices = async (
 // 총학생회 공지사항 등록
 export const postCouncilNotices = async (
   title: string,
-  content: string
+  content: string,
+  images: File[]
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.post<ApiResponse<number>>(
     `/api/councilNotices`,
@@ -40,6 +41,7 @@ export const postCouncilNotices = async (
       content,
     }
   );
+  console.log(images);
   return response.data;
 };
 
@@ -47,12 +49,14 @@ export const postCouncilNotices = async (
 export const putCouncilNotices = async (
   councilNoticeId: number,
   title: string,
-  content: string
+  content: string,
+  images: File[]
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.put<ApiResponse<number>>(
     `/api/councilNotices/${councilNoticeId}`,
     { title, content }
   );
+  console.log(images);
   return response.data;
 };
 

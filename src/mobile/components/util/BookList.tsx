@@ -10,28 +10,27 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
   const [books, setBooks] = useState<BookSummary[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // 책 리스트를 가져오는 함수
-  const fetchBooks = async (currentPage: number, reset = false) => {
+  // 리스트를 가져오는 함수
+  const fetchList = async (currentPage: number, reset = false) => {
     try {
       const response = available
         ? await getBoksListAvailable(currentPage)
         : await getBooksList(currentPage);
       const newBooks = response.data.contents;
-      console.log(response);
       setBooks((prevBooks) => (reset ? newBooks : [...prevBooks, ...newBooks]));
       setHasMore(currentPage < response.data.pages);
     } catch (error) {
-      console.error("Error fetching books:", error);
+      console.error("Error fetching:", error);
     }
   };
 
   // 무한 스크롤에서 호출될 함수
-  const loadMoreBooks = () => {
+  const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchBooks(nextPage);
+    fetchList(nextPage);
   };
 
   // 필터 변경 시 동작
@@ -43,18 +42,15 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
 
   // 초기 데이터 로드
   useEffect(() => {
-    fetchBooks(1, true);
+    fetchList(1, true);
   }, [available, reloadKey]);
 
   return (
     <>
-      {selectedBookId && (
-        <BookDetail
-          bookId={selectedBookId}
-          onClose={() => setSelectedBookId(null)}
-        />
+      {selectedId && (
+        <BookDetail bookId={selectedId} onClose={() => setSelectedId(null)} />
       )}
-      <BookListWrapper>
+      <ListWrapper>
         <FilterButtons>
           <button
             className={available ? "selected" : ""}
@@ -66,13 +62,13 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
 
         <InfiniteScroll
           dataLength={books.length}
-          next={loadMoreBooks}
+          next={loadMore}
           hasMore={hasMore}
           loader={<p>Loading...</p>}
           endMessage={<p>모든 책을 불러왔습니다.</p>}
         >
           {books.map((book) => (
-            <BookCard key={book.id} onClick={() => setSelectedBookId(book.id)}>
+            <BookCard key={book.id} onClick={() => setSelectedId(book.id)}>
               <img
                 src={`https://portal.inuappcenter.kr/images/book/thumbnail/${book.id}`}
                 alt={book.name}
@@ -85,12 +81,12 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
             </BookCard>
           ))}
         </InfiniteScroll>
-      </BookListWrapper>
+      </ListWrapper>
     </>
   );
 }
 
-const BookListWrapper = styled.div`
+const ListWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;

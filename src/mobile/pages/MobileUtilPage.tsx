@@ -3,8 +3,8 @@ import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import UploadBook from "mobile/components/util/UploadBook";
 import BookList from "mobile/components/util/BookList";
-import UploadPetition from "mobile/components/util/UploadPetition";
-import PetitionList from "mobile/components/util/PetitionList";
+import UploadLost from "mobile/components/util/UploadLost";
+import LostList from "mobile/components/util/LostList";
 import { useState } from "react";
 import useUserStore from "stores/useUserStore";
 
@@ -16,16 +16,16 @@ export default function MobileUtilPage() {
 
   const [reloadKey, setReloadKey] = useState(0);
   const [isBookUploadOpen, setIsBookUploadOpen] = useState(false);
-  const [isPetitionUploadOpen, setIsPetitionUploadOpen] = useState(false);
+  const [isLostUploadOpen, setIsLostUploadOpen] = useState(false);
 
   const handleBookUploaded = () => {
     setReloadKey((prevKey) => prevKey + 1);
     setIsBookUploadOpen(false);
   };
 
-  const handlePatitionUploaded = () => {
+  const handleLostUploaded = () => {
     setReloadKey((prevKey) => prevKey + 1);
-    setIsPetitionUploadOpen(false);
+    setIsLostUploadOpen(false);
   };
 
   return (
@@ -47,24 +47,22 @@ export default function MobileUtilPage() {
             onClose={() => {
               setIsBookUploadOpen(false);
             }}
-            onBookUploaded={handleBookUploaded}
+            onUploaded={handleBookUploaded}
           />
           <BookList reloadKey={reloadKey} />
         </>
       )}
-      {type === "petition" && (
+      {type === "lost" && (
         <>
-          <button onClick={() => setIsPetitionUploadOpen(true)}>
-            청원 등록
-          </button>
-          <UploadPetition
-            isOpen={isPetitionUploadOpen}
+          <button onClick={() => setIsLostUploadOpen(true)}>분실물 등록</button>
+          <UploadLost
+            isOpen={isLostUploadOpen}
             onClose={() => {
-              setIsPetitionUploadOpen(false);
+              setIsLostUploadOpen(false);
             }}
-            onPetitionUpload={handlePatitionUploaded}
+            onUploaded={handleLostUploaded}
           />
-          <PetitionList reloadKey={reloadKey} />
+          <LostList reloadKey={reloadKey} />
         </>
       )}
     </MobileUtilPageWrapper>

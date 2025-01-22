@@ -7,30 +7,30 @@ interface Props {
 }
 
 const buttons = [
-  { type: "book", label: "책 벼룩시장" },
-  { type: "lost", label: "분실물" },
+  { type: "notice", label: "총학생회 공지" },
+  { type: "petition", label: "총학생회 청원" },
 ];
 
-export default function MobileUtilHeader({ selectedType }: Props) {
+export default function MobileCouncilHeader({ selectedType }: Props) {
   const navigate = useNavigate();
   const { isAppUrl } = useAppStateStore();
 
   return (
-    <MobileUtilHeaderWrapper>
+    <MobileCouncilHeaderWrapper>
       {buttons.map((btn) => (
         <button
           key={btn.type}
-          onClick={() => navigate(`${isAppUrl}/home/util?type=${btn.type}`)}
+          onClick={() => navigate(`${isAppUrl}/home/council?type=${btn.type}`)}
           className={selectedType === btn.type ? "selected" : ""}
         >
           {btn.label}
         </button>
       ))}
-    </MobileUtilHeaderWrapper>
+    </MobileCouncilHeaderWrapper>
   );
 }
 
-const MobileUtilHeaderWrapper = styled.div`
+const MobileCouncilHeaderWrapper = styled.div`
   display: flex;
   align-items: center;
   width: 100%;

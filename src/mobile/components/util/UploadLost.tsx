@@ -1,10 +1,10 @@
-import { postBooks, putBooks } from "apis/books";
+import { postLost, putLost } from "apis/lost";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 
-export default function UploadBook({
+export default function UploadLost({
   onUploaded,
   initialData,
   isOpen,
@@ -16,18 +16,13 @@ export default function UploadBook({
   onClose: () => void;
 }) {
   const [name, setName] = useState(initialData?.name || "");
-  const [author, setAuthor] = useState(initialData?.author || "");
   const [content, setContent] = useState(initialData?.content || "");
-  const [price, setPrice] = useState<number | "">(initialData?.price || "");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   useEffect(() => {
     // 초기 데이터를 변경 시 필드 업데이트
     if (initialData) {
-      setName(initialData.name);
-      setAuthor(initialData.author);
       setContent(initialData.content);
-      setPrice(initialData.price || "");
     }
   }, [initialData]);
 
@@ -41,41 +36,32 @@ export default function UploadBook({
 
   // 등록 핸들러
   const handlePost = async () => {
-    if (!name || !author || !content || !price || selectedImages.length < 1) {
+    if (!name || !content || selectedImages.length < 1) {
       alert("모든 필드를 입력하고 이미지를 선택하세요.");
       return;
     }
 
     try {
       if (initialData) {
-        await putBooks(
-          initialData.id,
-          name,
-          author,
-          content,
-          Number(price),
-          selectedImages
-        );
-        alert("책이 수정되었습니다!");
+        await putLost(initialData.id, name, content, selectedImages);
+        alert("분실물이 수정되었습니다!");
       } else {
-        await postBooks(name, author, content, Number(price), selectedImages);
-        alert("책이 등록되었습니다!");
+        await postLost(name, content, selectedImages);
+        alert("분실물이 등록되었습니다!");
       }
       resetForm();
       onUploaded();
       onClose();
     } catch (error) {
-      console.error("Error posting book:", error);
-      alert("책 등록 중 오류가 발생했습니다.");
+      console.error("Error posting:", error);
+      alert("분실물 등록 중 오류가 발생했습니다.");
     }
   };
 
   // 입력 필드 초기화
   const resetForm = () => {
     setName("");
-    setAuthor("");
     setContent("");
-    setPrice("");
     setSelectedImages([]);
   };
 
@@ -83,23 +69,14 @@ export default function UploadBook({
     isOpen && (
       <BottomSheet open={isOpen} onDismiss={onClose}>
         <FormWrapper>
-          <h2>{initialData ? "책 수정" : "책 등록"}</h2>
+          <h2>{initialData ? "분실물 수정" : "분실물 등록"}</h2>
           <InputWrapper>
-            <label>책 제목</label>
+            <label>이름</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="책 제목을 입력하세요"
-            />
-          </InputWrapper>
-          <InputWrapper>
-            <label>저자</label>
-            <input
-              type="text"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="저자를 입력하세요"
+              placeholder="분실물 이름을 입력하세요"
             />
           </InputWrapper>
           <InputWrapper>
@@ -109,17 +86,6 @@ export default function UploadBook({
               onChange={(e) => setContent(e.target.value)}
               placeholder="내용을 입력하세요"
             ></textarea>
-          </InputWrapper>
-          <InputWrapper>
-            <label>가격</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) =>
-                setPrice(e.target.value ? Number(e.target.value) : "")
-              }
-              placeholder="가격을 입력하세요"
-            />
           </InputWrapper>
           <FileInputWrapper>
             <label htmlFor="imageInput">이미지 선택</label>

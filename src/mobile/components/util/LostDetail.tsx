@@ -2,38 +2,34 @@ import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
-import { getPetitionsDetail, deletePetitions } from "apis/petitions";
-import UploadPetition from "./UploadPetition";
-import { Petition } from "types/petitions";
+import { getLostDetail, deleteLost } from "apis/lost";
+import UploadLost from "./UploadLost";
+import { Lost } from "types/lost";
 import axios, { AxiosError } from "axios";
 
-interface PetitionDetailProps {
-  petitionId: number;
+interface LostDetailProps {
+  lostId: number;
   onClose: () => void;
 }
 
-export default function BookDetail({
-  petitionId,
-  onClose,
-}: PetitionDetailProps) {
-  const [petition, setPetition] = useState<Petition>({
+export default function LostDetail({ lostId, onClose }: LostDetailProps) {
+  const [lost, setLost] = useState<Lost>({
     id: -1,
-    title: "",
+    name: "",
     content: "",
-    writer: "",
     createDate: "",
     imageCount: 0,
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  // 청원 상세 정보 로드
+  // 상세 정보 로드
   useEffect(() => {
-    const fetchPetitionDetail = async () => {
+    const fetchDetail = async () => {
       try {
-        const response = await getPetitionsDetail(petitionId);
-        setPetition(response.data);
+        const response = await getLostDetail(lostId);
+        setLost(response.data);
       } catch (error) {
-        console.error("청원 가져오기실패", error);
+        console.error("분실물 가져오기 실패", error);
         // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
@@ -46,40 +42,39 @@ export default function BookDetail({
               alert("비밀글입니다.");
               break;
             default:
-              alert("청원 가져오기 실패");
+              alert("분실물 가져오기 실패");
               break;
           }
         }
         onClose();
       }
     };
-    fetchPetitionDetail();
-  }, [petitionId]);
+    fetchDetail();
+  }, [lostId]);
 
-  // 청원 삭제
+  // 삭제
   const handleDelete = async () => {
     try {
-      await deletePetitions(petitionId);
-      alert("청원이 삭제되었습니다.");
+      await deleteLost(lostId);
+      alert("분실물이 삭제되었습니다.");
       onClose();
     } catch (error) {
-      console.error("Error deleting book:", error);
+      console.error("Error deleting:", error);
     }
   };
 
-  const handlePetitionUploaded = () => {
+  const handleUploaded = () => {
     setIsEditOpen(false);
     onClose(); // 새로고침
   };
 
-  if (!petition) return <p>Loading...</p>;
+  if (!lost) return <p>Loading...</p>;
 
   return (
     <BottomSheet open={true} onDismiss={onClose}>
       <DetailWrapper>
-        <h2>{petition.title}</h2>
-        <p>작성자: {petition.writer}</p>
-        <p>내용: {petition.content}</p>
+        <h2>{lost.name}</h2>
+        <p>내용: {lost.content}</p>
       </DetailWrapper>
 
       <ButtonWrapper>
@@ -87,11 +82,11 @@ export default function BookDetail({
         <button onClick={handleDelete}>삭제</button>
       </ButtonWrapper>
 
-      <UploadPetition
+      <UploadLost
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        onPetitionUpload={handlePetitionUploaded}
-        initialData={petition}
+        onUploaded={handleUploaded}
+        initialData={lost}
       />
     </BottomSheet>
   );

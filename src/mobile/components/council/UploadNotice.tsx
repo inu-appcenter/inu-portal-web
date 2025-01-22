@@ -1,25 +1,22 @@
-import { postPetitions, putPetitions } from "apis/petitions";
+import { postCouncilNotices, putCouncilNotices } from "apis/councilNotices";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 
-export default function UploadPetition({
-  onPetitionUpload,
+export default function UploadNotice({
+  onUploaded,
   initialData,
   isOpen,
   onClose,
 }: {
-  onPetitionUpload: () => void;
+  onUploaded: () => void;
   initialData?: any;
   isOpen: boolean;
   onClose: () => void;
 }) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [content, setContent] = useState(initialData?.content || "");
-  const [isPrivate, setIsPrivate] = useState<boolean>(
-    initialData?.isPrivate || false
-  );
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   useEffect(() => {
@@ -27,7 +24,6 @@ export default function UploadPetition({
     if (initialData) {
       setTitle(initialData.title);
       setContent(initialData.content);
-      setIsPrivate(initialData.price || false);
     }
   }, [initialData]);
 
@@ -39,33 +35,27 @@ export default function UploadPetition({
     }
   };
 
-  // 청원 등록 핸들러
-  const handlePostPetitions = async () => {
-    if (!title || !content) {
-      alert("모든 필드를 입력해주세요.");
+  // 등록 핸들러
+  const handlePost = async () => {
+    if (!title || !content || selectedImages.length < 1) {
+      alert("모든 필드를 입력하고 이미지를 선택하세요.");
       return;
     }
 
     try {
       if (initialData) {
-        await putPetitions(
-          initialData.id,
-          title,
-          content,
-          isPrivate,
-          selectedImages
-        );
-        alert("청원이 수정되었습니다!");
+        await putCouncilNotices(initialData.id, title, content, selectedImages);
+        alert("총학생회 공지사항이 수정되었습니다!");
       } else {
-        await postPetitions(title, content, isPrivate, selectedImages);
-        alert("청원이 등록되었습니다!");
+        await postCouncilNotices(title, content, selectedImages);
+        alert("총학생회 공지사항이 등록되었습니다!");
       }
       resetForm();
-      onPetitionUpload();
-      onClose(); // 닫기
+      onUploaded();
+      onClose();
     } catch (error) {
-      console.error("Error posting book:", error);
-      alert("청원 등록 중 오류가 발생했습니다.");
+      console.error("Error posting:", error);
+      alert("총학생회 공지사항 등록 중 오류가 발생했습니다.");
     }
   };
 
@@ -73,7 +63,6 @@ export default function UploadPetition({
   const resetForm = () => {
     setTitle("");
     setContent("");
-    setIsPrivate(false);
     setSelectedImages([]);
   };
 
@@ -81,14 +70,16 @@ export default function UploadPetition({
     isOpen && (
       <BottomSheet open={isOpen} onDismiss={onClose}>
         <FormWrapper>
-          <h2>{initialData ? "청원 수정" : "청원 등록"}</h2>
+          <h2>
+            {initialData ? "총학생회 공지사항 수정" : "총학생회 공지사항 등록"}
+          </h2>
           <InputWrapper>
             <label>제목</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="청원 제목을 입력하세요"
+              placeholder="총학생회 공지사항 제목을 입력하세요"
             />
           </InputWrapper>
           <InputWrapper>
@@ -99,16 +90,6 @@ export default function UploadPetition({
               placeholder="내용을 입력하세요"
             ></textarea>
           </InputWrapper>
-          <CheckboxWrapper>
-            <label>
-              <input
-                type="checkbox"
-                checked={isPrivate}
-                onChange={(e) => setIsPrivate(e.target.checked)}
-              />
-              익명 여부
-            </label>
-          </CheckboxWrapper>
           <FileInputWrapper>
             <label htmlFor="imageInput">이미지 선택</label>
             <input
@@ -129,7 +110,7 @@ export default function UploadPetition({
             </ImagePreview>
           </FileInputWrapper>
           <ButtonWrapper>
-            <button onClick={handlePostPetitions}>
+            <button onClick={handlePost}>
               {initialData ? "수정 완료" : "등록 완료"}
             </button>{" "}
             <button onClick={onClose}>닫기</button>
@@ -178,25 +159,6 @@ const FileInputWrapper = styled.div`
 
   input[type="file"] {
     margin-top: 8px;
-  }
-`;
-
-const CheckboxWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  label {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    gap: 4px;
-  }
-
-  input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
   }
 `;
 

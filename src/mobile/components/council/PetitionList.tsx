@@ -5,16 +5,14 @@ import { getPetitionsList } from "apis/petitions";
 import styled from "styled-components";
 import PetitionDetail from "./PetitionDetail";
 
-export default function BookList({ reloadKey }: { reloadKey: number }) {
+export default function PetitionList({ reloadKey }: { reloadKey: number }) {
   const [petitions, setPetitions] = useState<PetitionSummary[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [selectedPetitionId, setSelectedPetitionId] = useState<number | null>(
-    null
-  );
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // 책 리스트를 가져오는 함수
-  const fetchPetitions = async (currentPage: number, reset = false) => {
+  // 리스트를 가져오는 함수
+  const fetchList = async (currentPage: number, reset = false) => {
     try {
       const response = await getPetitionsList(currentPage);
       const newPetitions = response.data.contents;
@@ -24,34 +22,34 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
       );
       setHasMore(currentPage < response.data.pages);
     } catch (error) {
-      console.error("Error fetching books:", error);
+      console.error("Error fetching:", error);
     }
   };
 
   // 무한 스크롤에서 호출될 함수
-  const loadMorePetitions = () => {
+  const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchPetitions(nextPage);
+    fetchList(nextPage);
   };
 
   // 초기 데이터 로드
   useEffect(() => {
-    fetchPetitions(1, true);
+    fetchList(1, true);
   }, [reloadKey]);
 
   return (
     <>
-      {selectedPetitionId && (
+      {selectedId && (
         <PetitionDetail
-          petitionId={selectedPetitionId}
-          onClose={() => setSelectedPetitionId(null)}
+          petitionId={selectedId}
+          onClose={() => setSelectedId(null)}
         />
       )}
-      <BookListWrapper>
+      <ListWrapper>
         <InfiniteScroll
           dataLength={petitions.length}
-          next={loadMorePetitions}
+          next={loadMore}
           hasMore={hasMore}
           loader={<p>Loading...</p>}
           endMessage={<p>모든 청원을 불러왔습니다.</p>}
@@ -59,7 +57,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
           {petitions.map((petition) => (
             <BookCard
               key={petition.id}
-              onClick={() => setSelectedPetitionId(petition.id)}
+              onClick={() => setSelectedId(petition.id)}
             >
               <img
                 src={`https://portal.inuappcenter.kr/images/petition/thumbnail/${petition.id}`}
@@ -73,12 +71,12 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
             </BookCard>
           ))}
         </InfiniteScroll>
-      </BookListWrapper>
+      </ListWrapper>
     </>
   );
 }
 
-const BookListWrapper = styled.div`
+const ListWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;

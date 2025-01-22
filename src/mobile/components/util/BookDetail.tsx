@@ -91,7 +91,7 @@ export default function BookDetail({ bookId, onClose }: BookDetailProps) {
       <UploadBook
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        onBookUploaded={handleBookUploaded}
+        onUploaded={handleBookUploaded}
         initialData={book}
       />
     </BottomSheet>
