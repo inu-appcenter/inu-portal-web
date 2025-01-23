@@ -3,13 +3,15 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { CouncilNotice } from "types/councilNotices";
 import { getCouncilNoticesList } from "apis/councilNotices";
 import styled from "styled-components";
-import NoticeDetail from "./NoticeDetail";
+import { useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function NoticeList({ reloadKey }: { reloadKey: number }) {
   const [notices, setNotices] = useState<CouncilNotice[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   // 리스트를 가져오는 함수
   const fetchList = async (currentPage: number, reset = false) => {
@@ -39,12 +41,6 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
 
   return (
     <>
-      {selectedId && (
-        <NoticeDetail
-          councilNoticeId={selectedId}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
       <ListWrapper>
         <InfiniteScroll
           dataLength={notices.length}
@@ -54,7 +50,12 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
           endMessage={<p>모든 공지사항을 불러왔습니다.</p>}
         >
           {notices.map((notice) => (
-            <BookCard key={notice.id} onClick={() => setSelectedId(notice.id)}>
+            <BookCard
+              key={notice.id}
+              onClick={() =>
+                navigate(`${isAppUrl}/councilnoticedetail?id=${notice.id}`)
+              }
+            >
               <img
                 src={`https://portal.inuappcenter.kr/images/councilNotice/thumbnail/${notice.id}`}
                 alt={notice.title}

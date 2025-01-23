@@ -3,13 +3,15 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { PetitionSummary } from "types/petitions";
 import { getPetitionsList } from "apis/petitions";
 import styled from "styled-components";
-import PetitionDetail from "./PetitionDetail";
+import { useNavigate } from "react-router-dom";
+import useAppStateStore from "stores/useAppStateStore";
 
 export default function PetitionList({ reloadKey }: { reloadKey: number }) {
   const [petitions, setPetitions] = useState<PetitionSummary[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const { isAppUrl } = useAppStateStore();
 
   // 리스트를 가져오는 함수
   const fetchList = async (currentPage: number, reset = false) => {
@@ -40,12 +42,6 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
 
   return (
     <>
-      {selectedId && (
-        <PetitionDetail
-          petitionId={selectedId}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
       <ListWrapper>
         <InfiniteScroll
           dataLength={petitions.length}
@@ -57,7 +53,9 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
           {petitions.map((petition) => (
             <BookCard
               key={petition.id}
-              onClick={() => setSelectedId(petition.id)}
+              onClick={() =>
+                navigate(`${isAppUrl}/petitiondetail?id=${petition.id}`)
+              }
             >
               {petition.title !== "비밀청원입니다." && (
                 <img

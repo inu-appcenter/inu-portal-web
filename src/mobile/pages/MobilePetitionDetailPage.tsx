@@ -1,17 +1,15 @@
 import styled from "styled-components";
 import backbtn from "resources/assets/mobile-common/backbtn.svg";
 import { useEffect, useState } from "react";
-import { deleteCouncilNotices, getCouncilNotices } from "apis/councilNotices";
+import { deletePetitions, getPetitionsDetail } from "apis/petitions";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
-import { CouncilNotice } from "types/councilNotices";
+import { Petition } from "types/petitions";
 import axios, { AxiosError } from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import useUserStore from "stores/useUserStore";
-import UploadNotice from "mobile/components/council/UploadNotice";
+import UploadPetition from "mobile/components/council/UploadPetition";
 
-export default function MobileCouncilDetailPage() {
-  const { userInfo } = useUserStore();
-  const [councilNotice, setCouncilNotice] = useState<CouncilNotice>();
+export default function MobilePetitionDetailPage() {
+  const [petition, setPetition] = useState<Petition>();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -19,10 +17,10 @@ export default function MobileCouncilDetailPage() {
 
   const fetchPost = async (id: number) => {
     try {
-      const response = await getCouncilNotices(id);
-      setCouncilNotice(response.data);
+      const response = await getPetitionsDetail(id);
+      setPetition(response.data);
     } catch (error) {
-      console.error("총학생회 공지사항 가져오기 실패", error);
+      console.error("청원 가져오기 실패", error);
       // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
@@ -32,6 +30,10 @@ export default function MobileCouncilDetailPage() {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
+            navigate(-1);
+            break;
+          case 403:
+            alert("비밀글입니다.");
             navigate(-1);
             break;
           default:
@@ -44,7 +46,7 @@ export default function MobileCouncilDetailPage() {
   };
 
   useEffect(() => {
-    if (location.pathname.includes("/councilnoticedetail")) {
+    if (location.pathname.includes("/petitiondetail")) {
       const params = new URLSearchParams(location.search);
       fetchPost(Number(params.get("id")) || 0);
     }
@@ -56,7 +58,7 @@ export default function MobileCouncilDetailPage() {
 
     try {
       const params = new URLSearchParams(location.search);
-      await deleteCouncilNotices(Number(params.get("id")));
+      await deletePetitions(Number(params.get("id")));
       navigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
@@ -87,7 +89,7 @@ export default function MobileCouncilDetailPage() {
 
   return (
     <>
-      {councilNotice ? (
+      {petition ? (
         <>
           <Wrapper>
             <PostTopWrapper>
@@ -95,7 +97,7 @@ export default function MobileCouncilDetailPage() {
                 <BackBtn onClick={() => navigate(-1)}>
                   <img src={backbtn} alt="뒤로가기 버튼" />
                 </BackBtn>
-                {userInfo.role == "admin" && (
+                {petition.hasAuthority && (
                   <>
                     <Button
                       onClick={() => {
@@ -110,14 +112,14 @@ export default function MobileCouncilDetailPage() {
               </PostUtilWrapper>
             </PostTopWrapper>
             <PostWrapper>
-              <PostContentContainer councilNotice={councilNotice} />
+              <PostContentContainer petition={petition} />
             </PostWrapper>
           </Wrapper>
-          <UploadNotice
+          <UploadPetition
             isOpen={isEditOpen}
             onClose={() => setIsEditOpen(false)}
             onUploaded={handleUploaded}
-            initialData={councilNotice}
+            initialData={petition}
           />
         </>
       ) : (

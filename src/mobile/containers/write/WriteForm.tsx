@@ -52,7 +52,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         const fetchedImages: File[] = [];
         for (let imageId = 0; imageId < response.data.imageCount; imageId++) {
           const response = await fetch(
-            `https://portal.inuappcenter.kr/api/posts/${postId}/images/${
+            `https://portal.inuappcenter.kr/images/post/${postId}-${
               imageId + 1
             }`
           );

@@ -3,15 +3,18 @@ import PostContent from "mobile/components/postdetail/post/postcontent";
 import styled from "styled-components";
 import { PostDetail } from "types/posts";
 import { CouncilNotice } from "types/councilNotices";
+import { Petition } from "types/petitions";
 
 interface PostContentContainerProps {
   post?: PostDetail;
   councilNotice?: CouncilNotice;
+  petition?: Petition;
 }
 
 export default function PostContentContainer({
   post,
   councilNotice,
+  petition,
 }: PostContentContainerProps) {
   return (
     <Wrapper>
@@ -45,6 +48,21 @@ export default function PostContentContainer({
             content={councilNotice.content}
             imageCount={councilNotice.imageCount}
             type="COUNCILNOTICE"
+          />
+        </>
+      )}
+      {petition && (
+        <>
+          <PostTitle
+            id={petition.id}
+            title={petition.title}
+            createDate={petition.createDate}
+          />
+          <PostContent
+            id={petition.id}
+            content={petition.content}
+            imageCount={petition.imageCount}
+            type="PETITION"
           />
         </>
       )}

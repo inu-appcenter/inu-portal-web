@@ -12,6 +12,7 @@ import MobileLoginPage from "mobile/pages/MobileLoginPage";
 import { usePreviousPage } from "hooks/usePreviousPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
 import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
+import MobilePetitionDetailPage from "mobile/pages/MobilePetitionDetailPage";
 import MobileMapPage from "mobile/pages/MobileMapPage";
 import MobileCouncilPage from "mobile/pages/MobileCouncilPage";
 import MobileUtilPage from "mobile/pages/MobileUtilPage";
@@ -89,7 +90,8 @@ export default function MobileRootPage() {
   const isLoginPage = location.pathname === "/m/login";
   const isPostDetailPage =
     location.pathname.includes("/m/postdetail") ||
-    location.pathname.includes("/m/councilnoticedetail");
+    location.pathname.includes("/m/councilnoticedetail") ||
+    location.pathname.includes("/m/petitiondetail");
   return (
     <MobileRootPageWrapper>
       <UpperBackground src={UpperBackgroundImg} />
@@ -139,6 +141,9 @@ export default function MobileRootPage() {
         </Page>
         <Page $active={activePage.includes("/m/councilnoticedetail")}>
           <MobileCouncilNoticeDetailPage />
+        </Page>
+        <Page $active={activePage.includes("/m/petitiondetail")}>
+          <MobilePetitionDetailPage />
         </Page>
         {pagesLoaded.write && (
           <Page $active={activePage.includes("/m/write")}>
