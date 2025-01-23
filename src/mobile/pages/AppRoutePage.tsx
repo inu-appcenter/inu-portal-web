@@ -10,7 +10,9 @@ import MobileWritePage from "mobile/pages/MobileWritePage";
 import MobileLoginPage from "mobile/pages/MobileLoginPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
 import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
+import MobilePetitionDetailPage from "mobile/pages/MobilePetitionDetailPage";
 import MobileMapPage from "mobile/pages/MobileMapPage";
+import MobileCouncilPage from "mobile/pages/MobileCouncilPage";
 import MobileUtilPage from "mobile/pages/MobileUtilPage";
 import MobileMyPage from "mobile/pages/MobileMyPage";
 import MobileProfilePage from "mobile/pages/MobileProfilePage";
@@ -21,6 +23,8 @@ import MobileMyPageLike from "mobile/pages/MobileMyPageLike";
 import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
+import MobileRentalPage from "mobile/pages/MobileRentalPage";
+import MobileClubPage from "./MobileClubPage";
 
 const Page = styled.div`
   display: flex;
@@ -61,6 +65,13 @@ export default function AppRoutePage() {
               path="/councilnoticedetail"
               element={<MobileCouncilNoticeDetailPage />}
             />
+            <Route
+              path="/petitiondetail"
+              element={<MobilePetitionDetailPage />}
+            />
+            <Route path="/home/council" element={<MobileCouncilPage />} />
+            <Route path="/home/club" element={<MobileClubPage />} />
+            <Route path="/rental" element={<MobileRentalPage />} />
             <Route path="/write" element={<MobileWritePage />} />
             <Route path="/save" element={<MobileSavePage />} />
             <Route path="/mypage" element={<MobileMyPage />} />
