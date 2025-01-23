@@ -23,6 +23,7 @@ export default function PetitionDetail({
     writer: "",
     createDate: "",
     imageCount: 0,
+    hasAuthority: false,
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
 

@@ -8,34 +8,33 @@ import writeIcon from "resources/assets/mobile-common/write-gray.svg";
 import writeIconActive from "resources/assets/mobile-common/write-blue.svg";
 import mypageIcon from "resources/assets/mobile-common/mypage-gray.svg";
 import mypageIconActive from "resources/assets/mobile-common/mypage-blue.svg";
+import useAppStateStore from "stores/useAppStateStore";
 
-interface MobileNavProps {
-  previousPages: Record<string, string>;
-}
+export default function MobileNav() {
+  const { isAppUrl } = useAppStateStore();
 
-export default function MobileNav({ previousPages }: MobileNavProps) {
   return (
     <MobileNavWrapper>
       <NavItem
-        to={previousPages.home}
+        to={`${isAppUrl}/home`}
         icon={homeIcon}
         activeIcon={homeIconActive}
         label="Home"
       />
       <NavItem
-        to={previousPages.save}
+        to={`${isAppUrl}/save`}
         icon={saveIcon}
         activeIcon={saveIconActive}
         label="Save"
       />
       <NavItem
-        to={previousPages.write}
+        to={`${isAppUrl}/write`}
         icon={writeIcon}
         activeIcon={writeIconActive}
         label="Write"
       />
       <NavItem
-        to={previousPages.mypage}
+        to={`${isAppUrl}/mypage`}
         icon={mypageIcon}
         activeIcon={mypageIconActive}
         label="Mypage"
