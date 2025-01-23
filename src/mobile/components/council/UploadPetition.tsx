@@ -1,4 +1,5 @@
 import { postPetitions, putPetitions } from "apis/petitions";
+import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
@@ -65,7 +66,24 @@ export default function UploadPetition({
       onClose(); // 닫기
     } catch (error) {
       console.error("Error posting book:", error);
-      alert("청원 등록 중 오류가 발생했습니다.");
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 403:
+            alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+            break;
+          case 404:
+            alert("존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("청원 등록 중 오류가 발생했습니다.");
+            break;
+        }
+      }
     }
   };
 

@@ -5,7 +5,7 @@ interface PostTitleProps {
   id: number;
   title: string;
   createDate: string;
-  view: number;
+  view?: number;
   writer?: string;
 }
 

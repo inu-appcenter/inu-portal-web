@@ -12,4 +12,5 @@ export interface Petition {
   writer: string;
   createDate: string;
   imageCount: number;
+  hasAuthority: boolean;
 }

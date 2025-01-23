@@ -17,32 +17,31 @@ export default function PostContent({
     <>
       <div className="post-contents">
         <div className="contents-img-container">
-          {Array.from({ length: imageCount }, (_, index) => (
-            <ContentImg
-              key={index}
-              src={
-                type === "TIPS"
-                  ? `https://portal.inuappcenter.kr/api/posts/${id}/images/${
-                      index + 1
-                    }`
-                  : `https://portal.inuappcenter.kr/api/councilNotices/${id}/images/${
-                      index + 1
-                    }`
-              }
-              alt={`이미지 ${index + 1}`}
-              onClick={() =>
-                window.open(
-                  type === "TIPS"
-                    ? `https://portal.inuappcenter.kr/api/posts/${id}/images/${
-                        index + 1
-                      }`
-                    : `https://portal.inuappcenter.kr/api/councilNotices/${id}/images/${
-                        index + 1
-                      }`
-                )
-              }
-            />
-          ))}
+          {Array.from({ length: imageCount }, (_, index) => {
+            const imageUrl =
+              type === "TIPS"
+                ? `https://portal.inuappcenter.kr/images/post/${id}-${
+                    index + 1
+                  }`
+                : type === "COUNCILNOTICE"
+                ? `https://portal.inuappcenter.kr/images/councilNotice/${id}-${
+                    index + 1
+                  }`
+                : type === "PETITION"
+                ? `https://portal.inuappcenter.kr/images/petition/${id}-${
+                    index + 1
+                  }`
+                : "";
+
+            return (
+              <ContentImg
+                key={index}
+                src={imageUrl}
+                alt={`이미지 ${index + 1}`}
+                onClick={() => window.open(imageUrl)}
+              />
+            );
+          })}
         </div>
         <div className="contents">{content}</div>
       </div>

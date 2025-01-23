@@ -1,4 +1,5 @@
 import { postCouncilNotices, putCouncilNotices } from "apis/councilNotices";
+import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
@@ -19,12 +20,34 @@ export default function UploadNotice({
   const [content, setContent] = useState(initialData?.content || "");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
-  useEffect(() => {
+  const fetchPost = async () => {
     // 초기 데이터를 변경 시 필드 업데이트
     if (initialData) {
       setTitle(initialData.title);
       setContent(initialData.content);
+      console.log(initialData);
+      if (initialData.imageCount && initialData.id) {
+        const fetchedImages: File[] = [];
+        for (let imageId = 0; imageId < initialData.imageCount; imageId++) {
+          const response = await fetch(
+            `https://portal.inuappcenter.kr/images/councilNotice/${
+              initialData.id
+            }-${imageId + 1}`
+          );
+          const blob = await response.blob();
+          const file = new File([blob], `image_${imageId}.png`, {
+            type: blob.type,
+          });
+          fetchedImages.push(file);
+        }
+
+        setSelectedImages(fetchedImages);
+      }
     }
+  };
+
+  useEffect(() => {
+    fetchPost();
   }, [initialData]);
 
   // 이미지 선택 핸들러
@@ -55,7 +78,24 @@ export default function UploadNotice({
       onClose();
     } catch (error) {
       console.error("Error posting:", error);
-      alert("총학생회 공지사항 등록 중 오류가 발생했습니다.");
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 403:
+            alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+            break;
+          case 404:
+            alert("존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("총학생회 공지사항 등록 중 오류가 발생했습니다.");
+            break;
+        }
+      }
     }
   };
 
