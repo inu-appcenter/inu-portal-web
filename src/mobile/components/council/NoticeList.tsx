@@ -66,9 +66,9 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
               )}
               <div>
                 <h3>{notice.title}</h3>
+                <div>{notice.createDate}</div>
+                <div>조회수: {notice.view}</div>
               </div>
-              <div>{notice.createDate}</div>
-              <div>조회수: {notice.view}</div>
             </BookCard>
           ))}
         </InfiniteScroll>
@@ -92,6 +92,9 @@ const BookCard = styled.div`
   border-radius: 8px;
   background-color: white;
 
+  div {
+    overflow-x: hidden;
+  }
   img {
     width: 50px;
     height: 50px;
