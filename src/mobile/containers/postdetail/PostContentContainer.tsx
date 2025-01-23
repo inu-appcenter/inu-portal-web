@@ -57,6 +57,7 @@ export default function PostContentContainer({
             id={petition.id}
             title={petition.title}
             createDate={petition.createDate}
+            view={petition.view}
           />
           <PostContent
             id={petition.id}

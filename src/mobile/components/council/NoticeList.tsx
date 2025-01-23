@@ -56,10 +56,14 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
                 navigate(`${isAppUrl}/councilnoticedetail?id=${notice.id}`)
               }
             >
-              <img
-                src={`https://portal.inuappcenter.kr/images/councilNotice/thumbnail/${notice.id}`}
-                alt={notice.title}
-              />
+              {notice.imageCount > 0 ? (
+                <img
+                  src={`https://portal.inuappcenter.kr/images/councilNotice/thumbnail/${notice.id}`}
+                  alt={notice.title}
+                />
+              ) : (
+                <span />
+              )}
               <div>
                 <h3>{notice.title}</h3>
               </div>
@@ -104,5 +108,10 @@ const BookCard = styled.div`
     font-size: 14px;
     color: #555;
     margin: 4px 0 0;
+  }
+
+  span {
+    width: 50px;
+    height: 50px;
   }
 `;

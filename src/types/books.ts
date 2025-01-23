@@ -4,6 +4,7 @@ export interface BookSummary {
   author: string;
   thumbnail: string;
   transactionStatus: string;
+  imageCount: number;
 }
 
 export interface Book {

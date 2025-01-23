@@ -69,10 +69,14 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
         >
           {books.map((book) => (
             <BookCard key={book.id} onClick={() => setSelectedId(book.id)}>
-              <img
-                src={`https://portal.inuappcenter.kr/images/book/thumbnail/${book.id}`}
-                alt={book.name}
-              />
+              {book.imageCount > 0 ? (
+                <img
+                  src={`https://portal.inuappcenter.kr/images/book/thumbnail/${book.id}`}
+                  alt={book.name}
+                />
+              ) : (
+                <span />
+              )}
               <div>
                 <h3>{book.name}</h3>
                 <p>{book.author}</p>
@@ -137,5 +141,10 @@ const BookCard = styled.div`
     font-size: 14px;
     color: #555;
     margin: 4px 0 0;
+  }
+
+  span {
+    width: 50px;
+    height: 50px;
   }
 `;
