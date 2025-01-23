@@ -3,6 +3,7 @@ export interface LostSummary {
   name: string;
   content: string;
   createDate: string;
+  imageCount: number;
 }
 
 export interface Lost {

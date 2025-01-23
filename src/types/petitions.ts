@@ -3,6 +3,7 @@ export interface PetitionSummary {
   title: string;
   writer: string;
   createDate: string;
+  imageCount: number;
 }
 
 export interface Petition {
@@ -13,4 +14,5 @@ export interface Petition {
   createDate: string;
   imageCount: number;
   hasAuthority: boolean;
+  view: number;
 }

@@ -57,11 +57,14 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
                 navigate(`${isAppUrl}/petitiondetail?id=${petition.id}`)
               }
             >
-              {petition.title !== "비밀청원입니다." && (
+              {petition.title !== "비밀청원입니다." &&
+              petition.imageCount > 0 ? (
                 <img
                   src={`https://portal.inuappcenter.kr/images/petition/thumbnail/${petition.id}`}
                   alt={petition.title}
                 />
+              ) : (
+                <span />
               )}
               <div>
                 <h3>{petition.title}</h3>
@@ -107,5 +110,10 @@ const BookCard = styled.div`
     font-size: 14px;
     color: #555;
     margin: 4px 0 0;
+  }
+
+  span {
+    width: 50px;
+    height: 50px;
   }
 `;
