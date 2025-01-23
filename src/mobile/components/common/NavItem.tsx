@@ -14,9 +14,7 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
   const isActive = location.pathname.includes(label.toLowerCase());
 
   const handleClick = () => {
-    if (!isActive) {
-      navigate(to);
-    }
+    navigate(to);
   };
 
   return (

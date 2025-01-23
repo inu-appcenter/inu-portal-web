@@ -9,7 +9,6 @@ import MobileTipsPage from "mobile/pages/MobileTipsPage";
 import MobileSavePage from "mobile/pages/MobileSavePage";
 import MobileWritePage from "mobile/pages/MobileWritePage";
 import MobileLoginPage from "mobile/pages/MobileLoginPage";
-import { usePreviousPage } from "hooks/usePreviousPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
 import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
 import MobilePetitionDetailPage from "mobile/pages/MobilePetitionDetailPage";
@@ -55,8 +54,6 @@ export default function MobileRootPage() {
     mypage: false,
     login: false,
   });
-
-  const { previousPages } = usePreviousPage();
 
   useEffect(() => {
     // 세션 스토리지에서 'introShown' 키 확인
@@ -180,9 +177,7 @@ export default function MobileRootPage() {
           </Page>
         )}
       </main>
-      {!isLoginPage && !isPostDetailPage && (
-        <MobileNav previousPages={previousPages} />
-      )}
+      {!isLoginPage && !isPostDetailPage && <MobileNav />}
     </MobileRootPageWrapper>
   );
 }
