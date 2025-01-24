@@ -14,11 +14,7 @@ export default function MobileHeader() {
   const { isAppUrl } = useAppStateStore();
 
   const handleClick = () => {
-    if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
-      window.AndroidBridge.navigateTo("home", "/home");
-    } else {
-      navigate(`${isAppUrl}/home`);
-    }
+    navigate(`${isAppUrl}/home`);
   };
 
   return (
