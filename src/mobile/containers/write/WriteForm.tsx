@@ -140,7 +140,14 @@ export default function WriteForm({ category, setCategory }: Props) {
         );
         triggerResetTips();
         triggerResetWrite();
-        navigate(`${isAppUrl}/postdetail?id=${response.data}`);
+        if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
+          window.AndroidBridge.navigateTo(
+            "home",
+            `${isAppUrl}/postdetail?id=${response.data}`
+          );
+        } else {
+          navigate(`${isAppUrl}/postdetail?id=${response.data}`);
+        }
       } catch (error) {
         console.error("게시글 수정 실패", error);
         // refreshError가 아닌 경우 처리
@@ -174,7 +181,14 @@ export default function WriteForm({ category, setCategory }: Props) {
         );
         triggerResetTips();
         triggerResetWrite();
-        navigate(`${isAppUrl}/postdetail?id=${response.data}`);
+        if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
+          window.AndroidBridge.navigateTo(
+            "home",
+            `${isAppUrl}/postdetail?id=${response.data}`
+          );
+        } else {
+          navigate(`${isAppUrl}/postdetail?id=${response.data}`);
+        }
       } catch (error) {
         console.error("게시글 등록 실패", error);
         // refreshError가 아닌 경우 처리
