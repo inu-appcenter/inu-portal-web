@@ -3,18 +3,22 @@ import menuImg from "resources/assets/mobile-home/menu.svg";
 import noticeImg from "resources/assets/mobile-home/notice.svg";
 import TipImg from "resources/assets/mobile-home/tip.svg";
 import calendarImg from "resources/assets/mobile-home/calendar.svg";
+import councilImg from "resources/assets/mobile-home/council.svg";
+import mapImg from "resources/assets/mobile-home/map.svg";
+import clubImg from "resources/assets/mobile-home/club.svg";
+import utilImg from "resources/assets/mobile-home/util.svg";
 import { useNavigate } from "react-router-dom";
 import useAppStateStore from "stores/useAppStateStore";
 
 const categorys = [
-  { title: "menu", img: menuImg },
-  { title: "notice", img: noticeImg },
-  { title: "tips", img: TipImg },
-  { title: "calendar", img: calendarImg },
-  { title: "총학생회", img: "" },
-  { title: "복지", img: "" },
-  { title: "동아리", img: "" },
-  { title: "유틸", img: "" },
+  { title: "메뉴", img: menuImg },
+  { title: "공지사항", img: noticeImg },
+  { title: "TIPS", img: TipImg },
+  { title: "시간표", img: calendarImg },
+  { title: "총학", img: councilImg },
+  { title: "캠퍼스", img: mapImg },
+  { title: "동아리", img: clubImg },
+  { title: "편의", img: utilImg },
 ];
 
 export default function CategoryForm() {
@@ -22,15 +26,21 @@ export default function CategoryForm() {
   const { isAppUrl } = useAppStateStore();
 
   const handleClick = (title: string) => {
-    if (title === "notice") {
+    if (title === "메뉴") {
+      navigate(`${isAppUrl}/home/menu`);
+    } else if (title === "공지사항") {
       navigate(`${isAppUrl}/home/tips?type=notice`);
+    } else if (title === "TIPS") {
+      navigate(`${isAppUrl}/home/tips`);
+    } else if (title === "시간표") {
+      navigate(`${isAppUrl}/home/calendar`);
+    } else if (title === "총학") {
+      navigate(`${isAppUrl}/home/council`);
     } else if (title === "동아리") {
       navigate(`${isAppUrl}/home/club`);
-    } else if (title === "총학생회") {
-      navigate(`${isAppUrl}/home/council`);
-    } else if (title === "복지") {
+    } else if (title === "캠퍼스") {
       navigate(`${isAppUrl}/home/map`);
-    } else if (title === "유틸") {
+    } else if (title === "편의") {
       navigate(`${isAppUrl}/home/util`);
     } else {
       navigate(`${isAppUrl}/home/${title}`);
