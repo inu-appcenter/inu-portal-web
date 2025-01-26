@@ -54,7 +54,11 @@ export default function MobileUtilPage() {
       )}
       {type === "lost" && (
         <>
-          <button onClick={() => setIsLostUploadOpen(true)}>분실물 등록</button>
+          {userInfo.role == "admin" && (
+            <button onClick={() => setIsLostUploadOpen(true)}>
+              분실물 등록
+            </button>
+          )}
           <UploadLost
             isOpen={isLostUploadOpen}
             onClose={() => {
