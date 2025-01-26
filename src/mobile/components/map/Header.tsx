@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
-    height: 60px;
+    height: 30px;
     border-top-left-radius: 12px;
     border-bottom-right-radius: 12px;
     position: relative;

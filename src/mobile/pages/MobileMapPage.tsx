@@ -20,17 +20,10 @@ export default function MobileMapPage() {
 
     return (
         <MobileTipsPageWrapper>
-            {/*{!(docType === "NOTICE") && <SerachForm/>}*/}
             <TitleCategorySelectorWrapper>
                 <TipsPageTitle value={docType + (query ? ` - ${query}` : "")}/>
-                {/*<ViewModeButtonCategorySelectorWrapper>*/}
-                {/*    {docType !== "SEARCH" && <CategorySelector/>}*/}
-                {/*    <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode}/>*/}
-                {/*</ViewModeButtonCategorySelectorWrapper>*/}
             </TitleCategorySelectorWrapper>
-            <Wrapper>
-                <Map/>
-            </Wrapper>
+            <Map/>
             <BottomSheet/>
         </MobileTipsPageWrapper>
     );
@@ -42,7 +35,8 @@ const MobileTipsPageWrapper = styled.div`
     align-items: center;
     gap: 16px;
     padding: 0 16px 0 16px;
-    width: 100%;
+    width: 100dvw;
+    height: 70dvh;
 `;
 
 const TitleCategorySelectorWrapper = styled.div`
@@ -53,9 +47,3 @@ const TitleCategorySelectorWrapper = styled.div`
     justify-content: space-between;
 `;
 
-
-const Wrapper = styled.div`
-    display: flex;
-    width: 100%;
-    height: 100%;
-`;
