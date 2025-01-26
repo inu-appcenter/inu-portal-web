@@ -1,16 +1,9 @@
 import React, {useState} from "react";
 import styled from "styled-components";
-import {places, restPlaces} from "../DB";
 
+import Tab from "../../../mobile/components/map/Tab.tsx";
+import List from "../../../mobile/components/map/List";
 
-// TabButton을 함수형 컴포넌트로 정의
-const TabButton = ({text, isSelected, onClick}: { text: string, isSelected: boolean, onClick: () => void }) => {
-    return (
-        <TabButtonWrapper isSelected={isSelected} onClick={onClick}>
-            {text}
-        </TabButtonWrapper>
-    );
-};
 
 const PlaceListPanel: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState<string>("학교");
@@ -18,113 +11,23 @@ const PlaceListPanel: React.FC = () => {
     const handleTabClick = (tab: string) => {
         setSelectedTab(tab);
     };
-    const placesToRender = selectedTab === "학교" ? places : selectedTab === "휴게실" ? restPlaces : [];
 
 
     return (
-        <div>
-            <TabWrapper>
-                <TabButton text={"학교"} isSelected={selectedTab === "학교"} onClick={() => handleTabClick("학교")}/>
-                <TabButton text={"휴게실"} isSelected={selectedTab === "휴게실"} onClick={() => handleTabClick("휴게실")}/>
-                <TabButton text={"카페"} isSelected={selectedTab === "카페"} onClick={() => handleTabClick("카페")}/>
-                <TabButton text={"식당"} isSelected={selectedTab === "식당"} onClick={() => handleTabClick("식당")}/>
-            </TabWrapper>
-
-            {/*<PlacesListWrapper>*/}
-            {/*    {placesToRender.map((place, index) => (*/}
-            {/*        <div key={index}>*/}
-            {/*            <PlaceWrapper>{place.location}<br/>{place.place_name}</PlaceWrapper>*/}
-
-            {/*        </div>*/}
-            {/*    ))}*/}
-            {/*</PlacesListWrapper>*/}
-
-            <NewPlacesListWrapper>
-                {placesToRender.map((place, index) => (
-                    <div key={index}>
-                        <NewPlaceWrapper>
-                            <IconBox src="../../../public/mapIcons/LocationIcon.svg"/>
-                            <TitleBox>{place.location}{' '}{place.place_name}</TitleBox>
-                            <OpenIconBox src="../../../public/mapIcons/OpenIcon.svg"/>
-
-                        </NewPlaceWrapper>
-
-                    </div>
-                ))}
-            </NewPlacesListWrapper>
-        </div>
+        <PlaceListPanelWrapper>
+            <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
+            <List selectedTab={selectedTab}/>
+        </PlaceListPanelWrapper>
     );
 };
 export default PlaceListPanel;
 
 
 //styled components
-const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
-    width: fit-content;
-    height: fit-content;
-    padding: 4px 30px;
-    box-sizing: border-box;
-    border-bottom: 3px solid ${({isSelected}) => (isSelected ? "#a9b6e1" : "#B5B5B5")};
-    font-style: normal;
-    font-weight: 600;
-    font-size: 20px;
-    line-height: 19px;
-    text-align: center;
-    color: ${({isSelected}) => (isSelected ? "#B5C8EA" : "#B5B5B5")}; /* 회색 계열로 변경 */
-    cursor: pointer;
-`;
 
-const TabWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    padding-top: 15px;
-`;
-
-
-const NewPlacesListWrapper = styled.div`
+const PlaceListPanelWrapper = styled.div`
     width: 100%;
-    height: calc(100% - 50px);
-    display: flex;
-    flex-direction: column;
-    margin-top: 20px;
+    margin: 20px;
 
-    overflow-y: auto;
-`
 
-const NewPlaceWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 46px;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    border-bottom: 0.5px solid #d6d6d6;
-
-`
-
-const IconBox = styled.img`
-    height: 32px;
-    width: fit-content;
-`
-
-const TitleBox = styled.div`
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 17px;
-    /* identical to box height */
-    letter-spacing: 1px;
-
-    color: #3B566E;
-    flex: 1;
-    padding-left: 15px;
-`
-
-const OpenIconBox = styled.img`
-    height: 11.78px;
-    width: fit-content;
 `
