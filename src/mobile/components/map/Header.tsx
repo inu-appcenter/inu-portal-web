@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
-    height: 24px;
+    height: 60px;
     border-top-left-radius: 12px;
     border-bottom-right-radius: 12px;
     position: relative;
@@ -10,18 +10,19 @@ const Wrapper = styled.div`
 `;
 
 const Handle = styled.div`
-    width: 40px;
-    height: 4px;
+    width: 45.92px;
+    height: 5.74px;
     border-radius: 2px;
     background-color: #DEE2E6;
     margin: auto;
-`
-const Header = () => {
+`;
+
+const Header = ({headerRef}: { headerRef: React.RefObject<HTMLDivElement> }) => {
     return (
-        <Wrapper>
+        <Wrapper ref={headerRef}>
             <Handle/>
         </Wrapper>
-    )
-}
+    );
+};
 
-export default Header
+export default Header;

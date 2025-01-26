@@ -14,10 +14,9 @@ interface BottomSheetMetrics {
 }
 
 export default function useBottomSheet() {
-
     const sheet = useRef<HTMLDivElement>(null);
-
     const content = useRef<HTMLDivElement>(null);
+    const header = useRef<HTMLDivElement>(null); // Header ref 추가
 
     const metrics = useRef<BottomSheetMetrics>({
         touchStart: {
@@ -31,13 +30,9 @@ export default function useBottomSheet() {
         isContentAreaTouched: false
     });
 
-
     useEffect(() => {
-
         const canUserMoveBottomSheet = () => {
             const {touchMove, isContentAreaTouched} = metrics.current;
-
-
             if (!isContentAreaTouched) {
                 return true;
             }
@@ -50,8 +45,7 @@ export default function useBottomSheet() {
                 return content.current!.scrollTop <= 0;
             }
             return false;
-        }
-
+        };
 
         const handleTouchStart = (e: TouchEvent) => {
             const {touchStart} = metrics.current;
@@ -59,9 +53,7 @@ export default function useBottomSheet() {
             touchStart.touchY = e.touches[0].clientY;
         };
 
-
         const handleTouchMove = (e: TouchEvent) => {
-
             const {touchStart, touchMove} = metrics.current;
             const currentTouch = e.touches[0];
 
@@ -70,7 +62,6 @@ export default function useBottomSheet() {
             }
 
             if (touchMove.prevTouchY === 0) {
-                // 맨 처음 앱 시작하고 시작시
                 touchMove.prevTouchY = touchStart.touchY;
             }
 
@@ -83,9 +74,7 @@ export default function useBottomSheet() {
             }
 
             if (canUserMoveBottomSheet()) {
-
                 e.preventDefault();
-
                 const touchOffset = currentTouch.clientY - touchStart.touchY;
                 let nextSheetY = touchStart.sheetY + touchOffset;
 
@@ -97,18 +86,15 @@ export default function useBottomSheet() {
                     nextSheetY = MAX_Y;
                 }
 
-                sheet.current!.style.setProperty('transform', `translateY(${nextSheetY - MAX_Y}px)`);  //바닥 만큼은 빼야쥬...
+                sheet.current!.style.setProperty('transform', `translateY(${nextSheetY - MAX_Y}px)`);
             } else {
                 document.body.style.overflowY = 'hidden';
             }
         };
 
-
         const handleTouchEnd = () => {
             document.body.style.overflowY = 'auto';
             const {touchMove} = metrics.current;
-
-            // Snap Animation
             const currentSheetY = sheet.current!.getBoundingClientRect().y;
 
             if (currentSheetY !== MIN_Y) {
@@ -121,34 +107,30 @@ export default function useBottomSheet() {
                 }
             }
 
-            // metrics 초기화.
             metrics.current = {
-                touchStart: {
-                    sheetY: 0,
-                    touchY: 0,
-                },
-                touchMove: {
-                    prevTouchY: 0,
-                    movingDirection: "none",
-                },
+                touchStart: {sheetY: 0, touchY: 0},
+                touchMove: {prevTouchY: 0, movingDirection: "none"},
                 isContentAreaTouched: false
             };
+        };
+
+        // Header 부분에만 이벤트 리스너를 추가합니다.
+        if (header.current) {
+            header.current.addEventListener('touchstart', handleTouchStart);
+            header.current.addEventListener('touchmove', handleTouchMove);
+            header.current.addEventListener('touchend', handleTouchEnd);
         }
 
-        sheet.current!.addEventListener('touchstart', handleTouchStart);
-        sheet.current!.addEventListener('touchmove', handleTouchMove);
-        sheet.current!.addEventListener('touchend', handleTouchEnd);
-
-    }, [])
-
+    }, []);
 
     useEffect(() => {
         const handleTouchStart = () => {
             metrics.current!.isContentAreaTouched = true;
+        };
+        if (content.current) {
+            content.current!.addEventListener('touchstart', handleTouchStart);
         }
-        content.current!.addEventListener('touchstart', handleTouchStart);
     }, []);
 
-    return {sheet, content}
-
+    return {sheet, content, header}; // header 반환
 }

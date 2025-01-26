@@ -27,7 +27,6 @@ export default PlaceListPanel;
 
 const PlaceListPanelWrapper = styled.div`
     width: 100%;
-    margin: 20px;
-
+    margin: 0px 20px 20px 20px;
 
 `
