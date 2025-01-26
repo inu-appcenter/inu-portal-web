@@ -40,7 +40,7 @@ const InfoBox = ({title, isExist, num}: { title: string, isExist: string, num: s
 }
 
 const InfoBoxWrapper = styled.div`
-    width: 100px;
+    width: 85px;
     height: fit-content;
     left: 38.23px;
     top: 535.25px;
@@ -54,8 +54,8 @@ const InfoBoxWrapper = styled.div`
     padding: 5px 10px 5px 5px;
 `
 const IconBox = styled.div`
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     left: 33px;
     top: 527.4px;
 
@@ -80,7 +80,7 @@ const TitleBox = styled.div`
     height: 100%;
     font-style: normal;
     font-weight: 400;
-    font-size: 10.4638px;
+    font-size: 9px;
     line-height: 13px;
     /* identical to box height */
     letter-spacing: 0.871981px;
@@ -93,7 +93,7 @@ const NumberBox = styled.div`
     width: fit-content;
     font-style: normal;
     font-weight: 600;
-    font-size: 9.73046px;
+    font-size: 9px;
     line-height: 12px;
     letter-spacing: 0.871981px;
 
