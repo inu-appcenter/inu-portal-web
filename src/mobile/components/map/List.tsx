@@ -30,7 +30,7 @@ const List = ({selectedTab}: { selectedTab: string }) => {
                     }}>
                         <FirstLine>
                             <IconBox src={LocationIcon}/>
-                            <TitleBox>{place.location}{' '}{place.place_name}</TitleBox>
+                            <TitleBox>{place.place_name}{' '}{place.location}{' '}{place.category}</TitleBox>
                             <OpenIconBox src={OpenIcon}/>
                         </FirstLine>
                         {openIndex === index ? (
