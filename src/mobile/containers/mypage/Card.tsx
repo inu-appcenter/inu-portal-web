@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
 import { deletePost, putLike } from "apis/posts";
 import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
 import { useResetTipsStore } from "../../../reducer/resetTipsStore";
 import { Post } from "types/posts";
-import useAppStateStore from "stores/useAppStateStore";
 import heart from "resources/assets/posts/posts-heart.svg";
 
 interface TipsCardContainerProps {
@@ -15,14 +14,13 @@ interface TipsCardContainerProps {
 }
 
 export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const [showModal, setShowModal] = useState(false);
   const [activePostId, setActivePostId] = useState<number | null>(null);
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
-  const { isAppUrl } = useAppStateStore();
 
   const handleDocumentClick = (id: number) => {
-    navigate(`${isAppUrl}/postdetail?id=${id}`);
+    mobileNavigate(`/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: number) => {

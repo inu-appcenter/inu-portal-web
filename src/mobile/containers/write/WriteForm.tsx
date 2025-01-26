@@ -5,10 +5,10 @@ import AnonymousCheck from "mobile/components/write/AnonymousCheck";
 import { useEffect, useState } from "react";
 import { getPostDetail, postPost, putPost } from "apis/posts";
 import { useBeforeUnload, useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import { useResetWriteStore } from "reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
-import useAppStateStore from "stores/useAppStateStore";
 
 interface Props {
   category: string;
@@ -17,6 +17,7 @@ interface Props {
 
 export default function WriteForm({ category, setCategory }: Props) {
   const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const [postId, setPostId] = useState<number>(0);
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -25,7 +26,6 @@ export default function WriteForm({ category, setCategory }: Props) {
   const [loading, setLoading] = useState(false);
   const triggerResetTips = useResetTipsStore((state) => state.triggerReset);
   const triggerResetWrite = useResetWriteStore((state) => state.triggerReset);
-  const { isAppUrl } = useAppStateStore();
 
   // postId 가져오기
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         const response = await getPostDetail(postId);
         if (!response.data.hasAuthority) {
           alert("수정 권한이 없습니다.");
-          navigate(`${isAppUrl}/write`);
+          mobileNavigate(`/write`);
         }
         setTitle(response.data.title);
         setContent(response.data.content);
@@ -140,14 +140,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         );
         triggerResetTips();
         triggerResetWrite();
-        if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
-          window.AndroidBridge.navigateTo(
-            "home",
-            `${isAppUrl}/postdetail?id=${response.data}`
-          );
-        } else {
-          navigate(`${isAppUrl}/postdetail?id=${response.data}`);
-        }
+        mobileNavigate(`/postdetail?id=${response.data}`);
       } catch (error) {
         console.error("게시글 수정 실패", error);
         // refreshError가 아닌 경우 처리
@@ -181,14 +174,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         );
         triggerResetTips();
         triggerResetWrite();
-        if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
-          window.AndroidBridge.navigateTo(
-            "home",
-            `${isAppUrl}/postdetail?id=${response.data}`
-          );
-        } else {
-          navigate(`${isAppUrl}/postdetail?id=${response.data}`);
-        }
+        mobileNavigate(`/postdetail?id=${response.data}`);
       } catch (error) {
         console.error("게시글 등록 실패", error);
         // refreshError가 아닌 경우 처리

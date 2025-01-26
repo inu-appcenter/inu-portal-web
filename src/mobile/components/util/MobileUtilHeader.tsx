@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
 
 interface Props {
@@ -12,15 +11,14 @@ const buttons = [
 ];
 
 export default function MobileUtilHeader({ selectedType }: Props) {
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   return (
     <MobileUtilHeaderWrapper>
       {buttons.map((btn) => (
         <button
           key={btn.type}
-          onClick={() => navigate(`${isAppUrl}/home/util?type=${btn.type}`)}
+          onClick={() => mobileNavigate(`/home/util?type=${btn.type}`)}
           className={selectedType === btn.type ? "selected" : ""}
         >
           {btn.label}

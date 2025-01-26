@@ -7,13 +7,11 @@ import { Pagination } from "swiper/modules";
 import "swiper/swiper-bundle.css";
 import "swiper/css/navigation";
 import "swiper/css";
-import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 export default function TipForm() {
   const [topPosts, setTopPosts] = useState<Post[][]>([]);
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   useEffect(() => {
     const fetchTopPosts = async () => {
@@ -34,7 +32,7 @@ export default function TipForm() {
 
   return (
     <TipFormWrapper>
-      <p onClick={() => navigate(`${isAppUrl}/home/tips`)}>
+      <p onClick={() => mobileNavigate(`/home/tips`)}>
         <span>TIP</span>인기글
       </p>
       <Swiper pagination={true} modules={[Pagination]} className="mySwiper">
@@ -43,9 +41,7 @@ export default function TipForm() {
             {chunk.map((topPost) => (
               <PostWrapper
                 key={topPost.id}
-                onClick={() =>
-                  navigate(`${isAppUrl}/postdetail?id=${topPost.id}`)
-                }
+                onClick={() => mobileNavigate(`/postdetail?id=${topPost.id}`)}
               >
                 <p className="category">{topPost.category}</p>
                 <p className="title">{topPost.title}</p>

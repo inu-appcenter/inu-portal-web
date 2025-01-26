@@ -1,20 +1,18 @@
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
-import useAppStateStore from "stores/useAppStateStore";
 
 interface EditPostBtnProps {
   id: number;
 }
 
 export default function EditPostBtn({ id }: EditPostBtnProps) {
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   const handleEditButtonClick = () => {
     if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
       window.AndroidBridge.navigateTo("write", `/write?id=${id}`);
     } else {
-      navigate(`${isAppUrl}/write?id=${id}`);
+      mobileNavigate(`/write?id=${id}`);
     }
   };
 

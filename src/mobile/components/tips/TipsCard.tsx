@@ -1,8 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
 import { Post } from "types/posts";
 import { Notice } from "types/notices";
-import useAppStateStore from "stores/useAppStateStore";
 import heart from "resources/assets/posts/posts-heart.svg";
 import { CouncilNotice } from "types/councilNotices";
 
@@ -23,8 +22,7 @@ export default function ({
   docType,
   isEditing,
 }: TipsCardContainerProps) {
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   const handleDocumentClick = () => {
     if (isEditing) return;
@@ -32,9 +30,9 @@ export default function ({
       notice && window.open("https://" + notice.url, "_blank");
     } else if (docType === "COUNCILNOTICE") {
       councilNotice &&
-        navigate(`${isAppUrl}/councilnoticedetail?id=${councilNotice.id}`);
+        mobileNavigate(`/councilnoticedetail?id=${councilNotice.id}`);
     } else {
-      post && navigate(`${isAppUrl}/postdetail?id=${post.id}`);
+      post && mobileNavigate(`/postdetail?id=${post.id}`);
     }
   };
 

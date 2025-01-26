@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
 import HeartFilledImg from "resources/assets/mobile-mypage/heart-filled-img.svg";
 import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
 import { MembersReplies } from "types/members";
 import { deleteReply } from "apis/replies";
 import axios, { AxiosError } from "axios";
-import useAppStateStore from "stores/useAppStateStore";
 
 interface TipsCardContainerProps {
   posts: MembersReplies[];
@@ -17,13 +16,12 @@ export default function CardComment({
   posts,
   onCommentsUpdate,
 }: TipsCardContainerProps) {
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [activeCardId, setActiveCardId] = useState<number | null>(null); // Active card state
-  const { isAppUrl } = useAppStateStore();
 
   const handleDocumentClick = (id: number) => {
-    navigate(`${isAppUrl}/postdetail?id=${id}`);
+    mobileNavigate(`/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: number) => {
