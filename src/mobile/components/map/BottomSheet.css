@@ -1,0 +1,27 @@
+.bottom-sheet {
+    position: fixed;
+    bottom: -40%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+    transition: bottom 0.3s ease;
+
+    z-index: 1;
+
+    overflow-y: auto;
+}
+
+.bottom-sheet.open {
+    bottom: -20%;
+}
+
+.sheet-header {
+    padding: 16px;
+    text-align: right;
+}
+
+.sheet-content {
+    padding: 16px;
+}

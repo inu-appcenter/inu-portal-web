@@ -30,14 +30,28 @@ const PlaceListPanel: React.FC = () => {
                 <TabButton text={"식당"} isSelected={selectedTab === "식당"} onClick={() => handleTabClick("식당")}/>
             </TabWrapper>
 
-            <PlacesListWrapper>
+            {/*<PlacesListWrapper>*/}
+            {/*    {placesToRender.map((place, index) => (*/}
+            {/*        <div key={index}>*/}
+            {/*            <PlaceWrapper>{place.location}<br/>{place.place_name}</PlaceWrapper>*/}
+
+            {/*        </div>*/}
+            {/*    ))}*/}
+            {/*</PlacesListWrapper>*/}
+
+            <NewPlacesListWrapper>
                 {placesToRender.map((place, index) => (
                     <div key={index}>
-                        <PlaceWrapper>{place.location}{' '}{place.place_name}</PlaceWrapper>
+                        <NewPlaceWrapper>
+                            <IconBox src="../../../public/mapIcons/LocationIcon.svg"/>
+                            <TitleBox>{place.location}{' '}{place.place_name}</TitleBox>
+                            <OpenIconBox src="../../../public/mapIcons/OpenIcon.svg"/>
+
+                        </NewPlaceWrapper>
 
                     </div>
                 ))}
-            </PlacesListWrapper>
+            </NewPlacesListWrapper>
         </div>
     );
 };
@@ -74,12 +88,15 @@ const PlacesListWrapper = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     margin-top: 20px;
-    gap: 15px;
+    gap: 20px;
+
+
 `
+
 
 const PlaceWrapper = styled.div`
     width: 120px;
-    height: 35px;
+    height: 75px;
     left: 304px;
     top: 741px;
 
@@ -89,14 +106,63 @@ const PlaceWrapper = styled.div`
     font-style: normal;
     font-weight: 500;
     font-size: 13px;
-    line-height: 16px;
-    text-align: center;
+    line-height: 28px;
+    /* identical to box height, or 212% */
+    letter-spacing: 1.14801px;
 
-    color: #000000;
+    color: #3B566E;
 
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
 
 
+`
+
+const NewPlacesListWrapper = styled.div`
+    width: 100%;
+    height: calc(100% - 50px);
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+
+    overflow-y: auto;
+`
+
+const NewPlaceWrapper = styled.div`
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 46px;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    border-bottom: 0.5px solid #d6d6d6;
+
+`
+
+const IconBox = styled.img`
+    height: 32px;
+    width: fit-content;
+`
+
+const TitleBox = styled.div`
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 17px;
+    /* identical to box height */
+    letter-spacing: 1px;
+
+    color: #3B566E;
+    flex: 1;
+    padding-left: 15px;
+`
+
+const OpenIconBox = styled.img`
+    height: 11.78px;
+    width: fit-content;
 `
