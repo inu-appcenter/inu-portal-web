@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import {useState, useEffect} from "react";
 import Woman from "resources/assets/mapIcons/woman.svg";
-import Bed from "resources/assets/mapIcons/Bed.svg";
-import Shower from "resources/assets/mapIcons/Shower.svg";
+import Bed from "resources/assets/mapIcons/bed.svg";
+import Shower from "resources/assets/mapIcons/shower.svg";
 
 
 const InfoBox = ({title, isExist, num}: { title: string, isExist: string, num: string }) => {
