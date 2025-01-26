@@ -4,8 +4,7 @@ import { getCafeterias } from "apis/cafeterias";
 import CafeteriaInfoContainer from "mobile/containers/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "mobile/containers/cafeteria/CafeteriaTitleContainer";
 import BackImg from "resources/assets/mobile-common/backbtn.svg";
-import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 interface CafeteriaDetail {
   구성원가: string;
@@ -24,8 +23,7 @@ export default function MobileMenuPage() {
   >([]);
   const date = new Date();
   const day = date.getDay();
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   useEffect(() => {
     setWeekDates(getWeekDates(date)); // 주의 날짜 설정
@@ -86,7 +84,7 @@ export default function MobileMenuPage() {
 
   return (
     <CafeteriaWrapper>
-      <BackButton onClick={() => navigate(`${isAppUrl}/home`)}>
+      <BackButton onClick={() => mobileNavigate(`/home`)}>
         <img src={BackImg} alt="뒤로가기 버튼" />
         <span>Back</span>
       </BackButton>

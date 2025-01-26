@@ -5,16 +5,14 @@ import ProfileNickname from "mobile/components/common/ProfileNickname";
 import MenuButton from "mobile/components/common/MenuButton";
 import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
 import useUserStore from "stores/useUserStore";
-import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 export default function MobileHeader() {
   const { userInfo } = useUserStore();
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   const handleClick = () => {
-    navigate(`${isAppUrl}/home`);
+    mobileNavigate(`/home`);
   };
 
   return (

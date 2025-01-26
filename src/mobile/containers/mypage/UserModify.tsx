@@ -1,17 +1,15 @@
 import styled from "styled-components";
 import { useState } from "react";
 import { putMembers } from "apis/members";
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import BackImg from "resources/assets/mobile-common/backbtn.svg";
 import useUserStore from "stores/useUserStore";
-import useAppStateStore from "stores/useAppStateStore";
 
 export default function UserModify() {
   const { setUserInfo, userInfo } = useUserStore();
   const [nickname, setNickname] = useState(userInfo.nickname);
   const [fireId, setFireId] = useState(userInfo.fireId);
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   const handleModifyClick = async () => {
     try {
@@ -32,7 +30,7 @@ export default function UserModify() {
 
   return (
     <UserModifyWrapper>
-      <BackButton onClick={() => navigate(`${isAppUrl}/mypage`)}>
+      <BackButton onClick={() => mobileNavigate(`/mypage`)}>
         <img src={BackImg} alt="뒤로가기 버튼" />
       </BackButton>
       <div className="nickname">

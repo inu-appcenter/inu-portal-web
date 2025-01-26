@@ -7,8 +7,7 @@ import councilImg from "resources/assets/mobile-home/council.svg";
 import mapImg from "resources/assets/mobile-home/map.svg";
 import clubImg from "resources/assets/mobile-home/club.svg";
 import utilImg from "resources/assets/mobile-home/util.svg";
-import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 const categorys = [
   { title: "메뉴", img: menuImg },
@@ -22,28 +21,27 @@ const categorys = [
 ];
 
 export default function CategoryForm() {
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   const handleClick = (title: string) => {
     if (title === "메뉴") {
-      navigate(`${isAppUrl}/home/menu`);
+      mobileNavigate(`/home/menu`);
     } else if (title === "공지사항") {
-      navigate(`${isAppUrl}/home/tips?type=notice`);
+      mobileNavigate(`/home/tips?type=notice`);
     } else if (title === "TIPS") {
-      navigate(`${isAppUrl}/home/tips`);
+      mobileNavigate(`/home/tips`);
     } else if (title === "시간표") {
-      navigate(`${isAppUrl}/home/calendar`);
+      mobileNavigate(`/home/calendar`);
     } else if (title === "총학") {
-      navigate(`${isAppUrl}/home/council`);
+      mobileNavigate(`/home/council`);
     } else if (title === "동아리") {
-      navigate(`${isAppUrl}/home/club`);
+      mobileNavigate(`/home/club`);
     } else if (title === "캠퍼스") {
-      navigate(`${isAppUrl}/home/map`);
+      mobileNavigate(`/home/map`);
     } else if (title === "편의") {
-      navigate(`${isAppUrl}/home/util`);
+      mobileNavigate(`/home/util`);
     } else {
-      navigate(`${isAppUrl}/home/${title}`);
+      mobileNavigate(`/home/${title}`);
     }
   };
 

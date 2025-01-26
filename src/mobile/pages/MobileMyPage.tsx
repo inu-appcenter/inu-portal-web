@@ -3,16 +3,14 @@ import useUserStore from "stores/useUserStore";
 import { useState } from "react";
 import loginImg from "resources/assets/login/login-modal-logo.svg";
 import { MyPageActive, MyPageCategory } from "resources/strings/m-mypage";
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import UserInfo from "mobile/containers/mypage/UserInfo";
 import arrowImg from "resources/assets/mobile-mypage/arrow.svg";
-import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   const handleLogout = () => {
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0 });
@@ -26,7 +24,7 @@ export default function MobileMyPage() {
     if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
       window.AndroidBridge.navigateTo("mypage", "/home");
     } else {
-      navigate(`${isAppUrl}/home`);
+      mobileNavigate(`/home`);
     }
   };
 
@@ -41,29 +39,29 @@ export default function MobileMyPage() {
   const handleClick = (title: string) => {
     switch (title) {
       case "내가 쓴 글":
-        navigate(`${isAppUrl}/mypage/post`);
+        mobileNavigate(`/mypage/post`);
         break;
       case "좋아요 한 글":
-        navigate(`${isAppUrl}/mypage/like`);
+        mobileNavigate(`/mypage/like`);
         break;
       case "작성한 댓글":
-        navigate(`${isAppUrl}/mypage/comment`);
+        mobileNavigate(`/mypage/comment`);
         break;
       case "프로필 편집":
-        navigate(`${isAppUrl}/mypage/profile`);
+        mobileNavigate(`/mypage/profile`);
         break;
       case "스크랩":
         if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
           window.AndroidBridge.navigateTo("save", "/save");
         } else {
-          navigate(`${isAppUrl}/save`);
+          mobileNavigate(`/save`);
         }
         break;
       case "로그아웃":
         handleLogoutModalClick();
         break;
       case "회원탈퇴":
-        navigate(`${isAppUrl}/mypage/delete`);
+        mobileNavigate(`/mypage/delete`);
         break;
 
       default:

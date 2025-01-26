@@ -2,20 +2,19 @@ import styled from "styled-components";
 import WritePageTitle from "mobile/components/write/WritePageTitle";
 import WriteForm from "mobile/containers/write/WriteForm";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import loginImg from "resources/assets/login/login-modal-logo.svg";
 import { useResetWriteStore } from "reducer/resetWriteStore";
 import useUserStore from "stores/useUserStore";
 import CategorySelect from "mobile/components/write/CategorySelect";
-import useAppStateStore from "stores/useAppStateStore";
 
 export default function MobileWritePage() {
   const { tokenInfo } = useUserStore();
   const [id, setId] = useState(0);
   const [category, setCategory] = useState<string>("");
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
   const resetKey = useResetWriteStore((state) => state.resetKey);
 
   useEffect(() => {
@@ -24,7 +23,7 @@ export default function MobileWritePage() {
   }, [location]);
 
   const handleNewPost = () => {
-    navigate(`${isAppUrl}/write`);
+    mobileNavigate(`/write`);
   };
 
   return (

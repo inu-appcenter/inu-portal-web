@@ -1,21 +1,15 @@
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 interface ProfileImageProps {
   fireId: number;
 }
 
 export default function ProfileImage({ fireId }: ProfileImageProps) {
-  const navigate = useNavigate();
-  const { isAppUrl } = useAppStateStore();
+  const mobileNavigate = useMobileNavigate();
 
   const handleClick = () => {
-    if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
-      window.AndroidBridge.navigateTo("mypage", "/mypage");
-    } else {
-      navigate(`${isAppUrl}/mypage`);
-    }
+    mobileNavigate("/mypage");
   };
 
   return (
