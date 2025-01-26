@@ -82,44 +82,6 @@ const TabWrapper = styled.div`
 `;
 
 
-const PlacesListWrapper = styled.div`
-    width: 100%;
-    height: fit-content;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    margin-top: 20px;
-    gap: 20px;
-
-
-`
-
-
-const PlaceWrapper = styled.div`
-    width: 120px;
-    height: 75px;
-    left: 304px;
-    top: 741px;
-
-    background: #E1ECFF;
-    border-radius: 5px;
-
-    font-style: normal;
-    font-weight: 500;
-    font-size: 13px;
-    line-height: 28px;
-    /* identical to box height, or 212% */
-    letter-spacing: 1.14801px;
-
-    color: #3B566E;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-
-
-`
-
 const NewPlacesListWrapper = styled.div`
     width: 100%;
     height: calc(100% - 50px);

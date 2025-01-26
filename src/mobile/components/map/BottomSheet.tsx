@@ -1,4 +1,3 @@
-import React from 'react';
 import {BOTTOM_SHEET_HEIGHT} from './BottomSheetOption';
 import styled from 'styled-components';
 import {motion} from "framer-motion";
