@@ -1,0 +1,101 @@
+import styled from "styled-components";
+import {useState, useEffect} from "react";
+
+
+const InfoBox = ({title, isExist, num}: { title: string, isExist: string, num: string }) => {
+    const [iconSrc, setIconSrc] = useState<string>("");
+
+    const decisionIcon = () => {
+        if (title === "여성용품 배치") {
+            setIconSrc("../../../../public/mapIcons/woman.svg");
+        } else if (title === "침대, 빈백(개)") {
+            setIconSrc("../../../../public/mapIcons/bed.svg");
+        } else if (title === "샤워실") {
+            setIconSrc("../../../public/mapIcons/shower.svg");
+        }
+    }
+
+    useEffect(() => {
+        decisionIcon();
+
+    }, []);
+
+    return (
+        <InfoBoxWrapper>
+            <IconBox>
+                <Icon src={iconSrc}/>
+            </IconBox>
+            <ContentBox>
+                <TitleBox>{title}</TitleBox>
+                <NumberBox>{isExist}{num}</NumberBox>
+            </ContentBox>
+
+
+        </InfoBoxWrapper>
+
+    );
+}
+
+const InfoBoxWrapper = styled.div`
+    width: 100px;
+    height: fit-content;
+    left: 38.23px;
+    top: 535.25px;
+
+    border: 0.871981px solid #A5A5A5;
+    border-radius: 19.1836px;
+
+    display: flex;
+    flex-direction: row;
+
+    padding: 5px 10px 5px 5px;
+`
+const IconBox = styled.div`
+    width: 30px;
+    height: 30px;
+    left: 33px;
+    top: 527.4px;
+
+    background: #4071B9;
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`
+const Icon = styled.img`
+
+`
+const ContentBox = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+`
+const TitleBox = styled.div`
+    height: 100%;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 10.4638px;
+    line-height: 13px;
+    /* identical to box height */
+    letter-spacing: 0.871981px;
+
+    color: #3B566E;
+
+`
+const NumberBox = styled.div`
+    height: fit-content;
+    width: fit-content;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 9.73046px;
+    line-height: 12px;
+    letter-spacing: 0.871981px;
+
+    color: #0E4D9D;
+`
+
+
+export default InfoBox;
