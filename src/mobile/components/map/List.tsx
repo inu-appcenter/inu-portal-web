@@ -1,6 +1,9 @@
 import InfoBox from "./InfoBox.tsx";
 import {places, restPlaces} from "../../../components/map/DB.tsx";
 import styled from "styled-components";
+import LocationIcon from "resources/assets/mapIcons/LocationIcon.svg";
+import OpenIcon from "resources/assets/mapIcons/OpenIcon.svg";
+
 
 import {useState} from "react";
 
@@ -26,9 +29,9 @@ const List = ({selectedTab}: { selectedTab: string }) => {
                         handleClick({index})
                     }}>
                         <FirstLine>
-                            <IconBox src="../../../public/mapIcons/LocationIcon.svg"/>
+                            <IconBox src={LocationIcon}/>
                             <TitleBox>{place.location}{' '}{place.place_name}</TitleBox>
-                            <OpenIconBox src="../../../public/mapIcons/OpenIcon.svg"/>
+                            <OpenIconBox src={OpenIcon}/>
                         </FirstLine>
                         {openIndex === index ? (
                             <SecondLine>

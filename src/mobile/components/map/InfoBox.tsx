@@ -1,5 +1,8 @@
 import styled from "styled-components";
 import {useState, useEffect} from "react";
+import Woman from "resources/assets/mapIcons/woman.svg";
+import Bed from "resources/assets/mapIcons/Bed.svg";
+import Shower from "resources/assets/mapIcons/Shower.svg";
 
 
 const InfoBox = ({title, isExist, num}: { title: string, isExist: string, num: string }) => {
@@ -7,11 +10,11 @@ const InfoBox = ({title, isExist, num}: { title: string, isExist: string, num: s
 
     const decisionIcon = () => {
         if (title === "여성용품 배치") {
-            setIconSrc("../../../../public/mapIcons/woman.svg");
+            setIconSrc(Woman);
         } else if (title === "침대, 빈백(개)") {
-            setIconSrc("../../../../public/mapIcons/bed.svg");
+            setIconSrc(Bed);
         } else if (title === "샤워실") {
-            setIconSrc("../../../public/mapIcons/shower.svg");
+            setIconSrc(Shower);
         }
     }
 
