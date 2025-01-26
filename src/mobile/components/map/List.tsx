@@ -60,6 +60,9 @@ const NewPlacesListWrapper = styled.div`
     margin-top: 20px;
 
     overflow-y: auto;
+
+    padding-right: 10px;
+    box-sizing: border-box;
 `
 
 const NewPlaceWrapper = styled.div`

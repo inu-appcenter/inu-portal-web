@@ -9,7 +9,7 @@ const Wrapper = styled(motion.div)`
     display: flex;
     flex-direction: column;
     position: fixed;
-    z-index: 1;
+    z-index: 2;
     top: calc(100% - 200px);
     left: 0;
     right: 0;
@@ -18,17 +18,18 @@ const Wrapper = styled(motion.div)`
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.6);
     height: ${BOTTOM_SHEET_HEIGHT}px;
     background: #ffffff;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     transition: transform 400ms ease-out;
 `;
 
 const BottomSheetContent = styled.div`
-    overflow: auto;
     -webkit-overflow-scrolling: touch;
     margin-bottom: 30px;
     padding-bottom: 30px;
     display: flex;
     justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 `;
 
 function BottomSheet() {
