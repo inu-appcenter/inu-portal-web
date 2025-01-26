@@ -10,11 +10,11 @@ export default function AiTitle() {
   return (
     <AiTitleWrapper>
       <div className="buttons">
-        <button onClick={() => navigate(isGalleryPage ? "/ai" : "/")}>
+        {/* <button onClick={() => navigate(isGalleryPage ? "/ai" : "/")}>
           {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 으로 돌아가기"}
-        </button>
+        </button> */}
 
-        <button onClick={() => navigate(isGalleryPage ? "/ai" : "/m/home")}>
+        <button onClick={() => navigate(isGalleryPage ? "/ai" : "/app/home")}>
           {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 모바일로 돌아가기"}
         </button>
       </div>

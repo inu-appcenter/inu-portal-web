@@ -10,13 +10,19 @@ export default function ProfileImage({ fireId }: ProfileImageProps) {
   const navigate = useNavigate();
   const { isAppUrl } = useAppStateStore();
 
+  const handleClick = () => {
+    if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
+      window.AndroidBridge.navigateTo("mypage", "/mypage");
+    } else {
+      navigate(`${isAppUrl}/mypage`);
+    }
+  };
+
   return (
     <ProfileImg
       src={`https://portal.inuappcenter.kr/api/images/${fireId}`}
       alt={`Profile Image`}
-      onClick={() => {
-        navigate(`${isAppUrl}/mypage`);
-      }}
+      onClick={handleClick}
     />
   );
 }
