@@ -4,7 +4,6 @@ import {zoomIn, zoomOut, displayLevel, setMapType} from "../utils/mapUtils";
 import {placesMarkDB} from "../utils/markerUtils";
 import {imageSources} from "../constants/markerImages.ts";
 import "./KakaoMap.css";
-import PlaceListPanel from "./PlaceListPanel.tsx";
 
 const KakaoMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
