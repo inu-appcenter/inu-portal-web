@@ -26,7 +26,6 @@ export default function RentalPage() {
             <ContentsWrapper>
                 <RentalTitle/>
                 <ThemeProvider theme={theme}>
-
                     <Rental/>
                 </ThemeProvider>
             </ContentsWrapper>

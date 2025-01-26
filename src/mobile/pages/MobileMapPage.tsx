@@ -7,6 +7,7 @@ import ViewModeButtons from "mobile/components/tips/ViewModeButtons";
 // import TipsListContainer from "mobile/containers/tips/TipsListContainer";
 import SerachForm from "mobile/containers/home/SerachForm";
 // import { useResetTipsStore } from "reducer/resetTipsStore";
+import BottomSheet from "../../../src/mobile/components/map/BottomSheet.tsx"
 
 import Map from "components/map/components/KakaoMap.tsx";
 
@@ -26,17 +27,18 @@ export default function MobileMapPage() {
 
     return (
         <MobileTipsPageWrapper>
-            {!(docType === "NOTICE") && <SerachForm/>}
+            {/*{!(docType === "NOTICE") && <SerachForm/>}*/}
             <TitleCategorySelectorWrapper>
                 <TipsPageTitle value={docType + (query ? ` - ${query}` : "")}/>
-                <ViewModeButtonCategorySelectorWrapper>
-                    {docType !== "SEARCH" && <CategorySelector/>}
-                    <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode}/>
-                </ViewModeButtonCategorySelectorWrapper>
+                {/*<ViewModeButtonCategorySelectorWrapper>*/}
+                {/*    {docType !== "SEARCH" && <CategorySelector/>}*/}
+                {/*    <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode}/>*/}
+                {/*</ViewModeButtonCategorySelectorWrapper>*/}
             </TitleCategorySelectorWrapper>
             <Wrapper>
                 <Map/>
             </Wrapper>
+            <BottomSheet/>
         </MobileTipsPageWrapper>
     );
 }

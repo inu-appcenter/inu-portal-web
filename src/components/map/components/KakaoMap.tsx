@@ -31,7 +31,7 @@ const KakaoMap: React.FC = () => {
     placesMarkDB(places, imageSources[1], 1, map);
 
     return (
-        <div>
+        <div style={{width: "100%"}}>
             <div className="map_wrap">
                 <div
                     id="map"
@@ -71,7 +71,6 @@ const KakaoMap: React.FC = () => {
         </span>
                 </div>
             </div>
-            <PlaceListPanel/>
         </div>
     );
 };
