@@ -13,8 +13,8 @@ const categorys = [
   { title: "메뉴", img: menuImg },
   { title: "공지사항", img: noticeImg },
   { title: "TIPS", img: TipImg },
-  { title: "시간표", img: calendarImg },
-  { title: "총학", img: councilImg },
+  { title: "학사일정", img: calendarImg },
+  { title: "총학생회", img: councilImg },
   { title: "캠퍼스", img: mapImg },
   { title: "동아리", img: clubImg },
   { title: "편의", img: utilImg },
@@ -30,9 +30,9 @@ export default function CategoryForm() {
       mobileNavigate(`/home/tips?type=notice`);
     } else if (title === "TIPS") {
       mobileNavigate(`/home/tips`);
-    } else if (title === "시간표") {
+    } else if (title === "학사일정") {
       mobileNavigate(`/home/calendar`);
-    } else if (title === "총학") {
+    } else if (title === "총학생회") {
       mobileNavigate(`/home/council`);
     } else if (title === "동아리") {
       mobileNavigate(`/home/club`);
