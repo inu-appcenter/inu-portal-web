@@ -13,14 +13,13 @@ export default function MobileHeader() {
   const navigate = useNavigate();
   const { isAppUrl } = useAppStateStore();
 
+  const handleClick = () => {
+    navigate(`${isAppUrl}/home`);
+  };
+
   return (
     <MobileHeaderWrapper>
-      <img
-        onClick={() => {
-          navigate(`${isAppUrl}/home`);
-        }}
-        src={intipLogo}
-      />
+      <img onClick={handleClick} src={intipLogo} />
       <ProfileMenuWrapper>
         {userInfo.nickname ? (
           <>

@@ -9,8 +9,13 @@ interface EditPostBtnProps {
 export default function EditPostBtn({ id }: EditPostBtnProps) {
   const navigate = useNavigate();
   const { isAppUrl } = useAppStateStore();
+
   const handleEditButtonClick = () => {
-    navigate(`${isAppUrl}/write?id=${id}`);
+    if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
+      window.AndroidBridge.navigateTo("write", `/write?id=${id}`);
+    } else {
+      navigate(`${isAppUrl}/write?id=${id}`);
+    }
   };
 
   return <EditBtn onClick={handleEditButtonClick}>수정하기</EditBtn>;

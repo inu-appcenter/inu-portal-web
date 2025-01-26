@@ -23,7 +23,11 @@ export default function MobileMyPage() {
       refreshTokenExpiredTime: "",
     });
     localStorage.removeItem("tokenInfo");
-    navigate(`${isAppUrl}/home`);
+    if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
+      window.AndroidBridge.navigateTo("mypage", "/home");
+    } else {
+      navigate(`${isAppUrl}/home`);
+    }
   };
 
   const handleLogoutModalClick = () => {
@@ -49,7 +53,11 @@ export default function MobileMyPage() {
         navigate(`${isAppUrl}/mypage/profile`);
         break;
       case "스크랩":
-        navigate(`${isAppUrl}/save`);
+        if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
+          window.AndroidBridge.navigateTo("save", "/save");
+        } else {
+          navigate(`${isAppUrl}/save`);
+        }
         break;
       case "로그아웃":
         handleLogoutModalClick();
