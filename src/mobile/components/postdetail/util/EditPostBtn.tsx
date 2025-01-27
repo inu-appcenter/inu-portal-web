@@ -9,11 +9,7 @@ export default function EditPostBtn({ id }: EditPostBtnProps) {
   const mobileNavigate = useMobileNavigate();
 
   const handleEditButtonClick = () => {
-    if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
-      window.AndroidBridge.navigateTo("write", `/write?id=${id}`);
-    } else {
-      mobileNavigate(`/write?id=${id}`);
-    }
+    mobileNavigate(`/write?id=${id}`);
   };
 
   return <EditBtn onClick={handleEditButtonClick}>수정하기</EditBtn>;
