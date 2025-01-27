@@ -1,14 +1,14 @@
-import InfoBox from "./InfoBox.tsx";
-import {places, restPlaces} from "../../../components/map/DB.tsx";
 import styled from "styled-components";
 import LocationIcon from "resources/assets/mapIcons/LocationIcon.svg";
 import OpenIcon from "resources/assets/mapIcons/OpenIcon.svg";
 
 
 import {useState} from "react";
+import SchoolInfoBox from "./SchoolInfoBox.tsx";
+import {Place} from "../../../components/map/DB.tsx";
 
 
-const List = ({selectedTab}: { selectedTab: string }) => {
+const List = ({placesToRender}: { placesToRender: Place[] }) => {
     const [openIndex, setOpenIndex] = useState(-1);
 
     const handleClick = ({index}: { index: number }) => {
@@ -19,8 +19,6 @@ const List = ({selectedTab}: { selectedTab: string }) => {
         setOpenIndex(index);
     }
 
-    const placesToRender = selectedTab === "학교" ? places : selectedTab === "휴게실" ? restPlaces : [];
-
     return (
         <NewPlacesListWrapper>
             {placesToRender.map((place, index) => (
@@ -30,15 +28,12 @@ const List = ({selectedTab}: { selectedTab: string }) => {
                     }}>
                         <FirstLine>
                             <IconBox src={LocationIcon}/>
-                            <TitleBox>{place.place_name}{' '}{place.location}{' '}{place.category}</TitleBox>
+                            <TitleBox>{place.location}{' '}{place.place_name}{' '}{place.category}</TitleBox>
                             <OpenIconBox src={OpenIcon}/>
                         </FirstLine>
                         {openIndex === index ? (
                             <SecondLine>
-                                <InfoBox title={"여성용품 배치"} isExist={"O"} num={"3"}></InfoBox>
-                                <InfoBox title={"침대, 빈백(개)"} isExist={"O"} num={"3"}></InfoBox>
-                                <InfoBox title={"샤워실"} isExist={"O"} num={"3"}></InfoBox>
-
+                                <SchoolInfoBox place={place}/>
                             </SecondLine>
                         ) : <></>}
 
@@ -112,6 +107,7 @@ const FirstLine = styled.div`
 
 const SecondLine = styled.div`
     width: 100%;
+    height: fit-content;
     padding: 10px;
     box-sizing: border-box;
 

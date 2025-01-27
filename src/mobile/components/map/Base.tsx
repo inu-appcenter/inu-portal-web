@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import BottomSheet from "./BottomSheet";
+import BottomSheet from "./BottomSheet.tsx";
 
 const BaseDiv = styled.div`
     height: 100vh;

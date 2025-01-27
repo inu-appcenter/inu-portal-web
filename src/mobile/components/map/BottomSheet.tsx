@@ -1,9 +1,9 @@
-import {BOTTOM_SHEET_HEIGHT} from './BottomSheetOption';
+import {BOTTOM_SHEET_HEIGHT} from './BottomSheetOption.ts';
 import styled from 'styled-components';
 import {motion} from "framer-motion";
-import useBottomSheet from './useBottomSheet';
-import Header from './Header';
-import Content from '../../../../src/components/map/components/PlaceListPanel.tsx';
+import useBottomSheet from './useBottomSheet.ts';
+import Header from './Header.tsx';
+import Content from '../../../components/map/components/PlaceListPanel.tsx';
 
 const Wrapper = styled(motion.div)`
     display: flex;
