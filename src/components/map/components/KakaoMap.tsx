@@ -4,6 +4,8 @@ import {zoomIn, zoomOut, setMapType} from "../utils/mapUtils";
 import {placesMarkDB} from "../utils/markerUtils";
 import {imageSources} from "../constants/markerImages.ts";
 import "./KakaoMap.css";
+import {useLocation} from "react-router-dom";
+
 
 const KakaoMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
@@ -12,25 +14,22 @@ const KakaoMap: React.FC = () => {
 
     level;
 
+    const location = useLocation(); // 현재 URL 경로 정보를 가져옴
 
     useEffect(() => {
-        if (window.kakao && mapContainer.current) {
+        if (location.pathname === "/m/home/map" && window.kakao && mapContainer.current) {
             const options = {
-                center: new window.kakao.maps.LatLng(
-                    37.374474020920864,
-                    126.63361466845616
-                ),
-                level: 3,
+                center: new window.kakao.maps.LatLng(37.374474020920864, 126.63361466845616),
+                level: 4,
             };
 
-
-            setTimeout(function () {
+            setTimeout(() => {
                 const kakaoMap = new window.kakao.maps.Map(mapContainer.current, options);
                 setMap(kakaoMap);
-            }, 50);
-            // displayLevel(kakaoMap, setLevel);
+            }, 100);
         }
-    }, []);
+    }, [location.pathname]); // location.pathname이 변경될 때마다 실행
+
     placesMarkDB(places, imageSources[1], 1, map);
 
     return (
