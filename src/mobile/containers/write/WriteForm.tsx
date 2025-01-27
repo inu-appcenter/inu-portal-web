@@ -4,7 +4,7 @@ import PhotoUpload from "mobile/components/write/PhotoUpload";
 import AnonymousCheck from "mobile/components/write/AnonymousCheck";
 import { useEffect, useState } from "react";
 import { getPostDetail, postPost, putPost } from "apis/posts";
-import { useBeforeUnload, useNavigate } from "react-router-dom";
+import { useBeforeUnload } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import { useResetWriteStore } from "reducer/resetWriteStore";
@@ -16,7 +16,6 @@ interface Props {
 }
 
 export default function WriteForm({ category, setCategory }: Props) {
-  const navigate = useNavigate();
   const mobileNavigate = useMobileNavigate();
   const [postId, setPostId] = useState<number>(0);
   const [title, setTitle] = useState<string>("");
@@ -82,11 +81,11 @@ export default function WriteForm({ category, setCategory }: Props) {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
           default:
             alert("게시글 가져오기 실패");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
         }
       }

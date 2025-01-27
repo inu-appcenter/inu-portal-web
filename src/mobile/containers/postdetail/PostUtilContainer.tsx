@@ -1,5 +1,5 @@
 // import React from 'react';
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
 import backbtn from "resources/assets/mobile-common/backbtn.svg";
 import PostLike from "mobile/components/postdetail/util/m.postlike";
@@ -26,7 +26,7 @@ export default function PostUtilContainer({
   isScraped,
   hasAuthority,
 }: PostUtilityProps) {
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +52,7 @@ export default function PostUtilContainer({
   return (
     <>
       <Wrapper>
-        <BackBtn onClick={() => navigate(-1)}>
+        <BackBtn onClick={() => mobileNavigate(-1)}>
           <img src={backbtn} alt="뒤로가기 버튼" />
         </BackBtn>
         <UtilWrapper>

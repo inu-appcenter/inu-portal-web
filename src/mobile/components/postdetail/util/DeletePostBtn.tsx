@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import { deletePost } from "apis/posts";
 import deletebtn from "resources/assets/mypage/minus.svg";
 import styled from "styled-components";
@@ -14,7 +14,7 @@ export default function DeletePostBtn({
   id,
   onPostUpdate,
 }: DeletePostBtnProps) {
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
   const handleDelete = async () => {
@@ -25,7 +25,7 @@ export default function DeletePostBtn({
       await deletePost(id);
       onPostUpdate();
       triggerReset();
-      navigate(-1);
+      mobileNavigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
       // refreshError가 아닌 경우 처리

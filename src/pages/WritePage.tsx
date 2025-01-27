@@ -1,7 +1,8 @@
 import { getPostDetail, postPost, putPost } from "apis/posts";
 import axios, { AxiosError } from "axios";
 import { ChangeEvent, useEffect, useState } from "react";
-import { useBeforeUnload, useNavigate } from "react-router-dom";
+import { useBeforeUnload } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
 import picture from "resources/assets/write/picture.svg";
 import checkedCheckbox from "resources/assets/posts/checked-checkbox.svg";
@@ -9,7 +10,7 @@ import uncheckedCheckbox from "resources/assets/posts/unchecked-checkbox.svg";
 import CategorySelect from "components/write/CategorySelect";
 
 export default function WritePage() {
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const [postId, setPostId] = useState<number>(0);
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -36,7 +37,7 @@ export default function WritePage() {
         const response = await getPostDetail(postId);
         if (!response.data.hasAuthority) {
           alert("수정 권한이 없습니다.");
-          navigate(-1);
+          mobileNavigate(-1);
         }
         setTitle(response.data.title);
         setContent(response.data.content);
@@ -70,11 +71,11 @@ export default function WritePage() {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
           default:
             alert("게시글 가져오기 실패");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
         }
       }
@@ -99,7 +100,7 @@ export default function WritePage() {
       event.preventDefault();
       return;
     }
-    navigate(-1);
+    mobileNavigate(-1);
   };
 
   // 이미지 업로드
@@ -141,7 +142,7 @@ export default function WritePage() {
           anonymous,
           images
         );
-        navigate(`/posts?id=${response.data}`);
+        mobileNavigate(`/posts?id=${response.data}`);
       } catch (error) {
         console.error("게시글 수정 실패", error);
         // refreshError가 아닌 경우 처리
@@ -174,7 +175,7 @@ export default function WritePage() {
           images
         );
 
-        navigate(`/posts?id=${response.data}`);
+        mobileNavigate(`/posts?id=${response.data}`);
       } catch (error) {
         console.error("게시글 등록 실패", error);
         // refreshError가 아닌 경우 처리
