@@ -5,14 +5,15 @@ import { deletePetitions, getPetitionsDetail } from "apis/petitions";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
 import { Petition } from "types/petitions";
 import axios, { AxiosError } from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import UploadPetition from "mobile/components/council/UploadPetition";
 
 export default function MobilePetitionDetailPage() {
   const [petition, setPetition] = useState<Petition>();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const location = useLocation();
 
   const fetchPost = async (id: number) => {
@@ -30,15 +31,15 @@ export default function MobilePetitionDetailPage() {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
           case 403:
             alert("비밀글입니다.");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
           default:
             alert("게시글 가져오기 실패");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
         }
       }
@@ -59,7 +60,7 @@ export default function MobilePetitionDetailPage() {
     try {
       const params = new URLSearchParams(location.search);
       await deletePetitions(Number(params.get("id")));
-      navigate(-1);
+      mobileNavigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
       // refreshError가 아닌 경우 처리
@@ -94,7 +95,7 @@ export default function MobilePetitionDetailPage() {
           <Wrapper>
             <PostTopWrapper>
               <PostUtilWrapper>
-                <BackBtn onClick={() => navigate(-1)}>
+                <BackBtn onClick={() => mobileNavigate(-1)}>
                   <img src={backbtn} alt="뒤로가기 버튼" />
                 </BackBtn>
                 {petition.hasAuthority && (
