@@ -5,7 +5,7 @@ import Bed from "resources/assets/mapIcons/bed.svg";
 import Shower from "resources/assets/mapIcons/shower.svg";
 
 
-const InfoBox = ({title, isExist, num}: { title: string, isExist: string, num: string }) => {
+const RestInfoBox = ({title, isExist, num}: { title: string, isExist?: any, num?: any }) => {
     const [iconSrc, setIconSrc] = useState<string>("");
 
     const decisionIcon = () => {
@@ -30,7 +30,7 @@ const InfoBox = ({title, isExist, num}: { title: string, isExist: string, num: s
             </IconBox>
             <ContentBox>
                 <TitleBox>{title}</TitleBox>
-                <NumberBox>{isExist}{num}</NumberBox>
+                <NumberBox>{isExist === true ? (<>O</>) : num !== undefined ? (<>{num}</>) : (<>X</>)}</NumberBox>
             </ContentBox>
 
 
@@ -101,4 +101,4 @@ const NumberBox = styled.div`
 `
 
 
-export default InfoBox;
+export default RestInfoBox;

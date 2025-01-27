@@ -2,7 +2,7 @@ import styled from "styled-components";
 import TipsPageTitle from "mobile/components/tips/TipsPageTitle";
 import {useLocation} from "react-router-dom";
 
-import BottomSheet from "../../../src/mobile/components/map/BottomSheet.tsx"
+import BottomSheet from "../components/map/BottomSheet.tsx"
 
 import Map from "components/map/components/KakaoMap.tsx";
 

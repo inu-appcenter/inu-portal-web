@@ -6,28 +6,28 @@ import listViewIcon from "resources/assets/mobile-tips/list-view-icon-gray.svg";
 import listViewIconActive from "resources/assets/mobile-tips/list-view-icon-blue.svg";
 
 interface ViewModeButtonsProps {
-  viewMode: "grid" | "list";
-  setViewMode: (mode: "grid" | "list") => void;
+    viewMode: "grid" | "list";
+    setViewMode: (mode: "grid" | "list") => void;
 }
 
 export default function ViewModeButtons({
-  viewMode,
-  setViewMode,
-}: ViewModeButtonsProps) {
-  return (
-    <ViewModeButtonsWrapper>
-      <ViewButton
-        onClick={() => setViewMode("grid")}
-        src={viewMode === "grid" ? gridViewIconActive : gridViewIcon}
-        alt="Grid View"
-      />
-      <ViewButton
-        onClick={() => setViewMode("list")}
-        src={viewMode === "list" ? listViewIconActive : listViewIcon}
-        alt="List View"
-      />
-    </ViewModeButtonsWrapper>
-  );
+                                            viewMode,
+                                            setViewMode,
+                                        }: ViewModeButtonsProps) {
+    return (
+        <ViewModeButtonsWrapper>
+            <ViewButton
+                onClick={() => setViewMode("grid")}
+                src={viewMode === "grid" ? gridViewIconActive : gridViewIcon}
+                alt="Grid View"
+            />
+            <ViewButton
+                onClick={() => setViewMode("list")}
+                src={viewMode === "list" ? listViewIconActive : listViewIcon}
+                alt="RestroomList View"
+            />
+        </ViewModeButtonsWrapper>
+    );
 }
 
 const ViewModeButtonsWrapper = styled.div`

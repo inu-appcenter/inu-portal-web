@@ -2,7 +2,10 @@ import React, {useState} from "react";
 import styled from "styled-components";
 
 import Tab from "../../../mobile/components/map/Tab.tsx";
-import List from "../../../mobile/components/map/List";
+import RestroomList from "../../../mobile/components/map/RestroomList.tsx";
+import SchoolList from "../../../mobile/components/map/SchoolList.tsx";
+
+import {places, restPlaces} from "../DB.tsx";
 
 
 const PlaceListPanel: React.FC = () => {
@@ -12,11 +15,17 @@ const PlaceListPanel: React.FC = () => {
         setSelectedTab(tab);
     };
 
+    const placesToRender = selectedTab === "학교" ? places : selectedTab === "휴게실" ? restPlaces : [];
+
 
     return (
         <PlaceListPanelWrapper>
             <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
-            <List selectedTab={selectedTab}/>
+            {selectedTab === "학교" ? (
+                <SchoolList placesToRender={placesToRender}/>
+            ) : selectedTab === "휴게실" ? (
+                <RestroomList placesToRender={placesToRender}/>
+            ) : (<></>)}
         </PlaceListPanelWrapper>
     );
 };
