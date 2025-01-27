@@ -5,6 +5,7 @@ declare global {
     AndroidBridge: {
       navigateTo?: (destination: string, url: string) => void;
       goBack?: () => void;
+      handleLogout?: () => void;
     };
   }
 }
