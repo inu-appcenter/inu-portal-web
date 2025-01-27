@@ -8,7 +8,8 @@ import ReplyInput from "mobile/containers/postdetail/ReplyInput";
 import { Reply } from "types/posts";
 import { PostDetail } from "types/posts";
 import axios, { AxiosError } from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
@@ -24,7 +25,7 @@ export default function PostDetailPage() {
     setReplyContent("");
   };
 
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
   const location = useLocation();
 
   const fetchPost = async (id: number) => {
@@ -43,11 +44,11 @@ export default function PostDetailPage() {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
           default:
             alert("게시글 가져오기 실패");
-            navigate(-1);
+            mobileNavigate(-1);
             break;
         }
       }

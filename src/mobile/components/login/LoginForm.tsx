@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import useMobileNavigate from "hooks/useMobileNavigate";
 import { login } from "apis/members";
 import styled from "styled-components";
 import LoginUser from "resources/assets/login/login-user.svg";
@@ -15,7 +15,7 @@ export default function LoginForm() {
     "password"
   );
   const { setTokenInfo } = useUserStore();
-  const navigate = useNavigate();
+  const mobileNavigate = useMobileNavigate();
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -31,7 +31,7 @@ export default function LoginForm() {
     try {
       const reponse = await login(studentId, password);
       setTokenInfo(reponse.data);
-      navigate(-1);
+      mobileNavigate(-1);
     } catch (error) {
       console.error("로그인 실패", error);
       if (axios.isAxiosError(error) && error.response) {

@@ -1,26 +1,24 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAppStateStore from "stores/useAppStateStore";
 
 export default function useMobileNavigate() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { isAppUrl } = useAppStateStore();
 
-  const mobileNavigate = (path: string) => {
-    const currentPathname = location.pathname;
-    const currentSearch = location.search;
-    const [newPathname, newSearch] = path.split("?");
-
-    if (window.AndroidBridge && window.AndroidBridge.navigateTo) {
-      if (currentPathname === newPathname) {
-        if (currentSearch !== `?${newSearch}`) {
-          navigate(`${isAppUrl}${path}`);
-        }
+  const mobileNavigate = (pathOrSteps: string | number) => {
+    if (typeof pathOrSteps === "number") {
+      if (window.AndroidBridge && window.AndroidBridge.goBack) {
+        window.AndroidBridge.goBack();
       } else {
-        window.location.href = `${isAppUrl}${path}`;
+        navigate(pathOrSteps);
       }
     } else {
-      navigate(`${isAppUrl}${path}`);
+      const fullPath = `${isAppUrl}${pathOrSteps}`;
+      if (window.AndroidBridge && window.AndroidBridge.goBack) {
+        window.location.href = fullPath;
+      } else {
+        navigate(fullPath);
+      }
     }
   };
 
