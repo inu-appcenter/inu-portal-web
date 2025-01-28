@@ -8,6 +8,7 @@ import PetitionList from "mobile/components/council/PetitionList";
 import { useState } from "react";
 import useUserStore from "stores/useUserStore";
 import HelloBus from "mobile/components/council/HelloBus";
+import PencilImg from "resources/assets/posts/pencil-white.svg";
 
 export default function MobileCouncilPage() {
   const { userInfo } = useUserStore();
@@ -35,8 +36,11 @@ export default function MobileCouncilPage() {
       {type === "notice" && (
         <>
           {userInfo.role == "admin" && (
-            <button onClick={() => setIsNoticeUploadOpen(true)}>
-              공지 등록
+            <button
+              className="upload-button"
+              onClick={() => setIsNoticeUploadOpen(true)}
+            >
+              관리자-공지 등록
             </button>
           )}
           <UploadNotice
@@ -51,8 +55,12 @@ export default function MobileCouncilPage() {
       )}
       {type === "petition" && (
         <>
-          <button onClick={() => setIsPetitionUploadOpen(true)}>
-            청원 등록
+          <button
+            className="upload-button"
+            onClick={() => setIsPetitionUploadOpen(true)}
+          >
+            <img src={PencilImg} alt="" />
+            글쓰기
           </button>
           <UploadPetition
             isOpen={isPetitionUploadOpen}
@@ -79,4 +87,25 @@ const MobileCouncilPageWrapper = styled.div`
   align-items: center;
   gap: 16px;
   width: 100%;
+
+  .upload-button {
+    position: fixed;
+    right: 20px;
+    bottom: 100px;
+    z-index: 999999;
+    color: white;
+    background-color: rgba(64, 113, 185, 1);
+    border-radius: 100%;
+    width: 64px;
+    height: 64px;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    img {
+      height: 24px;
+    }
+    font-size: 12px;
+  }
 `;
