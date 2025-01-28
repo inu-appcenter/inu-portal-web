@@ -69,19 +69,26 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
         >
           {books.map((book) => (
             <BookCard key={book.id} onClick={() => setSelectedId(book.id)}>
+              <div className="card-left">
+                <h3>
+                  {book.name} - {book.author}
+                </h3>
+                <p>판매 가격: book.price</p>
+                <div>
+                  {book.transactionStatus == "AVAILABLE"
+                    ? "판매중"
+                    : "판매 중지"}
+                </div>
+              </div>
               {book.imageCount > 0 ? (
                 <img
+                  className="thumbnail"
                   src={`https://portal.inuappcenter.kr/images/book/thumbnail/${book.id}`}
                   alt={book.name}
                 />
               ) : (
-                <span />
+                <span className="thumbnail" />
               )}
-              <div>
-                <h3>{book.name}</h3>
-                <p>{book.author}</p>
-              </div>
-              <div>{book.transactionStatus}</div>
             </BookCard>
           ))}
         </InfiniteScroll>
@@ -89,13 +96,6 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
     </>
   );
 }
-
-const ListWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
 
 const FilterButtons = styled.div`
   display: flex;
@@ -117,34 +117,54 @@ const FilterButtons = styled.div`
   }
 `;
 
+const ListWrapper = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 12px;
+`;
+
 const BookCard = styled.div`
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(122, 167, 229, 1);
   border-radius: 8px;
   background-color: white;
+  margin-bottom: 12px;
+  position: relative;
+  height: 96px;
 
-  img {
-    width: 50px;
-    height: 50px;
+  .thumbnail {
+    min-width: 96px;
+    max-width: 96px;
+    height: 96px;
     object-fit: cover;
-    border-radius: 4px;
+    box-sizing: border-box;
+    padding: 8px;
+    border-radius: 16px;
+  }
+
+  .card-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    justify-content: space-between;
   }
 
   h3 {
-    font-size: 16px;
+    font-size: 14px;
     margin: 0;
+    color: rgba(34, 17, 18, 1);
+    max-width: 240px;
+    overflow-x: hidden;
   }
 
   p {
     font-size: 14px;
     color: #555;
-    margin: 4px 0 0;
+    margin: 0;
   }
 
-  span {
-    width: 50px;
-    height: 50px;
+  .create-date {
+    color: rgba(122, 167, 229, 1);
   }
 `;
