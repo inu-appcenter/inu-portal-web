@@ -37,11 +37,10 @@ export default function MobileUtilPage() {
         <>
           {userInfo.role == "admin" && (
             <button
-              onClick={() => {
-                setIsBookUploadOpen(true);
-              }}
+              className="upload-button"
+              onClick={() => setIsBookUploadOpen(true)}
             >
-              책 등록
+              관리자-책 등록
             </button>
           )}
           <UploadBook
@@ -57,8 +56,11 @@ export default function MobileUtilPage() {
       {type === "lost" && (
         <>
           {userInfo.role == "admin" && (
-            <button onClick={() => setIsLostUploadOpen(true)}>
-              분실물 등록
+            <button
+              className="upload-button"
+              onClick={() => setIsLostUploadOpen(true)}
+            >
+              관리자-분실물 등록
             </button>
           )}
           <UploadLost
@@ -82,4 +84,25 @@ const MobileUtilPageWrapper = styled.div`
   align-items: center;
   gap: 16px;
   width: 100%;
+
+  .upload-button {
+    position: fixed;
+    right: 20px;
+    bottom: 100px;
+    z-index: 999999;
+    color: white;
+    background-color: rgba(64, 113, 185, 1);
+    border-radius: 100%;
+    width: 64px;
+    height: 64px;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    img {
+      height: 24px;
+    }
+    font-size: 12px;
+  }
 `;
