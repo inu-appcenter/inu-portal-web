@@ -127,6 +127,7 @@ const BookCard = styled.div`
   }
 
   .card-right {
+    flex: 1;
     display: flex;
     flex-direction: column;
     padding: 8px;
