@@ -6,8 +6,8 @@ interface Props {
 }
 
 const buttons = [
-  { type: "notice", label: "총학생회 공지" },
-  { type: "petition", label: "총학생회 청원" },
+  { type: "petition", label: "총학청원" },
+  { type: "notice", label: "총학공지" },
   { type: "HelloBus", label: "헬로버스" },
 ];
 
@@ -33,19 +33,19 @@ const MobileCouncilHeaderWrapper = styled.div`
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 42px;
-  border-bottom: 2px solid #e0e0e0;
+  min-height: 46px;
+  color: rgba(155, 155, 155, 1);
+  background: rgba(243, 247, 254, 1);
   button {
     box-sizing: content-box;
     height: 100%;
     flex: 1;
     background-color: transparent;
     border: 0;
-    border-bottom: 2px solid transparent;
     font-weight: 600;
   }
   .selected {
-    color: #4071b9;
-    border-bottom: 2px solid #4071b9;
+    background: linear-gradient(180deg, #6d98d7 0%, #0e4d9d 100%);
+    color: white;
   }
 `;
