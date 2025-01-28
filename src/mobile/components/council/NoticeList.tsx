@@ -4,6 +4,7 @@ import { CouncilNotice } from "types/councilNotices";
 import { getCouncilNoticesList } from "apis/councilNotices";
 import styled from "styled-components";
 import useMobileNavigate from "hooks/useMobileNavigate";
+import eyeImg from "resources/assets/posts/eye.svg";
 
 export default function NoticeList({ reloadKey }: { reloadKey: number }) {
   const [notices, setNotices] = useState<CouncilNotice[]>([]);
@@ -56,16 +57,22 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
             >
               {notice.imageCount > 0 ? (
                 <img
+                  className="thumbnail"
                   src={`https://portal.inuappcenter.kr/images/councilNotice/thumbnail/${notice.id}`}
                   alt={notice.title}
                 />
               ) : (
-                <span />
+                <span className="thumbnail" />
               )}
-              <div>
+              <div className="card-right">
                 <h3>{notice.title}</h3>
-                <div>{notice.createDate}</div>
-                <div>조회수: {notice.view}</div>
+                <div className="card-bottom">
+                  <p className="create-date">{notice.createDate}</p>
+                  <div className="view">
+                    <img src={eyeImg} alt="조회수" />
+                    <p>{notice.view}</p>
+                  </div>
+                </div>
               </div>
             </BookCard>
           ))}
@@ -77,42 +84,67 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
 
 const ListWrapper = styled.div`
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  box-sizing: border-box;
+  padding: 0 12px;
 `;
 
 const BookCard = styled.div`
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(122, 167, 229, 1);
   border-radius: 8px;
   background-color: white;
+  margin-bottom: 12px;
+  position: relative;
+  height: 96px;
 
-  div {
-    overflow-x: hidden;
-  }
-  img {
-    width: 50px;
-    height: 50px;
+  .thumbnail {
+    min-width: 96px;
+    max-width: 96px;
+    height: 96px;
     object-fit: cover;
-    border-radius: 4px;
+    border-right: 1px solid rgba(122, 167, 229, 1);
+    border-radius: 7px 0 0 7px;
+  }
+
+  .card-right {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    justify-content: space-between;
   }
 
   h3 {
-    font-size: 16px;
+    font-size: 14px;
     margin: 0;
+    color: rgba(34, 17, 18, 1);
+    max-width: 240px;
+    overflow-x: hidden;
   }
 
   p {
     font-size: 14px;
     color: #555;
-    margin: 4px 0 0;
+    margin: 0;
   }
 
-  span {
-    width: 50px;
-    height: 50px;
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .create-date {
+    color: rgba(122, 167, 229, 1);
+  }
+
+  .view {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    img {
+      width: 12px;
+    }
+    p {
+      font-size: 12px;
+    }
   }
 `;
