@@ -33,14 +33,25 @@ export default function MobileClubPage() {
       </TitleCategorySelectorWrapper>
       <ClubList>
         {clubs.map((club) => (
-          <ClubCard
-            key={club.name}
-            onClick={() => window.open(club.url, "_blank")}
-          >
+          <ClubCard key={club.name}>
             <img src={club.imageUrl} alt={club.name} />
             <div>
-              <h3>{club.name}</h3>
-              <h4>{club.category}</h4>
+              <span className="wrapper">
+                <h3>{club.name}</h3>
+                <h4>{club.category}</h4>
+              </span>
+              <span className="buttons-wrapper">
+                {club.url && (
+                  <button onClick={() => window.open(club.url, "_blank")}>
+                    소개 페이지
+                  </button>
+                )}
+                {club.homeUrl && (
+                  <button onClick={() => window.open(club.homeUrl, "_blank")}>
+                    동아리 홈페이지
+                  </button>
+                )}
+              </span>
             </div>
           </ClubCard>
         ))}
@@ -75,7 +86,7 @@ const ClubList = styled.div`
 `;
 
 const ClubCard = styled.div`
-  height: 48px;
+  height: 96px;
   width: 96%;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
@@ -84,11 +95,17 @@ const ClubCard = styled.div`
   align-items: center;
   img {
     margin-left: 4px;
-    height: 40px;
+    max-width: 96px;
     border-radius: 10px;
   }
+
   div {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -100,5 +117,18 @@ const ClubCard = styled.div`
     h3 {
       margin: 0;
     }
+  }
+
+  .buttons-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  button {
+    border: 2px solid #7aa7e5;
+    background-color: #7aa7e5;
+    border-radius: 12px;
+    padding: 4px 8px;
+    color: white;
   }
 `;
