@@ -8,8 +8,10 @@ import axios, { AxiosError } from "axios";
 import { useLocation } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import UploadPetition from "mobile/components/council/UploadPetition";
+import useReloadKeyStore from "stores/useReloadKeyStore";
 
 export default function MobilePetitionDetailPage() {
+  const { triggerReload } = useReloadKeyStore();
   const [petition, setPetition] = useState<Petition>();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -60,6 +62,7 @@ export default function MobilePetitionDetailPage() {
     try {
       const params = new URLSearchParams(location.search);
       await deletePetitions(Number(params.get("id")));
+      triggerReload();
       mobileNavigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);

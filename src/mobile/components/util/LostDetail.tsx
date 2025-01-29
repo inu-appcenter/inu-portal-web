@@ -6,6 +6,7 @@ import { getLostDetail, deleteLost } from "apis/lost";
 import UploadLost from "./UploadLost";
 import { Lost } from "types/lost";
 import axios, { AxiosError } from "axios";
+import useReloadKeyStore from "stores/useReloadKeyStore";
 
 interface LostDetailProps {
   lostId: number;
@@ -13,6 +14,7 @@ interface LostDetailProps {
 }
 
 export default function LostDetail({ lostId, onClose }: LostDetailProps) {
+  const { triggerReload } = useReloadKeyStore();
   const [lost, setLost] = useState<Lost>({
     id: -1,
     name: "",
@@ -57,6 +59,7 @@ export default function LostDetail({ lostId, onClose }: LostDetailProps) {
     try {
       await deleteLost(lostId);
       alert("분실물이 삭제되었습니다.");
+      triggerReload();
       onClose();
     } catch (error) {
       console.error("Error deleting:", error);

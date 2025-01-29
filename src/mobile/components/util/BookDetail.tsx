@@ -6,6 +6,7 @@ import { getBooksDetail, postBooksAvailable, deleteBooks } from "apis/books";
 import UploadBook from "./UploadBook";
 import { Book } from "types/books";
 import useUserStore from "stores/useUserStore";
+import useReloadKeyStore from "stores/useReloadKeyStore";
 
 interface BookDetailProps {
   bookId: number;
@@ -13,6 +14,7 @@ interface BookDetailProps {
 }
 
 export default function BookDetail({ bookId, onClose }: BookDetailProps) {
+  const { triggerReload } = useReloadKeyStore();
   const { userInfo } = useUserStore();
   const [book, setBook] = useState<Book>({
     id: -1,
@@ -44,6 +46,7 @@ export default function BookDetail({ bookId, onClose }: BookDetailProps) {
     try {
       await postBooksAvailable(bookId);
       alert("판매 상태가 변경되었습니다.");
+      triggerReload();
       onClose();
     } catch (error) {
       console.error("Error toggling availability:", error);
@@ -55,6 +58,7 @@ export default function BookDetail({ bookId, onClose }: BookDetailProps) {
     try {
       await deleteBooks(bookId);
       alert("책이 삭제되었습니다.");
+      triggerReload();
       onClose();
     } catch (error) {
       console.error("Error deleting book:", error);
