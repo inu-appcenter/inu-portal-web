@@ -54,9 +54,15 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
         <FilterButtons>
           <button
             className={available ? "selected" : ""}
-            onClick={() => handleFilterChange(!available)}
+            onClick={() => handleFilterChange(true)}
           >
             판매 중
+          </button>
+          <button
+            className={!available ? "selected" : ""}
+            onClick={() => handleFilterChange(false)}
+          >
+            전체
           </button>
         </FilterButtons>
 
@@ -102,18 +108,15 @@ const FilterButtons = styled.div`
   gap: 8px;
 
   button {
-    padding: 8px 16px;
     font-size: 14px;
-    border: 1px solid #ccc;
-    background-color: white;
-    border-radius: 4px;
-    cursor: pointer;
+    font-weight: 600;
+    background-color: transparent;
+    border: none;
+    margin-bottom: 8px;
   }
 
   .selected {
-    background-color: #007bff;
-    color: white;
-    border: none;
+    color: rgba(14, 77, 157, 1);
   }
 `;
 
