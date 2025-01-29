@@ -19,10 +19,7 @@ export default function PostTitle({
   // const token = useSelector((state: any) => state.user.token);
   return (
     <>
-      <PostTitleWrapper>
-        <span className="m-title">제목: </span>
-        <span className="m-titleText">{title}</span>
-      </PostTitleWrapper>
+      <PostTitleWrapper>{title}</PostTitleWrapper>
       <Line />
 
       <div className="m-PostInfo" key={id}>
@@ -42,19 +39,13 @@ export default function PostTitle({
 }
 
 const PostTitleWrapper = styled.div`
-  .m-title {
-    padding: 5px;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 20px;
-    text-align: left;
-  }
-  .m-titleText {
-    font-size: 15px;
-    font-weight: 00;
-    line-height: 20px;
-    text-align: left;
-  }
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: left;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 `;
 const Line = styled.div`
   border-top: 1px solid #ccc; /* 1픽셀 두께의 실선 구분선, 색상은 회색 */
