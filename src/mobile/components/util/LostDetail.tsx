@@ -78,6 +78,19 @@ export default function LostDetail({ lostId, onClose }: LostDetailProps) {
       <DetailWrapper>
         <h2>{lost.name}</h2>
         <p>내용: {lost.content}</p>
+        {Array.from({ length: lost.imageCount }, (_, index) => {
+          const imageUrl = `https://portal.inuappcenter.kr/images/lost/${
+            lost.id
+          }-${index + 1}`;
+          return (
+            <img
+              key={index}
+              src={imageUrl}
+              alt={`이미지 ${index + 1}`}
+              onClick={() => window.open(imageUrl)}
+            />
+          );
+        })}
         <ButtonWrapper>
           <button onClick={() => setIsEditOpen(true)}>수정</button>
           <button onClick={handleDelete}>삭제</button>
@@ -107,6 +120,10 @@ const DetailWrapper = styled.div`
 
   p {
     margin: 4px 0;
+  }
+
+  img {
+    width: 80px;
   }
 `;
 

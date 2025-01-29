@@ -79,6 +79,19 @@ export default function BookDetail({ bookId, onClose }: BookDetailProps) {
         <p>저자: {book.author}</p>
         <p>내용: {book.content}</p>
         <p>가격: {book.price}원</p>
+        {Array.from({ length: book.imageCount }, (_, index) => {
+          const imageUrl = `https://portal.inuappcenter.kr/images/book/${
+            book.id
+          }-${index + 1}`;
+          return (
+            <img
+              key={index}
+              src={imageUrl}
+              alt={`이미지 ${index + 1}`}
+              onClick={() => window.open(imageUrl)}
+            />
+          );
+        })}
         {userInfo.role == "admin" && (
           <ButtonWrapper>
             <button onClick={handleToggleAvailability}>
@@ -115,6 +128,10 @@ const DetailWrapper = styled.div`
 
   p {
     margin: 4px 0;
+  }
+
+  img {
+    width: 80px;
   }
 `;
 
