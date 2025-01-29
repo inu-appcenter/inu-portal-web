@@ -9,6 +9,7 @@ import { useState } from "react";
 import useUserStore from "stores/useUserStore";
 
 import MobileRentalPage from "mobile/pages/MobileRentalPage.tsx";
+import useReloadKeyStore from "stores/useReloadKeyStore";
 
 export default function MobileUtilPage() {
   const { userInfo } = useUserStore();
@@ -16,17 +17,17 @@ export default function MobileUtilPage() {
   const params = new URLSearchParams(location.search);
   let type = params.get("type") || "book";
 
-  const [reloadKey, setReloadKey] = useState(0);
+  const { reloadKey, triggerReload } = useReloadKeyStore();
   const [isBookUploadOpen, setIsBookUploadOpen] = useState(false);
   const [isLostUploadOpen, setIsLostUploadOpen] = useState(false);
 
   const handleBookUploaded = () => {
-    setReloadKey((prevKey) => prevKey + 1);
+    triggerReload();
     setIsBookUploadOpen(false);
   };
 
   const handleLostUploaded = () => {
-    setReloadKey((prevKey) => prevKey + 1);
+    triggerReload();
     setIsLostUploadOpen(false);
   };
 

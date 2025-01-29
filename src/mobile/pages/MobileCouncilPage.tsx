@@ -9,6 +9,7 @@ import { useState } from "react";
 import useUserStore from "stores/useUserStore";
 import HelloBus from "mobile/components/council/HelloBus";
 import PencilImg from "resources/assets/posts/pencil-white.svg";
+import useReloadKeyStore from "stores/useReloadKeyStore";
 
 export default function MobileCouncilPage() {
   const { userInfo } = useUserStore();
@@ -16,17 +17,17 @@ export default function MobileCouncilPage() {
   const params = new URLSearchParams(location.search);
   let type = params.get("type") || "notice";
 
-  const [reloadKey, setReloadKey] = useState(0);
+  const { reloadKey, triggerReload } = useReloadKeyStore();
   const [isNoticeUploadOpen, setIsNoticeUploadOpen] = useState(false);
   const [isPetitionUploadOpen, setIsPetitionUploadOpen] = useState(false);
 
   const handleNoticeUploaded = () => {
-    setReloadKey((prevKey) => prevKey + 1);
+    triggerReload();
     setIsNoticeUploadOpen(false);
   };
 
   const handlePatitionUploaded = () => {
-    setReloadKey((prevKey) => prevKey + 1);
+    triggerReload();
     setIsPetitionUploadOpen(false);
   };
 

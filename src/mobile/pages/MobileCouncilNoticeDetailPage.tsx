@@ -9,8 +9,10 @@ import { useLocation } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import useUserStore from "stores/useUserStore";
 import UploadNotice from "mobile/components/council/UploadNotice";
+import useReloadKeyStore from "stores/useReloadKeyStore";
 
 export default function MobileCouncilDetailPage() {
+  const { triggerReload } = useReloadKeyStore();
   const { userInfo } = useUserStore();
   const [councilNotice, setCouncilNotice] = useState<CouncilNotice>();
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -58,6 +60,7 @@ export default function MobileCouncilDetailPage() {
     try {
       const params = new URLSearchParams(location.search);
       await deleteCouncilNotices(Number(params.get("id")));
+      triggerReload();
       mobileNavigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
