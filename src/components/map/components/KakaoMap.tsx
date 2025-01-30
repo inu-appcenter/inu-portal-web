@@ -17,7 +17,7 @@ const KakaoMap: React.FC = () => {
     const location = useLocation(); // 현재 URL 경로 정보를 가져옴
 
     useEffect(() => {
-        if (location.pathname === "/m/home/campus" && window.kakao && mapContainer.current) {
+        if (((location.pathname === "/m/home/campus") || (location.pathname === "/app/home/campus")) && window.kakao && mapContainer.current) {
             const options = {
                 center: new window.kakao.maps.LatLng(37.374474020920864, 126.63361466845616),
                 level: 4,
