@@ -1,27 +1,89 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import styled from "styled-components";
 
 import ItemList from "./components/ItemList";
 import Tab from "mobile/components/util/rental/Tab.tsx";
 import OpenBtn from "resources/assets/rental/OpenBtn.svg"
 import CloseBtn from "resources/assets/rental/CloseBtn.svg"
+import ItemDetail from "../../mobile/components/util/rental/ItemDetail.tsx";
+import RentalAdmin from "./components/adminMode/RentalAdmin.tsx";
+
+import {getItemsList} from "apis/rental.ts";
+import {Items} from "../../apis/rental.ts";
 
 
 export default function RentalPage() {
-    const [selectedTab, setSelectedTab] = useState<string>("방송장비");
+    const [selectedTab, setSelectedTab] = useState<string>("broadcast_equipment");
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+    const [isAdminUser, setIsAdminUser] = useState<boolean>(true);
+    const [items, setItems] = useState<Items[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    setIsAdminUser; //빨간줄 없애기용..
+
+    useEffect(() => {
+        // 데이터 로드
+        const fetchItems = async () => {
+            try {
+                const data = await getItemsList();
+                setItems(data.data);
+            } catch (error) {
+                console.error("데이터를 가져오는 중 오류 발생:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchItems();
+    }, []);
+
+    if (loading) {
+        return <p>로딩 중...</p>;
+    }
+
 
     const handleTabClick = (tab: string) => {
         setSelectedTab(tab);
     };
 
+    const handleAdminMode = () => {
+        setIsAdminMode(!isAdminMode);
+    }
+
 
     return (
         <Wrapper>
-            <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
 
-            <ItemList selectedTab={selectedTab}/>
+            {/*평상시에는 렌탈 화면이 표시됨*/}
+            {!isAdminMode && (
+                <>
+                    <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
 
-            <NoticeBox/>
+                    <ItemList selectedTab={selectedTab} setSelectedId={setSelectedId} items={items}/>
+
+                    <NoticeBox/>
+                </>
+            )}
+
+            {/*관리자 모드 버튼이 눌린 경우 관리자 페이지 표시*/}
+            {isAdminMode && (
+                <>
+                    <RentalAdmin/>
+                </>
+            )}
+
+            {/*관리자 계정이면 관리자 페이지 버튼을 노출*/}
+            {isAdminUser && (
+                <>
+                    <button onClick={handleAdminMode}>관리자 페이지</button>
+                </>
+
+            )}
+
+            {/*선택된 아이템의 세부사항을 바텀시트로 보여줌*/}
+            {selectedId && (
+                <ItemDetail itemId={selectedId} onClose={() => setSelectedId(null)}/>
+            )}
 
         </Wrapper>
 

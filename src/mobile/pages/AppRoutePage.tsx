@@ -23,14 +23,13 @@ import MobileMyPageLike from "mobile/pages/MobileMyPageLike";
 import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
-import MobileRentalPage from "mobile/pages/MobileRentalPage";
 import MobileClubPage from "./MobileClubPage";
 
 const Page = styled.div`
-  display: flex;
-  width: 100%;
-  height: 100%;
-  justify-content: center;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
 `;
 
 export default function AppRoutePage() {
@@ -58,7 +57,7 @@ export default function AppRoutePage() {
                         <Route path="/home/tips" element={<MobileTipsPage/>}/>
                         <Route path="/home/menu" element={<MobileMenuPage/>}/>
                         <Route path="/home/calendar" element={<MobileCalendarPage/>}/>
-                        <Route path="/home/map" element={<MobileCampusPage/>}/>
+                        <Route path="/home/campus" element={<MobileCampusPage/>}/>
                         <Route path="/home/util" element={<MobileUtilPage/>}/>
                         <Route path="/postdetail" element={<MobilePostDetailPage/>}/>
                         <Route
@@ -71,7 +70,6 @@ export default function AppRoutePage() {
                         />
                         <Route path="/home/council" element={<MobileCouncilPage/>}/>
                         <Route path="/home/club" element={<MobileClubPage/>}/>
-                        <Route path="/rental" element={<MobileRentalPage/>}/>
                         <Route path="/write" element={<MobileWritePage/>}/>
                         <Route path="/save" element={<MobileSavePage/>}/>
                         <Route path="/mypage" element={<MobileMyPage/>}/>
@@ -89,14 +87,14 @@ export default function AppRoutePage() {
 }
 
 const MobileRootPageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  // padding-bottom: 72px; // Nav
-  overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    // padding-bottom: 72px; // Nav
+    overflow-y: auto;
 `;
 
 const UpperBackground = styled.img`
-  position: absolute;
-  z-index: -1;
-  width: 100%;
+    position: absolute;
+    z-index: -1;
+    width: 100%;
 `;

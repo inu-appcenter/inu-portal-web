@@ -1,32 +1,39 @@
 import styled from "styled-components";
 import 신난횃불이 from "resources/assets/rental/신난횃불이.png"
 
-import {broadcasting, tents, athleticGoods, elses} from "../DB.tsx";
+import {Items} from "apis/rental.ts";
 
 
-export default function ItemList({selectedTab}: { selectedTab: string }) {
-    const goodsToRender = selectedTab === "방송장비" ? broadcasting : selectedTab === "천막" ? tents : selectedTab === "체육물품" ? athleticGoods : selectedTab === "기타" ? elses : [];
+export default function ItemList({selectedTab, setSelectedId, items}: {
+    selectedTab: string,
+    setSelectedId: (id: number) => void,
+    items: Items[]
+}) {
+// selectedTab에 맞는 아이템만 필터링 (대소문자 무시)
+    const filteredItems: Items[] = selectedTab === 'all'
+        ? items
+        : items.filter(item => item.itemCategory.toLowerCase() === selectedTab.toLowerCase());
 
     return (
         <GoodsListWrapper>
-            {goodsToRender.map((item, index) => (
-                <div key={index}>
+            {filteredItems.map((item, index) => (
+                <div key={index} onClick={() => {
+                    if (item.id != null) {
+                        setSelectedId(item.id);
+                    }
+                }}>
                     <GoodWrapper>
                         <ImageBox src={신난횃불이}/>
                         <DescriptionBox>
                             <span className={'name'}>{item.name}</span><br/>
                             대여료 : {item.deposit}<br/>
-                            남은 수량 : {item.availableQuantity}
+                            총 수량 : {item.totalQuantity}
                         </DescriptionBox>
-
-
                     </GoodWrapper>
-
                 </div>
             ))}
         </GoodsListWrapper>
     );
-
 }
 
 
