@@ -25,7 +25,6 @@ import MobileMyPageLike from "mobile/pages/MobileMyPageLike";
 import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
-import MobileRentalPage from "mobile/pages/MobileRentalPage";
 import MobileClubPage from "./MobileClubPage";
 
 const Page = styled.div<{ $active: boolean }>`
@@ -120,9 +119,6 @@ export default function MobileRootPage() {
                 </Page>
                 <Page $active={activePage.includes("/m/home/campus")}>
                     <MobileCampusPage/>
-                </Page>
-                <Page $active={activePage.includes("/m/rental")}>
-                    <MobileRentalPage/>
                 </Page>
                 <Page $active={activePage.includes("/m/postdetail")}>
                     <MobilePostDetailPage/>

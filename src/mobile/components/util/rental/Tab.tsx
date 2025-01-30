@@ -16,10 +16,12 @@ const Tab = ({handleTabClick, selectedTab}: { handleTabClick: any, selectedTab: 
 
     return (
         <TabWrapper>
-            <TabButton text={"방송장비"} isSelected={selectedTab === "방송장비"} onClick={() => handleTabClick("방송장비")}/>
-            <TabButton text={"천막"} isSelected={selectedTab === "천막"} onClick={() => handleTabClick("천막")}/>
-            <TabButton text={"체육물품"} isSelected={selectedTab === "체육물품"} onClick={() => handleTabClick("체육물품")}/>
-            <TabButton text={"기타"} isSelected={selectedTab === "기타"} onClick={() => handleTabClick("기타")}/>
+            <TabButton text={"방송장비"} isSelected={selectedTab === "broadcast_equipment"}
+                       onClick={() => handleTabClick("broadcast_equipment")}/>
+            <TabButton text={"천막"} isSelected={selectedTab === "tent"} onClick={() => handleTabClick("tent")}/>
+            <TabButton text={"체육물품"} isSelected={selectedTab === "sports_equipment"}
+                       onClick={() => handleTabClick("sports_equipment")}/>
+            <TabButton text={"기타"} isSelected={selectedTab === "other"} onClick={() => handleTabClick("other")}/>
         </TabWrapper>
     );
 }
