@@ -5,8 +5,10 @@ import {useLocation} from "react-router-dom";
 import BottomSheet from "../components/map/BottomSheet.tsx"
 
 import Map from "components/map/components/KakaoMap.tsx";
+import MobileCampusHeader from "../components/map/MobileCampusHeader.tsx";
+import HelloBus from "../components/council/HelloBus.tsx";
 
-export default function MobileMapPage() {
+export default function MobileCampusPage() {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const query = params.get("search") || "";
@@ -16,15 +18,27 @@ export default function MobileMapPage() {
     } else if (params.get("type") === "notice") {
         docType = "NOTICE";
     }
-    // const category = params.get("category") || "전체";
+    let type = params.get("type") || "campusmap";
+
 
     return (
         <MobileTipsPageWrapper>
-            <TitleCategorySelectorWrapper>
-                <TipsPageTitle value={docType + (query ? ` - ${query}` : "")}/>
-            </TitleCategorySelectorWrapper>
-            <Map/>
-            <BottomSheet/>
+            <MobileCampusHeader selectedType={type}/>
+            {type === "campusmap" && (
+                <>
+                    <TitleCategorySelectorWrapper>
+                        <TipsPageTitle value={docType + (query ? ` - ${query}` : "")}/>
+                    </TitleCategorySelectorWrapper>
+                    <Map/>
+                    <BottomSheet/>
+                </>
+            )}
+            {type === "HelloBus" && (
+                <>
+                    <HelloBus/>
+                </>
+            )}
+
         </MobileTipsPageWrapper>
     );
 }
