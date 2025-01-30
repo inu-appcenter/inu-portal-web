@@ -12,7 +12,7 @@ import MobileLoginPage from "mobile/pages/MobileLoginPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
 import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
 import MobilePetitionDetailPage from "mobile/pages/MobilePetitionDetailPage";
-import MobileMapPage from "mobile/pages/MobileMapPage";
+import MobileCampusPage from "mobile/pages/MobileCampusPage.tsx";
 import MobileCouncilPage from "mobile/pages/MobileCouncilPage";
 import MobileUtilPage from "mobile/pages/MobileUtilPage";
 import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundImg.svg";
@@ -101,7 +101,7 @@ export default function MobileRootPage() {
                         !activePage.includes("/m/home/tips") &&
                         !activePage.includes("/m/home/menu") &&
                         !activePage.includes("/m/home/calendar") &&
-                        !activePage.includes("/m/home/map") &&
+                        !activePage.includes("/m/home/campus") &&
                         !activePage.includes("/m/home/council") &&
                         !activePage.includes("/m/home/club") &&
                         !activePage.includes("/m/home/util")
@@ -118,8 +118,8 @@ export default function MobileRootPage() {
                 <Page $active={activePage.includes("/m/home/tips")}>
                     <MobileTipsPage/>
                 </Page>
-                <Page $active={activePage.includes("/m/home/map")}>
-                    <MobileMapPage/>
+                <Page $active={activePage.includes("/m/home/campus")}>
+                    <MobileCampusPage/>
                 </Page>
                 <Page $active={activePage.includes("/m/rental")}>
                     <MobileRentalPage/>

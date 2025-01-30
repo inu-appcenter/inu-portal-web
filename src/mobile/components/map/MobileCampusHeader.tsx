@@ -6,29 +6,29 @@ interface Props {
 }
 
 const buttons = [
-    {type: "petition", label: "총학청원"},
-    {type: "notice", label: "총학공지"},
+    {type: "campusmap", label: "캠퍼스맵"},
+    {type: "HelloBus", label: "헬로버스"},
 ];
 
-export default function MobileCouncilHeader({selectedType}: Props) {
+export default function MobileCampusHeader({selectedType}: Props) {
     const mobileNavigate = useMobileNavigate();
 
     return (
-        <MobileCouncilHeaderWrapper>
+        <MobileCampusHeaderWrapper>
             {buttons.map((btn) => (
                 <button
                     key={btn.type}
-                    onClick={() => mobileNavigate(`/home/council?type=${btn.type}`)}
+                    onClick={() => mobileNavigate(`/home/campus?type=${btn.type}`)}
                     className={selectedType === btn.type ? "selected" : ""}
                 >
                     {btn.label}
                 </button>
             ))}
-        </MobileCouncilHeaderWrapper>
+        </MobileCampusHeaderWrapper>
     );
 }
 
-const MobileCouncilHeaderWrapper = styled.div`
+const MobileCampusHeaderWrapper = styled.div`
     display: flex;
     align-items: center;
     width: 100%;

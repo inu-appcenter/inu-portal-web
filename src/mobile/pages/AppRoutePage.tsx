@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import { useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import {useEffect} from "react";
+import {Route, Routes, useLocation} from "react-router-dom";
 import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundImg.svg";
 import MobileHeader from "mobile/containers/common/MobileHeader";
 import MobileHomePage from "mobile/pages/MobileHomePage";
@@ -11,7 +11,7 @@ import MobileLoginPage from "mobile/pages/MobileLoginPage";
 import MobilePostDetailPage from "mobile/pages/MobilePostDetailPage";
 import MobileCouncilNoticeDetailPage from "mobile/pages/MobileCouncilNoticeDetailPage";
 import MobilePetitionDetailPage from "mobile/pages/MobilePetitionDetailPage";
-import MobileMapPage from "mobile/pages/MobileMapPage";
+import MobileCampusPage from "mobile/pages/MobileCampusPage.tsx";
 import MobileCouncilPage from "mobile/pages/MobileCouncilPage";
 import MobileUtilPage from "mobile/pages/MobileUtilPage";
 import MobileMyPage from "mobile/pages/MobileMyPage";
@@ -34,58 +34,58 @@ const Page = styled.div`
 `;
 
 export default function AppRoutePage() {
-  const { setIsAppUrl } = useAppStateStore();
+    const {setIsAppUrl} = useAppStateStore();
 
-  useEffect(() => {
-    setIsAppUrl("/app"); // MobileRootPage에 진입하면 isAppUrl 상태 설정
-  }, [setIsAppUrl]);
+    useEffect(() => {
+        setIsAppUrl("/app"); // MobileRootPage에 진입하면 isAppUrl 상태 설정
+    }, [setIsAppUrl]);
 
-  const location = useLocation();
+    const location = useLocation();
 
-  const isLoginPage = location.pathname === "/app/login";
-  const isPostDetailPage =
-    location.pathname.includes("/app/postdetail") ||
-    location.pathname.includes("/app/councilnoticedetail");
+    const isLoginPage = location.pathname === "/app/login";
+    const isPostDetailPage =
+        location.pathname.includes("/app/postdetail") ||
+        location.pathname.includes("/app/councilnoticedetail");
 
-  return (
-    <MobileRootPageWrapper>
-      <UpperBackground src={UpperBackgroundImg} />
-      {!isLoginPage && !isPostDetailPage && <MobileHeader />}
-      <main>
-        <Page>
-          <Routes>
-            <Route path="/home" element={<MobileHomePage />} />
-            <Route path="/home/tips" element={<MobileTipsPage />} />
-            <Route path="/home/menu" element={<MobileMenuPage />} />
-            <Route path="/home/calendar" element={<MobileCalendarPage />} />
-            <Route path="/home/map" element={<MobileMapPage />} />
-            <Route path="/home/util" element={<MobileUtilPage />} />
-            <Route path="/postdetail" element={<MobilePostDetailPage />} />
-            <Route
-              path="/councilnoticedetail"
-              element={<MobileCouncilNoticeDetailPage />}
-            />
-            <Route
-              path="/petitiondetail"
-              element={<MobilePetitionDetailPage />}
-            />
-            <Route path="/home/council" element={<MobileCouncilPage />} />
-            <Route path="/home/club" element={<MobileClubPage />} />
-            <Route path="/rental" element={<MobileRentalPage />} />
-            <Route path="/write" element={<MobileWritePage />} />
-            <Route path="/save" element={<MobileSavePage />} />
-            <Route path="/mypage" element={<MobileMyPage />} />
-            <Route path="/mypage/profile" element={<MobileProfilePage />} />
-            <Route path="/mypage/post" element={<MobileMyPagePost />} />
-            <Route path="/mypage/like" element={<MobileMyPageLike />} />
-            <Route path="/mypage/comment" element={<MobileMyPageComment />} />
-            <Route path="/mypage/delete" element={<MobileDeletePage />} />
-            <Route path="/login" element={<MobileLoginPage />} />
-          </Routes>
-        </Page>
-      </main>
-    </MobileRootPageWrapper>
-  );
+    return (
+        <MobileRootPageWrapper>
+            <UpperBackground src={UpperBackgroundImg}/>
+            {!isLoginPage && !isPostDetailPage && <MobileHeader/>}
+            <main>
+                <Page>
+                    <Routes>
+                        <Route path="/home" element={<MobileHomePage/>}/>
+                        <Route path="/home/tips" element={<MobileTipsPage/>}/>
+                        <Route path="/home/menu" element={<MobileMenuPage/>}/>
+                        <Route path="/home/calendar" element={<MobileCalendarPage/>}/>
+                        <Route path="/home/map" element={<MobileCampusPage/>}/>
+                        <Route path="/home/util" element={<MobileUtilPage/>}/>
+                        <Route path="/postdetail" element={<MobilePostDetailPage/>}/>
+                        <Route
+                            path="/councilnoticedetail"
+                            element={<MobileCouncilNoticeDetailPage/>}
+                        />
+                        <Route
+                            path="/petitiondetail"
+                            element={<MobilePetitionDetailPage/>}
+                        />
+                        <Route path="/home/council" element={<MobileCouncilPage/>}/>
+                        <Route path="/home/club" element={<MobileClubPage/>}/>
+                        <Route path="/rental" element={<MobileRentalPage/>}/>
+                        <Route path="/write" element={<MobileWritePage/>}/>
+                        <Route path="/save" element={<MobileSavePage/>}/>
+                        <Route path="/mypage" element={<MobileMyPage/>}/>
+                        <Route path="/mypage/profile" element={<MobileProfilePage/>}/>
+                        <Route path="/mypage/post" element={<MobileMyPagePost/>}/>
+                        <Route path="/mypage/like" element={<MobileMyPageLike/>}/>
+                        <Route path="/mypage/comment" element={<MobileMyPageComment/>}/>
+                        <Route path="/mypage/delete" element={<MobileDeletePage/>}/>
+                        <Route path="/login" element={<MobileLoginPage/>}/>
+                    </Routes>
+                </Page>
+            </main>
+        </MobileRootPageWrapper>
+    );
 }
 
 const MobileRootPageWrapper = styled.div`
