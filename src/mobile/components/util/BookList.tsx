@@ -79,7 +79,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
                 <h3>
                   {book.name} - {book.author}
                 </h3>
-                <p>판매 가격: book.price</p>
+                <p>판매 가격: {book.price}</p>
                 <div>
                   {book.transactionStatus == "AVAILABLE"
                     ? "판매중"
