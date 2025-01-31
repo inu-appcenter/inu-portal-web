@@ -18,11 +18,19 @@ export const putMembers = async (
   nickname: string,
   fireId: number
 ): Promise<ApiResponse<number>> => {
-  const response = await tokenInstance.put<ApiResponse<number>>(
-    `/api/members`,
-    { nickname, fireId }
-  );
-  return response.data;
+  if (nickname) {
+    const response = await tokenInstance.put<ApiResponse<number>>(
+      `/api/members`,
+      { nickname, fireId }
+    );
+    return response.data;
+  } else {
+    const response = await tokenInstance.put<ApiResponse<number>>(
+      `/api/members`,
+      { fireId }
+    );
+    return response.data;
+  }
 };
 
 // 회원 삭제

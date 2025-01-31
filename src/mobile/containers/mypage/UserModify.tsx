@@ -14,13 +14,21 @@ export default function UserModify() {
   const handleModifyClick = async () => {
     try {
       const response = await putMembers(nickname, fireId);
-
-      setUserInfo({
-        id: response.data,
-        nickname: nickname,
-        role: userInfo.role,
-        fireId: Number(fireId),
-      });
+      if (nickname) {
+        setUserInfo({
+          id: response.data,
+          nickname: nickname,
+          role: userInfo.role,
+          fireId: Number(fireId),
+        });
+      } else {
+        setUserInfo({
+          id: response.data,
+          nickname: userInfo.nickname,
+          role: userInfo.role,
+          fireId: Number(fireId),
+        });
+      }
       alert("성공적으로 수정되었습니다.");
     } catch (error) {
       console.error("회원정보 수정 실패", error);
