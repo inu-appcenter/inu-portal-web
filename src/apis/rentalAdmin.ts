@@ -7,6 +7,14 @@ import {Items} from "apis/rental.ts";
 
 export {getItemsList} from "apis/rental.ts";
 
+// 예약 데이터 타입 정의
+interface Reservation {
+    memberId: string;
+    startDateTime: string;
+    endDateTime: string;
+    reservationStatus: string;
+}
+
 
 //물품 등록
 export const addItem = async (
@@ -67,8 +75,8 @@ export const deleteItem = async (itemId: number): Promise<ApiResponse<{}>> => {
 
 
 // 아이템별 예약 목록 조회 함수
-export const getItemReservations = async (itemId: number, page: number = 1): Promise<ApiResponse<any[]>> => {
-    const response = await tokenInstance.get<ApiResponse<any[]>>(
+export const getItemReservations = async (itemId: number, page: number = 1): Promise<ApiResponse<Reservation[]>> => {
+    const response = await tokenInstance.get<ApiResponse<Reservation[]>>(
         `/api/reservations/item/${itemId}?page=${page}`,
     );
     return response.data;

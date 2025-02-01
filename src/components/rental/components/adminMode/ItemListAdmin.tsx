@@ -1,18 +1,28 @@
-import {JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import styled from "styled-components";
 
 import {Items} from "apis/rental.ts";
 import {getItemsList, getItemReservations} from "apis/rentalAdmin.ts";
 import EditItem from "./EditItem";
 
+// 예약 데이터 타입 정의
+interface Reservation {
+    memberId: string;
+    startDateTime: string;
+    endDateTime: string;
+    reservationStatus: string;
+}
 
-// ItemList 컴포넌트
+interface ApiResponse<T> {
+    contents: T;
+}
+
 const ItemListAdmin = () => {
     const [items, setItems] = useState<Items[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedItem, setSelectedItem] = useState<Items | null>(null);
     const [isChanged, setIsChanged] = useState<boolean>(true);
-    const [reservations, setReservations] = useState<{ [key: number]: any[] }>({});
+    const [reservations, setReservations] = useState<{ [key: number]: Reservation[] }>({});
 
     useEffect(() => {
         // 데이터 로드
@@ -23,19 +33,25 @@ const ItemListAdmin = () => {
 
                 // 각 아이템의 예약 리스트 불러오기
                 if (Array.isArray(data.data)) {
-                    data.data.forEach(async (item) => {
+                    for (const item of data.data) {
                         try {
-                            const reservationData = await getItemReservations(item.id, 1);
-                            setReservations((prev) => ({
-                                ...prev,
-                                [item.id]: reservationData.contents,
-                            }));
+                            if (item.id !== undefined) {
+                                // @ts-ignore
+                                const reservationData: ApiResponse<Reservation[]> = await getItemReservations(item.id, 1);
+                                if (reservationData && reservationData.contents) {
+                                    // @ts-ignore
+                                    setReservations((prev) => ({
+                                        ...prev,
+                                        // @ts-ignore
+                                        [item.id]: reservationData.contents,
+                                    }));
+                                }
+                            }
                         } catch (error) {
                             console.error("예약 리스트를 가져오는 중 오류 발생:", error);
                         }
-                    });
+                    }
                 }
-
             } catch (error) {
                 console.error("아이템 목록을 가져오는 중 오류 발생:", error);
             } finally {
@@ -54,7 +70,6 @@ const ItemListAdmin = () => {
         setSelectedItem(item);
     };
 
-    // @ts-ignore
     return (
         <ItemListWrapper>
             {items.map((item, index) => (
@@ -69,16 +84,11 @@ const ItemListAdmin = () => {
                     </div>
 
                     {/* 예약 리스트 표시 */}
-                    {reservations[item.id] && reservations[item.id].length > 0 && (
+                    {item.id !== undefined && reservations[item.id] && reservations[item.id].length > 0 && (
                         <ReservationList>
                             <h4>예약 목록</h4>
                             <ul>
-                                {reservations[item.id].map((reservation: {
-                                    memberId: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined;
-                                    startDateTime: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined;
-                                    endDateTime: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined;
-                                    reservationStatus: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined;
-                                }, idx: Key | null | undefined) => (
+                                {reservations[item.id].map((reservation, idx) => (
                                     <li key={idx}>
                                         <div>예약자 ID: {reservation.memberId}</div>
                                         <div>예약 시간: {reservation.startDateTime} - {reservation.endDateTime}</div>

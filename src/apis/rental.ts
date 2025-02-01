@@ -12,6 +12,21 @@ export interface Items {
 
 }
 
+export interface Reservation {
+    pages: number;
+    total: number;
+    contents: ReservationContent[];
+}
+
+export interface ReservationContent {
+    itemId: number;
+    memberId: number;
+    startDateTime: string;
+    endDateTime: string;
+    createdAt: string;
+    reservationStatus: string;
+}
+
 
 //물품 리스트 조회
 export const getItemsList = async (): Promise<ApiResponse<SetStateAction<Items[]>>> => {
@@ -59,9 +74,9 @@ export const createReservation = async (
 
 
 // 예약 목록 조회
-export const getReservations = async (page: number = 1): Promise<ApiResponse<SetStateAction<any[]>>> => {
-    const response = await tokenInstance.get<ApiResponse<SetStateAction<any[]>>>(
-        `/api/reservations?page=${page}`,
+export const getReservations = async (page: number = 1): Promise<ApiResponse<Reservation>> => {
+    const response = await tokenInstance.get<ApiResponse<Reservation>>(
+        `/api/reservations?page=${page}`
     );
     return response.data;
 };
