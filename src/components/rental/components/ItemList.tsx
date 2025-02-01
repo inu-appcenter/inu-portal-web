@@ -45,7 +45,8 @@ const GoodsListWrapper = styled.div`
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* 화면 크기에 따라 150px 이상의 칸을 자동으로 채움 */
     margin-top: 20px;
     gap: 15px;
-    justify-content: center; /* 그리드를 좌우 중앙 정렬 */
+    place-items: center;
+
 
     margin-bottom: 30px;
 `;

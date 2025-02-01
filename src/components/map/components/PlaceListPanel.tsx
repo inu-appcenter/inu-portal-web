@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import styled from "styled-components";
 
 import Tab from "../../../mobile/components/map/Tab.tsx";
@@ -7,11 +7,15 @@ import SchoolList from "../../../mobile/components/map/SchoolList.tsx";
 
 import {places, restPlaces} from "../DB.tsx";
 
+interface BottomSheetProps {
+    selectedTab?: string;
+    setSelectedTab?: React.Dispatch<React.SetStateAction<string>>;
+}
 
-const PlaceListPanel: React.FC = () => {
-    const [selectedTab, setSelectedTab] = useState<string>("학교");
+const PlaceListPanel = ({selectedTab, setSelectedTab}: BottomSheetProps) => {
 
     const handleTabClick = (tab: string) => {
+        // @ts-ignore
         setSelectedTab(tab);
     };
 

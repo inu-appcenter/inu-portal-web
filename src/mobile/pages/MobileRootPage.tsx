@@ -183,6 +183,8 @@ const MobileRootPageWrapper = styled.div`
     flex-direction: column;
     padding-bottom: 72px; // Nav
     overflow-y: auto;
+    width: 100%;
+    height: 100%;
 `;
 
 const UpperBackground = styled.img`

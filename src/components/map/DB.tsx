@@ -440,7 +440,7 @@ export const places: Place[] = [
     },
 ];
 
-
+//휴게 장소 정보
 export const restPlaces: Place[] = [
     {
         latitude: "37.3759483",
@@ -747,3 +747,9 @@ export const restPlaces: Place[] = [
         schoolPlaceInfo: null,
     },
 ];
+
+
+//식당 정보
+
+
+//카페 정보
