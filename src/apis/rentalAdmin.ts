@@ -64,3 +64,12 @@ export const deleteItem = async (itemId: number): Promise<ApiResponse<{}>> => {
         throw error;
     }
 };
+
+
+// 아이템별 예약 목록 조회 함수
+export const getItemReservations = async (itemId: number, page: number = 1): Promise<ApiResponse<any[]>> => {
+    const response = await tokenInstance.get<ApiResponse<any[]>>(
+        `/api/reservations/item/${itemId}?page=${page}`,
+    );
+    return response.data;
+};
