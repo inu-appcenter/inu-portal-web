@@ -5,6 +5,7 @@ export interface BookSummary {
   thumbnail: string;
   transactionStatus: string;
   imageCount: number;
+  price: number;
 }
 
 export interface Book {
