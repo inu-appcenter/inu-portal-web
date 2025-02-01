@@ -1,21 +1,48 @@
 import React, {useEffect, useRef, useState} from "react";
-import {places} from "../DB";
+import {places, restPlaces} from "../DB";
 import {zoomIn, zoomOut, setMapType} from "../utils/mapUtils";
-import {placesMarkDB} from "../utils/markerUtils";
+import {placesMarkDB, deleteMarkers} from "../utils/markerUtils";
 import {imageSources} from "../constants/markerImages.ts";
 import "./KakaoMap.css";
 import {useLocation} from "react-router-dom";
 
 
-const KakaoMap: React.FC = () => {
+interface Props {
+    selectedTab: string;
+    setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
+}
+
+let markers: any[] = []; // any 타입 명시
+
+const KakaoMap = ({selectedTab, setSelectedTab}: Props) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const [map, setMap] = useState<any>(null);
     const [level, setLevel] = useState<number>(3);
+    setSelectedTab//빨간줄 제거용..
 
-    level;
 
+    useEffect(() => {
+        if (selectedTab === "학교") {
+            deleteMarkers(markers);
+            placesMarkDB(places, imageSources[1], 1, map, markers);
+
+        } else if (selectedTab === "휴게실") {
+            deleteMarkers(markers);
+            placesMarkDB(restPlaces, imageSources[1], 1, map, markers);
+
+
+        } else if (selectedTab === "카페") {
+
+        } else if (selectedTab === "식당") {
+
+        }
+    }, [selectedTab]);
+
+
+    level;//빨간줄 방지용..
+
+    //지도 화면 깨짐 문제 해결용
     const location = useLocation(); // 현재 URL 경로 정보를 가져옴
-
     useEffect(() => {
         if (((location.pathname === "/m/home/campus") || (location.pathname === "/app/home/campus")) && window.kakao && mapContainer.current) {
             const options = {
@@ -26,11 +53,13 @@ const KakaoMap: React.FC = () => {
             setTimeout(() => {
                 const kakaoMap = new window.kakao.maps.Map(mapContainer.current, options);
                 setMap(kakaoMap);
+
             }, 100);
+
         }
     }, [location.pathname]); // location.pathname이 변경될 때마다 실행
+    placesMarkDB(places, imageSources[1], 1, map, markers);
 
-    placesMarkDB(places, imageSources[1], 1, map);
 
     return (
         <div id="map" className="map_wrap" ref={mapContainer}>

@@ -1,6 +1,6 @@
 import Categories from "components/posts/Categories";
 
-import RentalTitle from "../../src/components/rental/RentalTitle.tsx";
+import RentalTitle from "../components/rental/components/RentalTitle.tsx";
 import styled from "styled-components";
 
 import {ThemeProvider} from "styled-components";

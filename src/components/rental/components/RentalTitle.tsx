@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import {useState} from "react";
-import useUserStore from "stores/useUserStore";
+import useUserStore from "stores/useUserStore.ts";
 
 export default function PostsTitle() {
     const {userInfo} = useUserStore();

@@ -6,10 +6,11 @@ export const placesMarkDB = (
     places: Place[],
     imageSrc: string,
     mode: number,
-    map: any
+    map: any,
+    markers: any
 ) => {
     places.forEach((place) => {
-        displayMarker(place, imageSrc, mode, map);
+        displayMarker(place, imageSrc, mode, map, markers);
     });
 };
 
@@ -19,13 +20,14 @@ const displayMarker = (
     place: Place,
     imageSrc: string,
     mode: number,
-    map: any
+    map: any,
+    markers: any[],
 ) => {
 
     const imageSize = new window.kakao.maps.Size(24, 35);
     const markerImage = new window.kakao.maps.MarkerImage(imageSrc, imageSize);
     const marker = new window.kakao.maps.Marker({
-        map,
+        // map,
         position: new window.kakao.maps.LatLng(place.latitude, place.longitude),
         title: place.place_name,
         image: markerImage,
@@ -60,4 +62,17 @@ const displayMarker = (
         currentInfoWindow = infowindow;
     });
 
+    // 마커가 지도 위에 표시되도록 설정합니다
+    marker.setMap(map);
+
+    markers.push(marker);
+
 };
+
+
+// 배열에 추가된 마커들을 지도에 표시하거나 삭제하는 함수입니다
+export const deleteMarkers = (markers: string | any[]) => {
+    for (let i = 0; i < markers.length; i++) {
+        markers[i].setMap(null);
+    }
+}
