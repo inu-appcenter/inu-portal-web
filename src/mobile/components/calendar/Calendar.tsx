@@ -103,6 +103,7 @@ export default function Calendarbar() {
         datesSet={handleDateChange}
         eventMouseEnter={handleEventMouseEnter}
         eventMouseLeave={handleEventMouseLeave}
+        height="400px"
       />
       {hoveredEvent && (
         <div className="event-tooltip">
@@ -134,7 +135,6 @@ const CalendarWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 24px;
-
   .fc-event {
     background-color: rgba(26, 36, 44, 0.1) !important;
   }
