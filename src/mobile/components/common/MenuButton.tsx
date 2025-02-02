@@ -37,6 +37,14 @@ export default function MenuButton() {
     setIsVisible(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (isVisible) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  });
+
   const handleClick = (title: string) => {
     if (title === "메뉴") {
       mobileNavigate(`/home/menu`);
