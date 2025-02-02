@@ -6,6 +6,7 @@ import { getLostDetail, deleteLost } from "apis/lost";
 import UploadLost from "./UploadLost";
 import { Lost } from "types/lost";
 import axios, { AxiosError } from "axios";
+import useUserStore from "stores/useUserStore";
 import useReloadKeyStore from "stores/useReloadKeyStore";
 
 interface LostDetailProps {
@@ -15,6 +16,7 @@ interface LostDetailProps {
 
 export default function LostDetail({ lostId, onClose }: LostDetailProps) {
   const { triggerReload } = useReloadKeyStore();
+  const { userInfo } = useUserStore();
   const [lost, setLost] = useState<Lost>({
     id: -1,
     name: "",
@@ -91,10 +93,12 @@ export default function LostDetail({ lostId, onClose }: LostDetailProps) {
             />
           );
         })}
-        <ButtonWrapper>
-          <button onClick={() => setIsEditOpen(true)}>수정</button>
-          <button onClick={handleDelete}>삭제</button>
-        </ButtonWrapper>
+        {userInfo.role == "admin" && (
+          <ButtonWrapper>
+            <button onClick={() => setIsEditOpen(true)}>수정</button>
+            <button onClick={handleDelete}>삭제</button>
+          </ButtonWrapper>
+        )}
       </DetailWrapper>
 
       <UploadLost
