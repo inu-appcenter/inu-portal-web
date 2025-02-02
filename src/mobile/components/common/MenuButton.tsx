@@ -115,6 +115,7 @@ const Sidebar = styled.div`
   top: 0;
   bottom: 0;
   right: 0;
+  padding-bottom: 80px;
   width: 320px;
   background-color: #fff;
   z-index: 1000;
