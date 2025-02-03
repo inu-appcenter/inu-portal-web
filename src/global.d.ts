@@ -7,6 +7,9 @@ declare global {
       goBack?: () => void;
       handleLogout?: () => void;
     };
+    webkit?: {
+      messageHandlers?: Record<string, { postMessage: (message: any) => void }>;
+    };
   }
 }
 
