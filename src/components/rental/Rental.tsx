@@ -11,11 +11,9 @@ import {Items, getItemsList, getReservations} from "apis/rental.ts";
 import ReservationList from "./components/ReservationList";
 
 
-export default function RentalPage() {
+export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
     const [selectedTab, setSelectedTab] = useState<string>("broadcast_equipment");
     const [selectedId, setSelectedId] = useState<number | null>(null);
-    const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
-    const [isAdminUser, setIsAdminUser] = useState<boolean>(true);
     const [items, setItems] = useState<Items[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [reservations, setReservations] = useState<any[]>([]); // 예약 목록 상태 추가
@@ -23,7 +21,6 @@ export default function RentalPage() {
     const [isOpenedList, setIsOpenedList] = useState<boolean>(false);
 
     //빨간줄제거용..
-    setIsAdminUser;
     reservations;
 
     useEffect(() => {
@@ -65,14 +62,11 @@ export default function RentalPage() {
         setSelectedTab(tab);
     };
 
-    const handleAdminMode = () => {
-        setIsAdminMode(!isAdminMode);
-    };
 
     return (
         <Wrapper>
             {/* 평상시에는 렌탈 화면이 표시됨 */}
-            {!isAdminMode && (
+            {!isOpenAdminPage && (
                 <>
                     <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
 
@@ -98,15 +92,15 @@ export default function RentalPage() {
             )}
 
             {/* 관리자 모드 버튼이 눌린 경우 관리자 페이지 표시 */}
-            {isAdminMode && <RentalAdmin/>}
+            {isOpenAdminPage && <RentalAdmin/>}
 
-            {/* 관리자 계정이면 관리자 페이지 버튼을 노출 */}
-            {isAdminUser && (
-                <>
-                    <AdminButton onClick={handleAdminMode}>관리자 페이지</AdminButton>
+            {/*/!* 관리자 계정이면 관리자 페이지 버튼을 노출 *!/*/}
+            {/*{isAdminUser && (*/}
+            {/*    <>*/}
+            {/*        <AdminButton onClick={handleAdminMode}>관리자 페이지</AdminButton>*/}
 
-                </>
-            )}
+            {/*    </>*/}
+            {/*)}*/}
 
             {/* 선택된 아이템의 세부사항을 바텀시트로 보여줌 */}
             {selectedId && <ItemDetail itemId={selectedId} onClose={() => setSelectedId(null)}/>}
@@ -138,26 +132,6 @@ const Button = styled.button`
 
     &:hover {
         background-color: #0056b3;
-    }
-`;
-
-const AdminButton = styled.button`
-    background-color: #007bff;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-
-    &:hover {
-        background-color: #0056b3;
-    }
-
-    &:active {
-        transform: scale(0.95);
     }
 `;
 

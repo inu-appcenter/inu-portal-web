@@ -8,7 +8,7 @@ import SchoolInfoBox from "./SchoolInfoBox.tsx";
 import {Place} from "../../../components/map/DB.tsx";
 
 
-const List = ({placesToRender}: { placesToRender: Place[] }) => {
+const List = ({placesToRender, setViewXY}: { placesToRender: Place[], setViewXY: any }) => {
     const [openIndex, setOpenIndex] = useState(-1);
 
     const handleClick = ({index}: { index: number }) => {
@@ -17,6 +17,8 @@ const List = ({placesToRender}: { placesToRender: Place[] }) => {
             return;
         }
         setOpenIndex(index);
+
+        // setViewXY({X: latitude, Y: longitude})
     }
 
     return (
