@@ -158,7 +158,6 @@ const HelloBusWrapper = styled.div`
 `;
 
 const Section = styled.div`
-  margin-bottom: 40px;
   button {
     border: none;
     font-size: 14px;
@@ -179,6 +178,7 @@ const Steps = styled.div`
   line-height: 1.6;
   background-color: rgba(248, 248, 248, 1);
   padding: 8px;
+  padding-bottom: 80px;
 
   p {
     font-weight: 500;
