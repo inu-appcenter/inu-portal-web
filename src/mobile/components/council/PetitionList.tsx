@@ -5,6 +5,7 @@ import { getPetitionsList } from "apis/petitions";
 import styled from "styled-components";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import Secret from "resources/assets/mobile-council/secret.svg";
+import heartFilledImg from "resources/assets/posts/heart-filled.svg";
 
 export default function PetitionList({ reloadKey }: { reloadKey: number }) {
   const [petitions, setPetitions] = useState<PetitionSummary[]>([]);
@@ -77,6 +78,10 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
                     <h3>{petition.title}</h3>
                     <div className="card-bottom">
                       <p className="create-date">{petition.createDate}</p>
+                      <div className="view">
+                        <img src={heartFilledImg} alt="좋아요" />
+                        <p>{petition.like}</p>
+                      </div>
                     </div>
                   </div>
                 </>
@@ -148,7 +153,24 @@ const BookCard = styled.div`
     margin: 0;
   }
 
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+  }
+
   .create-date {
     color: rgba(122, 167, 229, 1);
+  }
+
+  .view {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    img {
+      width: 12px;
+    }
+    p {
+      font-size: 12px;
+    }
   }
 `;

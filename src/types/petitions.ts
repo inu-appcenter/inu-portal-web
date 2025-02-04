@@ -4,6 +4,7 @@ export interface PetitionSummary {
   writer: string;
   createDate: string;
   imageCount: number;
+  like: number;
 }
 
 export interface Petition {
@@ -15,4 +16,6 @@ export interface Petition {
   imageCount: number;
   hasAuthority: boolean;
   view: number;
+  like: number;
+  isLiked: boolean;
 }
