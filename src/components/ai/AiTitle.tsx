@@ -1,11 +1,8 @@
-import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 export default function AiTitle() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const isGalleryPage = location.pathname === "/ai/gallery";
+  const mobileNavigate = useMobileNavigate();
 
   return (
     <AiTitleWrapper>
@@ -14,8 +11,8 @@ export default function AiTitle() {
           {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 으로 돌아가기"}
         </button> */}
 
-        <button onClick={() => navigate(isGalleryPage ? "/ai" : "/app/home")}>
-          {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 모바일로 돌아가기"}
+        <button onClick={() => mobileNavigate("/home")}>
+          ⬅ INTIP 모바일로 돌아가기
         </button>
       </div>
 
