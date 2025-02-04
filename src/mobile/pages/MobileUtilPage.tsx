@@ -20,6 +20,7 @@ export default function MobileUtilPage() {
     const {reloadKey, triggerReload} = useReloadKeyStore();
     const [isBookUploadOpen, setIsBookUploadOpen] = useState(false);
     const [isLostUploadOpen, setIsLostUploadOpen] = useState(false);
+    const [isRentalAdminOpen, setIsRentalAdminOpen] = useState(false);
 
     const handleBookUploaded = () => {
         triggerReload();
@@ -76,7 +77,15 @@ export default function MobileUtilPage() {
             )}
             {type === "rental" && (
                 <>
-                    <Rental/>
+                    {userInfo.role == "admin" && (
+                        <button
+                            className="upload-button"
+                            onClick={() => setIsRentalAdminOpen(!isRentalAdminOpen)}
+                        >
+                            관리자
+                        </button>
+                    )}
+                    <Rental isOpen={isRentalAdminOpen}/>
                 </>
 
             )}

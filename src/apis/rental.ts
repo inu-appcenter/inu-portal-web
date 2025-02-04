@@ -1,5 +1,5 @@
 // import axiosInstance from "./axiosInstance";
-import {ApiResponse} from "types/common";
+import {ApiResponse, Pagination} from "types/common";
 import tokenInstance from "./tokenInstance";
 import {SetStateAction} from "react";
 
@@ -46,31 +46,42 @@ export const getItemDetail = async (itemId: number): Promise<ApiResponse<Items>>
 };
 
 
-// 예약을 생성하는 API 호출 함수
+// 예약 등록
 export const createReservation = async (
     itemId: number,
     reservationData: { startDateTime: string, endDateTime: string }
-): Promise<ApiResponse<any>> => {
-    console.log(reservationData);
+): Promise<ApiResponse<Pagination>> => {
     try {
-        const response = await tokenInstance.post<ApiResponse<any>>(
+        console.log("에약일자", reservationData);
+        const response = await tokenInstance.post(
             `/api/reservations/${itemId}`,
-            reservationData,
-            {
-                headers: {
-                    "accept": "*/*",
-                    "Content-Type": "application/json",
-                },
-            }
+            reservationData
         );
         return response.data;
     } catch (error) {
-        if (error instanceof Error) {
-            throw new Error(error.message);
-        }
-        throw new Error("예약 등록 실패");
+        console.error("Error during reservation creation:", error);
+        throw error;
     }
 };
+
+// export const createReservation = async (itemId, {startDateTime, endDateTime}) => {
+//     try {
+//         // 예약 요청
+//         const response = await tokenInstance.post(`/api/reservations/${itemId}`, {
+//             startDateTime,
+//             endDateTime,
+//         });
+//
+//         return response.data;
+//     } catch (error) {
+//         // @ts-ignore
+//         if (error.response && error.response.status === 401) {
+//             //@ts-ignore
+//             throw new Error(error.response.data.msg || "만료된 토큰입니다.");
+//         }
+//         throw new Error("예약 등록 실패");
+//     }
+// };
 
 
 // 예약 목록 조회

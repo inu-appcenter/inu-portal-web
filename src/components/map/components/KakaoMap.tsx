@@ -10,11 +10,12 @@ import {useLocation} from "react-router-dom";
 interface Props {
     selectedTab: string;
     setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
+    viewXY: { x: number, y: number };
 }
 
 let markers: any[] = []; // any 타입 명시
 
-const KakaoMap = ({selectedTab, setSelectedTab}: Props) => {
+const KakaoMap = ({selectedTab, setSelectedTab, viewXY}: Props) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const [map, setMap] = useState<any>(null);
     const [level, setLevel] = useState<number>(3);
