@@ -102,3 +102,13 @@ export const deletePetitions = async (
   );
   return response.data;
 };
+
+// 총학생회 청원 여부 변경
+export const putLike = async (
+  petitionId: number
+): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.put<ApiResponse<number>>(
+    `/api/petitions/${petitionId}/like`
+  );
+  return response.data;
+};

@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import backbtn from "resources/assets/mobile-common/backbtn.svg";
 import { useEffect, useState } from "react";
-import { deletePetitions, getPetitionsDetail } from "apis/petitions";
+import { deletePetitions, getPetitionsDetail, putLike } from "apis/petitions";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
 import { Petition } from "types/petitions";
 import axios, { AxiosError } from "axios";
@@ -9,11 +9,15 @@ import { useLocation } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import UploadPetition from "mobile/components/council/UploadPetition";
 import useReloadKeyStore from "stores/useReloadKeyStore";
+import heartEmptyImg from "resources/assets/posts/heart-empty.svg";
+import heartFilledImg from "resources/assets/posts/heart-filled.svg";
 
 export default function MobilePetitionDetailPage() {
   const { triggerReload } = useReloadKeyStore();
   const [petition, setPetition] = useState<Petition>();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [likeState, setLikeState] = useState(0);
+  const [isLikedState, setIsLikedState] = useState(false);
 
   const mobileNavigate = useMobileNavigate();
   const location = useLocation();
@@ -22,6 +26,8 @@ export default function MobilePetitionDetailPage() {
     try {
       const response = await getPetitionsDetail(id);
       setPetition(response.data);
+      setLikeState(response.data.like);
+      setIsLikedState(response.data.isLiked);
     } catch (error) {
       console.error("청원 가져오기 실패", error);
       // refreshError가 아닌 경우 처리
@@ -91,6 +97,40 @@ export default function MobilePetitionDetailPage() {
     setIsEditOpen(false);
   };
 
+  const handleLike = async () => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const response = await putLike(Number(params.get("id")) || 0);
+      if (response.data === 1) {
+        setLikeState(likeState + 1);
+        setIsLikedState(!isLikedState);
+      } else {
+        setLikeState(likeState - 1);
+        setIsLikedState(!isLikedState);
+      }
+    } catch (error) {
+      console.error("게시글 좋아요 여부 변경 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 400:
+            alert("자신의 게시글에는 추천을 할 수 없습니다.");
+            break;
+          case 404:
+            alert("존재하지 않는 회원입니다. / 존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("게시글 좋아요 여부 변경 실패");
+            break;
+        }
+      }
+    }
+  };
+
   return (
     <>
       {petition ? (
@@ -113,6 +153,15 @@ export default function MobilePetitionDetailPage() {
                     <Button onClick={handleDelete}>삭제</Button>
                   </>
                 )}
+                <LikeContainer>
+                  <img
+                    className="UtilityImg"
+                    src={isLikedState ? heartFilledImg : heartEmptyImg}
+                    alt="heartImg"
+                    onClick={handleLike}
+                  />
+                  <span>{likeState}</span>
+                </LikeContainer>
               </PostUtilWrapper>
             </PostTopWrapper>
             <PostWrapper>
@@ -168,3 +217,12 @@ const BackBtn = styled.div`
 `;
 
 const Button = styled.button``;
+
+const LikeContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  img.UtilityImg {
+    width: 23px;
+  }
+`;
