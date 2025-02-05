@@ -10,10 +10,10 @@ import {places, restPlaces} from "../DB.tsx";
 interface BottomSheetProps {
     selectedTab?: string;
     setSelectedTab?: React.Dispatch<React.SetStateAction<string>>;
-    setViewXY: any;
+    map: any;
 }
 
-const PlaceListPanel = ({selectedTab, setSelectedTab, setViewXY}: BottomSheetProps) => {
+const PlaceListPanel = ({selectedTab, setSelectedTab, map}: BottomSheetProps) => {
 
     const handleTabClick = (tab: string) => {
         // @ts-ignore
@@ -27,7 +27,7 @@ const PlaceListPanel = ({selectedTab, setSelectedTab, setViewXY}: BottomSheetPro
         <PlaceListPanelWrapper>
             <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
             {selectedTab === "학교" ? (
-                <SchoolList placesToRender={placesToRender} setViewXY={setViewXY}/>
+                <SchoolList placesToRender={placesToRender} map={map}/>
             ) : selectedTab === "휴게실" ? (
                 <RestroomList placesToRender={placesToRender}/>
             ) : (<></>)}
