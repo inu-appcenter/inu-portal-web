@@ -36,17 +36,17 @@ const BottomSheetContent = styled.div`
 interface BottomSheetProps {
     selectedTab?: string;
     setSelectedTab?: React.Dispatch<React.SetStateAction<string>>;
-    setViewXY: any;
+    map: any;
 }
 
-function BottomSheet({selectedTab, setSelectedTab, setViewXY}: BottomSheetProps) {
+function BottomSheet({selectedTab, setSelectedTab, map}: BottomSheetProps) {
     const {sheet, content, header} = useBottomSheet();
 
     return (
         <Wrapper ref={sheet}>
             <Header headerRef={header}/>
             <BottomSheetContent ref={content}>
-                <Content selectedTab={selectedTab} setSelectedTab={setSelectedTab} setViewXY={setViewXY}/>
+                <Content selectedTab={selectedTab} setSelectedTab={setSelectedTab} map={map}/>
             </BottomSheetContent>
         </Wrapper>
     );

@@ -10,6 +10,13 @@ export const zoomOut = (map: any, setLevel: React.Dispatch<number>) => {
     setLevel(map.getLevel());
 };
 
+//장소 선택시 해당 장소 확대
+export const zoomLocation = (map: any) => {
+    // const currentLevel = map.getLevel();
+    map.setLevel(3);
+    // setLevel(map.getLevel());
+};
+
 export const displayLevel = (map: any, setLevel: React.Dispatch<number>) => {
     setLevel(map.getLevel());
 };
