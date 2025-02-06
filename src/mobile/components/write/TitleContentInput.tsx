@@ -42,7 +42,7 @@ const TitleContentInputWrapper = styled.div`
 const TitleInput = styled.input`
   margin: 8px;
   border: none;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
 `;
 
@@ -56,7 +56,7 @@ const ContentTextarea = styled.textarea`
   margin: 8px;
   flex: 1;
   border: none;
-  font-size: 10px;
+  font-size: 16px;
   font-weight: 300;
   font-family: inherit;
 `;
