@@ -59,7 +59,8 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
             alert("예약이 성공적으로 등록되었습니다.");
             onClose(); // 바텀시트 닫기
         } catch (err) {
-            setReservationError(err instanceof Error ? err.message : "예약 중 오류가 발생했습니다.");
+            // @ts-ignore
+            setReservationError(err instanceof Error ? err.response.data.msg : "예약 중 오류가 발생했습니다.");
         } finally {
             setReservationLoading(false);
         }
