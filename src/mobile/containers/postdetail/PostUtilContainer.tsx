@@ -105,7 +105,11 @@ const UtilWrapper = styled.div`
   flex-direction: row;
   gap: 20px;
 `;
-const DelOrModifyWrapper = styled.div``;
+const DelOrModifyWrapper = styled.div`
+  img {
+    padding: 4px 8px 0 8px;
+  }
+`;
 
 const Popup = styled.div`
   position: absolute;
