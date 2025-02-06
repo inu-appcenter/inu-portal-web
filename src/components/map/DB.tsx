@@ -2,16 +2,18 @@
 export interface Place {
     latitude: string; // 위도
     longitude: string; // 경도
-    location: string; // 위치(호관)
-    place_name: string; // 장소명(정보기술대학 등)
+    location: string; // 호관
+    place_name: string; // 건물명(정보기술대학 등)
     category:
         | "여자휴게실"
         | "남자휴게실"
         | "남녀공용 휴게실"
         | "송도캠퍼스"
-        | "미추홀캠퍼스";
+        | "미추홀캠퍼스"
+        | "카페";
     restareaInfo: RestArea | null;
     schoolPlaceInfo: Department[] | null; // 수정된 부분
+    cafePlaceInfo: Cafe | null;
     note: string;
     // 필요시 추가적인 프로퍼티를 여기에 정의할 수 있습니다.
 }
@@ -29,6 +31,10 @@ export interface Department {
     link: string; // 홈페이지 주소
 }
 
+export interface Cafe {
+    name: string;   //카페 상호명
+}
+
 //학교 건물 정보
 export const places: Place[] = [
     {
@@ -39,6 +45,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 대학본부는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -49,6 +56,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 교수회관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -59,6 +67,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 홍보관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -69,6 +78,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 정보전산원은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -85,6 +95,7 @@ export const places: Place[] = [
             {name: "패션산업학과", link: "https://www.example.com/패션산업학과"},
             {name: "해양학과", link: "https://www.example.com/해양학과"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -95,6 +106,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 도서관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -109,6 +121,7 @@ export const places: Place[] = [
             {name: "정보통신공학과", link: "https://www.example.com/정보통신공학과"},
             {name: "임베디드시스템공학과", link: "https://www.example.com/임베디드시스템공학과"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -128,6 +141,7 @@ export const places: Place[] = [
             {name: "에너지화학공학과", link: "https://www.example.com/에너지화학공학과"},
             {name: "바이오-로봇 시스템 공학과", link: "https://www.example.com/바이오-로봇 시스템 공학과"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -138,6 +152,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 실습관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -148,6 +163,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 게스트하우스는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -158,6 +174,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 복지회관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -168,6 +185,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 컨벤션센터는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -189,6 +207,7 @@ export const places: Place[] = [
             {name: "소비자학과", link: "https://www.example.com/소비자학과"},
             {name: "법학부", link: "https://www.example.com/법학부"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -207,6 +226,7 @@ export const places: Place[] = [
             {name: "스마트물류공학전공", link: "https://www.example.com/스마트물류공학전공"},
             {name: "IBE전공", link: "https://www.example.com/IBE전공"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -224,6 +244,7 @@ export const places: Place[] = [
             {name: "일본지역문화학과", link: "https://www.example.com/일본지역문화학과"},
             {name: "중어중국학과", link: "https://www.example.com/중어중국학과"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -241,6 +262,7 @@ export const places: Place[] = [
             {name: "스포츠과학부", link: "https://www.example.com/스포츠과학부"},
             {name: "운동건강학부", link: "https://www.example.com/운동건강학부"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -251,6 +273,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 학생회관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -261,6 +284,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 기숙사는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -271,6 +295,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 기숙사는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -281,6 +306,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 기숙사는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -295,6 +321,7 @@ export const places: Place[] = [
             {name: "국제자유전공학부", link: "https://www.example.com/국제자유전공학부"},
             {name: "융합학부", link: "https://www.example.com/융합학부"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -305,6 +332,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 스포츠센터는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -315,6 +343,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 체육관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -325,6 +354,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 학군단은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -335,6 +365,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 강당은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -345,6 +376,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 전망타워는 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -355,6 +387,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 어린이집은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -365,6 +398,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 온실은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -382,6 +416,7 @@ export const places: Place[] = [
             {name: "건축공학", link: "https://www.example.com/건축공학"},
             {name: "도시건축학", link: "https://www.example.com/도시건축학"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -392,6 +427,7 @@ export const places: Place[] = [
         category: "송도캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // 실습관은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -407,6 +443,7 @@ export const places: Place[] = [
             {name: "생명공학부(생명공학전공)", link: "https://www.example.com/생명공학부(생명공학전공)"},
             {name: "생명공학부(나이오바이오공학전공)", link: "https://www.example.com/생명공학부(나이오바이오공학전공)"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -426,6 +463,7 @@ export const places: Place[] = [
             {name: "역사교육과", link: "https://www.example.com/역사교육과"},
             {name: "윤리교육과", link: "https://www.example.com/윤리교육과"},
         ],
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
     {
@@ -436,9 +474,11 @@ export const places: Place[] = [
         category: "미추홀캠퍼스",
         restareaInfo: null,
         schoolPlaceInfo: null, // B동은 학과 정보가 없음
+        cafePlaceInfo: null, // 추가된 필드
         note: "",
     },
 ];
+
 
 //휴게 장소 정보
 export const restPlaces: Place[] = [
@@ -457,6 +497,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37465466",
@@ -473,6 +514,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37402624",
@@ -489,6 +531,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37621223",
@@ -505,6 +548,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37660704",
@@ -521,6 +565,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37535138",
@@ -537,6 +582,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37189377",
@@ -553,6 +599,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.3820173",
@@ -569,6 +616,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37459259",
@@ -585,6 +633,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37472788",
@@ -601,6 +650,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37172123",
@@ -617,6 +667,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37597128",
@@ -633,6 +684,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37462353",
@@ -649,6 +701,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37382437",
@@ -665,6 +718,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.3745533",
@@ -681,6 +735,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37595555",
@@ -697,6 +752,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37476251",
@@ -713,6 +769,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37432629",
@@ -729,6 +786,7 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
     {
         latitude: "37.37469541",
@@ -745,11 +803,79 @@ export const restPlaces: Place[] = [
         },
         note: "",
         schoolPlaceInfo: null,
+        cafePlaceInfo: null, // 추가된 필드
     },
 ];
-
 
 //식당 정보
 
 
 //카페 정보
+export const cafePlaces: Place[] = [
+    {
+        latitude: "37.37505128",
+        longitude: "126.6338094",
+        location: "6호관",
+        place_name: "학산도서관",
+        category: "송도캠퍼스",
+        restareaInfo: null,
+        schoolPlaceInfo: null,
+        cafePlaceInfo: {name: "Café Dream 도서관"},
+        note: "",
+    },
+    {
+        latitude: "37.37435262",
+        longitude: "126.6315153",
+        location: "11호관",
+        place_name: "복지회관",
+        category: "송도캠퍼스",
+        restareaInfo: null,
+        schoolPlaceInfo: null,
+        cafePlaceInfo: {name: "Café Dream 복지회관"},
+        note: "",
+    },
+    {
+        latitude: "37.37430555",
+        longitude: "126.6308692",
+        location: "17호관",
+        place_name: "학생회관",
+        category: "송도캠퍼스",
+        restareaInfo: null,
+        schoolPlaceInfo: null,
+        cafePlaceInfo: {name: "Grazie Bakery"},
+        note: "",
+    },
+    {
+        latitude: "37.37434517",
+        longitude: "126.6305726",
+        location: "17호관",
+        place_name: "학생회관",
+        category: "송도캠퍼스",
+        restareaInfo: null,
+        schoolPlaceInfo: null,
+        cafePlaceInfo: {name: "CAFÉ-ING"},
+        note: "",
+    },
+    {
+        latitude: "37.37386382",
+        longitude: "126.6344192",
+        location: "7호관 앞",
+        place_name: "팝업스토어",
+        category: "송도캠퍼스",
+        restareaInfo: null,
+        schoolPlaceInfo: null,
+        cafePlaceInfo: {name: "박종석커피"},
+        note: "",
+    },
+    {
+        latitude: "37.37368816",
+        longitude: "126.6344314",
+        location: "7호관 앞",
+        place_name: "팝업스토어",
+        category: "송도캠퍼스",
+        restareaInfo: null,
+        schoolPlaceInfo: null,
+        cafePlaceInfo: {name: "PALGONG TEA"},
+        note: "",
+    },
+];

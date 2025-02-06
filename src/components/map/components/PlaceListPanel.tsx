@@ -4,8 +4,9 @@ import styled from "styled-components";
 import Tab from "../../../mobile/components/map/Tab.tsx";
 import RestroomList from "../../../mobile/components/map/RestroomList.tsx";
 import SchoolList from "../../../mobile/components/map/SchoolList.tsx";
+import CafeList from "../../../mobile/components/map/CafeList.tsx";
 
-import {places, restPlaces} from "../DB.tsx";
+import {places, restPlaces, cafePlaces} from "../DB.tsx";
 
 interface BottomSheetProps {
     selectedTab?: string;
@@ -20,17 +21,21 @@ const PlaceListPanel = ({selectedTab, setSelectedTab, map}: BottomSheetProps) =>
         setSelectedTab(tab);
     };
 
-    const placesToRender = selectedTab === "학교" ? places : selectedTab === "휴게실" ? restPlaces : [];
+    const placesToRender = selectedTab === "학교" ? places : selectedTab === "휴게실" ? restPlaces : selectedTab === "카페" ? cafePlaces : [];
 
 
     return (
         <PlaceListPanelWrapper>
             <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
-            {selectedTab === "학교" ? (
+            {selectedTab === "학교" && (
                 <SchoolList placesToRender={placesToRender} map={map}/>
-            ) : selectedTab === "휴게실" ? (
-                <RestroomList placesToRender={placesToRender}/>
-            ) : (<></>)}
+            )}
+            {selectedTab === "휴게실" && (
+                <RestroomList placesToRender={placesToRender} map={map}/>
+            )}
+            {selectedTab === "카페" && (
+                <CafeList placesToRender={placesToRender} map={map}/>
+            )}
         </PlaceListPanelWrapper>
     );
 };
