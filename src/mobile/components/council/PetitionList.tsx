@@ -68,7 +68,7 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
                   {petition.imageCount > 0 ? (
                     <img
                       className="thumbnail"
-                      src={`https://portal.inuappcenter.kr/images/petition/thumbnail/${petition.id}`}
+                      src={`https://portal.inuappcenter.kr/images/petition/thumbnail/${petition.id}?v=${petition.modifiedDate}`}
                       alt={petition.title}
                     />
                   ) : (

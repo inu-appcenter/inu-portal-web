@@ -89,7 +89,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
               {book.imageCount > 0 ? (
                 <img
                   className="thumbnail"
-                  src={`https://portal.inuappcenter.kr/images/book/thumbnail/${book.id}`}
+                  src={`https://portal.inuappcenter.kr/images/book/thumbnail/${book.id}?v=${book.modifiedDate}`}
                   alt={book.name}
                 />
               ) : (

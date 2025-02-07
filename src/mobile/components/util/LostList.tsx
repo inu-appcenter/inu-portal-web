@@ -58,7 +58,7 @@ export default function LostList({ reloadKey }: { reloadKey: number }) {
               {lost.imageCount > 0 ? (
                 <img
                   className="thumbnail"
-                  src={`https://portal.inuappcenter.kr/images/lost/thumbnail/${lost.id}`}
+                  src={`https://portal.inuappcenter.kr/images/lost/thumbnail/${lost.id}?v=${lost.modifiedDate}`}
                   alt={lost.name}
                 />
               ) : (

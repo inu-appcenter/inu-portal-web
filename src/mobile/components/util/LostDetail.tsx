@@ -23,6 +23,7 @@ export default function LostDetail({ lostId, onClose }: LostDetailProps) {
     content: "",
     createDate: "",
     imageCount: 0,
+    modifiedDate: "",
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -83,7 +84,7 @@ export default function LostDetail({ lostId, onClose }: LostDetailProps) {
         {Array.from({ length: lost.imageCount }, (_, index) => {
           const imageUrl = `https://portal.inuappcenter.kr/images/lost/${
             lost.id
-          }-${index + 1}`;
+          }-${index + 1}?v=${lost.modifiedDate}`;
           return (
             <img
               key={index}

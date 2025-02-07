@@ -5,6 +5,7 @@ interface PostContentProps {
   content: string;
   imageCount: number;
   type: string;
+  modifiedDate: string;
 }
 
 export default function PostContent({
@@ -12,6 +13,7 @@ export default function PostContent({
   content,
   imageCount,
   type,
+  modifiedDate,
 }: PostContentProps) {
   return (
     <>
@@ -22,15 +24,15 @@ export default function PostContent({
               type === "TIPS"
                 ? `https://portal.inuappcenter.kr/images/post/${id}-${
                     index + 1
-                  }`
+                  }?v=${modifiedDate}`
                 : type === "COUNCILNOTICE"
                 ? `https://portal.inuappcenter.kr/images/councilNotice/${id}-${
                     index + 1
-                  }`
+                  }?v=${modifiedDate}`
                 : type === "PETITION"
                 ? `https://portal.inuappcenter.kr/images/petition/${id}-${
                     index + 1
-                  }`
+                  }?v=${modifiedDate}`
                 : "";
 
             return (

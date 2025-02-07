@@ -58,7 +58,7 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
               {notice.imageCount > 0 ? (
                 <img
                   className="thumbnail"
-                  src={`https://portal.inuappcenter.kr/images/councilNotice/thumbnail/${notice.id}`}
+                  src={`https://portal.inuappcenter.kr/images/councilNotice/thumbnail/${notice.id}?v=${notice.modifiedDate}`}
                   alt={notice.title}
                 />
               ) : (
