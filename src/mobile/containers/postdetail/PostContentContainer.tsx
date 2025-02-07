@@ -31,6 +31,7 @@ export default function PostContentContainer({
             id={post.id}
             content={post.content}
             imageCount={post.imageCount}
+            modifiedDate={post.modifiedDate}
             type="TIPS"
           />
         </>
@@ -47,6 +48,7 @@ export default function PostContentContainer({
             id={councilNotice.id}
             content={councilNotice.content}
             imageCount={councilNotice.imageCount}
+            modifiedDate={councilNotice.modifiedDate}
             type="COUNCILNOTICE"
           />
         </>
@@ -64,6 +66,7 @@ export default function PostContentContainer({
             id={petition.id}
             content={petition.content}
             imageCount={petition.imageCount}
+            modifiedDate={petition.modifiedDate}
             type="PETITION"
           />
         </>

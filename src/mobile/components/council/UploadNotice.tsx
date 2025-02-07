@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
+import { CouncilNotice } from "types/councilNotices";
 
 export default function UploadNotice({
   onUploaded,
@@ -12,7 +13,7 @@ export default function UploadNotice({
   onClose,
 }: {
   onUploaded: () => void;
-  initialData?: any;
+  initialData?: CouncilNotice;
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -29,12 +30,12 @@ export default function UploadNotice({
       if (initialData.imageCount && initialData.id) {
         const fetchedImages: File[] = [];
         for (let imageId = 0; imageId < initialData.imageCount; imageId++) {
-          const response = await fetch(
+          const responseImage = await fetch(
             `https://portal.inuappcenter.kr/images/councilNotice/${
               initialData.id
-            }-${imageId + 1}`
+            }-${imageId + 1}?v=${initialData.modifiedDate}`
           );
-          const blob = await response.blob();
+          const blob = await responseImage.blob();
           const file = new File([blob], `image_${imageId}.png`, {
             type: blob.type,
           });

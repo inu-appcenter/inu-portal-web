@@ -50,12 +50,12 @@ export default function WriteForm({ category, setCategory }: Props) {
 
         const fetchedImages: File[] = [];
         for (let imageId = 0; imageId < response.data.imageCount; imageId++) {
-          const response = await fetch(
+          const responseImage = await fetch(
             `https://portal.inuappcenter.kr/images/post/${postId}-${
               imageId + 1
-            }`
+            }?v=${response.data.modifiedDate}`
           );
-          const blob = await response.blob();
+          const blob = await responseImage.blob();
           const file = new File([blob], `image_${imageId}.png`, {
             type: blob.type,
           });

@@ -13,7 +13,7 @@ import useMobileNavigate from "hooks/useMobileNavigate";
 // import SortNotice from '../../components/notice/SortNotice';
 
 export default function NoticeForm() {
-  const [sort, setSort] = useState("date");
+  const [sort, setSort] = useState("view");
   const [notices, setNotices] = useState<Notice[]>([]);
   const mobileNavigate = useMobileNavigate();
 
