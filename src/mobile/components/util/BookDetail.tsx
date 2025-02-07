@@ -25,6 +25,7 @@ export default function BookDetail({ bookId, onClose }: BookDetailProps) {
     transactionStatus: "",
     imageCount: 0,
     image: [],
+    modifiedDate: "",
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -82,7 +83,7 @@ export default function BookDetail({ bookId, onClose }: BookDetailProps) {
         {Array.from({ length: book.imageCount }, (_, index) => {
           const imageUrl = `https://portal.inuappcenter.kr/images/book/${
             book.id
-          }-${index + 1}`;
+          }-${index + 1}?v=${book.modifiedDate}`;
           return (
             <img
               key={index}

@@ -134,5 +134,6 @@ const CommentWrapper = styled.div`
   flex-direction: column;
   gap: 15px;
   padding-bottom: 20px;
+  margin-bottom: 80px;
   position: relative;
 `;

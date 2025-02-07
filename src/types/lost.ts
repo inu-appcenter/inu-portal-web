@@ -4,6 +4,7 @@ export interface LostSummary {
   content: string;
   createDate: string;
   imageCount: number;
+  modifiedDate: string;
 }
 
 export interface Lost {
@@ -12,4 +13,5 @@ export interface Lost {
   content: string;
   createDate: string;
   imageCount: number;
+  modifiedDate: string;
 }
