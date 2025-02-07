@@ -1,13 +1,13 @@
 import styled from "styled-components";
-// import LocationIcon from "resources/assets/mapIcons/LocationIcon.svg";
-import CafeIcon from "resources/assets/mapIcons/CafeIcon.svg";
+import LocationIcon from "resources/assets/mapIcons/LocationIcon.svg";
+import RestaurantIcon from "resources/assets/mapIcons/RestaurantIcon.svg";
+import ConvienienceStoreIcon from "resources/assets/mapIcons/ConvenienceStoreIcon.svg"
 import OpenIcon from "resources/assets/mapIcons/OpenIcon.svg";
 
 import {useState} from "react";
 import {Place} from "../../../components/map/DB.tsx";
 import {zoomLocation} from "../../../components/map/utils/mapUtils.ts";
-import CafeInfoBox from "./CafeInfoBox.tsx";
-
+import RestaurantInfoBox from "./RestaurantInfoBox.tsx";
 
 const List = ({
                   placesToRender, map
@@ -27,6 +27,7 @@ const List = ({
         // setViewXY({X: 10, Y: 20});
     };
 
+
     // @ts-ignore
     return (
         <NewPlacesListWrapper>
@@ -41,17 +42,19 @@ const List = ({
                         }}
                     >
                         <FirstLine>
-                            <IconBox src={CafeIcon}/>
+
+                            <IconBox
+                                src={place.category === "식당" ? RestaurantIcon : place.category === "편의점" ? ConvienienceStoreIcon : LocationIcon}/>
                             <TitleBox>
                                 {/* @ts-ignore */}
-
-                                {place.category} {place.location} {place.place_name} {place.cafePlaceInfo.name}
+                                {place.restaurantInfo.name}<br/>
+                                {place.location} {place.place_name}
                             </TitleBox>
                             <OpenIconBox src={OpenIcon}/>
                         </FirstLine>
                         {openIndex === index ? (
                             <SecondLine>
-                                <CafeInfoBox place={place}/>
+                                <RestaurantInfoBox place={place}/>
                             </SecondLine>
                         ) : (
                             <></>
