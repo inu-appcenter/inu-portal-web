@@ -6,6 +6,7 @@ export interface BookSummary {
   transactionStatus: string;
   imageCount: number;
   price: number;
+  modifiedDate: string;
 }
 
 export interface Book {
@@ -17,4 +18,5 @@ export interface Book {
   transactionStatus: string;
   imageCount: number;
   image: string[];
+  modifiedDate: string;
 }

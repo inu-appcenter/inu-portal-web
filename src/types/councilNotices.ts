@@ -5,4 +5,5 @@ export interface CouncilNotice {
   view: number;
   createDate: string;
   imageCount: number;
+  modifiedDate: string;
 }
