@@ -6,7 +6,10 @@ export interface BookSummary {
   transactionStatus: string;
   imageCount: number;
   price: number;
+<<<<<<< Updated upstream
   modifiedDate: string;
+=======
+>>>>>>> Stashed changes
 }
 
 export interface Book {

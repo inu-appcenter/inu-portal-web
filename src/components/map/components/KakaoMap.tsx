@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {places, restPlaces, cafePlaces} from "../DB";
+import {places, restPlaces, cafePlaces, restaurantPlaces} from "../DB";
 import {zoomIn, zoomOut, setMapType} from "../utils/mapUtils";
 import {placesMarkDB, deleteMarkers} from "../utils/markerUtils";
 import {imageSources} from "../constants/markerImages.ts";
@@ -38,6 +38,8 @@ const KakaoMap = ({
             deleteMarkers(markers);
             placesMarkDB(cafePlaces, imageSources[1], 1, map, markers);
         } else if (selectedTab === "식당") {
+            deleteMarkers(markers);
+            placesMarkDB(restaurantPlaces, imageSources[1], 1, map, markers);
         }
     }, [selectedTab]);
 
