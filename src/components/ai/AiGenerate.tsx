@@ -6,6 +6,7 @@ import { useRef, useState, useEffect } from "react";
 import useUserStore from "stores/useUserStore";
 import AiGallery from "components/ai/AiGallery";
 import { result } from "apis/genTorch";
+import { openDB } from "idb"; // IndexedDB 사용
 
 export default function AiGenerate() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -16,14 +17,29 @@ export default function AiGenerate() {
   const [requestId, setRequestId] = useState<string | null>(null);
   const { tokenInfo } = useUserStore();
 
-  // 로컬스토리지에서 이미지 데이터 가져오기
-  const getImageFromLocalStorage = (requestId: string): string | null => {
-    return localStorage.getItem(`image_${requestId}`);
+  // IndexedDB 초기화
+  const initDB = async () => {
+    return openDB("ImageDB", 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains("images")) {
+          db.createObjectStore("images");
+        }
+      },
+    });
   };
 
-  // 로컬스토리지에 이미지 데이터 저장하기
-  const saveImageToLocalStorage = (requestId: string, b64Img: string) => {
-    localStorage.setItem(`image_${requestId}`, b64Img);
+  // IndexedDB에서 이미지 가져오기
+  const getImageFromIndexedDB = async (
+    requestId: string
+  ): Promise<string | null> => {
+    const db = await initDB();
+    return (await db.get("images", requestId)) || null;
+  };
+
+  // IndexedDB에 이미지 저장
+  const saveImageToIndexedDB = async (requestId: string, b64Img: string) => {
+    const db = await initDB();
+    await db.put("images", b64Img, requestId);
   };
 
   // ETA 감소를 위한 useEffect
@@ -70,8 +86,8 @@ export default function AiGenerate() {
         const requestId = response.data.request_id;
         setRequestId(requestId);
 
-        // 로컬스토리지에 이미지가 있는지 확인
-        const cachedImage = getImageFromLocalStorage(requestId);
+        // IndexedDB에서 이미지가 있는지 확인
+        const cachedImage = await getImageFromIndexedDB(requestId);
         if (cachedImage) {
           setMainImage(cachedImage);
           setLoading(false);
@@ -100,7 +116,7 @@ export default function AiGenerate() {
       const res = await result(requestId);
       if (res.status === 201 && res.body.b64_img) {
         const b64Img = res.body.b64_img;
-        saveImageToLocalStorage(requestId, b64Img);
+        await saveImageToIndexedDB(requestId, b64Img);
         setMainImage(b64Img);
         setLoading(false);
         setEta(0);
@@ -163,9 +179,13 @@ export default function AiGenerate() {
           }}
         />
         {tokenInfo.accessToken ? (
-          <GenerateButton onClick={handleGenerateClick}>
-            생성하기
-          </GenerateButton>
+          !loading && !canRefresh && eta == 0 ? (
+            <GenerateButton onClick={handleGenerateClick}>
+              생성하기
+            </GenerateButton>
+          ) : (
+            <GenerateButton disabled={true}>생성 중</GenerateButton>
+          )
         ) : (
           <>
             <MobileLoginButton href="/m/login">로그인</MobileLoginButton>

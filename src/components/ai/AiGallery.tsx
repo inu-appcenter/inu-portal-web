@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { result } from "apis/genTorch";
 import useUserStore from "stores/useUserStore";
 import { getFires } from "apis/fires";
+import { openDB } from "idb"; // IndexedDB 사용
 
 interface ImageRequest {
   id: string;
@@ -52,14 +53,29 @@ export default function AiGallery() {
     return () => clearInterval(interval);
   }, []);
 
-  // 로컬스토리지에서 이미지 가져오기
-  const getImageFromLocalStorage = (requestId: string): string | null => {
-    return localStorage.getItem(`image_${requestId}`);
+  // IndexedDB 초기화
+  const initDB = async () => {
+    return openDB("ImageDB", 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains("images")) {
+          db.createObjectStore("images");
+        }
+      },
+    });
   };
 
-  // 로컬스토리지에 이미지 저장하기
-  const saveImageToLocalStorage = (requestId: string, b64Img: string) => {
-    localStorage.setItem(`image_${requestId}`, b64Img);
+  // IndexedDB에서 이미지 가져오기
+  const getImageFromIndexedDB = async (
+    requestId: string
+  ): Promise<string | null> => {
+    const db = await initDB();
+    return (await db.get("images", requestId)) || null;
+  };
+
+  // IndexedDB에 이미지 저장
+  const saveImageToIndexedDB = async (requestId: string, b64Img: string) => {
+    const db = await initDB();
+    await db.put("images", b64Img, requestId);
   };
 
   const fetchImageRequests = async () => {
@@ -81,7 +97,9 @@ export default function AiGallery() {
       setImageRequests(initialRequests);
 
       // 각 요청별로 result 함수 호출
-      initialRequests.forEach((req: any) => fetchResultForRequest(req));
+      initialRequests.forEach((req: ImageRequest) =>
+        fetchResultForRequest(req)
+      );
     } catch (error) {
       console.error("Error fetching image requests:", error);
     }
@@ -89,8 +107,8 @@ export default function AiGallery() {
 
   const fetchResultForRequest = async (req: ImageRequest) => {
     try {
-      // 로컬스토리지에서 이미지 확인
-      const cachedImage = getImageFromLocalStorage(req.id);
+      // IndexedDB에서 이미지 확인
+      const cachedImage = await getImageFromIndexedDB(req.id);
       if (cachedImage) {
         setImageRequests((prevRequests) =>
           prevRequests.map((r) =>
@@ -108,7 +126,7 @@ export default function AiGallery() {
         return;
       }
 
-      // 로컬스토리지에 없으면 API 호출
+      // IndexedDB에 없으면 API 호출
       setImageRequests((prevRequests) =>
         prevRequests.map((r) =>
           r.id === req.id ? { ...r, isLoading: true, canRefresh: false } : r
@@ -118,7 +136,7 @@ export default function AiGallery() {
       const response = await result(req.id);
       if (response.status === 201) {
         const b64Img = response.body.b64_img;
-        saveImageToLocalStorage(req.id, b64Img);
+        await saveImageToIndexedDB(req.id, b64Img);
         setImageRequests((prevRequests) =>
           prevRequests.map((r) =>
             r.id === req.id
@@ -194,25 +212,9 @@ export default function AiGallery() {
               </>
             ) : (
               <GalleryStatus>
-                {req.status === "queued" ? (
+                {req.status === "queued" || req.status === "generating" ? (
                   <>
-                    <p>대기 중</p>
-                    <p>대기열: {req.request_ahead}</p>
-                    {req.eta > 0 ? (
-                      <p>예상 완료 시간: {Math.trunc(req.eta)}초</p>
-                    ) : (
-                      req.canRefresh && (
-                        <SmallRefreshButton
-                          onClick={() => fetchResultForRequest(req)}
-                        >
-                          확인!
-                        </SmallRefreshButton>
-                      )
-                    )}
-                  </>
-                ) : req.status === "generating" ? (
-                  <>
-                    <p>생성 중</p>
+                    <p>{req.status === "queued" ? "대기 중" : "생성 중"}</p>
                     <p>대기열: {req.request_ahead}</p>
                     {req.eta > 0 ? (
                       <p>예상 완료 시간: {Math.trunc(req.eta)}초</p>
