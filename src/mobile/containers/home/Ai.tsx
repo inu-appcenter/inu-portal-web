@@ -15,7 +15,7 @@ export default function AiForm() {
           <img src={aienterimg1} alt="aienter-btn-img" />
           <div className="enter-title">
             {" "}
-            횃불이 AI 생성 ✨ 지금 바로 만드러 가기
+            횃불이 AI 생성 ✨ 지금 바로 만들러 가기
           </div>
           <img src={aienterimg2} alt="aienter-btn-img" />
         </div>
