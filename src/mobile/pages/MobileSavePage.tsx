@@ -12,7 +12,10 @@ import useUserStore from "stores/useUserStore";
 export default function MobileSavePage() {
   const { tokenInfo } = useUserStore();
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>({
+    id: 0,
+    name: "전체",
+  });
   const [isManagingFolders, setIsManagingFolders] = useState(false); // 폴더 관리 상태
   const [manageMode, setManageMode] = useState<"add" | "manage">("manage"); // 폴더 관리 모드
 
