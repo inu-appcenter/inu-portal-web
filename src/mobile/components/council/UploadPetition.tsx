@@ -131,7 +131,7 @@ export default function UploadPetition({
                 checked={isPrivate}
                 onChange={(e) => setIsPrivate(e.target.checked)}
               />
-              익명 여부
+              비밀글
             </label>
           </CheckboxWrapper>
           <FileInputWrapper>
