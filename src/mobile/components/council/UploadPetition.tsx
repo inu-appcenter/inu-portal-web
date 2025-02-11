@@ -22,6 +22,7 @@ export default function UploadPetition({
     initialData?.isPrivate || false
   );
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // 초기 데이터를 변경 시 필드 업데이트
@@ -48,6 +49,10 @@ export default function UploadPetition({
     }
 
     try {
+      if (isLoading) {
+        return;
+      }
+      setIsLoading(true);
       if (initialData) {
         await putPetitions(
           initialData.id,
@@ -63,8 +68,10 @@ export default function UploadPetition({
       }
       resetForm();
       onUploaded();
+      setIsLoading(false);
       onClose(); // 닫기
     } catch (error) {
+      setIsLoading(false);
       console.error("Error posting book:", error);
       // refreshError가 아닌 경우 처리
       if (
@@ -147,10 +154,12 @@ export default function UploadPetition({
             </ImagePreview>
           </FileInputWrapper>
           <ButtonWrapper>
-            <button onClick={handlePost}>
-              {initialData ? "수정 완료" : "등록 완료"}
+            <button onClick={handlePost} disabled={isLoading}>
+              {isLoading ? "등록 중" : initialData ? "수정 완료" : "등록 완료"}
             </button>{" "}
-            <button onClick={onClose}>닫기</button>
+            <button onClick={onClose} disabled={isLoading}>
+              닫기
+            </button>
           </ButtonWrapper>
         </FormWrapper>
       </BottomSheet>
@@ -243,6 +252,11 @@ const ButtonWrapper = styled.div`
     border: none;
     border-radius: 4px;
     cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   }
 
   button:first-child {
