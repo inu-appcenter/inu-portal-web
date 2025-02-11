@@ -7,7 +7,7 @@ const CommonStyles = createGlobalStyle`
     src: url('/fonts/AppleSDGothicNeoM.ttf') format('truetype'); // format에 ttc, ttf은 'truetype' otf는 'opentype'
   }
   body {
-    font-family: 'CustomFont', Inter;
+    font-family: Roboto, 'CustomFont', Inter;
     margin: 0;
     -ms-overflow-style: none;
     overflow: scroll;
