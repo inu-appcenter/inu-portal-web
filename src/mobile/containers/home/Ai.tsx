@@ -47,7 +47,6 @@ const AiEnter = styled.div`
   }
 
   .enter-title {
-    font-family: Inter;
     font-size: 13px;
     font-weight: 700;
     color: white;

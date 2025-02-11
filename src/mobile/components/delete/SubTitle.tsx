@@ -15,7 +15,6 @@ const SubTitleWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   h3 {
-    font-family: Roboto;
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;

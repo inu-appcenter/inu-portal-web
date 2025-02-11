@@ -568,7 +568,6 @@ const EditingButtons = styled.div`
 
 const Button = styled.div`
   color: #4071b9;
-  font-family: Roboto;
   font-size: 14px;
   font-weight: 400;
 `;

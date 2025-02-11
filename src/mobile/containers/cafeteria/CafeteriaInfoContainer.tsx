@@ -66,14 +66,12 @@ const CafeteriaInfoWrapper = styled.div`
     display: flex;
     flex-direction: column;
     .type {
-      font-family: Inter;
       font-size: 10px;
       font-weight: 600;
       margin: 0;
     }
 
     .time {
-      font-family: Inter;
       font-size: 8px;
       font-weight: 400;
       color: #969696;
@@ -102,7 +100,6 @@ const CafeteriaInfoWrapper = styled.div`
     flex-direction: column;
     justify-content: space-between;
     .info {
-      font-family: Inter;
       font-size: 13px;
       font-weight: 600;
       color: #404040;
@@ -123,7 +120,6 @@ const CafeteriaInfoWrapper = styled.div`
       justify-content: center;
       border-radius: 5px;
       padding: 3px;
-      font-family: Inter;
       font-size: 10px;
       font-weight: 500;
       color: #888888;

@@ -97,7 +97,6 @@ const NoticeFormWrapper = styled.div`
       flex-direction: column;
       align-items: flex-start;
       h1 {
-        font-family: Inter;
         font-size: 10px;
         font-weight: 500;
         color: #0e4d9d;
@@ -105,7 +104,6 @@ const NoticeFormWrapper = styled.div`
       }
       .title {
         flex: 1;
-        font-family: Inter;
         font-size: 10px;
         font-weight: 600;
         text-align: left;
@@ -113,7 +111,6 @@ const NoticeFormWrapper = styled.div`
         text-overflow: ellipsis;
       }
       .createdate {
-        font-family: Inter;
         font-size: 15px;
         font-weight: 700;
         color: #7aa7e5;
@@ -155,7 +152,6 @@ const NoticeTitleWrapper = styled.div`
     font-weight: 500;
   }
   p {
-    font-family: Inter;
     font-size: 12px;
   }
 `;

@@ -111,7 +111,6 @@ const PostWrapper = styled.div`
     width: 52px;
     background-color: #aac9ee;
     color: white;
-    font-family: Inter;
     font-size: 8px;
     font-weight: 600;
     border-radius: 2px;
@@ -123,7 +122,6 @@ const PostWrapper = styled.div`
 
   .title {
     flex: 1;
-    font-family: Inter;
     font-size: 9px;
     font-weight: 600;
     text-align: center;

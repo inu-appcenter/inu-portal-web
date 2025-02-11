@@ -58,5 +58,4 @@ const ContentTextarea = styled.textarea`
   border: none;
   font-size: 16px;
   font-weight: 300;
-  font-family: inherit;
 `;

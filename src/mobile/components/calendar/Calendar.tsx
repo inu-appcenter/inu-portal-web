@@ -146,7 +146,6 @@ const CalendarWrapper = styled.div`
     padding-left: 0px;
   }
   .fc .fc-toolbar-title {
-    font-family: Lato;
     font-size: 16px;
     font-weight: 600;
     color: #828282;

@@ -120,7 +120,6 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
 
 const CardWrapper = styled.div`
   padding: 0 8px 10px 28px;
-  font-family: Inter;
   font-size: 15px;
   font-weight: 600;
   color: #0e4d9d;

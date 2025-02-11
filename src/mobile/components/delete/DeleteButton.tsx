@@ -69,7 +69,6 @@ const UserCancelButton = styled.button`
   border: none;
   padding: 10px 60px;
   cursor: pointer;
-  font-family: Roboto;
   font-size: 14px;
   font-weight: 500;
   color: #0e4d9d;
@@ -82,7 +81,6 @@ const UserDeleteButton = styled.button`
   border: none;
   padding: 10px 50px;
   cursor: pointer;
-  font-family: Roboto;
   font-size: 14px;
   font-weight: 500;
   color: #df5532;
@@ -123,7 +121,6 @@ const CancelButton = styled.button`
   border: none;
   padding: 10px 20px;
   cursor: pointer;
-  font-family: Roboto;
   font-size: 14px;
   color: #333;
   border-radius: 5px;
@@ -134,7 +131,6 @@ const ConfirmButton = styled.button`
   border: none;
   padding: 10px 20px;
   cursor: pointer;
-  font-family: Roboto;
   font-size: 14px;
   color: white;
   border-radius: 5px;

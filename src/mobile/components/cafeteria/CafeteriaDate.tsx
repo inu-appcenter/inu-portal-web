@@ -51,13 +51,11 @@ const CafeteriaDateWrapper = styled.div`
     padding: 2px 10px;
     border-radius: 10px;
     .day-name {
-      font-family: Inter;
       font-size: 10px;
       color: #444444;
       margin: 0;
     }
     .date-number {
-      font-family: Inter;
       font-size: 15px;
       font-weight: 700;
       padding: 0;
