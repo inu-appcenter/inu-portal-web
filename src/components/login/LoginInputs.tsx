@@ -17,6 +17,8 @@ export default function LoginInputs() {
   const { setTokenInfo } = useUserStore();
   const navigate = useNavigate();
 
+  const isActive = studentId.trim() !== "" && password.trim() !== "";
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleLogin();
@@ -24,6 +26,8 @@ export default function LoginInputs() {
   };
 
   const handleLogin = async () => {
+    if (!isActive) return;
+
     if (!studentId || !password) {
       alert("학번과 비밀번호를 입력해주세요.");
       return;
@@ -77,7 +81,11 @@ export default function LoginInputs() {
         />
         <img src={loginPassword} alt="" onClick={togglePasswordVisibility} />
       </span>
-      <button onClick={handleLogin}>로그인</button>
+
+      <LoginButton onClick={handleLogin} $isActive={isActive}>
+        로그인
+      </LoginButton>
+
       <TermOfUse />
     </LoginInputsWrapper>
   );
@@ -119,21 +127,24 @@ const LoginInputsWrapper = styled.div`
       width: 24px;
     }
   }
-  button {
-    height: 48px;
-    background: linear-gradient(
-      90deg,
-      rgba(156, 175, 226, 0.7) 0%,
-      rgba(181, 197, 242, 0.7) 55%,
-      rgba(156, 175, 226, 0.7) 100%
-    );
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 24px;
-    color: white;
-  }
   .info {
     width: 360px;
   }
+`;
+const LoginButton = styled.div<{ $isActive: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  background: ${({ $isActive }) =>
+    $isActive
+      ? "linear-gradient(90deg, rgba(49, 130, 206, 0.9) 0%, rgba(49, 170, 226, 0.9) 55%, rgba(49, 130, 206, 0.9) 100%)"
+      : "linear-gradient(90deg, rgba(156, 175, 226, 0.7) 0%, rgba(181, 197, 242, 0.7) 55%, rgba(156, 175, 226, 0.7) 100%)"};
+
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 24px;
+  color: white;
+  cursor: ${({ $isActive }) => ($isActive ? "pointer" : "not-allowed")};
 `;
