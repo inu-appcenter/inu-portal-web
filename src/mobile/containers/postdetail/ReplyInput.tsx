@@ -199,7 +199,7 @@ const StyledReplyInput = styled.div`
 
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 
     .anonymous-wrapper {
       display: flex;
@@ -207,6 +207,7 @@ const StyledReplyInput = styled.div`
       gap: 12px;
     }
     span {
+      min-width: 36px;
       font-size: 16px;
     }
 
