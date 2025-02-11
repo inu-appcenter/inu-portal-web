@@ -118,7 +118,6 @@ export default function CardComment({
 }
 
 const CardWrapper = styled.div`
-  font-family: Inter;
   font-size: 15px;
   font-weight: 600;
   color: #0e4d9d;

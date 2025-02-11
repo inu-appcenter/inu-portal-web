@@ -28,13 +28,11 @@ const SubContentWrapper = styled.div`
     text-align: left;
     padding: 10px;
     h1 {
-      font-family: Roboto;
       font-size: 13px;
       font-weight: 700;
     }
 
     h3 {
-      font-family: Roboto;
       font-size: 9px;
       font-weight: 500;
     }

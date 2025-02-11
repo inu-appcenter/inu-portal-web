@@ -14,7 +14,6 @@ const EmptyWrapper = styled.div`
   align-items: center;
   justify-content: center;
   p {
-    font-family: Roboto;
     font-size: 14px;
     font-weight: 400;
     color: #999898;

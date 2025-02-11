@@ -259,7 +259,6 @@ const ButtonContainer = styled.div`
 const CancelButton = styled.div`
   cursor: pointer;
   font-size: 14px;
-  font-family: Roboto;
   color: #0e4d9d;
   font-weight: 600;
   line-height: 20px;

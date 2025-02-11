@@ -56,7 +56,6 @@ const ToggleWrapper = styled.div`
     gap: 20px;
     padding: 10px 0;
     h1 {
-      font-family: Inter, sans-serif;
       font-size: 30px;
       font-weight: 700;
       line-height: 20px;
@@ -78,7 +77,6 @@ const ToggleWrapper = styled.div`
 
   .list-item {
     padding-left: 32px;
-    font-family: Inter;
     font-size: 14px;
     font-weight: 700;
     line-height: 16.94px;

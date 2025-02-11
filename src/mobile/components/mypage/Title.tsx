@@ -8,7 +8,6 @@ export default function Title({ title }: titleProps) {
 }
 
 const TitleName = styled.div`
-  font-family: Roboto;
   font-size: 15px;
   font-weight: 500;
 `;
