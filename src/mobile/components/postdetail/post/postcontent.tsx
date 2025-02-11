@@ -45,7 +45,7 @@ export default function PostContent({
             );
           })}
         </div>
-        <div className="contents">{content}</div>
+        <ContentText>{content}</ContentText>
       </div>
     </>
   );
@@ -53,4 +53,9 @@ export default function PostContent({
 
 const ContentImg = styled.img`
   max-width: 100%;
+`;
+
+const ContentText = styled.div`
+  white-space: pre-wrap;
+  word-break: break-word;
 `;
