@@ -9,6 +9,7 @@ import useMobileNavigate from "hooks/useMobileNavigate";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import { useResetWriteStore } from "reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
+import useAppStateStore from "stores/useAppStateStore";
 
 interface Props {
   category: string;
@@ -25,6 +26,7 @@ export default function WriteForm({ category, setCategory }: Props) {
   const [loading, setLoading] = useState(false);
   const triggerResetTips = useResetTipsStore((state) => state.triggerReset);
   const triggerResetWrite = useResetWriteStore((state) => state.triggerReset);
+  const { isAppUrl } = useAppStateStore();
 
   // postId 가져오기
   useEffect(() => {
@@ -98,7 +100,9 @@ export default function WriteForm({ category, setCategory }: Props) {
 
   // 나갈 때 경고
   useBeforeUnload((event) => {
-    event.preventDefault();
+    if (isAppUrl === "/m") {
+      event.preventDefault();
+    }
   });
 
   // 이미지 업로드
