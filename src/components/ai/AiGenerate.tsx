@@ -7,6 +7,7 @@ import useUserStore from "stores/useUserStore";
 import AiGallery from "components/ai/AiGallery";
 import { result } from "apis/genTorch";
 import { openDB } from "idb"; // IndexedDB 사용
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 export default function AiGenerate() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -16,6 +17,7 @@ export default function AiGenerate() {
   const [canRefresh, setCanRefresh] = useState<boolean>(false);
   const [requestId, setRequestId] = useState<string | null>(null);
   const { tokenInfo } = useUserStore();
+  const mobileNavigate = useMobileNavigate();
 
   // IndexedDB 초기화
   const initDB = async () => {
@@ -188,7 +190,9 @@ export default function AiGenerate() {
           )
         ) : (
           <>
-            <MobileLoginButton href="/m/login">로그인</MobileLoginButton>
+            <MobileLoginButton onClick={() => mobileNavigate("/login")}>
+              로그인
+            </MobileLoginButton>
             <DesktopLoginButton href="/login">로그인</DesktopLoginButton>
           </>
         )}
@@ -288,7 +292,7 @@ const GenerateButton = styled.button`
   font-weight: bold;
 `;
 
-const MobileLoginButton = styled.a`
+const MobileLoginButton = styled.button`
   display: flex;
   height: 44px;
   padding: 0 20px;
