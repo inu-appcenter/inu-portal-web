@@ -18,6 +18,7 @@ export default function UploadLost({
   const [name, setName] = useState(initialData?.name || "");
   const [content, setContent] = useState(initialData?.content || "");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // 초기 데이터를 변경 시 필드 업데이트
@@ -42,6 +43,10 @@ export default function UploadLost({
     }
 
     try {
+      if (isLoading) {
+        return;
+      }
+      setIsLoading(true);
       if (initialData) {
         await putLost(initialData.id, name, content, selectedImages);
         alert("분실물이 수정되었습니다!");
@@ -51,8 +56,10 @@ export default function UploadLost({
       }
       resetForm();
       onUploaded();
+      setIsLoading(false);
       onClose();
     } catch (error) {
+      setIsLoading(false);
       console.error("Error posting:", error);
       alert("분실물 등록 중 오류가 발생했습니다.");
     }
@@ -107,10 +114,12 @@ export default function UploadLost({
             </ImagePreview>
           </FileInputWrapper>
           <ButtonWrapper>
-            <button onClick={handlePost}>
-              {initialData ? "수정 완료" : "등록 완료"}
+            <button onClick={handlePost} disabled={isLoading}>
+              {isLoading ? "등록 중" : initialData ? "수정 완료" : "등록 완료"}
             </button>{" "}
-            <button onClick={onClose}>닫기</button>
+            <button onClick={onClose} disabled={isLoading}>
+              닫기
+            </button>
           </ButtonWrapper>
         </FormWrapper>
       </BottomSheet>
@@ -184,6 +193,11 @@ const ButtonWrapper = styled.div`
     border: none;
     border-radius: 4px;
     cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   }
 
   button:first-child {

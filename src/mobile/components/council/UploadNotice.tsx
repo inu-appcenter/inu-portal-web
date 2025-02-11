@@ -20,6 +20,7 @@ export default function UploadNotice({
   const [title, setTitle] = useState(initialData?.title || "");
   const [content, setContent] = useState(initialData?.content || "");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchPost = async () => {
     // 초기 데이터를 변경 시 필드 업데이트
@@ -67,6 +68,10 @@ export default function UploadNotice({
     }
 
     try {
+      if (isLoading) {
+        return;
+      }
+      setIsLoading(true);
       if (initialData) {
         await putCouncilNotices(initialData.id, title, content, selectedImages);
         alert("총학생회 공지사항이 수정되었습니다!");
@@ -76,8 +81,10 @@ export default function UploadNotice({
       }
       resetForm();
       onUploaded();
+      setIsLoading(false);
       onClose();
     } catch (error) {
+      setIsLoading(false);
       console.error("Error posting:", error);
       // refreshError가 아닌 경우 처리
       if (
@@ -151,10 +158,12 @@ export default function UploadNotice({
             </ImagePreview>
           </FileInputWrapper>
           <ButtonWrapper>
-            <button onClick={handlePost}>
-              {initialData ? "수정 완료" : "등록 완료"}
+            <button onClick={handlePost} disabled={isLoading}>
+              {isLoading ? "등록 중" : initialData ? "수정 완료" : "등록 완료"}
             </button>{" "}
-            <button onClick={onClose}>닫기</button>
+            <button onClick={onClose} disabled={isLoading}>
+              닫기
+            </button>
           </ButtonWrapper>
         </FormWrapper>
       </BottomSheet>
@@ -228,6 +237,11 @@ const ButtonWrapper = styled.div`
     border: none;
     border-radius: 4px;
     cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   }
 
   button:first-child {
