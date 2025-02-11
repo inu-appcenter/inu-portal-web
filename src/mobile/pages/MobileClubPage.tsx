@@ -1,4 +1,4 @@
-import CategorySelector from "mobile/components/common/CategorySelector";
+import CategorySelector from "mobile/components/club/ClubCategorySelector";
 import TipsPageTitle from "mobile/components/tips/TipsPageTitle";
 import styled from "styled-components";
 import { Club } from "types/club";

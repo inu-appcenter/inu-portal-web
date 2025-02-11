@@ -1,78 +1,47 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getCategories } from "apis/categories";
 import dropdownIcon from "resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
 import { useLocation, useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
 
-export default function CategorySelector() {
+export default function ClubCategorySelector() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [type, setType] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("전체");
   const [isOpen, setIsOpen] = useState(false);
-  const { isAppUrl } = useAppStateStore();
+
+  const clubCategories = [
+    "전체",
+    "교양학술",
+    "문화",
+    "봉사",
+    "종교",
+    "체육",
+    "취미·전시",
+  ];
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (location.pathname === `${isAppUrl}/write`) {
-      setType("write");
-    } else if (params.get("type") != type) {
-      if (params.get("type") === "notice") {
-        setType("notice");
-      } else {
-        setType("tips");
-      }
-    }
-    if (params.get("search")) {
-      setSelectedCategory("");
-    } else {
-      setSelectedCategory(params.get("category") || "전체");
-    }
-  }, [location.pathname, location.search]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        if (type == "tips") {
-          const response = await getCategories();
-          setCategories(["전체", ...response.data]);
-        } else if (type == "write") {
-          const response = await getCategories();
-          setCategories(response.data);
-        } else if (type === "notice") {
-          setCategories(["전체", "학사", "모집", "학점교류", "교육시험"]);
-        }
-      } catch (error) {
-        console.error("모든 카테고리 가져오기 실패", error);
-      }
-    };
-    fetchCategories();
-  }, [type]);
+    setSelectedCategory(params.get("category") || "전체");
+  }, [location.search]);
 
   const handleClickCategory = (category: string) => {
     const params = new URLSearchParams(location.search);
     params.delete("search");
     params.set("category", category);
     navigate(`${location.pathname}?${params.toString()}`);
+    setIsOpen(false);
   };
 
   return (
     <CategorySelectorWrapper onClick={() => setIsOpen(!isOpen)}>
       {isOpen ? (
         <DropdownOptions>
-          {categories.map((category, index) => (
+          {clubCategories.map((category, index) => (
             <React.Fragment key={category}>
-              <DropdownOption
-                onClick={() => {
-                  handleClickCategory(category);
-                  setIsOpen(false);
-                }}
-              >
+              <DropdownOption onClick={() => handleClickCategory(category)}>
                 <div>{category}</div>
               </DropdownOption>
-              {index < categories.length - 1 && <DropdownOptionLine />}
+              {index < clubCategories.length - 1 && <DropdownOptionLine />}
             </React.Fragment>
           ))}
         </DropdownOptions>
@@ -118,9 +87,8 @@ const DropdownOptions = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 4px 0;
-
   position: absolute;
-  top: 0; /* Dropdown과 같은 위치로 설정 */
+  top: 0;
   left: 0;
   right: 0;
   border-radius: 16px;
