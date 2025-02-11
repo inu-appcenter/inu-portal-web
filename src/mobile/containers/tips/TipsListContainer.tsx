@@ -55,7 +55,7 @@ export default function TipsListContainer({
     setNotices([]);
     setCouncilNotices([]);
     setIsInitialLoad(true);
-    fetchData();
+    fetchData(undefined, 1);
   }, [query, docType, setPosts, setNotices, setCouncilNotices, category]);
 
   // 첫 번째 로드 후 추가 데이터를 불러오도록 설정
@@ -64,21 +64,22 @@ export default function TipsListContainer({
       if (docType === "TIPS") {
         if (fetchState.lastPostId !== undefined) {
           setIsInitialLoad(false);
-          fetchData();
+          fetchData(fetchState.lastPostId, fetchState.page);
         }
       } else {
         if (fetchState.page !== 1) {
           setIsInitialLoad(false);
-          fetchData();
+          fetchData(fetchState.lastPostId, fetchState.page);
         }
       }
     }
   }, [fetchState]);
 
-  const fetchData = async () => {
+  const fetchData = async (lastPostId: number | undefined, page: number) => {
+    // console.log("fetchData", lastPostId, page, category);
     try {
       if (docType === "TIPS") {
-        const response = await getPostsMobile(fetchState.lastPostId, category);
+        const response = await getPostsMobile(lastPostId, category);
         const newPosts: Post[] = response.data;
         if (newPosts && newPosts.length > 0) {
           setPosts((prev) => [...prev, ...newPosts]);
@@ -92,7 +93,7 @@ export default function TipsListContainer({
           setHasMore(false);
         }
       } else if (docType === "NOTICE") {
-        const response = await getNotices(category, "date", fetchState.page);
+        const response = await getNotices(category, "date", page);
         const newNotices: Notice[] = response.data.contents;
         if (newNotices && newNotices.length > 0) {
           setNotices((prev) => [...prev, ...newNotices]);
@@ -105,7 +106,7 @@ export default function TipsListContainer({
           setHasMore(false);
         }
       } else if (docType === "SEARCH" && query) {
-        const response = await getSearch(query, "date", fetchState.page);
+        const response = await getSearch(query, "date", page);
         const newPosts: Post[] = response.data.contents;
         if (newPosts && newPosts.length > 0) {
           setPosts((prev) => [...prev, ...newPosts]);
@@ -140,8 +141,7 @@ export default function TipsListContainer({
 
   const handleNext = () => {
     if (!isInitialLoad && hasMore) {
-      // console.log("handleNext fetchData", docType, query, category, fetchState);
-      fetchData();
+      fetchData(fetchState.lastPostId, fetchState.page);
     }
   };
 
