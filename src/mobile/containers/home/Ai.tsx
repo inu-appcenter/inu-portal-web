@@ -2,6 +2,7 @@ import styled from "styled-components";
 import aienterimg1 from "resources/assets/ai/횃불-ai-enter-1.svg";
 import aienterimg2 from "resources/assets/ai/횃불-ai-enter-2.svg";
 import useMobileNavigate from "hooks/useMobileNavigate";
+import { ReactSVG } from "react-svg";
 
 export default function AiForm() {
   const mobileNavigate = useMobileNavigate();
@@ -12,12 +13,11 @@ export default function AiForm() {
     <AiEnterWrapper>
       <AiEnter onClick={handleAiBtnClick}>
         <div className="enter-frame">
-          <img src={aienterimg1} alt="aienter-btn-img" />
+          <ReactSVG src={aienterimg1} />
           <div className="enter-title">
-            {" "}
             횃불이 AI 생성 ✨ 지금 바로 만들러 가기
           </div>
-          <img src={aienterimg2} alt="aienter-btn-img" />
+          <ReactSVG src={aienterimg2} />
         </div>
       </AiEnter>
     </AiEnterWrapper>
@@ -37,18 +37,18 @@ const AiEnter = styled.div`
   padding: 4px;
   justify-content: center;
   align-items: center;
-  gap: 10px;
   border-radius: 10px;
   .enter-frame {
     justify-content: center;
     align-items: center;
     display: flex;
     border-radius: 10px;
+    gap: 12px;
   }
 
   .enter-title {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 500;
     color: white;
   }
 `;

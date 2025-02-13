@@ -114,7 +114,7 @@ const FolderItem = styled.div<{ selected: boolean }>`
   justify-content: center;
   color: ${({ selected }) => (selected ? "#4071B9" : "#000")};
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
 `;
 

@@ -47,10 +47,11 @@ const SearchFormWrapper = styled.div`
     background-color: white;
     display: flex;
     justify-content: space-between;
-    padding: 8px 17px;
+    padding: 8px 14px;
+    gap: 8px;
     input {
       border: none;
-      font-size: 14px;
+      font-size: 16px;
       color: #888888;
       font-weight: 500;
       flex-grow: 1;

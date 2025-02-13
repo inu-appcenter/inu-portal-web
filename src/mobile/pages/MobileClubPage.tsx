@@ -113,9 +113,11 @@ const ClubCard = styled.div`
 
     h4 {
       margin: 0;
+      font-weight: 500;
     }
     h3 {
       margin: 0;
+      font-weight: 500;
     }
   }
 

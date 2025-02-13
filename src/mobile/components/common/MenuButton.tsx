@@ -148,6 +148,7 @@ const Sidebar = styled.div`
       gap: 8px;
       background-color: transparent;
       border: none;
+      color: black;
       span {
         font-size: 14px;
         font-weight: 500;
@@ -174,7 +175,7 @@ const Sidebar = styled.div`
       }
 
       span {
-        font-weight: 600;
+        font-weight: 500;
       }
     }
   }

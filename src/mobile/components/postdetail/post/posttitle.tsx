@@ -40,7 +40,7 @@ export default function PostTitle({
 
 const PostTitleWrapper = styled.div`
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 20px;
   text-align: left;
   word-break: break-word;

@@ -53,30 +53,11 @@ export default function NoticeForm() {
               onClick={() => window.open("https://" + notice.url, "_blank")}
             >
               <h1>{notice.category}</h1>
-              <p className="title">{notice.title}</p>
+              <div className="title">{notice.title}</div>
               <p className="createdate">{notice.createDate}</p>
             </div>
-            {/* <div key={index} className='item item-1' onClick={() => window.open('https://' + notice.url, '_blank')}>
-                    <span className='card-1'>
-                    <div className='notice-category'>
-                        <div className='category-text'>{notice.category}</div>
-                        <div className='category-underbar'></div>
-                    </div>
-                    </span>
-                    <div className='notice-title'>{notice.title}</div>
-                    <div className='notice-date'>{notice.createDate}</div>
-                </div> */}
           </SwiperSlide>
         ))}
-        {/* <SwiperSlide>Slide1</SwiperSlide>
-            <SwiperSlide>Slide 2</SwiperSlide>
-            <SwiperSlide>Slide 3</SwiperSlide>
-            <SwiperSlide>Slide 4</SwiperSlide>
-            <SwiperSlide>Slide 5</SwiperSlide>
-            <SwiperSlide>Slide 6</SwiperSlide>
-            <SwiperSlide>Slide 7</SwiperSlide>
-            <SwiperSlide>Slide 8</SwiperSlide>
-            <SwiperSlide>Slide 9</SwiperSlide> */}
       </Swiper>
     </NoticeFormWrapper>
   );
@@ -86,33 +67,40 @@ const NoticeFormWrapper = styled.div`
   margin-top: 20px;
   .swiper {
     width: 100%;
-    height: 200px;
+    height: 180px;
+
+    .swiper-slide {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
     .notice-wrapper {
       border: 3px solid #9cafe2;
       border-radius: 6px;
-      width: 120px;
-      height: 120px;
-      padding: 10px 15px;
+      box-sizing: border-box;
+      width: 160px;
+      height: 148px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       h1 {
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 500;
         color: #0e4d9d;
-        margin-bottom: 0;
+        margin: 0 0 4px 0;
       }
       .title {
         flex: 1;
         font-size: 10px;
-        font-weight: 600;
+        font-weight: 500;
         text-align: left;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .createdate {
         font-size: 15px;
-        font-weight: 700;
+        font-weight: 600;
         color: #7aa7e5;
         margin: 0;
       }

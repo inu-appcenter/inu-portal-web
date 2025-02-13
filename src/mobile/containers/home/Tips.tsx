@@ -32,9 +32,9 @@ export default function TipForm() {
 
   return (
     <TipFormWrapper>
-      <p onClick={() => mobileNavigate(`/home/tips`)}>
+      <h1 onClick={() => mobileNavigate(`/home/tips`)}>
         <span>TIP</span>인기글
-      </p>
+      </h1>
       <Swiper pagination={true} modules={[Pagination]} className="mySwiper">
         {topPosts.map((chunk, index) => (
           <SwiperSlide key={index}>
@@ -43,8 +43,8 @@ export default function TipForm() {
                 key={topPost.id}
                 onClick={() => mobileNavigate(`/postdetail?id=${topPost.id}`)}
               >
-                <p className="category">{topPost.category}</p>
-                <p className="title">{topPost.title}</p>
+                <div className="category">{topPost.category}</div>
+                <div className="title">{topPost.title}</div>
               </PostWrapper>
             ))}
           </SwiperSlide>
@@ -55,10 +55,12 @@ export default function TipForm() {
 }
 
 const TipFormWrapper = styled.div`
-  font-size: 16px;
-  font-weight: 500;
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+  }
   margin-top: 32px;
-  height: 150px;
+  height: 160px;
   span {
     margin-right: 4px;
     color: #4071b9;
@@ -101,18 +103,18 @@ const PostWrapper = styled.div`
   display: flex;
   align-items: center;
   border: 1.5px solid #7aa7e5;
-  padding: 0 11px;
+  padding: 6px 12px;
   border-radius: 5px;
   margin-bottom: 8px;
   width: 90%;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 
   .category {
     width: 52px;
     background-color: #aac9ee;
     color: white;
-    font-size: 8px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 500;
     border-radius: 2px;
     display: flex;
     align-items: center;
@@ -122,8 +124,8 @@ const PostWrapper = styled.div`
 
   .title {
     flex: 1;
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 500;
     text-align: center;
     color: #656565;
   }

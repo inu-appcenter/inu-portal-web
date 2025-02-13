@@ -9,18 +9,18 @@ interface SortDropBoxProps {
 export default function SortDropBox({ sort, setSort }: SortDropBoxProps) {
   return (
     <DropBoxWrapper>
-      <p
+      <button
         className={sort === "view" ? "point" : ""}
         onClick={() => setSort("view")}
       >
         인기순
-      </p>
-      <p
+      </button>
+      <button
         className={sort === "date" ? "point" : ""}
         onClick={() => setSort("date")}
       >
         최신순
-      </p>
+      </button>
     </DropBoxWrapper>
   );
 }
@@ -46,11 +46,18 @@ const DropBoxWrapper = styled.div`
   display: flex;
   align-items: center;
   margin-right: 10px;
-  gap: 10px;
+  gap: 12px;
 
+  button {
+    font-size: 14px;
+    background-color: transparent;
+    border: none;
+    color: black;
+    padding: 0;
+  }
   .point {
     color: #20559e;
-    font-weight: 900;
+    font-weight: 800;
   }
 
   /* p::before {

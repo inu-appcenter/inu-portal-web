@@ -109,14 +109,16 @@ const FilterButtons = styled.div`
 
   button {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
     background-color: transparent;
     border: none;
     margin-bottom: 8px;
+    color: black;
   }
 
   .selected {
     color: rgba(14, 77, 157, 1);
+    font-weight: 600;
   }
 `;
 
@@ -154,6 +156,7 @@ const BookCard = styled.div`
   }
 
   h3 {
+    font-weight: 500;
     font-size: 14px;
     margin: 0;
     color: rgba(34, 17, 18, 1);

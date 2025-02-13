@@ -57,7 +57,7 @@ const ToggleWrapper = styled.div`
     padding: 10px 0;
     h1 {
       font-size: 30px;
-      font-weight: 700;
+      font-weight: 500;
       line-height: 20px;
       color: #404040;
     }
@@ -78,10 +78,10 @@ const ToggleWrapper = styled.div`
   .list-item {
     padding-left: 32px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 500;
     line-height: 16.94px;
     text-align: left;
-    color: #9f9f9f;
+    color: black;
     padding: 8px;
   }
 `;
