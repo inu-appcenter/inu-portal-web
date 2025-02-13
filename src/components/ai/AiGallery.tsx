@@ -187,6 +187,20 @@ export default function AiGallery() {
   const handlePageClick = (pageNumber: number) => {
     setPage(pageNumber);
   };
+  const getPageNumbers = () => {
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, page - 2);
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, i) => startPage + i
+    );
+  };
 
   return (
     <AiGalleryWrapper>
@@ -204,7 +218,7 @@ export default function AiGallery() {
                 />
                 <a
                   href={`data:image/png;base64,${req.b64_img}`}
-                  download={`image_${req.id}.png`}
+                  download={`${req.prompt}.png`}
                   className="save-button"
                 >
                   이미지 저장
@@ -237,17 +251,38 @@ export default function AiGallery() {
         ))}
       </GalleryWrapper>
       <PaginationWrapper>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-          (pageNumber) => (
-            <PageNumber
-              key={pageNumber}
-              $active={pageNumber === page}
-              onClick={() => handlePageClick(pageNumber)}
-            >
-              {pageNumber}
-            </PageNumber>
-          )
-        )}
+        <NavButton disabled={page === 1} onClick={() => handlePageClick(1)}>
+          {"<<"}
+        </NavButton>
+        <NavButton
+          disabled={page === 1}
+          onClick={() => handlePageClick(page - 1)}
+        >
+          {"<"}
+        </NavButton>
+
+        {getPageNumbers().map((pageNumber) => (
+          <PageNumber
+            key={pageNumber}
+            $active={pageNumber === page}
+            onClick={() => handlePageClick(pageNumber)}
+          >
+            {pageNumber}
+          </PageNumber>
+        ))}
+
+        <NavButton
+          disabled={page === totalPages}
+          onClick={() => handlePageClick(page + 1)}
+        >
+          {">"}
+        </NavButton>
+        <NavButton
+          disabled={page === totalPages}
+          onClick={() => handlePageClick(totalPages)}
+        >
+          {">>"}
+        </NavButton>
       </PaginationWrapper>
     </AiGalleryWrapper>
   );
@@ -383,8 +418,23 @@ const PaginationWrapper = styled.div`
 const PageNumber = styled.button<{ $active: boolean }>`
   padding: 8px 12px;
   font-size: 16px;
-  background-color: ${(props) => (props.$active ? "#6d4dc7" : "#e0e0e0")};
+  background-color: ${(props) => (props.$active ? "#6d4dc7" : "white")};
   color: ${(props) => (props.$active ? "white" : "#333")};
   border: none;
   border-radius: 6px;
+  cursor: pointer;
+`;
+
+const NavButton = styled.button`
+  padding: 8px 12px;
+  font-size: 16px;
+  background-color: white;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
