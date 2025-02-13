@@ -115,6 +115,7 @@ const BookCard = styled.div`
   }
 
   h3 {
+    font-weight: 500;
     font-size: 14px;
     margin: 0;
     color: rgba(34, 17, 18, 1);

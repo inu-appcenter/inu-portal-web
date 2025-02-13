@@ -194,7 +194,7 @@ const FolderAddInput = styled.input`
   background-color: #f9f9f9;
   border: none;
   box-shadow: 0px 2px 8px 0px #0000001a;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
 `;
 

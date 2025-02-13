@@ -6,6 +6,7 @@ import MenuButton from "mobile/components/common/MenuButton";
 import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
 import useUserStore from "stores/useUserStore";
 import useMobileNavigate from "hooks/useMobileNavigate";
+import { ReactSVG } from "react-svg";
 
 export default function MobileHeader() {
   const { userInfo } = useUserStore();
@@ -17,7 +18,7 @@ export default function MobileHeader() {
 
   return (
     <MobileHeaderWrapper>
-      <img onClick={handleClick} src={intipLogo} />
+      <ReactSVG onClick={handleClick} src={intipLogo} />
       <ProfileMenuWrapper>
         {userInfo.nickname ? (
           <>
@@ -44,6 +45,9 @@ const MobileHeaderWrapper = styled.header`
   padding: 0 24px;
   position: relative;
   z-index: 20;
+  img {
+    shape-rendering: crispEdges;
+  }
 `;
 
 const ProfileMenuWrapper = styled.div`

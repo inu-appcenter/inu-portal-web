@@ -67,7 +67,7 @@ const CafeteriaInfoWrapper = styled.div`
     flex-direction: column;
     .type {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 500;
       margin: 0;
     }
 
@@ -101,7 +101,7 @@ const CafeteriaInfoWrapper = styled.div`
     justify-content: space-between;
     .info {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       color: #404040;
       margin: 0;
     }

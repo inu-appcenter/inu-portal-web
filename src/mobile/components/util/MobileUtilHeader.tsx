@@ -43,6 +43,7 @@ const MobileUtilHeaderWrapper = styled.div`
     background-color: transparent;
     border: 0;
     font-weight: 600;
+    color: black;
   }
   .selected {
     background: linear-gradient(180deg, #6d98d7 0%, #0e4d9d 100%);
