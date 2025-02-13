@@ -260,5 +260,7 @@ const PostCard = styled.div`
   }
   .content {
     flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 `;
