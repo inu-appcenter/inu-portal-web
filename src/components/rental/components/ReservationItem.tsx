@@ -38,7 +38,7 @@ const ReservationItem = ({reservation}: { reservation: any }) => {
                 <Info><strong>물품 이름:</strong> {itemName}</Info>
                 <Info><strong>시작 시간:</strong> {reservation.startDateTime}</Info>
                 <Info><strong>종료 시간:</strong> {reservation.endDateTime}</Info>
-                <Info><strong>예약 상태:</strong> {reservation.reservationStatus}</Info>
+                <Info><strong>예약 상태:</strong> {reservation.reservationStatus === "CONFIRM" ? "승인" : "거절됨"}</Info>
             </InfoContainer>
             <CancelButton onClick={() => handleCancel(reservation.itemId)} disabled={loading}>
                 {loading ? "취소 중..." : "예약 취소"}

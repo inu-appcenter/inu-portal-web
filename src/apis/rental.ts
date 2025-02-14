@@ -28,21 +28,30 @@ export interface ReservationContent {
 }
 
 
-//물품 리스트 조회
+// 물품 리스트 조회
 export const getItemsList = async (): Promise<ApiResponse<SetStateAction<Items[]>>> => {
-    const response = await tokenInstance.get<ApiResponse<SetStateAction<Items[]>>>(
-        "/api/items"
-    );
-    return response.data;
+    try {
+        const response = await tokenInstance.get<ApiResponse<SetStateAction<Items[]>>>(
+            "/api/items"
+        );
+        return response.data;
+    } catch (error) {
+        console.error("물품 리스트 조회 중 오류 발생:", error);
+        throw error; // 예외를 다시 던져서 호출한 곳에서 감지할 수 있도록 처리
+    }
 };
 
-
-//아이템 세부 정보 조회
+// 아이템 세부 정보 조회
 export const getItemDetail = async (itemId: number): Promise<ApiResponse<Items>> => {
-    const response = await tokenInstance.get<ApiResponse<Items>>(
-        `/api/items/${itemId}`
-    );
-    return response.data;
+    try {
+        const response = await tokenInstance.get<ApiResponse<Items>>(
+            `/api/items/${itemId}`
+        );
+        return response.data;
+    } catch (error) {
+        console.error(`아이템 세부 정보 조회 중 오류 발생 (itemId: ${itemId}):`, error);
+        throw error; // 예외를 다시 던짐
+    }
 };
 
 
@@ -86,16 +95,22 @@ export const createReservation = async (
 
 // 예약 목록 조회
 export const getReservations = async (page: number = 1): Promise<ApiResponse<Reservation>> => {
-    const response = await tokenInstance.get<ApiResponse<Reservation>>(
-        `/api/reservations?page=${page}`
-    );
-    return response.data;
+    try {
+        const response = await tokenInstance.get<ApiResponse<Reservation>>(
+            `/api/reservations?page=${page}`
+        );
+        return response.data;
+    } catch (error) {
+        console.error(`예약 목록 조회 중 오류 발생 (page: ${page}):`, error);
+        throw error; // 예외를 다시 던져 호출한 곳에서 감지할 수 있도록 처리
+    }
 };
 
 
 // 예약 취소
 export const deleteReservation = async (itemId: number): Promise<void> => {
     try {
+        console.log("삭제할 id: ", itemId);
         await tokenInstance.delete(`/api/reservations/item/${itemId}`, {
             headers: {
                 "accept": "*/*",
@@ -105,6 +120,7 @@ export const deleteReservation = async (itemId: number): Promise<void> => {
         console.log("예약이 취소되었습니다.");
     } catch (error) {
         console.error("예약 취소 중 오류 발생:", error);
+        throw error;
     }
 };
 

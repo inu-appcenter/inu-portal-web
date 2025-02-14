@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import 신난횃불이 from "resources/assets/rental/신난횃불이.png"
+import DefaultImage from "resources/assets/rental/DefaultImage.svg"
 
 import {Items} from "apis/rental.ts";
 
@@ -23,11 +23,11 @@ export default function ItemList({selectedTab, setSelectedId, items}: {
                     }
                 }}>
                     <GoodWrapper>
-                        <ImageBox src={신난횃불이}/>
+                        <ImageBox src={DefaultImage}/>
                         <DescriptionBox>
                             <span className={'name'}>{item.name}</span><br/>
-                            대여료 : {item.deposit}<br/>
-                            총 수량 : {item.totalQuantity}
+                            수량 : {item.totalQuantity}<br/>
+                            보증금 : {item.deposit}(원)
                         </DescriptionBox>
                     </GoodWrapper>
                 </div>

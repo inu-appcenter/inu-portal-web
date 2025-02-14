@@ -80,6 +80,7 @@ const ItemListAdmin = () => {
                     </ItemInfo>
                     <div>
                         <ItemQuantity>수량: {item.totalQuantity}</ItemQuantity>
+                        {' '}
                         <ItemDeposit>보증금: {item.deposit.toLocaleString()}원</ItemDeposit>
                     </div>
 
@@ -91,8 +92,25 @@ const ItemListAdmin = () => {
                                 {reservations[item.id].map((reservation, idx) => (
                                     <li key={idx}>
                                         <div>예약자 ID: {reservation.memberId}</div>
-                                        <div>예약 시간: {reservation.startDateTime} - {reservation.endDateTime}</div>
-                                        <div>상태: {reservation.reservationStatus}</div>
+                                        <div>
+                                            대여 날짜: {new Date(reservation.startDateTime).toLocaleString('ko-KR', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                        </div>
+                                        <div>
+                                            반납 날짜: {new Date(reservation.endDateTime).toLocaleString('ko-KR', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                        </div>
+                                        <div>상태: {reservation.reservationStatus === 'CONFIRM' ? "승인" : "거절됨"}</div>
                                     </li>
                                 ))}
                             </ul>
