@@ -2,7 +2,6 @@ import React, {useEffect, useRef, useState} from "react";
 import {places, restPlaces, cafePlaces, restaurantPlaces} from "../DB";
 import {zoomIn, zoomOut, setMapType} from "../utils/mapUtils";
 import {placesMarkDB, deleteMarkers} from "../utils/markerUtils";
-import {imageSources} from "../constants/markerImages.ts";
 import "./KakaoMap.css";
 import {useLocation} from "react-router-dom";
 
@@ -30,16 +29,16 @@ const KakaoMap = ({
     useEffect(() => {
         if (selectedTab === "학교") {
             deleteMarkers(markers);
-            placesMarkDB(places, imageSources[1], 1, map, markers);
+            placesMarkDB(places, selectedTab, map, markers);
         } else if (selectedTab === "휴게실") {
             deleteMarkers(markers);
-            placesMarkDB(restPlaces, imageSources[1], 1, map, markers);
+            placesMarkDB(restPlaces, selectedTab, map, markers);
         } else if (selectedTab === "카페") {
             deleteMarkers(markers);
-            placesMarkDB(cafePlaces, imageSources[1], 1, map, markers);
+            placesMarkDB(cafePlaces, selectedTab, map, markers);
         } else if (selectedTab === "식당") {
             deleteMarkers(markers);
-            placesMarkDB(restaurantPlaces, imageSources[1], 1, map, markers);
+            placesMarkDB(restaurantPlaces, selectedTab, map, markers);
         }
     }, [selectedTab]);
 
@@ -71,7 +70,7 @@ const KakaoMap = ({
             }, 100);
         }
     }, [location.pathname]); // location.pathname이 변경될 때마다 실행
-    placesMarkDB(places, imageSources[1], 1, map, markers);
+    placesMarkDB(places, "학교", map, markers);
 
     return (
         <div id="map" className="map_wrap" ref={mapContainer}>

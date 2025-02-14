@@ -2,15 +2,25 @@ import {Place} from "../DB";
 import InfoWindowSchool from "./InfoWindowSchool.ts";
 import InfoWindowRestroom from "./InfoWindowRestroom.ts";
 
+import {getBuildingIcon, getRestIcon, CafeIcon, getRestaurantIcon} from "../constants/markerImages.ts";
+
+
 export const placesMarkDB = (
     places: Place[],
-    imageSrc: string,
-    mode: number,
+    selectedTab: string,
     map: any,
     markers: any
 ) => {
     places.forEach((place) => {
-        displayMarker(place, imageSrc, mode, map, markers);
+        if (selectedTab === "학교") { //학교 건물 호관
+            displayMarker(place, getBuildingIcon(place.location), selectedTab, map, markers);
+        } else if (selectedTab === "휴게실") { //휴게실
+            displayMarker(place, getRestIcon(place.category), selectedTab, map, markers);
+        } else if (selectedTab === "카페") { // 카페
+            displayMarker(place, CafeIcon, selectedTab, map, markers);
+        } else if (selectedTab === "식당") {
+            displayMarker(place, getRestaurantIcon(place.category), selectedTab, map, markers);
+        }
     });
 };
 
@@ -19,7 +29,7 @@ let currentInfoWindow: any = null;
 const displayMarker = (
     place: Place,
     imageSrc: string,
-    mode: number,
+    selectedTab: string,
     map: any,
     markers: any[],
 ) => {
@@ -34,14 +44,21 @@ const displayMarker = (
     });
 
 
+    //tab별로 infoWindow의 콘텐츠 내용을 다르게 함
     let iwContent;
-    if (mode === 1) {
+
+    if (selectedTab === "학교") {
         iwContent = InfoWindowSchool(place);
-    }
-    if (mode === 2) {
+    } else if (selectedTab === "휴게실") {
         iwContent = InfoWindowRestroom(place);
 
+    } else if (selectedTab === "카페") {
+        iwContent = InfoWindowRestroom(place);
+
+    } else if (selectedTab === "식당") {
+        iwContent = InfoWindowRestroom(place);
     }
+
 
     const infowindow = new window.kakao.maps.InfoWindow({
         content: iwContent,

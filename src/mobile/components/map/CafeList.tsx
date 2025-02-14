@@ -44,8 +44,8 @@ const List = ({
                             <IconBox src={CafeIcon}/>
                             <TitleBox>
                                 {/* @ts-ignore */}
-
-                                {place.category} {place.location} {place.place_name} {place.cafePlaceInfo.name}
+                                <strong>{place.cafePlaceInfo.name}</strong><br/>
+                                {place.category} {place.location} {place.place_name}
                             </TitleBox>
                             <OpenIconBox src={OpenIcon}/>
                         </FirstLine>

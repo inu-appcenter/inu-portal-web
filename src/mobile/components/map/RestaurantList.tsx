@@ -47,7 +47,7 @@ const List = ({
                                 src={place.category === "식당" ? RestaurantIcon : place.category === "편의점" ? ConvienienceStoreIcon : LocationIcon}/>
                             <TitleBox>
                                 {/* @ts-ignore */}
-                                {place.restaurantInfo.name}<br/>
+                                <strong>{place.restaurantInfo.name}</strong><br/>
                                 {place.location} {place.place_name}
                             </TitleBox>
                             <OpenIconBox src={OpenIcon}/>
