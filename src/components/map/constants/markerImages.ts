@@ -107,7 +107,7 @@ export const getRestIcon = (restCategory: string): string => {
 
 
 //카페 마커
-import CafeIcon from "../../../resources/assets/mapIcons/cafeIcon.svg";
+import CafeIcon from "../../../resources/assets/mapIcons/CafeIcon.svg";
 
 export {CafeIcon};
 
