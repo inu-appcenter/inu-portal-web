@@ -17,6 +17,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     const [error, setError] = useState<string | null>(null);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
+    const [phoneNumber, setPhoneNumber] = useState<string>("");
     const [reservationLoading, setReservationLoading] = useState<boolean>(false);
     const [reservationError, setReservationError] = useState<string | null>(null);
 
@@ -38,13 +39,22 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
         fetchItemDetail();
     }, [itemId]);
 
+    const isPhoneNumberValid = (phoneNumber: string): boolean => {
+        const phoneNumberRegex = /^01[0-9]\d{8,9}$/;
+        return phoneNumberRegex.test(phoneNumber);
+    };
+
     const handleReservation = async () => {
         if (!tokenInfo.accessToken) {
             alert("로그인 후 이용해 주세요.");
             return;
         }
-        if (!startDate || !endDate) {
-            alert("시작 날짜와 종료 날짜를 입력해주세요.");
+        if (!startDate || !endDate || !phoneNumber) {
+            alert("모든 입력칸을 채워주세요.");
+            return;
+        }
+        if (!isPhoneNumberValid(phoneNumber)) {
+            alert("전화번호 형식을 확인해주세요.");
             return;
         }
 
@@ -60,7 +70,8 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
 // 예약 요청
             await createReservation(itemId, {
                 startDateTime: formattedStartDate,
-                endDateTime: formattedEndDate
+                endDateTime: formattedEndDate,
+                phoneNumber: phoneNumber,
             });
 
 
@@ -82,6 +93,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     if (error) {
         return <div>{error}</div>;
     }
+
 
     return (
         <BottomSheet open={true} onDismiss={onClose}>
@@ -115,6 +127,19 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                             onChange={(e) => setEndDate(e.target.value)}
                         />
                     </label>
+                    <label>
+                        전화번호:
+                        <input
+                            type="tel"
+                            name="phoneNumber"
+                            placeholder="01012345678 ( - 없이 입력해주세요)"
+                            value={phoneNumber}
+                            onChange={(e) => {
+                                setPhoneNumber(e.target.value);
+                            }}
+                        />
+                    </label>
+
                 </InputWrapper>
                 {reservationError && <ErrorText>{reservationError}</ErrorText>}
                 <ButtonWrapper>

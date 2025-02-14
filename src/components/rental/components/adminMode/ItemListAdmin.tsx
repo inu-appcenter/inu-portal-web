@@ -11,6 +11,7 @@ interface Reservation {
     startDateTime: string;
     endDateTime: string;
     reservationStatus: string;
+    phoneNumber: number;
 }
 
 interface ApiResponse<T> {
@@ -70,10 +71,23 @@ const ItemListAdmin = () => {
         setSelectedItem(item);
     };
 
+    const handleEditReservation = (reservationId: string) => {
+        console.log("수정 버튼 클릭:", reservationId);
+        // 수정 로직 구현
+    };
+
+    const handleDeleteReservation = (reservationId: string) => {
+        console.log("삭제 버튼 클릭:", reservationId);
+        // 삭제 로직 구현
+    };
+
     return (
         <ItemListWrapper>
             {items.map((item, index) => (
-                <ItemCard key={index} onClick={() => handleClickItem(item)}>
+                <ItemCard key={index}>
+                    {/* 관리 버튼 추가 */}
+                    <ManageButton onClick={() => handleClickItem(item)}>관리</ManageButton>
+
                     <ItemInfo>
                         <ItemName>{item.name}</ItemName>
                         <ItemCategory>{item.itemCategory}</ItemCategory>
@@ -110,7 +124,21 @@ const ItemListAdmin = () => {
                                             minute: '2-digit'
                                         })}
                                         </div>
-                                        <div>상태: {reservation.reservationStatus === 'CONFIRM' ? "승인" : "거절됨"}</div>
+                                        <div>예약자 전화번호: {reservation.phoneNumber}</div>
+                                        <div>상태: {reservation.reservationStatus === "CONFIRM" ? "승인" :
+                                            reservation.reservationStatus === "PENDING" ? "관리자 확인 중" :
+                                                reservation.reservationStatus === "REJECTED" ? "거절됨" :
+                                                    "알 수 없음"
+                                        }</div>
+
+                                        {/* 수정 및 삭제 버튼 추가 */}
+                                        <ButtonWrapper>
+                                            <StyledButton
+                                                onClick={() => handleEditReservation(reservation.memberId)}>수정</StyledButton>
+                                            <StyledButton
+                                                onClick={() => handleDeleteReservation(reservation.memberId)}>예약 강제
+                                                삭제</StyledButton>
+                                        </ButtonWrapper>
                                     </li>
                                 ))}
                             </ul>
@@ -145,6 +173,28 @@ const ItemCard = styled.div`
     display: flex;
     justify-content: space-between;
     flex-direction: column;
+    position: relative; /* 상대적 위치 설정 */
+`;
+
+const ManageButton = styled.button`
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+        background-color: #218838;
+    }
+
+    &:focus {
+        outline: none;
+    }
 `;
 
 const ItemInfo = styled.div`
@@ -191,6 +241,31 @@ const ReservationList = styled.div`
         padding: 8px;
         border: 1px solid #f0f0f0;
         border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+    }
+`;
+
+const ButtonWrapper = styled.div`
+    display: flex;
+    gap: 8px;
+`;
+
+const StyledButton = styled.button`
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+
+    &:focus {
+        outline: none;
     }
 `;
 
