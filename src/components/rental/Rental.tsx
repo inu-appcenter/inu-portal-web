@@ -9,6 +9,7 @@ import RentalAdmin from "./components/adminMode/RentalAdmin.tsx";
 
 import {Items, getItemsList, getReservations} from "apis/rental.ts";
 import ReservationList from "./components/ReservationList";
+import useUserStore from "../../stores/useUserStore.ts";
 
 
 export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
@@ -22,6 +23,9 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
 
     //빨간줄제거용..
     reservations;
+
+    const {tokenInfo} = useUserStore();
+
 
     useEffect(() => {
         // 데이터 로드
@@ -41,6 +45,10 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
 
     // 예약 목록 로드 함수
     const fetchReservations = async () => {
+        if (!tokenInfo.accessToken) {
+            alert("로그인 후 이용해 주세요.");
+            return;
+        }
         setIsOpenedList(!isOpenedList);
         setLoadingReservations(true);
         try {
@@ -94,13 +102,6 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
             {/* 관리자 모드 버튼이 눌린 경우 관리자 페이지 표시 */}
             {isOpenAdminPage && <RentalAdmin/>}
 
-            {/*/!* 관리자 계정이면 관리자 페이지 버튼을 노출 *!/*/}
-            {/*{isAdminUser && (*/}
-            {/*    <>*/}
-            {/*        <AdminButton onClick={handleAdminMode}>관리자 페이지</AdminButton>*/}
-
-            {/*    </>*/}
-            {/*)}*/}
 
             {/* 선택된 아이템의 세부사항을 바텀시트로 보여줌 */}
             {selectedId && <ItemDetail itemId={selectedId} onClose={() => setSelectedId(null)}/>}
@@ -129,6 +130,8 @@ const Button = styled.button`
     border: none;
     border-radius: 5px;
     cursor: pointer;
+
+    margin-bottom: 15px;
 
     &:hover {
         background-color: #0056b3;
@@ -161,6 +164,8 @@ const NoticeBox = () => {
                     ※ 총학 행사 기간에는 대여 불가능합니다.
                     <br/>
                     ※ 당일 예약이 불가합니다.
+                    <br/>
+                    ※ 대여 및 반납은 오늘 기준 3일 후부터 14일 이내, 오전 10시부터 오후 5시 사이에 가능하며, 토요일 및 일요일에는 불가능합니다.
                     <br/>
                     물품 수량 확인 날짜 2025.01.02
                 </Content>

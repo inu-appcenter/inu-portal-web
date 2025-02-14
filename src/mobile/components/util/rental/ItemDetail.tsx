@@ -2,8 +2,9 @@ import {useEffect, useState} from "react";
 import {BottomSheet} from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
-import 신난횃불이 from "resources/assets/rental/신난횃불이.png";
-import {getItemDetail, createReservation, Items} from "apis/rental.ts"; // API 호출 함수 가져오기
+import DefaultImage from "resources/assets/rental/DefaultImage.svg"
+import {getItemDetail, createReservation, Items} from "apis/rental.ts";
+import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
 
 interface ItemDetailProps {
     itemId: number;
@@ -18,6 +19,9 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     const [endDate, setEndDate] = useState<string>("");
     const [reservationLoading, setReservationLoading] = useState<boolean>(false);
     const [reservationError, setReservationError] = useState<string | null>(null);
+
+    const {tokenInfo} = useUserStore();
+
 
     useEffect(() => {
         const fetchItemDetail = async () => {
@@ -35,6 +39,10 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     }, [itemId]);
 
     const handleReservation = async () => {
+        if (!tokenInfo.accessToken) {
+            alert("로그인 후 이용해 주세요.");
+            return;
+        }
         if (!startDate || !endDate) {
             alert("시작 날짜와 종료 날짜를 입력해주세요.");
             return;
@@ -78,13 +86,21 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     return (
         <BottomSheet open={true} onDismiss={onClose}>
             <DetailWrapper>
-                <h2>{itemDetail?.name}</h2>
-                <p>대여료: {itemDetail?.deposit}</p>
-                <p>남은 수량: {itemDetail?.totalQuantity}</p>
-                <img src={신난횃불이} alt="물품 이미지"/>
+                <h3>대여 정보를 확인해주세요 !</h3>
+                <GoodWrapper>
+                    <ImageBox src={DefaultImage}/>
+                    <DescriptionBox>
+                        <span className={'name'}>{itemDetail?.name}</span><br/>
+                        대여료 : {itemDetail?.deposit}<br/>
+                        총 수량 : {itemDetail?.totalQuantity}
+                    </DescriptionBox>
+                </GoodWrapper>
+                <Content>
+                    ※ 오늘 기준 3일 후부터 14일 이내, 오전 10시부터 오후 5시 사이에 가능하며, 토요일 및 일요일에는 불가능합니다.
+                </Content>
                 <InputWrapper>
                     <label>
-                        시작 날짜:
+                        대여 날짜:
                         <input
                             type="datetime-local"
                             value={startDate}
@@ -92,7 +108,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                         />
                     </label>
                     <label>
-                        종료 날짜:
+                        반납 날짜:
                         <input
                             type="datetime-local"
                             value={endDate}
@@ -158,13 +174,15 @@ const ButtonWrapper = styled.div`
     button {
         padding: 8px 16px;
         font-size: 14px;
+        font-weight: bold;
         border: none;
         border-radius: 4px;
         cursor: pointer;
+        width: 100%;
     }
 
     button:first-child {
-        background-color: #007bff;
+        background-color: #7aa7e5;
         color: white;
     }
 `;
@@ -172,4 +190,63 @@ const ButtonWrapper = styled.div`
 const ErrorText = styled.div`
     color: red;
     font-size: 14px;
+`;
+
+
+const Content = styled.div`
+    font-weight: 400;
+    font-size: 13px;
+    color: #656565;
+    width: 100%;
+`;
+
+
+const GoodWrapper = styled.div`
+    width: 100%;
+    height: 158px; /* 고정된 높이 */
+    border: 0.871981px solid #7aa7e5;
+    border-radius: 15px;
+
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+`;
+
+const ImageBox = styled.img`
+    width: 100%;
+    aspect-ratio: 1 / 1; /* 정사각형 비율 유지 */
+
+`;
+
+const DescriptionBox = styled.div`
+    width: 100%;
+    height: fit-content; /* 내용에 맞는 높이 */
+    text-align: center;
+
+    font-style: normal;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 12px;
+    text-align: center;
+    letter-spacing: 0.871981px;
+
+    color: #000000;
+
+
+    .name {
+        font-style: normal;
+        font-weight: 700;
+        font-size: 10px;
+        line-height: 12px;
+        text-align: center;
+        letter-spacing: 0.871981px;
+
+        color: #000000;
+
+
+    }
 `;
