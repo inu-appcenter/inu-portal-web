@@ -106,10 +106,6 @@ export const getRestIcon = (restCategory: string): string => {
 }
 
 
-//카페 마커
-export {default as CafeIcon} from "../../../resources/assets/mapIcons/CafeIcon.svg";
-
-
 //식당 마커
 import RestaurantIcon from "../../../resources/assets/mapIcons/restaurantIcon.svg";
 import ConvenienceStoreIcon from "../../../resources/assets/mapIcons/convenienceStoreIcon.svg";

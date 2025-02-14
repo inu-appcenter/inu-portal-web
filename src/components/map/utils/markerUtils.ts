@@ -2,7 +2,8 @@ import {Place} from "../DB";
 import InfoWindowSchool from "./InfoWindowSchool.ts";
 import InfoWindowRestroom from "./InfoWindowRestroom.ts";
 
-import {getBuildingIcon, getRestIcon, CafeIcon, getRestaurantIcon} from "../constants/markerImages.ts";
+import {getBuildingIcon, getRestIcon, getRestaurantIcon} from "../constants/markerImages.ts";
+import CafeIcon from "../../../resources/assets/mapIcons/CafeIcon.svg";
 
 
 export const placesMarkDB = (
