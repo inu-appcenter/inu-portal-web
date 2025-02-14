@@ -105,10 +105,14 @@ export const getRestIcon = (restCategory: string): string => {
     }
 }
 
+//카페 마커
+import CafeIcon from "../../../resources/assets/mapIcons/CafeIcon.svg";
+
+export {CafeIcon};
 
 //식당 마커
-import RestaurantIcon from "../../../resources/assets/mapIcons/restaurantIcon.svg";
-import ConvenienceStoreIcon from "../../../resources/assets/mapIcons/convenienceStoreIcon.svg";
+import RestaurantIcon from "../../../resources/assets/mapIcons/RestaurantIcon.svg";
+import ConvenienceStoreIcon from "../../../resources/assets/mapIcons/ConvenienceStoreIcon.svg";
 
 export function getRestaurantIcon(restaurantCategory: string): string {
     if (restaurantCategory === "식당") {
