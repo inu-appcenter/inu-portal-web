@@ -58,7 +58,7 @@ export const getItemDetail = async (itemId: number): Promise<ApiResponse<Items>>
 // 예약 등록
 export const createReservation = async (
     itemId: number,
-    reservationData: { startDateTime: string, endDateTime: string }
+    reservationData: { startDateTime: string, endDateTime: string, phoneNumber: string }
 ): Promise<ApiResponse<Pagination>> => {
     try {
         console.log("에약일자", reservationData);
@@ -72,25 +72,6 @@ export const createReservation = async (
         throw error;
     }
 };
-
-// export const createReservation = async (itemId, {startDateTime, endDateTime}) => {
-//     try {
-//         // 예약 요청
-//         const response = await tokenInstance.post(`/api/reservations/${itemId}`, {
-//             startDateTime,
-//             endDateTime,
-//         });
-//
-//         return response.data;
-//     } catch (error) {
-//         // @ts-ignore
-//         if (error.response && error.response.status === 401) {
-//             //@ts-ignore
-//             throw new Error(error.response.data.msg || "만료된 토큰입니다.");
-//         }
-//         throw new Error("예약 등록 실패");
-//     }
-// };
 
 
 // 예약 목록 조회
@@ -111,7 +92,7 @@ export const getReservations = async (page: number = 1): Promise<ApiResponse<Res
 export const deleteReservation = async (itemId: number): Promise<void> => {
     try {
         console.log("삭제할 id: ", itemId);
-        await tokenInstance.delete(`/api/reservations/item/${itemId}`, {
+        await tokenInstance.delete(`/api/reservations/${itemId}`, {
             headers: {
                 "accept": "*/*",
                 "Content-Type": "application/json",

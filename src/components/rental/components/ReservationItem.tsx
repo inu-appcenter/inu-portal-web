@@ -21,6 +21,7 @@ const ReservationItem = ({reservation}: { reservation: any }) => {
     }, [reservation.itemId]);
 
     const handleCancel = async (itemId: number) => {
+        console.log(itemId);
         setLoading(true);
         try {
             await deleteReservation(itemId);
@@ -36,9 +37,27 @@ const ReservationItem = ({reservation}: { reservation: any }) => {
         <ReservationItemWrapper>
             <InfoContainer>
                 <Info><strong>물품 이름:</strong> {itemName}</Info>
-                <Info><strong>시작 시간:</strong> {reservation.startDateTime}</Info>
-                <Info><strong>종료 시간:</strong> {reservation.endDateTime}</Info>
-                <Info><strong>예약 상태:</strong> {reservation.reservationStatus === "CONFIRM" ? "승인" : "거절됨"}</Info>
+                <Info><strong>시작 시간:</strong> {new Date(reservation.startDateTime).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</Info>
+                <Info><strong>종료 시간:</strong> {new Date(reservation.endDateTime).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</Info>
+                <Info><strong>예약
+                    상태:</strong> {reservation.reservationStatus === "CONFIRM" ? "승인" :
+                    reservation.reservationStatus === "PENDING" ? "관리자 확인 중" :
+                        reservation.reservationStatus === "REJECTED" ? "거절됨" :
+                            "알 수 없음"
+                }
+                </Info>
             </InfoContainer>
             <CancelButton onClick={() => handleCancel(reservation.itemId)} disabled={loading}>
                 {loading ? "취소 중..." : "예약 취소"}
@@ -46,6 +65,9 @@ const ReservationItem = ({reservation}: { reservation: any }) => {
         </ReservationItemWrapper>
     );
 };
+
+
+//styled components
 
 const ReservationItemWrapper = styled.div`
     width: 90%;
