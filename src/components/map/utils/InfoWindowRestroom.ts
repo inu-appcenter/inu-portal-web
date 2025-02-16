@@ -22,11 +22,11 @@ const InfoWindowRestroom = (place: Place) => {
       <span> ${place.place_name}<br/>${place.location} ${place.restareaInfo?.roomNumber}</span>
     </div>
     <!-- 구분선 -->
-        <div style="border-bottom: 2px solid #f1f1f1; margin: 15px 0; font-size: 18px; color: #555;"></div>
+        <div style="border-bottom: 2px solid #f1f1f1; margin: 5px 0; font-size: 18px; color: #555;"></div>
 
       
       <!-- 여성용품 배치 -->
-      <div style="margin-bottom: 10px;">
+      <div style="margin-bottom: 0;">
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
           <div style="width: 25px; height: 25px; background-color: #4071b9; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
             <img src="${decisionIcon('여성용품')}" alt="여성용품 아이콘" style="width: 14px; height: 14px;" />
