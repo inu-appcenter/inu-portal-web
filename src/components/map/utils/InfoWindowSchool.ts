@@ -5,7 +5,7 @@ const InfoWindowSchool = (place: Place, imagesrc: any) => `
     <div style="font-size: 15px; color: #333; font-weight: bold; margin-bottom: 5px;">
       ${place.location}<br/>${place.place_name}
     </div>
-    <div style="text-align: right; font-size: 14px; color: #888; font-weight: 600;">
+    <div style="text-align: right; font-size: 10px; color: #888; font-weight: 600;">
       <span>${place.category}</span>
     </div>
     
