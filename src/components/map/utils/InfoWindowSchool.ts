@@ -11,7 +11,7 @@ const InfoWindowSchool = (place: Place, imagesrc: any) => `
     
     <div style="border-bottom: 2px solid #f1f1f1; margin: 5px 0; font-size: 18px; color: #555;"></div>
 
-    <div style="margin-bottom: 15px;">
+    <div style="margin-bottom: 0;">
       <img src="${imagesrc}" alt="학교 이미지" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);"/>
     </div>
   </div>
