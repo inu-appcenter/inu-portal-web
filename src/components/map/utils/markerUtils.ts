@@ -1,8 +1,13 @@
 import {Place} from "../DB";
 import InfoWindowSchool from "./InfoWindowSchool.ts";
 import InfoWindowRestroom from "./InfoWindowRestroom.ts";
+import InfoWindowCafe from "./InfoWindowCafe.ts";
+import InfoWindowRestaurant from "./InfoWindowRestaurant.ts";
 
 import {getBuildingIcon, getRestIcon, CafeIcon, getRestaurantIcon} from "../constants/markerImages.ts";
+import {SchoolimageMap} from "resources/assets/mapBuildingImages/buildingImageManage.ts";
+import {CafeimageMap} from "resources/assets/mapCafeImages/cafeImageManage.ts";
+import {RestaurantimageMap} from "../../../resources/assets/mapRestaurantImages/restaurantImageManage.ts";
 
 
 export const placesMarkDB = (
@@ -48,15 +53,17 @@ const displayMarker = (
     let iwContent;
 
     if (selectedTab === "학교") {
-        iwContent = InfoWindowSchool(place);
+        iwContent = InfoWindowSchool(place, SchoolimageMap[place.location]);
     } else if (selectedTab === "휴게실") {
         iwContent = InfoWindowRestroom(place);
 
     } else if (selectedTab === "카페") {
-        iwContent = InfoWindowRestroom(place);
+        // @ts-ignore
+        iwContent = InfoWindowCafe(place, CafeimageMap[place.cafePlaceInfo?.name]);
 
     } else if (selectedTab === "식당") {
-        iwContent = InfoWindowRestroom(place);
+        // @ts-ignore
+        iwContent = InfoWindowRestaurant(place, RestaurantimageMap[place.restaurantInfo?.name]);
     }
 
 
