@@ -10,8 +10,8 @@ export default function HowToUse() {
         {/* <img src={AiExample} alt="" /> */}
       </div>
       <span style={{ fontSize: "20px", lineHeight: "30px" }}>
-        1. 원하는 행동 또는 상황을 입력합니다. 예를 들어, "exercising",
-        "studying" 등을 입력하세요.
+        1. 원하는 행동 또는 상황을 입력합니다. 예를 들어, "Surfing", "hawaiian
+        shirts", "sunset" 등을 입력하세요. 입력은 영어로만 가능합니다.
         <br />
         2. 앱은 입력된 내용을 바탕으로 AI로 캐릭터 이미지를 생성합니다.
         <br />
