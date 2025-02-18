@@ -2,15 +2,30 @@ import axiosInstance from "apis/axiosInstance";
 import tokenInstance from "apis/tokenInstance";
 import { ApiResponse, Pagination } from "types/common";
 import { Post, PostDetail } from "types/posts";
+import { AxiosError } from "axios";
 
 // 게시글 가져오기
 export const getPostDetail = async (
   postId: number
 ): Promise<ApiResponse<PostDetail>> => {
-  const response = await tokenInstance.get<ApiResponse<PostDetail>>(
-    `/api/posts/${postId}`
-  );
-  return response.data;
+  try {
+    // 1) 우선 tokenInstance로 시도
+    const response = await tokenInstance.get<ApiResponse<PostDetail>>(
+      `/api/posts/${postId}`
+    );
+    return response.data;
+  } catch (error) {
+    // 2) refreshError라면 axiosInstance로 재시도
+    const typedError = error as AxiosError & { isRefreshError?: boolean };
+    if (typedError.isRefreshError) {
+      // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
+      const response = await axiosInstance.get<ApiResponse<PostDetail>>(
+        `/api/posts/${postId}`
+      );
+      return response.data;
+    }
+    throw error; // 그 외 에러는 그대로 상위로 던짐
+  }
 };
 
 // 게시글 수정
@@ -98,11 +113,27 @@ export const getPosts = async (
   if (category !== "전체") {
     params.category = category;
   }
-  const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
-    "/api/posts",
-    { params }
-  );
-  return response.data;
+
+  try {
+    // 1) 우선 tokenInstance로 시도
+    const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
+      "/api/posts",
+      { params }
+    );
+    return response.data;
+  } catch (error) {
+    // 2) refreshError라면 axiosInstance로 재시도
+    const typedError = error as AxiosError & { isRefreshError?: boolean };
+    if (typedError.isRefreshError) {
+      // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
+      const response = await axiosInstance.get<ApiResponse<Pagination<Post[]>>>(
+        "/api/posts",
+        { params }
+      );
+      return response.data;
+    }
+    throw error; // 그 외 에러는 그대로 상위로 던짐
+  }
 };
 
 // 게시글 등록
@@ -162,9 +193,25 @@ export const getPostsMobile = async (
   if (typeof lastPostId === "number") {
     params.lastPostId = lastPostId;
   }
-  const response = await tokenInstance.get<ApiResponse<Post[]>>(
-    "/api/posts/mobile",
-    { params }
-  );
-  return response.data;
+
+  try {
+    // 1) 우선 tokenInstance로 시도
+    const response = await tokenInstance.get<ApiResponse<Post[]>>(
+      "/api/posts/mobile",
+      { params }
+    );
+    return response.data;
+  } catch (error) {
+    // 2) refreshError라면 axiosInstance로 재시도
+    const typedError = error as AxiosError & { isRefreshError?: boolean };
+    if (typedError.isRefreshError) {
+      // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
+      const response = await axiosInstance.get<ApiResponse<Post[]>>(
+        "/api/posts/mobile",
+        { params }
+      );
+      return response.data;
+    }
+    throw error; // 그 외 에러는 그대로 상위로 던짐
+  }
 };

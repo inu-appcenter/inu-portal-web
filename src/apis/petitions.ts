@@ -1,7 +1,8 @@
-// import axiosInstance from "./axiosInstance";
+import axiosInstance from "./axiosInstance";
 import { ApiResponse, Pagination } from "types/common";
 import tokenInstance from "./tokenInstance";
 import { Petition, PetitionSummary } from "types/petitions";
+import { AxiosError } from "axios";
 
 // 총학생회 청원 리스트 가져오기
 export const getPetitionsList = async (
@@ -10,20 +11,49 @@ export const getPetitionsList = async (
   const params: { [key: string]: string | number } = {
     page,
   };
-  const response = await tokenInstance.get<
-    ApiResponse<Pagination<PetitionSummary[]>>
-  >("/api/petitions", { params });
-  return response.data;
+
+  try {
+    // 1) 우선 tokenInstance로 시도
+    const response = await tokenInstance.get<
+      ApiResponse<Pagination<PetitionSummary[]>>
+    >("/api/petitions", { params });
+    return response.data;
+  } catch (error) {
+    // 2) refreshError라면 axiosInstance로 재시도
+    const typedError = error as AxiosError & { isRefreshError?: boolean };
+    if (typedError.isRefreshError) {
+      // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
+      const response = await axiosInstance.get<
+        ApiResponse<Pagination<PetitionSummary[]>>
+      >("/api/petitions", { params });
+      return response.data;
+    }
+    throw error; // 그 외 에러는 그대로 상위로 던짐
+  }
 };
 
 // 총학생회 청원 가져오기
 export const getPetitionsDetail = async (
   petitionId: number
 ): Promise<ApiResponse<Petition>> => {
-  const response = await tokenInstance.get<ApiResponse<Petition>>(
-    `/api/petitions/${petitionId}`
-  );
-  return response.data;
+  try {
+    // 1) 우선 tokenInstance로 시도
+    const response = await tokenInstance.get<ApiResponse<Petition>>(
+      `/api/petitions/${petitionId}`
+    );
+    return response.data;
+  } catch (error) {
+    // 2) refreshError라면 axiosInstance로 재시도
+    const typedError = error as AxiosError & { isRefreshError?: boolean };
+    if (typedError.isRefreshError) {
+      // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
+      const response = await axiosInstance.get<ApiResponse<Petition>>(
+        `/api/petitions/${petitionId}`
+      );
+      return response.data;
+    }
+    throw error; // 그 외 에러는 그대로 상위로 던짐
+  }
 };
 
 // 총학생회 청원 등록
