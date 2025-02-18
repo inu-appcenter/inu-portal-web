@@ -38,7 +38,7 @@ export default function MobileClubPage() {
             <div>
               <span className="wrapper">
                 <h3>{club.name}</h3>
-                <h4>{club.category}</h4>
+                <h4 className="club-category">{club.category}</h4>
               </span>
               <span className="buttons-wrapper">
                 {club.url && (
@@ -111,13 +111,18 @@ const ClubCard = styled.div`
     align-items: center;
     margin-right: 16px;
 
-    h4 {
+    .club-category {
       margin: 0;
       font-weight: 500;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background-color: rgba(236, 244, 255, 1);
     }
     h3 {
       margin: 0;
       font-weight: 500;
+      font-size: 16px;
     }
   }
 
