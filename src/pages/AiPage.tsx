@@ -2,7 +2,7 @@
 import Header from "components/common/Header";
 import AiGenerate from "components/ai/AiGenerate";
 import AiTitle from "components/ai/AiTitle";
-import AiIntroText from "components/ai/AiIntroText";
+// import AiIntroText from "components/ai/AiIntroText";
 import HowToUse from "components/ai/HowToUse";
 import styled from "styled-components";
 import { useState } from "react";
@@ -18,7 +18,7 @@ export default function AiPage() {
       </div>
       <AiContents>
         <AiTitle />
-        <Info onClick={() => setShow(true)}>AI 횃불이 ?</Info>
+        <Info onClick={() => setShow(true)}>AI 횃불이 ❓</Info>
         {show && (
           <ModalBackGround>
             <Modal>
@@ -26,7 +26,7 @@ export default function AiPage() {
                 <span>닫기</span>
                 <img src={X_Vector} alt="X" />
               </div>
-              <AiIntroText />
+              {/* <AiIntroText /> */}
               <HowToUse />
             </Modal>
           </ModalBackGround>
