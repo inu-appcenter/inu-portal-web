@@ -144,14 +144,14 @@ export default function AiGenerate() {
   };
 
   const handleRefreshClick = () => {
-    console.log(requestId);
-    window.location.reload();
-    // if (requestId) {
-    //   setCanRefresh(false);
-    //   setEta(0);
-    //   setLoading(true);
-    //   fetchResult(requestId);
-    // }
+    // console.log(requestId);
+    // window.location.reload();
+    if (requestId) {
+      setCanRefresh(false);
+      setEta(0);
+      setLoading(true);
+      fetchResult(requestId);
+    }
   };
 
   return (
@@ -175,7 +175,7 @@ export default function AiGenerate() {
       <InputWrapper>
         <InputField
           ref={inputRef}
-          placeholder="exercising, smile"
+          placeholder="Surfing, hawaiian shirts, sunset"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               handleGenerateClick();
