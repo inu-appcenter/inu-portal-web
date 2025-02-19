@@ -9,6 +9,7 @@ import OpenIcon from "resources/assets/mapIcons/OpenIcon.svg";
 
 import {useState} from "react";
 import {zoomLocation} from "../../../components/map/utils/mapUtils.ts";
+import CloseIcon from "../../../resources/assets/mapIcons/CloseIcon.svg";
 
 
 const RestroomList = ({placesToRender, map}: { placesToRender: Place[], map: any }) => {
@@ -44,7 +45,11 @@ const RestroomList = ({placesToRender, map}: { placesToRender: Place[], map: any
                                 ) : (<></>)}
 
                             <TitleBox>{place.place_name}{' '}{place.location}{' '}{place.restareaInfo?.roomNumber}</TitleBox>
-                            <OpenIconBox src={OpenIcon}/>
+                            {openIndex === index ? (
+                                <OpenIconBox src={CloseIcon}/>
+
+                            ) : <OpenIconBox src={OpenIcon}/>
+                            }
                         </FirstLine>
                         {openIndex === index ? (
                             <SecondLine>
