@@ -1,4 +1,4 @@
-import {useRef, useEffect} from 'react';
+import {useRef, useEffect, useState} from 'react';
 import {MIN_Y, MAX_Y} from './BottomSheetOption.ts';
 
 interface BottomSheetMetrics {
@@ -17,6 +17,9 @@ export default function useBottomSheet() {
     const sheet = useRef<HTMLDivElement>(null);
     const content = useRef<HTMLDivElement>(null);
     const header = useRef<HTMLDivElement>(null); // Header ref 추가
+
+    const [sheetHeight, setSheetHeight] = useState<number>(MAX_Y - MIN_Y); // 초기 높이 설정
+
 
     const metrics = useRef<BottomSheetMetrics>({
         touchStart: {
@@ -86,6 +89,11 @@ export default function useBottomSheet() {
                     nextSheetY = MAX_Y;
                 }
 
+                const newHeight = window.innerHeight - nextSheetY;
+
+                setSheetHeight(newHeight); // ✅ 높이 업데이트
+
+
                 sheet.current!.style.setProperty('transform', `translateY(${nextSheetY - MAX_Y}px)`);
             } else {
                 document.body.style.overflowY = 'hidden';
@@ -94,18 +102,20 @@ export default function useBottomSheet() {
 
         const handleTouchEnd = () => {
             document.body.style.overflowY = 'auto';
-            const {touchMove} = metrics.current;
-            const currentSheetY = sheet.current!.getBoundingClientRect().y;
 
-            if (currentSheetY !== MIN_Y) {
-                if (touchMove.movingDirection === 'down') {
-                    sheet.current!.style.setProperty('transform', 'translateY(0)');
-                }
+            //바텀 시트 높이 조정을 자유롭게 하기 위해 주석 처리
+            // const {touchMove} = metrics.current;
+            // const currentSheetY = sheet.current!.getBoundingClientRect().y;
 
-                if (touchMove.movingDirection === 'up') {
-                    sheet.current!.style.setProperty('transform', `translateY(${MIN_Y - MAX_Y}px)`);
-                }
-            }
+            // if (currentSheetY !== MIN_Y) {
+            //     if (touchMove.movingDirection === 'down') {
+            //         sheet.current!.style.setProperty('transform', 'translateY(0)');
+            //     }
+            //
+            //     if (touchMove.movingDirection === 'up') {
+            //         sheet.current!.style.setProperty('transform', `translateY(${MIN_Y - MAX_Y}px)`);
+            //     }
+            // }
 
             metrics.current = {
                 touchStart: {sheetY: 0, touchY: 0},
@@ -132,5 +142,5 @@ export default function useBottomSheet() {
         }
     }, []);
 
-    return {sheet, content, header}; // header 반환
+    return {sheet, content, header, sheetHeight}; // ✅ sheetHeight 반환
 }
