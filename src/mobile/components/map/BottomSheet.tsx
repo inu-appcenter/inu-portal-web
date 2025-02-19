@@ -40,13 +40,13 @@ interface BottomSheetProps {
 }
 
 function BottomSheet({selectedTab, setSelectedTab, map}: BottomSheetProps) {
-    const {sheet, content, header} = useBottomSheet();
+    const {sheet, header, content, sheetHeight} = useBottomSheet();
 
     return (
         <Wrapper ref={sheet}>
             <Header headerRef={header}/>
             <BottomSheetContent ref={content}>
-                <Content selectedTab={selectedTab} setSelectedTab={setSelectedTab} map={map}/>
+                <Content selectedTab={selectedTab} setSelectedTab={setSelectedTab} map={map} sheetHeight={sheetHeight}/>
             </BottomSheetContent>
         </Wrapper>
     );

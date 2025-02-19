@@ -147,6 +147,7 @@ const Button = styled.button`
     font-size: 16px;
     cursor: pointer;
     transition: 0.2s;
+
     &:hover {
         opacity: 0.8;
     }

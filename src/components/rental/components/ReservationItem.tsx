@@ -59,7 +59,7 @@ const ReservationItem = ({reservation}: { reservation: any }) => {
                 }
                 </Info>
             </InfoContainer>
-            <CancelButton onClick={() => handleCancel(reservation.itemId)} disabled={loading}>
+            <CancelButton onClick={() => handleCancel(reservation.reservationId)} disabled={loading}>
                 {loading ? "취소 중..." : "예약 취소"}
             </CancelButton>
         </ReservationItemWrapper>
