@@ -26,8 +26,13 @@ const PlaceListPanel = ({selectedTab, setSelectedTab, map, sheetHeight}: BottomS
                     selectedTab === "식당" ? restaurantPlaces :
                         [];
 
+    // ✅ URL 경로에 따라 높이 계산
+    const isMobile = window.location.pathname.includes("/m");
+    const isApp = window.location.pathname.includes("/app");
+    const calculatedHeight = isMobile ? sheetHeight - 100 : isApp ? sheetHeight - 50 : sheetHeight;
+
     return (
-        <PlaceListPanelWrapper style={{height: `${sheetHeight - 100}px`}}>
+        <PlaceListPanelWrapper style={{height: `${calculatedHeight}px`}}>
             <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
             {selectedTab === "학교" && <SchoolList placesToRender={placesToRender} map={map}/>}
             {selectedTab === "휴게실" && <RestroomList placesToRender={placesToRender} map={map}/>}

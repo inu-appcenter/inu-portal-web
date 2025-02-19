@@ -51,6 +51,8 @@ export default function useBottomSheet() {
         };
 
         const handleTouchStart = (e: TouchEvent) => {
+            sheet.current!.style.transition = 'none'; // 터치 시작 시 transition 제거
+
             const {touchStart} = metrics.current;
             touchStart.sheetY = sheet.current!.getBoundingClientRect().y;
             touchStart.touchY = e.touches[0].clientY;
