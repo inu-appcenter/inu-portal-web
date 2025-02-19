@@ -41,7 +41,7 @@ const List = ({
                         <FirstLine>
                             <IconBox src={LocationIcon}/>
                             <TitleBox>
-                                {place.location} {place.place_name} {place.category}
+                                <strong>{place.location}</strong> {place.place_name} {place.category}
                             </TitleBox>
                             <OpenIconBox src={OpenIcon}/>
                         </FirstLine>

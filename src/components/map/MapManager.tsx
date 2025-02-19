@@ -1,10 +1,10 @@
 import styled from "styled-components";
-import BottomSheet from "mobile/components/map/BottomSheet.tsx";
 
 import Map from "components/map/components/KakaoMap.tsx";
 import TipsPageTitle from "../../mobile/components/tips/TipsPageTitle.tsx";
 import {useLocation} from "react-router-dom";
 import {useState} from "react";
+import PlaceListPanel from "./components/PlaceListPanel.tsx";
 
 interface XY {
     X: number;
@@ -14,6 +14,7 @@ interface XY {
 export default function MapManager() {
     const [selectedTab, setSelectedTab] = useState<string>("학교");
     const [map, setMap] = useState<any>(null);
+    const [isOpen] = useState<boolean>(true);
 
     //캠퍼스맵 실행시 학교 위치
     const viewXY: XY = {
@@ -37,6 +38,7 @@ export default function MapManager() {
             <TitleCategorySelectorWrapper>
                 <TipsPageTitle value={docType + (query ? ` - ${query}` : "")}/>
             </TitleCategorySelectorWrapper>
+
             <MapWrapper>
                 <Map
                     selectedTab={selectedTab}
@@ -46,11 +48,12 @@ export default function MapManager() {
                     setMap={setMap}
                 />
             </MapWrapper>
-            <BottomSheet
-                selectedTab={selectedTab}
-                setSelectedTab={setSelectedTab}
-                map={map}
-            />
+
+            {/*바텀시트 장소목록*/}
+            <PlaceListPanel isOpen={isOpen} selectedTab={selectedTab}
+                            setSelectedTab={setSelectedTab} map={map}/>
+
+
         </>
     );
 }
