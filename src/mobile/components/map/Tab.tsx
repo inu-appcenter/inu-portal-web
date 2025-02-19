@@ -59,8 +59,9 @@ const TabWrapper = styled.div`
 
 const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
     width: fit-content;
+    min-width: fit-content;
     height: fit-content;
-    padding: 4px 20px;
+    padding: 4px 15px;
     box-sizing: border-box;
     border-bottom: 2px solid ${({isSelected}) => (isSelected ? "#0E4D9D" : "#B5B5B5")};
     font-style: normal;
