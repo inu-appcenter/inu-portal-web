@@ -23,7 +23,7 @@ const EditItemModal = ({item, onClose, onSave}: {
     const handleSave = async () => {
         try {
             if (item.id != null) {
-                await updateItem(item.id, formData);
+                await updateItem(item.id, formData, null);
             }
             onSave(); // 리스트 갱신
             onClose();

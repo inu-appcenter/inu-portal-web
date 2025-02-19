@@ -2,7 +2,7 @@
 import {ApiResponse, Pagination} from "types/common";
 import tokenInstance from "./tokenInstance";
 
-import {Items} from "apis/rental.ts";
+import {Items, ItemFormValues} from "apis/rental.ts";
 
 
 export {getItemsList} from "apis/rental.ts";
@@ -18,16 +18,20 @@ interface Reservation {
 
 //물품 등록
 export const addItem = async (
-    item: Items,
-): Promise<ApiResponse<Pagination<Items[]>>> => {
+    item: ItemFormValues,
+    images: string[], // 이미지 URL 리스트를 추가합니다.
+): Promise<ApiResponse<any>> => {
     try {
-        const response = await tokenInstance.post<ApiResponse<Pagination<Items[]>>>(
+        const response = await tokenInstance.post<ApiResponse<any>>(
             "/api/items",
             {
-                itemCategory: item.itemCategory,
-                name: item.name,
-                totalQuantity: item.totalQuantity,
-                deposit: item.deposit,
+                itemRegister: {
+                    itemCategory: item.itemCategory,
+                    name: item.name,
+                    totalQuantity: item.totalQuantity,
+                    deposit: item.deposit,
+                },
+                images: images, // 이미지 목록을 추가합니다.
             }
         );
         return response.data;
@@ -37,19 +41,24 @@ export const addItem = async (
     }
 };
 
+
 export const updateItem = async (
     itemId: number,
-    item: Items
+    item: { itemCategory: string, name: string, totalQuantity: number, deposit: number },
+    images: string[] | null // 이미지 배열을 추가
 ): Promise<ApiResponse<Pagination<Items[]>>> => {
     try {
         const response = await tokenInstance.put<ApiResponse<Pagination<Items[]>>>(
-            `/api/items/${itemId}`,
+            `/api/items/${itemId}`, // itemId를 URL 파라미터로 보냄
             {
-                itemCategory: item.itemCategory,
-                name: item.name,
-                totalQuantity: item.totalQuantity,
-                deposit: item.deposit,
-            }
+                itemUpdate: {
+                    itemCategory: item.itemCategory,
+                    name: item.name,
+                    totalQuantity: item.totalQuantity,
+                    deposit: item.deposit
+                },
+                images: images // 이미지 배열을 추가
+            },
         );
         console.log(response);
         return response.data;
@@ -80,4 +89,26 @@ export const getItemReservations = async (itemId: number, page: number = 1): Pro
         `/api/reservations/item/${itemId}?page=${page}`,
     );
     return response.data;
+};
+
+
+// 예약 상태 변경 함수
+export const setConfirmReject = async (
+    reservationId: number | null, // 예약 ID
+    status: string // 상태 (CONFIRM 또는 REJECTED)
+): Promise<ApiResponse<any>> => {
+    try {
+        // API 요청
+        const response = await tokenInstance.post<ApiResponse<any>>(
+            `/api/reservations/${reservationId}/confirm`,
+            null, // 요청 본문은 없으므로 null
+            {
+                params: {status}, // query parameter로 status 값 전달
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error during reservation status update:", error);
+        throw error;
+    }
 };
