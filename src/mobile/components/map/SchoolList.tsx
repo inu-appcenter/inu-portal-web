@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import LocationIcon from "resources/assets/mapIcons/LocationIcon.svg";
 import OpenIcon from "resources/assets/mapIcons/OpenIcon.svg";
+import CloseIcon from "resources/assets/mapIcons/CloseIcon.svg";
+
 
 import {useState} from "react";
 import SchoolInfoBox from "./SchoolInfoBox.tsx";
@@ -43,14 +45,16 @@ const List = ({
                             <TitleBox>
                                 <strong>{place.location}</strong> {place.place_name} {place.category}
                             </TitleBox>
-                            <OpenIconBox src={OpenIcon}/>
+                            {openIndex === index ? (
+                                <OpenIconBox src={CloseIcon}/>
+
+                            ) : <OpenIconBox src={OpenIcon}/>
+                            }
                         </FirstLine>
-                        {openIndex === index ? (
+                        {openIndex === index && (
                             <SecondLine>
                                 <SchoolInfoBox place={place}/>
                             </SecondLine>
-                        ) : (
-                            <></>
                         )}
                     </NewPlaceWrapper>
                 </div>

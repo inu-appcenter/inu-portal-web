@@ -8,6 +8,7 @@ import {useState} from "react";
 import {Place} from "../../../components/map/DB.tsx";
 import {zoomLocation} from "../../../components/map/utils/mapUtils.ts";
 import RestaurantInfoBox from "./RestaurantInfoBox.tsx";
+import CloseIcon from "../../../resources/assets/mapIcons/CloseIcon.svg";
 
 const List = ({
                   placesToRender, map
@@ -50,7 +51,11 @@ const List = ({
                                 <strong>{place.restaurantInfo.name}</strong><br/>
                                 {place.location} {place.place_name}
                             </TitleBox>
-                            <OpenIconBox src={OpenIcon}/>
+                            {openIndex === index ? (
+                                <OpenIconBox src={CloseIcon}/>
+
+                            ) : <OpenIconBox src={OpenIcon}/>
+                            }
                         </FirstLine>
                         {openIndex === index ? (
                             <SecondLine>
