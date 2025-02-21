@@ -1,9 +1,8 @@
 import styled from "styled-components";
-
 import Map from "components/map/components/KakaoMap.tsx";
 import TipsPageTitle from "../../mobile/components/tips/TipsPageTitle.tsx";
 import {useLocation} from "react-router-dom";
-import {useState} from "react";
+import {useState, useMemo} from "react";
 import PlaceListPanel from "./components/PlaceListPanel.tsx";
 
 interface XY {
@@ -14,17 +13,19 @@ interface XY {
 export default function MapManager() {
     const [selectedTab, setSelectedTab] = useState<string>("학교");
     const [map, setMap] = useState<any>(null);
-    const [isOpen] = useState<boolean>(true);
-
-    //캠퍼스맵 실행시 학교 위치
-    const viewXY: XY = {
-        X: 37.374474020920864,
-        Y: 126.63361466845616,
-    }
 
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const query = params.get("search") || "";
+
+    // 현재 경로에 "/campus"가 포함될 때만 isOpen을 true로 설정
+    const isOpen = useMemo(() => location.pathname.includes("/campus"), [location.pathname]);
+
+    // 캠퍼스맵 실행 시 학교 위치
+    const viewXY: XY = {
+        X: 37.374474020920864,
+        Y: 126.63361466845616,
+    };
 
     let docType = "캠퍼스맵";
     if (query) {
@@ -49,11 +50,13 @@ export default function MapManager() {
                 />
             </MapWrapper>
 
-            {/*바텀시트 장소목록*/}
-            <PlaceListPanel isOpen={isOpen} selectedTab={selectedTab}
-                            setSelectedTab={setSelectedTab} map={map}/>
-
-
+            {/* 바텀시트 장소목록 */}
+            <PlaceListPanel
+                isOpen={isOpen}
+                selectedTab={selectedTab}
+                setSelectedTab={setSelectedTab}
+                map={map}
+            />
         </>
     );
 }

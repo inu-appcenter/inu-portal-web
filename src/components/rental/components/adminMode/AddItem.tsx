@@ -3,7 +3,7 @@ import {addItem} from "apis/rentalAdmin.ts";
 import styled from "styled-components";
 import React, {useState} from "react";
 
-import {ItemFormValues} from "apis/rental.ts";
+import {ItemFormValues} from "apis/rentalAdmin.ts";
 
 
 const AddItem = () => {
@@ -34,6 +34,8 @@ const AddItem = () => {
 
         try {
             // @ts-ignore
+            console.log(formData);
+            console.log(images);
             const response = await addItem(formData, images);  // FormData 전송
             console.log("물품 등록 성공:", response);
             alert(response.msg); // 서버 응답 메시지

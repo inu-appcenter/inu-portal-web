@@ -12,13 +12,6 @@ export interface Items {
 
 }
 
-// 폼 데이터 타입 정의
-export interface ItemFormValues {
-    itemCategory: string;
-    name: string;
-    totalQuantity: number;
-    deposit: number;
-}
 
 export interface Reservation {
     pages: number;

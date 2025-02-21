@@ -2,7 +2,7 @@
 import {ApiResponse, Pagination} from "types/common";
 import tokenInstance from "./tokenInstance";
 
-import {Items, ItemFormValues} from "apis/rental.ts";
+import {Items} from "apis/rental.ts";
 
 
 export {getItemsList} from "apis/rental.ts";
@@ -13,6 +13,14 @@ interface Reservation {
     startDateTime: string;
     endDateTime: string;
     reservationStatus: string;
+}
+
+// 폼 데이터 타입 정의
+export interface ItemFormValues {
+    itemCategory: string;
+    name: string;
+    totalQuantity: number;
+    deposit: number;
 }
 
 
