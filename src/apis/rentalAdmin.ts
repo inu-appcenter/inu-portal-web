@@ -26,27 +26,43 @@ export interface ItemFormValues {
 
 //물품 등록
 export const addItem = async (
-    item: ItemFormValues,
-    images: string[], // 이미지 URL 리스트를 추가합니다.
-): Promise<ApiResponse<any>> => {
-    try {
-        const response = await tokenInstance.post<ApiResponse<any>>(
-            "/api/items",
-            {
-                itemRegister: {
-                    itemCategory: item.itemCategory,
-                    name: item.name,
-                    totalQuantity: item.totalQuantity,
-                    deposit: item.deposit,
-                },
-                images: images, // 이미지 목록을 추가합니다.
-            }
-        );
-        return response.data;
-    } catch (error) {
-        console.error("Error during item registration:", error);
-        throw error;
-    }
+    data: ItemFormValues,
+    images: File[], // 이미지 URL 리스트를 추가합니다.
+): Promise<ApiResponse<number>> => {
+
+    const {itemCategory, name, totalQuantity, deposit} = data;
+
+
+    const jsonData = {
+        itemCategory,
+        name,
+        totalQuantity,
+        deposit
+    };
+    console.log(jsonData);
+    const formData = new FormData();
+
+    const jsonBlob = new Blob([JSON.stringify(jsonData)], {
+        type: "application/json",
+    });
+    formData.append("itemRegister", jsonBlob);
+    images.forEach((image) => formData.append("images", image));
+
+    formData.forEach((value, key) => {
+        console.log(`${key}:`, value);
+    });
+
+
+    const response = await tokenInstance.post<ApiResponse<number>>(
+        `/api/items`,
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        }
+    );
+    return response.data;
 };
 
 
