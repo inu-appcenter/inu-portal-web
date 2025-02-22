@@ -45,6 +45,7 @@ export const postLost = async (
   formData.append("request", jsonBlob);
   images.forEach((image) => formData.append("images", image));
 
+
   const response = await tokenInstance.post<ApiResponse<number>>(
     `/api/lost`,
     formData,

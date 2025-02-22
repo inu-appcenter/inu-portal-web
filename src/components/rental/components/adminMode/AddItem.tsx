@@ -14,29 +14,16 @@ const AddItem = () => {
 
     // 이미지 파일 선택 함수
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            setImages(Array.from(event.target.files));
+        const files = event.target.files;
+        if (files) {
+            setImages(Array.from(files));
         }
     };
 
-    // onSubmit 함수 타입도 SubmitHandler<ItemFormValues>로 지정
     const onSubmit: SubmitHandler<ItemFormValues> = async (data) => {
-        const formData = new FormData();
-
-        // item 데이터 추가
-        formData.append("itemRegister", JSON.stringify({
-            itemCategory: data.itemCategory,
-            name: data.name,
-            totalQuantity: data.totalQuantity,
-            deposit: data.deposit,
-        }));
-
 
         try {
-            console.log(formData);
-            console.log(images);
-            // @ts-ignore
-            const response = await addItem(formData, images);  // FormData 전송
+            const response = await addItem(data, images);  // FormData 전송
             console.log("물품 등록 성공:", response);
             alert(response.msg); // 서버 응답 메시지
         } catch (error) {
@@ -44,6 +31,7 @@ const AddItem = () => {
             alert("물품 등록 실패");
         }
     };
+
 
     return (
         <AddItemWrapper>
@@ -56,10 +44,11 @@ const AddItem = () => {
                         {...register("itemCategory")}
                         defaultValue="broadcast_equipment"
                     >
-                        <option value="broadcast_equipment">방송 장비</option>
-                        <option value="tent">천막</option>
-                        <option value="sports_equipment">체육물품</option>
-                        <option value="other">기타</option>
+                        <option value="BROADCAST_EQUIPMENT">방송 장비</option>
+                        <option value="TENT">천막</option>
+                        <option value="SPORTS_EQUIPMENT">체육물품</option>
+                        <option value="OTHER">기타</option>
+
                     </select>
                 </div>
                 <div className="form-group">

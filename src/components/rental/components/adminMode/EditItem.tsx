@@ -24,6 +24,7 @@ const EditItemModal = ({item, onClose, onSave}: {
         try {
             if (item.id != null) {
                 await updateItem(item.id, formData, null);
+                alert("수정되었습니다.");
             }
             onSave(); // 리스트 갱신
             onClose();
@@ -36,7 +37,8 @@ const EditItemModal = ({item, onClose, onSave}: {
         if (window.confirm("정말로 삭제하시겠습니까?")) {
             try {
                 if (item.id != null) {
-                    await deleteItem(item.id);
+                        await deleteItem(item.id);
+                        alert("삭제되었습니다.");
                 }
                 onSave(); // 리스트 갱신
                 onClose();
