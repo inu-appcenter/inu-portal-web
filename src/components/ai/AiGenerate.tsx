@@ -70,6 +70,12 @@ export default function AiGenerate() {
       return;
     }
 
+    const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+    if (inputRef.current && koreanRegex.test(inputRef.current.value)) {
+      alert("한글은 지원되지 않습니다.");
+      return;
+    }
+
     if (!tokenInfo.accessToken) {
       alert("로그인이 필요합니다.");
       return;
