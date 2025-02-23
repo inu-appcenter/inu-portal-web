@@ -40,6 +40,7 @@ export default function AiPage() {
 
 const AiPageWrapper = styled.div`
   max-width: 1440px;
+  margin: auto;
 
   .header-wrapper {
     @media (max-width: 425px) {
