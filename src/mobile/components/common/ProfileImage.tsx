@@ -14,7 +14,7 @@ export default function ProfileImage({ fireId }: ProfileImageProps) {
 
   return (
     <ProfileImg
-      src={`https://portal.inuappcenter.kr/api/images/${fireId}`}
+      src={`https://portal.inuappcenter.kr/images/profile/${fireId}`}
       alt={`Profile Image`}
       onClick={handleClick}
     />
