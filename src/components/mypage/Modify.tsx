@@ -30,7 +30,7 @@ export default function Modify() {
       <div className="userInfo-nickname">
         <div className="userInfo">
           <img
-            src={`https://portal.inuappcenter.kr/api/images/${fireId}`}
+            src={`https://portal.inuappcenter.kr/images/profile/${fireId}`}
             alt=""
           />
           <h3>{nickname}</h3>
@@ -51,7 +51,7 @@ export default function Modify() {
             onClick={() => setFireId(id)}
           >
             <img
-              src={`https://portal.inuappcenter.kr/api/images/${id}`}
+              src={`https://portal.inuappcenter.kr/images/profile/${id}`}
               alt={`이미지 ${id}`}
             />
           </ImageOption>

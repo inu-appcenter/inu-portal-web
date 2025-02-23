@@ -195,7 +195,7 @@ export default function PostReplies({
                 <ReplyContainer $isFirst={index === 0}>
                   <img
                     className="fire"
-                    src={`https://portal.inuappcenter.kr/api/images/${reply.fireId}`}
+                    src={`https://portal.inuappcenter.kr/images/profile/${reply.fireId}`}
                     alt=""
                   />
                   <div className="main">

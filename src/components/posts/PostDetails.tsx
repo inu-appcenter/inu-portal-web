@@ -123,7 +123,7 @@ export default function PostDetails({ postId }: { postId: number }) {
                 <span className="writer">
                   <span>{post.writer}</span>
                   <img
-                    src={`https://portal.inuappcenter.kr/api/images/${post.fireId}`}
+                    src={`https://portal.inuappcenter.kr/images/profile/${post.fireId}`}
                     alt=""
                   />
                 </span>

@@ -57,7 +57,7 @@ export default function UserModify() {
             onClick={() => setFireId(id)}
           >
             <img
-              src={`https://portal.inuappcenter.kr/api/images/${id}`}
+              src={`https://portal.inuappcenter.kr/images/profile/${id}`}
               alt={`이미지 ${id}`}
             />
           </ImageOption>

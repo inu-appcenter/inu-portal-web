@@ -16,7 +16,7 @@ export default function MyPageTitle() {
         <div className="userInfo">
           <span>{userInfo.nickname}</span>
           <img
-            src={`https://portal.inuappcenter.kr/api/images/${userInfo.fireId}`}
+            src={`https://portal.inuappcenter.kr/images/profile/${userInfo.fireId}`}
             alt=""
           />
         </div>
