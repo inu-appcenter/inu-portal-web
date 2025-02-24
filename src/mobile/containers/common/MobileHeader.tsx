@@ -6,52 +6,53 @@ import MenuButton from "mobile/components/common/MenuButton";
 import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
 import useUserStore from "stores/useUserStore";
 import useMobileNavigate from "hooks/useMobileNavigate";
-import { ReactSVG } from "react-svg";
+import {ReactSVG} from "react-svg";
 
 export default function MobileHeader() {
-  const { userInfo } = useUserStore();
-  const mobileNavigate = useMobileNavigate();
+    const {userInfo} = useUserStore();
+    const mobileNavigate = useMobileNavigate();
 
-  const handleClick = () => {
-    mobileNavigate(`/home`);
-  };
+    const handleClick = () => {
+        mobileNavigate(`/home`);
+    };
 
-  return (
-    <MobileHeaderWrapper>
-      <ReactSVG onClick={handleClick} src={intipLogo} />
-      <ProfileMenuWrapper>
-        {userInfo.nickname ? (
-          <>
-            <ProfileImage fireId={userInfo.fireId} />
-            <ProfileNickname nickname={userInfo.nickname} />
-          </>
-        ) : (
-          <>
-            <LoginNavigateButton />
-          </>
-        )}
-        <MenuButton />
-      </ProfileMenuWrapper>
-    </MobileHeaderWrapper>
-  );
+    return (
+        <MobileHeaderWrapper>
+            <ReactSVG onClick={handleClick} src={intipLogo}/>
+            <ProfileMenuWrapper>
+                {userInfo.nickname ? (
+                    <>
+                        <ProfileImage fireId={userInfo.fireId}/>
+                        <ProfileNickname nickname={userInfo.nickname}/>
+                    </>
+                ) : (
+                    <>
+                        <LoginNavigateButton/>
+                    </>
+                )}
+                <MenuButton/>
+            </ProfileMenuWrapper>
+        </MobileHeaderWrapper>
+    );
 }
 
 const MobileHeaderWrapper = styled.header`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  height: 72px;
-  padding: 0 24px;
-  position: relative;
-  z-index: 20;
-  img {
-    shape-rendering: crispEdges;
-  }
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 72px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+
+    img {
+        shape-rendering: crispEdges;
+    }
 `;
 
 const ProfileMenuWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 `;
