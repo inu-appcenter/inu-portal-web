@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {places, restPlaces, cafePlaces, restaurantPlaces} from "../DB";
 import {zoomIn, zoomOut, setMapType} from "../utils/mapUtils";
-import {placesMarkDB, deleteMarkers} from "../utils/markerUtils";
+import {placesMarkDB} from "../utils/markerUtils";
 import "./KakaoMap.css";
 import {useLocation} from "react-router-dom";
 
@@ -11,16 +11,20 @@ interface Props {
     viewXY: { X: number; Y: number };
     map: any;
     setMap: any;
+    markers: any;
+    deleteMarkers: (markers: any[] | null) => void;
+
 }
 
-let markers: any[] = []; // any 타입 명시
 
 const KakaoMap = ({
                       selectedTab,
                       setSelectedTab,
                       viewXY,
                       map,
-                      setMap
+                      setMap,
+                      markers,
+                      deleteMarkers
                   }: Props) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const [level, setLevel] = useState<number>(3);

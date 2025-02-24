@@ -84,6 +84,8 @@ const displayMarker = (
 
         // 현재 InfoWindow를 업데이트
         currentInfoWindow = infowindow;
+
+
     });
 
     // 마커가 지도 위에 표시되도록 설정합니다
@@ -95,8 +97,18 @@ const displayMarker = (
 
 
 // 배열에 추가된 마커들을 지도에 표시하거나 삭제하는 함수입니다
-export const deleteMarkers = (markers: string | any[]) => {
+export const deleteMarkers = (markers: any[] | null) => {
+    // @ts-ignore
     for (let i = 0; i < markers.length; i++) {
+        // @ts-ignore
         markers[i].setMap(null);
+    }
+    markers = null;
+}
+
+export const closeInfoWindow = () => {
+    // 현재 열린 InfoWindow가 있다면 닫기
+    if (currentInfoWindow) {
+        currentInfoWindow.close();
     }
 }

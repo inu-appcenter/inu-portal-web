@@ -8,17 +8,20 @@ import RestaurantList from "../../../mobile/components/map/RestaurantList.tsx";
 import {places, restPlaces, cafePlaces, restaurantPlaces} from "../DB.tsx";
 import {BottomSheet} from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
+import {closeInfoWindow} from "../utils/markerUtils.ts";
 
 interface PlaceListPanelProps {
     isOpen: boolean;
     selectedTab?: string;
     setSelectedTab?: React.Dispatch<React.SetStateAction<string>>;
-    map: any;
+    map: any[];
+    markers: any;
 }
 
-const PlaceListPanel = ({isOpen, selectedTab, setSelectedTab, map}: PlaceListPanelProps) => {
+const PlaceListPanel = ({isOpen, selectedTab, setSelectedTab, map, markers}: PlaceListPanelProps) => {
     const handleTabClick = (tab: string) => {
         setSelectedTab?.(tab);
+        closeInfoWindow();
     };
 
     const placesToRender =
@@ -51,7 +54,7 @@ const PlaceListPanel = ({isOpen, selectedTab, setSelectedTab, map}: PlaceListPan
         >
             <PlaceListPanelWrapper style={{marginBottom: isMobile ? '50px' : 'auto'}}>
                 <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
-                {selectedTab === "학교" && <SchoolList placesToRender={placesToRender} map={map}/>}
+                {selectedTab === "학교" && <SchoolList placesToRender={placesToRender} map={map} markers={markers}/>}
                 {selectedTab === "휴게실" && <RestroomList placesToRender={placesToRender} map={map}/>}
                 {selectedTab === "카페" && <CafeList placesToRender={placesToRender} map={map}/>}
                 {selectedTab === "식당" && <RestaurantList placesToRender={placesToRender} map={map}/>}
