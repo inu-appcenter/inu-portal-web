@@ -68,22 +68,48 @@ export const addItem = async (
 
 export const updateItem = async (
     itemId: number,
-    item: { itemCategory: string, name: string, totalQuantity: number, deposit: number },
-    images: string[] | null // 이미지 배열을 추가
+    item: { itemCategory: string; name: string; totalQuantity: number; deposit: number },
+    images: File[] | null
 ): Promise<ApiResponse<Pagination<Items[]>>> => {
     try {
+        // JSON 데이터 준비
+        const jsonData = {
+            itemCategory: item.itemCategory,
+            name: item.name,
+            totalQuantity: item.totalQuantity,
+            deposit: item.deposit,
+        };
+
+        const formData = new FormData();
+
+        // JSON 데이터를 Blob으로 변환하여 FormData에 추가
+        const jsonBlob = new Blob([JSON.stringify(jsonData)], {
+            type: "application/json",
+        });
+        formData.append("itemUpdate", jsonBlob);
+
+        // 이미지 배열이 있으면 FormData에 추가
+        images?.forEach((image) => {
+            formData.append("images", image)
+        });
+
+
+        // 디버깅: FormData 내용 출력
+        formData.forEach((value, key) => {
+            console.log(`${key}:`, value);
+        });
+
+        // PUT 요청으로 FormData 전송
         const response = await tokenInstance.put<ApiResponse<Pagination<Items[]>>>(
-            `/api/items/${itemId}`, // itemId를 URL 파라미터로 보냄
+            `/api/items/${itemId}`,
+            formData,
             {
-                itemUpdate: {
-                    itemCategory: item.itemCategory,
-                    name: item.name,
-                    totalQuantity: item.totalQuantity,
-                    deposit: item.deposit
+                headers: {
+                    "Content-Type": "multipart/form-data",
                 },
-                images: images // 이미지 배열을 추가
-            },
+            }
         );
+
         console.log(response);
         return response.data;
     } catch (error) {

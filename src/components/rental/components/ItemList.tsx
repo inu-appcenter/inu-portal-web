@@ -2,7 +2,7 @@ import styled from "styled-components";
 import DefaultImage from "resources/assets/rental/DefaultImage.svg"
 
 import {Items} from "apis/rental.ts";
-
+import ImageBox from "./ImageBox";
 
 export default function ItemList({selectedTab, setSelectedId, items}: {
     selectedTab: string,
@@ -23,7 +23,11 @@ export default function ItemList({selectedTab, setSelectedId, items}: {
                     }
                 }}>
                     <GoodWrapper>
-                        <ImageBox src={DefaultImage}/>
+                        <ImageBox
+                            key={`${item.id}-${Date.now()}`} // key 추가로 강제 리렌더링
+                            src={`https://portal.inuappcenter.kr/images/item/${item.id}-1?cache_bust=${Date.now()}`}
+                            alt={DefaultImage}
+                        />
                         <DescriptionBox>
                             <span className={'name'}>{item.name}</span><br/>
                             수량 : {item.totalQuantity}<br/>
@@ -67,11 +71,6 @@ const GoodWrapper = styled.div`
     box-sizing: border-box;
 `;
 
-const ImageBox = styled.img`
-    width: 100%;
-    aspect-ratio: 1 / 0.8; /* 정사각형 비율 유지 */
-
-`;
 
 const DescriptionBox = styled.div`
     width: 100%;

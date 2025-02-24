@@ -3,6 +3,8 @@ import styled from "styled-components";
 import {Items} from "apis/rental.ts";
 import {getItemsList, getItemReservations, setConfirmReject} from "apis/rentalAdmin.ts";
 import EditItem from "./EditItem";
+import ImageBox from "../ImageBox.tsx";
+import DefaultImage from "../../../../resources/assets/rental/DefaultImage.svg";
 
 // 예약 데이터 타입 정의
 interface Reservation {
@@ -25,7 +27,7 @@ const ItemListAdmin = () => {
     const [items, setItems] = useState<Items[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedItem, setSelectedItem] = useState<Items | null>(null);
-    const [isChanged, setIsChanged] = useState<boolean>(true);
+    const [isChanged, setIsChanged] = useState<boolean>(false);
     const [reservations, setReservations] = useState<{ [key: number]: Reservation[] }>({});
 
     // 모달 관련 상태
@@ -33,6 +35,7 @@ const ItemListAdmin = () => {
     const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null);
     const [status, setStatus] = useState<string>("CONFIRM");
     const [activeButton, setActiveButton] = useState<string>(""); // '승인' 또는 '거절' 버튼의 active 상태
+
 
     useEffect(() => {
         // 데이터 로드
@@ -91,7 +94,7 @@ const ItemListAdmin = () => {
 
     const handleConfirm = async (reservationId: number | null) => {
         try {
-            const response = await setConfirmReject(reservationId, status); // CONFIRM | REJECTED
+            const response = await setConfirmReject(reservationId, status); // CONFIRM | CANCELED
             console.log('Reservation status updated:', response);
 
             // 성공 시 alert 띄우고 모달 닫기
@@ -126,6 +129,16 @@ const ItemListAdmin = () => {
                             {' '}
                             <ItemDeposit>보증금: {item.deposit.toLocaleString()}원</ItemDeposit>
                         </div>
+                        <div style={{width: "50%"}}>
+                            <ImageBox
+                                key={`${item.id}-${Date.now()}`} // key 추가로 강제 리렌더링
+                                src={`https://portal.inuappcenter.kr/images/item/${item.id}-1?cache_bust=${Date.now()}`}
+                                alt={DefaultImage}
+                            />
+
+
+                        </div>
+
 
                         {/* 예약 리스트 표시 */}
                         {item.id !== undefined && reservations[item.id] && reservations[item.id].length > 0 && (
@@ -134,7 +147,6 @@ const ItemListAdmin = () => {
                                 <ul>
                                     {reservations[item.id].map((reservation, idx) => (
                                         <li key={idx}>
-                                            <div>예약자 ID: {reservation.memberId}</div>
                                             <div>
                                                 대여 날짜: {new Date(reservation.startDateTime).toLocaleString('ko-KR', {
                                                 year: 'numeric',
@@ -158,9 +170,11 @@ const ItemListAdmin = () => {
 
                                             <div>상태: {reservation.reservationStatus === "CONFIRM" ? "승인" :
                                                 reservation.reservationStatus === "PENDING" ? "관리자 확인 중" :
-                                                    reservation.reservationStatus === "REJECTED" ? "거절됨" :
+                                                    reservation.reservationStatus === "CANCELED" ? "거절됨" :
                                                         "알 수 없음"
                                             }</div>
+                                            <div>예약번호: {reservation.reservationId}</div>
+
 
                                             {/* 수정 및 삭제 버튼 추가 */}
                                             <ButtonWrapper>
@@ -192,9 +206,9 @@ const ItemListAdmin = () => {
                                 승인
                             </StatusButton>
                             <StatusButton
-                                onClick={() => handleStatusChange("REJECTED")}
-                                active={activeButton === "REJECTED"}
-                                status="REJECTED"
+                                onClick={() => handleStatusChange("CANCELED")}
+                                active={activeButton === "CANCELED"}
+                                status="CANCELED"
                             >
                                 거절
                             </StatusButton>
@@ -202,12 +216,19 @@ const ItemListAdmin = () => {
                         <ConfirmCancelButtonWrapper>
 
                             <CancelButton
-                                onClick={() => setShowModal(false)}
+                                onClick={() => {
+                                    setShowModal(false);
+
+                                }}
                             >
                                 취소
                             </CancelButton>
                             <ConfirmButton
-                                onClick={() => handleConfirm(selectedReservationId)}
+                                onClick={() => {
+                                    handleConfirm(selectedReservationId);
+                                    setIsChanged(!isChanged);
+
+                                }}
                             >
                                 확인
                             </ConfirmButton>

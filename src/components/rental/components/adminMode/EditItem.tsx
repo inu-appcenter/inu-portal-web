@@ -1,4 +1,4 @@
-import {useState} from "react";
+import React, {useState} from "react";
 import styled from "styled-components";
 import {updateItem, deleteItem} from "apis/rentalAdmin.ts";
 import {Items} from "apis/rental.ts";
@@ -15,36 +15,57 @@ const EditItemModal = ({item, onClose, onSave}: {
         deposit: item.deposit,
     });
 
+    const [images, setImages] = useState<File[]>([]); // 이미지 파일 상태 추가
+
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const {name, value} = e.target;
         setFormData({...formData, [name]: value});
     };
 
     const handleSave = async () => {
+        const {itemCategory, name, totalQuantity, deposit} = formData;
+
+        // 유효성 검사: 모든 필수 입력값 확인
+        if (!itemCategory || !name.trim() || !totalQuantity || !deposit) {
+            alert("모든 필수 항목을 입력해주세요.");
+            return;
+        }
+
         try {
             if (item.id != null) {
-                await updateItem(item.id, formData, null);
+                await updateItem(item.id, formData, images);
+                onSave(); // 리스트 갱신
                 alert("수정되었습니다.");
+                onClose();
             }
-            onSave(); // 리스트 갱신
-            onClose();
         } catch (error) {
+            alert("수정 중 오류가 발생하였습니다.");
             console.error("수정 중 오류 발생:", error);
         }
     };
+
 
     const handleDelete = async () => {
         if (window.confirm("정말로 삭제하시겠습니까?")) {
             try {
                 if (item.id != null) {
-                        await deleteItem(item.id);
-                        alert("삭제되었습니다.");
+                    await deleteItem(item.id);
+                    alert("삭제되었습니다.");
                 }
                 onSave(); // 리스트 갱신
                 onClose();
             } catch (error) {
                 console.error("삭제 중 오류 발생:", error);
             }
+        }
+    };
+
+    // 이미지 파일 선택 함수
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (files) {
+            setImages(Array.from(files));
         }
     };
 
@@ -75,6 +96,16 @@ const EditItemModal = ({item, onClose, onSave}: {
                         보증금
                         <Input type="number" name="deposit" value={formData.deposit} onChange={handleChange}/>
                     </Label>
+                    <Label>
+                        이미지 변경
+                        <input
+                            id="images"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageChange}
+                        /> </Label>
+
                 </Form>
                 <Buttons>
                     <CancelButton onClick={onClose}>취소</CancelButton>

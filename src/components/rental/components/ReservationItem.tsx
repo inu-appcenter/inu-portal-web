@@ -54,7 +54,7 @@ const ReservationItem = ({reservation}: { reservation: any }) => {
                 <Info><strong>예약
                     상태:</strong> {reservation.reservationStatus === "CONFIRM" ? "승인" :
                     reservation.reservationStatus === "PENDING" ? "관리자 확인 중" :
-                        reservation.reservationStatus === "REJECTED" ? "거절됨" :
+                        reservation.reservationStatus === "CANCELED" ? "거절됨" :
                             "알 수 없음"
                 }
                 </Info>
