@@ -97,7 +97,7 @@ const AddItem = () => {
 
 // styled components
 const AddItemWrapper = styled.div`
-    width: 60%;
+    width: 90%;
     margin: 0 auto;
     padding: 20px;
     background-color: #f9f9f9;
