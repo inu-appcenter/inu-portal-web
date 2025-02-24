@@ -11,7 +11,13 @@ const TabButton = ({
     onClick: () => void;
 }) => {
     return (
-        <TabButtonWrapper isSelected={isSelected} onClick={onClick}>
+        <TabButtonWrapper
+            onClick={onClick}
+            style={{
+                borderBottomColor: isSelected ? "#0E4D9D" : "#B5B5B5",
+                color: isSelected ? "#0E4D9D" : "#B5B5B5",
+            }}
+        >
             {text}
         </TabButtonWrapper>
     );
@@ -21,8 +27,8 @@ const RentalTab = ({
                        handleTabClick,
                        selectedTab,
                    }: {
-    handleTabClick: any;
-    selectedTab: any;
+    handleTabClick: (tab: string) => void;
+    selectedTab: string;
 }) => {
     return (
         <TabWrapper>
@@ -57,22 +63,18 @@ const TabWrapper = styled.div`
     justify-content: space-between;
 `;
 
-const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
+const TabButtonWrapper = styled.div`
     width: fit-content;
     height: fit-content;
     padding: 4px 20px;
     box-sizing: border-box;
-    border-bottom: 2px solid ${({isSelected}) => (isSelected ? "#0E4D9D" : "#B5B5B5")};
+    border-bottom: 2px solid #B5B5B5; /* 기본 색상 설정 */
     font-style: normal;
     font-weight: 600;
     font-size: 13px;
     line-height: 28px;
-    /* identical to box height, or 184% */
     letter-spacing: 1.14801px;
-
     text-align: center;
-    color: ${({isSelected}) =>
-            isSelected ? "#0E4D9D" : "#B5B5B5"}; /* 회색 계열로 변경 */
     cursor: pointer;
 `;
 
