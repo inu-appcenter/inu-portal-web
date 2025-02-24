@@ -17,6 +17,11 @@ export const zoomLocation = (map: any) => {
     // setLevel(map.getLevel());
 };
 
+export const setZoom = (map: any, zoom: number) => {
+    map.setLevel(zoom);
+
+}
+
 export const displayLevel = (map: any, setLevel: React.Dispatch<number>) => {
     setLevel(map.getLevel());
 };

@@ -9,19 +9,28 @@ import {places, restPlaces, cafePlaces, restaurantPlaces} from "../DB.tsx";
 import {BottomSheet} from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import {closeInfoWindow} from "../utils/markerUtils.ts";
+import {setZoom} from "../utils/mapUtils.ts";
 
 interface PlaceListPanelProps {
     isOpen: boolean;
     selectedTab?: string;
     setSelectedTab?: React.Dispatch<React.SetStateAction<string>>;
-    map: any[];
+    map: any;
     markers: any;
+    viewXY: { X: number; Y: number };
+
 }
 
-const PlaceListPanel = ({isOpen, selectedTab, setSelectedTab, map, markers}: PlaceListPanelProps) => {
+const PlaceListPanel = ({isOpen, selectedTab, setSelectedTab, map, markers, viewXY}: PlaceListPanelProps) => {
     const handleTabClick = (tab: string) => {
         setSelectedTab?.(tab);
         closeInfoWindow();
+
+        const moveLatLon = new window.kakao.maps.LatLng(viewXY.X, viewXY.Y);
+
+        // 맵의 중심을 moveLatLon 위치로 설정
+        map.setCenter(moveLatLon);
+        setZoom(map, 4);
     };
 
     const placesToRender =

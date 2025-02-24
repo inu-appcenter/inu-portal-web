@@ -4,13 +4,18 @@ import {Place} from "components/map/DB.tsx";
 
 
 import {CafeimageMap} from "resources/assets/mapCafeImages/cafeImageManage.ts";
+import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
 
 
 const CafeInfoBox = ({place}: { place: Place }) => {
+    //@ts-ignore
+    const imageSrc = CafeimageMap[place.cafePlaceInfo?.name] ?? defaultImage;
+
     return (
         <CafeInfoBoxWrapper>
-            {/* @ts-ignore */}
-            <Image src={CafeimageMap[place.cafePlaceInfo?.name]} alt={`${place.cafePlaceInfo?.name}`}/>
+            <Image src={imageSrc} alt={`${place.cafePlaceInfo?.name} `} onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = defaultImage;
+            }}/>
             <Content>
                 <Title>{place.cafePlaceInfo?.name}</Title>
             </Content>

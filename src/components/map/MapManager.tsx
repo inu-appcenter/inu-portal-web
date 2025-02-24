@@ -65,6 +65,8 @@ export default function MapManager() {
                 setSelectedTab={setSelectedTab}
                 map={map}
                 markers={markers}
+                viewXY={viewXY}
+
             />
         </>
     );

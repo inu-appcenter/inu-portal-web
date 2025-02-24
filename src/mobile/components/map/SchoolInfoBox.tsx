@@ -1,12 +1,17 @@
 import styled from "styled-components";
 import {SchoolimageMap} from "resources/assets/mapBuildingImages/buildingImageManage.ts";
 import {Place} from "components/map/DB.tsx";
+import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
 
 
 const SchoolInfoBox = ({place}: { place: Place }) => {
+    const imageSrc = SchoolimageMap[place.location] ?? defaultImage;
+
     return (
         <SchoolInfoBoxWrapper>
-            <Image src={SchoolimageMap[place.location]} alt={`${place.location}호관`}/>
+            <Image src={imageSrc} alt={`${place.location}호관`} onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = defaultImage;
+            }}/>
             <Content>
                 <Title>{place.location}{' '}{place.place_name}</Title>
                 <DepartmentWrapper>
