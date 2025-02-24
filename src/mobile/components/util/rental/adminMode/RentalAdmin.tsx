@@ -1,7 +1,7 @@
 import {useState} from "react";
 import styled from "styled-components";
 
-import AddItem from "./AddItem";
+import AddItem from "./AddItem.tsx";
 import ItemListAdmin from "./ItemListAdmin.tsx";
 
 export default function RentalAdmin() {

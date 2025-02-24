@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {deleteReservation, getItemDetail} from "apis/rental";
+import {deleteReservation, getItemDetail} from "apis/rental.ts";
 import styled from "styled-components";
 
 const ReservationItem = ({reservation}: { reservation: any }) => {

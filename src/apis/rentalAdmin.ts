@@ -8,11 +8,15 @@ import {Items} from "apis/rental.ts";
 export {getItemsList} from "apis/rental.ts";
 
 // 예약 데이터 타입 정의
-interface Reservation {
+export interface Reservation {
+    reservationId: number;
     memberId: string;
     startDateTime: string;
     endDateTime: string;
     reservationStatus: string;
+    studentId: string;
+    phoneNumber: number;
+
 }
 
 // 폼 데이터 타입 정의

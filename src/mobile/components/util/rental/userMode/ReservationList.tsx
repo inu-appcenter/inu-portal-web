@@ -1,6 +1,6 @@
 import {useState, useEffect} from "react";
-import {getReservations, Reservation, ReservationContent} from "apis/rental";  // getReservations 함수 임포트
-import ReservationItem from "./ReservationItem";  // ReservationItem 컴포넌트 임포트
+import {getReservations, Reservation, ReservationContent} from "apis/rental.ts";  // getReservations 함수 임포트
+import ReservationItem from "./ReservationItem.tsx";  // ReservationItem 컴포넌트 임포트
 import styled from "styled-components";
 
 const ReservationList = () => {

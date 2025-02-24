@@ -10,7 +10,7 @@ const AddItem = () => {
     const [images, setImages] = useState<File[]>([]); // 이미지 파일 상태 추가
 
     // useForm에 타입 지정
-    const {register, handleSubmit} = useForm<ItemFormValues>();
+    const {register, handleSubmit, reset} = useForm<ItemFormValues>();
 
     // 이미지 파일 선택 함수
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,6 +26,9 @@ const AddItem = () => {
             const response = await addItem(data, images);  // FormData 전송
             console.log("물품 등록 성공:", response);
             alert(response.msg); // 서버 응답 메시지
+            // 등록 성공 시 폼 초기화
+            reset();  // 폼 내용 초기화
+            setImages([]);  // 이미지 상태 초기화
         } catch (error) {
             console.error("물품 등록 실패:", error);
             alert("물품 등록 실패");

@@ -5,7 +5,7 @@ import styled from "styled-components";
 import DefaultImage from "resources/assets/rental/DefaultImage.svg"
 import {getItemDetail, createReservation, Items} from "apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
-import ImageBox from "../../../../components/rental/components/ImageBox.tsx";
+import ImageBox from "./ImageBox.tsx";
 
 interface ItemDetailProps {
     itemId: number;

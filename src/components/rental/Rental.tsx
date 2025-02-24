@@ -1,15 +1,14 @@
 import {useEffect, useState} from "react";
 import styled from "styled-components";
-import ItemList from "./components/ItemList";
-import Tab from "mobile/components/util/rental/Tab.tsx";
-import OpenBtn from "resources/assets/rental/OpenBtn.svg";
-import CloseBtn from "resources/assets/rental/CloseBtn.svg";
-import ItemDetail from "../../mobile/components/util/rental/ItemDetail.tsx";
-import RentalAdmin from "./components/adminMode/RentalAdmin.tsx";
+import ItemList from "../../mobile/components/util/rental/userMode/ItemList.tsx";
+import RentalTab from "mobile/components/util/rental/RentalTab.tsx";
+import NoticeBox from "../../mobile/components/util/rental/userMode/NoticeBox.tsx";
 
-import {Items, getItemsList, getReservations} from "apis/rental.ts";
-import ReservationList from "./components/ReservationList";
-import useUserStore from "../../stores/useUserStore.ts";
+import ItemDetail from "../../mobile/components/util/rental/ItemDetail.tsx";
+import RentalAdmin from "../../mobile/components/util/rental/adminMode/RentalAdmin.tsx";
+
+import {Items, getItemsList} from "apis/rental.ts";
+import ReservationList from "../../mobile/components/util/rental/userMode/ReservationList.tsx";
 
 
 export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
@@ -17,14 +16,7 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [items, setItems] = useState<Items[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [reservations, setReservations] = useState<any[]>([]); // 예약 목록 상태 추가
-    const [loadingReservations, setLoadingReservations] = useState<boolean>(false); // 예약 목록 로딩 상태 추가
     const [isOpenedList, setIsOpenedList] = useState<boolean>(false);
-
-    //빨간줄제거용..
-    reservations;
-
-    const {tokenInfo} = useUserStore();
 
 
     useEffect(() => {
@@ -34,6 +26,7 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
                 const data = await getItemsList();
                 setItems(data.data);
             } catch (error) {
+                alert("물품 목록을 가져오는 중 오류가 발생하였습니다.");
                 console.error("데이터를 가져오는 중 오류 발생:", error);
             } finally {
                 setLoading(false);
@@ -43,24 +36,6 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
         fetchItems();
     }, []);
 
-    // 예약 목록 로드 함수
-    const fetchReservations = async () => {
-        if (!tokenInfo.accessToken) {
-            alert("로그인 후 이용해 주세요.");
-            return;
-        }
-        setIsOpenedList(!isOpenedList);
-        setLoadingReservations(true);
-        try {
-            const data = await getReservations(); // 예약 API 호출
-            // @ts-ignore
-            setReservations(data.contents); // 예약 데이터 설정
-        } catch (error) {
-            console.error("예약 목록을 가져오는 중 오류 발생:", error);
-        } finally {
-            setLoadingReservations(false);
-        }
-    };
 
     if (loading) {
         return <p>로딩 중...</p>;
@@ -76,21 +51,18 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
             {/* 평상시에는 렌탈 화면이 표시됨 */}
             {!isOpenAdminPage && (
                 <>
-                    <Tab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
+                    <RentalTab handleTabClick={handleTabClick} selectedTab={selectedTab}/>
 
                     <ItemList selectedTab={selectedTab} setSelectedId={setSelectedId} items={items}/>
 
                     {/* 내 예약 목록 보기 버튼 추가 */}
-                    <Button onClick={fetchReservations}>내 예약 목록 보기</Button>
+                    <Button onClick={() => {
+                        setIsOpenedList(!isOpenedList)
+                    }}>내 예약 목록 보기</Button>
 
                     {isOpenedList && (
                         <>
-                            {loadingReservations ? (
-                                <p>예약 목록 로딩 중...</p>
-                            ) : (
-
-                                <ReservationList/>
-                            )}
+                            <ReservationList/>
                         </>
                     )}
 
@@ -139,69 +111,3 @@ const Button = styled.button`
 `;
 
 
-// 공지 부분 컴포넌트
-const NoticeBox = () => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const handleClick = () => {
-        setIsOpen(!isOpen);
-    };
-    return (
-        <NoticeBoxWrapper>
-            <TitleWrapper onClick={handleClick}>
-                <Title>※ 물품 대여 방법 꼭 ! 확인하세요</Title>
-                {!isOpen && <img src={OpenBtn} style={{width: "15px"}}/>}
-                {isOpen && <img src={CloseBtn} style={{width: "15px"}}/>}
-            </TitleWrapper>
-            {isOpen && (
-                <Content>
-                    총학생회에서 제공하는 물품 대여 서비스입니다.
-                    <br/>
-                    ※ 대여 신청 가능한 물품의 개수는 적혀있는 것과 다를 수 있습니다.
-                    <br/>
-                    ※ 물품 파손 시 보증금 반환 불가 및 손망실 금액이 발생할 수 있습니다.
-                    <br/>
-                    ※ 총학 행사 기간에는 대여 불가능합니다.
-                    <br/>
-                    ※ 당일 예약이 불가합니다.
-                    <br/>
-                    ※ 대여 및 반납은 오늘 기준 3일 후부터 14일 이내, 오전 10시부터 오후 5시 사이에 가능하며, 토요일 및 일요일에는 불가능합니다.
-                    <br/>
-                    물품 수량 확인 날짜 2025.01.02
-                </Content>
-            )}
-        </NoticeBoxWrapper>
-    );
-};
-
-const NoticeBoxWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    margin-bottom: 50px;
-`;
-
-const TitleWrapper = styled.div`
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    border-bottom: #dfdfdf 1px solid;
-`;
-
-const Title = styled.div`
-    height: 50px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    font-size: 15px;
-    color: #000000;
-`;
-
-const Content = styled.div`
-    font-weight: 400;
-    font-size: 13px;
-    color: #656565;
-    width: 100%;
-`;
