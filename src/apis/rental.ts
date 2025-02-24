@@ -4,7 +4,7 @@ import tokenInstance from "./tokenInstance";
 import {SetStateAction} from "react";
 
 export interface Items {
-    id?: number;
+    id: number;
     itemCategory: string;
     name: string;
     totalQuantity: number;

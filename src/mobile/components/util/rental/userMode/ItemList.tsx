@@ -2,7 +2,7 @@ import styled from "styled-components";
 import DefaultImage from "resources/assets/rental/DefaultImage.svg"
 
 import {Items} from "apis/rental.ts";
-import ImageBox from "./ImageBox";
+import ImageBox from "../ImageBox.tsx";
 
 export default function ItemList({selectedTab, setSelectedId, items}: {
     selectedTab: string,

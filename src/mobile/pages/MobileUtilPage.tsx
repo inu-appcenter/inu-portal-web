@@ -1,10 +1,10 @@
 import MobileUtilHeader from "mobile/components/util/MobileUtilHeader";
 import {useLocation} from "react-router-dom";
 import styled from "styled-components";
-import UploadBook from "mobile/components/util/UploadBook";
-import BookList from "mobile/components/util/BookList";
-import UploadLost from "mobile/components/util/UploadLost";
-import LostList from "mobile/components/util/LostList";
+import UploadBook from "mobile/components/util/book/UploadBook.tsx";
+import BookList from "mobile/components/util/book/BookList.tsx";
+import UploadLost from "mobile/components/util/Lost/UploadLost.tsx";
+import LostList from "mobile/components/util/Lost/LostList.tsx";
 import {useState} from "react";
 import useUserStore from "stores/useUserStore";
 
