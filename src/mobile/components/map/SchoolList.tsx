@@ -46,6 +46,7 @@ const List = ({
 
                             //리스트에서 장소 클릭시 맵 화면에서 인포윈도우를 같이 띄우고 싶은데 안되네요..
                             // 이미 생성된 마커를 찾아 클릭 이벤트를 트리거
+                            //@ts-ignore
                             const marker = markers.find(marker => {
                                 return marker.getPosition().equals(moveLatLon); // 위치가 일치하는 마커 찾기
                             });
