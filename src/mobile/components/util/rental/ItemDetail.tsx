@@ -5,6 +5,7 @@ import styled from "styled-components";
 import DefaultImage from "resources/assets/rental/DefaultImage.svg"
 import {getItemDetail, createReservation, Items} from "apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
+import ImageBox from "../../../../components/rental/components/ImageBox.tsx";
 
 interface ItemDetailProps {
     itemId: number;
@@ -100,7 +101,11 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
             <DetailWrapper>
                 <h3>대여 정보를 확인해주세요 !</h3>
                 <GoodWrapper>
-                    <ImageBox src={DefaultImage}/>
+                    <ImageBox
+                        key={`${itemId}-${Date.now()}`} // key 추가로 강제 리렌더링
+                        src={`https://portal.inuappcenter.kr/images/item/${itemId}-1?cache_bust=${Date.now()}`}
+                        alt={DefaultImage}
+                    />
                     <DescriptionBox>
                         <span className={'name'}>{itemDetail?.name}</span><br/>
                         대여료 : {itemDetail?.deposit}<br/>
@@ -241,11 +246,6 @@ const GoodWrapper = styled.div`
     box-sizing: border-box;
 `;
 
-const ImageBox = styled.img`
-    width: 100%;
-    aspect-ratio: 1 / 1; /* 정사각형 비율 유지 */
-
-`;
 
 const DescriptionBox = styled.div`
     width: 100%;
