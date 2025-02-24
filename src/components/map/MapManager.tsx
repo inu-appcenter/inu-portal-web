@@ -4,15 +4,21 @@ import TipsPageTitle from "../../mobile/components/tips/TipsPageTitle.tsx";
 import {useLocation} from "react-router-dom";
 import {useState, useMemo} from "react";
 import PlaceListPanel from "./components/PlaceListPanel.tsx";
+import {deleteMarkers} from "components/map/utils/markerUtils.ts"
+
 
 interface XY {
     X: number;
     Y: number;
 }
 
+let markers: any[] = []; // any 타입 명시
+
+
 export default function MapManager() {
     const [selectedTab, setSelectedTab] = useState<string>("학교");
     const [map, setMap] = useState<any>(null);
+
 
     const location = useLocation();
     const params = new URLSearchParams(location.search);
@@ -47,6 +53,8 @@ export default function MapManager() {
                     viewXY={viewXY}
                     map={map}
                     setMap={setMap}
+                    markers={markers}
+                    deleteMarkers={deleteMarkers}
                 />
             </MapWrapper>
 
@@ -56,6 +64,7 @@ export default function MapManager() {
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
                 map={map}
+                markers={markers}
             />
         </>
     );

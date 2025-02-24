@@ -11,10 +11,12 @@ import {zoomLocation} from "../../../components/map/utils/mapUtils.ts";
 
 
 const List = ({
-                  placesToRender, map
+                  placesToRender, map, markers
               }: {
     placesToRender: Place[];
     map: any;
+    markers: any;
+
 }) => {
     const [openIndex, setOpenIndex] = useState(-1);
 
@@ -36,10 +38,26 @@ const List = ({
                         onClick={() => {
                             handleClick({index});
                             const moveLatLon = new window.kakao.maps.LatLng(place.latitude, place.longitude);
+
+                            // 맵의 중심을 moveLatLon 위치로 설정
                             map.setCenter(moveLatLon);
                             zoomLocation(map);
+
+
+                            //리스트에서 장소 클릭시 맵 화면에서 인포윈도우를 같이 띄우고 싶은데 안되네요..
+                            // 이미 생성된 마커를 찾아 클릭 이벤트를 트리거
+                            const marker = markers.find(marker => {
+                                return marker.getPosition().equals(moveLatLon); // 위치가 일치하는 마커 찾기
+                            });
+
+                            if (marker) {
+                                // 해당 마커를 클릭한 것처럼 이벤트를 트리거
+                                window.kakao.maps.event.trigger(marker, "click");
+                            }
                         }}
                     >
+
+
                         <FirstLine>
                             <IconBox src={LocationIcon}/>
                             <TitleBox>
