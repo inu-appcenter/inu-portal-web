@@ -110,10 +110,17 @@ const ItemListAdmin = () => {
         <>
             <ItemListWrapper>
                 {items.map((item, index) => (
-                    <ItemCard index={index} item={item} handleClickItem={handleClickItem}
-                              handleEditReservation={handleEditReservation} reservations={reservations}/>
+                    <ItemCard
+                        key={item.id}  // 고유한 값으로 key 추가 (여기서는 item.id를 사용)
+                        index={index}
+                        item={item}
+                        handleClickItem={handleClickItem}
+                        handleEditReservation={handleEditReservation}
+                        reservations={reservations}
+                    />
                 ))}
             </ItemListWrapper>
+
 
             {/* 승인 여부 변경 모달 */}
             {showModal && (
