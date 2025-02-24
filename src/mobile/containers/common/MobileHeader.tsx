@@ -1,13 +1,13 @@
 import styled from "styled-components";
 import intipLogo from "resources/assets/intip-logo.svg";
 import ProfileImage from "mobile/components/common/ProfileImage";
-import ProfileNickname from "mobile/components/common/ProfileNickname";
+// import ProfileNickname from "mobile/components/common/ProfileNickname";
 import MenuButton from "mobile/components/common/MenuButton";
 import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
 import useUserStore from "stores/useUserStore";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import {ReactSVG} from "react-svg";
-import eyeImg from "../../../resources/assets/posts/eye.svg";
+// import eyeImg from "../../../resources/assets/posts/eye.svg";
 
 export default function MobileHeader() {
     const {userInfo} = useUserStore();
