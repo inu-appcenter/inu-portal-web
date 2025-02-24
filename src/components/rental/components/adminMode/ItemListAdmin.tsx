@@ -61,11 +61,13 @@ const ItemListAdmin = () => {
                                 }
                             }
                         } catch (error) {
+                            alert("예약 리스트를 가져오는 중 오류가 발생하였습니다.");
                             console.error("예약 리스트를 가져오는 중 오류 발생:", error);
                         }
                     }
                 }
             } catch (error) {
+                alert("아이템 리스트를 가져오는 중 오류가 발생하였습니다.");
                 console.error("아이템 목록을 가져오는 중 오류 발생:", error);
             } finally {
                 setLoading(false);
@@ -98,13 +100,13 @@ const ItemListAdmin = () => {
             console.log('Reservation status updated:', response);
 
             // 성공 시 alert 띄우고 모달 닫기
-            alert('예약 상태가 성공적으로 업데이트되었습니다.');
+            alert('예약 승인 상태가 성공적으로 업데이트되었습니다.');
             setShowModal(false);
         } catch (error) {
             console.error('Error updating reservation status:', error);
 
             // 실패 시 alert 띄우기
-            alert('예약 상태 업데이트에 실패했습니다.');
+            alert('예약 승인 상태 업데이트에 실패했습니다.');
         }
     };
 
