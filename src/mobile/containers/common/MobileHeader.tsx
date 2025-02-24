@@ -7,23 +7,31 @@ import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
 import useUserStore from "stores/useUserStore";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import {ReactSVG} from "react-svg";
+import eyeImg from "../../../resources/assets/posts/eye.svg";
 
 export default function MobileHeader() {
     const {userInfo} = useUserStore();
     const mobileNavigate = useMobileNavigate();
 
-    const handleClick = () => {
+    const handleLogoClick = () => {
         mobileNavigate(`/home`);
+    };
+    const handleProfileClick = () => {
+        mobileNavigate("/mypage");
     };
 
     return (
         <MobileHeaderWrapper>
-            <ReactSVG onClick={handleClick} src={intipLogo}/>
+            <ReactSVG onClick={handleLogoClick} src={intipLogo}/>
             <ProfileMenuWrapper>
                 {userInfo.nickname ? (
                     <>
-                        <ProfileImage fireId={userInfo.fireId}/>
-                        <ProfileNickname nickname={userInfo.nickname}/>
+                        {/*<ProfileImage fireId={userInfo.fireId}/>*/}
+                        {/*<ProfileNickname nickname={userInfo.nickname}/>*/}
+                        <PostInfo onClick={handleProfileClick}>
+                            <ProfileImage fireId={userInfo.fireId}/>
+                            {userInfo.nickname}
+                        </PostInfo>
                     </>
                 ) : (
                     <>
@@ -44,7 +52,7 @@ const MobileHeaderWrapper = styled.header`
     height: 72px;
     padding: 0 24px;
     position: relative;
-    z-index: 1;
+    z-index: 2;
 
     img {
         shape-rendering: crispEdges;
@@ -55,4 +63,28 @@ const ProfileMenuWrapper = styled.div`
     display: flex;
     align-items: center;
     gap: 16px;
+`;
+
+
+const PostInfo = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+    background: #ecf4ff;
+    font-size: 14px;
+    color: #666;
+    height: fit-content;
+    width: auto;
+    border-radius: 100px;
+    padding: 5px;
+
+    font-weight: 400;
+
+
+    img {
+        top: 10px;
+    }
+
+
 `;
