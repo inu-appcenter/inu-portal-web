@@ -83,7 +83,7 @@ const ItemListAdmin = () => {
     };
 
 
-    const handleConfirm = async (reservationId: number | null) => {
+    const handleConfirm = async (reservationId: number) => {
         try {
             const response = await setConfirmReject(reservationId, status); // CONFIRM | CANCELED
             console.log('Reservation status updated:', response);

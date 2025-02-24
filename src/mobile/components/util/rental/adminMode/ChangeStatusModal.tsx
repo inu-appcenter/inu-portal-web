@@ -50,7 +50,9 @@ const ChangeStatusModal = ({
                     </CancelButton>
                     <ConfirmButton
                         onClick={() => {
-                            handleConfirm(selectedReservationId);
+                            if (selectedReservationId != null) {
+                                handleConfirm(selectedReservationId);
+                            }
 
                         }}
                     >
