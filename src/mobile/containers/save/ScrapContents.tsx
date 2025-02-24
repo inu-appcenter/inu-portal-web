@@ -392,7 +392,7 @@ export default function ScrapContents({folders, folder}: ScrapContentsProps) {
                         </DropdownWrapper>
                     )}
                     {renderPosts()}
-                    {loading && <Loader>Loading...</Loader>}
+                    {loading && <Loader>로딩 중...</Loader>}
                     {!loading && page > totalPages && (
                         <EndMarker>모든 스크랩을 불러왔습니다.</EndMarker>
                     )}
