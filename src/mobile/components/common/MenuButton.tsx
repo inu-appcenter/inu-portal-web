@@ -20,7 +20,7 @@ import useMobileNavigate from "hooks/useMobileNavigate";
 import {useLocation} from "react-router-dom";
 
 const categorys = [
-    {title: "메뉴", img: menuImg},
+    {title: "식당메뉴", img: menuImg},
     {title: "공지사항", img: noticeImg},
     {title: "TIPS", img: TipImg},
     {title: "학사일정", img: calendarImg},
@@ -49,7 +49,7 @@ export default function MenuButton() {
     });
 
     const handleClick = (title: string) => {
-        if (title === "메뉴") {
+        if (title === "식당메뉴") {
             mobileNavigate(`/home/menu`);
         } else if (title === "공지사항") {
             mobileNavigate(`/home/tips?type=notice`);
