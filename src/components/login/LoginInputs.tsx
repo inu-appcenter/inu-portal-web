@@ -9,6 +9,7 @@ import loginPassword from "resources/assets/login/login-password.svg";
 import TermOfUse from "./TermsOfUse";
 
 export default function LoginInputs() {
+  const [loading, setLoading] = useState(false);
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [passwordType, setPasswordType] = useState<"password" | "text">(
@@ -27,17 +28,21 @@ export default function LoginInputs() {
 
   const handleLogin = async () => {
     if (!isActive) return;
+    if (loading) return;
 
     if (!studentId || !password) {
       alert("학번과 비밀번호를 입력해주세요.");
       return;
     }
     try {
+      setLoading(true);
       const response = await login(studentId, password);
       setTokenInfo(response.data);
       navigate(-1);
+      setLoading(false);
     } catch (error) {
       console.error("로그인 실패", error);
+      setLoading(false);
       if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 401:
