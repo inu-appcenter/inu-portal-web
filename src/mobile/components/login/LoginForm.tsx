@@ -9,6 +9,7 @@ import axios from "axios";
 import TermOfUse from "components/login/TermsOfUse";
 
 export default function LoginForm() {
+  const [loading, setLoading] = useState(false);
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [passwordType, setPasswordType] = useState<"password" | "text">(
@@ -27,13 +28,16 @@ export default function LoginForm() {
 
   const handleLogin = async () => {
     if (!isActive) return;
-
+    if (loading) return;
     try {
+      setLoading(true);
       const response = await login(studentId, password);
       setTokenInfo(response.data);
       mobileNavigate(-1);
+      setLoading(false);
     } catch (error) {
       console.error("로그인 실패", error);
+      setLoading(false);
       if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 401:
@@ -88,7 +92,7 @@ export default function LoginForm() {
         </FormInputWrapper>
         <InputLine />
       </FormItemWrapper>
-      <LoginButton onClick={handleLogin} $isActive={isActive}>
+      <LoginButton onClick={handleLogin} $isActive={isActive && !loading}>
         로그인
       </LoginButton>
       <span className="termofuse">
