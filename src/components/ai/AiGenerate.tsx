@@ -101,6 +101,7 @@ export default function AiGenerate() {
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert("번역하는 중 오류가 발생했어요! 영어로 직접 입력해주세요.");
             });
 
         return ""; //번역 실패시 빈 문자열 반환
@@ -129,7 +130,12 @@ export default function AiGenerate() {
 
             const cleanedValue = inputValue.replace(/횃불이/g, ''); // '횃불이'를 제거
             if (koreanRegex.test(cleanedValue)) {
-                translatedValue = await translate(cleanedValue);
+                const result = await translate(cleanedValue);
+                if (result === "") {
+                    return;
+                } else {
+                    translatedValue = result;
+                }
                 // alert("한글은 지원되지 않습니다.");
                 // return;
             }
