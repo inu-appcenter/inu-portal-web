@@ -84,11 +84,11 @@ const AddItem = () => {
                 {/* 이미지 업로드 섹션 추가 */}
                 <div className="form-group">
                     <label htmlFor="images">이미지 업로드</label>
+                    최대 10MB
                     <input
                         id="images"
                         type="file"
                         accept="image/*"
-                        multiple
                         onChange={handleImageChange}
                     />
                 </div>

@@ -96,6 +96,7 @@ export default function UploadLost({
                     </InputWrapper>
                     <FileInputWrapper>
                         <label htmlFor="imageInput">이미지 선택</label>
+                        이미지당 최대 10MB, 총 이미지 용량 20MB
                         <input
                             type="file"
                             id="imageInput"
