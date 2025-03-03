@@ -55,10 +55,13 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
 
                     <ItemList selectedTab={selectedTab} setSelectedId={setSelectedId} items={items}/>
 
+                    <NoticeBox/>
+
+
                     {/* 내 예약 목록 보기 버튼 추가 */}
                     <Button onClick={() => {
                         setIsOpenedList(!isOpenedList)
-                    }}>내 예약 목록 보기</Button>
+                    }}>{!isOpenedList ? <>내 예약 목록 보기</> : <>내 예약 목록 닫기</>}</Button>
 
                     {isOpenedList && (
                         <>
@@ -67,7 +70,6 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
                     )}
 
 
-                    <NoticeBox/>
                 </>
             )}
 

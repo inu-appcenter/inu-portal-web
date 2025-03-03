@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {deleteReservation, getItemDetail} from "apis/rental.ts";
 import styled from "styled-components";
 
-const ReservationItem = ({reservation}: { reservation: any }) => {
+const ReservationItem = ({reservation, setIsChanged}: { reservation: any, setIsChanged: () => void }) => {
     const [loading, setLoading] = useState(false);
     const [itemName, setItemName] = useState("불러오는 중...");
 
@@ -26,6 +26,7 @@ const ReservationItem = ({reservation}: { reservation: any }) => {
         try {
             await deleteReservation(itemId);
             alert("예약이 취소되었습니다.");
+            setIsChanged(true);
         } catch (error) {
             alert("예약 취소에 실패했습니다.");
         } finally {
