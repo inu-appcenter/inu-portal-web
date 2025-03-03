@@ -59,10 +59,10 @@ export const getItemDetail = async (itemId: number): Promise<ApiResponse<Items>>
 // 예약 등록
 export const createReservation = async (
     itemId: number,
-    reservationData: { startDateTime: string, endDateTime: string, phoneNumber: string }
+    reservationData: { startDateTime: string, endDateTime: string, quantity: number, phoneNumber: string }
 ): Promise<ApiResponse<Pagination>> => {
     try {
-        console.log("에약일자", reservationData);
+        console.log("예약일자", reservationData);
         const response = await tokenInstance.post(
             `/api/reservations/${itemId}`,
             reservationData
