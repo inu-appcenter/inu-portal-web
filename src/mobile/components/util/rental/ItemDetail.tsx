@@ -92,6 +92,33 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
         }
     };
 
+    const getAvailableDates = () => {
+        const today = new Date();
+
+        // 오늘 기준 3일 후 날짜 구하기
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() + 3);
+
+        // 14일 이내 날짜 구하기
+        const endDate = new Date(today);
+        endDate.setDate(today.getDate() + 14);
+
+        const availableDates: string[] = [];
+
+        // 가능한 날짜 구하기 (주말 제외, 10시부터 17시까지)
+        for (let currentDate = new Date(startDate); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+            const dayOfWeek = currentDate.getDay();
+
+            // 주말 제외 (0: 일요일, 6: 토요일)
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                const month = currentDate.getMonth() + 1;  // 월은 0부터 시작하므로 1을 더해줍니다.
+                const day = currentDate.getDate();  // 일자 추출
+                availableDates.push(`${month}월 ${day}일`);
+            }
+        }
+
+        return availableDates;
+    };
 
     if (loading) {
         return <div>로딩 중...</div>;
@@ -119,7 +146,14 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                     </DescriptionBox>
                 </GoodWrapper>
                 <Content>
-                    ※ 오늘 기준 3일 후부터 14일 이내, 오전 10시부터 오후 5시 사이에 가능하며, 토요일 및 일요일에는 불가능합니다.
+                    🚧 오늘 기준 3일 후부터 14일 이내, 오전 10시부터 오후 5시 사이에 가능하며, 토요일 및 일요일에는 불가능합니다.<br/>
+                    ⏰ 대여-반납 가능 일자 : <br/>
+                    {getAvailableDates().map((date, index, array) => (
+                        <>
+                            {date}{index < array.length - 1 && ', '}
+                        </>
+                    ))}
+
                 </Content>
                 <InputWrapper>
                     <label>

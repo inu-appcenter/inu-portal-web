@@ -139,10 +139,15 @@ export const deleteItem = async (itemId: number): Promise<ApiResponse<{}>> => {
 
 // 아이템별 예약 목록 조회 함수
 export const getItemReservations = async (itemId: number, page: number = 1): Promise<ApiResponse<Reservation[]>> => {
-    const response = await tokenInstance.get<ApiResponse<Reservation[]>>(
-        `/api/reservations/item/${itemId}?page=${page}`,
-    );
-    return response.data;
+    try {
+        const response = await tokenInstance.get<ApiResponse<Reservation[]>>(
+            `/api/reservations/item/${itemId}?page=${page}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error('API 요청 중 오류 발생:', error);
+        throw new Error('예약 목록 조회에 실패했습니다.');
+    }
 };
 
 

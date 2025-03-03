@@ -6,6 +6,7 @@ import styled from "styled-components";
 const ReservationList = () => {
     const [reservations, setReservations] = useState<ReservationContent[]>([]);  // ReservationContent 배열로 타입 설정
     const [loading, setLoading] = useState(true);
+    const [isChanged, setIsChanged] = useState(false);
 
     useEffect(() => {
         const fetchReservations = async () => {
@@ -23,7 +24,7 @@ const ReservationList = () => {
         };
 
         fetchReservations();
-    }, []);
+    }, [isChanged]);
 
     if (loading) {
         return <p>로딩 중...</p>;
@@ -33,7 +34,7 @@ const ReservationList = () => {
         <ReservationListWrapper>
             {reservations && (  // reservations 배열이 비어 있지 않은지 확인
                 reservations.map((reservation) => (
-                    <ReservationItem key={reservation.itemId} reservation={reservation}/>
+                    <ReservationItem key={reservation.itemId} reservation={reservation} setIsChanged={setIsChanged}/>
                 ))
             )}
         </ReservationListWrapper>
