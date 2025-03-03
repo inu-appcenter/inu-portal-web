@@ -18,6 +18,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     const [error, setError] = useState<string | null>(null);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
+    const [quantity, setQuantity] = useState(1);
     const [phoneNumber, setPhoneNumber] = useState<string>("");
     const [reservationLoading, setReservationLoading] = useState<boolean>(false);
     const [reservationError, setReservationError] = useState<string | null>(null);
@@ -54,6 +55,10 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
             alert("모든 입력칸을 채워주세요.");
             return;
         }
+        if (quantity <= 0) {
+            alert("수량은 1개 이상이어야 합니다.");
+            return;
+        }
         if (!isPhoneNumberValid(phoneNumber)) {
             alert("전화번호 형식을 확인해주세요.");
             return;
@@ -73,6 +78,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                 startDateTime: formattedStartDate,
                 endDateTime: formattedEndDate,
                 phoneNumber: phoneNumber,
+                quantity: quantity,
             });
 
 
@@ -130,6 +136,17 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                             type="datetime-local"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
+                        />
+                    </label>
+                    <label>
+                        수량:
+                        <input
+                            type="string"
+                            name="quantity"
+                            value={quantity}
+                            onChange={(e) => {
+                                setQuantity(Number(e.target.value));
+                            }}
                         />
                     </label>
                     <label>
