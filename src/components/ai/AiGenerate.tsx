@@ -65,6 +65,48 @@ export default function AiGenerate() {
         return () => clearInterval(interval);
     }, [eta]);
 
+    const translate = async (koreanText: string): Promise<string> => {
+        // Google Cloud Translation API를 사용하려면 API 키가 필요합니다.
+
+        const apiKey = import.meta.env.VITE_API_KEY;
+
+// 번역할 텍스트와 타겟 언어 설정
+        const text = koreanText;
+        const targetLanguage = 'en';  // 한국어로 번역
+
+// 번역 요청을 위한 URL
+        const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+
+// 번역할 텍스트를 포함한 요청 본문
+        const requestBody = {
+            q: text,
+            target: targetLanguage
+        };
+
+// Fetch API를 사용하여 번역 요청
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => response.json())
+            .then(data => {
+                // 번역 결과 출력
+                console.log('Translated Text:', data.data.translations[0].translatedText);
+                alert(data.data.translations[0].translatedText + "(으)로 번역되어 횃불이 이미지가 생성됩니다.");
+                // alert(data.data.translations[0].translatedText);
+                return data.data.translations[0].translatedText;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        return ""; //번역 실패시 빈 문자열 반환
+
+    }
+
     const handleGenerateClick = async () => {
         if (loading) return;
         if (inputRef.current && !inputRef.current.value.trim()) {
@@ -72,11 +114,27 @@ export default function AiGenerate() {
             return;
         }
 
+        let translatedValue = "";
         const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
-        if (inputRef.current && koreanRegex.test(inputRef.current.value)) {
-            alert("한글은 지원되지 않습니다.");
-            return;
+        if (inputRef.current) {
+            const inputValue = inputRef.current.value;
+            if (inputValue === '횃불이') {
+                alert("‘횃불이’ 키워드는 사용할 수 없습니다. 예를 들어, '즐겁게 피아노 치는'과 같이 묘사해 주세요.");
+                return; // '횃불이'만 입력된 경우 리턴
+            }
+            if (inputValue.length > 30) {
+                alert("30글자를 초과할 수 없습니다.");
+                return; // 30글자를 초과하는 경우 리턴
+            }
+
+            const cleanedValue = inputValue.replace(/횃불이/g, ''); // '횃불이'를 제거
+            if (koreanRegex.test(cleanedValue)) {
+                translatedValue = await translate(cleanedValue);
+                // alert("한글은 지원되지 않습니다.");
+                // return;
+            }
         }
+
 
         if (!tokenInfo.accessToken) {
             alert("로그인이 필요합니다.");
@@ -92,7 +150,9 @@ export default function AiGenerate() {
 
             try {
                 // 명령어로 이미지 생성 요청
-                const response = await postFiresPredict(inputRef.current.value.trim());
+                const response = await postFiresPredict(
+                    translatedValue === "" ? inputRef.current.value.trim() : translatedValue
+                );
                 const requestId = response.data.request_id;
                 setRequestId(requestId);
 
