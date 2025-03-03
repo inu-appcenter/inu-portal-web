@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {deleteReservation, getItemDetail} from "apis/rental.ts";
 import styled from "styled-components";
 
-const ReservationItem = ({reservation, setIsChanged}: { reservation: any, setIsChanged: () => void }) => {
+const ReservationItem = ({reservation, setIsChanged}: { reservation: any, setIsChanged: (b: boolean) => void }) => {
     const [loading, setLoading] = useState(false);
     const [itemName, setItemName] = useState("불러오는 중...");
 
