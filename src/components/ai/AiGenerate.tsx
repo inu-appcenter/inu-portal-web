@@ -66,47 +66,40 @@ export default function AiGenerate() {
     }, [eta]);
 
     const translate = async (koreanText: string): Promise<string> => {
-        // Google Cloud Translation API를 사용하려면 API 키가 필요합니다.
-
         const apiKey = import.meta.env.VITE_API_KEY;
 
-// 번역할 텍스트와 타겟 언어 설정
         const text = koreanText;
         const targetLanguage = 'en';  // 한국어로 번역
 
-// 번역 요청을 위한 URL
         const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
-// 번역할 텍스트를 포함한 요청 본문
         const requestBody = {
             q: text,
             target: targetLanguage
         };
 
-// Fetch API를 사용하여 번역 요청
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        })
-            .then(response => response.json())
-            .then(data => {
-                // 번역 결과 출력
-                console.log('Translated Text:', data.data.translations[0].translatedText);
-                alert(data.data.translations[0].translatedText + "(으)로 번역되어 횃불이 이미지가 생성됩니다.");
-                // alert(data.data.translations[0].translatedText);
-                return data.data.translations[0].translatedText;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("번역하는 중 오류가 발생했어요! 영어로 직접 입력해주세요.");
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
             });
 
-        return ""; //번역 실패시 빈 문자열 반환
+            const data = await response.json();
+            const translatedText = data.data.translations[0].translatedText;
+            console.log('Translated Text:', translatedText);
 
-    }
+            alert(translatedText + "(으)로 번역되어 횃불이 이미지가 생성됩니다.");
+
+            return translatedText;  // 번역 결과 반환
+        } catch (error) {
+            console.error('Error:', error);
+            alert("번역하는 중 오류가 발생했어요! 영어로 직접 입력해주세요.");
+            return "";  // 오류 발생 시 빈 문자열 반환
+        }
+    };
 
     const handleGenerateClick = async () => {
         if (loading) return;
@@ -114,11 +107,16 @@ export default function AiGenerate() {
             alert("명령어를 입력해주세요.");
             return;
         }
+        if (!tokenInfo.accessToken) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
 
+        let inputValue = "";
         let translatedValue = "";
         const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
         if (inputRef.current) {
-            const inputValue = inputRef.current.value;
+            inputValue = inputRef.current.value;
             if (inputValue === '횃불이') {
                 alert("‘횃불이’ 키워드는 사용할 수 없습니다. 예를 들어, '즐겁게 피아노 치는'과 같이 묘사해 주세요.");
                 return; // '횃불이'만 입력된 경우 리턴
@@ -142,49 +140,46 @@ export default function AiGenerate() {
         }
 
 
-        if (!tokenInfo.accessToken) {
-            alert("로그인이 필요합니다.");
-            return;
-        }
+        // if (inputRef.current) {
+        setLoading(true);
+        setMainImage(null);
+        setEta(0);
+        setCanRefresh(false);
+        setRequestId(null);
 
-        if (inputRef.current) {
-            setLoading(true);
-            setMainImage(null);
-            setEta(0);
-            setCanRefresh(false);
-            setRequestId(null);
+        try {
+            // 명령어로 이미지 생성 요청
+            console.log("생성 요청 시작");
+            const response = await postFiresPredict(
+                translatedValue === "" ? inputValue.trim() : translatedValue
+            );
+            console.log(response);
+            const requestId = response.data.request_id;
+            setRequestId(requestId);
 
-            try {
-                // 명령어로 이미지 생성 요청
-                const response = await postFiresPredict(
-                    translatedValue === "" ? inputRef.current.value.trim() : translatedValue
-                );
-                const requestId = response.data.request_id;
-                setRequestId(requestId);
-
-                // IndexedDB에서 이미지가 있는지 확인
-                const cachedImage = await getImageFromIndexedDB(requestId);
-                if (cachedImage) {
-                    setMainImage(cachedImage);
-                    setLoading(false);
-                    return;
-                }
-
-                // 이미지 생성 결과 가져오기
-                fetchResult(requestId);
-            } catch (error) {
-                console.error("이미지 생성 요청 실패", error);
-                if (
-                    axios.isAxiosError(error) &&
-                    !(error as AxiosError & { isRefreshError?: boolean })
-                        .isRefreshError &&
-                    error.response
-                ) {
-                    alert("이미지 생성 요청 실패");
-                }
+            // IndexedDB에서 이미지가 있는지 확인
+            const cachedImage = await getImageFromIndexedDB(requestId);
+            if (cachedImage) {
+                setMainImage(cachedImage);
                 setLoading(false);
+                return;
             }
+
+            // 이미지 생성 결과 가져오기
+            fetchResult(requestId);
+        } catch (error) {
+            console.error("이미지 생성 요청 실패", error);
+            if (
+                axios.isAxiosError(error) &&
+                !(error as AxiosError & { isRefreshError?: boolean })
+                    .isRefreshError &&
+                error.response
+            ) {
+                alert("이미지 생성 요청 실패");
+            }
+            setLoading(false);
         }
+        // }
     };
 
     const fetchResult = async (requestId: string) => {
