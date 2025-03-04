@@ -11,7 +11,7 @@ export default function HowToUse() {
             </div>
             <span style={{fontSize: "20px", lineHeight: "30px"}}>
         <strong>1.</strong> 원하는 행동 또는 상황을 입력해주세요.<br/>예를 들어, "Surfing", "hawaiian
-        shirts", "sunset" 등을 입력하세요.<br/>한글로 입력할 경우 자동으로 영어로 번역되어 생성돼요.
+        shirts", "sunset" 등을 입력하세요.<br/>한글로 입력할 경우 자동으로 영어로 번역되어 생성돼요. 한글은 최대 30자까지 입력 가능해요.
         <br/><br/>
                 <strong>2.</strong> 'AI 횃불이'는 입력된 내용을 바탕으로 AI로 횃불이 이미지를 생성해요.
         <br/><br/>

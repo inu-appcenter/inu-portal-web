@@ -121,13 +121,14 @@ export default function AiGenerate() {
                 alert("‘횃불이’ 키워드는 사용할 수 없습니다. 예를 들어, '즐겁게 피아노 치는'과 같이 묘사해 주세요.");
                 return; // '횃불이'만 입력된 경우 리턴
             }
-            if (inputValue.length > 30) {
-                alert("30글자를 초과할 수 없습니다.");
-                return; // 30글자를 초과하는 경우 리턴
-            }
+
 
             const cleanedValue = inputValue.replace(/횃불이/g, ''); // '횃불이'를 제거
             if (koreanRegex.test(cleanedValue)) {
+                if (inputValue.length > 30) {
+                    alert("한글은 30글자를 초과할 수 없습니다.");
+                    return; // 30글자를 초과하는 경우 리턴
+                }
                 const result = await translate(cleanedValue);
                 if (result === "") {
                     return;
