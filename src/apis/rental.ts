@@ -10,7 +10,8 @@ export interface Items {
     name: string;
     totalQuantity: number;
     deposit: number;
-
+    createDate: string;
+    modifiedDate: string;
 }
 
 

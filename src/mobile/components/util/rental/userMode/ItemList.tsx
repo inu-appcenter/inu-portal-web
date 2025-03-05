@@ -24,14 +24,15 @@ export default function ItemList({selectedTab, setSelectedId, items}: {
                 }}>
                     <GoodWrapper>
                         <ImageBox
-                            key={`${item.id}-${Date.now()}`} // key 추가로 강제 리렌더링
-                            src={`https://portal.inuappcenter.kr/images/item/${item.id}-1?cache_bust=${Date.now()}`}
+                            key={`${item.id}-${item.modifiedDate}`} // key 추가로 강제 리렌더링
+                            src={`https://portal.inuappcenter.kr/images/item/${item.id}-1?cache_bust=${item.modifiedDate}`}
                             alt={DefaultImage}
                         />
                         <DescriptionBox>
                             <span className={'name'}>{item.name}</span><br/>
                             수량 : {item.totalQuantity}<br/>
-                            보증금 : {item.deposit}(원)
+                            보증금 : {item.deposit}(원)<br/>
+                            {/*{item.modifiedDate}*/}
                         </DescriptionBox>
                     </GoodWrapper>
                 </div>
@@ -81,7 +82,6 @@ const DescriptionBox = styled.div`
     font-weight: 500;
     font-size: 10px;
     line-height: 12px;
-    text-align: center;
     letter-spacing: 0.871981px;
 
     color: #000000;
@@ -93,7 +93,6 @@ const DescriptionBox = styled.div`
         font-size: 10px;
         line-height: 12px;
         text-align: center;
-        letter-spacing: 0.871981px;
 
         color: #000000;
 

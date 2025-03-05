@@ -135,8 +135,8 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                 <h3>대여 정보를 확인해주세요 !</h3>
                 <GoodWrapper>
                     <ImageBox
-                        key={`${itemId}-${Date.now()}`} // key 추가로 강제 리렌더링
-                        src={`https://portal.inuappcenter.kr/images/item/${itemId}-1?cache_bust=${Date.now()}`}
+                        key={`${itemId}-${itemDetail?.modifiedDate}`} // key 추가로 강제 리렌더링
+                        src={`https://portal.inuappcenter.kr/images/item/${itemId}-1?cache_bust=${itemDetail?.modifiedDate}`}
                         alt={DefaultImage}
                     />
                     <DescriptionBox>
