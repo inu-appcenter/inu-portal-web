@@ -141,8 +141,8 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                     />
                     <DescriptionBox>
                         <span className={'name'}>{itemDetail?.name}</span><br/>
-                        대여료 : {itemDetail?.deposit}<br/>
-                        총 수량 : {itemDetail?.totalQuantity}
+                        총 수량 : {itemDetail?.totalQuantity}<br/>
+                        대여료 : {itemDetail?.deposit}
                     </DescriptionBox>
                 </GoodWrapper>
                 <Content>
@@ -173,7 +173,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                         />
                     </label>
                     <label>
-                        수량:
+                        수량:<br/>(예약 상황에 따라 총 수량만큼 예약이 불가할 수 있습니다.)
                         <input
                             type="string"
                             name="quantity"
