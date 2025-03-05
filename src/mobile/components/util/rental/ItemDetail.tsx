@@ -157,7 +157,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                 </Content>
                 <InputWrapper>
                     <label>
-                        대여 날짜:
+                        대여 일자:
                         <input
                             type="datetime-local"
                             value={startDate}
@@ -165,7 +165,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                         />
                     </label>
                     <label>
-                        반납 날짜:
+                        반납 일자:
                         <input
                             type="datetime-local"
                             value={endDate}

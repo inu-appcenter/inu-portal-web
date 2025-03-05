@@ -38,14 +38,14 @@ const ReservationItem = ({reservation, setIsChanged}: { reservation: any, setIsC
         <ReservationItemWrapper>
             <InfoContainer>
                 <Info><strong>물품 이름:</strong> {itemName}</Info>
-                <Info><strong>시작 시간:</strong> {new Date(reservation.startDateTime).toLocaleString('ko-KR', {
+                <Info><strong>대여 일자:</strong> {new Date(reservation.startDateTime).toLocaleString('ko-KR', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 })}</Info>
-                <Info><strong>종료 시간:</strong> {new Date(reservation.endDateTime).toLocaleString('ko-KR', {
+                <Info><strong>반납 일자:</strong> {new Date(reservation.endDateTime).toLocaleString('ko-KR', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
