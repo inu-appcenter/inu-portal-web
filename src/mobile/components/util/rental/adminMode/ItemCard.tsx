@@ -34,8 +34,8 @@ const ItemCard = ({index, item, handleClickItem, reservations, handleEditReserva
             </div>
             <div style={{width: "50%"}}>
                 <ImageBox
-                    key={`${item.id}-${Date.now()}`} // key 추가로 강제 리렌더링
-                    src={`https://portal.inuappcenter.kr/images/item/${item.id}-1?cache_bust=${Date.now()}`}
+                    key={`${item.id}-${item.modifiedDate}`} // key 추가로 강제 리렌더링
+                    src={`https://portal.inuappcenter.kr/images/item/${item.id}-1?cache_bust=${item.modifiedDate}`}
                     alt={DefaultImage}
                 />
 
