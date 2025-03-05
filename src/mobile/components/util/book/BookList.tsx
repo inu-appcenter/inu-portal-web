@@ -4,6 +4,10 @@ import { BookSummary } from "types/books.ts";
 import { getBooksList, getBoksListAvailable } from "apis/books.ts";
 import styled from "styled-components";
 import BookDetail from "./BookDetail.tsx";
+import X_Vector from "../../../../resources/assets/mobile-mypage/X-Vector.svg";
+import HowToUse from "../../../../components/ai/HowToUse.tsx";
+
+import 안내횃불이 from "resources/assets/book/안내횃불이.png";
 
 export default function BookList({ reloadKey }: { reloadKey: number }) {
   const [available, setAvailable] = useState(true);
@@ -11,6 +15,9 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const [show, setShow] = useState(false);  //모달창 열림 여부
+
 
   // 리스트를 가져오는 함수
   const fetchList = async (currentPage: number, reset = false) => {
@@ -64,7 +71,25 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
           >
             전체
           </button>
+          <button className={"info selected"} onClick={() => setShow(true)}>
+            <img src={안내횃불이} />
+            구매 방법
+          </button>
         </FilterButtons>
+
+        {show &&
+            <ModalBackGround>
+              <Modal>
+                <div className="close" onClick={() => setShow(false)}>
+                  <span>닫기</span>
+                  <img src={X_Vector} alt="X" />
+                </div>
+                {/* <AiIntroText /> */}
+                <HowToUse />
+              </Modal>
+            </ModalBackGround>
+        }
+
 
         <InfiniteScroll
           dataLength={books.length}
@@ -108,6 +133,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
 const FilterButtons = styled.div`
   display: flex;
   gap: 8px;
+  position: relative; /* 버튼의 absolute 배치를 위해 추가 */
 
   button {
     font-size: 14px;
@@ -122,7 +148,24 @@ const FilterButtons = styled.div`
     color: rgba(14, 77, 157, 1);
     font-weight: 600;
   }
+
+  .info {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 30px;
+      
+    }
+  }
 `;
+
 
 const ListWrapper = styled.div`
   width: 100%;
@@ -185,5 +228,40 @@ const BookCard = styled.div`
 
   .create-date {
     color: rgba(122, 167, 229, 1);
+  }
+`;
+
+
+
+const ModalBackGround = styled.div`
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0 0 0 0;
+  z-index: 9999;
+`;
+
+const Modal = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  box-sizing: border-box;
+  padding: 32px 12px;
+  border-radius: 16px;
+  width: 95%;
+  height: 80%;
+  background: linear-gradient(90deg, #6084d7 0%, #c294eb 100%);
+
+  .close {
+    display: flex;
+    gap: 8px;
+    background-color: white;
+    width: 64px;
+    height: 32px;
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
   }
 `;
