@@ -5,7 +5,7 @@ import { getBooksList, getBoksListAvailable } from "apis/books.ts";
 import styled from "styled-components";
 import BookDetail from "./BookDetail.tsx";
 import X_Vector from "../../../../resources/assets/mobile-mypage/X-Vector.svg";
-import HowToUse from "../../../../components/ai/HowToUse.tsx";
+import HowToBuy from "../../../../components/book/HowToUse.tsx";
 
 import 안내횃불이 from "resources/assets/book/안내횃불이.png";
 
@@ -85,7 +85,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
                   <img src={X_Vector} alt="X" />
                 </div>
                 {/* <AiIntroText /> */}
-                <HowToUse />
+                <HowToBuy />
               </Modal>
             </ModalBackGround>
         }
