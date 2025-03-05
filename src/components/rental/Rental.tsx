@@ -41,6 +41,7 @@ export default function RentalPage({isOpen: isOpenAdminPage}: { isOpen: any }) {
         return <p>로딩 중...</p>;
     }
 
+
     const handleTabClick = (tab: string) => {
         setSelectedTab(tab);
     };
