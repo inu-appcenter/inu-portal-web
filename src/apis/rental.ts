@@ -2,6 +2,7 @@
 import {ApiResponse, Pagination} from "types/common";
 import tokenInstance from "./tokenInstance";
 import {SetStateAction} from "react";
+import axiosInstance from "./axiosInstance.ts";
 
 export interface Items {
     id: number;
@@ -32,7 +33,7 @@ export interface ReservationContent {
 // 물품 리스트 조회
 export const getItemsList = async (): Promise<ApiResponse<SetStateAction<Items[]>>> => {
     try {
-        const response = await tokenInstance.get<ApiResponse<SetStateAction<Items[]>>>(
+        const response = await axiosInstance.get<ApiResponse<SetStateAction<Items[]>>>(
             "/api/items"
         );
         return response.data;
