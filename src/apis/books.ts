@@ -3,6 +3,21 @@ import { ApiResponse, Pagination } from "types/common";
 import tokenInstance from "./tokenInstance";
 import { Book, BookSummary } from "types/books";
 
+// 책 검색
+export const getBooksSearch = async (
+  query: string,
+  page: number
+): Promise<ApiResponse<Pagination<BookSummary[]>>> => {
+  const params: { [key: string]: string | number } = {
+    query,
+    page,
+  };
+  const resposne = await axiosInstance.get<
+    ApiResponse<Pagination<BookSummary[]>>
+  >("/api/books/search", { params });
+  return resposne.data;
+};
+
 // 책 리스트 조회
 export const getBooksList = async (
   page: number

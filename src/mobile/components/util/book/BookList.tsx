@@ -1,13 +1,20 @@
 import { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { BookSummary } from "types/books.ts";
-import { getBooksList, getBoksListAvailable } from "apis/books.ts";
+import {
+  getBooksSearch,
+  getBooksList,
+  getBoksListAvailable,
+} from "apis/books.ts";
 import styled from "styled-components";
 import BookDetail from "./BookDetail.tsx";
 import X_Vector from "../../../../resources/assets/mobile-mypage/X-Vector.svg";
 import HowToBuy from "../../../../components/book/HowToUse.tsx";
 
 import 안내횃불이 from "resources/assets/book/안내횃불이.png";
+
+import SerachForm from "./BookSearchForm.tsx";
+import useMobileNavigate from "hooks/useMobileNavigate";
 
 export default function BookList({ reloadKey }: { reloadKey: number }) {
   const [available, setAvailable] = useState(true);
@@ -16,13 +23,18 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
   const [hasMore, setHasMore] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const [show, setShow] = useState(false);  //모달창 열림 여부
+  const [show, setShow] = useState(false); //모달창 열림 여부
 
+  const params = new URLSearchParams(location.search);
+  let query = params.get("search") || "";
+  const mobileNavigate = useMobileNavigate();
 
   // 리스트를 가져오는 함수
   const fetchList = async (currentPage: number, reset = false) => {
     try {
-      const response = available
+      const response = query
+        ? await getBooksSearch(query, currentPage)
+        : available
         ? await getBoksListAvailable(currentPage)
         : await getBooksList(currentPage);
       const newBooks = response.data.contents;
@@ -50,7 +62,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
   // 초기 데이터 로드
   useEffect(() => {
     fetchList(1, true);
-  }, [available, reloadKey]);
+  }, [available, reloadKey, query]);
 
   return (
     <>
@@ -58,38 +70,49 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
         <BookDetail bookId={selectedId} onClose={() => setSelectedId(null)} />
       )}
       <ListWrapper>
+        <SerachForm />
         <FilterButtons>
-          <button
-            className={available ? "selected" : ""}
-            onClick={() => handleFilterChange(true)}
-          >
-            판매 중
-          </button>
-          <button
-            className={!available ? "selected" : ""}
-            onClick={() => handleFilterChange(false)}
-          >
-            전체
-          </button>
+          {query ? (
+            <button
+              className=""
+              onClick={() => mobileNavigate(`/home/util?type=book`)}
+            >
+              검색 초기화
+            </button>
+          ) : (
+            <>
+              <button
+                className={available ? "selected" : ""}
+                onClick={() => handleFilterChange(true)}
+              >
+                판매 중
+              </button>
+              <button
+                className={!available ? "selected" : ""}
+                onClick={() => handleFilterChange(false)}
+              >
+                전체
+              </button>
+            </>
+          )}
           <button className={"info selected"} onClick={() => setShow(true)}>
             <img src={안내횃불이} />
             구매 방법
           </button>
         </FilterButtons>
 
-        {show &&
-            <ModalBackGround>
-              <Modal>
-                <div className="close" onClick={() => setShow(false)}>
-                  <span>닫기</span>
-                  <img src={X_Vector} alt="X" />
-                </div>
-                {/* <AiIntroText /> */}
-                <HowToBuy />
-              </Modal>
-            </ModalBackGround>
-        }
-
+        {show && (
+          <ModalBackGround>
+            <Modal>
+              <div className="close" onClick={() => setShow(false)}>
+                <span>닫기</span>
+                <img src={X_Vector} alt="X" />
+              </div>
+              {/* <AiIntroText /> */}
+              <HowToBuy />
+            </Modal>
+          </ModalBackGround>
+        )}
 
         <InfiniteScroll
           dataLength={books.length}
@@ -134,6 +157,7 @@ const FilterButtons = styled.div`
   display: flex;
   gap: 8px;
   position: relative; /* 버튼의 absolute 배치를 위해 추가 */
+  margin-top: 12px;
 
   button {
     font-size: 14px;
@@ -161,11 +185,9 @@ const FilterButtons = styled.div`
 
     img {
       width: 30px;
-      
     }
   }
 `;
-
 
 const ListWrapper = styled.div`
   width: 100%;
@@ -230,8 +252,6 @@ const BookCard = styled.div`
     color: rgba(122, 167, 229, 1);
   }
 `;
-
-
 
 const ModalBackGround = styled.div`
   position: fixed;
