@@ -25,6 +25,7 @@ const EditItemModal = ({item, onClose, onSave}: {
 
     const handleSave = async () => {
         const {itemCategory, name, totalQuantity, deposit} = formData;
+        console.log(itemCategory, name, totalQuantity, deposit);
 
         // 유효성 검사: 모든 필수 입력값 확인
         if (!itemCategory || !name.trim() || !totalQuantity || !deposit) {
