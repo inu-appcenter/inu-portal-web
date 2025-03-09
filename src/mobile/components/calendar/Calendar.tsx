@@ -156,6 +156,39 @@ const CalendarWrapper = styled.div`
     color: #828282 !important;
   }
 
+  // 요일 폰트
+  .fc-col-header-cell-cushion {
+    font-family: Lato;
+    font-weight: 500;
+    font-size: 14px;
+    text-transform: uppercase;
+  }
+
+  .fc-theme-standard td {
+    border: none;
+  }
+
+  .fc-theme-standard th {
+    border: none;
+  }
+
+  .fc-theme-standard .fc-scrollgrid {
+    border: none;
+  }
+
+  // 날짜 내의 숫자
+  .fc-daygrid-day-top {
+    font-family: Lato;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // 다른 달의 날짜 보이지 않기
+  .fc-day-other {
+    color: transparent;
+  }
+
   .event-tooltip {
     display: flex;
     justify-content: center;
