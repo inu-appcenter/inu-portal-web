@@ -111,10 +111,9 @@ export default function TipsListContainer({
         if (newPosts && newPosts.length > 0) {
           setPosts((prev) => [...prev, ...newPosts]);
           // lastPostId 및 페이지 수 업데이트
-          const lpi = Number(newPosts[newPosts.length - 1]?.id);
           setFetchState((prev) => ({
             ...prev,
-            lastPostId: Number.isNaN(lpi) ? undefined : lpi,
+            page: prev.page + 1,
           }));
         } else {
           setHasMore(false);
