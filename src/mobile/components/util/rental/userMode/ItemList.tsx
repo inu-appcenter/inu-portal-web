@@ -30,8 +30,8 @@ export default function ItemList({selectedTab, setSelectedId, items}: {
                         />
                         <DescriptionBox>
                             <span className={'name'}>{item.name}</span><br/>
-                            총 수량 : {item.totalQuantity}<br/>
-                            보증금 : {item.deposit}(원)<br/>
+                            총 수량 : {item.totalQuantity}개<br/>
+                            보증금 : {item.deposit}원<br/>
                             {/*{item.modifiedDate}*/}
                         </DescriptionBox>
                     </GoodWrapper>
