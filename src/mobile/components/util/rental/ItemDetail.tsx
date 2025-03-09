@@ -3,7 +3,7 @@ import {BottomSheet} from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 import DefaultImage from "resources/assets/rental/DefaultImage.svg"
-import {getItemDetail, createReservation, Items} from "apis/rental.ts";
+import {getItemDetail, createReservation, Items, getAvailableQuantity} from "apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
 import ImageBox from "./ImageBox.tsx";
 
@@ -18,6 +18,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     const [error, setError] = useState<string | null>(null);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
+    const [availableQuantity, setAvailableQuantity] = useState<number>(0);
     const [quantity, setQuantity] = useState(1);
     const [phoneNumber, setPhoneNumber] = useState<string>("");
     const [reservationLoading, setReservationLoading] = useState<boolean>(false);
@@ -40,6 +41,33 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
 
         fetchItemDetail();
     }, [itemId]);
+
+    useEffect(() => {
+        if (startDate && endDate) {
+            try {
+// 현재 시간에 9시간을 더하여 한국 시간으로 변환
+                const koreaTimeOffset = 9 * 60; // 한국은 UTC보다 9시간 빠름
+                const formattedStartDate = new Date(new Date(startDate).getTime() + koreaTimeOffset * 60 * 1000).toISOString();
+                const formattedEndDate = new Date(new Date(endDate).getTime() + koreaTimeOffset * 60 * 1000).toISOString();
+
+// 예약 요청
+                const data = getAvailableQuantity(itemId, {
+                    startDateTime: formattedStartDate,
+                    endDateTime: formattedEndDate,
+                });
+                console.log(data);
+                setAvailableQuantity(Number(data));
+
+
+            } catch (err) {
+                // @ts-ignore
+                // setReservationError(err instanceof Error ? err.response.data.msg : "예약 가능 수량을 받아오는 중 오류가 발생했습니다.");
+            } finally {
+                // setReservationLoading(false);
+            }
+        }
+
+    }, [startDate, endDate]);
 
     const isPhoneNumberValid = (phoneNumber: string): boolean => {
         const phoneNumberRegex = /^01[0-9]\d{8,9}$/;
@@ -173,7 +201,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                         />
                     </label>
                     <label>
-                        수량:<br/>(예약 상황에 따라 총 수량만큼 예약이 불가할 수 있습니다.)
+                        수량:<br/>{availableQuantity}개 가능
                         <input
                             type="string"
                             name="quantity"

@@ -21,6 +21,10 @@ export interface Reservation {
     contents: ReservationContent[];
 }
 
+export interface AvailableQuantity {
+    quantity: number;
+}
+
 export interface ReservationContent {
     itemId: number;
     memberId: number;
@@ -108,3 +112,19 @@ export const deleteReservation = async (itemId: number): Promise<void> => {
     }
 };
 
+// 예약 가능 수량 조회
+export const getAvailableQuantity = async (
+    itemId: number,
+    dateData: { startDateTime: string, endDateTime: string }
+): Promise<ApiResponse<AvailableQuantity>> => {
+    try {
+        console.log("예약일자", dateData);
+        const response = await tokenInstance.get<ApiResponse<AvailableQuantity>>(
+            `/api/reservations/quantity/${itemId}/?startDateTime=${dateData.startDateTime}&endDateTime=${dateData.endDateTime}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error during reservation creation:", error);
+        throw error;
+    }
+};
