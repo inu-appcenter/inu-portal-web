@@ -181,9 +181,12 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                 </button>
                 <h3>대여 정보를 확인해주세요 !</h3>
                 <GoodWrapper>
-                    <div className={'name'}>{itemDetail?.name}</div>
-                    총 수량 : {itemDetail?.totalQuantity}<br/>
-                    대여료 : {itemDetail?.deposit}원
+                    <DescriptionWrapper>
+                        <div className={'name'}>{itemDetail?.name}</div>
+                        총 수량 : {itemDetail?.totalQuantity}개<br/>
+                        대여료 : {itemDetail?.deposit}원
+                    </DescriptionWrapper>
+
                     <ImageBoxWrapper>
                         <ImageBox
                             key={`${itemId}-${itemDetail?.modifiedDate}`} // key 추가로 강제 리렌더링
@@ -376,44 +379,24 @@ const GoodWrapper = styled.div`
     padding: 15px;
     box-sizing: border-box;
 
-    justify-content: space-between;
 
     .name {
-        font-size: 25px;
+        font-size: 22px;
         font-weight: 600;
     }
 
 `;
 
 
-// const DescriptionBox = styled.div`
-//     width: 100%;
-//     height: fit-content; /* 내용에 맞는 높이 */
-//     text-align: center;
-//
-//     font-style: normal;
-//     font-weight: 500;
-//     font-size: 10px;
-//     line-height: 12px;
-//     text-align: center;
-//     letter-spacing: 0.871981px;
-//
-//     color: #000000;
-//
-//
-//     .name {
-//         font-style: normal;
-//         font-weight: 700;
-//         font-size: 10px;
-//         line-height: 12px;
-//         text-align: center;
-//         letter-spacing: 0.871981px;
-//
-//         color: #000000;
-//
-//
-//     }
-// `;
+const DescriptionWrapper = styled.div`
+    width: 48%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 14px;
+
+`
 
 
 const ImageBoxWrapper = styled.div`
