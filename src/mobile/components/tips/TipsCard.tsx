@@ -51,7 +51,7 @@ export default function ({
               </GridTopWrapper>
               <GridLine />
               <GridBottomWrapper>
-                <Title>{post.title}</Title>
+                <GridTitle>{post.title}</GridTitle>
                 <LikeCommentWriterWrapper>
                   <span className="like-comment">
                     <img src={heart} alt="" />
@@ -72,15 +72,11 @@ export default function ({
                   <Category>{notice.category}</Category>
                   <Date>{notice.createDate}</Date>
                 </GridTopTopWrapper>
-                <Content></Content>
-              </GridTopWrapper>
-              <GridLine />
-              <GridBottomWrapper>
-                <Title>{notice.title}</Title>
+                <GridTitle>{notice.title}</GridTitle>
                 <LikeCommentWriterWrapper>
                   <span className="writer">{notice.writer}</span>
                 </LikeCommentWriterWrapper>
-              </GridBottomWrapper>
+              </GridTopWrapper>
             </TipsCardGridWrapper>
           )}
           {councilNotice && (
@@ -94,7 +90,7 @@ export default function ({
               </GridTopWrapper>
               <GridLine />
               <GridBottomWrapper>
-                <Title>{councilNotice.title}</Title>
+                <GridTitle>{councilNotice.title}</GridTitle>
                 <LikeCommentWriterWrapper>
                   <span className="like-comment">
                     <span>조회수</span>
@@ -115,7 +111,7 @@ export default function ({
               </ListLeftWrapper>
               <ListLine />
               <ListRightWrapper>
-                <Title>{post.title}</Title>
+                <ListTitle>{post.title}</ListTitle>
                 <Content>{post.content}</Content>
                 <LikeCommentWriterWrapper>
                   <span className="like-comment">
@@ -138,7 +134,7 @@ export default function ({
               </ListLeftWrapper>
               <ListLine />
               <ListRightWrapper>
-                <Title>{notice.title}</Title>
+                <ListTitle>{notice.title}</ListTitle>
                 <Content></Content>
                 <LikeCommentWriterWrapper>
                   <span className="writer">{notice.writer}</span>
@@ -154,7 +150,7 @@ export default function ({
               </ListLeftWrapper>
               <ListLine />
               <ListRightWrapper>
-                <Title>{councilNotice.title}</Title>
+                <ListTitle>{councilNotice.title}</ListTitle>
                 <Content>{councilNotice.content}</Content>
                 <LikeCommentWriterWrapper>
                   <span className="like-comment">
@@ -187,22 +183,29 @@ const Date = styled.div`
   color: #7aa7e5;
 `;
 
-const Title = styled.div`
+const ListTitle = styled.div`
   font-size: 14px;
   font-weight: 500;
   color: #221112;
 `;
 
+const GridTitle = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: #221112;
+  flex: 1;
+`;
+
 const Content = styled.div`
+  flex: 1;
   font-size: 10px;
   font-weight: 500;
   color: #888888;
 `;
 
 const LikeCommentWriterWrapper = styled.div`
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
+  align-self: flex-end;
+  justify-self: end;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,7 +240,7 @@ const TipsCardGridWrapper = styled.div`
 `;
 
 const GridTopWrapper = styled.div`
-  padding: 12px 8px 0 8px;
+  padding: 8px;
   flex: 3;
   display: flex;
   flex-direction: column;
@@ -257,10 +260,10 @@ const GridLine = styled.div`
 
 const GridBottomWrapper = styled.div`
   position: relative;
-  padding: 8px 8px 0 12px;
+  padding: 8px;
   flex: 2;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 `;
 
 const TipsCardListWrapper = styled.div`
@@ -285,8 +288,10 @@ const ListLine = styled.div`
 `;
 
 const ListRightWrapper = styled.div`
+  height: 100%;
+  box-sizing: border-box;
   position: relative;
-  padding: 8px 8px 0 12px;
+  padding: 8px;
   flex: 7;
   display: flex;
   flex-direction: column;
