@@ -178,7 +178,7 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                 <GoodWrapper>
                     <ImageBox
                         key={`${itemId}-${itemDetail?.modifiedDate}`} // key 추가로 강제 리렌더링
-                        src={`https://portal.inuappcenter.kr/images/item/${itemId}-1?cache_bust=${itemDetail?.modifiedDate}`}
+                        src={`https://portal.inuappcenter.kr/images/item/thumbnail/${itemId}?cache_bust=${itemDetail?.modifiedDate}`}
                         alt={DefaultImage}
                     />
                     <DescriptionBox>
