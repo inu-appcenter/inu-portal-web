@@ -6,6 +6,7 @@ import DefaultImage from "resources/assets/rental/DefaultImage.svg"
 import {getItemDetail, createReservation, Items, getAvailableQuantity} from "apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
 import ImageBox from "./ImageBox.tsx";
+import closeBtn from "../../../../resources/assets/mobile-common/closebtn.svg";
 
 interface ItemDetailProps {
     itemId: number;
@@ -174,6 +175,10 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     return (
         <BottomSheet open={true} onDismiss={onClose}>
             <DetailWrapper>
+                <button onClick={onClose} className={"closeBtn"}>
+                    닫기
+                    <img src={closeBtn} alt=""/>
+                </button>
                 <h3>대여 정보를 확인해주세요 !</h3>
                 <GoodWrapper>
                     <ImageBox
@@ -282,6 +287,23 @@ const DetailWrapper = styled.div`
 
     img {
         width: 80px;
+    }
+
+
+    .closeBtn {
+        display: flex;
+        align-items: center;
+        justify-content: end;
+        gap: 8px;
+        background-color: transparent;
+        border: none;
+        color: black;
+        font-size: 14px;
+        font-weight: 500;
+
+        img {
+            width: 14px;
+        }
     }
 `;
 
