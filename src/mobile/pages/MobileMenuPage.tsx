@@ -40,7 +40,7 @@ export default function MobileMenuPage() {
         const monday = new Date(date);
         monday.setDate(date.getDate() + diffToMonday); // 이번 주 월요일 날짜
 
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 7; i++) {
             const weekDate = new Date(monday);
             weekDate.setDate(monday.getDate() + i);
             weekDates.push({
