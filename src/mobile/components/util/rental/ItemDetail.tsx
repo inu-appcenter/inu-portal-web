@@ -5,8 +5,8 @@ import styled from "styled-components";
 import DefaultImage from "resources/assets/rental/DefaultImage.svg"
 import {getItemDetail, createReservation, Items, getAvailableQuantity} from "apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
-import ImageBox from "./ImageBox.tsx";
 import closeBtn from "../../../../resources/assets/mobile-common/closebtn.svg";
+import ImageBox from "./ImageBox.tsx";
 
 interface ItemDetailProps {
     itemId: number;
@@ -181,16 +181,17 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                 </button>
                 <h3>대여 정보를 확인해주세요 !</h3>
                 <GoodWrapper>
-                    <ImageBox
-                        key={`${itemId}-${itemDetail?.modifiedDate}`} // key 추가로 강제 리렌더링
-                        src={`https://portal.inuappcenter.kr/images/item/thumbnail/${itemId}?cache_bust=${itemDetail?.modifiedDate}`}
-                        alt={DefaultImage}
-                    />
-                    <DescriptionBox>
-                        <span className={'name'}>{itemDetail?.name}</span><br/>
-                        총 수량 : {itemDetail?.totalQuantity}<br/>
-                        대여료 : {itemDetail?.deposit}
-                    </DescriptionBox>
+                    <div className={'name'}>{itemDetail?.name}</div>
+                    총 수량 : {itemDetail?.totalQuantity}<br/>
+                    대여료 : {itemDetail?.deposit}원
+                    <ImageBoxWrapper>
+                        <ImageBox
+                            key={`${itemId}-${itemDetail?.modifiedDate}`} // key 추가로 강제 리렌더링
+                            src={`https://portal.inuappcenter.kr/images/item/${itemId}-1?cache_bust=${itemDetail?.modifiedDate}`}
+                            alt={DefaultImage}
+                        />
+                    </ImageBoxWrapper>
+
                 </GoodWrapper>
                 <Content>
                     🚧 오늘 기준 3일 후부터 14일 이내, 오전 10시부터 오후 5시 사이에 가능하며, 토요일 및 일요일에는 불가능합니다.<br/>
@@ -285,9 +286,9 @@ const DetailWrapper = styled.div`
         margin: 4px 0;
     }
 
-    img {
-        width: 80px;
-    }
+    //img {
+    //    width: 80px;
+    //}
 
 
     .closeBtn {
@@ -362,46 +363,62 @@ const Content = styled.div`
 
 
 const GoodWrapper = styled.div`
+    position: relative;
     width: 100%;
     height: 158px; /* 고정된 높이 */
     border: 0.871981px solid #7aa7e5;
     border-radius: 15px;
 
-
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
+    //justify-content: space-between;
+    //align-items: center;
+    padding: 15px;
     box-sizing: border-box;
-`;
 
-
-const DescriptionBox = styled.div`
-    width: 100%;
-    height: fit-content; /* 내용에 맞는 높이 */
-    text-align: center;
-
-    font-style: normal;
-    font-weight: 500;
-    font-size: 10px;
-    line-height: 12px;
-    text-align: center;
-    letter-spacing: 0.871981px;
-
-    color: #000000;
-
+    justify-content: space-between;
 
     .name {
-        font-style: normal;
-        font-weight: 700;
-        font-size: 10px;
-        line-height: 12px;
-        text-align: center;
-        letter-spacing: 0.871981px;
-
-        color: #000000;
-
-
+        font-size: 25px;
+        font-weight: 600;
     }
+
 `;
+
+
+// const DescriptionBox = styled.div`
+//     width: 100%;
+//     height: fit-content; /* 내용에 맞는 높이 */
+//     text-align: center;
+//
+//     font-style: normal;
+//     font-weight: 500;
+//     font-size: 10px;
+//     line-height: 12px;
+//     text-align: center;
+//     letter-spacing: 0.871981px;
+//
+//     color: #000000;
+//
+//
+//     .name {
+//         font-style: normal;
+//         font-weight: 700;
+//         font-size: 10px;
+//         line-height: 12px;
+//         text-align: center;
+//         letter-spacing: 0.871981px;
+//
+//         color: #000000;
+//
+//
+//     }
+// `;
+
+
+const ImageBoxWrapper = styled.div`
+    position: absolute;
+    right: 10px;
+    width: 50%;
+    height: 80%;
+`

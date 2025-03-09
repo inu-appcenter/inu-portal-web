@@ -70,6 +70,7 @@ const GoodWrapper = styled.div`
     align-items: center;
     padding: 10px;
     box-sizing: border-box;
+    gap: 5px;
 `;
 
 
