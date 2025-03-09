@@ -18,7 +18,8 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     const [error, setError] = useState<string | null>(null);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
-    const [availableQuantity, setAvailableQuantity] = useState<number>(0);
+    const [availableQuantity, setAvailableQuantity] = useState("0");
+    const [quantityError, setQuantityError] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [phoneNumber, setPhoneNumber] = useState<string>("");
     const [reservationLoading, setReservationLoading] = useState<boolean>(false);
@@ -43,29 +44,38 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
     }, [itemId]);
 
     useEffect(() => {
-        if (startDate && endDate) {
-            try {
+        const getAvailable = async () => {
+            if (startDate && endDate) {
+                try {
 // 현재 시간에 9시간을 더하여 한국 시간으로 변환
-                const koreaTimeOffset = 9 * 60; // 한국은 UTC보다 9시간 빠름
-                const formattedStartDate = new Date(new Date(startDate).getTime() + koreaTimeOffset * 60 * 1000).toISOString();
-                const formattedEndDate = new Date(new Date(endDate).getTime() + koreaTimeOffset * 60 * 1000).toISOString();
+                    const koreaTimeOffset = 9 * 60; // 한국은 UTC보다 9시간 빠름
+                    const formattedStartDate = new Date(new Date(startDate).getTime() + koreaTimeOffset * 60 * 1000).toISOString();
+                    const formattedEndDate = new Date(new Date(endDate).getTime() + koreaTimeOffset * 60 * 1000).toISOString();
 
 // 예약 요청
-                const data = getAvailableQuantity(itemId, {
-                    startDateTime: formattedStartDate,
-                    endDateTime: formattedEndDate,
-                });
-                console.log(data);
-                setAvailableQuantity(Number(data));
+                    const data = await getAvailableQuantity(itemId, {
+                        startDateTime: formattedStartDate,
+                        endDateTime: formattedEndDate,
+                    });
+
+                    setQuantityError("");
+
+                    console.log("data", data.data);
+                    // @ts-ignore
+                    setAvailableQuantity(data.data);
 
 
-            } catch (err) {
-                // @ts-ignore
-                // setReservationError(err instanceof Error ? err.response.data.msg : "예약 가능 수량을 받아오는 중 오류가 발생했습니다.");
-            } finally {
-                // setReservationLoading(false);
+                } catch (err) {
+                    // @ts-ignore
+                    console.log(err.response.data.msg);
+                    // @ts-ignore
+                    setQuantityError(`수량 확인 중 오류 발생 - ${err.response.data.msg}`);
+                }
             }
         }
+
+        getAvailable();
+
 
     }, [startDate, endDate]);
 
@@ -85,6 +95,10 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
         }
         if (quantity <= 0) {
             alert("수량은 1개 이상이어야 합니다.");
+            return;
+        }
+        if (Number(availableQuantity) < quantity) {
+            alert("선택하신 일자에 예약 가능한 수량보다 많습니다.");
             return;
         }
         if (!isPhoneNumberValid(phoneNumber)) {
@@ -201,7 +215,22 @@ export default function ItemDetail({itemId, onClose}: ItemDetailProps) {
                         />
                     </label>
                     <label>
-                        수량:<br/>{availableQuantity}개 가능
+                        수량:<br/>
+                        {quantityError ? (
+                                <>
+                                    {quantityError}
+                                </>
+
+                            ) :
+                            availableQuantity != "0" ? (
+                                <>
+                                    최대 {availableQuantity}개 예약 가능
+                                </>
+                            ) : (
+                                <>
+                                    대여, 반납일자를 선택해주세요.
+                                </>
+                            )}
                         <input
                             type="string"
                             name="quantity"
