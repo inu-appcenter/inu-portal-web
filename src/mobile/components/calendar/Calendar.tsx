@@ -189,6 +189,20 @@ const CalendarWrapper = styled.div`
     color: transparent;
   }
 
+  // 이벤트
+  .fc-h-event {
+    border: none;
+  }
+  .fc-event-main-frame {
+    height: 4px;
+    background-color: rgba(64, 113, 185, 1);
+    margin-top: 2px;
+    border-radius: 8px;
+    .fc-event-title-container {
+      display: none;
+    }
+  }
+
   .event-tooltip {
     display: flex;
     justify-content: center;
