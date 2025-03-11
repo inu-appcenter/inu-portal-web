@@ -7,12 +7,12 @@ interface CommentTitleProps {
     onback: () => void;
 }
 
-export default function CommontTitle({title, onback}: CommentTitleProps) {
+export default function CommentTitle({title, onback}: CommentTitleProps) {
     return (
         <CommentTitleWrapper>
-            <span onClick={onback}>
+            <BackButtonWrapper onClick={onback}>
                 <BackButton/>
-            </span>
+            </BackButtonWrapper>
             <Title title={title}/>
         </CommentTitleWrapper>
     );
@@ -21,13 +21,13 @@ export default function CommontTitle({title, onback}: CommentTitleProps) {
 const CommentTitleWrapper = styled.div`
     display: flex;
     align-items: center;
-    align-self: center;
-    align-content: center;
-
     border-bottom: 1px solid #d9d9d9;
-    padding: 15px 0 15px 0;
-
+    padding: 15px 0;
     gap: 8px;
-
     width: 100%;
+`;
+
+const BackButtonWrapper = styled.span`
+    display: flex;
+    align-items: center;
 `;
