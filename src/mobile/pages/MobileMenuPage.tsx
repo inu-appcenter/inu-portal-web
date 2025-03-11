@@ -3,8 +3,9 @@ import {useEffect, useState} from "react";
 import {getCafeterias} from "apis/cafeterias";
 import CafeteriaInfoContainer from "mobile/containers/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "mobile/containers/cafeteria/CafeteriaTitleContainer";
-import BackImg from "resources/assets/mobile-common/backbtn.svg";
+// import BackImg from "resources/assets/mobile-common/backbtn.svg";
 import useMobileNavigate from "hooks/useMobileNavigate";
+import Title from "mobile/containers/mypage/Title.tsx"
 
 interface CafeteriaDetail {
     구성원가: string;
@@ -84,10 +85,11 @@ export default function MobileMenuPage() {
 
     return (
         <CafeteriaWrapper>
-            <BackButton onClick={() => mobileNavigate(`/home`)}>
-                <img src={BackImg} alt="뒤로가기 버튼"/>
-                <span>Back</span>
-            </BackButton>
+            {/*<BackButton onClick={() => mobileNavigate(`/home`)}>*/}
+            {/*    <img src={BackImg} alt="뒤로가기 버튼"/>*/}
+            {/*    <span>Back</span>*/}
+            {/*</BackButton>*/}
+            <Title title={"식당메뉴"} onback={() => mobileNavigate('/home')}/>
             <CafeteriaTitleContainer
                 title={title}
                 setTitle={setTitle}
@@ -109,18 +111,19 @@ const CafeteriaWrapper = styled.div`
     flex-direction: column;
     width: 100%;
     height: 100%;
+    
 `;
 
-const BackButton = styled.div`
-    padding: 20px 0 0 20px;
-    width: 80px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    img {
-        width: 15px;
-        height: 15px;
-    }
-`;
+// const BackButton = styled.div`
+//     padding: 20px 0 0 20px;
+//     width: 80px;
+//     font-size: 14px;
+//     display: flex;
+//     align-items: center;
+//     gap: 8px;
+//
+//     img {
+//         width: 15px;
+//         height: 15px;
+//     }
+// `;

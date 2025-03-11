@@ -4,12 +4,15 @@ import Title from "mobile/components/mypage/Title";
 
 interface CommentTitleProps {
     title: string;
+    onback: () => void;
 }
 
-export default function CommontTitle({title}: CommentTitleProps) {
+export default function CommontTitle({title, onback}: CommentTitleProps) {
     return (
         <CommentTitleWrapper>
-            <BackButton/>
+            <span onClick={onback}>
+                <BackButton/>
+            </span>
             <Title title={title}/>
         </CommentTitleWrapper>
     );
@@ -19,6 +22,9 @@ const CommentTitleWrapper = styled.div`
     display: flex;
     align-items: center;
     border-bottom: 1px solid #d9d9d9;
-    padding: 15px;
+    padding: 15px 0 15px 0;
+
     gap: 8px;
+
+    width: 100%;
 `;
