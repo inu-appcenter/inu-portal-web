@@ -21,6 +21,9 @@ export default function CommontTitle({title, onback}: CommentTitleProps) {
 const CommentTitleWrapper = styled.div`
     display: flex;
     align-items: center;
+    align-self: center;
+    align-content: center;
+
     border-bottom: 1px solid #d9d9d9;
     padding: 15px 0 15px 0;
 
