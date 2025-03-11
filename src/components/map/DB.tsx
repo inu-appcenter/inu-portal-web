@@ -888,8 +888,8 @@ export const restPlaces: Place[] = [
 //식당 정보
 export const restaurantPlaces: Place[] = [
     {
-        latitude: "37.374416242980054",
-        longitude: "126.63169282366194",
+        latitude: "37.3743292734437",
+        longitude: "126.63197549904656",
         location: "11호관",
         place_name: "복지회관/소극장",
         category: "식당",
@@ -1083,8 +1083,24 @@ export const restaurantPlaces: Place[] = [
         note: ""
     },
     {
-        latitude: "37.375637411134655",
-        longitude: "126.63469004660143",
+        latitude: "37.37578072246939",
+        longitude: "126.63514378310879",
+        location: "5호관",
+        place_name: "자연과학대학",
+        category: "식당",
+        restareaInfo: null,
+        schoolPlaceInfo: null,
+        cafePlaceInfo: null,
+        restaurantInfo: {
+            name: "바비와따!",
+            // 추가적인 식당 정보가 있다면 여기에 추가
+        },
+        note: "",
+
+    },
+    {
+        latitude: "37.37598686771142",
+        longitude: "126.6355210081379",
         location: "5호관",
         place_name: "자연과학대학",
         category: "편의점",
@@ -1098,9 +1114,10 @@ export const restaurantPlaces: Place[] = [
         note: "",
 
     },
+
     {
-        latitude: "37.374416242980054",
-        longitude: "126.63169282366194",
+        latitude: "37.37457192149467",
+        longitude: "126.63177391528959",
         location: "11호관",
         place_name: "복지회관/소극장",
         category: "편의점",

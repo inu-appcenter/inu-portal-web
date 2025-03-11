@@ -8,6 +8,7 @@ import {getBuildingIcon, getRestIcon, CafeIcon, getRestaurantIcon} from "../cons
 import {SchoolimageMap} from "resources/assets/mapBuildingImages/buildingImageManage.ts";
 import {CafeimageMap} from "resources/assets/mapCafeImages/cafeImageManage.ts";
 import {RestaurantimageMap} from "../../../resources/assets/mapRestaurantImages/restaurantImageManage.ts";
+import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
 
 
 export const placesMarkDB = (
@@ -63,7 +64,9 @@ const displayMarker = (
 
     } else if (selectedTab === "식당") {
         // @ts-ignore
-        iwContent = InfoWindowRestaurant(place, RestaurantimageMap[place.restaurantInfo?.name]);
+        const imageSrc = RestaurantimageMap[place.restaurantInfo?.name] ?? defaultImage;
+
+        iwContent = InfoWindowRestaurant(place, imageSrc);
     }
 
 

@@ -17,6 +17,7 @@ import coopsket복지회관 from "resources/assets/mapRestaurantImages/coopsket�
 import coopsket생명대 from "resources/assets/mapRestaurantImages/coopsket생명대.jpg";
 import coopsket공대 from "resources/assets/mapRestaurantImages/coopsket공대.jpg";
 import emart24도서관 from "resources/assets/mapRestaurantImages/emart24도서관.jpg";
+import 바비와따 from "resources/assets/mapRestaurantImages/바비와따!.jpg";
 
 
 // 이미지 객체를 생성
@@ -39,4 +40,5 @@ export const RestaurantimageMap: Record<string, string> = {
     "coopsket생명대": coopsket생명대,
     "coopsket공대": coopsket공대,
     "emart24도서관": emart24도서관,
+    "바비와따!": 바비와따,
 };
