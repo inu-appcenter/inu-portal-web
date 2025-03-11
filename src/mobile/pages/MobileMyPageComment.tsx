@@ -5,9 +5,13 @@ import CommontTitle from "mobile/containers/mypage/Title";
 import styled from "styled-components";
 import Empty from "mobile/components/mypage/Empty";
 import CardComment from "mobile/containers/mypage/CardComment";
+import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 
 export default function MobileMyPageComment() {
     const [replyPost, setReplyPost] = useState<MembersReplies[]>([]);
+
+    const mobileNavigate = useMobileNavigate();
+
 
     useEffect(() => {
         fetchData();
@@ -24,7 +28,7 @@ export default function MobileMyPageComment() {
 
     return (
         <MobileMyPageCommentWrapper>
-            <CommontTitle title={"작성한 댓글"}/>
+            <CommontTitle title={"작성한 댓글"} onback={() => mobileNavigate('/mypage')}/>
             {replyPost.length === 0 ? (
                 <Empty/>
             ) : (
