@@ -27,7 +27,7 @@ export default function MobileMyPagePost() {
 
     return (
         <MobileMyPagePostWrapper>
-            <CommontTitle title={"내가 쓴 글"} onback={() => mobileNavigate('/home')}/>
+            <CommontTitle title={"내가 쓴 글"} onback={() => mobileNavigate('/mypage')}/>
             {postPost.length === 0 ? (
                 <Empty/>
             ) : (
