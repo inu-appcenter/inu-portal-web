@@ -5,9 +5,14 @@ import Manual3 from "resources/assets/helllo-bus/manual-3.svg";
 import Manual4 from "resources/assets/helllo-bus/manual-4.svg";
 import backbtn from "resources/assets/mobile-common/backbtn.svg";
 import {useState} from "react";
+// import Title from "mobile/containers/mypage/Title.tsx"
+// import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
+
 
 export default function HelloBus() {
     const [show, setShow] = useState(0);
+    // const mobileNavigate = useMobileNavigate();
+
     const manuals = [
         {title: "", steps: [], images: []},
         {
@@ -84,6 +89,8 @@ export default function HelloBus() {
 
     return (
         <HelloBusWrapper>
+            {/*<Title title={"통학버스"} onback={() => mobileNavigate('/home')}/>*/}
+
             {show > 0 ? (
                 <Section>
                     <button onClick={() => setShow(0)}>
