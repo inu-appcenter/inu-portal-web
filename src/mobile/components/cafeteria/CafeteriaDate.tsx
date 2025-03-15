@@ -68,6 +68,7 @@ const CafeteriaDateWrapper = styled.div`
         padding: 2px 10px;
         border-radius: 10px;
 
+
         .day-name {
             font-size: 10px;
             font-weight: 700;
