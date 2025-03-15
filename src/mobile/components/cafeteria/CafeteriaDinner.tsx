@@ -11,6 +11,7 @@ interface CafeteriaBreakfastProps {
   cafeteriaDetail: (CafeteriaDeatilProps | null)[];
   cafeteriaInfo: (string | null)[];
 }
+
 export default function CafeteriaDinner({
   cafeteriaTypes,
   cafeteriaDetail,
@@ -24,7 +25,19 @@ export default function CafeteriaDinner({
           <img src={dinnerImg} alt="석식 이미지" />
         </div>
         <div className="detail-info-wrapper">
-          <p className="info">{cafeteriaInfo[2]}</p>
+          <p className="info">
+            {" "}
+            {cafeteriaInfo[2] === "오늘은 쉽니다" ? (
+              <>오늘은 쉽니다</>
+            ) : (
+              cafeteriaInfo[2]?.split(" ").map((line) => (
+                <>
+                  {" "}
+                  {line} <br />{" "}
+                </>
+              ))
+            )}
+          </p>
           {cafeteriaDetail[2] && (
             <div className="detail-wrapper">
               <div className="sub-detail-wrapper">
