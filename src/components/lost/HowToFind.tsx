@@ -11,7 +11,7 @@ export default function HowToFind() {
         <span className="title">HOW TO FIND</span>
         {/* <img src={AiExample} alt="" /> */}
       </div>
-      <img src={howtofind} alt={"구매방법 이미지"} />
+      <img src={howtofind} alt={"분실물 수령 방법 이미지"} />
       <span style={{ fontSize: "20px", lineHeight: "30px" }}>
         총학생회실(17호관 206호)로 방문 후 수령하실 수 있습니다!
         <br />
