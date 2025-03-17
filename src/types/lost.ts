@@ -2,7 +2,7 @@ export interface LostSummary {
   id: number;
   name: string;
   content: string;
-  createDate: string;
+  createdAt: string;
   imageCount: number;
   modifiedDate: string;
 }

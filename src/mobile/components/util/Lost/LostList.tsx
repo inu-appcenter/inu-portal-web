@@ -21,6 +21,7 @@ export default function LostList({ reloadKey }: { reloadKey: number }) {
       const response = await getLostList(currentPage);
       const newLosts = response.data.contents;
       setLosts((prevLosts) => (reset ? newLosts : [...prevLosts, ...newLosts]));
+      console.log(losts);
       setHasMore(currentPage < response.data.pages);
     } catch (error) {
       console.error("Error fetching:", error);
@@ -72,7 +73,7 @@ export default function LostList({ reloadKey }: { reloadKey: number }) {
               <div className="card-left">
                 <h3>{lost.name}</h3>
                 <p>{lost.content}</p>
-                <p className="create-date">{lost.createDate}</p>
+                <p className="create-date">{lost.createdAt}</p>
               </div>
               {lost.imageCount > 0 ? (
                 <img
