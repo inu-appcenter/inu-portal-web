@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 interface PostContentProps {
-  id: number;
+  id: string;
   content: string;
   imageCount: number;
   modifiedDate: string;

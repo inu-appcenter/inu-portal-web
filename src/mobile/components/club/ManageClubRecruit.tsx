@@ -45,7 +45,7 @@ export default function ManageClubRecruit({
 
   // 등록 핸들러
   const handlePost = async () => {
-    if (!content) {
+    if (isrecruiting && !content) {
       alert("모든 필드를 입력하고 이미지를 선택하세요.");
       return;
     }
