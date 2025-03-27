@@ -78,7 +78,7 @@ export default function PostDetailPage() {
               />
             </PostTopWrapper>
             <PostWrapper>
-              <PostContentContainer post={post} />
+              <PostContentContainer ClubRecruit={post} />
               <CommentWrapper>
                 <CommentListMobile
                   bestReply={post.bestReplies[0]}

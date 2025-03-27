@@ -1,14 +1,17 @@
 import axiosInstance from "./axiosInstance";
+import tokenInstance from "./tokenInstance";
+
 import { ApiResponse } from "types/common";
-import { Club } from "types/club";
+
+import { Club, ClubRecruit } from "types/club";
 
 // 동아리 리스트 가져오기
 export const getClubs = async (
-  category: string
+  category: string,
 ): Promise<ApiResponse<Club[]>> => {
   if (category != "전체") {
     const response = await axiosInstance.get<ApiResponse<Club[]>>(
-      `/api/clubs?category=${category}`
+      `/api/clubs?category=${category}`,
     );
     return response.data;
   } else {
@@ -16,8 +19,6 @@ export const getClubs = async (
     return response.data;
   }
 };
-<<<<<<< Updated upstream
-=======
 
 // 동아리 모집공고글 가져오기
 export const getClubRecruit = async (
@@ -33,7 +34,6 @@ export const getClubRecruit = async (
 export const postClubRecruit = async (
   clubId: number,
   content: string,
-  is_recruiting: boolean,
   images: File[],
 ): Promise<ApiResponse<number>> => {
   const formData = new FormData();
@@ -41,7 +41,7 @@ export const postClubRecruit = async (
   // Dto 형식에 맞는 데이터를 추가
   const jsonData = {
     recruit: content,
-    is_recruiting: is_recruiting, // 모집 중 여부
+    is_recruiting: true, // 모집 중 여부
   };
   const jsonBlob = new Blob([JSON.stringify(jsonData)], {
     type: "application/json",
@@ -66,7 +66,6 @@ export const postClubRecruit = async (
 export const putClubRecruit = async (
   clubId: number,
   content: string,
-  is_recruiting: boolean,
   images: File[],
 ): Promise<ApiResponse<number>> => {
   const formData = new FormData();
@@ -74,7 +73,7 @@ export const putClubRecruit = async (
   // Dto 형식에 맞는 데이터를 추가
   const jsonData = {
     recruit: content,
-    is_recruiting: is_recruiting, // 모집 중 여부
+    is_recruiting: true, // 모집 중 여부
   };
   const jsonBlob = new Blob([JSON.stringify(jsonData)], {
     type: "application/json",
@@ -94,4 +93,3 @@ export const putClubRecruit = async (
   );
   return response.data;
 };
->>>>>>> Stashed changes

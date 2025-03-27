@@ -26,6 +26,7 @@ import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
 import MobileClubPage from "./MobileClubPage";
+import MobileClubRecruitDetailPage from "./MobileClubRecruitDetailPage";
 import AiPage from "pages/AiPage";
 
 const Page = styled.div<{ $active: boolean }>`
@@ -89,6 +90,7 @@ export default function MobileRootPage() {
     location.pathname.includes("/m/postdetail") ||
     location.pathname.includes("/m/councilnoticedetail") ||
     location.pathname.includes("/m/petitiondetail");
+
   return (
     <MobileRootPageWrapper>
       <UpperBackground src={UpperBackgroundImg} />
@@ -104,7 +106,8 @@ export default function MobileRootPage() {
             !activePage.includes("/m/home/campus") &&
             !activePage.includes("/m/home/council") &&
             !activePage.includes("/m/home/club") &&
-            !activePage.includes("/m/home/util")
+            !activePage.includes("/m/home/util") &&
+            !activePage.includes("/m/home/recruitdetail")
           }
         >
           <MobileHomePage />
@@ -130,6 +133,9 @@ export default function MobileRootPage() {
         <Page $active={activePage.includes("/m/home/club")}>
           <MobileClubPage />
         </Page>
+        <Page $active={activePage.includes("/m/home/recruitdetail")}>
+          <MobileClubRecruitDetailPage />
+        </Page>
         <Page $active={activePage.includes("/m/home/util")}>
           <MobileUtilPage />
         </Page>
@@ -142,6 +148,7 @@ export default function MobileRootPage() {
         <Page $active={activePage.includes("/m/ai")}>
           <AiPage />
         </Page>
+
         {pagesLoaded.write && (
           <Page $active={activePage.includes("/m/write")}>
             <MobileWritePage />
