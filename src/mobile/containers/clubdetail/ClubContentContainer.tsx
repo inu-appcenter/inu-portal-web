@@ -18,7 +18,6 @@ export default function ClubContentContainer({
             content={ClubRecruit.recruit}
             imageCount={ClubRecruit.imageCount}
             modifiedDate={ClubRecruit.modifiedDate}
-            type="CLUBRECRUIT"
           />
         </>
       )}
