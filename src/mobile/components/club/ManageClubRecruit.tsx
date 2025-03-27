@@ -1,4 +1,3 @@
-import { postLost, putLost } from "apis/lost.ts";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
@@ -20,7 +19,6 @@ export default function ManageClubRecruit({
   onClose: () => void;
   selectedClub: Club | null;
 }) {
-  const [name, setName] = useState(initialData?.name || "");
   const [content, setContent] = useState(initialData?.content || "");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +40,7 @@ export default function ManageClubRecruit({
 
   // 등록 핸들러
   const handlePost = async () => {
-    if (!name || !content || selectedImages.length < 1) {
+    if (!content) {
       alert("모든 필드를 입력하고 이미지를 선택하세요.");
       return;
     }
@@ -55,8 +53,8 @@ export default function ManageClubRecruit({
       if (initialData) {
         await putClubRecruit(initialData.id, content, selectedImages);
         alert("모집공고가 수정되었습니다!");
-      } else {
-        await postClubRecruit(initialData.id, content, selectedImages);
+      } else if (selectedClub) {
+        await postClubRecruit(selectedClub.id, content, selectedImages);
         alert("모집공고가 등록되었습니다!");
       }
       resetForm();
@@ -72,7 +70,6 @@ export default function ManageClubRecruit({
 
   // 입력 필드 초기화
   const resetForm = () => {
-    setName("");
     setContent("");
     setSelectedImages([]);
   };
@@ -82,7 +79,7 @@ export default function ManageClubRecruit({
       <BottomSheet open={isOpen} onDismiss={onClose}>
         <FormWrapper>
           <h2>
-            {selectedClub.name}{" "}
+            {selectedClub && selectedClub.name}{" "}
             {initialData ? "모집공고 수정" : "모집공고 등록"}
           </h2>
           <InputWrapper>
@@ -95,11 +92,11 @@ export default function ManageClubRecruit({
           </InputWrapper>
           <FileInputWrapper>
             <label htmlFor="imageInput">이미지 선택</label>
-            이미지당 최대 10MB, 총 이미지 용량 20MB
+            최대 10MB
             <input
               type="file"
               id="imageInput"
-              multiple
+              // multiple
               accept="image/*"
               onChange={handleImageChange}
             />

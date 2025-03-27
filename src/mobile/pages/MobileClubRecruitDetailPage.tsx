@@ -1,11 +1,12 @@
 import styled from "styled-components";
 import { ClubRecruit } from "types/club.ts";
-import { getClubRecruit, getClubs } from "apis/club.ts";
+import { getClubRecruit } from "apis/club.ts";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Title from "mobile/containers/mypage/Title.tsx";
 // import ManageClubRecruit from "../components/club/ManageClubRecruit.tsx";
 import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
+import ClubContentContainer from "../containers/clubdetail/ClubContentContainer.tsx";
 // import UploadBook from "../util/book/UploadBook.tsx";
 
 export default function MobileClubRecruitDetailPage() {
@@ -35,12 +36,14 @@ export default function MobileClubRecruitDetailPage() {
   return (
     <MobileClubPageWrapper>
       <TitleCategorySelectorWrapper>
-        {/*<TipsPageTitle value="동아리"/>*/}
         <Title
-          title={clubName || ""}
+          title={clubName + " 모집 공고" || ""}
           onback={() => mobileNavigate("/home/club")}
         />
       </TitleCategorySelectorWrapper>
+      <PostWrapper>
+        <ClubContentContainer ClubRecruit={clubRecruitDetail} />
+      </PostWrapper>
     </MobileClubPageWrapper>
   );
 }
@@ -62,74 +65,11 @@ const TitleCategorySelectorWrapper = styled.div`
   justify-content: space-between;
 `;
 
-const ClubList = styled.div`
+const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
-  gap: 8px;
-`;
-
-const ClubCard = styled.div`
-  height: 96px;
-  width: 96%;
-  border: 2px solid #7aa7e5;
-  border-radius: 10px;
-  display: flex;
-  gap: 16px;
-  align-items: center;
-
-  img {
-    margin-left: 4px;
-    max-width: 96px;
-    border-radius: 10px;
-  }
-
-  div {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-right: 16px;
-
-    .club-category {
-      margin: 0;
-      font-weight: 500;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 12px;
-      background-color: rgba(236, 244, 255, 1);
-    }
-
-    h3 {
-      margin: 0;
-      font-weight: 500;
-      font-size: 16px;
-    }
-  }
-
-  .buttons-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  button {
-    border: 2px solid #7aa7e5;
-    background-color: #7aa7e5;
-    border-radius: 12px;
-    padding: 4px 8px;
-    color: white;
-  }
-`;
-
-const CategorySelectorWrapper = styled.div`
-  position: absolute;
-  right: 20px;
+  height: calc(100svh - 135px);
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
 `;

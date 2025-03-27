@@ -12,7 +12,7 @@ import ManageClubRecruit from "./ManageClubRecruit.tsx";
 export default function ClubAdmin({
   setIsClubAdminOpen,
 }: {
-  setIsClubAdminOpen: (boolean) => void;
+  setIsClubAdminOpen: (arg0: boolean) => void;
 }) {
   const location = useLocation();
   // const mobileNavigate = useMobileNavigate();
@@ -79,7 +79,9 @@ export default function ClubAdmin({
                 <h3>{club.name}</h3>
                 <span className="tag">
                   {club.isRecruiting && (
-                    <h4 className="club-category">모집중</h4>
+                    <h4 className="club-category">
+                      <strong>모집중🔥</strong>
+                    </h4>
                   )}
                   <h4 className="club-category">{club.category}</h4>
                 </span>{" "}
