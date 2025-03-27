@@ -34,8 +34,8 @@ export default function MobileClubPage() {
     fetchClubs();
   }, [category]);
 
-  const handleRecruitingBtn = () => {
-    mobileNavigate("/home/recruitdetail?id=1&name=인천대 앱센터");
+  const handleRecruitingBtn = (clubId: number, clubName: string) => {
+    mobileNavigate(`/home/recruitdetail?id=${clubId}&name=${clubName}`);
   };
 
   return (
@@ -70,7 +70,9 @@ export default function MobileClubPage() {
                     <h3>{club.name}</h3>
                     <span className="tag">
                       {club.isRecruiting && (
-                        <h4 className="club-category">모집중</h4>
+                        <h4 className="club-category">
+                          <strong>모집중🔥</strong>
+                        </h4>
                       )}
                       <h4 className="club-category">{club.category}</h4>
                     </span>
@@ -89,7 +91,9 @@ export default function MobileClubPage() {
                       </button>
                     )}
                     {club.isRecruiting && (
-                      <button onClick={() => handleRecruitingBtn()}>
+                      <button
+                        onClick={() => handleRecruitingBtn(club.id, club.name)}
+                      >
                         모집 공고
                       </button>
                     )}

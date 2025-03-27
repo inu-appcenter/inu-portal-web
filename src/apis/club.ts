@@ -25,7 +25,7 @@ export const getClubRecruit = async (
   clubId: string,
 ): Promise<ApiResponse<ClubRecruit>> => {
   const response = await axiosInstance.get<ApiResponse<ClubRecruit>>(
-    `/api/clubs/clubId=${clubId}`,
+    `/api/clubs/${clubId}`,
   );
   return response.data;
 };
@@ -36,16 +36,18 @@ export const postClubRecruit = async (
   content: string,
   images: File[],
 ): Promise<ApiResponse<number>> => {
-  const jsonData = {
-    content,
-  };
-
   const formData = new FormData();
 
+  // Dto 형식에 맞는 데이터를 추가
+  const jsonData = {
+    recruit: content,
+    is_recruiting: true, // 모집 중 여부
+  };
   const jsonBlob = new Blob([JSON.stringify(jsonData)], {
     type: "application/json",
   });
-  formData.append("request", jsonBlob);
+  formData.append("clubRecruitingRequestDto", jsonBlob);
+
   images.forEach((image) => formData.append("images", image));
 
   const response = await tokenInstance.post<ApiResponse<number>>(
@@ -66,19 +68,21 @@ export const putClubRecruit = async (
   content: string,
   images: File[],
 ): Promise<ApiResponse<number>> => {
-  const jsonData = {
-    content,
-  };
-
   const formData = new FormData();
 
+  // Dto 형식에 맞는 데이터를 추가
+  const jsonData = {
+    recruit: content,
+    is_recruiting: true, // 모집 중 여부
+  };
   const jsonBlob = new Blob([JSON.stringify(jsonData)], {
     type: "application/json",
   });
-  formData.append("request", jsonBlob);
+  formData.append("clubRecruitingRequestDto", jsonBlob);
+
   images.forEach((image) => formData.append("images", image));
 
-  const response = await tokenInstance.post<ApiResponse<number>>(
+  const response = await tokenInstance.put<ApiResponse<number>>(
     `/api/clubs/${clubId}`,
     formData,
     {
