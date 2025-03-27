@@ -6,32 +6,32 @@ import { CouncilNotice } from "types/councilNotices";
 import { Petition } from "types/petitions";
 
 interface PostContentContainerProps {
-  post?: PostDetail;
+  ClubRecruit?: PostDetail;
   councilNotice?: CouncilNotice;
   petition?: Petition;
 }
 
 export default function PostContentContainer({
-  post,
+  ClubRecruit,
   councilNotice,
   petition,
 }: PostContentContainerProps) {
   return (
     <Wrapper>
-      {post && (
+      {ClubRecruit && (
         <>
           <PostTitle
-            id={post.id}
-            title={post.title}
-            createDate={post.createDate}
-            view={post.view}
-            writer={post.writer}
+            id={ClubRecruit.id}
+            title={ClubRecruit.title}
+            createDate={ClubRecruit.createDate}
+            view={ClubRecruit.view}
+            writer={ClubRecruit.writer}
           />
           <PostContent
-            id={post.id}
-            content={post.content}
-            imageCount={post.imageCount}
-            modifiedDate={post.modifiedDate}
+            id={ClubRecruit.id}
+            content={ClubRecruit.content}
+            imageCount={ClubRecruit.imageCount}
+            modifiedDate={ClubRecruit.modifiedDate}
             type="TIPS"
           />
         </>

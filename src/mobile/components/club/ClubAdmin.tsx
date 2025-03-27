@@ -62,7 +62,7 @@ export default function ClubAdmin({
       <TitleCategorySelectorWrapper>
         {/*<TipsPageTitle value="동아리"/>*/}
         <Title
-          title={"동아리 관리자 모드🖥️"}
+          title={"동아리 관리자 모드"}
           onback={() => setIsClubAdminOpen(false)}
         />
 
@@ -93,7 +93,7 @@ export default function ClubAdmin({
                   }}
                 >
                   {" "}
-                  모집 공고 등록/수정
+                  모집 공고 관리
                 </button>
               </span>
             </div>
