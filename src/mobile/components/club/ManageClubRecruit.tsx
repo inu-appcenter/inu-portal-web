@@ -20,6 +20,7 @@ export default function ManageClubRecruit({
   selectedClub: Club | null;
 }) {
   const [content, setContent] = useState(initialData?.content || "");
+  const [isrecruiting, setIsrecruiting] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,6 +30,10 @@ export default function ManageClubRecruit({
       setContent(initialData.content);
     }
   }, [initialData]);
+
+  const handleCheckboxChange = () => {
+    setIsrecruiting((prevState) => !prevState);
+  };
 
   // 이미지 선택 핸들러
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,10 +56,20 @@ export default function ManageClubRecruit({
       }
       setIsLoading(true);
       if (initialData) {
-        await putClubRecruit(initialData.id, content, selectedImages);
+        await putClubRecruit(
+          initialData.id,
+          content,
+          isrecruiting,
+          selectedImages,
+        );
         alert("모집공고가 수정되었습니다!");
       } else if (selectedClub) {
-        await postClubRecruit(selectedClub.id, content, selectedImages);
+        await postClubRecruit(
+          selectedClub.id,
+          content,
+          isrecruiting,
+          selectedImages,
+        );
         alert("모집공고가 등록되었습니다!");
       }
       resetForm();
@@ -83,6 +98,18 @@ export default function ManageClubRecruit({
             {initialData ? "모집공고 수정" : "모집공고 등록"}
           </h2>
           <InputWrapper>
+            <label>모집 중인 경우 체크해주세요.</label>
+          </InputWrapper>
+          <label>
+            <input
+              type="checkbox"
+              checked={isrecruiting}
+              onChange={handleCheckboxChange}
+            />{" "}
+            모집 중
+          </label>
+
+          <InputWrapper>
             <label>내용</label>
             <textarea
               value={content}
@@ -92,11 +119,11 @@ export default function ManageClubRecruit({
           </InputWrapper>
           <FileInputWrapper>
             <label htmlFor="imageInput">이미지 선택</label>
-            최대 10MB
+            이미지당 최대 10MB, 총 이미지 용량 20MB
             <input
               type="file"
               id="imageInput"
-              // multiple
+              multiple
               accept="image/*"
               onChange={handleImageChange}
             />

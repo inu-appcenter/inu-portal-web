@@ -34,6 +34,7 @@ export const getClubRecruit = async (
 export const postClubRecruit = async (
   clubId: number,
   content: string,
+  is_recruiting: boolean,
   images: File[],
 ): Promise<ApiResponse<number>> => {
   const formData = new FormData();
@@ -41,7 +42,7 @@ export const postClubRecruit = async (
   // Dto 형식에 맞는 데이터를 추가
   const jsonData = {
     recruit: content,
-    is_recruiting: true, // 모집 중 여부
+    is_recruiting: is_recruiting, // 모집 중 여부
   };
   const jsonBlob = new Blob([JSON.stringify(jsonData)], {
     type: "application/json",
@@ -66,6 +67,7 @@ export const postClubRecruit = async (
 export const putClubRecruit = async (
   clubId: number,
   content: string,
+  is_recruiting: boolean,
   images: File[],
 ): Promise<ApiResponse<number>> => {
   const formData = new FormData();
@@ -73,7 +75,7 @@ export const putClubRecruit = async (
   // Dto 형식에 맞는 데이터를 추가
   const jsonData = {
     recruit: content,
-    is_recruiting: true, // 모집 중 여부
+    is_recruiting: is_recruiting, // 모집 중 여부
   };
   const jsonBlob = new Blob([JSON.stringify(jsonData)], {
     type: "application/json",
