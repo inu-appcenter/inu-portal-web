@@ -42,7 +42,7 @@ export default function MobileClubRecruitDetailPage() {
         />
       </TitleCategorySelectorWrapper>
       <PostWrapper>
-        <ClubContentContainer ClubRecruit={clubRecruitDetail} />
+        <ClubContentContainer ClubRecruit={clubRecruitDetail} clubId={clubId} />
       </PostWrapper>
     </MobileClubPageWrapper>
   );

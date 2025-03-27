@@ -4,17 +4,19 @@ import ClubContent from "../../components/club/clubcontent.tsx";
 
 interface PostContentContainerProps {
   ClubRecruit?: ClubRecruit;
+  clubId: string | null;
 }
 
 export default function ClubContentContainer({
   ClubRecruit,
+  clubId,
 }: PostContentContainerProps) {
   return (
     <Wrapper>
       {ClubRecruit && (
         <>
           <ClubContent
-            id={1}
+            id={clubId || "0"}
             content={ClubRecruit.recruit}
             imageCount={ClubRecruit.imageCount}
             modifiedDate={ClubRecruit.modifiedDate}
