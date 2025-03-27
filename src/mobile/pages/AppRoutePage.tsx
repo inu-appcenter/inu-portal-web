@@ -24,6 +24,7 @@ import MobileDeletePage from "mobile/pages/MobileDelete";
 import MobileCalendarPage from "mobile/pages/MobileCalendarPage";
 import useAppStateStore from "stores/useAppStateStore";
 import MobileClubPage from "./MobileClubPage";
+import MobileClubRecruitDetailPage from "./MobileClubRecruitDetailPage.tsx";
 import AiPage from "pages/AiPage";
 
 const Page = styled.div`
@@ -71,6 +72,11 @@ export default function AppRoutePage() {
             />
             <Route path="/home/council" element={<MobileCouncilPage />} />
             <Route path="/home/club" element={<MobileClubPage />} />
+            <Route
+              path="/home/recruitdetail"
+              element={<MobileClubRecruitDetailPage />}
+            />
+
             <Route path="/ai" element={<AiPage />} />
             <Route path="/write" element={<MobileWritePage />} />
             <Route path="/save" element={<MobileSavePage />} />
