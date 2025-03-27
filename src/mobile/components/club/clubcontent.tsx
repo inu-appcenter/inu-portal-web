@@ -4,7 +4,6 @@ interface PostContentProps {
   id: number;
   content: string;
   imageCount: number;
-  type: string;
   modifiedDate: string;
 }
 
@@ -12,7 +11,6 @@ export default function ClubContent({
   id,
   content,
   imageCount,
-  type,
   modifiedDate,
 }: PostContentProps) {
   return (
@@ -20,21 +18,9 @@ export default function ClubContent({
       <div className="post-contents">
         <div className="contents-img-container">
           {Array.from({ length: imageCount }, (_, index) => {
-            const imageUrl =
-              type === "TIPS"
-                ? `https://portal.inuappcenter.kr/images/post/${id}-${
-                    index + 1
-                  }?v=${modifiedDate}`
-                : type === "COUNCILNOTICE"
-                  ? `https://portal.inuappcenter.kr/images/councilNotice/${id}-${
-                      index + 1
-                    }?v=${modifiedDate}`
-                  : type === "PETITION"
-                    ? `https://portal.inuappcenter.kr/images/petition/${id}-${
-                        index + 1
-                      }?v=${modifiedDate}`
-                    : "";
-
+            const imageUrl = `https://portal.inuappcenter.kr/images/clubRecruit/${id}-${
+              index + 1
+            }?v=${modifiedDate}`;
             return (
               <ContentImg
                 key={index}
