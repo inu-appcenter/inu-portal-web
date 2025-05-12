@@ -176,7 +176,8 @@ export default function AiGenerate() {
                     .isRefreshError &&
                 error.response
             ) {
-                alert("이미지 생성 요청 실패");
+                //  alert("이미지 생성 요청 실패");
+                alert("AI 이미지 서비스 점검 중입니다.");
             }
             setLoading(false);
         }
