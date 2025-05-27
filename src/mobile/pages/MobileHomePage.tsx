@@ -40,12 +40,14 @@ export default function MobileHomePage() {
             </div>
             {/* <AiIntroText /> */}
             <Banner
-              title={"쿠러미 출시!"}
+              title={"쿠러미 베타 출시!"}
               imgsrc={쿠러미}
               content={
                 <>
-                  지금 바로 <a href={"https://www.currumi.shop/10"}>다운로드</a>
-                  !
+                  앱센터에서 주변 식당 쿠폰을 모은 앱이 곧 출시돼요.
+                  <br />
+                  지금 바로 먼저{" "}
+                  <a href={"https://www.currumi.shop/10"}>사용해 보세요</a>!
                 </>
               }
             />
