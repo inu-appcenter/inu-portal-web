@@ -16,10 +16,11 @@ export default function Banner({
         <span className="title">{title}</span>
         {/* <img src={AiExample} alt="" /> */}
       </div>
+      <span style={{ fontSize: "15px", lineHeight: "20px" }}>{content}</span>
+
       <a href={"https://www.currumi.shop/10"}>
         <img src={imgsrc} alt={"배너 이미지"} />
       </a>
-      <span style={{ fontSize: "20px", lineHeight: "30px" }}>{content}</span>
     </BannerWrapper>
   );
 }
@@ -44,7 +45,7 @@ const BannerWrapper = styled.div`
   }
 
   .title {
-    font-size: 28px;
+    font-size: 23px;
     font-weight: 700;
     text-align: left;
   }
