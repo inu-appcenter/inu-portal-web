@@ -10,17 +10,6 @@ export default function Banner({
   imgsrc: string;
   content: ReactNode;
 }) {
-  const openInChrome = () => {
-    const url = "https://www.currumi.shop/10";
-    const chromeUrl = url.replace(/^https?:\/\//, "googlechromes://");
-    window.location.href = chromeUrl;
-
-    // Fallback: 일정 시간 후 원래 URL로 이동 (Chrome이 없을 경우 대비)
-    setTimeout(() => {
-      window.location.href = url;
-    }, 500);
-  };
-
   return (
     <BannerWrapper>
       <div className="title-img">
@@ -28,10 +17,7 @@ export default function Banner({
         {/* <img src={AiExample} alt="" /> */}
       </div>
       <span style={{ fontSize: "15px", lineHeight: "20px" }}>{content}</span>
-
-      {/*<a href={"https://www.currumi.shop/10"}>*/}
-      <img src={imgsrc} alt={"배너 이미지"} onClick={openInChrome} />
-      {/*</a>*/}
+      <img src={imgsrc} alt={"배너 이미지"} />
     </BannerWrapper>
   );
 }
