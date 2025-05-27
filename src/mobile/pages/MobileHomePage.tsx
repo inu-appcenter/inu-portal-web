@@ -40,7 +40,7 @@ export default function MobileHomePage() {
             </div>
             {/* <AiIntroText /> */}
             <Banner
-              title={"쿠러미 베타 출시!"}
+              title={"📣 쿠러미 베타 출시!"}
               imgsrc={쿠러미}
               content={
                 <>
