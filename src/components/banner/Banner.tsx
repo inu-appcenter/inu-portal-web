@@ -48,7 +48,7 @@ const BannerWrapper = styled.div`
   img {
     width: 100%;
     border-radius: 8px;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   span {
