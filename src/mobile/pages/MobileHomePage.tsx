@@ -13,7 +13,8 @@ import 쿠러미 from "resources/assets/banner/쿠러미.jpg";
 import { useEffect, useState } from "react";
 
 export default function MobileHomePage() {
-  const [show, setShow] = useState(false); //모달창 열림 여부
+  const [show, setShow] = useState(false); //배너 모달창 열림 여부
+  const isBannerOn = false; //배너 온오프 - on:true off:false
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
@@ -31,14 +32,13 @@ export default function MobileHomePage() {
 
   return (
     <MobileHomePageWrapper>
-      {show && (
+      {show && isBannerOn && (
         <ModalBackGround>
           <Modal>
             <div className="close" onClick={handleCloseModal}>
               <span>오늘 하루 안 보기</span>
               <img src={X_Vector} alt="X" />
             </div>
-            {/* <AiIntroText /> */}
             <Banner
               title={"📣 쿠러미 베타 출시!"}
               imgsrc={쿠러미}
