@@ -13,20 +13,27 @@ import 쿠러미 from "resources/assets/banner/쿠러미.jpg";
 import { useEffect, useState } from "react";
 
 export default function MobileHomePage() {
-  const [show, setShow] = useState(false); //배너 모달창 열림 여부
   const isBannerOn = false; //배너 온오프 - on:true off:false
+  const [show, setShow] = useState(false); //배너 모달창 열림 여부
 
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-    const hideDate = localStorage.getItem("hideModalDate");
-    if (hideDate !== today) {
+    const today = new Date();
+    const hideDateStr = localStorage.getItem("hideModalDate");
+    if (hideDateStr) {
+      const hideDate = new Date(hideDateStr);
+      // 오늘 날짜가 저장된 hideDate보다 이후이면 모달을 보이게 함
+      if (today > hideDate) {
+        setShow(true);
+      }
+    } else {
       setShow(true);
     }
   }, []);
 
   const handleCloseModal = () => {
-    const today = new Date().toISOString().split("T")[0];
-    localStorage.setItem("hideModalDate", today);
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    localStorage.setItem("hideModalDate", nextWeek.toISOString());
     setShow(false);
   };
 
@@ -36,7 +43,7 @@ export default function MobileHomePage() {
         <ModalBackGround>
           <Modal>
             <div className="close" onClick={handleCloseModal}>
-              <span>오늘 하루 안 보기</span>
+              <span>일주일동안 안 보기</span>
               <img src={X_Vector} alt="X" />
             </div>
             <Banner
