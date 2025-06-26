@@ -9,11 +9,11 @@ import AppcenterLogo from "resources/assets/appcenter-logo.svg";
 import { ReactSVG } from "react-svg";
 import X_Vector from "../../resources/assets/mobile-mypage/X-Vector.svg";
 import Banner from "components/banner/Banner.tsx";
-import 쿠러미 from "resources/assets/banner/쿠러미.jpg";
+import 배너이미지 from "resources/assets/banner/intip설문조사.png";
 import { useEffect, useState } from "react";
 
 export default function MobileHomePage() {
-  const isBannerOn = false; //배너 온오프 - on:true off:false
+  const isBannerOn = true; //배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); //배너 모달창 열림 여부
 
   useEffect(() => {
@@ -47,14 +47,18 @@ export default function MobileHomePage() {
               <img src={X_Vector} alt="X" />
             </div>
             <Banner
-              title={"📣 쿠러미 베타 출시!"}
-              imgsrc={쿠러미}
+              title={"📣 INTIP 사용 경험을 들려주세요!\n"}
+              imgsrc={배너이미지}
               content={
                 <>
-                  앱센터에서 주변 식당 쿠폰을 모은 앱이 곧 출시돼요.
+                  자유롭게 의견을 남겨주세요!
                   <br />
-                  지금 바로 먼저{" "}
-                  <a href={"https://www.currumi.shop/10"}>사용해 보세요</a>!
+                  30초만 시간 내어 작성해주시면 더 좋은 서비스를 준비하는 데 큰
+                  도움이 됩니다
+                  <br />
+                  <a href={"https://forms.gle/DHk5zsAF8Ko3SN38A"}>
+                    설문 조사 바로가기
+                  </a>
                 </>
               }
             />
@@ -124,7 +128,8 @@ const Modal = styled.div`
   border-radius: 16px;
   width: 90%;
   max-width: 420px;
-  height: 80%;
+  height: fit-content;
+  max-height: 80%;
   background: #9cafe2;
   color: #333366;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
