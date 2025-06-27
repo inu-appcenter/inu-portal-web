@@ -69,8 +69,7 @@ export default function MenuButton() {
       mobileNavigate(`/home/util`);
     } else if (title == "1대1 문의하기") {
       window.open(
-        "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
-        "_blank"
+        "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform"
       );
     } else {
       mobileNavigate(`/home/${title}`);
