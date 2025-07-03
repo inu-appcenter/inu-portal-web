@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import MobileIntroPage from "mobile/pages/MobileIntroPage";
 import MobileHomePage from "mobile/pages/MobileHomePage";
 import MobileTipsPage from "mobile/pages/MobileTipsPage";
@@ -39,7 +39,6 @@ import SubLayout from "../SubLayout.tsx";
 export default function MobileRootPage() {
   const { setIsAppUrl } = useAppStateStore();
   const [showIntro, setShowIntro] = useState(true);
-  const location = useLocation();
 
   useEffect(() => {
     setIsAppUrl("/m");
@@ -119,10 +118,4 @@ const MobileRootPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-`;
-
-const UpperBackground = styled.img`
-  position: absolute;
-  z-index: -1;
-  width: 100%;
 `;
