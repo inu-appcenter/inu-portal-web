@@ -10,7 +10,7 @@ import { ReactSVG } from "react-svg";
 import X_Vector from "../../resources/assets/mobile-mypage/X-Vector.svg";
 import Banner from "components/banner/Banner.tsx";
 import 배너이미지 from "resources/assets/banner/intip설문조사.png";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function MobileHomePage() {
   const isBannerOn = true; //배너 온오프 - on:true off:false
@@ -36,6 +36,46 @@ export default function MobileHomePage() {
     localStorage.setItem("hideModalDate", nextWeek.toISOString());
     setShow(false);
   };
+
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const indexRef = useRef(0);
+  const totalSlides = 3;
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    let autoSlideTimer: NodeJS.Timeout;
+
+    // 💡 초기 mount 이후 약간의 지연을 주고 시작
+    const startAutoSlide = () => {
+      autoSlideTimer = setInterval(() => {
+        if (!slider) return;
+        indexRef.current = (indexRef.current + 1) % totalSlides;
+        slider.scrollTo({
+          left: slider.clientWidth * indexRef.current,
+          behavior: "smooth",
+        });
+      }, 4000);
+    };
+
+    // 💡 DOM 렌더링이 완료된 후 300ms 이후 슬라이드 시작
+    const delayTimer = setTimeout(startAutoSlide, 300);
+
+    const handleManualScroll = () => {
+      if (!slider) return;
+      const newIndex = Math.round(slider.scrollLeft / slider.clientWidth);
+      indexRef.current = newIndex;
+    };
+
+    slider.addEventListener("scroll", handleManualScroll);
+
+    return () => {
+      clearInterval(autoSlideTimer);
+      clearTimeout(delayTimer);
+      slider.removeEventListener("scroll", handleManualScroll);
+    };
+  }, []);
 
   return (
     <MobileHomePageWrapper>
@@ -65,7 +105,17 @@ export default function MobileHomePage() {
           </Modal>
         </ModalBackGround>
       )}
-      <WeatherForm />
+
+      <FullWidthSlider ref={sliderRef}>
+        <FullWidthSlide>
+          <WeatherForm />
+        </FullWidthSlide>
+        <FullWidthSlide>뭐하누</FullWidthSlide>
+
+        <FullWidthSlide>가나다</FullWidthSlide>
+        <FullWidthSlide>우하하</FullWidthSlide>
+      </FullWidthSlider>
+
       <ContainerWrapper>
         <SerachForm />
         <CategoryForm />
@@ -83,7 +133,7 @@ export default function MobileHomePage() {
 const MobileHomePageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: 170px;
+  //margin-top: 170px;
   width: 100%;
   position: relative;
 
@@ -170,4 +220,26 @@ const Modal = styled.div`
       transform: translateY(0);
     }
   }
+`;
+
+const FullWidthSlider = styled.div`
+  display: flex;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  width: 100%;
+  -ms-overflow-style: none; /* IE */
+  scrollbar-width: none; /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome */
+  }
+`;
+
+const FullWidthSlide = styled.div`
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  width: 100%;
+  height: 100%; // WeatherForm 높이와 동일
+  box-sizing: border-box;
 `;
