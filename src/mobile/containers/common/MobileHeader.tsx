@@ -83,18 +83,25 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
     $visible ? "translateY(0)" : "translateY(-100%)"};
 `;
 
-const UpperBackground = styled.div`
+const UpperBackground = () => (
+  <StyledUpperBackground>
+    <ReactSVG src={UpperBackgroundImg} />
+  </StyledUpperBackground>
+);
+
+const StyledUpperBackground = styled.div`
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 100%;
-  background-image: url(${UpperBackgroundImg});
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  opacity: 1;
   z-index: -1;
+
+  & > svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const ProfileMenuWrapper = styled.div`
