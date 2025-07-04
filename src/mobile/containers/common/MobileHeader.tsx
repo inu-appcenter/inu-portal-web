@@ -75,7 +75,7 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   right: 0;
 
   z-index: 999;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  //box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 
   transition: transform 0.3s ease;
