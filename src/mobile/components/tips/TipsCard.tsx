@@ -210,16 +210,19 @@ const LikeCommentWriterWrapper = styled.div`
   align-items: center;
   justify-content: center;
   gap: 4px;
+
   .like-comment {
     display: flex;
     align-items: center;
     gap: 4px;
     font-size: 10px;
     font-weight: 500;
+
     img {
       height: 10px;
     }
   }
+
   .writer {
     font-size: 10px;
     font-weight: 500;
@@ -232,7 +235,8 @@ const LikeCommentWriterWrapper = styled.div`
 
 const TipsCardGridWrapper = styled.div`
   height: 196px;
-  width: 95%;
+  width: 100%;
+  box-sizing: border-box;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
@@ -268,7 +272,8 @@ const GridBottomWrapper = styled.div`
 
 const TipsCardListWrapper = styled.div`
   height: 96px;
-  width: 95%;
+  width: 100%;
+  box-sizing: border-box;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
