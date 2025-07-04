@@ -5,7 +5,7 @@ import { Club } from "types/club";
 import { getClubs } from "apis/club";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Title from "mobile/containers/mypage/Title.tsx";
+import Title from "mobile/containers/common/MobileTitleHeader.tsx";
 import useMobileNavigate from "hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "../components/club/ClubAdmin";
@@ -113,7 +113,7 @@ const MobileClubPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 0 16px 0 16px;
+
   width: 100%;
 
   .upload-button {
@@ -154,13 +154,15 @@ const ClubList = styled.div`
   align-items: center;
   width: 100%;
   gap: 8px;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;
 
 const ClubCard = styled.div`
   min-height: 90px;
   height: fit-content;
   padding: 10px 0 10px 0;
-  width: 96%;
+  width: 100%;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;

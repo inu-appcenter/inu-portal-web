@@ -49,5 +49,6 @@ const MobileCouncilHeaderWrapper = styled.div`
   .selected {
     background: linear-gradient(180deg, #6d98d7 0%, #0e4d9d 100%);
     color: white;
+    min-height: 46px;
   }
 `;

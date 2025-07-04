@@ -7,7 +7,7 @@ import ViewModeButtons from "mobile/components/tips/ViewModeButtons";
 import TipsListContainer from "mobile/containers/tips/TipsListContainer";
 import SerachForm from "mobile/containers/home/SerachForm";
 import { useResetTipsStore } from "reducer/resetTipsStore";
-import Title from "mobile/containers/mypage/Title.tsx";
+import Title from "mobile/containers/common/MobileTitleHeader.tsx";
 import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 
 export default function MobileTipsPage() {
@@ -45,7 +45,16 @@ export default function MobileTipsPage() {
           <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
         </ViewModeButtonCategorySelectorWrapper>
       </TitleCategorySelectorWrapper>
-      {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
+      <div
+        style={{
+          width: "100%",
+          paddingLeft: "16px",
+          paddingRight: "16px",
+          boxSizing: "border-box",
+        }}
+      >
+        {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
+      </div>
 
       <Wrapper>
         <TipsListContainer
@@ -88,4 +97,6 @@ const Wrapper = styled.div`
   display: flex;
   width: 100%;
   height: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;

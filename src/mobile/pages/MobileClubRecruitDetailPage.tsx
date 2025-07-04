@@ -3,7 +3,7 @@ import { ClubRecruit } from "types/club.ts";
 import { getClubRecruit } from "apis/club.ts";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Title from "mobile/containers/mypage/Title.tsx";
+import Title from "mobile/containers/common/MobileTitleHeader.tsx";
 // import ManageClubRecruit from "../components/club/ManageClubRecruit.tsx";
 import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 import ClubContentContainer from "../containers/clubdetail/ClubContentContainer.tsx";
