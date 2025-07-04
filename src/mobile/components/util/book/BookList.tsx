@@ -192,7 +192,7 @@ const FilterButtons = styled.div`
 const ListWrapper = styled.div`
   width: 100%;
   box-sizing: border-box;
-  padding: 0 12px;
+  //padding: 0 12px;
 `;
 
 const BookCard = styled.div`
