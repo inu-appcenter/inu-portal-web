@@ -134,7 +134,7 @@ export default function Calendarbar() {
 const CalendarWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 24px;
+
   .fc-event {
     background-color: rgba(26, 36, 44, 0.1) !important;
   }
@@ -142,14 +142,17 @@ const CalendarWrapper = styled.div`
   .fc-event-title {
     color: #151e27 !important;
   }
+
   .fc .fc-button-primary {
     padding-left: 0px;
   }
+
   .fc .fc-toolbar-title {
     font-size: 16px;
     font-weight: 600;
     color: #828282;
   }
+
   .fc .fc-button-primary {
     background-color: white;
     border: none;
@@ -157,6 +160,7 @@ const CalendarWrapper = styled.div`
   }
 
   // 요일 폰트
+
   .fc-col-header-cell-cushion {
     font-family: Lato;
     font-weight: 500;
@@ -177,6 +181,7 @@ const CalendarWrapper = styled.div`
   }
 
   // 날짜 내의 숫자
+
   .fc-daygrid-day-top {
     font-family: Lato;
     display: flex;
@@ -185,19 +190,23 @@ const CalendarWrapper = styled.div`
   }
 
   // 다른 달의 날짜 보이지 않기
+
   .fc-day-other {
     color: transparent;
   }
 
   // 이벤트
+
   .fc-h-event {
     border: none;
   }
+
   .fc-event-main-frame {
     height: 4px;
     background-color: rgba(64, 113, 185, 1);
     margin-top: 2px;
     border-radius: 8px;
+
     .fc-event-title-container {
       display: none;
     }
@@ -210,6 +219,7 @@ const CalendarWrapper = styled.div`
     border: 1px solid #828282;
     border-radius: 4px;
     padding: 10px 0;
+
     p {
       margin: 0;
     }
@@ -226,14 +236,17 @@ const EventsList = styled.div`
 
 const EventItem = styled.div`
   margin-bottom: 1px solid black;
+
   div {
     display: flex;
   }
+
   strong {
     display: block;
     font-size: 16px;
     margin-bottom: 20px;
   }
+
   span {
     font-size: 11px;
     line-height: 8px;

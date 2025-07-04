@@ -1,49 +1,65 @@
-import {useState, useEffect} from "react";
-import {getReservations, Reservation, ReservationContent} from "apis/rental.ts";  // getReservations 함수 임포트
-import ReservationItem from "./ReservationItem.tsx";  // ReservationItem 컴포넌트 임포트
+import { useState, useEffect } from "react";
+import {
+  getReservations,
+  Reservation,
+  ReservationContent,
+} from "apis/rental.ts";
+import ReservationItem from "./ReservationItem.tsx";
 import styled from "styled-components";
 
 const ReservationList = () => {
-    const [reservations, setReservations] = useState<ReservationContent[]>([]);  // ReservationContent 배열로 타입 설정
-    const [loading, setLoading] = useState(true);
-    const [isChanged, setIsChanged] = useState(false);
+  const [reservations, setReservations] = useState<ReservationContent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isChanged, setIsChanged] = useState(false);
 
-    useEffect(() => {
-        const fetchReservations = async () => {
-            try {
-                // @ts-ignore
-                const data: ApiResponse<Reservation> = await getReservations(1);  // 첫 페이지 예약 목록 가져오기
-                console.log(data);
-                setReservations(data.contents);  // 유효한 배열이면 상태 업데이트
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        // @ts-ignore
+        const data: ApiResponse<Reservation> = await getReservations(1);
+        console.log(data);
+        setReservations(data.contents);
+      } catch (error) {
+        console.error("예약 목록을 가져오는 중 오류 발생:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            } catch (error) {
-                console.error("예약 목록을 가져오는 중 오류 발생:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    fetchReservations();
+  }, [isChanged]);
 
-        fetchReservations();
-    }, [isChanged]);
+  if (loading) {
+    return <p>로딩 중...</p>;
+  }
 
-    if (loading) {
-        return <p>로딩 중...</p>;
-    }
-
-    return (
-        <ReservationListWrapper>
-            {reservations && (  // reservations 배열이 비어 있지 않은지 확인
-                reservations.map((reservation) => (
-                    <ReservationItem key={reservation.itemId} reservation={reservation} setIsChanged={setIsChanged}/>
-                ))
-            )}
-        </ReservationListWrapper>
-    );
+  return (
+    <ReservationListWrapper>
+      {reservations.length === 0 ? (
+        <EmptyMessage>예약된 항목이 없습니다.</EmptyMessage>
+      ) : (
+        reservations.map((reservation) => (
+          <ReservationItem
+            key={reservation.itemId}
+            reservation={reservation}
+            setIsChanged={setIsChanged}
+          />
+        ))
+      )}
+    </ReservationListWrapper>
+  );
 };
 
 const ReservationListWrapper = styled.div`
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
+`;
+
+const EmptyMessage = styled.p`
+  text-align: center;
+  margin-top: 2rem;
+  color: #777;
+  font-size: 1.1rem;
 `;
 
 export default ReservationList;
