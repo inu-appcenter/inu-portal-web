@@ -39,7 +39,8 @@ export default function MobileHomePage() {
 
   const sliderRef = useRef<HTMLDivElement>(null);
   const indexRef = useRef(0);
-  const totalSlides = 3;
+  const totalSlides = 1;
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const slider = sliderRef.current;
@@ -56,6 +57,7 @@ export default function MobileHomePage() {
           left: slider.clientWidth * indexRef.current,
           behavior: "smooth",
         });
+        setCurrentIndex(indexRef.current); // ← 상태 업데이트
       }, 4000);
     };
 
@@ -66,6 +68,7 @@ export default function MobileHomePage() {
       if (!slider) return;
       const newIndex = Math.round(slider.scrollLeft / slider.clientWidth);
       indexRef.current = newIndex;
+      setCurrentIndex(newIndex); // ← 상태 업데이트
     };
 
     slider.addEventListener("scroll", handleManualScroll);
@@ -110,14 +113,16 @@ export default function MobileHomePage() {
         <FullWidthSlide>
           <WeatherForm />
         </FullWidthSlide>
-        <FullWidthSlide>뭐하누</FullWidthSlide>
 
-        <FullWidthSlide>가나다</FullWidthSlide>
-        <FullWidthSlide>우하하</FullWidthSlide>
+        <IndicatorWrapper>
+          {Array.from({ length: totalSlides }).map((_, idx) => (
+            <Dot key={idx} active={idx === currentIndex} />
+          ))}
+        </IndicatorWrapper>
       </FullWidthSlider>
 
       <ContainerWrapper>
-        <SerachForm />
+        {/*<SerachForm />*/}
         <CategoryForm />
         <AiForm />
         <TipForm />
@@ -143,6 +148,7 @@ const MobileHomePageWrapper = styled.div`
 
 const ContainerWrapper = styled.div`
   margin: 0 24px;
+  //margin-top: 14px;
 `;
 
 const AppcenterLogoWrapper = styled.div`
@@ -228,6 +234,7 @@ const FullWidthSlider = styled.div`
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   width: 100%;
+  position: relative; /* ← 플로팅을 위한 설정 */
   -ms-overflow-style: none; /* IE */
   scrollbar-width: none; /* Firefox */
 
@@ -242,4 +249,22 @@ const FullWidthSlide = styled.div`
   width: 100%;
   height: 100%; // WeatherForm 높이와 동일
   box-sizing: border-box;
+`;
+
+const IndicatorWrapper = styled.div`
+  position: absolute;
+  bottom: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none; /* 인디케이터가 클릭 차단 안 되도록 */
+`;
+
+const Dot = styled.div<{ active: boolean }>`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: ${({ active }) => (active ? "#555" : "#ccc")};
+  transition: background-color 0.3s ease;
 `;
