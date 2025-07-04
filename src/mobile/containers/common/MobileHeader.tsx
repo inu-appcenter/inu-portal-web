@@ -44,7 +44,7 @@ export default function MobileHeader() {
 
   return (
     <MobileHeaderWrapper $visible={showHeader}>
-      <UpperBackground />
+      <UpperBackground src={UpperBackgroundImg} alt="background" />
       <ReactSVG onClick={handleLogoClick} src={intipLogo} />
       <ProfileMenuWrapper>
         {userInfo.nickname ? (
@@ -83,25 +83,16 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
     $visible ? "translateY(0)" : "translateY(-100%)"};
 `;
 
-const UpperBackground = () => (
-  <StyledUpperBackground>
-    <ReactSVG src={UpperBackgroundImg} />
-  </StyledUpperBackground>
-);
-
-const StyledUpperBackground = styled.div`
+const UpperBackground = styled.img`
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
+  width: 100%;
   height: 100%;
+  object-fit: cover; /* 이미지가 부모 영역 꽉 채움 */
   z-index: -1;
-
-  & > svg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
 `;
 
 const ProfileMenuWrapper = styled.div`

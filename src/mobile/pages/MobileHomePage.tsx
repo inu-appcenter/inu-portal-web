@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import WeatherForm from "mobile/containers/home/Weather";
-import SerachForm from "mobile/containers/home/SerachForm";
+// import SerachForm from "mobile/containers/home/SerachForm";
 import CategoryForm from "mobile/containers/home/Category";
 import TipForm from "mobile/containers/home/Tips";
 import AiForm from "mobile/containers/home/Ai";
