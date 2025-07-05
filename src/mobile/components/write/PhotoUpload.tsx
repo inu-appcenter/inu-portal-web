@@ -81,6 +81,8 @@ const PhotoUploadWrapper = styled.div`
   border: 1px solid #e0e0e0;
   position: relative;
   overflow-y: scroll;
+
+  justify-content: center;
 `;
 
 const CenteredAddImageWrapper = styled.div`
@@ -101,10 +103,12 @@ const AddImageButton = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   img {
     width: 64px;
     height: 64px;
   }
+
   div {
     margin-top: 8px;
     font-size: 14px;
@@ -123,6 +127,7 @@ const ImagePreviewWrapper = styled.div`
 
 const ImageContainer = styled.div`
   position: relative;
+
   img {
     width: 100%;
     height: 100%;

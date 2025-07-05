@@ -32,6 +32,7 @@ export default function MobileHeader() {
     console.log(path);
     const pathTitleMap: Record<string, string> = {
       "/m/home/tips": "TIPS",
+      "/m/home/tips/write": "TIPS 글쓰기",
       "/m/home/notice": "학교 공지사항",
       "/m/home/menu": "식당메뉴",
       "/m/home/calendar": "학사일정",

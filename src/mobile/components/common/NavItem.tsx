@@ -11,7 +11,10 @@ interface NavItemProps {
 export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const isActive = location.pathname.includes(label.toLowerCase());
+
+  // pathname이 정확히 일치하거나, 하위 경로 포함 여부 판단
+  const isActive =
+    location.pathname === to || location.pathname.startsWith(to + "/");
 
   const handleClick = () => {
     navigate(to);
