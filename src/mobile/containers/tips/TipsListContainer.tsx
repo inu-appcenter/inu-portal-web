@@ -203,8 +203,8 @@ const TipsListContainerWrapper = styled.div<{
           ? "calc(100svh - 72px - 64px - 16px - 32px)" // DocType이 NOTICE 일 때는 SearchForm 없음
           : "calc(100svh - 64px - 16px - 32px)" // isAppUrl이 "/app" 이면 nav는 없음
         : $isAppUrl === "/m"
-        ? "calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)" // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
-        : "calc(100svh - 64px - 16px - 32px - 16px - 49px)" // isAppUrl이 "/app" 이면 nav는 없음
+          ? "calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)" // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
+          : "calc(100svh - 64px - 16px - 32px - 16px - 49px)" // isAppUrl이 "/app" 이면 nav는 없음
   };
   overflow-y: auto;
 `;
@@ -217,4 +217,6 @@ const TipsCardWrapper = styled.div<{ $viewMode: "grid" | "list" }>`
   width: 100%;
   grid-template-columns: ${({ $viewMode }) =>
     $viewMode === "grid" ? "repeat(2, 1fr)" : "unset"};
+  //padding: 0 10px;
+  box-sizing: border-box;
 `;

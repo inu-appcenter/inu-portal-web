@@ -5,7 +5,7 @@ import { Club } from "types/club";
 import { getClubs } from "apis/club";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Title from "mobile/containers/mypage/Title.tsx";
+import Title from "mobile/containers/common/MobileTitleHeader.tsx";
 import ManageClubRecruit from "./ManageClubRecruit.tsx";
 // import UploadBook from "../util/book/UploadBook.tsx";
 

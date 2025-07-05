@@ -95,7 +95,7 @@ export default function LostList({ reloadKey }: { reloadKey: number }) {
 const ListWrapper = styled.div`
   width: 100%;
   box-sizing: border-box;
-  padding: 20px 12px;
+  padding: 20px 0;
 
   button {
     font-size: 14px;
