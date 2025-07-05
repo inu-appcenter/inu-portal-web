@@ -18,7 +18,12 @@ export default function MobileTitleHeader({
 
   const handleBack = () => {
     const params = new URLSearchParams(location.search);
-    const specialPaths = ["/m/home/util", "/m/home/council", "/m/home/campus"];
+    const specialPaths = [
+      "/m/home/util",
+      "/m/home/council",
+      "/m/home/campus",
+      "/m/home/tips",
+    ];
 
     const shouldGoHome =
       specialPaths.includes(location.pathname) && [...params].length > 0;
