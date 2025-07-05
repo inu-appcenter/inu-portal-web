@@ -30,8 +30,9 @@ const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 70px;
+  padding-top: 140px;
 
-  padding-bottom: 72px;
+  //padding-bottom: 72px;
   overflow-y: hidden;
+  height: 100%;
 `;

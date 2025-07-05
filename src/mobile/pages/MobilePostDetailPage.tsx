@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { getPostDetail } from "apis/posts";
-import PostUtilContainer from "mobile/containers/postdetail/PostUtilContainer";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
 import CommentListMobile from "mobile/containers/postdetail/CommentListContainer";
 import ReplyInput from "mobile/containers/postdetail/ReplyInput";
@@ -67,16 +66,6 @@ export default function PostDetailPage() {
       {post ? (
         <>
           <Wrapper>
-            <PostTopWrapper>
-              <PostUtilContainer
-                id={post.id}
-                like={post.like}
-                isLiked={post.isLiked}
-                scrap={post.scrap}
-                isScraped={post.isScraped}
-                hasAuthority={post.hasAuthority}
-              />
-            </PostTopWrapper>
             <PostWrapper>
               <PostContentContainer ClubRecruit={post} />
               <CommentWrapper>
@@ -115,17 +104,12 @@ const Wrapper = styled.div`
   width: 100%;
   height: calc(100svh - 65px);
 `;
-const PostTopWrapper = styled.div`
-  width: 100%;
-  height: 70px;
-  border-bottom: 1px solid #ccc;
-`;
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100svh - 135px);
-  overflow-y: auto;
+  //overflow-y: auto;
   position: relative;
   z-index: 1;
 `;
