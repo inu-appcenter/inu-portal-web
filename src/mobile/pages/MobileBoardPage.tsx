@@ -6,6 +6,7 @@ import ViewModeButtons from "mobile/components/tips/ViewModeButtons";
 import TipsListContainer from "mobile/containers/tips/TipsListContainer";
 import SerachForm from "mobile/containers/home/SerachForm";
 import { useResetTipsStore } from "reducer/resetTipsStore";
+import MobileWriteButton from "mobile/components/tips/MobileWriteButton";
 
 export default function MobileBoardPage() {
   const location = useLocation();
@@ -35,6 +36,7 @@ export default function MobileBoardPage() {
       </TitleCategorySelectorWrapper>
       {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
 
+
       <TipsListContainer
         key={resetKey}
         viewMode={viewMode}
@@ -42,6 +44,8 @@ export default function MobileBoardPage() {
         category={category}
         query={query}
       />
+      {(docType === "TIPS" || docType === "SEARCH") && <MobileWriteButton />}
+
     </MobileTipsPageWrapper>
   );
 }
