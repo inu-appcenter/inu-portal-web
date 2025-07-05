@@ -1,7 +1,4 @@
-// import React from 'react';
-import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
-import backbtn from "resources/assets/mobile-common/backbtn.svg";
 import PostLike from "mobile/components/postdetail/util/m.postlike";
 import PostScrap from "mobile/components/postdetail/util/m.postscrap";
 import utilfolder from "resources/assets/mobile-tips/utilfolder.svg";
@@ -18,6 +15,7 @@ interface PostUtilityProps {
   isScraped: boolean;
   hasAuthority: boolean;
 }
+
 export default function PostUtilContainer({
   id,
   like,
@@ -26,7 +24,6 @@ export default function PostUtilContainer({
   isScraped,
   hasAuthority,
 }: PostUtilityProps) {
-  const mobileNavigate = useMobileNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -51,53 +48,32 @@ export default function PostUtilContainer({
 
   return (
     <>
-      <Wrapper>
-        <BackBtn onClick={() => mobileNavigate(-1)}>
-          <img src={backbtn} alt="뒤로가기 버튼" />
-        </BackBtn>
-        <UtilWrapper>
-          <PostLike id={id} like={like} isLikedProp={isLiked} />
-          <PostScrap id={id} scrap={scrap} isScrapedProp={isScraped} />
-          <DelOrModifyWrapper>
-            <img
-              src={utilfolder}
-              alt="del or modify folder"
-              onClick={handleFolderClick}
-              style={{ cursor: "pointer" }}
-            />
-            {showPopup && (
-              <Popup ref={popupRef}>
-                {hasAuthority && (
-                  <>
-                    <DeletePostBtn id={id} onPostUpdate={handlePostUpdate} />
-                    <EditPostBtn id={id} />
-                  </>
-                )}
-                <ReportsPostBtn id={id} />
-              </Popup>
-            )}
-          </DelOrModifyWrapper>
-        </UtilWrapper>
-      </Wrapper>
+      <UtilWrapper>
+        <PostLike id={id} like={like} isLikedProp={isLiked} />
+        <PostScrap id={id} scrap={scrap} isScrapedProp={isScraped} />
+        <DelOrModifyWrapper>
+          <img
+            src={utilfolder}
+            alt="del or modify folder"
+            onClick={handleFolderClick}
+            style={{ cursor: "pointer" }}
+          />
+          {showPopup && (
+            <Popup ref={popupRef}>
+              {hasAuthority && (
+                <>
+                  <DeletePostBtn id={id} onPostUpdate={handlePostUpdate} />
+                  <EditPostBtn id={id} />
+                </>
+              )}
+              <ReportsPostBtn id={id} />
+            </Popup>
+          )}
+        </DelOrModifyWrapper>
+      </UtilWrapper>
     </>
   );
 }
-
-const Wrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px 20px 10px 20px;
-  height: 30px;
-  gap: 15px;
-`;
-
-const BackBtn = styled.div`
-  color: #888888;
-  margin-right: auto;
-  display: flex;
-  padding: 8px;
-`;
 
 const UtilWrapper = styled.div`
   margin-left: auto;
