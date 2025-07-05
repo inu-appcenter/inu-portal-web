@@ -7,15 +7,12 @@ import UploadLost from "mobile/components/util/Lost/UploadLost.tsx";
 import LostList from "mobile/components/util/Lost/LostList.tsx";
 import { useState } from "react";
 import useUserStore from "stores/useUserStore";
-import Title from "mobile/containers/common/MobileTitleHeader.tsx";
-import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 
 import useReloadKeyStore from "stores/useReloadKeyStore";
 import Rental from "../../components/rental/Rental.tsx";
 
 export default function MobileUtilPage() {
   const { userInfo } = useUserStore();
-  const mobileNavigate = useMobileNavigate();
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -38,8 +35,6 @@ export default function MobileUtilPage() {
 
   return (
     <MobileUtilPageWrapper>
-      <Title title={"편의"} onback={() => mobileNavigate("/home")} />
-
       <MobileUtilHeader
         selectedType={type}
         setIsRentalAdminOpen={setIsRentalAdminOpen}

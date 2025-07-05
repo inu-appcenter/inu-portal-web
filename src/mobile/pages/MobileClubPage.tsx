@@ -1,11 +1,9 @@
 import CategorySelector from "mobile/components/club/ClubCategorySelector";
-// import TipsPageTitle from "mobile/components/tips/TipsPageTitle";
 import styled from "styled-components";
 import { Club } from "types/club";
 import { getClubs } from "apis/club";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Title from "mobile/containers/common/MobileTitleHeader.tsx";
 import useMobileNavigate from "hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "../components/club/ClubAdmin";
@@ -54,9 +52,6 @@ export default function MobileClubPage() {
           )}
 
           <TitleCategorySelectorWrapper>
-            {/*<TipsPageTitle value="동아리"/>*/}
-            <Title title={"동아리"} onback={() => mobileNavigate("/home")} />
-
             <CategorySelectorWrapper>
               <CategorySelector />
             </CategorySelectorWrapper>

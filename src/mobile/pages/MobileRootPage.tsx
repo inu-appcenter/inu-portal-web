@@ -81,6 +81,8 @@ export default function MobileRootPage() {
         {/*내비바가 필요없는 서브페이지들*/}
         <Route path="/" element={<SubLayout />}>
           <Route path="/home/tips" element={<MobileTipsPage />} />
+          <Route path="/home/notice" element={<MobileTipsPage />} />
+
           <Route path="/home/menu" element={<MobileMenuPage />} />
           <Route path="/home/calendar" element={<MobileCalendarPage />} />
           <Route path="/home/campus" element={<MobileCampusPage />} />
