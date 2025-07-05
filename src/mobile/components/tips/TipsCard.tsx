@@ -43,13 +43,9 @@ export default function ({
           {post && (
             <TipsCardGridWrapper onClick={handleDocumentClick}>
               <GridTopWrapper>
-                <GridTopTopWrapper>
-                  <Category>{post.category}</Category>
-                  <Date>{post.createDate}</Date>
-                </GridTopTopWrapper>
-                <Content>{post.content}</Content>
+                <Category>{post.category}</Category>
               </GridTopWrapper>
-              <GridLine />
+
               <GridBottomWrapper>
                 <GridTitle>{post.title}</GridTitle>
                 <LikeCommentWriterWrapper>
@@ -107,7 +103,6 @@ export default function ({
             <TipsCardListWrapper onClick={handleDocumentClick}>
               <ListLeftWrapper>
                 <Category>{post.category}</Category>
-                <Date>{post.createDate}</Date>
               </ListLeftWrapper>
               <ListLine />
               <ListRightWrapper>
@@ -190,10 +185,12 @@ const ListTitle = styled.div`
 `;
 
 const GridTitle = styled.div`
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: #221112;
   flex: 1;
+  text-align: center;
+  word-break: keep-all; //제목이 단어 기준으로 끊김
 `;
 
 const Content = styled.div`
@@ -234,21 +231,21 @@ const LikeCommentWriterWrapper = styled.div`
 `;
 
 const TipsCardGridWrapper = styled.div`
-  height: 196px;
-  width: 100%;
-  box-sizing: border-box;
+  height: 120px;
+  width: 85%;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
+  padding: 10px;
+  margin: 8px auto;
 `;
 
 const GridTopWrapper = styled.div`
-  padding: 8px;
-  flex: 3;
+  padding: 4px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 `;
 
 const GridTopTopWrapper = styled.div`
