@@ -32,6 +32,7 @@ export default function MobileHeader() {
     console.log(path);
     const pathTitleMap: Record<string, string> = {
       "/m/home/tips": "TIPS",
+      "/m/home/tips/write": "TIPS 글쓰기",
       "/m/home/notice": "학교 공지사항",
       "/m/home/menu": "식당메뉴",
       "/m/home/calendar": "학사일정",
@@ -43,7 +44,7 @@ export default function MobileHeader() {
       "/m/postdetail": "게시글 상세",
       "/m/councilnoticedetail": "공지사항 상세",
       "/m/petitiondetail": "청원 상세",
-      "/m/mypage/profile": "프로필 수정",
+      "/m/mypage/profile": "프로필 편집",
       "/m/mypage/post": "내 게시글",
       "/m/mypage/like": "좋아요한 글",
       "/m/mypage/comment": "내 댓글",
@@ -107,7 +108,7 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   left: 0;
   right: 0;
 
-  z-index: 999;
+  z-index: 1;
   //box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 

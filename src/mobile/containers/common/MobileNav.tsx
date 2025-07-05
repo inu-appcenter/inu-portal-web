@@ -2,6 +2,8 @@ import styled from "styled-components";
 import NavItem from "mobile/components/common/NavItem";
 import homeIcon from "resources/assets/mobile-common/home-gray.svg";
 import homeIconActive from "resources/assets/mobile-common/home-blue.svg";
+import busIcon from "resources/assets/mobile-common/bus-gray.svg";
+import busIconActive from "resources/assets/mobile-common/bus-blue.svg";
 import saveIcon from "resources/assets/mobile-common/save-gray.svg";
 import saveIconActive from "resources/assets/mobile-common/save-blue.svg";
 import mypageIcon from "resources/assets/mobile-common/mypage-gray.svg";
@@ -17,19 +19,25 @@ export default function MobileNav() {
         to={`${isAppUrl}/home`}
         icon={homeIcon}
         activeIcon={homeIconActive}
-        label="Home"
+        label="홈"
+      />
+      <NavItem
+        to={`${isAppUrl}/bus`}
+        icon={busIcon}
+        activeIcon={busIconActive}
+        label="인입런"
       />
       <NavItem
         to={`${isAppUrl}/save`}
         icon={saveIcon}
         activeIcon={saveIconActive}
-        label="Save"
+        label="스크랩"
       />
       <NavItem
         to={`${isAppUrl}/mypage`}
         icon={mypageIcon}
         activeIcon={mypageIconActive}
-        label="Mypage"
+        label="마이페이지"
       />
     </MobileNavWrapper>
   );

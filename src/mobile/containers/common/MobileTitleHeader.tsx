@@ -16,12 +16,19 @@ export default function MobileTitleHeader({
   const mobileNavigate = useMobileNavigate();
   const location = useLocation();
 
-  // 기본 onback 핸들러
   const handleBack = () => {
     const params = new URLSearchParams(location.search);
+    const specialPaths = [
+      "/m/home/util",
+      "/m/home/council",
+      "/m/home/campus",
+      "/m/home/tips",
+    ];
 
-    // 파라미터가 하나라도 있으면 /home으로 이동
-    if ([...params].length > 0) {
+    const shouldGoHome =
+      specialPaths.includes(location.pathname) && [...params].length > 0;
+
+    if (shouldGoHome) {
       mobileNavigate("/home");
     } else {
       mobileNavigate(-1);
