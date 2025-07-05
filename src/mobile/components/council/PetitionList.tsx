@@ -20,7 +20,7 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
       const newPetitions = response.data.contents;
       console.log(response);
       setPetitions((prevPetitions) =>
-        reset ? newPetitions : [...prevPetitions, ...newPetitions]
+        reset ? newPetitions : [...prevPetitions, ...newPetitions],
       );
       setHasMore(currentPage < response.data.pages);
     } catch (error) {
@@ -97,7 +97,6 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
 const ListWrapper = styled.div`
   width: 100%;
   box-sizing: border-box;
-  padding: 0 12px;
 `;
 
 const BookCard = styled.div`
@@ -115,6 +114,7 @@ const BookCard = styled.div`
     top: 50%;
     transform: translate(-50%, -50%);
   }
+
   .secretImg {
     position: absolute;
     left: 50%;
@@ -167,9 +167,11 @@ const BookCard = styled.div`
     display: flex;
     gap: 6px;
     align-items: center;
+
     img {
       width: 12px;
     }
+
     p {
       font-size: 12px;
     }

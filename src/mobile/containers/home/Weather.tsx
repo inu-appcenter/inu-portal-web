@@ -143,13 +143,11 @@ export default function WeatherForm() {
 }
 
 const WeatherWrapper = styled.div`
-  height: 200px;
+  height: 100%;
   width: 100%;
-  position: relative;
   display: flex;
-  position: absolute;
-  top: -244px;
-  z-index: -1;
+  justify-content: center;
+  align-items: center;
 `;
 
 const WeatherBackground = styled.div<{ $gradient: string }>`

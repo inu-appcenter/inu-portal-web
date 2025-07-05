@@ -269,7 +269,8 @@ const GridBottomWrapper = styled.div`
 
 const TipsCardListWrapper = styled.div`
   height: 96px;
-  width: 95%;
+  width: 100%;
+  box-sizing: border-box;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
