@@ -9,6 +9,7 @@ import SerachForm from "mobile/containers/home/SerachForm";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import Title from "mobile/containers/common/MobileTitleHeader.tsx";
 import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
+import MobileWriteButton from "mobile/components/tips/MobileWriteButton";
 
 export default function MobileTipsPage() {
   const location = useLocation();
@@ -65,6 +66,8 @@ export default function MobileTipsPage() {
           query={query}
         />
       </Wrapper>
+
+      {(docType === "TIPS" || docType === "SEARCH") && <MobileWriteButton />}
     </MobileTipsPageWrapper>
   );
 }
