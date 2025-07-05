@@ -23,12 +23,13 @@ const UserInfoWrapper = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 125px;
+  width: 100%;
   height: 125px;
   position: relative;
+
   img {
-    width: 100%;
-    height: 100%;
+    width: 110px;
+    height: 110px;
     margin-bottom: 10px;
   }
 `;

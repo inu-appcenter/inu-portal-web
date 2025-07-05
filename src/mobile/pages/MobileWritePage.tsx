@@ -58,7 +58,8 @@ const MobileWritePageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 0 16px 0 16px;
+  padding: 0 16px;
+  box-sizing: border-box;
   min-height: calc(100svh - 72px - 72px - 24px);
   width: 100%;
 `;
@@ -83,6 +84,7 @@ const ErrorWrapper = styled.div`
   gap: 30px;
   align-items: center;
   margin-top: 100px;
+
   div {
     font-size: 20px;
   }

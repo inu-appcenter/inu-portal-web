@@ -27,6 +27,7 @@ import AiPage from "pages/AiPage";
 import useAppStateStore from "stores/useAppStateStore";
 import MainLayout from "../MainLayout.tsx";
 import SubLayout from "../SubLayout.tsx";
+import MobileBusPage from "./MobileBusPage.tsx";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -72,8 +73,9 @@ export default function MobileRootPage() {
         {/*내비바가 필요한 루트페이지*/}
         <Route path="/" element={<MainLayout />}>
           <Route path="/home" element={<MobileHomePage />} />
+          <Route path="/bus" element={<MobileBusPage />} />
+
           <Route path="/ai" element={<AiPage />} />
-          <Route path="/write" element={<MobileWritePage />} />
           <Route path="/save" element={<MobileSavePage />} />
           <Route path="/mypage" element={<MobileMyPage />} />
         </Route>
@@ -81,8 +83,8 @@ export default function MobileRootPage() {
         {/*내비바가 필요없는 서브페이지들*/}
         <Route path="/" element={<SubLayout />}>
           <Route path="/home/tips" element={<MobileBoardPage />} />
+          <Route path="/home/tips/write" element={<MobileWritePage />} />
           <Route path="/home/notice" element={<MobileBoardPage />} />
-
           <Route path="/home/menu" element={<MobileMenuPage />} />
           <Route path="/home/calendar" element={<MobileCalendarPage />} />
           <Route path="/home/campus" element={<MobileCampusPage />} />

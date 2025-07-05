@@ -12,7 +12,7 @@ export default function FloatingWriteButton() {
 
   const handleClick = () => {
     if (tokenInfo.accessToken) {
-      mobileNavigate("/write");
+      mobileNavigate("/home/tips/write");
     } else {
       setIsOpenModal(true);
     }
