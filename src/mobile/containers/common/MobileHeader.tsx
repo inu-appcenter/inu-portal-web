@@ -44,7 +44,7 @@ export default function MobileHeader() {
       "/m/postdetail": "게시글 상세",
       "/m/councilnoticedetail": "공지사항 상세",
       "/m/petitiondetail": "청원 상세",
-      "/m/mypage/profile": "프로필 수정",
+      "/m/mypage/profile": "프로필 편집",
       "/m/mypage/post": "내 게시글",
       "/m/mypage/like": "좋아요한 글",
       "/m/mypage/comment": "내 댓글",
