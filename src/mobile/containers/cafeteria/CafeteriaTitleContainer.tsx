@@ -1,6 +1,7 @@
 import CafeteriaDate from "mobile/components/cafeteria/CafeteriaDate";
 import CafeteriaToggle from "mobile/components/cafeteria/CafeteriaList";
 import styled from "styled-components";
+
 // import eatingRice from "resources/assets/cafeteria/eatingRice.png";
 
 interface weekDatesProps {
@@ -25,7 +26,7 @@ export default function CafeteriaTitleContainer({
 }: CafeteriaTitleContainerProps) {
   return (
     <CafeteriaTitleWrapper>
-            {/*<Imgbox src={eatingRice} alt="eatingRice" />*/}
+      {/*<Imgbox src={eatingRice} alt="eatingRice" />*/}
 
       <CafeteriaToggle title={title} setTitle={setTitle} />
       <CafeteriaDate
@@ -37,15 +38,4 @@ export default function CafeteriaTitleContainer({
   );
 }
 
-const CafeteriaTitleWrapper = styled.div`
-  padding: 0 16px 0 16px;
-`;
-
-// const Imgbox = styled.img`
-//   width: 70px;
-//   height: 70px;
-//   position: absolute;
-//   top:130px;
-//   right: 10px;
-//   border-radius: 50%;
-// `
+const CafeteriaTitleWrapper = styled.div``;

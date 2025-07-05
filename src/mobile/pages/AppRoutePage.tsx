@@ -56,6 +56,7 @@ export default function AppRoutePage() {
         <Page>
           <Routes>
             <Route path="/home" element={<MobileHomePage />} />
+            <Route path="/home/notice" element={<MobileTipsPage />} />
             <Route path="/home/tips" element={<MobileTipsPage />} />
             <Route path="/home/menu" element={<MobileMenuPage />} />
             <Route path="/home/calendar" element={<MobileCalendarPage />} />
