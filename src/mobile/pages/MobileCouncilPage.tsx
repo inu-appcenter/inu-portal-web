@@ -9,12 +9,9 @@ import { useState } from "react";
 import useUserStore from "stores/useUserStore";
 import PencilImg from "resources/assets/posts/pencil-white.svg";
 import useReloadKeyStore from "stores/useReloadKeyStore";
-import Title from "mobile/containers/common/MobileTitleHeader.tsx";
-import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 
 export default function MobileCouncilPage() {
   const { userInfo } = useUserStore();
-  const mobileNavigate = useMobileNavigate();
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -36,8 +33,6 @@ export default function MobileCouncilPage() {
 
   return (
     <MobileCouncilPageWrapper>
-      <Title title={"총학생회"} onback={() => mobileNavigate("/home")} />
-
       <MobileCouncilHeader selectedType={type} />
       <Wrapper>
         {type === "notice" && (

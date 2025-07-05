@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import styled from "styled-components";
 import intipLogo from "resources/assets/intip-logo.svg";
 import ProfileImage from "mobile/components/common/ProfileImage";
@@ -6,14 +6,17 @@ import MenuButton from "mobile/components/common/MenuButton";
 import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
 import useUserStore from "stores/useUserStore";
 import useMobileNavigate from "hooks/useMobileNavigate";
+import { useLocation } from "react-router-dom";
 import { ReactSVG } from "react-svg";
 import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundImg.svg";
+import MobileTitleHeader from "./MobileTitleHeader.tsx";
 
 export default function MobileHeader() {
   const { userInfo } = useUserStore();
   const mobileNavigate = useMobileNavigate();
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+  const location = useLocation();
 
   const handleLogoClick = () => {
     mobileNavigate(`/home`);
@@ -23,15 +26,41 @@ export default function MobileHeader() {
     mobileNavigate("/mypage");
   };
 
+  // 경로에 따른 타이틀 정의
+  const pageTitle = useMemo(() => {
+    const path = location.pathname;
+    console.log(path);
+    const pathTitleMap: Record<string, string> = {
+      "/m/home/tips": "TIPS",
+      "/m/home/notice": "학교 공지사항",
+      "/m/home/menu": "식당메뉴",
+      "/m/home/calendar": "학사일정",
+      "/m/home/campus": "캠퍼스",
+      "/m/home/util": "편의",
+      "/m/home/council": "총학생회",
+      "/m/home/club": "동아리",
+      "/m/home/recruitdetail": "동아리 모집 상세",
+      "/m/postdetail": "게시글 상세",
+      "/m/councilnoticedetail": "공지사항 상세",
+      "/m/petitiondetail": "청원 상세",
+      "/m/mypage/profile": "프로필 수정",
+      "/m/mypage/post": "내 게시글",
+      "/m/mypage/like": "좋아요한 글",
+      "/m/mypage/comment": "내 댓글",
+      "/m/mypage/delete": "회원 탈퇴",
+      "/m/login": "로그인",
+    };
+
+    return pathTitleMap[path] || "";
+  }, [location.pathname]);
+
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
 
       if (currentY > lastScrollY.current && currentY > 50) {
-        // 아래로 스크롤
         setShowHeader(false);
       } else {
-        // 위로 스크롤
         setShowHeader(true);
       }
 
@@ -44,30 +73,34 @@ export default function MobileHeader() {
 
   return (
     <MobileHeaderWrapper $visible={showHeader}>
-      <UpperBackground src={UpperBackgroundImg} alt="background" />
-      <ReactSVG onClick={handleLogoClick} src={intipLogo} />
-      <ProfileMenuWrapper>
-        {userInfo.nickname ? (
-          <PostInfo onClick={handleProfileClick}>
-            <ProfileImage fireId={userInfo.fireId} />
-            {userInfo.nickname}
-          </PostInfo>
-        ) : (
-          <LoginNavigateButton />
-        )}
-        <MenuButton />
-      </ProfileMenuWrapper>
+      <MainHeaderWrapper>
+        <UpperBackground src={UpperBackgroundImg} alt="background" />
+        <ReactSVG onClick={handleLogoClick} src={intipLogo} />
+        <ProfileMenuWrapper>
+          {userInfo.nickname ? (
+            <PostInfo onClick={handleProfileClick}>
+              <ProfileImage fireId={userInfo.fireId} />
+              {userInfo.nickname}
+            </PostInfo>
+          ) : (
+            <LoginNavigateButton />
+          )}
+          <MenuButton />
+        </ProfileMenuWrapper>
+      </MainHeaderWrapper>
+
+      {/* title이 존재할 경우에만 헤더 렌더링 */}
+      {pageTitle && <MobileTitleHeader title={pageTitle} />}
     </MobileHeaderWrapper>
   );
 }
-const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
 
-  height: 72px;
-  padding: 0 24px;
+const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
   background: white;
   position: fixed;
   top: 0;
@@ -80,7 +113,19 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
 
   transition: transform 0.3s ease;
   transform: ${({ $visible }) =>
-    $visible ? "translateY(0)" : "translateY(-100%)"};
+    $visible ? "translateY(0)" : "translateY(-72px)"};
+`;
+const MainHeaderWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  box-sizing: border-box;
+
+  height: 72px;
 `;
 
 const UpperBackground = styled.img`

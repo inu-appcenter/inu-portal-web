@@ -27,7 +27,7 @@ export default function CategoryForm() {
     if (title === "식당메뉴") {
       mobileNavigate(`/home/menu`);
     } else if (title === "공지사항") {
-      mobileNavigate(`/home/tips?type=notice`);
+      mobileNavigate(`/home/notice`);
     } else if (title === "TIPS") {
       mobileNavigate(`/home/tips`);
     } else if (title === "학사일정") {
