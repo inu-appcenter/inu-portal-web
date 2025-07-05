@@ -45,7 +45,10 @@ export default function TipsListContainer({
     const scrollableDiv = document.getElementById("scrollableDiv");
     if (scrollableDiv) {
       scrollableDiv.scrollTop = 0;
+    } else {
+      window.scrollTo(0, 0); // 전체 스크롤 기준일 때
     }
+
     setFetchState({
       lastPostId: undefined,
       page: 1,
@@ -54,7 +57,7 @@ export default function TipsListContainer({
     setPosts([]);
     setNotices([]);
     setCouncilNotices([]);
-    setIsInitialLoad(true);
+    setIsInitialLoad(false); // 여기에서 바로 false 처리
     fetchData(undefined, 1);
   }, [query, docType, setPosts, setNotices, setCouncilNotices, category]);
 
@@ -159,7 +162,6 @@ export default function TipsListContainer({
         endMessage={
           <h4 style={{ textAlign: "center" }}>더 이상 게시물이 없습니다.</h4>
         }
-        scrollableTarget="scrollableDiv"
       >
         <TipsCardWrapper $viewMode={viewMode}>
           {posts.map((p, i) => (
@@ -206,7 +208,7 @@ const TipsListContainerWrapper = styled.div<{
           ? "calc(100svh - 72px - 64px - 16px - 32px - 16px - 49px)" // 100% 로 하면 안먹혀서 header, nav, gap, TitleCategorySelectorWrapper, SearchForm 크기 직접 빼주기
           : "calc(100svh - 64px - 16px - 32px - 16px - 49px)" // isAppUrl이 "/app" 이면 nav는 없음
   };
-  overflow-y: auto;
+  //overflow-y: auto;
 `;
 
 const TipsCardWrapper = styled.div<{ $viewMode: "grid" | "list" }>`
