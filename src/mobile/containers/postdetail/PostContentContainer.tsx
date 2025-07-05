@@ -26,6 +26,11 @@ export default function PostContentContainer({
             createDate={ClubRecruit.createDate}
             view={ClubRecruit.view}
             writer={ClubRecruit.writer}
+            like={ClubRecruit.like}
+            isLiked={ClubRecruit.isLiked}
+            scrap={ClubRecruit.scrap}
+            isScraped={ClubRecruit.isScraped}
+            hasAuthority={ClubRecruit.hasAuthority}
           />
           <PostContent
             id={ClubRecruit.id}
