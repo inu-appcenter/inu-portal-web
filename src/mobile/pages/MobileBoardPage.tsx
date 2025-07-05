@@ -7,7 +7,7 @@ import TipsListContainer from "mobile/containers/tips/TipsListContainer";
 import SerachForm from "mobile/containers/home/SerachForm";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 
-export default function MobileTipsPage() {
+export default function MobileBoardPage() {
   const location = useLocation();
   console.log(location.pathname);
 
@@ -18,7 +18,6 @@ export default function MobileTipsPage() {
   let docType = "TIPS";
   if (params.has("search")) {
     docType = "SEARCH";
-    console.log("search모드입니다.");
   } else if (location.pathname === "/m/home/notice") {
     docType = "NOTICE";
   } else if (params.get("type") === "councilNotice") {
@@ -34,26 +33,15 @@ export default function MobileTipsPage() {
           <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
         </ViewModeButtonCategorySelectorWrapper>
       </TitleCategorySelectorWrapper>
-      <div
-        style={{
-          width: "100%",
-          paddingLeft: "16px",
-          paddingRight: "16px",
-          boxSizing: "border-box",
-        }}
-      >
-        {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
-      </div>
+      {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
 
-      <Wrapper>
-        <TipsListContainer
-          key={resetKey}
-          viewMode={viewMode}
-          docType={docType}
-          category={category}
-          query={query}
-        />
-      </Wrapper>
+      <TipsListContainer
+        key={resetKey}
+        viewMode={viewMode}
+        docType={docType}
+        category={category}
+        query={query}
+      />
     </MobileTipsPageWrapper>
   );
 }
@@ -64,6 +52,8 @@ const MobileTipsPageWrapper = styled.div`
   flex: 1; // ← 이거 추가!
   width: 100%;
   gap: 16px;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;
 
 const TitleCategorySelectorWrapper = styled.div`
@@ -80,11 +70,4 @@ const ViewModeButtonCategorySelectorWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-`;
-const Wrapper = styled.div`
-  display: flex;
-  width: 100%;
-  height: 100%;
-  padding: 0 16px;
-  box-sizing: border-box;
 `;

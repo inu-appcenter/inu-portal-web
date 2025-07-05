@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import MobileIntroPage from "mobile/pages/MobileIntroPage";
 import MobileHomePage from "mobile/pages/MobileHomePage";
-import MobileTipsPage from "mobile/pages/MobileTipsPage";
+import MobileBoardPage from "mobile/pages/MobileBoardPage.tsx";
 import MobileSavePage from "mobile/pages/MobileSavePage";
 import MobileWritePage from "mobile/pages/MobileWritePage";
 import MobileLoginPage from "mobile/pages/MobileLoginPage";
@@ -80,8 +80,8 @@ export default function MobileRootPage() {
 
         {/*내비바가 필요없는 서브페이지들*/}
         <Route path="/" element={<SubLayout />}>
-          <Route path="/home/tips" element={<MobileTipsPage />} />
-          <Route path="/home/notice" element={<MobileTipsPage />} />
+          <Route path="/home/tips" element={<MobileBoardPage />} />
+          <Route path="/home/notice" element={<MobileBoardPage />} />
 
           <Route path="/home/menu" element={<MobileMenuPage />} />
           <Route path="/home/calendar" element={<MobileCalendarPage />} />
