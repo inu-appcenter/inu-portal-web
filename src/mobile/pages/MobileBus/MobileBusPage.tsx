@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import MobileBusCardSection from "../../components/mobilebus/MobileBusCardSection.tsx";
 
 // import { useLocation } from "react-router-dom";
 // import useMobileNavigate from "hooks/useMobileNavigate.ts";
@@ -10,14 +11,16 @@ export default function MobileBusPage() {
   //
   // const mobileNavigate = useMobileNavigate();
 
-  return <MobileBusPageWrapper>인입런 페이지입니다.</MobileBusPageWrapper>;
+  return (
+    <MobileBusPageWrapper>
+      <MobileBusCardSection />
+    </MobileBusPageWrapper>
+  );
 }
 
 const MobileBusPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-
   width: 100%;
 `;

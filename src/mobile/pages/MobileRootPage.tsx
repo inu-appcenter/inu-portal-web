@@ -27,7 +27,11 @@ import AiPage from "pages/AiPage";
 import useAppStateStore from "stores/useAppStateStore";
 import MainLayout from "../MainLayout.tsx";
 import SubLayout from "../SubLayout.tsx";
-import MobileBusPage from "./MobileBusPage.tsx";
+import MobileBusPage from "./MobileBus/MobileBusPage.tsx";
+
+import MobileBusSchoolPage from "mobile/pages/MobileBus/MobileBusSchoolPage";
+import MobileBusHomePage from "mobile/pages/MobileBus/MobileBusHomePage";
+import MobileBusShuttlePage from "mobile/pages/MobileBus/MobileBusShuttlePage";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -110,6 +114,11 @@ export default function MobileRootPage() {
           <Route path="/mypage/comment" element={<MobileMyPageComment />} />
           <Route path="/mypage/delete" element={<MobileDeletePage />} />
           <Route path="/login" element={<MobileLoginPage />} />
+          {/*인입런 페이지 추가*/}
+          <Route path="/bus" element={<MobileBusPage />} />
+          <Route path="/bus/go-school" element={<MobileBusSchoolPage />} />
+          <Route path="/bus/go-home" element={<MobileBusHomePage />} />
+          <Route path="/bus/shuttle" element={<MobileBusShuttlePage />} />
         </Route>
       </Routes>
 
