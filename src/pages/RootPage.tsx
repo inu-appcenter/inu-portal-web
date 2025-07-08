@@ -5,6 +5,7 @@ import IntroPage from "pages/IntroPage";
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
+import RouteRedirector from "../components/common/RouteRedirector.tsx";
 
 export default function RootPage() {
   const [showIntro, setShowIntro] = useState(true);
@@ -28,6 +29,7 @@ export default function RootPage() {
 
   return (
     <RootPageWrapper>
+      <RouteRedirector />
       <Header />
       <Nav />
       <main style={{ minHeight: 1024 }}>
