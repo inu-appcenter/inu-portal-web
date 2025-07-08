@@ -29,9 +29,9 @@ import MainLayout from "../MainLayout.tsx";
 import SubLayout from "../SubLayout.tsx";
 import MobileBusPage from "./MobileBus/MobileBusPage.tsx";
 
-import MobileBusSchoolPage from "mobile/pages/MobileBus/MobileBusSchoolPage";
-import MobileBusHomePage from "mobile/pages/MobileBus/MobileBusHomePage";
-import MobileBusShuttlePage from "mobile/pages/MobileBus/MobileBusShuttlePage";
+import MobileBusInfoPage from "mobile/pages/MobileBus/MobileBusInfoPage.tsx";
+import MobileBusDetailPage from "mobile/pages/MobileBus/MobileBusDetailPage.tsx";
+import MobileBusStationPage from "mobile/pages/MobileBus/MobileBusStationPage.tsx";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -114,11 +114,10 @@ export default function MobileRootPage() {
           <Route path="/mypage/comment" element={<MobileMyPageComment />} />
           <Route path="/mypage/delete" element={<MobileDeletePage />} />
           <Route path="/login" element={<MobileLoginPage />} />
-          {/*인입런 페이지 추가*/}
-          <Route path="/bus" element={<MobileBusPage />} />
-          <Route path="/bus/go-school" element={<MobileBusSchoolPage />} />
-          <Route path="/bus/go-home" element={<MobileBusHomePage />} />
-          <Route path="/bus/shuttle" element={<MobileBusShuttlePage />} />
+
+          <Route path="/bus/info" element={<MobileBusInfoPage />} />
+          <Route path="/bus/busdetail" element={<MobileBusDetailPage />} />
+          <Route path="/bus/stopinfo" element={<MobileBusStationPage />} />
         </Route>
       </Routes>
 

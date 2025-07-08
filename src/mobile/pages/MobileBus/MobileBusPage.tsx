@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import MobileBusCardSection from "../../components/mobilebus/MobileBusCardSection.tsx";
+import BusCardSection from "../../components/bus/BusCardSection.tsx";
 
 // import { useLocation } from "react-router-dom";
 // import useMobileNavigate from "hooks/useMobileNavigate.ts";
@@ -13,7 +13,7 @@ export default function MobileBusPage() {
 
   return (
     <MobileBusPageWrapper>
-      <MobileBusCardSection />
+      <BusCardSection />
     </MobileBusPageWrapper>
   );
 }
