@@ -12,3 +12,12 @@ export interface BusData {
   route: string;
   arrivalInfo: ArrivalInfo[];
 }
+
+export interface StationData {
+  id: string;
+  stopName: string;
+  sectionName: string;
+  stopDescription: string;
+  mapImage: string;
+  busList: string[];
+}

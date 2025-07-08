@@ -4,7 +4,7 @@ import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
   goHome_MainOut,
   goHome_MainIn,
-} from "mobile/components/bus/busdummy.ts";
+} from "mobile/components/bus/BusDummy.ts";
 
 export default function GoHomeMain() {
   return (
@@ -24,5 +24,10 @@ export default function GoHomeMain() {
 }
 
 const PageWrapper = styled.div`
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;

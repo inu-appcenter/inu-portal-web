@@ -2,7 +2,7 @@ import styled from "styled-components";
 import SectionLabel from "mobile/components/bus/SectionLabel";
 import InfoIcon from "mobile/components/bus/InfoIcon";
 import BusItem from "mobile/components/bus/BusItem";
-import { BusData } from "types/buses.ts";
+import { BusData } from "types/bus.ts";
 
 interface Props {
   sectionName: string;
@@ -41,6 +41,7 @@ const BusStopBoxWrapper = styled.div`
   border: 1px solid #7aa7e5;
   margin-bottom: 12px;
   border-radius: 10px;
+  box-sizing: border-box;
 `;
 
 const BusStopBoxHeader = styled.div`

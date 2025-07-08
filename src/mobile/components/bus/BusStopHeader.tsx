@@ -26,8 +26,12 @@ export default function BusStopHeader({
 }
 
 const BusStopHeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
-  padding: 16px;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;
 
 const TopWrapper = styled.div`

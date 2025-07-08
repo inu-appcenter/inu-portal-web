@@ -4,7 +4,7 @@ import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
   goSchool_INUExit1,
   goSchool_INUExit2,
-} from "mobile/components/bus/busdummy.ts";
+} from "mobile/components/bus/BusDummy.ts";
 //import { mobileNavigate } from "hooks/useMobileNavigate";
 
 export default function GoSchoolINU() {
@@ -30,5 +30,10 @@ export default function GoSchoolINU() {
 }
 
 const PageWrapper = styled.div`
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;
