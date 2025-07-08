@@ -2,9 +2,9 @@ import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
-  goHome_Science_INU,
-  goHome_Science_BIT,
-} from "mobile/components/bus/busdummy.ts";
+  goHome_Nature_INU,
+  goHome_Nature_BIT,
+} from "mobile/components/bus/BusDummy.ts";
 import BusCircleBox from "mobile/components/bus/BusCircleBox.tsx";
 
 export default function GoHomeScience() {
@@ -17,9 +17,9 @@ export default function GoHomeScience() {
       />
       <BusStopBox
         sectionName="인천대입구 1번출구"
-        busList={goHome_Science_INU}
+        busList={goHome_Nature_INU}
       />
-      <BusStopBox sectionName="지식정보단지역행" busList={goHome_Science_BIT} />
+      <BusStopBox sectionName="지식정보단지역행" busList={goHome_Nature_BIT} />
       <BusStopHeader
         stopName="인천대 공과대학"
         stopNotice={`※ 도착 정보가 표시되지 않을 수 있습니다.`}
@@ -30,5 +30,10 @@ export default function GoHomeScience() {
 }
 
 const PageWrapper = styled.div`
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;

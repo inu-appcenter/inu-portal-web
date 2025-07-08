@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
-import { goHome_Dorm } from "mobile/components/bus/busdummy.ts";
+import { goHome_Dorm } from "mobile/components/bus/BusDummy.ts";
 
 export default function GoHomeDorm() {
   return (
@@ -16,5 +16,10 @@ export default function GoHomeDorm() {
 }
 
 const PageWrapper = styled.div`
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;

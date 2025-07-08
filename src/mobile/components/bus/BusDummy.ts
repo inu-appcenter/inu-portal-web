@@ -1,4 +1,4 @@
-import type { BusData, ArrivalInfo } from "types/buses";
+import type { BusData, ArrivalInfo } from "types/bus.ts";
 
 export const goSchool_INUExit2: BusData[] = [
   {
@@ -233,23 +233,9 @@ export const goHome_Dorm: BusData[] = [
   },
 ];
 
-export const goHome_Science_INU: BusData[] = [
+export const goHome_Nature_INU: BusData[] = [
   {
     id: 1,
-    number: "셔틀",
-    route: "송도캠 → 공대 → 정문 → 인입",
-    arrivalInfo: [
-      {
-        time: "18:00, 18:15, 18:30",
-        station: "3회 운영",
-      },
-      {
-        time: "송도캠 기준",
-      },
-    ],
-  },
-  {
-    id: 2,
     number: "8",
     route: "공대 → 자연대 → 정문 → 인입",
     arrivalInfo: [
@@ -267,7 +253,7 @@ export const goHome_Science_INU: BusData[] = [
   },
 ];
 
-export const goHome_Science_BIT: BusData[] = [
+export const goHome_Nature_BIT: BusData[] = [
   {
     id: 1,
     number: "6-1",

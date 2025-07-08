@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { BusData } from "types/buses.ts";
+import { BusData } from "types/bus.ts";
 import BusCircle from "./BusCircle.tsx";
 
 interface Props extends BusData {}
