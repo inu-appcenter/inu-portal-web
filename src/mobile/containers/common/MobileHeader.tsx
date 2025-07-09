@@ -50,6 +50,7 @@ export default function MobileHeader() {
       "/m/mypage/comment": "내 댓글",
       "/m/mypage/delete": "회원 탈퇴",
       "/m/login": "로그인",
+      "/m/bus/info": "버스 정보",
     };
 
     return pathTitleMap[path] || "";
