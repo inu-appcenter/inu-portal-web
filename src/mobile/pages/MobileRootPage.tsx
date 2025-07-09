@@ -31,7 +31,7 @@ import MobileBusPage from "./MobileBus/MobileBusPage.tsx";
 
 import MobileBusInfoPage from "mobile/pages/MobileBus/MobileBusInfoPage.tsx";
 import MobileBusDetailPage from "mobile/pages/MobileBus/MobileBusDetailPage.tsx";
-import MobileBusStationPage from "mobile/pages/MobileBus/MobileBusStationPage.tsx";
+import MobileBusStopPage from "mobile/pages/MobileBus/MobileBusStopPage.tsx";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -117,7 +117,7 @@ export default function MobileRootPage() {
 
           <Route path="/bus/info" element={<MobileBusInfoPage />} />
           <Route path="/bus/busdetail" element={<MobileBusDetailPage />} />
-          <Route path="/bus/stopinfo" element={<MobileBusStationPage />} />
+          <Route path="/bus/stopinfo" element={<MobileBusStopPage />} />
         </Route>
       </Routes>
 
