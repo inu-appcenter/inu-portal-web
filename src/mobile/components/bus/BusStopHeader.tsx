@@ -1,12 +1,8 @@
 import styled from "styled-components";
 import InfoIcon from "mobile/components/bus/InfoIcon";
+import { BusStopHeaderProps } from "types/bus.ts";
 
-interface Props {
-  stopName: string;
-  stopNotice: string;
-  onClickStopInfo?: () => void;
-  showInfoIcon?: boolean;
-}
+interface Props extends BusStopHeaderProps {}
 
 export default function BusStopHeader({
   stopName,

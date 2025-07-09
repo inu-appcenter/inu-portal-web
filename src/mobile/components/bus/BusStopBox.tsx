@@ -2,14 +2,9 @@ import styled from "styled-components";
 import SectionLabel from "mobile/components/bus/SectionLabel";
 import InfoIcon from "mobile/components/bus/InfoIcon";
 import BusItem from "mobile/components/bus/BusItem";
-import { BusData } from "types/bus.ts";
+import { BusStopBoxProps } from "types/bus.ts";
 
-interface Props {
-  sectionName: string;
-  onClickInfo?: () => void;
-  showInfoIcon?: boolean;
-  busList: BusData[];
-}
+interface Props extends BusStopBoxProps {}
 
 export default function BusStopBox({
   sectionName,

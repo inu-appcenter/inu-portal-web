@@ -51,6 +51,7 @@ export default function MobileHeader() {
       "/m/mypage/delete": "회원 탈퇴",
       "/m/login": "로그인",
       "/m/bus/info": "버스 정보",
+      "/m/bus/stopinfo": "정류장 상세 정보",
     };
 
     return pathTitleMap[path] || "";
