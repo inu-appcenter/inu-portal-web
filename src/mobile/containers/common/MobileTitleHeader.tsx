@@ -28,7 +28,11 @@ export default function MobileTitleHeader({
     const shouldGoHome =
       specialPaths.includes(location.pathname) && [...params].length > 0;
 
-    if (shouldGoHome) {
+    const isBusInfoPage = location.pathname.includes("/m/bus/info");
+
+    if (isBusInfoPage) {
+      mobileNavigate("/bus");
+    } else if (shouldGoHome) {
       mobileNavigate("/home");
     } else {
       mobileNavigate(-1);
