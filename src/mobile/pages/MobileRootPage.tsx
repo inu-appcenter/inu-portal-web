@@ -116,7 +116,7 @@ export default function MobileRootPage() {
           <Route path="/login" element={<MobileLoginPage />} />
 
           <Route path="/bus/info" element={<MobileBusInfoPage />} />
-          <Route path="/bus/busdetail" element={<MobileBusDetailPage />} />
+          <Route path="/bus/detail" element={<MobileBusDetailPage />} />
           <Route path="/bus/stopinfo" element={<MobileBusStopPage />} />
         </Route>
       </Routes>

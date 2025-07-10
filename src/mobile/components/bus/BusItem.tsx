@@ -2,11 +2,20 @@ import styled from "styled-components";
 import { BusData } from "types/bus.ts";
 import BusCircle from "./BusCircle.tsx";
 
-interface Props extends BusData {}
+interface Props extends BusData {
+  onClick?: () => void;
+  showArrow?: boolean;
+}
 
-export default function BusItem({ number, route, arrivalInfo }: Props) {
+export default function BusItem({
+  number,
+  route,
+  arrivalInfo,
+  onClick,
+  showArrow = true,
+}: Props) {
   return (
-    <BusCardWrapper>
+    <BusCardWrapper onClick={onClick}>
       <TopSection>
         <RouteText>{route}</RouteText>
       </TopSection>
@@ -27,7 +36,7 @@ export default function BusItem({ number, route, arrivalInfo }: Props) {
             </ArrivalWrapper>
           ))}
         </TimeInfo>
-        <Arrow>{">"}</Arrow>
+        {showArrow && <Arrow>{">"}</Arrow>}
       </MainSection>
     </BusCardWrapper>
   );
@@ -40,6 +49,7 @@ const BusCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+  cursor: pointer;
 `;
 
 const TopSection = styled.div``;
@@ -91,5 +101,4 @@ const Arrow = styled.span`
   font-size: 20px;
   color: #3b566e;
   margin-left: auto;
-  cursor: pointer;
 `;

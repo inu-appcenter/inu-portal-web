@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import BusStopHeader from "../../components/bus/BusStopHeader.tsx";
 import SectionLabel from "../../components/bus/SectionLabel.tsx";
-import StopImg from "../../components/bus/station/StopImg.tsx";
+import StopImg from "../../components/bus/StopImg.tsx";
 import BusCircleBox from "../../components/bus/BusCircleBox.tsx";
 
 import { useLocation } from "react-router-dom";
