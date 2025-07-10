@@ -22,6 +22,12 @@ export interface BusStopData {
   busList: string[];
 }
 
+export interface BusDetailProps {
+  number: string;
+  busNotice: string;
+  routeImg: string;
+}
+
 export interface BusStopBoxProps {
   sectionName: string;
   onClickInfo?: () => void;

@@ -3,6 +3,7 @@ import SectionLabel from "mobile/components/bus/SectionLabel";
 import InfoIcon from "mobile/components/bus/InfoIcon";
 import BusItem from "mobile/components/bus/BusItem";
 import { BusStopBoxProps } from "types/bus.ts";
+import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 
 interface Props extends BusStopBoxProps {}
 
@@ -12,6 +13,7 @@ export default function BusStopBox({
   busList,
   showInfoIcon = false, //기본값
 }: Props) {
+  const mobileNavigate = useMobileNavigate();
   return (
     <BusStopBoxWrapper>
       <BusStopBoxHeader>
@@ -23,7 +25,11 @@ export default function BusStopBox({
 
       <BusList>
         {busList.map((bus) => (
-          <BusItem key={bus.id} {...bus} />
+          <BusItem
+            key={bus.id}
+            {...bus}
+            onClick={() => mobileNavigate(`/bus/detail?number=${bus.number}`)}
+          />
         ))}
       </BusList>
     </BusStopBoxWrapper>
