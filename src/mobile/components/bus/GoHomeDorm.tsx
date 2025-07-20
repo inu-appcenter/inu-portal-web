@@ -13,7 +13,11 @@ export default function GoHomeDorm() {
         stopNotice="※ 배차간격이 길어요"
         onClickStopInfo={() => mobileBusStopNavigate("go-home-dorm")}
       />
-      <BusStopBox sectionName="인천대입구 1번출구 " busList={goHome_Dorm} />
+      <BusStopBox
+        sectionName="인천대입구 1번출구 "
+        busList={goHome_Dorm}
+        bstopId={"164000751"}
+      />
     </PageWrapper>
   );
 }

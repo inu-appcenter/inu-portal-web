@@ -25,14 +25,16 @@ export default function BusItem({
           isGreen={number === "41" || number === "46"}
         />
         <TimeInfo>
-          {arrivalInfo.map((info, index) => (
+          {arrivalInfo?.map((info, index) => (
             <ArrivalWrapper key={index}>
               <MainTime>{info.time}</MainTime>
-              <LabelWrapper>
-                <StatusInfo>
-                  {info.station} {info.status}
-                </StatusInfo>
-              </LabelWrapper>
+              {(info.status || info.station) && (
+                <LabelWrapper>
+                  <StatusInfo>
+                    {info.station ?? ""} {info.status ?? ""}
+                  </StatusInfo>
+                </LabelWrapper>
+              )}
             </ArrivalWrapper>
           ))}
         </TimeInfo>

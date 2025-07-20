@@ -19,12 +19,14 @@ export default function GoSchoolINU() {
       <BusStopBox
         sectionName="2번출구"
         busList={goSchool_INUExit2}
+        bstopId={"164000395"}
         showInfoIcon
         onClickInfo={() => mobileBusStopNavigate("go-school-INU2")}
       />
       <BusStopBox
         sectionName="1번출구"
         busList={goSchool_INUExit1}
+        bstopId={"164000396"}
         showInfoIcon
         onClickInfo={() => mobileBusStopNavigate("go-school-INU1")}
       />

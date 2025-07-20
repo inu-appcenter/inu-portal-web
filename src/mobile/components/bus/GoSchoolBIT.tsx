@@ -13,7 +13,11 @@ export default function GoSchoolBIT() {
         stopNotice="※ 엘리베이터로 이동하면 더 쉽게 찾을 수 있어요 !"
         onClickStopInfo={() => mobileBusStopNavigate("go-school-BIT3")}
       />
-      <BusStopBox sectionName="3번출구" busList={goSchool_BITExit3} />
+      <BusStopBox
+        sectionName="3번출구"
+        busList={goSchool_BITExit3}
+        bstopId={"164000403"}
+      />
     </PageWrapper>
   );
 }

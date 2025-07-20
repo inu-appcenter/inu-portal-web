@@ -16,13 +16,21 @@ export default function GoHomeMain() {
         stopNotice="⚠️ 오후 4시~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요."
         onClickStopInfo={() => mobileBusStopNavigate("go-home-main-out")}
       />
-      <BusStopBox sectionName="인천대입구 1번출구" busList={goHome_MainOut} />
+      <BusStopBox
+        sectionName="인천대입구 1번출구"
+        busList={goHome_MainOut}
+        bstopId={"164000385"}
+      />
       <BusStopHeader
         stopName="인천대 정문"
         stopNotice="※ 정류장 위치를 꼭 확인하세요! "
         onClickStopInfo={() => mobileBusStopNavigate("go-home-main-in")}
       />
-      <BusStopBox sectionName="인천대입구 1번출구" busList={goHome_MainIn} />
+      <BusStopBox
+        sectionName="인천대입구 1번출구"
+        busList={goHome_MainIn}
+        bstopId={"164000386"}
+      />
     </PageWrapper>
   );
 }
