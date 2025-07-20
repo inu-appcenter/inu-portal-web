@@ -1,19 +1,24 @@
 import styled from "styled-components";
 import InfoIcon from "mobile/components/bus/InfoIcon";
 import { BusStopHeaderProps } from "types/bus.ts";
+import SectionLabel from "mobile/components/bus/SectionLabel";
 
-interface Props extends BusStopHeaderProps {}
+interface Props extends BusStopHeaderProps {
+  sectionLabel?: string;
+}
 
 export default function BusStopHeader({
   stopName,
   stopNotice,
   onClickStopInfo,
   showInfoIcon = true,
+  sectionLabel,
 }: Props) {
   return (
     <BusStopHeaderWrapper>
       <TopWrapper>
         <StopName>{stopName}</StopName>
+        {sectionLabel && <SectionLabel text={sectionLabel} />}
         {showInfoIcon && <InfoIcon onClick={onClickStopInfo} />}
       </TopWrapper>
       <Notice>{stopNotice}</Notice>

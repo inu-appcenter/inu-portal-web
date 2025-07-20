@@ -21,6 +21,7 @@ export interface BusStopData {
   stopNotice?: string;
   stopImg: string[];
   busList: string[];
+  sectionLabel?: string;
 }
 
 export interface BusDetailProps {

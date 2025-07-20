@@ -22,6 +22,7 @@ export default function MobileBusStopPage() {
             stopName={stop.stopName}
             stopNotice={stop.stopNotice ?? ""}
             showInfoIcon={false}
+            sectionLabel={stop.sectionLabel}
           />
 
           <ImageSection>

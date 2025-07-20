@@ -13,7 +13,7 @@ export default function GoHomeMain() {
     <PageWrapper>
       <BusStopHeader
         stopName="인천대 정문 (길 건너서)"
-        stopNotice="⚠️ 오후 4시~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요."
+        stopNotice="※ 오후 4시~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요."
         onClickStopInfo={() => mobileBusStopNavigate("go-home-main-out")}
       />
       <BusStopBox
