@@ -10,7 +10,8 @@ export interface BusData {
   id: number;
   number: string;
   route: string;
-  arrivalInfo: ArrivalInfo[];
+  arrivalInfo?: ArrivalInfo[];
+  routeId?: string;
 }
 
 //정류장 상세 정보 (더미데이터)

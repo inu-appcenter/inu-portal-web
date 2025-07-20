@@ -21,8 +21,13 @@ export default function GoHomeScience() {
       <BusStopBox
         sectionName="인천대입구 1번출구"
         busList={goHome_Nature_INU}
+        bstopId={"164000378"}
       />
-      <BusStopBox sectionName="지식정보단지역행" busList={goHome_Nature_BIT} />
+      <BusStopBox
+        sectionName="지식정보단지역행"
+        busList={goHome_Nature_BIT}
+        bstopId={"164000378"}
+      />
       <BusStopHeader
         stopName="인천대 공과대학"
         stopNotice={`※ 도착 정보가 표시되지 않을 수 있습니다.`}
