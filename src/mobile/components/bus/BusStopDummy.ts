@@ -3,7 +3,8 @@ import { BusStopData } from "types/bus";
 export const BusStopDummy: BusStopData[] = [
   {
     id: "go-school-INU2",
-    stopName: "인천대입구역 (2번출구)",
+    stopName: "인천대입구역",
+    sectionLabel: "2번 출구",
     stopNotice:
       " 계단을 통해야 줄서기 가능. \n정류장에 차양막과 여름철 안개 분사 장치가 있어 \n대기 중에도 쾌적함.",
     stopImg: ["/Bus/go-school-INU2.svg", "/Bus/go-school-INU2.svg"],
@@ -11,7 +12,8 @@ export const BusStopDummy: BusStopData[] = [
   },
   {
     id: "go-school-INU1",
-    stopName: "인천대입구역 (1번출구)",
+    stopName: "인천대입구역",
+    sectionLabel: "1번 출구",
     stopNotice:
       "에스컬레이터가 있어 접근이 편리함. 버스 \n헷갈리지 않도록 주의.",
     stopImg: ["/Bus/go-school-INU2.svg"],
@@ -19,7 +21,8 @@ export const BusStopDummy: BusStopData[] = [
   },
   {
     id: "go-school-BIT3",
-    stopName: "지식정보단지역 (3번출구)",
+    stopName: "지식정보단지역",
+    sectionLabel: "3번 출구",
     stopNotice:
       "엘리베이터를 통해 나가는 것을 추천. \n정류장은 에어컨과 폰 충전이 가능한 최신식 시설",
     stopImg: ["/Bus/go-school-INU2.svg"],
@@ -27,7 +30,8 @@ export const BusStopDummy: BusStopData[] = [
   },
   {
     id: "go-home-main-out",
-    stopName: "인천대 정문(길 건너)",
+    stopName: "인천대 정문",
+    sectionLabel: "길 건너",
     stopNotice: "항상 이용객이 많으며, 정차하지 않고 지나치는 경우 있음.",
     stopImg: ["/Bus/go-school-INU2.svg"],
     busList: ["셔틀", "8", "16", "58"],
@@ -56,7 +60,8 @@ export const BusStopDummy: BusStopData[] = [
   },
   {
     id: "go-home-dorm",
-    stopName: "인천대 송도캠퍼스(기숙사 앞)",
+    stopName: "인천대 송도캠퍼스",
+    sectionLabel: "기숙사 앞",
     stopNotice: "암벽장 앞에 위치.",
     stopImg: ["/Bus/go-school-INU2.svg"],
     busList: ["셔틀", "41", "46"],

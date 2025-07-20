@@ -14,7 +14,7 @@ export default function GoHomeScience() {
     <PageWrapper>
       <BusStopHeader
         stopName="인천대 자연과학대학"
-        stopNotice={`⚠️ 오후 5시~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요.
+        stopNotice={`※ 오후 5시~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요.
       \n공과대학 정류장을 이용하는걸 추천해요.`}
         onClickStopInfo={() => mobileBusStopNavigate("go-home-science")}
       />
