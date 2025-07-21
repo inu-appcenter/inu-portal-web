@@ -11,17 +11,19 @@ export default function BusInfoPage() {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const type = query.get("type") || "go-school";
+  const tab = query.get("tab");
+  //디폴트 탭
+  const defaultTab = type === "go-school" ? "INU" : "main";
+  const selectedTab = tab ?? defaultTab;
 
   return (
     <BusInfoPageWrapper>
       <BusTabHeader Type={type} />
-      {type === "go-school" && query.get("tab") === "INU" && <GoSchoolINU />}
-      {type === "go-school" && query.get("tab") === "BIT" && <GoSchoolBIT />}
-      {type === "go-home" && query.get("tab") === "main" && <GoHomeMain />}
-      {type === "go-home" && query.get("tab") === "science" && (
-        <GoHomeScience />
-      )}
-      {type === "go-home" && query.get("tab") === "dorm" && <GoHomeDorm />}
+      {type === "go-school" && selectedTab === "INU" && <GoSchoolINU />}
+      {type === "go-school" && selectedTab === "BIT" && <GoSchoolBIT />}
+      {type === "go-home" && selectedTab === "main" && <GoHomeMain />}
+      {type === "go-home" && selectedTab === "science" && <GoHomeScience />}
+      {type === "go-home" && selectedTab === "dorm" && <GoHomeDorm />}
     </BusInfoPageWrapper>
   );
 }
