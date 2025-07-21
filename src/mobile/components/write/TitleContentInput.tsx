@@ -54,7 +54,7 @@ const Line = styled.div`
 
 const ContentTextarea = styled.textarea`
   margin: 8px;
-  height: 200px;
+  height: 300px;
   //flex: 1;
   border: none;
   font-size: 16px;
