@@ -21,11 +21,12 @@ const HomeTab = [
 export default function BusTabHeader({ Type }: Props) {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-  const selectedTab =
-    query.get("tab") || (Type === "go-school" ? "INU" : "main");
-
+  const tab = query.get("tab");
   const tabList = Type === "go-school" ? SchoolTab : HomeTab;
+  const defaultTab = tabList[0].type;
   const mobileNavigate = useMobileNavigate();
+
+  const selectedTab = tab ?? defaultTab;
 
   return (
     <BusTabHeaderWrapper>

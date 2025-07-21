@@ -5,9 +5,10 @@ import {
   goSchool_INUExit1,
   goSchool_INUExit2,
 } from "mobile/components/bus/BusDummy.ts";
-//import { mobileNavigate } from "hooks/useMobileNavigate";
+import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 
 export default function GoSchoolINU() {
+  const mobileBusStopNavigate = useBusStopNavigate();
   return (
     <PageWrapper>
       <BusStopHeader
@@ -18,12 +19,16 @@ export default function GoSchoolINU() {
       <BusStopBox
         sectionName="2번출구"
         busList={goSchool_INUExit2}
-        showInfoIcon={true}
+        bstopId={"164000395"}
+        showInfoIcon
+        onClickInfo={() => mobileBusStopNavigate("go-school-INU2")}
       />
       <BusStopBox
         sectionName="1번출구"
         busList={goSchool_INUExit1}
-        showInfoIcon={true}
+        bstopId={"164000396"}
+        showInfoIcon
+        onClickInfo={() => mobileBusStopNavigate("go-school-INU1")}
       />
     </PageWrapper>
   );
