@@ -1,9 +1,10 @@
 import styled from "styled-components";
+import 부천송내시간표 from "resources/assets/bus/부천송내시간표.jpeg";
 
 const BucheonShuttle = () => {
   return (
     <Wrapper>
-      <img src={"/public/Bus/부천송내시간표.jpeg"} />
+      <img src={부천송내시간표} />
     </Wrapper>
   );
 };
