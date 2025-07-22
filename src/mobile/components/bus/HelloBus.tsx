@@ -173,6 +173,7 @@ const Section = styled.div`
     display: flex;
     align-items: center;
     gap: 8px;
+    //width: fit-content;
 
     img {
       height: 14px;
@@ -180,6 +181,7 @@ const Section = styled.div`
 
     span {
       padding-top: 2px;
+      min-width: fit-content;
     }
   }
 `;
@@ -204,6 +206,8 @@ const ImageSlider = styled.div`
   overflow-x: auto;
   gap: 10px;
   padding: 10px 20px;
+  width: 100%;
+  box-sizing: border-box;
 
   img {
     flex: 0 0 auto;

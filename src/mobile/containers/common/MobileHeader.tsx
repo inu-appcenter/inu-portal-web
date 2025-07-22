@@ -36,7 +36,7 @@ export default function MobileHeader() {
       "/m/home/notice": "학교 공지사항",
       "/m/home/menu": "식당메뉴",
       "/m/home/calendar": "학사일정",
-      "/m/home/campus": "캠퍼스",
+      "/m/home/campus": "캠퍼스맵",
       "/m/home/util": "편의",
       "/m/home/council": "총학생회",
       "/m/home/club": "동아리",
@@ -53,6 +53,8 @@ export default function MobileHeader() {
       "/m/bus/info": "버스 정보",
       "/m/bus/detail": "버스 상세 정보",
       "/m/bus/stopinfo": "정류장 상세 정보",
+      "/m/bus/shuttle/hellobus": "헬로버스",
+      "/m/bus/shuttle": "셔틀버스 노선 정보",
     };
 
     return pathTitleMap[path] || "";

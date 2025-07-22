@@ -1,41 +1,25 @@
 import styled from "styled-components";
-import { useLocation } from "react-router-dom";
-
-import MobileCampusHeader from "../components/map/MobileCampusHeader.tsx";
-import HelloBus from "../components/council/HelloBus.tsx";
 import MapManager from "components/map/MapManager.tsx";
 
 export default function MobileCampusPage() {
-  const location = useLocation();
-
-  const params = new URLSearchParams(location.search);
-  let type = params.get("type") || "campusmap";
-
   return (
-    <MobileTipsPageWrapper>
-      <MobileCampusHeader selectedType={type} />
+    <MobileCampusPageWrapper>
       <Wrapper>
-        {type === "campusmap" && (
-          <>
-            <MapManager />
-          </>
-        )}
-        {type === "HelloBus" && (
-          <>
-            <HelloBus />
-          </>
-        )}
+        <MapManager />
       </Wrapper>
-    </MobileTipsPageWrapper>
+    </MobileCampusPageWrapper>
   );
 }
 
-const MobileTipsPageWrapper = styled.div`
+const MobileCampusPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   width: 100dvw;
+
+  padding-top: 16px;
+  box-sizing: border-box;
 `;
 
 const Wrapper = styled.div`

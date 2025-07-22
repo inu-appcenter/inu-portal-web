@@ -1,16 +1,7 @@
 import styled from "styled-components";
 import BusCardSection from "../../components/bus/BusCardSection.tsx";
 
-// import { useLocation } from "react-router-dom";
-// import useMobileNavigate from "hooks/useMobileNavigate.ts";
-// import useUserStore from "../../stores/useUserStore.ts";
-
 export default function MobileBusPage() {
-  // const location = useLocation();
-  // const { userInfo } = useUserStore();
-  //
-  // const mobileNavigate = useMobileNavigate();
-
   return (
     <MobileBusPageWrapper>
       <BusCardSection />
@@ -23,4 +14,7 @@ const MobileBusPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   width: 100%;
+
+  padding-top: 32px;
+  box-sizing: border-box;
 `;

@@ -18,11 +18,22 @@ const HomeTab = [
   { type: "dorm", label: "기숙사 앞" },
 ];
 
+const ShuttleTab = [
+  { type: "michuholShuttle", label: "사범대 셔틀" },
+  { type: "subwayShuttle", label: "인천대입구 셔틀" },
+  { type: "schoolShuttle", label: "통학 셔틀" },
+];
+
 export default function BusTabHeader({ Type }: Props) {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const tab = query.get("tab");
-  const tabList = Type === "go-school" ? SchoolTab : HomeTab;
+  const tabList =
+    Type === "go-school"
+      ? SchoolTab
+      : Type === "go-home"
+        ? HomeTab
+        : ShuttleTab;
   const defaultTab = tabList[0].type;
   const mobileNavigate = useMobileNavigate();
 
