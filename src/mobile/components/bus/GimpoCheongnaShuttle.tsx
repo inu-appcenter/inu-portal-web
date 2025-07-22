@@ -1,9 +1,10 @@
 import styled from "styled-components";
+import 김포청라시간표 from "resources/assets/bus/김포청라시간표.jpeg";
 
 const GimpoCheongnaShuttle = () => {
   return (
     <Wrapper>
-      <img src={"/public/Bus/김포청라시간표.jpeg"} />
+      <img src={김포청라시간표} />
     </Wrapper>
   );
 };
