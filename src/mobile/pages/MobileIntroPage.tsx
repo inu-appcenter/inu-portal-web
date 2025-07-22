@@ -30,8 +30,8 @@ const IntroPageWrapper = styled.div`
   justify-content: space-around;
   z-index: 100;
 
-  animation: ${fadeOut} 3s ease forwards;
-  animation-delay: 1s;
+  animation: ${fadeOut} 1s ease forwards;
+  animation-delay: 0.5s;
 `;
 
 const IntroImage = styled.img`
