@@ -34,6 +34,7 @@ const NavItemWrapper = styled.div`
   align-items: center;
   justify-content: center;
   padding: 8px;
+  width: 55px;
 `;
 
 const Icon = styled.img`
