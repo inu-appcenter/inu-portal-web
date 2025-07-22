@@ -1,9 +1,11 @@
 import styled from "styled-components";
 
+import 안산시흥시간표 from "resources/assets/bus/안산시흥시간표.jpeg";
+
 const AnsanSiheungShuttle = () => {
   return (
     <Wrapper>
-      <img src={"/public/Bus/안산시흥시간표.jpeg"} />
+      <img src={안산시흥시간표} />
     </Wrapper>
   );
 };
