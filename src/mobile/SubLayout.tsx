@@ -30,7 +30,7 @@ const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 140px;
+  padding-top: 126px;
 
   //padding-bottom: 72px;
   overflow-y: hidden;

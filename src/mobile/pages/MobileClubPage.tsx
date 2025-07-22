@@ -109,6 +109,10 @@ const MobileClubPageWrapper = styled.div`
   align-items: center;
   gap: 16px;
 
+  padding-top: 16px;
+  padding-bottom: 32px;
+  box-sizing: border-box;
+
   width: 100%;
 
   .upload-button {

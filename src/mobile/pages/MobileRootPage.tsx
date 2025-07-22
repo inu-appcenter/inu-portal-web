@@ -32,6 +32,8 @@ import MobileBusPage from "./MobileBus/MobileBusPage.tsx";
 import MobileBusInfoPage from "mobile/pages/MobileBus/MobileBusInfoPage.tsx";
 import MobileBusDetailPage from "mobile/pages/MobileBus/MobileBusDetailPage.tsx";
 import MobileBusStopPage from "mobile/pages/MobileBus/MobileBusStopPage.tsx";
+import MobileBusShuttleHelloBusPage from "./MobileBus/MobileBusShuttleHelloBusPage.tsx";
+import MobileBusShuttleRouteInfoPage from "./MobileBus/MobileBusShuttleRouteInfoPage.tsx";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -118,6 +120,14 @@ export default function MobileRootPage() {
           <Route path="/bus/info" element={<MobileBusInfoPage />} />
           <Route path="/bus/detail" element={<MobileBusDetailPage />} />
           <Route path="/bus/stopinfo" element={<MobileBusStopPage />} />
+          <Route
+            path="/bus/shuttle/hellobus"
+            element={<MobileBusShuttleHelloBusPage />}
+          />
+          <Route
+            path="/bus/shuttle"
+            element={<MobileBusShuttleRouteInfoPage />}
+          />
         </Route>
       </Routes>
 

@@ -36,7 +36,6 @@ export default function MobileBoardPage() {
       </TitleCategorySelectorWrapper>
       {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
 
-
       <TipsListContainer
         key={resetKey}
         viewMode={viewMode}
@@ -45,7 +44,6 @@ export default function MobileBoardPage() {
         query={query}
       />
       {(docType === "TIPS" || docType === "SEARCH") && <MobileWriteButton />}
-
     </MobileTipsPageWrapper>
   );
 }
@@ -56,7 +54,7 @@ const MobileTipsPageWrapper = styled.div`
   flex: 1; // ← 이거 추가!
   width: 100%;
   gap: 16px;
-  padding: 0 16px;
+  padding: 16px;
   box-sizing: border-box;
 `;
 
