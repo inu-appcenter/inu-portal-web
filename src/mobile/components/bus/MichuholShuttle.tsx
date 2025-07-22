@@ -1,9 +1,10 @@
 import styled from "styled-components";
+import 사범대셔틀시간표 from "resources/assets/bus/사범대셔틀시간표.jpeg";
 
 const MichuholShuttle = () => {
   return (
     <Wrapper>
-      <img src={"/public/Bus/사범대셔틀시간표.jpeg"} />
+      <img src={사범대셔틀시간표} alt={"사범대셔틀시간표"} />
     </Wrapper>
   );
 };
