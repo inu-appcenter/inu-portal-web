@@ -53,7 +53,7 @@ export default function MobileRootPage() {
 
   useEffect(() => {
     const introShown = sessionStorage.getItem("introShown");
-    if (!introShown) {
+    if (introShown) {
       setShowIntro(false);
     } else {
       sessionStorage.setItem("introShown", "true");
