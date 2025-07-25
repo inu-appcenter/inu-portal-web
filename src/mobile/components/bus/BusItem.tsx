@@ -25,13 +25,14 @@ export default function BusItem({
           isGreen={number === "41" || number === "46"}
         />
         <TimeInfo>
-          {arrivalInfo?.map((info, index) => (
+          {arrivalInfo?.slice(0, 2).map((info, index) => (
             <ArrivalWrapper key={index}>
               <MainTime>{info.time}</MainTime>
               {(info.status || info.station) && (
                 <LabelWrapper>
                   <StatusInfo>
-                    {info.station ?? ""} {info.status ?? ""}
+                    {info.station}{" "}
+                    {info.isLastBus ? <LastBus>🚨막차</LastBus> : info.status}
                   </StatusInfo>
                 </LabelWrapper>
               )}
@@ -97,6 +98,11 @@ const StatusInfo = styled.span`
   font-size: 12px;
   color: #666;
   font-weight: normal;
+`;
+
+const LastBus = styled.span`
+  font-weight: 500;
+  color: red;
 `;
 
 const Arrow = styled.span`

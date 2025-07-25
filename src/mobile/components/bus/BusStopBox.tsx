@@ -15,46 +15,80 @@ export default function BusStopBox({
   sectionName,
   onClickInfo,
   busList,
-  showInfoIcon = false, //기본값
+  showInfoIcon = false,
   bstopId,
 }: Props) {
   const mobileNavigate = useMobileNavigate();
-  const [mergedList, setMergedList] = useState<BusData[]>([]);
+  const [busArrivalList, setBusArrivalList] = useState<BusData[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getBusArrival(bstopId);
+  const fetchBusArrivalData = async () => {
+    const data = await getBusArrival(bstopId);
 
-      const updatedList = busList.map((bus) => {
-        if (!bus.routeId) return bus;
+    const updatedList = busList.map((bus) => {
+      if (!bus.routeId) return bus;
 
-        const matches = data.filter((item) => item.ROUTEID === bus.routeId);
+      const matches = data.filter((item) => item.ROUTEID === bus.routeId);
 
-        if (matches.length === 0) {
-          return {
-            ...bus,
-            arrivalInfo: [
-              {
-                time: "도착정보 없음",
-              },
-            ],
-          };
-        }
-
+      if (matches.length === 0) {
         return {
           ...bus,
-          arrivalInfo: matches.slice(0, 2).map((match) => ({
-            time: toTime(match.ARRIVALESTIMATETIME),
+          arrivalInfo: [
+            {
+              time: "도착정보 없음",
+              seconds: 0,
+              isLastBus: false,
+            },
+          ],
+        };
+      }
+
+      return {
+        ...bus,
+        arrivalInfo: matches.slice(0, 2).map((match) => {
+          const seconds = Number(match.ARRIVALESTIMATETIME);
+          return {
+            time: toTime(seconds),
+            seconds,
             station: `${match.REST_STOP_COUNT}번째전`,
             status: convertStatus(match.CONGESTION),
-          })),
-        };
-      });
-      setMergedList(updatedList);
-    };
+            isLastBus: match.LASTBUSYN === "1",
+          };
+        }),
+      };
+    });
 
-    fetchData();
+    setBusArrivalList(updatedList);
+  };
+
+  useEffect(() => {
+    fetchBusArrivalData();
+
+    const interval = setInterval(fetchBusArrivalData, 2 * 60 * 1000); // 2분
+    return () => clearInterval(interval);
   }, [bstopId, busList]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBusArrivalList((prev) =>
+        prev.map((bus) => ({
+          ...bus,
+          arrivalInfo: bus.arrivalInfo?.map((item) => {
+            if (typeof item.seconds !== "number" || item.seconds <= 0)
+              return item;
+
+            const updatedSeconds = item.seconds - 1;
+            return {
+              ...item,
+              seconds: updatedSeconds,
+              time: toTime(updatedSeconds),
+            };
+          }),
+        })),
+      );
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <BusStopBoxWrapper>
@@ -66,7 +100,7 @@ export default function BusStopBox({
       </BusStopBoxHeader>
 
       <BusList>
-        {mergedList.map((bus) => (
+        {busArrivalList.map((bus) => (
           <BusItem
             key={bus.id}
             {...bus}
@@ -80,6 +114,8 @@ export default function BusStopBox({
 
 function toTime(seconds: string | number) {
   const sec = parseInt(String(seconds), 10);
+  if (sec < 0) return "도착정보 없음";
+  if (sec <= 30) return "곧 도착";
   const min = Math.floor(sec / 60);
   const rest = sec % 60;
   return `${min}분 ${rest}초`;

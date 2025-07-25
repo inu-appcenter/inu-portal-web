@@ -4,6 +4,8 @@ export interface ArrivalInfo {
   time: string;
   station?: string;
   status?: BusStatus;
+  seconds: number;
+  isLastBus: boolean;
 }
 
 export interface BusData {
