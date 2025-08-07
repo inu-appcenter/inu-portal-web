@@ -4,7 +4,6 @@ import BusCircle from "./BusCircle.tsx";
 
 interface Props extends BusData {
   onClick?: () => void;
-  showArrow?: boolean;
 }
 
 export default function BusItem({
@@ -12,40 +11,43 @@ export default function BusItem({
   route,
   arrivalInfo,
   onClick,
-  showArrow = true,
 }: Props) {
   return (
-    <BusCardWrapper onClick={onClick}>
+    <BusItemWrapper onClick={onClick}>
       <TopSection>
-        <RouteText>{route}</RouteText>
+        <RouteText>{route.join("→")}</RouteText>
       </TopSection>
       <MainSection>
         <BusCircle
           number={number}
           isGreen={number === "41" || number === "46"}
         />
-        <TimeInfo>
-          {arrivalInfo?.slice(0, 2).map((info, index) => (
-            <ArrivalWrapper key={index}>
-              <MainTime>{info.time}</MainTime>
-              {(info.status || info.station) && (
+        {arrivalInfo && (
+          <TimeInfo>
+            <ArrivalWrapper>
+              <MainTime>{arrivalInfo.time}</MainTime>
+              {(arrivalInfo.status || arrivalInfo.station) && (
                 <LabelWrapper>
                   <StatusInfo>
-                    {info.station}{" "}
-                    {info.isLastBus ? <LastBus>🚨막차</LastBus> : info.status}
+                    {arrivalInfo.station}{" "}
+                    {arrivalInfo.isLastBus ? (
+                      <LastBus>🚨막차</LastBus>
+                    ) : (
+                      arrivalInfo.status
+                    )}
                   </StatusInfo>
                 </LabelWrapper>
               )}
             </ArrivalWrapper>
-          ))}
-        </TimeInfo>
-        {showArrow && <Arrow>{">"}</Arrow>}
+          </TimeInfo>
+        )}
+        <Arrow>{">"}</Arrow>
       </MainSection>
-    </BusCardWrapper>
+    </BusItemWrapper>
   );
 }
 
-const BusCardWrapper = styled.div`
+const BusItemWrapper = styled.div`
   background-color: #e8f0fe;
   border-radius: 12px;
   padding: 12px 16px;

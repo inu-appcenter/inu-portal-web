@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import styled from "styled-components";
 
-interface Props {
+interface BusTabHeaderProps {
   Type: string;
 }
 
@@ -24,7 +24,7 @@ const ShuttleTab = [
   { type: "schoolShuttle", label: "통학 셔틀" },
 ];
 
-export default function BusTabHeader({ Type }: Props) {
+export default function BusTabHeader({ Type }: BusTabHeaderProps) {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const tab = query.get("tab");
