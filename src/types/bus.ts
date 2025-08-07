@@ -4,16 +4,20 @@ export interface ArrivalInfo {
   time: string;
   station?: string;
   status?: BusStatus;
-  seconds: number;
-  isLastBus: boolean;
+  seconds?: number; //카운트다운
+  isLastBus?: boolean;
+  restCount?: number;
 }
 
 export interface BusData {
   id: number;
   number: string;
-  route: string;
-  arrivalInfo?: ArrivalInfo[];
+  route: string[];
+  routeImg?: string[];
+  arrivalInfo?: ArrivalInfo;
   routeId?: string;
+  sectionLabel: string;
+  stopId: string;
 }
 
 //정류장 상세 정보 (더미데이터)
@@ -26,12 +30,6 @@ export interface BusStopData {
   sectionLabel?: string;
 }
 
-export interface BusDetailProps {
-  number: string;
-  busNotice: string;
-  routeImg: string;
-}
-
 export interface BusStopBoxProps {
   sectionName: string;
   onClickInfo?: () => void;
@@ -41,7 +39,7 @@ export interface BusStopBoxProps {
 
 export interface BusStopHeaderProps {
   stopName: string;
-  stopNotice: string;
+  stopNotice?: string;
   onClickStopInfo?: () => void;
   showInfoIcon?: boolean;
 }

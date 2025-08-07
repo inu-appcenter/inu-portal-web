@@ -1,10 +1,10 @@
 import styled from "styled-components";
 
-interface Props {
+interface SectionLabelProps {
   text: string;
 }
 
-export default function SectionLabel({ text }: Props) {
+export default function SectionLabel({ text }: SectionLabelProps) {
   return <Label>{text}</Label>;
 }
 

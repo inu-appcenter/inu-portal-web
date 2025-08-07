@@ -7,7 +7,7 @@ interface Props extends BusStopHeaderProps {
   sectionLabel?: string;
 }
 
-export default function BusStopHeader({
+export default function ponBusStopHeader({
   stopName,
   stopNotice,
   onClickStopInfo,
