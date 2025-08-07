@@ -13,6 +13,7 @@ export interface BusData {
   id: number;
   number: string;
   route: string[];
+  routeNotice?: string;
   routeImg?: string[];
   arrivalInfo?: ArrivalInfo;
   routeId?: string;

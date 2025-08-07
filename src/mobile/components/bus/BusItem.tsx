@@ -2,20 +2,25 @@ import styled from "styled-components";
 import { BusData } from "types/bus.ts";
 import BusCircle from "./BusCircle.tsx";
 
-interface Props extends BusData {
+interface BusItemProps extends BusData {
   onClick?: () => void;
 }
 
 export default function BusItem({
   number,
   route,
+  routeNotice,
   arrivalInfo,
   onClick,
-}: Props) {
+}: BusItemProps) {
   return (
     <BusItemWrapper onClick={onClick}>
       <TopSection>
-        <RouteText>{route.join("→")}</RouteText>
+        {routeNotice ? (
+          <RouteText>{routeNotice}</RouteText>
+        ) : (
+          <RouteText>{route.join("→")}</RouteText>
+        )}
       </TopSection>
       <MainSection>
         <BusCircle

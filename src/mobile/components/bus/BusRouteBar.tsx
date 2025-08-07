@@ -24,21 +24,17 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
     const label = i >= 5 ? (route[i - 4] ?? "") : i == 4 ? route[0] : "";
 
     //버스 아이콘 위치
-    const showBus = !arrivalInfo?.time
-      ? i === 0
-      : restCount === 0
+    const showBus =
+      arrivalInfo?.time === "곧 도착"
         ? isCurrent
-        : restCount >= 4
+        : arrivalInfo?.time === "도착정보 없음"
           ? i === 0
-          : i === 4 - restCount;
+          : restCount >= 4
+            ? i === 0
+            : i === 4 - restCount;
 
     //네모박스 표시
-    const showInfoBox =
-      restCount === 0
-        ? isCurrent
-        : restCount >= 4
-          ? i === 0
-          : i === 4 - restCount;
+    const showInfoBox = showBus;
 
     dots.push({ color, label, showBus, showInfoBox });
   }

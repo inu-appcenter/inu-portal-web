@@ -95,6 +95,7 @@ export const goHome_MainOut: BusData[] = [
     id: 10,
     number: "58",
     route: ["정문", "인입"],
+    routeNotice: "많이 돌아가는 노선이니 주의하세요!",
     routeId: "161000007",
     routeImg: ["/Bus/8.svg"],
     sectionLabel: "정문 (길 건너)",
