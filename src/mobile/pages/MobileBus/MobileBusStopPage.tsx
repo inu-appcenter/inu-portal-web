@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import BusStopHeader from "../../components/bus/BusStopHeader.tsx";
 import SectionLabel from "../../components/bus/SectionLabel.tsx";
-import StopImg from "../../components/bus/StopImg.tsx";
 import BusCircleBox from "../../components/bus/BusCircleBox.tsx";
 
 import { useLocation } from "react-router-dom";
 import { BusStopDummy } from "../../components/bus/BusStopDummy.ts";
+import BusStopMap from "../../components/bus/BusStopMap.tsx";
 
 export default function MobileBusStopPage() {
   const location = useLocation();
@@ -27,7 +27,7 @@ export default function MobileBusStopPage() {
 
           <ImageSection>
             <SectionLabel text="정류장 위치" />
-            <StopImg stopImg={stop.stopImg} />
+            <BusStopMap lat={stop.lat} lng={stop.lng} />
           </ImageSection>
 
           <BusCircleBox label="정차버스" busList={stop.busList} />
@@ -39,13 +39,13 @@ export default function MobileBusStopPage() {
 const MobileBusStopPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 0 16px;
+  width: 100%;
+  gap: 20px;
 `;
 
 const ImageSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   padding: 0 16px;
 `;

@@ -26,9 +26,10 @@ export interface BusStopData {
   id: string;
   stopName: string;
   stopNotice?: string;
-  stopImg: string[];
   busList: string[];
   sectionLabel?: string;
+  lat: number;
+  lng: number;
 }
 
 export interface BusStopBoxProps {
