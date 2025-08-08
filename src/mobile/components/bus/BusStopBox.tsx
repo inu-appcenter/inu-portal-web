@@ -5,7 +5,6 @@ import BusItem from "mobile/components/bus/BusItem";
 import { BusStopBoxProps } from "types/bus.ts";
 import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 import useBusArrival from "../../../hooks/useBusArrival.ts";
-import { useLocation } from "react-router-dom";
 
 interface Props extends BusStopBoxProps {
   bstopId: string;
@@ -20,9 +19,6 @@ export default function BusStopBox({
 }: Props) {
   const mobileNavigate = useMobileNavigate();
   const busArrivalList = useBusArrival(bstopId, busList);
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const currentTab = searchParams.get("tab") || "";
 
   return (
     <BusStopBoxWrapper>
@@ -39,9 +35,7 @@ export default function BusStopBox({
             key={bus.id}
             {...bus}
             onClick={() =>
-              mobileNavigate(
-                `/bus/detail?tab=${currentTab}&bstopId=${bstopId}&id=${bus.id}`,
-              )
+              mobileNavigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
             }
           />
         ))}
@@ -60,7 +54,7 @@ const BusStopBoxWrapper = styled.div`
 `;
 
 const BusStopBoxHeader = styled.div`
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 `;
 
 const LabelGroup = styled.div`
