@@ -29,7 +29,7 @@ export const BusStopDummy: BusStopData[] = [
       "엘리베이터를 통해 나가는 것을 추천. \n정류장은 에어컨과 폰 충전이 가능한 최신식 시설",
     busList: ["6-1"],
     lat: 37.37862478339092,
-    lng: 37.37862478339092,
+    lng: 126.64521251646616,
   },
   {
     id: "go-home-main-out",

@@ -56,4 +56,5 @@ const MobileBusDetailPageWrapper = styled.div`
   flex-direction: column;
   gap: 20px;
   padding: 0 16px;
+  margin-bottom: 20px;
 `;
