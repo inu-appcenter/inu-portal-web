@@ -1,4 +1,4 @@
-import { useKakaoLoader, Map, MapMarker } from "react-kakao-maps-sdk";
+import { Map, MapMarker } from "react-kakao-maps-sdk";
 import styled from "styled-components";
 
 interface BusStopMapProps {
@@ -7,10 +7,7 @@ interface BusStopMapProps {
 }
 
 export default function BusStopMap({ lat, lng }: BusStopMapProps) {
-  useKakaoLoader({
-    appkey: import.meta.env.VITE_KAKAO_API_KEY as string,
-    libraries: ["services"],
-  });
+  if (!window.kakao?.maps) return <MapCard />;
 
   return (
     <MapCard>

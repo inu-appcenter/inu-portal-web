@@ -74,7 +74,7 @@ const BusRouteBarWrapper = styled.div`
 
 const Line = styled.div`
   position: relative;
-  width: 350px;
+  width: 400px;
   height: 36px;
   display: flex;
   align-items: center;
