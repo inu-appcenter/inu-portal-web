@@ -1,11 +1,11 @@
 import styled from "styled-components";
 
-interface Props {
+interface BusCircleProps {
   number: string;
   isGreen?: boolean;
 }
 
-export default function BusCircle({ number, isGreen }: Props) {
+export default function BusCircle({ number, isGreen }: BusCircleProps) {
   return <Circle $isGreen={isGreen}>{number}</Circle>;
 }
 

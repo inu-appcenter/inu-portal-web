@@ -2,49 +2,57 @@ import styled from "styled-components";
 import { BusData } from "types/bus.ts";
 import BusCircle from "./BusCircle.tsx";
 
-interface Props extends BusData {
+interface BusItemProps extends BusData {
   onClick?: () => void;
-  showArrow?: boolean;
 }
 
 export default function BusItem({
   number,
   route,
+  routeNotice,
   arrivalInfo,
   onClick,
-  showArrow = true,
-}: Props) {
+}: BusItemProps) {
   return (
-    <BusCardWrapper onClick={onClick}>
+    <BusItemWrapper onClick={onClick}>
       <TopSection>
-        <RouteText>{route}</RouteText>
+        {routeNotice ? (
+          <RouteText>{routeNotice}</RouteText>
+        ) : (
+          <RouteText>{route.join("→")}</RouteText>
+        )}
       </TopSection>
       <MainSection>
         <BusCircle
           number={number}
           isGreen={number === "41" || number === "46"}
         />
-        <TimeInfo>
-          {arrivalInfo?.map((info, index) => (
-            <ArrivalWrapper key={index}>
-              <MainTime>{info.time}</MainTime>
-              {(info.status || info.station) && (
+        {arrivalInfo && (
+          <TimeInfo>
+            <ArrivalWrapper>
+              <MainTime>{arrivalInfo.time}</MainTime>
+              {(arrivalInfo.status || arrivalInfo.station) && (
                 <LabelWrapper>
                   <StatusInfo>
-                    {info.station ?? ""} {info.status ?? ""}
+                    {arrivalInfo.station}{" "}
+                    {arrivalInfo.isLastBus ? (
+                      <LastBus>🚨막차</LastBus>
+                    ) : (
+                      arrivalInfo.status
+                    )}
                   </StatusInfo>
                 </LabelWrapper>
               )}
             </ArrivalWrapper>
-          ))}
-        </TimeInfo>
-        {showArrow && <Arrow>{">"}</Arrow>}
+          </TimeInfo>
+        )}
+        <Arrow>{">"}</Arrow>
       </MainSection>
-    </BusCardWrapper>
+    </BusItemWrapper>
   );
 }
 
-const BusCardWrapper = styled.div`
+const BusItemWrapper = styled.div`
   background-color: #e8f0fe;
   border-radius: 12px;
   padding: 12px 16px;
@@ -97,6 +105,11 @@ const StatusInfo = styled.span`
   font-size: 12px;
   color: #666;
   font-weight: normal;
+`;
+
+const LastBus = styled.span`
+  font-weight: 500;
+  color: red;
 `;
 
 const Arrow = styled.span`
