@@ -7,21 +7,20 @@ interface BusStopMapProps {
 }
 
 export default function BusStopMap({ lat, lng }: BusStopMapProps) {
-  if (!window.kakao?.maps) return <MapCard />;
-
-  return (
-    <MapCard>
-      <Map
-        center={{ lat, lng }}
-        level={3}
-        draggable
-        zoomable
-        style={{ height: "100%", width: "100%" }}
-      >
-        <MapMarker position={{ lat, lng }} />
-      </Map>
-    </MapCard>
-  );
+  if (window.kakao?.maps)
+    return (
+      <MapCard>
+        <Map
+          center={{ lat, lng }}
+          level={3}
+          draggable
+          zoomable
+          style={{ height: "100%", width: "100%" }}
+        >
+          <MapMarker position={{ lat, lng }} />
+        </Map>
+      </MapCard>
+    );
 }
 
 const MapCard = styled.div`

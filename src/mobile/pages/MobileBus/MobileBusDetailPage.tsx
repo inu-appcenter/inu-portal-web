@@ -54,7 +54,7 @@ export default function MobileBusDetailPage() {
 const MobileBusDetailPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 30px;
   padding: 0 16px;
   margin-bottom: 20px;
 `;
