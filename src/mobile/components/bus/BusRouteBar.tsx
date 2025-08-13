@@ -18,9 +18,7 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
 
   for (let i = 0; i < totalDots; i++) {
     const isCurrent = i === 4;
-    const isNext = i > 4;
 
-    const color = isCurrent ? "#dc2626" : isNext ? "#0E4D9D" : "#D9D9D9";
     const label = i >= 5 ? (route[i - 4] ?? "") : i == 4 ? route[0] : "";
 
     //버스 아이콘 위치
@@ -36,7 +34,7 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
     //네모박스 표시
     const showInfoBox = showBus;
 
-    dots.push({ color, label, showBus, showInfoBox });
+    dots.push({ label, showBus, showInfoBox, isCurrent });
   }
 
   return (
@@ -56,7 +54,7 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
                 </InfoBox>
               )}
               {dot.showBus && <BusIcon src={busIcon} />}
-              <Dot $color={dot.color} />
+              <Dot $current={dot.isCurrent} />
               {dot.label && <Label>{dot.label}</Label>}
             </DotBox>
           ))}
@@ -74,20 +72,21 @@ const BusRouteBarWrapper = styled.div`
 
 const Line = styled.div`
   position: relative;
-  width: 400px;
+  width: 100%;
   height: 36px;
   display: flex;
   align-items: center;
 `;
 
 const Arrow = styled.div`
-  width: 100%;
   position: absolute;
   top: 50%;
   height: 2px;
   transform: translateY(-50%);
   background-color: #a1c3ff;
   z-index: 0;
+  left: 18px;
+  right: 18px;
 `;
 
 const DotList = styled.div`
@@ -107,15 +106,17 @@ const DotBox = styled.div`
   align-items: center;
 `;
 
-const Dot = styled.div<{ $color: string }>`
+const Dot = styled.div<{ $current: boolean }>`
   width: 12px;
   height: 12px;
-  background-color: ${({ $color }) => $color};
   border-radius: 50%;
   z-index: 1;
   position: relative;
   top: 50%;
   transform: translateY(-50%);
+  background-color: ${({ $current }) => ($current ? "#A1C3FF" : "#fff")};
+  border: ${({ $current }) =>
+    $current ? "1.5px solid #A1C3FF" : "1.5px solid #C7DAF5"};
 `;
 
 const BusIcon = styled.img`
@@ -142,6 +143,6 @@ const InfoBox = styled.div`
 
 const Label = styled.div`
   margin-top: 20px;
-  font-size: 10px;
+  font-size: 12px;
   white-space: nowrap;
 `;
