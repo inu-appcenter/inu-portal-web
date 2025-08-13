@@ -21,5 +21,5 @@ const CircleBusBoxWrapper = styled.div`
   margin-bottom: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 `;
