@@ -16,36 +16,35 @@ export default function MobileBusStopPage() {
 
   if (stop)
     return (
-      <>
-        <MobileBusStopPageWrapper>
-          <BusStopHeader
-            stopName={stop.stopName}
-            stopNotice={stop.stopNotice ?? ""}
-            showInfoIcon={false}
-            sectionLabel={stop.sectionLabel}
-          />
+      <MobileBusStopPageWrapper>
+        <BusStopHeader
+          stopName={stop.stopName}
+          stopNotice={stop.stopNotice ?? ""}
+          showInfoIcon={false}
+          sectionLabel={stop.sectionLabel}
+        />
 
-          <ImageSection>
-            <SectionLabel text="정류장 위치" />
-            <BusStopMap lat={stop.lat} lng={stop.lng} />
-          </ImageSection>
+        <StopMapSection>
+          <SectionLabel text="정류장 위치" />
+          <BusStopMap lat={stop.lat} lng={stop.lng} />
+        </StopMapSection>
 
-          <BusCircleBox label="정차버스" busList={stop.busList} />
-        </MobileBusStopPageWrapper>
-      </>
+        <BusCircleBox label="정차버스" busList={stop.busList} />
+      </MobileBusStopPageWrapper>
     );
 }
 
 const MobileBusStopPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
   gap: 20px;
+  padding: 0 16px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
-const ImageSection = styled.div`
+const StopMapSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 16px;
 `;

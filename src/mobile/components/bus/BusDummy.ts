@@ -31,7 +31,7 @@ export const goSchool_INUExit2: BusData[] = [
   {
     id: 4,
     number: "41",
-    route: ["인입", "북문", "송도캠(기숙사)"],
+    route: ["인입", "북문", "송도캠퍼스"],
     routeId: "165000514",
     routeImg: ["/Bus/8.svg"],
     sectionLabel: "인입 2번출구",
@@ -55,7 +55,8 @@ export const goSchool_BITExit3: BusData[] = [
   {
     id: 6,
     number: "6-1",
-    route: ["지정단", "자연대", "공대(정보대)"],
+    route: ["지정단", "자연대", "공대"],
+    routeNotice: "지정단 → 자연대 → 공대(정보대)",
     routeId: "165000008",
     routeImg: ["/Bus/8.svg"],
     sectionLabel: "지정단 3번출구",
@@ -161,7 +162,8 @@ export const goHome_Nature_BIT: BusData[] = [
   {
     id: 16,
     number: "6-1",
-    route: ["공대", "자연대", "지정단 2번출구"],
+    route: ["공대", "자연대", "지정단"],
+    routeNotice: "공대 → 자연대 → 지정단 2번출구",
     routeId: "165000008",
     routeImg: ["/Bus/8.svg"],
     sectionLabel: "자연대",
@@ -170,7 +172,8 @@ export const goHome_Nature_BIT: BusData[] = [
   {
     id: 17,
     number: "6",
-    route: ["공대", "자연대", "지정단 4번출구"],
+    route: ["공대", "자연대", "지정단"],
+    routeNotice: "공대 → 자연대 → 지정단 4번출구",
     routeId: "165000007",
     routeImg: ["/Bus/8.svg"],
     sectionLabel: "자연대",

@@ -25,7 +25,7 @@ export default function BusInfoPage() {
   const selectedTab = tab ?? defaultTab;
 
   return (
-    <BusInfoPageWrapper>
+    <>
       <BusTabHeader Type={type} />
       {type === "go-school" && selectedTab === "INU" && <GoSchoolINU />}
       {type === "go-school" && selectedTab === "BIT" && <GoSchoolBIT />}
@@ -41,13 +41,13 @@ export default function BusInfoPage() {
       {type === "shuttle" && selectedTab === "schoolShuttle" && (
         <SchoolShuttle />
       )}
-    </BusInfoPageWrapper>
+      <BusInfoPageWrapper />
+    </>
   );
 }
 
 const BusInfoPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  overflow-x: hidden;
+  padding: 0 16px;
 `;
