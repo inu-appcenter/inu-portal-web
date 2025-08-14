@@ -31,14 +31,13 @@ const BusStopHeaderWrapper = styled.div`
   flex-direction: column;
   gap: 1px;
   width: 100%;
-  padding: 0 16px;
   box-sizing: border-box;
 `;
 
 const TopWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 `;
 
 const StopName = styled.h2`
