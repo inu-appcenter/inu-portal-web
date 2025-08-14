@@ -57,4 +57,6 @@ const MobileBusDetailPageWrapper = styled.div`
   gap: 30px;
   padding: 0 16px;
   margin-bottom: 20px;
+  box-sizing: border-box;
+  width: 100%;
 `;

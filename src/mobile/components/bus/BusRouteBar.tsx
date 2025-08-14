@@ -68,6 +68,7 @@ const BusRouteBarWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   margin: 20px 0;
+  padding: 0 16px;
 `;
 
 const Line = styled.div`
