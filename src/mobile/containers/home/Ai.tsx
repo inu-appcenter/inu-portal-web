@@ -25,7 +25,7 @@ export default function AiForm() {
 }
 
 const AiEnterWrapper = styled.div`
-  margin-top: 40px;
+  //margin-top: 40px;
   background: linear-gradient(90deg, #6f84e2 0%, #7babe5 100%);
   border-radius: 10px;
   padding: 3px 3px;
@@ -50,5 +50,6 @@ const AiEnter = styled.div`
     font-size: 13px;
     font-weight: 500;
     color: white;
+    text-align: center;
   }
 `;
