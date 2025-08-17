@@ -3,19 +3,19 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/scrollbar";
 
-import { Scrollbar } from "swiper/modules";
+import { Scrollbar, Autoplay } from "swiper/modules";
 
 import { useEffect, useState } from "react";
 import { getNotices } from "apis/notices";
 import { Notice } from "types/notices";
 import SortDropBox from "mobile/components/notice/Sort";
-import useMobileNavigate from "hooks/useMobileNavigate";
+// import useMobileNavigate from "hooks/useMobileNavigate";
 // import SortNotice from '../../components/notice/SortNotice';
 
 export default function NoticeForm() {
   const [sort, setSort] = useState("view");
   const [notices, setNotices] = useState<Notice[]>([]);
-  const mobileNavigate = useMobileNavigate();
+  // const mobileNavigate = useMobileNavigate();
 
   const fetchNotices = async (sort: string) => {
     try {
@@ -33,17 +33,28 @@ export default function NoticeForm() {
   return (
     <NoticeFormWrapper>
       <NoticeTitleWrapper>
-        <h1 onClick={() => mobileNavigate(`/home/tips?type=notice`)}>Notice</h1>
+        {/*<h1 onClick={() => mobileNavigate(`/home/tips?type=notice`)}>*/}
+        {/*  /!*학교 공지사항*!/*/}
+        {/*</h1>*/}
         <SortDropBox sort={sort} setSort={setSort} />
         {/* <SortNotice sort={sort} setNotices={setNotices}/> */}
       </NoticeTitleWrapper>
 
       <Swiper
-        slidesPerView={2}
+        modules={[Scrollbar, Autoplay]}
+        breakpoints={{
+          320: { slidesPerView: 2 }, // 화면 320px 이상일 때 슬라이드 1개
+          480: { slidesPerView: 2 }, // 화면 480px 이상일 때 슬라이드 2개
+          768: { slidesPerView: 3 }, // 화면 768px 이상일 때 슬라이드 3개
+          1024: { slidesPerView: 4 }, // 화면 1024px 이상일 때 슬라이드 4개
+        }}
+        autoplay={{
+          delay: 3000, // 3초마다 자동 이동
+          disableOnInteraction: false, // 사용자가 조작해도 자동재생 유지
+        }}
         scrollbar={{
           hide: false,
         }}
-        modules={[Scrollbar]}
         className="mySwiper"
       >
         {notices.map((notice, index) => (
@@ -64,9 +75,12 @@ export default function NoticeForm() {
 }
 
 const NoticeFormWrapper = styled.div`
-  margin-top: 20px;
+  //margin-top: 20px;
+  width: 100%; // 부모 너비 꽉 채움
+  //max-width: 500px; // 필요하면 최대 너비 제한
+
   .swiper {
-    width: 100%;
+    width: 100%; // Swiper도 부모 너비에 맞춤
     height: 180px;
 
     .swiper-slide {
@@ -83,23 +97,33 @@ const NoticeFormWrapper = styled.div`
       padding: 12px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       align-items: flex-start;
       h1 {
-        font-size: 12px;
-        font-weight: 500;
+        font-size: 14px;
+        font-weight: 600;
         color: #0e4d9d;
-        margin: 0 0 4px 0;
+        margin: 0;
+        //margin: 0 0 4px 0;
       }
       .title {
-        flex: 1;
-        font-size: 10px;
-        font-weight: 500;
+        font-size: 14px;
+        font-weight: 400;
         text-align: left;
+
+        display: -webkit-box; /* box layout 사용 */
+        -webkit-line-clamp: 3; /* 최대 3줄 */
+        -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        /* 높이를 3줄에 맞게 최소 높이 지정 */
+        line-height: 1.2em; /* 줄간격 */
+        min-height: calc(1.2em * 3); /* 3줄 높이 확보 */
       }
+
       .createdate {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
         color: #7aa7e5;
         margin: 0;
@@ -116,7 +140,7 @@ const NoticeFormWrapper = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 12px;
+    //margin-bottom: 12px;
   }
 
   .swiper-slide img {
@@ -137,9 +161,10 @@ const NoticeTitleWrapper = styled.div`
   justify-content: space-between;
   h1 {
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 600;
   }
   p {
     font-size: 12px;
   }
+  margin-bottom: 8px;
 `;
