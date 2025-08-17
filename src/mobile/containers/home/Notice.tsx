@@ -48,6 +48,7 @@ export default function NoticeForm() {
           768: { slidesPerView: 3 }, // 화면 768px 이상일 때 슬라이드 3개
           1024: { slidesPerView: 4 }, // 화면 1024px 이상일 때 슬라이드 4개
         }}
+        slidesPerGroup={2} // <- 한 번에 2칸 이동
         autoplay={{
           delay: 3000, // 3초마다 자동 이동
           disableOnInteraction: false, // 사용자가 조작해도 자동재생 유지
