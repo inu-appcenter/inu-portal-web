@@ -1,7 +1,7 @@
 import type { BusData } from "types/bus.ts";
 
 export const goSchool_INUExit2: BusData[] = [
-  /*{
+  {
     id: 1,
     number: "셔틀",
     route: ["정문", "정보대", "송도캠(기숙사)"],
@@ -9,7 +9,7 @@ export const goSchool_INUExit2: BusData[] = [
       time: "08:30 ~ 10:20",
       station: "수시 운행 중 ",
     },
-  },*/
+  },
   {
     id: 2,
     number: "8",
@@ -94,7 +94,7 @@ export const goSchool_BITExit3: BusData[] = [
 ];
 
 export const goHome_MainOut: BusData[] = [
-  /*{
+  {
     id: 7,
     number: "셔틀",
     route: ["정문", "인입"],
@@ -102,7 +102,7 @@ export const goHome_MainOut: BusData[] = [
       time: "18:00, 18:15, 18:30",
       station: "3회 운영",
     },
-  },*/
+  },
   {
     id: 8,
     number: "8",
@@ -175,7 +175,7 @@ export const goHome_MainIn: BusData[] = [
 ];
 
 export const goHome_Dorm: BusData[] = [
-  /*{
+  {
     id: 12,
     number: "셔틀",
     route: ["송도캠", "공대", "정문", "인입"],
@@ -183,7 +183,7 @@ export const goHome_Dorm: BusData[] = [
       time: "18:00, 18:15, 18:30",
       station: "3회 운영",
     },
-  },*/
+  },
   {
     id: 13,
     number: "41",

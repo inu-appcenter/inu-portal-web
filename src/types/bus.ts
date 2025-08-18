@@ -14,12 +14,12 @@ export interface BusData {
   id: number;
   number: string;
   route: string[];
-  path: { lat: number; lng: number }[];
+  path?: { lat: number; lng: number }[];
   routeNotice?: string;
   arrivalInfo?: ArrivalInfo;
   routeId?: string;
-  sectionLabel: string;
-  stopId: string;
+  sectionLabel?: string;
+  stopId?: string;
 }
 
 //정류장 상세 정보 (BusDummy)
