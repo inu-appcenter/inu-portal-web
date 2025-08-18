@@ -221,7 +221,7 @@ const LikeCommentWriterWrapper = styled.div`
   }
 
   .writer {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 500;
     color: #303030;
     padding: 2px 8px;
