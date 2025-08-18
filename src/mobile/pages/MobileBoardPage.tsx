@@ -1,12 +1,12 @@
 import styled from "styled-components";
 import { useState } from "react";
-import CategorySelector from "mobile/components/common/CategorySelector";
 import { useLocation } from "react-router-dom";
 import ViewModeButtons from "mobile/components/tips/ViewModeButtons";
 import TipsListContainer from "mobile/containers/tips/TipsListContainer";
 import SerachForm from "mobile/containers/home/SerachForm";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import MobileWriteButton from "mobile/components/tips/MobileWriteButton";
+import CategorySelectorNew from "../components/common/CategorySelectorNew.tsx";
 
 export default function MobileBoardPage() {
   const location = useLocation();
@@ -28,11 +28,9 @@ export default function MobileBoardPage() {
 
   return (
     <MobileTipsPageWrapper>
+      {(docType === "TIPS" || docType === "NOTICE") && <CategorySelectorNew />}
       <TitleCategorySelectorWrapper>
-        <ViewModeButtonCategorySelectorWrapper>
-          {(docType === "TIPS" || docType === "NOTICE") && <CategorySelector />}
-          <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
-        </ViewModeButtonCategorySelectorWrapper>
+        <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
       </TitleCategorySelectorWrapper>
       {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
 
@@ -51,25 +49,17 @@ export default function MobileBoardPage() {
 const MobileTipsPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1; // ← 이거 추가!
+  flex: 1;
   width: 100%;
-  gap: 16px;
+  gap: 8px;
   padding: 16px;
   box-sizing: border-box;
 `;
 
 const TitleCategorySelectorWrapper = styled.div`
   width: 100%;
-  min-height: 32px;
+  min-height: fit-content;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-`;
-
-const ViewModeButtonCategorySelectorWrapper = styled.div`
-  position: absolute;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  justify-content: flex-end;
 `;
