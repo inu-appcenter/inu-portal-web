@@ -56,31 +56,64 @@ export default function CategorySelectorNew() {
   };
 
   return (
-    <CategorySelectorWrapper onClick={() => setIsOpen(!isOpen)}>
-      {categories.map((category, index) => (
-        <FillItem
-          key={index}
-          $selected={selectedCategory === category}
-          onClick={() => {
-            handleClickCategory(category);
-            setIsOpen(false);
-          }}
-        >
-          <div>{category}</div>
-        </FillItem>
-      ))}
+    <CategorySelectorWrapper>
+      <CategoryScrollArea>
+        {categories.map((category, index) => (
+          <FillItem
+            key={index}
+            $selected={selectedCategory === category}
+            onClick={() => {
+              handleClickCategory(category);
+              setIsOpen(false);
+            }}
+          >
+            <div>{category}</div>
+          </FillItem>
+        ))}
+      </CategoryScrollArea>
+
+      {/* ✅ 그라데이션 오버레이 */}
+      {/*<GradientLeft />*/}
+      <GradientRight />
     </CategorySelectorWrapper>
   );
 }
 
 const CategorySelectorWrapper = styled.div`
+  position: relative; /* ✅ 기준점 */
   width: 100%;
   height: fit-content;
+`;
 
+const CategoryScrollArea = styled.div`
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap; /* ✅ 줄바꿈 허용 */
   gap: 6px;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+// const GradientLeft = styled.div`
+//   position: absolute;
+//   left: 0;
+//   top: 0;
+//   bottom: 0;
+//   width: 24px;
+//   background: linear-gradient(to right, #fff, transparent);
+//   pointer-events: none;
+// `;
+
+const GradientRight = styled.div`
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background: linear-gradient(to left, #fff, transparent);
+  pointer-events: none;
 `;
 
 const FillItem = styled.div<{ $selected: boolean }>`
@@ -98,7 +131,7 @@ const FillItem = styled.div<{ $selected: boolean }>`
   background: ${({ $selected }) =>
     $selected
       ? "linear-gradient(180deg, #ffffff -21.86%, #d5e4f7 100%, #aac9ee 100%)"
-      : "#e0e0e0"}; /* ✅ 선택되지 않은 건 회색 */
+      : "#e0e0e0"}; /* 선택되지 않은 건 회색 */
   color: ${({ $selected }) => ($selected ? "#000" : "#666")};
   cursor: pointer;
 `;

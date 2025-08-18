@@ -28,8 +28,11 @@ export default function MobileBoardPage() {
 
   return (
     <MobileTipsPageWrapper>
-      {(docType === "TIPS" || docType === "NOTICE") && <CategorySelectorNew />}
       <TitleCategorySelectorWrapper>
+        {(docType === "TIPS" || docType === "NOTICE") && (
+          <CategorySelectorNew />
+        )}
+
         <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
       </TitleCategorySelectorWrapper>
       {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
@@ -62,4 +65,5 @@ const TitleCategorySelectorWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 8px;
 `;
