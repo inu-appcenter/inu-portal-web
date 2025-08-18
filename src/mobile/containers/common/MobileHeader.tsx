@@ -55,6 +55,7 @@ export default function MobileHeader() {
       "/m/bus/stopinfo": "정류장 상세 정보",
       "/m/bus/shuttle/hellobus": "헬로버스",
       "/m/bus/shuttle": "셔틀버스 노선 정보",
+      "/m/unidorm": "유니돔",
     };
 
     return pathTitleMap[path] || "";
