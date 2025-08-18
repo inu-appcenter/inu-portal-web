@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import BusStopHeader from "../../components/bus/BusStopHeader.tsx";
-import RouteImg from "../../components/bus/RouteImg.tsx";
+import BusRouteMap from "../../components/bus/BusRouteMap.tsx";
 import styled from "styled-components";
 import BusRouteBar from "../../components/bus/BusRouteBar.tsx";
 import {
@@ -46,7 +46,7 @@ export default function MobileBusDetailPage() {
         onClickStopInfo={() => mobileBusStopNavigate(bus?.stopId)}
       />
       <BusRouteBar bus={bus} bstopId={bstopId} />
-      {bus.routeImg && <RouteImg routeImg={bus.routeImg} />}
+      <BusRouteMap path={bus.path} />
     </MobileBusDetailPageWrapper>
   );
 }

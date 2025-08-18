@@ -48,7 +48,11 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
                 <InfoBox>
                   <div>
                     {arrivalInfo.station}{" "}
-                    {arrivalInfo.isLastBus ? "🚨막차" : arrivalInfo.status}
+                    {arrivalInfo.isLastBus ? (
+                      <LastBus>("막차")</LastBus>
+                    ) : (
+                      arrivalInfo.status
+                    )}
                   </div>
                   <div>{arrivalInfo.time}</div>
                 </InfoBox>
@@ -124,6 +128,11 @@ const BusIcon = styled.img`
   position: absolute;
   top: -5px;
   width: 24px;
+`;
+
+const LastBus = styled.span`
+  font-weight: 500;
+  color: red;
 `;
 
 const InfoBox = styled.div`
