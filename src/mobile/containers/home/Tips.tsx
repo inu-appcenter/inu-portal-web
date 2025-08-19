@@ -38,15 +38,11 @@ export default function TipForm() {
 
   return (
     <TipFormWrapper>
-      {/*<h1 onClick={() => mobileNavigate("/home/tips")}>*/}
-      {/*  <span>TIP</span>인기글*/}
-      {/*</h1>*/}
-
       <Swiper
         pagination
         modules={[Pagination, Autoplay]}
         autoplay={{
-          delay: 3000, // 3초마다 자동 이동
+          delay: 4000,
           disableOnInteraction: false, // 사용자가 조작해도 자동재생 유지
         }}
         className="mySwiper"
@@ -89,7 +85,7 @@ const TipFormWrapper = styled.div`
     width: 100%;
     height: 100%;
     position: relative;
-    padding-bottom: 30px;
+    padding-bottom: 15px;
   }
 
   .swiper-slide {
@@ -102,7 +98,7 @@ const TipFormWrapper = styled.div`
   }
 
   .swiper-pagination {
-    bottom: 12px !important; /* 확보한 공간 안에서 배치 */
+    bottom: -4px !important;
   }
 
   .swiper-button-next,
