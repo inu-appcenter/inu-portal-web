@@ -68,7 +68,7 @@ export default function UserModify() {
 }
 
 const UserModifyWrapper = styled.div`
-  position: absolute;
+  //position: absolute;
   top: 310px;
   width: 100%;
   display: flex;
