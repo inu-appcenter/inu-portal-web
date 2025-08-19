@@ -39,6 +39,6 @@ const PageWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  padding: 0 16px;
+  //padding: 0 16px;
   box-sizing: border-box;
 `;

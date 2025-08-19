@@ -14,7 +14,7 @@ export default function ClubContent({
   modifiedDate,
 }: PostContentProps) {
   return (
-    <>
+    <ClubContentWrapper>
       <div className="post-contents">
         <div className="contents-img-container">
           {Array.from({ length: imageCount }, (_, index) => {
@@ -33,9 +33,11 @@ export default function ClubContent({
         </div>
         <ContentText>{content}</ContentText>
       </div>
-    </>
+    </ClubContentWrapper>
   );
 }
+
+const ClubContentWrapper = styled.div``;
 
 const ContentImg = styled.img`
   max-width: 100%;

@@ -142,6 +142,7 @@ export default function HelloBus() {
 
 const HelloBusWrapper = styled.div`
   width: 100%;
+  height: 100%;
   box-sizing: border-box;
 
   .manual-wrapper1 {

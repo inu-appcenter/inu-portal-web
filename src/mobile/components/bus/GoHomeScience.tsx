@@ -2,8 +2,8 @@ import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
-  goHome_Nature_INU,
   goHome_Nature_BIT,
+  goHome_Nature_INU,
 } from "mobile/components/bus/BusDummy.ts";
 import BusCircleBox from "mobile/components/bus/BusCircleBox.tsx";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
@@ -43,6 +43,6 @@ const PageWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  padding: 0 16px;
+  //padding: 0 16px;
   box-sizing: border-box;
 `;

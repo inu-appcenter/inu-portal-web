@@ -1,10 +1,14 @@
 import styled from "styled-components";
 import BusCardSection from "../../components/bus/BusCardSection.tsx";
+import MobileHeader from "../../containers/common/MobileHeader.tsx";
+import MobileNav from "../../containers/common/MobileNav.tsx";
 
 export default function MobileBusPage() {
   return (
     <MobileBusPageWrapper>
+      <MobileHeader />
       <BusCardSection />
+      <MobileNav />
     </MobileBusPageWrapper>
   );
 }

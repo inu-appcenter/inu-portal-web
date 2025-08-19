@@ -1,15 +1,14 @@
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
-import MobileHeader from "./containers/common/MobileHeader.tsx";
 
 export default function SubLayout() {
   return (
     <Container>
-      <MobileHeader />
+      {/*<MobileHeader />*/}
 
-      <ContentWrapper>
+      <OutletWrapper>
         <Outlet />
-      </ContentWrapper>
+      </OutletWrapper>
     </Container>
   );
 }
@@ -24,15 +23,10 @@ const Container = styled.div`
   box-sizing: border-box;
 `;
 
-const ContentWrapper = styled.div`
-  flex: 1; // 핵심! 남은 공간을 모두 차지
-  box-sizing: border-box;
+const OutletWrapper = styled.div`
+  flex: 1;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding-top: 126px;
-
-  //padding-bottom: 72px;
-  overflow-y: hidden;
-  height: 100%;
 `;

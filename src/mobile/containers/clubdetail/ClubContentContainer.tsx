@@ -28,7 +28,8 @@ export default function ClubContentContainer({
 }
 
 const Wrapper = styled.div`
-  margin: 20px 20px 20px 20px;
+  padding: 16px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 15px;

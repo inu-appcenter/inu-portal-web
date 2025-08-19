@@ -119,7 +119,9 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
 }
 
 const CardWrapper = styled.div`
-  padding: 0 8px 10px 28px;
+  //padding: 0 8px 10px 28px;
+  padding: 0 16px;
+  box-sizing: border-box;
   font-size: 15px;
   font-weight: 600;
   color: #0e4d9d;
@@ -195,11 +197,11 @@ const LikeCommentWriterWrapper = styled.div`
 const TipsCardListWrapper = styled.div`
   position: relative;
   height: 96px;
-  width: 90%;
+  width: 100%;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
-  padding-right: 20px;
+  //padding-right: 20px;
   margin-bottom: 12px;
 `;
 

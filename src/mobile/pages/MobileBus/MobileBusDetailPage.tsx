@@ -4,16 +4,17 @@ import RouteImg from "../../components/bus/RouteImg.tsx";
 import styled from "styled-components";
 import BusRouteBar from "../../components/bus/BusRouteBar.tsx";
 import {
-  goSchool_INUExit2,
-  goSchool_INUExit1,
-  goSchool_BITExit3,
   goHome_Dorm,
   goHome_MainIn,
   goHome_MainOut,
   goHome_Nature_BIT,
   goHome_Nature_INU,
+  goSchool_BITExit3,
+  goSchool_INUExit1,
+  goSchool_INUExit2,
 } from "../../components/bus/BusDummy.ts";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
+import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 export default function MobileBusDetailPage() {
   const [searchParams] = useSearchParams();
@@ -40,6 +41,7 @@ export default function MobileBusDetailPage() {
 
   return (
     <MobileBusDetailPageWrapper>
+      <MobileHeader title={"버스 정보"} />
       <BusStopHeader
         stopName={`${bus.number}번`}
         sectionLabel={bus.sectionLabel}
@@ -56,6 +58,7 @@ const MobileBusDetailPageWrapper = styled.div`
   flex-direction: column;
   gap: 30px;
   padding: 0 16px;
+  padding-top: 56px;
   margin-bottom: 20px;
   box-sizing: border-box;
   width: 100%;
