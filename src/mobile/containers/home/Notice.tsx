@@ -3,7 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/scrollbar";
 
-import { Scrollbar, Autoplay } from "swiper/modules";
+import { Autoplay, Scrollbar } from "swiper/modules";
 
 import { useEffect, useState } from "react";
 import { getNotices } from "apis/notices";
@@ -48,9 +48,9 @@ export default function NoticeForm() {
           768: { slidesPerView: 3 }, // 화면 768px 이상일 때 슬라이드 3개
           1024: { slidesPerView: 4 }, // 화면 1024px 이상일 때 슬라이드 4개
         }}
-        slidesPerGroup={2} // <- 한 번에 2칸 이동
+        slidesPerGroup={2} // 한 번에 2칸 이동
         autoplay={{
-          delay: 3000, // 3초마다 자동 이동
+          delay: 4000,
           disableOnInteraction: false, // 사용자가 조작해도 자동재생 유지
         }}
         scrollbar={{
@@ -76,9 +76,7 @@ export default function NoticeForm() {
 }
 
 const NoticeFormWrapper = styled.div`
-  //margin-top: 20px;
   width: 100%; // 부모 너비 꽉 채움
-  //max-width: 500px; // 필요하면 최대 너비 제한
 
   .swiper {
     width: 100%; // Swiper도 부모 너비에 맞춤
@@ -141,7 +139,7 @@ const NoticeFormWrapper = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    //margin-bottom: 12px;
+    //margin-bottom: 18px;
   }
 
   .swiper-slide img {
@@ -153,7 +151,7 @@ const NoticeFormWrapper = styled.div`
 
   .swiper-horizontal > .swiper-scrollbar,
   .swiper-scrollbar.swiper-scrollbar-horizontal {
-    bottom: var(--swiper-scrollbar-bottom, 15px);
+    bottom: 16px !important; /* 직접 위치 지정 */
   }
 `;
 
