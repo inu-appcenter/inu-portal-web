@@ -1,18 +1,20 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import intipLogo from "resources/assets/intip-logo.svg";
-import ProfileImage from "mobile/components/common/ProfileImage";
 import MenuButton from "mobile/components/common/MenuButton";
-import LoginNavigateButton from "mobile/components/common/LoginNavigateButton";
-import useUserStore from "stores/useUserStore";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import { useLocation } from "react-router-dom";
-import { ReactSVG } from "react-svg";
 import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundImg.svg";
-import MobileTitleHeader from "./MobileTitleHeader.tsx";
 
-export default function MobileHeader() {
-  const { userInfo } = useUserStore();
+import BackButton from "../../components/mypage/BackButton.tsx";
+import Title from "../../components/mypage/Title.tsx";
+
+interface HeaderProps {
+  title?: string;
+  hasback?: boolean;
+}
+
+export default function MobileHeader({ title, hasback = true }: HeaderProps) {
   const mobileNavigate = useMobileNavigate();
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -21,45 +23,6 @@ export default function MobileHeader() {
   const handleLogoClick = () => {
     mobileNavigate(`/home`);
   };
-
-  const handleProfileClick = () => {
-    mobileNavigate("/mypage");
-  };
-
-  // 경로에 따른 타이틀 정의
-  const pageTitle = useMemo(() => {
-    const path = location.pathname;
-    console.log(path);
-    const pathTitleMap: Record<string, string> = {
-      "/m/home/tips": "TIPS",
-      "/m/home/tips/write": "TIPS 글쓰기",
-      "/m/home/notice": "학교 공지사항",
-      "/m/home/menu": "식당메뉴",
-      "/m/home/calendar": "학사일정",
-      "/m/home/campus": "캠퍼스맵",
-      "/m/home/util": "편의",
-      "/m/home/council": "총학생회",
-      "/m/home/club": "동아리",
-      "/m/home/recruitdetail": "동아리 모집 상세",
-      "/m/postdetail": "게시글 상세",
-      "/m/councilnoticedetail": "공지사항 상세",
-      "/m/petitiondetail": "청원 상세",
-      "/m/mypage/profile": "프로필 편집",
-      "/m/mypage/post": "내 게시글",
-      "/m/mypage/like": "좋아요한 글",
-      "/m/mypage/comment": "내 댓글",
-      "/m/mypage/delete": "회원 탈퇴",
-      "/m/login": "로그인",
-      "/m/bus/info": "버스 정보",
-      "/m/bus/detail": "버스 상세 정보",
-      "/m/bus/stopinfo": "정류장 상세 정보",
-      "/m/bus/shuttle/hellobus": "헬로버스",
-      "/m/bus/shuttle": "셔틀버스 노선 정보",
-      "/m/unidorm": "유니돔",
-    };
-
-    return pathTitleMap[path] || "";
-  }, [location.pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,26 +41,51 @@ export default function MobileHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleBack = () => {
+    const params = new URLSearchParams(location.search);
+    const specialPaths = [
+      "/m/home/util",
+      "/m/home/council",
+      "/m/home/campus",
+      "/m/home/tips",
+    ];
+
+    const shouldGoHome =
+      specialPaths.includes(location.pathname) && [...params].length > 0;
+
+    const isBusInfoPage = location.pathname.includes("/m/bus/info");
+
+    if (isBusInfoPage) {
+      mobileNavigate("/bus");
+    } else if (shouldGoHome) {
+      mobileNavigate("/home");
+    } else {
+      mobileNavigate(-1);
+    }
+  };
+
   return (
     <MobileHeaderWrapper $visible={showHeader}>
       <MainHeaderWrapper>
         <UpperBackground src={UpperBackgroundImg} alt="background" />
-        <ReactSVG onClick={handleLogoClick} src={intipLogo} />
+        {title ? (
+          <TitleArea>
+            {hasback && (
+              <BackButtonWrapper onClick={handleBack}>
+                <BackButton />
+              </BackButtonWrapper>
+            )}
+
+            <Title title={title} />
+          </TitleArea>
+        ) : (
+          <img className="logo" onClick={handleLogoClick} src={intipLogo} />
+        )}
+
         <ProfileMenuWrapper>
-          {userInfo.nickname ? (
-            <PostInfo onClick={handleProfileClick}>
-              <ProfileImage fireId={userInfo.fireId} />
-              {userInfo.nickname}
-            </PostInfo>
-          ) : (
-            <LoginNavigateButton />
-          )}
           <MenuButton />
         </ProfileMenuWrapper>
       </MainHeaderWrapper>
-
-      {/* title이 존재할 경우에만 헤더 렌더링 */}
-      {pageTitle && <MobileTitleHeader title={pageTitle} />}
     </MobileHeaderWrapper>
   );
 }
@@ -124,15 +112,23 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
 `;
 const MainHeaderWrapper = styled.div`
   width: 100%;
-  height: 100%;
+  height: 56px;
+
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
+  //padding: 0 24px;
   box-sizing: border-box;
 
-  height: 72px;
+  .logo {
+    //width: 100px;
+    height: 100%;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-left: 24px;
+    box-sizing: border-box;
+  }
 `;
 
 const UpperBackground = styled.img`
@@ -151,17 +147,21 @@ const ProfileMenuWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-right: 24px;
 `;
 
-const PostInfo = styled.div`
+const BackButtonWrapper = styled.span`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 5px;
-  background: #ecf4ff;
-  font-size: 14px;
-  color: #666;
-  border-radius: 100px;
-  padding: 5px;
-  font-weight: 400;
+  justify-content: center;
+  margin-left: 16px;
+`;
+
+const TitleArea = styled.div`
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
 `;

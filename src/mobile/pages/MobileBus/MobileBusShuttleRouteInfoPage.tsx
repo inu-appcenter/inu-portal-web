@@ -3,6 +3,7 @@ import styled from "styled-components";
 import GimpoCheongnaShuttle from "../../components/bus/GimpoCheongnaShuttle.tsx";
 import AnsanSiheungShuttle from "../../components/bus/AnsanSiheungShuttle.tsx";
 import BucheonShuttle from "../../components/bus/BucheonShuttle.tsx";
+import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 const MobileBusShuttleRouteInfoPage = () => {
   const location = useLocation();
@@ -11,6 +12,7 @@ const MobileBusShuttleRouteInfoPage = () => {
 
   return (
     <Wrapper>
+      <MobileHeader title={"셔틀 노선 정보"} />
       {route === "gimpo-cheongna" && <GimpoCheongnaShuttle />}
       {route === "bucheon" && <BucheonShuttle />}
       {route === "ansan-siheung" && <AnsanSiheungShuttle />}
@@ -28,6 +30,7 @@ const Wrapper = styled.div`
   width: 100%;
   height: 100%;
   padding: 16px;
+  padding-top: calc(56px + 16px);
   box-sizing: border-box;
 
   img {

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getCafeterias } from "apis/cafeterias";
 import CafeteriaInfoContainer from "mobile/containers/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "mobile/containers/cafeteria/CafeteriaTitleContainer";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 interface CafeteriaDetail {
   구성원가: string;
@@ -81,6 +82,7 @@ export default function MobileMenuPage() {
 
   return (
     <CafeteriaWrapper>
+      <MobileHeader title={"식당 메뉴"} />
       <CafeteriaTitleContainer
         title={title}
         setTitle={setTitle}
@@ -104,4 +106,5 @@ const CafeteriaWrapper = styled.div`
   height: 100%;
   box-sizing: border-box;
   padding: 0 16px;
+  padding-top: 72px;
 `;

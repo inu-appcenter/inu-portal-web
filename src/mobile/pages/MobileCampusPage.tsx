@@ -1,9 +1,12 @@
 import styled from "styled-components";
 import MapManager from "components/map/MapManager.tsx";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileCampusPage() {
   return (
     <MobileCampusPageWrapper>
+      <MobileHeader title={"캠퍼스맵"} />
+
       <Wrapper>
         <MapManager />
       </Wrapper>
@@ -18,7 +21,8 @@ const MobileCampusPageWrapper = styled.div`
   gap: 16px;
   width: 100dvw;
 
-  padding-top: 16px;
+  padding-top: 72px;
+
   box-sizing: border-box;
 `;
 

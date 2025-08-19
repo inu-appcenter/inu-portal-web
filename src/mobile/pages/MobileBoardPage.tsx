@@ -7,6 +7,7 @@ import SerachForm from "mobile/containers/home/SerachForm";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import MobileWriteButton from "mobile/components/tips/MobileWriteButton";
 import CategorySelectorNew from "../components/common/CategorySelectorNew.tsx";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileBoardPage() {
   const location = useLocation();
@@ -28,6 +29,15 @@ export default function MobileBoardPage() {
 
   return (
     <MobileTipsPageWrapper>
+      <MobileHeader
+        title={
+          docType === "TIPS"
+            ? "TIPS"
+            : docType === "NOTICE"
+              ? "학교 공지사항"
+              : ""
+        }
+      />
       <TitleCategorySelectorWrapper>
         {(docType === "TIPS" || docType === "NOTICE") && (
           <CategorySelectorNew />
@@ -56,6 +66,8 @@ const MobileTipsPageWrapper = styled.div`
   width: 100%;
   gap: 8px;
   padding: 16px;
+  padding-top: 72px;
+
   box-sizing: border-box;
 `;
 

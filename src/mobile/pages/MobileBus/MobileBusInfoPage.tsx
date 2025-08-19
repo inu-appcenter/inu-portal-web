@@ -9,6 +9,7 @@ import GoHomeScience from "../../components/bus/GoHomeScience.tsx";
 import MichuholShuttle from "../../components/bus/MichuholShuttle.tsx";
 import SubwayShuttle from "../../components/bus/SubwayShuttle.tsx";
 import SchoolShuttle from "../../components/bus/SchoolShuttle.tsx";
+import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 export default function BusInfoPage() {
   const location = useLocation();
@@ -25,29 +26,40 @@ export default function BusInfoPage() {
   const selectedTab = tab ?? defaultTab;
 
   return (
-    <>
+    <BusInfoPageWrapper>
+      <MobileHeader
+        title={`${type === "go-school" ? "학교 갈래요" : type === "go-home" ? "집 갈래요" : type === "shuttle" ? "셔틀버스" : "인입런"}`}
+      />
       <BusTabHeader Type={type} />
-      {type === "go-school" && selectedTab === "INU" && <GoSchoolINU />}
-      {type === "go-school" && selectedTab === "BIT" && <GoSchoolBIT />}
-      {type === "go-home" && selectedTab === "main" && <GoHomeMain />}
-      {type === "go-home" && selectedTab === "science" && <GoHomeScience />}
-      {type === "go-home" && selectedTab === "dorm" && <GoHomeDorm />}
-      {type === "shuttle" && selectedTab === "michuholShuttle" && (
-        <MichuholShuttle />
-      )}
-      {type === "shuttle" && selectedTab === "subwayShuttle" && (
-        <SubwayShuttle />
-      )}
-      {type === "shuttle" && selectedTab === "schoolShuttle" && (
-        <SchoolShuttle />
-      )}
-      <BusInfoPageWrapper />
-    </>
+      <ContentWrapper>
+        {type === "go-school" && selectedTab === "INU" && <GoSchoolINU />}
+        {type === "go-school" && selectedTab === "BIT" && <GoSchoolBIT />}
+        {type === "go-home" && selectedTab === "main" && <GoHomeMain />}
+        {type === "go-home" && selectedTab === "science" && <GoHomeScience />}
+        {type === "go-home" && selectedTab === "dorm" && <GoHomeDorm />}
+        {type === "shuttle" && selectedTab === "michuholShuttle" && (
+          <MichuholShuttle />
+        )}
+        {type === "shuttle" && selectedTab === "subwayShuttle" && (
+          <SubwayShuttle />
+        )}
+        {type === "shuttle" && selectedTab === "schoolShuttle" && (
+          <SchoolShuttle />
+        )}
+      </ContentWrapper>
+    </BusInfoPageWrapper>
   );
 }
 
 const BusInfoPageWrapper = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
+  padding-top: 56px;
+  box-sizing: border-box;
+`;
+
+const ContentWrapper = styled.div`
   padding: 0 16px;
+  box-sizing: border-box;
 `;

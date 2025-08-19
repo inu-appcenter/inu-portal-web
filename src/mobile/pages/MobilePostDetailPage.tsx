@@ -4,11 +4,11 @@ import { getPostDetail } from "apis/posts";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
 import CommentListMobile from "mobile/containers/postdetail/CommentListContainer";
 import ReplyInput from "mobile/containers/postdetail/ReplyInput";
-import { Reply } from "types/posts";
-import { PostDetail } from "types/posts";
+import { PostDetail, Reply } from "types/posts";
 import axios, { AxiosError } from "axios";
 import { useLocation } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
@@ -62,53 +62,54 @@ export default function PostDetailPage() {
   }, [location.pathname, commentUpdated]);
 
   return (
-    <>
+    <Wrapper>
+      <MobileHeader title={"게시글 상세"} />
       {post ? (
         <>
-          <Wrapper>
-            <PostWrapper>
-              <PostContentContainer ClubRecruit={post} />
-              <CommentWrapper>
-                <CommentListMobile
-                  bestReply={post.bestReplies[0]}
-                  replies={post.replies}
-                  setReplyToReply={setReplyToReply}
-                  setReplyToEdit={setReplyToEdit}
-                  setReplyContent={setReplyContent}
-                  onCommentUpdate={() => setCommentUpdated(true)}
-                />
-              </CommentWrapper>
-            </PostWrapper>
-            <ReplyInput
-              postId={post.id}
-              replyContent={replyContent}
-              isAnonymous={isAnonymous}
-              replyToEdit={replyToEdit}
-              replyToReply={replyToReply}
-              setReplyToReply={setReplyToReply}
-              setReplyToEdit={setReplyToEdit}
-              setReplyContent={setReplyContent}
-              setIsAnonymous={setIsAnonymous}
-              cancelEditOrReply={cancelEditOrReply}
-              onCommentUpdate={() => setCommentUpdated(true)}
-            />
-          </Wrapper>
+          <PostWrapper>
+            <PostContentContainer ClubRecruit={post} />
+            <CommentWrapper>
+              <CommentListMobile
+                bestReply={post.bestReplies[0]}
+                replies={post.replies}
+                setReplyToReply={setReplyToReply}
+                setReplyToEdit={setReplyToEdit}
+                setReplyContent={setReplyContent}
+                onCommentUpdate={() => setCommentUpdated(true)}
+              />
+            </CommentWrapper>
+          </PostWrapper>
+          <ReplyInput
+            postId={post.id}
+            replyContent={replyContent}
+            isAnonymous={isAnonymous}
+            replyToEdit={replyToEdit}
+            replyToReply={replyToReply}
+            setReplyToReply={setReplyToReply}
+            setReplyToEdit={setReplyToEdit}
+            setReplyContent={setReplyContent}
+            setIsAnonymous={setIsAnonymous}
+            cancelEditOrReply={cancelEditOrReply}
+            onCommentUpdate={() => setCommentUpdated(true)}
+          />
         </>
       ) : (
         <div>Loading...</div>
       )}
-    </>
+    </Wrapper>
   );
 }
 const Wrapper = styled.div`
   width: 100%;
-  height: calc(100svh - 65px);
+  //height: calc(100svh - 65px);
+  padding-top: 56px;
+  box-sizing: border-box;
 `;
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: calc(100svh - 135px);
+  //height: calc(100svh - 135px);
   //overflow-y: auto;
   position: relative;
   z-index: 1;

@@ -13,6 +13,8 @@ import 배너이미지 from "resources/assets/banner/intip설문조사.png";
 import { useEffect, useRef, useState } from "react";
 import TitleContentArea from "../../components/common/TitleContentArea.tsx";
 import ThreeWeekCalendar from "../components/calendar/ThreeWeekCalendar.tsx";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
+import MobileNav from "../containers/common/MobileNav.tsx";
 
 export default function MobileHomePage() {
   const isBannerOn = true; //배너 온오프 - on:true off:false
@@ -84,6 +86,7 @@ export default function MobileHomePage() {
 
   return (
     <MobileHomePageWrapper>
+      <MobileHeader />
       {show && isBannerOn && (
         <ModalBackGround>
           <Modal>
@@ -149,6 +152,7 @@ export default function MobileHomePage() {
       <AppcenterLogoWrapper>
         <ReactSVG src={AppcenterLogo} />
       </AppcenterLogoWrapper>
+      <MobileNav />
     </MobileHomePageWrapper>
   );
 }
