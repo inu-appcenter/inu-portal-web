@@ -10,7 +10,6 @@ export default function CategorySelectorNew() {
   const [type, setType] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
   const { isAppUrl } = useAppStateStore();
 
   useEffect(() => {
@@ -64,7 +63,6 @@ export default function CategorySelectorNew() {
             $selected={selectedCategory === category}
             onClick={() => {
               handleClickCategory(category);
-              setIsOpen(false);
             }}
           >
             <div>{category}</div>
