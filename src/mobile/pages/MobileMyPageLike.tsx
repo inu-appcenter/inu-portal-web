@@ -4,6 +4,7 @@ import styled from "styled-components";
 import Card from "mobile/containers/mypage/Card";
 import Empty from "mobile/components/mypage/Empty";
 import { Post } from "types/posts";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileMyPageLike() {
   const [likePost, setLikePost] = useState<Post[]>([]);
@@ -23,6 +24,7 @@ export default function MobileMyPageLike() {
 
   return (
     <MobileMyPageLikeWrapper>
+      <MobileHeader title={"좋아요한 글"} />
       {likePost.length === 0 ? (
         <Empty />
       ) : (
@@ -32,4 +34,6 @@ export default function MobileMyPageLike() {
   );
 }
 
-const MobileMyPageLikeWrapper = styled.div``;
+const MobileMyPageLikeWrapper = styled.div`
+  padding-top: 72px;
+`;

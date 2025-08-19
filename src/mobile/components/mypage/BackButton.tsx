@@ -6,13 +6,11 @@ export default function BackButton() {
   // const mobileNavigate = useMobileNavigate();
 
   return (
-    <>
-      <Img
-        src={backBtnImg}
-        alt="뒤로가기 이미지"
-        // onClick={() => mobileNavigate(`/mypage`)}
-      />
-    </>
+    <Img
+      src={backBtnImg}
+      alt="뒤로가기 이미지"
+      // onClick={() => mobileNavigate(`/mypage`)}
+    />
   );
 }
 

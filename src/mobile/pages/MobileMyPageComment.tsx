@@ -4,6 +4,7 @@ import { MembersReplies } from "types/members";
 import styled from "styled-components";
 import Empty from "mobile/components/mypage/Empty";
 import CardComment from "mobile/containers/mypage/CardComment";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileMyPageComment() {
   const [replyPost, setReplyPost] = useState<MembersReplies[]>([]);
@@ -23,6 +24,7 @@ export default function MobileMyPageComment() {
 
   return (
     <MobileMyPageCommentWrapper>
+      <MobileHeader title={"작성한 댓글"} />
       {replyPost.length === 0 ? (
         <Empty />
       ) : (
@@ -34,4 +36,5 @@ export default function MobileMyPageComment() {
 
 const MobileMyPageCommentWrapper = styled.div`
   width: 100%;
+  padding-top: 72px;
 `;

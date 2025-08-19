@@ -1,16 +1,14 @@
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
-import MobileHeader from "./containers/common/MobileHeader.tsx";
-import MobileNav from "./containers/common/MobileNav.tsx";
 
 export default function MainLayout() {
   return (
     <Container>
-      <MobileHeader />
+      {/*<MobileHeader />*/}
       <ContentWrapper>
         <Outlet />
       </ContentWrapper>
-      <MobileNav />
+      {/*<MobileNav />*/}
     </Container>
   );
 }
@@ -31,7 +29,7 @@ const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 72px;
+  padding-top: 52px;
   padding-bottom: 72px;
   overflow-y: hidden;
 `;

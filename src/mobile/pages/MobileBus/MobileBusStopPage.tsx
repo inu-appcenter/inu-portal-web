@@ -6,6 +6,7 @@ import BusCircleBox from "../../components/bus/BusCircleBox.tsx";
 import { useLocation } from "react-router-dom";
 import { BusStopDummy } from "../../components/bus/BusStopDummy.ts";
 import BusStopMap from "../../components/bus/BusStopMap.tsx";
+import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 export default function MobileBusStopPage() {
   const location = useLocation();
@@ -17,6 +18,7 @@ export default function MobileBusStopPage() {
   if (stop)
     return (
       <MobileBusStopPageWrapper>
+        <MobileHeader title={"정류장 정보"} />
         <BusStopHeader
           stopName={stop.stopName}
           stopNotice={stop.stopNotice ?? ""}
@@ -39,6 +41,7 @@ const MobileBusStopPageWrapper = styled.div`
   flex-direction: column;
   gap: 20px;
   padding: 0 16px;
+  padding-top: 56px;
   width: 100%;
   box-sizing: border-box;
 `;

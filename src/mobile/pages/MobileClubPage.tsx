@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "../components/club/ClubAdmin";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -38,6 +39,8 @@ export default function MobileClubPage() {
 
   return (
     <MobileClubPageWrapper>
+      <MobileHeader title={"동아리"} />
+
       {isClubAdminOpen ? (
         <ClubAdmin setIsClubAdminOpen={setIsClubAdminOpen} />
       ) : (
@@ -109,7 +112,7 @@ const MobileClubPageWrapper = styled.div`
   align-items: center;
   gap: 16px;
 
-  padding-top: 16px;
+  padding-top: 72px;
   padding-bottom: 32px;
   box-sizing: border-box;
 

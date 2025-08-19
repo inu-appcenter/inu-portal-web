@@ -12,7 +12,7 @@ export const MyPageActive = [
 ];
 
 export const MyPageCategory = [
-  { title: "프로필 편집", image: `${profileImg}` },
+  { title: "프로필 수정", image: `${profileImg}` },
   { title: "스크랩", image: `${scrapImg}` },
   { title: "로그아웃", image: `${logoutImg}` },
   // { title: "회원탈퇴", image: `${removeImg}` },
