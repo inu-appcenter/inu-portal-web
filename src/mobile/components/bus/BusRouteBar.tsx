@@ -49,7 +49,7 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
                   <div>
                     {arrivalInfo.station}{" "}
                     {arrivalInfo.isLastBus ? (
-                      <LastBus>("막차")</LastBus>
+                      <LastBus>막차</LastBus>
                     ) : (
                       arrivalInfo.status
                     )}

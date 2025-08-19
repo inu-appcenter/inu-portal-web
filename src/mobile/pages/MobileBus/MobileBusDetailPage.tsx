@@ -43,10 +43,14 @@ export default function MobileBusDetailPage() {
       <BusStopHeader
         stopName={`${bus.number}번`}
         sectionLabel={bus.sectionLabel}
-        onClickStopInfo={() => mobileBusStopNavigate(bus?.stopId)}
+        onClickStopInfo={() => {
+          if (bus?.stopId) {
+            mobileBusStopNavigate(bus?.stopId);
+          }
+        }}
       />
       <BusRouteBar bus={bus} bstopId={bstopId} />
-      <BusRouteMap path={bus.path} />
+      {bus?.path && <BusRouteMap path={bus.path} />}
     </MobileBusDetailPageWrapper>
   );
 }
