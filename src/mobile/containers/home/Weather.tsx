@@ -157,6 +157,7 @@ const WeatherBackground = styled.div<{ $gradient: string }>`
   display: flex;
   align-items: flex-end;
   padding: 20px 0 40px 0;
+  box-sizing: border-box;
   justify-content: space-around;
   background: ${(props) => props.$gradient};
 `;
