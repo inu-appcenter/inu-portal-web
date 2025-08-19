@@ -8,6 +8,8 @@ import loginImg from "resources/assets/login/login-modal-logo.svg";
 import { Folder } from "types/folders";
 import axios, { AxiosError } from "axios";
 import useUserStore from "stores/useUserStore";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
+import MobileNav from "../containers/common/MobileNav.tsx";
 
 export default function MobileSavePage() {
   const { tokenInfo } = useUserStore();
@@ -60,6 +62,7 @@ export default function MobileSavePage() {
 
   return (
     <MobileSavePageWrapper>
+      <MobileHeader />
       {tokenInfo.accessToken ? (
         <>
           <ScrapFolders
@@ -85,6 +88,7 @@ export default function MobileSavePage() {
           <div className="error">로그인이 필요합니다!</div>
         </ErrorWrapper>
       )}
+      <MobileNav />
     </MobileSavePageWrapper>
   );
 }

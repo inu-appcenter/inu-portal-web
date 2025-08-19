@@ -31,7 +31,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 16px;
+  //padding: 16px;
 `;
 
 const CardImg = styled.img`

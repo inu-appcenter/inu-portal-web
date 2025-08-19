@@ -2,8 +2,8 @@ import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
-  goHome_MainOut,
   goHome_MainIn,
+  goHome_MainOut,
 } from "mobile/components/bus/BusDummy.ts";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 
@@ -40,6 +40,6 @@ const PageWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  padding: 0 16px;
+  //padding: 0 16px;
   box-sizing: border-box;
 `;

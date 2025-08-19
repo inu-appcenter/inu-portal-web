@@ -4,6 +4,7 @@ import styled from "styled-components";
 import Card from "mobile/containers/mypage/Card";
 import Empty from "mobile/components/mypage/Empty";
 import { Post } from "types/posts";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileMyPagePost() {
   const [postPost, setPostPost] = useState<Post[]>([]);
@@ -23,6 +24,7 @@ export default function MobileMyPagePost() {
 
   return (
     <MobileMyPagePostWrapper>
+      <MobileHeader title={"내가 쓴 글"} />
       {postPost.length === 0 ? (
         <Empty />
       ) : (
@@ -34,4 +36,5 @@ export default function MobileMyPagePost() {
 
 const MobileMyPagePostWrapper = styled.div`
   width: 100%;
+  padding-top: 72px;
 `;
