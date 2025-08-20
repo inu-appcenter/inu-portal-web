@@ -1,10 +1,8 @@
 import { Map, MapMarker } from "react-kakao-maps-sdk";
 import styled from "styled-components";
+import { LatLng } from "../../../types/bus.ts";
 
-interface BusStopMapProps {
-  lat: number;
-  lng: number;
-}
+interface BusStopMapProps extends LatLng {}
 
 export default function BusStopMap({ lat, lng }: BusStopMapProps) {
   if (window.kakao?.maps)

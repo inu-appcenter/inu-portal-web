@@ -19,7 +19,7 @@ export default function BusItem({
         {routeNotice ? (
           <RouteText>{routeNotice}</RouteText>
         ) : (
-          <RouteText>{route.join("→")}</RouteText>
+          <RouteText>{route.filter(Boolean).join("→")}</RouteText>
         )}
       </TopSection>
       <MainSection>

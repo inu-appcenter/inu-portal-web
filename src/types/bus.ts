@@ -9,19 +9,21 @@ export interface ArrivalInfo {
   restCount?: number;
 }
 
+//버스 상세 정보 (BusDummy)
 export interface BusData {
   id: number;
   number: string;
   route: string[];
+  path?: { lat: number; lng: number }[];
   routeNotice?: string;
-  routeImg?: string[];
   arrivalInfo?: ArrivalInfo;
   routeId?: string;
-  sectionLabel: string;
-  stopId: string;
+  sectionLabel?: string;
+  stopId?: string;
+  lastStopId?: string;
 }
 
-//정류장 상세 정보 (더미데이터)
+//정류장 상세 정보 (BusDummy)
 export interface BusStopData {
   id: string;
   stopName: string;
@@ -44,4 +46,10 @@ export interface BusStopHeaderProps {
   stopNotice?: string;
   onClickStopInfo?: () => void;
   showInfoIcon?: boolean;
+}
+
+//지도 좌표
+export interface LatLng {
+  lat: number;
+  lng: number;
 }
