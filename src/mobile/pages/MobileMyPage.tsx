@@ -2,7 +2,11 @@ import styled from "styled-components";
 import useUserStore from "stores/useUserStore";
 import { useState } from "react";
 import loginImg from "resources/assets/login/login-modal-logo.svg";
-import { MyPageActive, MyPageCategoryCommon, MyPageCategoryLoggeedIn } from "resources/strings/m-mypage";
+import {
+  MyPageActive,
+  MyPageCategoryCommon,
+  MyPageCategoryLoggeedIn,
+} from "resources/strings/m-mypage";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import arrowImg from "resources/assets/mobile-mypage/arrow.svg";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
