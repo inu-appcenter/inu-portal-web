@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
-import styled from 'styled-components';
-import { navBarList as originalNavBarList } from '../../resource/string/navbar';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import VVector from '../../resource/assets/V-Vector.svg';
-import LoginModal from './LoginModal.tsx';
-import round from '../../resource/assets/round.svg';
-import lightround from '../../resource/assets/lightround.svg';
-import polygon from '../../resource/assets/polygon.svg';
+import { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
+import { navBarList as originalNavBarList } from "../../resource/string/navBarList";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import VVector from "../../resource/assets/V-Vector.svg";
+import LoginModal from "./LoginModal.tsx";
+import round from "../../resource/assets/round.svg";
+import lightround from "../../resource/assets/lightround.svg";
+import polygon from "../../resource/assets/polygon.svg";
 
 interface loginInfo {
   user: {
@@ -31,15 +31,18 @@ export default function NavItems({ isInFooter }: NavItemsProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setToggleIndex(null);
         setSubToggleIndex(null);
         setSelectedChildItems([]);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [wrapperRef]);
 
@@ -48,7 +51,7 @@ export default function NavItems({ isInFooter }: NavItemsProps) {
   };
 
   const handleMyPageClick = (url: string) => {
-    if (user.token === '') {
+    if (user.token === "") {
       setOpenModal(true);
     } else {
       console.log(user.token);
@@ -76,7 +79,9 @@ export default function NavItems({ isInFooter }: NavItemsProps) {
     setSelectedChildItems([]); // child toggle2가 닫힐 때 selectedChildItems 초기화
   };
 
-  const navBarList = isInFooter? [...originalNavBarList, { title: '공지사항' }, {title: 'TIPS' }]: originalNavBarList
+  const navBarList = isInFooter
+    ? [...originalNavBarList, { title: "공지사항" }, { title: "TIPS" }]
+    : originalNavBarList;
 
   return (
     <Items ref={wrapperRef}>
@@ -85,46 +90,84 @@ export default function NavItems({ isInFooter }: NavItemsProps) {
           <div
             onClick={() => {
               handleToggle(index);
-              if (items.title === '마이 페이지') { handleMyPageClick('/mypage'); }
-              else if (items.title === '공지사항') { navigate('/tips/notice'); }
-              else if (items.title === 'TIPS') { navigate('/tips') }
+              if (items.title === "마이 페이지") {
+                handleMyPageClick("/mypage");
+              } else if (items.title === "공지사항") {
+                navigate("/tips/notice");
+              } else if (items.title === "TIPS") {
+                navigate("/tips");
+              }
             }}
           >
-            <div onMouseEnter={() => handleToggle(index)} onMouseLeave={() => closeSubModal()}>
+            <div
+              onMouseEnter={() => handleToggle(index)}
+              onMouseLeave={() => closeSubModal()}
+            >
               {items.title}
-              {((items.title === '학과 홈페이지' || items.title === '학교 홈페이지') && toggleIndex === index) && (
-                <div
-                  className={`child toggle ${isInFooter ? 'footer' : ''}`}
-                  onMouseEnter={() => handleToggle(index)}
-                  onMouseLeave={() => handleToggle(0)}
-                >
-                  {!isInFooter && (
-                    <>
-                      <img className='v-vector' src={VVector} />
-                      <div className='line-vector' />
-                    </>)}
-                  {items.child?.map((item, itemIndex) => (
-                    <ChildDetail key={itemIndex} onClick={(event) => handleSubItemClick(item, itemIndex, event)}>
-                      <img src={lightround} alt='상단바 인덱스 디자인' style={{ margin: '0 10px' }} />
-                      {item.title}
-                      {((items.title === '학과 홈페이지') && toggleIndex === index && selectedChildItems.length > 0) && itemIndex === subToggleIndex && (
-                        <div className='child toggle2' onClick={closeSubModal}>
-                          {selectedChildItems.map((subItem, subItemIndex) => (
-                            <ChildDetail2 key={subItemIndex} onClick={(event) => handleSubItemClick(subItem, subItemIndex, event)}>
-                              {subItem.title}
-                            </ChildDetail2>
-                          ))}
-                        </div>
-                      )}
-                    </ChildDetail>
-                  ))}
-                </div>
-              )}
+              {(items.title === "학과 홈페이지" ||
+                items.title === "학교 홈페이지") &&
+                toggleIndex === index && (
+                  <div
+                    className={`child toggle ${isInFooter ? "footer" : ""}`}
+                    onMouseEnter={() => handleToggle(index)}
+                    onMouseLeave={() => handleToggle(0)}
+                  >
+                    {!isInFooter && (
+                      <>
+                        <img className="v-vector" src={VVector} />
+                        <div className="line-vector" />
+                      </>
+                    )}
+                    {items.child?.map((item, itemIndex) => (
+                      <ChildDetail
+                        key={itemIndex}
+                        onClick={(event) =>
+                          handleSubItemClick(item, itemIndex, event)
+                        }
+                      >
+                        <img
+                          src={lightround}
+                          alt="상단바 인덱스 디자인"
+                          style={{ margin: "0 10px" }}
+                        />
+                        {item.title}
+                        {items.title === "학과 홈페이지" &&
+                          toggleIndex === index &&
+                          selectedChildItems.length > 0 &&
+                          itemIndex === subToggleIndex && (
+                            <div
+                              className="child toggle2"
+                              onClick={closeSubModal}
+                            >
+                              {selectedChildItems.map(
+                                (subItem, subItemIndex) => (
+                                  <ChildDetail2
+                                    key={subItemIndex}
+                                    onClick={(event) =>
+                                      handleSubItemClick(
+                                        subItem,
+                                        subItemIndex,
+                                        event,
+                                      )
+                                    }
+                                  >
+                                    {subItem.title}
+                                  </ChildDetail2>
+                                ),
+                              )}
+                            </div>
+                          )}
+                      </ChildDetail>
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
         </ItemWrapper>
       ))}
-      {isOpenModal && <LoginModal setOpenModal={setOpenModal} closeModal={closeModal} />}
+      {isOpenModal && (
+        <LoginModal setOpenModal={setOpenModal} closeModal={closeModal} />
+      )}
     </Items>
   );
 }
@@ -145,7 +188,9 @@ const ItemWrapper = styled.div`
   .child {
     width: 5rem;
     top: 2.5rem;
-    transition: opacity 0.5s, visibility 0.5s;
+    transition:
+      opacity 0.5s,
+      visibility 0.5s;
     visibility: hidden;
     opacity: 0;
   }
@@ -161,7 +206,12 @@ const ItemWrapper = styled.div`
     width: 210px;
     padding: 30px 20px;
     border-radius: 10px;
-    background: linear-gradient(180deg, #8da6ec 4.5%, #9cafe2 54%, #7590d9 100%);
+    background: linear-gradient(
+      180deg,
+      #8da6ec 4.5%,
+      #9cafe2 54%,
+      #7590d9 100%
+    );
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -240,7 +290,7 @@ const ChildDetail = styled.div`
     content: url(${round});
   }
 
-  cursor: url('/pointers/cursor-pointer.svg'), pointer;
+  cursor: url("/pointers/cursor-pointer.svg"), pointer;
   position: relative;
 `;
 

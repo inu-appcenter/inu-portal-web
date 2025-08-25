@@ -31,7 +31,7 @@ export default function CategoryForm() {
     } else if (title === "학교 공지") {
       mobileNavigate(`/home/notice`);
     } else if (title === "학과 공지") {
-      mobileNavigate(`/home/notice`);
+      mobileNavigate(`/home/deptnotice`);
     } else if (title === "TIPS") {
       mobileNavigate(`/home/tips`);
     } else if (title === "학사 일정") {
