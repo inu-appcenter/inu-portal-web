@@ -15,7 +15,7 @@ import councilImg from "resources/assets/mobile-home/council.svg";
 import mapImg from "resources/assets/mobile-home/map.svg";
 import clubImg from "resources/assets/mobile-home/club.svg";
 import utilImg from "resources/assets/mobile-home/util.svg";
-import inquiryImg from "resources/assets/mobile-home/inquiry.svg";
+import inquiryImg from "resources/assets/mobile-mypage/inquiry.svg";
 
 import useMobileNavigate from "hooks/useMobileNavigate";
 import { useLocation } from "react-router-dom";
