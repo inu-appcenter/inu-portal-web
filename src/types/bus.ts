@@ -15,6 +15,11 @@ export interface BusData {
   number: string;
   route: string[];
   path?: { lat: number; lng: number }[];
+  stopMarker?: {
+    name: string;
+    lat: number;
+    lng: number;
+  }[];
   routeNotice?: string;
   arrivalInfo?: ArrivalInfo;
   routeId?: string;

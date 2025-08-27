@@ -1,4 +1,4 @@
-import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { Map, MapMarker, MapTypeControl } from "react-kakao-maps-sdk";
 import styled from "styled-components";
 import { LatLng } from "../../../types/bus.ts";
 
@@ -16,6 +16,9 @@ export default function BusStopMap({ lat, lng }: BusStopMapProps) {
           style={{ height: "100%", width: "100%" }}
         >
           <MapMarker position={{ lat, lng }} />
+          <MapTypeControl
+            position={window.kakao.maps.ControlPosition.TOPRIGHT}
+          />
         </Map>
       </MapCard>
     );

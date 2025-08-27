@@ -36,7 +36,7 @@ export default function BusStopBox({
             {...bus}
             onClick={() =>
               bus.number === "셔틀"
-                ? mobileNavigate("/bus/info?type=shuttle&tab=subwayShuttle")
+                ? mobileNavigate("/Bus/info?type=shuttle&tab=subwayShuttle")
                 : mobileNavigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
             }
           />

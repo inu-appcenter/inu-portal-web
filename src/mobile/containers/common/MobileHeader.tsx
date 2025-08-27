@@ -53,10 +53,10 @@ export default function MobileHeader({ title, hasback = true }: HeaderProps) {
     const shouldGoHome =
       specialPaths.includes(location.pathname) && [...params].length > 0;
 
-    const isBusInfoPage = location.pathname.includes("/m/bus/info");
+    const isBusInfoPage = location.pathname.includes("/m/Bus/info");
 
     if (isBusInfoPage) {
-      mobileNavigate("/bus");
+      mobileNavigate("/Bus");
     } else if (shouldGoHome) {
       mobileNavigate("/home");
     } else {
