@@ -4,10 +4,12 @@ import { Post } from "types/posts";
 import { Notice } from "types/notices";
 import heart from "resources/assets/posts/posts-heart.svg";
 import { CouncilNotice } from "types/councilNotices";
+import { FaEye } from "react-icons/fa"; // FontAwesome 눈 아이콘
 
 interface TipsCardContainerProps {
   post?: Post;
   notice?: Notice;
+  deptNotice?: Notice;
   councilNotice?: CouncilNotice;
   viewMode: "grid" | "list";
   docType: string;
@@ -17,6 +19,7 @@ interface TipsCardContainerProps {
 export default function ({
   post,
   notice,
+  deptNotice,
   councilNotice,
   viewMode,
   docType,
@@ -26,8 +29,9 @@ export default function ({
 
   const handleDocumentClick = () => {
     if (isEditing) return;
-    if (docType === "NOTICE") {
+    if (docType === "NOTICE" || docType === "DEPT_NOTICE") {
       notice && window.open("https://" + notice.url, "_blank");
+      deptNotice && window.open(deptNotice.url, "_blank");
     } else if (docType === "COUNCILNOTICE") {
       councilNotice &&
         mobileNavigate(`/councilnoticedetail?id=${councilNotice.id}`);
@@ -75,6 +79,25 @@ export default function ({
               </GridTopWrapper>
             </TipsCardGridWrapper>
           )}
+
+          {deptNotice && (
+            <TipsCardGridWrapper onClick={handleDocumentClick}>
+              <GridTopWrapper>
+                <GridTopTopWrapper>
+                  <Category>{deptNotice.category}</Category>
+                  <Date>{deptNotice.createDate}</Date>
+                </GridTopTopWrapper>
+                <GridTitle>{deptNotice.title}</GridTitle>
+                <LikeCommentWriterWrapper>
+                  <span className="view">
+                    <FaEye />
+                    {deptNotice.view}
+                  </span>{" "}
+                </LikeCommentWriterWrapper>
+              </GridTopWrapper>
+            </TipsCardGridWrapper>
+          )}
+
           {councilNotice && (
             <TipsCardGridWrapper onClick={handleDocumentClick}>
               <GridTopWrapper>
@@ -137,6 +160,19 @@ export default function ({
               </ListRightWrapper>
             </TipsCardListWrapper>
           )}
+
+          {deptNotice && (
+            <DeptNoticeCardListWrapper onClick={handleDocumentClick}>
+              <ListTitle>{deptNotice.title}</ListTitle>
+              <DateViewWrapper>
+                <Date>{deptNotice.createDate}</Date>
+                <span className="view">
+                  <FaEye />
+                  {deptNotice.view}
+                </span>
+              </DateViewWrapper>
+            </DeptNoticeCardListWrapper>
+          )}
           {councilNotice && (
             <TipsCardListWrapper onClick={handleDocumentClick}>
               <ListLeftWrapper>
@@ -186,11 +222,18 @@ const ListTitle = styled.div`
 
 const GridTitle = styled.div`
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   color: #221112;
   flex: 1;
   text-align: center;
-  word-break: keep-all; //제목이 단어 기준으로 끊김
+  //background: red;
+  word-break: keep-all;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 4; // 최대 4줄
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Content = styled.div`
@@ -221,12 +264,28 @@ const LikeCommentWriterWrapper = styled.div`
   }
 
   .writer {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
     color: #303030;
     padding: 2px 8px;
     background-color: #ecf4ff;
     border-radius: 8px;
+  }
+
+  .view {
+    font-size: 10px;
+    font-weight: 500;
+    color: #303030;
+    padding: 2px 8px;
+    background-color: #ecf4ff;
+    border-radius: 8px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+
+    color: gray;
   }
 `;
 
@@ -246,6 +305,7 @@ const GridTopWrapper = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
 `;
 
 const GridTopTopWrapper = styled.div`
@@ -298,4 +358,55 @@ const ListRightWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+`;
+
+const DeptNoticeCardListWrapper = styled.div`
+  height: fit-content;
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid #7aa7e5;
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 8px;
+  flex: 7;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+const DateViewWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+
+  .like-comment {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+
+    img {
+      height: 10px;
+    }
+  }
+
+  .view {
+    font-size: 10px;
+    font-weight: 500;
+    color: #303030;
+    padding: 2px 8px;
+    background-color: #ecf4ff;
+    border-radius: 8px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+
+    color: gray;
+  }
 `;

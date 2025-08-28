@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import styled from "styled-components";
 import TipsCard from "mobile/components/tips/TipsCard";
 import { getPostsMobile } from "apis/posts";
-import { getNotices } from "apis/notices";
+import { getDepartmentNotices, getNotices } from "apis/notices";
 import { getSearch } from "apis/search";
 import { getCouncilNoticesList } from "apis/councilNotices";
 import { Post } from "types/posts";
@@ -14,6 +14,7 @@ import useAppStateStore from "stores/useAppStateStore";
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
   docType: string;
+  dept?: string;
   category: string;
   query: string;
 }
@@ -26,11 +27,13 @@ interface FetchState {
 export default function TipsListContainer({
   viewMode,
   docType,
+  dept,
   category,
   query,
 }: TipsListContainerProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
   const [councilNotices, setCouncilNotices] = useState<CouncilNotice[]>([]);
   const [fetchState, setFetchState] = useState<FetchState>({
     lastPostId: undefined,
@@ -56,10 +59,11 @@ export default function TipsListContainer({
     setHasMore(true);
     setPosts([]);
     setNotices([]);
+    setDeptNotices([]);
     setCouncilNotices([]);
     setIsInitialLoad(false); // 여기에서 바로 false 처리
     fetchData(undefined, 1);
-  }, [query, docType, setPosts, setNotices, setCouncilNotices, category]);
+  }, [query, docType, setPosts, setNotices, setCouncilNotices, category, dept]);
 
   // 첫 번째 로드 후 추가 데이터를 불러오도록 설정
   useEffect(() => {
@@ -78,8 +82,9 @@ export default function TipsListContainer({
     }
   }, [fetchState]);
 
+  const [isLoading, setIsLoading] = useState(false);
   const fetchData = async (lastPostId: number | undefined, page: number) => {
-    // console.log("fetchData", lastPostId, page, category);
+    setIsLoading(true); // 로딩 시작
     try {
       if (docType === "TIPS") {
         const response = await getPostsMobile(lastPostId, category);
@@ -100,6 +105,23 @@ export default function TipsListContainer({
         const newNotices: Notice[] = response.data.contents;
         if (newNotices && newNotices.length > 0) {
           setNotices((prev) => [...prev, ...newNotices]);
+          // lastPostId 및 페이지 수 업데이트
+          setFetchState((prev) => ({
+            ...prev,
+            page: prev.page + 1,
+          }));
+        } else {
+          setHasMore(false);
+        }
+      } else if (docType === "DEPT_NOTICE") {
+        if (!dept) {
+          return;
+        }
+        const response = await getDepartmentNotices(dept, "date", page);
+        console.log(response);
+        const newNotices: Notice[] = response.data.contents;
+        if (newNotices && newNotices.length > 0) {
+          setDeptNotices((prev) => [...prev, ...newNotices]);
           // lastPostId 및 페이지 수 업데이트
           setFetchState((prev) => ({
             ...prev,
@@ -138,6 +160,8 @@ export default function TipsListContainer({
     } catch (error) {
       console.error("게시글/공지 가져오기 실패", error);
       setHasMore(false);
+    } finally {
+      setIsLoading(false); // 로딩 종료
     }
   };
 
@@ -158,7 +182,9 @@ export default function TipsListContainer({
         dataLength={docType === "NOTICE" ? notices.length : posts.length}
         next={handleNext}
         hasMore={hasMore}
-        loader={<h4 style={{ textAlign: "center" }}>Loading...</h4>}
+        loader={
+          isLoading ? <h4 style={{ textAlign: "center" }}>Loading...</h4> : null
+        }
         endMessage={
           <h4 style={{ textAlign: "center" }}>더 이상 게시물이 없습니다.</h4>
         }
@@ -180,6 +206,14 @@ export default function TipsListContainer({
             <TipsCard
               key={i}
               councilNotice={cn}
+              viewMode={viewMode}
+              docType={docType}
+            />
+          ))}
+          {deptNotices.map((dn, i) => (
+            <TipsCard
+              key={i}
+              deptNotice={dn}
               viewMode={viewMode}
               docType={docType}
             />
