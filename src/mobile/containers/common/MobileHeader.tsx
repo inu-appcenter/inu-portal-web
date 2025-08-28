@@ -12,9 +12,14 @@ import Title from "../../components/mypage/Title.tsx";
 interface HeaderProps {
   title?: string;
   hasback?: boolean;
+  backPath?: string;
 }
 
-export default function MobileHeader({ title, hasback = true }: HeaderProps) {
+export default function MobileHeader({
+  title,
+  hasback = true,
+  backPath,
+}: HeaderProps) {
   const mobileNavigate = useMobileNavigate();
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -42,6 +47,12 @@ export default function MobileHeader({ title, hasback = true }: HeaderProps) {
   }, []);
 
   const handleBack = () => {
+    if (backPath) {
+      // backPath가 존재하면 우선 이동
+      mobileNavigate(backPath);
+      return;
+    }
+
     const params = new URLSearchParams(location.search);
     const specialPaths = [
       "/m/home/util",
@@ -102,7 +113,7 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   left: 0;
   right: 0;
 
-  z-index: 1;
+  z-index: 2;
   //box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 

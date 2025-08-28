@@ -31,7 +31,7 @@ export default function CategoryForm() {
     } else if (title === "학교 공지") {
       mobileNavigate(`/home/notice`);
     } else if (title === "학과 공지") {
-      mobileNavigate(`/home/notice`);
+      mobileNavigate(`/home/deptnotice`);
     } else if (title === "TIPS") {
       mobileNavigate(`/home/tips`);
     } else if (title === "학사 일정") {
@@ -59,7 +59,12 @@ export default function CategoryForm() {
           className="category"
           onClick={() => handleClick(category.title)}
         >
-          <img src={category.img} alt="카테고리 이미지" />
+          <div className="icon-wrapper">
+            <img src={category.img} alt="카테고리 이미지" />
+            {["인입런", "학과 공지"].includes(category.title) && (
+              <span className="new-badge">NEW!</span>
+            )}
+          </div>
           <button>{category.title}</button>
         </div>
       ))}
@@ -78,16 +83,37 @@ const CategoryFormmWrapper = styled.div`
   min-width: fit-content;
 
   .category {
-    //margin-top: 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 20%;
     min-width: fit-content;
 
-    img {
+    .icon-wrapper {
+      position: relative;
       width: 40px;
       height: 40px;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+
+      .new-badge {
+        position: absolute;
+        top: -6px;
+        right: -16px;
+        background-color: #4f9cff; /* 파스텔 블루 */
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        border-radius: 9999px;
+        padding: 2px 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+      }
     }
 
     button {

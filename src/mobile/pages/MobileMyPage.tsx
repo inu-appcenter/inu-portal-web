@@ -2,12 +2,16 @@ import styled from "styled-components";
 import useUserStore from "stores/useUserStore";
 import { useState } from "react";
 import loginImg from "resources/assets/login/login-modal-logo.svg";
-import { MyPageActive, MyPageCategory } from "resources/strings/m-mypage";
+import {
+  MyPageActive,
+  MyPageCategoryCommon,
+  MyPageCategoryLoggeedIn,
+} from "resources/strings/m-mypage";
 import useMobileNavigate from "hooks/useMobileNavigate";
-import UserInfo from "mobile/containers/mypage/UserInfo";
 import arrowImg from "resources/assets/mobile-mypage/arrow.svg";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
 import MobileNav from "../containers/common/MobileNav.tsx";
+import UserInfo from "../containers/mypage/UserInfo.tsx";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -62,6 +66,15 @@ export default function MobileMyPage() {
         mobileNavigate(`/mypage/delete`);
         break;
 
+      case "문의하기":
+        window.open(
+          "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
+        );
+        break;
+      case "인천대학교 앱센터":
+        window.open("https://home.inuappcenter.kr");
+        break;
+
       default:
         break;
     }
@@ -70,65 +83,103 @@ export default function MobileMyPage() {
   return (
     <MyPageWrapper>
       <MobileHeader />
-      {userInfo.id ? (
-        <>
-          <Background />
-          <TopBackground>
-            <UserWrapper>{userInfo.id && <UserInfo />}</UserWrapper>
-            <ActiveWrapper>
-              {MyPageActive.map((active, index) => (
-                <div
-                  className="item"
-                  key={index}
-                  onClick={() => handleClick(active.title)}
-                >
-                  <img src={active.image} />
-                  <p>{active.title}</p>
-                </div>
-              ))}
-            </ActiveWrapper>
-          </TopBackground>
 
-          <CategoryWrapper>
-            {MyPageCategory.map((category, index) => (
-              <div key={index} onClick={() => handleClick(category.title)}>
-                <span>
-                  <img src={category.image} />
-                  <p>{category.title}</p>
-                </span>
-                <Arrow src={arrowImg} />
+      <Background />
+      <TopBackground>
+        <UserWrapper>
+          {userInfo.id !== 0 && <UserInfo />}
+          {!userInfo.id && (
+            <ErrorWrapper>
+              <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
+              <div className="error">
+                로그인이 필요합니다!
+                <LoginButton
+                  onClick={() => {
+                    mobileNavigate("/login");
+                  }}
+                >
+                  로그인
+                </LoginButton>
               </div>
-            ))}
-          </CategoryWrapper>
-          {isModalOpen && (
-            <ModalOverlay>
-              <ModalContent>
-                <Title>
-                  INTIP에서 <br />
-                  로그아웃 하시겠어요?
-                </Title>
-                <ButtonContainer>
-                  <CancelButton onClick={handleModalClose}>취소</CancelButton>
-                  <Divider />
-                  <LogoutButton
-                    onClick={() => {
-                      handleModalClose();
-                      handleLogout();
-                    }}
-                  >
-                    확인
-                  </LogoutButton>
-                </ButtonContainer>
-              </ModalContent>
-            </ModalOverlay>
+            </ErrorWrapper>
           )}
-        </>
-      ) : (
-        <ErrorWrapper>
-          <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
-          <div className="error">로그인이 필요합니다!</div>
-        </ErrorWrapper>
+        </UserWrapper>
+        <ActiveWrapper>
+          {MyPageActive.map((active, index) => (
+            <div
+              className="item"
+              key={index}
+              onClick={() => handleClick(active.title)}
+            >
+              <img src={active.image} />
+              <p>{active.title}</p>
+            </div>
+          ))}
+          {!userInfo.id && <Overlay />} {/* 로그인 안 됐으면 오버레이 */}
+        </ActiveWrapper>
+      </TopBackground>
+
+      <CategoryWrapper>
+        {userInfo.id !== 0 &&
+          MyPageCategoryLoggeedIn.map((category, index) => (
+            <div
+              className="item"
+              key={index}
+              onClick={() => handleClick(category.title)}
+            >
+              <span>
+                <img src={category.image} />
+
+                <div>
+                  {category.title}
+                  {category.description && (
+                    <div className="description">{category.description}</div>
+                  )}
+                </div>
+              </span>
+              <Arrow src={arrowImg} />
+            </div>
+          ))}
+        {MyPageCategoryCommon.map((category, index) => (
+          <div
+            className="item"
+            key={index}
+            onClick={() => handleClick(category.title)}
+          >
+            <span>
+              <img src={category.image} />
+              <div>
+                <div>{category.title}</div>
+                <div className="description">{category.description}</div>
+              </div>
+            </span>
+            <Arrow src={arrowImg} />
+          </div>
+        ))}{" "}
+      </CategoryWrapper>
+      {isModalOpen && (
+        <ModalOverlay>
+          <ModalContent>
+            <Title>
+              INTIP에서 <br />
+              로그아웃 하시겠어요?
+            </Title>
+            <ButtonContainer>
+              <CancelButton onClick={handleModalClose}>취소</CancelButton>
+              <Divider />
+              <LogoutButton
+                onClick={() => {
+                  handleModalClose();
+                  handleLogout();
+                }}
+              >
+                확인
+              </LogoutButton>
+            </ButtonContainer>
+          </ModalContent>
+        </ModalOverlay>
       )}
+
       <MobileNav />
     </MyPageWrapper>
   );
@@ -183,6 +234,7 @@ const ActiveWrapper = styled.div`
   display: flex;
   gap: 30px;
   border-radius: 10px;
+  overflow: hidden;
 
   div {
     display: flex;
@@ -214,8 +266,9 @@ const CategoryWrapper = styled.div`
   max-width: 350px;
   gap: 16px;
 
-  div {
+  .item {
     width: calc(100% - 32px);
+    min-height: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -223,19 +276,33 @@ const CategoryWrapper = styled.div`
     padding: 10px 16px 10px 16px;
     border-radius: 10px;
 
+    word-break: keep-all;
+
     span {
       display: flex;
       align-items: center;
       gap: 18px;
 
+      div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
       img {
         width: 36px;
         height: 36px;
       }
+
+      .description {
+        font-size: 12px;
+        color: gray;
+        white-space: pre-line; /* \줄바꿈 처리 */
+      }
     }
   }
 
-  padding-bottom: 16px;
+  padding-bottom: 32px;
 `;
 
 const Arrow = styled.img`
@@ -307,16 +374,80 @@ const Divider = styled.div`
 
 const ErrorWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 30px;
+  flex-direction: row;
   align-items: center;
-  margin-top: 100px;
+  justify-content: center;
+  gap: 12px;
+
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px 16px;
+  padding-right: 32px;
+  box-sizing: border-box;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
 
   div {
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    word-break: keep-all;
   }
 `;
 
 const LoginImg = styled.img`
-  width: 150px;
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+`;
+
+const LoginButton = styled.button`
+  width: 100%;
+  height: fit-content;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #7a6dd0; // 기존 보라보다 화면과 조화로운 톤
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 25px / 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+
+  &:hover {
+    background: linear-gradient(
+      90deg,
+      #6b5ec7,
+      #8a79e0
+    ); // 자연스러운 호버 그라데이션
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6); // 반투명 흰색
+  z-index: 10;
+  cursor: not-allowed;
 `;
