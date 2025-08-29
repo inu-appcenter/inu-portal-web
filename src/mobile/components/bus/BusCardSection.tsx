@@ -9,18 +9,18 @@ export default function BusCardSection() {
       <CardImg
         src="/Bus/SchoolCard.svg"
         alt="학교갈래요"
-        onClick={() => mobileNavigate("/bus/info?type=go-school")}
+        onClick={() => mobileNavigate("/Bus/info?type=go-school")}
       />
       <CardImg
         src="/Bus/HomeCard.svg"
         alt="집갈래요"
-        onClick={() => mobileNavigate("/bus/info?type=go-home")}
+        onClick={() => mobileNavigate("/Bus/info?type=go-home")}
       />
       <CardImg
         src="/Bus/ShuttleCard.svg"
         alt="셔틀버스"
         onClick={() => {
-          mobileNavigate("/bus/info?type=shuttle");
+          mobileNavigate("/Bus/info?type=shuttle");
         }}
       />
     </Wrapper>
