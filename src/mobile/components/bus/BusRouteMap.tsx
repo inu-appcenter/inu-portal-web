@@ -50,10 +50,7 @@ export default function BusRouteMap({ path, stopMarker }: BusRouteMapProps) {
             yAnchor={1}
           >
             <MarkerWrapper>
-              <img
-                src={`../../src/resources/assets/bus/marker/${stop.name}.svg`}
-                alt={stop.name}
-              />
+              <img src={`/Bus/marker/${stop.name}.svg`} alt={stop.name} />
             </MarkerWrapper>
           </CustomOverlayMap>
         ))}
