@@ -18,8 +18,8 @@ export default function BusStopMap({ lat, lng }: BusStopMapProps) {
           <MapMarker
             position={{ lat, lng }}
             image={{
-              src: "/Bus/marker/횃불이마커.svg",
-              size: { width: 50, height: 50 },
+              src: "/Bus/marker/횃불이마커.png",
+              size: { width: 40, height: 50 },
             }}
           />
           <MapTypeControl
