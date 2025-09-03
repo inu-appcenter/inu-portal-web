@@ -41,13 +41,18 @@ const TopWrapper = styled.div`
 `;
 
 const StopName = styled.h2`
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
 `;
 
 const Notice = styled.p`
   font-size: 14px;
   color: #3b566e;
-  white-space: pre-line;
+  white-space: pre-wrap;
   margin: 0;
+  line-height: 1.8;
+
+  @media (max-width: 380px) {
+    font-size: 13px;
+  }
 `;

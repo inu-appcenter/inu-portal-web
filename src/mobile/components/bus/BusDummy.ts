@@ -1,6 +1,6 @@
 import type { BusData } from "types/bus.ts";
 
-export const goSchool_INUExit2: BusData[] = [
+export const goSchool_INU2: BusData[] = [
   {
     id: 1,
     number: "셔틀",
@@ -28,7 +28,7 @@ export const goSchool_INUExit2: BusData[] = [
       { name: "공대", lat: 37.37171, lng: 126.63345 },
     ],
     routeId: "165000012",
-    sectionLabel: "인입 2번출구",
+    sectionLabel: "인입 2번 출구",
     stopId: "go-school-INU2",
     lastStopId: "164000499",
   },
@@ -46,7 +46,7 @@ export const goSchool_INUExit2: BusData[] = [
       { name: "정문", lat: 37.37764, lng: 126.63522 },
     ],
     routeId: "165000020",
-    sectionLabel: "인입 2번출구",
+    sectionLabel: "인입 2번 출구",
     stopId: "go-school-INU2",
     lastStopId: "164000386",
   },
@@ -65,13 +65,13 @@ export const goSchool_INUExit2: BusData[] = [
       { name: "송도캠", lat: 37.37375, lng: 126.63108 },
     ],
     routeId: "165000514",
-    sectionLabel: "인입 2번출구",
+    sectionLabel: "인입 2번 출구",
     stopId: "go-school-INU2",
     lastStopId: "164000763",
   },
 ];
 
-export const goSchool_INUExit1: BusData[] = [
+export const goSchool_INU1: BusData[] = [
   {
     id: 5,
     number: "46",
@@ -91,13 +91,13 @@ export const goSchool_INUExit1: BusData[] = [
       { name: "송도캠", lat: 37.37374, lng: 126.63108 },
     ],
     routeId: "164000004",
-    sectionLabel: "인입 1번출구",
+    sectionLabel: "인입 1번 출구",
     stopId: "go-school-INU1",
     lastStopId: "164000751",
   },
 ];
 
-export const goSchool_BITExit3: BusData[] = [
+export const goSchool_BIT3: BusData[] = [
   {
     id: 6,
     number: "6-1",
@@ -118,7 +118,7 @@ export const goSchool_BITExit3: BusData[] = [
     ],
     routeNotice: "지정단 → 자연대 → 공대(정보대)",
     routeId: "165000008",
-    sectionLabel: "지정단 3번출구",
+    sectionLabel: "지정단 3번 출구",
     stopId: "go-school-BIT3",
     lastStopId: "164000376",
   },
@@ -226,7 +226,7 @@ export const goHome_MainIn: BusData[] = [
   },
 ];
 
-export const goHome_Dorm: BusData[] = [
+export const goHome_Dorm1: BusData[] = [
   {
     id: 12,
     number: "셔틀",
@@ -255,6 +255,8 @@ export const goHome_Dorm: BusData[] = [
     stopId: "go-home-dorm",
     lastStopId: "164000396",
   },
+];
+export const goHome_Dorm2: BusData[] = [
   {
     id: 14,
     number: "46",

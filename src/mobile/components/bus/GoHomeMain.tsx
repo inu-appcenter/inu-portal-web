@@ -12,12 +12,12 @@ export default function GoHomeMain() {
   return (
     <PageWrapper>
       <BusStopHeader
-        stopName="인천대 정문 (길 건너서)"
-        stopNotice="※ 오후 4시~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요."
+        stopName="인천대 정문 (길 건너)"
+        stopNotice="※ 오후 4~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요."
         onClickStopInfo={() => mobileBusStopNavigate("go-home-main-out")}
       />
       <BusStopBox
-        sectionName="인천대입구 1번출구"
+        sectionName="인입 1번 출구행"
         busList={goHome_MainOut}
         bstopId={"164000385"}
       />
@@ -27,7 +27,7 @@ export default function GoHomeMain() {
         onClickStopInfo={() => mobileBusStopNavigate("go-home-main-in")}
       />
       <BusStopBox
-        sectionName="인천대입구 1번출구"
+        sectionName="인입 1번 출구행"
         busList={goHome_MainIn}
         bstopId={"164000386"}
       />
@@ -40,6 +40,5 @@ const PageWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  //padding: 0 16px;
   box-sizing: border-box;
 `;
