@@ -62,6 +62,7 @@ const BusStopBoxHeader = styled.div`
 const LabelGroup = styled.div`
   display: flex;
   align-items: center;
+  gap: 6px;
 `;
 
 const BusList = styled.div`
