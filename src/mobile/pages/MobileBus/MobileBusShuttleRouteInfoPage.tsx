@@ -1,8 +1,8 @@
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import IlsanGimpoShuttle from "../../components/bus/IlsanGimpoShuttle.tsx";
-import AnsanSiheungShuttle from "../../components/bus/AnsanSiheungShuttle.tsx";
-import BucheonShuttle from "../../components/bus/BucheonShuttle.tsx";
+import IlsanGimpoShuttle from "../../components/bus/shuttle/IlsanGimpoShuttle.tsx";
+import AnsanSiheungShuttle from "../../components/bus/shuttle/AnsanSiheungShuttle.tsx";
+import BucheonShuttle from "../../components/bus/shuttle/BucheonShuttle.tsx";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 const MobileBusShuttleRouteInfoPage = () => {

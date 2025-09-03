@@ -4,9 +4,9 @@ import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
   goHome_Nature_BIT,
   goHome_Nature_INU,
-} from "mobile/components/bus/BusDummy.ts";
+} from "mobile/components/bus/data/BusDummy.ts";
 import BusCircleBox from "mobile/components/bus/BusCircleBox.tsx";
-import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
+import useBusStopNavigate from "../../../../hooks/useBusStopNavigate.ts";
 
 export default function GoHomeScience() {
   const mobileBusStopNavigate = useBusStopNavigate();

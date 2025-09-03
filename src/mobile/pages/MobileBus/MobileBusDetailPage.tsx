@@ -14,7 +14,7 @@ import {
   goSchool_BIT3,
   goSchool_INU1,
   goSchool_INU2,
-} from "../../components/bus/BusDummy.ts";
+} from "../../components/bus/data/BusDummy.ts";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 

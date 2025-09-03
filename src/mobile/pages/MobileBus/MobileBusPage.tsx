@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import BusCardSection from "../../components/bus/BusCardSection.tsx";
+import BusCardSection from "../../components/bus/goHomeSchool/BusCardSection.tsx";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 import MobileNav from "../../containers/common/MobileNav.tsx";
 

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import useMobileNavigate from "hooks/useMobileNavigate";
+import useMobileNavigate from "hooks/useMobileNavigate.ts";
 
 export default function BusCardSection() {
   const mobileNavigate = useMobileNavigate();

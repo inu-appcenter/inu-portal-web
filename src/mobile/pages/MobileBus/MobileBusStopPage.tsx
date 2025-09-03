@@ -4,7 +4,7 @@ import SectionLabel from "../../components/bus/SectionLabel.tsx";
 import BusCircleBox from "../../components/bus/BusCircleBox.tsx";
 
 import { useLocation } from "react-router-dom";
-import { BusStopDummy } from "../../components/bus/BusStopDummy.ts";
+import { BusStopDummy } from "../../components/bus/data/BusStopDummy.ts";
 import BusStopMap from "../../components/bus/BusStopMap.tsx";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
