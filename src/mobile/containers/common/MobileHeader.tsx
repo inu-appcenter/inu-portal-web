@@ -64,7 +64,7 @@ export default function MobileHeader({
     const shouldGoHome =
       specialPaths.includes(location.pathname) && [...params].length > 0;
 
-    const isBusInfoPage = location.pathname.includes("/m/Bus/info");
+    const isBusInfoPage = location.pathname.includes("m/bus/info");
 
     if (isBusInfoPage) {
       mobileNavigate("/Bus");
