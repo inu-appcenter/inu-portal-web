@@ -4,8 +4,8 @@ import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
   goHome_MainIn,
   goHome_MainOut,
-} from "mobile/components/bus/BusDummy.ts";
-import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
+} from "mobile/components/bus/data/BusDummy.ts";
+import useBusStopNavigate from "../../../../hooks/useBusStopNavigate.ts";
 
 export default function GoHomeMain() {
   const mobileBusStopNavigate = useBusStopNavigate();

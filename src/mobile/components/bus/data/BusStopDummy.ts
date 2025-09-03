@@ -1,4 +1,4 @@
-import { BusStopData } from "types/bus";
+import { BusStopData } from "types/bus.ts";
 
 export const BusStopDummy: BusStopData[] = [
   {

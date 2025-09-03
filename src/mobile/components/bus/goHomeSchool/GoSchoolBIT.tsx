@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
-import { goSchool_BIT3 } from "mobile/components/bus/BusDummy.ts";
-import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
+import { goSchool_BIT3 } from "mobile/components/bus/data/BusDummy.ts";
+import useBusStopNavigate from "../../../../hooks/useBusStopNavigate.ts";
 
 export default function GoSchoolBIT() {
   const mobileBusStopNavigate = useBusStopNavigate();

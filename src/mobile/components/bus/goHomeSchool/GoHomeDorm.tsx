@@ -1,8 +1,11 @@
 import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
-import { goHome_Dorm1, goHome_Dorm2 } from "mobile/components/bus/BusDummy.ts";
-import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
+import {
+  goHome_Dorm1,
+  goHome_Dorm2,
+} from "mobile/components/bus/data/BusDummy.ts";
+import useBusStopNavigate from "../../../../hooks/useBusStopNavigate.ts";
 
 export default function GoHomeDorm() {
   const mobileBusStopNavigate = useBusStopNavigate();
