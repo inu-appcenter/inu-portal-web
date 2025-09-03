@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import GimpoCheongnaShuttle from "../../components/bus/GimpoCheongnaShuttle.tsx";
+import IlsanGimpoShuttle from "../../components/bus/IlsanGimpoShuttle.tsx";
 import AnsanSiheungShuttle from "../../components/bus/AnsanSiheungShuttle.tsx";
 import BucheonShuttle from "../../components/bus/BucheonShuttle.tsx";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
@@ -13,7 +13,7 @@ const MobileBusShuttleRouteInfoPage = () => {
   return (
     <Wrapper>
       <MobileHeader title={"셔틀 노선 정보"} />
-      {route === "gimpo-cheongna" && <GimpoCheongnaShuttle />}
+      {route === "gimpo-cheongna" && <IlsanGimpoShuttle />}
       {route === "bucheon" && <BucheonShuttle />}
       {route === "ansan-siheung" && <AnsanSiheungShuttle />}
 
