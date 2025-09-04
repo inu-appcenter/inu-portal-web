@@ -16,13 +16,12 @@ export default function InfoIcon({ onClick }: Props) {
 const Icon = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
   border: none;
   background: none;
   padding: 0;
-
+  margin-bottom: 1px;
   img {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
 `;

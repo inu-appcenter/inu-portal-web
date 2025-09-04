@@ -23,7 +23,6 @@ export default function GoHomeMain() {
       />
       <BusStopHeader
         stopName="인천대 정문"
-        stopNotice="※ 정류장 위치를 꼭 확인하세요! "
         onClickStopInfo={() => mobileBusStopNavigate("go-home-main-in")}
       />
       <BusStopBox

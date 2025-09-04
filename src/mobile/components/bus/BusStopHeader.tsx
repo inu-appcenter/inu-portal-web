@@ -7,7 +7,7 @@ interface Props extends BusStopHeaderProps {
   sectionLabel?: string;
 }
 
-export default function ponBusStopHeader({
+export default function BusStopHeader({
   stopName,
   stopNotice,
   onClickStopInfo,
@@ -35,7 +35,7 @@ const BusStopHeaderWrapper = styled.div`
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  margin: 20px 0;
+  margin: 24px 0;
   gap: 6px;
 `;
 
@@ -68,13 +68,13 @@ const StopName = styled.span`
 `;
 
 const Notice = styled.p`
-  font-size: 14px;
+  font-size: 13px;
   color: #3b566e;
   white-space: pre-wrap;
   margin: 0;
-  line-height: 1.8;
+  line-height: 1.4;
 
   @media (max-width: 380px) {
-    font-size: 13px;
+    font-size: 12px;
   }
 `;
