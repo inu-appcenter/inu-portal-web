@@ -4,7 +4,8 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-school-INU2",
     stopName: "인천대입구역 2번 출구",
-    stopNotice: " ※ 계단에서 줄서기를 꼭 지켜주세요!",
+    stopNotice:
+      "※ 계단에서 줄서기를 꼭 지켜주세요!\n차양막과 여름철 안개 분사 장치가 있어 대기 중에도 쾌적해요!",
     busList: ["셔틀", "8", "16", "41"],
     lat: 37.38547992733756,
     lng: 126.63872424244481,
@@ -12,7 +13,7 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-school-INU1",
     stopName: "인천대입구역 1번 출구",
-    stopNotice: "※ 에스컬레이터가 있어서 편해요. 버스 번호 헷갈리지 않게 주의!",
+    stopNotice: "※ 에스컬레이터가 있어 이동하기 편리합니다.",
     busList: ["46"],
     lat: 37.385140392568694,
     lng: 126.63892065212548,
@@ -36,7 +37,7 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-home-main-in",
     stopName: "인천대 정문",
-    stopNotice: "※ 학교올 때 내리는 정류장이에요.",
+    stopNotice: "※ 정류장 위치를 꼭 확인해주세요!",
     busList: ["46"],
     lat: 37.377628082135054,
     lng: 126.63523080363775,
@@ -60,7 +61,7 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-home-dorm",
     stopName: "인천대 송도캠퍼스",
-    stopNotice: "※ 버스가 오지 않을 땐 공과대학 정류장을 이용해보세요!",
+    stopNotice: "※ 암벽장 앞, 기숙사 근처에 위치해 있어요.",
     busList: ["셔틀", "41", "46"],
     lat: 37.37374085801472,
     lng: 126.6310921152427,

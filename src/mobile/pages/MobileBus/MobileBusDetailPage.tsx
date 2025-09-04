@@ -53,6 +53,7 @@ export default function MobileBusDetailPage() {
             mobileBusStopNavigate(bus?.stopId);
           }
         }}
+        stopNotice={bus.busNotice}
       />
       <BusRouteBar bus={bus} bstopId={bstopId} />
       <SectionLabel text={"노선 지도"} />

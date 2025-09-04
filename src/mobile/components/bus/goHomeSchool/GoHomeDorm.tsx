@@ -13,7 +13,7 @@ export default function GoHomeDorm() {
     <PageWrapper>
       <BusStopHeader
         stopName="인천대 송도캠퍼스"
-        stopNotice="※ 암벽 앞, 기숙사 근처에 위치해 있어요."
+        stopNotice="※ 버스가 오지 않을 땐 공과대학 정류장을 이용해보세요!"
         onClickStopInfo={() => mobileBusStopNavigate("go-home-dorm")}
       />
       <BusStopBox
