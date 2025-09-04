@@ -13,7 +13,7 @@ export default function GoSchoolINU() {
     <PageWrapper>
       <BusStopHeader
         stopName="인천대입구역"
-        stopNotice={`※ 등교 시간에는 지하철에서 내리자마자 정류장까지 달려가는\n'인입런' 현상이 생길 정도로 혼잡합니다. 참고해주세요.`}
+        stopNotice={`※ 아침에는 지하철에서 내리자마자 정류장까지 달려가는\n인입런 현상이 생길 정도로 혼잡합니다. 참고해주세요!`}
         showInfoIcon={false}
       />
       <BusStopBox
