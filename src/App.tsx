@@ -76,7 +76,7 @@ function App() {
           console.log("로그인 상태 FCM 토큰 등록 완료");
         } else {
           // 비로그인 상태 → 일반 axiosInstance 사용
-          await axiosInstance.post("/api/token", { fcmToken: token });
+          await axiosInstance.post("/api/tokens", { fcmToken: token });
           console.log("비로그인 상태 FCM 토큰 등록 완료");
         }
       } catch (error) {
@@ -87,7 +87,7 @@ function App() {
     return () => {
       (window as any).onReceiveFcmToken = null;
     };
-  }, []);
+  }, [userInfo]);
 
   return (
     <>
