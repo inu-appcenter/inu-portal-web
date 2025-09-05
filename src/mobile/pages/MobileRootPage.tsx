@@ -35,6 +35,7 @@ import MobileBusStopPage from "mobile/pages/MobileBus/MobileBusStopPage.tsx";
 import MobileBusShuttleHelloBusPage from "./MobileBus/MobileBusShuttleHelloBusPage.tsx";
 import MobileBusShuttleRouteInfoPage from "./MobileBus/MobileBusShuttleRouteInfoPage.tsx";
 import MobileUnidormPage from "./MobileUnidormPage.tsx";
+import MobileAlertPage from "./MobileAlertPage.tsx";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -89,6 +90,7 @@ export default function MobileRootPage() {
 
         {/*내비바가 필요없는 서브페이지들*/}
         <Route path="/" element={<SubLayout />}>
+            <Route path ="/home/alert" element={<MobileAlertPage/>}/>
           <Route path="/home/tips" element={<MobileBoardPage />} />
           <Route path="/home/tips/write" element={<MobileWritePage />} />
           <Route path="/home/notice" element={<MobileBoardPage />} />
