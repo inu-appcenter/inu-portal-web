@@ -81,6 +81,12 @@ function App() {
       }
     };
 
+    // ✅ iOS에 "준비 완료" 신호 보내기
+    if ((window as any).webkit?.messageHandlers?.fcmReady) {
+      (window as any).webkit.messageHandlers.fcmReady.postMessage("ready");
+      console.log("Native App에 FCM 핸들러 준비 완료 신호 전송");
+    }
+
     return () => {
       (window as any).onReceiveFcmToken = null;
     };
