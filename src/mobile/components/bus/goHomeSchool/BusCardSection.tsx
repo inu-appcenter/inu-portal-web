@@ -7,18 +7,18 @@ export default function BusCardSection() {
   return (
     <Wrapper>
       <CardImg
-        src="/Bus/SchoolCard.svg"
-        alt="학교갈래요"
+        src="/Bus/학교갈래요버튼.svg"
+        alt="학교갈래요버튼"
         onClick={() => mobileNavigate("/bus/info?type=go-school")}
       />
       <CardImg
-        src="/Bus/HomeCard.svg"
-        alt="집갈래요"
+        src="/Bus/집갈래요버튼.svg"
+        alt="집갈래요버튼"
         onClick={() => mobileNavigate("/bus/info?type=go-home")}
       />
       <CardImg
-        src="/Bus/ShuttleCard.svg"
-        alt="셔틀버스"
+        src="/Bus/셔틀버스버튼.svg"
+        alt="셔틀버스버튼"
         onClick={() => {
           mobileNavigate("/bus/info?type=shuttle");
         }}
