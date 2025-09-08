@@ -54,7 +54,11 @@ export default function BusRouteMap({ path, stopMarker }: BusRouteMapProps) {
             </MarkerWrapper>
           </CustomOverlayMap>
         ))}
-        <MapTypeControl position={window.kakao.maps.ControlPosition.TOPRIGHT} />
+        {window.kakao?.maps && (
+          <MapTypeControl
+            position={window.kakao.maps.ControlPosition.TOPRIGHT}
+          />
+        )}
       </Map>
     </BusRouteMapWrapper>
   );
