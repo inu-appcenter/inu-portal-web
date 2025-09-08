@@ -1,8 +1,8 @@
 import {
-  Map,
-  Polyline,
-  MapTypeControl,
   CustomOverlayMap,
+  Map,
+  MapTypeControl,
+  Polyline,
 } from "react-kakao-maps-sdk";
 import styled from "styled-components";
 import { LatLng } from "../../../types/bus.ts";
@@ -38,8 +38,8 @@ export default function BusRouteMap({ path, stopMarker }: BusRouteMapProps) {
       >
         <Polyline
           path={path}
-          strokeWeight={5}
-          strokeColor={"#2d99f3"}
+          strokeWeight={4}
+          strokeColor={"#3E69D1"}
           strokeOpacity={0.9}
           strokeStyle={"solid"}
         />
@@ -50,11 +50,15 @@ export default function BusRouteMap({ path, stopMarker }: BusRouteMapProps) {
             yAnchor={1}
           >
             <MarkerWrapper>
-              <img src={`/Bus/marker/${stop.name}.svg`} alt={stop.name} />
+              <img src={`/Bus/marker/${stop.name}.png`} alt={stop.name} />
             </MarkerWrapper>
           </CustomOverlayMap>
         ))}
-        <MapTypeControl position={window.kakao.maps.ControlPosition.TOPRIGHT} />
+        {window.kakao?.maps && (
+          <MapTypeControl
+            position={window.kakao.maps.ControlPosition.TOPRIGHT}
+          />
+        )}
       </Map>
     </BusRouteMapWrapper>
   );
@@ -71,7 +75,7 @@ const BusRouteMapWrapper = styled.div`
 
 const MarkerWrapper = styled.div`
   width: 40px;
-  height: 40px;
+  height: 50px;
 
   img {
     width: 100%;

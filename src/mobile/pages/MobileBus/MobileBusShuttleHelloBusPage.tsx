@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import HelloBus from "../../components/bus/HelloBus.tsx";
+import HelloBus from "../../components/bus/shuttle/HelloBus.tsx";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 const MobileBusShuttleHelloBusPage = () => {

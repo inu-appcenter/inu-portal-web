@@ -14,6 +14,7 @@ export interface BusData {
   id: number;
   number: string;
   route: string[];
+  busNotice?: string;
   path?: { lat: number; lng: number }[];
   stopMarker?: {
     name: string;
