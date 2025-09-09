@@ -71,6 +71,7 @@ const BusTabHeaderWrapper = styled.div`
     background-color: transparent;
     border: 0;
     font-weight: 600;
+    font-size: 15px;
     color: black;
   }
 
