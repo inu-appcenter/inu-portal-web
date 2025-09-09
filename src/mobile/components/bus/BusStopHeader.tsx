@@ -36,7 +36,7 @@ const BusStopHeaderWrapper = styled.div`
   width: 100%;
   box-sizing: border-box;
   margin: 24px 0;
-  gap: 6px;
+  gap: 10px;
 `;
 
 const TopWrapper = styled.div`
@@ -73,6 +73,7 @@ const Notice = styled.p`
   white-space: pre-wrap;
   margin: 0;
   line-height: 1.4;
+  word-break: break-word;
 
   @media (max-width: 380px) {
     font-size: 12px;
