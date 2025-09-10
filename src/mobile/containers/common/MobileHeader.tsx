@@ -1,24 +1,58 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import intipLogo from "resources/assets/intip-logo.svg";
-import MenuButton from "mobile/components/common/MenuButton";
+// import MenuButton from "mobile/components/common/MenuButton";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import { useLocation } from "react-router-dom";
 import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundImg.svg";
 
 import BackButton from "../../components/mypage/BackButton.tsx";
 import Title from "../../components/mypage/Title.tsx";
+import { Bell } from "lucide-react";
+
+// 알림 여부를 prop으로 전달받아서 표시 여부 결정
+const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
+  const mobileNavigate = useMobileNavigate();
+  const handleNotiBtnClick = () => {
+    mobileNavigate("/home/alert");
+  };
+
+  return (
+    <BellWrapper>
+      <Bell size={22} onClick={handleNotiBtnClick} />
+      {hasNew && <Badge />}
+    </BellWrapper>
+  );
+};
+
+const BellWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+`;
+
+const Badge = styled.div`
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 8px;
+  height: 8px;
+  background-color: #ffd60a;
+  border-radius: 50%;
+`;
 
 interface HeaderProps {
   title?: string;
   hasback?: boolean;
   backPath?: string;
+  showAlarm?: boolean;
 }
 
 export default function MobileHeader({
   title,
   hasback = true,
   backPath,
+  showAlarm = true,
 }: HeaderProps) {
   const mobileNavigate = useMobileNavigate();
   const [showHeader, setShowHeader] = useState(true);
@@ -94,7 +128,9 @@ export default function MobileHeader({
         )}
 
         <ProfileMenuWrapper>
-          <MenuButton />
+          {showAlarm && <NotificationBell hasNew={true} />}
+
+          {/*<MenuButton />*/}
         </ProfileMenuWrapper>
       </MainHeaderWrapper>
     </MobileHeaderWrapper>

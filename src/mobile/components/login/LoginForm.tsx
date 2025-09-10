@@ -13,7 +13,7 @@ export default function LoginForm() {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [passwordType, setPasswordType] = useState<"password" | "text">(
-    "password"
+    "password",
   );
   const { setTokenInfo } = useUserStore();
   const mobileNavigate = useMobileNavigate();
@@ -33,6 +33,22 @@ export default function LoginForm() {
       setLoading(true);
       const response = await login(studentId, password);
       setTokenInfo(response.data);
+
+      // --- FCM 관련 추가 ---
+      if (typeof window !== "undefined" && (window as any).AndroidBridge) {
+        const bridge = (window as any).AndroidBridge;
+        const fcmToken = bridge.getFcmToken?.();
+        if (fcmToken) {
+          console.log("Calling native saveFcmToken with token:", fcmToken);
+          bridge.saveFcmToken?.(fcmToken);
+        } else {
+          console.log("FCM Token is not available from native yet.");
+        }
+      } else {
+        console.log("AndroidBridge is not available.");
+      }
+      // --- FCM 관련 추가 끝 ---
+
       mobileNavigate(-1);
       setLoading(false);
     } catch (error) {
@@ -92,7 +108,11 @@ export default function LoginForm() {
         </FormInputWrapper>
         <InputLine />
       </FormItemWrapper>
-      <LoginButton onClick={handleLogin} $isActive={isActive && !loading}>
+      <LoginButton
+        onClick={handleLogin}
+        $isActive={isActive && !loading}
+        id="login-button"
+      >
         로그인
       </LoginButton>
       <span className="termofuse">
