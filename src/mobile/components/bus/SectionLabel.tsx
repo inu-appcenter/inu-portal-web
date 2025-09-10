@@ -9,12 +9,15 @@ export default function SectionLabel({ text }: SectionLabelProps) {
 }
 
 const Label = styled.span`
+  display: flex;
+  justify-content: center;
   color: #fff;
   font-size: 14px;
+  font-weight: 500;
   background-color: #7aa7e5;
-  padding: 2px 6px;
-  border-radius: 2px;
-  width: auto;
+  padding: 1px 8px;
+  border-radius: 4px;
+  align-items: center;
   max-width: fit-content;
-  gap: 12px;
+  margin: 0;
 `;

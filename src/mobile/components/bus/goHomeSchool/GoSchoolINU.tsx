@@ -2,10 +2,10 @@ import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
 import {
-  goSchool_INUExit1,
-  goSchool_INUExit2,
-} from "mobile/components/bus/BusDummy.ts";
-import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
+  goSchool_INU1,
+  goSchool_INU2,
+} from "mobile/components/bus/data/BusDummy.ts";
+import useBusStopNavigate from "../../../../hooks/useBusStopNavigate.ts";
 
 export default function GoSchoolINU() {
   const mobileBusStopNavigate = useBusStopNavigate();
@@ -13,19 +13,19 @@ export default function GoSchoolINU() {
     <PageWrapper>
       <BusStopHeader
         stopName="인천대입구역"
-        stopNotice="※버스 노선을 꼭 확인하고 탑승해주세요 !"
+        stopNotice={`※ 오전 8시~10시에는 매우 혼잡하니 주의해주세요.`}
         showInfoIcon={false}
       />
       <BusStopBox
-        sectionName="2번출구"
-        busList={goSchool_INUExit2}
+        sectionName="2번 출구"
+        busList={goSchool_INU2}
         bstopId={"164000395"}
         showInfoIcon
         onClickInfo={() => mobileBusStopNavigate("go-school-INU2")}
       />
       <BusStopBox
-        sectionName="1번출구"
-        busList={goSchool_INUExit1}
+        sectionName="1번 출구"
+        busList={goSchool_INU1}
         bstopId={"164000396"}
         showInfoIcon
         onClickInfo={() => mobileBusStopNavigate("go-school-INU1")}
@@ -39,6 +39,5 @@ const PageWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  //padding: 0 16px;
   box-sizing: border-box;
 `;

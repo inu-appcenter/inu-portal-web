@@ -1,6 +1,6 @@
 import type { BusData } from "types/bus.ts";
 
-export const goSchool_INUExit2: BusData[] = [
+export const goSchool_INU2: BusData[] = [
   {
     id: 1,
     number: "셔틀",
@@ -28,9 +28,10 @@ export const goSchool_INUExit2: BusData[] = [
       { name: "공대", lat: 37.37171, lng: 126.63345 },
     ],
     routeId: "165000012",
-    sectionLabel: "인입 2번출구",
+    sectionLabel: "인입 2번 출구",
     stopId: "go-school-INU2",
     lastStopId: "164000499",
+    busNotice: `운행시간 | 05:54 ~ 00:31\n배차간격 |  5~13분`,
   },
   {
     id: 3,
@@ -46,9 +47,10 @@ export const goSchool_INUExit2: BusData[] = [
       { name: "정문", lat: 37.37764, lng: 126.63522 },
     ],
     routeId: "165000020",
-    sectionLabel: "인입 2번출구",
+    sectionLabel: "인입 2번 출구",
     stopId: "go-school-INU2",
     lastStopId: "164000386",
+    busNotice: `운행시간 | 05:38 ~ 23:28\n배차간격 |  15~26분`,
   },
   {
     id: 4,
@@ -65,13 +67,14 @@ export const goSchool_INUExit2: BusData[] = [
       { name: "송도캠", lat: 37.37375, lng: 126.63108 },
     ],
     routeId: "165000514",
-    sectionLabel: "인입 2번출구",
+    sectionLabel: "인입 2번 출구",
     stopId: "go-school-INU2",
     lastStopId: "164000763",
+    busNotice: `운행시간 | 06:26 ~ 23:57\n배차간격 |  16~27분`,
   },
 ];
 
-export const goSchool_INUExit1: BusData[] = [
+export const goSchool_INU1: BusData[] = [
   {
     id: 5,
     number: "46",
@@ -91,13 +94,14 @@ export const goSchool_INUExit1: BusData[] = [
       { name: "송도캠", lat: 37.37374, lng: 126.63108 },
     ],
     routeId: "164000004",
-    sectionLabel: "인입 1번출구",
+    sectionLabel: "인입 1번 출구",
     stopId: "go-school-INU1",
     lastStopId: "164000751",
+    busNotice: `운행시간 | 05:17 ~ 23:38\n배차간격 |  19~31분`,
   },
 ];
 
-export const goSchool_BITExit3: BusData[] = [
+export const goSchool_BIT3: BusData[] = [
   {
     id: 6,
     number: "6-1",
@@ -118,9 +122,10 @@ export const goSchool_BITExit3: BusData[] = [
     ],
     routeNotice: "지정단 → 자연대 → 공대(정보대)",
     routeId: "165000008",
-    sectionLabel: "지정단 3번출구",
+    sectionLabel: "지정단 3번 출구",
     stopId: "go-school-BIT3",
     lastStopId: "164000376",
+    busNotice: `운행시간  05:40 ~ 00:27\n배차간격  10~19분`,
   },
 ];
 
@@ -152,6 +157,7 @@ export const goHome_MainOut: BusData[] = [
     sectionLabel: "정문 (길 건너)",
     stopId: "go-home-main-out",
     lastStopId: "164000396",
+    busNotice: `운행시간 | 05:08 ~ 23:09\n배차간격 |  5~13분`,
   },
   {
     id: 9,
@@ -171,6 +177,7 @@ export const goHome_MainOut: BusData[] = [
     sectionLabel: "정문 (길 건너)",
     stopId: "go-home-main-out",
     lastStopId: "164000396",
+    busNotice: `운행시간 | 05:16 ~ 22:47\n배차간격 |  15~26분`,
   },
   {
     id: 10,
@@ -196,6 +203,7 @@ export const goHome_MainOut: BusData[] = [
     sectionLabel: "정문 (길 건너)",
     stopId: "go-home-main-out",
     lastStopId: "164000396",
+    busNotice: `운행시간 | 05:15 ~ 23:11\n배차간격 |  13~26분`,
   },
 ];
 
@@ -223,10 +231,11 @@ export const goHome_MainIn: BusData[] = [
     sectionLabel: "정문",
     stopId: "go-home-main-in",
     lastStopId: "164000395",
+    busNotice: `운행시간 | 05:27 ~ 23:48\n배차간격 |  19~31분`,
   },
 ];
 
-export const goHome_Dorm: BusData[] = [
+export const goHome_Dorm1: BusData[] = [
   {
     id: 12,
     number: "셔틀",
@@ -254,7 +263,10 @@ export const goHome_Dorm: BusData[] = [
     sectionLabel: "송도캠",
     stopId: "go-home-dorm",
     lastStopId: "164000396",
+    busNotice: `운행시간 | 05:33 ~ 23:03\n배차간격 |  16~27분`,
   },
+];
+export const goHome_Dorm2: BusData[] = [
   {
     id: 14,
     number: "46",
@@ -283,6 +295,7 @@ export const goHome_Dorm: BusData[] = [
     sectionLabel: "송도캠",
     stopId: "go-home-dorm",
     lastStopId: "164000395",
+    busNotice: `운행시간 | 05:24 ~ 23:44\n배차간격 |  19~31분`,
   },
 ];
 
@@ -310,6 +323,7 @@ export const goHome_Nature_INU: BusData[] = [
     sectionLabel: "자연대",
     stopId: "go-home-dorm",
     lastStopId: "164000396",
+    busNotice: `운행시간 | 05:06 ~ 23:07\n배차간격 |  5~13분`,
   },
 ];
 
@@ -336,6 +350,7 @@ export const goHome_Nature_BIT: BusData[] = [
     sectionLabel: "자연대",
     stopId: "go-home-science",
     lastStopId: "164000404",
+    busNotice: `운행시간 | 05:03 ~ 23:03\n배차간격 |  10~19분`,
   },
   {
     id: 17,
@@ -369,5 +384,6 @@ export const goHome_Nature_BIT: BusData[] = [
     sectionLabel: "자연대",
     stopId: "go-home-science",
     lastStopId: "164000380",
+    busNotice: `운행시간 | 05:06 ~ 23:03\n배차간격 |  10~13분`,
   },
 ];

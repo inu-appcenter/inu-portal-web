@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import useMobileNavigate from "hooks/useMobileNavigate";
+import useMobileNavigate from "hooks/useMobileNavigate.ts";
 
 export default function ShuttleCardSection() {
   const mobileNavigate = useMobileNavigate();
@@ -14,9 +14,9 @@ export default function ShuttleCardSection() {
         }}
       />
       <CardImg
-        src="/Bus/김포청라버튼.svg"
-        alt="김포청라버튼"
-        onClick={() => mobileNavigate("/Bus/shuttle?route=gimpo-cheongna")}
+        src="/Bus/일산김포버튼.svg"
+        alt="일산김포버튼"
+        onClick={() => mobileNavigate("/Bus/shuttle?route=ilsan-gimpo")}
       />
       <CardImg
         src="/Bus/부천송내버튼.svg"

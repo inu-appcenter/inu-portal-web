@@ -1,14 +1,14 @@
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import BusTabHeader from "mobile/components/bus/BusTabHeader";
-import GoSchoolINU from "../../components/bus/GoSchoolINU.tsx";
-import GoSchoolBIT from "../../components/bus/GoSchoolBIT.tsx";
-import GoHomeMain from "../../components/bus/GoHomeMain.tsx";
-import GoHomeDorm from "../../components/bus/GoHomeDorm.tsx";
-import GoHomeScience from "../../components/bus/GoHomeScience.tsx";
-import MichuholShuttle from "../../components/bus/MichuholShuttle.tsx";
-import SubwayShuttle from "../../components/bus/SubwayShuttle.tsx";
-import SchoolShuttle from "../../components/bus/SchoolShuttle.tsx";
+import GoSchoolINU from "../../components/bus/goHomeSchool/GoSchoolINU.tsx";
+import GoSchoolBIT from "../../components/bus/goHomeSchool/GoSchoolBIT.tsx";
+import GoHomeMain from "../../components/bus/goHomeSchool/GoHomeMain.tsx";
+import GoHomeDorm from "../../components/bus/goHomeSchool/GoHomeDorm.tsx";
+import GoHomeScience from "../../components/bus/goHomeSchool/GoHomeScience.tsx";
+import MichuholShuttle from "../../components/bus/shuttle/MichuholShuttle.tsx";
+import SubwayShuttle from "../../components/bus/shuttle/SubwayShuttle.tsx";
+import SchoolShuttle from "../../components/bus/shuttle/SchoolShuttle.tsx";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 export default function BusInfoPage() {
