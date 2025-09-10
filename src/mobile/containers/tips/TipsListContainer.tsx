@@ -13,6 +13,7 @@ import useAppStateStore from "stores/useAppStateStore";
 import { getNotifications } from "../../../apis/members.ts";
 import { Notification } from "../../../types/members.ts";
 import MoreFeaturesBox from "../../../components/common/MoreFeaturesBox.tsx";
+import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
 
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
@@ -121,7 +122,13 @@ export default function TipsListContainer({
         if (!dept) {
           return;
         }
-        const response = await getDepartmentNotices(dept, "date", page);
+        const deptCode = findTitleOrCode(dept);
+        if (!deptCode) {
+          return;
+        }
+
+        const response = await getDepartmentNotices(deptCode, "date", page);
+
         console.log(response);
         const newNotices: Notice[] = response.data.contents;
         if (newNotices && newNotices.length > 0) {
@@ -248,6 +255,14 @@ export default function TipsListContainer({
               title={"푸시알림이 오지 않나요?"}
               content={
                 "핸드폰 설정에서 INTIP 앱의 알림 권한이 허용으로 되어있는지 확인해주세요!"
+              }
+            />
+          )}
+          {docType === "DEPT_NOTICE" && (
+            <MoreFeaturesBox
+              title={"학과를 변경하고싶으신가요?"}
+              content={
+                "마이페이지 -> 프로필 수정에서 학과 정보를 수정해보세요!"
               }
             />
           )}

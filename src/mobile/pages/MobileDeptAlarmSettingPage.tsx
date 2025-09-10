@@ -9,8 +9,12 @@ import {
   getKeywords,
   subscribeDepartment,
 } from "../../apis/notices.ts";
+import useUserStore from "../../stores/useUserStore.ts";
+import findTitleOrCode from "../../utils/findTitleOrCode.ts";
 
 export default function MobileDeptAlarmSettingPage() {
+  const { userInfo } = useUserStore();
+
   const [keyword, setKeyword] = useState("");
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [allAlarm, setAllAlarm] = useState(false); // 전체 공지 알림 체크박스 상태
@@ -18,6 +22,12 @@ export default function MobileDeptAlarmSettingPage() {
   useEffect(() => {
     fetchKeywords();
   }, []);
+  useEffect(() => {
+    // keyword가 null인 항목이 하나라도 있으면 allAlarm true
+    if (keywords.some((k) => k.keyword === null)) {
+      setAllAlarm(true);
+    }
+  }, [keywords]);
 
   const fetchKeywords = async () => {
     try {
@@ -31,7 +41,7 @@ export default function MobileDeptAlarmSettingPage() {
   const handleAddKeyword = async () => {
     if (!keyword) return;
     try {
-      await createKeyword(keyword, "KOREAN"); // 예시: 학과 임시 KOREAN
+      await createKeyword(keyword, findTitleOrCode(userInfo.department));
       setKeyword("");
       fetchKeywords();
     } catch (error) {
@@ -55,15 +65,20 @@ export default function MobileDeptAlarmSettingPage() {
   const handleToggleAllAlarm = async () => {
     try {
       if (!allAlarm) {
-        // 체크 ON → 학과 구독
-        await subscribeDepartment("KOREAN"); // 학과 예시값
-      } else {
-        // 체크 OFF → 모든 학과 알림 해제 (예: KOREAN 해제)
-        const target = keywords.find((k) => k.department === "KOREAN");
-        if (target) {
-          await deleteKeyword(target.keywordId);
+        if (
+          !window.confirm(
+            "전체 알림을 켤까요? 기존에 등록한 키워드는 삭제됩니다.",
+          )
+        ) {
+          return;
         }
+        await subscribeDepartment(findTitleOrCode(userInfo.department));
+      } else {
+        // keyword가 null인 항목만 필터링 - null은 학과 전체 알림
+        const nullKeywords = keywords.filter((k) => k.keyword === null);
+        await Promise.all(nullKeywords.map((k) => deleteKeyword(k.keywordId)));
       }
+
       setAllAlarm(!allAlarm);
       fetchKeywords();
     } catch (error) {
@@ -76,14 +91,21 @@ export default function MobileDeptAlarmSettingPage() {
       <MobileHeader title={"학과 공지 푸시알림 설정"} />
       <AllAlarmCheckBoxWrapper>
         <Checkbox checked={allAlarm} onChange={handleToggleAllAlarm} />
-        <div>
+        <div onClick={handleToggleAllAlarm}>
           <div className="first-line">전체 공지 알림 받기</div>
           <div className="second-line">
-            키워드에 상관 없이 모든 알림을 받을 수 있습니다.
+            {allAlarm ? (
+              <>
+                {keywords.find((k) => k.keyword === null)?.department}의 모든
+                공지사항 푸시알림을 받고 있어요.
+              </>
+            ) : (
+              <>키워드에 상관 없이 모든 알림을 받을 수 있습니다.</>
+            )}
           </div>
         </div>
       </AllAlarmCheckBoxWrapper>
-      <KeyWordSettingWrapper>
+      <KeyWordSettingWrapper style={{ position: "relative" }}>
         <Wrapper>
           <Label>키워드 알림 설정</Label>
           <InputWrapper>
@@ -100,15 +122,28 @@ export default function MobileDeptAlarmSettingPage() {
         <Wrapper>
           <Label>등록된 키워드 목록</Label>
           <ListWrapper>
-            {keywords.map((item) => (
-              <RegisteredKeywordItem
-                key={item.keywordId}
-                keyword={item.keyword ?? ""}
-                onDelete={() => handleDeleteKeyword(item.keywordId)}
-              />
-            ))}
+            {keywords.map((item) =>
+              item.keyword ? (
+                <RegisteredKeywordItem
+                  key={item.keywordId}
+                  keyword={item.keyword}
+                  onDelete={() => handleDeleteKeyword(item.keywordId)}
+                />
+              ) : null,
+            )}
           </ListWrapper>
         </Wrapper>
+
+        {/* 전체 오버레이 */}
+        {allAlarm && (
+          <Overlay>
+            <OverlayMessage>
+              전체 공지 알림이 켜져 있어
+              <br />
+              키워드 알림 설정을 사용할 수 없습니다.
+            </OverlayMessage>
+          </Overlay>
+        )}
       </KeyWordSettingWrapper>
     </MobileTipsPageWrapper>
   );
@@ -239,4 +274,32 @@ const TextButton = styled.button<{ disabled?: boolean }>`
   &:disabled {
     cursor: not-allowed;
   }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.6); // 부드러운 반투명
+  backdrop-filter: blur(1px); // 블러 효과로 시각적으로 깔끔하게
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  z-index: 10;
+  border-radius: 8px;
+`;
+
+const OverlayMessage = styled.div`
+  background-color: #ffffff;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
 `;
