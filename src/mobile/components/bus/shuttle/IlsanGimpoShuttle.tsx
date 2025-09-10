@@ -1,15 +1,15 @@
 import styled from "styled-components";
-import 김포청라시간표 from "resources/assets/bus/김포청라시간표.jpeg";
+import 일산김포시간표 from "resources/assets/bus/일산김포시간표.jpeg";
 
-const GimpoCheongnaShuttle = () => {
+const IlsanGimpoShuttle = () => {
   return (
     <Wrapper>
-      <img src={김포청라시간표} />
+      <img src={일산김포시간표} />
     </Wrapper>
   );
 };
 
-export default GimpoCheongnaShuttle;
+export default IlsanGimpoShuttle;
 
 const Wrapper = styled.div`
   width: 100%;

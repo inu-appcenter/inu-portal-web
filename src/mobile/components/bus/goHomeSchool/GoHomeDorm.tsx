@@ -1,21 +1,29 @@
 import styled from "styled-components";
 import BusStopHeader from "mobile/components/bus/BusStopHeader.tsx";
 import BusStopBox from "mobile/components/bus/BusStopBox.tsx";
-import { goHome_Dorm } from "mobile/components/bus/BusDummy.ts";
-import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
+import {
+  goHome_Dorm1,
+  goHome_Dorm2,
+} from "mobile/components/bus/data/BusDummy.ts";
+import useBusStopNavigate from "../../../../hooks/useBusStopNavigate.ts";
 
 export default function GoHomeDorm() {
   const mobileBusStopNavigate = useBusStopNavigate();
   return (
     <PageWrapper>
       <BusStopHeader
-        stopName="인천대 송도캠퍼스 (암벽 앞)"
-        stopNotice="※ 배차간격이 길어요"
+        stopName="인천대 송도캠퍼스"
+        stopNotice="※ 버스가 오지 않을 땐 공과대학 정류장을 이용해보세요!"
         onClickStopInfo={() => mobileBusStopNavigate("go-home-dorm")}
       />
       <BusStopBox
-        sectionName="인천대입구 1번출구 "
-        busList={goHome_Dorm}
+        sectionName="인입 1번 출구행 "
+        busList={goHome_Dorm1}
+        bstopId={"164000751"}
+      />
+      <BusStopBox
+        sectionName="인입 2번 출구행 "
+        busList={goHome_Dorm2}
         bstopId={"164000751"}
       />
     </PageWrapper>
@@ -27,6 +35,5 @@ const PageWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  //padding: 0 16px;
   box-sizing: border-box;
 `;

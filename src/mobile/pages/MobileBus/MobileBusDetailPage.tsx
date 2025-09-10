@@ -5,15 +5,16 @@ import styled from "styled-components";
 import BusRouteBar from "../../components/bus/BusRouteBar.tsx";
 import SectionLabel from "../../components/bus/SectionLabel.tsx";
 import {
-  goHome_Dorm,
+  goHome_Dorm1,
+  goHome_Dorm2,
   goHome_MainIn,
   goHome_MainOut,
   goHome_Nature_BIT,
   goHome_Nature_INU,
-  goSchool_BITExit3,
-  goSchool_INUExit1,
-  goSchool_INUExit2,
-} from "../../components/bus/BusDummy.ts";
+  goSchool_BIT3,
+  goSchool_INU1,
+  goSchool_INU2,
+} from "../../components/bus/data/BusDummy.ts";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
@@ -25,10 +26,11 @@ export default function MobileBusDetailPage() {
   const mobileBusStopNavigate = useBusStopNavigate();
 
   const allBus = [
-    ...goSchool_INUExit1,
-    ...goSchool_INUExit2,
-    ...goSchool_BITExit3,
-    ...goHome_Dorm,
+    ...goSchool_INU1,
+    ...goSchool_INU2,
+    ...goSchool_BIT3,
+    ...goHome_Dorm1,
+    ...goHome_Dorm2,
     ...goHome_MainIn,
     ...goHome_MainOut,
     ...goHome_Nature_BIT,
@@ -44,13 +46,14 @@ export default function MobileBusDetailPage() {
     <MobileBusDetailPageWrapper>
       <MobileHeader title={"버스 정보"} />
       <BusStopHeader
-        stopName={`${bus.number}번`}
+        stopName={`${bus.number} 번`}
         sectionLabel={bus.sectionLabel}
         onClickStopInfo={() => {
           if (bus?.stopId) {
             mobileBusStopNavigate(bus?.stopId);
           }
         }}
+        stopNotice={bus.busNotice}
       />
       <BusRouteBar bus={bus} bstopId={bstopId} />
       <SectionLabel text={"노선 지도"} />
