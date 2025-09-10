@@ -53,9 +53,9 @@ export const BusStopDummy: BusStopData[] = [
     stopName: "인천대 공과대학",
     stopNotice:
       "버스 출발지로 도착 정보가 표시되지 않는 경우가 있음.\n 자연대와 동일 노선 정차.",
-    busList: ["셔틀", "8", "16", "41"],
+    busList: ["셔틀", "8", "6-1", "6"],
     lat: 37.37238638306375,
-    lng: 37.37238638306375,
+    lng: 126.63451098800367,
   },
   {
     id: "go-home-science",

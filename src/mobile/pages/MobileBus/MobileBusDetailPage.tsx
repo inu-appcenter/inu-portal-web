@@ -1,8 +1,9 @@
 import { useSearchParams } from "react-router-dom";
 import BusStopHeader from "../../components/bus/BusStopHeader.tsx";
-import RouteImg from "../../components/bus/RouteImg.tsx";
+import BusRouteMap from "../../components/bus/BusRouteMap.tsx";
 import styled from "styled-components";
 import BusRouteBar from "../../components/bus/BusRouteBar.tsx";
+import SectionLabel from "../../components/bus/SectionLabel.tsx";
 import {
   goHome_Dorm,
   goHome_MainIn,
@@ -45,10 +46,15 @@ export default function MobileBusDetailPage() {
       <BusStopHeader
         stopName={`${bus.number}번`}
         sectionLabel={bus.sectionLabel}
-        onClickStopInfo={() => mobileBusStopNavigate(bus?.stopId)}
+        onClickStopInfo={() => {
+          if (bus?.stopId) {
+            mobileBusStopNavigate(bus?.stopId);
+          }
+        }}
       />
       <BusRouteBar bus={bus} bstopId={bstopId} />
-      {bus.routeImg && <RouteImg routeImg={bus.routeImg} />}
+      <SectionLabel text={"노선 지도"} />
+      {bus?.path && <BusRouteMap path={bus.path} stopMarker={bus.stopMarker} />}
     </MobileBusDetailPageWrapper>
   );
 }

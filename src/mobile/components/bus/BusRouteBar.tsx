@@ -10,31 +10,53 @@ interface BusRouteBarProps {
 
 export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
   const arrivalInfo = useBusArrival(bstopId, [bus])[0]?.arrivalInfo;
+  const passArrival = useBusArrival(bus.lastStopId!, [bus])[0]?.arrivalInfo;
+
   const restCount = arrivalInfo?.restCount ?? -1;
+  const passRestCount = passArrival?.restCount ?? -1;
 
   const route = bus.route;
   const totalDots = 4 + route.length;
   const dots = [];
+
+  const lastIndex = route.length - 1;
+  const passIndex = lastIndex - passRestCount;
 
   for (let i = 0; i < totalDots; i++) {
     const isCurrent = i === 4;
 
     const label = i >= 5 ? (route[i - 4] ?? "") : i == 4 ? route[0] : "";
 
-    //버스 아이콘 위치
+    //현재 정류장 기준 (도착 예정 버스 표시)
     const showBus =
-      arrivalInfo?.time === "곧 도착"
-        ? isCurrent
-        : arrivalInfo?.time === "도착정보 없음"
+      arrivalInfo?.time === "도착정보 없음"
+        ? i === 0
+        : restCount >= 4
           ? i === 0
-          : restCount >= 4
-            ? i === 0
-            : i === 4 - restCount;
+          : restCount > 0
+            ? i === 4 - restCount
+            : false;
 
     //네모박스 표시
     const showInfoBox = showBus;
 
-    dots.push({ label, showBus, showInfoBox, isCurrent });
+    //마지막 정류장 기준 (현재 정류장에서 지나간 버스 표시)
+    const showPassBus =
+      passRestCount >= 0 &&
+      passIndex >= 1 &&
+      passIndex < route.length &&
+      i === passIndex + 4;
+
+    const passText = `${route.length - passRestCount - 1}정류장 지남`;
+
+    dots.push({
+      label,
+      showBus,
+      showInfoBox,
+      isCurrent,
+      showPassBus,
+      passText,
+    });
   }
 
   return (
@@ -48,10 +70,20 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
                 <InfoBox>
                   <div>
                     {arrivalInfo.station}{" "}
-                    {arrivalInfo.isLastBus ? "🚨막차" : arrivalInfo.status}
+                    {arrivalInfo.isLastBus ? (
+                      <LastBus>막차</LastBus>
+                    ) : (
+                      arrivalInfo.status
+                    )}
                   </div>
                   <div>{arrivalInfo.time}</div>
                 </InfoBox>
+              )}
+              {dot.showPassBus && (
+                <>
+                  <BusIcon src={busIcon} />
+                  <InfoBox>{dot.passText}</InfoBox>
+                </>
               )}
               {dot.showBus && <BusIcon src={busIcon} />}
               <Dot $current={dot.isCurrent} />
@@ -108,8 +140,8 @@ const DotBox = styled.div`
 `;
 
 const Dot = styled.div<{ $current: boolean }>`
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   z-index: 1;
   position: relative;
@@ -140,6 +172,11 @@ const InfoBox = styled.div`
   flex-direction: column;
   justify-content: center;
   line-height: 1.4;
+`;
+
+const LastBus = styled.span`
+  font-weight: 500;
+  color: red;
 `;
 
 const Label = styled.div`
