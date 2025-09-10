@@ -18,9 +18,15 @@ type NavBarProps = {
   departments: Department[];
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  handleClick?: (arg0: string) => void;
 };
 
-const DepartmentMenu = ({ departments, isOpen, setIsOpen }: NavBarProps) => {
+const DepartmentMenu = ({
+  departments,
+  isOpen,
+  setIsOpen,
+  handleClick,
+}: NavBarProps) => {
   const [maxHeight, setMaxHeight] = useState(0);
 
   const mobileNavigate = useMobileNavigate();
@@ -49,6 +55,10 @@ const DepartmentMenu = ({ departments, isOpen, setIsOpen }: NavBarProps) => {
                     <SubItem
                       key={sub.title}
                       onClick={() => {
+                        if (handleClick) {
+                          handleClick(sub.code);
+                          return;
+                        }
                         mobileNavigate(`/home/deptnotice/${sub.code}`);
                         setIsOpen(false);
                       }}

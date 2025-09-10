@@ -78,7 +78,7 @@ export default function CategorySelectorNew() {
 }
 
 const CategorySelectorWrapper = styled.div`
-  position: relative; /* ✅ 기준점 */
+  position: relative;
   width: 100%;
   height: fit-content;
 `;
@@ -88,21 +88,12 @@ const CategoryScrollArea = styled.div`
   flex-direction: row;
   gap: 6px;
   overflow-x: auto;
+  padding-right: 16px;
 
   &::-webkit-scrollbar {
     display: none;
   }
 `;
-
-// const GradientLeft = styled.div`
-//   position: absolute;
-//   left: 0;
-//   top: 0;
-//   bottom: 0;
-//   width: 24px;
-//   background: linear-gradient(to right, #fff, transparent);
-//   pointer-events: none;
-// `;
 
 const GradientRight = styled.div`
   position: absolute;

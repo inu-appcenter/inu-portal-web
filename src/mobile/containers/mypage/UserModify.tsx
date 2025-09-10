@@ -1,30 +1,42 @@
 import styled from "styled-components";
 import { useState } from "react";
-import { putMembers } from "apis/members";
+import { putMemberDepartment, putMembers } from "apis/members";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import useUserStore from "stores/useUserStore";
+import { navBarList } from "../../../../old/resource/string/navBarList.tsx";
+import DepartmentNoticeSelector from "../../components/notice/DepartmentNoticeSelector.tsx";
+import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
 
 export default function UserModify() {
   const { setUserInfo, userInfo } = useUserStore();
   const [nickname, setNickname] = useState(userInfo.nickname);
   const [fireId, setFireId] = useState(userInfo.fireId);
   const [initialNickname] = useState(userInfo.nickname); // 최초 닉네임 저장
+  const [department, setDepartment] = useState(userInfo.department);
   const mobileNavigate = useMobileNavigate();
+  const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
 
+  console.log(userInfo);
   const handleModifyClick = async () => {
     if (nickname && nickname.length > 10) {
       alert("닉네임은 10글자를 초과할 수 없습니다.");
       return;
     }
 
+    const Code = findTitleOrCode(department);
+
     try {
       // 닉네임이 변경되지 않은 경우 null로 처리
       const updatedNickname = nickname === initialNickname ? null : nickname;
 
       const response = await putMembers(updatedNickname, fireId);
+      if (Code) {
+        await putMemberDepartment(Code);
+      }
       setUserInfo({
         id: response.data,
         nickname: updatedNickname || initialNickname, // 변경된 닉네임 또는 초기 닉네임 설정
+        department: department,
         role: userInfo.role,
         fireId: Number(fireId),
       });
@@ -36,8 +48,24 @@ export default function UserModify() {
     }
   };
 
+  const handleDepartmentClick = (department: string) => {
+    const deptKorean = findTitleOrCode(department);
+    {
+      deptKorean && setDepartment(deptKorean);
+    }
+    setIsDeptSelectorOpen(false);
+  };
+
   return (
     <UserModifyWrapper>
+      {navBarList[1].child && (
+        <DepartmentNoticeSelector
+          departments={navBarList[1].child}
+          isOpen={isDeptSelectorOpen}
+          setIsOpen={setIsDeptSelectorOpen}
+          handleClick={handleDepartmentClick}
+        />
+      )}
       <div className="nickname">
         <h4>닉네임</h4>
         <input
@@ -45,6 +73,23 @@ export default function UserModify() {
           onChange={(e) => setNickname(e.target.value)}
           placeholder="새로운 닉네임을 입력하세요!"
         />
+      </div>
+      <div className="nickname department">
+        <h4>학과</h4>
+        <div className="input-button-wrapper">
+          <input
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            placeholder="학과 정보를 입력해주세요!"
+            readOnly={true}
+          />
+          <StyledButton onClick={() => setIsDeptSelectorOpen(true)}>
+            학과 선택
+          </StyledButton>
+        </div>
+      </div>
+      <div className="nickname">
+        <h4>프로필 이미지</h4>
       </div>
       <ImageSelection>
         {Array.from({ length: 12 }, (_, i) => i + 1).map((id) => (
@@ -61,33 +106,55 @@ export default function UserModify() {
         ))}
       </ImageSelection>
       <ButtonWrapper>
-        <Modify onClick={handleModifyClick}>수정</Modify>
+        <StyledButton fullWidth onClick={handleModifyClick}>
+          수정
+        </StyledButton>
       </ButtonWrapper>
     </UserModifyWrapper>
   );
 }
 
 const UserModifyWrapper = styled.div`
-  //position: absolute;
   top: 310px;
   width: 100%;
+  padding: 0 16px;
+  padding-bottom: 60px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
 
   .nickname {
-    width: 90%;
+    width: 100%;
+    margin-bottom: 16px;
 
     h4 {
       margin-bottom: 8px;
     }
 
     input {
-      width: 90%;
+      width: 100%;
       padding: 12px;
+      box-sizing: border-box;
       border-radius: 8px;
       color: #404040;
       font-size: 10px;
+    }
+
+    &.department {
+      .input-button-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        input {
+          flex: 1; // input이 남은 공간 채우기
+        }
+
+        button {
+          flex: 0; // 버튼은 내용에 맞게
+        }
+      }
     }
   }
 `;
@@ -117,14 +184,14 @@ const ImageOption = styled.div<{ selected: boolean }>`
   }
 `;
 
-const Modify = styled.button`
-  margin: 0 24px;
+const StyledButton = styled.button<{ fullWidth?: boolean }>`
   box-sizing: border-box;
-  margin-bottom: 90px;
   background-color: #0e4d9d;
   border: 1px solid white;
   color: white;
-  width: 100%;
   padding: 12px;
   border-radius: 5px;
+  width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
+  min-width: fit-content;
+  cursor: pointer;
 `;

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import ViewModeButtons from "mobile/components/tips/ViewModeButtons";
 import TipsListContainer from "mobile/containers/tips/TipsListContainer";
@@ -11,11 +11,15 @@ import MobileHeader from "../containers/common/MobileHeader.tsx";
 import DepartmentNoticeSelector from "../components/notice/DepartmentNoticeSelector.tsx";
 import { navBarList } from "../../../old/resource/string/navBarList.tsx";
 import loginImg from "../../resources/assets/login/login-modal-logo.svg";
+import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
+import useUserStore from "../../stores/useUserStore.ts";
 
 export default function MobileBoardPage() {
   console.log(navBarList[1].child);
   const location = useLocation();
   console.log(location.pathname);
+
+  const { userInfo } = useUserStore();
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const resetKey = useResetTipsStore((state) => state.resetKey); // 전역 상태에서 resetKey 구독
@@ -23,10 +27,15 @@ export default function MobileBoardPage() {
   const query = params.get("search") || "";
   const deptParams = useParams<{ dept: string }>();
 
+  const mobilenavigate = useMobileNavigate();
+  const mobileNavigate = useMobileNavigate();
+
   // docType 계산
   const docType = useMemo(() => {
     if (params.has("search")) return "SEARCH";
     if (location.pathname === "/m/home/notice") return "NOTICE";
+    if (location.pathname === "/m/home/alert") return "ALERT";
+
     if (location.pathname.includes("/m/home/deptnotice")) return "DEPT_NOTICE";
     if (params.get("type") === "councilNotice") return "COUNCILNOTICE";
     return "TIPS";
@@ -36,6 +45,7 @@ export default function MobileBoardPage() {
   const title = useMemo(() => {
     switch (docType) {
       case "TIPS":
+      case "SEARCH":
         return "TIPS";
       case "NOTICE":
         return "학교 공지사항";
@@ -43,6 +53,9 @@ export default function MobileBoardPage() {
         return deptParams.dept
           ? `${deptParams.dept} 공지사항`
           : "학과 공지사항";
+
+      case "ALERT":
+        return "알림";
       default:
         return "";
     }
@@ -50,6 +63,12 @@ export default function MobileBoardPage() {
   const category = params.get("category") || "전체";
 
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
+
+  useEffect(() => {
+    if (docType === "DEPT_NOTICE" && userInfo.department) {
+      mobileNavigate(`/home/deptnotice/${userInfo.department}`);
+    }
+  }, []);
 
   return (
     <MobileTipsPageWrapper>
@@ -63,24 +82,46 @@ export default function MobileBoardPage() {
         />
       )}
 
-      <TitleCategorySelectorWrapper>
-        {(docType === "TIPS" || docType === "NOTICE") && (
+      {(docType === "TIPS" || docType === "NOTICE") && (
+        <TitleCategorySelectorWrapper>
           <CategorySelectorNew />
-        )}
+          <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
+        </TitleCategorySelectorWrapper>
+      )}
 
-        <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
-      </TitleCategorySelectorWrapper>
+      {docType === "DEPT_NOTICE" && (
+        <TitleCategorySelectorWrapper>
+          {deptParams.dept && (
+            <SelectButton
+              onClick={() => {
+                mobilenavigate("/home/deptnotice/setting");
+              }}
+            >
+              🔔 푸시 알림 설정하기
+            </SelectButton>
+          )}
+
+          <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
+        </TitleCategorySelectorWrapper>
+      )}
+
       {(docType === "TIPS" || docType === "SEARCH") && <SerachForm />}
       {docType === "DEPT_NOTICE" && !deptParams.dept && (
         <ErrorWrapper>
           <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
-          <div className="error">학과를 선택해주세요!</div>
+          <div className="error">
+            등록된 학과 정보가 없어요!
+            <br />
+            마이페이지에서 내 학과 정보를 등록 후 이용할 수 있어요.
+          </div>
           <SelectButton
             onClick={() => {
-              setIsDeptSelectorOpen(!isDeptSelectorOpen);
+              mobilenavigate("/mypage");
+              // setIsDeptSelectorOpen(!isDeptSelectorOpen);
             }}
+            style={{ width: "50%", maxWidth: "250px" }}
           >
-            학과 선택
+            마이페이지로 이동
           </SelectButton>
         </ErrorWrapper>
       )}
@@ -115,7 +156,7 @@ const TitleCategorySelectorWrapper = styled.div`
   min-height: fit-content;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 8px;
 `;
 
@@ -127,6 +168,11 @@ const ErrorWrapper = styled.div`
   margin-top: 100px;
   div {
     font-size: 20px;
+    width: 70%;
+    max-width: 300px;
+    text-align: center;
+
+    word-break: keep-all;
   }
 `;
 
@@ -135,9 +181,9 @@ const LoginImg = styled.img`
 `;
 
 const SelectButton = styled.button`
-  width: 200px;
+  width: auto;
   height: fit-content;
-  padding: 8px 16px;
+  padding: 12px 16px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -151,6 +197,7 @@ const SelectButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
+  word-break: keep-all;
 
   &:hover {
     background: linear-gradient(

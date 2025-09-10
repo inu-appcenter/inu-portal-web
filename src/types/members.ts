@@ -8,6 +8,7 @@ export interface TokenInfo {
 export interface UserInfo {
   id: number;
   nickname: string;
+  department: string; //학과 정보
   fireId: number;
   role: string; // "admin" | ""
 }
@@ -21,4 +22,13 @@ export interface MembersReplies {
   postId: number;
   createDate: string;
   modifiedDate: string;
+}
+
+//알림
+export interface Notification {
+  fcmMessageId: number;
+  memberId: number;
+  title: string;
+  body: string;
+  type: "GENERAL" | string;
 }
