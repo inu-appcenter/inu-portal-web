@@ -10,6 +10,9 @@ import { Post } from "types/posts";
 import { Notice } from "types/notices";
 import { CouncilNotice } from "types/councilNotices";
 import useAppStateStore from "stores/useAppStateStore";
+import { getNotifications } from "../../../apis/members.ts";
+import { Notification } from "../../../types/members.ts";
+import MoreFeaturesBox from "../../../components/common/MoreFeaturesBox.tsx";
 
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
@@ -35,6 +38,7 @@ export default function TipsListContainer({
   const [notices, setNotices] = useState<Notice[]>([]);
   const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
   const [councilNotices, setCouncilNotices] = useState<CouncilNotice[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [fetchState, setFetchState] = useState<FetchState>({
     lastPostId: undefined,
     page: 1,
@@ -156,6 +160,19 @@ export default function TipsListContainer({
         } else {
           setHasMore(false);
         }
+      } else if (docType === "NOTIFICATION") {
+        const response = await getNotifications(fetchState.page);
+        const newNotifications: Notification[] = response.data.contents;
+        if (newNotifications && newNotifications.length > 0) {
+          setNotifications((prev) => [...prev, ...newNotifications]);
+          // 페이지 수 업데이트
+          setFetchState((prev) => ({
+            ...prev,
+            page: prev.page + 1,
+          }));
+        } else {
+          setHasMore(false);
+        }
       }
     } catch (error) {
       console.error("게시글/공지 가져오기 실패", error);
@@ -218,6 +235,22 @@ export default function TipsListContainer({
               docType={docType}
             />
           ))}
+          {notifications.map((n, i) => (
+            <TipsCard
+              key={i}
+              notification={n}
+              viewMode={viewMode}
+              docType={docType}
+            />
+          ))}
+          {docType === "ALERT" && (
+            <MoreFeaturesBox
+              title={"푸시알림이 오지 않나요?"}
+              content={
+                "핸드폰 설정에서 INTIP 앱의 알림 권한이 허용으로 되어있는지 확인해주세요!"
+              }
+            />
+          )}
         </TipsCardWrapper>
       </InfiniteScroll>
     </TipsListContainerWrapper>

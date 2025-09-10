@@ -17,6 +17,7 @@ export default function Modify() {
         nickname: nickname,
         role: userInfo.role,
         fireId: fireId,
+        department: userInfo.department,
       });
     } catch (error) {
       console.error("회원정보 수정 실패", error);

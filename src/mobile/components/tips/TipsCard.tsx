@@ -4,13 +4,15 @@ import { Post } from "types/posts";
 import { Notice } from "types/notices";
 import heart from "resources/assets/posts/posts-heart.svg";
 import { CouncilNotice } from "types/councilNotices";
-import { FaEye } from "react-icons/fa"; // FontAwesome 눈 아이콘
+import { FaEye } from "react-icons/fa";
+import { Notification } from "../../../types/members.ts"; // FontAwesome 눈 아이콘
 
 interface TipsCardContainerProps {
   post?: Post;
   notice?: Notice;
   deptNotice?: Notice;
   councilNotice?: CouncilNotice;
+  notification?: Notification;
   viewMode: "grid" | "list";
   docType: string;
   isEditing?: boolean;
@@ -21,6 +23,7 @@ export default function ({
   notice,
   deptNotice,
   councilNotice,
+  notification,
   viewMode,
   docType,
   isEditing,
@@ -35,6 +38,8 @@ export default function ({
     } else if (docType === "COUNCILNOTICE") {
       councilNotice &&
         mobileNavigate(`/councilnoticedetail?id=${councilNotice.id}`);
+    } else if (docType === "ALERT") {
+      mobileNavigate("/home/deptnotice");
     } else {
       post && mobileNavigate(`/postdetail?id=${post.id}`);
     }
@@ -127,7 +132,7 @@ export default function ({
               <ListLeftWrapper>
                 <Category>{post.category}</Category>
               </ListLeftWrapper>
-              <ListLine />
+              {/*<ListLine />*/}
               <ListRightWrapper>
                 <ListTitle>{post.title}</ListTitle>
                 <Content>{post.content}</Content>
@@ -150,7 +155,7 @@ export default function ({
                 <Category>{notice.category}</Category>
                 <Date>{notice.createDate}</Date>
               </ListLeftWrapper>
-              <ListLine />
+              {/*<ListLine />*/}
               <ListRightWrapper>
                 <ListTitle>{notice.title}</ListTitle>
                 <Content></Content>
@@ -179,7 +184,7 @@ export default function ({
                 <Category>{"총학생회"}</Category>
                 <Date>{councilNotice.createDate}</Date>
               </ListLeftWrapper>
-              <ListLine />
+              {/*<ListLine />*/}
               <ListRightWrapper>
                 <ListTitle>{councilNotice.title}</ListTitle>
                 <Content>{councilNotice.content}</Content>
@@ -189,6 +194,19 @@ export default function ({
                     <span>{councilNotice.view}</span>
                   </span>
                 </LikeCommentWriterWrapper>
+              </ListRightWrapper>
+            </TipsCardListWrapper>
+          )}
+
+          {notification && (
+            <TipsCardListWrapper onClick={handleDocumentClick}>
+              <ListLeftWrapper>
+                <Category>{notification.type}</Category>
+              </ListLeftWrapper>
+              {/*<ListLine />*/}
+              <ListRightWrapper>
+                <ListTitle>{notification.title}</ListTitle>
+                <Content>{notification.body}</Content>
               </ListRightWrapper>
             </TipsCardListWrapper>
           )}
@@ -328,7 +346,7 @@ const GridBottomWrapper = styled.div`
 `;
 
 const TipsCardListWrapper = styled.div`
-  height: 96px;
+  height: fit-content;
   width: 100%;
   box-sizing: border-box;
   border: 2px solid #7aa7e5;
@@ -338,16 +356,18 @@ const TipsCardListWrapper = styled.div`
 
 const ListLeftWrapper = styled.div`
   padding-left: 12px;
+  box-sizing: border-box;
   flex: 3;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  border-right: 2px solid #7aa7e5; // 오른쪽 경계선 추가
 `;
 
-const ListLine = styled.div`
-  height: 100%;
-  border: 1px solid #7aa7e5;
-`;
+// const ListLine = styled.div`
+//   height: 100%;
+//   border: 1px solid #7aa7e5;
+// `;
 
 const ListRightWrapper = styled.div`
   height: 100%;

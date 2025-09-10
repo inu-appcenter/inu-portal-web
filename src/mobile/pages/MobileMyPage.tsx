@@ -19,7 +19,7 @@ export default function MobileMyPage() {
   const mobileNavigate = useMobileNavigate();
 
   const handleLogout = () => {
-    setUserInfo({ id: 0, nickname: "", role: "", fireId: 0 });
+    setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
     setTokenInfo({
       accessToken: "",
       accessTokenExpiredTime: "",
@@ -353,6 +353,13 @@ const ButtonContainer = styled.div`
 
 const CancelButton = styled.div`
   cursor: pointer;
+  //width: 100%;
+  height: 100%;
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   //&:hover {
   //    background: #0056b3;
@@ -364,6 +371,14 @@ const LogoutButton = styled.div`
   font-weight: 600;
   line-height: 20px;
   color: #0e4d9d;
+  //width: 100%;
+  height: 100%;
+
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Divider = styled.div`
