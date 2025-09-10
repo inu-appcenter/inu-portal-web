@@ -138,7 +138,7 @@ const UserModifyWrapper = styled.div`
       box-sizing: border-box;
       border-radius: 8px;
       color: #404040;
-      font-size: 10px;
+      font-size: 14px;
     }
 
     &.department {
@@ -194,4 +194,7 @@ const StyledButton = styled.button<{ fullWidth?: boolean }>`
   width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
   min-width: fit-content;
   cursor: pointer;
+
+  font-size: 16px;
+  font-weight: 600;
 `;

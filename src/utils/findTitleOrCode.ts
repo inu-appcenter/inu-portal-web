@@ -4,8 +4,8 @@ import { navBarList } from "../../old/resource/string/navBarList.tsx";
  * title을 인자로 주면 code를 반환
  * code를 인자로 주면 title을 반환
  */
-export default function findTitleOrCode(value: string): string | null {
-  function dfs(items: any): string | null {
+export default function findTitleOrCode(value: string): string {
+  function dfs(items: any): string {
     for (const item of items) {
       // code와 title 매칭 확인
       if (item.code && item.title === value) return item.code;
@@ -23,7 +23,7 @@ export default function findTitleOrCode(value: string): string | null {
         if (found) return found;
       }
     }
-    return null;
+    return "";
   }
 
   return dfs(navBarList);
