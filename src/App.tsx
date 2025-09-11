@@ -17,10 +17,12 @@ import MobileRootPage from "mobile/pages/MobileRootPage";
 import AppRootPage from "mobile/pages/AppRoutePage";
 
 import InstallPage from "./mobile/pages/InstallPage";
+import tokenInstance from "./apis/tokenInstance.ts";
+// import axiosInstance from "./apis/axiosInstance.ts";
 
 function App() {
   const location = useLocation();
-  const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
+  const { tokenInfo, setTokenInfo, setUserInfo, userInfo } = useUserStore();
 
   // URL 쿼리에서 토큰 값 추출 및 저장
   useEffect(() => {
@@ -61,6 +63,28 @@ function App() {
       initializeUser();
     }
   }, [tokenInfo, setUserInfo]);
+
+  // 웹뷰에서 FCM 토큰 전달 콜백 등록
+  useEffect(() => {
+    (window as any).onReceiveFcmToken = async function (token: string) {
+      console.log("FCM 토큰 전달받음:", token);
+
+      try {
+        // 로컬스토리지에 토큰 저장
+        localStorage.setItem("fcmToken", token);
+
+        // 서버로 토큰 등록
+        await tokenInstance.post("/api/tokens", { token });
+        console.log("FCM 토큰 등록 완료");
+      } catch (error) {
+        console.error("FCM 토큰 등록 실패", error);
+      }
+    };
+
+    return () => {
+      (window as any).onReceiveFcmToken = null;
+    };
+  }, [userInfo]);
 
   return (
     <>

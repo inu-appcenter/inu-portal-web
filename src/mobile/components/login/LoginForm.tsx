@@ -7,6 +7,7 @@ import LoginPassword from "resources/assets/login/login-password.svg";
 import useUserStore from "stores/useUserStore";
 import axios from "axios";
 import TermOfUse from "components/login/TermsOfUse";
+import tokenInstance from "../../../apis/tokenInstance.ts";
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -34,20 +35,17 @@ export default function LoginForm() {
       const response = await login(studentId, password);
       setTokenInfo(response.data);
 
-      // --- FCM 관련 추가 ---
-      if (typeof window !== "undefined" && (window as any).AndroidBridge) {
-        const bridge = (window as any).AndroidBridge;
-        const fcmToken = bridge.getFcmToken?.();
-        if (fcmToken) {
-          console.log("Calling native saveFcmToken with token:", fcmToken);
-          bridge.saveFcmToken?.(fcmToken);
-        } else {
-          console.log("FCM Token is not available from native yet.");
+
+      // 로그인 성공 후 FCM 토큰 서버로 전달
+      const fcmToken = localStorage.getItem("fcmToken");
+      if (fcmToken) {
+        try {
+          await tokenInstance.post("/api/tokens", { token: fcmToken });
+          console.log("로그인 후 FCM 토큰 등록 완료");
+        } catch (tokenError) {
+          console.error("로그인 후 FCM 토큰 등록 실패", tokenError);
         }
-      } else {
-        console.log("AndroidBridge is not available.");
       }
-      // --- FCM 관련 추가 끝 ---
 
       mobileNavigate(-1);
       setLoading(false);
