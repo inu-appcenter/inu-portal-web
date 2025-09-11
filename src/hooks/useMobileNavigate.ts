@@ -13,7 +13,10 @@ export default function useMobileNavigate() {
     return /iphone|ipad/i.test(navigator.userAgent) && isAppUrl === "/app";
   };
 
-  const mobileNavigate = (pathOrSteps: string | number) => {
+  const mobileNavigate = (
+    pathOrSteps: string | number,
+    options?: { replace?: boolean; state?: any },
+  ) => {
     if (typeof pathOrSteps === "number") {
       if (window.AndroidBridge && window.AndroidBridge.goBack) {
         window.AndroidBridge.goBack();
@@ -25,9 +28,13 @@ export default function useMobileNavigate() {
     } else {
       const fullPath = `${isAppUrl}${pathOrSteps}`;
       if (isAndroid() || isiOS()) {
+        // 앱 환경에서는 replace/state를 적용할 수 없고 그냥 이동만 가능
         window.location.href = fullPath;
       } else {
-        navigate(fullPath);
+        navigate(fullPath, {
+          replace: options?.replace,
+          state: options?.state,
+        });
       }
     }
   };
