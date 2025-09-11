@@ -45,7 +45,9 @@ export default function BusTabHeader({ Type }: BusTabHeaderProps) {
         <button
           key={tab.type}
           onClick={() =>
-            mobileNavigate(`/bus/info?type=${Type}&tab=${tab.type}`)
+            mobileNavigate(`/bus/info?type=${Type}&tab=${tab.type}`, {
+              replace: true,
+            })
           }
           className={selectedTab === tab.type ? "selected" : ""}
         >
