@@ -1,26 +1,22 @@
-import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/scrollbar";
-
 import { Autoplay, Scrollbar } from "swiper/modules";
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import styled from "styled-components";
 import { getNotices } from "apis/notices";
 import { Notice } from "types/notices";
 import SortDropBox from "mobile/components/notice/Sort";
-// import useMobileNavigate from "hooks/useMobileNavigate";
-// import SortNotice from '../../components/notice/SortNotice';
 
 export default function NoticeForm() {
   const [sort, setSort] = useState("view");
   const [notices, setNotices] = useState<Notice[]>([]);
-  // const mobileNavigate = useMobileNavigate();
+  const swiperRef = useRef<any>(null); // Swiper 참조
 
   const fetchNotices = async (sort: string) => {
     try {
       const response = await getNotices("전체", sort, 1);
       setNotices(response.data.contents);
+      // 데이터를 불러온 뒤 Swiper를 처음으로 이동
+      if (swiperRef.current) swiperRef.current.slideTo(0);
     } catch (error) {
       console.error("모든 공지사항 가져오기 실패", error);
     }
@@ -33,25 +29,22 @@ export default function NoticeForm() {
   return (
     <NoticeFormWrapper>
       <NoticeTitleWrapper>
-        {/*<h1 onClick={() => mobileNavigate(`/home/tips?type=notice`)}>*/}
-        {/*  /!*학교 공지사항*!/*/}
-        {/*</h1>*/}
         <SortDropBox sort={sort} setSort={setSort} />
-        {/* <SortNotice sort={sort} setNotices={setNotices}/> */}
       </NoticeTitleWrapper>
 
       <Swiper
+        onSwiper={(swiper) => (swiperRef.current = swiper)} // Swiper 참조 저장
         modules={[Scrollbar, Autoplay]}
         breakpoints={{
-          320: { slidesPerView: 2 }, // 화면 320px 이상일 때 슬라이드 1개
-          480: { slidesPerView: 2 }, // 화면 480px 이상일 때 슬라이드 2개
-          768: { slidesPerView: 3 }, // 화면 768px 이상일 때 슬라이드 3개
-          1024: { slidesPerView: 4 }, // 화면 1024px 이상일 때 슬라이드 4개
+          320: { slidesPerView: 2 },
+          480: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          1024: { slidesPerView: 4 },
         }}
-        slidesPerGroup={2} // 한 번에 2칸 이동
+        slidesPerGroup={2}
         autoplay={{
           delay: 4000,
-          disableOnInteraction: false, // 사용자가 조작해도 자동재생 유지
+          disableOnInteraction: false,
         }}
         scrollbar={{
           hide: false,

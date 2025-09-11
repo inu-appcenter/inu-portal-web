@@ -107,7 +107,7 @@ export default function UserModify() {
       </ImageSelection>
       <ButtonWrapper>
         <StyledButton fullWidth onClick={handleModifyClick}>
-          수정
+          수정하기
         </StyledButton>
       </ButtonWrapper>
     </UserModifyWrapper>
@@ -163,6 +163,14 @@ const ButtonWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+  position: fixed;
+  bottom: 0;
+
+  padding: 16px;
+  box-sizing: border-box;
+
+  background-color: rgba(255, 255, 255, 0.5); /* 반투명 배경 */
+  backdrop-filter: blur(10px); /* 블러 효과 */
 `;
 
 const ImageSelection = styled.div`

@@ -57,7 +57,7 @@ export default function ({
 
               <GridBottomWrapper>
                 <GridTitle>{post.title}</GridTitle>
-                <LikeCommentWriterWrapper>
+                <LikeCommentWriterWrapper viewMode={viewMode}>
                   <span className="like-comment">
                     <img src={heart} alt="" />
                     <span>{post.like}</span>
@@ -78,7 +78,7 @@ export default function ({
                   <Date>{notice.createDate}</Date>
                 </GridTopTopWrapper>
                 <GridTitle>{notice.title}</GridTitle>
-                <LikeCommentWriterWrapper>
+                <LikeCommentWriterWrapper viewMode={viewMode}>
                   <span className="writer">{notice.writer}</span>
                 </LikeCommentWriterWrapper>
               </GridTopWrapper>
@@ -93,7 +93,7 @@ export default function ({
                   <Date>{deptNotice.createDate}</Date>
                 </GridTopTopWrapper>
                 <GridTitle>{deptNotice.title}</GridTitle>
-                <LikeCommentWriterWrapper>
+                <LikeCommentWriterWrapper viewMode={viewMode}>
                   <span className="view">
                     <FaEye />
                     {deptNotice.view}
@@ -115,7 +115,7 @@ export default function ({
               <GridLine />
               <GridBottomWrapper>
                 <GridTitle>{councilNotice.title}</GridTitle>
-                <LikeCommentWriterWrapper>
+                <LikeCommentWriterWrapper viewMode={viewMode}>
                   <span className="like-comment">
                     <span>조회수</span>
                     <span>{councilNotice.view}</span>
@@ -136,7 +136,7 @@ export default function ({
               <ListRightWrapper>
                 <ListTitle>{post.title}</ListTitle>
                 <Content>{post.content}</Content>
-                <LikeCommentWriterWrapper>
+                <LikeCommentWriterWrapper viewMode={viewMode}>
                   <span className="like-comment">
                     <img src={heart} alt="" />
                     <span>{post.like}</span>
@@ -159,7 +159,7 @@ export default function ({
               <ListRightWrapper>
                 <ListTitle>{notice.title}</ListTitle>
                 <Content></Content>
-                <LikeCommentWriterWrapper>
+                <LikeCommentWriterWrapper viewMode={viewMode}>
                   <span className="writer">{notice.writer}</span>
                 </LikeCommentWriterWrapper>
               </ListRightWrapper>
@@ -188,7 +188,7 @@ export default function ({
               <ListRightWrapper>
                 <ListTitle>{councilNotice.title}</ListTitle>
                 <Content>{councilNotice.content}</Content>
-                <LikeCommentWriterWrapper>
+                <LikeCommentWriterWrapper viewMode={viewMode}>
                   <span className="like-comment">
                     <span>조회수</span>
                     <span>{councilNotice.view}</span>
@@ -261,7 +261,7 @@ const Content = styled.div`
   color: #888888;
 `;
 
-const LikeCommentWriterWrapper = styled.div`
+const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
   align-self: flex-end;
   justify-self: end;
   display: flex;
@@ -288,6 +288,16 @@ const LikeCommentWriterWrapper = styled.div`
     padding: 2px 8px;
     background-color: #ecf4ff;
     border-radius: 8px;
+
+    /* grid 모드일 때만 적용 */
+    ${(props) =>
+      props.viewMode === "grid" &&
+      `
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 40px;
+    `}
   }
 
   .view {
@@ -308,13 +318,15 @@ const LikeCommentWriterWrapper = styled.div`
 `;
 
 const TipsCardGridWrapper = styled.div`
-  height: 120px;
-  width: 85%;
+  height: 140px;
+  //width: 100%;
+  width: 160px;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   padding: 10px;
+  box-sizing: border-box;
   margin: 8px auto;
 `;
 
