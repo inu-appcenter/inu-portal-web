@@ -202,7 +202,17 @@ export default function TipsListContainer({
     >
       <InfiniteScroll
         key={docType}
-        dataLength={docType === "NOTICE" ? notices.length : posts.length}
+        dataLength={
+          docType === "NOTICE"
+            ? notices.length
+            : docType === "DEPT_NOTICE"
+              ? deptNotices.length
+              : docType === "COUNCILNOTICE"
+                ? councilNotices.length
+                : docType === "NOTIFICATION"
+                  ? notifications.length
+                  : posts.length
+        }
         next={handleNext}
         hasMore={hasMore}
         loader={
@@ -259,7 +269,7 @@ export default function TipsListContainer({
           )}
           {docType === "DEPT_NOTICE" && (
             <MoreFeaturesBox
-              title={"학과를 변경하고싶으신가요?"}
+              title={"학과를 변경하고 싶으신가요?"}
               content={
                 "마이페이지 -> 프로필 수정에서 학과 정보를 수정해보세요!"
               }
@@ -276,7 +286,6 @@ const TipsListContainerWrapper = styled.div`
   flex-direction: column;
   flex: 1;
   width: 100%;
-  //height: 100vh; // 전체 화면
   overflow-y: auto; // 스크롤 허용
 `;
 
