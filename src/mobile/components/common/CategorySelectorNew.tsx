@@ -66,7 +66,7 @@ export default function CategorySelectorNew({
     const params = new URLSearchParams(location.search);
     params.delete("search");
     params.set("category", category);
-    navigate(`${location.pathname}?${params.toString()}`);
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
   };
 
   return (
