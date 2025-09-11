@@ -53,7 +53,7 @@ export default function TipsListContainer({
     if (scrollableDiv) {
       scrollableDiv.scrollTop = 0;
     } else {
-      window.scrollTo(0, 0); // 전체 스크롤 기준일 때
+      window.scrollTo(0, 0);
     }
 
     setFetchState({
@@ -65,8 +65,15 @@ export default function TipsListContainer({
     setNotices([]);
     setDeptNotices([]);
     setCouncilNotices([]);
-    setIsInitialLoad(false); // 여기에서 바로 false 처리
-    fetchData(undefined, 1);
+    setIsInitialLoad(false);
+
+    // 초기 로딩 때 2페이지까지 불러오기
+    const loadInitialPages = async () => {
+      await fetchData(undefined, 1); // 1페이지
+      await fetchData(fetchState.lastPostId, 2); // 2페이지
+    };
+
+    loadInitialPages();
   }, [query, docType, setPosts, setNotices, setCouncilNotices, category, dept]);
 
   // 첫 번째 로드 후 추가 데이터를 불러오도록 설정
@@ -259,24 +266,22 @@ export default function TipsListContainer({
               docType={docType}
             />
           ))}
-          {docType === "ALERT" && (
-            <MoreFeaturesBox
-              title={"푸시알림이 오지 않나요?"}
-              content={
-                "핸드폰 설정에서 INTIP 앱의 알림 권한이 허용으로 되어있는지 확인해주세요!"
-              }
-            />
-          )}
-          {docType === "DEPT_NOTICE" && (
-            <MoreFeaturesBox
-              title={"학과를 변경하고 싶으신가요?"}
-              content={
-                "마이페이지 -> 프로필 수정에서 학과 정보를 수정해보세요!"
-              }
-            />
-          )}
         </TipsCardWrapper>
       </InfiniteScroll>
+      {docType === "ALERT" && (
+        <MoreFeaturesBox
+          title={"푸시알림이 오지 않나요?"}
+          content={
+            "핸드폰 설정에서 INTIP 앱의 알림 권한이 허용으로 되어있는지 확인해주세요!"
+          }
+        />
+      )}
+      {docType === "DEPT_NOTICE" && (
+        <MoreFeaturesBox
+          title={"학과를 변경하고 싶으신가요?"}
+          content={"마이페이지 -> 프로필 수정에서 학과 정보를 수정해보세요!"}
+        />
+      )}
     </TipsListContainerWrapper>
   );
 }
@@ -296,7 +301,6 @@ const TipsCardWrapper = styled.div<{ $viewMode: "grid" | "list" }>`
   gap: 8px;
   width: 100%;
   grid-template-columns: ${({ $viewMode }) =>
-    $viewMode === "grid" ? "repeat(2, 1fr)" : "unset"};
-  //padding: 0 10px;
+    $viewMode === "grid" ? "repeat(auto-fit, minmax(160px, 1fr))" : "unset"};
   box-sizing: border-box;
 `;
