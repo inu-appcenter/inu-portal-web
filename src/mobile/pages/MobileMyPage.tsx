@@ -232,7 +232,8 @@ const ActiveWrapper = styled.div`
   padding: 26px 38px;
   height: fit-content;
   display: flex;
-  gap: 30px;
+  justify-content: space-between;
+  //gap: 30px;
   border-radius: 10px;
   overflow: hidden;
 

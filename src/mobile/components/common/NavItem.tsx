@@ -17,7 +17,7 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
     location.pathname === to || location.pathname.startsWith(to + "/");
 
   const handleClick = () => {
-    navigate(to);
+    navigate(to, { replace: true });
   };
 
   return (

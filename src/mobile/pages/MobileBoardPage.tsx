@@ -27,7 +27,6 @@ export default function MobileBoardPage() {
   const query = params.get("search") || "";
   const deptParams = useParams<{ dept: string }>();
 
-  const mobilenavigate = useMobileNavigate();
   const mobileNavigate = useMobileNavigate();
 
   // docType 계산
@@ -66,7 +65,9 @@ export default function MobileBoardPage() {
 
   useEffect(() => {
     if (docType === "DEPT_NOTICE" && userInfo.department) {
-      mobileNavigate(`/home/deptnotice/${userInfo.department}`);
+      mobileNavigate(`/home/deptnotice/${userInfo.department}`, {
+        replace: true,
+      });
     }
   }, []);
 
@@ -94,7 +95,7 @@ export default function MobileBoardPage() {
           {deptParams.dept && (
             <SelectButton
               onClick={() => {
-                mobilenavigate("/home/deptnotice/setting");
+                mobileNavigate("/home/deptnotice/setting");
               }}
             >
               🔔 푸시 알림 설정하기
@@ -116,7 +117,7 @@ export default function MobileBoardPage() {
           </div>
           <SelectButton
             onClick={() => {
-              mobilenavigate("/mypage");
+              mobileNavigate("/mypage");
               // setIsDeptSelectorOpen(!isDeptSelectorOpen);
             }}
             style={{ width: "50%", maxWidth: "250px" }}

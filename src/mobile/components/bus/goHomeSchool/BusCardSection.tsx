@@ -7,17 +7,17 @@ export default function BusCardSection() {
   return (
     <Wrapper>
       <CardImg
-        src="/Bus/학교갈래요버튼.svg"
+        src="/Bus/학교갈래요버튼.webp"
         alt="학교갈래요버튼"
         onClick={() => mobileNavigate("/bus/info?type=go-school")}
       />
       <CardImg
-        src="/Bus/집갈래요버튼.svg"
+        src="/Bus/집갈래요버튼.webp"
         alt="집갈래요버튼"
         onClick={() => mobileNavigate("/bus/info?type=go-home")}
       />
       <CardImg
-        src="/Bus/셔틀버스버튼.svg"
+        src="/Bus/셔틀버스버튼.webp"
         alt="셔틀버스버튼"
         onClick={() => {
           mobileNavigate("/bus/info?type=shuttle");
@@ -36,6 +36,7 @@ const Wrapper = styled.div`
 
 const CardImg = styled.img`
   width: 100%;
+  max-width: 500px;
   border-radius: 16px;
   cursor: pointer;
 `;
