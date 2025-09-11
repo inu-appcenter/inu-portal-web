@@ -1,14 +1,13 @@
 import CategorySelector from "mobile/components/club/ClubCategorySelector";
-// import TipsPageTitle from "mobile/components/tips/TipsPageTitle";
 import styled from "styled-components";
 import { Club } from "types/club";
 import { getClubs } from "apis/club";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Title from "mobile/containers/mypage/Title.tsx";
 import useMobileNavigate from "hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "../components/club/ClubAdmin";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -40,6 +39,8 @@ export default function MobileClubPage() {
 
   return (
     <MobileClubPageWrapper>
+      <MobileHeader title={"동아리"} />
+
       {isClubAdminOpen ? (
         <ClubAdmin setIsClubAdminOpen={setIsClubAdminOpen} />
       ) : (
@@ -54,9 +55,6 @@ export default function MobileClubPage() {
           )}
 
           <TitleCategorySelectorWrapper>
-            {/*<TipsPageTitle value="동아리"/>*/}
-            <Title title={"동아리"} onback={() => mobileNavigate("/home")} />
-
             <CategorySelectorWrapper>
               <CategorySelector />
             </CategorySelectorWrapper>
@@ -113,7 +111,11 @@ const MobileClubPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 0 16px 0 16px;
+
+  padding-top: 72px;
+  padding-bottom: 32px;
+  box-sizing: border-box;
+
   width: 100%;
 
   .upload-button {
@@ -154,13 +156,15 @@ const ClubList = styled.div`
   align-items: center;
   width: 100%;
   gap: 8px;
+  padding: 0 16px;
+  box-sizing: border-box;
 `;
 
 const ClubCard = styled.div`
   min-height: 90px;
   height: fit-content;
   padding: 10px 0 10px 0;
-  width: 96%;
+  width: 100%;
   border: 2px solid #7aa7e5;
   border-radius: 10px;
   display: flex;

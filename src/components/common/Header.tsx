@@ -8,7 +8,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    setUserInfo({ id: 0, nickname: "", role: "", fireId: 0 });
+    setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
     setTokenInfo({
       accessToken: "",
       accessTokenExpiredTime: "",
@@ -76,11 +76,13 @@ const StyledHeader = styled.header`
     color: white;
     padding: 0;
   }
+
   .mobile {
     @media (min-width: 1024px) {
       display: none;
     }
   }
+
   .desktop {
     @media (max-width: 1024px) {
       display: none;

@@ -10,17 +10,16 @@ export default function ProfileNickname({ nickname }: ProfileNicknameProps) {
 
 const ProfileNicknameWrapper = styled.div`
   box-sizing: border-box;
-  min-width: 64px;
-  max-width: 108px;
-  height: 24px;
+  min-width: fit-content;
+  max-width: 200px;
+  height: fit-content;
   border-radius: 8px;
   border: none;
   background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* 컨테이너 크기를 벗어나는 텍스트 숨김 */
-  padding: 0 4px;
+  padding: 4px 8px;
   font-size: 14px;
   color: black;
 `;

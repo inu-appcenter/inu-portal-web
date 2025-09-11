@@ -1,20 +1,17 @@
 import styled from "styled-components";
-import useMobileNavigate from "hooks/useMobileNavigate";
 
 export default function AiTitle() {
-  const mobileNavigate = useMobileNavigate();
-
   return (
     <AiTitleWrapper>
-      <div className="buttons">
-        {/* <button onClick={() => navigate(isGalleryPage ? "/ai" : "/")}>
-          {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 으로 돌아가기"}
-        </button> */}
+      {/*<div className="buttons">*/}
+      {/*  /!* <button onClick={() => navigate(isGalleryPage ? "/ai" : "/")}>*/}
+      {/*    {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 으로 돌아가기"}*/}
+      {/*  </button> *!/*/}
 
-        <button onClick={() => mobileNavigate("/home")}>
-          ⬅ INTIP 모바일로 돌아가기
-        </button>
-      </div>
+      {/*  <button onClick={() => mobileNavigate("/home")}>*/}
+      {/*    ⬅ INTIP 모바일로 돌아가기*/}
+      {/*  </button>*/}
+      {/*</div>*/}
 
       <div className="title">
         <AiTitle1>Hello, </AiTitle1>

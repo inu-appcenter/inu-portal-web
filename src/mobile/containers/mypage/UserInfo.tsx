@@ -12,6 +12,9 @@ export default function UserInfo() {
         <>
           <ProfileImage fireId={userInfo.fireId} />
           <ProfileNickname nickname={userInfo.nickname} />
+          {userInfo.department && (
+            <ProfileNickname nickname={userInfo.department} />
+          )}
         </>
       )}
     </UserInfoWrapper>
@@ -23,12 +26,15 @@ const UserInfoWrapper = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 125px;
+  width: 100%;
   height: 125px;
   position: relative;
+
+  gap: 10px;
+
   img {
-    width: 100%;
-    height: 100%;
-    margin-bottom: 10px;
+    width: 110px;
+    height: 110px;
+    //margin-bottom: 10px;
   }
 `;
