@@ -11,13 +11,23 @@ import {
 } from "../../apis/notices.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import findTitleOrCode from "../../utils/findTitleOrCode.ts";
+import CategorySelectorNew from "../components/common/CategorySelectorNew.tsx";
+import { useLocation } from "react-router-dom";
+import { NoticeRecommendKeywords } from "../../resources/strings/NoticeRecommendKeywords.ts";
 
 export default function MobileDeptAlarmSettingPage() {
   const { userInfo } = useUserStore();
+  const location = useLocation();
 
   const [keyword, setKeyword] = useState("");
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [allAlarm, setAllAlarm] = useState(false); // 전체 공지 알림 체크박스 상태
+
+  // location.search가 바뀔 때마다 keyword 업데이트
+  useEffect(() => {
+    const newParams = new URLSearchParams(location.search);
+    setKeyword(newParams.get("category") || "");
+  }, [location.search]);
 
   useEffect(() => {
     fetchKeywords();
@@ -118,6 +128,7 @@ export default function MobileDeptAlarmSettingPage() {
               등록
             </TextButton>
           </InputWrapper>
+          <CategorySelectorNew categoriesProp={NoticeRecommendKeywords} />
         </Wrapper>
         <Wrapper>
           <Label>등록된 키워드 목록</Label>
