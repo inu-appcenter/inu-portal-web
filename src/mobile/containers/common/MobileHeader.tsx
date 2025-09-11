@@ -128,7 +128,7 @@ export default function MobileHeader({
         )}
 
         <ProfileMenuWrapper>
-          {showAlarm && <NotificationBell hasNew={true} />}
+          {showAlarm && <NotificationBell hasNew={false} />}
 
           {/*<MenuButton />*/}
         </ProfileMenuWrapper>
