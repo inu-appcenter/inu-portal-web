@@ -17,7 +17,7 @@ import MobileNav from "../containers/common/MobileNav.tsx";
 import Banner from "../containers/home/Banner.tsx";
 
 export default function MobileHomePage() {
-  const isBannerOn = true; //배너 온오프 - on:true off:false
+  const isBannerOn = false; //배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); //배너 모달창 열림 여부
 
   useEffect(() => {
