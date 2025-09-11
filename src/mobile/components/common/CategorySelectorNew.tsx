@@ -4,7 +4,13 @@ import { getCategories } from "apis/categories";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAppStateStore from "stores/useAppStateStore";
 
-export default function CategorySelectorNew() {
+interface CategorySelectorNewProps {
+  categoriesProp?: string[]; // ✅ 배열로 받음
+}
+
+export default function CategorySelectorNew({
+  categoriesProp,
+}: CategorySelectorNewProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [type, setType] = useState("");
@@ -14,6 +20,7 @@ export default function CategorySelectorNew() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+
     if (location.pathname === `${isAppUrl}/write`) {
       setType("write");
     } else if (location.pathname === `${isAppUrl}/home/notice`) {
@@ -21,6 +28,7 @@ export default function CategorySelectorNew() {
     } else if (location.pathname === `${isAppUrl}/home/tips`) {
       setType("tips");
     }
+
     if (params.get("search")) {
       setSelectedCategory("");
     } else {
@@ -31,10 +39,17 @@ export default function CategorySelectorNew() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        if (type == "tips") {
+        if (categoriesProp && categoriesProp.length > 0) {
+          // ✅ props가 있으면 그걸 우선 사용
+          setCategories(categoriesProp);
+          setSelectedCategory("-1");
+          return;
+        }
+
+        if (type === "tips") {
           const response = await getCategories();
           setCategories(["전체", ...response.data]);
-        } else if (type == "write") {
+        } else if (type === "write") {
           const response = await getCategories();
           setCategories(response.data);
         } else if (type === "notice") {
@@ -45,7 +60,7 @@ export default function CategorySelectorNew() {
       }
     };
     fetchCategories();
-  }, [type]);
+  }, [type, categoriesProp]);
 
   const handleClickCategory = (category: string) => {
     const params = new URLSearchParams(location.search);
@@ -61,17 +76,13 @@ export default function CategorySelectorNew() {
           <FillItem
             key={index}
             $selected={selectedCategory === category}
-            onClick={() => {
-              handleClickCategory(category);
-            }}
+            onClick={() => handleClickCategory(category)}
           >
             <div>{category}</div>
           </FillItem>
         ))}
       </CategoryScrollArea>
 
-      {/* ✅ 그라데이션 오버레이 */}
-      {/*<GradientLeft />*/}
       <GradientRight />
     </CategorySelectorWrapper>
   );
@@ -120,7 +131,7 @@ const FillItem = styled.div<{ $selected: boolean }>`
   background: ${({ $selected }) =>
     $selected
       ? "linear-gradient(180deg, #ffffff -21.86%, #d5e4f7 100%, #aac9ee 100%)"
-      : "#e0e0e0"}; /* 선택되지 않은 건 회색 */
+      : "#e0e0e0"};
   color: ${({ $selected }) => ($selected ? "#000" : "#666")};
   cursor: pointer;
 `;
