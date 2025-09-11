@@ -35,6 +35,7 @@ export default function LoginForm() {
       const response = await login(studentId, password);
       setTokenInfo(response.data);
 
+
       // 로그인 성공 후 FCM 토큰 서버로 전달
       const fcmToken = localStorage.getItem("fcmToken");
       if (fcmToken) {
@@ -105,7 +106,11 @@ export default function LoginForm() {
         </FormInputWrapper>
         <InputLine />
       </FormItemWrapper>
-      <LoginButton onClick={handleLogin} $isActive={isActive && !loading}>
+      <LoginButton
+        onClick={handleLogin}
+        $isActive={isActive && !loading}
+        id="login-button"
+      >
         로그인
       </LoginButton>
       <span className="termofuse">

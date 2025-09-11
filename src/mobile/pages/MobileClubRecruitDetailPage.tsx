@@ -3,15 +3,13 @@ import { ClubRecruit } from "types/club.ts";
 import { getClubRecruit } from "apis/club.ts";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Title from "mobile/containers/mypage/Title.tsx";
 // import ManageClubRecruit from "../components/club/ManageClubRecruit.tsx";
-import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
-import ClubContentContainer from "../containers/clubdetail/ClubContentContainer.tsx";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
+import ClubContent from "../components/club/clubcontent.tsx";
 // import UploadBook from "../util/book/UploadBook.tsx";
 
 export default function MobileClubRecruitDetailPage() {
   const location = useLocation();
-  const mobileNavigate = useMobileNavigate();
 
   const params = new URLSearchParams(location.search);
   const clubId = params.get("id");
@@ -35,15 +33,17 @@ export default function MobileClubRecruitDetailPage() {
 
   return (
     <MobileClubPageWrapper>
-      <TitleCategorySelectorWrapper>
-        <Title
-          title={clubName + " 모집 공고" || ""}
-          onback={() => mobileNavigate("/home/club")}
+      <MobileHeader title={clubName + " 모집 공고" || ""} />
+      {clubRecruitDetail ? (
+        <ClubContent
+          id={clubId || "0"}
+          content={clubRecruitDetail.recruit}
+          imageCount={clubRecruitDetail.imageCount}
+          modifiedDate={clubRecruitDetail.modifiedDate}
         />
-      </TitleCategorySelectorWrapper>
-      <PostWrapper>
-        <ClubContentContainer ClubRecruit={clubRecruitDetail} clubId={clubId} />
-      </PostWrapper>
+      ) : (
+        <>게시글을 불러오는 중 오류가 발생하였습니다.</>
+      )}
     </MobileClubPageWrapper>
   );
 }
@@ -53,23 +53,10 @@ const MobileClubPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 0 16px 0 16px;
-  width: 100%;
-`;
+  padding: 0 16px;
+  padding-top: 72px;
+  padding-bottom: 32px;
+  box-sizing: border-box;
 
-const TitleCategorySelectorWrapper = styled.div`
   width: 100%;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const PostWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc(100svh - 135px);
-  overflow-y: auto;
-  position: relative;
-  z-index: 1;
 `;

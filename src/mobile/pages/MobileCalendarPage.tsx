@@ -1,40 +1,26 @@
 import styled from "styled-components";
 import Calendarbar from "mobile/components/calendar/Calendar";
-// import BackImg from "resources/assets/mobile-common/backbtn.svg";
-import useMobileNavigate from "hooks/useMobileNavigate";
-import Title from "mobile/containers/mypage/Title.tsx"
-
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileCalendarPage() {
-    const mobileNavigate = useMobileNavigate();
-
-    return (
-        <MobileWritePageWrapper>
-            {/*<BackButton onClick={() => mobileNavigate(`/home`)}>*/}
-            {/*    <img src={BackImg} alt="뒤로가기 버튼"/>*/}
-            {/*    <span>Back</span>*/}
-            {/*</BackButton>*/}
-            <Title title={"학사일정"} onback={() => mobileNavigate('/home')}/>
-
-            <Calendarbar/>
-        </MobileWritePageWrapper>
-    );
+  return (
+    <MobileCalendarPageWrapper>
+      {/*<Title title={"학사일정"} onback={() => mobileNavigate("/home")} />*/}
+      <MobileHeader title={"학사일정"} />
+      <Calendarbar />
+    </MobileCalendarPageWrapper>
+  );
 }
 
-const MobileWritePageWrapper = styled.div`
-    width: 100%;
-`;
+const MobileCalendarPageWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-// const BackButton = styled.div`
-//     padding: 20px 0 0 20px;
-//     width: 80px;
-//     font-size: 14px;
-//     display: flex;
-//     align-items: center;
-//     gap: 8px;
-//
-//     img {
-//         width: 15px;
-//         height: 15px;
-//     }
-// `;
+  padding: 30px 16px;
+  padding-top: 72px;
+
+  box-sizing: border-box;
+`;

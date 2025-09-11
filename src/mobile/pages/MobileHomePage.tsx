@@ -1,6 +1,5 @@
 import styled from "styled-components";
-import WeatherForm from "mobile/containers/home/Weather";
-import SerachForm from "mobile/containers/home/SerachForm";
+// import SerachForm from "mobile/containers/home/SerachForm";
 import CategoryForm from "mobile/containers/home/Category";
 import TipForm from "mobile/containers/home/Tips";
 import AiForm from "mobile/containers/home/Ai";
@@ -8,9 +7,14 @@ import NoticeForm from "mobile/containers/home/Notice";
 import AppcenterLogo from "resources/assets/appcenter-logo.svg";
 import { ReactSVG } from "react-svg";
 import X_Vector from "../../resources/assets/mobile-mypage/X-Vector.svg";
-import Banner from "components/banner/Banner.tsx";
+import PopupNotice from "components/banner/PopupNotice.tsx";
 import 배너이미지 from "resources/assets/banner/intip설문조사.png";
 import { useEffect, useState } from "react";
+import TitleContentArea from "../../components/common/TitleContentArea.tsx";
+import ThreeWeekCalendar from "../components/calendar/ThreeWeekCalendar.tsx";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
+import MobileNav from "../containers/common/MobileNav.tsx";
+import Banner from "../containers/home/Banner.tsx";
 
 export default function MobileHomePage() {
   const isBannerOn = true; //배너 온오프 - on:true off:false
@@ -39,6 +43,7 @@ export default function MobileHomePage() {
 
   return (
     <MobileHomePageWrapper>
+      <MobileHeader />
       {show && isBannerOn && (
         <ModalBackGround>
           <Modal>
@@ -46,7 +51,7 @@ export default function MobileHomePage() {
               <span>일주일동안 안 보기</span>
               <img src={X_Vector} alt="X" />
             </div>
-            <Banner
+            <PopupNotice
               title={"📣 INTIP 사용 경험을 들려주세요!\n"}
               imgsrc={배너이미지}
               content={
@@ -65,17 +70,35 @@ export default function MobileHomePage() {
           </Modal>
         </ModalBackGround>
       )}
-      <WeatherForm />
+      <Banner />
+
       <ContainerWrapper>
-        <SerachForm />
+        {/*<SerachForm />*/}
         <CategoryForm />
         <AiForm />
-        <TipForm />
-        <NoticeForm />
+        {/*<NoticeForm />*/}
+        <TitleContentArea
+          title={"학교 공지사항"}
+          children={<NoticeForm />}
+          link={"/m/home/notice"}
+        />
+        <TitleContentArea
+          title={"학사일정"}
+          children={<ThreeWeekCalendar />}
+          link={"/m/home/calendar"}
+        />
+        <TitleContentArea
+          title={"TIPS 인기글"}
+          children={<TipForm />}
+          link={"/m/home/tips"}
+        />
+        {/*<TipForm />*/}
       </ContainerWrapper>
+
       <AppcenterLogoWrapper>
         <ReactSVG src={AppcenterLogo} />
       </AppcenterLogoWrapper>
+      <MobileNav />
     </MobileHomePageWrapper>
   );
 }
@@ -83,21 +106,25 @@ export default function MobileHomePage() {
 const MobileHomePageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: 170px;
   width: 100%;
   position: relative;
-
-  .asdf {
-  }
 `;
 
 const ContainerWrapper = styled.div`
-  margin: 0 24px;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  //margin-top: 14px;
 `;
 
 const AppcenterLogoWrapper = styled.div`
   background: linear-gradient(to bottom, white, rgb(170, 201, 238));
   padding: 24px 0;
+  //margin-top: 12px;
+  box-sizing: border-box;
   height: 32px;
   display: flex;
   align-items: center;

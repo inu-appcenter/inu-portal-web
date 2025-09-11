@@ -1,12 +1,11 @@
-// import styled from "styled-components";
 import styled, { keyframes } from "styled-components";
-
 import menuButtonImage from "resources/assets/mobile-common/menu-button.svg";
 import intipLogo from "resources/assets/intip-logo.svg";
 import closeBtn from "resources/assets/mobile-common/closebtn.svg";
 import { useEffect, useState } from "react";
 import SerachForm from "mobile/containers/home/SerachForm";
 import AiForm from "mobile/containers/home/Ai";
+import SidebarPortal from "mobile/components/common/SidebarPortal";
 
 import menuImg from "resources/assets/mobile-home/menu.svg";
 import noticeImg from "resources/assets/mobile-home/notice.svg";
@@ -16,7 +15,7 @@ import councilImg from "resources/assets/mobile-home/council.svg";
 import mapImg from "resources/assets/mobile-home/map.svg";
 import clubImg from "resources/assets/mobile-home/club.svg";
 import utilImg from "resources/assets/mobile-home/util.svg";
-import inquiryImg from "resources/assets/mobile-home/inquiry.svg";
+import inquiryImg from "resources/assets/mobile-mypage/inquiry.svg";
 
 import useMobileNavigate from "hooks/useMobileNavigate";
 import { useLocation } from "react-router-dom";
@@ -34,7 +33,6 @@ const categorys = [
 ];
 
 export default function MenuButton() {
-  const [isVisible, setIsVisible] = useState(false);
   const location = useLocation();
   const mobileNavigate = useMobileNavigate();
 
@@ -42,13 +40,20 @@ export default function MenuButton() {
     setIsVisible(false);
   }, [location.pathname]);
 
+  const [isVisible, setIsVisible] = useState(false); // 보여줄지 여부
+  const [shouldRender, setShouldRender] = useState(false); // 실제 렌더링 여부
+
   useEffect(() => {
     if (isVisible) {
+      setShouldRender(true);
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
+      // 애니메이션 시간만큼 delay 후 DOM 제거
+      const timeout = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timeout);
     }
-  });
+  }, [isVisible]);
 
   const handleClick = (title: string) => {
     if (title === "식당메뉴") {
@@ -67,9 +72,9 @@ export default function MenuButton() {
       mobileNavigate(`/home/campus`);
     } else if (title === "편의") {
       mobileNavigate(`/home/util`);
-    } else if (title == "1대1 문의하기") {
+    } else if (title === "1대1 문의하기") {
       window.open(
-        "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform"
+        "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
       );
     } else {
       mobileNavigate(`/home/${title}`);
@@ -83,18 +88,18 @@ export default function MenuButton() {
         alt="사이드바"
         onClick={() => setIsVisible(true)}
       />
-      {isVisible && (
-        <>
+      {shouldRender && (
+        <SidebarPortal>
           <Background
             isVisible={isVisible}
             onClick={() => setIsVisible(false)}
           />
           <Sidebar isVisible={isVisible}>
             <div className="sidebar-header">
-              <img className="logo" src={intipLogo} alt="" />
+              <img className="logo" src={intipLogo} alt="로고" />
               <button onClick={() => setIsVisible(false)}>
                 <span>닫기</span>
-                <img src={closeBtn} alt="" />
+                <img src={closeBtn} alt="닫기 버튼" />
               </button>
             </div>
             <div className="sidebar-categories">
@@ -114,7 +119,7 @@ export default function MenuButton() {
               <AiForm />
             </div>
           </Sidebar>
-        </>
+        </SidebarPortal>
       )}
     </>
   );
@@ -165,6 +170,7 @@ const Background = styled.div<{ isVisible: boolean }>`
   position: fixed;
   inset: 0;
   background-color: rgba(255, 255, 255, 0.5);
+  z-index: 9998;
   animation: ${({ isVisible }) => (isVisible ? fadeIn : fadeOut)} 0.3s
     ease-in-out;
 `;
@@ -174,10 +180,9 @@ const Sidebar = styled.div<{ isVisible: boolean }>`
   top: 0;
   bottom: 0;
   right: 0;
-  padding-bottom: 80px;
   width: 320px;
   background-color: #fff;
-  z-index: 1000;
+  z-index: 9999; // 가장 위로
   display: flex;
   flex-direction: column;
   overflow-y: auto;

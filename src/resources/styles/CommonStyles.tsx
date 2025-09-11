@@ -6,6 +6,7 @@ const CommonStyles = createGlobalStyle`
     font-family: 'CustomFont';
     src: url('/fonts/AppleSDGothicNeoM.ttf') format('truetype'); // format에 ttc, ttf은 'truetype' otf는 'opentype'
   }
+
   body {
     font-family: Arial, 'CustomFont', Roboto, Inter;
     margin: 0;
@@ -13,9 +14,16 @@ const CommonStyles = createGlobalStyle`
     overflow: scroll;
     cursor: url('/pointers/cursor.svg'), auto; // 기본 커서 이미지 설정
   }
+
+
   a, button, img {
     cursor: url('/pointers/cursor-pointer.svg'), pointer;
   }
+
+  * {
+    -webkit-tap-highlight-color: rgba(128, 128, 128, 0.2);
+  }
+
 `;
 
 export default CommonStyles;

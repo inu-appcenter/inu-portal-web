@@ -87,13 +87,15 @@ export default function CardComment({
             />
             <Date>{p.createDate}</Date>
             <Content>{p.content}</Content>
-            <LikeWrapper>
-              <img src={HeartFilledImg} alt="like" />
-              <Like>{p.like}</Like>
-              <Like>·</Like>
-              <Like>댓글 {p.replyCount}</Like>
-            </LikeWrapper>
-            <Title>{p.title}</Title>
+            <Title>
+              제목 : {p.title}
+              <LikeWrapper>
+                <img src={HeartFilledImg} alt="like" />
+                <Like>{p.like}</Like>
+                <Like>·</Like>
+                <Like>댓글 {p.replyCount}</Like>
+              </LikeWrapper>
+            </Title>
           </TipsCardWrapper>
         ))}
       </TipsCardListWrapper>
@@ -121,9 +123,11 @@ const CardWrapper = styled.div`
   font-size: 15px;
   font-weight: 600;
   color: #0e4d9d;
+
   span {
     color: #969696;
   }
+
   p {
     padding-left: 28px;
   }
@@ -138,13 +142,17 @@ const TipsCardListWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const TipsCardWrapper = styled.div`
   position: relative;
   height: 126px;
-  width: calc(100% - 28px);
-  padding: 14px 0 14px 28px;
+  width: calc(100% - 32px);
+  padding: 16px;
+  box-sizing: border-box;
+
   background-color: white;
   display: flex;
   flex-direction: column;
@@ -162,13 +170,13 @@ const XButton = styled.img`
 `;
 
 const Date = styled.div`
-  font-size: 7px;
+  font-size: 12px;
   font-weight: 400;
   color: #757575;
 `;
 
 const Content = styled.div`
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 400;
   color: #000000;
   height: 40px;
@@ -177,11 +185,12 @@ const Content = styled.div`
 const LikeWrapper = styled.div`
   display: flex;
   gap: 6px;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 400;
   color: #757575;
   height: 10px;
   align-items: center;
+
   img {
     height: 10px;
   }
@@ -193,16 +202,19 @@ const Like = styled.div`
 `;
 
 const Title = styled.div`
-  padding-left: 8px;
-  width: 228px;
+  padding: 4px 12px;
+  width: 100%;
   max-width: 90%;
-  height: 18px;
-  font-size: 8px;
+  height: fit-content;
+  font-size: 12px;
   font-weight: 600;
   color: #000000;
   background-color: #f3f3f3;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  align-items: start;
 `;
 
 // Modal Styles
@@ -236,6 +248,7 @@ const ModalTop = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
+
   span {
     height: 1px;
     width: 100%;
