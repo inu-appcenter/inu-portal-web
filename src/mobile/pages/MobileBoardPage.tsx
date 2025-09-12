@@ -69,7 +69,7 @@ export default function MobileBoardPage() {
         replace: true,
       });
     }
-  }, []);
+  }, [location.pathname]);
 
   return (
     <MobileTipsPageWrapper>
