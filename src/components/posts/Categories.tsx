@@ -1,4 +1,4 @@
-import { getCategories } from "apis/categories";
+import { getTipsCategories } from "apis/categories";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -39,7 +39,7 @@ export default function Categories() {
     const fetchCategories = async () => {
       try {
         if (type == "tips") {
-          const response = await getCategories();
+          const response = await getTipsCategories();
           const allCategories = ["전체", ...response.data];
           const tmpCategories: Category[] = [];
           const tmpCollages: Category[] = [];
@@ -66,7 +66,7 @@ export default function Categories() {
               name: cat,
               iconWhite: `/categoryIcons/${cat}_white.svg`,
               iconGray: `/categoryIcons/${cat}_gray.svg`,
-            }))
+            })),
           );
         }
       } catch (error) {
@@ -81,14 +81,14 @@ export default function Categories() {
     if (type === "categories") {
       setCategories((prevCategories) =>
         prevCategories.map((cat, idx) =>
-          idx === index ? { ...cat, hasError: true } : cat
-        )
+          idx === index ? { ...cat, hasError: true } : cat,
+        ),
       );
     } else {
       setColleges((prevCategories) =>
         prevCategories.map((cat, idx) =>
-          idx === index ? { ...cat, hasError: true } : cat
-        )
+          idx === index ? { ...cat, hasError: true } : cat,
+        ),
       );
     }
   };

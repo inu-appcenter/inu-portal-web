@@ -1,10 +1,19 @@
 import { ApiResponse } from "types/common";
 import axiosInstance from "./axiosInstance";
 
-// 모든 카테고리 가져오기
-export const getCategories = async (): Promise<ApiResponse<string[]>> => {
+// 팁게시판 카테고리 정보 가져오기
+export const getTipsCategories = async (): Promise<ApiResponse<string[]>> => {
+  const response =
+    await axiosInstance.get<ApiResponse<string[]>>(`/api/categories`);
+  return response.data;
+};
+
+// 학교 공지 카테고리 정보 가져오기
+export const getSchoolNoticeCategories = async (): Promise<
+  ApiResponse<string[]>
+> => {
   const response = await axiosInstance.get<ApiResponse<string[]>>(
-    `/api/categories`
+    `/api/categories/notice`,
   );
   return response.data;
 };
