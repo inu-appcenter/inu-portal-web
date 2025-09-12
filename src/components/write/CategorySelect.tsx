@@ -1,4 +1,4 @@
-import { getCategories } from "apis/categories";
+import { getTipsCategories } from "apis/categories";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import dropdown from "resources/assets/write/dropdown.svg";
@@ -18,7 +18,7 @@ export default function CategorySelect({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await getCategories();
+        const response = await getTipsCategories();
         setCategories(response.data);
       } catch (error) {
         console.error("모든 카테고리 가져오기 실패", error);

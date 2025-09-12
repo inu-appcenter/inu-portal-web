@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getCategories } from "apis/categories";
+import { getSchoolNoticeCategories, getTipsCategories } from "apis/categories";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAppStateStore from "stores/useAppStateStore";
 
@@ -47,13 +47,14 @@ export default function CategorySelectorNew({
         }
 
         if (type === "tips") {
-          const response = await getCategories();
+          const response = await getTipsCategories();
           setCategories(["전체", ...response.data]);
         } else if (type === "write") {
-          const response = await getCategories();
+          const response = await getTipsCategories();
           setCategories(response.data);
         } else if (type === "notice") {
-          setCategories(["전체", "학사", "모집", "학점교류", "교육시험"]);
+          const response = await getSchoolNoticeCategories();
+          setCategories(["전체", ...response.data]);
         }
       } catch (error) {
         console.error("모든 카테고리 가져오기 실패", error);
