@@ -45,7 +45,7 @@ export default function TipsListContainer({
   });
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  // const { isAppUrl } = useAppStateStore();
+  // const { isAppUrl } = useAppStateStore()
 
   // 초기화
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function TipsListContainer({
     // 초기 로딩 때 2페이지까지 불러오기
     const loadInitialPages = async () => {
       await fetchData(undefined, 1); // 1페이지
-      await fetchData(fetchState.lastPostId, 2); // 2페이지
+      if (docType === "NOTICE") await fetchData(fetchState.lastPostId, 2); // 2페이지
     };
 
     loadInitialPages();
@@ -173,9 +173,12 @@ export default function TipsListContainer({
         } else {
           setHasMore(false);
         }
-      } else if (docType === "NOTIFICATION") {
+      } else if (docType === "ALERT") {
         const response = await getNotifications(fetchState.page);
         const newNotifications: Notification[] = response.data.contents;
+        console.log(fetchState.page);
+        console.log(response);
+
         if (newNotifications && newNotifications.length > 0) {
           setNotifications((prev) => [...prev, ...newNotifications]);
           // 페이지 수 업데이트

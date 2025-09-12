@@ -5,7 +5,8 @@ import { Notice } from "types/notices";
 import heart from "resources/assets/posts/posts-heart.svg";
 import { CouncilNotice } from "types/councilNotices";
 import { FaEye } from "react-icons/fa";
-import { Notification } from "../../../types/members.ts"; // FontAwesome 눈 아이콘
+import { Notification } from "../../../types/members.ts";
+import notificationCategory from "../../../resources/strings/notificationCategory.ts"; // FontAwesome 눈 아이콘
 
 interface TipsCardContainerProps {
   post?: Post;
@@ -38,11 +39,13 @@ export default function ({
     } else if (docType === "COUNCILNOTICE") {
       councilNotice &&
         mobileNavigate(`/councilnoticedetail?id=${councilNotice.id}`);
-    } else if (docType === "ALERT") {
-      mobileNavigate("/home/deptnotice");
     } else {
       post && mobileNavigate(`/postdetail?id=${post.id}`);
     }
+  };
+
+  const handleAlertClick = () => {
+    mobileNavigate("/home/deptnotice");
   };
 
   return (
@@ -199,9 +202,11 @@ export default function ({
           )}
 
           {notification && (
-            <TipsCardListWrapper onClick={handleDocumentClick}>
+            <TipsCardListWrapper onClick={handleAlertClick}>
               <ListLeftWrapper>
-                <Category>{notification.type}</Category>
+                <Category>
+                  {notificationCategory?.[notification.type] ?? "알림"}
+                </Category>
               </ListLeftWrapper>
               {/*<ListLine />*/}
               <ListRightWrapper>
