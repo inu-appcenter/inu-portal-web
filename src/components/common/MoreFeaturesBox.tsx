@@ -36,4 +36,5 @@ const Title = styled.p`
 const Content = styled.div`
   color: #3d6fd0;
   font-size: 16px;
+  white-space: pre-line; /* 엔터 처리 */
 `;
