@@ -3,9 +3,15 @@ import { Autoplay, Pagination } from "swiper/modules";
 import WeatherForm from "./Weather.tsx";
 import 유니돔배너 from "../../../resources/assets/banner/유니돔배너.svg";
 import 인팁배너1 from "../../../resources/assets/banner/인팁배너1.png";
+import 인입런 from "../../../resources/assets/banner/인입런.webp";
+import 학과공지알리미 from "../../../resources/assets/banner/학과공지알리미.webp";
+import 설문배너 from "../../../resources/assets/banner/설문배너.webp";
+
 import styled from "styled-components";
+import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 
 const Banner = () => {
+  const mobilenavigate = useMobileNavigate();
   return (
     <BannerWrapper>
       <Swiper
@@ -33,6 +39,37 @@ const Banner = () => {
           >
             <WeatherForm />
           </div>
+        </SwiperSlide>
+        <SwiperSlide>
+          <img
+            className="banner-img"
+            src={학과공지알리미}
+            onClick={() => {
+              mobilenavigate("/home/deptnotice");
+            }}
+          />
+        </SwiperSlide>
+        <SwiperSlide>
+          <img
+            className="banner-img"
+            src={인입런}
+            onClick={() => {
+              mobilenavigate("/bus");
+            }}
+          />
+        </SwiperSlide>
+        <SwiperSlide>
+          <img
+            className="banner-img"
+            src={설문배너}
+            onClick={() => {
+              window.open(
+                "https://forms.gle/DHk5zsAF8Ko3SN38A",
+                "_blank",
+                "noopener,noreferrer",
+              );
+            }}
+          />
         </SwiperSlide>
         <SwiperSlide>
           <img
