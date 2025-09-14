@@ -347,6 +347,26 @@ export const navBarList = [
         ],
       },
       {
+        title: "융합자유전공대학",
+        subItems: [
+          {
+            title: "자유전공학부",
+            url: "https://clis.inu.ac.kr/",
+            code: "LIBERAL_ARTS",
+          },
+          {
+            title: "국제자유전공학부",
+            url: "https://clis.inu.ac.kr/",
+            code: "INTERNATIONAL_LIBERAL_ARTS",
+          },
+          {
+            title: "융합학부",
+            url: "https://clis.inu.ac.kr/",
+            code: "CONVERGENCE",
+          },
+        ],
+      },
+      {
         title: "동북아국제통상물류학부",
         subItems: [
           {
