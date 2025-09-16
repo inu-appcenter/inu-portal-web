@@ -15,7 +15,6 @@ import CategorySelectorNew from "../components/common/CategorySelectorNew.tsx";
 import { useLocation } from "react-router-dom";
 import { NoticeRecommendKeywords } from "../../resources/strings/NoticeRecommendKeywords.ts";
 // import TitleContentArea from "../../components/common/TitleContentArea.tsx";
-import MoreFeaturesBox from "../../components/common/MoreFeaturesBox.tsx";
 
 export default function MobileDeptAlarmSettingPage() {
   const { userInfo } = useUserStore();
@@ -160,12 +159,12 @@ export default function MobileDeptAlarmSettingPage() {
         )}
       </KeyWordSettingWrapper>
 
-      <MoreFeaturesBox
-        title={"알려드립니다"}
-        content={
-          "현재 iPhone에서 푸시알림이 정상적으로 이루어지지 않고 있고, 해당 현상은 9월 19일 전까지 수정 예정입니다.\n미리 설정해두시면 오류가 수정된 시점부터 알림을 받아보실 수 있습니다."
-        }
-      />
+      {/*<MoreFeaturesBox*/}
+      {/*  title={"알려드립니다"}*/}
+      {/*  content={*/}
+      {/*    "현재 iPhone에서 푸시알림이 정상적으로 이루어지지 않고 있고, 해당 현상은 9월 19일 전까지 수정 예정입니다.\n미리 설정해두시면 오류가 수정된 시점부터 알림을 받아보실 수 있습니다."*/}
+      {/*  }*/}
+      {/*/>*/}
     </MobileTipsPageWrapper>
   );
 }
