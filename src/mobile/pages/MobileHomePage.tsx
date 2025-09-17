@@ -43,7 +43,7 @@ export default function MobileHomePage() {
 
   return (
     <MobileHomePageWrapper>
-      <MobileHeader />
+      <MobileHeader showAlarm={true} />
       {show && isBannerOn && (
         <ModalBackGround>
           <Modal>

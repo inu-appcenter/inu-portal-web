@@ -45,6 +45,10 @@ const DepartmentMenu = ({
     >
       <ContentWrapper>
         <h2>학과 선택</h2>
+        <p>
+          학과 변경 시 푸시 알림 설정을 다시 해야 적용됩니다.(다시 설정하지
+          않으면 변경 전 학과의 알림이 발송됨)
+        </p>
         <DepartmentsWrapper>
           {departments.map((dept) => (
             <DepartmentBlock key={dept.title}>

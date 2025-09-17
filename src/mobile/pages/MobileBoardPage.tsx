@@ -13,6 +13,8 @@ import { navBarList } from "../../../old/resource/string/navBarList.tsx";
 import loginImg from "../../resources/assets/login/login-modal-logo.svg";
 import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
+import findTitleOrCode from "../../utils/findTitleOrCode.ts";
+import { putMemberDepartment } from "../../apis/members.ts";
 
 export default function MobileBoardPage() {
   console.log(navBarList[1].child);
@@ -28,6 +30,8 @@ export default function MobileBoardPage() {
   const deptParams = useParams<{ dept: string }>();
 
   const mobileNavigate = useMobileNavigate();
+
+  const { setUserInfo } = useUserStore();
 
   // docType 계산
   const docType = useMemo(() => {
@@ -69,17 +73,52 @@ export default function MobileBoardPage() {
         replace: true,
       });
     }
-  }, [location.pathname]);
+  }, [location.pathname, userInfo.department]);
+
+  const handleDepartmentClick = async (department: string) => {
+    try {
+      await putMemberDepartment(department); //서버에는 학과 CODE로 POST
+      //유저 정보에는 한국어로 학과 정보 UPDATE
+      const deptKorean = findTitleOrCode(department);
+      setUserInfo({
+        ...userInfo,
+        department: deptKorean,
+      });
+    } catch (error) {
+      console.log(error);
+      alert("학과 변경을 실패했습니다.");
+    }
+
+    setIsDeptSelectorOpen(false);
+  };
+
+  // docType에 따른 메뉴 정의
+  const menuItems = useMemo(() => {
+    switch (docType) {
+      case "DEPT_NOTICE":
+        if (userInfo.department) {
+          return [
+            { label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) },
+          ];
+        } else {
+          return undefined;
+        }
+
+      default:
+        return undefined;
+    }
+  }, [docType]);
 
   return (
     <MobileTipsPageWrapper>
-      <MobileHeader title={title} backPath={"/home"} />
+      <MobileHeader title={title} backPath={"/home"} menuItems={menuItems} />
 
       {navBarList[1].child && (
         <DepartmentNoticeSelector
           departments={navBarList[1].child}
           isOpen={isDeptSelectorOpen}
           setIsOpen={setIsDeptSelectorOpen}
+          handleClick={handleDepartmentClick}
         />
       )}
 

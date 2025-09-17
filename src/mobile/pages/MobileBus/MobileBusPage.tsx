@@ -6,7 +6,7 @@ import MobileNav from "../../containers/common/MobileNav.tsx";
 export default function MobileBusPage() {
   return (
     <MobileBusPageWrapper>
-      <MobileHeader />
+      <MobileHeader showAlarm={true} />
       <BusCardSection />
       <MobileNav />
     </MobileBusPageWrapper>

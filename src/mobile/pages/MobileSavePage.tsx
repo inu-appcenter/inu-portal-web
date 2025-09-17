@@ -62,7 +62,7 @@ export default function MobileSavePage() {
 
   return (
     <MobileSavePageWrapper>
-      <MobileHeader />
+      <MobileHeader showAlarm={true} />
       {tokenInfo.accessToken ? (
         <>
           <ScrapFolders
