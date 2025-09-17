@@ -9,6 +9,7 @@ import UpperBackgroundImg from "resources/assets/mobile-common/upperBackgroundIm
 import BackButton from "../../components/mypage/BackButton.tsx";
 import Title from "../../components/mypage/Title.tsx";
 import { Bell } from "lucide-react";
+import TopRightDropdownMenu from "../../../components/common/TopRightDropdownMenu.tsx";
 
 // 알림 여부를 prop으로 전달받아서 표시 여부 결정
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
@@ -41,18 +42,24 @@ const Badge = styled.div`
   border-radius: 50%;
 `;
 
+interface MenuItemType {
+  label: string;
+  onClick: () => void;
+}
 interface HeaderProps {
   title?: string;
   hasback?: boolean;
   backPath?: string;
   showAlarm?: boolean;
+  menuItems?: MenuItemType[];
 }
 
 export default function MobileHeader({
   title,
   hasback = true,
   backPath,
-  showAlarm = true,
+  showAlarm = false,
+  menuItems,
 }: HeaderProps) {
   const mobileNavigate = useMobileNavigate();
   const [showHeader, setShowHeader] = useState(true);
@@ -129,6 +136,7 @@ export default function MobileHeader({
 
         <ProfileMenuWrapper>
           {showAlarm && <NotificationBell hasNew={false} />}
+          {menuItems && <TopRightDropdownMenu items={menuItems} />}
 
           {/*<MenuButton />*/}
         </ProfileMenuWrapper>
@@ -151,7 +159,7 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
 
   z-index: 2;
   //box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  //overflow: hidden;
 
   transition: transform 0.3s ease;
   transform: ${({ $visible }) =>

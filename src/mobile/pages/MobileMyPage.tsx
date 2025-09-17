@@ -82,7 +82,7 @@ export default function MobileMyPage() {
 
   return (
     <MyPageWrapper>
-      <MobileHeader />
+      <MobileHeader showAlarm={true} />
 
       <Background />
       <TopBackground>

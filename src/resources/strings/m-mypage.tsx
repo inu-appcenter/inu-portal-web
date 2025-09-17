@@ -18,7 +18,7 @@ export const MyPageCategoryLoggeedIn = [
   {
     title: "프로필 수정",
     image: `${profileImg}`,
-    description: "프로필 이미지와 닉네임을 수정할 수 있어요.",
+    description: "닉네임 · 학과 · 프로필 이미지",
   },
   {
     title: "스크랩",
