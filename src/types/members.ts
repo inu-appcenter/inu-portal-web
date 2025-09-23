@@ -32,3 +32,8 @@ export interface Notification {
   body: string;
   type: "GENERAL" | string;
 }
+
+//api로그
+export interface ApiLog{
+    uri:string;
+}

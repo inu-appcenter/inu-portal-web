@@ -54,3 +54,4 @@ export async function getBusArrival(bstopId: string) {
     return [];
   }
 }
+
