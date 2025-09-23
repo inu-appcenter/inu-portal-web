@@ -3,10 +3,10 @@ import tokenInstance from "apis/tokenInstance";
 import refreshInstance from "apis/refreshInstance";
 import { ApiResponse, Pagination } from "types/common";
 import {
-  TokenInfo,
-  UserInfo,
-  MembersReplies,
-  Notification,
+    TokenInfo,
+    UserInfo,
+    MembersReplies,
+    Notification, ApiLog,
 } from "types/members";
 import { Post } from "types/posts";
 
@@ -128,4 +128,15 @@ export const getNotifications = async (
     ApiResponse<Pagination<Notification[]>>
   >("/api/tokens", { params });
   return response.data;
+};
+
+
+export const postApiLogs = async (
+    uri: string
+): Promise<ApiResponse<ApiLog>> => {
+    const response = await axiosInstance.post<ApiResponse<ApiLog>>(
+        `/api/logs/apis`,
+        { uri }
+    );
+    return response.data;
 };

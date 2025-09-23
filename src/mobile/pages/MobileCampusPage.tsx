@@ -1,8 +1,20 @@
 import styled from "styled-components";
 import MapManager from "components/map/MapManager.tsx";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
+import {useEffect} from "react";
+import {postApiLogs} from "../../apis/members.ts";
 
 export default function MobileCampusPage() {
+
+    useEffect(() => {
+        const logApi = async ()=>{
+            console.log("캠퍼스맵 로그");
+            await postApiLogs("/api/campusmap");
+
+        }
+        logApi();
+    }, [])
+
   return (
     <MobileCampusPageWrapper>
       <MobileHeader title={"캠퍼스맵"} />
