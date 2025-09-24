@@ -10,6 +10,7 @@ import axios, { AxiosError } from "axios";
 import useUserStore from "stores/useUserStore";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
 import MobileNav from "../containers/common/MobileNav.tsx";
+import { postApiLogs } from "../../apis/members.ts";
 
 export default function MobileSavePage() {
   const { tokenInfo } = useUserStore();
@@ -43,6 +44,14 @@ export default function MobileSavePage() {
       fetchFolders();
     }
   }, [tokenInfo]);
+
+  useEffect(() => {
+    const logApi = async () => {
+      console.log("스크랩페이지 로그");
+      await postApiLogs("/api/folders");
+    };
+    logApi();
+  }, []);
 
   const handleManageFoldersClick = (mode: "add" | "manage") => {
     setManageMode(mode);

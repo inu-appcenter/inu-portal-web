@@ -4,6 +4,7 @@ import { getCafeterias } from "apis/cafeterias";
 import CafeteriaInfoContainer from "mobile/containers/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "mobile/containers/cafeteria/CafeteriaTitleContainer";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
+import { postApiLogs } from "../../apis/members.ts";
 
 interface CafeteriaDetail {
   구성원가: string;
@@ -30,6 +31,14 @@ export default function MobileMenuPage() {
   useEffect(() => {
     fetchCafeteriaData(nowday);
   }, [title, nowday]);
+
+  useEffect(() => {
+    const logApi = async () => {
+      console.log("식당 메뉴 로그");
+      await postApiLogs("/api/cafeteria");
+    };
+    logApi();
+  }, []);
 
   const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
     const weekDates = [];
