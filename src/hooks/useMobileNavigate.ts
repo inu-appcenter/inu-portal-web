@@ -21,18 +21,21 @@ export default function useMobileNavigate() {
       if (window.AndroidBridge && window.AndroidBridge.goBack) {
         window.AndroidBridge.goBack();
       } else if (isiOS()) {
-        window.history.back();
+        window.history.go(pathOrSteps);
       } else {
         navigate(pathOrSteps);
       }
     } else {
       const fullPath = `${isAppUrl}${pathOrSteps}`;
       if (isAndroid() || isiOS()) {
-        // 앱 환경에서는 replace/state를 적용할 수 없고 그냥 이동만 가능
-        window.location.href = fullPath;
+        if (options?.replace) {
+          window.location.replace(fullPath); // 스택 제거 이동
+        } else {
+          window.location.href = fullPath; // 일반 이동
+        }
       } else {
         navigate(fullPath, {
-          replace: options?.replace,
+          replace: options?.replace ?? false,
           state: options?.state,
         });
       }

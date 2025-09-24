@@ -7,7 +7,7 @@ interface WritePageTitleProps {
 export default function WritePageTitle({ id }: WritePageTitleProps) {
   return (
     <WritePageTitleWrapper>
-      {id === 0 ? "TIP 글쓰기" : `TIP 수정하기 (${id})`}
+      {id === 0 ? "TIP 글쓰기" : `TIP 수정하기`}
     </WritePageTitleWrapper>
   );
 }

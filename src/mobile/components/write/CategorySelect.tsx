@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import { getTipsCategories } from "apis/categories";
 import dropdownIcon from "resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
@@ -14,6 +14,7 @@ export default function CategorySelector({
 }: CategorySelectProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null); // ref 추가
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -33,33 +34,45 @@ export default function CategorySelector({
     setIsOpen(false);
   };
 
+  // 바깥 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <CategorySelectorWrapper>
-      {isOpen ? (
+    <CategorySelectorWrapper ref={dropdownRef}>
+      <Dropdown
+        onClick={() => {
+          setIsOpen(!isOpen);
+        }}
+      >
+        <div>{category || "카테고리 선택"}</div>
+        <DropdownImg src={dropdownIcon} alt="" />
+      </Dropdown>
+
+      {isOpen && (
         <DropdownOptions>
           {categories.map((category, index) => (
             <React.Fragment key={category}>
-              <DropdownOption
-                onClick={() => {
-                  handleCategoryClick(category);
-                  setIsOpen(false);
-                }}
-              >
+              <DropdownOption onClick={() => handleCategoryClick(category)}>
                 <div>{category}</div>
                 {index < categories.length - 1 && <DropdownOptionLine />}
               </DropdownOption>
             </React.Fragment>
           ))}
         </DropdownOptions>
-      ) : (
-        <Dropdown
-          onClick={() => {
-            setIsOpen(!isOpen);
-          }}
-        >
-          <div>{category || "카테고리 선택"}</div>
-          <DropdownImg src={dropdownIcon} alt="" />
-        </Dropdown>
       )}
     </CategorySelectorWrapper>
   );
@@ -100,7 +113,7 @@ const DropdownOptions = styled.div`
   padding-bottom: 15px;
 
   position: absolute;
-  top: 0; /* Dropdown과 같은 위치로 설정 */
+  top: 40px; /* Dropdown과 같은 위치로 설정 */
   left: 0;
   right: 0;
   border-radius: 16px;

@@ -4,7 +4,7 @@ import PhotoUpload from "mobile/components/write/PhotoUpload";
 import AnonymousCheck from "mobile/components/write/AnonymousCheck";
 import { useEffect, useState } from "react";
 import { getPostDetail, postPost, putPost } from "apis/posts";
-import { useBeforeUnload } from "react-router-dom";
+import { useBeforeUnload, useParams } from "react-router-dom";
 import useMobileNavigate from "hooks/useMobileNavigate";
 import { useResetTipsStore } from "reducer/resetTipsStore";
 import { useResetWriteStore } from "reducer/resetWriteStore";
@@ -18,7 +18,8 @@ interface Props {
 
 export default function WriteForm({ category, setCategory }: Props) {
   const mobileNavigate = useMobileNavigate();
-  const [postId, setPostId] = useState<number>(0);
+  const { id: routeId } = useParams<{ id?: string }>();
+  const postId = routeId ? Number(routeId) : 0;
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [anonymous, setAnonymous] = useState<boolean>(false);
@@ -27,14 +28,6 @@ export default function WriteForm({ category, setCategory }: Props) {
   const triggerResetTips = useResetTipsStore((state) => state.triggerReset);
   const triggerResetWrite = useResetWriteStore((state) => state.triggerReset);
   const { isAppUrl } = useAppStateStore();
-
-  // postId 가져오기
-  useEffect(() => {
-    if (location.pathname.includes("/write")) {
-      const params = new URLSearchParams(location.search);
-      setPostId(Number(params.get("id")) || 0);
-    }
-  }, [location.pathname, location.search]);
 
   // 수정 시 기존 내용 가져오기
   const fetchPost = async () => {
@@ -55,7 +48,7 @@ export default function WriteForm({ category, setCategory }: Props) {
           const responseImage = await fetch(
             `https://portal.inuappcenter.kr/images/post/${postId}-${
               imageId + 1
-            }?v=${response.data.modifiedDate}`
+            }?v=${response.data.modifiedDate}`,
           );
           const blob = await responseImage.blob();
           const file = new File([blob], `image_${imageId}.png`, {
@@ -133,17 +126,10 @@ export default function WriteForm({ category, setCategory }: Props) {
     setLoading(true);
     if (postId) {
       try {
-        const response = await putPost(
-          postId,
-          title,
-          content,
-          category,
-          anonymous,
-          images
-        );
+        await putPost(postId, title, content, category, anonymous, images);
         triggerResetTips();
         triggerResetWrite();
-        mobileNavigate(`/postdetail?id=${response.data}`);
+        mobileNavigate(-1);
       } catch (error) {
         console.error("게시글 수정 실패", error);
         // refreshError가 아닌 경우 처리
@@ -173,11 +159,11 @@ export default function WriteForm({ category, setCategory }: Props) {
           content,
           category,
           anonymous,
-          images
+          images,
         );
         triggerResetTips();
         triggerResetWrite();
-        mobileNavigate(`/postdetail?id=${response.data}`);
+        mobileNavigate(`/postdetail?id=${response.data}`, { replace: true });
       } catch (error) {
         console.error("게시글 등록 실패", error);
         // refreshError가 아닌 경우 처리
@@ -190,7 +176,7 @@ export default function WriteForm({ category, setCategory }: Props) {
           switch (error.response.status) {
             case 400:
               alert(
-                "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다."
+                "일정 시간 동안 같은 게시글이나 댓글을 작성할 수 없습니다.",
               );
               break;
             case 404:
@@ -242,16 +228,24 @@ const WriteFormWrapper = styled.div`
   gap: 16px;
 `;
 
-const UploadButton = styled.div<{ $disabled: boolean }>`
+const UploadButton = styled.button<{ $disabled: boolean }>`
   height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+  border: none; /* border 제거 */
   font-size: 18px;
   font-weight: 700;
   color: white;
-  background: ${({ $disabled }) => ($disabled ? "#CCC" : "#ADC7EC")};
+  background: ${({ $disabled }) => ($disabled ? "#AAA" : "#3B6CE1")};
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+  transition: background 0.15s ease-in-out;
+
+  /* 모바일 터치 효과 */
+  &:active {
+    background: ${({ $disabled }) => ($disabled ? "#AAA" : "#2F54B2")};
+  }
 `;
 
 const Desc = styled.span`

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { getPostDetail } from "apis/posts";
+import { deletePost, getPostDetail } from "apis/posts";
 import PostContentContainer from "mobile/containers/postdetail/PostContentContainer";
 import CommentListMobile from "mobile/containers/postdetail/CommentListContainer";
 import ReplyInput from "mobile/containers/postdetail/ReplyInput";
@@ -30,7 +30,9 @@ export default function PostDetailPage() {
   const fetchPost = async (id: number) => {
     try {
       const response = await getPostDetail(id);
+      console.log("게시글 가져오기 성공!!!");
       setPost(response.data);
+      console.log(response);
       setCommentUpdated(false);
     } catch (error) {
       console.error("게시글 가져오기 실패", error);
@@ -54,6 +56,46 @@ export default function PostDetailPage() {
     }
   };
 
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("정말 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    if (!post?.id) {
+      alert("게시글 삭제 중 오류가 발생했습니다.");
+      return;
+    }
+
+    try {
+      await deletePost(post?.id);
+      alert("삭제되었습니다.");
+      mobileNavigate(-1);
+    } catch (error) {
+      console.error("게시글 삭제 실패", error);
+      // refreshError가 아닌 경우 처리
+      if (
+        axios.isAxiosError(error) &&
+        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+        error.response
+      ) {
+        switch (error.response.status) {
+          case 403:
+            alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
+            break;
+          case 404:
+            alert("존재하지 않는 게시글입니다.");
+            break;
+          default:
+            alert("게시글 삭제 실패");
+            break;
+        }
+      }
+    }
+  };
+
+  const handleEdit = () => {
+    mobileNavigate(`/home/tips/write/${post?.id}`);
+  };
+
   useEffect(() => {
     if (location.pathname.includes("/postdetail")) {
       const params = new URLSearchParams(location.search);
@@ -61,9 +103,27 @@ export default function PostDetailPage() {
     }
   }, [location.pathname, commentUpdated]);
 
+  const menuItems = [
+    {
+      label: "수정하기",
+      onClick: () => {
+        handleEdit();
+      },
+    },
+    {
+      label: "삭제하기",
+      onClick: () => {
+        handleDelete();
+      },
+    },
+  ];
+
   return (
     <Wrapper>
-      <MobileHeader title={"게시글 상세"} />
+      <MobileHeader
+        title={"게시글 상세"}
+        menuItems={post?.hasAuthority ? menuItems : undefined}
+      />
       {post ? (
         <>
           <PostWrapper>
