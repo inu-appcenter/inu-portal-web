@@ -30,7 +30,6 @@ export default function PostContentContainer({
             isLiked={ClubRecruit.isLiked}
             scrap={ClubRecruit.scrap}
             isScraped={ClubRecruit.isScraped}
-            hasAuthority={ClubRecruit.hasAuthority}
           />
           <PostContent
             id={ClubRecruit.id}
