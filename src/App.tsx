@@ -1,6 +1,6 @@
 import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { getMembers } from "apis/members";
+import {getMembers, postApiLogs} from "apis/members";
 import useUserStore from "stores/useUserStore";
 import ScrollBarStyles from "resources/styles/ScrollBarStyles";
 import RootPage from "pages/RootPage";
@@ -85,6 +85,25 @@ function App() {
       (window as any).onReceiveFcmToken = null;
     };
   }, [userInfo]);
+
+  //접속 유저수 중복없이 카운팅
+    useEffect(() => {
+        const apiCount =async ()=>{
+            const STORAGE_KEY = "user_count_date";
+
+            const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+            const lastCountDate = localStorage.getItem(STORAGE_KEY);
+
+            if (lastCountDate !== today) {
+               await postApiLogs("/api/members/no-dup");
+                localStorage.setItem(STORAGE_KEY, today);
+
+            }
+        }
+        apiCount();
+
+
+    }, []);
 
   return (
     <>
