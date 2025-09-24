@@ -8,7 +8,6 @@ import useMobileNavigate from "hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "../components/club/ClubAdmin";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
-import { postApiLogs } from "../../apis/members.ts";
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -33,14 +32,6 @@ export default function MobileClubPage() {
     };
     fetchClubs();
   }, [category]);
-
-  useEffect(() => {
-    const logApi = async () => {
-      console.log("동아리 로그");
-      await postApiLogs("/api/club");
-    };
-    logApi();
-  }, []);
 
   const handleRecruitingBtn = (clubId: number, clubName: string) => {
     mobileNavigate(`/home/recruitdetail?id=${clubId}&name=${clubName}`);

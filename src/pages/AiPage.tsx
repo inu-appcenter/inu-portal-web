@@ -4,22 +4,13 @@ import AiTitle from "components/ai/AiTitle";
 // import AiIntroText from "components/ai/AiIntroText";
 import HowToUse from "components/ai/HowToUse";
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import X_Vector from "resources/assets/mobile-mypage/X-Vector.svg";
 import MobileHeader from "../mobile/containers/common/MobileHeader.tsx";
 import TitleContentArea from "../components/common/TitleContentArea.tsx";
-import { postApiLogs } from "../apis/members.ts";
 
 export default function AiPage() {
   const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const logApi = async () => {
-      console.log("AI횃불이 로그");
-      await postApiLogs("/api/ai-fire");
-    };
-    logApi();
-  }, []);
 
   return (
     <AiPageWrapper>

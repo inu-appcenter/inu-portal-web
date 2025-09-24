@@ -1,17 +1,8 @@
 import styled from "styled-components";
 import Calendarbar from "mobile/components/calendar/Calendar";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
-import { useEffect } from "react";
-import { postApiLogs } from "../../apis/members.ts";
 
 export default function MobileCalendarPage() {
-  useEffect(() => {
-    const logApi = async () => {
-      console.log("학사일정 로그");
-      await postApiLogs("/api/calendar");
-    };
-    logApi();
-  }, []);
   return (
     <MobileCalendarPageWrapper>
       {/*<Title title={"학사일정"} onback={() => mobileNavigate("/home")} />*/}

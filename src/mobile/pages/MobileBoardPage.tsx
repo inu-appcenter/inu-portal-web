@@ -14,7 +14,7 @@ import loginImg from "../../resources/assets/login/login-modal-logo.svg";
 import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import findTitleOrCode from "../../utils/findTitleOrCode.ts";
-import { postApiLogs, putMemberDepartment } from "../../apis/members.ts";
+import { putMemberDepartment } from "../../apis/members.ts";
 
 export default function MobileBoardPage() {
   console.log(navBarList[1].child);
@@ -74,39 +74,6 @@ export default function MobileBoardPage() {
       });
     }
   }, [location.pathname, userInfo.department]);
-
-  useEffect(() => {
-    const logApi = async () => {
-      try {
-        switch (docType) {
-          case "TIPS":
-            console.log("TIPS 로그");
-            await postApiLogs("/api/tips");
-            break;
-          case "NOTICE":
-            console.log("학교 공지 로그");
-            await postApiLogs("/api/notice");
-            break;
-          case "DEPT_NOTICE":
-            console.log("학과 공지 로그");
-            await postApiLogs("/api/deptnotice");
-            break;
-          case "ALERT":
-            console.log("알림 로그");
-            await postApiLogs("/api/alert");
-            break;
-          case "SEARCH":
-            console.log("검색 로그");
-            await postApiLogs("/api/search");
-            break;
-        }
-      } catch (error) {
-        console.error("로그 전송 실패:", error);
-      }
-    };
-
-    logApi();
-  }, [docType]);
 
   const handleDepartmentClick = async (department: string) => {
     try {
