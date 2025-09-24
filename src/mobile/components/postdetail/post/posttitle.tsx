@@ -12,7 +12,6 @@ interface PostTitleProps {
   isLiked?: boolean;
   scrap?: number;
   isScraped?: boolean;
-  hasAuthority?: boolean;
 }
 
 export default function PostTitle({
@@ -25,21 +24,22 @@ export default function PostTitle({
   isLiked,
   scrap,
   isScraped,
-  hasAuthority,
 }: PostTitleProps) {
   // const token = useSelector((state: any) => state.user.token);
   return (
     <>
       <PostTitleWrapper>
         {title}
-        {like && isLiked && scrap && isScraped && hasAuthority ? (
+        {like !== undefined &&
+        isLiked !== undefined &&
+        scrap !== undefined &&
+        isScraped !== undefined ? (
           <PostUtilContainer
             id={id}
             like={like}
             isLiked={isLiked}
             scrap={scrap}
             isScraped={isScraped}
-            hasAuthority={hasAuthority}
           />
         ) : null}
       </PostTitleWrapper>
