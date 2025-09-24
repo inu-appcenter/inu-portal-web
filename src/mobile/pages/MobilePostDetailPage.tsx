@@ -57,7 +57,7 @@ export default function PostDetailPage() {
   };
 
   const handleDelete = async () => {
-    const confirmDelete = window.confirm("정말 삭제하시겠습니까?");
+    const confirmDelete = window.confirm("정말 삭제할까요?");
     if (!confirmDelete) return;
 
     if (!post?.id) {
