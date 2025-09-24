@@ -93,7 +93,9 @@ export default function MobileRootPage() {
           <Route path="/home/alert" element={<MobileBoardPage />} />
           <Route path="/home/tips" element={<MobileBoardPage />} />
           <Route path="/home/tips/write" element={<MobileWritePage />} />
-          <Route path="/home/notice" element={<MobileBoardPage />} />
+            <Route path="/home/tips/write/:id" element={<MobileWritePage />} />
+
+            <Route path="/home/notice" element={<MobileBoardPage />} />
           <Route path="/home/deptnotice/:dept?" element={<MobileBoardPage />} />
           <Route
             path="/home/deptnotice/setting"

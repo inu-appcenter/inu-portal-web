@@ -1,40 +1,29 @@
 import styled from "styled-components";
 import WritePageTitle from "mobile/components/write/WritePageTitle";
 import WriteForm from "mobile/containers/write/WriteForm";
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import useMobileNavigate from "hooks/useMobileNavigate";
+import { useParams } from "react-router-dom";
 import loginImg from "resources/assets/login/login-modal-logo.svg";
 import { useResetWriteStore } from "reducer/resetWriteStore";
 import useUserStore from "stores/useUserStore";
 import CategorySelect from "mobile/components/write/CategorySelect";
+import { useState } from "react";
+import MobileHeader from "../containers/common/MobileHeader.tsx";
 
 export default function MobileWritePage() {
   const { tokenInfo } = useUserStore();
-  const [id, setId] = useState(0);
+  const { id: routeId } = useParams<{ id?: string }>();
+  const id = routeId ? Number(routeId) : 0;
   const [category, setCategory] = useState<string>("");
-  const location = useLocation();
-  const mobileNavigate = useMobileNavigate();
   const resetKey = useResetWriteStore((state) => state.resetKey);
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    setId(Number(params.get("id")) || 0);
-  }, [location]);
-
-  const handleNewPost = () => {
-    mobileNavigate(`/write`);
-  };
 
   return (
     <>
       {tokenInfo.accessToken ? (
         <MobileWritePageWrapper>
+          <MobileHeader title={id === 0 ? "TIP 글쓰기" : `TIP 수정하기`} />
+
           <TitleCategorySelectorWrapper>
             <WritePageTitle id={id} />
-            {id != 0 && (
-              <NewPostButton onClick={handleNewPost}>새 글 쓰기</NewPostButton>
-            )}
             <CategorySelect category={category} setCategory={setCategory} />
           </TitleCategorySelectorWrapper>
           <WriteForm
@@ -62,6 +51,8 @@ const MobileWritePageWrapper = styled.div`
   box-sizing: border-box;
   min-height: calc(100svh - 72px - 72px - 24px);
   width: 100%;
+
+  padding-top: 65px;
 `;
 
 const TitleCategorySelectorWrapper = styled.div`
@@ -71,13 +62,6 @@ const TitleCategorySelectorWrapper = styled.div`
   justify-content: space-between;
 `;
 
-const NewPostButton = styled.div`
-  padding: 4px 8px;
-  font-size: 12px;
-  color: white;
-  background-color: #007bff;
-  border-radius: 4px;
-`;
 const ErrorWrapper = styled.div`
   display: flex;
   flex-direction: column;

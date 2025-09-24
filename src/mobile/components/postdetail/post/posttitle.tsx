@@ -32,7 +32,7 @@ export default function PostTitle({
     <>
       <PostTitleWrapper>
         {title}
-        {like && isLiked && scrap && isScraped && hasAuthority && (
+        {like && isLiked && scrap && isScraped && hasAuthority ? (
           <PostUtilContainer
             id={id}
             like={like}
@@ -41,7 +41,7 @@ export default function PostTitle({
             isScraped={isScraped}
             hasAuthority={hasAuthority}
           />
-        )}
+        ) : null}
       </PostTitleWrapper>
       <Line />
 
