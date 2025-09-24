@@ -14,6 +14,7 @@ import findTitleOrCode from "../../utils/findTitleOrCode.ts";
 import CategorySelectorNew from "../components/common/CategorySelectorNew.tsx";
 import { useLocation } from "react-router-dom";
 import { NoticeRecommendKeywords } from "../../resources/strings/NoticeRecommendKeywords.ts";
+import { postApiLogs } from "../../apis/members.ts";
 // import TitleContentArea from "../../components/common/TitleContentArea.tsx";
 
 export default function MobileDeptAlarmSettingPage() {
@@ -39,6 +40,14 @@ export default function MobileDeptAlarmSettingPage() {
       setAllAlarm(true);
     }
   }, [keywords]);
+
+  useEffect(() => {
+    const logApi = async () => {
+      console.log("학과공지 알리미 설정 로그");
+      await postApiLogs("/api/deptnotice/settings");
+    };
+    logApi();
+  }, []);
 
   const fetchKeywords = async () => {
     try {
