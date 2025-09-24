@@ -83,14 +83,14 @@ export default function MobileHomePage() {
           link={"/m/home/notice"}
         />
         <TitleContentArea
-          title={"학사일정"}
-          children={<ThreeWeekCalendar />}
-          link={"/m/home/calendar"}
-        />
-        <TitleContentArea
           title={"TIPS 인기글"}
           children={<TipForm />}
           link={"/m/home/tips"}
+        />
+        <TitleContentArea
+          title={"학사일정"}
+          children={<ThreeWeekCalendar />}
+          link={"/m/home/calendar"}
         />
         {/*<TipForm />*/}
       </ContainerWrapper>
