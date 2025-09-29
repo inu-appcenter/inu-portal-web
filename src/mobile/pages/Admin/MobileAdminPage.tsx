@@ -22,6 +22,11 @@ const MobileAdminPage: React.FC = () => {
       path: "/admin/userstatistics",
       description: "일자별로 접속한 유저 통계를 볼 수 있어요.",
     },
+    {
+      label: "서비스 사용 통계",
+      path: "/admin/apistatistics",
+      description: "일자별로 API 요청 횟수 통계를 볼 수 있어요.",
+    },
   ];
 
   return (
@@ -43,7 +48,7 @@ const MobileAdminPage: React.FC = () => {
 export default MobileAdminPage;
 
 export const Wrapper = styled.div`
-  padding: 30px;
+  padding: 30px 16px;
   padding-top: 80px;
   box-sizing: border-box;
   max-width: 800px;
