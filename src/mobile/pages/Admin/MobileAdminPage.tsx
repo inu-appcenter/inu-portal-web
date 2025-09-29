@@ -6,14 +6,17 @@ import MobileHeader from "../../containers/common/MobileHeader.tsx";
 
 const MobileAdminPage: React.FC = () => {
   const mobilenavigate = useMobileNavigate();
-  const { tokenInfo, userInfo } = useUserStore();
+  const { tokenInfo, userInfo, isLoading } = useUserStore();
 
   useEffect(() => {
-    console.log(userInfo.role === "admin");
-    if (!tokenInfo.accessToken || !(userInfo.role === "admin")) {
-      mobilenavigate("/home");
+    // isLoading이 false일 때만 다음 로직 실행
+    if (!isLoading) {
+      console.log(userInfo && userInfo.role === "admin");
+      if (!tokenInfo.accessToken || !(userInfo && userInfo.role === "admin")) {
+        mobilenavigate("/home");
+      }
     }
-  }, [tokenInfo, userInfo]);
+  }, [tokenInfo, userInfo, isLoading]);
 
   // 관리자 페이지 목록
   const adminPages = [
