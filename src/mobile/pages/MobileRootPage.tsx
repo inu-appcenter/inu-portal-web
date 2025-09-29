@@ -36,6 +36,8 @@ import MobileBusShuttleHelloBusPage from "./MobileBus/MobileBusShuttleHelloBusPa
 import MobileBusShuttleRouteInfoPage from "./MobileBus/MobileBusShuttleRouteInfoPage.tsx";
 import MobileUnidormPage from "./MobileUnidormPage.tsx";
 import MobileDeptAlarmSettingPage from "./MobileDeptAlarmSettingPage.tsx";
+import MobileAdminPage from "./Admin/MobileAdminPage.tsx";
+import MobileAdminUserStatisticsPage from "./Admin/MobileAdminUserStatisticsPage.tsx";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -93,9 +95,9 @@ export default function MobileRootPage() {
           <Route path="/home/alert" element={<MobileBoardPage />} />
           <Route path="/home/tips" element={<MobileBoardPage />} />
           <Route path="/home/tips/write" element={<MobileWritePage />} />
-            <Route path="/home/tips/write/:id" element={<MobileWritePage />} />
+          <Route path="/home/tips/write/:id" element={<MobileWritePage />} />
 
-            <Route path="/home/notice" element={<MobileBoardPage />} />
+          <Route path="/home/notice" element={<MobileBoardPage />} />
           <Route path="/home/deptnotice/:dept?" element={<MobileBoardPage />} />
           <Route
             path="/home/deptnotice/setting"
@@ -139,6 +141,11 @@ export default function MobileRootPage() {
             element={<MobileBusShuttleRouteInfoPage />}
           />
           <Route path="/unidorm" element={<MobileUnidormPage />} />
+          <Route path="/admin" element={<MobileAdminPage />} />
+          <Route
+            path="/admin/userstatistics"
+            element={<MobileAdminUserStatisticsPage />}
+          />
         </Route>
       </Routes>
 

@@ -66,6 +66,10 @@ export default function MobileMyPage() {
         mobileNavigate(`/mypage/delete`);
         break;
 
+      case "관리자 페이지":
+        mobileNavigate("/admin");
+        break;
+
       case "문의하기":
         window.open(
           "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
@@ -140,6 +144,16 @@ export default function MobileMyPage() {
               <Arrow src={arrowImg} />
             </div>
           ))}
+        {/* admin role일 경우 관리자 페이지 추가 */}
+        {userInfo.role === "admin" && (
+          <div className="item" onClick={() => handleClick("관리자 페이지")}>
+            <span>
+              <img src={/* 관리자 아이콘 이미지 */ ""} />
+              <div>관리자 페이지</div>
+            </span>
+            <Arrow src={arrowImg} />
+          </div>
+        )}
         {MyPageCategoryCommon.map((category, index) => (
           <div
             className="item"
