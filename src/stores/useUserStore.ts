@@ -6,6 +6,7 @@ interface UserState {
   userInfo: UserInfo;
   setTokenInfo: (tokenInfo: TokenInfo) => void;
   setUserInfo: (userProfile: UserInfo) => void;
+  isLoading: boolean;
 }
 
 const useUserStore = create<UserState>((set) => ({
@@ -22,6 +23,7 @@ const useUserStore = create<UserState>((set) => ({
     fireId: 0,
     role: "",
   },
+  isLoading: true, // 초기 상태를 true로 설정
 
   setTokenInfo: (tokenInfo) => {
     set(() => ({ tokenInfo }));
