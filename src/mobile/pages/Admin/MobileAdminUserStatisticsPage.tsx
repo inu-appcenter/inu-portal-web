@@ -4,11 +4,7 @@ import { useEffect, useState } from "react";
 import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 import MobileHeader from "../../containers/common/MobileHeader.tsx";
 import { getMemberLogs } from "../../../apis/admin.ts";
-
-interface MemberLogData {
-  memberCount: number;
-  memberIds: string[];
-}
+import { MemberLogData } from "../../../types/admin.ts";
 
 const MobileAdminUserStatisticsPage: React.FC = () => {
   const mobilenavigate = useMobileNavigate();
@@ -136,7 +132,7 @@ export default MobileAdminUserStatisticsPage;
 
 // 스타일
 export const Wrapper = styled.div`
-  padding: 30px 20px;
+  padding: 30px 16px;
   padding-top: 50px;
   box-sizing: border-box;
   max-width: 800px;
@@ -195,7 +191,7 @@ const ErrorMessage = styled(Message)`
 const StatsCard = styled.div`
   background-color: #ffffff;
   border-radius: 16px;
-  padding: 24px;
+  padding: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border: 1px solid #eee;
   display: flex;

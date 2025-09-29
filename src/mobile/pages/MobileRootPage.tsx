@@ -38,6 +38,7 @@ import MobileUnidormPage from "./MobileUnidormPage.tsx";
 import MobileDeptAlarmSettingPage from "./MobileDeptAlarmSettingPage.tsx";
 import MobileAdminPage from "./Admin/MobileAdminPage.tsx";
 import MobileAdminUserStatisticsPage from "./Admin/MobileAdminUserStatisticsPage.tsx";
+import MobileAdminApiStatisticsPage from "./Admin/MobileAdminApiStatisticsPage.tsx";
 
 // import MobileHeader from "mobile/containers/common/MobileHeader";
 // const Page = styled.div`
@@ -145,6 +146,10 @@ export default function MobileRootPage() {
           <Route
             path="/admin/userstatistics"
             element={<MobileAdminUserStatisticsPage />}
+          />
+          <Route
+            path="/admin/apistatistics"
+            element={<MobileAdminApiStatisticsPage />}
           />
         </Route>
       </Routes>
