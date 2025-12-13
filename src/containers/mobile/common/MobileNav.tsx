@@ -43,8 +43,10 @@ export default function MobileNav() {
 
 const MobileNavWrapper = styled.nav`
   position: fixed;
-  z-index: 10;
-  bottom: 0px;
+  z-index: 2;
+  bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   background-color: white;
   display: flex;
