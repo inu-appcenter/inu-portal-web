@@ -97,6 +97,9 @@ export default Banner;
 
 const BannerWrapper = styled.div`
   background: #f0f6ff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
 
   .banner-svg {
     width: 100%;

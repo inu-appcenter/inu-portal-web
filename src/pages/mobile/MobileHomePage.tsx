@@ -107,6 +107,9 @@ const MobileHomePageWrapper = styled.div`
   flex-direction: column;
   width: 100%;
   position: relative;
+
+  padding: 0 16px;
+  box-sizing: border-box;
 `;
 
 const ContainerWrapper = styled.div`
