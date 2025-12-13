@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { ROUTES } from "@/constants/routes"; // ROUTES 상수 import
 import NavItem from "@/components/mobile/common/NavItem";
 import homeIcon from "@/resources/assets/mobile-common/home-gray.svg";
 import homeIconActive from "@/resources/assets/mobile-common/home-blue.svg";
@@ -13,25 +14,25 @@ export default function MobileNav() {
   return (
     <MobileNavWrapper>
       <NavItem
-        to={`/home`}
+        to={ROUTES.HOME}
         icon={homeIcon}
         activeIcon={homeIconActive}
         label="홈"
       />
       <NavItem
-        to={`/bus`}
+        to={ROUTES.BUS.ROOT} // /bus -> ROUTES.BUS.ROOT
         icon={busIcon}
         activeIcon={busIconActive}
         label="인입런"
       />
       <NavItem
-        to={`/save`}
+        to={ROUTES.SAVE}
         icon={saveIcon}
         activeIcon={saveIconActive}
         label="스크랩"
       />
       <NavItem
-        to={`/mypage`}
+        to={ROUTES.MYPAGE.ROOT} // /mypage -> ROUTES.MYPAGE.ROOT
         icon={mypageIcon}
         activeIcon={mypageIconActive}
         label="마이페이지"
