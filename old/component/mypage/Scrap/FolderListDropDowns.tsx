@@ -1,10 +1,10 @@
-import styled from 'styled-components';
-import ListImg from '../../../resource/assets/list-logo.svg';
-import closeImg from '../../../resource/assets/close-img.svg';
-import fileImg from '../../../resource/assets/file-img.svg';
-import plusImg from '../../../resource/assets/plus-img.svg';
-import { useState } from 'react';
-import { postFoldersPosts } from '../../../utils/API/Folders';
+import styled from "styled-components";
+import ListImg from "../../../resource/assets/list-logo.svg";
+import closeImg from "../../../resource/assets/close-img.svg";
+import fileImg from "../../../resource/assets/file-img.svg";
+import plusImg from "../../../resource/assets/plus-img.svg";
+import { useState } from "react";
+import { postFoldersPosts } from "old/utils/API/Folders";
 
 interface FolderListDropDownsProps {
   folders: Folder[];
@@ -16,11 +16,23 @@ interface FolderListDropDownsProps {
   onClose: () => void;
 }
 
-export default function FolderListDropDowns({ folders, postIds, postId, token, handleCreateListClick, handleAddPosts, onClose }: FolderListDropDownsProps) {
+export default function FolderListDropDowns({
+  folders,
+  postIds,
+  postId,
+  token,
+  handleCreateListClick,
+  handleAddPosts,
+  onClose,
+}: FolderListDropDownsProps) {
   const [selectedFolderIds, setSelectedFolderIds] = useState<number[]>([]);
 
   const handleOptionClick = (folderId: number) => {
-    setSelectedFolderIds(prevIds => prevIds.includes(folderId) ? prevIds.filter(id => id !== folderId) : [...prevIds, folderId]);
+    setSelectedFolderIds((prevIds) =>
+      prevIds.includes(folderId)
+        ? prevIds.filter((id) => id !== folderId)
+        : [...prevIds, folderId],
+    );
   };
 
   const handleAddClick = async () => {
@@ -30,9 +42,13 @@ export default function FolderListDropDowns({ folders, postIds, postId, token, h
           try {
             const response = await postFoldersPosts(token, postId, folderId);
             if (response.status === 200) {
-              console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
+              console.log(
+                `폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`,
+              );
             } else {
-              console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
+              console.error(
+                `폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`,
+              );
             }
           } catch (error) {
             console.error("폴더에 추가하지 못했습니다.", error);
@@ -44,9 +60,13 @@ export default function FolderListDropDowns({ folders, postIds, postId, token, h
         try {
           const response = await postFoldersPosts(token, postId, folderId);
           if (response.status === 200) {
-            console.log(`폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`);
+            console.log(
+              `폴더에 추가 성공: postId=${postId}, folderId=${folderId}, message=${response.body.msg}`,
+            );
           } else {
-            console.error(`폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`);
+            console.error(
+              `폴더에 추가 실패: postId=${postId}, folderId=${folderId}, message=${response.body.msg}, status=${response.status}`,
+            );
           }
         } catch (error) {
           console.error("폴더에 추가하지 못했습니다.", error);
@@ -61,19 +81,24 @@ export default function FolderListDropDowns({ folders, postIds, postId, token, h
     <FolderListDropDownsWrapper className="dropdown-menu">
       <FolderListClose>
         <div>
-          <img src={ListImg} className='list-img' />
+          <img src={ListImg} className="list-img" />
           <span>List</span>
         </div>
-        <img src={closeImg} className='close-img' onClick={onClose}/>
+        <img src={closeImg} className="close-img" onClick={onClose} />
       </FolderListClose>
       <FolderListDetail>
-        {folders.filter((_, index) => index !== 0).map((folder) => (
-          <label key={folder.id}>
-            <input type="checkbox" onClick={() => handleOptionClick(folder.id)} />
-            <img src={fileImg} alt="" />
-            <FolderListDropDownDetail>{folder.name}</FolderListDropDownDetail>
-          </label>
-        ))}
+        {folders
+          .filter((_, index) => index !== 0)
+          .map((folder) => (
+            <label key={folder.id}>
+              <input
+                type="checkbox"
+                onClick={() => handleOptionClick(folder.id)}
+              />
+              <img src={fileImg} alt="" />
+              <FolderListDropDownDetail>{folder.name}</FolderListDropDownDetail>
+            </label>
+          ))}
       </FolderListDetail>
       <FolderListButton>
         <div onClick={() => handleCreateListClick()}>

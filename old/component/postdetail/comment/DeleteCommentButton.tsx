@@ -1,4 +1,4 @@
-import { deleteReplies } from "../../../utils/API/Replies";
+import { deleteReplies } from "old/utils/API/Replies";
 import styled from "styled-components";
 
 interface DeleteCommentButtonProps {

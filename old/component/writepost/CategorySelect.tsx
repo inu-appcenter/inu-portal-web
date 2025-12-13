@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getCategories } from "../../utils/API/Categories";
+import { getCategories } from "old/utils/API/Categories";
 import dropdownImg from "../../resource/assets/CategorySelectDropdown-img.svg";
 import styled from "styled-components";
 

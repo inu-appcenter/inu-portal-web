@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { login } from "../../utils/API/Members";
+import { login } from "old/utils/API/Members";
 import {
   tokenUser as tokenUserAction,
   studentIdUser as studentIdUserAction,
@@ -46,7 +46,7 @@ export default function LoginInput() {
         localStorage.setItem("refreshToken", refreshToken);
         localStorage.setItem(
           "refreshTokenExpiredTime",
-          refreshTokenExpiredTime
+          refreshTokenExpiredTime,
         );
 
         dispatch(studentIdUserAction({ studentId: username }));
@@ -56,7 +56,7 @@ export default function LoginInput() {
             tokenExpiredTime,
             refreshToken,
             refreshTokenExpiredTime,
-          })
+          }),
         );
 
         navigate(-1);

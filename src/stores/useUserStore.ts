@@ -1,4 +1,4 @@
-import { TokenInfo, UserInfo } from "types/members";
+import { TokenInfo, UserInfo } from "@/types/members";
 import { create } from "zustand";
 
 interface UserState {

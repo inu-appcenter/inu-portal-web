@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { getPostsTop } from "../../utils/API/Posts";
+import { getPostsTop } from "old/utils/API/Posts";
 import { useNavigate } from "react-router-dom";
 import Heart from "../../resource/assets/heart.svg";
 

@@ -1,18 +1,18 @@
-import styled from 'styled-components';
-import { Link, useParams } from 'react-router-dom';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { deleteFoldersPosts } from '../../../utils/API/Folders';
-import FolderListDropDowns from './FolderListDropDowns';
+import styled from "styled-components";
+import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { deleteFoldersPosts } from "old/utils/API/Folders";
+import FolderListDropDowns from "./FolderListDropDowns";
 
 import ListImg from "../../../resource/assets/list-logo.svg";
 import HeartImg from "../../../resource/assets/heart-logo.svg";
 import CalendarImg from "../../../resource/assets/bx_calendar.svg";
 import arrowImg from "../../../resource/assets/arrow.svg";
 import deleteImg from "../../../resource/assets/deletebtn.svg";
-import Pagination from './Pagination';
-import SortDropBox from '../../common/SortDropBox';
-import ReturnScrapButton from './ReturnButton';
+import Pagination from "./Pagination";
+import SortDropBox from "../../common/SortDropBox";
+import ReturnScrapButton from "./ReturnButton";
 
 interface loginInfo {
   user: {
@@ -51,14 +51,25 @@ interface ScrapPostProps {
   handleCreateListClick: () => void;
 }
 
-export default function ScrapPost({ selectedCategory, setDocuments, documents, totalPages, total, scrapsort, page, setScrapSort, setPage, handleCreateListClick }: ScrapPostProps) {
+export default function ScrapPost({
+  selectedCategory,
+  setDocuments,
+  documents,
+  totalPages,
+  total,
+  scrapsort,
+  page,
+  setScrapSort,
+  setPage,
+  handleCreateListClick,
+}: ScrapPostProps) {
   const token = useSelector((state: loginInfo) => state.user.token);
   const folders = useSelector((state: folderInfo) => state.folder.folders);
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
   const { id } = useParams<{ id: string }>();
 
   const handleSearchTypeClick = (index: number) => {
-    setShowDropdown(prevIndex => (prevIndex === index ? null : index));
+    setShowDropdown((prevIndex) => (prevIndex === index ? null : index));
   };
 
   const handleRemoveClick = async (postId: number) => {
@@ -66,7 +77,9 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
       try {
         const response = await deleteFoldersPosts(token, postId, id);
         if (response.status === 200) {
-          const filteredPostScrapFolderInfo = documents.filter(item => item.id !== postId);
+          const filteredPostScrapFolderInfo = documents.filter(
+            (item) => item.id !== postId,
+          );
           setDocuments(filteredPostScrapFolderInfo);
         } else {
           console.error("폴더에서 삭제 실패:", response.status);
@@ -78,17 +91,20 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
   };
 
   // Folder object를 Folder[] 타입으로 변환
-  const folderArray = Object.entries(folders).map(([id, name]) => ({ id: Number(id), name }));
+  const folderArray = Object.entries(folders).map(([id, name]) => ({
+    id: Number(id),
+    name,
+  }));
 
   return (
     <ScrapWrapper>
       <ScrapDetailWrapper>
         <CountWrapper>
-          <p className='title'>All scraps</p>
-          <p className='length'>{total}</p>
+          <p className="title">All scraps</p>
+          <p className="length">{total}</p>
         </CountWrapper>
         <BackSortWrapper>
-          {selectedCategory === '폴더' && <ReturnScrapButton />}
+          {selectedCategory === "폴더" && <ReturnScrapButton />}
           <SortDropBox sort={scrapsort} setSort={setScrapSort} />
         </BackSortWrapper>
       </ScrapDetailWrapper>
@@ -98,22 +114,25 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
             <PostScrapItem>
               <PostLink to={`/tips/${item.id}`}>
                 <PostScrapItem>
-                  <p className='category'>{item.category}</p>
-                  <p className='title'>{`[${item.content}`}</p>
-                  <p className='close-title'>{`]`}</p>
+                  <p className="category">{item.category}</p>
+                  <p className="title">{`[${item.content}`}</p>
+                  <p className="close-title">{`]`}</p>
                 </PostScrapItem>
               </PostLink>
               <PostListWrapper>
-                {selectedCategory === '폴더' &&
+                {selectedCategory === "폴더" && (
                   <RemoveButton onClick={() => handleRemoveClick(item.id)}>
                     <img src={deleteImg} alt="" />
                     <span>삭제</span>
-                  </RemoveButton>}
+                  </RemoveButton>
+                )}
                 <FolderListDropDownWrapper>
-                  <FolderListDropDownBox onClick={() => handleSearchTypeClick(index)}>
-                    <img src={ListImg} className='list-img' />
+                  <FolderListDropDownBox
+                    onClick={() => handleSearchTypeClick(index)}
+                  >
+                    <img src={ListImg} className="list-img" />
                     <span>List</span>
-                    <img src={arrowImg} alt="" className='arrow-img' />
+                    <img src={arrowImg} alt="" className="arrow-img" />
                   </FolderListDropDownBox>
                   {showDropdown === index && (
                     <FolderListDropDowns
@@ -127,17 +146,21 @@ export default function ScrapPost({ selectedCategory, setDocuments, documents, t
                   )}
                 </FolderListDropDownWrapper>
                 <PostInfoWrapper>
-                  <img src={CalendarImg} alt="" className='calender-image' />
-                  <p className='createdate'>{item.createDate}</p>
-                  <img src={HeartImg} alt="" className='heart-image' />
-                  <p className='like'>{item.like}</p>
+                  <img src={CalendarImg} alt="" className="calender-image" />
+                  <p className="createdate">{item.createDate}</p>
+                  <img src={HeartImg} alt="" className="heart-image" />
+                  <p className="like">{item.like}</p>
                 </PostInfoWrapper>
               </PostListWrapper>
             </PostScrapItem>
           </PostDetailWrapper>
         ))}
       </PostWrapper>
-      <Pagination totalPages={totalPages} currentPage={page} setPage={setPage} />
+      <Pagination
+        totalPages={totalPages}
+        currentPage={page}
+        setPage={setPage}
+      />
     </ScrapWrapper>
   );
 }
@@ -147,7 +170,7 @@ const ScrapWrapper = styled.div`
   width: 100%;
   border-style: solid;
   border-width: 5px 0 0 5px;
-  border-color: #EAEAEA;
+  border-color: #eaeaea;
   background-color: white;
   padding: 5px 49px;
 `;
@@ -161,7 +184,7 @@ const ScrapDetailWrapper = styled.div`
   }
 
   .length {
-    color: #0E4D9D;
+    color: #0e4d9d;
     margin-left: 10px;
   }
 `;
@@ -187,7 +210,7 @@ const PostWrapper = styled.div`
 `;
 
 const PostDetailWrapper = styled.div`
-  border: 1px solid #AAC9EE;
+  border: 1px solid #aac9ee;
   margin-bottom: 20px;
 `;
 

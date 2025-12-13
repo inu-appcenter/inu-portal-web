@@ -1,6 +1,6 @@
-import axiosInstance from "apis/axiosInstance";
-import { ApiResponse, Pagination } from "types/common";
-import { Keyword, Notice } from "types/notices";
+import axiosInstance from "@/apis/axiosInstance";
+import { ApiResponse, Pagination } from "@/types/common";
+import { Keyword, Notice } from "@/types/notices";
 import tokenInstance from "./tokenInstance.ts";
 
 // 모든 공지사항 가져오기

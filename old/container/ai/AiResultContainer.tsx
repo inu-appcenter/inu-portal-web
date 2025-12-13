@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
-import { getFires } from "../../utils/API/Fires";
+import { getFires } from "old/utils/API/Fires";
 import AiImgViewer from "../../component/ai/AiImgViewer";
 import AiImgRetry from "../../component/ai/AiImgRetry";
 import AiImgScore from "../../component/ai/AiImgScore";

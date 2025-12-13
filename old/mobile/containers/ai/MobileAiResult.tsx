@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { AiChat } from "../../../../old/mobile/components/ai/AiChat";
+import { AiChat } from "old/mobile/components/ai/AiChat";
 import { getFires } from "../../../../src/utils/API/Fires";
 import AiImgViewer from "../../../component/ai/AiImgViewer";
 

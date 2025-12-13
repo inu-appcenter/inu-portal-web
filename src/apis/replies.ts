@@ -1,35 +1,35 @@
-import tokenInstance from "apis/tokenInstance";
-import { ApiResponse } from "types/common";
+import tokenInstance from "@/apis/tokenInstance";
+import { ApiResponse } from "@/types/common";
 
 // 댓글 수정
 export const putReply = async (
   replyId: number,
   content: string,
-  anonymous: boolean
+  anonymous: boolean,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.put<ApiResponse<number>>(
     `/api/replies/${replyId}`,
-    { content, anonymous }
+    { content, anonymous },
   );
   return response.data;
 };
 
 // 댓글 삭제
 export const deleteReply = async (
-  replyId: number
+  replyId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.delete<ApiResponse<number>>(
-    `/api/replies/${replyId}`
+    `/api/replies/${replyId}`,
   );
   return response.data;
 };
 
 // 댓글 좋아요 여부 변경
 export const putReplyLike = async (
-  replyId: number
+  replyId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.put<ApiResponse<number>>(
-    `/api/replies/${replyId}/like`
+    `/api/replies/${replyId}/like`,
   );
   return response.data;
 };
@@ -38,11 +38,11 @@ export const putReplyLike = async (
 export const postReReply = async (
   replyId: number,
   content: string,
-  anonymous: boolean
+  anonymous: boolean,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.post<ApiResponse<number>>(
     `/api/replies/${replyId}/re-replies`,
-    { content, anonymous }
+    { content, anonymous },
   );
   return response.data;
 };
@@ -51,11 +51,11 @@ export const postReReply = async (
 export const postReply = async (
   postId: number,
   content: string,
-  anonymous: boolean
+  anonymous: boolean,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.post<ApiResponse<number>>(
     `/api/replies/${postId}`,
-    { content, anonymous }
+    { content, anonymous },
   );
   return response.data;
 };

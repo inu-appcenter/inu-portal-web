@@ -1,15 +1,15 @@
-import axiosInstance from "apis/axiosInstance";
-import tokenInstance from "apis/tokenInstance";
-import refreshInstance from "apis/refreshInstance";
-import { ApiResponse, Pagination } from "types/common";
+import axiosInstance from "@/apis/axiosInstance";
+import tokenInstance from "@/apis/tokenInstance";
+import refreshInstance from "@/apis/refreshInstance";
+import { ApiResponse, Pagination } from "@/types/common";
 import {
   TokenInfo,
   UserInfo,
   MembersReplies,
   Notification,
   ApiLog,
-} from "types/members";
-import { Post } from "types/posts";
+} from "@/types/members";
+import { Post } from "@/types/posts";
 
 // 회원 가져오기
 export const getMembers = async (): Promise<ApiResponse<UserInfo>> => {

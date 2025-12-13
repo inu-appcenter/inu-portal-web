@@ -14,7 +14,7 @@ import pmGradeverHarm from "../../resource/assets/pmGrade-veryharm.svg";
 import { useEffect, useState } from "react";
 
 import back from "../../resource/assets/back.png";
-import { getWeathers } from "../../utils/API/Weathers";
+import { getWeathers } from "old/utils/API/Weathers";
 
 export default function Weather() {
   const [weather, setWeather] = useState<{

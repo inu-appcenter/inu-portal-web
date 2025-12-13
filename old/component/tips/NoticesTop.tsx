@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { getNoticesTop } from "../../utils/API/Notices";
+import { getNoticesTop } from "old/utils/API/Notices";
 
 interface Notice {
   id: number;

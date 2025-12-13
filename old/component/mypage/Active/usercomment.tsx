@@ -1,13 +1,13 @@
 // usercomment.tsx
-import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import styled from "styled-components";
+import { Link } from "react-router-dom";
 import commentlogo from "../../../resource/assets/comment-img.svg";
-import { useEffect, useState } from 'react';
-import { getPost } from '../../../utils/API/Posts';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from "react";
+import { getPost } from "old/utils/API/Posts";
+import { useSelector } from "react-redux";
 import HeartImg from "../../../resource/assets/heart-logo.svg";
 import CalendarImg from "../../../resource/assets/bx_calendar.svg";
-import SortDropBox from '../../common/SortDropBox';
+import SortDropBox from "../../common/SortDropBox";
 
 interface Document {
   id: number;
@@ -34,13 +34,17 @@ interface CommentInfoProps {
   setCommentSort: (sort: string) => void;
 }
 
-export default function UserComment({ postCommentInfo, commentsort, setCommentSort }: CommentInfoProps) {
+export default function UserComment({
+  postCommentInfo,
+  commentsort,
+  setCommentSort,
+}: CommentInfoProps) {
   const [postInfo, setPostInfo] = useState<Post[]>([]);
   const token = useSelector((state: loginInfo) => state.user.token);
 
   useEffect(() => {
     const fetchPost = async () => {
-      const ids = postCommentInfo.map(comment => comment.postId);
+      const ids = postCommentInfo.map((comment) => comment.postId);
       const posts: Post[] = [];
       for (const id of ids) {
         try {
@@ -71,17 +75,17 @@ export default function UserComment({ postCommentInfo, commentsort, setCommentSo
             <PostScrapItem key={item.id}>
               <PostLink to={`/tips/${item.postId}`}>
                 <PostScrapItem>
-                  <p className='category'>{postInfo[index]?.category}</p>
-                  <p className='title'>{`[${item.content}`}</p>
-                  <p className='close-title'>{`]`}</p>
+                  <p className="category">{postInfo[index]?.category}</p>
+                  <p className="title">{`[${item.content}`}</p>
+                  <p className="close-title">{`]`}</p>
                 </PostScrapItem>
               </PostLink>
               <PostListWrapper>
                 <PostInfoWrapper>
-                  <img src={CalendarImg} alt="" className='calender-image' />
-                  <p className='createdate'>{item.createDate}</p>
-                  <img src={HeartImg} alt="" className='heart-image' />
-                  <p className='like'>{item.like}</p>
+                  <img src={CalendarImg} alt="" className="calender-image" />
+                  <p className="createdate">{item.createDate}</p>
+                  <img src={HeartImg} alt="" className="heart-image" />
+                  <p className="like">{item.like}</p>
                 </PostInfoWrapper>
               </PostListWrapper>
             </PostScrapItem>
@@ -92,39 +96,39 @@ export default function UserComment({ postCommentInfo, commentsort, setCommentSo
   );
 }
 
-const TotalWrapper = styled.div``
+const TotalWrapper = styled.div``;
 const CommentWrapper = styled.div`
   display: flex;
   justify-content: space-between;
 `;
 
 const PostWrapper = styled.div`
-  max-height: 170px; 
-  overflow-y: auto; 
-  scrollbar-width: thin; 
-  scrollbar-color: #82ADE899 #DBEBFF; 
+  max-height: 170px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #82ade899 #dbebff;
   padding-left: 5px;
 
   &::-webkit-scrollbar {
-    width: 8px; 
+    width: 8px;
   }
 
   &::-webkit-scrollbar-track {
-    background-color: #f1f1f1; 
+    background-color: #f1f1f1;
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: #DBEBFF; 
-    border-radius: 4px; 
+    background-color: #dbebff;
+    border-radius: 4px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background-color: #DBEBFF;
+    background-color: #dbebff;
   }
 `;
 
 const PostDetailWrapper = styled.div`
-  border: 1px solid #AAC9EE;
+  border: 1px solid #aac9ee;
   margin-bottom: 22px;
 `;
 
@@ -137,7 +141,7 @@ const PostScrapItem = styled.div`
   box-sizing: border-box;
 
   .category {
-    background-color: #a4c8e4; 
+    background-color: #a4c8e4;
     padding: 10px;
     margin: 10px;
     color: white;
@@ -155,7 +159,7 @@ const PostScrapItem = styled.div`
     max-width: 500px;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; 
+    text-overflow: ellipsis;
   }
 
   .close-title {
@@ -185,7 +189,7 @@ const Commentimg = styled.img`
 const CommentCount = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #0E4D9D;
+  color: #0e4d9d;
 `;
 
 const PostLink = styled(Link)`

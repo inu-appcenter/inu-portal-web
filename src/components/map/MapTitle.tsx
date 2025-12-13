@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import SearchBar from "components/posts/SearchBar";
+import SearchBar from "@/components/desktop/posts/SearchBar";
 import { useEffect, useState } from "react";
-import useUserStore from "stores/useUserStore";
+import useUserStore from "@/stores/useUserStore";
 
 export default function PostsTitle() {
   const { userInfo } = useUserStore();

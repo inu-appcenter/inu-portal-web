@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { postReplies } from "../../../utils/API/Replies";
+import { postReplies } from "old/utils/API/Replies";
 import styled from "styled-components";
 import checkedCheckbox from "../../../resource/assets/checked-checkbox.svg";
 import uncheckedCheckbox from "../../../resource/assets/unchecked-checkbox.svg";

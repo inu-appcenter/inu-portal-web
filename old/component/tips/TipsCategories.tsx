@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCategories } from "../../utils/API/Categories";
+import { getCategories } from "old/utils/API/Categories";
 import styled from "styled-components";
 import round from "../../resource/assets/round.svg";
 
@@ -60,7 +60,7 @@ export default function TipsCategories({
             name: cat,
             iconWhite: `/categoryIcons/${cat}_white.svg`,
             iconGray: `/categoryIcons/${cat}_gray.svg`,
-          })
+          }),
         );
         setCategories(cats);
       }
@@ -77,14 +77,14 @@ export default function TipsCategories({
     if (type === "categories") {
       setCategories((prevCategories) =>
         prevCategories.map((cat, idx) =>
-          idx === index ? { ...cat, hasError: true } : cat
-        )
+          idx === index ? { ...cat, hasError: true } : cat,
+        ),
       );
     } else {
       setCollege((prevCategories) =>
         prevCategories.map((cat, idx) =>
-          idx === index ? { ...cat, hasError: true } : cat
-        )
+          idx === index ? { ...cat, hasError: true } : cat,
+        ),
       );
     }
   };

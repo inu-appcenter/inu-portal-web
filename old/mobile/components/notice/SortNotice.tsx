@@ -1,42 +1,35 @@
 // SortDropBox.tsx
-import  { useEffect } from 'react';
-import styled from 'styled-components';
-import { getNotices } from '../../../utils/API/Notices';
+import { useEffect } from "react";
+import styled from "styled-components";
+import { getNotices } from "old/utils/API/Notices";
 
 interface Notice {
-    id: number;
-    category: string;
-    title: string;
-    writer: string;
-    createDate: string;
-    view: number;
-    url: string;
-  }
-  
-
-interface NoticeProps {
-    sort: string;
-    setNotices: (notice: Notice) => void;
+  id: number;
+  category: string;
+  title: string;
+  writer: string;
+  createDate: string;
+  view: number;
+  url: string;
 }
 
-export default function SortNotice({sort,setNotices}:NoticeProps) {
-    useEffect(()=>{
-        const fetchNotices = async () => {
-            const response = await getNotices('전체', 'date', '1');
-            if (response.status === 200) {
-              setNotices(response.body.data.notices);
-            }
-          };
-          fetchNotices();
-          console.log("왓니");
-          
-    },[sort]);
-    return (
-        <DropBoxWrapper>
-            
-      </DropBoxWrapper>
-    )
+interface NoticeProps {
+  sort: string;
+  setNotices: (notice: Notice) => void;
+}
 
+export default function SortNotice({ sort, setNotices }: NoticeProps) {
+  useEffect(() => {
+    const fetchNotices = async () => {
+      const response = await getNotices("전체", "date", "1");
+      if (response.status === 200) {
+        setNotices(response.body.data.notices);
+      }
+    };
+    fetchNotices();
+    console.log("왓니");
+  }, [sort]);
+  return <DropBoxWrapper></DropBoxWrapper>;
 }
 // const SortDropBox: React.FC<SortDropBoxProps> = ({ sort, setSort }) => {
 //   return (
@@ -121,4 +114,3 @@ const DropBoxWrapper = styled.div`
     cursor: url('/pointers/cursor-pointer.svg'), pointer;
   } */
 `;
-

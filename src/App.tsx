@@ -1,22 +1,22 @@
 import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import {getMembers, postApiLogs} from "apis/members";
-import useUserStore from "stores/useUserStore";
-import ScrollBarStyles from "resources/styles/ScrollBarStyles";
-import RootPage from "pages/RootPage";
-import HomePage from "pages/HomePage";
-import LoginPage from "pages/LoginPage";
-import PostsPage from "pages/PostsPage";
-import WritePage from "pages/WritePage";
-import MyPage from "pages/MyPage";
-import AiPage from "pages/AiPage";
-import MapPage from "pages/MapPage";
-import RentalPage from "pages/RentalPage";
+import { getMembers, postApiLogs } from "@/apis/members";
+import useUserStore from "@/stores/useUserStore";
+import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
+import RootPage from "@/pages/desktop/RootPage";
+import HomePage from "@/pages/desktop/HomePage";
+import LoginPage from "@/pages/desktop/LoginPage";
+import PostsPage from "@/pages/desktop/PostsPage";
+import WritePage from "@/pages/desktop/WritePage";
+import MyPage from "@/pages/desktop/MyPage";
+import AiPage from "@/pages/desktop/AiPage";
+import MapPage from "@/pages/desktop/MapPage";
+import RentalPage from "@/pages/desktop/RentalPage";
 
-import MobileRootPage from "mobile/pages/MobileRootPage";
-import AppRootPage from "mobile/pages/AppRoutePage";
+import MobileRootPage from "@/pages/mobile/MobileRootPage";
+import AppRootPage from "@/pages/mobile/AppRoutePage";
 
-import InstallPage from "./mobile/pages/InstallPage";
+import InstallPage from "./pages/mobile/InstallPage";
 import tokenInstance from "./apis/tokenInstance.ts";
 // import axiosInstance from "./apis/axiosInstance.ts";
 
@@ -87,23 +87,20 @@ function App() {
   }, [userInfo]);
 
   //접속 유저수 중복없이 카운팅
-    useEffect(() => {
-        const apiCount =async ()=>{
-            const STORAGE_KEY = "user_count_date";
+  useEffect(() => {
+    const apiCount = async () => {
+      const STORAGE_KEY = "user_count_date";
 
-            const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-            const lastCountDate = localStorage.getItem(STORAGE_KEY);
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const lastCountDate = localStorage.getItem(STORAGE_KEY);
 
-            if (lastCountDate !== today) {
-               await postApiLogs("/api/members/no-dup");
-                localStorage.setItem(STORAGE_KEY, today);
-
-            }
-        }
-        apiCount();
-
-
-    }, []);
+      if (lastCountDate !== today) {
+        await postApiLogs("/api/members/no-dup");
+        localStorage.setItem(STORAGE_KEY, today);
+      }
+    };
+    apiCount();
+  }, []);
 
   return (
     <>

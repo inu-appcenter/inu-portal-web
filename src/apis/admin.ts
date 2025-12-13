@@ -1,6 +1,6 @@
 import tokenInstance from "./tokenInstance.ts";
-import { ApiResponse } from "../types/common.ts";
-import { ApiLogData, MemberLogData } from "../types/admin.ts";
+import { ApiResponse } from "@/types/common";
+import { ApiLogData, MemberLogData } from "@/types/admin";
 
 export const getMemberLogs = async (
   date: string,

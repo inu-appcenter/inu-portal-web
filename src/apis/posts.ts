@@ -1,17 +1,17 @@
-import axiosInstance from "apis/axiosInstance";
-import tokenInstance from "apis/tokenInstance";
-import { ApiResponse, Pagination } from "types/common";
-import { Post, PostDetail } from "types/posts";
+import axiosInstance from "@/apis/axiosInstance";
+import tokenInstance from "@/apis/tokenInstance";
+import { ApiResponse, Pagination } from "@/types/common";
+import { Post, PostDetail } from "@/types/posts";
 import { AxiosError } from "axios";
 
 // 게시글 가져오기
 export const getPostDetail = async (
-  postId: number
+  postId: number,
 ): Promise<ApiResponse<PostDetail>> => {
   try {
     // 1) 우선 tokenInstance로 시도
     const response = await tokenInstance.get<ApiResponse<PostDetail>>(
-      `/api/posts/${postId}`
+      `/api/posts/${postId}`,
     );
     return response.data;
   } catch (error) {
@@ -20,7 +20,7 @@ export const getPostDetail = async (
     if (typedError.isRefreshError) {
       // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
       const response = await axiosInstance.get<ApiResponse<PostDetail>>(
-        `/api/posts/${postId}`
+        `/api/posts/${postId}`,
       );
       return response.data;
     }
@@ -35,7 +35,7 @@ export const putPost = async (
   content: string,
   category: string,
   anonymous: boolean,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     title,
@@ -59,27 +59,27 @@ export const putPost = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
 
 // 게시글 삭제
 export const deletePost = async (
-  postId: number
+  postId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.delete<ApiResponse<number>>(
-    `/api/posts/${postId}`
+    `/api/posts/${postId}`,
   );
   return response.data;
 };
 
 // 스크랩 여부 변경
 export const putScrap = async (
-  postId: number
+  postId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.put<ApiResponse<number>>(
-    `/api/posts/${postId}/scrap`
+    `/api/posts/${postId}/scrap`,
   );
   return response.data;
 };
@@ -87,16 +87,15 @@ export const putScrap = async (
 // 게시글 좋아요 여부 변경
 export const putLike = async (postId: number): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.put<ApiResponse<number>>(
-    `/api/posts/${postId}/like`
+    `/api/posts/${postId}/like`,
   );
   return response.data;
 };
 
 // 메인 페이지 게시글 7개 가져오기
 export const getPostsMain = async (): Promise<ApiResponse<Post[]>> => {
-  const response = await axiosInstance.get<ApiResponse<Post[]>>(
-    `/api/posts/main`
-  );
+  const response =
+    await axiosInstance.get<ApiResponse<Post[]>>(`/api/posts/main`);
   return response.data;
 };
 
@@ -104,7 +103,7 @@ export const getPostsMain = async (): Promise<ApiResponse<Post[]>> => {
 export const getPosts = async (
   category: string,
   sort: string,
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<Post[]>>> => {
   const params: { [key: string]: string | number } = {
     sort,
@@ -118,7 +117,7 @@ export const getPosts = async (
     // 1) 우선 tokenInstance로 시도
     const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
       "/api/posts",
-      { params }
+      { params },
     );
     return response.data;
   } catch (error) {
@@ -128,7 +127,7 @@ export const getPosts = async (
       // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
       const response = await axiosInstance.get<ApiResponse<Pagination<Post[]>>>(
         "/api/posts",
-        { params }
+        { params },
       );
       return response.data;
     }
@@ -142,7 +141,7 @@ export const postPost = async (
   content: string,
   category: string,
   anonymous: boolean,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     title,
@@ -166,17 +165,17 @@ export const postPost = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
 
 // 상단부 인기 게시글 12개 가져오기
 export const getPostsTop = async (
-  category: string
+  category: string,
 ): Promise<ApiResponse<Post[]>> => {
   const response = await axiosInstance.get<ApiResponse<Post[]>>(
-    `/api/posts/top${category ? `?category=${category}` : ""}`
+    `/api/posts/top${category ? `?category=${category}` : ""}`,
   );
   return response.data;
 };
@@ -184,7 +183,7 @@ export const getPostsTop = async (
 // 모바일용 게시글 리스트 가져오기
 export const getPostsMobile = async (
   lastPostId: number | undefined,
-  category: string
+  category: string,
 ): Promise<ApiResponse<Post[]>> => {
   const params: { [key: string]: string | number } = {};
   if (category !== "전체") {
@@ -198,7 +197,7 @@ export const getPostsMobile = async (
     // 1) 우선 tokenInstance로 시도
     const response = await tokenInstance.get<ApiResponse<Post[]>>(
       "/api/posts/mobile",
-      { params }
+      { params },
     );
     return response.data;
   } catch (error) {
@@ -208,7 +207,7 @@ export const getPostsMobile = async (
       // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
       const response = await axiosInstance.get<ApiResponse<Post[]>>(
         "/api/posts/mobile",
-        { params }
+        { params },
       );
       return response.data;
     }

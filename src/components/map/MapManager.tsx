@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import Map from "components/map/components/KakaoMap.tsx";
+import Map from "@/components/map/components/KakaoMap.tsx";
 import { useLocation } from "react-router-dom";
 import { useState, useMemo } from "react";
 import PlaceListPanel from "./components/PlaceListPanel.tsx";
-import { deleteMarkers } from "components/map/utils/markerUtils.ts";
+import { deleteMarkers } from "@/components/map/utils/markerUtils.ts";
 
 interface XY {
   X: number;

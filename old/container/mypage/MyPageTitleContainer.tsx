@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
-import { MypageTitle } from "../../component/mypage/common/MyPageTitle";
+import { MypageTitle } from "old/component/mypage/common/MyPageTitle";
 // import MyPageUserInfo from '../../component/mypage/common/MyPageUserInfo';
 import SearchBar from "../../component/tips/SearchBar";
 import MyInfo from "../../component/mypage/common/info";

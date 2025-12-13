@@ -1,12 +1,12 @@
 import axiosInstance from "./axiosInstance";
-import { ApiResponse, Pagination } from "types/common";
+import { ApiResponse, Pagination } from "@/types/common";
 import tokenInstance from "./tokenInstance";
-import { Book, BookSummary } from "types/books";
+import { Book, BookSummary } from "@/types/books";
 
 // 책 검색
 export const getBooksSearch = async (
   query: string,
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<BookSummary[]>>> => {
   const params: { [key: string]: string | number } = {
     query,
@@ -20,7 +20,7 @@ export const getBooksSearch = async (
 
 // 책 리스트 조회
 export const getBooksList = async (
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<BookSummary[]>>> => {
   const params: { [key: string]: string | number } = {
     page,
@@ -33,7 +33,7 @@ export const getBooksList = async (
 
 // 판매 가능한 책 리스트 조회
 export const getBoksListAvailable = async (
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<BookSummary[]>>> => {
   const params: { [key: string]: string | number } = {
     page,
@@ -46,10 +46,10 @@ export const getBoksListAvailable = async (
 
 // 책 상세 조회
 export const getBooksDetail = async (
-  bookId: number
+  bookId: number,
 ): Promise<ApiResponse<Book>> => {
   const response = await axiosInstance.get<ApiResponse<Book>>(
-    `/api/books/${bookId}`
+    `/api/books/${bookId}`,
   );
   return response.data;
 };
@@ -60,7 +60,7 @@ export const postBooks = async (
   author: string,
   content: string,
   price: number,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     name,
@@ -84,7 +84,7 @@ export const postBooks = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
@@ -96,7 +96,7 @@ export const putBooks = async (
   author: string,
   content: string,
   price: number,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     name,
@@ -120,27 +120,27 @@ export const putBooks = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
 
 // 책 판매 상태 변경
 export const postBooksAvailable = async (
-  bookId: number
+  bookId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.post<ApiResponse<number>>(
-    `/api/books/${bookId}`
+    `/api/books/${bookId}`,
   );
   return response.data;
 };
 
 // 책 삭제
 export const deleteBooks = async (
-  bookId: number
+  bookId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.delete<ApiResponse<number>>(
-    `/api/books/${bookId}`
+    `/api/books/${bookId}`,
   );
   return response.data;
 };

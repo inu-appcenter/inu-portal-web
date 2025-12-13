@@ -1,10 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
-import { getBusArrival } from "../apis/busArrival.ts";
-import { BusData } from "types/bus.ts";
-import {
-  toTime,
-  convertStatus,
-} from "../mobile/components/bus/busArrivalUtils.ts";
+import { getBusArrival } from "@/apis/busArrival";
+import { BusData } from "@/types/bus.ts";
+import { toTime, convertStatus } from "@/components/mobile/bus/busArrivalUtils";
 
 export default function useBusArrival(bstopId: string, busList: BusData[]) {
   const [busArrivalList, setBusArrivalList] = useState<BusData[]>([]);

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useAppStateStore from "@/stores/useAppStateStore";
 
 export default function useMobileNavigate() {
   const navigate = useNavigate();

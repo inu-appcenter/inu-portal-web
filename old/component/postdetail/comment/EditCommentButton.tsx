@@ -1,4 +1,4 @@
-import { putReplies } from "../../../utils/API/Replies";
+import { putReplies } from "old/utils/API/Replies";
 import styled from "styled-components";
 
 interface EditCommentButtonProps {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { getPosts } from "../../utils/API/Posts";
-import { getNotices } from "../../utils/API/Notices";
-import { search } from "../../utils/API/Search";
+import { getPosts } from "old/utils/API/Posts";
+import { getNotices } from "old/utils/API/Notices";
+import { search } from "old/utils/API/Search";
 import { useNavigate } from "react-router-dom";
 import Heart from "../../resource/assets/heart.svg";
 import Pagination from "./Pagination";
@@ -60,7 +60,7 @@ export default function TipsDocuments({
         const docs = await getNotices(
           docState.selectedCategory,
           docState.sort,
-          docState.page
+          docState.page,
         );
         if (docs.status === 200) {
           setTotalPages(docs.body.data.pages);
@@ -71,7 +71,7 @@ export default function TipsDocuments({
           const docs = await search(
             docState.query,
             docState.sort,
-            docState.page
+            docState.page,
           );
           setTotalPages(docs.body.data.pages);
           setDocuments(docs.body.data.posts);
@@ -79,7 +79,7 @@ export default function TipsDocuments({
           const docs = await getPosts(
             docState.selectedCategory,
             docState.sort,
-            docState.page
+            docState.page,
           );
           setTotalPages(docs.body.data.pages);
           setDocuments(docs.body.data.posts);

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { deletePost } from "../../../utils/API/Posts";
+import { deletePost } from "old/utils/API/Posts";
 import deletebtn from "../../../resource/assets/deletebtn.svg";
 import styled from "styled-components";
 import { useResetTipsStore } from "../../../reducer/resetTipsStore";
@@ -28,7 +28,7 @@ export default function DeletePostBtn({
           onPostUpdate();
           triggerReset();
           navigate(
-            currentPath.includes("/m/postdetail") ? "/m/home/tips" : "/tips"
+            currentPath.includes("/m/postdetail") ? "/m/home/tips" : "/tips",
           );
         } else if (response.status === 403) {
           alert("이 글의 삭제에 대한 권한이 없습니다.");

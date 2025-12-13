@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { postReReplies } from "../../../utils/API/Replies";
+import { postReReplies } from "old/utils/API/Replies";
 import styled from "styled-components";
 import checkedCheckbox from "../../../resource/assets/checked-checkbox.svg";
 import uncheckedCheckbox from "../../../resource/assets/unchecked-checkbox.svg";
@@ -31,7 +31,7 @@ export default function ReCommentInput({
         token,
         parentId,
         content,
-        isAnonymous
+        isAnonymous,
       );
       if (response.status === 201) {
         alert("대댓글 등록 성공");
