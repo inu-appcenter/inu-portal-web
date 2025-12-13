@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import ThreeWeekCalendar from "@/components/mobile/calendar/ThreeWeekCalendar.tsx";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
-import MobileNav from "../../containers/mobile/common/MobileNav.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";
 
 export default function MobileHomePage() {
@@ -99,7 +98,6 @@ export default function MobileHomePage() {
       <AppcenterLogoWrapper>
         <ReactSVG src={AppcenterLogo} />
       </AppcenterLogoWrapper>
-      <MobileNav />
     </MobileHomePageWrapper>
   );
 }

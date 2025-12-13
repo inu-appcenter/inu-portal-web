@@ -1,6 +1,6 @@
-import { ROUTES } from "@/constants/routes";
-import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 interface NavItemProps {
   to: string;
@@ -13,9 +13,9 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // pathname이 정확히 일치하거나, 하위 경로 포함 여부 판단
   const isActive =
-    location.pathname === to || location.pathname.startsWith(to + ROUTES.ROOT);
+    location.pathname === to ||
+    (location.pathname.startsWith(to) && to !== ROUTES.HOME);
 
   const handleClick = () => {
     navigate(to, { replace: true });
@@ -29,21 +29,35 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
   );
 }
 
-const NavItemWrapper = styled.div`
+const NavItemWrapper = styled.button`
+  position: relative;
+  z-index: 1;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-  width: 55px;
+
+  width: 100%;
+  height: 100%;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 `;
 
 const Icon = styled.img`
   width: 24px;
   height: 24px;
+  margin-bottom: 3px;
+  transition: transform 0.2s ease;
 `;
 
-const Label = styled.div<{ $isActive: boolean }>`
-  font-size: 12px;
-  color: ${({ $isActive }) => ($isActive ? "#9CAFE2" : "#D6D1D5")};
+const Label = styled.span<{ $isActive: boolean }>`
+  font-size: 11px;
+  font-weight: ${({ $isActive }) => ($isActive ? "600" : "500")};
+  color: ${({ $isActive }) => ($isActive ? "#5E92F0" : "#8E8E93")};
+  letter-spacing: -0.3px;
+  transition: color 0.2s ease;
 `;

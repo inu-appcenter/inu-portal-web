@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { ROUTES } from "@/constants/routes"; // ROUTES 상수 import
+import { ROUTES } from "@/constants/routes";
 import NavItem from "@/components/mobile/common/NavItem";
 import homeIcon from "@/resources/assets/mobile-common/home-gray.svg";
 import homeIconActive from "@/resources/assets/mobile-common/home-blue.svg";
@@ -10,51 +12,103 @@ import saveIconActive from "@/resources/assets/mobile-common/save-blue.svg";
 import mypageIcon from "@/resources/assets/mobile-common/mypage-gray.svg";
 import mypageIconActive from "@/resources/assets/mobile-common/mypage-blue.svg";
 
+const NAV_ITEMS = [
+  { to: ROUTES.HOME, icon: homeIcon, activeIcon: homeIconActive, label: "홈" },
+  {
+    to: ROUTES.BUS.ROOT,
+    icon: busIcon,
+    activeIcon: busIconActive,
+    label: "인입런",
+  },
+  {
+    to: ROUTES.SAVE,
+    icon: saveIcon,
+    activeIcon: saveIconActive,
+    label: "스크랩",
+  },
+  {
+    to: ROUTES.MYPAGE.ROOT,
+    icon: mypageIcon,
+    activeIcon: mypageIconActive,
+    label: "마이페이지",
+  },
+];
+
 export default function MobileNav() {
+  const location = useLocation();
+
+  const getIndexByPath = (path: string) => {
+    const index = NAV_ITEMS.findIndex((item) => {
+      if (item.to === ROUTES.HOME) return path === ROUTES.HOME;
+      return path === item.to || path.startsWith(item.to);
+    });
+    return index === -1 ? 0 : index;
+  };
+
+  const [activeIndex, setActiveIndex] = useState(() =>
+    getIndexByPath(location.pathname),
+  );
+
+  useEffect(() => {
+    setActiveIndex(getIndexByPath(location.pathname));
+  }, [location.pathname]);
+
   return (
     <MobileNavWrapper>
-      <NavItem
-        to={ROUTES.HOME}
-        icon={homeIcon}
-        activeIcon={homeIconActive}
-        label="홈"
-      />
-      <NavItem
-        to={ROUTES.BUS.ROOT} // /bus -> ROUTES.BUS.ROOT
-        icon={busIcon}
-        activeIcon={busIconActive}
-        label="인입런"
-      />
-      <NavItem
-        to={ROUTES.SAVE}
-        icon={saveIcon}
-        activeIcon={saveIconActive}
-        label="스크랩"
-      />
-      <NavItem
-        to={ROUTES.MYPAGE.ROOT} // /mypage -> ROUTES.MYPAGE.ROOT
-        icon={mypageIcon}
-        activeIcon={mypageIconActive}
-        label="마이페이지"
-      />
+      <ActiveIndicator $index={activeIndex} />
+      {NAV_ITEMS.map((item) => (
+        <NavItem
+          key={item.to}
+          to={item.to}
+          icon={item.icon}
+          activeIcon={item.activeIcon}
+          label={item.label}
+        />
+      ))}
     </MobileNavWrapper>
   );
 }
 
 const MobileNavWrapper = styled.nav`
   position: fixed;
-  z-index: 2;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  background-color: white;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
+  z-index: 100;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 90%;
+  max-width: 400px;
+  min-width: 250px;
+  //height: 60px;
+
+  padding: 8px 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  height: 64px;
-  padding-bottom: 8px;
-  border-radius: 20px 20px 0px 0px;
-  box-shadow: 0px -3px 6px 0px #3030301a;
+
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+
+  overflow: hidden;
+`;
+
+const ActiveIndicator = styled.div<{ $index: number }>`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+
+  /* 너비는 전체의 1/4 (25%), 높이는 100% */
+  width: 25%;
+  height: 100%;
+
+  border-radius: 50px;
+  background: rgba(231, 231, 231, 0.5);
+
+  /* 왼쪽 끝(0)에서 시작하여 25%씩 이동 */
+  left: ${({ $index }) => $index * 25}%;
+
+  transition: left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 `;

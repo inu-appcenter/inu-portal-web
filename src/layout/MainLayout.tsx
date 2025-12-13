@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
+import MobileNav from "@/containers/mobile/common/MobileNav";
 
 export default function MainLayout() {
   return (
@@ -8,7 +9,7 @@ export default function MainLayout() {
       <ContentWrapper>
         <Outlet />
       </ContentWrapper>
-      {/*<MobileNav />*/}
+      <MobileNav />
     </Container>
   );
 }

@@ -9,7 +9,6 @@ import { Folder } from "@/types/folders";
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/stores/useUserStore";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
-import MobileNav from "../../containers/mobile/common/MobileNav.tsx";
 
 export default function MobileSavePage() {
   const { tokenInfo } = useUserStore();
@@ -88,7 +87,6 @@ export default function MobileSavePage() {
           <div className="error">로그인이 필요합니다!</div>
         </ErrorWrapper>
       )}
-      <MobileNav />
     </MobileSavePageWrapper>
   );
 }
