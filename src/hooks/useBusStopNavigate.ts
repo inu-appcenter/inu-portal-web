@@ -1,7 +1,7 @@
-import mobileNavigate from "./useMobileNavigate";
+import { useNavigate } from "react-router-dom";
 
 export default function useBusStopNavigate() {
-  const navigate = mobileNavigate();
+  const navigate = useNavigate();
 
   return (id: string) => {
     navigate(`/bus/stopinfo?id=${id}`);

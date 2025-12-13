@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +56,7 @@ export default function InstallPage() {
             <h2>iOS 설치 방법</h2>
             <span>Safari 브라우저를 이용합니다.</span>
             <span>
-              <Clickable onClick={() => navigate("/m/home")}>
+              <Clickable onClick={() => navigate(ROUTES.HOME)}>
                 메인 페이지
               </Clickable>
               로 이동한 후, 홈 화면에 추가를 이용합니다.
@@ -72,7 +73,7 @@ export default function InstallPage() {
             <h2>Android 설치 방법</h2>
             <span>크로미움 브라우저(예: Chrome)를 이용합니다.</span>
             <span>
-              <Clickable onClick={() => navigate("/m/home")}>
+              <Clickable onClick={() => navigate(ROUTES.HOME)}>
                 메인 페이지
               </Clickable>
               로 이동한 후, 홈 화면에 추가를 이용합니다.
@@ -108,8 +109,10 @@ export default function InstallPage() {
             <h2>Windows 설치 방법</h2>
             <span>크로미움 브라우저(예: Edge)를 이용합니다.</span>
             <span>
-              <Clickable onClick={() => navigate("/")}>메인 페이지</Clickable>로
-              이동한 후, 아래의 사진처럼 앱 설치 아이콘을 이용합니다.
+              <Clickable onClick={() => navigate(ROUTES.ROOT)}>
+                메인 페이지
+              </Clickable>
+              로 이동한 후, 아래의 사진처럼 앱 설치 아이콘을 이용합니다.
             </span>
             <ImageWrapper>
               <InstallImage src={install_Windows} alt="Windows 설치 방법" />
@@ -123,8 +126,10 @@ export default function InstallPage() {
             <h2>Mac 설치 방법</h2>
             <span>크로미움 브라우저(예: Chrome)를 이용합니다.</span>
             <span>
-              <Clickable onClick={() => navigate("/")}>메인 페이지</Clickable>로
-              이동한 후, 아래의 사진처럼 앱 설치 아이콘을 이용합니다.
+              <Clickable onClick={() => navigate(ROUTES.ROOT)}>
+                메인 페이지
+              </Clickable>
+              로 이동한 후, 아래의 사진처럼 앱 설치 아이콘을 이용합니다.
             </span>
             <ImageWrapper>
               <InstallImage src={install_Mac} alt="Mac 설치 방법" />

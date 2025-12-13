@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { PetitionSummary } from "@/types/petitions";
 import { getPetitionsList } from "@/apis/petitions";
 import styled from "styled-components";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import Secret from "@/resources/assets/mobile-council/secret.svg";
 import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
 
@@ -11,7 +11,7 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
   const [petitions, setPetitions] = useState<PetitionSummary[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   // 리스트를 가져오는 함수
   const fetchList = async (currentPage: number, reset = false) => {
@@ -55,7 +55,7 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
               key={petition.id}
               onClick={() => {
                 petition.title !== "비밀청원입니다." &&
-                  mobileNavigate(`/petitiondetail?id=${petition.id}`);
+                  navigate(`/petitiondetail?id=${petition.id}`);
               }}
             >
               {petition.title === "비밀청원입니다." ? (

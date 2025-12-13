@@ -6,10 +6,9 @@ import ReplyLikeButton from "@/components/desktop/posts/ReplyLikeButton";
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
 import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 import enter from "@/resources/assets/posts/enter.svg";
-import { useState } from "react";
-import { postReply, deleteReply, putReply, postReReply } from "@/apis/replies";
+import React, { useState } from "react";
+import { deleteReply, postReply, postReReply, putReply } from "@/apis/replies";
 import axios, { AxiosError } from "axios";
-import React from "react";
 
 export default function PostReplies({
   postId,

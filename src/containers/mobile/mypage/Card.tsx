@@ -1,5 +1,5 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import styled from "styled-components";
 import { deletePost, putLike } from "@/apis/posts";
 import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
@@ -14,13 +14,13 @@ interface TipsCardContainerProps {
 }
 
 export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [activePostId, setActivePostId] = useState<number | null>(null);
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
   const handleDocumentClick = (id: number) => {
-    mobileNavigate(`/postdetail?id=${id}`);
+    navigate(`/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: number) => {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
-import { getLostDetail, deleteLost } from "@/apis/lost.ts";
+import { deleteLost, getLostDetail } from "@/apis/lost.ts";
 import UploadLost from "./UploadLost.tsx";
 import { Lost } from "@/types/lost.ts";
 import axios, { AxiosError } from "axios";

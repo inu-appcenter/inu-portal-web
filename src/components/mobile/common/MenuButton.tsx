@@ -17,8 +17,7 @@ import clubImg from "@/resources/assets/mobile-home/club.svg";
 import utilImg from "@/resources/assets/mobile-home/util.svg";
 import inquiryImg from "@/resources/assets/mobile-mypage/inquiry.svg";
 
-import useMobileNavigate from "@/hooks/useMobileNavigate";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const categorys = [
   { title: "식당메뉴", img: menuImg },
@@ -34,7 +33,7 @@ const categorys = [
 
 export default function MenuButton() {
   const location = useLocation();
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsVisible(false);
@@ -57,27 +56,27 @@ export default function MenuButton() {
 
   const handleClick = (title: string) => {
     if (title === "식당메뉴") {
-      mobileNavigate(`/home/menu`);
+      navigate(`/home/menu`);
     } else if (title === "공지사항") {
-      mobileNavigate(`/home/tips?type=notice`);
+      navigate(`/home/tips?type=notice`);
     } else if (title === "TIPS") {
-      mobileNavigate(`/home/tips`);
+      navigate(`/home/tips`);
     } else if (title === "학사일정") {
-      mobileNavigate(`/home/calendar`);
+      navigate(`/home/calendar`);
     } else if (title === "총학생회") {
-      mobileNavigate(`/home/council`);
+      navigate(`/home/council`);
     } else if (title === "동아리") {
-      mobileNavigate(`/home/club`);
+      navigate(`/home/club`);
     } else if (title === "캠퍼스") {
-      mobileNavigate(`/home/campus`);
+      navigate(`/home/campus`);
     } else if (title === "편의") {
-      mobileNavigate(`/home/util`);
+      navigate(`/home/util`);
     } else if (title === "1대1 문의하기") {
       window.open(
         "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
       );
     } else {
-      mobileNavigate(`/home/${title}`);
+      navigate(`/home/${title}`);
     }
   };
 

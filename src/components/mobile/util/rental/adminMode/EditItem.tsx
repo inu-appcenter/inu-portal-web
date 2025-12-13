@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { updateItem, deleteItem } from "@/apis/rentalAdmin.ts";
+import { deleteItem, updateItem } from "@/apis/rentalAdmin.ts";
 import { Items } from "@/apis/rental.ts";
 
 const EditItemModal = ({

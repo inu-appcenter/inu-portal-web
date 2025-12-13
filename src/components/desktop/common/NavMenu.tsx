@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { ROUTES } from "@/constants/routes";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { navItems as originalNavItems } from "@/resources/strings/navItems";
 import { useNavigate } from "react-router-dom";
@@ -78,7 +79,7 @@ export default function NavMenu({ isInFooter }: NavMenuProps) {
             onClick={() => {
               handleToggle(index);
               if (items.title === "마이 페이지") {
-                handleMyPageClick("/mypage");
+                handleMyPageClick(ROUTES.MYPAGE.ROOT);
               } else if (items.title === "공지사항") {
                 navigate("/posts?type=notice");
               } else if (items.title === "TIPS") {

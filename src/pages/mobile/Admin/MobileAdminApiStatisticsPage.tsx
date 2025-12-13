@@ -1,13 +1,13 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import useUserStore from "../../../stores/useUserStore.ts";
 import { useEffect, useState } from "react";
-import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { getApiLogs } from "@/apis/admin";
 import { ApiLogData } from "@/types/admin";
 
 const MobileAdminApiStatisticsPage: React.FC = () => {
-  const mobilenavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const { tokenInfo, userInfo } = useUserStore();
 
   const [apiLogs, setApiLogs] = useState<ApiLogData[] | null>(null);
@@ -20,9 +20,9 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
   useEffect(() => {
     // 관리자 권한 체크
     if (!tokenInfo.accessToken || userInfo.role !== "admin") {
-      mobilenavigate("/home");
+      navigate("/home");
     }
-  }, [tokenInfo, userInfo, mobilenavigate]);
+  }, [tokenInfo, userInfo, navigate]);
 
   useEffect(() => {
     const fetchApiLogs = async () => {

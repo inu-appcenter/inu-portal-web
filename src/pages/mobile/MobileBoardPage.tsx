@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ViewModeButtons from "@/components/mobile/tips/ViewModeButtons";
 import TipsListContainer from "@/containers/mobile/tips/TipsListContainer";
 import SerachForm from "@/containers/mobile/home/SerachForm";
@@ -11,7 +11,6 @@ import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector.tsx";
 import { navBarList } from "old/resource/string/navBarList";
 import loginImg from "../../resources/assets/login/login-modal-logo.svg";
-import useMobileNavigate from "../../hooks/useMobileNavigate.ts";
 import useUserStore from "../../stores/useUserStore.ts";
 import findTitleOrCode from "../../utils/findTitleOrCode.ts";
 import { putMemberDepartment } from "@/apis/members";
@@ -29,7 +28,7 @@ export default function MobileBoardPage() {
   const query = params.get("search") || "";
   const deptParams = useParams<{ dept: string }>();
 
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const { setUserInfo } = useUserStore();
 
@@ -69,7 +68,7 @@ export default function MobileBoardPage() {
 
   useEffect(() => {
     if (docType === "DEPT_NOTICE" && userInfo.department) {
-      mobileNavigate(`/home/deptnotice/${userInfo.department}`, {
+      navigate(`/home/deptnotice/${userInfo.department}`, {
         replace: true,
       });
     }
@@ -134,7 +133,7 @@ export default function MobileBoardPage() {
           {deptParams.dept && (
             <SelectButton
               onClick={() => {
-                mobileNavigate("/home/deptnotice/setting");
+                navigate("/home/deptnotice/setting");
               }}
             >
               🔔 푸시 알림 설정하기
@@ -156,7 +155,7 @@ export default function MobileBoardPage() {
           </div>
           <SelectButton
             onClick={() => {
-              mobileNavigate("/mypage");
+              navigate("/mypage");
               // setIsDeptSelectorOpen(!isDeptSelectorOpen);
             }}
             style={{ width: "50%", maxWidth: "250px" }}

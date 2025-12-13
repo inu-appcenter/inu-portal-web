@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import WeatherForm from "./Weather.tsx";
@@ -8,10 +10,9 @@ import 학과공지알리미 from "../../../resources/assets/banner/학과공지
 import 설문배너 from "../../../resources/assets/banner/설문배너.webp";
 
 import styled from "styled-components";
-import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 
 const Banner = () => {
-  const mobilenavigate = useMobileNavigate();
+  const navigate = useNavigate();
   return (
     <BannerWrapper>
       <Swiper
@@ -45,7 +46,7 @@ const Banner = () => {
             className="banner-img"
             src={학과공지알리미}
             onClick={() => {
-              mobilenavigate("/home/deptnotice");
+              navigate(ROUTES.BOARD.DEPT_NOTICE);
             }}
           />
         </SwiperSlide>
@@ -54,7 +55,7 @@ const Banner = () => {
             className="banner-img"
             src={인입런}
             onClick={() => {
-              mobilenavigate("/bus");
+              navigate(ROUTES.BUS.ROOT);
             }}
           />
         </SwiperSlide>

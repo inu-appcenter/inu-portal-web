@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Woman from "@/resources/assets/mapIcons/woman.svg";
 import Bed from "@/resources/assets/mapIcons/bed.svg";
 import Shower from "@/resources/assets/mapIcons/shower.svg";

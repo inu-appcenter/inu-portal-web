@@ -1,7 +1,7 @@
 import { deletePost, getPostDetail } from "@/apis/posts";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import { /* useLocation , */ useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { PostDetail } from "@/types/posts";
 import pencil from "@/resources/assets/posts/pencil.svg";

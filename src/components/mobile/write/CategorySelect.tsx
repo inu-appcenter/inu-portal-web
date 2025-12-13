@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { getTipsCategories } from "@/apis/categories";
 import dropdownIcon from "@/resources/assets/mobile-tips/CategorySelectDropdown-img.svg";

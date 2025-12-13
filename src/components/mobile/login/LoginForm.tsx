@@ -1,5 +1,5 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import { login } from "@/apis/members";
 import styled from "styled-components";
 import LoginUser from "@/resources/assets/login/login-user.svg";
@@ -17,7 +17,7 @@ export default function LoginForm() {
     "password",
   );
   const { setTokenInfo } = useUserStore();
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const isActive = studentId.trim() !== "" && password.trim() !== "";
 
@@ -46,7 +46,7 @@ export default function LoginForm() {
         }
       }
 
-      mobileNavigate(-1);
+      navigate(-1);
       setLoading(false);
     } catch (error) {
       console.error("로그인 실패", error);

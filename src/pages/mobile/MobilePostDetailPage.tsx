@@ -6,8 +6,7 @@ import CommentListMobile from "@/containers/mobile/postdetail/CommentListContain
 import ReplyInput from "@/containers/mobile/postdetail/ReplyInput";
 import { PostDetail, Reply } from "@/types/posts";
 import axios, { AxiosError } from "axios";
-import { useLocation } from "react-router-dom";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
+import { useLocation, useNavigate } from "react-router-dom";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 
 export default function PostDetailPage() {
@@ -24,7 +23,7 @@ export default function PostDetailPage() {
     setReplyContent("");
   };
 
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const fetchPost = async (id: number) => {
@@ -45,11 +44,11 @@ export default function PostDetailPage() {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
-            mobileNavigate(-1);
+            navigate(-1);
             break;
           default:
             alert("게시글 가져오기 실패");
-            mobileNavigate(-1);
+            navigate(-1);
             break;
         }
       }
@@ -68,7 +67,7 @@ export default function PostDetailPage() {
     try {
       await deletePost(post?.id);
       alert("삭제되었습니다.");
-      mobileNavigate(-1);
+      navigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
       // refreshError가 아닌 경우 처리
@@ -93,7 +92,7 @@ export default function PostDetailPage() {
   };
 
   const handleEdit = () => {
-    mobileNavigate(`/home/tips/write/${post?.id}`);
+    navigate(`/home/tips/write/${post?.id}`);
   };
 
   useEffect(() => {

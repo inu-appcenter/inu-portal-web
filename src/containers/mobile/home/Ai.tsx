@@ -1,13 +1,13 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import aienterimg1 from "@/resources/assets/ai/횃불-ai-enter-1.svg";
 import aienterimg2 from "@/resources/assets/ai/횃불-ai-enter-2.svg";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import { ReactSVG } from "react-svg";
 
 export default function AiForm() {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const handleAiBtnClick = () => {
-    mobileNavigate(`/ai`);
+    navigate(`/ai`);
   };
   return (
     <AiEnterWrapper>

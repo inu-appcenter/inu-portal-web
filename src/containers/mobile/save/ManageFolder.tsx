@@ -1,7 +1,7 @@
 // ManageFolder.tsx
 import styled from "styled-components";
 import { useState } from "react";
-import { postFolders, putFolders, deleteFolders } from "@/apis/folders";
+import { deleteFolders, postFolders, putFolders } from "@/apis/folders";
 import DeleteConfirmModal from "@/components/mobile/save/DeleteConfirmModal";
 import axios, { AxiosError } from "axios";
 import { Folder } from "@/types/folders";

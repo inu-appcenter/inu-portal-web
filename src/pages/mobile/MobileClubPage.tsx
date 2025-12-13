@@ -3,8 +3,7 @@ import styled from "styled-components";
 import { Club } from "@/types/club";
 import { getClubs } from "@/apis/club";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import useMobileNavigate from "@/hooks/useMobileNavigate.ts";
+import { useLocation, useNavigate } from "react-router-dom";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "@/components/mobile/club/ClubAdmin";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
@@ -13,7 +12,7 @@ export default function MobileClubPage() {
   const location = useLocation();
   const { userInfo } = useUserStore();
 
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const params = new URLSearchParams(location.search);
   const category = params.get("category") || "전체";
@@ -34,7 +33,7 @@ export default function MobileClubPage() {
   }, [category]);
 
   const handleRecruitingBtn = (clubId: number, clubName: string) => {
-    mobileNavigate(`/home/recruitdetail?id=${clubId}&name=${clubName}`);
+    navigate(`/home/recruitdetail?id=${clubId}&name=${clubName}`);
   };
 
   return (

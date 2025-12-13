@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import TipsCard from "@/components/mobile/tips/TipsCard";
-import { getFoldersPosts, deleteFoldersPosts } from "@/apis/folders";
+import { deleteFoldersPosts, getFoldersPosts } from "@/apis/folders";
 import { getMembersScraps } from "@/apis/members";
-import { getSearchScrap, getSearchFolderScrap } from "@/apis/search";
+import { getSearchFolderScrap, getSearchScrap } from "@/apis/search";
 import { putScrap } from "@/apis/posts";
 import SaveSearchForm from "@/components/mobile/save/SaveSearchForm";
 import editButton from "@/resources/assets/mobile-save/editButton.svg";

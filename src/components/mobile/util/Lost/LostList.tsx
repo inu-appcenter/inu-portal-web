@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { LostSummary } from "@/types/lost.ts";
 import { getLostList } from "@/apis/lost.ts";

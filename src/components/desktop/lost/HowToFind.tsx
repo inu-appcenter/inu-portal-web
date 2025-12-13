@@ -1,10 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 // import AiExample from "@/resources/assets/ai/ai-example.svg";
 import howtofind from "@/resources/assets/lost/howtofind.png";
-import useMobileNavigate from "@/hooks/useMobileNavigate.ts";
 
 export default function HowToFind() {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   return (
     <HowToBuyWrapper>
       <div className="title-img">
@@ -17,7 +17,7 @@ export default function HowToFind() {
         <br />
         <a
           onClick={() => {
-            mobileNavigate("/home/campus");
+            navigate("/home/campus");
           }}
           style={{
             textDecoration: "underline",

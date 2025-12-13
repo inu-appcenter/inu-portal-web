@@ -4,8 +4,7 @@ import PhotoUpload from "@/components/mobile/write/PhotoUpload";
 import AnonymousCheck from "@/components/mobile/write/AnonymousCheck";
 import { useEffect, useState } from "react";
 import { getPostDetail, postPost, putPost } from "@/apis/posts";
-import { useBeforeUnload, useParams } from "react-router-dom";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
+import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
 import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import { useResetWriteStore } from "@/reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
@@ -17,7 +16,7 @@ interface Props {
 }
 
 export default function WriteForm({ category, setCategory }: Props) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const { id: routeId } = useParams<{ id?: string }>();
   const postId = routeId ? Number(routeId) : 0;
   const [title, setTitle] = useState<string>("");
@@ -36,7 +35,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         const response = await getPostDetail(postId);
         if (!response.data.hasAuthority) {
           alert("수정 권한이 없습니다.");
-          mobileNavigate(`/write`);
+          navigate(`/write`);
         }
         setTitle(response.data.title);
         setContent(response.data.content);
@@ -76,11 +75,11 @@ export default function WriteForm({ category, setCategory }: Props) {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
-            mobileNavigate(-1);
+            navigate(-1);
             break;
           default:
             alert("게시글 가져오기 실패");
-            mobileNavigate(-1);
+            navigate(-1);
             break;
         }
       }
@@ -129,7 +128,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         await putPost(postId, title, content, category, anonymous, images);
         triggerResetTips();
         triggerResetWrite();
-        mobileNavigate(-1);
+        navigate(-1);
       } catch (error) {
         console.error("게시글 수정 실패", error);
         // refreshError가 아닌 경우 처리
@@ -163,7 +162,7 @@ export default function WriteForm({ category, setCategory }: Props) {
         );
         triggerResetTips();
         triggerResetWrite();
-        mobileNavigate(`/postdetail?id=${response.data}`, { replace: true });
+        navigate(`/postdetail?id=${response.data}`, { replace: true });
       } catch (error) {
         console.error("게시글 등록 실패", error);
         // refreshError가 아닌 경우 처리

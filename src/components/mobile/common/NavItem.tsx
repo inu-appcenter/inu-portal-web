@@ -1,4 +1,5 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 interface NavItemProps {
@@ -14,7 +15,7 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
 
   // pathname이 정확히 일치하거나, 하위 경로 포함 여부 판단
   const isActive =
-    location.pathname === to || location.pathname.startsWith(to + "/");
+    location.pathname === to || location.pathname.startsWith(to + ROUTES.ROOT);
 
   const handleClick = () => {
     navigate(to, { replace: true });

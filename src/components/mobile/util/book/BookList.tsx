@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { BookSummary } from "@/types/books.ts";
 import {
-  getBooksSearch,
-  getBooksList,
   getBoksListAvailable,
+  getBooksList,
+  getBooksSearch,
 } from "@/apis/books.ts";
 import styled from "styled-components";
 import BookDetail from "./BookDetail.tsx";
@@ -14,7 +15,6 @@ import HowToBuy from "../../../../components/desktop/book/HowToBuy.tsx";
 import 안내횃불이 from "@/resources/assets/book/안내횃불이.png";
 
 import SerachForm from "./BookSearchForm.tsx";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 
 export default function BookList({ reloadKey }: { reloadKey: number }) {
   const [available, setAvailable] = useState(true);
@@ -27,7 +27,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
 
   const params = new URLSearchParams(location.search);
   let query = params.get("search") || "";
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   // 리스트를 가져오는 함수
   const fetchList = async (currentPage: number, reset = false) => {
@@ -75,7 +75,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
           {query ? (
             <button
               className=""
-              onClick={() => mobileNavigate(`/home/util?type=book`)}
+              onClick={() => navigate(`/home/util?type=book`)}
             >
               검색 초기화
             </button>

@@ -1,10 +1,11 @@
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import { useState } from "react";
 import styled from "styled-components";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import { deleteMembers } from "@/apis/members";
 
 export default function DeleteButton() {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDeleteAccount = async () => {
@@ -16,7 +17,7 @@ export default function DeleteButton() {
     try {
       await deleteMembers();
       alert("회원 탈퇴가 완료되었습니다.");
-      mobileNavigate("/");
+      navigate(ROUTES.ROOT);
       return;
     } catch (error) {
       console.error("회원 탈퇴 실패");
@@ -26,9 +27,7 @@ export default function DeleteButton() {
   return (
     <>
       <ButtonWrapper>
-        <UserCancelButton onClick={() => mobileNavigate(-1)}>
-          취소
-        </UserCancelButton>
+        <UserCancelButton onClick={() => navigate(-1)}>취소</UserCancelButton>
         <UserDeleteButton onClick={() => setIsModalOpen(true)}>
           계정 삭제
         </UserDeleteButton>

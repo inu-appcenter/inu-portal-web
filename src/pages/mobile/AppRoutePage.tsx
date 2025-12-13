@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
@@ -38,15 +39,15 @@ export default function AppRoutePage() {
   const { setIsAppUrl } = useAppStateStore();
 
   useEffect(() => {
-    setIsAppUrl("/app"); // MobileRootPage에 진입하면 isAppUrl 상태 설정
+    setIsAppUrl(ROUTES.ROOT); // MobileRootPage에 진입하면 isAppUrl 상태 설정
   }, [setIsAppUrl]);
 
   const location = useLocation();
 
-  const isLoginPage = location.pathname === "/app/login";
+  const isLoginPage = location.pathname === ROUTES.LOGIN;
   const isPostDetailPage =
-    location.pathname.includes("/app/postdetail") ||
-    location.pathname.includes("/app/councilnoticedetail");
+    location.pathname.includes(ROUTES.DETAIL.POST) ||
+    location.pathname.includes(ROUTES.DETAIL.COUNCIL_NOTICE);
 
   return (
     <MobileRootPageWrapper>
@@ -55,39 +56,55 @@ export default function AppRoutePage() {
       <main>
         <Page>
           <Routes>
-            <Route path="/home" element={<MobileHomePage />} />
-            <Route path="/home/notice" element={<MobileBoardPage />} />
-            <Route path="/home/tips" element={<MobileBoardPage />} />
-            <Route path="/home/menu" element={<MobileMenuPage />} />
-            <Route path="/home/calendar" element={<MobileCalendarPage />} />
-            <Route path="/home/campus" element={<MobileCampusPage />} />
-            <Route path="/home/util" element={<MobileUtilPage />} />
-            <Route path="/postdetail" element={<MobilePostDetailPage />} />
+            <Route path={ROUTES.HOME} element={<MobileHomePage />} />
+            <Route path={ROUTES.BOARD.NOTICE} element={<MobileBoardPage />} />
+            <Route path={ROUTES.BOARD.TIPS} element={<MobileBoardPage />} />
+            <Route path={ROUTES.BOARD.MENU} element={<MobileMenuPage />} />
             <Route
-              path="/councilnoticedetail"
+              path={ROUTES.BOARD.CALENDAR}
+              element={<MobileCalendarPage />}
+            />
+            <Route path={ROUTES.BOARD.CAMPUS} element={<MobileCampusPage />} />
+            <Route path={ROUTES.BOARD.UTIL} element={<MobileUtilPage />} />
+            <Route
+              path={ROUTES.DETAIL.POST}
+              element={<MobilePostDetailPage />}
+            />
+            <Route
+              path={ROUTES.DETAIL.COUNCIL_NOTICE}
               element={<MobileCouncilNoticeDetailPage />}
             />
             <Route
-              path="/petitiondetail"
+              path={ROUTES.DETAIL.PETITION}
               element={<MobilePetitionDetailPage />}
             />
-            <Route path="/home/council" element={<MobileCouncilPage />} />
-            <Route path="/home/club" element={<MobileClubPage />} />
             <Route
-              path="/home/recruitdetail"
+              path={ROUTES.BOARD.COUNCIL}
+              element={<MobileCouncilPage />}
+            />
+            <Route path={ROUTES.BOARD.CLUB} element={<MobileClubPage />} />
+            <Route
+              path={ROUTES.BOARD.CLUB_RECRUIT_DETAIL}
               element={<MobileClubRecruitDetailPage />}
             />
 
-            <Route path="/ai" element={<AiPage />} />
+            <Route path={ROUTES.AI} element={<AiPage />} />
+            {/* "/write"는 ROUTES에 정의된 상수(TIPS_WRITE 등)와 경로가 일치하는지 확인 후 교체 권장 */}
             <Route path="/write" element={<MobileWritePage />} />
-            <Route path="/save" element={<MobileSavePage />} />
-            <Route path="/mypage" element={<MobileMyPage />} />
-            <Route path="/mypage/profile" element={<MobileProfilePage />} />
-            <Route path="/mypage/post" element={<MobileMyPagePost />} />
-            <Route path="/mypage/like" element={<MobileMyPageLike />} />
-            <Route path="/mypage/comment" element={<MobileMyPageComment />} />
-            <Route path="/mypage/delete" element={<MobileDeletePage />} />
-            <Route path="/login" element={<MobileLoginPage />} />
+            <Route path={ROUTES.SAVE} element={<MobileSavePage />} />
+            <Route path={ROUTES.MYPAGE.ROOT} element={<MobileMyPage />} />
+            <Route
+              path={ROUTES.MYPAGE.PROFILE}
+              element={<MobileProfilePage />}
+            />
+            <Route path={ROUTES.MYPAGE.POSTS} element={<MobileMyPagePost />} />
+            <Route path={ROUTES.MYPAGE.LIKES} element={<MobileMyPageLike />} />
+            <Route
+              path={ROUTES.MYPAGE.COMMENTS}
+              element={<MobileMyPageComment />}
+            />
+            <Route path={ROUTES.MYPAGE.DELETE} element={<MobileDeletePage />} />
+            <Route path={ROUTES.LOGIN} element={<MobileLoginPage />} />
           </Routes>
         </Page>
       </main>

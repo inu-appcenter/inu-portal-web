@@ -29,7 +29,7 @@ export default function Pagination({ pages }: { pages: number }) {
           >
             {pageNumber}
           </PageButton>
-        )
+        ),
       )}
     </PaginationWrapper>
   );

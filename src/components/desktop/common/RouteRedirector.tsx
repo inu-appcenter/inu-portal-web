@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,8 +8,8 @@ const RouteRedirector = () => {
 
   useEffect(() => {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    if (isMobile && window.location.pathname !== "/m/home") {
-      navigate("/m/home");
+    if (isMobile && window.location.pathname !== ROUTES.HOME) {
+      navigate(ROUTES.HOME);
     }
   }, [navigate]);
 

@@ -8,33 +8,30 @@ import saveIcon from "@/resources/assets/mobile-common/save-gray.svg";
 import saveIconActive from "@/resources/assets/mobile-common/save-blue.svg";
 import mypageIcon from "@/resources/assets/mobile-common/mypage-gray.svg";
 import mypageIconActive from "@/resources/assets/mobile-common/mypage-blue.svg";
-import useAppStateStore from "@/stores/useAppStateStore";
 
 export default function MobileNav() {
-  const { isAppUrl } = useAppStateStore();
-
   return (
     <MobileNavWrapper>
       <NavItem
-        to={`${isAppUrl}/home`}
+        to={`/home`}
         icon={homeIcon}
         activeIcon={homeIconActive}
         label="홈"
       />
       <NavItem
-        to={`${isAppUrl}/bus`}
+        to={`/bus`}
         icon={busIcon}
         activeIcon={busIconActive}
         label="인입런"
       />
       <NavItem
-        to={`${isAppUrl}/save`}
+        to={`/save`}
         icon={saveIcon}
         activeIcon={saveIconActive}
         label="스크랩"
       />
       <NavItem
-        to={`${isAppUrl}/mypage`}
+        to={`/mypage`}
         icon={mypageIcon}
         activeIcon={mypageIconActive}
         label="마이페이지"

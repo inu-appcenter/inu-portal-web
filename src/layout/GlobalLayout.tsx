@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
@@ -28,7 +29,7 @@ export default function GlobalLayout() {
 
   // 앱 URL 상태 설정
   useEffect(() => {
-    setIsAppUrl("/m");
+    setIsAppUrl(ROUTES.ROOT);
   }, [setIsAppUrl]);
 
   // URL 쿼리 토큰 추출 및 저장

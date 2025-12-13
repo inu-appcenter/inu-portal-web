@@ -1,4 +1,4 @@
-import useMobileNavigate from "@/hooks/useMobileNavigate";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 interface EditPostBtnProps {
@@ -6,10 +6,10 @@ interface EditPostBtnProps {
 }
 
 export default function EditPostBtn({ id }: EditPostBtnProps) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const handleEditButtonClick = () => {
-    mobileNavigate(`/write?id=${id}`);
+    navigate(`/write?id=${id}`);
   };
 
   return <EditBtn onClick={handleEditButtonClick}>수정하기</EditBtn>;

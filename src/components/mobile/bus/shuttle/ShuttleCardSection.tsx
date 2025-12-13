@@ -1,8 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import useMobileNavigate from "@/hooks/useMobileNavigate.ts";
 
 export default function ShuttleCardSection() {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   return (
     <Wrapper>
@@ -10,24 +10,24 @@ export default function ShuttleCardSection() {
         src="/Bus/탑승방법버튼.svg"
         alt="탑승방법버튼"
         onClick={() => {
-          mobileNavigate("/Bus/shuttle/hellobus");
+          navigate("/Bus/shuttle/hellobus");
         }}
       />
       <CardImg
         src="/Bus/일산김포버튼.svg"
         alt="일산김포버튼"
-        onClick={() => mobileNavigate("/Bus/shuttle?route=ilsan-gimpo")}
+        onClick={() => navigate("/Bus/shuttle?route=ilsan-gimpo")}
       />
       <CardImg
         src="/Bus/부천송내버튼.svg"
         alt="부천송내버튼"
-        onClick={() => mobileNavigate("/Bus/shuttle?route=bucheon")}
+        onClick={() => navigate("/Bus/shuttle?route=bucheon")}
       />
       <CardImg
         src="/Bus/안산시흥버튼.svg"
         alt="안산시흥버튼"
         onClick={() => {
-          mobileNavigate("/Bus/shuttle?route=ansan-siheung");
+          navigate("/Bus/shuttle?route=ansan-siheung");
         }}
       />
     </Wrapper>

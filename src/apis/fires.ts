@@ -1,6 +1,6 @@
 import tokenInstance from "@/apis/tokenInstance";
 import { ApiResponse } from "@/types/common";
-import { PredictResult, FiresPagination } from "@/types/fires";
+import { FiresPagination, PredictResult } from "@/types/fires";
 
 // 횃불이 ai 그림 그리기
 export const postFiresPredict = async (

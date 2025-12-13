@@ -1,4 +1,5 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 export default function AiTitle() {
@@ -10,12 +11,16 @@ export default function AiTitle() {
   return (
     <AiTitleWrapper>
       {/* 768px 이상 화면에서만 보이는 버튼 */}
-      <DesktopButton onClick={() => navigate(isGalleryPage ? "/ai" : "/")}>
+      <DesktopButton
+        onClick={() => navigate(isGalleryPage ? ROUTES.AI : ROUTES.ROOT)}
+      >
         {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP으로 돌아가기"}
       </DesktopButton>
 
       {/* 768px 이하 화면에서만 보이는 버튼 */}
-      <MobileButton onClick={() => navigate(isGalleryPage ? "/ai" : "/m/home")}>
+      <MobileButton
+        onClick={() => navigate(isGalleryPage ? ROUTES.AI : ROUTES.HOME)}
+      >
         {isGalleryPage ? "⬅ 생성하러 가기" : "⬅ INTIP 모바일로 돌아가기"}
       </MobileButton>
 

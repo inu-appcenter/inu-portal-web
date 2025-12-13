@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import IntipLogo from "@/resources/assets/intip-logo.svg";
@@ -8,7 +9,7 @@ export default function Nav() {
 
   return (
     <StyledNav>
-      <img onClick={() => navigate("/")} src={IntipLogo} alt="INTIP" />
+      <img onClick={() => navigate(ROUTES.ROOT)} src={IntipLogo} alt="INTIP" />
       <NavMenu isInFooter={false} />
     </StyledNav>
   );

@@ -1,4 +1,4 @@
-import useMobileNavigate from "@/hooks/useMobileNavigate";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Dispatch, SetStateAction } from "react";
 
@@ -17,7 +17,7 @@ export default function MobileUtilHeader({
   selectedType,
   setIsRentalAdminOpen,
 }: Props) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   return (
     <MobileUtilHeaderWrapper>
@@ -26,7 +26,7 @@ export default function MobileUtilHeader({
           key={btn.type}
           onClick={() => {
             setIsRentalAdminOpen(false);
-            mobileNavigate(`/home/util?type=${btn.type}`);
+            navigate(`/home/util?type=${btn.type}`);
           }}
           className={selectedType === btn.type ? "selected" : ""}
         >

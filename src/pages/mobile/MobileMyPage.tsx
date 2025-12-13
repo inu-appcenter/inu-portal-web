@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
@@ -7,7 +8,6 @@ import {
   MyPageCategoryCommon,
   MyPageCategoryLoggeedIn,
 } from "@/resources/strings/m-mypage";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import MobileNav from "../../containers/mobile/common/MobileNav.tsx";
@@ -16,7 +16,7 @@ import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
@@ -30,7 +30,7 @@ export default function MobileMyPage() {
     if (window.AndroidBridge && window.AndroidBridge.handleLogout) {
       window.AndroidBridge.handleLogout();
     } else {
-      mobileNavigate(`/home`);
+      navigate(`/home`);
     }
   };
 
@@ -45,29 +45,29 @@ export default function MobileMyPage() {
   const handleClick = (title: string) => {
     switch (title) {
       case "내가 쓴 글":
-        mobileNavigate(`/mypage/post`);
+        navigate(`/mypage/post`);
         break;
       case "좋아요 한 글":
-        mobileNavigate(`/mypage/like`);
+        navigate(`/mypage/like`);
         break;
       case "작성한 댓글":
-        mobileNavigate(`/mypage/comment`);
+        navigate(`/mypage/comment`);
         break;
       case "프로필 수정":
-        mobileNavigate(`/mypage/profile`);
+        navigate(`/mypage/profile`);
         break;
       case "스크랩":
-        mobileNavigate(`/save`);
+        navigate(`/save`);
         break;
       case "로그아웃":
         handleLogoutModalClick();
         break;
       case "회원탈퇴":
-        mobileNavigate(`/mypage/delete`);
+        navigate(`/mypage/delete`);
         break;
 
       case "관리자 페이지":
-        mobileNavigate("/admin");
+        navigate("/admin");
         break;
 
       case "문의하기":
@@ -99,7 +99,7 @@ export default function MobileMyPage() {
                 로그인이 필요합니다!
                 <LoginButton
                   onClick={() => {
-                    mobileNavigate("/login");
+                    navigate("/login");
                   }}
                 >
                   로그인

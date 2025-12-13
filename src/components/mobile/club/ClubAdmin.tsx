@@ -15,7 +15,7 @@ export default function ClubAdmin({
   setIsClubAdminOpen: (arg0: boolean) => void;
 }) {
   const location = useLocation();
-  // const mobileNavigate = useMobileNavigate();
+  // const navigate = useNavigate();
 
   const params = new URLSearchParams(location.search);
   const category = params.get("category") || "전체";

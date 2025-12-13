@@ -1,11 +1,12 @@
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 
 export default function LoginNavigateButton() {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   return (
-    <LoginNavigateButtonWrapper onClick={() => mobileNavigate("/login")}>
+    <LoginNavigateButtonWrapper onClick={() => navigate(ROUTES.LOGIN)}>
       Login
     </LoginNavigateButtonWrapper>
   );

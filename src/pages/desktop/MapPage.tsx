@@ -2,7 +2,7 @@ import Categories from "@/components/desktop/posts/Categories";
 
 import PostsTitle from "@/components/map/MapTitle";
 import MapManager from "../../components/map/MapManager.tsx";
-import { useEffect /*useState*/ } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 

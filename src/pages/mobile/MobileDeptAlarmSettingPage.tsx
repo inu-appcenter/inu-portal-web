@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import RegisteredKeywordItem from "../../components/desktop/notice/RegisteredKeywordItem.tsx";
 import { Keyword } from "@/types/notices";

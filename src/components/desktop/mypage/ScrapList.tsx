@@ -9,8 +9,8 @@ import likeImage from "@/resources/assets/mypage/like.svg";
 import { useEffect, useState } from "react";
 import { getSearchFolderScrap, getSearchScrap } from "@/apis/search";
 import {
-  getFoldersPosts,
   deleteFoldersPosts,
+  getFoldersPosts,
   postFoldersPosts,
 } from "@/apis/folders";
 import { putScrap } from "@/apis/posts";

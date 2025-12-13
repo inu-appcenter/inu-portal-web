@@ -3,11 +3,11 @@ import tokenInstance from "@/apis/tokenInstance";
 import refreshInstance from "@/apis/refreshInstance";
 import { ApiResponse, Pagination } from "@/types/common";
 import {
-  TokenInfo,
-  UserInfo,
+  ApiLog,
   MembersReplies,
   Notification,
-  ApiLog,
+  TokenInfo,
+  UserInfo,
 } from "@/types/members";
 import { Post } from "@/types/posts";
 

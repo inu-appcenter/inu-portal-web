@@ -1,6 +1,6 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Scrollbar } from "swiper/modules";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { getNotices } from "@/apis/notices";
 import { Notice } from "@/types/notices";

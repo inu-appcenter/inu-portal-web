@@ -3,8 +3,8 @@ import { MembersReplies } from "@/types/members";
 import { Post } from "@/types/posts";
 import {
   getMembersLikes,
-  getMembersReplies,
   getMembersPosts,
+  getMembersReplies,
 } from "@/apis/members";
 import { useEffect, useState } from "react";
 import likeImage from "@/resources/assets/mypage/like.svg";

@@ -7,7 +7,7 @@ import NoticeBox from "@/components/mobile/util/rental/userMode/NoticeBox.tsx";
 import ItemDetail from "@/components/mobile/util/rental/ItemDetail.tsx";
 import RentalAdmin from "@/components/mobile/util/rental/adminMode/RentalAdmin.tsx";
 
-import { Items, getItemsList } from "@/apis/rental.ts";
+import { getItemsList, Items } from "@/apis/rental.ts";
 import ReservationList from "@/components/mobile/util/rental/userMode/ReservationList.tsx";
 
 export default function RentalPage({

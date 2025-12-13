@@ -1,5 +1,4 @@
-import { useLocation } from "react-router-dom";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 interface BusTabHeaderProps {
@@ -35,7 +34,7 @@ export default function BusTabHeader({ Type }: BusTabHeaderProps) {
         ? HomeTab
         : ShuttleTab;
   const defaultTab = tabList[0].type;
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const selectedTab = tab ?? defaultTab;
 
@@ -45,7 +44,7 @@ export default function BusTabHeader({ Type }: BusTabHeaderProps) {
         <button
           key={tab.type}
           onClick={() =>
-            mobileNavigate(`/bus/info?type=${Type}&tab=${tab.type}`, {
+            navigate(`/bus/info?type=${Type}&tab=${tab.type}`, {
               replace: true,
             })
           }

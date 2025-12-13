@@ -1,9 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import SectionLabel from "@/components/mobile/bus/SectionLabel";
 import InfoIcon from "@/components/mobile/bus/InfoIcon";
 import BusItem from "@/components/mobile/bus/BusItem";
 import { BusStopBoxProps } from "@/types/bus.ts";
-import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 import useBusArrival from "../../../hooks/useBusArrival.ts";
 
 interface Props extends BusStopBoxProps {
@@ -17,7 +17,7 @@ export default function BusStopBox({
   showInfoIcon = false,
   bstopId,
 }: Props) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const busArrivalList = useBusArrival(bstopId, busList);
 
   return (
@@ -36,8 +36,8 @@ export default function BusStopBox({
             {...bus}
             onClick={() =>
               bus.number === "셔틀"
-                ? mobileNavigate("/Bus/info?type=shuttle&tab=subwayShuttle")
-                : mobileNavigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
+                ? navigate("/Bus/info?type=shuttle&tab=subwayShuttle")
+                : navigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
             }
           />
         ))}

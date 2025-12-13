@@ -1,7 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useState } from "react";
 import { putMemberDepartment, putMembers } from "@/apis/members";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "../../../components/mobile/notice/DepartmentNoticeSelector.tsx";
@@ -13,7 +13,7 @@ export default function UserModify() {
   const [fireId, setFireId] = useState(userInfo.fireId);
   const [initialNickname] = useState(userInfo.nickname); // 최초 닉네임 저장
   const [department, setDepartment] = useState(userInfo.department);
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
 
   console.log(userInfo);
@@ -41,7 +41,7 @@ export default function UserModify() {
         fireId: Number(fireId),
       });
       alert("성공적으로 수정되었습니다.");
-      mobileNavigate(`/mypage`);
+      navigate(`/mypage`);
     } catch (error) {
       console.error("회원정보 수정 실패", error);
       alert("회원정보 수정에 실패했습니다.");

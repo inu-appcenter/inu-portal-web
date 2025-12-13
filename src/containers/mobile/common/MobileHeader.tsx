@@ -1,21 +1,20 @@
+import { ROUTES } from "@/constants/routes";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import intipLogo from "@/resources/assets/intip-logo.svg";
-// import MenuButton from "@/components/mobile/common/MenuButton";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import UpperBackgroundImg from "@/resources/assets/mobile-common/upperBackgroundImg.svg";
 
-import BackButton from "../../../components/mobile/mypage/BackButton.tsx";
-import Title from "../../../components/mobile/mypage/Title.tsx";
 import { Bell } from "lucide-react";
-import TopRightDropdownMenu from "../../../components/desktop/common/TopRightDropdownMenu.tsx";
+import BackButton from "@/components/mobile/login/BackButton";
+import Title from "@/components/mobile/mypage/Title";
+import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
 
 // 알림 여부를 prop으로 전달받아서 표시 여부 결정
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const handleNotiBtnClick = () => {
-    mobileNavigate("/home/alert");
+    navigate(ROUTES.BOARD.ALERT);
   };
 
   return (
@@ -61,13 +60,14 @@ export default function MobileHeader({
   showAlarm = false,
   menuItems,
 }: HeaderProps) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
   const location = useLocation();
 
   const handleLogoClick = () => {
-    mobileNavigate(`/home`);
+    // [수정] 하드코딩된 '/home' -> 상수 교체
+    navigate(ROUTES.HOME);
   };
 
   useEffect(() => {
@@ -89,30 +89,32 @@ export default function MobileHeader({
 
   const handleBack = () => {
     if (backPath) {
-      // backPath가 존재하면 우선 이동
-      mobileNavigate(backPath);
+      navigate(backPath);
       return;
     }
 
     const params = new URLSearchParams(location.search);
-    const specialPaths = [
-      "/m/home/util",
-      "/m/home/council",
-      "/m/home/campus",
-      "/m/home/tips",
+
+    // [수정] TS 에러 해결: : string[] 타입을 명시하여 일반 문자열 비교 허용
+    const specialPaths: string[] = [
+      ROUTES.BOARD.UTIL,
+      ROUTES.BOARD.COUNCIL,
+      ROUTES.BOARD.CAMPUS,
+      ROUTES.BOARD.TIPS,
     ];
 
     const shouldGoHome =
       specialPaths.includes(location.pathname) && [...params].length > 0;
 
-    const isBusInfoPage = location.pathname.includes("m/bus/info");
+    // [수정] 하드코딩된 'm/bus/info' -> 상수 교체 (ROUTES.BUS.INFO 사용)
+    const isBusInfoPage = location.pathname.includes(ROUTES.BUS.INFO);
 
     if (isBusInfoPage) {
-      mobileNavigate("/bus");
+      navigate(ROUTES.BUS.ROOT);
     } else if (shouldGoHome) {
-      mobileNavigate("/home");
+      navigate(ROUTES.HOME);
     } else {
-      mobileNavigate(-1);
+      navigate(-1);
     }
   };
 
@@ -137,8 +139,6 @@ export default function MobileHeader({
         <ProfileMenuWrapper>
           {showAlarm && <NotificationBell hasNew={false} />}
           {menuItems && <TopRightDropdownMenu items={menuItems} />}
-
-          {/*<MenuButton />*/}
         </ProfileMenuWrapper>
       </MainHeaderWrapper>
     </MobileHeaderWrapper>
@@ -158,8 +158,6 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   right: 0;
 
   z-index: 2;
-  //box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  //overflow: hidden;
 
   transition: transform 0.3s ease;
   transform: ${({ $visible }) =>
@@ -173,11 +171,9 @@ const MainHeaderWrapper = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  //padding: 0 24px;
   box-sizing: border-box;
 
   .logo {
-    //width: 100px;
     height: 100%;
     cursor: pointer;
     padding: 4px 0;
@@ -194,7 +190,7 @@ const UpperBackground = styled.img`
   bottom: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* 이미지가 부모 영역 꽉 채움 */
+  object-fit: cover;
   z-index: -1;
 `;
 

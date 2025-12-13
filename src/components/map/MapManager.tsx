@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Map from "@/components/map/components/KakaoMap.tsx";
 import { useLocation } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import PlaceListPanel from "./components/PlaceListPanel.tsx";
 import { deleteMarkers } from "@/components/map/utils/markerUtils.ts";
 

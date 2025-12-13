@@ -1,14 +1,13 @@
+import { useNavigate } from "react-router-dom";
 // AiGenerate.tsx
 import styled from "styled-components";
 import { postFiresPredict } from "@/apis/fires";
 import axios, { AxiosError } from "axios";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import useUserStore from "@/stores/useUserStore";
 import AiGallery from "@/components/desktop/ai/AiGallery";
 import { result } from "@/apis/genTorch";
 import { openDB } from "idb"; // IndexedDB 사용
-import useMobileNavigate from "@/hooks/useMobileNavigate";
-
 export default function AiGenerate() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -17,7 +16,7 @@ export default function AiGenerate() {
   const [canRefresh, setCanRefresh] = useState<boolean>(false);
   const [requestId, setRequestId] = useState<string | null>(null);
   const { tokenInfo } = useUserStore();
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const [newImageGenerated, setNewImageGenerated] = useState(false);
 
@@ -263,7 +262,7 @@ export default function AiGenerate() {
           )
         ) : (
           <>
-            <MobileLoginButton onClick={() => mobileNavigate("/login")}>
+            <MobileLoginButton onClick={() => navigate("/login")}>
               로그인
             </MobileLoginButton>
             <DesktopLoginButton href="/login">로그인</DesktopLoginButton>

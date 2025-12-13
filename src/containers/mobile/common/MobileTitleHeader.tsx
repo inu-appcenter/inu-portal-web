@@ -1,8 +1,8 @@
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import BackButton from "@/components/mobile/mypage/BackButton.tsx";
 import Title from "@/components/mobile/mypage/Title.tsx";
-import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 
 interface CommentTitleProps {
   title: string;
@@ -13,29 +13,32 @@ export default function MobileTitleHeader({
   title,
   onback,
 }: CommentTitleProps) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const handleBack = () => {
     const params = new URLSearchParams(location.search);
-    const specialPaths = [
-      "/m/home/util",
-      "/m/home/council",
-      "/m/home/campus",
-      "/m/home/tips",
+
+    // [수정] string[] 타입 명시로 includes 에러 해결
+    const specialPaths: string[] = [
+      ROUTES.BOARD.UTIL,
+      ROUTES.BOARD.COUNCIL,
+      ROUTES.BOARD.CAMPUS,
+      ROUTES.BOARD.TIPS,
     ];
 
     const shouldGoHome =
       specialPaths.includes(location.pathname) && [...params].length > 0;
 
-    const isBusInfoPage = location.pathname.includes("/m/Bus/info");
+    // [수정] 하드코딩된 경로를 상수로 교체 (대소문자 및 /m 제거 주의)
+    const isBusInfoPage = location.pathname.includes(ROUTES.BUS.INFO);
 
     if (isBusInfoPage) {
-      mobileNavigate("/Bus");
+      navigate(ROUTES.BUS.ROOT);
     } else if (shouldGoHome) {
-      mobileNavigate("/home");
+      navigate(ROUTES.HOME);
     } else {
-      mobileNavigate(-1);
+      navigate(-1);
     }
   };
 

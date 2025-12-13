@@ -4,10 +4,10 @@ import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 import DefaultImage from "@/resources/assets/rental/DefaultImage.svg";
 import {
-  getItemDetail,
   createReservation,
-  Items,
   getAvailableQuantity,
+  getItemDetail,
+  Items,
 } from "@/apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
 import closeBtn from "../../../../resources/assets/mobile-common/closebtn.svg";

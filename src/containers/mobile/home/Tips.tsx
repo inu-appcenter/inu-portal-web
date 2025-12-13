@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -5,15 +6,13 @@ import { Autoplay, Pagination } from "swiper/modules";
 
 import { getPostsMain } from "@/apis/posts";
 import { Post } from "@/types/posts";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
-
 import "swiper/swiper-bundle.css";
 import "swiper/css/navigation";
 import "swiper/css";
 
 export default function TipForm() {
   const [topPosts, setTopPosts] = useState<Post[][]>([]);
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTopPosts = async () => {
@@ -52,7 +51,7 @@ export default function TipForm() {
             {chunk.map((post) => (
               <PostWrapper
                 key={post.id}
-                onClick={() => mobileNavigate(`/postdetail?id=${post.id}`)}
+                onClick={() => navigate(`/postdetail?id=${post.id}`)}
               >
                 <div className="category">{post.category}</div>
                 <div className="title">{post.title}</div>

@@ -34,6 +34,6 @@ export interface Notification {
 }
 
 //api로그
-export interface ApiLog{
-    uri:string;
+export interface ApiLog {
+  uri: string;
 }

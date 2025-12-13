@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import LoginModalLogo from "@/resources/assets/login/login-modal-logo.svg";
@@ -12,7 +13,7 @@ export default function LoginModal({ openModal, closeModal }: Props) {
   const navigate = useNavigate();
   const handleLoginClick = () => {
     openModal();
-    navigate("/login");
+    navigate(ROUTES.LOGIN);
   };
 
   return (

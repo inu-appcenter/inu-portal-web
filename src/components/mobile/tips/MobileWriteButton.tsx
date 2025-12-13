@@ -1,18 +1,19 @@
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import pencil from "@/resources/assets/posts/pencil-white.svg";
 import LoginModal from "@/components/desktop/common/LoginModal";
 import { useState } from "react";
 import useUserStore from "@/stores/useUserStore";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 
 export default function FloatingWriteButton() {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const { tokenInfo } = useUserStore();
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const handleClick = () => {
     if (tokenInfo.accessToken) {
-      mobileNavigate("/home/tips/write");
+      navigate(ROUTES.BOARD.TIPS_WRITE);
     } else {
       setIsOpenModal(true);
     }

@@ -1,11 +1,12 @@
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import useUserStore from "../../../stores/useUserStore.ts";
 import { useEffect } from "react";
-import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 
 const MobileAdminPage: React.FC = () => {
-  const mobilenavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const { tokenInfo, userInfo, isLoading } = useUserStore();
 
   useEffect(() => {
@@ -13,7 +14,7 @@ const MobileAdminPage: React.FC = () => {
     if (!isLoading) {
       console.log(userInfo && userInfo.role === "admin");
       if (!tokenInfo.accessToken || !(userInfo && userInfo.role === "admin")) {
-        mobilenavigate("/home");
+        navigate(ROUTES.HOME);
       }
     }
   }, [tokenInfo, userInfo, isLoading]);
@@ -22,12 +23,12 @@ const MobileAdminPage: React.FC = () => {
   const adminPages = [
     {
       label: "접속 유저 통계",
-      path: "/admin/userstatistics",
+      path: ROUTES.ADMIN.USER_STAT,
       description: "일자별로 접속한 유저 통계를 볼 수 있어요.",
     },
     {
       label: "서비스 사용 통계",
-      path: "/admin/apistatistics",
+      path: ROUTES.ADMIN.API_STAT,
       description: "일자별로 API 요청 횟수 통계를 볼 수 있어요.",
     },
   ];
@@ -38,7 +39,7 @@ const MobileAdminPage: React.FC = () => {
       <Title>관리자 기능 선택</Title>
       <MenuGrid>
         {adminPages.map((page) => (
-          <MenuCard key={page.path} onClick={() => mobilenavigate(page.path)}>
+          <MenuCard key={page.path} onClick={() => navigate(page.path)}>
             <CardTitle>{page.label}</CardTitle>
             <CardDescription>{page.description}</CardDescription>
           </MenuCard>

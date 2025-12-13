@@ -5,10 +5,10 @@ import InfoWindowCafe from "./InfoWindowCafe.ts";
 import InfoWindowRestaurant from "./InfoWindowRestaurant.ts";
 
 import {
-  getBuildingIcon,
-  getRestIcon,
   CafeIcon,
+  getBuildingIcon,
   getRestaurantIcon,
+  getRestIcon,
 } from "../constants/markerImages.ts";
 import { SchoolimageMap } from "@/resources/assets/mapBuildingImages/buildingImageManage.ts";
 import { CafeimageMap } from "@/resources/assets/mapCafeImages/cafeImageManage.ts";

@@ -1,4 +1,5 @@
-import useMobileNavigate from "@/hooks/useMobileNavigate";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { Post } from "@/types/posts";
 import { Notice } from "@/types/notices";
@@ -29,7 +30,7 @@ export default function ({
   docType,
   isEditing,
 }: TipsCardContainerProps) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const handleDocumentClick = () => {
     if (isEditing) return;
@@ -37,15 +38,14 @@ export default function ({
       notice && window.open("https://" + notice.url, "_blank");
       deptNotice && window.open(deptNotice.url, "_blank");
     } else if (docType === "COUNCILNOTICE") {
-      councilNotice &&
-        mobileNavigate(`/councilnoticedetail?id=${councilNotice.id}`);
+      councilNotice && navigate(`/councilnoticedetail?id=${councilNotice.id}`);
     } else {
-      post && mobileNavigate(`/postdetail?id=${post.id}`);
+      post && navigate(`/postdetail?id=${post.id}`);
     }
   };
 
   const handleAlertClick = () => {
-    mobileNavigate("/home/deptnotice");
+    navigate(ROUTES.BOARD.DEPT_NOTICE);
   };
 
   return (

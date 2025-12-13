@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import backbtn from "@/resources/assets/mobile-common/backbtn.svg";
 import { useEffect, useState } from "react";
@@ -5,8 +6,7 @@ import { deletePetitions, getPetitionsDetail, putLike } from "@/apis/petitions";
 import PostContentContainer from "@/containers/mobile/postdetail/PostContentContainer";
 import { Petition } from "@/types/petitions";
 import axios, { AxiosError } from "axios";
-import { useLocation } from "react-router-dom";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
+import { useLocation, useNavigate } from "react-router-dom";
 import UploadPetition from "@/components/mobile/council/UploadPetition";
 import useReloadKeyStore from "@/stores/useReloadKeyStore";
 import heartEmptyImg from "@/resources/assets/posts/heart-empty.svg";
@@ -19,7 +19,7 @@ export default function MobilePetitionDetailPage() {
   const [likeState, setLikeState] = useState(0);
   const [isLikedState, setIsLikedState] = useState(false);
 
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const fetchPost = async (id: number) => {
@@ -39,15 +39,15 @@ export default function MobilePetitionDetailPage() {
         switch (error.response.status) {
           case 404:
             alert("존재하지 않는 게시글입니다.");
-            mobileNavigate(-1);
+            navigate(-1);
             break;
           case 403:
             alert("비밀글입니다.");
-            mobileNavigate(-1);
+            navigate(-1);
             break;
           default:
             alert("게시글 가져오기 실패");
-            mobileNavigate(-1);
+            navigate(-1);
             break;
         }
       }
@@ -55,7 +55,7 @@ export default function MobilePetitionDetailPage() {
   };
 
   useEffect(() => {
-    if (location.pathname.includes("/petitiondetail")) {
+    if (location.pathname.includes(ROUTES.DETAIL.PETITION)) {
       const params = new URLSearchParams(location.search);
       fetchPost(Number(params.get("id")) || 0);
     }
@@ -69,7 +69,7 @@ export default function MobilePetitionDetailPage() {
       const params = new URLSearchParams(location.search);
       await deletePetitions(Number(params.get("id")));
       triggerReload();
-      mobileNavigate(-1);
+      navigate(-1);
     } catch (error) {
       console.error("게시글 삭제 실패", error);
       // refreshError가 아닌 경우 처리
@@ -138,7 +138,7 @@ export default function MobilePetitionDetailPage() {
           <Wrapper>
             <PostTopWrapper>
               <PostUtilWrapper>
-                <BackBtn onClick={() => mobileNavigate(-1)}>
+                <BackBtn onClick={() => navigate(-1)}>
                   <img src={backbtn} alt="뒤로가기 버튼" />
                 </BackBtn>
                 {petition.hasAuthority && (

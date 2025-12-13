@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { deleteMembers } from "@/apis/members";
 import { useState } from "react";
@@ -21,7 +22,7 @@ export default function Delete() {
     try {
       await deleteMembers();
       alert("회원 탈퇴가 완료되었습니다.");
-      navigate("/");
+      navigate(ROUTES.ROOT);
       return;
     } catch (error) {
       console.error("회원 탈퇴 실패");

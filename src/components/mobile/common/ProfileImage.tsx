@@ -1,15 +1,16 @@
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 
 interface ProfileImageProps {
   fireId: number;
 }
 
 export default function ProfileImage({ fireId }: ProfileImageProps) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   const handleClick = () => {
-    mobileNavigate("/mypage");
+    navigate(ROUTES.MYPAGE.ROOT);
   };
 
   return (

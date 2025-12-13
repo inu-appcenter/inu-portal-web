@@ -1,13 +1,13 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import useUserStore from "../../../stores/useUserStore.ts";
 import { useEffect, useState } from "react";
-import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { getMemberLogs } from "@/apis/admin";
 import { MemberLogData } from "@/types/admin";
 
 const MobileAdminUserStatisticsPage: React.FC = () => {
-  const mobilenavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const { tokenInfo, userInfo } = useUserStore();
 
   const [memberLog, setMemberLog] = useState<MemberLogData | null>(null);
@@ -22,7 +22,7 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
 
   useEffect(() => {
     if (!tokenInfo.accessToken || userInfo.role !== "admin") {
-      mobilenavigate("/home");
+      navigate("/home");
     }
   }, [tokenInfo, userInfo]);
 

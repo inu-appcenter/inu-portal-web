@@ -1,9 +1,7 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { addItem } from "@/apis/rentalAdmin.ts";
+import { addItem, ItemFormValues } from "@/apis/rentalAdmin.ts";
 import styled from "styled-components";
 import React, { useState } from "react";
-
-import { ItemFormValues } from "@/apis/rentalAdmin.ts";
 
 const AddItem = () => {
   const [images, setImages] = useState<File[]>([]); // 이미지 파일 상태 추가

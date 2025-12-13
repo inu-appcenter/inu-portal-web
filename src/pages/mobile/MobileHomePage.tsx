@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 // import SerachForm from "@/mobile/containers/home/SerachForm";
 import CategoryForm from "@/containers/mobile/home/Category";
@@ -80,17 +81,17 @@ export default function MobileHomePage() {
         <TitleContentArea
           title={"학교 공지사항"}
           children={<NoticeForm />}
-          link={"/m/home/notice"}
+          link={ROUTES.BOARD.NOTICE}
         />
         <TitleContentArea
           title={"TIPS 인기글"}
           children={<TipForm />}
-          link={"/m/home/tips"}
+          link={ROUTES.BOARD.TIPS}
         />
         <TitleContentArea
           title={"학사일정"}
           children={<ThreeWeekCalendar />}
-          link={"/m/home/calendar"}
+          link={ROUTES.BOARD.CALENDAR}
         />
         {/*<TipForm />*/}
       </ContainerWrapper>

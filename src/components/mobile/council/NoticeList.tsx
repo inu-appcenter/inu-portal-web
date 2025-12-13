@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { CouncilNotice } from "@/types/councilNotices";
 import { getCouncilNoticesList } from "@/apis/councilNotices";
 import styled from "styled-components";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import eyeImg from "@/resources/assets/posts/eye.svg";
 
 export default function NoticeList({ reloadKey }: { reloadKey: number }) {
   const [notices, setNotices] = useState<CouncilNotice[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   // 리스트를 가져오는 함수
   const fetchList = async (currentPage: number, reset = false) => {
@@ -51,9 +51,7 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
           {notices.map((notice) => (
             <BookCard
               key={notice.id}
-              onClick={() =>
-                mobileNavigate(`/councilnoticedetail?id=${notice.id}`)
-              }
+              onClick={() => navigate(`/councilnoticedetail?id=${notice.id}`)}
             >
               {notice.imageCount > 0 ? (
                 <img

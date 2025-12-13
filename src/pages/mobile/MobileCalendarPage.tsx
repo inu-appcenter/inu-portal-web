@@ -5,7 +5,7 @@ import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 export default function MobileCalendarPage() {
   return (
     <MobileCalendarPageWrapper>
-      {/*<Title title={"학사일정"} onback={() => mobileNavigate("/home")} />*/}
+      {/*<Title title={"학사일정"} onback={() => mobileNavigate(ROUTES.HOME)} />*/}
       <MobileHeader title={"학사일정"} />
       <Calendarbar />
     </MobileCalendarPageWrapper>

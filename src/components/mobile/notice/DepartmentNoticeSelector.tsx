@@ -1,7 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import styled from "styled-components";
-import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 
 type SubItem = {
   title: string;
@@ -29,7 +29,7 @@ const DepartmentMenu = ({
 }: NavBarProps) => {
   const [maxHeight, setMaxHeight] = useState(0);
 
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const screenHeight = window.innerHeight;
@@ -63,7 +63,7 @@ const DepartmentMenu = ({
                           handleClick(sub.code);
                           return;
                         }
-                        mobileNavigate(`/home/deptnotice/${sub.code}`);
+                        navigate(`/home/deptnotice/${sub.code}`);
                         setIsOpen(false);
                       }}
                     >

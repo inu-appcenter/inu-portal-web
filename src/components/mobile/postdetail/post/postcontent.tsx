@@ -26,14 +26,14 @@ export default function PostContent({
                     index + 1
                   }?v=${modifiedDate}`
                 : type === "COUNCILNOTICE"
-                ? `https://portal.inuappcenter.kr/images/councilNotice/${id}-${
-                    index + 1
-                  }?v=${modifiedDate}`
-                : type === "PETITION"
-                ? `https://portal.inuappcenter.kr/images/petition/${id}-${
-                    index + 1
-                  }?v=${modifiedDate}`
-                : "";
+                  ? `https://portal.inuappcenter.kr/images/councilNotice/${id}-${
+                      index + 1
+                    }?v=${modifiedDate}`
+                  : type === "PETITION"
+                    ? `https://portal.inuappcenter.kr/images/petition/${id}-${
+                        index + 1
+                      }?v=${modifiedDate}`
+                    : "";
 
             return (
               <ContentImg

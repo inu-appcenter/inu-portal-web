@@ -5,12 +5,9 @@ import Manual3 from "@/resources/assets/helllo-bus/manual-3.svg";
 import Manual4 from "@/resources/assets/helllo-bus/manual-4.svg";
 import backbtn from "@/resources/assets/mobile-common/backbtn.svg";
 import { useState } from "react";
-// import Title from "@/mobile/containers/mypage/MobileTitleHeader.tsx"
-// import useMobileNavigate from "../../../hooks/useMobileNavigate.ts";
 
 export default function HelloBus() {
   const [show, setShow] = useState(0);
-  // const mobileNavigate = useMobileNavigate();
 
   const manuals = [
     { title: "", steps: [], images: [] },
@@ -88,7 +85,7 @@ export default function HelloBus() {
 
   return (
     <HelloBusWrapper>
-      {/*<Title title={"통학버스"} onback={() => mobileNavigate('/home')}/>*/}
+      {/*<Title title={"통학버스"} onback={() => navigate('/home')}/>*/}
 
       {show > 0 ? (
         <Section>
@@ -191,10 +188,10 @@ const Steps = styled.div`
   line-height: 1.6;
   background-color: rgba(248, 248, 248, 1);
   padding: 8px;
-< < < < < < < Updated upstream padding-bottom: 80 px;
-= = = = = = = >>> >>> > Stashed changes p {
-  font-weight: 500;
-}
+  padding-bottom: 80px;
+  p {
+    font-weight: 500;
+  }
 
   strong {
     color: rgba(14, 77, 157, 1);

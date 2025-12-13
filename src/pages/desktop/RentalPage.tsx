@@ -1,9 +1,8 @@
 import Categories from "@/components/desktop/posts/Categories";
 
 import RentalTitle from "@/components/mobile/util/rental/RentalTitle.tsx";
-import styled from "styled-components";
-
-import { ThemeProvider } from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
+import Rental from "../../components/desktop/rental/Rental.tsx";
 
 const theme = {
   colors: {
@@ -14,8 +13,6 @@ const theme = {
     border: "#ddd",
   },
 };
-
-import Rental from "../../components/desktop/rental/Rental.tsx";
 
 export default function RentalPage() {
   return (

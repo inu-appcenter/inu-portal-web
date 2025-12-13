@@ -1,5 +1,5 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import useMobileNavigate from "@/hooks/useMobileNavigate";
 import styled from "styled-components";
 import HeartFilledImg from "@/resources/assets/mobile-mypage/heart-filled-img.svg";
 import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
@@ -16,12 +16,12 @@ export default function CardComment({
   posts,
   onCommentsUpdate,
 }: TipsCardContainerProps) {
-  const mobileNavigate = useMobileNavigate();
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [activeCardId, setActiveCardId] = useState<number | null>(null); // Active card state
 
   const handleDocumentClick = (id: number) => {
-    mobileNavigate(`/postdetail?id=${id}`);
+    navigate(`/postdetail?id=${id}`);
   };
 
   const handleXButtonClick = (id: number) => {
