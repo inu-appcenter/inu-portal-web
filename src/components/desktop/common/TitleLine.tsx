@@ -10,10 +10,15 @@ interface TitleLineProps {
 const TitleLine = ({ title, link }: TitleLineProps) => {
   const navigate = useNavigate();
   return (
-    <TitleLineWrapper>
+    <TitleLineWrapper
+      onClick={() => {
+        if (!link) return;
+        navigate(link);
+      }}
+    >
       <div className="title">{title}</div>
       {link && (
-        <div onClick={() => navigate(link)}>
+        <div>
           <MdChevronRight size={24} />
         </div>
       )}
