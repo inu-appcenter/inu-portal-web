@@ -52,7 +52,7 @@ export default function CategoryForm() {
   };
 
   return (
-    <CategoryFormmWrapper>
+    <CategoryFormWrapper>
       {categorys.map((category, index) => (
         <div
           key={index}
@@ -68,11 +68,11 @@ export default function CategoryForm() {
           <button>{category.title}</button>
         </div>
       ))}
-    </CategoryFormmWrapper>
+    </CategoryFormWrapper>
   );
 }
 
-const CategoryFormmWrapper = styled.div`
+const CategoryFormWrapper = styled.div`
   display: grid;
   justify-items: center;
   grid-template-rows: repeat(2, minmax(0, 1fr));
