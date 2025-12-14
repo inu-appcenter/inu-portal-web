@@ -1,10 +1,11 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Scrollbar } from "swiper/modules";
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { getNotices } from "@/apis/notices";
 import { Notice } from "@/types/notices";
 import SortDropBox from "@/components/mobile/notice/Sort";
+import Box from "@/components/common/Box";
+import NoticeItem from "@/components/mobile/notice/NoticeItem";
+import Divider from "@/components/common/Divider";
 
 export default function NoticeForm() {
   const [sort, setSort] = useState("view");
@@ -27,44 +28,24 @@ export default function NoticeForm() {
   }, [sort]);
 
   return (
-    <NoticeFormWrapper>
-      <NoticeTitleWrapper>
-        <SortDropBox sort={sort} setSort={setSort} />
-      </NoticeTitleWrapper>
-
-      <Swiper
-        onSwiper={(swiper) => (swiperRef.current = swiper)} // Swiper 참조 저장
-        modules={[Scrollbar, Autoplay]}
-        breakpoints={{
-          320: { slidesPerView: 2 },
-          480: { slidesPerView: 2 },
-          768: { slidesPerView: 3 },
-          1024: { slidesPerView: 4 },
-        }}
-        slidesPerGroup={2}
-        autoplay={{
-          delay: 4000,
-          disableOnInteraction: false,
-        }}
-        scrollbar={{
-          hide: false,
-        }}
-        className="mySwiper"
-      >
-        {notices.map((notice, index) => (
-          <SwiperSlide key={index}>
-            <div
-              className="notice-wrapper"
-              onClick={() => window.open("https://" + notice.url, "_blank")}
-            >
-              <h1>{notice.category}</h1>
-              <div className="title">{notice.title}</div>
-              <p className="createdate">{notice.createDate}</p>
-            </div>
-          </SwiperSlide>
+    <Box>
+      <NoticeFormWrapper>
+        <NoticeTitleWrapper>
+          <SortDropBox sort={sort} setSort={setSort} />
+        </NoticeTitleWrapper>
+        {notices.slice(0, 3).map((notice, index) => (
+          <div key={index}>
+            <NoticeItem
+              title={notice.title}
+              category={notice.category}
+              date={notice.createDate}
+              writer={notice.writer}
+            />
+            {index !== 2 && <Divider />}
+          </div>
         ))}
-      </Swiper>
-    </NoticeFormWrapper>
+      </NoticeFormWrapper>
+    </Box>
   );
 }
 

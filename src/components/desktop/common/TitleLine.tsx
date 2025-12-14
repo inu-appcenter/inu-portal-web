@@ -17,11 +17,7 @@ const TitleLine = ({ title, link }: TitleLineProps) => {
       }}
     >
       <div className="title">{title}</div>
-      {link && (
-        <div>
-          <MdChevronRight size={24} />
-        </div>
-      )}
+      {link && <MdChevronRight size={24} style={{ display: "block" }} />}
     </TitleLineWrapper>
   );
 };
@@ -32,7 +28,7 @@ const TitleLineWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 0 20px;
   box-sizing: border-box;
   gap: 8px;
