@@ -110,7 +110,7 @@ const MobileHomePageWrapper = styled.div`
 `;
 
 const ContainerWrapper = styled.div`
-  padding: 24px 16px;
+  padding: 24px 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

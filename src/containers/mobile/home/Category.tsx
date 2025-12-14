@@ -73,20 +73,27 @@ export default function CategoryForm() {
 }
 
 const CategoryFormmWrapper = styled.div`
-  display: flex;
+  display: grid;
+  justify-items: center;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   flex-wrap: wrap;
-  justify-content: space-around;
-  gap: 4px;
-  row-gap: 32px;
-  padding: 0 8px;
+  row-gap: 16px;
+
+  padding: 16px;
   box-sizing: border-box;
   min-width: fit-content;
+  width: 100%;
+
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
 
   .category {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 20%;
+    width: fit-content;
     min-width: fit-content;
 
     .icon-wrapper {

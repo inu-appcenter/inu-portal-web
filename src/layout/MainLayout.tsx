@@ -57,6 +57,14 @@ const Container = styled.div`
   width: 100%;
   //overflow: hidden;
   position: relative;
+
+  background: conic-gradient(
+    from 85deg at 50.89% 49.77%,
+    #cfe9ea 76.62456929683685deg,
+    #d4e3ef 135.7189178466797deg,
+    #def 265.1615309715271deg,
+    #d4e3ef 314.8280382156372deg
+  );
 `;
 
 const ContentWrapper = styled.div`
