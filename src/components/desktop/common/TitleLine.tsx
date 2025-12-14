@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { MdChevronRight } from "react-icons/md";
 
 interface TitleLineProps {
   title: string;
@@ -12,8 +13,8 @@ const TitleLine = ({ title, link }: TitleLineProps) => {
     <TitleLineWrapper>
       <div className="title">{title}</div>
       {link && (
-        <div onClick={() => navigate(link)} className="more">
-          더보기 {`>`}
+        <div onClick={() => navigate(link)}>
+          <MdChevronRight size={24} />
         </div>
       )}
     </TitleLineWrapper>
@@ -27,21 +28,19 @@ const TitleLineWrapper = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 0px;
+  padding: 0 20px;
+  box-sizing: border-box;
   gap: 8px;
 
   width: 100%;
   height: fit-content;
 
   .title {
+    color: #000;
+    text-align: center;
     font-size: 18px;
-    font-weight: 600;
-  }
-  .more {
     font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 28px;
-    color: #8e8e93;
+    font-weight: 600;
+    line-height: normal;
   }
 `;
