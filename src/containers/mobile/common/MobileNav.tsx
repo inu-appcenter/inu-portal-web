@@ -54,32 +54,46 @@ export default function MobileNav() {
   }, [location.pathname]);
 
   return (
-    <MobileNavWrapper>
-      <ActiveIndicator $index={activeIndex} />
-      {NAV_ITEMS.map((item) => (
-        <NavItem
-          key={item.to}
-          to={item.to}
-          icon={item.icon}
-          activeIcon={item.activeIcon}
-          label={item.label}
-        />
-      ))}
-    </MobileNavWrapper>
+    <AreaWrapper>
+      <MobileNavWrapper>
+        <ActiveIndicator $index={activeIndex} />
+        {NAV_ITEMS.map((item) => (
+          <NavItem
+            key={item.to}
+            to={item.to}
+            icon={item.icon}
+            activeIcon={item.activeIcon}
+            label={item.label}
+          />
+        ))}
+      </MobileNavWrapper>
+    </AreaWrapper>
   );
 }
 
-const MobileNavWrapper = styled.nav`
+const AreaWrapper = styled.div`
   position: fixed;
-  z-index: 100;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 89vh;
+  left: 0;
+  width: 100vw;
+  height: fit-content;
 
-  width: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+
+  /* 빈 영역 터치 통과 */
+  pointer-events: none;
+`;
+
+const MobileNavWrapper = styled.nav`
+  position: relative;
+  z-index: 100;
+  margin-bottom: 24px;
+
+  width: 90vw;
   max-width: 400px;
   min-width: 250px;
-  //height: 60px;
 
   padding: 8px 0;
   display: grid;
@@ -92,8 +106,10 @@ const MobileNavWrapper = styled.nav`
   backdrop-filter: blur(5px);
 
   overflow: hidden;
-`;
 
+  /* 네비게이션 영역 터치 활성화 */
+  pointer-events: auto;
+`;
 const ActiveIndicator = styled.div<{ $index: number }>`
   position: absolute;
   top: 0;

@@ -8,7 +8,6 @@ import loginImg from "@/resources/assets/login/login-modal-logo.svg";
 import { Folder } from "@/types/folders";
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/stores/useUserStore";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 
 export default function MobileSavePage() {
   const { tokenInfo } = useUserStore();
@@ -61,7 +60,6 @@ export default function MobileSavePage() {
 
   return (
     <MobileSavePageWrapper>
-      <MobileHeader showAlarm={true} />
       {tokenInfo.accessToken ? (
         <>
           <ScrapFolders

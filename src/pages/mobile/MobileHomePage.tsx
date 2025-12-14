@@ -1,6 +1,5 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-// import SerachForm from "@/mobile/containers/home/SerachForm";
 import CategoryForm from "@/containers/mobile/home/Category";
 import TipForm from "@/containers/mobile/home/Tips";
 import AiForm from "@/containers/mobile/home/Ai";
@@ -13,7 +12,6 @@ import 배너이미지 from "@/resources/assets/banner/intip설문조사.png";
 import { useEffect, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import ThreeWeekCalendar from "@/components/mobile/calendar/ThreeWeekCalendar.tsx";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";
 
 export default function MobileHomePage() {
@@ -43,7 +41,6 @@ export default function MobileHomePage() {
 
   return (
     <MobileHomePageWrapper>
-      <MobileHeader showAlarm={true} />
       {show && isBannerOn && (
         <ModalBackGround>
           <Modal>

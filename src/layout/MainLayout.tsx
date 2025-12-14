@@ -2,6 +2,7 @@ import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
 import MobileNav from "@/containers/mobile/common/MobileNav";
+import MobileHeader from "@/containers/mobile/common/MobileHeader";
 
 export default function MainLayout() {
   const location = useLocation();
@@ -9,6 +10,8 @@ export default function MainLayout() {
 
   return (
     <Container>
+      <MobileHeader showAlarm={true} />
+
       {/* 겹침 허용을 위해 mode="sync" 또는 기본값 사용 */}
       <AnimatePresence mode="sync">
         <MotionPage

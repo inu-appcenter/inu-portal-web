@@ -9,7 +9,6 @@ import {
   MyPageCategoryLoggeedIn,
 } from "@/resources/strings/m-mypage";
 import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 
 export default function MobileMyPage() {
@@ -85,8 +84,6 @@ export default function MobileMyPage() {
 
   return (
     <MyPageWrapper>
-      <MobileHeader showAlarm={true} />
-
       <Background />
       <TopBackground>
         <UserWrapper>
