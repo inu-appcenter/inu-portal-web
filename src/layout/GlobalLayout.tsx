@@ -117,21 +117,16 @@ export default function GlobalLayout() {
 const RootBackground = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
-  background-color: #f0f2f5;
-  min-height: 100vh;
+  align-items: stretch;
   width: 100%;
 `;
 
 // 모바일 뷰 컨테이너
 const AppContainer = styled.div`
   width: 100%;
-  max-width: 480px;
+  max-width: 1024px;
   min-height: 100vh;
-  background-color: white;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow-y: auto;
 `;
