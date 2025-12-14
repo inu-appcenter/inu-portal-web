@@ -1,9 +1,8 @@
 import { ROUTES } from "@/constants/routes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import intipLogo from "@/resources/assets/intip-logo.svg";
 import { useLocation, useNavigate } from "react-router-dom";
-import UpperBackgroundImg from "@/resources/assets/mobile-common/upperBackgroundImg.svg";
 
 import { Bell } from "lucide-react";
 import BackButton from "@/components/mobile/login/BackButton";
@@ -61,8 +60,7 @@ export default function MobileHeader({
   menuItems,
 }: HeaderProps) {
   const navigate = useNavigate();
-  const [showHeader, setShowHeader] = useState(true);
-  const lastScrollY = useRef(0);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
 
   const handleLogoClick = () => {
@@ -74,18 +72,16 @@ export default function MobileHeader({
     const handleScroll = () => {
       const currentY = window.scrollY;
 
-      if (currentY > lastScrollY.current && currentY > 50) {
-        setShowHeader(false);
+      if (currentY >= 50) {
+        setIsScrolled(true);
       } else {
-        setShowHeader(true);
+        setIsScrolled(false);
       }
-
-      lastScrollY.current = currentY;
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [location]);
 
   const handleBack = () => {
     if (backPath) {
@@ -119,39 +115,37 @@ export default function MobileHeader({
   };
 
   return (
-    <MobileHeaderWrapper $visible={showHeader}>
-      <MainHeaderWrapper>
-        <UpperBackground src={UpperBackgroundImg} alt="background" />
+    <MobileHeaderWrapper $visible={true}>
+      <MainHeaderWrapper $isScrolled={isScrolled}>
+        {/*<UpperBackground src={UpperBackgroundImg} alt="background" />*/}
         {title ? (
           <TitleArea>
-            {hasback && (
-              <BackButtonWrapper onClick={handleBack}>
-                <BackButton />
-              </BackButtonWrapper>
-            )}
-
+            {hasback && <BackButton onClick={handleBack} />}
             <Title title={title} />
           </TitleArea>
         ) : (
           <img className="logo" onClick={handleLogoClick} src={intipLogo} />
         )}
 
-        <ProfileMenuWrapper>
-          {showAlarm && <NotificationBell hasNew={false} />}
-          {menuItems && <TopRightDropdownMenu items={menuItems} />}
-        </ProfileMenuWrapper>
+        {(showAlarm || menuItems) && (
+          <ProfileMenuWrapper $isScrolled={isScrolled}>
+            {showAlarm && <NotificationBell hasNew={false} />}
+            {menuItems && <TopRightDropdownMenu items={menuItems} />}
+          </ProfileMenuWrapper>
+        )}
       </MainHeaderWrapper>
     </MobileHeaderWrapper>
   );
 }
 
 const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
+  padding-top: 24px;
   width: 100%;
   height: fit-content;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  background: white;
+  //background: white;
   position: fixed;
   top: 0;
   left: 0;
@@ -163,9 +157,11 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   transform: ${({ $visible }) =>
     $visible ? "translateY(0)" : "translateY(-72px)"};
 `;
-const MainHeaderWrapper = styled.div`
+const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   width: 100%;
   height: 56px;
+  padding-left: 36px;
+  padding-right: 16px;
 
   display: flex;
   flex-direction: row;
@@ -177,35 +173,44 @@ const MainHeaderWrapper = styled.div`
     height: 100%;
     cursor: pointer;
     padding: 4px 0;
-    margin-left: 24px;
+    //margin-left: 36px;
     box-sizing: border-box;
-  }
+
+    opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
+    visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
+    transition:
+      opacity 0.1s ease,
+      transform 0.1s ease,
+      visibility 0s linear ${({ $isScrolled }) =>
+        $isScrolled ? "0.3s" : "0s"};
+
 `;
 
-const UpperBackground = styled.img`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-`;
-
-const ProfileMenuWrapper = styled.div`
+const ProfileMenuWrapper = styled.div<{ $isScrolled: boolean }>`
   display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-right: 24px;
-`;
-
-const BackButtonWrapper = styled.span`
-  display: flex;
-  align-items: center;
   justify-content: center;
-  margin-left: 16px;
+  align-content: center;
+
+  gap: 16px;
+  //margin-right: 16px;
+  padding: 16px;
+
+  border-radius: 100%;
+
+  background: ${({ $isScrolled }) =>
+    $isScrolled ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0)"};
+
+  box-shadow: ${({ $isScrolled }) =>
+    $isScrolled
+      ? "0 2px 4px 0 rgba(0, 0, 0, 0.2)"
+      : "0 2px 4px 0 rgba(0, 0, 0, 0)"};
+
+  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
+
+  transition:
+    background 0.1s ease,
+    box-shadow 0.1s ease,
+    backdrop-filter 0.1s ease;
 `;
 
 const TitleArea = styled.div`
@@ -215,4 +220,6 @@ const TitleArea = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: start;
+
+  //margin-left: 36px;
 `;

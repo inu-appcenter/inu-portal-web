@@ -120,7 +120,7 @@ const BannerWrapper = styled.div`
 
   .swiper {
     width: 100%;
-    height: 250px;
+    height: 200px;
     position: relative;
     //padding-bottom: 15px;
   }
