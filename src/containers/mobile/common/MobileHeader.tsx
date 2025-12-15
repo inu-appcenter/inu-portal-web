@@ -69,7 +69,11 @@ export default function MobileHeader({
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentY = window.scrollY;
+      // 스크롤 영역 찾기
+      const scrollTarget = document.getElementById("app-scroll-view");
+
+      // 스크롤 위치 가져오기 (타겟이 있으면 scrollTop, 없으면 window.scrollY 사용)
+      const currentY = scrollTarget ? scrollTarget.scrollTop : window.scrollY;
 
       if (currentY >= 50) {
         setIsScrolled(true);
@@ -78,9 +82,13 @@ export default function MobileHeader({
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [location]);
+    // 이벤트 리스너 타겟 설정
+    const scrollTarget = document.getElementById("app-scroll-view");
+    const target = scrollTarget || window;
+
+    target.addEventListener("scroll", handleScroll);
+    return () => target.removeEventListener("scroll", handleScroll);
+  }, [location]); // location이 바뀌면(페이지 이동) 다시 바인딩
 
   const handleBack = () => {
     if (backPath) {

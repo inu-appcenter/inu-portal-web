@@ -113,19 +113,19 @@ export default function GlobalLayout() {
   );
 }
 
-// PC 화면 대응 배경
 const RootBackground = styled.div`
   display: flex;
   justify-content: center;
   align-items: stretch;
   width: 100%;
+  height: 100vh; /* 화면 전체 높이 고정 */
+  overflow: hidden; /* 배경 밖으로 스크롤 생기는 것 방지 */
 `;
 
-// 모바일 뷰 컨테이너
 const AppContainer = styled.div`
   width: 100%;
   max-width: 1024px;
-  min-height: 100vh;
+  height: 100%; /* vh 대신 %로 부모 높이 상속 */
   display: flex;
   flex-direction: column;
   position: relative;
