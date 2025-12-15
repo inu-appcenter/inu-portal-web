@@ -184,8 +184,8 @@ const MobileTipsPageWrapper = styled.div`
   flex: 1;
   width: 100%;
   gap: 8px;
-  padding: 16px;
-  padding-top: 72px;
+  padding: 0 16px;
+  //padding-top: 72px;
 
   box-sizing: border-box;
 `;

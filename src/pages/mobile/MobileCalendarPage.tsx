@@ -20,7 +20,6 @@ const MobileCalendarPageWrapper = styled.div`
   align-items: center;
 
   padding: 30px 16px;
-  padding-top: 72px;
 
   box-sizing: border-box;
 `;

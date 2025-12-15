@@ -13,7 +13,7 @@ const MobileBusPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 16px;
+  padding: 16px;
   box-sizing: border-box;
   width: 100%;
 `;

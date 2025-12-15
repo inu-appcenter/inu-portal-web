@@ -67,7 +67,6 @@ const MobileBusDetailPageWrapper = styled.div`
   flex-direction: column;
   gap: 30px;
   padding: 0 16px;
-  padding-top: 56px;
   margin-bottom: 20px;
   box-sizing: border-box;
   width: 100%;

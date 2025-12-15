@@ -41,7 +41,6 @@ const MobileBusStopPageWrapper = styled.div`
   flex-direction: column;
   gap: 20px;
   padding: 0 16px;
-  padding-top: 56px;
   width: 100%;
   box-sizing: border-box;
 `;

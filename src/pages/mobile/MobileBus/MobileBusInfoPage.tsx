@@ -85,7 +85,6 @@ const BusInfoPageWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding-top: 56px;
   box-sizing: border-box;
 `;
 

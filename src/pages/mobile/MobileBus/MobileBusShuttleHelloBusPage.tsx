@@ -20,7 +20,7 @@ const Wrapper = styled.div`
   justify-content: center;
   width: 100%;
   padding: 16px;
-  padding-top: calc(56px + 16px);
+  //padding-top: calc(56px + 16px);
   box-sizing: border-box;
 
   img {

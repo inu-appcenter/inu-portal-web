@@ -4,37 +4,37 @@ import styled from "styled-components";
 export default function SubLayout() {
   return (
     <Container>
-      {/*<MobileHeader />*/}
+      {/*<MobileHeader hasback={true} title={"TIPS"} />*/}
 
-      <OutletWrapper>
+      <ContentWrapper id="app-scroll-view">
         <Outlet />
-      </OutletWrapper>
+      </ContentWrapper>
     </Container>
   );
 }
 
 const Container = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  margin: 0 auto;
-  overflow-y: hidden;
-  box-sizing: border-box;
+  height: 100%; /* 부모(AppContainer) 높이 상속 = 100vh */
+  position: relative;
+  overflow: hidden; /* 배경은 고정하고 내부 스크롤이 밖으로 넘치지 않게 함 */
 `;
 
-const OutletWrapper = styled.div`
-  flex: 1;
+const ContentWrapper = styled.div`
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  height: 100%; /* MotionPage 꽉 채우기 */
+  padding-top: 100px;
+  padding-bottom: 100px;
+  box-sizing: border-box;
 
-  background: conic-gradient(
-    from 85deg at 50.89% 49.77%,
-    #cfe9ea 76.62456929683685deg,
-    #d4e3ef 135.7189178466797deg,
-    #def 265.1615309715271deg,
-    #d4e3ef 314.8280382156372deg
-  );
+  /* 여기서 스크롤 처리 */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  ///* 스크롤바 숨김 처리 (선택사항) */
+  //&::-webkit-scrollbar {
+  //  display: none;
+  //}
+  //-ms-overflow-style: none;
+  //scrollbar-width: none;
 `;

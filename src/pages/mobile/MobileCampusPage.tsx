@@ -31,8 +31,6 @@ const MobileCampusPageWrapper = styled.div`
   gap: 16px;
   width: 100dvw;
 
-  padding-top: 72px;
-
   box-sizing: border-box;
 `;
 

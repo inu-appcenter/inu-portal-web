@@ -106,5 +106,4 @@ const CafeteriaWrapper = styled.div`
   height: 100%;
   box-sizing: border-box;
   padding: 0 16px;
-  padding-top: 72px;
 `;

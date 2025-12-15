@@ -111,7 +111,6 @@ const MobileClubPageWrapper = styled.div`
   align-items: center;
   gap: 16px;
 
-  padding-top: 72px;
   padding-bottom: 32px;
   box-sizing: border-box;
 
