@@ -1,7 +1,6 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import CategoryForm from "@/containers/mobile/home/Category";
-import TipForm from "@/containers/mobile/home/Tips";
 import AiForm from "@/containers/mobile/home/Ai";
 import NoticeForm from "@/containers/mobile/home/Notice";
 import AppcenterLogo from "@/resources/assets/appcenter-logo.svg";
@@ -13,6 +12,7 @@ import { useEffect, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import ThreeWeekCalendar from "@/components/mobile/calendar/ThreeWeekCalendar.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";
+import TipsWidget from "@/components/mobile/tips/TipsWidget";
 
 export default function MobileHomePage() {
   const isBannerOn = false; //배너 온오프 - on:true off:false
@@ -80,8 +80,8 @@ export default function MobileHomePage() {
           link={ROUTES.BOARD.NOTICE}
         />
         <TitleContentArea
-          title={"TIPS 인기글"}
-          children={<TipForm />}
+          title={"TIPS 알아보기"}
+          children={<TipsWidget />}
           link={ROUTES.BOARD.TIPS}
         />
         <TitleContentArea

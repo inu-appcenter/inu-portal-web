@@ -13,16 +13,25 @@ const CommonStyles = createGlobalStyle`
     -ms-overflow-style: none;
     //overflow: scroll;
     cursor: url('/pointers/cursor.svg'), auto; // 기본 커서 이미지 설정
+
+    line-height: 1;
+
   }
 
 
   a, button, img {
     cursor: url('/pointers/cursor-pointer.svg'), pointer;
   }
+  
+  button{
+    border: none;
+    background: none;
+  }
 
   * {
     -webkit-tap-highlight-color: rgba(128, 128, 128, 0.2);
   }
+  
 
 `;
 
