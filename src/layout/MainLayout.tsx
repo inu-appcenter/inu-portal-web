@@ -43,15 +43,6 @@ const Container = styled.div`
   height: 100%; /* 부모(AppContainer) 높이 상속 = 100vh */
   position: relative;
   overflow: hidden; /* 배경은 고정하고 내부 스크롤이 밖으로 넘치지 않게 함 */
-
-  /* 배경 그라데이션 고정 */
-  background: conic-gradient(
-    from 85deg at 50.89% 49.77%,
-    #cfe9ea 76.62456929683685deg,
-    #d4e3ef 135.7189178466797deg,
-    #def 265.1615309715271deg,
-    #d4e3ef 314.8280382156372deg
-  );
 `;
 
 const HeaderWrapper = styled.div`
@@ -82,12 +73,12 @@ const ContentWrapper = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* 스크롤바 숨김 처리 (선택사항) */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  ///* 스크롤바 숨김 처리 (선택사항) */
+  //&::-webkit-scrollbar {
+  //  display: none;
+  //}
+  //-ms-overflow-style: none;
+  //scrollbar-width: none;
 `;
 
 const NavLayer = styled.div`

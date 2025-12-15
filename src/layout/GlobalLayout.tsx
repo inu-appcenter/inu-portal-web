@@ -112,21 +112,33 @@ export default function GlobalLayout() {
     </RootBackground>
   );
 }
-
 const RootBackground = styled.div`
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: stretch;
-  width: 100%;
-  height: 100vh; /* 화면 전체 높이 고정 */
-  overflow: hidden; /* 배경 밖으로 스크롤 생기는 것 방지 */
+  overflow: hidden;
+
+  /* 배경 그라데이션 고정 */
+  background: conic-gradient(
+    from 85deg at 50.89% 49.77%,
+    #cfe9ea 76.62456929683685deg,
+    #d4e3ef 135.7189178466797deg,
+    #def 265.1615309715271deg,
+    #d4e3ef 314.8280382156372deg
+  );
 `;
 
 const AppContainer = styled.div`
   width: 100%;
-  max-width: 1024px;
-  height: 100%; /* vh 대신 %로 부모 높이 상속 */
+  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
+
+  max-width: 1024px;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
 `;

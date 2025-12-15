@@ -11,7 +11,7 @@ const CommonStyles = createGlobalStyle`
     font-family: Arial, 'CustomFont', Roboto, Inter;
     margin: 0;
     -ms-overflow-style: none;
-    overflow: scroll;
+    //overflow: scroll;
     cursor: url('/pointers/cursor.svg'), auto; // 기본 커서 이미지 설정
   }
 
