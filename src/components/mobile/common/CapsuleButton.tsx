@@ -34,8 +34,6 @@ const CapsuleButtonWrapper = styled.button`
   justify-content: start;
   padding: 16px 12px;
   box-sizing: border-box;
-  width: 40%;
-  max-width: 170px;
 
   border-radius: 50px;
   background: #fff;

@@ -8,7 +8,7 @@ import NoticeItem from "@/components/mobile/notice/NoticeItem";
 import Divider from "@/components/common/Divider";
 
 export default function NoticeForm() {
-  const [sort, setSort] = useState("view");
+  const [sort, setSort] = useState("date");
   const [notices, setNotices] = useState<Notice[]>([]);
   const swiperRef = useRef<any>(null); // Swiper 참조
 
@@ -30,9 +30,7 @@ export default function NoticeForm() {
   return (
     <Box>
       <NoticeFormWrapper>
-        <NoticeTitleWrapper>
-          <SortDropBox sort={sort} setSort={setSort} />
-        </NoticeTitleWrapper>
+        <SortDropBox sort={sort} setSort={setSort} />
         {notices.slice(0, 3).map((notice, index) => (
           <div key={index}>
             <NoticeItem
@@ -50,94 +48,8 @@ export default function NoticeForm() {
 }
 
 const NoticeFormWrapper = styled.div`
-  width: 100%; // 부모 너비 꽉 채움
-
-  .swiper {
-    width: 100%; // Swiper도 부모 너비에 맞춤
-    height: 180px;
-
-    .swiper-slide {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-    }
-    .notice-wrapper {
-      border: 3px solid #9cafe2;
-      border-radius: 6px;
-      box-sizing: border-box;
-      width: 160px;
-      height: 148px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: flex-start;
-      h1 {
-        font-size: 14px;
-        font-weight: 600;
-        color: #0e4d9d;
-        margin: 0;
-        //margin: 0 0 4px 0;
-      }
-      .title {
-        font-size: 14px;
-        font-weight: 400;
-        text-align: left;
-
-        display: -webkit-box; /* box layout 사용 */
-        -webkit-line-clamp: 3; /* 최대 3줄 */
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-
-        /* 높이를 3줄에 맞게 최소 높이 지정 */
-        line-height: 1.2em; /* 줄간격 */
-        min-height: calc(1.2em * 3); /* 3줄 높이 확보 */
-      }
-
-      .createdate {
-        font-size: 14px;
-        font-weight: 600;
-        color: #7aa7e5;
-        margin: 0;
-      }
-    }
-  }
-
-  .swiper-slide {
-    text-align: center;
-    font-size: 18px;
-    background: #fff;
-
-    /* Center slide text vertically */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    //margin-bottom: 18px;
-  }
-
-  .swiper-slide img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .swiper-horizontal > .swiper-scrollbar,
-  .swiper-scrollbar.swiper-scrollbar-horizontal {
-    bottom: 16px !important; /* 직접 위치 지정 */
-  }
-`;
-
-const NoticeTitleWrapper = styled.div`
   display: flex;
-  justify-content: space-between;
-  h1 {
-    font-size: 18px;
-    font-weight: 600;
-  }
-  p {
-    font-size: 12px;
-  }
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 `;

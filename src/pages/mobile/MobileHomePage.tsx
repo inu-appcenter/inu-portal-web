@@ -120,18 +120,13 @@ const ContainerWrapper = styled.div`
 `;
 
 const AppcenterLogoWrapper = styled.div`
-  background: linear-gradient(to bottom, white, rgb(170, 201, 238));
-  padding: 24px 0;
-  //margin-top: 12px;
-  box-sizing: border-box;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
 
   svg {
     width: 100%;
-    height: 32px;
+    height: 48px;
   }
 `;
 

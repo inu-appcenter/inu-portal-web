@@ -34,9 +34,8 @@ const TipsWidget = () => {
 export default TipsWidget;
 
 const TipsWidgetWrapper = styled.div`
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
   align-self: stretch;
-  flex-wrap: wrap;
 `;
