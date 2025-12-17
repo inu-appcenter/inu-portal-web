@@ -7,7 +7,6 @@ import SerachForm from "@/containers/mobile/home/SerachForm";
 import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import MobileWriteButton from "@/components/mobile/tips/MobileWriteButton";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.tsx";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector.tsx";
 import { navBarList } from "old/resource/string/navBarList";
 import loginImg from "../../resources/assets/login/login-modal-logo.svg";
@@ -43,25 +42,25 @@ export default function MobileBoardPage() {
     return "TIPS";
   }, [location.pathname, params]);
 
-  // title 계산
-  const title = useMemo(() => {
-    switch (docType) {
-      case "TIPS":
-      case "SEARCH":
-        return "TIPS";
-      case "NOTICE":
-        return "학교 공지사항";
-      case "DEPT_NOTICE":
-        return deptParams.dept
-          ? `${deptParams.dept} 공지사항`
-          : "학과 공지사항";
-
-      case "ALERT":
-        return "알림";
-      default:
-        return "";
-    }
-  }, [docType, deptParams]);
+  // // title 계산
+  // const title = useMemo(() => {
+  //   switch (docType) {
+  //     case "TIPS":
+  //     case "SEARCH":
+  //       return "TIPS";
+  //     case "NOTICE":
+  //       return "학교 공지사항";
+  //     case "DEPT_NOTICE":
+  //       return deptParams.dept
+  //         ? `${deptParams.dept} 공지사항`
+  //         : "학과 공지사항";
+  //
+  //     case "ALERT":
+  //       return "알림";
+  //     default:
+  //       return "";
+  //   }
+  // }, [docType, deptParams]);
   const category = params.get("category") || "전체";
 
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
@@ -91,26 +90,26 @@ export default function MobileBoardPage() {
     setIsDeptSelectorOpen(false);
   };
 
-  // docType에 따른 메뉴 정의
-  const menuItems = useMemo(() => {
-    switch (docType) {
-      case "DEPT_NOTICE":
-        if (userInfo.department) {
-          return [
-            { label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) },
-          ];
-        } else {
-          return undefined;
-        }
-
-      default:
-        return undefined;
-    }
-  }, [docType]);
+  // // docType에 따른 메뉴 정의
+  // const menuItems = useMemo(() => {
+  //   switch (docType) {
+  //     case "DEPT_NOTICE":
+  //       if (userInfo.department) {
+  //         return [
+  //           { label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) },
+  //         ];
+  //       } else {
+  //         return undefined;
+  //       }
+  //
+  //     default:
+  //       return undefined;
+  //   }
+  // }, [docType]);
 
   return (
     <MobileTipsPageWrapper>
-      <MobileHeader title={title} backPath={"/home"} menuItems={menuItems} />
+      {/*<MobileHeader title={title} backPath={"/home"} menuItems={menuItems} />*/}
 
       {navBarList[1].child && (
         <DepartmentNoticeSelector

@@ -5,6 +5,7 @@ import pencil from "@/resources/assets/posts/pencil-white.svg";
 import LoginModal from "@/components/desktop/common/LoginModal";
 import { useState } from "react";
 import useUserStore from "@/stores/useUserStore";
+import { createPortal } from "react-dom"; // 1. createPortal 불러오기
 
 export default function FloatingWriteButton() {
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -19,7 +20,8 @@ export default function FloatingWriteButton() {
     }
   };
 
-  return (
+  // 2. 렌더링할 내용을 변수로 분리 (선택 사항이지만 가독성에 좋음)
+  const buttonContent = (
     <>
       <WriteButtonWrapper onClick={handleClick}>
         <img src={pencil} alt="글쓰기" />
@@ -32,8 +34,12 @@ export default function FloatingWriteButton() {
       )}
     </>
   );
+
+  // 3. createPortal을 사용하여 document.body에 렌더링
+  return createPortal(buttonContent, document.body);
 }
 
+// 스타일은 그대로 유지
 const WriteButtonWrapper = styled.button`
   position: fixed;
   bottom: 30px;
@@ -42,7 +48,7 @@ const WriteButtonWrapper = styled.button`
   height: 55px;
   border-radius: 100px;
   border: none;
-  z-index: 999;
+  z-index: 9999; /* 포탈을 썼으므로 z-index가 중요해질 수 있음 */
   background: linear-gradient(
     90deg,
     rgba(111, 132, 226) 0%,
@@ -51,4 +57,5 @@ const WriteButtonWrapper = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer; /* 버튼이므로 커서 추가 추천 */
 `;

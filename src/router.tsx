@@ -1,8 +1,6 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import GlobalLayout from "@/layout/GlobalLayout";
-import MainLayout from "@/layout/MainLayout";
-import SubLayout from "@/layout/SubLayout";
+import GlobalLayout from "@/layout/GlobalLayout"; // RootLayout이 GlobalLayout으로 명명된 것으로 가정
 
 // 페이지 컴포넌트 임포트
 import MobileHomePage from "@/pages/mobile/MobileHomePage";
@@ -42,11 +40,13 @@ import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiSta
 export const router = createBrowserRouter([
   {
     path: ROUTES.ROOT,
-    element: <GlobalLayout />,
+    element: <Outlet />,
     children: [
-      // 1. 하단 탭바 레이아웃 (MainLayout)
+      // ----------------------------------------------------------------
+      // 1. 하단 네비게이션 노출 (Main Tabs)
+      // ----------------------------------------------------------------
       {
-        element: <MainLayout />,
+        element: <GlobalLayout showNav={true} />,
         children: [
           { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.HOME, element: <MobileHomePage /> },
@@ -57,9 +57,11 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // 2. 서브 페이지 레이아웃 (SubLayout)
+      // ----------------------------------------------------------------
+      // 2. 하단 네비게이션 미노출 (Sub Pages) - SubLayout 제거됨
+      // ----------------------------------------------------------------
       {
-        element: <SubLayout />,
+        element: <GlobalLayout showNav={false} showHeader={true} />, // 기본값 false 적용
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
