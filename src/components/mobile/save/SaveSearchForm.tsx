@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import searchImg from "@/resources/assets/mobile-home/input.svg";
+import searchImg from "@/resources/assets/mobile-home/category-form/input.svg";
 
 interface SaveSearchFormProps {
   onSearch: (query: string) => void;

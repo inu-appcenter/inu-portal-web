@@ -73,10 +73,11 @@ export default function MobileNav() {
 
 const AreaWrapper = styled.div`
   position: fixed;
-  top: 89vh;
+  bottom: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: fit-content;
+  z-index: 100;
 
   display: flex;
   justify-content: center;

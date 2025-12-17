@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import styled from "styled-components";
-import searchImg from "@/resources/assets/mobile-home/input.svg";
+import searchImg from "@/resources/assets/mobile-home/category-form/input.svg";
 
 export default function SerachForm() {
   const [query, setQuery] = useState("");

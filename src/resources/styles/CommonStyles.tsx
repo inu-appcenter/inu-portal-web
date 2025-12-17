@@ -22,11 +22,13 @@ const CommonStyles = createGlobalStyle`
   a, button, img {
     cursor: url('/pointers/cursor-pointer.svg'), pointer;
   }
-  
-  button{
-    border: none;
-    background: none;
+
+  button {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
   }
+
 
   * {
     -webkit-tap-highlight-color: rgba(128, 128, 128, 0.2);

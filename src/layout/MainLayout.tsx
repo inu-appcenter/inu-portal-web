@@ -27,22 +27,21 @@ export default function MainLayout() {
           }}
         >
           {/*스크롤 감지를 위한 id 부여*/}
-          <ContentWrapper id="app-scroll-view">{outlet}</ContentWrapper>
+          <ContentWrapper>{outlet}</ContentWrapper>
         </MotionPage>
       </AnimatePresence>
 
-      <NavLayer>
-        <MobileNav />
-      </NavLayer>
+      {/*<NavLayer>*/}
+      <MobileNav />
+      {/*</NavLayer>*/}
     </Container>
   );
 }
 
 const Container = styled.div`
   width: 100%;
-  height: 100%; /* 부모(AppContainer) 높이 상속 = 100vh */
+  height: 100%;
   position: relative;
-  overflow: hidden; /* 배경은 고정하고 내부 스크롤이 밖으로 넘치지 않게 함 */
 `;
 
 const HeaderWrapper = styled.div`
@@ -64,27 +63,8 @@ const MotionPage = styled(motion.div)`
 
 const ContentWrapper = styled.div`
   width: 100%;
-  height: 100%; /* MotionPage 꽉 채우기 */
+  height: 100%;
   padding-top: 100px;
   padding-bottom: 100px;
   box-sizing: border-box;
-
-  /* 여기서 스크롤 처리 */
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  ///* 스크롤바 숨김 처리 (선택사항) */
-  //&::-webkit-scrollbar {
-  //  display: none;
-  //}
-  //-ms-overflow-style: none;
-  //scrollbar-width: none;
-`;
-
-const NavLayer = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
 `;

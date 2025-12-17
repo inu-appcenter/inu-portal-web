@@ -7,14 +7,14 @@ import SerachForm from "@/containers/mobile/home/SerachForm";
 import AiForm from "@/containers/mobile/home/Ai";
 import SidebarPortal from "@/components/mobile/common/SidebarPortal";
 
-import menuImg from "@/resources/assets/mobile-home/menu.svg";
-import noticeImg from "@/resources/assets/mobile-home/notice.svg";
-import TipImg from "@/resources/assets/mobile-home/tip.svg";
-import calendarImg from "@/resources/assets/mobile-home/calendar.svg";
-import councilImg from "@/resources/assets/mobile-home/council.svg";
-import mapImg from "@/resources/assets/mobile-home/map.svg";
-import clubImg from "@/resources/assets/mobile-home/club.svg";
-import utilImg from "@/resources/assets/mobile-home/util.svg";
+import menuImg from "@/resources/assets/mobile-home/category-form/menu.svg";
+import noticeImg from "@/resources/assets/mobile-home/category-form/notice.svg";
+import TipImg from "@/resources/assets/mobile-home/category-form/tip.svg";
+import calendarImg from "@/resources/assets/mobile-home/category-form/calendar.svg";
+import councilImg from "@/resources/assets/mobile-home/category-form/council.svg";
+import mapImg from "@/resources/assets/mobile-home/category-form/map.svg";
+import clubImg from "@/resources/assets/mobile-home/category-form/club.svg";
+import utilImg from "@/resources/assets/mobile-home/category-form/util.svg";
 import inquiryImg from "@/resources/assets/mobile-mypage/inquiry.svg";
 
 import { useLocation, useNavigate } from "react-router-dom";

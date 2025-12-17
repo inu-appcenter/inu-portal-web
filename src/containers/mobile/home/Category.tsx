@@ -1,15 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import menuImg from "@/resources/assets/mobile-home/menu.svg";
-import noticeImg from "@/resources/assets/mobile-home/notice.svg";
-import TipImg from "@/resources/assets/mobile-home/tip.svg";
-import calendarImg from "@/resources/assets/mobile-home/calendar.svg";
+import menuImg from "@/resources/assets/mobile-home/category-form/menu.svg";
+import noticeImg from "@/resources/assets/mobile-home/category-form/notice.svg";
+import TipImg from "@/resources/assets/mobile-home/category-form/tip.svg";
+import calendarImg from "@/resources/assets/mobile-home/category-form/calendar.svg";
 // import councilImg from "@/resources/assets/mobile-home/council.svg";
-import mapImg from "@/resources/assets/mobile-home/map.svg";
-import clubImg from "@/resources/assets/mobile-home/club.svg";
-import busImg from "@/resources/assets/mobile-home/bus.svg";
+import mapImg from "@/resources/assets/mobile-home/category-form/map.svg";
+import clubImg from "@/resources/assets/mobile-home/category-form/club.svg";
+import busImg from "@/resources/assets/mobile-home/category-form/bus.svg";
 // import utilImg from "@/resources/assets/mobile-home/util.svg";
-import schoolNoticeImg from "@/resources/assets/mobile-home/school-notice.svg";
+import schoolNoticeImg from "@/resources/assets/mobile-home/category-form/school-notice.svg";
 
 const categorys = [
   { title: "식당 메뉴", img: menuImg },

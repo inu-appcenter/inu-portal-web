@@ -117,7 +117,7 @@ const RootBackground = styled.div`
   height: 100vh;
   display: flex;
   justify-content: center;
-  overflow: hidden;
+  //overflow: hidden;
 
   /* 배경 그라데이션 고정 */
   background: conic-gradient(
@@ -137,6 +137,8 @@ const AppContainer = styled.div`
   position: relative;
 
   max-width: 1024px;
+
+  //overflow: auto;
 
   @media (max-width: 768px) {
     padding: 0;
