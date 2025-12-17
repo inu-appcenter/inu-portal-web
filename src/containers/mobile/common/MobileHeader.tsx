@@ -8,6 +8,7 @@ import { Bell } from "lucide-react";
 import BackButton from "@/components/mobile/login/BackButton";
 import Title from "@/components/mobile/mypage/Title";
 import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
+import { useHeaderState } from "@/context/HeaderContext";
 
 // 알림 여부를 prop으로 전달받아서 표시 여부 결정
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
@@ -40,25 +41,11 @@ const Badge = styled.div`
   border-radius: 50%;
 `;
 
-interface MenuItemType {
-  label: string;
-  onClick: () => void;
-}
-interface HeaderProps {
-  title?: string;
-  hasback?: boolean;
-  backPath?: string;
-  showAlarm?: boolean;
-  menuItems?: MenuItemType[];
-}
+export default function MobileHeader() {
+  // Context 상태 구독
+  const { title, hasback, backPath, showAlarm, menuItems, visible } =
+    useHeaderState();
 
-export default function MobileHeader({
-  title,
-  hasback = true,
-  backPath,
-  showAlarm = false,
-  menuItems,
-}: HeaderProps) {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -67,6 +54,7 @@ export default function MobileHeader({
     navigate(ROUTES.HOME);
   };
 
+  // 스크롤 감지 로직
   useEffect(() => {
     const scrollTarget = document.getElementById("app-scroll-view");
 
@@ -115,6 +103,9 @@ export default function MobileHeader({
       navigate(-1);
     }
   };
+
+  // visible 설정이 false면 렌더링 생략
+  if (visible === false) return null;
 
   return (
     <MobileHeaderWrapper $visible={true}>

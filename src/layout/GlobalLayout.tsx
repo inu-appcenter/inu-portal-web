@@ -13,6 +13,7 @@ import MobileIntroPage from "@/pages/mobile/MobileIntroPage";
 import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
 import MobileNav from "@/containers/mobile/common/MobileNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
+import { HeaderProvider } from "@/context/HeaderContext";
 
 interface RootLayoutProps {
   showHeader?: boolean;
@@ -118,39 +119,41 @@ export default function RootLayout({
   }, []);
 
   return (
-    <RootBackground>
-      <ScrollBarStyles />
-      <AppContainer id="app-scroll-view">
-        {showIntro ? (
-          <MobileIntroPage />
-        ) : (
-          <>
-            {showHeader && (
-              <HeaderWrapper>
-                <MobileHeader showAlarm={true} />
-              </HeaderWrapper>
-            )}
+    <HeaderProvider>
+      <RootBackground>
+        <ScrollBarStyles />
+        <AppContainer id="app-scroll-view">
+          {showIntro ? (
+            <MobileIntroPage />
+          ) : (
+            <>
+              {showHeader && (
+                <HeaderWrapper>
+                  <MobileHeader />
+                </HeaderWrapper>
+              )}
 
-            <AnimatePresence mode="sync">
-              <MotionPage
-                key={location.pathname}
-                initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
-                transition={{
-                  duration: 0.25,
-                  ease: [0.4, 0.0, 0.2, 1],
-                }}
-              >
-                <ContentWrapper $showNav={showNav}>{outlet}</ContentWrapper>
-              </MotionPage>
-            </AnimatePresence>
+              <AnimatePresence mode="sync">
+                <MotionPage
+                  key={location.pathname}
+                  initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
+                  transition={{
+                    duration: 0.25,
+                    ease: [0.4, 0.0, 0.2, 1],
+                  }}
+                >
+                  <ContentWrapper $showNav={showNav}>{outlet}</ContentWrapper>
+                </MotionPage>
+              </AnimatePresence>
 
-            {showNav && <MobileNav />}
-          </>
-        )}
-      </AppContainer>
-    </RootBackground>
+              {showNav && <MobileNav />}
+            </>
+          )}
+        </AppContainer>
+      </RootBackground>
+    </HeaderProvider>
   );
 }
 

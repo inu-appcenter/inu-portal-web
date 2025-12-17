@@ -13,10 +13,16 @@ import ThreeWeekCalendar from "@/components/mobile/calendar/ThreeWeekCalendar.ts
 import Banner from "../../containers/mobile/home/Banner.tsx";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileHomePage() {
   const isBannerOn = false; //배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); //배너 모달창 열림 여부
+
+  // 헤더 설정 주입
+  useHeader({
+    showAlarm: true,
+  });
 
   useEffect(() => {
     const today = new Date();
