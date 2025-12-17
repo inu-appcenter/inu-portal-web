@@ -104,6 +104,9 @@ const MobileNavWrapper = styled.nav`
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+
+  /* Safari 호환성 */
+  -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
 
   overflow: hidden;
@@ -111,6 +114,7 @@ const MobileNavWrapper = styled.nav`
   /* 네비게이션 영역 터치 활성화 */
   pointer-events: auto;
 `;
+
 const ActiveIndicator = styled.div<{ $index: number }>`
   position: absolute;
   top: 0;

@@ -206,12 +206,17 @@ const MenuBackgroundWrapper = styled.div<{
       ? "0 2px 4px 0 rgba(0, 0, 0, 0.2)"
       : "0 2px 4px 0 rgba(0, 0, 0, 0)"};
 
+  /* Safari 호환성 */
+  -webkit-backdrop-filter: blur(
+    ${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")}
+  );
   backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
 
   transition:
     background 0.1s ease,
     box-shadow 0.1s ease,
-    backdrop-filter 0.1s ease;
+    backdrop-filter 0.1s ease,
+    -webkit-backdrop-filter 0.1s ease;
 
   pointer-events: auto;
 `;
