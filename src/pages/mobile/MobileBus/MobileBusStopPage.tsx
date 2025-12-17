@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import { BusStopDummy } from "@/components/mobile/bus/data/BusStopDummy";
 import BusStopMap from "@/components/mobile/bus/BusStopMap.tsx";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileBusStopPage() {
   const location = useLocation();
@@ -15,10 +16,15 @@ export default function MobileBusStopPage() {
 
   const stop = BusStopDummy.find((s) => s.id === stopId);
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "정류장 정보",
+  });
+
   if (stop)
     return (
       <MobileBusStopPageWrapper>
-        <MobileHeader title={"정류장 정보"} />
+        <MobileHeader />
         <BusStopHeader
           stopName={stop.stopName}
           stopNotice={stop.stopNotice ?? ""}

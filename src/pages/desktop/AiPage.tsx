@@ -8,13 +8,19 @@ import { useState } from "react";
 import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function AiPage() {
   const [show, setShow] = useState(false);
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "AI 횃불이",
+  });
+
   return (
     <AiPageWrapper>
-      <MobileHeader title={"AI 횃불이"} />
+      <MobileHeader />
       {/*<div className="header-wrapper">*/}
       {/*  <Header />*/}
       {/*</div>*/}

@@ -14,6 +14,7 @@ import findTitleOrCode from "../../utils/findTitleOrCode.ts";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.tsx";
 import { useLocation } from "react-router-dom";
 import { NoticeRecommendKeywords } from "@/resources/strings/NoticeRecommendKeywords";
+import { useHeader } from "@/context/HeaderContext";
 // import TitleContentArea from "../../components/common/TitleContentArea.tsx";
 
 export default function MobileDeptAlarmSettingPage() {
@@ -97,9 +98,14 @@ export default function MobileDeptAlarmSettingPage() {
     }
   };
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "학과 공지 푸시알림 설정",
+  });
+
   return (
     <MobileTipsPageWrapper>
-      <MobileHeader title={"학과 공지 푸시알림 설정"} />
+      <MobileHeader />
 
       <AllAlarmCheckBoxWrapper>
         <Checkbox checked={allAlarm} onChange={handleToggleAllAlarm} />

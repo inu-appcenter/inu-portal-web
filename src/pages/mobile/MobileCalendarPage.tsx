@@ -1,12 +1,17 @@
 import styled from "styled-components";
 import Calendarbar from "@/components/mobile/calendar/Calendar";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileCalendarPage() {
+  // 헤더 설정 주입
+  useHeader({
+    title: "학사일정",
+  });
   return (
     <MobileCalendarPageWrapper>
       {/*<Title title={"학사일정"} onback={() => mobileNavigate(ROUTES.HOME)} />*/}
-      <MobileHeader title={"학사일정"} />
+      <MobileHeader />
       <Calendarbar />
     </MobileCalendarPageWrapper>
   );

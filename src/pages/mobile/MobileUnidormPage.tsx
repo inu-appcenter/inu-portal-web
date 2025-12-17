@@ -1,11 +1,17 @@
 import React from "react";
 import styled from "styled-components";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 const MobileUnidormPage: React.FC = () => {
+  // 헤더 설정 주입
+  useHeader({
+    title: "유니돔",
+  });
+
   return (
     <MobileUnidormPageWrapper>
-      <MobileHeader title={"UNI Dorm"} />
+      <MobileHeader />
       <Iframe src="https://unidorm.inuappcenter.kr" title="unidorm" />
     </MobileUnidormPageWrapper>
   );

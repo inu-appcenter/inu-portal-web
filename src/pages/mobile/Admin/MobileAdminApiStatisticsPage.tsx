@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { getApiLogs } from "@/apis/admin";
 import { ApiLogData } from "@/types/admin";
+import { useHeader } from "@/context/HeaderContext";
 
 const MobileAdminApiStatisticsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -53,9 +54,14 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
     setSelectedDate(e.target.value);
   };
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "서비스 사용 통계",
+  });
+
   return (
     <Wrapper>
-      <MobileHeader title={"서비스 사용 통계"} />
+      <MobileHeader />
       <Content>
         <DatePickerContainer>
           <label htmlFor="date">조회 날짜</label>

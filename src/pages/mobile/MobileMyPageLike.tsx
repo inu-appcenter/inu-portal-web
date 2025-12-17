@@ -5,6 +5,7 @@ import Card from "@/containers/mobile/mypage/Card";
 import Empty from "@/components/mobile/mypage/Empty";
 import { Post } from "@/types/posts";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileMyPageLike() {
   const [likePost, setLikePost] = useState<Post[]>([]);
@@ -22,9 +23,14 @@ export default function MobileMyPageLike() {
     }
   };
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "좋아요한 글",
+  });
+
   return (
     <MobileMyPageLikeWrapper>
-      <MobileHeader title={"좋아요한 글"} />
+      <MobileHeader />
       {likePost.length === 0 ? (
         <Empty />
       ) : (

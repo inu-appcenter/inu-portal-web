@@ -4,15 +4,21 @@ import IlsanGimpoShuttle from "@/components/mobile/bus/shuttle/IlsanGimpoShuttle
 import AnsanSiheungShuttle from "@/components/mobile/bus/shuttle/AnsanSiheungShuttle.tsx";
 import BucheonShuttle from "@/components/mobile/bus/shuttle/BucheonShuttle.tsx";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 const MobileBusShuttleRouteInfoPage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const route = searchParams.get("route");
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "셔틀 노선 정보",
+  });
+
   return (
     <Wrapper>
-      <MobileHeader title={"셔틀 노선 정보"} />
+      <MobileHeader />
       {route === "ilsan-gimpo" && <IlsanGimpoShuttle />}
       {route === "bucheon" && <BucheonShuttle />}
       {route === "ansan-siheung" && <AnsanSiheungShuttle />}

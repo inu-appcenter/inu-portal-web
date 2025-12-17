@@ -8,6 +8,7 @@ import useUserStore from "@/stores/useUserStore";
 import CategorySelect from "@/components/mobile/write/CategorySelect";
 import { useState } from "react";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileWritePage() {
   const { tokenInfo } = useUserStore();
@@ -16,11 +17,16 @@ export default function MobileWritePage() {
   const [category, setCategory] = useState<string>("");
   const resetKey = useResetWriteStore((state) => state.resetKey);
 
+  // 헤더 설정 주입
+  useHeader({
+    title: id === 0 ? "TIP 글쓰기" : "TIP 수정하기",
+  });
+
   return (
     <>
       {tokenInfo.accessToken ? (
         <MobileWritePageWrapper>
-          <MobileHeader title={id === 0 ? "TIP 글쓰기" : `TIP 수정하기`} />
+          <MobileHeader />
 
           <TitleCategorySelectorWrapper>
             <WritePageTitle id={id} />

@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "@/components/mobile/club/ClubAdmin";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -18,6 +19,11 @@ export default function MobileClubPage() {
   const category = params.get("category") || "전체";
   const [clubs, setClubs] = useState<Club[]>([]);
   const [isClubAdminOpen, setIsClubAdminOpen] = useState(false);
+
+  // 헤더 설정 주입
+  useHeader({
+    title: "동아리",
+  });
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -38,7 +44,7 @@ export default function MobileClubPage() {
 
   return (
     <MobileClubPageWrapper>
-      <MobileHeader title={"동아리"} />
+      <MobileHeader />
 
       {isClubAdminOpen ? (
         <ClubAdmin setIsClubAdminOpen={setIsClubAdminOpen} />

@@ -12,12 +12,26 @@ import SubwayShuttle from "@/components/mobile/bus/shuttle/SubwayShuttle.tsx";
 import SchoolShuttle from "@/components/mobile/bus/shuttle/SchoolShuttle.tsx";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { postApiLogs } from "@/apis/members";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function BusInfoPage() {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const type = query.get("type") || "go-school";
   const tab = query.get("tab");
+
+  // 헤더 설정 주입
+  useHeader({
+    title: `${
+      type === "go-school"
+        ? "학교 갈래요"
+        : type === "go-home"
+          ? "집 갈래요"
+          : type === "shuttle"
+            ? "셔틀버스"
+            : "인입런"
+    }`,
+  });
 
   // 디폴트 탭
   const defaultTab =
@@ -49,17 +63,7 @@ export default function BusInfoPage() {
 
   return (
     <BusInfoPageWrapper>
-      <MobileHeader
-        title={`${
-          type === "go-school"
-            ? "학교 갈래요"
-            : type === "go-home"
-              ? "집 갈래요"
-              : type === "shuttle"
-                ? "셔틀버스"
-                : "인입런"
-        }`}
-      />
+      <MobileHeader />
       <BusTabHeader Type={type} />
       <ContentWrapper>
         {type === "go-school" && selectedTab === "INU" && <GoSchoolINU />}

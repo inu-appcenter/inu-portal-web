@@ -4,6 +4,7 @@ import styled from "styled-components";
 import useUserStore from "../../../stores/useUserStore.ts";
 import { useEffect } from "react";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 const MobileAdminPage: React.FC = () => {
   const navigate = useNavigate();
@@ -33,9 +34,14 @@ const MobileAdminPage: React.FC = () => {
     },
   ];
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "관리자 페이지",
+  });
+
   return (
     <Wrapper>
-      <MobileHeader title={"관리자 페이지"} />
+      <MobileHeader />
       <Title>관리자 기능 선택</Title>
       <MenuGrid>
         {adminPages.map((page) => (

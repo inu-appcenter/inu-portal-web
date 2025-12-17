@@ -3,8 +3,14 @@ import MapManager from "@/components/map/MapManager.tsx";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useEffect } from "react";
 import { postApiLogs } from "@/apis/members";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileCampusPage() {
+  // 헤더 설정 주입
+  useHeader({
+    title: "캠퍼스맵",
+  });
+
   useEffect(() => {
     const logApi = async () => {
       console.log("캠퍼스맵 로그");
@@ -15,7 +21,7 @@ export default function MobileCampusPage() {
 
   return (
     <MobileCampusPageWrapper>
-      <MobileHeader title={"캠퍼스맵"} />
+      <MobileHeader />
 
       <Wrapper>
         <MapManager />

@@ -12,7 +12,7 @@ export default function MainLayout() {
     <Container>
       {/* Header에 z-index를 주어 애니메이션 위로 오게 함 */}
       <HeaderWrapper>
-        <MobileHeader showAlarm={true} />
+        <MobileHeader />
       </HeaderWrapper>
 
       <AnimatePresence mode="sync">

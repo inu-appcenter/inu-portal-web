@@ -5,6 +5,7 @@ import styled from "styled-components";
 import Empty from "@/components/mobile/mypage/Empty";
 import CardComment from "@/containers/mobile/mypage/CardComment";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileMyPageComment() {
   const [replyPost, setReplyPost] = useState<MembersReplies[]>([]);
@@ -22,9 +23,14 @@ export default function MobileMyPageComment() {
     }
   };
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "작성한 댓글",
+  });
+
   return (
     <MobileMyPageCommentWrapper>
-      <MobileHeader title={"작성한 댓글"} />
+      <MobileHeader />
       {replyPost.length === 0 ? (
         <Empty />
       ) : (

@@ -5,6 +5,7 @@ import Card from "@/containers/mobile/mypage/Card";
 import Empty from "@/components/mobile/mypage/Empty";
 import { Post } from "@/types/posts";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileMyPagePost() {
   const [postPost, setPostPost] = useState<Post[]>([]);
@@ -22,9 +23,14 @@ export default function MobileMyPagePost() {
     }
   };
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "내가 쓴 글",
+  });
+
   return (
     <MobileMyPagePostWrapper>
-      <MobileHeader title={"내가 쓴 글"} />
+      <MobileHeader />
       {postPost.length === 0 ? (
         <Empty />
       ) : (

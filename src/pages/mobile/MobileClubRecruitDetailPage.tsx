@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom";
 // import ManageClubRecruit from "../components/club/ManageClubRecruit.tsx";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import ClubContent from "@/components/mobile/club/clubcontent.tsx";
+import { useHeader } from "@/context/HeaderContext";
 // import UploadBook from "../util/book/UploadBook.tsx";
 
 export default function MobileClubRecruitDetailPage() {
@@ -31,9 +32,14 @@ export default function MobileClubRecruitDetailPage() {
     fetchClubRecruit();
   }, [clubId]);
 
+  // 헤더 설정 주입
+  useHeader({
+    title: `${clubName} 모집 공고`,
+  });
+
   return (
     <MobileClubPageWrapper>
-      <MobileHeader title={clubName + " 모집 공고" || ""} />
+      <MobileHeader />
       {clubRecruitDetail ? (
         <ClubContent
           id={clubId || "0"}

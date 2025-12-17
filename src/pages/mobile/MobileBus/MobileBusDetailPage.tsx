@@ -17,6 +17,7 @@ import {
 } from "@/components/mobile/bus/data/BusDummy";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileBusDetailPage() {
   const [searchParams] = useSearchParams();
@@ -24,6 +25,11 @@ export default function MobileBusDetailPage() {
   const bstopId = searchParams.get("bstopId") || "";
 
   const mobileBusStopNavigate = useBusStopNavigate();
+
+  // 헤더 설정 주입
+  useHeader({
+    title: "버스 정보",
+  });
 
   const allBus = [
     ...goSchool_INU1,
@@ -44,7 +50,7 @@ export default function MobileBusDetailPage() {
 
   return (
     <MobileBusDetailPageWrapper>
-      <MobileHeader title={"버스 정보"} />
+      <MobileHeader />
       <BusStopHeader
         stopName={`${bus.number} 번`}
         sectionLabel={bus.sectionLabel}

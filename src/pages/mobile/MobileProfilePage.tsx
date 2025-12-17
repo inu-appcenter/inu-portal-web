@@ -3,13 +3,19 @@ import UserInfo from "@/containers/mobile/mypage/UserInfo";
 import UserModify from "@/containers/mobile/mypage/UserModify";
 import useUserStore from "@/stores/useUserStore";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileProfilePage() {
   const { userInfo } = useUserStore();
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "프로필 수정",
+  });
+
   return (
     <MobileProfilePageWrapper>
-      <MobileHeader title={"프로필 수정"} />
+      <MobileHeader />
       <Background>
         <UserWrapper>{userInfo.id && <UserInfo />}</UserWrapper>
       </Background>

@@ -8,6 +8,7 @@ import { PostDetail, Reply } from "@/types/posts";
 import axios, { AxiosError } from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
@@ -117,12 +118,15 @@ export default function PostDetailPage() {
     },
   ];
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "게시글 상세",
+    menuItems: post?.hasAuthority ? menuItems : undefined,
+  });
+
   return (
     <Wrapper>
-      <MobileHeader
-        title={"게시글 상세"}
-        menuItems={post?.hasAuthority ? menuItems : undefined}
-      />
+      <MobileHeader />
       {post ? (
         <>
           <PostWrapper>

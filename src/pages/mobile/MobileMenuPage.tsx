@@ -4,6 +4,7 @@ import { getCafeterias } from "@/apis/cafeterias";
 import CafeteriaInfoContainer from "@/containers/mobile/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "@/containers/mobile/cafeteria/CafeteriaTitleContainer";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 interface CafeteriaDetail {
   구성원가: string;
@@ -80,9 +81,14 @@ export default function MobileMenuPage() {
     return match ? match[1].trim() : input;
   };
 
+  // 헤더 설정 주입
+  useHeader({
+    title: "식당 메뉴",
+  });
+
   return (
     <CafeteriaWrapper>
-      <MobileHeader title={"식당 메뉴"} />
+      <MobileHeader />
       <CafeteriaTitleContainer
         title={title}
         setTitle={setTitle}
