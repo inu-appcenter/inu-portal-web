@@ -60,7 +60,7 @@ export default function MobileHeader() {
 
     const handleScroll = () => {
       if (!scrollTarget) return;
-      setIsScrolled(scrollTarget.scrollTop >= 50);
+      setIsScrolled(scrollTarget.scrollTop >= 24);
     };
 
     if (scrollTarget) {
@@ -134,12 +134,12 @@ export default function MobileHeader() {
 
 const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   padding-top: 24px;
-  width: 100vw;
+  width: 100%;
   height: fit-content;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
@@ -213,10 +213,10 @@ const MenuBackgroundWrapper = styled.div<{
   backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
 
   transition:
-    background 0.1s ease,
-    box-shadow 0.1s ease,
-    backdrop-filter 0.1s ease,
-    -webkit-backdrop-filter 0.1s ease;
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    backdrop-filter 0.2s ease,
+    -webkit-backdrop-filter 0.2s ease;
 
   pointer-events: auto;
 `;

@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { cafeterias } from "@/resources/strings/cafeterias";
-import CafeteriaBreakfast from "@/components/mobile/cafeteria/CafeteriaBreakfast";
-import CafeteriaDinner from "@/components/mobile/cafeteria/CafeteriaDinner";
-import CafeteriaLunch from "@/components/mobile/cafeteria/CafeteriaLunch";
+import CafeteriaItem from "@/components/mobile/cafeteria/CafeteriaItem";
 
 interface CafeteriaDeatilProps {
   구성원가: string;
@@ -33,17 +31,20 @@ export default function CafeteriaInfoContainer({
 
   return (
     <CafeteriaInfoWrapper>
-      <CafeteriaBreakfast
+      <CafeteriaItem
+        typeIndex={0}
         cafeteriaTypes={cafeteriaTypes}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
       />
-      <CafeteriaLunch
+      <CafeteriaItem
+        typeIndex={1}
         cafeteriaTypes={cafeteriaTypes}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
       />
-      <CafeteriaDinner
+      <CafeteriaItem
+        typeIndex={2}
         cafeteriaTypes={cafeteriaTypes}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
@@ -53,10 +54,12 @@ export default function CafeteriaInfoContainer({
 }
 
 const CafeteriaInfoWrapper = styled.div`
-  background-color: #f3f7fe;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   box-sizing: border-box;
   padding: 0 16px;
-  margin-top: 20px;
+  //margin: 0 16px;
   min-height: fit-content;
   border-radius: 10px;
 
@@ -92,45 +95,6 @@ const CafeteriaInfoWrapper = styled.div`
     img {
       width: 38px;
       height: 38px;
-    }
-  }
-
-  .detail-info-wrapper {
-    width: 100%;
-    min-height: 90px;
-    background-color: white;
-    padding: 10px 15px;
-    box-sizing: border-box;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    .info {
-      font-size: 13px;
-      font-weight: 500;
-      color: #404040;
-      margin: 0;
-    }
-  }
-
-  .detail-wrapper {
-    display: flex; /* Changed from inline-block to flex */
-    gap: 6px;
-    justify-content: flex-end;
-    align-items: center;
-
-    .sub-detail-wrapper {
-      display: flex;
-      border: 0.5px solid #dfdfdf;
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-      border-radius: 5px;
-      padding: 3px;
-      font-size: 10px;
-      font-weight: 500;
-      color: #888888;
     }
   }
 `;

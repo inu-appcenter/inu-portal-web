@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { getCafeterias } from "@/apis/cafeterias";
 import CafeteriaInfoContainer from "@/containers/mobile/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "@/containers/mobile/cafeteria/CafeteriaTitleContainer";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
 interface CafeteriaDetail {
@@ -34,7 +33,7 @@ export default function MobileMenuPage() {
 
   const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
     const weekDates = [];
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const days = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
     const diffToMonday = (day === 0 ? -6 : 1) - day; // 월요일까지의 차이
     const monday = new Date(date);
     monday.setDate(date.getDate() + diffToMonday); // 이번 주 월요일 날짜
@@ -88,7 +87,6 @@ export default function MobileMenuPage() {
 
   return (
     <CafeteriaWrapper>
-      <MobileHeader />
       <CafeteriaTitleContainer
         title={title}
         setTitle={setTitle}
@@ -111,5 +109,9 @@ const CafeteriaWrapper = styled.div`
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  padding: 0 16px;
+  gap: 16px;
+
+  padding-bottom: 100px;
+
+  //padding: 0 16px;
 `;

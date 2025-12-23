@@ -32,7 +32,7 @@ export default function CafeteriaToggle({
   return (
     <ToggleWrapper>
       <div className="title" onClick={handleToggle}>
-        <h1>{title}</h1>
+        <div>{title}</div>
         <img src={arrowImg} alt="화살표 이미지" />
       </div>
       <BottomSheet
@@ -59,40 +59,17 @@ export default function CafeteriaToggle({
 }
 
 const ToggleWrapper = styled.div`
+  padding: 0 32px;
+  height: fit-content;
+  cursor: pointer;
+
   .title {
     display: flex;
-    cursor: pointer;
-    gap: 20px;
-    padding: 10px 0;
-    h1 {
-      font-size: 30px;
-      font-weight: 500;
-      line-height: 20px;
-      color: #404040;
-    }
+    flex-direction: row;
+    gap: 12px;
+    font-size: 30px;
+    font-weight: 500;
   }
-
-  //.list {
-  //  position: fixed;
-  //  z-index: 1001;
-  //  bottom: 0;
-  //  left: 0;
-  //  width: 100%;
-  //  padding: 16px;
-  //  background-color: white;
-  //  display: flex;
-  //  flex-direction: column;
-  //}
-  //
-  //.list-item {
-  //  padding-left: 32px;
-  //  font-size: 14px;
-  //  font-weight: 500;
-  //  line-height: 16.94px;
-  //  text-align: left;
-  //  color: black;
-  //  padding: 8px;
-  //}
 `;
 
 const List = styled.div`
@@ -107,7 +84,6 @@ const List = styled.div`
 
 const ListItem = styled.div`
   padding: 12px 16px;
-  background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;

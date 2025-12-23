@@ -187,7 +187,7 @@ const AppContainer = styled.div`
 `;
 
 const HeaderWrapper = styled.div`
-  position: absolute;
+  position: sticky;
   top: 0;
   left: 0;
   width: 100%;

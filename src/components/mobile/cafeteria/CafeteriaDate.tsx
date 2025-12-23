@@ -19,15 +19,15 @@ export default function CafeteriaDate({
   const handleChangeDay = (day: number) => {
     setNowDay(day);
   };
-  if (nowday === 0) {
-    nowday = 7;
-  }
+
+  // 일요일(0) 처리
+  const activeDay = nowday === 0 ? 7 : nowday;
 
   return (
-    <CafeteriaDateWrapper>
+    <DateListContainer>
       {weekDates.map((weekDate, index) => (
         <div
-          className={`date ${index + 1 === nowday ? "check" : ""}`}
+          className={`date ${index + 1 === activeDay ? "check" : ""}`}
           key={index}
           onClick={() => handleChangeDay(index + 1)}
         >
@@ -59,25 +59,54 @@ export default function CafeteriaDate({
           </p>
         </div>
       ))}
-    </CafeteriaDateWrapper>
+    </DateListContainer>
   );
 }
 
-const CafeteriaDateWrapper = styled.div`
+const DateListContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   gap: 15px;
+  overflow-x: auto;
+  width: 100%;
+
+  /* 그림자 공간 확보 및 좌우 여백 */
+  padding: 10px 32px;
+  //padding-right: 24px;
+  box-sizing: border-box;
+
+  /* 스크롤바 제거 */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 우측 페이드 효과 */
+  mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 0) 100%
+  );
 
   .date {
-    width: 40px;
-    height: 40px;
+    flex-shrink: 0;
     display: flex;
-    justify-content: center;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+
+    /* 그림자 설정 */
     box-shadow: 0px 4px 4px 0px #00000040;
-    padding: 2px 10px;
+
+    padding: 8px 10px;
     border-radius: 10px;
+    background-color: white;
+    cursor: pointer;
 
     .day-name {
       font-size: 10px;
@@ -88,17 +117,15 @@ const CafeteriaDateWrapper = styled.div`
     .date-number {
       font-size: 15px;
       font-weight: 700;
-      padding: 0;
       margin: 0;
     }
   }
 
   .check {
     background-color: #4071b9;
-
     .day-name,
     .date-number {
-      color: white !important; /* 클릭된 날짜는 흰색 유지 */
+      color: white !important;
     }
   }
 `;
