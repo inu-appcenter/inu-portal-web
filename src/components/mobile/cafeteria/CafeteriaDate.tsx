@@ -65,9 +65,10 @@ export default function CafeteriaDate({
 
 const DateListContainer = styled.div`
   display: flex;
-  gap: 15px;
   overflow-x: auto;
   width: 100%;
+  gap: 8px;
+  justify-content: space-around;
 
   /* 그림자 공간 확보 및 좌우 여백 */
   padding: 10px 32px;
@@ -84,12 +85,12 @@ const DateListContainer = styled.div`
   /* 우측 페이드 효과 */
   mask-image: linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 1) 80%,
     rgba(0, 0, 0, 0) 100%
   );
   -webkit-mask-image: linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 1) 80%,
     rgba(0, 0, 0, 0) 100%
   );
 
