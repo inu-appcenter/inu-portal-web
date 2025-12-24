@@ -9,11 +9,11 @@ import PopupNotice from "@/components/desktop/banner/PopupNotice.tsx";
 import 배너이미지 from "@/resources/assets/banner/intip설문조사.png";
 import { useEffect, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
-import ThreeWeekCalendar from "@/components/mobile/calendar/ThreeWeekCalendar.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import { useHeader } from "@/context/HeaderContext";
+import Calendar from "@/components/mobile/calendar/Calendar";
 
 export default function MobileHomePage() {
   const isBannerOn = false; //배너 온오프 - on:true off:false
@@ -92,7 +92,7 @@ export default function MobileHomePage() {
         />
         <TitleContentArea
           title={"학사일정"}
-          children={<ThreeWeekCalendar />}
+          children={<Calendar mode={"weekly"} />}
           link={ROUTES.BOARD.CALENDAR}
         />
         {/*<TipForm />*/}

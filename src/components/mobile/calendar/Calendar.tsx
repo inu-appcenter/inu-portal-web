@@ -12,6 +12,8 @@ import {
   startOfWeek,
   addMonths,
   subMonths,
+  addWeeks,
+  subWeeks,
 } from "date-fns";
 import { useEffect, useState } from "react";
 import { getSchedules } from "@/apis/schedules";
@@ -19,6 +21,7 @@ import { EventInput } from "@fullcalendar/core";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 
+// 아이콘 컴포넌트
 const ChevronLeft = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path
@@ -43,9 +46,17 @@ const ChevronRight = () => (
   </svg>
 );
 
-export default function Calendarbar() {
+interface CalendarbarProps {
+  mode?: "monthly" | "weekly";
+  baseDate?: Date;
+}
+
+export default function Calendar({
+  mode = "monthly",
+  baseDate = new Date(),
+}: CalendarbarProps) {
   const today = new Date();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(baseDate);
   const [monthEvents, setMonthEvents] = useState<EventInput[]>([]);
   const [weeks, setWeeks] = useState<Date[][]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
@@ -60,30 +71,44 @@ export default function Calendarbar() {
 
   const selectedMonthStr = format(currentDate, "yyyy-MM");
 
-  // 주차 계산
+  // 주차 및 날짜 계산
   useEffect(() => {
-    const firstDay = startOfMonth(currentDate);
-    const lastDay = endOfMonth(firstDay);
-    const calendarStart = startOfWeek(firstDay, { weekStartsOn: 0 });
-    const calendarEnd = endOfWeek(lastDay, { weekStartsOn: 6 });
-
-    const totalDays =
-      Math.ceil(
-        (calendarEnd.getTime() - calendarStart.getTime()) /
-          (1000 * 60 * 60 * 24),
-      ) + 1;
-    const dates = Array.from({ length: totalDays }, (_, i) =>
-      addDays(calendarStart, i),
-    );
-
     const weeksArr: Date[][] = [];
-    for (let i = 0; i < dates.length; i += 7) {
-      weeksArr.push(dates.slice(i, i + 7));
+
+    if (mode === "weekly") {
+      // 주간 모드: 이전 주, 현재 주, 다음 주 계산
+      const currentWeekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
+      const prevWeekStart = subWeeks(currentWeekStart, 1);
+      const nextWeekStart = addWeeks(currentWeekStart, 1);
+
+      [prevWeekStart, currentWeekStart, nextWeekStart].forEach((start) => {
+        const week = Array.from({ length: 7 }, (_, i) => addDays(start, i));
+        weeksArr.push(week);
+      });
+    } else {
+      // 월간 모드: 한 달 전체 계산
+      const firstDay = startOfMonth(currentDate);
+      const lastDay = endOfMonth(firstDay);
+      const calendarStart = startOfWeek(firstDay, { weekStartsOn: 0 });
+      const calendarEnd = endOfWeek(lastDay, { weekStartsOn: 6 });
+
+      const totalDays =
+        Math.ceil(
+          (calendarEnd.getTime() - calendarStart.getTime()) /
+            (1000 * 60 * 60 * 24),
+        ) + 1;
+      const dates = Array.from({ length: totalDays }, (_, i) =>
+        addDays(calendarStart, i),
+      );
+
+      for (let i = 0; i < dates.length; i += 7) {
+        weeksArr.push(dates.slice(i, i + 7));
+      }
     }
     setWeeks(weeksArr);
-  }, [currentDate]);
+  }, [currentDate, mode]);
 
-  // 이벤트 로드 및 배치
+  // 이벤트 데이터 로드 및 배치
   useEffect(() => {
     if (weeks.length === 0) return;
 
@@ -146,6 +171,7 @@ export default function Calendarbar() {
     fetchEvents();
   }, [weeks, selectedMonthStr]);
 
+  // 주차별 최대 행 계산
   const maxRowsByWeek = weeks.map((_, weekIdx) => {
     const rows = eventsByWeek
       .filter((e) => e.weekIndex === weekIdx)
@@ -165,17 +191,19 @@ export default function Calendarbar() {
   return (
     <CalendarContainer>
       <LayoutWrapper>
-        {/* 왼쪽 섹션: 헤더 및 달력 그리드 */}
         <LeftSection>
-          <CalendarHeader>
-            <ArrowButton onClick={goToPrev}>
-              <ChevronLeft />
-            </ArrowButton>
-            <MonthDisplay>{format(currentDate, "yyyy년 MM월")}</MonthDisplay>
-            <ArrowButton onClick={goToNext}>
-              <ChevronRight />
-            </ArrowButton>
-          </CalendarHeader>
+          {/* 모드에 따른 헤더 노출 제어 */}
+          {mode === "monthly" && (
+            <CalendarHeader>
+              <ArrowButton onClick={goToPrev}>
+                <ChevronLeft />
+              </ArrowButton>
+              <MonthDisplay>{format(currentDate, "yyyy년 MM월")}</MonthDisplay>
+              <ArrowButton onClick={goToNext}>
+                <ChevronRight />
+              </ArrowButton>
+            </CalendarHeader>
+          )}
 
           <Box>
             <Weekdays>
@@ -193,14 +221,17 @@ export default function Calendarbar() {
                   <WeekRow key={weekIdx} $maxRows={maxRows}>
                     {week.map((date, idx) => {
                       const isToday = isSameDay(date, today);
-                      const isCurrentMonth =
-                        date.getMonth() === currentDate.getMonth();
+                      // 모드에 따라 날짜 투명도 처리 기준 변경
+                      const isActive =
+                        mode === "weekly"
+                          ? true
+                          : date.getMonth() === currentDate.getMonth();
                       return (
-                        <DayCell key={idx} $isCurrentMonth={isCurrentMonth}>
+                        <DayCell key={idx} $isCurrentMonth={isActive}>
                           {isToday && <TodayCircle />}
                           <DateNumber
                             $isToday={isToday}
-                            $isCurrentMonth={isCurrentMonth}
+                            $isCurrentMonth={isActive}
                           >
                             {format(date, "d")}
                           </DateNumber>
@@ -226,41 +257,45 @@ export default function Calendarbar() {
           </Box>
         </LeftSection>
 
-        {/* 오른쪽 섹션: 일정 목록 */}
         <RightSection>
-          <TitleContentArea
-            title={`${format(currentDate, "yyyy년 MM월")} 일정`}
-          >
-            <Box>
-              {monthEvents.length > 0 ? (
-                monthEvents.map((event, index) => (
-                  <EventItem key={index}>
-                    <EventInfo>
-                      <EventDot />
-                      <EventDate>
-                        {formatDateRange(event.start, event.end)}
-                      </EventDate>
-                    </EventInfo>
-                    <EventTitle>{event.title}</EventTitle>
-                  </EventItem>
-                ))
-              ) : (
-                <EmptyMessage>등록된 이벤트가 없습니다.</EmptyMessage>
-              )}
-            </Box>
-          </TitleContentArea>
+          {mode === "monthly" && (
+            <TitleContentArea
+              title={
+                mode === "monthly"
+                  ? `${format(currentDate, "yyyy년 MM월")} 일정`
+                  : "최근 일정"
+              }
+            >
+              <Box>
+                {monthEvents.length > 0 ? (
+                  monthEvents.map((event, index) => (
+                    <EventItem key={index}>
+                      <EventInfo>
+                        <EventDot />
+                        <EventDate>
+                          {formatDateRange(event.start, event.end)}
+                        </EventDate>
+                      </EventInfo>
+                      <EventTitle>{event.title}</EventTitle>
+                    </EventItem>
+                  ))
+                ) : (
+                  <EmptyMessage>등록된 이벤트가 없습니다.</EmptyMessage>
+                )}
+              </Box>
+            </TitleContentArea>
+          )}
         </RightSection>
       </LayoutWrapper>
     </CalendarContainer>
   );
 }
 
-// --- 스타일 컴포넌트 ---
+// 스타일 컴포넌트
 const CalendarContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  /* PC 화면 고려 전체 너비 확장 */
   max-width: 1200px;
   margin: 0 auto;
 `;
@@ -270,7 +305,6 @@ const LayoutWrapper = styled.div`
   flex-direction: column;
   gap: 24px;
 
-  /* 데스크탑 가로 배치 미디어 쿼리 */
   @media (min-width: 1024px) {
     flex-direction: row;
     align-items: flex-start;
@@ -281,12 +315,12 @@ const LeftSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  flex: 1.5; /* 달력 비중 */
+  flex: 1.5;
   width: 100%;
 `;
 
 const RightSection = styled.div`
-  flex: 1; /* 일정 목록 비중 */
+  flex: 1;
   width: 100%;
 `;
 
@@ -382,7 +416,6 @@ const DateNumber = styled.div<{ $isToday: boolean; $isCurrentMonth: boolean }>`
 const EventBar = styled.div<{ $start: number; $end: number; $row: number }>`
   position: absolute;
   top: ${({ $row }) => 40 + $row * 24}px;
-  /* 간격 보정 계산 */
   left: ${({ $start }) =>
     `calc((100% - 24px) / 7 * ${$start} + ${$start * 4}px)`};
   width: ${({ $start, $end }) => {
