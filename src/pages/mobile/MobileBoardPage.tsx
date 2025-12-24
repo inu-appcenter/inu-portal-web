@@ -6,7 +6,7 @@ import TipsListContainer from "@/containers/mobile/tips/TipsListContainer";
 import SerachForm from "@/containers/mobile/home/SerachForm";
 import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import MobileWriteButton from "@/components/mobile/tips/MobileWriteButton";
-import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.tsx";
+// import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.tsx";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector.tsx";
 import { navBarList } from "old/resource/string/navBarList";
 import loginImg from "../../resources/assets/login/login-modal-logo.svg";
@@ -142,7 +142,7 @@ export default function MobileBoardPage() {
 
       {(docType === "TIPS" || docType === "NOTICE") && (
         <TitleCategorySelectorWrapper>
-          <CategorySelectorNew />
+          {/*<CategorySelectorNew />*/}
           <ViewModeButtons viewMode={viewMode} setViewMode={setViewMode} />
         </TitleCategorySelectorWrapper>
       )}
