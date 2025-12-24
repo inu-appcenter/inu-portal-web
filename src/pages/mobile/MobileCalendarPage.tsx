@@ -9,11 +9,12 @@ export default function MobileCalendarPage() {
     title: "학사일정",
   });
   return (
-    <MobileCalendarPageWrapper>
-      {/*<Title title={"학사일정"} onback={() => mobileNavigate(ROUTES.HOME)} />*/}
+    <>
       <MobileHeader />
-      <Calendarbar />
-    </MobileCalendarPageWrapper>
+      <MobileCalendarPageWrapper>
+        <Calendarbar />
+      </MobileCalendarPageWrapper>
+    </>
   );
 }
 
@@ -24,7 +25,8 @@ const MobileCalendarPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
 
-  padding: 30px 16px;
+  padding: 0 16px;
+  padding-bottom: 100px;
 
   box-sizing: border-box;
 `;

@@ -1,4 +1,3 @@
-// Calendarbar.tsx
 import styled from "styled-components";
 import {
   addDays,
@@ -11,16 +10,42 @@ import {
   parseISO,
   startOfMonth,
   startOfWeek,
+  addMonths,
+  subMonths,
 } from "date-fns";
 import { useEffect, useState } from "react";
 import { getSchedules } from "@/apis/schedules";
 import { EventInput } from "@fullcalendar/core";
+import Box from "@/components/common/Box";
+import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+
+const ChevronLeft = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M15 6L9 12L15 18"
+      stroke="#333"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ChevronRight = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M9 18L15 12L9 6"
+      stroke="#333"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 export default function Calendarbar() {
   const today = new Date();
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    format(today, "yyyy-MM"),
-  );
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [monthEvents, setMonthEvents] = useState<EventInput[]>([]);
   const [weeks, setWeeks] = useState<Date[][]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
@@ -33,12 +58,12 @@ export default function Calendarbar() {
     }[]
   >([]);
 
-  // 1. 주(weeks) 계산
-  useEffect(() => {
-    const [year, month] = selectedMonth.split("-").map(Number);
-    const firstDay = startOfMonth(new Date(year, month - 1));
-    const lastDay = endOfMonth(firstDay);
+  const selectedMonthStr = format(currentDate, "yyyy-MM");
 
+  // 주차 계산
+  useEffect(() => {
+    const firstDay = startOfMonth(currentDate);
+    const lastDay = endOfMonth(firstDay);
     const calendarStart = startOfWeek(firstDay, { weekStartsOn: 0 });
     const calendarEnd = endOfWeek(lastDay, { weekStartsOn: 6 });
 
@@ -47,7 +72,6 @@ export default function Calendarbar() {
         (calendarEnd.getTime() - calendarStart.getTime()) /
           (1000 * 60 * 60 * 24),
       ) + 1;
-
     const dates = Array.from({ length: totalDays }, (_, i) =>
       addDays(calendarStart, i),
     );
@@ -57,26 +81,20 @@ export default function Calendarbar() {
       weeksArr.push(dates.slice(i, i + 7));
     }
     setWeeks(weeksArr);
-  }, [selectedMonth]);
+  }, [currentDate]);
 
-  // 2. 이벤트 불러와서 주별로 배치
+  // 이벤트 로드 및 배치
   useEffect(() => {
     if (weeks.length === 0) return;
 
     const fetchEvents = async () => {
-      const [year, month] = selectedMonth.split("-").map(Number);
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
       const res = await getSchedules(year, month);
-      console.log(res);
-      setMonthEvents(res.data);
       const events: EventInput[] = res.data;
+      setMonthEvents(events);
 
-      const parsedEvents: {
-        weekIndex: number;
-        start: number;
-        end: number;
-        title: string;
-        row: number;
-      }[] = [];
+      const parsedEvents: typeof eventsByWeek = [];
 
       weeks.forEach((week, weekIndex) => {
         const weekStart = week[0];
@@ -120,15 +138,13 @@ export default function Calendarbar() {
           }
           placed.push({ ...ev, weekIndex, row });
         });
-
         parsedEvents.push(...placed);
       });
-
       setEventsByWeek(parsedEvents);
     };
 
     fetchEvents();
-  }, [weeks, selectedMonth]);
+  }, [weeks, selectedMonthStr]);
 
   const maxRowsByWeek = weeks.map((_, weekIdx) => {
     const rows = eventsByWeek
@@ -136,210 +152,298 @@ export default function Calendarbar() {
       .map((e) => e.row);
     return rows.length > 0 ? Math.max(...rows) + 1 : 1;
   });
-  const formatDate = (date?: Date | string | number): string => {
-    if (date === undefined || date === null) return "";
 
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return "";
-
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-
-    return `${year}.${month}.${day}`;
+  const formatDateRange = (start?: any, end?: any) => {
+    const s = format(parseISO(String(start)), "yyyy.MM.dd");
+    const e = format(parseISO(String(end)), "yyyy.MM.dd");
+    return `${s} ~ ${e}`;
   };
 
-  const handleEventDate = (date: EventInput["start"]) => {
-    if (
-      typeof date === "string" ||
-      typeof date === "number" ||
-      date instanceof Date
-    ) {
-      return formatDate(date);
-    }
-    return "";
-  };
+  const goToNext = () => setCurrentDate((prev) => addMonths(prev, 1));
+  const goToPrev = () => setCurrentDate((prev) => subMonths(prev, 1));
 
   return (
     <CalendarContainer>
-      <MonthSelector>
-        <input
-          type="month"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-        />
-      </MonthSelector>
+      <LayoutWrapper>
+        {/* 왼쪽 섹션: 헤더 및 달력 그리드 */}
+        <LeftSection>
+          <CalendarHeader>
+            <ArrowButton onClick={goToPrev}>
+              <ChevronLeft />
+            </ArrowButton>
+            <MonthDisplay>{format(currentDate, "yyyy년 MM월")}</MonthDisplay>
+            <ArrowButton onClick={goToNext}>
+              <ChevronRight />
+            </ArrowButton>
+          </CalendarHeader>
 
-      <Weekdays>
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, i) => (
-          <div key={i}>{d}</div>
-        ))}
-      </Weekdays>
-
-      {weeks.map((week, weekIdx) => {
-        const maxRows = maxRowsByWeek[weekIdx];
-        return (
-          <WeekRow key={weekIdx} $maxRows={maxRows}>
-            {week.map((date, idx) => {
-              const isToday = isSameDay(date, today);
-              const isCurrentMonth =
-                date.getMonth() === new Date(selectedMonth).getMonth();
-              return (
-                <DayCell
-                  key={idx}
-                  $isToday={isToday}
-                  $isCurrentMonth={isCurrentMonth}
-                >
-                  <DateNumber
-                    $isToday={isToday}
-                    $isCurrentMonth={isCurrentMonth}
-                  >
-                    {format(date, "d")}
-                  </DateNumber>
-                </DayCell>
-              );
-            })}
-            {eventsByWeek
-              .filter((e) => e.weekIndex === weekIdx)
-              .map((event, i) => (
-                <EventBar
-                  key={i}
-                  $start={event.start}
-                  $end={event.end}
-                  $row={event.row}
-                >
-                  {event.title}
-                </EventBar>
+          <Box>
+            <Weekdays>
+              {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
+                <WeekdayCell key={i} $index={i}>
+                  {d}
+                </WeekdayCell>
               ))}
-          </WeekRow>
-        );
-      })}
-      <EventsList>
-        {monthEvents.length > 0 ? (
-          monthEvents.map((event, index) => (
-            <EventItem key={index}>
-              <div>
-                <EventDot />
-                <span>
-                  {handleEventDate(event.start)} ~{handleEventDate(event.end)}
-                </span>
-              </div>
-              <strong>{event.title}</strong>
-            </EventItem>
-          ))
-        ) : (
-          <p>이벤트가 없습니다.</p>
-        )}{" "}
-      </EventsList>
+            </Weekdays>
+
+            <CalendarBody>
+              {weeks.map((week, weekIdx) => {
+                const maxRows = maxRowsByWeek[weekIdx];
+                return (
+                  <WeekRow key={weekIdx} $maxRows={maxRows}>
+                    {week.map((date, idx) => {
+                      const isToday = isSameDay(date, today);
+                      const isCurrentMonth =
+                        date.getMonth() === currentDate.getMonth();
+                      return (
+                        <DayCell key={idx} $isCurrentMonth={isCurrentMonth}>
+                          {isToday && <TodayCircle />}
+                          <DateNumber
+                            $isToday={isToday}
+                            $isCurrentMonth={isCurrentMonth}
+                          >
+                            {format(date, "d")}
+                          </DateNumber>
+                        </DayCell>
+                      );
+                    })}
+                    {eventsByWeek
+                      .filter((e) => e.weekIndex === weekIdx)
+                      .map((event, i) => (
+                        <EventBar
+                          key={i}
+                          $start={event.start}
+                          $end={event.end}
+                          $row={event.row}
+                        >
+                          {event.title}
+                        </EventBar>
+                      ))}
+                  </WeekRow>
+                );
+              })}
+            </CalendarBody>
+          </Box>
+        </LeftSection>
+
+        {/* 오른쪽 섹션: 일정 목록 */}
+        <RightSection>
+          <TitleContentArea
+            title={`${format(currentDate, "yyyy년 MM월")} 일정`}
+          >
+            <Box>
+              {monthEvents.length > 0 ? (
+                monthEvents.map((event, index) => (
+                  <EventItem key={index}>
+                    <EventInfo>
+                      <EventDot />
+                      <EventDate>
+                        {formatDateRange(event.start, event.end)}
+                      </EventDate>
+                    </EventInfo>
+                    <EventTitle>{event.title}</EventTitle>
+                  </EventItem>
+                ))
+              ) : (
+                <EmptyMessage>등록된 이벤트가 없습니다.</EmptyMessage>
+              )}
+            </Box>
+          </TitleContentArea>
+        </RightSection>
+      </LayoutWrapper>
     </CalendarContainer>
   );
 }
 
+// --- 스타일 컴포넌트 ---
 const CalendarContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 480px;
+  /* PC 화면 고려 전체 너비 확장 */
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
-const MonthSelector = styled.div`
+const LayoutWrapper = styled.div`
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 24px;
+
+  /* 데스크탑 가로 배치 미디어 쿼리 */
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+`;
+
+const LeftSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1.5; /* 달력 비중 */
+  width: 100%;
+`;
+
+const RightSection = styled.div`
+  flex: 1; /* 일정 목록 비중 */
+  width: 100%;
+`;
+
+const CalendarHeader = styled.div`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 32px;
+`;
+
+const MonthDisplay = styled.h2`
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #222;
+`;
+
+const ArrowButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  &:hover {
+    background-color: #f0f0f0;
+  }
 `;
 
 const Weekdays = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+  gap: 6px;
+  width: 100%;
+`;
+
+const WeekdayCell = styled.div<{ $index: number }>`
   text-align: center;
-  color: gray;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${({ $index }) =>
+    $index === 0 ? "#F97171" : $index === 6 ? "#0A84FF" : "#4C4C4C"};
+`;
+
+const CalendarBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
 `;
 
 const WeekRow = styled.div<{ $maxRows: number }>`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
   position: relative;
-  min-height: ${({ $maxRows }) => 80 + ($maxRows - 1) * 24}px;
-  //border-top: 1px solid #ddd;
-  //border-left: 1px solid #ddd;
-  //& > div {
-  //  border-right: 1px solid #ddd;
-  //  border-bottom: 1px solid #ddd;
-  //}
+  min-height: ${({ $maxRows }) => 100 + ($maxRows - 1) * 24}px;
 `;
 
-const DayCell = styled.div<{ $isToday: boolean; $isCurrentMonth: boolean }>`
-  padding: 6px;
-  background-color: ${({ $isToday }) => ($isToday ? "#e0f0ff" : "#fff")};
+const DayCell = styled.div<{ $isCurrentMonth: boolean }>`
+  padding: 4px 0;
+  background-color: #f9f9fb;
+  border-radius: 4px;
   opacity: ${({ $isCurrentMonth }) => ($isCurrentMonth ? 1 : 0.4)};
   text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const TodayCircle = styled.div`
+  position: absolute;
+  top: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: #0a84ff;
+  z-index: 1;
 `;
 
 const DateNumber = styled.div<{ $isToday: boolean; $isCurrentMonth: boolean }>`
-  font-weight: ${({ $isToday }) => ($isToday ? "bold" : "normal")};
-  color: ${({ $isToday, $isCurrentMonth }) =>
-    $isToday ? "#007aff" : $isCurrentMonth ? "#000" : "#888"};
+  position: relative;
+  z-index: 2;
+  font-size: 14px;
+  font-weight: ${({ $isToday }) => ($isToday ? "700" : "500")};
+  line-height: 22px;
+  color: ${({ $isToday }) => ($isToday ? "#fff" : "#000")};
 `;
 
 const EventBar = styled.div<{ $start: number; $end: number; $row: number }>`
   position: absolute;
-  top: ${({ $row }) => 35 + $row * 24}px;
-  left: ${({ $start }) => `calc(100% / 7 * ${$start})`};
-  width: ${({ $start, $end }) => `calc(100% / 7 * (${$end - $start + 1}))`};
+  top: ${({ $row }) => 40 + $row * 24}px;
+  /* 간격 보정 계산 */
+  left: ${({ $start }) =>
+    `calc((100% - 24px) / 7 * ${$start} + ${$start * 4}px)`};
+  width: ${({ $start, $end }) => {
+    const count = $end - $start + 1;
+    return `calc((100% - 24px) / 7 * ${count} + ${(count - 1) * 4}px)`;
+  }};
   height: 20px;
   background-color: rgba(64, 113, 185, 1);
+  color: white;
   font-size: 11px;
-  padding: 2px 6px;
+  padding: 0 8px;
   box-sizing: border-box;
-  border-radius: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  color: white;
-`;
-
-const EventsList = styled.div`
-  padding: 15px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
+  z-index: 3;
 `;
 
 const EventItem = styled.div`
-  //border-bottom: 1px solid black;
   width: 100%;
-
-  div {
-    display: flex;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f2f2f7;
+  &:last-child {
+    border-bottom: none;
   }
+`;
 
-  strong {
-    display: block;
-    font-size: 16px;
-    margin-bottom: 20px;
-  }
-
-  span {
-    font-size: 11px;
-    line-height: 8px;
-    color: #535353;
-    margin-bottom: 10px;
-  }
+const EventInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const EventDot = styled.div`
   width: 8px;
   height: 8px;
-  background-color: #9cafe2;
+  background-color: rgba(64, 113, 185, 1);
   border-radius: 50%;
-  margin-right: 10px;
+`;
+
+const EventDate = styled.span`
+  font-size: 12px;
+  color: #8e8e93;
+  font-weight: 500;
+`;
+
+const EventTitle = styled.strong`
+  font-size: 15px;
+  color: #1c1c1e;
+  padding-left: 16px;
+`;
+
+const EmptyMessage = styled.p`
+  text-align: center;
+  color: #8e8e93;
+  font-size: 14px;
+  margin: 20px 0;
 `;
