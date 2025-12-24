@@ -12,7 +12,7 @@ import { getSchoolNoticeCategories } from "@/apis/categories";
 
 const MobileSchoolNoticePage = () => {
   useHeader({
-    title: "학과 공지사항",
+    title: "학교 공지사항",
     hasback: true,
   });
 
@@ -78,38 +78,45 @@ const MobileSchoolNoticePage = () => {
   }, [selectedCategory]);
 
   return (
-    <MobileSchoolNoticePageWrapper>
+    <>
       <MobileHeader />
-      <TitleCategorySelectorWrapper>
-        <CategorySelectorNew
-          categories={categoryList}
-          selectedCategory={selectedCategory}
-        />
-      </TitleCategorySelectorWrapper>
-      <TipsListContainerWrapper>
-        <InfiniteScroll
-          dataLength={notices.length}
-          next={() => fetchData(page)}
-          hasMore={hasMore}
-          scrollableTarget="app-scroll-view" // 레이아웃의 스크롤 ID와 일치
-          loader={<LoadingText>Loading...</LoadingText>}
-          endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-        >
-          <TipsCardWrapper>
-            {notices.map((notice, index) => (
-              <Box key={`${notice.title}-${index}`}>
-                <NoticeItem
-                  title={notice.title}
-                  category={notice.category}
-                  writer={notice.writer}
-                  date={notice.createDate}
-                />
-              </Box>
-            ))}
-          </TipsCardWrapper>
-        </InfiniteScroll>
-      </TipsListContainerWrapper>
-    </MobileSchoolNoticePageWrapper>
+      <MobileSchoolNoticePageWrapper>
+        <TitleCategorySelectorWrapper>
+          <CategorySelectorNew
+            categories={categoryList}
+            selectedCategory={selectedCategory}
+          />
+        </TitleCategorySelectorWrapper>
+        <TipsListContainerWrapper>
+          <InfiniteScroll
+            dataLength={notices.length}
+            next={() => fetchData(page)}
+            hasMore={hasMore}
+            scrollableTarget="app-scroll-view" // 레이아웃의 스크롤 ID와 일치
+            loader={<LoadingText>Loading...</LoadingText>}
+            endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+          >
+            <TipsCardWrapper>
+              {notices.map((notice, index) => (
+                <Box
+                  key={`${notice.title}-${index}`}
+                  onClick={() => {
+                    window.open("https://" + notice.url, "_blank");
+                  }}
+                >
+                  <NoticeItem
+                    title={notice.title}
+                    category={notice.category}
+                    writer={notice.writer}
+                    date={notice.createDate}
+                  />
+                </Box>
+              ))}
+            </TipsCardWrapper>
+          </InfiniteScroll>
+        </TipsListContainerWrapper>
+      </MobileSchoolNoticePageWrapper>
+    </>
   );
 };
 

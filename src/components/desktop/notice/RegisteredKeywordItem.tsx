@@ -26,7 +26,6 @@ const RegisteredKeywordItemWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
 
-  border-bottom: 1px solid #e2e2e2;
   padding: 16px 0;
 
   .keyword {

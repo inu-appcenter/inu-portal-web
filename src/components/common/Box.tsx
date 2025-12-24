@@ -1,12 +1,18 @@
 import styled from "styled-components";
-import { ReactNode } from "react";
+import { ReactNode, CSSProperties } from "react";
 
 interface BoxProps {
   children: ReactNode;
+  onClick?: () => void;
+  style?: CSSProperties;
 }
 
-const Box = ({ children }: BoxProps) => {
-  return <BoxWrapper>{children}</BoxWrapper>;
+const Box = ({ children, onClick, style }: BoxProps) => {
+  return (
+    <BoxWrapper onClick={onClick} style={style}>
+      {children}
+    </BoxWrapper>
+  );
 };
 
 export default Box;

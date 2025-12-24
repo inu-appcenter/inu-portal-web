@@ -1,11 +1,13 @@
 import styled from "styled-components";
 import TitleLine from "./TitleLine.tsx";
+import { CSSProperties } from "react";
 
 interface TitleContentAreaProps {
   title: string; // 공지사항, 기숙사 꿀팁 등
   link?: string;
   description?: string;
   children: React.ReactNode;
+  style?: CSSProperties;
 }
 
 const TitleContentArea = ({
@@ -13,9 +15,10 @@ const TitleContentArea = ({
   link,
   description,
   children,
+  style,
 }: TitleContentAreaProps) => {
   return (
-    <TitleContentAreaWrapper>
+    <TitleContentAreaWrapper style={style}>
       <TitleLine title={title} link={link} />
       {description && <DescriptionText>{description}</DescriptionText>}
       {children}
@@ -31,7 +34,7 @@ const TitleContentAreaWrapper = styled.div`
   align-items: center;
   justify-content: center;
 
-  width: 100%;
+  //width: 100%;
   height: fit-content;
 
   gap: 8px;

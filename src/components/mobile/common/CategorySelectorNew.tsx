@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 interface CategorySelectorNewProps {
   categories: string[];
-  selectedCategory: string;
+  selectedCategory?: string;
 }
 
 export default function CategorySelectorNew({
@@ -88,7 +88,7 @@ export default function CategorySelectorNew({
 }
 
 const CategorySelectorWrapper = styled.div`
-  position: relative;
+  //position: relative;
   width: 100%;
   height: fit-content;
 `;
@@ -98,9 +98,8 @@ const CategoryScrollArea = styled.div`
   flex-direction: row;
   gap: 6px;
   overflow-x: auto;
-  padding: 0 0 4px 0;
-  /* 마스크에 가려지는 영역 보정 */
-  padding-right: 20px;
+  padding: 0 20px 4px 0;
+  box-sizing: border-box;
 
   /* 우측 끝부분을 투명하게 처리 (배경색 무관) */
   mask-image: linear-gradient(

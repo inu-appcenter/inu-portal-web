@@ -38,6 +38,7 @@ import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserS
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import SubLayout from "@/layout/SubLayout";
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
+import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 
 export const router = createBrowserRouter([
   {
@@ -63,7 +64,7 @@ export const router = createBrowserRouter([
       // 2. 하단 네비게이션 미노출 (Sub Pages) - SubLayout 제거됨
       // ----------------------------------------------------------------
       {
-        element: <SubLayout showNav={false} showHeader={true} />, // 기본값 false 적용
+        element: <SubLayout showNav={false} />,
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
@@ -79,7 +80,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.BOARD.NOTICE, element: <MobileSchoolNoticePage /> },
           {
             path: `${ROUTES.BOARD.DEPT_NOTICE}/:dept?`,
-            element: <MobileBoardPage />,
+            element: <MobileDeptNoticePage />,
           },
           {
             path: ROUTES.BOARD.DEPT_SETTING,

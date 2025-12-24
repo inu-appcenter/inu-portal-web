@@ -15,6 +15,11 @@ import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.
 import { useLocation } from "react-router-dom";
 import { NoticeRecommendKeywords } from "@/resources/strings/NoticeRecommendKeywords";
 import { useHeader } from "@/context/HeaderContext";
+import Box from "@/components/common/Box";
+import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import Divider from "@/components/common/Divider";
+import React from "react";
+import Switch from "@/components/common/Switch";
 // import TitleContentArea from "../../components/common/TitleContentArea.tsx";
 
 export default function MobileDeptAlarmSettingPage() {
@@ -104,74 +109,93 @@ export default function MobileDeptAlarmSettingPage() {
   });
 
   return (
-    <MobileTipsPageWrapper>
+    <>
       <MobileHeader />
-
-      <AllAlarmCheckBoxWrapper>
-        <Checkbox checked={allAlarm} onChange={handleToggleAllAlarm} />
-        <div onClick={handleToggleAllAlarm}>
-          <div className="first-line">전체 공지 알림 받기</div>
-          <div className="second-line">
-            {allAlarm ? (
-              <>
-                {keywords.find((k) => k.keyword === null)?.department}의 모든
-                공지사항 푸시알림을 받고 있어요.
-              </>
-            ) : (
-              <>키워드에 상관 없이 모든 알림을 받을 수 있습니다.</>
-            )}
-          </div>
-        </div>
-      </AllAlarmCheckBoxWrapper>
-      <KeyWordSettingWrapper style={{ position: "relative" }}>
-        <Wrapper>
-          <Label>키워드 알림 설정</Label>
-          <InputWrapper>
-            <StyledInput
-              placeholder="알림 받을 키워드를 입력해주세요."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+      <MobileTipsPageWrapper>
+        <Box style={{ background: "#E3E3E5", margin: "0 16px" }}>
+          <AllAlarmCheckBoxWrapper onClick={handleToggleAllAlarm}>
+            {/*<Checkbox checked={allAlarm} onChange={handleToggleAllAlarm} />*/}
+            <div>
+              <div className="first-line">전체 공지 알림 받기</div>
+              <div className="second-line">
+                {allAlarm ? (
+                  <>
+                    {keywords.find((k) => k.keyword === null)?.department}의
+                    모든 공지사항 푸시알림을 받고 있어요.
+                  </>
+                ) : (
+                  <>키워드에 상관 없이 모든 알림을 받을 수 있습니다.</>
+                )}
+              </div>
+            </div>
+            <Switch
+              checked={allAlarm}
+              onCheckedChange={() => handleToggleAllAlarm}
             />
-            <TextButton disabled={!keyword} onClick={handleAddKeyword}>
-              등록
-            </TextButton>
-          </InputWrapper>
-          <CategorySelectorNew categories={NoticeRecommendKeywords} />
-        </Wrapper>
-        <Wrapper>
-          <Label>등록된 키워드 목록</Label>
-          <ListWrapper>
-            {keywords.map((item) =>
-              item.keyword ? (
-                <RegisteredKeywordItem
-                  key={item.keywordId}
-                  keyword={item.keyword}
-                  onDelete={() => handleDeleteKeyword(item.keywordId)}
-                />
-              ) : null,
-            )}
-          </ListWrapper>
-        </Wrapper>
+          </AllAlarmCheckBoxWrapper>
+        </Box>
 
-        {/* 전체 오버레이 */}
-        {allAlarm && (
-          <Overlay>
-            <OverlayMessage>
-              전체 공지 알림이 켜져 있어
-              <br />
-              키워드 알림 설정을 사용할 수 없습니다.
-            </OverlayMessage>
-          </Overlay>
-        )}
-      </KeyWordSettingWrapper>
+        <KeyWordSettingWrapper>
+          <TitleContentArea title={"키워드 알림 설정"}>
+            <Box>
+              <Wrapper>
+                <InputWrapper>
+                  <StyledInput
+                    placeholder="알림 받을 키워드를 입력해주세요."
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                  />
+                  <TextButton disabled={!keyword} onClick={handleAddKeyword}>
+                    등록
+                  </TextButton>
+                </InputWrapper>
+                <CategorySelectorNew categories={NoticeRecommendKeywords} />
+              </Wrapper>
+            </Box>
+          </TitleContentArea>
 
-      {/*<MoreFeaturesBox*/}
-      {/*  title={"알려드립니다"}*/}
-      {/*  content={*/}
-      {/*    "현재 iPhone에서 푸시알림이 정상적으로 이루어지지 않고 있고, 해당 현상은 9월 19일 전까지 수정 예정입니다.\n미리 설정해두시면 오류가 수정된 시점부터 알림을 받아보실 수 있습니다."*/}
-      {/*  }*/}
-      {/*/>*/}
-    </MobileTipsPageWrapper>
+          <TitleContentArea title={"등록된 키워드 목록"}>
+            <Box style={{ maxHeight: "300px", overflowY: "auto" }}>
+              <ListWrapper>
+                {!allAlarm &&
+                keywords.filter((item) => item.keyword !== null).length ===
+                  0 ? (
+                  <div>등록된 키워드가 없어요.</div>
+                ) : (
+                  keywords
+                    .filter(
+                      (item): item is typeof item & { keyword: string } =>
+                        item.keyword !== null,
+                    )
+                    .map((item, index, filtered) => (
+                      <React.Fragment key={item.keywordId}>
+                        <RegisteredKeywordItem
+                          keyword={item.keyword}
+                          onDelete={() => handleDeleteKeyword(item.keywordId)}
+                        />
+                        {index < filtered.length - 1 && (
+                          <Divider margin={"4px 0"} />
+                        )}
+                      </React.Fragment>
+                    ))
+                )}
+              </ListWrapper>
+
+              {/* 전체 오버레이 */}
+              {allAlarm && (
+                <Overlay>
+                  <OverlayMessage>
+                    전체 공지 알림이 켜져 있어
+                    <br />
+                    키워드 알림 설정을 사용할 수 없습니다.
+                  </OverlayMessage>
+                </Overlay>
+              )}
+            </Box>
+          </TitleContentArea>
+        </KeyWordSettingWrapper>
+      </MobileTipsPageWrapper>
+    </>
   );
 }
 
@@ -182,8 +206,6 @@ const MobileTipsPageWrapper = styled.div`
 
   flex: 1;
   width: 100%;
-  padding: 16px;
-  padding-top: 84px;
 
   box-sizing: border-box;
 `;
@@ -191,10 +213,14 @@ const MobileTipsPageWrapper = styled.div`
 const AllAlarmCheckBoxWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  //gap: 8px;
+
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 
   .first-line {
-    color: #444;
+    color: black;
     font-size: 18px;
     font-weight: 700;
   }
@@ -203,59 +229,30 @@ const AllAlarmCheckBoxWrapper = styled.div`
     color: #818181;
     font-size: 12px;
     font-weight: 500;
-    line-height: 28px;
+    //line-height: 28px;
   }
-`;
-
-const Checkbox = styled.input.attrs({ type: "checkbox" })`
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #5e92f0;
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-
-  &:checked {
-    border-color: #5e92f0;
-  }
-
-  &:checked::after {
-    content: "✔";
-    position: absolute;
-    top: -3px;
-    left: 3px;
-    font-size: 16px;
-    color: #5e92f0;
-  }
-
-  &:hover {
-    border-color: #0056b3;
-  }
-`;
-
-const Label = styled.label`
-  color: #444;
-  font-size: 16px;
-  font-weight: 700;
 `;
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 `;
 
 const KeyWordSettingWrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 16px;
+  padding: 0 16px;
 `;
 
 const ListWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  //gap: 8px;
+  width: 100%;
 `;
 
 const InputWrapper = styled.div`

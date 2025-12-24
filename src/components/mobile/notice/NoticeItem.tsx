@@ -2,20 +2,20 @@ import styled from "styled-components";
 import Badge from "@/components/common/Badge";
 
 interface NoticeItemProps {
-  category: string;
+  category?: string;
   title: string;
   date: string;
-  writer: string;
+  writer?: string;
 }
 
 const NoticeItem = ({ category, title, date, writer }: NoticeItemProps) => {
   return (
     <NoticeItemWrapper>
-      <Category>{category}</Category>
+      {category && <Category>{category}</Category>}
       <Title>{title}</Title>
       <InfoLine>
         <div className="date">{date}</div>
-        <Badge text={writer} />
+        {writer && <Badge text={writer} />}
       </InfoLine>
     </NoticeItemWrapper>
   );
