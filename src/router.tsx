@@ -37,6 +37,7 @@ import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import SubLayout from "@/layout/SubLayout";
+import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 
 export const router = createBrowserRouter([
   {
@@ -75,7 +76,7 @@ export const router = createBrowserRouter([
             path: `${ROUTES.BOARD.TIPS_WRITE}/:id`,
             element: <MobileWritePage />,
           },
-          { path: ROUTES.BOARD.NOTICE, element: <MobileBoardPage /> },
+          { path: ROUTES.BOARD.NOTICE, element: <MobileSchoolNoticePage /> },
           {
             path: `${ROUTES.BOARD.DEPT_NOTICE}/:dept?`,
             element: <MobileBoardPage />,

@@ -1,20 +1,14 @@
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-
-import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { HeaderProvider } from "@/context/HeaderContext";
 import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
 
 interface RootLayoutProps {
-  showHeader?: boolean;
   showNav?: boolean;
 }
 
-export default function SubLayout({
-  showHeader = true,
-  showNav = false,
-}: RootLayoutProps) {
+export default function SubLayout({ showNav = false }: RootLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
 
@@ -23,7 +17,7 @@ export default function SubLayout({
       <RootBackground>
         <ScrollBarStyles />
         <AppContainer id="app-scroll-view">
-          <AnimatePresence mode="sync">
+          <AnimatePresence mode="wait">
             <MotionPage
               key={location.pathname}
               initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
@@ -34,11 +28,6 @@ export default function SubLayout({
                 ease: [0.4, 0.0, 0.2, 1],
               }}
             >
-              {showHeader && (
-                <HeaderWrapper>
-                  <MobileHeader />
-                </HeaderWrapper>
-              )}
               <ContentWrapper $showNav={showNav}>{outlet}</ContentWrapper>
             </MotionPage>
           </AnimatePresence>
@@ -48,20 +37,11 @@ export default function SubLayout({
   );
 }
 
-// 스타일 정의
 const RootBackground = styled.div`
   width: 100vw;
   height: 100vh;
   display: flex;
   justify-content: center;
-  background: #f1f1f3;
-  //background: conic-gradient(
-  //  from 85deg at 50.89% 49.77%,
-  //  #cfe9ea 76.62456929683685deg,
-  //  #d4e3ef 135.7189178466797deg,
-  //  #def 265.1615309715271deg,
-  //  #d4e3ef 314.8280382156372deg
-  //);
 `;
 
 const AppContainer = styled.div`
@@ -71,33 +51,23 @@ const AppContainer = styled.div`
   flex-direction: column;
   position: relative;
   max-width: 1024px;
-  overflow-y: auto;
+  overflow-y: auto; // 실제 스크롤 발생 구역
+  background: #f1f1f3;
 
   @media (max-width: 768px) {
     padding: 0;
   }
 `;
 
-const HeaderWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-`;
-
 const MotionPage = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 `;
 
 const ContentWrapper = styled.div<{ $showNav: boolean }>`
   width: 100%;
-  padding-top: 10px;
   padding-bottom: ${(props) => (props.$showNav ? "100px" : "20px")};
   box-sizing: border-box;
 `;

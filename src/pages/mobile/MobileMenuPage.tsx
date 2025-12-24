@@ -4,6 +4,7 @@ import { getCafeterias } from "@/apis/cafeterias";
 import CafeteriaInfoContainer from "@/containers/mobile/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "@/containers/mobile/cafeteria/CafeteriaTitleContainer";
 import { useHeader } from "@/context/HeaderContext";
+import MobileHeader from "@/containers/mobile/common/MobileHeader";
 
 interface CafeteriaDetail {
   구성원가: string;
@@ -87,6 +88,7 @@ export default function MobileMenuPage() {
 
   return (
     <CafeteriaWrapper>
+      <MobileHeader />
       <CafeteriaTitleContainer
         title={title}
         setTitle={setTitle}
