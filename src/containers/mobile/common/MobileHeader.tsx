@@ -10,7 +10,6 @@ import Title from "@/components/mobile/mypage/Title";
 import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
 import { useHeaderState } from "@/context/HeaderContext";
 
-// 알림 여부를 prop으로 전달받아서 표시 여부 결정
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   const navigate = useNavigate();
   const handleNotiBtnClick = () => {
@@ -42,7 +41,6 @@ const Badge = styled.div`
 `;
 
 export default function MobileHeader() {
-  // Context 상태 구독
   const { title, hasback, backPath, showAlarm, menuItems, visible } =
     useHeaderState();
 
@@ -54,7 +52,6 @@ export default function MobileHeader() {
     navigate(ROUTES.HOME);
   };
 
-  // 스크롤 감지 로직
   useEffect(() => {
     const scrollTarget = document.getElementById("app-scroll-view");
 
@@ -82,17 +79,15 @@ export default function MobileHeader() {
     }
 
     const params = new URLSearchParams(location.search);
-
-    const specialPaths: string[] = [
+    const specialPaths = [
       ROUTES.BOARD.UTIL,
       ROUTES.BOARD.COUNCIL,
       ROUTES.BOARD.CAMPUS,
       ROUTES.BOARD.TIPS,
-    ];
+    ] as string[];
 
     const shouldGoHome =
       specialPaths.includes(location.pathname) && [...params].length > 0;
-
     const isBusInfoPage = location.pathname.includes(ROUTES.BUS.INFO);
 
     if (isBusInfoPage) {
@@ -104,7 +99,6 @@ export default function MobileHeader() {
     }
   };
 
-  // visible 설정이 false면 렌더링 생략
   if (visible === false) return null;
 
   return (
@@ -113,8 +107,17 @@ export default function MobileHeader() {
         {title ? (
           <MenuBackgroundWrapper $isScrolled={isScrolled} $marginLeft="16px">
             <TitleArea>
-              {hasback && <BackButton onClick={handleBack} />}
-              <Title title={title} />
+              {hasback && (
+                <BackButtonWrapper onClick={handleBack}>
+                  <BackButton />
+                </BackButtonWrapper>
+              )}
+              <TitleWrapper
+                $isScrolled={isScrolled}
+                $hasBack={hasback ?? false}
+              >
+                <Title title={title} />
+              </TitleWrapper>
             </TitleArea>
           </MenuBackgroundWrapper>
         ) : (
@@ -143,20 +146,16 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   top: 0;
   left: 0;
   right: 0;
-
   z-index: 2;
-
   transition: transform 0.3s ease;
   transform: ${({ $visible }) =>
     $visible ? "translateY(0)" : "translateY(-72px)"};
-
   pointer-events: none;
 `;
 
 const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   width: 100%;
   height: 56px;
-
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -169,14 +168,11 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
     padding: 4px 0;
     margin-left: 36px;
     box-sizing: border-box;
-
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:
       opacity 0.1s ease,
-      transform 0.1s ease,
-      visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.3s" : "0s")};
-
+      visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.1s" : "0s")};
     pointer-events: auto;
   }
 `;
@@ -188,44 +184,62 @@ const MenuBackgroundWrapper = styled.div<{
 }>`
   display: flex;
   justify-content: center;
-  align-content: center;
+  align-items: center;
 
-  gap: 16px;
-  padding: 16px;
+  /* 상하좌우 균일 패딩으로 원형 기반 마련 */
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 999px;
 
   margin-left: ${({ $marginLeft }) => $marginLeft ?? "0"};
   margin-right: ${({ $marginRight }) => $marginRight ?? "0"};
 
-  border-radius: 50px;
-
   background: ${({ $isScrolled }) =>
     $isScrolled ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0)"};
-
   box-shadow: ${({ $isScrolled }) =>
     $isScrolled
       ? "0 2px 4px 0 rgba(0, 0, 0, 0.2)"
       : "0 2px 4px 0 rgba(0, 0, 0, 0)"};
 
-  /* Safari 호환성 */
   -webkit-backdrop-filter: blur(
     ${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")}
   );
   backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
 
-  transition:
-    background 0.2s ease,
-    box-shadow 0.2s ease,
-    backdrop-filter 0.2s ease,
-    -webkit-backdrop-filter 0.2s ease;
-
+  transition: all 0.2s ease-in-out;
   pointer-events: auto;
 `;
 
 const TitleArea = styled.div`
-  width: fit-content;
-  height: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: start;
+  justify-content: center;
+`;
+
+/* 버튼 위치 고정을 위한 래퍼 */
+const BackButtonWrapper = styled.div`
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  cursor: pointer;
+`;
+
+const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
+  opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
+  visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
+
+  max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "300px")};
+
+  overflow: hidden;
+  white-space: nowrap;
+
+  /* 모든 레이아웃 변화를 동기화 */
+  transition:
+    all 0.2s ease-in-out,
+    visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
 `;

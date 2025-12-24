@@ -42,6 +42,7 @@ const RootBackground = styled.div`
   height: 100vh;
   display: flex;
   justify-content: center;
+  background: #f1f1f3;
 `;
 
 const AppContainer = styled.div`
@@ -52,7 +53,6 @@ const AppContainer = styled.div`
   position: relative;
   max-width: 1024px;
   overflow-y: auto; // 실제 스크롤 발생 구역
-  background: #f1f1f3;
 
   @media (max-width: 768px) {
     padding: 0;
