@@ -8,6 +8,7 @@ import { getNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import NoticeItem from "@/components/mobile/notice/NoticeItem";
+import { getSchoolNoticeCategories } from "@/apis/categories";
 
 const MobileSchoolNoticePage = () => {
   useHeader({
@@ -16,8 +17,9 @@ const MobileSchoolNoticePage = () => {
   });
 
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [categoryList, setCategoryList] = useState<string[]>([]);
   const params = new URLSearchParams(location.search);
-  const category = params.get("category") || "전체";
+  const selectedCategory = params.get("category") || "전체";
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -29,7 +31,7 @@ const MobileSchoolNoticePage = () => {
       if (isLoading) return;
       setIsLoading(true);
       try {
-        const response = await getNotices(category, "date", pageNum);
+        const response = await getNotices(selectedCategory, "date", pageNum);
         const newNotices: Notice[] = response.data.contents;
 
         if (newNotices && newNotices.length > 0) {
@@ -47,8 +49,17 @@ const MobileSchoolNoticePage = () => {
         setIsLoading(false);
       }
     },
-    [category, isLoading],
+    [selectedCategory, isLoading],
   );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getSchoolNoticeCategories();
+      setCategoryList(["전체", ...response.data]);
+    };
+
+    fetchData();
+  }, []);
 
   // 카테고리 변경 시 초기화
   useEffect(() => {
@@ -64,13 +75,16 @@ const MobileSchoolNoticePage = () => {
       await fetchData(1, true);
     };
     initLoad();
-  }, [category]);
+  }, [selectedCategory]);
 
   return (
     <MobileSchoolNoticePageWrapper>
       <MobileHeader />
       <TitleCategorySelectorWrapper>
-        <CategorySelectorNew />
+        <CategorySelectorNew
+          categories={categoryList}
+          selectedCategory={selectedCategory}
+        />
       </TitleCategorySelectorWrapper>
       <TipsListContainerWrapper>
         <InfiniteScroll

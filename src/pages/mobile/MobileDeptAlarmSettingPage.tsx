@@ -136,7 +136,7 @@ export default function MobileDeptAlarmSettingPage() {
               등록
             </TextButton>
           </InputWrapper>
-          <CategorySelectorNew categoriesProp={NoticeRecommendKeywords} />
+          <CategorySelectorNew categories={NoticeRecommendKeywords} />
         </Wrapper>
         <Wrapper>
           <Label>등록된 키워드 목록</Label>
