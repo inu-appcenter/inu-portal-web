@@ -98,7 +98,7 @@ const CategoryScrollArea = styled.div`
   flex-direction: row;
   gap: 6px;
   overflow-x: auto;
-  padding: 0 20px 4px 0;
+  padding: 4px 20px 4px 0;
   box-sizing: border-box;
 
   /* 우측 끝부분을 투명하게 처리 (배경색 무관) */

@@ -6,7 +6,7 @@ import CommentListMobile from "@/containers/mobile/postdetail/CommentListContain
 import ReplyInput from "@/containers/mobile/postdetail/ReplyInput";
 import { PostDetail, Reply } from "@/types/posts";
 import axios, { AxiosError } from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
@@ -25,7 +25,6 @@ export default function PostDetailPage() {
   };
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const fetchPost = async (id: number) => {
     try {
@@ -96,12 +95,13 @@ export default function PostDetailPage() {
     navigate(`/home/tips/write/${post?.id}`);
   };
 
+  const { id } = useParams<{ id: string }>(); // 경로 파라미터 추출
+
   useEffect(() => {
-    if (location.pathname.includes("/postdetail")) {
-      const params = new URLSearchParams(location.search);
-      fetchPost(Number(params.get("id")) || 0);
+    if (id) {
+      fetchPost(Number(id)); // 게시글 조회 함수 호출
     }
-  }, [location.pathname, commentUpdated]);
+  }, [id, commentUpdated]); // id 또는 댓글 갱신 시 실행
 
   const menuItems = [
     {
@@ -165,7 +165,7 @@ export default function PostDetailPage() {
 const Wrapper = styled.div`
   width: 100%;
   //height: calc(100svh - 65px);
-  padding-top: 56px;
+  //padding-top: 56px;
   box-sizing: border-box;
 `;
 
@@ -181,7 +181,7 @@ const CommentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
-  padding-bottom: 20px;
-  margin-bottom: 80px;
+  padding-bottom: 100px;
+  //margin-bottom: 80px;
   position: relative;
 `;

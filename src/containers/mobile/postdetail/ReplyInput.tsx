@@ -184,11 +184,12 @@ export default function ReplyInput({
 
 const StyledReplyInput = styled.div`
   border-top: 4px solid #eaeaea;
-  position: fixed;
+  position: sticky;
   bottom: 0;
   z-index: 100;
-  height: 64px;
-  width: 100vw;
+  padding-bottom: 16px;
+  //height: 64px;
+  //width: 100vw;
   background-color: white;
   display: flex;
   align-items: center;
@@ -196,7 +197,7 @@ const StyledReplyInput = styled.div`
   .wrapper {
     flex: 1;
     padding: 12px;
-
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     gap: 8px;

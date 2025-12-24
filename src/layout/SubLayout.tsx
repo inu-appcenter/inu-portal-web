@@ -68,6 +68,6 @@ const MotionPage = styled(motion.div)`
 
 const ContentWrapper = styled.div<{ $showNav: boolean }>`
   width: 100%;
-  padding-bottom: ${(props) => (props.$showNav ? "100px" : "20px")};
+  // padding-bottom: ${(props) => (props.$showNav ? "100px" : "20px")};
   box-sizing: border-box;
 `;

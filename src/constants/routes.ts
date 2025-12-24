@@ -19,9 +19,11 @@ export const ROUTES = {
   BOARD: {
     ALERT: "/home/alert",
     TIPS: "/home/tips",
+    TIPS_DETAIL: (id: string | number) => `/home/tips/${id}`,
     TIPS_WRITE: "/home/tips/write",
     NOTICE: "/home/notice",
-    DEPT_NOTICE: "/home/deptnotice", // :dept 파라미터 대응 필요
+    DEPT_NOTICE: "/home/deptnotice",
+    DEPT_NOTICE_DETAIL: (dept: string | number) => `/home/deptnotice/${dept}`,
     DEPT_SETTING: "/home/deptnotice/setting",
     MENU: "/home/menu",
     CALENDAR: "/home/calendar",

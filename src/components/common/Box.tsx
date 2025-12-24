@@ -23,7 +23,7 @@ const BoxWrapper = styled.div`
   box-sizing: border-box;
   flex-direction: column;
   align-items: flex-start;
-  gap: 16px;
+  //gap: 16px;
   align-self: stretch;
 
   border-radius: 20px;

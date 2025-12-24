@@ -39,6 +39,7 @@ import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiSta
 import SubLayout from "@/layout/SubLayout";
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
+import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
 
 export const router = createBrowserRouter([
   {
@@ -71,7 +72,20 @@ export const router = createBrowserRouter([
 
           // 게시판
           { path: ROUTES.BOARD.ALERT, element: <MobileBoardPage /> },
-          { path: ROUTES.BOARD.TIPS, element: <MobileBoardPage /> },
+          {
+            path: ROUTES.BOARD.TIPS,
+            children: [
+              {
+                index: true, // /home/tips 접속 시 출력
+                element: <MobileTipsPage />,
+              },
+              {
+                path: ":id", // /home/tips/:id 접속 시 출력
+                element: <MobilePostDetailPage />,
+              },
+            ],
+          },
+
           { path: ROUTES.BOARD.TIPS_WRITE, element: <MobileWritePage /> },
           {
             path: `${ROUTES.BOARD.TIPS_WRITE}/:id`,
