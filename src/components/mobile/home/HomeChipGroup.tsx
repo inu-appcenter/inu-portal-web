@@ -24,7 +24,7 @@ const HomeChipGroup = () => {
     {
       iconSrc: Unidorm,
       title: "유니돔",
-      isExternalLink: "true",
+      isExternalLink: true,
     },
   ];
 
