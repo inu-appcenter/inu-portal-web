@@ -1,10 +1,16 @@
 import styled from "styled-components";
 
 interface Props {
-  text: string;
+  text?: string;
+  children?: React.ReactNode;
 }
-const Label = ({ text }: Props) => {
-  return <LabelWrapper>{text}</LabelWrapper>;
+const Label = ({ text, children }: Props) => {
+  return (
+    <LabelWrapper>
+      {text}
+      {children}
+    </LabelWrapper>
+  );
 };
 
 export default Label;
@@ -15,6 +21,7 @@ const LabelWrapper = styled.div`
   justify-content: center;
   align-items: center;
   gap: 10px;
+  min-width: fit-content;
 
   border-radius: 50px;
   background: #ecf4ff;
