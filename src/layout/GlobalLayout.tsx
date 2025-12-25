@@ -194,6 +194,8 @@ const HeaderWrapper = styled.div`
   z-index: 50;
 `;
 
+// RootLayout.tsx 내 스타일 정의 수정
+
 const MotionPage = styled(motion.div)`
   position: absolute;
   top: 0;
@@ -201,10 +203,24 @@ const MotionPage = styled(motion.div)`
   width: 100%;
   height: 100%;
   z-index: 10;
+
+  /* 내부 ContentWrapper를 중앙에 배치하기 위해 flex 설정 */
+  display: flex;
+  flex-direction: column;
 `;
 
 const ContentWrapper = styled.div<{ $showNav: boolean }>`
   width: 100%;
+  /* flex: 1을 주어 남은 공간을 다 차지하게 함 */
+  flex: 1;
+
+  /* 내부 자식(페이지 내용)을 상하좌우 중앙 정렬 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  /* 헤더와 네비게이션만큼의 여백 */
   padding-top: 90px;
   padding-bottom: ${(props) => (props.$showNav ? "100px" : "20px")};
   box-sizing: border-box;

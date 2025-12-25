@@ -28,15 +28,27 @@ export default function BusCardSection() {
 }
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  //padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  gap: 12px;
+  align-self: stretch;
+
+  /* 그리드 아이템 및 트랙 중앙 정렬 */
+  justify-items: center;
+  justify-content: center;
 `;
 
 const CardImg = styled.img`
   width: 100%;
-  max-width: 500px;
+  max-width: 400px;
   border-radius: 16px;
   cursor: pointer;
+
+  /* 이미지 중앙 정렬 */
+  margin: 0 auto;
 `;
