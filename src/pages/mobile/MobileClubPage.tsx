@@ -87,7 +87,7 @@ export default function MobileClubPage() {
                       <span className="label-wrapper">
                         {club.isRecruiting && (
                           <Label>
-                            <strong>모집중🔥</strong>
+                            <strong>모집 중🔥</strong>
                           </Label>
                         )}
                         <Label>{club.category}</Label>
@@ -97,6 +97,7 @@ export default function MobileClubPage() {
                       {club.url && (
                         <FillButton
                           onClick={() => window.open(club.url, "_blank")}
+                          isExternalLink={true}
                         >
                           소개 페이지
                         </FillButton>
@@ -104,6 +105,7 @@ export default function MobileClubPage() {
                       {club.homeUrl && (
                         <FillButton
                           onClick={() => window.open(club.homeUrl, "_blank")}
+                          isExternalLink={true}
                         >
                           동아리 홈페이지
                         </FillButton>

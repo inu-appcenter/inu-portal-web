@@ -1,14 +1,18 @@
 import styled from "styled-components";
+import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink-white.svg";
 
 // 버튼 속성 상속 인터페이스
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
+  isExternalLink?: boolean;
 }
 
-const FillButton = ({ children, ...props }: Props) => {
+const FillButton = ({ children, isExternalLink, ...props }: Props) => {
   return (
     // 나머지 속성 전달
-    <FillButtonWrapper {...props}>{children}</FillButtonWrapper>
+    <FillButtonWrapper {...props}>
+      {children} {isExternalLink && <img src={외부연결버튼} />}
+    </FillButtonWrapper>
   );
 };
 
@@ -19,6 +23,7 @@ const FillButtonWrapper = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   height: fit-content;
   border-radius: 100px;
   padding: 8px 14px;

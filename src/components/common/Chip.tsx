@@ -4,7 +4,7 @@ import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink
 interface ChipButtonProps {
   iconSrc: string;
   title: string;
-  isExternalLink?: string;
+  isExternalLink?: boolean;
   isAIButton?: boolean;
   onClick?: () => void;
 }
