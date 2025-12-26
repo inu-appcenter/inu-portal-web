@@ -25,6 +25,13 @@ const HomeChipGroup = () => {
       iconSrc: Unidorm,
       title: "유니돔",
       isExternalLink: true,
+      onClick: () => {
+        window.open(
+          "https://unidorm.inuappcenter.kr",
+          "_blank",
+          "noopener,noreferrer",
+        );
+      },
     },
   ];
 
