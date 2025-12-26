@@ -53,7 +53,7 @@ export default function MobileBusDetailPage() {
     <>
       <MobileHeader />
       <MobileBusDetailPageWrapper>
-        <WidePaddingWrapper>
+        <MediumPaddingWrapper>
           <BusStopHeader
             stopName={`${bus.number} 번`}
             sectionLabel={bus.sectionLabel}
@@ -64,7 +64,7 @@ export default function MobileBusDetailPage() {
             }}
             stopNotice={bus.busNotice}
           />
-        </WidePaddingWrapper>
+        </MediumPaddingWrapper>
         <MediumPaddingWrapper>
           <BusRouteBar bus={bus} bstopId={bstopId} />
         </MediumPaddingWrapper>
@@ -87,10 +87,7 @@ const MobileBusDetailPageWrapper = styled.div`
   margin-bottom: 20px;
   width: 100%;
 `;
-const WidePaddingWrapper = styled.div`
-  padding: 0 30px;
-  box-sizing: border-box;
-`;
+
 const MediumPaddingWrapper = styled.div`
   padding: 0 16px;
   box-sizing: border-box;

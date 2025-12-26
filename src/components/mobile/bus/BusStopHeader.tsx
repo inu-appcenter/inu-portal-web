@@ -37,6 +37,7 @@ const BusStopHeaderWrapper = styled.div`
   margin: 24px 20px 0 20px;
   //margin: 24px 0;
   gap: 8px;
+  //width: 100%;
 `;
 
 const TopWrapper = styled.div`
