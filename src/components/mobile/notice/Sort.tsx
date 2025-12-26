@@ -30,6 +30,7 @@ const DropBoxWrapper = styled.div`
   display: flex;
   align-items: center;
   margin-right: 10px;
+  margin-bottom: 16px;
   gap: 12px;
 
   button {

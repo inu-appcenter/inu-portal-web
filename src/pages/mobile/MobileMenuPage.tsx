@@ -50,8 +50,11 @@ export default function MobileMenuPage() {
     return weekDates;
   };
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const fetchCafeteriaData = async (date: number) => {
     try {
+      setIsLoading(true);
       const response = await getCafeterias(title, date);
       const processedData = response.data.map((info: string) =>
         extractValues(info),
@@ -59,6 +62,7 @@ export default function MobileMenuPage() {
       const infoData = response.data.map((info: string) => extractMenu(info));
       setCafeteriaInfo(infoData);
       setCafeteriaDetail(processedData);
+      setIsLoading(false);
     } catch (error) {
       console.error("학식 메뉴 가져오기 실패", error);
     }
@@ -100,6 +104,7 @@ export default function MobileMenuPage() {
         title={title}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
+        isLoading={isLoading}
       />
     </CafeteriaWrapper>
   );

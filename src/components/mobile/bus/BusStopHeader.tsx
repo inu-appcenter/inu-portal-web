@@ -35,7 +35,7 @@ const BusStopHeaderWrapper = styled.div`
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  margin-top: 24px;
+  margin: 24px 20px 0 20px;
   //margin: 24px 0;
   gap: 10px;
 `;
@@ -61,7 +61,7 @@ const RightGroup = styled.div`
 
 const StopName = styled.span`
   display: flex;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1;
   align-items: center;

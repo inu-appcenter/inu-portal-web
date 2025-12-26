@@ -25,7 +25,6 @@ const MobileSchoolNoticePage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 데이터 요청 함수
   const fetchData = useCallback(
     async (pageNum: number, isFirst: boolean = false) => {
       if (isLoading) return;
@@ -42,33 +41,30 @@ const MobileSchoolNoticePage = () => {
         } else {
           setHasMore(false);
         }
+        setIsLoading(false);
       } catch (error) {
         console.error("데이터 로드 실패", error);
         setHasMore(false);
-      } finally {
-        setIsLoading(false);
       }
     },
     [selectedCategory, isLoading],
   );
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       const response = await getSchoolNoticeCategories();
       setCategoryList(["전체", ...response.data]);
     };
 
-    fetchData();
+    fetchCategories();
   }, []);
 
-  // 카테고리 변경 시 초기화
   useEffect(() => {
     const initLoad = async () => {
       setNotices([]);
       setPage(1);
       setHasMore(true);
 
-      // 스크롤 상단 이동
       const scrollableDiv = document.getElementById("app-scroll-view");
       if (scrollableDiv) scrollableDiv.scrollTop = 0;
 
@@ -79,42 +75,56 @@ const MobileSchoolNoticePage = () => {
 
   return (
     <>
-      <MobileHeader />
-      <MobileSchoolNoticePageWrapper>
-        <TitleCategorySelectorWrapper>
+      <MobileHeader
+        subHeader={
           <CategorySelectorNew
             categories={categoryList}
             selectedCategory={selectedCategory}
           />
-        </TitleCategorySelectorWrapper>
-        <TipsListContainerWrapper>
-          <InfiniteScroll
-            dataLength={notices.length}
-            next={() => fetchData(page)}
-            hasMore={hasMore}
-            scrollableTarget="app-scroll-view" // 레이아웃의 스크롤 ID와 일치
-            loader={<LoadingText>Loading...</LoadingText>}
-            endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-          >
+        }
+        floatingSubHeader={true}
+      />
+      <MobileSchoolNoticePageWrapper>
+        <InfiniteScroll
+          dataLength={notices.length}
+          next={() => fetchData(page)}
+          hasMore={hasMore}
+          scrollableTarget="app-scroll-view"
+          // 하단 추가 로딩 스켈레톤
+          loader={
             <TipsCardWrapper>
-              {notices.map((notice, index) => (
-                <Box
-                  key={`${notice.title}-${index}`}
-                  onClick={() => {
-                    window.open("https://" + notice.url, "_blank");
-                  }}
-                >
-                  <NoticeItem
-                    title={notice.title}
-                    category={notice.category}
-                    writer={notice.writer}
-                    date={notice.createDate}
-                  />
-                </Box>
-              ))}
+              <Box>
+                <NoticeItem isLoading />
+              </Box>
             </TipsCardWrapper>
-          </InfiniteScroll>
-        </TipsListContainerWrapper>
+          }
+          endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+        >
+          <TipsCardWrapper>
+            {/* 초기 로딩 스켈레톤 (데이터가 없을 때) */}
+            {notices.length === 0 && isLoading
+              ? Array.from({ length: 8 }).map((_, i) => (
+                  <Box key={`skeleton-${i}`}>
+                    <NoticeItem isLoading />
+                  </Box>
+                ))
+              : notices.map((notice, index) => (
+                  <Box
+                    key={`${notice.title}-${index}`}
+                    onClick={() => {
+                      window.open("https://" + notice.url, "_blank");
+                    }}
+                  >
+                    <NoticeItem
+                      title={notice.title}
+                      category={notice.category}
+                      writer={notice.writer}
+                      date={notice.createDate}
+                    />
+                  </Box>
+                ))}
+          </TipsCardWrapper>
+        </InfiniteScroll>
       </MobileSchoolNoticePageWrapper>
     </>
   );
@@ -126,27 +136,17 @@ const MobileSchoolNoticePageWrapper = styled.div`
   width: 100%;
 `;
 
-const TitleCategorySelectorWrapper = styled.div`
-  width: 100%;
-  padding: 0 16px;
-  box-sizing: border-box;
-`;
-
-const TipsListContainerWrapper = styled.div`
-  width: 100%;
-  padding: 0 16px;
-  box-sizing: border-box;
-`;
-
 const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding-top: 12px;
+  margin: 0 16px;
 `;
 
 const LoadingText = styled.h4`
   text-align: center;
   padding: 20px 0;
   color: #888;
+  font-size: 14px;
 `;

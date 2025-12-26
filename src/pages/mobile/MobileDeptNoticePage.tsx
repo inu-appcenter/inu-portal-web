@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useState, useEffect, useCallback } from "react"; // useCallback 추가
+import { useState, useEffect, useCallback } from "react";
 import { Notice } from "@/types/notices";
 import { getDepartmentNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
@@ -49,15 +49,18 @@ const MobileDeptNoticePage = () => {
     menuItems,
   });
 
-  // 데이터 fetch 함수
+  // 데이터 요청 함수
   const fetchData = useCallback(
     async (page: number, isInitial: boolean = false) => {
-      if (isLoading) return; // 중복 호출 방지
+      if (isLoading) return;
 
       setIsLoading(true);
       try {
         const deptCode = dept ? findTitleOrCode(dept) : undefined;
-        if (!deptCode) return;
+        if (!deptCode) {
+          alert("학과 정보가 없어요");
+          return;
+        }
 
         const response = await getDepartmentNotices(deptCode, "date", page);
         const newNotices: Notice[] = response.data.contents;
@@ -71,7 +74,7 @@ const MobileDeptNoticePage = () => {
             page: page + 1,
           }));
         } else {
-          if (isInitial) setDeptNotices([]); // 결과가 아예 없는 경우
+          if (isInitial) setDeptNotices([]);
           setHasMore(false);
         }
       } catch (error) {
@@ -84,12 +87,13 @@ const MobileDeptNoticePage = () => {
     [dept, isLoading],
   );
 
-  // 학과(dept) 변경 시 초기화 및 첫 페이지 로드
+  // 학과 변경 시 데이터 초기화 및 재요청
   useEffect(() => {
     if (dept) {
+      setDeptNotices([]); // 기존 데이터 제거로 스켈레톤 유도
       setHasMore(true);
       setFetchState({ lastPostId: undefined, page: 1 });
-      fetchData(1, true); // 첫 페이지 호출
+      fetchData(1, true);
     }
   }, [dept]);
 
@@ -101,7 +105,6 @@ const MobileDeptNoticePage = () => {
 
   useEffect(() => {
     if (userInfo.department && !dept) {
-      // 경로에 dept가 없을 때만 리다이렉트
       navigate(`/home/deptnotice/${userInfo.department}`, {
         replace: true,
       });
@@ -110,8 +113,8 @@ const MobileDeptNoticePage = () => {
 
   const handleDepartmentClick = async (department: string) => {
     try {
-      await putMemberDepartment(department); // 학과 코드 서버 전송
-      const deptKorean = findTitleOrCode(department); // 한글명 변환
+      await putMemberDepartment(department);
+      const deptKorean = findTitleOrCode(department);
       setUserInfo({
         ...userInfo,
         department: deptKorean,
@@ -129,32 +132,50 @@ const MobileDeptNoticePage = () => {
       <MobileHeader />
       <MobileDeptNoticePageWrapper>
         <TipsListContainerWrapper>
-          <InfiniteScroll
-            dataLength={deptNotices.length}
-            next={handleNext}
-            hasMore={hasMore}
-            scrollableTarget="app-scroll-view"
-            loader={<LoadingText>Loading...</LoadingText>}
-            endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-          >
+          {/* 초기 로딩 상태 처리 */}
+          {deptNotices.length === 0 && isLoading ? (
             <TipsCardWrapper>
-              {deptNotices.map((deptNotice, index) => (
-                <Box
-                  key={`${deptNotice.title}-${index}`}
-                  onClick={() => {
-                    window.open(deptNotice.url, "_blank");
-                  }}
-                >
-                  <NoticeItem
-                    title={deptNotice.title}
-                    category={deptNotice.category}
-                    writer={deptNotice.writer}
-                    date={deptNotice.createDate}
-                  />
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Box key={`dept-init-skeleton-${i}`}>
+                  <NoticeItem isLoading />
                 </Box>
               ))}
             </TipsCardWrapper>
-          </InfiniteScroll>
+          ) : (
+            <InfiniteScroll
+              dataLength={deptNotices.length}
+              next={handleNext}
+              hasMore={hasMore}
+              scrollableTarget="app-scroll-view"
+              // 추가 데이터 로딩 시 하단 로더
+              loader={
+                <div style={{ marginTop: "12px" }}>
+                  <Box>
+                    <NoticeItem isLoading />
+                  </Box>
+                </div>
+              }
+              endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+            >
+              <TipsCardWrapper>
+                {deptNotices.map((deptNotice, index) => (
+                  <Box
+                    key={`${deptNotice.title}-${index}`}
+                    onClick={() => {
+                      window.open(deptNotice.url, "_blank");
+                    }}
+                  >
+                    <NoticeItem
+                      title={deptNotice.title}
+                      category={deptNotice.category}
+                      writer={deptNotice.writer}
+                      date={deptNotice.createDate}
+                    />
+                  </Box>
+                ))}
+              </TipsCardWrapper>
+            </InfiniteScroll>
+          )}
         </TipsListContainerWrapper>
 
         {navBarList[1].child && (
@@ -186,11 +207,12 @@ const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  //padding-top: 12px;
+  padding-top: 12px;
 `;
 
 const LoadingText = styled.h4`
   text-align: center;
   padding: 20px 0;
   color: #888;
+  font-size: 14px;
 `;

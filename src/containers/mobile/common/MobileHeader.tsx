@@ -184,6 +184,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
 
 const SubHeaderWrapper = styled.div`
   width: 100%;
+  pointer-events: auto; // 클릭 이벤트 허용
 `;
 
 const TitleArea = styled.div`
@@ -251,4 +252,6 @@ const FloatingWrapper = styled.div`
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   transition: all 0.2s ease-in-out;
+
+  min-height: 36px;
 `;

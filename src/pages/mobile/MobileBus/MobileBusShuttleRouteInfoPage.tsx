@@ -17,16 +17,18 @@ const MobileBusShuttleRouteInfoPage = () => {
   });
 
   return (
-    <Wrapper>
+    <>
       <MobileHeader />
-      {route === "ilsan-gimpo" && <IlsanGimpoShuttle />}
-      {route === "bucheon" && <BucheonShuttle />}
-      {route === "ansan-siheung" && <AnsanSiheungShuttle />}
+      <Wrapper>
+        {route === "ilsan-gimpo" && <IlsanGimpoShuttle />}
+        {route === "bucheon" && <BucheonShuttle />}
+        {route === "ansan-siheung" && <AnsanSiheungShuttle />}
 
-      {!["ilsan-gimpo", "bucheon", "ansan-siheung"].includes(route || "") && (
-        <div>노선 정보가 없습니다.</div>
-      )}
-    </Wrapper>
+        {!["ilsan-gimpo", "bucheon", "ansan-siheung"].includes(route || "") && (
+          <div>노선 정보가 없습니다.</div>
+        )}
+      </Wrapper>
+    </>
   );
 };
 

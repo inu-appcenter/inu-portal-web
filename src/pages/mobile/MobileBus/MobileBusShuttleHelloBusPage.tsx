@@ -9,10 +9,12 @@ const MobileBusShuttleHelloBusPage = () => {
     title: "셔틀버스 안내",
   });
   return (
-    <Wrapper>
+    <>
       <MobileHeader />
-      <HelloBus />
-    </Wrapper>
+      <Wrapper>
+        <HelloBus />
+      </Wrapper>
+    </>
   );
 };
 

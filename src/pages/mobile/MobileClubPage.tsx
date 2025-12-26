@@ -11,34 +11,44 @@ import Box from "@/components/common/Box.tsx";
 import FillButton from "@/components/mobile/common/FillButton";
 import Label from "@/components/mobile/common/Label";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
+import Skeleton from "@/components/common/Skeleton"; // 스켈레톤 컴포넌트
 
 export default function MobileClubPage() {
   const location = useLocation();
   const { userInfo } = useUserStore();
-
   const navigate = useNavigate();
 
   const params = new URLSearchParams(location.search);
   const category = params.get("category") || "전체";
+
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
   const [isClubAdminOpen, setIsClubAdminOpen] = useState(false);
 
-  // 헤더 설정 주입
-  useHeader({
-    title: "동아리",
-  });
+  useHeader({ title: "동아리" });
 
+  // 데이터 패칭
   useEffect(() => {
     const fetchClubs = async () => {
+      setIsLoading(true);
       try {
         const response = await getClubs(category);
         setClubs(response.data);
-        console.log(response);
+        setIsLoading(false);
       } catch (error) {
         console.error("동아리 가져오기 실패", error);
       }
     };
+
     fetchClubs();
+  }, [category]);
+
+  // 카테고리 변경 시 스크롤 상단 이동
+  useEffect(() => {
+    const scrollableDiv = document.getElementById("app-scroll-view");
+    if (scrollableDiv) {
+      scrollableDiv.scrollTop = 0;
+    }
   }, [category]);
 
   const handleRecruitingBtn = (clubId: number, clubName: string) => {
@@ -70,65 +80,85 @@ export default function MobileClubPage() {
       {isClubAdminOpen ? (
         <ClubAdmin setIsClubAdminOpen={setIsClubAdminOpen} />
       ) : (
-        <>
-          <ClubList>
-            {clubs.map((club) => (
-              // <ClubCard key={club.name}>
-              <Box>
-                <ContentWrapper>
-                  <img
-                    src={club.imageUrl}
-                    alt={club.name}
-                    className="club-logo"
-                  />
-                  <RightArea>
-                    <FirstLine>
-                      <h3>{club.name}</h3>
-                      <span className="label-wrapper">
-                        {club.isRecruiting && (
-                          <Label>
-                            <strong>모집 중🔥</strong>
-                          </Label>
+        <ClubList>
+          {/* 초기 로딩 스켈레톤 */}
+          {isLoading && clubs.length === 0
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <Box key={`club-skeleton-${i}`}>
+                  <ContentWrapper>
+                    <Skeleton width={100} height={80} />
+                    <RightArea>
+                      <FirstLine>
+                        <Skeleton width="40%" height={20} />
+                        <div style={{ display: "flex", gap: "4px" }}>
+                          <Skeleton width={40} height={22} />
+                          <Skeleton width={40} height={22} />
+                        </div>
+                      </FirstLine>
+                      <ButtonsWrapper>
+                        <Skeleton width={70} height={30} />
+                        <Skeleton width={70} height={30} />
+                      </ButtonsWrapper>
+                    </RightArea>
+                  </ContentWrapper>
+                </Box>
+              ))
+            : clubs.map((club) => (
+                <Box key={club.id}>
+                  <ContentWrapper>
+                    <img
+                      src={club.imageUrl}
+                      alt={club.name}
+                      className="club-logo"
+                    />
+                    <RightArea>
+                      <FirstLine>
+                        <h3>{club.name}</h3>
+                        <span className="label-wrapper">
+                          {club.isRecruiting && (
+                            <Label>
+                              <strong>모집 중🔥</strong>
+                            </Label>
+                          )}
+                          <Label>{club.category}</Label>
+                        </span>
+                      </FirstLine>
+                      <ButtonsWrapper>
+                        {club.url && (
+                          <FillButton
+                            onClick={() => window.open(club.url, "_blank")}
+                            isExternalLink={true}
+                          >
+                            소개 페이지
+                          </FillButton>
                         )}
-                        <Label>{club.category}</Label>
-                      </span>
-                    </FirstLine>
-                    <ButtonsWrapper>
-                      {club.url && (
-                        <FillButton
-                          onClick={() => window.open(club.url, "_blank")}
-                          isExternalLink={true}
-                        >
-                          소개 페이지
-                        </FillButton>
-                      )}
-                      {club.homeUrl && (
-                        <FillButton
-                          onClick={() => window.open(club.homeUrl, "_blank")}
-                          isExternalLink={true}
-                        >
-                          동아리 홈페이지
-                        </FillButton>
-                      )}
-                      {club.isRecruiting && (
-                        <FillButton
-                          onClick={() =>
-                            handleRecruitingBtn(club.id, club.name)
-                          }
-                        >
-                          모집 공고
-                        </FillButton>
-                      )}
-                    </ButtonsWrapper>
-                  </RightArea>
-                </ContentWrapper>
-              </Box>
-            ))}
-          </ClubList>
-        </>
+                        {club.homeUrl && (
+                          <FillButton
+                            onClick={() => window.open(club.homeUrl, "_blank")}
+                            isExternalLink={true}
+                          >
+                            동아리 홈페이지
+                          </FillButton>
+                        )}
+                        {club.isRecruiting && (
+                          <FillButton
+                            onClick={() =>
+                              handleRecruitingBtn(club.id, club.name)
+                            }
+                          >
+                            모집 공고
+                          </FillButton>
+                        )}
+                      </ButtonsWrapper>
+                    </RightArea>
+                  </ContentWrapper>
+                </Box>
+              ))}
+        </ClubList>
       )}
+
       <StickyBottomWrapper>
-        {userInfo.role == "admin" && !isClubAdminOpen && (
+        {userInfo.role === "admin" && !isClubAdminOpen && (
           <button
             className="upload-button"
             onClick={() => setIsClubAdminOpen(true)}
@@ -146,17 +176,14 @@ const MobileClubPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-
-  //padding-bottom: 32px;
   box-sizing: border-box;
-
   width: 100%;
 
   .upload-button {
     position: sticky;
     right: 20px;
     bottom: 100px;
-    z-index: 999999;
+    z-index: 9999;
     color: white;
     background-color: rgba(64, 113, 185, 1);
     border-radius: 100%;
@@ -167,11 +194,6 @@ const MobileClubPageWrapper = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-
-    img {
-      height: 24px;
-    }
-
     font-size: 12px;
   }
 `;
@@ -180,7 +202,6 @@ const StickyBottomWrapper = styled.div`
   position: sticky;
   bottom: 0;
   z-index: 100;
-  //background-color: #fff;
   width: 100%;
 `;
 
@@ -205,10 +226,13 @@ const ContentWrapper = styled.div`
 
   .club-logo {
     margin-left: 4px;
-    max-width: 80px;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
     border-radius: 10px;
   }
 `;
+
 const RightArea = styled.div`
   display: flex;
   flex-direction: column;

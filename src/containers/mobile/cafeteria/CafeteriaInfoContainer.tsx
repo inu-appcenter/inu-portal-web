@@ -12,12 +12,14 @@ interface CafeteriaInfoWrapperProps {
   title: string;
   cafeteriaDetail: (CafeteriaDeatilProps | null)[];
   cafeteriaInfo: (string | null)[];
+  isLoading: boolean;
 }
 
 export default function CafeteriaInfoContainer({
   title,
   cafeteriaDetail,
   cafeteriaInfo,
+  isLoading,
 }: CafeteriaInfoWrapperProps) {
   const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([]);
 
@@ -36,18 +38,21 @@ export default function CafeteriaInfoContainer({
         cafeteriaTypes={cafeteriaTypes}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
+        isLoading={isLoading}
       />
       <CafeteriaItem
         typeIndex={1}
         cafeteriaTypes={cafeteriaTypes}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
+        isLoading={isLoading}
       />
       <CafeteriaItem
         typeIndex={2}
         cafeteriaTypes={cafeteriaTypes}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
+        isLoading={isLoading}
       />
     </CafeteriaInfoWrapper>
   );

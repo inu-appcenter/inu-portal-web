@@ -3,8 +3,9 @@ import styled from "styled-components";
 import InfoIcon from "@/components/mobile/bus/InfoIcon";
 import BusItem from "@/components/mobile/bus/BusItem";
 import { BusStopBoxProps } from "@/types/bus.ts";
-import useBusArrival from "../../../hooks/useBusArrival.ts";
+import useBusArrival from "@/hooks/useBusArrival.ts";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import BusItemSkeleton from "@/components/mobile/bus/BusItemSkeleton";
 
 interface Props extends BusStopBoxProps {
   bstopId: string;
@@ -18,7 +19,7 @@ export default function BusStopBox({
   bstopId,
 }: Props) {
   const navigate = useNavigate();
-  const busArrivalList = useBusArrival(bstopId, busList);
+  const { busArrivalList, isLoading } = useBusArrival(bstopId, busList);
 
   return (
     <TitleContentArea
@@ -30,17 +31,22 @@ export default function BusStopBox({
     >
       <BusStopBoxWrapper>
         <BusList>
-          {busArrivalList.map((bus) => (
-            <BusItem
-              key={bus.id}
-              {...bus}
-              onClick={() =>
-                bus.number === "셔틀"
-                  ? navigate("/Bus/info?type=shuttle&tab=subwayShuttle")
-                  : navigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
-              }
-            />
-          ))}
+          {isLoading
+            ? // 데이터 로딩 중일 때 버스 리스트 개수만큼 스켈레톤 표시
+              Array.from({ length: busList.length || 2 }).map((_, i) => (
+                <BusItemSkeleton key={`bus-skeleton-${i}`} />
+              ))
+            : busArrivalList.map((bus) => (
+                <BusItem
+                  key={bus.id}
+                  {...bus}
+                  onClick={() =>
+                    bus.number === "셔틀"
+                      ? navigate("/Bus/info?type=shuttle&tab=subwayShuttle")
+                      : navigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
+                  }
+                />
+              ))}
         </BusList>
       </BusStopBoxWrapper>
     </TitleContentArea>
@@ -48,11 +54,8 @@ export default function BusStopBox({
 }
 
 const BusStopBoxWrapper = styled.div`
-  //padding: 16px;
   background-color: transparent;
   width: 100%;
-  //border: 1px solid #7aa7e5;
-  //margin-bottom: 12px;
   border-radius: 10px;
   box-sizing: border-box;
 `;
