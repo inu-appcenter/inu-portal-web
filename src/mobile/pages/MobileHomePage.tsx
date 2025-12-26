@@ -15,6 +15,7 @@ import ThreeWeekCalendar from "../components/calendar/ThreeWeekCalendar.tsx";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
 import MobileNav from "../containers/common/MobileNav.tsx";
 import Banner from "../containers/home/Banner.tsx";
+import TopPopupNotification from "components/common/TopPopupNotification";
 
 export default function MobileHomePage() {
   const isBannerOn = false; //배너 온오프 - on:true off:false
@@ -39,6 +40,28 @@ export default function MobileHomePage() {
     nextWeek.setDate(nextWeek.getDate() + 7);
     localStorage.setItem("hideModalDate", nextWeek.toISOString());
     setShow(false);
+  };
+
+  // 알림에 표시할 데이터의 타입 (예시)
+  interface NotificationData {
+    title: string;
+    message: string;
+  }
+  const [notification, setNotification] = useState<NotificationData | null>(
+    null,
+  );
+
+  useEffect(() => {
+    setNotification({
+      title: "서비스 점검 안내",
+      message: `12월 26일(금) 18시부터 12월 29일(월) 08시까지 정보전산원 시스템 점검으로 인해 서비스 이용이 어렵습니다. 이용에 불편을 드려 죄송합니다.`,
+    });
+  }, []);
+
+  // 3. 알림이 닫힐 때 호출될 함수 (onClose prop으로 전달)
+  const handleCloseNotification = () => {
+    // 1. UI에서 즉시 숨김
+    setNotification(null);
   };
 
   return (
@@ -70,6 +93,17 @@ export default function MobileHomePage() {
           </Modal>
         </ModalBackGround>
       )}
+
+      {/* 4. state에 notification 데이터가 있을 때만 렌더링 */}
+      {notification && (
+        <TopPopupNotification
+          title={notification.title}
+          message={notification.message}
+          onClose={handleCloseNotification}
+          duration={10000}
+        />
+      )}
+
       <Banner />
 
       <ContainerWrapper>
