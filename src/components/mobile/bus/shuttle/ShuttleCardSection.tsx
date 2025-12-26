@@ -35,16 +35,20 @@ export default function ShuttleCardSection() {
 }
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   gap: 12px;
-  //padding: 16px;
+  align-self: stretch;
 
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
+  /* 그리드 아이템 및 트랙 중앙 정렬 */
+  justify-items: center;
+  justify-content: center;
 `;
-
 const CardImg = styled.img`
   width: 100%;
   border-radius: 16px;

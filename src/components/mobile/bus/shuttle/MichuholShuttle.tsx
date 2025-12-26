@@ -18,8 +18,12 @@ const Wrapper = styled.div`
   padding-top: 16px;
   box-sizing: border-box;
 
+  display: flex;
+  justify-content: center;
+
   img {
     width: 100%;
     border-radius: 10px;
+    max-width: 500px;
   }
 `;
