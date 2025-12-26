@@ -2,6 +2,7 @@ import styled from "styled-components";
 import busIcon from "/Bus/busIcon.svg";
 import useBusArrival from "../../../hooks/useBusArrival";
 import { BusData } from "@/types/bus";
+import Box from "@/components/common/Box";
 
 interface BusRouteBarProps {
   bus: BusData;
@@ -60,47 +61,51 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
   }
 
   return (
-    <BusRouteBarWrapper>
-      <Line>
-        <Arrow />
-        <DotList>
-          {dots.map((dot, i) => (
-            <DotBox key={i}>
-              {dot.showInfoBox && arrivalInfo && (
-                <InfoBox>
-                  <div>
-                    {arrivalInfo.station}{" "}
-                    {arrivalInfo.isLastBus ? (
-                      <LastBus>막차</LastBus>
-                    ) : (
-                      arrivalInfo.status
-                    )}
-                  </div>
-                  <div>{arrivalInfo.time}</div>
-                </InfoBox>
-              )}
-              {dot.showPassBus && (
-                <>
-                  <BusIcon src={busIcon} />
-                  <InfoBox>{dot.passText}</InfoBox>
-                </>
-              )}
-              {dot.showBus && <BusIcon src={busIcon} />}
-              <Dot $current={dot.isCurrent} />
-              {dot.label && <Label>{dot.label}</Label>}
-            </DotBox>
-          ))}
-        </DotList>
-      </Line>
-    </BusRouteBarWrapper>
+    <Box>
+      <BusRouteBarWrapper>
+        <Line>
+          <Arrow />
+          <DotList>
+            {dots.map((dot, i) => (
+              <DotBox key={i}>
+                {dot.showInfoBox && arrivalInfo && (
+                  <InfoBox>
+                    <div>
+                      {arrivalInfo.station}{" "}
+                      {arrivalInfo.isLastBus ? (
+                        <LastBus>막차</LastBus>
+                      ) : (
+                        arrivalInfo.status
+                      )}
+                    </div>
+                    <div>{arrivalInfo.time}</div>
+                  </InfoBox>
+                )}
+                {dot.showPassBus && (
+                  <>
+                    <BusIcon src={busIcon} />
+                    <InfoBox>{dot.passText}</InfoBox>
+                  </>
+                )}
+                {dot.showBus && <BusIcon src={busIcon} />}
+                <Dot $current={dot.isCurrent} />
+                {dot.label && <Label>{dot.label}</Label>}
+              </DotBox>
+            ))}
+          </DotList>
+        </Line>
+      </BusRouteBarWrapper>
+    </Box>
   );
 }
 const BusRouteBarWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 24px;
-  padding: 0 16px;
+  margin-top: 40px;
+  //padding-top: ;
+  box-sizing: border-box;
+  width: 100%;
 `;
 
 const Line = styled.div`

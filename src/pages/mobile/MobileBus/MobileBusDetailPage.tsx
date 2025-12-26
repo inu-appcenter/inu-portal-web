@@ -18,6 +18,7 @@ import {
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
+import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 
 export default function MobileBusDetailPage() {
   const [searchParams] = useSearchParams();
@@ -49,31 +50,57 @@ export default function MobileBusDetailPage() {
   }
 
   return (
-    <MobileBusDetailPageWrapper>
-      <MobileHeader />
-      <BusStopHeader
-        stopName={`${bus.number} 번`}
-        sectionLabel={bus.sectionLabel}
-        onClickStopInfo={() => {
-          if (bus?.stopId) {
-            mobileBusStopNavigate(bus?.stopId);
-          }
-        }}
-        stopNotice={bus.busNotice}
-      />
-      <BusRouteBar bus={bus} bstopId={bstopId} />
-      <SectionLabel text={"노선 지도"} />
-      {bus?.path && <BusRouteMap path={bus.path} stopMarker={bus.stopMarker} />}
-    </MobileBusDetailPageWrapper>
+    <>
+      <StickyHeaderWrapper>
+        <MobileHeader />
+      </StickyHeaderWrapper>
+      <MobileBusDetailPageWrapper>
+        <WidePaddingWrapper>
+          <BusStopHeader
+            stopName={`${bus.number} 번`}
+            sectionLabel={bus.sectionLabel}
+            onClickStopInfo={() => {
+              if (bus?.stopId) {
+                mobileBusStopNavigate(bus?.stopId);
+              }
+            }}
+            stopNotice={bus.busNotice}
+          />
+        </WidePaddingWrapper>
+        <MediumPaddingWrapper>
+          <BusRouteBar bus={bus} bstopId={bstopId} />
+        </MediumPaddingWrapper>
+        <MediumPaddingWrapper>
+          <TitleContentArea title={<SectionLabel text={"노선 지도"} />}>
+            {bus?.path && (
+              <BusRouteMap path={bus.path} stopMarker={bus.stopMarker} />
+            )}
+          </TitleContentArea>
+        </MediumPaddingWrapper>
+      </MobileBusDetailPageWrapper>
+    </>
   );
 }
 
 const MobileBusDetailPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 30px;
-  padding: 0 16px;
+  gap: 16px;
   margin-bottom: 20px;
+  width: 100%;
+`;
+const WidePaddingWrapper = styled.div`
+  padding: 0 30px;
   box-sizing: border-box;
+`;
+const MediumPaddingWrapper = styled.div`
+  padding: 0 16px;
+  box-sizing: border-box;
+`;
+const StickyHeaderWrapper = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  //background-color: #fff;
   width: 100%;
 `;

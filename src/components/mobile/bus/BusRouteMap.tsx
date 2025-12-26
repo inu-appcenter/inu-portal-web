@@ -65,12 +65,13 @@ export default function BusRouteMap({ path, stopMarker }: BusRouteMapProps) {
 }
 
 const BusRouteMapWrapper = styled.div`
-  position: relative;
-  z-index: 0;
-  height: 460px;
-  border-radius: 12px;
+  //position: relative;
+  //z-index: 0;
+  height: 400px;
+  width: 100%;
+  border-radius: 20px;
   overflow: hidden;
-  margin-top: -15px;
+  //margin-top: -15px;
 `;
 
 const MarkerWrapper = styled.div`
