@@ -68,16 +68,15 @@ const MobileSchoolNoticePage = () => {
 
   return (
     <>
-      {/* 상단 고정 헤더 */}
-      <StickyHeaderWrapper>
-        <MobileHeader />
-        <TitleCategorySelectorWrapper>
+      <MobileHeader
+        subHeader={
           <CategorySelectorNew
             categories={categoryList}
             selectedCategory={selectedCategory}
           />
-        </TitleCategorySelectorWrapper>
-      </StickyHeaderWrapper>
+        }
+        floatingSubHeader={true}
+      />
 
       <MobileSchoolNoticePageWrapper>
         <TipsListContainerWrapper>
@@ -128,30 +127,6 @@ export default MobileSchoolNoticePage;
 const MobileSchoolNoticePageWrapper = styled.div`
   width: 100%;
   position: relative;
-`;
-
-// 헤더와 카테고리 선택자를 묶어서 고정
-const StickyHeaderWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  //background-color: #fff;
-  width: 100%;
-`;
-
-const TitleCategorySelectorWrapper = styled.div`
-  //width: 100%;
-  padding: 4px 16px;
-  margin: 0 16px;
-  border-radius: 50px;
-  box-sizing: border-box;
-  //background-color: #fff;
-  border-bottom: 1px solid #f2f2f2;
-
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
-  -webkit-backdrop-filter: blur("5px");
-  backdrop-filter: blur("5px");
 `;
 
 const TipsListContainerWrapper = styled.div`

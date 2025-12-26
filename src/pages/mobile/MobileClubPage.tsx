@@ -57,15 +57,15 @@ export default function MobileClubPage() {
 
   return (
     <MobileClubPageWrapper>
-      <StickyHeaderWrapper>
-        <MobileHeader />
-        <TitleCategorySelectorWrapper>
+      <MobileHeader
+        subHeader={
           <CategorySelectorNew
             categories={clubCategories}
             selectedCategory={category}
           />
-        </TitleCategorySelectorWrapper>
-      </StickyHeaderWrapper>
+        }
+        floatingSubHeader={true}
+      />
 
       {isClubAdminOpen ? (
         <ClubAdmin setIsClubAdminOpen={setIsClubAdminOpen} />
@@ -176,35 +176,12 @@ const MobileClubPageWrapper = styled.div`
   }
 `;
 
-const StickyHeaderWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  //background-color: #fff;
-  width: 100%;
-`;
-
 const StickyBottomWrapper = styled.div`
   position: sticky;
   bottom: 0;
   z-index: 100;
   //background-color: #fff;
   width: 100%;
-`;
-
-const TitleCategorySelectorWrapper = styled.div`
-  //width: 100%;
-  padding: 4px 16px;
-  margin: 0 16px;
-  border-radius: 50px;
-  box-sizing: border-box;
-  //background-color: #fff;
-  border-bottom: 1px solid #f2f2f2;
-
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
-  -webkit-backdrop-filter: blur("5px");
-  backdrop-filter: blur("5px");
 `;
 
 const ClubList = styled.div`

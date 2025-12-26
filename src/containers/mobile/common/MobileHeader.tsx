@@ -40,7 +40,15 @@ const Badge = styled.div`
   border-radius: 50%;
 `;
 
-export default function MobileHeader() {
+interface HeaderProps {
+  subHeader?: React.ReactNode;
+  floatingSubHeader?: boolean;
+}
+
+export default function MobileHeader({
+  subHeader,
+  floatingSubHeader,
+}: HeaderProps) {
   const { title, hasback, backPath, showAlarm, menuItems, visible } =
     useHeaderState();
 
@@ -105,19 +113,14 @@ export default function MobileHeader() {
     <MobileHeaderWrapper $visible={true}>
       <MainHeaderWrapper $isScrolled={isScrolled}>
         {title ? (
-          <MenuBackgroundWrapper $isScrolled={isScrolled} $marginLeft="16px">
-            <TitleArea>
-              {hasback && (
-                <BackButton onClick={handleBack} $isScrolled={isScrolled} />
-              )}
-              <TitleWrapper
-                $isScrolled={isScrolled}
-                $hasBack={hasback ?? false}
-              >
-                <Title title={title} />
-              </TitleWrapper>
-            </TitleArea>
-          </MenuBackgroundWrapper>
+          <TitleArea>
+            {hasback && (
+              <BackButton onClick={handleBack} $isScrolled={isScrolled} />
+            )}
+            <TitleWrapper $isScrolled={isScrolled} $hasBack={hasback ?? false}>
+              <Title title={title} />
+            </TitleWrapper>
+          </TitleArea>
         ) : (
           <img className="logo" onClick={handleLogoClick} src={intipLogo} />
         )}
@@ -129,6 +132,13 @@ export default function MobileHeader() {
           </MenuBackgroundWrapper>
         )}
       </MainHeaderWrapper>
+      <SubHeaderWrapper>
+        {floatingSubHeader ? (
+          <FloatingWrapper>{subHeader}</FloatingWrapper>
+        ) : (
+          subHeader
+        )}
+      </SubHeaderWrapper>
     </MobileHeaderWrapper>
   );
 }
@@ -139,15 +149,14 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   height: fit-content;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
   position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 2;
   transition: transform 0.3s ease;
   transform: ${({ $visible }) =>
     $visible ? "translateY(0)" : "translateY(-72px)"};
+
+  /* 헤더 전체 영역 터치 투과 */
   pointer-events: none;
 `;
 
@@ -155,24 +164,52 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   width: 100%;
   height: 56px;
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  box-sizing: border-box;
 
   .logo {
+    /* 로고 클릭 활성화 */
+    pointer-events: auto;
     height: 100%;
     cursor: pointer;
     padding: 4px 0;
     margin-left: 36px;
-    box-sizing: border-box;
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:
       opacity 0.1s ease,
       visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.1s" : "0s")};
+  }
+`;
+
+const SubHeaderWrapper = styled.div`
+  width: 100%;
+`;
+
+const TitleArea = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+
+  /* 하위 버튼 요소 클릭 활성화 */
+  & > * {
     pointer-events: auto;
   }
+`;
+
+const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
+  /* 제목 텍스트 자체는 클릭 불필요 시 투과 유지 (필요 시 auto로 변경) */
+  pointer-events: none;
+
+  opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
+  visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
+  max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "300px")};
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 200px;
+  transition:
+    all 0.2s ease-in-out,
+    visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
 `;
 
 const MenuBackgroundWrapper = styled.div<{
@@ -181,34 +218,37 @@ const MenuBackgroundWrapper = styled.div<{
   $marginRight?: string;
 }>`
   display: flex;
-  justify-content: center;
   align-items: center;
-  box-sizing: border-box;
-
+  gap: 16px;
+  border-radius: 50px;
   margin-left: ${({ $marginLeft }) => $marginLeft ?? "0"};
   margin-right: ${({ $marginRight }) => $marginRight ?? "0"};
+  padding: 16px;
 
-  /* 배경 관련 속성 제거 */
-  transition: all 0.2s ease-in-out;
+  /* 배경 및 내부 아이콘 클릭 활성화 */
   pointer-events: auto;
+
+  background: ${({ $isScrolled }) =>
+    $isScrolled ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0)"};
+  box-shadow: ${({ $isScrolled }) =>
+    $isScrolled ? "0 2px 4px 0 rgba(0, 0, 0, 0.2)" : "none"};
+  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
+  -webkit-backdrop-filter: blur(
+    ${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")}
+  );
+  transition: all 0.2s ease-in-out;
 `;
 
-const TitleArea = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
+const FloatingWrapper = styled.div`
+  padding: 4px 16px;
+  margin: 0 16px;
+  border-radius: 50px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #f2f2f2;
 
-const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
-  opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
-  visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
-  max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "300px")};
-  overflow: hidden;
-  white-space: nowrap;
-  transition:
-    all 0.2s ease-in-out,
-    visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
-
-  min-width: 200px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.2s ease-in-out;
 `;

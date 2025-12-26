@@ -67,15 +67,15 @@ export default function BusInfoPage() {
   }, [type]);
   return (
     <BusInfoPageWrapper>
-      <StickyHeaderWrapper>
-        <MobileHeader />
-        <TitleCategorySelectorWrapper>
+      <MobileHeader
+        subHeader={
           <CategorySelectorNew
             categories={tabList}
             selectedCategory={selectedTab}
           />
-        </TitleCategorySelectorWrapper>
-      </StickyHeaderWrapper>
+        }
+        floatingSubHeader={true}
+      />
       <ContentWrapper>
         {type === "go-school" && selectedTab === "인입런" && <GoSchoolINU />}
         {type === "go-school" && selectedTab === "지정단런" && <GoSchoolBIT />}
@@ -108,27 +108,4 @@ const BusInfoPageWrapper = styled.div`
 const ContentWrapper = styled.div`
   padding: 0 16px;
   box-sizing: border-box;
-`;
-
-const StickyHeaderWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  //background-color: #fff;
-  width: 100%;
-`;
-
-const TitleCategorySelectorWrapper = styled.div`
-  //width: 100%;
-  padding: 4px 16px;
-  margin: 0 16px;
-  border-radius: 50px;
-  box-sizing: border-box;
-  //background-color: #fff;
-  border-bottom: 1px solid #f2f2f2;
-
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
-  -webkit-backdrop-filter: blur("5px");
-  backdrop-filter: blur("5px");
 `;

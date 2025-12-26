@@ -51,9 +51,7 @@ export default function MobileBusDetailPage() {
 
   return (
     <>
-      <StickyHeaderWrapper>
-        <MobileHeader />
-      </StickyHeaderWrapper>
+      <MobileHeader />
       <MobileBusDetailPageWrapper>
         <WidePaddingWrapper>
           <BusStopHeader
@@ -96,11 +94,4 @@ const WidePaddingWrapper = styled.div`
 const MediumPaddingWrapper = styled.div`
   padding: 0 16px;
   box-sizing: border-box;
-`;
-const StickyHeaderWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  //background-color: #fff;
-  width: 100%;
 `;
