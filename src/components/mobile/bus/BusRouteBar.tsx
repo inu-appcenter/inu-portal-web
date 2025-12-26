@@ -10,8 +10,15 @@ interface BusRouteBarProps {
 }
 
 export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
-  const arrivalInfo = useBusArrival(bstopId, [bus])[0]?.arrivalInfo;
-  const passArrival = useBusArrival(bus.lastStopId!, [bus])[0]?.arrivalInfo;
+  // 구조 분해 할당을 통해 busArrivalList 추출
+  const { busArrivalList: currentArrivals } = useBusArrival(bstopId, [bus]);
+  const { busArrivalList: passArrivals } = useBusArrival(bus.lastStopId!, [
+    bus,
+  ]);
+
+  // 첫 번째 요소의 arrivalInfo 참조
+  const arrivalInfo = currentArrivals[0]?.arrivalInfo;
+  const passArrival = passArrivals[0]?.arrivalInfo;
 
   const restCount = arrivalInfo?.restCount ?? -1;
   const passRestCount = passArrival?.restCount ?? -1;
@@ -28,7 +35,7 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
 
     const label = i >= 5 ? (route[i - 4] ?? "") : i == 4 ? route[0] : "";
 
-    //현재 정류장 기준 (도착 예정 버스 표시)
+    // 현재 정류장 기준 도착 예정 버스 표시 여부
     const showBus =
       arrivalInfo?.time === "도착정보 없음"
         ? i === 0
@@ -38,10 +45,10 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
             ? i === 4 - restCount
             : false;
 
-    //네모박스 표시
+    // 정보 박스 표시 여부
     const showInfoBox = showBus;
 
-    //마지막 정류장 기준 (현재 정류장에서 지나간 버스 표시)
+    // 지나간 버스 표시 여부
     const showPassBus =
       passRestCount >= 0 &&
       passIndex >= 1 &&
@@ -98,12 +105,12 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
     </Box>
   );
 }
+
 const BusRouteBarWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 40px;
-  //padding-top: ;
   box-sizing: border-box;
   width: 100%;
 `;
