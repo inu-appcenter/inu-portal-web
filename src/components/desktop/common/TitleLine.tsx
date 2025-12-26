@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MdChevronRight } from "react-icons/md";
 
 interface TitleLineProps {
-  title: string;
+  title: string | React.ReactNode;
   link?: string;
 }
 

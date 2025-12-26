@@ -3,7 +3,7 @@ import TitleLine from "./TitleLine.tsx";
 import { CSSProperties } from "react";
 
 interface TitleContentAreaProps {
-  title: string; // 공지사항, 기숙사 꿀팁 등
+  title: string | React.ReactNode;
   link?: string;
   description?: string;
   children: React.ReactNode;

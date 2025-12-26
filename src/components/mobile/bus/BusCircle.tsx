@@ -10,14 +10,14 @@ export default function BusCircle({ number, isGreen }: BusCircleProps) {
 }
 
 const Circle = styled.div<{ $isGreen?: boolean }>`
-  background-color: #ffffff;
-  box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.15);
+  //background-color: #ffffff;
+  //box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.15);
   color: ${(props) => (props.$isGreen ? "#2c9b37" : "#1b4e9b")};
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;

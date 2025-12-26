@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import SectionLabel from "@/components/mobile/bus/SectionLabel";
 import InfoIcon from "@/components/mobile/bus/InfoIcon";
 import BusItem from "@/components/mobile/bus/BusItem";
 import { BusStopBoxProps } from "@/types/bus.ts";
 import useBusArrival from "../../../hooks/useBusArrival.ts";
+import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 
 interface Props extends BusStopBoxProps {
   bstopId: string;
@@ -21,42 +21,40 @@ export default function BusStopBox({
   const busArrivalList = useBusArrival(bstopId, busList);
 
   return (
-    <BusStopBoxWrapper>
-      <BusStopBoxHeader>
+    <TitleContentArea
+      title={
         <LabelGroup>
-          <SectionLabel text={sectionName} />
-          {showInfoIcon && <InfoIcon onClick={onClickInfo} />}
+          {sectionName} {showInfoIcon && <InfoIcon onClick={onClickInfo} />}
         </LabelGroup>
-      </BusStopBoxHeader>
-
-      <BusList>
-        {busArrivalList.map((bus) => (
-          <BusItem
-            key={bus.id}
-            {...bus}
-            onClick={() =>
-              bus.number === "셔틀"
-                ? navigate("/Bus/info?type=shuttle&tab=subwayShuttle")
-                : navigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
-            }
-          />
-        ))}
-      </BusList>
-    </BusStopBoxWrapper>
+      }
+    >
+      <BusStopBoxWrapper>
+        <BusList>
+          {busArrivalList.map((bus) => (
+            <BusItem
+              key={bus.id}
+              {...bus}
+              onClick={() =>
+                bus.number === "셔틀"
+                  ? navigate("/Bus/info?type=shuttle&tab=subwayShuttle")
+                  : navigate(`/bus/detail?bstopId=${bstopId}&id=${bus.id}`)
+              }
+            />
+          ))}
+        </BusList>
+      </BusStopBoxWrapper>
+    </TitleContentArea>
   );
 }
 
 const BusStopBoxWrapper = styled.div`
-  padding: 16px;
+  //padding: 16px;
   background-color: transparent;
-  border: 1px solid #7aa7e5;
-  margin-bottom: 12px;
+  width: 100%;
+  //border: 1px solid #7aa7e5;
+  //margin-bottom: 12px;
   border-radius: 10px;
   box-sizing: border-box;
-`;
-
-const BusStopBoxHeader = styled.div`
-  margin-bottom: 6px;
 `;
 
 const LabelGroup = styled.div`
