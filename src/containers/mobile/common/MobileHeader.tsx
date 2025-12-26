@@ -108,9 +108,7 @@ export default function MobileHeader() {
           <MenuBackgroundWrapper $isScrolled={isScrolled} $marginLeft="16px">
             <TitleArea>
               {hasback && (
-                <BackButtonWrapper onClick={handleBack}>
-                  <BackButton />
-                </BackButtonWrapper>
+                <BackButton onClick={handleBack} $isScrolled={isScrolled} />
               )}
               <TitleWrapper
                 $isScrolled={isScrolled}
@@ -185,27 +183,12 @@ const MenuBackgroundWrapper = styled.div<{
   display: flex;
   justify-content: center;
   align-items: center;
-
-  /* 상하좌우 균일 패딩으로 원형 기반 마련 */
-  padding: 12px;
   box-sizing: border-box;
-  border-radius: 999px;
 
   margin-left: ${({ $marginLeft }) => $marginLeft ?? "0"};
   margin-right: ${({ $marginRight }) => $marginRight ?? "0"};
 
-  background: ${({ $isScrolled }) =>
-    $isScrolled ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0)"};
-  box-shadow: ${({ $isScrolled }) =>
-    $isScrolled
-      ? "0 2px 4px 0 rgba(0, 0, 0, 0.2)"
-      : "0 2px 4px 0 rgba(0, 0, 0, 0)"};
-
-  -webkit-backdrop-filter: blur(
-    ${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")}
-  );
-  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
-
+  /* 배경 관련 속성 제거 */
   transition: all 0.2s ease-in-out;
   pointer-events: auto;
 `;
@@ -217,29 +200,15 @@ const TitleArea = styled.div`
   justify-content: center;
 `;
 
-/* 버튼 위치 고정을 위한 래퍼 */
-const BackButtonWrapper = styled.div`
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  cursor: pointer;
-`;
-
 const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
   opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
   visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
-
   max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "300px")};
-
   overflow: hidden;
   white-space: nowrap;
-
-  /* 모든 레이아웃 변화를 동기화 */
   transition:
     all 0.2s ease-in-out,
     visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
+
+  min-width: 200px;
 `;

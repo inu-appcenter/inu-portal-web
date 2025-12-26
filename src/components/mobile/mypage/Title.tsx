@@ -13,12 +13,12 @@ const TitleName = styled.div`
   font-size: 22px;
   font-style: normal;
   font-weight: 600;
-  line-height: normal;
+  //line-height: normal;
 
   display: flex;
   width: fit-content;
   align-items: center;
   justify-content: center;
 
-  margin-left: 16px;
+  margin-left: 8px;
 `;
