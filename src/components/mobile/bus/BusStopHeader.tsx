@@ -33,11 +33,10 @@ export default function BusStopHeader({
 const BusStopHeaderWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
   box-sizing: border-box;
   margin: 24px 20px 0 20px;
   //margin: 24px 0;
-  gap: 10px;
+  gap: 8px;
 `;
 
 const TopWrapper = styled.div`
