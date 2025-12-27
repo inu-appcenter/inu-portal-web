@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import RegisteredKeywordItem from "../../components/desktop/notice/RegisteredKeywordItem.tsx";
 import { Keyword } from "@/types/notices";
 import {
@@ -20,7 +19,6 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Divider from "@/components/common/Divider";
 import React from "react";
 import Switch from "@/components/common/Switch";
-// import TitleContentArea from "../../components/common/TitleContentArea.tsx";
 
 export default function MobileDeptAlarmSettingPage() {
   const { userInfo } = useUserStore();
@@ -109,93 +107,89 @@ export default function MobileDeptAlarmSettingPage() {
   });
 
   return (
-    <>
-      <MobileHeader />
-      <MobileTipsPageWrapper>
-        <Box style={{ background: "#E3E3E5", margin: "0 16px" }}>
-          <AllAlarmCheckBoxWrapper onClick={handleToggleAllAlarm}>
-            {/*<Checkbox checked={allAlarm} onChange={handleToggleAllAlarm} />*/}
-            <div>
-              <div className="first-line">전체 공지 알림 받기</div>
-              <div className="second-line">
-                {allAlarm ? (
-                  <>
-                    {keywords.find((k) => k.keyword === null)?.department}의
-                    모든 공지사항 푸시알림을 받고 있어요.
-                  </>
-                ) : (
-                  <>키워드에 상관 없이 모든 알림을 받을 수 있습니다.</>
-                )}
-              </div>
-            </div>
-            <Switch
-              checked={allAlarm}
-              onCheckedChange={() => handleToggleAllAlarm}
-            />
-          </AllAlarmCheckBoxWrapper>
-        </Box>
-
-        <KeyWordSettingWrapper>
-          <TitleContentArea title={"키워드 알림 설정"}>
-            <Box>
-              <Wrapper>
-                <InputWrapper>
-                  <StyledInput
-                    placeholder="알림 받을 키워드를 입력해주세요."
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                  />
-                  <TextButton disabled={!keyword} onClick={handleAddKeyword}>
-                    등록
-                  </TextButton>
-                </InputWrapper>
-                <CategorySelectorNew categories={NoticeRecommendKeywords} />
-              </Wrapper>
-            </Box>
-          </TitleContentArea>
-
-          <TitleContentArea title={"등록된 키워드 목록"}>
-            <Box style={{ maxHeight: "300px", overflowY: "auto" }}>
-              <ListWrapper>
-                {!allAlarm &&
-                keywords.filter((item) => item.keyword !== null).length ===
-                  0 ? (
-                  <div>등록된 키워드가 없어요.</div>
-                ) : (
-                  keywords
-                    .filter(
-                      (item): item is typeof item & { keyword: string } =>
-                        item.keyword !== null,
-                    )
-                    .map((item, index, filtered) => (
-                      <React.Fragment key={item.keywordId}>
-                        <RegisteredKeywordItem
-                          keyword={item.keyword}
-                          onDelete={() => handleDeleteKeyword(item.keywordId)}
-                        />
-                        {index < filtered.length - 1 && (
-                          <Divider margin={"4px 0"} />
-                        )}
-                      </React.Fragment>
-                    ))
-                )}
-              </ListWrapper>
-
-              {/* 전체 오버레이 */}
-              {allAlarm && (
-                <Overlay>
-                  <OverlayMessage>
-                    전체 공지 알림이 켜져 있어
-                    <br />
-                    키워드 알림 설정을 사용할 수 없습니다.
-                  </OverlayMessage>
-                </Overlay>
+    <MobileTipsPageWrapper>
+      <Box style={{ background: "#E3E3E5", margin: "0 16px" }}>
+        <AllAlarmCheckBoxWrapper onClick={handleToggleAllAlarm}>
+          {/*<Checkbox checked={allAlarm} onChange={handleToggleAllAlarm} />*/}
+          <div>
+            <div className="first-line">전체 공지 알림 받기</div>
+            <div className="second-line">
+              {allAlarm ? (
+                <>
+                  {keywords.find((k) => k.keyword === null)?.department}의 모든
+                  공지사항 푸시알림을 받고 있어요.
+                </>
+              ) : (
+                <>키워드에 상관 없이 모든 알림을 받을 수 있습니다.</>
               )}
-            </Box>
-          </TitleContentArea>
-        </KeyWordSettingWrapper>
-      </MobileTipsPageWrapper>
-    </>
+            </div>
+          </div>
+          <Switch
+            checked={allAlarm}
+            onCheckedChange={() => handleToggleAllAlarm}
+          />
+        </AllAlarmCheckBoxWrapper>
+      </Box>
+
+      <KeyWordSettingWrapper>
+        <TitleContentArea title={"키워드 알림 설정"}>
+          <Box>
+            <Wrapper>
+              <InputWrapper>
+                <StyledInput
+                  placeholder="알림 받을 키워드를 입력해주세요."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                />
+                <TextButton disabled={!keyword} onClick={handleAddKeyword}>
+                  등록
+                </TextButton>
+              </InputWrapper>
+              <CategorySelectorNew categories={NoticeRecommendKeywords} />
+            </Wrapper>
+          </Box>
+        </TitleContentArea>
+
+        <TitleContentArea title={"등록된 키워드 목록"}>
+          <Box style={{ maxHeight: "300px", overflowY: "auto" }}>
+            <ListWrapper>
+              {!allAlarm &&
+              keywords.filter((item) => item.keyword !== null).length === 0 ? (
+                <div>등록된 키워드가 없어요.</div>
+              ) : (
+                keywords
+                  .filter(
+                    (item): item is typeof item & { keyword: string } =>
+                      item.keyword !== null,
+                  )
+                  .map((item, index, filtered) => (
+                    <React.Fragment key={item.keywordId}>
+                      <RegisteredKeywordItem
+                        keyword={item.keyword}
+                        onDelete={() => handleDeleteKeyword(item.keywordId)}
+                      />
+                      {index < filtered.length - 1 && (
+                        <Divider margin={"4px 0"} />
+                      )}
+                    </React.Fragment>
+                  ))
+              )}
+            </ListWrapper>
+
+            {/* 전체 오버레이 */}
+            {allAlarm && (
+              <Overlay>
+                <OverlayMessage>
+                  전체 공지 알림이 켜져 있어
+                  <br />
+                  키워드 알림 설정을 사용할 수 없습니다.
+                </OverlayMessage>
+              </Overlay>
+            )}
+          </Box>
+        </TitleContentArea>
+      </KeyWordSettingWrapper>
+    </MobileTipsPageWrapper>
   );
 }
 
