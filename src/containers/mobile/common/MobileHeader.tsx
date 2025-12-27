@@ -40,17 +40,17 @@ const Badge = styled.div`
   border-radius: 50%;
 `;
 
-interface HeaderProps {
-  subHeader?: React.ReactNode;
-  floatingSubHeader?: boolean;
-}
-
-export default function MobileHeader({
-  subHeader,
-  floatingSubHeader,
-}: HeaderProps) {
-  const { title, hasback, backPath, showAlarm, menuItems, visible } =
-    useHeaderState();
+export default function MobileHeader() {
+  const {
+    title,
+    hasback,
+    backPath,
+    showAlarm,
+    menuItems,
+    visible,
+    subHeader,
+    floatingSubHeader,
+  } = useHeaderState();
 
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -60,24 +60,16 @@ export default function MobileHeader({
     navigate(ROUTES.HOME);
   };
 
+  // 스크롤 감지 로직
   useEffect(() => {
-    const scrollTarget = document.getElementById("app-scroll-view");
-
     const handleScroll = () => {
-      if (!scrollTarget) return;
-      setIsScrolled(scrollTarget.scrollTop >= 24);
+      setIsScrolled(window.scrollY >= 24);
     };
 
-    if (scrollTarget) {
-      scrollTarget.addEventListener("scroll", handleScroll);
-      handleScroll();
-    }
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
 
-    return () => {
-      if (scrollTarget) {
-        scrollTarget.removeEventListener("scroll", handleScroll);
-      }
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [location.pathname]);
 
   const handleBack = () => {
@@ -132,31 +124,43 @@ export default function MobileHeader({
           </MenuBackgroundWrapper>
         )}
       </MainHeaderWrapper>
-      <SubHeaderWrapper>
-        {floatingSubHeader ? (
-          <FloatingWrapper>{subHeader}</FloatingWrapper>
-        ) : (
-          subHeader
-        )}
-      </SubHeaderWrapper>
+
+      {/* 서브 헤더 렌더링 영역 */}
+      {subHeader && (
+        <SubHeaderWrapper>
+          {floatingSubHeader ? (
+            <FloatingWrapper>{subHeader}</FloatingWrapper>
+          ) : (
+            subHeader
+          )}
+        </SubHeaderWrapper>
+      )}
     </MobileHeaderWrapper>
   );
 }
+const APP_MAX_WIDTH = "768px";
 
+// 브라우저 상단 고정
 const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
-  padding-top: 24px;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%); /* 중앙 정렬 */
   width: 100%;
-  height: fit-content;
+  max-width: ${APP_MAX_WIDTH};
+  padding-top: 24px;
+  z-index: 1000;
+
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  transition: transform 0.3s ease;
-  transform: ${({ $visible }) =>
-    $visible ? "translateY(0)" : "translateY(-72px)"};
 
-  /* 헤더 전체 영역 터치 투과 */
+  transition: transform 0.3s ease;
+  /* translateY에 translateX(-50%) 유지 필요 */
+  transform: ${({ $visible }) =>
+    $visible
+      ? "translateX(-50%) translateY(0)"
+      : "translateX(-50%) translateY(-100%)"};
+
   pointer-events: none;
 `;
 
@@ -166,9 +170,9 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
 
   .logo {
-    /* 로고 클릭 활성화 */
     pointer-events: auto;
     height: 100%;
     cursor: pointer;
@@ -177,31 +181,26 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:
-      opacity 0.1s ease,
-      visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.1s" : "0s")};
+      opacity 0.15s ease,
+      visibility 0s linear
+        ${({ $isScrolled }) => ($isScrolled ? "0.15s" : "0s")};
   }
 `;
 
 const SubHeaderWrapper = styled.div`
   width: 100%;
-  pointer-events: auto; // 클릭 이벤트 허용
+  pointer-events: auto;
 `;
 
 const TitleArea = styled.div`
   display: flex;
   align-items: center;
   margin-left: 16px;
-
-  /* 하위 버튼 요소 클릭 활성화 */
-  & > * {
-    pointer-events: auto;
-  }
+  pointer-events: auto;
 `;
 
 const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
-  /* 제목 텍스트 자체는 클릭 불필요 시 투과 유지 (필요 시 auto로 변경) */
   pointer-events: none;
-
   opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
   visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
   max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "300px")};
@@ -215,29 +214,26 @@ const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
 
 const MenuBackgroundWrapper = styled.div<{
   $isScrolled: boolean;
-  $marginLeft?: string;
   $marginRight?: string;
 }>`
   display: flex;
   align-items: center;
   gap: 16px;
   border-radius: 50px;
-  margin-left: ${({ $marginLeft }) => $marginLeft ?? "0"};
   margin-right: ${({ $marginRight }) => $marginRight ?? "0"};
-  padding: 16px;
-
-  /* 배경 및 내부 아이콘 클릭 활성화 */
+  padding: 12px 16px;
   pointer-events: auto;
 
   background: ${({ $isScrolled }) =>
     $isScrolled ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0)"};
   box-shadow: ${({ $isScrolled }) =>
-    $isScrolled ? "0 2px 4px 0 rgba(0, 0, 0, 0.2)" : "none"};
-  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
+    $isScrolled ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none"};
+  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "10px" : "0px")});
   -webkit-backdrop-filter: blur(
-    ${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")}
+    ${({ $isScrolled }) => ($isScrolled ? "10px" : "0px")}
   );
-  transition: all 0.2s ease-in-out;
+
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const FloatingWrapper = styled.div`
@@ -245,13 +241,9 @@ const FloatingWrapper = styled.div`
   margin: 0 16px;
   border-radius: 50px;
   box-sizing: border-box;
-  border-bottom: 1px solid #f2f2f2;
-
   background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  transition: all 0.2s ease-in-out;
-
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   min-height: 36px;
 `;

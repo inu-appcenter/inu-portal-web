@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Notice } from "@/types/notices";
 import { getDepartmentNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
-import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { putMemberDepartment } from "@/apis/members";
 import findTitleOrCode from "@/utils/findTitleOrCode";
@@ -128,66 +127,63 @@ const MobileDeptNoticePage = () => {
   };
 
   return (
-    <>
-      <MobileHeader />
-      <MobileDeptNoticePageWrapper>
-        <TipsListContainerWrapper>
-          {/* 초기 로딩 상태 처리 */}
-          {deptNotices.length === 0 && isLoading ? (
-            <TipsCardWrapper>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Box key={`dept-init-skeleton-${i}`}>
+    <MobileDeptNoticePageWrapper>
+      <TipsListContainerWrapper>
+        {/* 초기 로딩 상태 처리 */}
+        {deptNotices.length === 0 && isLoading ? (
+          <TipsCardWrapper>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Box key={`dept-init-skeleton-${i}`}>
+                <PostItem isLoading />
+              </Box>
+            ))}
+          </TipsCardWrapper>
+        ) : (
+          <InfiniteScroll
+            dataLength={deptNotices.length}
+            next={handleNext}
+            hasMore={hasMore}
+            scrollableTarget="app-scroll-view"
+            // 추가 데이터 로딩 시 하단 로더
+            loader={
+              <div style={{ marginTop: "12px" }}>
+                <Box>
                   <PostItem isLoading />
+                </Box>
+              </div>
+            }
+            endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+          >
+            <TipsCardWrapper>
+              {deptNotices.map((deptNotice, index) => (
+                <Box
+                  key={`${deptNotice.title}-${index}`}
+                  onClick={() => {
+                    window.open(deptNotice.url, "_blank");
+                  }}
+                >
+                  <PostItem
+                    title={deptNotice.title}
+                    category={deptNotice.category}
+                    writer={deptNotice.writer}
+                    date={deptNotice.createDate}
+                  />
                 </Box>
               ))}
             </TipsCardWrapper>
-          ) : (
-            <InfiniteScroll
-              dataLength={deptNotices.length}
-              next={handleNext}
-              hasMore={hasMore}
-              scrollableTarget="app-scroll-view"
-              // 추가 데이터 로딩 시 하단 로더
-              loader={
-                <div style={{ marginTop: "12px" }}>
-                  <Box>
-                    <PostItem isLoading />
-                  </Box>
-                </div>
-              }
-              endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-            >
-              <TipsCardWrapper>
-                {deptNotices.map((deptNotice, index) => (
-                  <Box
-                    key={`${deptNotice.title}-${index}`}
-                    onClick={() => {
-                      window.open(deptNotice.url, "_blank");
-                    }}
-                  >
-                    <PostItem
-                      title={deptNotice.title}
-                      category={deptNotice.category}
-                      writer={deptNotice.writer}
-                      date={deptNotice.createDate}
-                    />
-                  </Box>
-                ))}
-              </TipsCardWrapper>
-            </InfiniteScroll>
-          )}
-        </TipsListContainerWrapper>
-
-        {navBarList[1].child && (
-          <DepartmentNoticeSelector
-            departments={navBarList[1].child}
-            isOpen={isDeptSelectorOpen}
-            setIsOpen={setIsDeptSelectorOpen}
-            handleClick={handleDepartmentClick}
-          />
+          </InfiniteScroll>
         )}
-      </MobileDeptNoticePageWrapper>
-    </>
+      </TipsListContainerWrapper>
+
+      {navBarList[1].child && (
+        <DepartmentNoticeSelector
+          departments={navBarList[1].child}
+          isOpen={isDeptSelectorOpen}
+          setIsOpen={setIsDeptSelectorOpen}
+          handleClick={handleDepartmentClick}
+        />
+      )}
+    </MobileDeptNoticePageWrapper>
   );
 };
 

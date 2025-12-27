@@ -3,7 +3,6 @@ import styled from "styled-components";
 import IlsanGimpoShuttle from "@/components/mobile/bus/shuttle/IlsanGimpoShuttle.tsx";
 import AnsanSiheungShuttle from "@/components/mobile/bus/shuttle/AnsanSiheungShuttle.tsx";
 import BucheonShuttle from "@/components/mobile/bus/shuttle/BucheonShuttle.tsx";
-import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
 const MobileBusShuttleRouteInfoPage = () => {
@@ -17,18 +16,15 @@ const MobileBusShuttleRouteInfoPage = () => {
   });
 
   return (
-    <>
-      <MobileHeader />
-      <Wrapper>
-        {route === "ilsan-gimpo" && <IlsanGimpoShuttle />}
-        {route === "bucheon" && <BucheonShuttle />}
-        {route === "ansan-siheung" && <AnsanSiheungShuttle />}
+    <Wrapper>
+      {route === "ilsan-gimpo" && <IlsanGimpoShuttle />}
+      {route === "bucheon" && <BucheonShuttle />}
+      {route === "ansan-siheung" && <AnsanSiheungShuttle />}
 
-        {!["ilsan-gimpo", "bucheon", "ansan-siheung"].includes(route || "") && (
-          <div>노선 정보가 없습니다.</div>
-        )}
-      </Wrapper>
-    </>
+      {!["ilsan-gimpo", "bucheon", "ansan-siheung"].includes(route || "") && (
+        <div>노선 정보가 없습니다.</div>
+      )}
+    </Wrapper>
   );
 };
 

@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import HelloBus from "@/components/mobile/bus/shuttle/HelloBus.tsx";
-import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
 const MobileBusShuttleHelloBusPage = () => {
@@ -9,12 +8,9 @@ const MobileBusShuttleHelloBusPage = () => {
     title: "셔틀버스 안내",
   });
   return (
-    <>
-      <MobileHeader />
-      <Wrapper>
-        <HelloBus />
-      </Wrapper>
-    </>
+    <Wrapper>
+      <HelloBus />
+    </Wrapper>
   );
 };
 

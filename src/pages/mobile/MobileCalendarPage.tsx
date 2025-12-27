@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import Calendar from "@/components/mobile/calendar/Calendar";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileCalendarPage() {
@@ -9,12 +8,9 @@ export default function MobileCalendarPage() {
     title: "학사일정",
   });
   return (
-    <>
-      <MobileHeader />
-      <MobileCalendarPageWrapper>
-        <Calendar />
-      </MobileCalendarPageWrapper>
-    </>
+    <MobileCalendarPageWrapper>
+      <Calendar />
+    </MobileCalendarPageWrapper>
   );
 }
 

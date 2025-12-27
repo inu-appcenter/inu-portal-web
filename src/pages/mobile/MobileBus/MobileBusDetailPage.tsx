@@ -16,7 +16,6 @@ import {
   goSchool_INU2,
 } from "@/components/mobile/bus/data/BusDummy";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
-import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 
@@ -50,33 +49,30 @@ export default function MobileBusDetailPage() {
   }
 
   return (
-    <>
-      <MobileHeader />
-      <MobileBusDetailPageWrapper>
-        <MediumPaddingWrapper>
-          <BusStopHeader
-            stopName={`${bus.number} 번`}
-            sectionLabel={bus.sectionLabel}
-            onClickStopInfo={() => {
-              if (bus?.stopId) {
-                mobileBusStopNavigate(bus?.stopId);
-              }
-            }}
-            stopNotice={bus.busNotice}
-          />
-        </MediumPaddingWrapper>
-        <MediumPaddingWrapper>
-          <BusRouteBar bus={bus} bstopId={bstopId} />
-        </MediumPaddingWrapper>
-        <MediumPaddingWrapper>
-          <TitleContentArea title={<SectionLabel text={"노선 지도"} />}>
-            {bus?.path && (
-              <BusRouteMap path={bus.path} stopMarker={bus.stopMarker} />
-            )}
-          </TitleContentArea>
-        </MediumPaddingWrapper>
-      </MobileBusDetailPageWrapper>
-    </>
+    <MobileBusDetailPageWrapper>
+      <MediumPaddingWrapper>
+        <BusStopHeader
+          stopName={`${bus.number} 번`}
+          sectionLabel={bus.sectionLabel}
+          onClickStopInfo={() => {
+            if (bus?.stopId) {
+              mobileBusStopNavigate(bus?.stopId);
+            }
+          }}
+          stopNotice={bus.busNotice}
+        />
+      </MediumPaddingWrapper>
+      <MediumPaddingWrapper>
+        <BusRouteBar bus={bus} bstopId={bstopId} />
+      </MediumPaddingWrapper>
+      <MediumPaddingWrapper>
+        <TitleContentArea title={<SectionLabel text={"노선 지도"} />}>
+          {bus?.path && (
+            <BusRouteMap path={bus.path} stopMarker={bus.stopMarker} />
+          )}
+        </TitleContentArea>
+      </MediumPaddingWrapper>
+    </MobileBusDetailPageWrapper>
   );
 }
 

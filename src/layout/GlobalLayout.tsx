@@ -27,11 +27,10 @@ export default function RootLayout({
   const location = useLocation();
   const outlet = useOutlet();
 
-  const { tokenInfo, setTokenInfo, setUserInfo, userInfo } = useUserStore();
+  const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
 
-  // 인트로 표시 여부 확인
   useEffect(() => {
     const introShown = sessionStorage.getItem("introShown");
     if (introShown) {
@@ -43,185 +42,155 @@ export default function RootLayout({
     }
   }, []);
 
-  // 앱 URL 상태 설정
   useEffect(() => {
     setIsAppUrl(ROUTES.ROOT);
-  }, [setIsAppUrl]);
+    const storedToken = localStorage.getItem("tokenInfo");
+    if (storedToken) setTokenInfo(JSON.parse(storedToken));
+  }, [setTokenInfo, setIsAppUrl]);
 
-  // URL 쿼리 토큰 추출 및 저장
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const accessToken = queryParams.get("token");
-
-    if (accessToken) {
-      setTokenInfo({
-        accessToken: accessToken,
-        accessTokenExpiredTime: "",
-        refreshToken: "",
-        refreshTokenExpiredTime: "",
-      });
-    }
-  }, [location.search, setTokenInfo]);
-
-  // 로컬스토리지 토큰 복구
-  useEffect(() => {
-    const storedTokenInfo = localStorage.getItem("tokenInfo");
-    if (storedTokenInfo) {
-      setTokenInfo(JSON.parse(storedTokenInfo));
-    }
-  }, [setTokenInfo]);
-
-  // 회원 정보 조회
-  useEffect(() => {
-    const initializeUser = async () => {
-      try {
-        const response = await getMembers();
-        setUserInfo(response.data);
-      } catch (error) {
-        console.error("회원 가져오기 실패", error);
-      }
-    };
-
     if (tokenInfo.accessToken) {
-      initializeUser();
+      (async () => {
+        try {
+          const { data } = await getMembers();
+          setUserInfo(data);
+        } catch (e) {
+          console.error("회원 조회 실패", e);
+        }
+      })();
     }
-  }, [tokenInfo, setUserInfo]);
+  }, [tokenInfo.accessToken, setUserInfo]);
 
-  // FCM 토큰 처리
   useEffect(() => {
-    (window as any).onReceiveFcmToken = async function (token: string) {
-      try {
-        localStorage.setItem("fcmToken", token);
-        await tokenInstance.post("/api/tokens", { token });
-      } catch (error) {
-        console.error("FCM 토큰 등록 실패", error);
-      }
+    (window as any).onReceiveFcmToken = async (token: string) => {
+      localStorage.setItem("fcmToken", token);
+      await tokenInstance.post("/api/tokens", { token });
     };
 
-    return () => {
-      (window as any).onReceiveFcmToken = null;
-    };
-  }, [userInfo]);
-
-  // 접속 유저 카운팅
-  useEffect(() => {
     const apiCount = async () => {
-      const STORAGE_KEY = "user_count_date";
       const today = new Date().toISOString().split("T")[0];
-      const lastCountDate = localStorage.getItem(STORAGE_KEY);
-
-      if (lastCountDate !== today) {
+      if (localStorage.getItem("user_count_date") !== today) {
         await postApiLogs("/api/members/no-dup");
-        localStorage.setItem(STORAGE_KEY, today);
+        localStorage.setItem("user_count_date", today);
       }
     };
     apiCount();
+    return () => {
+      (window as any).onReceiveFcmToken = null;
+    };
   }, []);
 
   return (
     <HeaderProvider>
+      <ScrollBarStyles />
       <RootBackground>
-        <ScrollBarStyles />
-        <AppContainer id="app-scroll-view">
-          {showIntro ? (
-            <MobileIntroPage />
-          ) : (
-            <>
-              {showHeader && (
-                <HeaderWrapper>
-                  <MobileHeader />
-                </HeaderWrapper>
-              )}
+        <AppContainer>
+          <AnimatePresence mode="wait">
+            {showIntro ? (
+              <IntroWrapper
+                key="intro"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <MobileIntroPage />
+              </IntroWrapper>
+            ) : (
+              <>
+                {/* 헤더: fixed로 화면 상단 고정 */}
+                {showHeader && <MobileHeader />}
 
-              <AnimatePresence mode="sync">
-                <MotionPage
-                  key={location.pathname}
-                  initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
-                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
-                  transition={{
-                    duration: 0.25,
-                    ease: [0.4, 0.0, 0.2, 1],
-                  }}
-                >
-                  <ContentWrapper $showNav={showNav}>{outlet}</ContentWrapper>
-                </MotionPage>
-              </AnimatePresence>
+                <ContentArea>
+                  <AnimatePresence mode="popLayout">
+                    <MotionPage
+                      key={location.pathname}
+                      $showHeader={showHeader}
+                      $showNav={showNav}
+                      initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
+                      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
+                      transition={{
+                        duration: 0.25,
+                        ease: [0.4, 0.0, 0.2, 1],
+                      }}
+                    >
+                      {outlet}
+                    </MotionPage>
+                  </AnimatePresence>
+                </ContentArea>
 
-              {showNav && <MobileNav />}
-            </>
-          )}
+                {/* 네비게이션: fixed로 화면 하단 고정 */}
+                {showNav && <MobileNav />}
+              </>
+            )}
+          </AnimatePresence>
         </AppContainer>
       </RootBackground>
     </HeaderProvider>
   );
 }
 
-// 스타일 정의
+const APP_MAX_WIDTH = "768px";
+
+// ... 기존 import 동일
+
 const RootBackground = styled.div`
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
   background: conic-gradient(
     from 85deg at 50.89% 49.77%,
-    #cfe9ea 76.62456929683685deg,
-    #d4e3ef 135.7189178466797deg,
-    #def 265.1615309715271deg,
-    #d4e3ef 314.8280382156372deg
+    #cfe9ea 76.62deg,
+    #d4e3ef 135.72deg,
+    #def 265.16deg,
+    #d4e3ef 314.83deg
   );
+  background-attachment: fixed;
+
+  /* [핵심 1] 브라우저 수준에서 가로 스크롤만 차단 */
+  overflow-x: hidden;
 `;
 
 const AppContainer = styled.div`
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  max-width: ${APP_MAX_WIDTH};
+  margin: 0 auto;
+  min-height: 100vh;
   position: relative;
-  max-width: 1024px;
-  overflow-y: auto;
-
-  @media (max-width: 768px) {
-    padding: 0;
-  }
+  /* 내부 overflow 설정을 제거하여 브라우저 스크롤이 끝까지 전달되게 함 */
 `;
 
-const HeaderWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  left: 0;
+const ContentArea = styled.div`
   width: 100%;
-  z-index: 50;
+  position: relative;
+  overflow-y: hidden;
+  /* [핵심 2] 애니메이션 중인 요소가 컨테이너 밖으로 나갈 때 스크롤바 생성 방지 */
+  /* hidden 대신 clip을 사용하면 더 깔끔하지만, 호환성을 위해 hidden 유지 */
+  overflow-x: hidden;
 `;
 
-// RootLayout.tsx 내 스타일 정의 수정
-
-const MotionPage = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
+const MotionPage = styled(motion.div)<{
+  $showHeader: boolean;
+  $showNav: boolean;
+}>`
   width: 100%;
-  height: 100%;
-  z-index: 10;
-
-  /* 내부 ContentWrapper를 중앙에 배치하기 위해 flex 설정 */
+  /* [핵심 3] 높이를 고정하지 않음으로써 브라우저 전체 높이에 맞게 늘어남 */
   display: flex;
   flex-direction: column;
-`;
-
-const ContentWrapper = styled.div<{ $showNav: boolean }>`
-  width: 100%;
-  /* flex: 1을 주어 남은 공간을 다 차지하게 함 */
-  flex: 1;
-
-  /* 내부 자식(페이지 내용)을 상하좌우 중앙 정렬 */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  /* 헤더와 네비게이션만큼의 여백 */
-  padding-top: 90px;
-  padding-bottom: ${(props) => (props.$showNav ? "100px" : "20px")};
   box-sizing: border-box;
+
+  /* 고정 헤더/네비 여백 유지 */
+  padding-top: ${(props) => (props.$showHeader ? "100px" : "20px")};
+  padding-bottom: ${(props) => (props.$showNav ? "140px" : "40px")};
+
+  /* 내부 스크롤 관련 속성 절대 금지 (이중 스크롤의 원인) */
+  overflow: visible;
+`;
+
+const IntroWrapper = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1000;
 `;

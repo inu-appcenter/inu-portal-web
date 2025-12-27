@@ -8,6 +8,7 @@ import {
   useId,
 } from "react";
 
+// --- Types (내부 사용 또는 별도 파일 분리 권장) ---
 export interface MenuItemType {
   label: string;
   onClick: () => void;
@@ -20,6 +21,8 @@ export interface HeaderConfig {
   showAlarm?: boolean;
   menuItems?: MenuItemType[];
   visible?: boolean;
+  subHeader?: ReactNode;
+  floatingSubHeader?: boolean;
 }
 
 interface HeaderContextType {
@@ -34,14 +37,17 @@ const defaultHeaderConfig: HeaderConfig = {
   hasback: true,
   showAlarm: false,
   visible: true,
+  subHeader: null,
+  floatingSubHeader: false,
 };
 
+// --- Context 객체 (export 하지 않음) ---
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
 
+// --- Provider 컴포넌트 ---
 export const HeaderProvider = ({ children }: { children: ReactNode }) => {
   const [headerConfig, setHeaderConfig] =
     useState<HeaderConfig>(defaultHeaderConfig);
-  // 현재 헤더를 제어하고 있는 컴포넌트의 ID를 추적
   const activeHeaderId = useRef<string | null>(null);
 
   const registerHeader = (id: string, config: HeaderConfig) => {
@@ -50,8 +56,6 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const unregisterHeader = (id: string) => {
-    // 현재 헤더 주인이 나(언마운트 되는 컴포넌트)일 때만 초기화
-    // 이미 다른 페이지가 진입해서 registerHeader를 호출했다면 초기화하지 않음
     if (activeHeaderId.current === id) {
       activeHeaderId.current = null;
       setHeaderConfig(defaultHeaderConfig);
@@ -72,26 +76,33 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// --- Custom Hooks ---
 export const useHeader = (config?: HeaderConfig) => {
   const context = useContext(HeaderContext);
   if (!context) throw new Error("HeaderProvider 미존재");
 
   const { registerHeader, unregisterHeader } = context;
-  const id = useId(); // 컴포넌트 고유 ID 생성
+  const id = useId();
 
-  // useEffect보다 실행 시점이 빠른 useLayoutEffect 사용하여 깜빡임 방지
   useLayoutEffect(() => {
-    if (config) {
-      registerHeader(id, { ...defaultHeaderConfig, ...config });
-    }
+    if (!config) return;
+
+    // subHeader는 참조값으로 직접 비교
+    registerHeader(id, { ...defaultHeaderConfig, ...config });
 
     return () => {
-      if (config) {
-        unregisterHeader(id);
-      }
+      unregisterHeader(id);
     };
-    // config 객체 내부 값이 변할 때만 재실행
-  }, [JSON.stringify(config)]);
+    // 의존성 배열에 원시 값들 위주로 나열하여 변경 감지 보장
+  }, [
+    id,
+    config?.title,
+    config?.hasback,
+    config?.showAlarm,
+    config?.visible,
+    config?.subHeader,
+    config?.floatingSubHeader,
+  ]);
 
   return { setHeaderConfig: context.setHeaderConfig };
 };

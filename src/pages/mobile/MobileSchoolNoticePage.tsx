@@ -1,21 +1,15 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Notice } from "@/types/notices";
 import { getNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
-import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { getSchoolNoticeCategories } from "@/apis/categories";
+import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 
 const MobileSchoolNoticePage = () => {
-  useHeader({
-    title: "학교 공지사항",
-    hasback: true,
-  });
-
   const [notices, setNotices] = useState<Notice[]>([]);
   const [categoryList, setCategoryList] = useState<string[]>([]);
   const params = new URLSearchParams(location.search);
@@ -73,60 +67,66 @@ const MobileSchoolNoticePage = () => {
     initLoad();
   }, [selectedCategory]);
 
-  return (
-    <>
-      <MobileHeader
-        subHeader={
-          <CategorySelectorNew
-            categories={categoryList}
-            selectedCategory={selectedCategory}
-          />
-        }
-        floatingSubHeader={true}
+  const subHeader = useMemo(
+    () => (
+      <CategorySelectorNew
+        categories={categoryList}
+        selectedCategory={selectedCategory}
       />
-      <MobileSchoolNoticePageWrapper>
-        <InfiniteScroll
-          dataLength={notices.length}
-          next={() => fetchData(page)}
-          hasMore={hasMore}
-          scrollableTarget="app-scroll-view"
-          // 하단 추가 로딩 스켈레톤
-          loader={
-            <TipsCardWrapper>
-              <Box>
-                <PostItem isLoading />
-              </Box>
-            </TipsCardWrapper>
-          }
-          endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-        >
+    ),
+    [categoryList, selectedCategory],
+  ); // 의존성 배열 관리
+
+  useHeader({
+    title: "학교 공지사항",
+    hasback: true,
+    subHeader: subHeader,
+    floatingSubHeader: true,
+  });
+
+  return (
+    <MobileSchoolNoticePageWrapper>
+      <InfiniteScroll
+        dataLength={notices.length}
+        next={() => fetchData(page)}
+        hasMore={hasMore}
+        scrollableTarget="app-scroll-view"
+        // 하단 추가 로딩 스켈레톤
+        loader={
           <TipsCardWrapper>
-            {/* 초기 로딩 스켈레톤 (데이터가 없을 때) */}
-            {notices.length === 0 && isLoading
-              ? Array.from({ length: 8 }).map((_, i) => (
-                  <Box key={`skeleton-${i}`}>
-                    <PostItem isLoading />
-                  </Box>
-                ))
-              : notices.map((notice, index) => (
-                  <Box
-                    key={`${notice.title}-${index}`}
-                    onClick={() => {
-                      window.open("https://" + notice.url, "_blank");
-                    }}
-                  >
-                    <PostItem
-                      title={notice.title}
-                      category={notice.category}
-                      writer={notice.writer}
-                      date={notice.createDate}
-                    />
-                  </Box>
-                ))}
+            <Box>
+              <PostItem isLoading />
+            </Box>
           </TipsCardWrapper>
-        </InfiniteScroll>
-      </MobileSchoolNoticePageWrapper>
-    </>
+        }
+        endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+      >
+        <TipsCardWrapper>
+          {/* 초기 로딩 스켈레톤 (데이터가 없을 때) */}
+          {notices.length === 0 && isLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <Box key={`skeleton-${i}`}>
+                  <PostItem isLoading />
+                </Box>
+              ))
+            : notices.map((notice, index) => (
+                <Box
+                  key={`${notice.title}-${index}`}
+                  onClick={() => {
+                    window.open("https://" + notice.url, "_blank");
+                  }}
+                >
+                  <PostItem
+                    title={notice.title}
+                    category={notice.category}
+                    writer={notice.writer}
+                    date={notice.createDate}
+                  />
+                </Box>
+              ))}
+        </TipsCardWrapper>
+      </InfiniteScroll>
+    </MobileSchoolNoticePageWrapper>
   );
 };
 

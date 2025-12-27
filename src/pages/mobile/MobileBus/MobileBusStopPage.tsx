@@ -6,7 +6,6 @@ import BusCircleBox from "@/components/mobile/bus/BusCircleBox.tsx";
 import { useLocation } from "react-router-dom";
 import { BusStopDummy } from "@/components/mobile/bus/data/BusStopDummy";
 import BusStopMap from "@/components/mobile/bus/BusStopMap.tsx";
-import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileBusStopPage() {
@@ -24,7 +23,6 @@ export default function MobileBusStopPage() {
   if (stop)
     return (
       <MobileBusStopPageWrapper>
-        <MobileHeader />
         <BusStopHeader
           stopName={stop.stopName}
           stopNotice={stop.stopNotice ?? ""}

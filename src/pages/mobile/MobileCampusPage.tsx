@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import MapManager from "@/components/map/MapManager.tsx";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useEffect } from "react";
 import { postApiLogs } from "@/apis/members";
 import { useHeader } from "@/context/HeaderContext";
@@ -21,8 +20,6 @@ export default function MobileCampusPage() {
 
   return (
     <MobileCampusPageWrapper>
-      <MobileHeader />
-
       <Wrapper>
         <MapManager />
       </Wrapper>

@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import GoSchoolINU from "@/components/mobile/bus/goHomeSchool/GoSchoolINU.tsx";
 import GoSchoolBIT from "@/components/mobile/bus/goHomeSchool/GoSchoolBIT.tsx";
 import GoHomeMain from "@/components/mobile/bus/goHomeSchool/GoHomeMain.tsx";
@@ -9,7 +9,6 @@ import GoHomeScience from "@/components/mobile/bus/goHomeSchool/GoHomeScience.ts
 import MichuholShuttle from "@/components/mobile/bus/shuttle/MichuholShuttle.tsx";
 import SubwayShuttle from "@/components/mobile/bus/shuttle/SubwayShuttle.tsx";
 import SchoolShuttle from "@/components/mobile/bus/shuttle/SchoolShuttle.tsx";
-import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { postApiLogs } from "@/apis/members";
 import { useHeader } from "@/context/HeaderContext";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
@@ -19,19 +18,6 @@ export default function BusInfoPage() {
   const query = new URLSearchParams(location.search);
   const type = query.get("type") || "go-school";
   const tab = query.get("category");
-
-  // 헤더 설정 주입
-  useHeader({
-    title: `${
-      type === "go-school"
-        ? "학교 갈래요"
-        : type === "go-home"
-          ? "집 갈래요"
-          : type === "shuttle"
-            ? "셔틀버스"
-            : "인입런"
-    }`,
-  });
 
   // 디폴트 탭
   const defaultTab =
@@ -65,17 +51,33 @@ export default function BusInfoPage() {
 
     logApi();
   }, [type]);
+
+  const subHeader = useMemo(
+    () => (
+      <CategorySelectorNew
+        categories={tabList}
+        selectedCategory={selectedTab}
+      />
+    ),
+    [tabList, selectedTab],
+  ); // 의존성 배열 관리
+
+  useHeader({
+    title: `${
+      type === "go-school"
+        ? "학교 갈래요"
+        : type === "go-home"
+          ? "집 갈래요"
+          : type === "shuttle"
+            ? "셔틀버스"
+            : "인입런"
+    }`,
+    subHeader: subHeader,
+    floatingSubHeader: true,
+  });
+
   return (
     <BusInfoPageWrapper>
-      <MobileHeader
-        subHeader={
-          <CategorySelectorNew
-            categories={tabList}
-            selectedCategory={selectedTab}
-          />
-        }
-        floatingSubHeader={true}
-      />
       <ContentWrapper>
         {type === "go-school" && selectedTab === "인입런" && <GoSchoolINU />}
         {type === "go-school" && selectedTab === "지정단런" && <GoSchoolBIT />}

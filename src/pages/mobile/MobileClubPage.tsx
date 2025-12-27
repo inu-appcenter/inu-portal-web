@@ -1,17 +1,16 @@
 import styled from "styled-components";
 import { Club } from "@/types/club";
 import { getClubs } from "@/apis/club";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "@/components/mobile/club/ClubAdmin";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box.tsx";
 import FillButton from "@/components/mobile/common/FillButton";
 import Label from "@/components/mobile/common/Label";
-import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import Skeleton from "@/components/common/Skeleton"; // 스켈레톤 컴포넌트
+import Skeleton from "@/components/common/Skeleton";
+import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"; // 스켈레톤 컴포넌트
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -19,20 +18,18 @@ export default function MobileClubPage() {
   const navigate = useNavigate();
 
   const params = new URLSearchParams(location.search);
-  const category = params.get("category") || "전체";
+  const selectedCategory = params.get("category") || "전체";
 
   const [clubs, setClubs] = useState<Club[]>([]);
   const [isLoading, setIsLoading] = useState(false); // 로딩 상태
   const [isClubAdminOpen, setIsClubAdminOpen] = useState(false);
-
-  useHeader({ title: "동아리" });
 
   // 데이터 패칭
   useEffect(() => {
     const fetchClubs = async () => {
       setIsLoading(true);
       try {
-        const response = await getClubs(category);
+        const response = await getClubs(selectedCategory);
         setClubs(response.data);
         setIsLoading(false);
       } catch (error) {
@@ -41,7 +38,7 @@ export default function MobileClubPage() {
     };
 
     fetchClubs();
-  }, [category]);
+  }, [selectedCategory]);
 
   // 카테고리 변경 시 스크롤 상단 이동
   useEffect(() => {
@@ -49,13 +46,13 @@ export default function MobileClubPage() {
     if (scrollableDiv) {
       scrollableDiv.scrollTop = 0;
     }
-  }, [category]);
+  }, [selectedCategory]);
 
   const handleRecruitingBtn = (clubId: number, clubName: string) => {
     navigate(`/home/recruitdetail?id=${clubId}&name=${clubName}`);
   };
 
-  const clubCategories = [
+  const [clubCategories] = useState([
     "전체",
     "교양학술",
     "문화",
@@ -63,20 +60,27 @@ export default function MobileClubPage() {
     "종교",
     "체육",
     "취미·전시",
-  ];
+  ]);
+
+  const subHeader = useMemo(
+    () => (
+      <CategorySelectorNew
+        categories={clubCategories}
+        selectedCategory={selectedCategory}
+      />
+    ),
+    [clubCategories, selectedCategory],
+  ); // 의존성 배열 관리
+
+  useHeader({
+    title: "동아리",
+    hasback: true,
+    subHeader: subHeader,
+    floatingSubHeader: true,
+  });
 
   return (
     <MobileClubPageWrapper>
-      <MobileHeader
-        subHeader={
-          <CategorySelectorNew
-            categories={clubCategories}
-            selectedCategory={category}
-          />
-        }
-        floatingSubHeader={true}
-      />
-
       {isClubAdminOpen ? (
         <ClubAdmin setIsClubAdminOpen={setIsClubAdminOpen} />
       ) : (

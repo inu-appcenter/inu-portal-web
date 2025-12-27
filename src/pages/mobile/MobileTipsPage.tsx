@@ -1,9 +1,8 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import { useEffect, useState, Fragment } from "react";
+import { useEffect, useState, Fragment, useMemo } from "react";
 import Box from "@/components/common/Box";
-import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { getTipsCategories } from "@/apis/categories";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { getPostsMobile } from "@/apis/posts";
@@ -11,13 +10,9 @@ import { Post } from "@/types/posts";
 import Divider from "@/components/common/Divider";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import Skeleton from "@/components/common/Skeleton"; // 스켈레톤 컴포넌트
+import Skeleton from "@/components/common/Skeleton";
 
 const MobileSchoolNoticePage = () => {
-  useHeader({
-    title: "TIPS",
-    hasback: true,
-  });
   const navigate = useNavigate();
 
   const [tips, setTips] = useState<Post[]>([]);
@@ -71,18 +66,26 @@ const MobileSchoolNoticePage = () => {
     }
   }, [selectedCategory, tips, isLoading]);
 
+  const subHeader = useMemo(
+    () => (
+      <CategorySelectorNew
+        categories={categoryList}
+        selectedCategory={selectedCategory}
+      />
+    ),
+    [categoryList, selectedCategory],
+  ); // 의존성 배열 관리
+
+  useHeader({
+    title: "TIPS",
+    hasback: true,
+    subHeader: subHeader,
+    floatingSubHeader: true,
+  });
+
   return (
     <>
-      <MobileHeader
-        subHeader={
-          <CategorySelectorNew
-            categories={categoryList}
-            selectedCategory={selectedCategory}
-          />
-        }
-        floatingSubHeader={true}
-      />
-
+      {/*<MobileHeader />*/}
       <MobileSchoolNoticePageWrapper>
         <TipsListContainerWrapper>
           {isLoading
