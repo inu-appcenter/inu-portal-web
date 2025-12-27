@@ -111,14 +111,29 @@ export default function SubLayout(props: SubLayoutProps) {
 
 // --- Styles ---
 
+// --- Styles ---
+
 const APP_MAX_WIDTH = "768px";
 
 const HeaderAnimationWrapper = styled.div`
   position: fixed;
   top: 0;
-  left: 0;
+  /* 중앙 정렬 */
+  left: 50%;
+  transform: translateX(-50%);
+
   width: 100%;
+  max-width: ${APP_MAX_WIDTH};
+
+  /* 가로 애니메이션만 마스킹 */
+  overflow-x: hidden;
+  overflow-y: visible;
+
+  /* 헤더/서브헤더 높이를 고려한 충분한 높이 (브라우저 스크롤에 영향 없음) */
+  height: 200px;
+
   z-index: 1001;
+  /* 하위 요소 외에는 클릭/스크롤 이벤트 통과 */
   pointer-events: none;
 `;
 
@@ -128,10 +143,21 @@ const HeaderMotionWrapper = styled(motion.div)`
   left: 0;
   width: 100%;
   background: #ffffff;
+  /* 실제 버튼 등 인터랙션 허용 */
   pointer-events: auto;
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: transform, opacity;
+`;
+
+const ContentArea = styled.div`
+  width: 100%;
+  position: relative;
+  /* 가로 애니메이션 마스킹 */
+  overflow-x: hidden;
+  min-height: 100vh;
+
+  overflow-y: hidden;
 `;
 
 const RootBackground = styled.div`
@@ -147,13 +173,6 @@ const AppContainer = styled.div`
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
-`;
-
-const ContentArea = styled.div`
-  width: 100%;
-  position: relative;
-  overflow-x: hidden;
-  min-height: 100vh;
 `;
 
 const MotionPage = styled(motion.div)<{
