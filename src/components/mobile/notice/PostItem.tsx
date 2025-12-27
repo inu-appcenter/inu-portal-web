@@ -5,14 +5,16 @@ import Skeleton from "@/components/common/Skeleton";
 interface NoticeItemProps {
   category?: string;
   title?: string;
+  content?: string;
   date?: string;
   writer?: string;
   isLoading?: boolean;
 }
 
-const NoticeItem = ({
+const PostItem = ({
   category,
   title,
+  content,
   date,
   writer,
   isLoading,
@@ -38,6 +40,7 @@ const NoticeItem = ({
     <NoticeItemWrapper>
       {category && <Category>{category}</Category>}
       <Title>{title || ""}</Title>
+      <ContentLine>{content}</ContentLine>
       <InfoLine>
         <div className="date">{date}</div>
         {writer && <Badge text={writer} />}
@@ -46,7 +49,7 @@ const NoticeItem = ({
   );
 };
 
-export default NoticeItem;
+export default PostItem;
 
 const NoticeItemWrapper = styled.div`
   display: flex;
@@ -70,6 +73,8 @@ const Title = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 `;
+
+const ContentLine = styled.div``;
 
 const InfoLine = styled.div`
   display: flex;

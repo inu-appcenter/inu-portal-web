@@ -7,7 +7,7 @@ import { Notice } from "@/types/notices";
 import { getNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
-import NoticeItem from "@/components/mobile/notice/NoticeItem";
+import PostItem from "@/components/mobile/notice/PostItem";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 
 const MobileSchoolNoticePage = () => {
@@ -94,7 +94,7 @@ const MobileSchoolNoticePage = () => {
           loader={
             <TipsCardWrapper>
               <Box>
-                <NoticeItem isLoading />
+                <PostItem isLoading />
               </Box>
             </TipsCardWrapper>
           }
@@ -105,7 +105,7 @@ const MobileSchoolNoticePage = () => {
             {notices.length === 0 && isLoading
               ? Array.from({ length: 8 }).map((_, i) => (
                   <Box key={`skeleton-${i}`}>
-                    <NoticeItem isLoading />
+                    <PostItem isLoading />
                   </Box>
                 ))
               : notices.map((notice, index) => (
@@ -115,7 +115,7 @@ const MobileSchoolNoticePage = () => {
                       window.open("https://" + notice.url, "_blank");
                     }}
                   >
-                    <NoticeItem
+                    <PostItem
                       title={notice.title}
                       category={notice.category}
                       writer={notice.writer}

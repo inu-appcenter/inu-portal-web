@@ -6,7 +6,7 @@ import { Notice } from "@/types/notices";
 import { getDepartmentNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
-import NoticeItem from "@/components/mobile/notice/NoticeItem";
+import PostItem from "@/components/mobile/notice/PostItem";
 import { putMemberDepartment } from "@/apis/members";
 import findTitleOrCode from "@/utils/findTitleOrCode";
 import { useNavigate, useParams } from "react-router-dom";
@@ -137,7 +137,7 @@ const MobileDeptNoticePage = () => {
             <TipsCardWrapper>
               {Array.from({ length: 8 }).map((_, i) => (
                 <Box key={`dept-init-skeleton-${i}`}>
-                  <NoticeItem isLoading />
+                  <PostItem isLoading />
                 </Box>
               ))}
             </TipsCardWrapper>
@@ -151,7 +151,7 @@ const MobileDeptNoticePage = () => {
               loader={
                 <div style={{ marginTop: "12px" }}>
                   <Box>
-                    <NoticeItem isLoading />
+                    <PostItem isLoading />
                   </Box>
                 </div>
               }
@@ -165,7 +165,7 @@ const MobileDeptNoticePage = () => {
                       window.open(deptNotice.url, "_blank");
                     }}
                   >
-                    <NoticeItem
+                    <PostItem
                       title={deptNotice.title}
                       category={deptNotice.category}
                       writer={deptNotice.writer}

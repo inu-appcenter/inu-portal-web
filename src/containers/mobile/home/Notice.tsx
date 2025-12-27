@@ -4,7 +4,7 @@ import { getNotices } from "@/apis/notices";
 import { Notice } from "@/types/notices";
 import SortDropBox from "@/components/mobile/notice/Sort";
 import Box from "@/components/common/Box";
-import NoticeItem from "@/components/mobile/notice/NoticeItem";
+import PostItem from "@/components/mobile/notice/PostItem";
 import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -61,7 +61,7 @@ export default function NoticeForm() {
             ))
           : notices.slice(0, 3).map((notice, index) => (
               <div key={notice.id || index}>
-                <NoticeItem
+                <PostItem
                   title={notice.title}
                   category={notice.category}
                   date={notice.createDate}

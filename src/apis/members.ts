@@ -119,7 +119,7 @@ export const getMembersLikes = async (
 };
 
 //회원이 받은 알림 목록 가져오기
-export const getNotifications = async (
+export const getAlerts = async (
   page: number,
 ): Promise<ApiResponse<Pagination<Notification[]>>> => {
   const params: { [key: string]: number } = {

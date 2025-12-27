@@ -8,7 +8,6 @@ import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
 import MobileSavePage from "@/pages/mobile/MobileSavePage";
 import MobileMyPage from "@/pages/mobile/MobileMyPage";
-import MobileBoardPage from "@/pages/mobile/MobileBoardPage";
 import MobileWritePage from "@/pages/mobile/MobileWritePage";
 import MobileDeptAlarmSettingPage from "@/pages/mobile/MobileDeptAlarmSettingPage";
 import MobileMenuPage from "@/pages/mobile/MobileMenuPage";
@@ -40,6 +39,7 @@ import SubLayout from "@/layout/SubLayout";
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
+import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 
 export const router = createBrowserRouter([
   {
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
 
           // 게시판
-          { path: ROUTES.BOARD.ALERT, element: <MobileBoardPage /> },
+          { path: ROUTES.BOARD.ALERT, element: <MobileAlertPage /> },
           {
             path: ROUTES.BOARD.TIPS,
             children: [

@@ -9,7 +9,7 @@ import { getCouncilNoticesList } from "@/apis/councilNotices";
 import { Post } from "@/types/posts";
 import { Notice } from "@/types/notices";
 import { CouncilNotice } from "@/types/councilNotices";
-import { getNotifications } from "@/apis/members";
+import { getAlerts } from "@/apis/members";
 import { Notification } from "@/types/members";
 import MoreFeaturesBox from "../../../components/desktop/common/MoreFeaturesBox.tsx";
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
@@ -174,7 +174,7 @@ export default function TipsListContainer({
           setHasMore(false);
         }
       } else if (docType === "ALERT") {
-        const response = await getNotifications(fetchState.page);
+        const response = await getAlerts(fetchState.page);
         const newNotifications: Notification[] = response.data.contents;
         console.log(fetchState.page);
         console.log(response);

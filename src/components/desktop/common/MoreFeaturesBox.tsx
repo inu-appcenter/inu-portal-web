@@ -19,7 +19,7 @@ const Container = styled.div`
   background-color: #e2e8f4; /* 연한 회색 배경 */
   border-radius: 20px;
   padding: 20px 24px;
-  margin: 20px 0;
+  margin: 20px 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
