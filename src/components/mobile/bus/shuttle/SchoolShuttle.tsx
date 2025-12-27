@@ -14,7 +14,7 @@ export default MichuholShuttle;
 const Wrapper = styled.div`
   width: 100%;
   height: 100%;
-  padding-top: 16px;
+  //padding-top: 16px;
   box-sizing: border-box;
 
   display: flex;

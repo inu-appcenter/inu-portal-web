@@ -1,5 +1,5 @@
 import { ROUTES } from "@/constants/routes";
-import { useLocation, useOutlet } from "react-router-dom";
+import { useLocation, useOutlet, useNavigationType } from "react-router-dom"; // useNavigationType 추가
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,29 +13,33 @@ import MobileIntroPage from "@/pages/mobile/MobileIntroPage";
 import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
 import MobileNav from "@/containers/mobile/common/MobileNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
-import { HeaderProvider, useHeaderState } from "@/context/HeaderContext"; // useHeaderState 추가
+import { HeaderProvider, useHeaderState } from "@/context/HeaderContext";
 
 interface RootLayoutProps {
   showHeader?: boolean;
   showNav?: boolean;
 }
 
-// 1. 컨텍스트를 사용하는 내부 콘텐츠 컴포넌트 분리
 function RootLayoutContent({
   showHeader = true,
   showNav = false,
 }: RootLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
+  const navType = useNavigationType(); // 내비게이션 타입 감지
 
-  // Header 상태 구독
   const { subHeader } = useHeaderState();
-
   const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
   const [showIntro, setShowIntro] = useState(false);
 
-  // --- 기존 useEffect 로직 유지 ---
+  // 페이지 이동 시 스크롤 상단 이동 제어
+  useEffect(() => {
+    if (navType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname, navType]);
+
   useEffect(() => {
     const introShown = sessionStorage.getItem("introShown");
     if (introShown) {
@@ -107,7 +111,7 @@ function RootLayoutContent({
                   key={location.pathname}
                   $showHeader={showHeader}
                   $showNav={showNav}
-                  $hasSubHeader={!!subHeader} // subHeader 유무 전달
+                  $hasSubHeader={!!subHeader}
                   initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
                   animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
@@ -129,7 +133,6 @@ function RootLayoutContent({
   );
 }
 
-// 2. 메인 Export 컴포넌트 (Provider로 감싸기)
 export default function RootLayout(props: RootLayoutProps) {
   return (
     <HeaderProvider>
@@ -182,7 +185,6 @@ const MotionPage = styled(motion.div)<{
   flex-direction: column;
   box-sizing: border-box;
 
-  /* 동적 padding-top: subHeader 여부에 따라 높이 조절 */
   padding-top: ${(props) => {
     if (!props.$showHeader) return "20px";
     return props.$hasSubHeader ? "150px" : "100px";

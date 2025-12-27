@@ -1,7 +1,8 @@
-import { useLocation, useOutlet } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation, useOutlet, useNavigationType } from "react-router-dom";
 import styled from "styled-components";
-import { AnimatePresence, motion } from "framer-motion";
-import { HeaderProvider, useHeaderState } from "@/context/HeaderContext"; // useHeaderState 추가
+import { AnimatePresence, motion, Variants } from "framer-motion"; // Variants 추가
+import { HeaderProvider, useHeaderState } from "@/context/HeaderContext";
 import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 
@@ -10,44 +11,82 @@ interface SubLayoutProps {
   showNav?: boolean;
 }
 
-// 컨텍스트 값 참조를 위한 내부 콘텐츠 컴포넌트
+// Variants 타입 명시 및 cubic-bezier 배열 타입 고정
+const stackVariants: Variants = {
+  initial: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-30%",
+    opacity: direction > 0 ? 1 : 0.8,
+    zIndex: direction > 0 ? 2 : 1,
+  }),
+  animate: {
+    x: 0,
+    opacity: 1,
+    zIndex: 1,
+    transition: {
+      duration: 0.4,
+      ease: [0.33, 1, 0.68, 1], // 타입 추론 해결
+    },
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? "-30%" : "100%",
+    opacity: direction > 0 ? 0 : 1,
+    zIndex: direction > 0 ? 0 : 2,
+    transition: {
+      duration: 0.4,
+      ease: [0.33, 1, 0.68, 1], // 타입 추론 해결
+    },
+  }),
+};
+
 function SubLayoutContent({
   showHeader = true,
   showNav = false,
 }: SubLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
-  const { subHeader } = useHeaderState(); // 현재 subHeader 존재 여부 확인
+  const navType = useNavigationType();
+  const { subHeader } = useHeaderState();
+
+  // 스크롤 제어: 뒤로가기(POP)가 아닐 때만 상단 이동
+  useEffect(() => {
+    if (navType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname, navType]);
+
+  const direction = navType === "POP" ? -1 : 1;
 
   return (
     <AppContainer>
       {showHeader && (
         <HeaderAnimationWrapper>
-          <AnimatePresence mode="wait">
-            <motion.div
+          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+            <HeaderMotionWrapper
               key={location.pathname}
-              initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
-              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
-              transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
+              custom={direction}
+              variants={stackVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
             >
               <MobileHeader />
-            </motion.div>
+            </HeaderMotionWrapper>
           </AnimatePresence>
         </HeaderAnimationWrapper>
       )}
 
       <ContentArea>
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="popLayout" initial={false} custom={direction}>
           <MotionPage
             key={location.pathname}
             $showHeader={showHeader}
             $showNav={showNav}
-            $hasSubHeader={!!subHeader} // subHeader 존재 여부 전달
-            initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
-            transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
+            $hasSubHeader={!!subHeader}
+            custom={direction}
+            variants={stackVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
           >
             {outlet}
           </MotionPage>
@@ -59,7 +98,6 @@ function SubLayoutContent({
   );
 }
 
-// 메인 Export 컴포넌트
 export default function SubLayout(props: SubLayoutProps) {
   return (
     <HeaderProvider>
@@ -82,10 +120,18 @@ const HeaderAnimationWrapper = styled.div`
   width: 100%;
   z-index: 1001;
   pointer-events: none;
+`;
 
-  & > div {
-    pointer-events: auto;
-  }
+const HeaderMotionWrapper = styled(motion.div)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  pointer-events: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 `;
 
 const RootBackground = styled.div`
@@ -107,27 +153,30 @@ const ContentArea = styled.div`
   width: 100%;
   position: relative;
   overflow-x: hidden;
+  min-height: 100vh;
 `;
 
 const MotionPage = styled(motion.div)<{
   $showHeader: boolean;
   $showNav: boolean;
-  $hasSubHeader: boolean; // 추가된 prop 타입
+  $hasSubHeader: boolean;
 }>`
   width: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background: #f1f1f3;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 
-  /* 헤더 및 서브헤더 유무에 따른 동적 패딩 설정 */
   padding-top: ${(props) => {
     if (!props.$showHeader) return "20px";
-    return props.$hasSubHeader ? "120px" : "100px"; // subHeader 있을 때 150px로 확장
+    return props.$hasSubHeader ? "140px" : "100px";
   }};
 
   padding-bottom: ${(props) => (props.$showNav ? "140px" : "40px")};
-
-  overflow: visible;
 `;
 
 const NavSlot = styled.div`

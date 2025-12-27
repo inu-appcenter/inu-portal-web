@@ -34,7 +34,7 @@ const BusStopHeaderWrapper = styled.div`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  margin: 24px 20px 0 20px;
+  margin: 0 20px;
   //margin: 24px 0;
   gap: 8px;
   //width: 100%;

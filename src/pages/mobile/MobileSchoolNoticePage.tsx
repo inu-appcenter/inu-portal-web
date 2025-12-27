@@ -140,7 +140,7 @@ const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-top: 12px;
+  //padding-top: 12px;
   margin: 0 16px;
 `;
 

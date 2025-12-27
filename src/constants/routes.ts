@@ -45,7 +45,7 @@ export const ROUTES = {
   BUS: {
     ROOT: "/bus",
     INFO: "/bus/info",
-    DETAIL: "/bus/detail",
+    DETAIL: "/bus/info/detail",
     STOP_INFO: "/bus/stopinfo",
     SHUTTLE_HELLO: "/bus/shuttle/hellobus",
     SHUTTLE_ROUTE: "/bus/shuttle",

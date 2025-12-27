@@ -77,26 +77,29 @@ export default function MobileHeader() {
       navigate(backPath);
       return;
     }
+    navigate(-1);
 
-    const params = new URLSearchParams(location.search);
-    const specialPaths = [
-      ROUTES.BOARD.UTIL,
-      ROUTES.BOARD.COUNCIL,
-      ROUTES.BOARD.CAMPUS,
-      ROUTES.BOARD.TIPS,
-    ] as string[];
+    //
+    // const params = new URLSearchParams(location.search);
+    // const specialPaths = [
+    //   ROUTES.BOARD.UTIL,
+    //   ROUTES.BOARD.COUNCIL,
+    //   ROUTES.BOARD.CAMPUS,
+    //   ROUTES.BOARD.TIPS,
+    // ] as string[];
+    //
+    // const shouldGoHome =
+    //   specialPaths.includes(location.pathname) && [...params].length > 0;
+    // const isBusInfoPage = location.pathname.includes(ROUTES.BUS.INFO);
 
-    const shouldGoHome =
-      specialPaths.includes(location.pathname) && [...params].length > 0;
-    const isBusInfoPage = location.pathname.includes(ROUTES.BUS.INFO);
-
-    if (isBusInfoPage) {
-      navigate(ROUTES.BUS.ROOT);
-    } else if (shouldGoHome) {
-      navigate(ROUTES.HOME);
-    } else {
-      navigate(-1);
-    }
+    // return;
+    // if (isBusInfoPage) {
+    //   navigate(ROUTES.BUS.ROOT);
+    // } else if (shouldGoHome) {
+    //   navigate(ROUTES.HOME);
+    // } else {
+    //   navigate(-1);
+    // }
   };
 
   if (visible === false) return null;

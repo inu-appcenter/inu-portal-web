@@ -84,66 +84,61 @@ const MobileSchoolNoticePage = () => {
   });
 
   return (
-    <>
-      {/*<MobileHeader />*/}
-      <MobileSchoolNoticePageWrapper>
-        <TipsListContainerWrapper>
-          {isLoading
-            ? // 로딩 중 스켈레톤 UI
-              Array.from({ length: 3 }).map((_, groupIdx) => (
-                <div key={`group-skeleton-${groupIdx}`}>
-                  <TitleContentArea
-                    title={<Skeleton width={100} height={20} />}
-                  >
+    <MobileSchoolNoticePageWrapper>
+      <TipsListContainerWrapper>
+        {isLoading
+          ? // 로딩 중 스켈레톤 UI
+            Array.from({ length: 3 }).map((_, groupIdx) => (
+              <div key={`group-skeleton-${groupIdx}`}>
+                <TitleContentArea title={<Skeleton width={100} height={20} />}>
+                  <Box>
+                    {Array.from({ length: 3 }).map((_, itemIdx) => (
+                      <Fragment key={`item-skeleton-${itemIdx}`}>
+                        <Skeleton width="70%" height={22} />
+                        {itemIdx < 2 && <Divider margin={"16px 0"} />}
+                      </Fragment>
+                    ))}
+                  </Box>
+                </TitleContentArea>
+              </div>
+            ))
+          : // 실제 데이터 렌더링
+            categoryList.map((categoryItem) => {
+              const filteredTips = tips.filter(
+                (tip) => tip.category === categoryItem,
+              );
+
+              return (
+                <div id={`category-${categoryItem}`} key={categoryItem}>
+                  <TitleContentArea title={categoryItem}>
                     <Box>
-                      {Array.from({ length: 3 }).map((_, itemIdx) => (
-                        <Fragment key={`item-skeleton-${itemIdx}`}>
-                          <Skeleton width="70%" height={22} />
-                          {itemIdx < 2 && <Divider margin={"16px 0"} />}
-                        </Fragment>
-                      ))}
+                      {filteredTips.length > 0 ? (
+                        filteredTips.map((tip, index) => (
+                          <Fragment key={tip.id}>
+                            <TipTitle
+                              onClick={() => {
+                                navigate(ROUTES.BOARD.TIPS_DETAIL(tip.id));
+                              }}
+                            >
+                              {tip.title}
+                            </TipTitle>
+                            {index < filteredTips.length - 1 && (
+                              <Divider margin={"16px 0"} />
+                            )}
+                          </Fragment>
+                        ))
+                      ) : (
+                        <EmptyState>
+                          해당 카테고리의 게시글이 없습니다.
+                        </EmptyState>
+                      )}
                     </Box>
                   </TitleContentArea>
                 </div>
-              ))
-            : // 실제 데이터 렌더링
-              categoryList.map((categoryItem) => {
-                const filteredTips = tips.filter(
-                  (tip) => tip.category === categoryItem,
-                );
-
-                return (
-                  <div id={`category-${categoryItem}`} key={categoryItem}>
-                    <TitleContentArea title={categoryItem}>
-                      <Box>
-                        {filteredTips.length > 0 ? (
-                          filteredTips.map((tip, index) => (
-                            <Fragment key={tip.id}>
-                              <TipTitle
-                                onClick={() => {
-                                  navigate(ROUTES.BOARD.TIPS_DETAIL(tip.id));
-                                }}
-                              >
-                                {tip.title}
-                              </TipTitle>
-                              {index < filteredTips.length - 1 && (
-                                <Divider margin={"16px 0"} />
-                              )}
-                            </Fragment>
-                          ))
-                        ) : (
-                          <EmptyState>
-                            해당 카테고리의 게시글이 없습니다.
-                          </EmptyState>
-                        )}
-                      </Box>
-                    </TitleContentArea>
-                  </div>
-                );
-              })}
-        </TipsListContainerWrapper>
-      </MobileSchoolNoticePageWrapper>
-    </>
+              );
+            })}
+      </TipsListContainerWrapper>
+    </MobileSchoolNoticePageWrapper>
   );
 };
 
@@ -157,7 +152,7 @@ const MobileSchoolNoticePageWrapper = styled.div`
 
 const TipsListContainerWrapper = styled.div`
   width: 100%;
-  padding: 16px;
+  padding: 0 16px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
