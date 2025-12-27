@@ -13,24 +13,29 @@ import MobileIntroPage from "@/pages/mobile/MobileIntroPage";
 import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
 import MobileNav from "@/containers/mobile/common/MobileNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
-import { HeaderProvider } from "@/context/HeaderContext";
+import { HeaderProvider, useHeaderState } from "@/context/HeaderContext"; // useHeaderState 추가
 
 interface RootLayoutProps {
   showHeader?: boolean;
   showNav?: boolean;
 }
 
-export default function RootLayout({
+// 1. 컨텍스트를 사용하는 내부 콘텐츠 컴포넌트 분리
+function RootLayoutContent({
   showHeader = true,
   showNav = false,
 }: RootLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
 
+  // Header 상태 구독
+  const { subHeader } = useHeaderState();
+
   const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
   const [showIntro, setShowIntro] = useState(false);
 
+  // --- 기존 useEffect 로직 유지 ---
   useEffect(() => {
     const introShown = sessionStorage.getItem("introShown");
     if (introShown) {
@@ -81,58 +86,62 @@ export default function RootLayout({
   }, []);
 
   return (
+    <AppContainer>
+      <AnimatePresence mode="wait">
+        {showIntro ? (
+          <IntroWrapper
+            key="intro"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <MobileIntroPage />
+          </IntroWrapper>
+        ) : (
+          <>
+            {showHeader && <MobileHeader />}
+
+            <ContentArea>
+              <AnimatePresence mode="popLayout">
+                <MotionPage
+                  key={location.pathname}
+                  $showHeader={showHeader}
+                  $showNav={showNav}
+                  $hasSubHeader={!!subHeader} // subHeader 유무 전달
+                  initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
+                  transition={{
+                    duration: 0.25,
+                    ease: [0.4, 0.0, 0.2, 1],
+                  }}
+                >
+                  {outlet}
+                </MotionPage>
+              </AnimatePresence>
+            </ContentArea>
+
+            {showNav && <MobileNav />}
+          </>
+        )}
+      </AnimatePresence>
+    </AppContainer>
+  );
+}
+
+// 2. 메인 Export 컴포넌트 (Provider로 감싸기)
+export default function RootLayout(props: RootLayoutProps) {
+  return (
     <HeaderProvider>
       <ScrollBarStyles />
       <RootBackground>
-        <AppContainer>
-          <AnimatePresence mode="wait">
-            {showIntro ? (
-              <IntroWrapper
-                key="intro"
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <MobileIntroPage />
-              </IntroWrapper>
-            ) : (
-              <>
-                {/* 헤더: fixed로 화면 상단 고정 */}
-                {showHeader && <MobileHeader />}
-
-                <ContentArea>
-                  <AnimatePresence mode="popLayout">
-                    <MotionPage
-                      key={location.pathname}
-                      $showHeader={showHeader}
-                      $showNav={showNav}
-                      initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
-                      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
-                      transition={{
-                        duration: 0.25,
-                        ease: [0.4, 0.0, 0.2, 1],
-                      }}
-                    >
-                      {outlet}
-                    </MotionPage>
-                  </AnimatePresence>
-                </ContentArea>
-
-                {/* 네비게이션: fixed로 화면 하단 고정 */}
-                {showNav && <MobileNav />}
-              </>
-            )}
-          </AnimatePresence>
-        </AppContainer>
+        <RootLayoutContent {...props} />
       </RootBackground>
     </HeaderProvider>
   );
 }
 
-const APP_MAX_WIDTH = "768px";
-
-// ... 기존 import 동일
+// --- Styles ---
 
 const RootBackground = styled.div`
   width: 100%;
@@ -145,8 +154,6 @@ const RootBackground = styled.div`
     #d4e3ef 314.83deg
   );
   background-attachment: fixed;
-
-  /* [핵심 1] 브라우저 수준에서 가로 스크롤만 차단 */
   overflow-x: hidden;
 `;
 
@@ -156,33 +163,32 @@ const AppContainer = styled.div`
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
-  /* 내부 overflow 설정을 제거하여 브라우저 스크롤이 끝까지 전달되게 함 */
 `;
 
 const ContentArea = styled.div`
   width: 100%;
   position: relative;
   overflow-y: hidden;
-  /* [핵심 2] 애니메이션 중인 요소가 컨테이너 밖으로 나갈 때 스크롤바 생성 방지 */
-  /* hidden 대신 clip을 사용하면 더 깔끔하지만, 호환성을 위해 hidden 유지 */
   overflow-x: hidden;
 `;
 
 const MotionPage = styled(motion.div)<{
   $showHeader: boolean;
   $showNav: boolean;
+  $hasSubHeader: boolean;
 }>`
   width: 100%;
-  /* [핵심 3] 높이를 고정하지 않음으로써 브라우저 전체 높이에 맞게 늘어남 */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 
-  /* 고정 헤더/네비 여백 유지 */
-  padding-top: ${(props) => (props.$showHeader ? "100px" : "20px")};
-  padding-bottom: ${(props) => (props.$showNav ? "140px" : "40px")};
+  /* 동적 padding-top: subHeader 여부에 따라 높이 조절 */
+  padding-top: ${(props) => {
+    if (!props.$showHeader) return "20px";
+    return props.$hasSubHeader ? "150px" : "100px";
+  }};
 
-  /* 내부 스크롤 관련 속성 절대 금지 (이중 스크롤의 원인) */
+  padding-bottom: ${(props) => (props.$showNav ? "140px" : "40px")};
   overflow: visible;
 `;
 

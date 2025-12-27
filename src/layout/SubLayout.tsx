@@ -1,7 +1,7 @@
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-import { HeaderProvider } from "@/context/HeaderContext";
+import { HeaderProvider, useHeaderState } from "@/context/HeaderContext"; // useHeaderState 추가
 import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 
@@ -10,68 +10,78 @@ interface SubLayoutProps {
   showNav?: boolean;
 }
 
-export default function SubLayout({
+// 컨텍스트 값 참조를 위한 내부 콘텐츠 컴포넌트
+function SubLayoutContent({
   showHeader = true,
   showNav = false,
 }: SubLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
+  const { subHeader } = useHeaderState(); // 현재 subHeader 존재 여부 확인
 
+  return (
+    <AppContainer>
+      {showHeader && (
+        <HeaderAnimationWrapper>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+              transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
+            >
+              <MobileHeader />
+            </motion.div>
+          </AnimatePresence>
+        </HeaderAnimationWrapper>
+      )}
+
+      <ContentArea>
+        <AnimatePresence mode="popLayout">
+          <MotionPage
+            key={location.pathname}
+            $showHeader={showHeader}
+            $showNav={showNav}
+            $hasSubHeader={!!subHeader} // subHeader 존재 여부 전달
+            initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
+            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
+            transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
+          >
+            {outlet}
+          </MotionPage>
+        </AnimatePresence>
+      </ContentArea>
+
+      {showNav && <NavSlot />}
+    </AppContainer>
+  );
+}
+
+// 메인 Export 컴포넌트
+export default function SubLayout(props: SubLayoutProps) {
   return (
     <HeaderProvider>
       <ScrollBarStyles />
       <RootBackground>
-        <AppContainer>
-          {/* 1. 헤더 전용 애니메이션 영역 (고정 위치 유지) */}
-          {showHeader && (
-            <HeaderAnimationWrapper>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={location.pathname} // 페이지 경로가 바뀔 때마다 애니메이션 실행
-                  initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
-                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
-                  transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
-                >
-                  <MobileHeader />
-                </motion.div>
-              </AnimatePresence>
-            </HeaderAnimationWrapper>
-          )}
-
-          <ContentArea>
-            <AnimatePresence mode="popLayout">
-              <MotionPage
-                key={location.pathname}
-                $showHeader={showHeader}
-                $showNav={showNav}
-                initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
-                transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
-              >
-                {outlet}
-              </MotionPage>
-            </AnimatePresence>
-          </ContentArea>
-
-          {showNav && <NavSlot />}
-        </AppContainer>
+        <SubLayoutContent {...props} />
       </RootBackground>
     </HeaderProvider>
   );
 }
 
+// --- Styles ---
+
 const APP_MAX_WIDTH = "768px";
 
-// 헤더의 fixed 속성을 유지하기 위한 래퍼
 const HeaderAnimationWrapper = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 1001;
-  pointer-events: none; // 클릭 이벤트는 내부 실제 헤더가 처리
+  pointer-events: none;
 
   & > div {
     pointer-events: auto;
@@ -81,8 +91,8 @@ const HeaderAnimationWrapper = styled.div`
 const RootBackground = styled.div`
   width: 100%;
   min-height: 100vh;
-  background: #f1f1f3; // 기존 회색 배경 유지
-  overflow-x: hidden; // 가로 스크롤 방지
+  background: #f1f1f3;
+  overflow-x: hidden;
 `;
 
 const AppContainer = styled.div`
@@ -96,23 +106,28 @@ const AppContainer = styled.div`
 const ContentArea = styled.div`
   width: 100%;
   position: relative;
-  overflow-x: hidden; // 애니메이션 이탈 방지
+  overflow-x: hidden;
 `;
 
 const MotionPage = styled(motion.div)<{
   $showHeader: boolean;
   $showNav: boolean;
+  $hasSubHeader: boolean; // 추가된 prop 타입
 }>`
   width: 100%;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 
-  /* 고정 요소 높이 고려 여백 */
-  padding-top: ${(props) => (props.$showHeader ? "100px" : "20px")};
+  /* 헤더 및 서브헤더 유무에 따른 동적 패딩 설정 */
+  padding-top: ${(props) => {
+    if (!props.$showHeader) return "20px";
+    return props.$hasSubHeader ? "120px" : "100px"; // subHeader 있을 때 150px로 확장
+  }};
+
   padding-bottom: ${(props) => (props.$showNav ? "140px" : "40px")};
 
-  overflow: visible; // 브라우저 스크롤 허용
+  overflow: visible;
 `;
 
 const NavSlot = styled.div`
@@ -120,6 +135,6 @@ const NavSlot = styled.div`
   bottom: 0;
   width: 100%;
   max-width: ${APP_MAX_WIDTH};
-  height: 140px; // 네비게이션 높이만큼 공간 확보
+  height: 140px;
   z-index: 100;
 `;
