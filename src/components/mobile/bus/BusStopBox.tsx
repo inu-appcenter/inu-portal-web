@@ -44,7 +44,7 @@ export default function BusStopBox({
                   onClick={() =>
                     bus.number === "셔틀"
                       ? navigate(
-                          `${ROUTES.BUS.INFO}?type=shuttle&tab=subwayShuttle`,
+                          `${ROUTES.BUS.INFO}?type=shuttle&category=인천대입구 셔틀`,
                         )
                       : navigate(
                           `${ROUTES.BUS.DETAIL}?bstopId=${bstopId}&id=${bus.id}`,
