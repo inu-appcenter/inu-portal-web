@@ -141,7 +141,7 @@ export default function RootLayout(props: RootLayoutProps) {
   );
 }
 
-// --- Styles ---
+const APP_MAX_WIDTH = "768px";
 
 const RootBackground = styled.div`
   width: 100%;
