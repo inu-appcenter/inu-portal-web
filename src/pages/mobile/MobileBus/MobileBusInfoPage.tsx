@@ -16,7 +16,7 @@ import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"
 export default function BusInfoPage() {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-  const type = query.get("type") || "go-school";
+  const type = query.get("type");
   const tab = query.get("category");
 
   // 디폴트 탭
