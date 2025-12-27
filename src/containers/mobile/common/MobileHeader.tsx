@@ -154,13 +154,6 @@ const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   display: flex;
   flex-direction: column;
 
-  transition: transform 0.3s ease;
-  /* translateY에 translateX(-50%) 유지 필요 */
-  transform: ${({ $visible }) =>
-    $visible
-      ? "translateX(-50%) translateY(0)"
-      : "translateX(-50%) translateY(-100%)"};
-
   pointer-events: none;
 `;
 
