@@ -87,22 +87,13 @@ export const useHeader = (config?: HeaderConfig) => {
   useLayoutEffect(() => {
     if (!config) return;
 
-    // subHeader는 참조값으로 직접 비교
     registerHeader(id, { ...defaultHeaderConfig, ...config });
 
     return () => {
       unregisterHeader(id);
     };
-    // 의존성 배열에 원시 값들 위주로 나열하여 변경 감지 보장
-  }, [
-    id,
-    config?.title,
-    config?.hasback,
-    config?.showAlarm,
-    config?.visible,
-    config?.subHeader,
-    config?.floatingSubHeader,
-  ]);
+    // config 객체 전체를 의존성에 넣지 말고, 값이 변할 만한 것들만 정확히 체크
+  }, [id, config?.title, config?.visible, config?.subHeader]); // subHeader 등 JSX는 제외하거나 신중히 포함
 
   return { setHeaderConfig: context.setHeaderConfig };
 };

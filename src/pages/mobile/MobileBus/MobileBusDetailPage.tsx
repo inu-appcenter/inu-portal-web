@@ -20,16 +20,16 @@ import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 
 export default function MobileBusDetailPage() {
+  // 헤더 설정 주입
+  useHeader({
+    title: "버스 정보",
+  });
+
   const [searchParams] = useSearchParams();
   const id = Number(searchParams.get("id"));
   const bstopId = searchParams.get("bstopId") || "";
 
   const mobileBusStopNavigate = useBusStopNavigate();
-
-  // 헤더 설정 주입
-  useHeader({
-    title: "버스 정보",
-  });
 
   const allBus = [
     ...goSchool_INU1,
