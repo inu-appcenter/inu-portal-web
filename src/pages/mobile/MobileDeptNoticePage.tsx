@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Notice } from "@/types/notices";
 import { getDepartmentNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
@@ -32,15 +32,17 @@ const MobileDeptNoticePage = () => {
   });
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
 
-  const menuItems: MenuItemType[] | undefined = userInfo.department
-    ? [
-        { label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) },
-        {
-          label: "푸시 알림 설정",
-          onClick: () => navigate("/home/deptnotice/setting"),
-        },
-      ]
-    : undefined;
+  const menuItems = useMemo<MenuItemType[] | undefined>(() => {
+    return userInfo.department
+      ? [
+          { label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) },
+          {
+            label: "푸시 알림 설정",
+            onClick: () => navigate("/home/deptnotice/setting"),
+          },
+        ]
+      : undefined;
+  }, [userInfo.department]);
 
   useHeader({
     title: dept ? `${dept} 공지사항` : "학과 공지사항",
