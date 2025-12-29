@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import NavMenu from "@/components/desktop/common/NavMenu";
 import CopyRightText from "@/resources/assets/CopyRightText.svg";
-import AppcenterLogo from "@/resources/assets/appcenter-logo.svg";
+import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
 import { useLocation } from "react-router-dom";
 
 export default function Footer() {

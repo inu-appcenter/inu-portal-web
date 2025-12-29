@@ -2,8 +2,7 @@ import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import CategoryForm from "@/containers/mobile/home/Category";
 import NoticeForm from "@/containers/mobile/home/Notice";
-import AppcenterLogo from "@/resources/assets/appcenter-logo.svg";
-import { ReactSVG } from "react-svg";
+import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
 import X_Vector from "../../resources/assets/mobile-mypage/X-Vector.svg";
 import PopupNotice from "@/components/desktop/banner/PopupNotice.tsx";
 import 배너이미지 from "@/resources/assets/banner/intip설문조사.png";
@@ -99,7 +98,13 @@ export default function MobileHomePage() {
       </ContainerWrapper>
 
       <AppcenterLogoWrapper>
-        <ReactSVG src={AppcenterLogo} />
+        <img
+          src={AppcenterLogo}
+          alt={"appcenterLogo"}
+          onClick={() => {
+            window.open("https://home.inuappcenter.kr");
+          }}
+        />
       </AppcenterLogoWrapper>
     </MobileHomePageWrapper>
   );
@@ -130,9 +135,11 @@ const AppcenterLogoWrapper = styled.div`
   align-items: center;
   justify-content: center;
 
-  svg {
-    width: 100%;
-    height: 48px;
+  img {
+    width: 50%;
+    height: auto;
+    max-width: 200px;
+    min-width: 150px;
   }
 `;
 

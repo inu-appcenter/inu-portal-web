@@ -1,7 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import intipLogo from "@/resources/assets/intip-logo.svg";
+import intipLogo from "@/resources/assets/intip-logo.webp";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Bell } from "lucide-react";
@@ -170,7 +170,8 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
 
   .logo {
     pointer-events: auto;
-    height: 100%;
+    height: auto;
+    width: 100px;
     cursor: pointer;
     padding: 4px 0;
     margin-left: 36px;

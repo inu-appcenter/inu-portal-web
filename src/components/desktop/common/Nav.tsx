@@ -1,7 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import IntipLogo from "@/resources/assets/intip-logo.svg";
+import IntipLogo from "@/resources/assets/intip-logo.webp";
 import NavMenu from "@/components/desktop/common/NavMenu";
 
 export default function Nav() {

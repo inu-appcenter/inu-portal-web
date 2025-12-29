@@ -1,6 +1,6 @@
 import styled, { keyframes } from "styled-components";
 import menuButtonImage from "@/resources/assets/mobile-common/menu-button.svg";
-import intipLogo from "@/resources/assets/intip-logo.svg";
+import intipLogo from "@/resources/assets/intip-logo.webp";
 import closeBtn from "@/resources/assets/mobile-common/closebtn.svg";
 import { useEffect, useState } from "react";
 import SerachForm from "@/containers/mobile/home/SerachForm";

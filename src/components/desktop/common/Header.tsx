@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import useUserStore from "@/stores/useUserStore";
 import { useNavigate } from "react-router-dom";
-import AppcenterLogo from "@/resources/assets/appcenter-logo.svg";
+import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
 
 export default function Header() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
