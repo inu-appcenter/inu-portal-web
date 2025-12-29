@@ -51,12 +51,12 @@ export default function MobileHomePage() {
     null,
   );
 
-  useEffect(() => {
-    setNotification({
-      title: "서비스 점검 안내",
-      message: `12월 26일(금) 18시부터 12월 29일(월) 08시까지 정보전산원 시스템 점검으로 인해 서비스 이용이 어렵습니다. 이용에 불편을 드려 죄송합니다.`,
-    });
-  }, []);
+  // useEffect(() => {
+  //   setNotification({
+  //     title: "서비스 점검 안내",
+  //     message: `12월 26일(금) 18시부터 12월 29일(월) 08시까지 정보전산원 시스템 점검으로 인해 서비스 이용이 어렵습니다. 이용에 불편을 드려 죄송합니다.`,
+  //   });
+  // }, []);
 
   // 3. 알림이 닫힐 때 호출될 함수 (onClose prop으로 전달)
   const handleCloseNotification = () => {
