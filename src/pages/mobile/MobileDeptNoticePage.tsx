@@ -13,8 +13,10 @@ import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
 
+// 서버에서 보내주는 페이지당 데이터 개수
+const LIMIT = 8;
+
 interface FetchState {
-  lastPostId: number | undefined;
   page: number;
 }
 
@@ -27,7 +29,6 @@ const MobileDeptNoticePage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchState, setFetchState] = useState<FetchState>({
-    lastPostId: undefined,
     page: 1,
   });
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
@@ -42,7 +43,7 @@ const MobileDeptNoticePage = () => {
           },
         ]
       : undefined;
-  }, [userInfo.department]);
+  }, [userInfo.department, navigate]);
 
   useHeader({
     title: dept ? `${dept} 공지사항` : "학과 공지사항",
@@ -53,7 +54,8 @@ const MobileDeptNoticePage = () => {
   // 데이터 요청 함수
   const fetchData = useCallback(
     async (page: number, isInitial: boolean = false) => {
-      if (isLoading) return;
+      // 초기화 요청이 아닐 때만 중복 방지 가드 작동
+      if (isLoading && !isInitial) return;
 
       setIsLoading(true);
       try {
@@ -70,10 +72,10 @@ const MobileDeptNoticePage = () => {
           setDeptNotices((prev) =>
             isInitial ? newNotices : [...prev, ...newNotices],
           );
-          setFetchState((prev) => ({
-            ...prev,
-            page: page + 1,
-          }));
+          setFetchState({ page: page + 1 });
+
+          // 데이터 개수가 LIMIT 미만이면 더 이상 데이터 없음
+          setHasMore(newNotices.length >= LIMIT);
         } else {
           if (isInitial) setDeptNotices([]);
           setHasMore(false);
@@ -88,20 +90,23 @@ const MobileDeptNoticePage = () => {
     [dept, isLoading],
   );
 
-  // 학과 변경 시 데이터 초기화 및 재요청
+  // 학과 변경 시 상태 초기화 및 첫 데이터 요청
   useEffect(() => {
     if (dept) {
-      setDeptNotices([]); // 기존 데이터 제거로 스켈레톤 유도
+      setDeptNotices([]);
       setHasMore(true);
-      setFetchState({ lastPostId: undefined, page: 1 });
+      setFetchState({ page: 1 });
+
+      const scrollableDiv = document.getElementById("app-scroll-view");
+      if (scrollableDiv) scrollableDiv.scrollTop = 0;
+
       fetchData(1, true);
     }
   }, [dept]);
 
+  // 무한 스크롤 핸들러
   const handleNext = () => {
-    if (hasMore && !isLoading) {
-      fetchData(fetchState.page);
-    }
+    fetchData(fetchState.page);
   };
 
   useEffect(() => {
@@ -131,7 +136,7 @@ const MobileDeptNoticePage = () => {
   return (
     <MobileDeptNoticePageWrapper>
       <TipsListContainerWrapper>
-        {/* 초기 로딩 상태 처리 */}
+        {/* 초기 로딩: 데이터가 없고 로딩 중일 때만 스켈레톤 노출 */}
         {deptNotices.length === 0 && isLoading ? (
           <TipsCardWrapper>
             {Array.from({ length: 8 }).map((_, i) => (
@@ -146,7 +151,7 @@ const MobileDeptNoticePage = () => {
             next={handleNext}
             hasMore={hasMore}
             scrollableTarget="app-scroll-view"
-            // 추가 데이터 로딩 시 하단 로더
+            // 추가 데이터 로딩 시에만 하단 스켈레톤 노출
             loader={
               <div style={{ marginTop: "12px" }}>
                 <Box>
@@ -205,7 +210,6 @@ const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  //padding-top: 12px;
 `;
 
 const LoadingText = styled.h4`

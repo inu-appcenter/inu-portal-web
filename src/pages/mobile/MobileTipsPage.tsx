@@ -8,7 +8,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { getPostsMobile } from "@/apis/posts";
 import { Post } from "@/types/posts";
 import Divider from "@/components/common/Divider";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -18,6 +18,8 @@ const MobileSchoolNoticePage = () => {
   const [tips, setTips] = useState<Post[]>([]);
   const [categoryList, setCategoryList] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+
+  const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || categoryList[0];
 
@@ -45,21 +47,19 @@ const MobileSchoolNoticePage = () => {
   useEffect(() => {
     if (isLoading) return; // 로딩 중 스크롤 방지
 
-    const scrollContainer = document.getElementById("app-scroll-view");
-
     if (selectedCategory === "전체") {
-      scrollContainer?.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     const targetElement = document.getElementById(
       `category-${selectedCategory}`,
     );
-    if (targetElement && scrollContainer) {
+    if (targetElement) {
       const headerOffset = 104;
       const targetPosition = targetElement.offsetTop - headerOffset;
 
-      scrollContainer.scrollTo({
+      window.scrollTo({
         top: targetPosition,
         behavior: "smooth",
       });

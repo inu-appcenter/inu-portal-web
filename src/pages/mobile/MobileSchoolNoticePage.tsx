@@ -8,10 +8,15 @@ import Box from "@/components/common/Box";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
+import { useLocation } from "react-router-dom";
+
+const LIMIT = 8; // 서버에서 보내주는 페이지당 데이터 개수
 
 const MobileSchoolNoticePage = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [categoryList, setCategoryList] = useState<string[]>([]);
+
+  const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "전체";
 
@@ -23,6 +28,7 @@ const MobileSchoolNoticePage = () => {
     async (pageNum: number, isFirst: boolean = false) => {
       if (isLoading) return;
       setIsLoading(true);
+
       try {
         const response = await getNotices(selectedCategory, "date", pageNum);
         const newNotices: Notice[] = response.data.contents;
@@ -32,13 +38,22 @@ const MobileSchoolNoticePage = () => {
             isFirst ? newNotices : [...prev, ...newNotices],
           );
           setPage(pageNum + 1);
+
+          // 데이터 개수가 LIMIT보다 적으면 더 이상 가져올 데이터 없음 처리
+          if (newNotices.length < LIMIT) {
+            setHasMore(false);
+          } else {
+            setHasMore(true);
+          }
         } else {
+          // 가져온 데이터가 0개인 경우
           setHasMore(false);
         }
-        setIsLoading(false);
       } catch (error) {
         console.error("데이터 로드 실패", error);
         setHasMore(false);
+      } finally {
+        setIsLoading(false);
       }
     },
     [selectedCategory, isLoading],
@@ -75,7 +90,7 @@ const MobileSchoolNoticePage = () => {
       />
     ),
     [categoryList, selectedCategory],
-  ); // 의존성 배열 관리
+  );
 
   useHeader({
     title: "학교 공지사항",
