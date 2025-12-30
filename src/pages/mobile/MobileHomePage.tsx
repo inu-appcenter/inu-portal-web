@@ -13,6 +13,9 @@ import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import { useHeader } from "@/context/HeaderContext";
 import Calendar from "@/components/mobile/calendar/Calendar";
+import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
+
+const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
 export default function MobileHomePage() {
   const isBannerOn = false; //배너 온오프 - on:true off:false
@@ -94,6 +97,12 @@ export default function MobileHomePage() {
           children={<Calendar mode={"weekly"} />}
           link={ROUTES.BOARD.CALENDAR}
         />
+        <TitleContentArea
+          title={"인천대학교 YouTube"}
+          externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
+        >
+          <YoutubeWidget />
+        </TitleContentArea>
         {/*<TipForm />*/}
       </ContainerWrapper>
 

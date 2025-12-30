@@ -5,6 +5,7 @@ import { CSSProperties } from "react";
 interface TitleContentAreaProps {
   title: string | React.ReactNode;
   link?: string;
+  externalLink?: string;
   description?: string;
   children: React.ReactNode;
   style?: CSSProperties;
@@ -13,13 +14,14 @@ interface TitleContentAreaProps {
 const TitleContentArea = ({
   title,
   link,
+  externalLink,
   description,
   children,
   style,
 }: TitleContentAreaProps) => {
   return (
     <TitleContentAreaWrapper style={style}>
-      <TitleLine title={title} link={link} />
+      <TitleLine title={title} link={link} externalLink={externalLink} />
       {description && <DescriptionText>{description}</DescriptionText>}
       {children}
     </TitleContentAreaWrapper>

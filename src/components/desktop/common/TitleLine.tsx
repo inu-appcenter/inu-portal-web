@@ -5,19 +5,25 @@ import { MdChevronRight } from "react-icons/md";
 interface TitleLineProps {
   title: string | React.ReactNode;
   link?: string;
+  externalLink?: string;
 }
 
-const TitleLine = ({ title, link }: TitleLineProps) => {
+const TitleLine = ({ title, link, externalLink }: TitleLineProps) => {
   const navigate = useNavigate();
   return (
     <TitleLineWrapper
       onClick={() => {
-        if (!link) return;
-        navigate(link);
+        if (link) {
+          navigate(link);
+        } else if (externalLink) {
+          window.open(externalLink, "_blank");
+        }
       }}
     >
       <div className="title">{title}</div>
-      {link && <MdChevronRight size={24} style={{ display: "block" }} />}
+      {(link || externalLink) && (
+        <MdChevronRight size={24} style={{ display: "block" }} />
+      )}
     </TitleLineWrapper>
   );
 };
