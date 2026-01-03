@@ -13,26 +13,22 @@ import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
 
-// 서버에서 보내주는 페이지당 데이터 개수
+// 페이지당 데이터 개수 상수
 const LIMIT = 8;
-
-interface FetchState {
-  page: number;
-}
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo } = useUserStore();
   const navigate = useNavigate();
   const { dept } = useParams<{ dept: string }>();
 
+  // 데이터 관련 상태
   const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [fetchState, setFetchState] = useState<FetchState>({
-    page: 1,
-  });
+  const [page, setPage] = useState(1);
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
 
+  // 헤더 메뉴 설정
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     return userInfo.department
       ? [
@@ -51,30 +47,30 @@ const MobileDeptNoticePage = () => {
     menuItems,
   });
 
-  // 데이터 요청 함수
+  // 공통 데이터 페칭 함수
   const fetchData = useCallback(
-    async (page: number, isInitial: boolean = false) => {
-      // 초기화 요청이 아닐 때만 중복 방지 가드 작동
-      if (isLoading && !isInitial) return;
+    async (targetPage: number, isInitial: boolean = false) => {
+      // 로딩 중 중복 방지
+      if (isLoading) return;
 
       setIsLoading(true);
       try {
         const deptCode = dept ? findTitleOrCode(dept) : undefined;
-        if (!deptCode) {
-          alert("학과 정보가 없어요");
-          return;
-        }
+        if (!deptCode) return;
 
-        const response = await getDepartmentNotices(deptCode, "date", page);
+        const response = await getDepartmentNotices(
+          deptCode,
+          "date",
+          targetPage,
+        );
         const newNotices: Notice[] = response.data.contents;
 
         if (newNotices && newNotices.length > 0) {
           setDeptNotices((prev) =>
             isInitial ? newNotices : [...prev, ...newNotices],
           );
-          setFetchState({ page: page + 1 });
-
-          // 데이터 개수가 LIMIT 미만이면 더 이상 데이터 없음
+          setPage(targetPage + 1);
+          // 획득 데이터 수 기반 추가 로드 가능 여부 판단
           setHasMore(newNotices.length >= LIMIT);
         } else {
           if (isInitial) setDeptNotices([]);
@@ -90,13 +86,12 @@ const MobileDeptNoticePage = () => {
     [dept, isLoading],
   );
 
-  // 학과 변경 시 상태 초기화 및 첫 데이터 요청
+  // 학과 변경 감지 및 초기화
   useEffect(() => {
     if (dept) {
-      setDeptNotices([]);
+      setPage(1);
       setHasMore(true);
-      setFetchState({ page: 1 });
-
+      // 스크롤 최상단 초기화
       const scrollableDiv = document.getElementById("app-scroll-view");
       if (scrollableDiv) scrollableDiv.scrollTop = 0;
 
@@ -104,42 +99,41 @@ const MobileDeptNoticePage = () => {
     }
   }, [dept]);
 
-  // 무한 스크롤 핸들러
+  // 다음 페이지 로드 핸들러
   const handleNext = () => {
-    fetchData(fetchState.page);
+    if (!isLoading && hasMore) {
+      fetchData(page);
+    }
   };
 
+  // 학과 리다이렉트 처리
   useEffect(() => {
     if (userInfo.department && !dept) {
-      navigate(`/home/deptnotice/${userInfo.department}`, {
-        replace: true,
-      });
+      navigate(`/home/deptnotice/${userInfo.department}`, { replace: true });
     }
   }, [userInfo.department, dept, navigate]);
 
+  // 학과 변경 선택 처리
   const handleDepartmentClick = async (department: string) => {
     try {
       await putMemberDepartment(department);
       const deptKorean = findTitleOrCode(department);
-      setUserInfo({
-        ...userInfo,
-        department: deptKorean,
-      });
+      setUserInfo({ ...userInfo, department: deptKorean });
       setIsDeptSelectorOpen(false);
       navigate(`/home/deptnotice/${deptKorean}`, { replace: true });
     } catch (error) {
       console.error(error);
-      alert("학과 변경을 실패했습니다.");
+      alert("학과 변경 실패");
     }
   };
 
   return (
     <MobileDeptNoticePageWrapper>
       <TipsListContainerWrapper>
-        {/* 초기 로딩: 데이터가 없고 로딩 중일 때만 스켈레톤 노출 */}
+        {/* 초기 로딩 스켈레톤 UI */}
         {deptNotices.length === 0 && isLoading ? (
           <TipsCardWrapper>
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: LIMIT }).map((_, i) => (
               <Box key={`dept-init-skeleton-${i}`}>
                 <PostItem isLoading />
               </Box>
@@ -150,8 +144,7 @@ const MobileDeptNoticePage = () => {
             dataLength={deptNotices.length}
             next={handleNext}
             hasMore={hasMore}
-            scrollableTarget="app-scroll-view"
-            // 추가 데이터 로딩 시에만 하단 스켈레톤 노출
+            scrollableTarget="app-scroll-view" // 레이아웃 스크롤 영역 참조
             loader={
               <div style={{ marginTop: "12px" }}>
                 <Box>
@@ -159,14 +152,16 @@ const MobileDeptNoticePage = () => {
                 </Box>
               </div>
             }
-            endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+            endMessage={
+              <LoadingText>모든 공지사항을 확인했습니다.</LoadingText>
+            }
           >
             <TipsCardWrapper>
               {deptNotices.map((deptNotice, index) => (
                 <Box
                   key={`${deptNotice.title}-${index}`}
                   onClick={() => {
-                    window.open(deptNotice.url, "_blank");
+                    if (deptNotice.url) window.open(deptNotice.url, "_blank");
                   }}
                 >
                   <PostItem
@@ -182,6 +177,7 @@ const MobileDeptNoticePage = () => {
         )}
       </TipsListContainerWrapper>
 
+      {/* 학과 선택 모달 */}
       {navBarList[1].child && (
         <DepartmentNoticeSelector
           departments={navBarList[1].child}
@@ -196,6 +192,7 @@ const MobileDeptNoticePage = () => {
 
 export default MobileDeptNoticePage;
 
+/* 스타일 정의 */
 const MobileDeptNoticePageWrapper = styled.div`
   width: 100%;
 `;
@@ -210,6 +207,7 @@ const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding-bottom: 20px;
 `;
 
 const LoadingText = styled.h4`

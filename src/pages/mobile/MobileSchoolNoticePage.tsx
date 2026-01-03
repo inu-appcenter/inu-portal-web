@@ -10,7 +10,7 @@ import { getSchoolNoticeCategories } from "@/apis/categories";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import { useLocation } from "react-router-dom";
 
-const LIMIT = 8; // 서버에서 보내주는 페이지당 데이터 개수
+const LIMIT = 8; // 페이지당 데이터 수
 
 const MobileSchoolNoticePage = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -24,11 +24,13 @@ const MobileSchoolNoticePage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 데이터 페칭 함수
   const fetchData = useCallback(
     async (pageNum: number, isFirst: boolean = false) => {
-      if (isLoading) return;
-      setIsLoading(true);
+      // 중복 로딩 방지
+      if (isLoading && !isFirst) return;
 
+      setIsLoading(true);
       try {
         const response = await getNotices(selectedCategory, "date", pageNum);
         const newNotices: Notice[] = response.data.contents;
@@ -39,14 +41,13 @@ const MobileSchoolNoticePage = () => {
           );
           setPage(pageNum + 1);
 
-          // 데이터 개수가 LIMIT보다 적으면 더 이상 가져올 데이터 없음 처리
+          // 데이터 개수 기반 다음 페이지 유무 판별
           if (newNotices.length < LIMIT) {
             setHasMore(false);
           } else {
             setHasMore(true);
           }
         } else {
-          // 가져온 데이터가 0개인 경우
           setHasMore(false);
         }
       } catch (error) {
@@ -56,18 +57,24 @@ const MobileSchoolNoticePage = () => {
         setIsLoading(false);
       }
     },
-    [selectedCategory, isLoading],
+    [selectedCategory], // isLoading 제거: 함수 안정성 유지
   );
 
+  // 카테고리 로드
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await getSchoolNoticeCategories();
-      setCategoryList(["전체", ...response.data]);
+      try {
+        const response = await getSchoolNoticeCategories();
+        setCategoryList(["전체", ...response.data]);
+      } catch (error) {
+        console.error("카테고리 로드 실패", error);
+      }
     };
 
     fetchCategories();
   }, []);
 
+  // 카테고리 변경 시 초기화
   useEffect(() => {
     const initLoad = async () => {
       setNotices([]);
@@ -80,7 +87,7 @@ const MobileSchoolNoticePage = () => {
       await fetchData(1, true);
     };
     initLoad();
-  }, [selectedCategory]);
+  }, [selectedCategory, fetchData]);
 
   const subHeader = useMemo(
     () => (
@@ -105,8 +112,7 @@ const MobileSchoolNoticePage = () => {
         dataLength={notices.length}
         next={() => fetchData(page)}
         hasMore={hasMore}
-        scrollableTarget="app-scroll-view"
-        // 하단 추가 로딩 스켈레톤
+        scrollableTarget="app-scroll-view" // SubLayout의 ID와 일치
         loader={
           <TipsCardWrapper>
             <Box>
@@ -117,7 +123,7 @@ const MobileSchoolNoticePage = () => {
         endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
       >
         <TipsCardWrapper>
-          {/* 초기 로딩 스켈레톤 (데이터가 없을 때) */}
+          {/* 초기 로딩 스켈레톤 */}
           {notices.length === 0 && isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
                 <Box key={`skeleton-${i}`}>
@@ -126,9 +132,10 @@ const MobileSchoolNoticePage = () => {
               ))
             : notices.map((notice, index) => (
                 <Box
-                  key={`${notice.title}-${index}`}
+                  key={`${notice.id || index}`}
                   onClick={() => {
-                    window.open("https://" + notice.url, "_blank");
+                    if (notice.url)
+                      window.open("https://" + notice.url, "_blank");
                   }}
                 >
                   <PostItem
@@ -155,8 +162,8 @@ const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  //padding-top: 12px;
   margin: 0 16px;
+  padding-bottom: 20px;
 `;
 
 const LoadingText = styled.h4`

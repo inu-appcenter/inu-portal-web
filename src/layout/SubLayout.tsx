@@ -1,208 +1,116 @@
-import { useEffect } from "react";
-import { useLocation, useOutlet, useNavigationType } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
-import { AnimatePresence, motion, Variants } from "framer-motion"; // Variants 추가
-import { HeaderProvider, useHeaderState } from "@/context/HeaderContext";
-import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
+import { useHeaderConfig } from "@/context/HeaderContext";
 
 interface SubLayoutProps {
   showHeader?: boolean;
   showNav?: boolean;
 }
 
-// Variants 타입 명시 및 cubic-bezier 배열 타입 고정
-const stackVariants: Variants = {
-  initial: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-30%",
-    opacity: direction > 0 ? 1 : 0.8,
-    zIndex: direction > 0 ? 2 : 1,
-  }),
-  animate: {
-    x: 0,
-    opacity: 1,
-    zIndex: 1,
-    transition: {
-      duration: 0.4,
-      ease: [0.33, 1, 0.68, 1], // 타입 추론 해결
-    },
-  },
-  exit: (direction: number) => ({
-    x: direction > 0 ? "-30%" : "100%",
-    opacity: direction > 0 ? 0 : 1,
-    zIndex: direction > 0 ? 0 : 2,
-    transition: {
-      duration: 0.4,
-      ease: [0.33, 1, 0.68, 1], // 타입 추론 해결
-    },
-  }),
-};
-
-function SubLayoutContent({
+export default function SubLayout({
   showHeader = true,
   showNav = false,
 }: SubLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
-  const navType = useNavigationType();
-  const { subHeader } = useHeaderState();
+  const { setIsScrolled } = useHeaderConfig();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // 스크롤 제어: 뒤로가기(POP)가 아닐 때만 상단 이동
+  // 경로 고정
+  const [frozenPath] = useState(location.pathname);
+
+  // 헤더 설정 로드
+  const config = useHeaderConfig(frozenPath);
+  const hasSubHeader = !!config.subHeader;
+
   useEffect(() => {
-    if (navType !== "POP") {
-      window.scrollTo(0, 0);
-    }
-  }, [location.pathname, navType]);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    setIsScrolled(false);
+  }, [frozenPath, setIsScrolled]);
 
-  const direction = navType === "POP" ? -1 : 1;
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    setIsScrolled(scrollTop >= 24);
+  };
+
+  // 헤더 및 네비게이션 높이 계산
+  const headerHeight = showHeader ? (hasSubHeader ? 140 : 100) : 20;
+  const navHeight = showNav ? 100 : 40;
 
   return (
-    <AppContainer>
-      {showHeader && (
-        <HeaderAnimationWrapper>
-          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-            <HeaderMotionWrapper
-              key={location.pathname}
-              custom={direction}
-              variants={stackVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
+    <LayoutContainer>
+      <ScrollArea
+        id="app-scroll-view" // 인피니티 스크롤 타겟 ID
+        ref={scrollRef}
+        onScroll={handleScroll}
+        $paddingTop={0}
+        $paddingBottom={0}
+      >
+        <div style={{ position: "relative", minHeight: "100%" }}>
+          {showHeader && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                zIndex: 100,
+                pointerEvents: "none",
+              }}
             >
-              <MobileHeader />
-            </HeaderMotionWrapper>
-          </AnimatePresence>
-        </HeaderAnimationWrapper>
-      )}
+              <div style={{ pointerEvents: "auto" }}>
+                <MobileHeader targetPath={frozenPath} />
+              </div>
+            </div>
+          )}
 
-      <ContentArea>
-        <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-          <MotionPage
-            key={location.pathname}
-            $showHeader={showHeader}
-            $showNav={showNav}
-            $hasSubHeader={!!subHeader}
-            custom={direction}
-            variants={stackVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
+          <div
+            style={{
+              paddingTop: headerHeight,
+              paddingBottom: navHeight,
+              transition: "padding-top 0.2s ease",
+            }}
           >
             {outlet}
-          </MotionPage>
-        </AnimatePresence>
-      </ContentArea>
+          </div>
+        </div>
+      </ScrollArea>
 
-      {showNav && <NavSlot />}
-    </AppContainer>
+      {showNav && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            zIndex: 100,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ pointerEvents: "auto" }}>{/* Nav Component */}</div>
+        </div>
+      )}
+    </LayoutContainer>
   );
 }
 
-export default function SubLayout(props: SubLayoutProps) {
-  return (
-    <HeaderProvider>
-      <ScrollBarStyles />
-      <RootBackground>
-        <SubLayoutContent {...props} />
-      </RootBackground>
-    </HeaderProvider>
-  );
-}
-
-// --- Styles ---
-
-// --- Styles ---
-
-const APP_MAX_WIDTH = "768px";
-
-const HeaderAnimationWrapper = styled.div`
-  position: fixed;
-  top: 0;
-  /* 중앙 정렬 */
-  left: 50%;
-  transform: translateX(-50%);
-
+const LayoutContainer = styled.div`
   width: 100%;
-  max-width: ${APP_MAX_WIDTH};
-
-  /* 가로 애니메이션만 마스킹 */
-  overflow-x: hidden;
-  overflow-y: visible;
-
-  /* 헤더/서브헤더 높이를 고려한 충분한 높이 (브라우저 스크롤에 영향 없음) */
-  height: 200px;
-
-  z-index: 1001;
-  /* 하위 요소 외에는 클릭/스크롤 이벤트 통과 */
-  pointer-events: none;
-`;
-
-const HeaderMotionWrapper = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #ffffff;
-  /* 실제 버튼 등 인터랙션 허용 */
-  pointer-events: auto;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  will-change: transform, opacity;
-`;
-
-const ContentArea = styled.div`
-  width: 100%;
+  height: 100%;
   position: relative;
-  /* 가로 애니메이션 마스킹 */
+  background-color: #f1f1f3;
+`;
+
+const ScrollArea = styled.div<{ $paddingTop: number; $paddingBottom: number }>`
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
   overflow-x: hidden;
-  min-height: 100vh;
-
-  overflow-y: hidden;
-`;
-
-const RootBackground = styled.div`
-  width: 100%;
-  min-height: 100vh;
-  background: #f1f1f3;
-  overflow-x: hidden;
-`;
-
-const AppContainer = styled.div`
-  width: 100%;
-  max-width: ${APP_MAX_WIDTH};
-  margin: 0 auto;
-  min-height: 100vh;
-  position: relative;
-`;
-
-const MotionPage = styled(motion.div)<{
-  $showHeader: boolean;
-  $showNav: boolean;
-  $hasSubHeader: boolean;
-}>`
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   box-sizing: border-box;
-  background: #f1f1f3;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  will-change: transform, opacity;
 
-  padding-top: ${(props) => {
-    if (!props.$showHeader) return "20px";
-    return props.$hasSubHeader ? "140px" : "100px";
-  }};
-
-  padding-bottom: ${(props) => (props.$showNav ? "140px" : "40px")};
-`;
-
-const NavSlot = styled.div`
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  max-width: ${APP_MAX_WIDTH};
-  height: 140px;
-  z-index: 100;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;

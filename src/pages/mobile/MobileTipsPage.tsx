@@ -12,18 +12,19 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
 
-const MobileSchoolNoticePage = () => {
+const MobileTipsPage = () => {
   const navigate = useNavigate();
-
   const [tips, setTips] = useState<Post[]>([]);
   const [categoryList, setCategoryList] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+  const [isLoading, setIsLoading] = useState(true);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const selectedCategory = params.get("category") || categoryList[0];
 
-  // 초기 데이터 로드
+  // 현재 선택된 카테고리
+  const selectedCategory = params.get("category") || "자유게시판";
+
+  // 데이터 초기 로드
   useEffect(() => {
     const initData = async () => {
       setIsLoading(true);
@@ -31,6 +32,7 @@ const MobileSchoolNoticePage = () => {
         const categoryRes = await getTipsCategories();
         setCategoryList([...categoryRes.data]);
 
+        // 전체 팁 데이터 로드
         const postRes = await getPostsMobile(undefined, "전체");
         setTips(postRes.data);
       } catch (error) {
@@ -43,29 +45,36 @@ const MobileSchoolNoticePage = () => {
     initData();
   }, []);
 
-  // 카테고리 선택 시 스크롤 제어
+  // 카테고리 변경 시 스크롤 이동
   useEffect(() => {
-    if (isLoading) return; // 로딩 중 스크롤 방지
+    if (isLoading || tips.length === 0) return;
 
+    const scrollContainer = document.getElementById("app-scroll-view");
+    if (!scrollContainer) return;
+
+    // 전체 카테고리 선택 시 최상단 이동
     if (selectedCategory === "전체") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    const targetElement = document.getElementById(
-      `category-${selectedCategory}`,
-    );
-    if (targetElement) {
-      const headerOffset = 104;
-      const targetPosition = targetElement.offsetTop - headerOffset;
+    // 특정 카테고리 섹션 이동
+    const scrollTimer = setTimeout(() => {
+      const targetElement = document.getElementById(
+        `category-${selectedCategory}`,
+      );
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 100);
 
-      window.scrollTo({
-        top: targetPosition,
-        behavior: "smooth",
-      });
-    }
+    return () => clearTimeout(scrollTimer);
   }, [selectedCategory, tips, isLoading]);
 
+  // 상단 헤더 컴포넌트
   const subHeader = useMemo(
     () => (
       <CategorySelectorNew
@@ -74,8 +83,9 @@ const MobileSchoolNoticePage = () => {
       />
     ),
     [categoryList, selectedCategory],
-  ); // 의존성 배열 관리
+  );
 
+  // 헤더 설정 등록
   useHeader({
     title: "TIPS",
     hasback: true,
@@ -84,10 +94,10 @@ const MobileSchoolNoticePage = () => {
   });
 
   return (
-    <MobileSchoolNoticePageWrapper>
+    <MobileTipsPageWrapper>
       <TipsListContainerWrapper>
         {isLoading
-          ? // 로딩 중 스켈레톤 UI
+          ? // 로딩 스켈레톤
             Array.from({ length: 3 }).map((_, groupIdx) => (
               <div key={`group-skeleton-${groupIdx}`}>
                 <TitleContentArea title={<Skeleton width={100} height={20} />}>
@@ -102,14 +112,17 @@ const MobileSchoolNoticePage = () => {
                 </TitleContentArea>
               </div>
             ))
-          : // 실제 데이터 렌더링
+          : // 카테고리별 섹션 렌더링
             categoryList.map((categoryItem) => {
               const filteredTips = tips.filter(
                 (tip) => tip.category === categoryItem,
               );
 
               return (
-                <div id={`category-${categoryItem}`} key={categoryItem}>
+                <CategorySection
+                  id={`category-${categoryItem}`}
+                  key={categoryItem}
+                >
                   <TitleContentArea title={categoryItem}>
                     <Box>
                       {filteredTips.length > 0 ? (
@@ -134,25 +147,29 @@ const MobileSchoolNoticePage = () => {
                       )}
                     </Box>
                   </TitleContentArea>
-                </div>
+                </CategorySection>
               );
             })}
       </TipsListContainerWrapper>
-    </MobileSchoolNoticePageWrapper>
+    </MobileTipsPageWrapper>
   );
 };
 
-export default MobileSchoolNoticePage;
+export default MobileTipsPage;
 
-/* Styled Components */
-const MobileSchoolNoticePageWrapper = styled.div`
+/* 스타일 정의 */
+const MobileTipsPageWrapper = styled.div`
   width: 100%;
-  position: relative;
+`;
+
+const CategorySection = styled.div`
+  // 헤더 높이(140px) 고려 스크롤 여백
+  scroll-margin-top: 150px;
 `;
 
 const TipsListContainerWrapper = styled.div`
   width: 100%;
-  padding: 0 16px;
+  padding: 0 16px 40px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -163,7 +180,7 @@ const TipTitle = styled.span`
   font-size: 15px;
   color: #333;
   line-height: 1.5;
-  display: block; // 클릭 영역 확보
+  display: block;
 `;
 
 const EmptyState = styled.div`

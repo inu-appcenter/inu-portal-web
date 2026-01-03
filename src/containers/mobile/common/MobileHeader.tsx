@@ -1,14 +1,13 @@
 import { ROUTES } from "@/constants/routes";
-import { useEffect, useState } from "react";
 import styled from "styled-components";
 import intipLogo from "@/resources/assets/intip-logo.webp";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Bell } from "lucide-react";
 import BackButton from "@/components/mobile/login/BackButton";
 import Title from "@/components/mobile/mypage/Title";
 import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
-import { useHeaderState } from "@/context/HeaderContext";
+import { useHeaderConfig } from "@/context/HeaderContext";
 
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   const navigate = useNavigate();
@@ -40,7 +39,13 @@ const Badge = styled.div`
   border-radius: 50%;
 `;
 
-export default function MobileHeader() {
+// [변경] targetPath를 필수 props로 받음
+interface MobileHeaderProps {
+  targetPath: string;
+}
+
+export default function MobileHeader({ targetPath }: MobileHeaderProps) {
+  // [변경] 현재 URL이 아닌, 전달받은 targetPath의 설정을 가져옴
   const {
     title,
     hasback,
@@ -50,27 +55,14 @@ export default function MobileHeader() {
     visible,
     subHeader,
     floatingSubHeader,
-  } = useHeaderState();
+    isScrolled,
+  } = useHeaderConfig(targetPath);
 
   const navigate = useNavigate();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const location = useLocation();
 
   const handleLogoClick = () => {
     navigate(ROUTES.HOME);
   };
-
-  // 스크롤 감지 로직
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY >= 24);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [location.pathname]);
 
   const handleBack = () => {
     if (backPath) {
@@ -78,28 +70,6 @@ export default function MobileHeader() {
       return;
     }
     navigate(-1);
-
-    //
-    // const params = new URLSearchParams(location.search);
-    // const specialPaths = [
-    //   ROUTES.BOARD.UTIL,
-    //   ROUTES.BOARD.COUNCIL,
-    //   ROUTES.BOARD.CAMPUS,
-    //   ROUTES.BOARD.TIPS,
-    // ] as string[];
-    //
-    // const shouldGoHome =
-    //   specialPaths.includes(location.pathname) && [...params].length > 0;
-    // const isBusInfoPage = location.pathname.includes(ROUTES.BUS.INFO);
-
-    // return;
-    // if (isBusInfoPage) {
-    //   navigate(ROUTES.BUS.ROOT);
-    // } else if (shouldGoHome) {
-    //   navigate(ROUTES.HOME);
-    // } else {
-    //   navigate(-1);
-    // }
   };
 
   if (visible === false) return null;
@@ -128,7 +98,6 @@ export default function MobileHeader() {
         )}
       </MainHeaderWrapper>
 
-      {/* 서브 헤더 렌더링 영역 */}
       {subHeader && (
         <SubHeaderWrapper>
           {floatingSubHeader ? (
@@ -141,22 +110,18 @@ export default function MobileHeader() {
     </MobileHeaderWrapper>
   );
 }
+
 const APP_MAX_WIDTH = "768px";
 
-// 브라우저 상단 고정
 const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
   position: fixed;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%); /* 중앙 정렬 */
   width: 100%;
   max-width: ${APP_MAX_WIDTH};
   padding-top: 24px;
   z-index: 1000;
-
   display: flex;
   flex-direction: column;
-
   pointer-events: none;
 `;
 

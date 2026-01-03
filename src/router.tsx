@@ -1,8 +1,12 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import GlobalLayout from "@/layout/GlobalLayout"; // RootLayout이 GlobalLayout으로 명명된 것으로 가정
 
-// 페이지 컴포넌트 임포트
+// Layouts
+import RootLayout from "@/layout/RootLayout";
+import MainTabLayout from "@/layout/MainTabLayout";
+import SubLayout from "@/layout/SubLayout";
+
+// Pages (Imports 생략 - 기존과 동일)
 import MobileHomePage from "@/pages/mobile/MobileHomePage";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
@@ -35,7 +39,6 @@ import MobileUnidormPage from "@/pages/mobile/MobileUnidormPage";
 import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
-import SubLayout from "@/layout/SubLayout";
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
@@ -44,13 +47,13 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 export const router = createBrowserRouter([
   {
     path: ROUTES.ROOT,
-    element: <Outlet />,
+    element: <RootLayout />, // 최상위 슬라이드 제어
     children: [
       // ----------------------------------------------------------------
-      // 1. 하단 네비게이션 노출 (Main Tabs)
+      // 1. 메인 탭 (MainTabLayout) - 페이드 전환, 하단 탭바 노출
       // ----------------------------------------------------------------
       {
-        element: <GlobalLayout showNav={true} />,
+        element: <MainTabLayout showNav={true} showHeader={true} />,
         children: [
           { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.HOME, element: <MobileHomePage /> },
@@ -61,7 +64,7 @@ export const router = createBrowserRouter([
       },
 
       // ----------------------------------------------------------------
-      // 2. 하단 네비게이션 미노출 (Sub Pages) - SubLayout 제거됨
+      // 2. 서브 페이지 (SubLayout) - RootLayout에 의해 슬라이드, 하단 탭바 숨김
       // ----------------------------------------------------------------
       {
         element: <SubLayout showNav={false} />,
@@ -69,7 +72,7 @@ export const router = createBrowserRouter([
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
 
-          //횃불이 ai
+          // 횃불이 AI
           { path: ROUTES.AI, element: <AiPage /> },
 
           // 게시판
@@ -77,17 +80,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.BOARD.TIPS,
             children: [
-              {
-                index: true, // /home/tips 접속 시 출력
-                element: <MobileTipsPage />,
-              },
-              {
-                path: ":id", // /home/tips/:id 접속 시 출력
-                element: <MobilePostDetailPage />,
-              },
+              { index: true, element: <MobileTipsPage /> },
+              { path: ":id", element: <MobilePostDetailPage /> },
             ],
           },
-
           { path: ROUTES.BOARD.TIPS_WRITE, element: <MobileWritePage /> },
           {
             path: `${ROUTES.BOARD.TIPS_WRITE}/:id`,

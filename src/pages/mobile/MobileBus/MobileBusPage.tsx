@@ -1,7 +1,12 @@
 import styled from "styled-components";
 import BusCardSection from "@/components/mobile/bus/goHomeSchool/BusCardSection.tsx";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileBusPage() {
+  useHeader({
+    title: undefined,
+    subHeader: null,
+  });
   return (
     <MobileBusPageWrapper>
       <BusCardSection />

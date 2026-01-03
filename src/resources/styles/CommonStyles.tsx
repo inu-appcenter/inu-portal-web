@@ -15,7 +15,19 @@ const CommonStyles = createGlobalStyle`
     cursor: url('/pointers/cursor.svg'), auto; // 기본 커서 이미지 설정
 
     line-height: 1;
+    overflow: hidden; /* 중요 */
 
+  }
+
+  /* src/index.css */
+
+  /* 반드시 포함되어야 합니다! */
+  html, body, #root {
+    width: 100%;
+    height: 100%; /* 이게 없으면 화면이 하얗게 나옵니다 */
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* 브라우저 자체 스크롤 제거 */
   }
 
 

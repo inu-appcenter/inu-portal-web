@@ -83,10 +83,10 @@ const APP_MAX_WIDTH = "768px";
 
 // 하단 고정 최외곽 컨테이너
 const AreaWrapper = styled.div`
-  position: fixed; /* 브라우저 화면 기준 고정 */
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%); /* 중앙 정렬 */
+  //position: fixed; /* 브라우저 화면 기준 고정 */
+  //bottom: 0;
+  //left: 50%;
+  //transform: translateX(-50%); /* 중앙 정렬 */
   width: 100%;
   max-width: ${APP_MAX_WIDTH};
   height: fit-content;
