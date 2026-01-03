@@ -33,6 +33,7 @@ const YoutubeListWidget = () => {
     const fetchVideos = async () => {
       setLoading(true);
       try {
+        console.log("유튜브 영상 로딩 시작");
         const orderParam = sort === "date" ? "date" : "viewCount";
 
         const searchResponse = await fetch(
@@ -66,6 +67,8 @@ const YoutubeListWidget = () => {
           }));
 
           setVideos(formattedVideos.slice(0, 3));
+
+          console.log("유튜브 영상 로딩 끝");
         } else {
           setVideos([]);
         }

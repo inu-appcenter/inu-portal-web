@@ -257,8 +257,8 @@ export default function Calendar({
           </Box>
         </LeftSection>
 
-        <RightSection>
-          {mode === "monthly" && (
+        {mode === "monthly" && (
+          <RightSection>
             <TitleContentArea
               title={
                 mode === "monthly"
@@ -284,8 +284,8 @@ export default function Calendar({
                 )}
               </Box>
             </TitleContentArea>
-          )}
-        </RightSection>
+          </RightSection>
+        )}
       </LayoutWrapper>
     </CalendarContainer>
   );
