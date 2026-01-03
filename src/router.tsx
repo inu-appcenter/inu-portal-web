@@ -55,7 +55,6 @@ export const router = createBrowserRouter([
           { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.HOME, element: <MobileHomePage /> },
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
-          { path: ROUTES.AI, element: <AiPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
           { path: ROUTES.MYPAGE.ROOT, element: <MobileMyPage /> },
         ],
@@ -69,6 +68,9 @@ export const router = createBrowserRouter([
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
+
+          //횃불이 ai
+          { path: ROUTES.AI, element: <AiPage /> },
 
           // 게시판
           { path: ROUTES.BOARD.ALERT, element: <MobileAlertPage /> },

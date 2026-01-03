@@ -6,7 +6,6 @@ import HowToUse from "@/components/desktop/ai/HowToUse";
 import styled from "styled-components";
 import { useState } from "react";
 import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
@@ -20,11 +19,6 @@ export default function AiPage() {
 
   return (
     <AiPageWrapper>
-      <MobileHeader />
-      {/*<div className="header-wrapper">*/}
-      {/*  <Header />*/}
-      {/*</div>*/}
-
       <AiContents>
         <AiTitle />
         <TitleContentArea
