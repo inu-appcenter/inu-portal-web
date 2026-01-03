@@ -18,8 +18,7 @@ const MAIN_PATHS: string[] = [
   ROUTES.ROOT,
 ];
 
-// [추가] 컨텐츠 고정 컴포넌트
-// 애니메이션 도중 outlet이 변하는 것을 방지하기 위해 마운트 시점의 outlet 고정
+// 컨텐츠 고정 컴포넌트 (마운트 시점 outlet 유지)
 const FrozenOutlet = ({ children }: { children: React.ReactNode }) => {
   const [fixedOutlet] = useState(children);
   return <>{fixedOutlet}</>;
@@ -40,11 +39,11 @@ export default function MainTabLayout({
   const [showIntro, setShowIntro] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // [수정] 렌더링 시점에 즉시 애니메이션 키 결정 (useEffect 지연 제거)
+  // 현재 경로 상태 관리
   const [lastMainPath, setLastMainPath] = useState(location.pathname);
   const isMainPath = MAIN_PATHS.includes(location.pathname);
 
-  // 메인 경로일 때만 키 업데이트, 아닐 경우 마지막 메인 키 유지
+  // 애니메이션 키 계산
   const activeKey = useMemo(() => {
     if (isMainPath) return location.pathname;
     return lastMainPath;
@@ -93,7 +92,13 @@ export default function MainTabLayout({
         ) : (
           <>
             <ScrollArea ref={scrollRef} onScroll={handleScroll}>
-              {/* RootLayout과 동일한 sync 모드 및 애니메이션 파라미터 */}
+              {/* 애니메이션 제외 영역: 헤더 고정 */}
+              {showHeader && (
+                <HeaderFloating>
+                  <MobileHeader targetPath={activeKey as any} />
+                </HeaderFloating>
+              )}
+
               <AnimatePresence mode="sync">
                 <MotionPage
                   key={activeKey}
@@ -105,17 +110,10 @@ export default function MainTabLayout({
                     ease: [0.4, 0, 0.2, 1],
                   }}
                 >
-                  {showHeader && (
-                    <HeaderFloating>
-                      <MobileHeader targetPath={activeKey as any} />
-                    </HeaderFloating>
-                  )}
-
                   <ContentArea
                     $paddingTop={headerHeight}
                     $paddingBottom={navHeight}
                   >
-                    {/* [핵심] FrozenOutlet으로 감싸서 종료 시점 컨텐츠 유지 */}
                     <FrozenOutlet>{outlet}</FrozenOutlet>
                   </ContentArea>
                 </MotionPage>
@@ -158,8 +156,16 @@ const ScrollArea = styled.div`
   }
 `;
 
+const HeaderFloating = styled.div`
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  pointer-events: auto;
+`;
+
 const MotionPage = styled(motion.div)`
-  position: absolute; /* sync 모드에서 겹침 방지 */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -175,13 +181,8 @@ const ContentArea = styled.div<{ $paddingTop: number; $paddingBottom: number }>`
   padding-top: ${(props) => props.$paddingTop}px;
   padding-bottom: ${(props) => props.$paddingBottom}px;
   box-sizing: border-box;
-`;
-
-const HeaderFloating = styled.div`
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 100;
+  display: flex;
+  flex-direction: column;
 `;
 
 const NavFloating = styled.div`
