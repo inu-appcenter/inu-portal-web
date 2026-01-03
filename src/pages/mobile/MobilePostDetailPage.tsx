@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { deletePost, getPostDetail } from "@/apis/posts";
 import PostContentContainer from "@/containers/mobile/postdetail/PostContentContainer";
 import CommentListMobile from "@/containers/mobile/postdetail/CommentListContainer";
@@ -7,8 +7,8 @@ import ReplyInput from "@/containers/mobile/postdetail/ReplyInput";
 import { PostDetail, Reply } from "@/types/posts";
 import axios, { AxiosError } from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
+import ReplyPortal from "@/components/common/ReplyPortal";
 
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
@@ -103,30 +103,35 @@ export default function PostDetailPage() {
     }
   }, [id, commentUpdated]); // id 또는 댓글 갱신 시 실행
 
-  const menuItems = [
-    {
-      label: "수정하기",
-      onClick: () => {
-        handleEdit();
+  // 메뉴 아이템 메모이제이션
+  const menuItems = useMemo(() => {
+    // 권한 확인
+    if (!post?.hasAuthority) return undefined;
+
+    return [
+      {
+        label: "수정하기",
+        onClick: () => {
+          handleEdit();
+        },
       },
-    },
-    {
-      label: "삭제하기",
-      onClick: () => {
-        handleDelete();
+      {
+        label: "삭제하기",
+        onClick: () => {
+          handleDelete();
+        },
       },
-    },
-  ];
+    ];
+  }, [post?.hasAuthority]); // 의존성 배열
 
   // 헤더 설정 주입
   useHeader({
     title: "게시글 상세",
-    menuItems: post?.hasAuthority ? menuItems : undefined,
+    menuItems,
   });
 
   return (
     <Wrapper>
-      <MobileHeader />
       {post ? (
         <>
           <PostWrapper>
@@ -142,19 +147,21 @@ export default function PostDetailPage() {
               />
             </CommentWrapper>
           </PostWrapper>
-          <ReplyInput
-            postId={post.id}
-            replyContent={replyContent}
-            isAnonymous={isAnonymous}
-            replyToEdit={replyToEdit}
-            replyToReply={replyToReply}
-            setReplyToReply={setReplyToReply}
-            setReplyToEdit={setReplyToEdit}
-            setReplyContent={setReplyContent}
-            setIsAnonymous={setIsAnonymous}
-            cancelEditOrReply={cancelEditOrReply}
-            onCommentUpdate={() => setCommentUpdated(true)}
-          />
+          <ReplyPortal>
+            <ReplyInput
+              postId={post.id}
+              replyContent={replyContent}
+              isAnonymous={isAnonymous}
+              replyToEdit={replyToEdit}
+              replyToReply={replyToReply}
+              setReplyToReply={setReplyToReply}
+              setReplyToEdit={setReplyToEdit}
+              setReplyContent={setReplyContent}
+              setIsAnonymous={setIsAnonymous}
+              cancelEditOrReply={cancelEditOrReply}
+              onCommentUpdate={() => setCommentUpdated(true)}
+            />
+          </ReplyPortal>
         </>
       ) : (
         <div>Loading...</div>
@@ -177,11 +184,13 @@ const PostWrapper = styled.div`
   position: relative;
   z-index: 1;
 `;
+// PostDetailPage.tsx 내 스타일 수정
+
 const CommentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
-  padding-bottom: 100px;
-  //margin-bottom: 80px;
+  /* ReplyInput 높이(약 64px~80px)만큼 하단 패딩 확보 */
+  padding-bottom: 120px;
   position: relative;
 `;

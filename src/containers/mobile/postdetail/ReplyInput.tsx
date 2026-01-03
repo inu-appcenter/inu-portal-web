@@ -182,47 +182,45 @@ export default function ReplyInput({
   );
 }
 
+// ReplyInput.tsx 내 StyledReplyInput 수정
+
 const StyledReplyInput = styled.div`
-  border-top: 4px solid #eaeaea;
-  position: sticky;
+  position: fixed;
   bottom: 0;
-  z-index: 100;
-  padding-bottom: 16px;
-  //height: 64px;
-  //width: 100vw;
+  /* 화면 중앙 정렬 */
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* 레이아웃 제약 (SubLayout과 동일하게) */
+  width: 100%;
+  max-width: 768px;
+
+  /* 최상단 레이어 설정 */
+  z-index: 9999;
+
   background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-top: 1px solid #eaeaea;
+
+  /* iOS 하단 바 여백 */
+  padding-bottom: env(safe-area-inset-bottom);
+
   .wrapper {
-    flex: 1;
-    padding: 12px;
-    box-sizing: border-box;
     display: flex;
     align-items: center;
     gap: 8px;
-
-    .anonymous-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    span {
-      min-width: 36px;
-      font-size: 16px;
-    }
+    padding: 12px 16px;
+    height: 64px;
+    box-sizing: border-box;
 
     input {
       flex: 1;
-      font-size: 16px; /* 모바일 확대 방지: 최소 16px 설정 */
-      height: 36px;
+      height: 40px;
       border: none;
-      padding-left: 12px;
-      border-radius: 12px;
+      border-radius: 20px;
       background-color: #eff2f9;
-
-      /* 모바일 확대 방지 */
-      -webkit-text-size-adjust: 100%;
+      padding: 0 16px;
+      font-size: 16px;
+      outline: none;
     }
   }
 `;
