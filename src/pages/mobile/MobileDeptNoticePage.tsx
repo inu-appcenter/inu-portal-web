@@ -13,20 +13,21 @@ import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
 
-const LIMIT = 8; // 페이지당 데이터 수
+const LIMIT = 8;
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo } = useUserStore();
   const navigate = useNavigate();
   const { dept } = useParams<{ dept: string }>();
 
-  // 상태 관리 (참조 코드와 동일한 구조)
   const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
+
+  // 핵심: DOM 바인딩 타이밍 문제 해결을 위한 상태
+  const [isReady, setIsReady] = useState(false);
 
   // 리다이렉트 로직
   useEffect(() => {
@@ -35,7 +36,6 @@ const MobileDeptNoticePage = () => {
     }
   }, [userInfo.department, dept, navigate]);
 
-  // 헤더 메뉴
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     return userInfo.department
       ? [
@@ -54,11 +54,9 @@ const MobileDeptNoticePage = () => {
     menuItems,
   });
 
-  // 데이터 페칭 함수 (참조 코드 로직 그대로 적용)
   const fetchData = useCallback(
-    async (pageNum: number, isFirst: boolean = false) => {
-      // 중복 로딩 방지
-      if (isLoading && !isFirst) return;
+    async (pageNum: number, isInitial: boolean = false) => {
+      if (isLoading && !isInitial) return;
 
       setIsLoading(true);
       try {
@@ -70,19 +68,16 @@ const MobileDeptNoticePage = () => {
 
         if (newNotices && newNotices.length > 0) {
           setDeptNotices((prev) =>
-            isFirst ? newNotices : [...prev, ...newNotices],
+            isInitial ? newNotices : [...prev, ...newNotices],
           );
           setPage(pageNum + 1);
-
-          // 데이터 개수 기반 다음 페이지 유무 판별
           if (newNotices.length < LIMIT) {
             setHasMore(false);
           } else {
             setHasMore(true);
           }
         } else {
-          // 데이터가 아예 없는 경우 처리
-          if (isFirst) setDeptNotices([]);
+          if (isInitial) setDeptNotices([]);
           setHasMore(false);
         }
       } catch (error) {
@@ -92,27 +87,32 @@ const MobileDeptNoticePage = () => {
         setIsLoading(false);
       }
     },
-    [dept], // isLoading 제거: 함수 안정성 유지 (참조 코드 방식)
+    [dept],
   );
 
-  // 학과 변경 시 초기화 및 첫 로드 (참조 코드 방식)
   useEffect(() => {
     if (dept) {
-      const initLoad = async () => {
-        setDeptNotices([]);
-        setPage(1);
-        setHasMore(true);
+      // 1. 상태 초기화
+      setDeptNotices([]);
+      setPage(1);
+      setHasMore(true);
+      setIsReady(false); // InfiniteScroll 언마운트
 
-        const scrollableDiv = document.getElementById("app-scroll-view");
-        if (scrollableDiv) scrollableDiv.scrollTop = 0;
+      const scrollableDiv = document.getElementById("app-scroll-view");
+      if (scrollableDiv) scrollableDiv.scrollTop = 0;
 
-        await fetchData(1, true);
-      };
-      initLoad();
+      // 2. 데이터 로드 시작
+      fetchData(1, true);
+
+      // 3. 약간의 지연 후 InfiniteScroll 마운트 (DOM 바인딩 보장)
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 500);
+
+      return () => clearTimeout(timer);
     }
   }, [dept, fetchData]);
 
-  // 학과 변경 처리
   const handleDepartmentClick = async (department: string) => {
     try {
       await putMemberDepartment(department);
@@ -130,46 +130,59 @@ const MobileDeptNoticePage = () => {
 
   return (
     <MobileDeptNoticePageWrapper>
-      <InfiniteScroll
-        key={dept} // 학과 변경 시 컴포넌트 리셋을 위해 key 추가
-        dataLength={deptNotices.length}
-        next={() => fetchData(page)} // 현재 page 상태를 인자로 전달
-        hasMore={hasMore}
-        scrollableTarget="app-scroll-view"
-        loader={
+      {/* isReady가 true일 때만 렌더링하여 DOM id='app-scroll-view'를 확실히 찾게 함 */}
+      {isReady && (
+        <InfiniteScroll
+          key={dept} // key를 변경하여 컴포넌트 재생성 강제
+          dataLength={deptNotices.length}
+          next={() => fetchData(page)}
+          hasMore={hasMore}
+          scrollableTarget="app-scroll-view"
+          loader={
+            <TipsCardWrapper>
+              <Box>
+                <PostItem isLoading />
+              </Box>
+            </TipsCardWrapper>
+          }
+          endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+        >
           <TipsCardWrapper>
-            <Box>
+            {deptNotices.length === 0 && isLoading
+              ? Array.from({ length: LIMIT }).map((_, i) => (
+                  <Box key={`dept-init-skeleton-${i}`}>
+                    <PostItem isLoading />
+                  </Box>
+                ))
+              : deptNotices.map((deptNotice, index) => (
+                  <Box
+                    key={`${deptNotice.id || index}`}
+                    onClick={() => {
+                      if (deptNotice.url) window.open(deptNotice.url, "_blank");
+                    }}
+                  >
+                    <PostItem
+                      title={deptNotice.title}
+                      category={deptNotice.category}
+                      writer={deptNotice.writer}
+                      date={deptNotice.createDate}
+                    />
+                  </Box>
+                ))}
+          </TipsCardWrapper>
+        </InfiniteScroll>
+      )}
+
+      {/* 로딩 중이거나 준비 전일 때 스켈레톤만 먼저 보여줘서 깜빡임 방지 */}
+      {!isReady && (
+        <TipsCardWrapper>
+          {Array.from({ length: LIMIT }).map((_, i) => (
+            <Box key={`skeleton-placeholder-${i}`}>
               <PostItem isLoading />
             </Box>
-          </TipsCardWrapper>
-        }
-        endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-      >
-        <TipsCardWrapper>
-          {/* 초기 로딩 스켈레톤 */}
-          {deptNotices.length === 0 && isLoading
-            ? Array.from({ length: LIMIT }).map((_, i) => (
-                <Box key={`dept-init-skeleton-${i}`}>
-                  <PostItem isLoading />
-                </Box>
-              ))
-            : deptNotices.map((deptNotice, index) => (
-                <Box
-                  key={`${deptNotice.id || index}`}
-                  onClick={() => {
-                    if (deptNotice.url) window.open(deptNotice.url, "_blank");
-                  }}
-                >
-                  <PostItem
-                    title={deptNotice.title}
-                    category={deptNotice.category}
-                    writer={deptNotice.writer}
-                    date={deptNotice.createDate}
-                  />
-                </Box>
-              ))}
+          ))}
         </TipsCardWrapper>
-      </InfiniteScroll>
+      )}
 
       {navBarList[1].child && (
         <DepartmentNoticeSelector
