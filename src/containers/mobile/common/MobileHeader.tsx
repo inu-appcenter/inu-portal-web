@@ -41,7 +41,7 @@ const Badge = styled.div`
 
 // [변경] targetPath를 필수 props로 받음
 interface MobileHeaderProps {
-  targetPath: string;
+  targetPath?: string;
 }
 
 export default function MobileHeader({ targetPath }: MobileHeaderProps) {

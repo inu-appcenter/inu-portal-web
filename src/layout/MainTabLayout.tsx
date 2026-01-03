@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
@@ -18,6 +18,13 @@ const MAIN_PATHS: string[] = [
   ROUTES.ROOT,
 ];
 
+// [추가] 컨텐츠 고정 컴포넌트
+// 애니메이션 도중 outlet이 변하는 것을 방지하기 위해 마운트 시점의 outlet 고정
+const FrozenOutlet = ({ children }: { children: React.ReactNode }) => {
+  const [fixedOutlet] = useState(children);
+  return <>{fixedOutlet}</>;
+};
+
 interface MainLayoutProps {
   showHeader?: boolean;
   showNav?: boolean;
@@ -33,15 +40,19 @@ export default function MainTabLayout({
   const [showIntro, setShowIntro] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // [수정] state 타입을 string으로 명시하여 location.pathname 할당 허용
-  const [frozenPath, setFrozenPath] = useState<string>(location.pathname);
+  // [수정] 렌더링 시점에 즉시 애니메이션 키 결정 (useEffect 지연 제거)
+  const [lastMainPath, setLastMainPath] = useState(location.pathname);
+  const isMainPath = MAIN_PATHS.includes(location.pathname);
+
+  // 메인 경로일 때만 키 업데이트, 아닐 경우 마지막 메인 키 유지
+  const activeKey = useMemo(() => {
+    if (isMainPath) return location.pathname;
+    return lastMainPath;
+  }, [location.pathname, isMainPath, lastMainPath]);
 
   useEffect(() => {
-    // MAIN_PATHS 포함 여부 확인 후 업데이트
-    if (MAIN_PATHS.includes(location.pathname)) {
-      setFrozenPath(location.pathname);
-    }
-  }, [location.pathname]);
+    if (isMainPath) setLastMainPath(location.pathname);
+  }, [location.pathname, isMainPath]);
 
   useEffect(() => {
     const introShown = sessionStorage.getItem("introShown");
@@ -57,7 +68,7 @@ export default function MainTabLayout({
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
     setIsScrolled(false);
-  }, [frozenPath, setIsScrolled]);
+  }, [activeKey, setIsScrolled]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
@@ -81,71 +92,40 @@ export default function MainTabLayout({
           </IntroWrapper>
         ) : (
           <>
-            <ScrollArea
-              ref={scrollRef}
-              onScroll={handleScroll}
-              $paddingTop={0}
-              $paddingBottom={0}
-            >
-              <AnimatePresence mode="popLayout">
-                <FadePage
-                  key={frozenPath}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  style={{
-                    width: "100%",
-                    minHeight: "100%",
-                    position: "relative",
+            <ScrollArea ref={scrollRef} onScroll={handleScroll}>
+              {/* RootLayout과 동일한 sync 모드 및 애니메이션 파라미터 */}
+              <AnimatePresence mode="sync">
+                <MotionPage
+                  key={activeKey}
+                  initial={{ opacity: 0, x: 24, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, x: -12, filter: "blur(8px)" }}
+                  transition={{
+                    duration: 0.25,
+                    ease: [0.4, 0, 0.2, 1],
                   }}
                 >
                   {showHeader && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        zIndex: 100,
-                        pointerEvents: "none",
-                      }}
-                    >
-                      <div style={{ pointerEvents: "auto" }}>
-                        {/* [수정] MobileHeader의 targetPath 타입 요구사항에 맞춰 단언 */}
-                        <MobileHeader targetPath={frozenPath as any} />
-                      </div>
-                    </div>
+                    <HeaderFloating>
+                      <MobileHeader targetPath={activeKey as any} />
+                    </HeaderFloating>
                   )}
 
-                  <div
-                    style={{
-                      paddingTop: headerHeight,
-                      paddingBottom: navHeight,
-                      minHeight: "100%",
-                    }}
+                  <ContentArea
+                    $paddingTop={headerHeight}
+                    $paddingBottom={navHeight}
                   >
-                    {outlet}
-                  </div>
-                </FadePage>
+                    {/* [핵심] FrozenOutlet으로 감싸서 종료 시점 컨텐츠 유지 */}
+                    <FrozenOutlet>{outlet}</FrozenOutlet>
+                  </ContentArea>
+                </MotionPage>
               </AnimatePresence>
             </ScrollArea>
 
             {showNav && (
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  width: "100%",
-                  zIndex: 100,
-                  pointerEvents: "none",
-                }}
-              >
-                <div style={{ pointerEvents: "auto" }}>
-                  <MobileNav />
-                </div>
-              </div>
+              <NavFloating>
+                <MobileNav />
+              </NavFloating>
             )}
           </>
         )}
@@ -167,26 +147,53 @@ const LayoutContainer = styled.div`
   );
 `;
 
-const ScrollArea = styled.div<{ $paddingTop: number; $paddingBottom: number }>`
+const ScrollArea = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  box-sizing: border-box;
-
+  position: relative;
   &::-webkit-scrollbar {
     display: none;
   }
 `;
 
-const FadePage = styled(motion.div)`
+const MotionPage = styled(motion.div)`
+  position: absolute; /* sync 모드에서 겹침 방지 */
+  top: 0;
+  left: 0;
   width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  will-change: transform, opacity, filter;
+`;
+
+const ContentArea = styled.div<{ $paddingTop: number; $paddingBottom: number }>`
+  width: 100%;
+  flex: 1;
+  padding-top: ${(props) => props.$paddingTop}px;
+  padding-bottom: ${(props) => props.$paddingBottom}px;
+  box-sizing: border-box;
+`;
+
+const HeaderFloating = styled.div`
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+`;
+
+const NavFloating = styled.div`
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
 `;
 
 const IntroWrapper = styled(motion.div)`
   position: absolute;
   top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   z-index: 2000;
