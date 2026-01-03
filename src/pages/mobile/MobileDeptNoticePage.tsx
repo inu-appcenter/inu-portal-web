@@ -13,22 +13,29 @@ import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
 
-// 페이지당 데이터 개수 상수
-const LIMIT = 8;
+const LIMIT = 8; // 페이지당 데이터 수
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo } = useUserStore();
   const navigate = useNavigate();
   const { dept } = useParams<{ dept: string }>();
 
-  // 데이터 관련 상태
+  // 상태 관리 (참조 코드와 동일한 구조)
   const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
+  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
+
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
 
-  // 헤더 메뉴 설정
+  // 리다이렉트 로직
+  useEffect(() => {
+    if (userInfo.department && !dept) {
+      navigate(`/home/deptnotice/${userInfo.department}`, { replace: true });
+    }
+  }, [userInfo.department, dept, navigate]);
+
+  // 헤더 메뉴
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     return userInfo.department
       ? [
@@ -47,73 +54,65 @@ const MobileDeptNoticePage = () => {
     menuItems,
   });
 
-  // 공통 데이터 페칭 함수
+  // 데이터 페칭 함수 (참조 코드 로직 그대로 적용)
   const fetchData = useCallback(
-    async (targetPage: number, isInitial: boolean = false) => {
-      // 로딩 중 중복 방지
-      if (isLoading) return;
+    async (pageNum: number, isFirst: boolean = false) => {
+      // 중복 로딩 방지
+      if (isLoading && !isFirst) return;
 
       setIsLoading(true);
       try {
         const deptCode = dept ? findTitleOrCode(dept) : undefined;
         if (!deptCode) return;
 
-        const response = await getDepartmentNotices(
-          deptCode,
-          "date",
-          targetPage,
-        );
+        const response = await getDepartmentNotices(deptCode, "date", pageNum);
         const newNotices: Notice[] = response.data.contents;
 
         if (newNotices && newNotices.length > 0) {
           setDeptNotices((prev) =>
-            isInitial ? newNotices : [...prev, ...newNotices],
+            isFirst ? newNotices : [...prev, ...newNotices],
           );
-          setPage(targetPage + 1);
-          // 획득 데이터 수 기반 추가 로드 가능 여부 판단
-          setHasMore(newNotices.length >= LIMIT);
+          setPage(pageNum + 1);
+
+          // 데이터 개수 기반 다음 페이지 유무 판별
+          if (newNotices.length < LIMIT) {
+            setHasMore(false);
+          } else {
+            setHasMore(true);
+          }
         } else {
-          if (isInitial) setDeptNotices([]);
+          // 데이터가 아예 없는 경우 처리
+          if (isFirst) setDeptNotices([]);
           setHasMore(false);
         }
       } catch (error) {
-        console.error("데이터 로딩 실패", error);
+        console.error("데이터 로드 실패", error);
         setHasMore(false);
       } finally {
         setIsLoading(false);
       }
     },
-    [dept, isLoading],
+    [dept], // isLoading 제거: 함수 안정성 유지 (참조 코드 방식)
   );
 
-  // 학과 변경 감지 및 초기화
+  // 학과 변경 시 초기화 및 첫 로드 (참조 코드 방식)
   useEffect(() => {
     if (dept) {
-      setPage(1);
-      setHasMore(true);
-      // 스크롤 최상단 초기화
-      const scrollableDiv = document.getElementById("app-scroll-view");
-      if (scrollableDiv) scrollableDiv.scrollTop = 0;
+      const initLoad = async () => {
+        setDeptNotices([]);
+        setPage(1);
+        setHasMore(true);
 
-      fetchData(1, true);
+        const scrollableDiv = document.getElementById("app-scroll-view");
+        if (scrollableDiv) scrollableDiv.scrollTop = 0;
+
+        await fetchData(1, true);
+      };
+      initLoad();
     }
-  }, [dept]);
+  }, [dept, fetchData]);
 
-  // 다음 페이지 로드 핸들러
-  const handleNext = () => {
-    if (!isLoading && hasMore) {
-      fetchData(page);
-    }
-  };
-
-  // 학과 리다이렉트 처리
-  useEffect(() => {
-    if (userInfo.department && !dept) {
-      navigate(`/home/deptnotice/${userInfo.department}`, { replace: true });
-    }
-  }, [userInfo.department, dept, navigate]);
-
-  // 학과 변경 선택 처리
+  // 학과 변경 처리
   const handleDepartmentClick = async (department: string) => {
     try {
       await putMemberDepartment(department);
@@ -127,39 +126,36 @@ const MobileDeptNoticePage = () => {
     }
   };
 
+  if (!dept) return null;
+
   return (
     <MobileDeptNoticePageWrapper>
-      <TipsListContainerWrapper>
-        {/* 초기 로딩 스켈레톤 UI */}
-        {deptNotices.length === 0 && isLoading ? (
+      <InfiniteScroll
+        key={dept} // 학과 변경 시 컴포넌트 리셋을 위해 key 추가
+        dataLength={deptNotices.length}
+        next={() => fetchData(page)} // 현재 page 상태를 인자로 전달
+        hasMore={hasMore}
+        scrollableTarget="app-scroll-view"
+        loader={
           <TipsCardWrapper>
-            {Array.from({ length: LIMIT }).map((_, i) => (
-              <Box key={`dept-init-skeleton-${i}`}>
-                <PostItem isLoading />
-              </Box>
-            ))}
+            <Box>
+              <PostItem isLoading />
+            </Box>
           </TipsCardWrapper>
-        ) : (
-          <InfiniteScroll
-            dataLength={deptNotices.length}
-            next={handleNext}
-            hasMore={hasMore}
-            scrollableTarget="app-scroll-view" // 레이아웃 스크롤 영역 참조
-            loader={
-              <div style={{ marginTop: "12px" }}>
-                <Box>
+        }
+        endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
+      >
+        <TipsCardWrapper>
+          {/* 초기 로딩 스켈레톤 */}
+          {deptNotices.length === 0 && isLoading
+            ? Array.from({ length: LIMIT }).map((_, i) => (
+                <Box key={`dept-init-skeleton-${i}`}>
                   <PostItem isLoading />
                 </Box>
-              </div>
-            }
-            endMessage={
-              <LoadingText>모든 공지사항을 확인했습니다.</LoadingText>
-            }
-          >
-            <TipsCardWrapper>
-              {deptNotices.map((deptNotice, index) => (
+              ))
+            : deptNotices.map((deptNotice, index) => (
                 <Box
-                  key={`${deptNotice.title}-${index}`}
+                  key={`${deptNotice.id || index}`}
                   onClick={() => {
                     if (deptNotice.url) window.open(deptNotice.url, "_blank");
                   }}
@@ -172,12 +168,9 @@ const MobileDeptNoticePage = () => {
                   />
                 </Box>
               ))}
-            </TipsCardWrapper>
-          </InfiniteScroll>
-        )}
-      </TipsListContainerWrapper>
+        </TipsCardWrapper>
+      </InfiniteScroll>
 
-      {/* 학과 선택 모달 */}
       {navBarList[1].child && (
         <DepartmentNoticeSelector
           departments={navBarList[1].child}
@@ -192,21 +185,15 @@ const MobileDeptNoticePage = () => {
 
 export default MobileDeptNoticePage;
 
-/* 스타일 정의 */
 const MobileDeptNoticePageWrapper = styled.div`
   width: 100%;
-`;
-
-const TipsListContainerWrapper = styled.div`
-  width: 100%;
-  padding: 0 16px;
-  box-sizing: border-box;
 `;
 
 const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin: 0 16px;
   padding-bottom: 20px;
 `;
 
