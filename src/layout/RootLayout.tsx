@@ -21,7 +21,7 @@ const MAIN_PATHS: string[] = [
   ROUTES.SAVE,
   ROUTES.MYPAGE.ROOT,
   ROUTES.ROOT,
-  ROUTES.TIMETABLE,
+  ROUTES.TIMETABLE.ROOT,
 ];
 
 // 페이지 스택 애니메이션 변수

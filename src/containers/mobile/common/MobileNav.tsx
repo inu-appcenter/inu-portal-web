@@ -18,7 +18,7 @@ import mypageIconActive from "@/resources/assets/mobile-common/mypage-blue.svg";
 const NAV_ITEMS = [
   { to: ROUTES.HOME, icon: homeIcon, activeIcon: homeIconActive, label: "홈" },
   {
-    to: ROUTES.TIMETABLE,
+    to: ROUTES.TIMETABLE.ROOT,
     icon: saveIcon,
     activeIcon: saveIconActive,
     label: "시간표",

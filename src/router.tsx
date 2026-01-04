@@ -44,6 +44,7 @@ import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
 import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
+import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 
 export const router = createBrowserRouter([
   {
@@ -61,7 +62,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
           { path: ROUTES.MYPAGE.ROOT, element: <MobileMyPage /> },
-          { path: ROUTES.TIMETABLE, element: <MobileTimeTablePage /> },
+          { path: ROUTES.TIMETABLE.ROOT, element: <MobileTimeTablePage /> },
         ],
       },
 
@@ -73,6 +74,9 @@ export const router = createBrowserRouter([
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
+
+          //시간표
+          { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
 
           // 횃불이 AI
           { path: ROUTES.AI, element: <AiPage /> },

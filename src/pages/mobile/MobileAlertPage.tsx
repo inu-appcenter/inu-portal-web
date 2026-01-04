@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
 import { Notification } from "@/types/members";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
+import { ROUTES } from "@/constants/routes";
 
 interface FetchState {
   lastPostId: number | undefined;
@@ -32,7 +33,7 @@ const MobileAlertPage = () => {
     () => [
       {
         label: "푸시 알림 설정",
-        onClick: () => navigate("/home/deptnotice/setting"),
+        onClick: () => navigate(ROUTES.BOARD.DEPT_SETTING),
       },
     ],
     [navigate], // navigate 함수 의존성 추가

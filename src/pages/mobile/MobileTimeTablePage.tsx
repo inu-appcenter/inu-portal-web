@@ -1,10 +1,13 @@
 import styled from "styled-components";
-import { useHeader } from "@/context/HeaderContext";
+import { MenuItemType, useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import GradeCalculatorWidget from "@/components/mobile/timetable/GradeCalculatorWidget";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 // 목업 데이터
 const MOCK_TIMETABLE: ClassItem[] = [
@@ -67,10 +70,23 @@ const MOCK_TIMETABLE: ClassItem[] = [
 ];
 
 const MobileTimeTablePage = () => {
+  const navigate = useNavigate();
+
+  const menuItems = useMemo<MenuItemType[]>(
+    () => [
+      {
+        label: "시간표 편집",
+        onClick: () => navigate(ROUTES.TIMETABLE.EDIT),
+      },
+    ],
+    [navigate], // navigate 함수 의존성 추가
+  );
+
   useHeader({
     title: undefined,
     showAlarm: true,
     hasback: false,
+    menuItems,
   });
 
   return (

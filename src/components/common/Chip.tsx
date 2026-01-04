@@ -2,7 +2,7 @@ import styled from "styled-components";
 import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
 
 interface ChipButtonProps {
-  iconSrc: string;
+  iconSrc?: string;
   title: string;
   isExternalLink?: boolean;
   isAIButton?: boolean;
@@ -17,8 +17,14 @@ const Chip = ({
   onClick,
 }: ChipButtonProps) => {
   return (
-    <ChipWrapper onClick={onClick} $isAIButton={isAIButton}>
-      <Icon src={iconSrc} alt="" />
+    <ChipWrapper
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      $isAIButton={isAIButton}
+    >
+      {iconSrc && <Icon src={iconSrc} alt="" />}
       <ContentArea>
         <div className="title">{title}</div>
         {isExternalLink && <img src={외부연결버튼} />}

@@ -12,54 +12,6 @@ export default function CategorySelectorNew({
 }: CategorySelectorNewProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  // const [type, setType] = useState("");
-  // const [categories, setCategories] = useState<string[]>([]);
-  // const { isAppUrl } = useAppStateStore();
-
-  // useEffect(() => {
-  //   const params = new URLSearchParams(location.search);
-  //
-  //   if (location.pathname === `${isAppUrl}/write`) {
-  //     setType("write");
-  //   } else if (location.pathname === `${isAppUrl}/home/notice`) {
-  //     setType("notice");
-  //   } else if (location.pathname === `${isAppUrl}/home/tips`) {
-  //     setType("tips");
-  //   }
-  //
-  //   if (params.get("search")) {
-  //     setSelectedCategory("");
-  //   } else {
-  //     setSelectedCategory(params.get("category") || "전체");
-  //   }
-  // }, [location.pathname, location.search]);
-  //
-  // useEffect(() => {
-  //   const fetchCategories = async () => {
-  //     try {
-  //       if (categoriesProp && categoriesProp.length > 0) {
-  //         // ✅ props가 있으면 그걸 우선 사용
-  //         setCategories(categoriesProp);
-  //         setSelectedCategory("-1");
-  //         return;
-  //       }
-  //
-  //       if (type === "tips") {
-  //         const response = await getTipsCategories();
-  //         setCategories(["전체", ...response.data]);
-  //       } else if (type === "write") {
-  //         const response = await getTipsCategories();
-  //         setCategories(response.data);
-  //       } else if (type === "notice") {
-  //         const response = await getSchoolNoticeCategories();
-  //         setCategories(["전체", ...response.data]);
-  //       }
-  //     } catch (error) {
-  //       console.error("모든 카테고리 가져오기 실패", error);
-  //     }
-  //   };
-  //   fetchCategories();
-  // }, [type, categoriesProp]);
 
   const handleClickCategory = (category: string) => {
     const params = new URLSearchParams(location.search);
