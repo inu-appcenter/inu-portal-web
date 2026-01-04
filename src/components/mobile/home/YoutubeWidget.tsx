@@ -32,6 +32,8 @@ const YoutubeListWidget = () => {
 
     const fetchVideos = async () => {
       setLoading(true);
+      return; //개발 중 임시로 불러오지 않도록 막음
+
       try {
         console.log("유튜브 영상 로딩 시작");
         const orderParam = sort === "date" ? "date" : "viewCount";
