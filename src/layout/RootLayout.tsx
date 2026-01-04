@@ -8,7 +8,7 @@ import useUserStore from "@/stores/useUserStore";
 import useAppStateStore from "@/stores/useAppStateStore";
 import { getMembers, postApiLogs } from "@/apis/members";
 import tokenInstance from "@/apis/tokenInstance";
-import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
+import ScrollBarStyles from "@/styles/ScrollBarStyles";
 import { HeaderProvider } from "@/context/HeaderContext";
 
 // 허용되는 경로 타입 정의
@@ -21,6 +21,7 @@ const MAIN_PATHS: string[] = [
   ROUTES.SAVE,
   ROUTES.MYPAGE.ROOT,
   ROUTES.ROOT,
+  ROUTES.TIMETABLE,
 ];
 
 // 페이지 스택 애니메이션 변수

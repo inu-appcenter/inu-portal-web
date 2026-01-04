@@ -18,8 +18,8 @@ import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
 export default function MobileHomePage() {
-  const isBannerOn = false; //배너 온오프 - on:true off:false
-  const [show, setShow] = useState(false); //배너 모달창 열림 여부
+  const isBannerOn = false; // 배너 온오프 - on:true off:false
+  const [show, setShow] = useState(false); // 배너 모달창 열림 여부
 
   // 헤더 설정 주입
   useHeader({
@@ -75,36 +75,56 @@ export default function MobileHomePage() {
           </Modal>
         </ModalBackGround>
       )}
-      <Banner />
 
-      <ContainerWrapper>
-        {/*<SerachForm />*/}
-        <CategoryForm />
-        <HomeChipGroup />
-        {/*<NoticeForm />*/}
-        <TitleContentArea
-          title={"학교 공지사항"}
-          children={<NoticeForm />}
-          link={ROUTES.BOARD.NOTICE}
-        />
-        <TitleContentArea
-          title={"TIPS 알아보기"}
-          children={<TipsWidget />}
-          link={ROUTES.BOARD.TIPS}
-        />
-        <TitleContentArea
-          title={"학사일정"}
-          children={<Calendar mode={"weekly"} />}
-          link={ROUTES.BOARD.CALENDAR}
-        />
-        <TitleContentArea
-          title={"인천대학교 YouTube"}
-          externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
-        >
-          <YoutubeWidget />
-        </TitleContentArea>
-        {/*<TipForm />*/}
-      </ContainerWrapper>
+      {/* 상단 배너 영역 */}
+      <Section>
+        <Banner />
+      </Section>
+
+      {/* 메인 피드 영역 */}
+      <FeedLayout>
+        <Section>
+          <CategoryForm />
+        </Section>
+
+        <Section>
+          <HomeChipGroup />
+        </Section>
+
+        {/* 모든 TitleContentArea를 Section으로 감싸서 패딩 통일 */}
+        <Section>
+          <TitleContentArea
+            title={"학교 공지사항"}
+            children={<NoticeForm />}
+            link={ROUTES.BOARD.NOTICE}
+          />
+        </Section>
+
+        <Section>
+          <TitleContentArea
+            title={"TIPS 알아보기"}
+            children={<TipsWidget />}
+            link={ROUTES.BOARD.TIPS}
+          />
+        </Section>
+
+        <Section>
+          <TitleContentArea
+            title={"학사일정"}
+            children={<Calendar mode={"weekly"} />}
+            link={ROUTES.BOARD.CALENDAR}
+          />
+        </Section>
+
+        <Section>
+          <TitleContentArea
+            title={"인천대학교 YouTube"}
+            externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
+          >
+            <YoutubeWidget />
+          </TitleContentArea>
+        </Section>
+      </FeedLayout>
 
       <AppcenterLogoWrapper>
         <img
@@ -124,31 +144,37 @@ const MobileHomePageWrapper = styled.div`
   flex-direction: column;
   width: 100%;
   position: relative;
-
-  padding: 0 16px;
   box-sizing: border-box;
 `;
 
-const ContainerWrapper = styled.div`
-  padding: 24px 0;
+// 역할: 컨텐츠가 안전 영역(Safe Area) 내에 배치되도록 함 (기존 MediumPaddingWrapper 대체)
+const Section = styled.section`
+  padding: 0 16px;
   box-sizing: border-box;
+  width: 100%;
+`;
+
+// 역할: 수직 리듬(Vertical Rhythm) 관리 (기존 ContainerWrapper 대체)
+const FeedLayout = styled.div`
   display: flex;
   flex-direction: column;
   gap: 28px;
+  padding: 24px 0;
   width: 100%;
-  //margin-top: 14px;
 `;
 
 const AppcenterLogoWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-bottom: 40px;
 
   img {
     width: 50%;
     height: auto;
     max-width: 200px;
     min-width: 150px;
+    cursor: pointer;
   }
 `;
 

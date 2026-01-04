@@ -43,6 +43,7 @@ import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
 import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
+import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
           { path: ROUTES.MYPAGE.ROOT, element: <MobileMyPage /> },
+          { path: ROUTES.TIMETABLE, element: <MobileTimeTablePage /> },
         ],
       },
 

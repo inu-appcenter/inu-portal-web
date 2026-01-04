@@ -18,17 +18,18 @@ import mypageIconActive from "@/resources/assets/mobile-common/mypage-blue.svg";
 const NAV_ITEMS = [
   { to: ROUTES.HOME, icon: homeIcon, activeIcon: homeIconActive, label: "홈" },
   {
+    to: ROUTES.TIMETABLE,
+    icon: saveIcon,
+    activeIcon: saveIconActive,
+    label: "시간표",
+  },
+  {
     to: ROUTES.BUS.ROOT,
     icon: busIcon,
     activeIcon: busIconActive,
     label: "인입런",
   },
-  {
-    to: ROUTES.SAVE,
-    icon: saveIcon,
-    activeIcon: saveIconActive,
-    label: "스크랩",
-  },
+
   {
     to: ROUTES.MYPAGE.ROOT,
     icon: mypageIcon,
@@ -83,10 +84,6 @@ const APP_MAX_WIDTH = "768px";
 
 // 하단 고정 최외곽 컨테이너
 const AreaWrapper = styled.div`
-  //position: fixed; /* 브라우저 화면 기준 고정 */
-  //bottom: 0;
-  //left: 50%;
-  //transform: translateX(-50%); /* 중앙 정렬 */
   width: 100%;
   max-width: ${APP_MAX_WIDTH};
   height: fit-content;

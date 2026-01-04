@@ -4,6 +4,7 @@ export const ROUTES = {
   HOME: "/home",
   AI: "/ai",
   SAVE: "/save",
+  TIMETABLE: "/timetable",
 
   // 마이페이지
   MYPAGE: {

@@ -10,7 +10,7 @@ import { getMembers, postApiLogs } from "@/apis/members";
 import tokenInstance from "@/apis/tokenInstance";
 
 import MobileIntroPage from "@/pages/mobile/MobileIntroPage";
-import ScrollBarStyles from "@/resources/styles/ScrollBarStyles";
+import ScrollBarStyles from "@/styles/ScrollBarStyles";
 import MobileNav from "@/containers/mobile/common/MobileNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { HeaderProvider, useHeaderState } from "@/context/HeaderContext";

@@ -15,6 +15,7 @@ const MAIN_PATHS: string[] = [
   ROUTES.SAVE,
   ROUTES.MYPAGE.ROOT,
   ROUTES.ROOT,
+  ROUTES.TIMETABLE,
 ];
 
 const FrozenOutlet = ({ children }: { children: React.ReactNode }) => {
