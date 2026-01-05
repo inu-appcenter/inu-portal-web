@@ -20,6 +20,9 @@ const HomeChipGroup = () => {
     {
       iconSrc: CallINU,
       title: "INU 전화번호부",
+      onClick: () => {
+        navigate(`/phonebook`);
+      },
     },
     {
       iconSrc: Unidorm,

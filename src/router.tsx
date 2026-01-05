@@ -45,6 +45,7 @@ import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
 import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
+import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 
 export const router = createBrowserRouter([
   {
@@ -77,6 +78,9 @@ export const router = createBrowserRouter([
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
+
+          //전화번호부
+          { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },
 
           // 횃불이 AI
           { path: ROUTES.AI, element: <AiPage /> },

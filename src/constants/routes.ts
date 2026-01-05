@@ -11,6 +11,11 @@ export const ROUTES = {
     EDIT: "/timetable/edit",
   },
 
+  //전화번호부
+  PHONEBOOK: {
+    ROOT: "/phonebook",
+  },
+
   // 마이페이지
   MYPAGE: {
     ROOT: "/mypage",
