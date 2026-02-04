@@ -30,6 +30,11 @@ const MobileAdminPage: React.FC = () => {
       path: "/admin/apistatistics",
       description: "일자별로 API 요청 횟수 통계를 볼 수 있어요.",
     },
+    {
+      label: "푸시 알림 전송",
+      path: "/admin/notification",
+      description: "유저에게 푸시알림을 보낼 수 있어요.",
+    },
   ];
 
   return (
