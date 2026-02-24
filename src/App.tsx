@@ -97,6 +97,8 @@ function App() {
         } catch (error) {
           // 서버 등록 실패 예외 처리
         }
+      } else {
+        alert("토큰이 없습니다");
       }
     };
 
