@@ -93,7 +93,7 @@ function App() {
       if (storedToken) {
         try {
           alert("토큰 전송 시도");
-          await tokenInstance.post("/fcm/token", { fcmToken: storedToken });
+          await tokenInstance.post("/fcm/token", { token: storedToken });
           alert("토큰 전송 완료");
         } catch (error) {
           // 서버 등록 실패 예외 처리
