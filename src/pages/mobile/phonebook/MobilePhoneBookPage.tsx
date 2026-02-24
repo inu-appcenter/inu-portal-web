@@ -3,11 +3,16 @@ import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
 import { useMemo, useState } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import callinuBanner from "@/resources/assets/phonebook/callinu-banner.webp";
 import callinuLogo from "@/resources/assets/phonebook/callinu-logo.webp";
+import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 
 const MobilePhoneBookPage = () => {
+  const navigate = useNavigate();
+  const [isModalOpen] = useState(true);
+
   const [categoryList] = useState<string[]>([
     "전체",
     "대학본부",
@@ -39,6 +44,10 @@ const MobilePhoneBookPage = () => {
 
   return (
     <MobilePhoneBookPageWrapper>
+      <ComingSoonModal
+        isOpen={isModalOpen}
+        onClose={() => navigate(ROUTES.HOME, { replace: true })}
+      />
       <Box>
         <BannerSection>
           <BannerImage src={callinuBanner} alt="Callin U" />

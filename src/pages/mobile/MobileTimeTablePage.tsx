@@ -5,9 +5,10 @@ import GradeCalculatorWidget from "@/components/mobile/timetable/GradeCalculator
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 
 // 목업 데이터
 const MOCK_TIMETABLE: ClassItem[] = [
@@ -71,6 +72,7 @@ const MOCK_TIMETABLE: ClassItem[] = [
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
+  const [isModalOpen] = useState(true);
 
   const menuItems = useMemo<MenuItemType[]>(
     () => [
@@ -91,6 +93,10 @@ const MobileTimeTablePage = () => {
 
   return (
     <MobileTimeTablePageWrapper>
+      <ComingSoonModal
+        isOpen={isModalOpen}
+        onClose={() => navigate(ROUTES.HOME, { replace: true })}
+      />
       <TitleContentArea title={"2025년 2학기"}>
         <TimetableGrid events={MOCK_TIMETABLE} />
       </TitleContentArea>
