@@ -92,14 +92,15 @@ function App() {
       // 토큰 존재 및 로그인 상태 확인 시 전송 실행
       if (storedToken) {
         try {
-          alert("토큰 전송 시도");
-          await tokenInstance.post("/fcm/token", { token: storedToken });
-          alert("토큰 전송 완료");
+          // alert("토큰 전송 시도");
+          console.log(storedToken);
+          await tokenInstance.post("/api/tokens", { token: storedToken });
+          // alert("토큰 전송 완료");
         } catch (error) {
           // 서버 등록 실패 예외 처리
         }
       } else {
-        alert("토큰이 없습니다");
+        // alert("토큰이 없습니다");
       }
     };
 
