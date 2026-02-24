@@ -1,6 +1,6 @@
 import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import {getMembers, postApiLogs} from "apis/members";
+import { useEffect, useState } from "react";
+import { getMembers, postApiLogs } from "apis/members";
 import useUserStore from "stores/useUserStore";
 import ScrollBarStyles from "resources/styles/ScrollBarStyles";
 import RootPage from "pages/RootPage";
@@ -22,7 +22,8 @@ import tokenInstance from "./apis/tokenInstance.ts";
 
 function App() {
   const location = useLocation();
-  const { tokenInfo, setTokenInfo, setUserInfo, userInfo } = useUserStore();
+  const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
+  const [fcmToken, setFcmToken] = useState("");
 
   // URL 쿼리에서 토큰 값 추출 및 저장
   useEffect(() => {
@@ -64,46 +65,60 @@ function App() {
     }
   }, [tokenInfo, setUserInfo]);
 
-  // 웹뷰에서 FCM 토큰 전달 콜백 등록
+  // 웹뷰 FCM 토큰 수신 설정
   useEffect(() => {
+    // 전역 윈도우 객체에 토큰 수신 콜백 등록
     (window as any).onReceiveFcmToken = async function (token: string) {
-      console.log("FCM 토큰 전달받음:", token);
-
-      try {
-        // 로컬스토리지에 토큰 저장
+      // 토큰 유효성 확인 및 저장
+      if (token && token.trim() !== "") {
         localStorage.setItem("fcmToken", token);
-
-        // 서버로 토큰 등록
-        await tokenInstance.post("/api/tokens", { token });
-        console.log("FCM 토큰 등록 완료");
-      } catch (error) {
-        console.error("FCM 토큰 등록 실패", error);
+        setFcmToken(token);
       }
     };
 
     return () => {
+      // 컴포넌트 언마운트 시 콜백 초기화
       (window as any).onReceiveFcmToken = null;
     };
-  }, [userInfo]);
+  }, []);
+
+  // FCM 토큰 서버 등록 (로컬 스토리지 기반 전송)
+  useEffect(() => {
+    // 서버 등록 비동기 함수 정의
+    const registerFcmToken = async () => {
+      // 로컬 스토리지 토큰 조회
+      const storedToken = localStorage.getItem("fcmToken");
+
+      // 토큰 존재 및 로그인 상태 확인 시 전송 실행
+      if (storedToken) {
+        try {
+          await tokenInstance.post("/fcm/token", { fcmToken: storedToken });
+          alert("토큰 전송 완료");
+        } catch (error) {
+          // 서버 등록 실패 예외 처리
+        }
+      }
+    };
+
+    registerFcmToken();
+    // 토큰 상태, 로그인 여부, 토큰 정보 변경 시 재실행
+  }, [fcmToken, tokenInfo]);
 
   //접속 유저수 중복없이 카운팅
-    useEffect(() => {
-        const apiCount =async ()=>{
-            const STORAGE_KEY = "user_count_date";
+  useEffect(() => {
+    const apiCount = async () => {
+      const STORAGE_KEY = "user_count_date";
 
-            const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-            const lastCountDate = localStorage.getItem(STORAGE_KEY);
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const lastCountDate = localStorage.getItem(STORAGE_KEY);
 
-            if (lastCountDate !== today) {
-               await postApiLogs("/api/members/no-dup");
-                localStorage.setItem(STORAGE_KEY, today);
-
-            }
-        }
-        apiCount();
-
-
-    }, []);
+      if (lastCountDate !== today) {
+        await postApiLogs("/api/members/no-dup");
+        localStorage.setItem(STORAGE_KEY, today);
+      }
+    };
+    apiCount();
+  }, []);
 
   return (
     <>
