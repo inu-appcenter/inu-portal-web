@@ -6,6 +6,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 
 import { getPostsMain } from "@/apis/posts";
 import { Post } from "@/types/posts";
+import { ROUTES } from "@/constants/routes";
 import "swiper/swiper-bundle.css";
 import "swiper/css/navigation";
 import "swiper/css";
@@ -51,7 +52,7 @@ export default function TipForm() {
             {chunk.map((post) => (
               <PostWrapper
                 key={post.id}
-                onClick={() => navigate(`/postdetail?id=${post.id}`)}
+                onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(post.id))}
               >
                 <div className="category">{post.category}</div>
                 <div className="title">{post.title}</div>

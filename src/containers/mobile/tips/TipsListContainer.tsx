@@ -13,6 +13,12 @@ import { getAlerts } from "@/apis/members";
 import { Notification } from "@/types/members";
 import MoreFeaturesBox from "../../../components/desktop/common/MoreFeaturesBox.tsx";
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
+import Box from "@/components/common/Box";
+import Divider from "@/components/common/Divider";
+import { Fragment } from "react";
+import { ROUTES } from "@/constants/routes";
+import { useNavigate } from "react-router-dom";
+import PostItem from "@/components/mobile/notice/PostItem";
 
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
@@ -34,6 +40,7 @@ export default function TipsListContainer({
   category,
   query,
 }: TipsListContainerProps) {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
@@ -233,9 +240,33 @@ export default function TipsListContainer({
         }
       >
         <TipsCardWrapper $viewMode={viewMode}>
-          {posts.map((p, i) => (
-            <TipsCard key={i} post={p} viewMode={viewMode} docType={docType} />
-          ))}
+          {(docType === "TIPS" || docType === "SEARCH") &&
+          viewMode === "list" ? (
+            posts.length > 0 && (
+              <Box>
+                {posts.map((p, i) => (
+                  <Fragment key={p.id}>
+                    <div
+                      onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(p.id))}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <PostItem
+                        title={p.title}
+                        category={p.category}
+                        date={p.createDate}
+                        writer={p.writer}
+                      />
+                    </div>
+                    {i < posts.length - 1 && <Divider margin={"16px 0"} />}
+                  </Fragment>
+                ))}
+              </Box>
+            )
+          ) : (
+            posts.map((p, i) => (
+              <TipsCard key={i} post={p} viewMode={viewMode} docType={docType} />
+            ))
+          )}
 
           {notices.map((n, i) => (
             <TipsCard

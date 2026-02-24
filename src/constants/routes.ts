@@ -30,6 +30,7 @@ export const ROUTES = {
   BOARD: {
     ALERT: "/home/alert",
     TIPS: "/home/tips",
+    TIPS_CATEGORY: (category: string) => `/home/tips/category/${category}`,
     TIPS_DETAIL: (id: string | number) => `/home/tips/${id}`,
     TIPS_WRITE: "/home/tips/write",
     NOTICE: "/home/notice",

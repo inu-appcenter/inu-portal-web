@@ -5,23 +5,28 @@ import { useEffect, useState, Fragment, useMemo } from "react";
 import Box from "@/components/common/Box";
 import { getTipsCategories } from "@/apis/categories";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import { getPostsMobile } from "@/apis/posts";
+import { getPostsByCategories } from "@/apis/posts";
 import { Post } from "@/types/posts";
 import Divider from "@/components/common/Divider";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
+import PostItem from "@/components/mobile/notice/PostItem";
+
+interface CategoryPosts {
+  category: string;
+  posts: Post[];
+}
 
 const MobileTipsPage = () => {
   const navigate = useNavigate();
-  const [tips, setTips] = useState<Post[]>([]);
+  const [categoryPosts, setCategoryPosts] = useState<CategoryPosts[]>([]);
   const [categoryList, setCategoryList] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
 
-  // 현재 선택된 카테고리
   const selectedCategory = params.get("category") || "자유게시판";
 
   // 데이터 초기 로드
@@ -32,9 +37,9 @@ const MobileTipsPage = () => {
         const categoryRes = await getTipsCategories();
         setCategoryList([...categoryRes.data]);
 
-        // 전체 팁 데이터 로드
-        const postRes = await getPostsMobile(undefined, "전체");
-        setTips(postRes.data);
+        // 카테고리별 최신 게시글 가져오기 (기본 5개)
+        const postRes = await getPostsByCategories(3);
+        setCategoryPosts(postRes.data);
       } catch (error) {
         console.error("데이터 로드 실패", error);
       } finally {
@@ -47,18 +52,16 @@ const MobileTipsPage = () => {
 
   // 카테고리 변경 시 스크롤 이동
   useEffect(() => {
-    if (isLoading || tips.length === 0) return;
+    if (isLoading || categoryPosts.length === 0) return;
 
     const scrollContainer = document.getElementById("app-scroll-view");
     if (!scrollContainer) return;
 
-    // 전체 카테고리 선택 시 최상단 이동
     if (selectedCategory === "전체") {
       scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    // 특정 카테고리 섹션 이동
     const scrollTimer = setTimeout(() => {
       const targetElement = document.getElementById(
         `category-${selectedCategory}`,
@@ -72,9 +75,8 @@ const MobileTipsPage = () => {
     }, 100);
 
     return () => clearTimeout(scrollTimer);
-  }, [selectedCategory, tips, isLoading]);
+  }, [selectedCategory, categoryPosts, isLoading]);
 
-  // 상단 헤더 컴포넌트
   const subHeader = useMemo(
     () => (
       <CategorySelectorNew
@@ -85,7 +87,6 @@ const MobileTipsPage = () => {
     [categoryList, selectedCategory],
   );
 
-  // 헤더 설정 등록
   useHeader({
     title: "TIPS",
     hasback: true,
@@ -97,8 +98,7 @@ const MobileTipsPage = () => {
     <MobileTipsPageWrapper>
       <TipsListContainerWrapper>
         {isLoading
-          ? // 로딩 스켈레톤
-            Array.from({ length: 3 }).map((_, groupIdx) => (
+          ? Array.from({ length: 3 }).map((_, groupIdx) => (
               <div key={`group-skeleton-${groupIdx}`}>
                 <TitleContentArea title={<Skeleton width={100} height={20} />}>
                   <Box>
@@ -112,44 +112,42 @@ const MobileTipsPage = () => {
                 </TitleContentArea>
               </div>
             ))
-          : // 카테고리별 섹션 렌더링
-            categoryList.map((categoryItem) => {
-              const filteredTips = tips.filter(
-                (tip) => tip.category === categoryItem,
-              );
-
-              return (
-                <CategorySection
-                  id={`category-${categoryItem}`}
-                  key={categoryItem}
+          : categoryPosts.map((categoryItem) => (
+              <CategorySection
+                id={`category-${categoryItem.category}`}
+                key={categoryItem.category}
+              >
+                <TitleContentArea
+                  title={categoryItem.category}
+                  link={ROUTES.BOARD.TIPS_CATEGORY(categoryItem.category)}
                 >
-                  <TitleContentArea title={categoryItem}>
-                    <Box>
-                      {filteredTips.length > 0 ? (
-                        filteredTips.map((tip, index) => (
-                          <Fragment key={tip.id}>
-                            <TipTitle
-                              onClick={() => {
-                                navigate(ROUTES.BOARD.TIPS_DETAIL(tip.id));
-                              }}
-                            >
-                              {tip.title}
-                            </TipTitle>
-                            {index < filteredTips.length - 1 && (
-                              <Divider margin={"16px 0"} />
-                            )}
-                          </Fragment>
-                        ))
-                      ) : (
-                        <EmptyState>
-                          해당 카테고리의 게시글이 없습니다.
-                        </EmptyState>
-                      )}
-                    </Box>
-                  </TitleContentArea>
-                </CategorySection>
-              );
-            })}
+                  <Box>
+                    {categoryItem.posts.length > 0 ? (
+                      categoryItem.posts.map((tip, index) => (
+                        <Fragment key={tip.id}>
+                          <PostItem
+                            title={tip.title}
+                            // category={tip.category}
+                            date={tip.createDate}
+                            writer={tip.writer}
+                            onClick={() => {
+                              navigate(ROUTES.BOARD.TIPS_DETAIL(tip.id));
+                            }}
+                          />
+                          {index < categoryItem.posts.length - 1 && (
+                            <Divider margin={"16px 0"} />
+                          )}
+                        </Fragment>
+                      ))
+                    ) : (
+                      <EmptyState>
+                        해당 카테고리의 게시글이 없습니다.
+                      </EmptyState>
+                    )}
+                  </Box>
+                </TitleContentArea>
+              </CategorySection>
+            ))}
       </TipsListContainerWrapper>
     </MobileTipsPageWrapper>
   );
@@ -163,7 +161,6 @@ const MobileTipsPageWrapper = styled.div`
 `;
 
 const CategorySection = styled.div`
-  // 헤더 높이(140px) 고려 스크롤 여백
   scroll-margin-top: 150px;
 `;
 
@@ -174,13 +171,6 @@ const TipsListContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-`;
-
-const TipTitle = styled.span`
-  font-size: 15px;
-  color: #333;
-  line-height: 1.5;
-  display: block;
 `;
 
 const EmptyState = styled.div`

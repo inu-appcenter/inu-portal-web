@@ -42,6 +42,7 @@ import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiSta
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
+import MobileTipsCategoryPage from "@/pages/mobile/MobileTipsCategoryPage";
 import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
@@ -91,6 +92,10 @@ export const router = createBrowserRouter([
             path: ROUTES.BOARD.TIPS,
             children: [
               { index: true, element: <MobileTipsPage /> },
+              {
+                path: "category/:category",
+                element: <MobileTipsCategoryPage />,
+              },
               { path: ":id", element: <MobilePostDetailPage /> },
             ],
           },

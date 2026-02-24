@@ -40,7 +40,7 @@ export default function ({
     } else if (docType === "COUNCILNOTICE") {
       councilNotice && navigate(`/councilnoticedetail?id=${councilNotice.id}`);
     } else {
-      post && navigate(`/postdetail?id=${post.id}`);
+      post && navigate(ROUTES.BOARD.TIPS_DETAIL(post.id));
     }
   };
 

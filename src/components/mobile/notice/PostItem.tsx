@@ -9,6 +9,7 @@ interface NoticeItemProps {
   date?: string;
   writer?: string;
   isLoading?: boolean;
+  onClick?: () => void;
 }
 
 const PostItem = ({
@@ -18,6 +19,7 @@ const PostItem = ({
   date,
   writer,
   isLoading,
+  onClick,
 }: NoticeItemProps) => {
   if (isLoading) {
     return (
@@ -37,10 +39,10 @@ const PostItem = ({
   }
 
   return (
-    <NoticeItemWrapper>
+    <NoticeItemWrapper onClick={onClick}>
       {category && <Category>{category}</Category>}
       <Title>{title || ""}</Title>
-      <ContentLine>{content}</ContentLine>
+      {content && <ContentLine>{content}</ContentLine>}
       <InfoLine>
         <div className="date">{date}</div>
         {writer && <Badge text={writer} />}
@@ -56,6 +58,8 @@ const NoticeItemWrapper = styled.div`
   flex-direction: column;
   gap: 8px;
   width: 100%;
+
+  cursor: pointer;
 `;
 
 const Category = styled.div`

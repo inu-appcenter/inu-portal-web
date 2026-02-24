@@ -1,7 +1,7 @@
 import axiosInstance from "@/apis/axiosInstance";
 import tokenInstance from "@/apis/tokenInstance";
 import { ApiResponse, Pagination } from "@/types/common";
-import { Post, PostDetail } from "@/types/posts";
+import { CategoryPosts, Post, PostDetail } from "@/types/posts";
 import { AxiosError } from "axios";
 
 // 게시글 가져오기
@@ -213,4 +213,14 @@ export const getPostsMobile = async (
     }
     throw error; // 그 외 에러는 그대로 상위로 던짐
   }
+};
+
+export const getPostsByCategories = async (
+  count?: number,
+): Promise<ApiResponse<CategoryPosts[]>> => {
+  const response = await axiosInstance.get<ApiResponse<CategoryPosts[]>>(
+    `/api/posts/categories${count ? `?count=${count}` : ""}`,
+  );
+
+  return response.data;
 };

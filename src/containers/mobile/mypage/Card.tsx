@@ -2,10 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import styled from "styled-components";
 import { deletePost, putLike } from "@/apis/posts";
+import { ROUTES } from "@/constants/routes";
 import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
 import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import { Post } from "@/types/posts";
-import heart from "@/resources/assets/posts/posts-heart.svg";
+import PostItem from "@/components/mobile/notice/PostItem";
+import Box from "@/components/common/Box";
+import Divider from "@/components/common/Divider";
+import { Fragment } from "react";
 
 interface TipsCardContainerProps {
   post: Post[];
@@ -20,7 +24,7 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
   const handleDocumentClick = (id: number) => {
-    navigate(`/postdetail?id=${id}`);
+    navigate(ROUTES.BOARD.TIPS_DETAIL(id));
   };
 
   const handleXButtonClick = (id: number) => {
@@ -62,40 +66,34 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
       <p>
         <span>All</span> {post.length}
       </p>
-      {post.map((p) => (
-        <TipsCardListWrapper
-          key={p.id}
-          onClick={() => handleDocumentClick(p.id)}
-        >
-          <XButton
-            src={X_Vector}
-            alt="delete"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent card click when X is clicked
-              handleXButtonClick(p.id);
-            }}
-          />
-          <ListLeftWrapper>
-            <Category>{p.category}</Category>
-            <Date>{p.createDate}</Date>
-          </ListLeftWrapper>
-          <ListLine />
-          <ListRightWrapper>
-            <Title>{p.title}</Title>
-            <Content>{p.content}</Content>
-            <LikeCommentWriterWrapper>
-              <span className="like-comment">
-                <img src={heart} alt="" />
-                <span>{p.like}</span>
-                <span></span>
-                <span>댓글</span>
-                <span>{p.replyCount}</span>
-              </span>
-              <span className="writer">{p.writer}</span>
-            </LikeCommentWriterWrapper>
-          </ListRightWrapper>
-        </TipsCardListWrapper>
-      ))}
+      <Box>
+        {post.map((p, index) => (
+          <Fragment key={p.id}>
+            <RelativeWrapper>
+              <XButton
+                src={X_Vector}
+                alt="delete"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card click when X is clicked
+                  handleXButtonClick(p.id);
+                }}
+              />
+              <div
+                onClick={() => handleDocumentClick(p.id)}
+                style={{ cursor: "pointer" }}
+              >
+                <PostItem
+                  title={p.title}
+                  category={p.category}
+                  date={p.createDate}
+                  writer={p.writer}
+                />
+              </div>
+            </RelativeWrapper>
+            {index < post.length - 1 && <Divider margin={"16px 0"} />}
+          </Fragment>
+        ))}
+      </Box>
 
       {/* Modal for Delete or Unlike Confirmation */}
       {showModal && (
@@ -132,99 +130,20 @@ const CardWrapper = styled.div`
 
 const XButton = styled.img`
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 10px;
+  top: 0;
+  right: 0;
+  width: 100px;
   height: 10px;
   cursor: pointer;
-`;
-
-const Category = styled.div`
-  font-size: 14px;
-  font-weight: 500;
-  color: #0e4d9d;
+  z-index: 10;
+  padding: 5px; // Click area
+  object-fit: contain;
   width: fit-content;
-  border-bottom: 2px solid #7aa7e5;
-  padding-bottom: 2px;
 `;
 
-const Date = styled.div`
-  font-size: 14px;
-  font-weight: 700;
-  color: #7aa7e5;
-`;
-
-const Title = styled.div`
-  font-size: 14px;
-  font-weight: 500;
-  color: #221112;
-`;
-
-const Content = styled.div`
-  font-size: 10px;
-  font-weight: 500;
-  color: #888888;
-`;
-
-const LikeCommentWriterWrapper = styled.div`
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  .like-comment {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10px;
-    font-weight: 500;
-    img {
-      height: 10px;
-    }
-  }
-  .writer {
-    font-size: 10px;
-    font-weight: 500;
-    color: #303030;
-    padding: 2px 8px;
-    background-color: #ecf4ff;
-    border-radius: 8px;
-  }
-`;
-
-const TipsCardListWrapper = styled.div`
+const RelativeWrapper = styled.div`
   position: relative;
-  height: 96px;
   width: 100%;
-  border: 2px solid #7aa7e5;
-  border-radius: 10px;
-  display: flex;
-  //padding-right: 20px;
-  margin-bottom: 12px;
-`;
-
-const ListLeftWrapper = styled.div`
-  padding-left: 12px;
-  flex: 3;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-`;
-
-const ListLine = styled.div`
-  height: 100%;
-  border: 1px solid #7aa7e5;
-`;
-
-const ListRightWrapper = styled.div`
-  position: relative;
-  padding: 8px 8px 0 12px;
-  flex: 7;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 `;
 
 // Modal Styles
