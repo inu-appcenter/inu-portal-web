@@ -23,8 +23,8 @@ export default function MobileMyPage() {
     const fcmToken = localStorage.getItem("fcmToken");
     try {
       if (fcmToken) {
-        await tokenInstance.post("/api/tokens/unlink", {
-          token: fcmToken,
+        await tokenInstance.delete("/api/tokens", {
+          data: { token: fcmToken },
         });
       }
     } catch (error) {}
