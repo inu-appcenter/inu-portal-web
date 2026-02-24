@@ -92,6 +92,7 @@ function App() {
       // 토큰 존재 및 로그인 상태 확인 시 전송 실행
       if (storedToken) {
         try {
+          alert("토큰 전송 시도");
           await tokenInstance.post("/fcm/token", { fcmToken: storedToken });
           alert("토큰 전송 완료");
         } catch (error) {
