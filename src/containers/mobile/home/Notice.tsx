@@ -66,6 +66,10 @@ export default function NoticeForm() {
                   category={notice.category}
                   date={notice.createDate}
                   writer={notice.writer}
+                  onClick={() => {
+                    if (notice.url)
+                      window.open("https://" + notice.url, "_blank");
+                  }}
                 />
                 {index !== 2 && <Divider />}
               </div>

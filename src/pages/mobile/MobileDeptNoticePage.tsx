@@ -8,17 +8,32 @@ import Box from "@/components/common/Box";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { putMemberDepartment } from "@/apis/members";
 import findTitleOrCode from "@/utils/findTitleOrCode";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
+import LoginRequiredModal from "@/components/mobile/common/LoginRequiredModal";
+import { ROUTES } from "@/constants/routes";
+import { Bell } from "lucide-react";
 
 const LIMIT = 8;
 
 const MobileDeptNoticePage = () => {
-  const { userInfo, setUserInfo } = useUserStore();
+  const { userInfo, setUserInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
-  const { dept } = useParams<{ dept: string }>();
+  const location = useLocation();
+
+  const deptParam = new URLSearchParams(location.search).get("dept");
+  const currentDept = deptParam || userInfo.department;
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(
+    !tokenInfo.accessToken,
+  );
+
+  // 로그인 체크
+  useEffect(() => {
+    setIsLoginModalOpen(!tokenInfo.accessToken);
+  }, [tokenInfo.accessToken]);
 
   const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
   const [page, setPage] = useState(1);
@@ -29,27 +44,14 @@ const MobileDeptNoticePage = () => {
   // 핵심: DOM 바인딩 타이밍 문제 해결을 위한 상태
   const [isReady, setIsReady] = useState(false);
 
-  // 리다이렉트 로직
-  useEffect(() => {
-    if (userInfo.department && !dept) {
-      navigate(`/home/deptnotice/${userInfo.department}`, { replace: true });
-    }
-  }, [userInfo.department, dept, navigate]);
-
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     return userInfo.department
-      ? [
-          { label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) },
-          {
-            label: "푸시 알림 설정",
-            onClick: () => navigate("/home/deptnotice/setting"),
-          },
-        ]
+      ? [{ label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) }]
       : undefined;
-  }, [userInfo.department, navigate]);
+  }, [userInfo.department]);
 
   useHeader({
-    title: dept ? `${dept} 공지사항` : "학과 공지사항",
+    title: currentDept ? `${currentDept} 공지사항` : "학과 공지사항",
     hasback: true,
     menuItems,
   });
@@ -60,7 +62,7 @@ const MobileDeptNoticePage = () => {
 
       setIsLoading(true);
       try {
-        const deptCode = dept ? findTitleOrCode(dept) : undefined;
+        const deptCode = currentDept ? findTitleOrCode(currentDept) : undefined;
         if (!deptCode) return;
 
         const response = await getDepartmentNotices(deptCode, "date", pageNum);
@@ -87,11 +89,11 @@ const MobileDeptNoticePage = () => {
         setIsLoading(false);
       }
     },
-    [dept],
+    [currentDept],
   );
 
   useEffect(() => {
-    if (dept) {
+    if (currentDept) {
       // 1. 상태 초기화
       setDeptNotices([]);
       setPage(1);
@@ -111,7 +113,7 @@ const MobileDeptNoticePage = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [dept, fetchData]);
+  }, [currentDept, fetchData]);
 
   const handleDepartmentClick = async (department: string) => {
     try {
@@ -119,21 +121,30 @@ const MobileDeptNoticePage = () => {
       const deptKorean = findTitleOrCode(department);
       setUserInfo({ ...userInfo, department: deptKorean });
       setIsDeptSelectorOpen(false);
-      navigate(`/home/deptnotice/${deptKorean}`, { replace: true });
+      navigate(ROUTES.BOARD.DEPT_NOTICE_DETAIL(deptKorean), { replace: true });
     } catch (error) {
       console.error(error);
       alert("학과 변경 실패");
     }
   };
 
-  if (!dept) return null;
+  if (!tokenInfo.accessToken) {
+    return (
+      <MobileDeptNoticePageWrapper>
+        <LoginRequiredModal isOpen={true} />
+      </MobileDeptNoticePageWrapper>
+    );
+  }
+
+  if (!currentDept) return null;
 
   return (
     <MobileDeptNoticePageWrapper>
+      <LoginRequiredModal isOpen={isLoginModalOpen} />
       {/* isReady가 true일 때만 렌더링하여 DOM id='app-scroll-view'를 확실히 찾게 함 */}
       {isReady && (
         <InfiniteScroll
-          key={dept} // key를 변경하여 컴포넌트 재생성 강제
+          key={currentDept} // key를 변경하여 컴포넌트 재생성 강제
           dataLength={deptNotices.length}
           next={() => fetchData(page)}
           hasMore={hasMore}
@@ -192,6 +203,15 @@ const MobileDeptNoticePage = () => {
           handleClick={handleDepartmentClick}
         />
       )}
+
+      {userInfo.department && (
+        <FixedButtonWrapper>
+          <FloatingButton onClick={() => navigate("/home/deptnotice/setting")}>
+            <Bell size={18} color="white" />
+            학과 공지 알림 받기
+          </FloatingButton>
+        </FixedButtonWrapper>
+      )}
     </MobileDeptNoticePageWrapper>
   );
 };
@@ -200,6 +220,8 @@ export default MobileDeptNoticePage;
 
 const MobileDeptNoticePageWrapper = styled.div`
   width: 100%;
+  position: relative;
+  min-height: 100%;
 `;
 
 const TipsCardWrapper = styled.div`
@@ -215,4 +237,38 @@ const LoadingText = styled.h4`
   padding: 20px 0;
   color: #888;
   font-size: 14px;
+`;
+
+const FixedButtonWrapper = styled.div`
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+`;
+
+const FloatingButton = styled.button`
+  pointer-events: auto;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:active {
+    background-color: #000;
+    transform: scale(0.98);
+  }
 `;

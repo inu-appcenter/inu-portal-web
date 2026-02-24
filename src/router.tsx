@@ -106,7 +106,7 @@ export const router = createBrowserRouter([
           },
           { path: ROUTES.BOARD.NOTICE, element: <MobileSchoolNoticePage /> },
           {
-            path: `${ROUTES.BOARD.DEPT_NOTICE}/:dept?`,
+            path: ROUTES.BOARD.DEPT_NOTICE,
             element: <MobileDeptNoticePage />,
           },
           {
