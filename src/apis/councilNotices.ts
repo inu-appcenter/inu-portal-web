@@ -1,12 +1,12 @@
-import axiosInstance from "apis/axiosInstance";
-import { ApiResponse, Pagination } from "types/common";
-import { CouncilNotice } from "types/councilNotices";
+import axiosInstance from "@/apis/axiosInstance";
+import { ApiResponse, Pagination } from "@/types/common";
+import { CouncilNotice } from "@/types/councilNotices";
 import tokenInstance from "./tokenInstance";
 
 // 총학생회 공지사항 리스트 가져오기
 export const getCouncilNoticesList = async (
   sort: string,
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<CouncilNotice[]>>> => {
   const params: { [key: string]: string | number } = {
     sort,
@@ -20,10 +20,10 @@ export const getCouncilNoticesList = async (
 
 // 총학생회 공지사항 가져오기
 export const getCouncilNotices = async (
-  councilNoticeId: number
+  councilNoticeId: number,
 ): Promise<ApiResponse<CouncilNotice>> => {
   const response = await axiosInstance.get<ApiResponse<CouncilNotice>>(
-    `/api/councilNotices/${councilNoticeId}`
+    `/api/councilNotices/${councilNoticeId}`,
   );
   return response.data;
 };
@@ -32,7 +32,7 @@ export const getCouncilNotices = async (
 export const postCouncilNotices = async (
   title: string,
   content: string,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     title,
@@ -54,7 +54,7 @@ export const postCouncilNotices = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
@@ -64,7 +64,7 @@ export const putCouncilNotices = async (
   councilNoticeId: number,
   title: string,
   content: string,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     title,
@@ -86,17 +86,17 @@ export const putCouncilNotices = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
 
 // 총학생회 공지사항 삭제
 export const deleteCouncilNotices = async (
-  councilNoticeId: number
+  councilNoticeId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.delete<ApiResponse<number>>(
-    `/api/councilNotices/${councilNoticeId}`
+    `/api/councilNotices/${councilNoticeId}`,
   );
   return response.data;
 };

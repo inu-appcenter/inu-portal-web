@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { getFireImages } from "../../../../utils/API/Images";
+import { getFireImages } from "old/utils/API/Images";
 
 interface Info {
   user: {
@@ -24,7 +24,7 @@ export default function ModifyUserInfo() {
         setImage(response.body);
       }
     } catch (error) {
-      console.error('이미지 조회 실패:', error);
+      console.error("이미지 조회 실패:", error);
     }
   };
 

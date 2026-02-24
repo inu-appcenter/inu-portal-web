@@ -1,5 +1,6 @@
+import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
-import useAppStateStore from "stores/useAppStateStore";
+import useAppStateStore from "@/stores/useAppStateStore";
 
 export default function useMobileNavigate() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ export default function useMobileNavigate() {
   };
 
   const isiOS = () => {
-    return /iphone|ipad/i.test(navigator.userAgent) && isAppUrl === "/app";
+    return /iphone|ipad/i.test(navigator.userAgent) && isAppUrl === ROUTES.ROOT;
   };
 
   const mobileNavigate = (

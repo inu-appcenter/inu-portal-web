@@ -21,7 +21,7 @@ const KakaoMap: React.FC = () => {
       const options = {
         center: new window.kakao.maps.LatLng(
           37.374474020920864,
-          126.63361466845616
+          126.63361466845616,
         ), // 중심 좌표 설정
         level: 3, // 확대 레벨 설정
       };
@@ -204,35 +204,35 @@ const KakaoMap: React.FC = () => {
         <h3>필터</h3>
         <label>
           <input
-              type="checkbox"
-              checked={isChecked1}
-              onChange={() => handleFilter("여자휴게실")}
+            type="checkbox"
+            checked={isChecked1}
+            onChange={() => handleFilter("여자휴게실")}
           />
           여자휴게실
         </label>
         <label>
           <input
-              type="checkbox"
-              checked={isChecked2}
-              onChange={() => handleFilter("남자휴게실")}
+            type="checkbox"
+            checked={isChecked2}
+            onChange={() => handleFilter("남자휴게실")}
           />
           남자휴게실
         </label>
         <label>
           <input
-              type="checkbox"
-              checked={isChecked3}
-              onChange={() => handleFilter("남녀공용 휴게실")}
+            type="checkbox"
+            checked={isChecked3}
+            onChange={() => handleFilter("남녀공용 휴게실")}
           />
           남녀공용 휴게실
         </label>
         <h2>장소 목록</h2>
         <ul>
           {restPlaces.map((place, index) => (
-              <li key={index}>
-                <strong>{place.place_name}</strong>: 위도({place.latitude}), 경도(
-                {place.longitude})
-              </li>
+            <li key={index}>
+              <strong>{place.place_name}</strong>: 위도({place.latitude}), 경도(
+              {place.longitude})
+            </li>
           ))}
         </ul>
       </div>

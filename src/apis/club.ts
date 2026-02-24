@@ -1,9 +1,9 @@
 import axiosInstance from "./axiosInstance";
 import tokenInstance from "./tokenInstance";
 
-import { ApiResponse } from "types/common";
+import { ApiResponse } from "@/types/common";
 
-import { Club, ClubRecruit } from "types/club";
+import { Club, ClubRecruit } from "@/types/club";
 
 // 동아리 리스트 가져오기
 export const getClubs = async (

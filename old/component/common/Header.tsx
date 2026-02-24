@@ -3,7 +3,7 @@ import styled from "styled-components";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logoutUser } from "../../reducer/userSlice";
+import { logoutUser } from "old/reducer/userSlice";
 import AppcenterLogo from "../../resource/assets/appcenter-logo.svg";
 
 export default function Headerbar() {

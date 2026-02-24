@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { ROUTES } from "@/constants/routes";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 interface PreviousPages {
@@ -7,16 +8,16 @@ interface PreviousPages {
 
 export function usePreviousPage() {
   const [previousPages, setPreviousPages] = useState<PreviousPages>({
-    home: "/m/home",
+    home: ROUTES.HOME,
     write: "/m/write",
-    save: "/m/save",
-    mypage: "/m/mypage",
+    save: ROUTES.SAVE,
+    mypage: ROUTES.MYPAGE.ROOT,
   });
 
   const location = useLocation();
 
   useEffect(() => {
-    const path = location.pathname.split("/")[2] || "home";
+    const path = location.pathname.split(ROUTES.ROOT)[2] || "home";
     setPreviousPages((prev) => ({
       ...prev,
       [path]: location.pathname + location.search,

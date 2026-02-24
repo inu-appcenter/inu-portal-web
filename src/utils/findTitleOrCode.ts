@@ -1,4 +1,4 @@
-import { navBarList } from "../../old/resource/string/navBarList.tsx";
+import { navBarList } from "old/resource/string/navBarList";
 
 /**
  * title을 인자로 주면 code를 반환

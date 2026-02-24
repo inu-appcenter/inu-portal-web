@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getImages } from "../../../utils/API/Posts";
+import { getImages } from "old/utils/API/Posts";
 import styled from "styled-components";
 
 interface PostContentProps {

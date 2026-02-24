@@ -1,4 +1,4 @@
-import { ApiResponse } from "types/common";
+import { ApiResponse } from "@/types/common";
 import axiosInstance from "./axiosInstance";
 
 // 팁게시판 카테고리 정보 가져오기

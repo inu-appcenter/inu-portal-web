@@ -1,13 +1,13 @@
-import writeImg from "resources/assets/mobile-mypage/post-img.svg";
-import likeImg from "resources/assets/mobile-mypage/like-img.svg";
-import commentImg from "resources/assets/mobile-mypage/comment-img.svg";
-import scrapImg from "resources/assets/mobile-mypage/scrap.svg";
-import profileImg from "resources/assets/mobile-mypage/profile.svg";
-import logoutImg from "resources/assets/mobile-mypage/logout.svg";
-import inquiryImg from "resources/assets/mobile-mypage/inquiry.svg";
-import AppcenterLogo from "resources/assets/mobile-mypage/AppcenterLogo.svg";
+import writeImg from "@/resources/assets/mobile-mypage/post-img.svg";
+import likeImg from "@/resources/assets/mobile-mypage/like-img.svg";
+import commentImg from "@/resources/assets/mobile-mypage/comment-img.svg";
+import scrapImg from "@/resources/assets/mobile-mypage/scrap.svg";
+import profileImg from "@/resources/assets/mobile-mypage/profile.svg";
+import logoutImg from "@/resources/assets/mobile-mypage/logout.svg";
+import inquiryImg from "@/resources/assets/mobile-mypage/inquiry.svg";
+import AppcenterLogo from "@/resources/assets/mobile-mypage/AppcenterLogo.svg";
 
-// import removeImg from "resources/assets/mobile-mypage/remove.svg";
+// import removeImg from "@/resources/assets/mobile-mypage/remove.svg";
 export const MyPageActive = [
   { title: "내가 쓴 글", image: `${writeImg}` },
   { title: "좋아요 한 글", image: `${likeImg}` },

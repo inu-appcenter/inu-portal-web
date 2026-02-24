@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { getFireImages } from "../../../utils/API/Images";
+import { getFireImages } from "old/utils/API/Images";
 
 interface Info {
   user: {
@@ -24,7 +24,7 @@ export default function MyInfo() {
         setImage(response.body);
       }
     } catch (error) {
-      console.error('이미지 조회 실패:', error);
+      console.error("이미지 조회 실패:", error);
     }
   };
 
@@ -43,7 +43,8 @@ export default function MyInfo() {
 const InfoWrapper = styled.div`
   display: flex;
 
-  @media (max-width: 768px) { /* 모바일 */
+  @media (max-width: 768px) {
+    /* 모바일 */
     display: none;
   }
 `;
@@ -54,7 +55,8 @@ const Nickname = styled.div`
   line-height: 30px;
   letter-spacing: 0px;
   margin-left: 36px;
-  @media (max-width: 768px) { /* 모바일 */
+  @media (max-width: 768px) {
+    /* 모바일 */
     margin-left: 0px;
   }
 `;

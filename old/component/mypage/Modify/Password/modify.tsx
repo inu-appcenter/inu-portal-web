@@ -1,14 +1,14 @@
-import styled from 'styled-components';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import CurrentpasswordInput from './currentpassword';
-import NewPasswordInput from './newpassword';
-import CheckNewPasswordInput from './checknewpassword';
-import ModifyButton from './modifybutton';
-import { getMembers } from '../../../../utils/API/Members';
-import ModifyPassword from '../../../../utils/putPassword';
-import Title from '../../common/title';
+import styled from "styled-components";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import CurrentpasswordInput from "./currentpassword";
+import NewPasswordInput from "./newpassword";
+import CheckNewPasswordInput from "./checknewpassword";
+import ModifyButton from "./modifybutton";
+import { getMembers } from "old/utils/API/Members";
+import ModifyPassword from "../../../../utils/putPassword";
+import Title from "../../common/title";
 
 interface loginInfo {
   user: {
@@ -24,7 +24,9 @@ export default function ModifyInfo() {
   const [currnetnickname, setCurrentNickname] = useState("");
   const navigate = useNavigate();
 
-  const handleCurrentPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCurrentPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setCurrentpassword(e.target.value);
     console.log(currentpassword);
   };
@@ -33,7 +35,9 @@ export default function ModifyInfo() {
     setNewpassword(e.target.value);
   };
 
-  const handleCheckNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckNewPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setCheckPassword(e.target.value);
   };
 
@@ -49,9 +53,9 @@ export default function ModifyInfo() {
         setCurrentNickname(userInfo.nickname);
         console.log("닉네임이름", currnetnickname);
       } else if (response.status === 404) {
-        console.error('존재하지 않는 회원입니다.');
+        console.error("존재하지 않는 회원입니다.");
       } else {
-        console.error('회원 정보 가져오기 실패:', response.status);
+        console.error("회원 정보 가져오기 실패:", response.status);
       }
     } catch (error) {
       console.error("회원을 가져오지 못했습니다.", error);
@@ -63,19 +67,23 @@ export default function ModifyInfo() {
       alert("비밀번호가 일치하지 않습니다.");
     } else {
       try {
-        const response = await ModifyPassword(token, currentpassword, newpassword);
+        const response = await ModifyPassword(
+          token,
+          currentpassword,
+          newpassword,
+        );
         console.log(response, "비밀번호 변경 결과:", response);
         if (response.status === 401) {
-          alert('비밀번호가 틀립니다.');
+          alert("비밀번호가 틀립니다.");
         } else if (response.status === 404) {
-          alert('존재하지 않는 회원입니다.');
+          alert("존재하지 않는 회원입니다.");
         } else {
-          alert('비밀번호 변경 성공');
-          navigate('/mypage');
+          alert("비밀번호 변경 성공");
+          navigate("/mypage");
         }
       } catch (error) {
-        console.error('비밀번호 변경 에러:', error);
-        alert('비밀번호 변경에 실패했습니다.');
+        console.error("비밀번호 변경 에러:", error);
+        alert("비밀번호 변경에 실패했습니다.");
       }
     }
   };
@@ -84,9 +92,18 @@ export default function ModifyInfo() {
     <ModifyWrapper>
       <Title title={"비밀번호 변경"} />
       <ChangeWrapper>
-        <CurrentpasswordInput value={currentpassword} onChange={handleCurrentPasswordChange} />
-        <NewPasswordInput value={newpassword} onChange={handleNewPasswordChange} />
-        <CheckNewPasswordInput value={checkpassword} onChange={handleCheckNewPasswordChange} />
+        <CurrentpasswordInput
+          value={currentpassword}
+          onChange={handleCurrentPasswordChange}
+        />
+        <NewPasswordInput
+          value={newpassword}
+          onChange={handleNewPasswordChange}
+        />
+        <CheckNewPasswordInput
+          value={checkpassword}
+          onChange={handleCheckNewPasswordChange}
+        />
       </ChangeWrapper>
       <ModifyButton onClick={handleModifyClick} />
       <LostBtn to="/">비밀번호를 잊으셨나요?</LostBtn>
@@ -113,6 +130,6 @@ const LostBtn = styled(Link)`
   justify-content: flex-end;
   font-size: 17px;
   font-weight: 500;
-  color: #0E4D9D;
+  color: #0e4d9d;
   text-decoration: none;
 `;

@@ -1,5 +1,5 @@
 import axios from "axios";
-import useUserStore from "stores/useUserStore";
+import useUserStore from "@/stores/useUserStore";
 
 const refreshInstance = axios.create({
   baseURL: "https://portal.inuappcenter.kr/",
@@ -16,7 +16,7 @@ refreshInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // 응답 인터셉터

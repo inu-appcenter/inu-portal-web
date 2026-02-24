@@ -1,49 +1,46 @@
-import styled from "styled-components"
-import logoutImg from "../../../resource/assets/logout-logo.svg"
+import styled from "styled-components";
+import logoutImg from "../../../resource/assets/logout-logo.svg";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logoutUser } from "../../../reducer/userSlice";
+import { logoutUser } from "old/reducer/userSlice";
 
-export default function  MypageLogout () {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+export default function MypageLogout() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        dispatch(logoutUser());
-        navigate('/');
-    };
-    return (
-        <MyPageLogpoutWrapper>
-            <MyPageLogpoutImg src={logoutImg} alt="마이페이지 로그아웃로고"/>
-            <MyPageLogpoutTitle onClick={handleLogout}>로그아웃</MyPageLogpoutTitle>
-        </MyPageLogpoutWrapper>
-    )
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    dispatch(logoutUser());
+    navigate("/");
+  };
+  return (
+    <MyPageLogpoutWrapper>
+      <MyPageLogpoutImg src={logoutImg} alt="마이페이지 로그아웃로고" />
+      <MyPageLogpoutTitle onClick={handleLogout}>로그아웃</MyPageLogpoutTitle>
+    </MyPageLogpoutWrapper>
+  );
 }
 
-
 const MyPageLogpoutWrapper = styled.div`
-    display: flex;
-    padding: 20px 35px;
-    margin-top:  calc(100% + 300px)
-
-`
-const MyPageLogpoutImg= styled.img`
-display: inline-block;
-width: 24px;
-height: 24px;
-
+  display: flex;
+  padding: 20px 35px;
+  margin-top: calc(100% + 300px);
+`;
+const MyPageLogpoutImg = styled.img`
+  display: inline-block;
+  width: 24px;
+  height: 24px;
 `;
 
 const MyPageLogpoutTitle = styled.button`
-display: inline;
-font-size: 17px;
-font-weight: 500;
-line-height: 20px;
-letter-spacing: 0px;
-text-align: left;
-color: #656565;
-margin-left: 19px;
-border:none;
-background-color: white;
+  display: inline;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0px;
+  text-align: left;
+  color: #656565;
+  margin-left: 19px;
+  border: none;
+  background-color: white;
 `;

@@ -1,15 +1,15 @@
-import axiosInstance from "apis/axiosInstance";
-import tokenInstance from "apis/tokenInstance";
-import refreshInstance from "apis/refreshInstance";
-import { ApiResponse, Pagination } from "types/common";
+import axiosInstance from "@/apis/axiosInstance";
+import tokenInstance from "@/apis/tokenInstance";
+import refreshInstance from "@/apis/refreshInstance";
+import { ApiResponse, Pagination } from "@/types/common";
 import {
-  TokenInfo,
-  UserInfo,
+  ApiLog,
   MembersReplies,
   Notification,
-  ApiLog,
-} from "types/members";
-import { Post } from "types/posts";
+  TokenInfo,
+  UserInfo,
+} from "@/types/members";
+import { Post } from "@/types/posts";
 
 // 회원 가져오기
 export const getMembers = async (): Promise<ApiResponse<UserInfo>> => {
@@ -119,7 +119,7 @@ export const getMembersLikes = async (
 };
 
 //회원이 받은 알림 목록 가져오기
-export const getNotifications = async (
+export const getAlerts = async (
   page: number,
 ): Promise<ApiResponse<Pagination<Notification[]>>> => {
   const params: { [key: string]: number } = {

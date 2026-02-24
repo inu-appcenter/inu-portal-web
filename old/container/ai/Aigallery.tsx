@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { result } from "../../utils/API/GenTorchy";
-import { getFiresV2 } from "../../utils/API/Fires";
+import { result } from "old/utils/API/GenTorchy";
+import { getFiresV2 } from "old/utils/API/Fires";
 import { useSelector } from "react-redux";
 
 interface loginInfo {
@@ -50,7 +50,7 @@ export default function AiGallery() {
             return { ...req, eta: newEta };
           }
           return req;
-        })
+        }),
       );
     }, 1000);
 
@@ -72,7 +72,7 @@ export default function AiGallery() {
             eta: 0,
             isLoading: true,
             canRefresh: false,
-          })
+          }),
         );
         setImageRequests(initialRequests);
 
@@ -91,8 +91,8 @@ export default function AiGallery() {
       // 새로고침 시 canRefresh를 false로 설정하고 로딩 상태로 전환
       setImageRequests((prevRequests) =>
         prevRequests.map((r) =>
-          r.id === req.id ? { ...r, isLoading: true, canRefresh: false } : r
-        )
+          r.id === req.id ? { ...r, isLoading: true, canRefresh: false } : r,
+        ),
       );
 
       const response = await result(req.id);
@@ -107,8 +107,8 @@ export default function AiGallery() {
                   isLoading: false,
                   canRefresh: false,
                 }
-              : r
-          )
+              : r,
+          ),
         );
       } else if (response.status === 202 || response.status === 203) {
         setImageRequests((prevRequests) =>
@@ -122,8 +122,8 @@ export default function AiGallery() {
                   isLoading: false,
                   canRefresh: false,
                 }
-              : r
-          )
+              : r,
+          ),
         );
       } else {
         setImageRequests((prevRequests) =>
@@ -135,8 +135,8 @@ export default function AiGallery() {
                   isLoading: false,
                   canRefresh: false,
                 }
-              : r
-          )
+              : r,
+          ),
         );
       }
     } catch (error) {
@@ -204,7 +204,7 @@ export default function AiGallery() {
                 <p>이미지를 찾을 수 없습니다</p>
               )}
             </GalleryStatus>
-          )
+          ),
         )}
       </GalleryWrapper>
       <PaginationWrapper>
@@ -217,7 +217,7 @@ export default function AiGallery() {
             >
               {pageNumber}
             </PageNumber>
-          )
+          ),
         )}
       </PaginationWrapper>
     </div>

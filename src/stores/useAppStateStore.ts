@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { create } from "zustand";
 
 interface AppState {
@@ -6,7 +7,7 @@ interface AppState {
 }
 
 const useAppStateStore = create<AppState>((set) => ({
-  isAppUrl: "/m",
+  isAppUrl: ROUTES.ROOT,
   setIsAppUrl: (isAppUrl) => {
     set(() => ({ isAppUrl }));
   },

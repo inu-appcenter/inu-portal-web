@@ -1,5 +1,5 @@
 import 횃불Logo from "../../resource/assets/횃불-logo.svg";
-import { getNotices } from "../../utils/API/Notices";
+import { getNotices } from "old/utils/API/Notices";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import Homepage횃불Img from "../../resource/assets/homepage-횃불-img.svg";
@@ -37,7 +37,7 @@ export default function NoticeItems() {
 
   const goNext = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex < notices.length - itemsToShow ? prevIndex + 1 : prevIndex
+      prevIndex < notices.length - itemsToShow ? prevIndex + 1 : prevIndex,
     );
   };
 

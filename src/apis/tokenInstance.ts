@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
-import useUserStore from "stores/useUserStore";
-import { refresh } from "apis/members";
+import useUserStore from "@/stores/useUserStore";
+import { refresh } from "@/apis/members";
 
 const tokenInstance = axios.create({
   baseURL: "https://portal.inuappcenter.kr/",

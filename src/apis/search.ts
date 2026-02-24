@@ -1,6 +1,6 @@
-import axiosInstance from "apis/axiosInstance";
-import { ApiResponse, Pagination } from "types/common";
-import { Post } from "types/posts";
+import axiosInstance from "@/apis/axiosInstance";
+import { ApiResponse, Pagination } from "@/types/common";
+import { Post } from "@/types/posts";
 import tokenInstance from "./tokenInstance";
 import { AxiosError } from "axios";
 
@@ -8,7 +8,7 @@ import { AxiosError } from "axios";
 export const getSearch = async (
   query: string,
   sort: string,
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<Post[]>>> => {
   const params: { [key: string]: string | number } = {
     query,
@@ -20,7 +20,7 @@ export const getSearch = async (
     // 1) 우선 tokenInstance로 시도
     const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
       "/api/search",
-      { params }
+      { params },
     );
     return response.data;
   } catch (error) {
@@ -30,7 +30,7 @@ export const getSearch = async (
       // 인증이 완전히 만료된 상태이므로, 비로그인(axiosInstance) 요청
       const response = await axiosInstance.get<ApiResponse<Pagination<Post[]>>>(
         "/api/search",
-        { params }
+        { params },
       );
       return response.data;
     }
@@ -42,7 +42,7 @@ export const getSearch = async (
 export const getSearchScrap = async (
   query: string,
   sort: string,
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<Post[]>>> => {
   const params: { [key: string]: string | number } = {
     query,
@@ -51,7 +51,7 @@ export const getSearchScrap = async (
   };
   const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
     "/api/search/scrap",
-    { params }
+    { params },
   );
   return response.data;
 };
@@ -61,7 +61,7 @@ export const getSearchFolderScrap = async (
   query: string,
   sort: string,
   page: number,
-  folderId: number
+  folderId: number,
 ): Promise<ApiResponse<Pagination<Post[]>>> => {
   const params: { [key: string]: string | number } = {
     query,
@@ -70,7 +70,7 @@ export const getSearchFolderScrap = async (
   };
   const response = await tokenInstance.get<ApiResponse<Pagination<Post[]>>>(
     `/api/search/folder/${folderId}`,
-    { params }
+    { params },
   );
   return response.data;
 };

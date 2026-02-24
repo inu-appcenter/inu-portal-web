@@ -1,11 +1,11 @@
 import axiosInstance from "./axiosInstance";
-import { ApiResponse, Pagination } from "types/common";
+import { ApiResponse, Pagination } from "@/types/common";
 import tokenInstance from "./tokenInstance";
-import { Lost, LostSummary } from "types/lost";
+import { Lost, LostSummary } from "@/types/lost";
 
 // 분실물 리스트 조회
 export const getLostList = async (
-  page: number
+  page: number,
 ): Promise<ApiResponse<Pagination<LostSummary[]>>> => {
   const params: { [key: string]: string | number } = {
     page,
@@ -18,10 +18,10 @@ export const getLostList = async (
 
 // 분실물 상세 조회
 export const getLostDetail = async (
-  lostId: number
+  lostId: number,
 ): Promise<ApiResponse<Lost>> => {
   const response = await axiosInstance.get<ApiResponse<Lost>>(
-    `/api/lost/${lostId}`
+    `/api/lost/${lostId}`,
   );
   return response.data;
 };
@@ -30,7 +30,7 @@ export const getLostDetail = async (
 export const postLost = async (
   name: string,
   content: string,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     name,
@@ -45,7 +45,6 @@ export const postLost = async (
   formData.append("request", jsonBlob);
   images.forEach((image) => formData.append("images", image));
 
-
   const response = await tokenInstance.post<ApiResponse<number>>(
     `/api/lost`,
     formData,
@@ -53,7 +52,7 @@ export const postLost = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
@@ -63,7 +62,7 @@ export const putLost = async (
   lostId: number,
   name: string,
   content: string,
-  images: File[]
+  images: File[],
 ): Promise<ApiResponse<number>> => {
   const jsonData = {
     name,
@@ -85,17 +84,17 @@ export const putLost = async (
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return response.data;
 };
 
 // 분실물 삭제
 export const deleteLost = async (
-  lostId: number
+  lostId: number,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.delete<ApiResponse<number>>(
-    `/api/lost/${lostId}`
+    `/api/lost/${lostId}`,
   );
   return response.data;
 };

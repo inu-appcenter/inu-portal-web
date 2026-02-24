@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { deleteMembers } from "../../../utils/API/Members";
+import { deleteMembers } from "old/utils/API/Members";
 import {
   tokenUser as tokenUserAction,
   studentIdUser as studentIdUserAction,

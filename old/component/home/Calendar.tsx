@@ -3,7 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
 import { EventInput } from "@fullcalendar/core/index.js";
 
-import { getSchedules } from "../../utils/API/Schedules";
+import { getSchedules } from "old/utils/API/Schedules";
 import "./calendar.css";
 
 export default function Calendarbar() {

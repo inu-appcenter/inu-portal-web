@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AiLoading from "../../component/ai/AiLoading";
-import { predict } from "../../utils/API/Fires";
+import { predict } from "old/utils/API/Fires";
 
 interface loginInfo {
   user: {
@@ -49,7 +49,7 @@ export default function AiIntroContainer() {
           console.error(
             "이미지 생성 요청 실패:",
             response.status,
-            response.body.msg
+            response.body.msg,
           );
         }
       } catch (error) {

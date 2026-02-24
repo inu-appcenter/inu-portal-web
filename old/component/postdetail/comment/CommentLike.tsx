@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { handleRepliesLike } from "../../../utils/API/Replies";
+import { handleRepliesLike } from "old/utils/API/Replies";
 import heartEmptyImg from "../../../resource/assets/heart-empty-img.svg";
 import heartFilledImg from "../../../resource/assets/heart-filled-img.svg";
 import styled from "styled-components";
@@ -66,8 +66,8 @@ const UtilityImg = styled.img`
   width: 20px;
   height: 20px;
   margin-right: 5px;
-   @media (max-width: 767px) {
-    width: 15px; 
+  @media (max-width: 767px) {
+    width: 15px;
   }
 `;
 
@@ -75,7 +75,7 @@ const ContentText = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: #757575;
-   @media (max-width: 767px) {
-    font-size:10px; 
+  @media (max-width: 767px) {
+    font-size: 10px;
   }
 `;

@@ -13,7 +13,7 @@ import {
   putImages,
   getImages,
   postImages,
-} from "../../utils/API/Posts";
+} from "old/utils/API/Posts";
 import styled from "styled-components";
 import inuLogoImg from "../../resource/assets/inu-logo-img.svg";
 
@@ -163,7 +163,7 @@ export default function PostFormContainer() {
         let postId;
         const response = await postPosts(
           { title, content, category, anonymous },
-          token
+          token,
         );
         if (response.status === 201) {
           postId = response.body.data;
@@ -192,7 +192,7 @@ export default function PostFormContainer() {
         const response = await putPost(
           { title, content, category, anonymous },
           token,
-          postId
+          postId,
         );
         if (response.status === 200) {
           if (images.length) {
@@ -217,7 +217,7 @@ export default function PostFormContainer() {
   // 나갈 때 경고
   const handleGetOut = () => {
     const result = window.confirm(
-      "해당 페이지를 나가시겠습니까? 변경사항이 저장되지 않을 수 있습니다."
+      "해당 페이지를 나가시겠습니까? 변경사항이 저장되지 않을 수 있습니다.",
     );
     if (result) {
       navigate("/");

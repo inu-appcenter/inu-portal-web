@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { handlePostScrap } from "../../../utils/API/Posts";
+import { handlePostScrap } from "old/utils/API/Posts";
 import scrapEmptyImg from "../../../resource/assets/scrap-empty-img.svg";
 import styled from "styled-components";
 

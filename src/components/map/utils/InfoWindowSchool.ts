@@ -1,4 +1,4 @@
-import {Place} from "../DB";
+import { Place } from "../DB";
 
 const InfoWindowSchool = (place: Place, imagesrc: any) => `
   <div style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.5; color: #333; max-width: 150px; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; background-color: #ffffff; overflow: hidden;">

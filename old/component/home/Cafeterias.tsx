@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { cafeteriasList } from "../../resource/string/cafeterias";
+import { cafeteriasList } from "old/resource/string/cafeterias";
 import { useEffect, useState } from "react";
-import { getCafeterias } from "../../utils/API/Cafeterias";
+import { getCafeterias } from "old/utils/API/Cafeterias";
 import dinnerImg from "../../resource/assets/Sunset.svg";
 import lunchImg from "../../resource/assets/Sun.svg";
 import breakfastImg from "../../resource/assets/Sunrise.svg";
@@ -40,10 +40,10 @@ export default function Cafeteria() {
       const response = await getCafeterias(cafeteriaType, nowday);
       if (response.status === 200) {
         const processedData = response.body.data.map((info: string) =>
-          extractValues(info)
+          extractValues(info),
         );
         const infoData = response.body.data.map((info: string) =>
-          extractMenu(info)
+          extractMenu(info),
         );
         setCafeteriaInfo(infoData);
         setCafeteriaDetail(processedData);
@@ -61,7 +61,7 @@ export default function Cafeteria() {
   };
 
   function extractValues(
-    input: string
+    input: string,
   ): { 구성원가: string; 칼로리: string } | null {
     const price = input.match(/([0-9,]+)원/);
     const calory = input.match(/[0-9,]+kcal/);

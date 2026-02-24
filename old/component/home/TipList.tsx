@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { getPostsMain } from "../../utils/API/Posts";
+import { getPostsMain } from "old/utils/API/Posts";
 
 interface Post {
   id: number;

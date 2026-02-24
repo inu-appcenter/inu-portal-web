@@ -1,11 +1,12 @@
+import { ROUTES } from "@/constants/routes";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import Tab from "../../../mobile/components/map/Tab.tsx";
-import RestroomList from "../../../mobile/components/map/RestroomList.tsx";
-import SchoolList from "../../../mobile/components/map/SchoolList.tsx";
-import CafeList from "../../../mobile/components/map/CafeList.tsx";
-import RestaurantList from "../../../mobile/components/map/RestaurantList.tsx";
-import { places, restPlaces, cafePlaces, restaurantPlaces } from "../DB.tsx";
+import Tab from "@/components/mobile/map/Tab.tsx";
+import RestroomList from "@/components/mobile/map/RestroomList.tsx";
+import SchoolList from "@/components/mobile/map/SchoolList.tsx";
+import CafeList from "@/components/mobile/map/CafeList.tsx";
+import RestaurantList from "@/components/mobile/map/RestaurantList.tsx";
+import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB.tsx";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import { closeInfoWindow } from "../utils/markerUtils.ts";
@@ -58,7 +59,7 @@ const PlaceListPanel = ({
             : [];
 
   // URL 경로에 따라 높이 계산
-  const isMobile = window.location.pathname.includes("/m");
+  const isMobile = window.location.pathname.includes(ROUTES.ROOT);
 
   return (
     <BottomSheet

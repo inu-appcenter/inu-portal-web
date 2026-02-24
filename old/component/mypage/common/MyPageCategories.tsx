@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MyPageCategory } from "../../../resource/string/mypage.tsx";
+import { MyPageCategory } from "old/resource/string/mypage";
 import MypageLogout from "./logout";
 import styled from "styled-components";
 
@@ -39,8 +39,8 @@ export default function MyPageCategories({
   const handleImageError = (index: number) => {
     setCategories((prevCategories) =>
       prevCategories.map((cat, idx) =>
-        idx === index ? { ...cat, hasError: true } : cat
-      )
+        idx === index ? { ...cat, hasError: true } : cat,
+      ),
     );
   };
 

@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import retry from "../../resource/assets/retry.svg";
 import { useNavigate } from "react-router-dom";
-import { postFiresRating } from "../../utils/API/Fires";
+import { postFiresRating } from "old/utils/API/Fires";
 import { useSelector } from "react-redux";
 
 interface AiImgRetryProps {

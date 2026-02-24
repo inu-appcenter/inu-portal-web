@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { handlePostLike } from "../../../utils/API/Posts";
+import { handlePostLike } from "old/utils/API/Posts";
 import heartEmptyImg from "../../../resource/assets/heart-empty-img.svg";
 import heartFilledImg from "../../../resource/assets/heart-filled-img.svg";
 import styled from "styled-components";

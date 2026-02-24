@@ -1,3 +1,9 @@
+// 카테고리별 최신 게시글 가져오기
+export interface CategoryPosts {
+  category: string;
+  posts: Post[];
+}
+
 export interface Post {
   id: number;
   title: string;

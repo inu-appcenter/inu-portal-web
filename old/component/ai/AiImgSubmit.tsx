@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { postFiresRating } from "../../utils/API/Fires";
+import { postFiresRating } from "old/utils/API/Fires";
 import { useSelector } from "react-redux";
 
 interface AiSubmitProps {
