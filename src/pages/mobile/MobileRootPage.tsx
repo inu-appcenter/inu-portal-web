@@ -80,7 +80,7 @@ export default function MobileRootPage() {
 
         {/*내비바가 필요없는 서브페이지들*/}
         <Route path={ROUTES.ROOT} element={<SubLayout />}>
-          <Route path={ROUTES.BOARD.ALERT} element={<MobileBoardPage />} />
+          {/*<Route path={ROUTES.BOARD.ALERT} element={<MobileBoardPage />} />*/}
           <Route path={ROUTES.BOARD.TIPS} element={<MobileBoardPage />} />
           <Route path={ROUTES.BOARD.TIPS_WRITE} element={<MobileWritePage />} />
 

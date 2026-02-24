@@ -226,7 +226,7 @@ export default function TipsListContainer({
               ? deptNotices.length
               : docType === "COUNCILNOTICE"
                 ? councilNotices.length
-                : docType === "NOTIFICATION"
+                : docType === "NOTIFICATION" || docType === "ALERT"
                   ? notifications.length
                   : posts.length
         }

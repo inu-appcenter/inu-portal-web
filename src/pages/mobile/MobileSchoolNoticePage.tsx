@@ -143,6 +143,8 @@ const MobileSchoolNoticePage = () => {
                     category={notice.category}
                     writer={notice.writer}
                     date={notice.createDate}
+                    views={notice.view}
+                    isEllipsis={false}
                   />
                 </Box>
               ))}

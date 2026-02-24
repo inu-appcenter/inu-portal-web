@@ -66,6 +66,7 @@ const MobileDeptNoticePage = () => {
         if (!deptCode) return;
 
         const response = await getDepartmentNotices(deptCode, "date", pageNum);
+        console.log(response);
         const newNotices: Notice[] = response.data.contents;
 
         if (newNotices && newNotices.length > 0) {
@@ -177,6 +178,8 @@ const MobileDeptNoticePage = () => {
                       category={deptNotice.category}
                       writer={deptNotice.writer}
                       date={deptNotice.createDate}
+                      views={deptNotice.view}
+                      isEllipsis={false}
                     />
                   </Box>
                 ))}

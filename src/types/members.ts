@@ -31,6 +31,7 @@ export interface Notification {
   title: string;
   body: string;
   type: "GENERAL" | string;
+  createDate: string;
 }
 
 //api로그

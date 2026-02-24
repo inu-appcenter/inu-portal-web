@@ -1,6 +1,7 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import Badge from "@/components/common/Badge";
 import Skeleton from "@/components/common/Skeleton";
+import { Eye } from "lucide-react";
 
 interface NoticeItemProps {
   category?: string;
@@ -8,8 +9,11 @@ interface NoticeItemProps {
   content?: string;
   date?: string;
   writer?: string;
+  views?: number;
   isLoading?: boolean;
   onClick?: () => void;
+  /** 말줄임 여부 설정 (기본값: true) */
+  isEllipsis?: boolean;
 }
 
 const PostItem = ({
@@ -18,8 +22,10 @@ const PostItem = ({
   content,
   date,
   writer,
+  views,
   isLoading,
   onClick,
+  isEllipsis = true,
 }: NoticeItemProps) => {
   if (isLoading) {
     return (
@@ -28,9 +34,13 @@ const PostItem = ({
         <Skeleton width={60} height={18} />
         {/* 제목 스켈레톤 */}
         <Skeleton width="100%" height={20} />
+        {/* 내용 스켈레톤 */}
+        <Skeleton width="100%" height={16} />
         <InfoLine>
-          {/* 날짜 스켈레톤 */}
-          <Skeleton width={80} height={14} />
+          <div style={{ display: "flex", gap: "8px" }}>
+            {/* 날짜 스켈레톤 */}
+            <Skeleton width={80} height={14} />
+          </div>
           {/* 작성자 뱃지 스켈레톤 */}
           <Skeleton width={50} height={14} />
         </InfoLine>
@@ -41,11 +51,19 @@ const PostItem = ({
   return (
     <NoticeItemWrapper onClick={onClick}>
       {category && <Category>{category}</Category>}
-      <Title>{title || ""}</Title>
-      {content && <ContentLine>{content}</ContentLine>}
+      <Title isEllipsis={isEllipsis}>{title || ""}</Title>
+      {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
       <InfoLine>
-        <div className="date">{date}</div>
-        {writer && <Badge text={writer} />}
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <div className="date">{date}</div>
+          {writer && <Badge text={writer} />}
+        </div>
+        {views !== undefined && (
+          <ViewCount>
+            <Eye size={14} />
+            {views}
+          </ViewCount>
+        )}
       </InfoLine>
     </NoticeItemWrapper>
   );
@@ -58,7 +76,6 @@ const NoticeItemWrapper = styled.div`
   flex-direction: column;
   gap: 8px;
   width: 100%;
-
   cursor: pointer;
 `;
 
@@ -68,17 +85,36 @@ const Category = styled.div`
   font-weight: 700;
 `;
 
-const Title = styled.div`
+const Title = styled.div<{ isEllipsis: boolean }>`
   color: #000;
   font-size: 14px;
   font-weight: 400;
   align-self: stretch;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+
+  ${({ isEllipsis }) =>
+    isEllipsis &&
+    css`
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `}
 `;
 
-const ContentLine = styled.div``;
+const ContentLine = styled.div<{ isEllipsis: boolean }>`
+  color: #666;
+  font-size: 13px;
+  line-height: 1.4;
+
+  ${({ isEllipsis }) =>
+    isEllipsis &&
+    css`
+      display: -webkit-box;
+      -webkit-line-clamp: 2; /* 두 줄 제한 */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `}
+`;
 
 const InfoLine = styled.div`
   display: flex;
@@ -90,4 +126,13 @@ const InfoLine = styled.div`
     font-size: 12px;
     font-weight: 400;
   }
+`;
+
+const ViewCount = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #969696;
+  font-size: 12px;
+  font-weight: 400;
 `;

@@ -5,29 +5,18 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Box from "@/components/common/Box";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { getAlerts } from "@/apis/members";
-import { useNavigate, useParams } from "react-router-dom";
-import useUserStore from "@/stores/useUserStore";
+import { useNavigate } from "react-router-dom";
 import { Notification } from "@/types/members";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
 import { ROUTES } from "@/constants/routes";
 
-interface FetchState {
-  lastPostId: number | undefined;
-  page: number;
-}
-
 const MobileAlertPage = () => {
-  const { userInfo } = useUserStore();
   const navigate = useNavigate();
-  const { dept } = useParams<{ dept: string }>();
 
   const [alerts, setAlerts] = useState<Notification[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [fetchState, setFetchState] = useState<FetchState>({
-    lastPostId: undefined,
-    page: 1,
-  });
+  const [page, setPage] = useState(1);
 
   const menuItems = useMemo<MenuItemType[]>(
     () => [
@@ -46,47 +35,57 @@ const MobileAlertPage = () => {
   });
 
   // 데이터 요청 함수
-  const fetchData = useCallback(async () => {
-    if (isLoading) return;
+  const fetchData = useCallback(
+    async (pageNum: number, isInitial: boolean = false) => {
+      if (isLoading && !isInitial) return;
 
-    setIsLoading(true);
-    try {
-      const response = await getAlerts(fetchState.page);
-      const newNotifications: Notification[] = response.data.contents;
-      console.log(fetchState.page);
-      console.log(response);
+      setIsLoading(true);
+      try {
+        const response = await getAlerts(pageNum);
+        const newNotifications: Notification[] = response.data.contents;
+        console.log("Fetching page:", pageNum);
+        console.log(response);
 
-      if (newNotifications && newNotifications.length > 0) {
-        setAlerts((prev) => [...prev, ...newNotifications]);
-        // 페이지 수 업데이트
-        setFetchState((prev) => ({
-          ...prev,
-          page: prev.page + 1,
-        }));
-      } else {
+        if (newNotifications && newNotifications.length > 0) {
+          setAlerts((prev) =>
+            isInitial ? newNotifications : [...prev, ...newNotifications],
+          );
+          setPage(pageNum + 1);
+          // 페이지네이션 한계 체크 (예: 10개 미만이면 더 이상 없음)
+          if (newNotifications.length < 10) {
+            setHasMore(false);
+          }
+        } else {
+          if (isInitial) setAlerts([]);
+          setHasMore(false);
+        }
+      } catch (error) {
+        console.error("데이터 로딩 실패", error);
         setHasMore(false);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("데이터 로딩 실패", error);
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [dept, isLoading]);
+    },
+    [isLoading],
+  );
+
+  useEffect(() => {
+    fetchData(1, true);
+  }, []);
 
   const handleNext = () => {
     if (hasMore && !isLoading) {
-      fetchData();
+      fetchData(page);
     }
   };
 
-  useEffect(() => {
-    if (userInfo.department && !dept) {
-      navigate(`/home/deptnotice/${userInfo.department}`, {
-        replace: true,
-      });
-    }
-  }, [userInfo.department, dept, navigate]);
+  // useEffect(() => {
+  //   if (userInfo.department && !dept) {
+  //     navigate(`/home/deptnotice/${userInfo.department}`, {
+  //       replace: true,
+  //     });
+  //   }
+  // }, [userInfo.department, dept, navigate]);
 
   return (
     <MobileDeptNoticePageWrapper>
@@ -118,8 +117,21 @@ const MobileAlertPage = () => {
           >
             <TipsCardWrapper>
               {alerts.map((alert, index) => (
-                <Box key={`${alert.title}-${index}`}>
-                  <PostItem category={alert.title} title={alert.body} />
+                <Box
+                  key={`${alert.fcmMessageId || index}`}
+                  onClick={() => {
+                    if (alert.type === "DEPARTMENT") {
+                      navigate(ROUTES.BOARD.DEPT_NOTICE);
+                    }
+                  }}
+                >
+                  <PostItem
+                    // category={alert.type}
+                    title={alert.title}
+                    content={alert.body}
+                    date={alert.createDate}
+                    isEllipsis={false}
+                  />
                 </Box>
               ))}
             </TipsCardWrapper>
