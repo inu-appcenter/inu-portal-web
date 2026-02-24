@@ -12,13 +12,23 @@ import arrowImg from "resources/assets/mobile-mypage/arrow.svg";
 import MobileHeader from "../containers/common/MobileHeader.tsx";
 import MobileNav from "../containers/common/MobileNav.tsx";
 import UserInfo from "../containers/mypage/UserInfo.tsx";
+import tokenInstance from "apis/tokenInstance";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const mobileNavigate = useMobileNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const fcmToken = localStorage.getItem("fcmToken");
+    try {
+      if (fcmToken) {
+        await tokenInstance.post("/api/tokens/unlink", {
+          token: fcmToken,
+        });
+      }
+    } catch (error) {}
+
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
     setTokenInfo({
       accessToken: "",

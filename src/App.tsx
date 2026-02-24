@@ -1,5 +1,5 @@
 import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getMembers, postApiLogs } from "apis/members";
 import useUserStore from "stores/useUserStore";
 import ScrollBarStyles from "resources/styles/ScrollBarStyles";
@@ -65,7 +65,6 @@ function App() {
     }
   }, [tokenInfo, setUserInfo]);
 
-  // 웹뷰에서 토큰 수신
   useEffect(() => {
     (window as any).onReceiveFcmToken = (token: string) => {
       if (!token || token.trim() === "") return;
@@ -79,7 +78,6 @@ function App() {
     };
   }, []);
 
-  // 앱 재실행 대비 복구
   useEffect(() => {
     const savedToken = localStorage.getItem("fcmToken");
     if (savedToken) {
@@ -87,36 +85,25 @@ function App() {
     }
   }, []);
 
-  const sentTokenRef = useRef<string | null>(null);
+  const LAST_SENT_TOKEN_KEY = "lastSentFcmToken";
 
-  //토큰 최초 등록 (비로그인 포함)
   useEffect(() => {
-    const registerToken = async () => {
+    const syncToken = async () => {
       if (!fcmToken) return;
-      if (sentTokenRef.current === fcmToken) return;
+
+      const lastSent = localStorage.getItem(LAST_SENT_TOKEN_KEY);
+      if (lastSent === fcmToken) return;
 
       try {
         await tokenInstance.post("/api/tokens", { token: fcmToken });
-        sentTokenRef.current = fcmToken;
-      } catch (error) {}
+        localStorage.setItem(LAST_SENT_TOKEN_KEY, fcmToken);
+      } catch (error) {
+        /* empty */
+      }
     };
 
-    registerToken();
+    syncToken();
   }, [fcmToken]);
-
-  //로그인 시 유저 매핑용 재전송
-  useEffect(() => {
-    const remapTokenToUser = async () => {
-      if (!fcmToken) return;
-      if (!tokenInfo?.accessToken) return;
-
-      try {
-        await tokenInstance.post("/api/tokens", { token: fcmToken });
-      } catch (error) {}
-    };
-
-    remapTokenToUser();
-  }, [tokenInfo, fcmToken]);
 
   //접속 유저수 중복없이 카운팅
   useEffect(() => {
