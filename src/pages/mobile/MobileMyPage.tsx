@@ -10,13 +10,20 @@ import {
 } from "@/resources/strings/m-mypage";
 import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
+import tokenInstance from "@/apis/tokenInstance";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const fcmToken = localStorage.getItem("fcmToken");
+
+    if (fcmToken) {
+      await tokenInstance.post("/api/tokens/unlink", { token: fcmToken });
+    }
+
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
     setTokenInfo({
       accessToken: "",

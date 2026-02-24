@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigationType, useOutlet } from "react-router-dom";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import styled from "styled-components";
@@ -11,10 +11,8 @@ import tokenInstance from "@/apis/tokenInstance";
 import ScrollBarStyles from "@/styles/ScrollBarStyles";
 import { HeaderProvider } from "@/context/HeaderContext";
 
-// 허용되는 경로 타입 정의
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 
-// 메인 탭 경로 목록
 const MAIN_PATHS: string[] = [
   ROUTES.HOME,
   ROUTES.BUS.ROOT,
@@ -24,7 +22,6 @@ const MAIN_PATHS: string[] = [
   ROUTES.TIMETABLE.ROOT,
 ];
 
-// 페이지 스택 애니메이션 변수
 const stackVariants: Variants = {
   initial: (direction: number) => ({
     x: direction > 0 ? "100%" : "-20%",
@@ -62,16 +59,24 @@ export default function RootLayout() {
   const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
 
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
+  const LAST_SENT_TOKEN_KEY = "lastSentFcmToken";
+
+  // =========================
   // 토큰 및 초기 경로 설정
+  // =========================
   useEffect(() => {
-    // [수정] 정의된 MainTabPath 타입으로 단언
     setIsAppUrl(ROUTES.ROOT as MainTabPath);
 
     const storedToken = localStorage.getItem("tokenInfo");
-    if (storedToken) setTokenInfo(JSON.parse(storedToken));
+    if (storedToken) {
+      setTokenInfo(JSON.parse(storedToken));
+    }
   }, [setTokenInfo, setIsAppUrl]);
 
+  // =========================
   // 사용자 데이터 동기화
+  // =========================
   useEffect(() => {
     if (tokenInfo.accessToken) {
       (async () => {
@@ -85,13 +90,64 @@ export default function RootLayout() {
     }
   }, [tokenInfo.accessToken, setUserInfo]);
 
-  // FCM 토큰 수신 및 접속 로그 기록
+  // =========================
+  // WebView FCM 수신 등록
+  // =========================
   useEffect(() => {
-    (window as any).onReceiveFcmToken = async (token: string) => {
+    (window as any).onReceiveFcmToken = (token: string) => {
+      if (!token || token.trim() === "") return;
+
       localStorage.setItem("fcmToken", token);
-      await tokenInstance.post("/api/tokens", { token });
+      setFcmToken(token);
     };
 
+    return () => {
+      (window as any).onReceiveFcmToken = null;
+    };
+  }, []);
+
+  // =========================
+  // 앱 토큰 우선 전략 (fallback 포함)
+  // =========================
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!fcmToken) {
+        const savedToken = localStorage.getItem("fcmToken");
+        if (savedToken) {
+          setFcmToken(savedToken);
+        }
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [fcmToken]);
+
+  // =========================
+  // 토큰 변경 시 서버 동기화
+  // =========================
+  useEffect(() => {
+    const syncToken = async () => {
+      if (!fcmToken) return;
+      if (!tokenInfo.accessToken) return; // 로그인 상태에서만
+
+      const lastSent = localStorage.getItem(LAST_SENT_TOKEN_KEY);
+      if (lastSent === fcmToken) return;
+
+      try {
+        await tokenInstance.post("/api/tokens", { token: fcmToken });
+        localStorage.setItem(LAST_SENT_TOKEN_KEY, fcmToken);
+      } catch (error) {
+        console.error("FCM 토큰 동기화 실패", error);
+      }
+    };
+
+    syncToken();
+  }, [fcmToken, tokenInfo.accessToken]);
+
+  // =========================
+  // 접속 로그
+  // =========================
+  useEffect(() => {
     const apiCount = async () => {
       const today = new Date().toISOString().split("T")[0];
       if (localStorage.getItem("user_count_date") !== today) {
@@ -100,12 +156,8 @@ export default function RootLayout() {
       }
     };
     apiCount();
-    return () => {
-      (window as any).onReceiveFcmToken = null;
-    };
   }, []);
 
-  // 애니메이션 제어 변수
   const isMainTab = MAIN_PATHS.includes(location.pathname);
   const animationKey = isMainTab ? "MAIN_TAB_GROUP" : location.pathname;
   const direction = navType === "POP" ? -1 : 1;
@@ -133,7 +185,6 @@ export default function RootLayout() {
 
 const APP_MAX_WIDTH = "768px";
 
-// 최상위 컨테이너
 const ScreenContainer = styled.div`
   width: 100%;
   height: 100vh;
@@ -145,7 +196,6 @@ const ScreenContainer = styled.div`
   background-color: #f1f1f3;
 `;
 
-// 애니메이션 래퍼
 const MotionPageWrapper = styled(motion.div)`
   position: absolute;
   top: 0;
