@@ -1,5 +1,5 @@
 import { Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getMembers, postApiLogs } from "apis/members";
 import useUserStore from "stores/useUserStore";
 import ScrollBarStyles from "resources/styles/ScrollBarStyles";
@@ -65,48 +65,58 @@ function App() {
     }
   }, [tokenInfo, setUserInfo]);
 
-  // 웹뷰 FCM 토큰 수신 설정
+  // 웹뷰에서 토큰 수신
   useEffect(() => {
-    // 전역 윈도우 객체에 토큰 수신 콜백 등록
-    (window as any).onReceiveFcmToken = async function (token: string) {
-      // 토큰 유효성 확인 및 저장
-      if (token && token.trim() !== "") {
-        localStorage.setItem("fcmToken", token);
-        setFcmToken(token);
-      }
+    (window as any).onReceiveFcmToken = (token: string) => {
+      if (!token || token.trim() === "") return;
+
+      localStorage.setItem("fcmToken", token);
+      setFcmToken(token);
     };
 
     return () => {
-      // 컴포넌트 언마운트 시 콜백 초기화
       (window as any).onReceiveFcmToken = null;
     };
   }, []);
 
-  // FCM 토큰 서버 등록 (로컬 스토리지 기반 전송)
+  // 앱 재실행 대비 복구
   useEffect(() => {
-    // 서버 등록 비동기 함수 정의
-    const registerFcmToken = async () => {
-      // 로컬 스토리지 토큰 조회
-      const storedToken = localStorage.getItem("fcmToken");
+    const savedToken = localStorage.getItem("fcmToken");
+    if (savedToken) {
+      setFcmToken(savedToken);
+    }
+  }, []);
 
-      // 토큰 존재 및 로그인 상태 확인 시 전송 실행
-      if (storedToken) {
-        try {
-          // alert("토큰 전송 시도");
-          console.log(storedToken);
-          await tokenInstance.post("/api/tokens", { token: storedToken });
-          // alert("토큰 전송 완료");
-        } catch (error) {
-          // 서버 등록 실패 예외 처리
-        }
-      } else {
-        // alert("토큰이 없습니다");
-      }
+  const sentTokenRef = useRef<string | null>(null);
+
+  //토큰 최초 등록 (비로그인 포함)
+  useEffect(() => {
+    const registerToken = async () => {
+      if (!fcmToken) return;
+      if (sentTokenRef.current === fcmToken) return;
+
+      try {
+        await tokenInstance.post("/api/tokens", { token: fcmToken });
+        sentTokenRef.current = fcmToken;
+      } catch (error) {}
     };
 
-    registerFcmToken();
-    // 토큰 상태, 로그인 여부, 토큰 정보 변경 시 재실행
-  }, [fcmToken, tokenInfo]);
+    registerToken();
+  }, [fcmToken]);
+
+  //로그인 시 유저 매핑용 재전송
+  useEffect(() => {
+    const remapTokenToUser = async () => {
+      if (!fcmToken) return;
+      if (!tokenInfo?.accessToken) return;
+
+      try {
+        await tokenInstance.post("/api/tokens", { token: fcmToken });
+      } catch (error) {}
+    };
+
+    remapTokenToUser();
+  }, [tokenInfo, fcmToken]);
 
   //접속 유저수 중복없이 카운팅
   useEffect(() => {
