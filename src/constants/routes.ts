@@ -1,7 +1,12 @@
 export const ROUTES = {
   ROOT: "/",
+  MOBILE_ROOT: "/m",
+
   LOGIN: "/login",
+
   HOME: "/home",
+  MOBILE_HOME: "/m/home",
+
   AI: "/ai",
   SAVE: "/save",
 
@@ -35,7 +40,8 @@ export const ROUTES = {
     TIPS_WRITE: "/home/tips/write",
     NOTICE: "/home/notice",
     DEPT_NOTICE: "/home/deptnotice",
-    DEPT_NOTICE_DETAIL: (dept: string | number) => `/home/deptnotice?dept=${dept}`,
+    DEPT_NOTICE_DETAIL: (dept: string | number) =>
+      `/home/deptnotice?dept=${dept}`,
     DEPT_SETTING: "/home/deptnotice/setting",
     MENU: "/home/menu",
     CALENDAR: "/home/calendar",

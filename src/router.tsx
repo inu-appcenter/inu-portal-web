@@ -68,6 +68,22 @@ export const router = createBrowserRouter([
         ],
       },
 
+      // ---------------------------------------
+      // /m 전용 경로 추가
+      // ---------------------------------------
+      {
+        path: ROUTES.MOBILE_ROOT, // "/m"
+        element: <MainTabLayout showNav={true} showHeader={true} />,
+        children: [
+          { path: "", element: <Navigate to={ROUTES.MOBILE_HOME} replace /> },
+          { path: "home", element: <MobileHomePage /> },
+          { path: "bus", element: <MobileBusPage /> },
+          { path: "save", element: <MobileSavePage /> },
+          { path: "mypage", element: <MobileMyPage /> },
+          { path: "timetable", element: <MobileTimeTablePage /> },
+        ],
+      },
+
       // ----------------------------------------------------------------
       // 2. 서브 페이지 (SubLayout) - RootLayout에 의해 슬라이드, 하단 탭바 숨김
       // ----------------------------------------------------------------
