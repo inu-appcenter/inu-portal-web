@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import useUserStore from "../../../stores/useUserStore.ts";
 import { useEffect, useState } from "react";
-import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { getApiLogs } from "@/apis/admin";
 import { ApiLogData } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
@@ -61,7 +60,6 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
 
   return (
     <Wrapper>
-      <MobileHeader />
       <Content>
         <DatePickerContainer>
           <label htmlFor="date">조회 날짜</label>
@@ -114,8 +112,7 @@ export default MobileAdminApiStatisticsPage;
 
 // 스타일
 export const Wrapper = styled.div`
-  padding: 30px 16px;
-  padding-top: 50px;
+  padding: 0 16px;
   box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;
@@ -123,7 +120,6 @@ export const Wrapper = styled.div`
 `;
 
 const Content = styled.div`
-  margin-top: 20px;
 `;
 
 const DatePickerContainer = styled.div`

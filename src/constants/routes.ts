@@ -77,5 +77,6 @@ export const ROUTES = {
     ROOT: "/admin",
     USER_STAT: "/admin/userstatistics",
     API_STAT: "/admin/apistatistics",
+    USER_NOTIFICATIION: "/admin/usernotification",
   },
 } as const;

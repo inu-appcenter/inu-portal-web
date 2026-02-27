@@ -3,7 +3,6 @@ import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import useUserStore from "../../../stores/useUserStore.ts";
 import { useEffect } from "react";
-import MobileHeader from "../../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
 const MobileAdminPage: React.FC = () => {
@@ -34,7 +33,7 @@ const MobileAdminPage: React.FC = () => {
     },
     {
       label: "푸시 알림 전송",
-      path: "/admin/notification",
+      path: ROUTES.ADMIN.USER_NOTIFICATIION,
       description: "유저에게 푸시알림을 보낼 수 있어요.",
     },
   ];
@@ -46,7 +45,6 @@ const MobileAdminPage: React.FC = () => {
 
   return (
     <Wrapper>
-      <MobileHeader />
       <Title>관리자 기능 선택</Title>
       <MenuGrid>
         {adminPages.map((page) => (
@@ -63,8 +61,8 @@ const MobileAdminPage: React.FC = () => {
 export default MobileAdminPage;
 
 export const Wrapper = styled.div`
-  padding: 30px 16px;
-  padding-top: 80px;
+  padding: 0px 16px;
+
   box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;

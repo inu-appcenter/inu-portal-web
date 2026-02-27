@@ -47,6 +47,7 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
+import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -185,6 +186,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.ADMIN.API_STAT,
             element: <MobileAdminApiStatisticsPage />,
+          },
+          {
+            path: ROUTES.ADMIN.USER_NOTIFICATIION,
+            element: <MobileAdminNotificationPage />,
           },
         ],
       },
