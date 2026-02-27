@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigationType, useOutlet } from "react-router-dom";
-import { AnimatePresence, motion, Variants } from "framer-motion";
+import { useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { ROUTES } from "@/constants/routes";
@@ -13,48 +12,8 @@ import { HeaderProvider } from "@/context/HeaderContext";
 
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 
-const MAIN_PATHS: string[] = [
-  ROUTES.HOME,
-  ROUTES.BUS.ROOT,
-  ROUTES.SAVE,
-  ROUTES.MYPAGE.ROOT,
-  ROUTES.ROOT,
-  ROUTES.TIMETABLE.ROOT,
-];
-
-const stackVariants: Variants = {
-  initial: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-20%",
-    opacity: 1,
-    zIndex: direction > 0 ? 2 : 1,
-    filter: "blur(0px)",
-  }),
-  animate: {
-    x: 0,
-    opacity: 1,
-    zIndex: 1,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.35,
-      ease: [0.33, 1, 0.68, 1],
-    },
-  },
-  exit: (direction: number) => ({
-    x: direction > 0 ? "-20%" : "100%",
-    opacity: 1,
-    zIndex: direction > 0 ? 0 : 2,
-    filter: direction > 0 ? "brightness(0.8)" : "brightness(1)",
-    transition: {
-      duration: 0.35,
-      ease: [0.33, 1, 0.68, 1],
-    },
-  }),
-};
-
 export default function RootLayout() {
-  const location = useLocation();
   const outlet = useOutlet();
-  const navType = useNavigationType();
 
   const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
@@ -158,51 +117,22 @@ export default function RootLayout() {
     apiCount();
   }, []);
 
-  const isMainTab = MAIN_PATHS.includes(location.pathname);
-  const animationKey = isMainTab ? "MAIN_TAB_GROUP" : location.pathname;
-  const direction = navType === "POP" ? -1 : 1;
-
   return (
     <HeaderProvider>
       <ScrollBarStyles />
       <ScreenContainer>
-        <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-          <MotionPageWrapper
-            key={animationKey}
-            custom={direction}
-            variants={stackVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            {outlet}
-          </MotionPageWrapper>
-        </AnimatePresence>
+        {outlet}
       </ScreenContainer>
     </HeaderProvider>
   );
 }
 
-const APP_MAX_WIDTH = "768px";
-
 const ScreenContainer = styled.div`
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  max-width: ${APP_MAX_WIDTH};
+  max-width: 768px;
   margin: 0 auto;
+  min-height: 100vh;
   position: relative;
-  overflow: hidden;
   background-color: #f1f1f3;
-`;
-
-const MotionPageWrapper = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #f1f1f3;
-  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 `;
