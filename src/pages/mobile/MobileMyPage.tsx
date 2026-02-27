@@ -11,6 +11,7 @@ import {
 import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 import tokenInstance from "@/apis/tokenInstance";
+import {useHeader} from "@/context/HeaderContext.tsx";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -88,6 +89,12 @@ export default function MobileMyPage() {
         break;
     }
   };
+
+  useHeader({
+    title: "마이페이지",
+    subHeader: null,
+    hasback: false,
+  });
 
   return (
     <MyPageWrapper>

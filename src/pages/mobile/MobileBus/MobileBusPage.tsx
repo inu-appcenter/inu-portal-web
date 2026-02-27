@@ -4,8 +4,9 @@ import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileBusPage() {
   useHeader({
-    title: undefined,
+    title: "인입런",
     subHeader: null,
+    hasback: false,
   });
   return (
     <MobileBusPageWrapper>

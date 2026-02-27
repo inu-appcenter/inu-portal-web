@@ -85,7 +85,7 @@ const MobileTimeTablePage = () => {
   );
 
   useHeader({
-    title: undefined,
+    title: "시간표",
     showAlarm: true,
     hasback: false,
     menuItems,
