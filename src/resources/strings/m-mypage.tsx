@@ -24,7 +24,7 @@ export const MyPageCategoryLoggeedIn = [
     title: "스크랩",
     image: `${scrapImg}`,
   },
-  { title: "로그아웃!!", image: `${logoutImg}` },
+  { title: "로그아웃", image: `${logoutImg}` },
   // { title: "회원탈퇴", image: `${removeImg}` },
 ];
 
