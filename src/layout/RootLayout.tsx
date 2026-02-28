@@ -21,9 +21,7 @@ export default function RootLayout() {
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const LAST_SENT_TOKEN_KEY = "lastSentFcmToken";
 
-  // =========================
   // 토큰 및 초기 경로 설정
-  // =========================
   useEffect(() => {
     setIsAppUrl(ROUTES.ROOT as MainTabPath);
 
@@ -33,9 +31,7 @@ export default function RootLayout() {
     }
   }, [setTokenInfo, setIsAppUrl]);
 
-  // =========================
   // 사용자 데이터 동기화
-  // =========================
   useEffect(() => {
     if (tokenInfo.accessToken) {
       (async () => {
@@ -49,9 +45,7 @@ export default function RootLayout() {
     }
   }, [tokenInfo.accessToken, setUserInfo]);
 
-  // =========================
-  // WebView FCM 수신 등록
-  // =========================
+  // 웹뷰 FCM 수신 등록
   useEffect(() => {
     (window as any).onReceiveFcmToken = (token: string) => {
       if (!token || token.trim() === "") return;
@@ -65,9 +59,7 @@ export default function RootLayout() {
     };
   }, []);
 
-  // =========================
-  // 앱 토큰 우선 전략 (fallback 포함)
-  // =========================
+  // 앱 토큰 우선 전략
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!fcmToken) {
@@ -81,13 +73,10 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, [fcmToken]);
 
-  // =========================
-  // 토큰 변경 시 서버 동기화
-  // =========================
+  // 토큰 서버 동기화
   useEffect(() => {
     const syncToken = async () => {
       if (!fcmToken) return;
-      if (!tokenInfo.accessToken) return; // 로그인 상태에서만
 
       const lastSent = localStorage.getItem(LAST_SENT_TOKEN_KEY);
       if (lastSent === fcmToken) return;
@@ -101,11 +90,9 @@ export default function RootLayout() {
     };
 
     syncToken();
-  }, [fcmToken, tokenInfo.accessToken]);
+  }, [fcmToken]);
 
-  // =========================
   // 접속 로그
-  // =========================
   useEffect(() => {
     const apiCount = async () => {
       const today = new Date().toISOString().split("T")[0];
@@ -120,9 +107,7 @@ export default function RootLayout() {
   return (
     <HeaderProvider>
       <ScrollBarStyles />
-      <ScreenContainer>
-        {outlet}
-      </ScreenContainer>
+      <ScreenContainer>{outlet}</ScreenContainer>
     </HeaderProvider>
   );
 }
