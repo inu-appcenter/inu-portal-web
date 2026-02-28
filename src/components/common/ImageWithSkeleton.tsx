@@ -31,7 +31,7 @@ const ImageWithSkeleton = ({
   };
 
   return (
-    <Container borderRadius={borderRadius}>
+    <Container $borderRadius={borderRadius}>
       {isLoading && (
         <Skeleton
           height={skeletonHeight}
@@ -43,7 +43,7 @@ const ImageWithSkeleton = ({
         src={src}
         alt={alt}
         onLoad={handleLoad}
-        isLoading={isLoading}
+        $isLoading={isLoading}
         style={{ ...style, borderRadius }}
         {...props}
       />
@@ -53,14 +53,14 @@ const ImageWithSkeleton = ({
 
 export default ImageWithSkeleton;
 
-const Container = styled.div<{ borderRadius: string }>`
+const Container = styled.div<{ $borderRadius: string }>`
   width: 100%;
   position: relative;
-  border-radius: ${({ borderRadius }) => borderRadius};
+  border-radius: ${({ $borderRadius }) => $borderRadius};
   overflow: hidden;
 `;
 
-const StyledImg = styled.img<{ isLoading: boolean }>`
+const StyledImg = styled.img<{ $isLoading: boolean }>`
   width: 100%;
-  display: ${({ isLoading }) => (isLoading ? "none" : "block")};
+  display: ${({ $isLoading }) => ($isLoading ? "none" : "block")};
 `;

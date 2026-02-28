@@ -1,4 +1,5 @@
 import styled, { keyframes, css } from "styled-components";
+import React from "react";
 
 // 애니메이션 정의
 const shimmer = keyframes`
@@ -23,32 +24,39 @@ const variantStyles = {
   `,
 };
 
-interface SkeletonProps {
+export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "text" | "tag" | "card";
   width?: string | number;
   height?: string | number;
   circle?: boolean;
 }
 
+interface StyledSkeletonProps {
+  $variant?: "text" | "tag" | "card";
+  $width?: string | number;
+  $height?: string | number;
+  $circle?: boolean;
+}
+
 // 스타일 컴포넌트 정의
-const StyledSkeleton = styled.div<SkeletonProps>`
+const StyledSkeleton = styled.div<StyledSkeletonProps>`
   background: #e3e3e3;
   border-radius: 6px;
   position: relative;
   overflow: hidden;
 
   // 너비 및 높이 설정
-  width: ${({ width }) =>
-    typeof width === "number" ? `${width}px` : width || "100%"};
-  height: ${({ height }) =>
-    typeof height === "number" ? `${height}px` : height || "20px"};
+  width: ${({ $width }) =>
+    typeof $width === "number" ? `${$width}px` : $width || "100%"};
+  height: ${({ $height }) =>
+    typeof $height === "number" ? `${$height}px` : $height || "20px"};
 
   // 변형 스타일 적용
-  ${({ variant }) => variant && variantStyles[variant]};
+  ${({ $variant }) => $variant && variantStyles[$variant]};
 
   // 원형 옵션
-  ${({ circle }) =>
-    circle &&
+  ${({ $circle }) =>
+    $circle &&
     css`
       border-radius: 50%;
     `};
@@ -68,8 +76,23 @@ const StyledSkeleton = styled.div<SkeletonProps>`
   }
 `;
 
-const Skeleton = ({ variant = "text", ...props }: SkeletonProps) => {
-  return <StyledSkeleton variant={variant} aria-hidden="true" {...props} />;
+const Skeleton = ({
+  variant = "text",
+  width,
+  height,
+  circle,
+  ...props
+}: SkeletonProps) => {
+  return (
+    <StyledSkeleton
+      $variant={variant}
+      $width={width}
+      $height={height}
+      $circle={circle}
+      aria-hidden="true"
+      {...props}
+    />
+  );
 };
 
 export default Skeleton;
