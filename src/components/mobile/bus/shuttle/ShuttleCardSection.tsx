@@ -1,38 +1,44 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { ROUTES } from "@/constants/routes"; // ROUTES 경로 확인
+import { ROUTES } from "@/constants/routes";
+import { SHUTTLE_ROUTES } from "@/constants/bus";
+import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 
 export default function ShuttleCardSection() {
   const navigate = useNavigate();
 
   return (
     <Wrapper>
-      <CardImg
-        src="/Bus/탑승방법버튼.svg"
-        alt="탑승방법버튼"
+      {/* 탑승방법 버튼 */}
+      <CardWrapper
         onClick={() => {
           navigate(ROUTES.BUS.SHUTTLE_HELLO);
         }}
-      />
-      <CardImg
-        src="/Bus/일산김포버튼.svg"
-        alt="일산김포버튼"
-        onClick={() =>
-          navigate(`${ROUTES.BUS.SHUTTLE_ROUTE}?route=ilsan-gimpo`)
-        }
-      />
-      <CardImg
-        src="/Bus/부천송내버튼.svg"
-        alt="부천송내버튼"
-        onClick={() => navigate(`${ROUTES.BUS.SHUTTLE_ROUTE}?route=bucheon`)}
-      />
-      <CardImg
-        src="/Bus/안산시흥버튼.svg"
-        alt="안산시흥버튼"
-        onClick={() => {
-          navigate(`${ROUTES.BUS.SHUTTLE_ROUTE}?route=ansan-siheung`);
-        }}
-      />
+      >
+        <ImageWithSkeleton
+          src="/Bus/탑승방법버튼.svg"
+          alt="탑승방법버튼"
+          skeletonHeight="100px"
+          borderRadius="16px"
+        />
+      </CardWrapper>
+
+      {/* 노선 카드 렌더링 */}
+      {SHUTTLE_ROUTES.filter((route) => route.isActive).map((route) => (
+        <CardWrapper
+          key={route.id}
+          onClick={() =>
+            navigate(`${ROUTES.BUS.SHUTTLE_ROUTE}?route=${route.id}`)
+          }
+        >
+          <ImageWithSkeleton
+            src={route.buttonImage}
+            alt={route.name}
+            skeletonHeight="100px"
+            borderRadius="16px"
+          />
+        </CardWrapper>
+      ))}
     </Wrapper>
   );
 }
@@ -50,8 +56,7 @@ const Wrapper = styled.div`
   }
 `;
 
-const CardImg = styled.img`
+const CardWrapper = styled.div`
   width: 100%;
-  border-radius: 16px;
   cursor: pointer;
 `;

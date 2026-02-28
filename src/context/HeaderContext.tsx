@@ -18,6 +18,7 @@ export interface HeaderConfig {
   title?: string;
   hasback?: boolean;
   backPath?: string;
+  onBack?: () => void;
   showAlarm?: boolean;
   menuItems?: MenuItemType[];
   visible?: boolean;
@@ -69,20 +70,26 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
           return { ...prev, [path]: config };
         }
 
-        // 2. 안전한 비교를 위해 ReactNode(subHeader)와 함수(menuItems)를 제외하고 비교
-        // (이 부분이 에러를 해결하는 핵심입니다)
+        // 2. 안전한 비교를 위해 ReactNode(subHeader)와 함수(menuItems, onBack)를 제외하고 비교
         const {
           subHeader: prevSub,
           menuItems: prevMenu,
+          onBack: prevOnBack,
           ...prevRest
         } = prevConfig;
-        const { subHeader: newSub, menuItems: newMenu, ...newRest } = config;
+        const {
+          subHeader: newSub,
+          menuItems: newMenu,
+          onBack: newOnBack,
+          ...newRest
+        } = config;
 
         // 3. 나머지 단순 값(문자열, 불리언)만 JSON 문자열로 비교
-        // subHeader와 menuItems는 참조값(===)으로 비교
+        // subHeader, menuItems, onBack은 참조값(===)으로 비교
         if (
           prevSub === newSub &&
           prevMenu === newMenu &&
+          prevOnBack === newOnBack &&
           JSON.stringify(prevRest) === JSON.stringify(newRest)
         ) {
           return prev; // 변경사항 없으면 리렌더링 방지
@@ -135,6 +142,7 @@ export const useHeader = (config?: HeaderConfig) => {
     currentPath,
     configString,
     config?.menuItems, // 참조값 비교
+    config?.onBack, // 참조값 비교
     config?.subHeader, // 참조값 비교
     updateHeaderConfig,
   ]);

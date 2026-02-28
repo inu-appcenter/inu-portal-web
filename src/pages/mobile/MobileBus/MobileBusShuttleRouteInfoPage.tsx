@@ -1,27 +1,30 @@
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import IlsanGimpoShuttle from "@/components/mobile/bus/shuttle/IlsanGimpoShuttle.tsx";
-import AnsanSiheungShuttle from "@/components/mobile/bus/shuttle/AnsanSiheungShuttle.tsx";
-import BucheonShuttle from "@/components/mobile/bus/shuttle/BucheonShuttle.tsx";
 import { useHeader } from "@/context/HeaderContext";
+import { SHUTTLE_ROUTES } from "@/constants/bus";
+import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 
 const MobileBusShuttleRouteInfoPage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const route = searchParams.get("route");
+  const routeId = searchParams.get("route");
+
+  const selectedRoute = SHUTTLE_ROUTES.find((r) => r.id === routeId);
 
   // 헤더 설정 주입
   useHeader({
-    title: "셔틀 노선 정보",
+    title: `${selectedRoute?.name} 노선`,
   });
 
   return (
     <Wrapper>
-      {route === "ilsan-gimpo" && <IlsanGimpoShuttle />}
-      {route === "bucheon" && <BucheonShuttle />}
-      {route === "ansan-siheung" && <AnsanSiheungShuttle />}
-
-      {!["ilsan-gimpo", "bucheon", "ansan-siheung"].includes(route || "") && (
+      {selectedRoute ? (
+        <ImageWithSkeleton
+          src={selectedRoute.infoImage}
+          alt={selectedRoute.name}
+          skeletonHeight="80vh"
+        />
+      ) : (
         <div>노선 정보가 없습니다.</div>
       )}
     </Wrapper>
@@ -35,8 +38,4 @@ const Wrapper = styled.div`
   height: 100%;
   padding: 0 16px;
   box-sizing: border-box;
-
-  img {
-    width: 100%;
-  }
 `;

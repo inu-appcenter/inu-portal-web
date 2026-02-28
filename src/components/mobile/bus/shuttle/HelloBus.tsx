@@ -3,12 +3,14 @@ import Manual1 from "@/resources/assets/helllo-bus/manual-1.svg";
 import Manual2 from "@/resources/assets/helllo-bus/manual-2.svg";
 import Manual3 from "@/resources/assets/helllo-bus/manual-3.svg";
 import Manual4 from "@/resources/assets/helllo-bus/manual-4.svg";
-import backbtn from "@/resources/assets/mobile-common/backbtn.svg";
-import { useState } from "react";
+import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 
-export default function HelloBus() {
-  const [show, setShow] = useState(0);
+interface HelloBusProps {
+  show: number;
+  setShow: (show: number) => void;
+}
 
+export default function HelloBus({ show, setShow }: HelloBusProps) {
   const manuals = [
     { title: "", steps: [], images: [] },
     {
@@ -88,19 +90,21 @@ export default function HelloBus() {
       {/*<Title title={"통학버스"} onback={() => navigate('/home')}/>*/}
 
       {show > 0 ? (
-        <Section>
-          <button onClick={() => setShow(0)}>
-            <img src={backbtn} alt="뒤로가기 버튼" />
-            <span>{manuals[show].title}</span>
-          </button>
+        <>
           <ImageSlider>
             {manuals[show].images.map((image, idx) => (
-              <img
+              <div
                 key={idx}
-                src={image}
+                className="image-item"
                 onClick={() => window.open(image, "_blank")}
-                alt={`Step ${idx + 1}`}
-              />
+              >
+                <ImageWithSkeleton
+                  src={image}
+                  alt={`Step ${idx + 1}`}
+                  skeletonHeight="480px"
+                  skeletonWidth="280px"
+                />
+              </div>
             ))}
           </ImageSlider>
           <Steps>
@@ -108,28 +112,36 @@ export default function HelloBus() {
               <p key={idx} dangerouslySetInnerHTML={{ __html: step }} />
             ))}
           </Steps>
-        </Section>
+        </>
       ) : (
         <div className="manual-wrapper1">
-          <div className="manual-wrapper2">
-            <img
+          <div className="manual-item" onClick={() => setShow(1)}>
+            <ImageWithSkeleton
               src={Manual1}
-              onClick={() => setShow(1)}
               alt="헬로버스 앱 다운로드 메뉴얼"
-            />
-            <img
-              src={Manual2}
-              onClick={() => setShow(2)}
-              alt="통학 서비스 이용 권한 요청에 대한 메뉴얼"
+              skeletonHeight="180px"
             />
           </div>
-          <div className="manual-wrapper2">
-            <img
-              src={Manual3}
-              onClick={() => setShow(3)}
-              alt="노선등록에 대한 메뉴얼"
+          <div className="manual-item" onClick={() => setShow(2)}>
+            <ImageWithSkeleton
+              src={Manual2}
+              alt="통학 서비스 이용 권한 요청에 대한 메뉴얼"
+              skeletonHeight="180px"
             />
-            <img src={Manual4} onClick={() => setShow(4)} alt="알림존 설정" />
+          </div>
+          <div className="manual-item" onClick={() => setShow(3)}>
+            <ImageWithSkeleton
+              src={Manual3}
+              alt="노선등록에 대한 메뉴얼"
+              skeletonHeight="180px"
+            />
+          </div>
+          <div className="manual-item" onClick={() => setShow(4)}>
+            <ImageWithSkeleton
+              src={Manual4}
+              alt="알림존 설정"
+              skeletonHeight="180px"
+            />
           </div>
         </div>
       )}
@@ -143,43 +155,19 @@ const HelloBusWrapper = styled.div`
   box-sizing: border-box;
 
   .manual-wrapper1 {
-    //padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
+    padding: 16px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    box-sizing: border-box;
 
-    .manual-wrapper2 {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-
-      img {
-        width: 48%;
-      }
-    }
-  }
-`;
-
-const Section = styled.div`
-  button {
-    border: none;
-    font-size: 14px;
-    background-color: transparent;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    //width: fit-content;
-
-    img {
-      height: 14px;
-    }
-
-    span {
-      padding-top: 2px;
-      min-width: fit-content;
+    .manual-item {
+      cursor: pointer;
+      border-radius: 12px;
+      overflow: hidden;
     }
   }
 `;
@@ -202,21 +190,22 @@ const Steps = styled.div`
 const ImageSlider = styled.div`
   display: flex;
   overflow-x: auto;
-  gap: 10px;
-  padding: 10px 20px;
+  gap: 12px;
+  padding: 16px 20px;
   width: 100%;
   box-sizing: border-box;
 
-  img {
+  .image-item {
     flex: 0 0 auto;
-    height: auto;
+    width: 280px;
     border-radius: 8px;
     border: 1px solid rgba(14, 77, 157, 1);
-    width: 160px;
+    overflow: hidden;
+    cursor: pointer;
   }
 
   &::-webkit-scrollbar {
-    height: 8px;
+    height: 6px;
   }
 
   &::-webkit-scrollbar-thumb {

@@ -50,6 +50,7 @@ export default function MobileHeader({ targetPath }: MobileHeaderProps) {
     title,
     hasback,
     backPath,
+    onBack,
     showAlarm,
     menuItems,
     visible,
@@ -65,6 +66,10 @@ export default function MobileHeader({ targetPath }: MobileHeaderProps) {
   };
 
   const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
     if (backPath) {
       navigate(backPath);
       return;
