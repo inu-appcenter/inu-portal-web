@@ -11,7 +11,7 @@ import {
 import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 import tokenInstance from "@/apis/tokenInstance";
-import {useHeader} from "@/context/HeaderContext.tsx";
+import { useHeader } from "@/context/HeaderContext.tsx";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -65,7 +65,7 @@ export default function MobileMyPage() {
       case "스크랩":
         navigate(`/save`);
         break;
-      case "로그아웃":
+      case "로그아웃!!":
         handleLogoutModalClick();
         break;
       case "회원탈퇴":
