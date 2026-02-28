@@ -65,7 +65,7 @@ export default function MobileMyPage() {
       case "스크랩":
         navigate(`/save`);
         break;
-      case "로그아웃!!":
+      case "로그아웃":
         handleLogoutModalClick();
         break;
       case "회원탈퇴":
