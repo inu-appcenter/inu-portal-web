@@ -20,7 +20,7 @@ import useUserStore from "@/stores/useUserStore";
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
 export default function MobileHomePage() {
-  const { userInfo } = useUserStore();
+  const { userInfo, tokenInfo } = useUserStore();
   const isBannerOn = false; // 배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); // 배너 모달창 열림 여부
   const [showLoginPromo, setShowLoginPromo] = useState(false);
@@ -46,13 +46,14 @@ export default function MobileHomePage() {
 
   // 확률적으로 로그인 유도 바텀시트 노출
   useEffect(() => {
-    if (!userInfo.id) {
+    // userInfo.id 대신 tokenInfo.accessToken 존재 여부로 로그인 확인
+    if (!tokenInfo.accessToken) {
       const probability = 0.3;
       if (Math.random() < probability) {
         setShowLoginPromo(true);
       }
     }
-  }, [userInfo.id]);
+  }, [tokenInfo.accessToken]);
 
   const handleCloseModal = () => {
     const nextWeek = new Date();
