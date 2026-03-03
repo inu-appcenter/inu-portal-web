@@ -1,8 +1,10 @@
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import busIcon from "/Bus/busIcon.svg";
 import useBusArrival from "../../../hooks/useBusArrival";
 import { BusData } from "@/types/bus";
 import Box from "@/components/common/Box";
+import { RotateCw } from "lucide-react";
+import { useState, useCallback } from "react";
 
 interface BusRouteBarProps {
   bus: BusData;
@@ -10,13 +12,45 @@ interface BusRouteBarProps {
 }
 
 export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
-  // 구조 분해 할당을 통해 busArrivalList 추출
-  const { busArrivalList: currentArrivals } = useBusArrival(bstopId, [bus]);
-  const { busArrivalList: passArrivals } = useBusArrival(bus.lastStopId!, [
-    bus,
+  // 현재 정류장 기준 도착 정보
+  const {
+    busArrivalList: currentArrivals,
+    refetch: refetchCurrent,
+    isFetching: isFetchingCurrent,
+    lastUpdated,
+  } = useBusArrival(bstopId, [bus]);
+
+  // 지나간 정류장 기준 정보 (전체 노선 상의 위치 파악용)
+  const {
+    busArrivalList: passArrivals,
+    refetch: refetchPass,
+    isFetching: isFetchingPass,
+  } = useBusArrival(bus.lastStopId!, [bus]);
+
+  const [isCooldown, setIsCooldown] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    if (isCooldown || isFetchingCurrent || isFetchingPass) return;
+
+    refetchCurrent();
+    refetchPass();
+    setIsCooldown(true);
+
+    setTimeout(() => {
+      setIsCooldown(false);
+    }, 10000); // 10초 쿨타임
+  }, [
+    isCooldown,
+    isFetchingCurrent,
+    isFetchingPass,
+    refetchCurrent,
+    refetchPass,
   ]);
 
-  // 첫 번째 요소의 arrivalInfo 참조
+  const formatTime = (date: Date) => {
+    return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`;
+  };
+
   const arrivalInfo = currentArrivals[0]?.arrivalInfo;
   const passArrival = passArrivals[0]?.arrivalInfo;
 
@@ -32,10 +66,8 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
 
   for (let i = 0; i < totalDots; i++) {
     const isCurrent = i === 4;
-
     const label = i >= 5 ? (route[i - 4] ?? "") : i == 4 ? route[0] : "";
 
-    // 현재 정류장 기준 도착 예정 버스 표시 여부
     const showBus =
       arrivalInfo?.time === "도착정보 없음"
         ? i === 0
@@ -45,10 +77,8 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
             ? i === 4 - restCount
             : false;
 
-    // 정보 박스 표시 여부
     const showInfoBox = showBus;
 
-    // 지나간 버스 표시 여부
     const showPassBus =
       passRestCount >= 0 &&
       passIndex >= 1 &&
@@ -68,57 +98,125 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
   }
 
   return (
-    <Box>
-      <BusRouteBarWrapper>
-        <Line>
-          <Arrow />
-          <DotList>
-            {dots.map((dot, i) => (
-              <DotBox key={i}>
-                {dot.showInfoBox && arrivalInfo && (
-                  <InfoBox>
-                    <div>
-                      {arrivalInfo.station}{" "}
-                      {arrivalInfo.isLastBus ? (
-                        <LastBus>막차</LastBus>
-                      ) : (
-                        arrivalInfo.status
-                      )}
-                    </div>
-                    <div>{arrivalInfo.time}</div>
-                  </InfoBox>
-                )}
-                {dot.showPassBus && (
-                  <>
-                    <BusIcon src={busIcon} />
-                    <InfoBox>{dot.passText}</InfoBox>
-                  </>
-                )}
-                {dot.showBus && <BusIcon src={busIcon} />}
-                <Dot $current={dot.isCurrent} />
-                {dot.label && <Label>{dot.label}</Label>}
-              </DotBox>
-            ))}
-          </DotList>
-        </Line>
-      </BusRouteBarWrapper>
-    </Box>
+    <BusRouteBarWrapper>
+      <HeaderArea>
+        <LastUpdated>업데이트: {formatTime(lastUpdated)}</LastUpdated>
+        <RefreshButton
+          onClick={handleRefresh}
+          $isFetching={isFetchingCurrent || isFetchingPass}
+          $isCooldown={isCooldown}
+          disabled={isCooldown || isFetchingCurrent || isFetchingPass}
+        >
+          <RotateCw size={14} />
+        </RefreshButton>
+      </HeaderArea>
+
+      <Box>
+        <LineArea>
+          <Line>
+            <Arrow />
+            <DotList>
+              {dots.map((dot, i) => (
+                <DotBox key={i}>
+                  {dot.showInfoBox && arrivalInfo && (
+                    <InfoBox>
+                      <div>
+                        {arrivalInfo.station}{" "}
+                        {arrivalInfo.isLastBus ? (
+                          <LastBus>막차</LastBus>
+                        ) : (
+                          arrivalInfo.status
+                        )}
+                      </div>
+                      <div>{arrivalInfo.time}</div>
+                    </InfoBox>
+                  )}
+                  {dot.showPassBus && (
+                    <>
+                      <BusIcon src={busIcon} />
+                      <InfoBox>{dot.passText}</InfoBox>
+                    </>
+                  )}
+                  {dot.showBus && <BusIcon src={busIcon} />}
+                  <Dot $current={dot.isCurrent} />
+                  {dot.label && <Label>{dot.label}</Label>}
+                </DotBox>
+              ))}
+            </DotList>
+          </Line>
+        </LineArea>
+      </Box>
+    </BusRouteBarWrapper>
   );
 }
+
+const rotate = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
 
 const BusRouteBarWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-top: 40px;
   box-sizing: border-box;
   width: 100%;
+  padding: 8px 0;
+`;
+
+const HeaderArea = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+`;
+
+const LastUpdated = styled.span`
+  font-size: 11px;
+  color: #888;
+`;
+
+const RefreshButton = styled.button<{
+  $isFetching: boolean;
+  $isCooldown: boolean;
+}>`
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${(props) => (props.$isCooldown ? "#ccc" : "#666")};
+  transition: color 0.2s;
+
+  ${(props) =>
+    props.$isFetching &&
+    css`
+      animation: ${rotate} 1s linear infinite;
+    `}
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+`;
+
+const LineArea = styled.div`
+  padding: 64px 0 20px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Line = styled.div`
   position: relative;
   width: 100%;
-  height: 36px;
+  height: 2px;
   display: flex;
   align-items: center;
 `;
@@ -149,6 +247,7 @@ const DotBox = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 `;
 
 const Dot = styled.div<{ $current: boolean }>`
@@ -156,9 +255,6 @@ const Dot = styled.div<{ $current: boolean }>`
   height: 10px;
   border-radius: 50%;
   z-index: 1;
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
   background-color: ${({ $current }) => ($current ? "#A1C3FF" : "#fff")};
   border: ${({ $current }) =>
     $current ? "1.5px solid #A1C3FF" : "1.5px solid #C7DAF5"};
@@ -166,13 +262,13 @@ const Dot = styled.div<{ $current: boolean }>`
 
 const BusIcon = styled.img`
   position: absolute;
-  top: -5px;
+  bottom: 20px;
   width: 24px;
 `;
 
 const InfoBox = styled.div`
   position: absolute;
-  top: -40px;
+  bottom: 48px;
   width: 66px;
   height: 30px;
   font-size: 10px;
@@ -184,6 +280,7 @@ const InfoBox = styled.div`
   flex-direction: column;
   justify-content: center;
   line-height: 1.4;
+  z-index: 10;
 `;
 
 const LastBus = styled.span`
@@ -192,7 +289,8 @@ const LastBus = styled.span`
 `;
 
 const Label = styled.div`
-  margin-top: 20px;
+  position: absolute;
+  top: 15px;
   font-size: 12px;
   white-space: nowrap;
 `;

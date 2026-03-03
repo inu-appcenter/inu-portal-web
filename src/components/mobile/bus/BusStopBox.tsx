@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import InfoIcon from "@/components/mobile/bus/InfoIcon";
 import BusItem from "@/components/mobile/bus/BusItem";
 import { BusStopBoxProps } from "@/types/bus.ts";
 import useBusArrival from "@/hooks/useBusArrival.ts";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import BusItemSkeleton from "@/components/mobile/bus/BusItemSkeleton";
-import { ROUTES } from "@/constants/routes"; // ROUTES 상수 임포트
+import { ROUTES } from "@/constants/routes";
+import { RotateCw } from "lucide-react";
+import { useState, useCallback } from "react";
 
 interface Props extends BusStopBoxProps {
   bstopId: string;
@@ -20,21 +22,52 @@ export default function BusStopBox({
   bstopId,
 }: Props) {
   const navigate = useNavigate();
-  const { busArrivalList, isLoading } = useBusArrival(bstopId, busList);
+  const { busArrivalList, isLoading, refetch, isFetching, lastUpdated } = 
+    useBusArrival(bstopId, busList);
+
+  const [isCooldown, setIsCooldown] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    if (isCooldown || isFetching) return;
+    
+    refetch();
+    setIsCooldown(true);
+    
+    // 10초 쿨타임 (여러 번 누름 방지)
+    setTimeout(() => {
+      setIsCooldown(false);
+    }, 10000);
+  }, [isCooldown, isFetching, refetch]);
+
+  const formatTime = (date: Date) => {
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+  };
 
   return (
     <TitleContentArea
       title={
-        <LabelGroup>
-          {sectionName} {showInfoIcon && <InfoIcon onClick={onClickInfo} />}
-        </LabelGroup>
+        <HeaderGroup>
+          <LabelGroup>
+            {sectionName} {showInfoIcon && <InfoIcon onClick={onClickInfo} />}
+          </LabelGroup>
+          <RefreshArea>
+             <LastUpdated>업데이트: {formatTime(lastUpdated)}</LastUpdated>
+             <RefreshButton 
+                onClick={handleRefresh} 
+                $isFetching={isFetching}
+                $isCooldown={isCooldown}
+                disabled={isCooldown || isFetching}
+             >
+                <RotateCw size={14} />
+             </RefreshButton>
+          </RefreshArea>
+        </HeaderGroup>
       }
     >
       <BusStopBoxWrapper>
         <BusList>
           {isLoading
-            ? // 로딩 상태 스켈레톤 표시
-              Array.from({ length: busList.length || 2 }).map((_, i) => (
+            ? Array.from({ length: busList.length || 2 }).map((_, i) => (
                 <BusItemSkeleton key={`bus-skeleton-${i}`} />
               ))
             : busArrivalList.map((bus) => (
@@ -58,6 +91,11 @@ export default function BusStopBox({
   );
 }
 
+const rotate = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
 const BusStopBoxWrapper = styled.div`
   background-color: transparent;
   width: 100%;
@@ -65,10 +103,53 @@ const BusStopBoxWrapper = styled.div`
   box-sizing: border-box;
 `;
 
+const HeaderGroup = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
 const LabelGroup = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+`;
+
+const RefreshArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const LastUpdated = styled.span`
+  font-size: 11px;
+  color: #888;
+  font-weight: normal;
+`;
+
+const RefreshButton = styled.button<{ $isFetching: boolean; $isCooldown: boolean }>`
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.$isCooldown ? '#ccc' : '#666'};
+  transition: color 0.2s;
+
+  ${props => props.$isFetching && css`
+    animation: ${rotate} 1s linear infinite;
+  `}
+
+  &:active {
+    transform: scale(0.9);
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+  }
 `;
 
 const BusList = styled.div`
