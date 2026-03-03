@@ -17,7 +17,7 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
 
   return (
     <BellWrapper>
-      <Bell size={22} onClick={handleNotiBtnClick} />
+      <Bell size={24} onClick={handleNotiBtnClick} />
       {hasNew && <Badge />}
     </BellWrapper>
   );
@@ -85,7 +85,9 @@ export default function MobileHeader({ targetPath }: MobileHeaderProps) {
         {title ? (
           <TitleArea>
             {hasback && (
-              <BackButton onClick={handleBack} $isScrolled={isScrolled} />
+              <IconBackgroundWrapper $isScrolled={isScrolled} $isCircle={true}>
+                <BackButton onClick={handleBack} />
+              </IconBackgroundWrapper>
             )}
             <TitleWrapper $isScrolled={isScrolled} $hasBack={hasback ?? false}>
               <Title title={title} />
@@ -96,10 +98,14 @@ export default function MobileHeader({ targetPath }: MobileHeaderProps) {
         )}
 
         {(showAlarm || menuItems) && (
-          <MenuBackgroundWrapper $isScrolled={isScrolled} $marginRight="16px">
+          <IconBackgroundWrapper
+            $isScrolled={isScrolled}
+            $isCircle={!(showAlarm && menuItems)}
+            $marginRight="16px"
+          >
             {showAlarm && <NotificationBell hasNew={false} />}
             {menuItems && <TopRightDropdownMenu items={menuItems} />}
-          </MenuBackgroundWrapper>
+          </IconBackgroundWrapper>
         )}
       </MainHeaderWrapper>
 
@@ -164,6 +170,7 @@ const TitleArea = styled.div`
   align-items: center;
   margin-left: 16px;
   pointer-events: auto;
+  gap: 0;
 `;
 
 const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
@@ -174,33 +181,55 @@ const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
   overflow: hidden;
   white-space: nowrap;
   min-width: 200px;
+  margin-left: -4px; /* 타이틀을 버튼 쪽으로 조금 더 당김 */
   transition:
     all 0.2s ease-in-out,
     visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
 `;
 
-const MenuBackgroundWrapper = styled.div<{
+const IconBackgroundWrapper = styled.div<{
   $isScrolled: boolean;
+  $isCircle: boolean;
   $marginRight?: string;
 }>`
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  gap: 12px;
   border-radius: 50px;
   margin-right: ${({ $marginRight }) => $marginRight ?? "0"};
-  padding: 12px 16px;
+  padding: ${({ $isCircle }) => ($isCircle ? "0" : "0 20px")}; /* 상하 패딩 제거 */
+  width: ${({ $isCircle }) => ($isCircle ? "48px" : "auto")};
+  height: 48px;
   pointer-events: auto;
+  box-sizing: border-box;
 
+  /* 스크롤 시에만 배경과 그림자 적용 (기존 BackButton 수치 복구) */
   background: ${({ $isScrolled }) =>
-    $isScrolled ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0)"};
+    $isScrolled ? "rgba(255, 255, 255, 0.7)" : "transparent"};
   box-shadow: ${({ $isScrolled }) =>
-    $isScrolled ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none"};
-  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "10px" : "0px")});
+    $isScrolled ? "0 2px 4px 0 rgba(0, 0, 0, 0.15)" : "none"};
+  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
   -webkit-backdrop-filter: blur(
-    ${({ $isScrolled }) => ($isScrolled ? "10px" : "0px")}
+    ${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")}
   );
 
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 내부 요소(버튼, 아이콘)들의 강제 중앙 정렬 */
+  & > * {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: ${({ $isCircle }) => ($isCircle ? "100%" : "auto")} !important;
+    height: 100% !important;
+  }
 `;
 
 const FloatingWrapper = styled.div`

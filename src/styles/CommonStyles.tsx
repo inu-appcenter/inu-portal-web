@@ -41,8 +41,16 @@ const CommonStyles = createGlobalStyle`
     font-family: inherit;
     all: unset;
     box-sizing: border-box;
+  }
+
+  button {
     cursor: pointer;
     text-align: center;
+  }
+
+  input, textarea {
+    text-align: left;
+    cursor: text;
   }
 `;
 

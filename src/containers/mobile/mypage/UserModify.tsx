@@ -115,44 +115,62 @@ export default function UserModify() {
 }
 
 const UserModifyWrapper = styled.div`
-  top: 310px;
   width: 100%;
-  padding: 0 16px;
-  padding-bottom: 60px;
+  padding: 24px 16px 120px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #f8faff;
 
   .nickname {
     width: 100%;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
+    max-width: 384px;
 
     h4 {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #495057;
     }
 
     input {
       width: 100%;
-      padding: 12px;
+      padding: 14px 16px;
       box-sizing: border-box;
-      border-radius: 8px;
-      color: #404040;
-      font-size: 14px;
+      border-radius: 12px;
+      color: #212529;
+      font-size: 15px;
+      font-weight: 600;
+      background-color: #ffffff;
+      border: 1px solid #e9ecef;
+      transition: all 0.2s;
+
+      &:focus {
+        border-color: #5e92f0;
+        box-shadow: 0 0 0 3px rgba(94, 146, 240, 0.1);
+      }
+
+      &::placeholder {
+        color: #adb5bd;
+      }
     }
 
     &.department {
       .input-button-wrapper {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
 
         input {
-          flex: 1; // input이 남은 공간 채우기
+          flex: 1;
+          background-color: #f1f3f5; /* 읽기 전용 느낌 */
         }
 
         button {
-          flex: 0; // 버튼은 내용에 맞게
+          flex: 0;
+          white-space: nowrap;
         }
       }
     }
@@ -161,50 +179,96 @@ const UserModifyWrapper = styled.div`
 
 const ButtonWrapper = styled.div`
   width: 100%;
+  max-width: 768px;
   display: flex;
   justify-content: center;
   position: fixed;
   bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
 
-  padding: 16px;
+  padding: 16px 20px 32px;
   box-sizing: border-box;
 
-  background-color: rgba(255, 255, 255, 0.5); /* 반투명 배경 */
-  backdrop-filter: blur(10px); /* 블러 효과 */
+  background: linear-gradient(180deg, rgba(248, 250, 255, 0) 0%, #f8faff 40%);
+  pointer-events: none;
+
+  button {
+    pointer-events: auto;
+  }
 `;
 
 const ImageSelection = styled.div`
-  margin: 24px 0;
+  margin: 12px 0 24px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 `;
 
 const ImageOption = styled.div<{ selected: boolean }>`
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
 
   img {
     width: 100%;
     height: 100%;
-    border-radius: 12px;
-    border: ${({ selected }) => (selected ? "3px solid #4071B9" : "none")};
+    border-radius: 16px;
+    border: 3px solid ${({ selected }) => (selected ? "#5e92f0" : "transparent")};
+    transition: all 0.2s;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    display: block;
   }
+
+  ${({ selected }) =>
+    selected &&
+    `
+    &::after {
+      content: '✓';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 24px;
+      height: 24px;
+      background-color: #5e92f0;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+  `}
 `;
 
 const StyledButton = styled.button<{ fullWidth?: boolean }>`
   box-sizing: border-box;
-  background-color: #0e4d9d;
-  border: 1px solid white;
+  background: linear-gradient(135deg, #5e92f0 0%, #4a7fd0 100%);
   color: white;
-  padding: 12px;
-  border-radius: 5px;
+  padding: 14px 20px;
+  border-radius: 12px;
   width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
-  min-width: fit-content;
+  min-width: 100px;
   cursor: pointer;
 
   font-size: 16px;
-  font-weight: 600;
-
+  font-weight: 700;
   text-align: center;
+  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.3);
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(94, 146, 240, 0.3);
+  }
 `;
