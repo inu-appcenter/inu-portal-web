@@ -131,6 +131,28 @@ export const getAlerts = async (
   return response.data;
 };
 
+// FCM 토큰 등록
+export const postFcmToken = async (
+  token: string,
+): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.post<ApiResponse<number>>(
+    "/api/tokens",
+    { token },
+  );
+  return response.data;
+};
+
+// FCM 토큰 삭제
+export const deleteFcmToken = async (
+  token: string,
+): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.delete<ApiResponse<number>>(
+    "/api/tokens",
+    { data: { token } },
+  );
+  return response.data;
+};
+
 export const postApiLogs = async (
   uri: string,
 ): Promise<ApiResponse<ApiLog>> => {

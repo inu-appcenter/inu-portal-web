@@ -10,8 +10,8 @@ import {
 } from "@/resources/strings/m-mypage";
 import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
-import tokenInstance from "@/apis/tokenInstance";
 import { useHeader } from "@/context/HeaderContext.tsx";
+import { deleteFcmToken } from "@/apis/members";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -22,7 +22,11 @@ export default function MobileMyPage() {
     const fcmToken = localStorage.getItem("fcmToken");
 
     if (fcmToken) {
-      await tokenInstance.post("/api/tokens/unlink", { token: fcmToken });
+      try {
+        await deleteFcmToken(fcmToken);
+      } catch (error) {
+        console.error("FCM 토큰 삭제 실패:", error);
+      }
     }
 
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
@@ -33,11 +37,14 @@ export default function MobileMyPage() {
       refreshTokenExpiredTime: "",
     });
     localStorage.removeItem("tokenInfo");
-    if (window.AndroidBridge && window.AndroidBridge.handleLogout) {
-      window.AndroidBridge.handleLogout();
-    } else {
-      navigate(`/home`);
-    }
+
+    navigate(`/home`);
+
+    // if (window.AndroidBridge && window.AndroidBridge.handleLogout) {
+    //   window.AndroidBridge.handleLogout();
+    // } else {
+    //   navigate(`/home`);
+    // }
   };
 
   const handleLogoutModalClick = () => {

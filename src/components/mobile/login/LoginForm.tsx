@@ -1,13 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { login } from "@/apis/members";
+import { login, postFcmToken } from "@/apis/members";
 import styled from "styled-components";
 import LoginUser from "@/resources/assets/login/login-user.svg";
 import LoginPassword from "@/resources/assets/login/login-password.svg";
 import useUserStore from "@/stores/useUserStore";
 import axios from "axios";
 import TermOfUse from "@/components/desktop/login/TermsOfUse";
-import tokenInstance from "../../../apis/tokenInstance.ts";
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -39,7 +38,7 @@ export default function LoginForm() {
       const fcmToken = localStorage.getItem("fcmToken");
       if (fcmToken) {
         try {
-          await tokenInstance.post("/api/tokens", { token: fcmToken });
+          await postFcmToken(fcmToken);
           console.log("로그인 후 FCM 토큰 등록 완료");
         } catch (tokenError) {
           console.error("로그인 후 FCM 토큰 등록 실패", tokenError);

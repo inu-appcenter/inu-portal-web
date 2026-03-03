@@ -5,8 +5,7 @@ import styled from "styled-components";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import useAppStateStore from "@/stores/useAppStateStore";
-import { getMembers, postApiLogs } from "@/apis/members";
-import tokenInstance from "@/apis/tokenInstance";
+import { getMembers, postApiLogs, postFcmToken } from "@/apis/members";
 import ScrollBarStyles from "@/styles/ScrollBarStyles";
 import { HeaderProvider } from "@/context/HeaderContext";
 
@@ -82,7 +81,7 @@ export default function RootLayout() {
       if (lastSent === fcmToken) return;
 
       try {
-        await tokenInstance.post("/api/tokens", { token: fcmToken });
+        await postFcmToken(fcmToken);
         localStorage.setItem(LAST_SENT_TOKEN_KEY, fcmToken);
       } catch (error) {
         console.error("FCM 토큰 동기화 실패", error);
