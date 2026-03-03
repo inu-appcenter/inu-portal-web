@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Notice } from "@/types/notices";
 import { getNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
@@ -9,56 +8,16 @@ import PostItem from "@/components/mobile/notice/PostItem";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import { useLocation } from "react-router-dom";
-
-const LIMIT = 8; // 페이지당 데이터 수
+import { useInView } from "react-intersection-observer";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 const MobileSchoolNoticePage = () => {
-  const [notices, setNotices] = useState<Notice[]>([]);
   const [categoryList, setCategoryList] = useState<string[]>([]);
+  const { ref, inView } = useInView();
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "전체";
-
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // 데이터 페칭 함수
-  const fetchData = useCallback(
-    async (pageNum: number, isFirst: boolean = false) => {
-      // 중복 로딩 방지
-      if (isLoading && !isFirst) return;
-
-      setIsLoading(true);
-      try {
-        const response = await getNotices(selectedCategory, "date", pageNum);
-        const newNotices: Notice[] = response.data.contents;
-
-        if (newNotices && newNotices.length > 0) {
-          setNotices((prev) =>
-            isFirst ? newNotices : [...prev, ...newNotices],
-          );
-          setPage(pageNum + 1);
-
-          // 데이터 개수 기반 다음 페이지 유무 판별
-          if (newNotices.length < LIMIT) {
-            setHasMore(false);
-          } else {
-            setHasMore(true);
-          }
-        } else {
-          setHasMore(false);
-        }
-      } catch (error) {
-        console.error("데이터 로드 실패", error);
-        setHasMore(false);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [selectedCategory], // isLoading 제거: 함수 안정성 유지
-  );
 
   // 카테고리 로드
   useEffect(() => {
@@ -74,20 +33,33 @@ const MobileSchoolNoticePage = () => {
     fetchCategories();
   }, []);
 
-  // 카테고리 변경 시 초기화
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    queryKey: ["notices", selectedCategory],
+    queryFn: ({ pageParam = 1 }) => getNotices(selectedCategory, "date", pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = lastPage.data.pages;
+      const currentPage = allPages.length;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+  });
+
   useEffect(() => {
-    const initLoad = async () => {
-      setNotices([]);
-      setPage(1);
-      setHasMore(true);
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-      const scrollableDiv = document.getElementById("app-scroll-view");
-      if (scrollableDiv) scrollableDiv.scrollTop = 0;
-
-      await fetchData(1, true);
-    };
-    initLoad();
-  }, [selectedCategory, fetchData]);
+  const notices = useMemo(() => {
+    return data?.pages.flatMap((page) => page.data.contents) || [];
+  }, [data]);
 
   const subHeader = useMemo(
     () => (
@@ -108,48 +80,53 @@ const MobileSchoolNoticePage = () => {
 
   return (
     <MobileSchoolNoticePageWrapper>
-      <InfiniteScroll
-        dataLength={notices.length}
-        next={() => fetchData(page)}
-        hasMore={hasMore}
-        scrollableTarget="app-scroll-view" // SubLayout의 ID와 일치
-        loader={
+      <TipsCardWrapper>
+        {/* 초기 로딩 스켈레톤 */}
+        {isLoading && notices.length === 0 ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            <Box key={`skeleton-${i}`}>
+              <PostItem isLoading />
+            </Box>
+          ))
+        ) : isError ? (
+          <LoadingText>데이터를 불러오는 중 오류가 발생했습니다.</LoadingText>
+        ) : notices.length === 0 ? (
+          <LoadingText>게시물이 없습니다.</LoadingText>
+        ) : (
+          notices.map((notice: Notice, index: number) => (
+            <Box
+              key={`${notice.id || index}`}
+              onClick={() => {
+                if (notice.url) window.open("https://" + notice.url, "_blank");
+              }}
+            >
+              <PostItem
+                title={notice.title}
+                category={notice.category}
+                writer={notice.writer}
+                date={notice.createDate}
+                views={notice.view}
+                isEllipsis={false}
+              />
+            </Box>
+          ))
+        )}
+      </TipsCardWrapper>
+
+      {/* 무한 스크롤 트리거 */}
+      <div ref={ref} style={{ height: "20px" }}>
+        {isFetchingNextPage && (
           <TipsCardWrapper>
             <Box>
               <PostItem isLoading />
             </Box>
           </TipsCardWrapper>
-        }
-        endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-      >
-        <TipsCardWrapper>
-          {/* 초기 로딩 스켈레톤 */}
-          {notices.length === 0 && isLoading
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <Box key={`skeleton-${i}`}>
-                  <PostItem isLoading />
-                </Box>
-              ))
-            : notices.map((notice, index) => (
-                <Box
-                  key={`${notice.id || index}`}
-                  onClick={() => {
-                    if (notice.url)
-                      window.open("https://" + notice.url, "_blank");
-                  }}
-                >
-                  <PostItem
-                    title={notice.title}
-                    category={notice.category}
-                    writer={notice.writer}
-                    date={notice.createDate}
-                    views={notice.view}
-                    isEllipsis={false}
-                  />
-                </Box>
-              ))}
-        </TipsCardWrapper>
-      </InfiniteScroll>
+        )}
+      </div>
+
+      {!hasNextPage && notices.length > 0 && (
+        <LoadingText>더 이상 게시물이 없습니다.</LoadingText>
+      )}
     </MobileSchoolNoticePageWrapper>
   );
 };

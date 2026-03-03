@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Notice } from "@/types/notices";
 import { getDepartmentNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
@@ -15,13 +14,14 @@ import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNotic
 import LoginRequiredModal from "@/components/mobile/common/LoginRequiredModal";
 import { ROUTES } from "@/constants/routes";
 import { Bell } from "lucide-react";
-
-const LIMIT = 8;
+import { useInView } from "react-intersection-observer";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const { ref, inView } = useInView();
 
   const deptParam = new URLSearchParams(location.search).get("dept");
   const currentDept = deptParam || userInfo.department;
@@ -35,14 +35,7 @@ const MobileDeptNoticePage = () => {
     setIsLoginModalOpen(!tokenInfo.accessToken);
   }, [tokenInfo.accessToken]);
 
-  const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
-
-  // 핵심: DOM 바인딩 타이밍 문제 해결을 위한 상태
-  const [isReady, setIsReady] = useState(false);
 
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     return userInfo.department
@@ -56,65 +49,38 @@ const MobileDeptNoticePage = () => {
     menuItems,
   });
 
-  const fetchData = useCallback(
-    async (pageNum: number, isInitial: boolean = false) => {
-      if (isLoading && !isInitial) return;
-
-      setIsLoading(true);
-      try {
-        const deptCode = currentDept ? findTitleOrCode(currentDept) : undefined;
-        if (!deptCode) return;
-
-        const response = await getDepartmentNotices(deptCode, "date", pageNum);
-        console.log(response);
-        const newNotices: Notice[] = response.data.contents;
-
-        if (newNotices && newNotices.length > 0) {
-          setDeptNotices((prev) =>
-            isInitial ? newNotices : [...prev, ...newNotices],
-          );
-          setPage(pageNum + 1);
-          if (newNotices.length < LIMIT) {
-            setHasMore(false);
-          } else {
-            setHasMore(true);
-          }
-        } else {
-          if (isInitial) setDeptNotices([]);
-          setHasMore(false);
-        }
-      } catch (error) {
-        console.error("데이터 로드 실패", error);
-        setHasMore(false);
-      } finally {
-        setIsLoading(false);
-      }
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    queryKey: ["deptNotices", currentDept],
+    queryFn: ({ pageParam = 1 }) => {
+      const deptCode = currentDept ? findTitleOrCode(currentDept) : undefined;
+      if (!deptCode) return Promise.reject("학과 정보가 없습니다.");
+      return getDepartmentNotices(deptCode, "date", pageParam);
     },
-    [currentDept],
-  );
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = lastPage.data.pages;
+      const currentPage = allPages.length;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    enabled: !!currentDept && !!tokenInfo.accessToken,
+  });
 
   useEffect(() => {
-    if (currentDept) {
-      // 1. 상태 초기화
-      setDeptNotices([]);
-      setPage(1);
-      setHasMore(true);
-      setIsReady(false); // InfiniteScroll 언마운트
-
-      const scrollableDiv = document.getElementById("app-scroll-view");
-      if (scrollableDiv) scrollableDiv.scrollTop = 0;
-
-      // 2. 데이터 로드 시작
-      fetchData(1, true);
-
-      // 3. 약간의 지연 후 InfiniteScroll 마운트 (DOM 바인딩 보장)
-      const timer = setTimeout(() => {
-        setIsReady(true);
-      }, 500);
-
-      return () => clearTimeout(timer);
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [currentDept, fetchData]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const deptNotices = useMemo(() => {
+    return data?.pages.flatMap((page) => page.data.contents) || [];
+  }, [data]);
 
   const handleDepartmentClick = async (department: string) => {
     try {
@@ -142,60 +108,51 @@ const MobileDeptNoticePage = () => {
   return (
     <MobileDeptNoticePageWrapper>
       <LoginRequiredModal isOpen={isLoginModalOpen} />
-      {/* isReady가 true일 때만 렌더링하여 DOM id='app-scroll-view'를 확실히 찾게 함 */}
-      {isReady && (
-        <InfiniteScroll
-          key={currentDept} // key를 변경하여 컴포넌트 재생성 강제
-          dataLength={deptNotices.length}
-          next={() => fetchData(page)}
-          hasMore={hasMore}
-          scrollableTarget="app-scroll-view"
-          loader={
-            <TipsCardWrapper>
-              <Box>
-                <PostItem isLoading />
-              </Box>
-            </TipsCardWrapper>
-          }
-          endMessage={<LoadingText>더 이상 게시물이 없습니다.</LoadingText>}
-        >
-          <TipsCardWrapper>
-            {deptNotices.length === 0 && isLoading
-              ? Array.from({ length: LIMIT }).map((_, i) => (
-                  <Box key={`dept-init-skeleton-${i}`}>
-                    <PostItem isLoading />
-                  </Box>
-                ))
-              : deptNotices.map((deptNotice, index) => (
-                  <Box
-                    key={`${deptNotice.id || index}`}
-                    onClick={() => {
-                      if (deptNotice.url) window.open(deptNotice.url, "_blank");
-                    }}
-                  >
-                    <PostItem
-                      title={deptNotice.title}
-                      category={deptNotice.category}
-                      writer={deptNotice.writer}
-                      date={deptNotice.createDate}
-                      views={deptNotice.view}
-                      isEllipsis={false}
-                    />
-                  </Box>
-                ))}
-          </TipsCardWrapper>
-        </InfiniteScroll>
-      )}
-
-      {/* 로딩 중이거나 준비 전일 때 스켈레톤만 먼저 보여줘서 깜빡임 방지 */}
-      {!isReady && (
-        <TipsCardWrapper>
-          {Array.from({ length: LIMIT }).map((_, i) => (
-            <Box key={`skeleton-placeholder-${i}`}>
+      <TipsCardWrapper>
+        {isLoading && deptNotices.length === 0 ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            <Box key={`dept-init-skeleton-${i}`}>
               <PostItem isLoading />
             </Box>
-          ))}
-        </TipsCardWrapper>
+          ))
+        ) : isError ? (
+          <LoadingText>데이터를 불러오는 중 오류가 발생했습니다.</LoadingText>
+        ) : deptNotices.length === 0 ? (
+          <LoadingText>게시물이 없습니다.</LoadingText>
+        ) : (
+          deptNotices.map((deptNotice: Notice, index: number) => (
+            <Box
+              key={`${deptNotice.id || index}`}
+              onClick={() => {
+                if (deptNotice.url) window.open(deptNotice.url, "_blank");
+              }}
+            >
+              <PostItem
+                title={deptNotice.title}
+                category={deptNotice.category}
+                writer={deptNotice.writer}
+                date={deptNotice.createDate}
+                views={deptNotice.view}
+                isEllipsis={false}
+              />
+            </Box>
+          ))
+        )}
+      </TipsCardWrapper>
+
+      {/* 무한 스크롤 트리거 */}
+      <div ref={ref} style={{ height: "20px" }}>
+        {isFetchingNextPage && (
+          <TipsCardWrapper>
+            <Box>
+              <PostItem isLoading />
+            </Box>
+          </TipsCardWrapper>
+        )}
+      </div>
+
+      {!hasNextPage && deptNotices.length > 0 && (
+        <LoadingText>더 이상 게시물이 없습니다.</LoadingText>
       )}
 
       {navBarList[1].child && (
