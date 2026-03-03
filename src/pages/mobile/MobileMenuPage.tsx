@@ -33,10 +33,11 @@ export default function MobileMenuPage() {
 
   const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
     const weekDates = [];
-    const days = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
-    const diffToMonday = (day === 0 ? -6 : 1) - day; // 월요일까지의 차이
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const currentDay = date.getDay();
+    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
     const monday = new Date(date);
-    monday.setDate(date.getDate() + diffToMonday); // 이번 주 월요일 날짜
+    monday.setDate(date.getDate() + diffToMonday);
 
     for (let i = 0; i < 7; i++) {
       const weekDate = new Date(monday);
