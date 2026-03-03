@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
-import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
 import SortDropBox from "@/components/mobile/notice/Sort";
+import Box from "@/components/common/Box";
 
 interface VideoData {
   id: string;
@@ -13,81 +14,88 @@ interface VideoData {
   viewCount: string;
 }
 
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
+const UPLOADS_PLAYLIST_ID = "UUqOO8FqoVW6Y87jLnqhdflA";
+
+const fetchYoutubeVideos = async (sort: string): Promise<VideoData[]> => {
+  let videoIds = "";
+
+  if (sort === "date") {
+    const playlistResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlistItems?key=${API_KEY}&playlistId=${UPLOADS_PLAYLIST_ID}&part=snippet&maxResults=3`,
+    );
+
+    // 응답 상태 확인 및 에러 발생
+    if (!playlistResponse.ok) throw new Error("유튜브 API 호출 실패");
+
+    const playlistData = await playlistResponse.json();
+
+    if (!playlistData.items || playlistData.items.length === 0) {
+      return [];
+    }
+
+    const targetItems = playlistData.items.slice(0, 3);
+    videoIds = targetItems
+      .map((item: any) => item.snippet.resourceId.videoId)
+      .join(",");
+  } else {
+    const searchResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=id&order=viewCount&maxResults=3&type=video`,
+    );
+
+    // 응답 상태 확인 및 에러 발생
+    if (!searchResponse.ok) throw new Error("유튜브 API 호출 실패");
+
+    const searchData = await searchResponse.json();
+
+    if (!searchData.items || searchData.items.length === 0) {
+      return [];
+    }
+
+    const targetItems = searchData.items.slice(0, 3);
+    videoIds = targetItems.map((item: any) => item.id.videoId).join(",");
+  }
+
+  const videosResponse = await fetch(
+    `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoIds}&part=snippet,statistics`,
+  );
+
+  // 응답 상태 확인 및 에러 발생
+  if (!videosResponse.ok) throw new Error("유튜브 상세 정보 호출 실패");
+
+  const videosData = await videosResponse.json();
+
+  const formattedVideos = videosData.items.map((item: any) => ({
+    id: item.id,
+    title: item.snippet.title,
+    thumbnailUrl: item.snippet.thumbnails.medium.url,
+    publishedAt: item.snippet.publishedAt,
+    viewCount: item.statistics.viewCount,
+  }));
+
+  return formattedVideos.slice(0, 3);
+};
+
 const YoutubeListWidget = () => {
-  const [videos, setVideos] = useState<VideoData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("date");
 
-  const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
-  const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA"; //인천대학교 유튜브 채널 id
+  const {
+    data: videos = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["youtubeVideos", sort],
+    queryFn: () => fetchYoutubeVideos(sort),
+    staleTime: 1000 * 60 * 60,
+    retry: false, // 테스트를 위해 재시도 비활성화
+  });
 
   const formatViewCount = (count: string) => {
     const num = parseInt(count, 10);
     if (num >= 10000) return `${(num / 10000).toFixed(1)}만회`;
     return `${num.toLocaleString()}회`;
   };
-
-  useEffect(() => {
-    let isCancelled = false; // 클린업 플래그
-
-    const fetchVideos = async () => {
-      setLoading(true);
-      return; //개발 중 임시로 불러오지 않도록 막음
-
-      try {
-        console.log("유튜브 영상 로딩 시작");
-        const orderParam = sort === "date" ? "date" : "viewCount";
-
-        const searchResponse = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=id&order=${orderParam}&maxResults=3&type=video`,
-        );
-        const searchData = await searchResponse.json();
-
-        // 컴포넌트가 언마운트되었거나 탭이 바뀌었으면 중단
-        if (isCancelled) return;
-
-        if (searchData.items && searchData.items.length > 0) {
-          const targetItems = searchData.items.slice(0, 3);
-          const videoIds = targetItems
-            .map((item: any) => item.id.videoId)
-            .join(",");
-
-          // 비디오 상세 정보 호출
-          const videosResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoIds}&part=snippet,statistics`,
-          );
-          const videosData = await videosResponse.json();
-
-          if (isCancelled) return;
-
-          const formattedVideos = videosData.items.map((item: any) => ({
-            id: item.id,
-            title: item.snippet.title,
-            thumbnailUrl: item.snippet.thumbnails.medium.url,
-            publishedAt: item.snippet.publishedAt,
-            viewCount: item.statistics.viewCount,
-          }));
-
-          setVideos(formattedVideos.slice(0, 3));
-
-          console.log("유튜브 영상 로딩 끝");
-        } else {
-          setVideos([]);
-        }
-      } catch (error) {
-        console.error("YouTube API Error:", error);
-      } finally {
-        if (!isCancelled) setLoading(false);
-      }
-    };
-
-    fetchVideos();
-
-    // 5. 클린업 함수: 탭이 바뀌거나 컴포넌트가 사라질 때 기존 요청 무시
-    return () => {
-      isCancelled = true;
-    };
-  }, [sort]);
 
   const handleVideoClick = (videoId: string) => {
     window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank");
@@ -97,32 +105,31 @@ const YoutubeListWidget = () => {
     <Box>
       <SortDropBox sort={sort} setSort={setSort} />
 
-      {loading ? (
+      {/* 로딩 중이거나 에러 발생 시 스켈레톤 유지 */}
+      {isLoading || isError ? (
         <ListContainer>
           {[...Array(3)].map((_, i) => (
             <div key={i}>
               <VideoItem style={{ cursor: "default" }}>
-                {/* 썸네일 스켈레톤 */}
+                {/* 썸네일 영역 스켈레톤 */}
                 <Skeleton width={120} height={68} />
 
                 <InfoWrapper>
                   <TitleSkeletonWrapper>
-                    {/* 제목 스켈레톤 */}
+                    {/* 제목 영역 스켈레톤 */}
                     <Skeleton width="100%" height={15} />
                     <Skeleton width="70%" height={15} />
                   </TitleSkeletonWrapper>
 
-                  {/* 날짜/조회수 스켈레톤 */}
+                  {/* 하단 정보 스켈레톤 */}
                   <Skeleton width="40%" height={12} />
                 </InfoWrapper>
               </VideoItem>
-              {/* 마지막 아이템이 아니면 Divider 표시 */}
               {i < 2 && <Divider margin={"16px 0"} />}
             </div>
           ))}
         </ListContainer>
       ) : (
-        // 실제 데이터 영역
         <ListContainer>
           {videos.map((video, i) => (
             <div key={video.id}>
@@ -189,7 +196,6 @@ const InfoWrapper = styled.div`
   flex: 1;
 `;
 
-// 스켈레톤 레이아웃을 위한 래퍼
 const TitleSkeletonWrapper = styled.div`
   display: flex;
   flex-direction: column;

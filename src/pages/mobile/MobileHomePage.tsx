@@ -124,19 +124,19 @@ export default function MobileHomePage() {
 
         <Section>
           <TitleContentArea
-            title={"학사일정"}
-            children={<Calendar mode={"weekly"} />}
-            link={ROUTES.BOARD.CALENDAR}
-          />
-        </Section>
-
-        <Section>
-          <TitleContentArea
             title={"인천대학교 YouTube"}
             externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
           >
             <YoutubeWidget />
           </TitleContentArea>
+        </Section>
+
+        <Section>
+          <TitleContentArea
+            title={"학사일정"}
+            children={<Calendar mode={"weekly"} />}
+            link={ROUTES.BOARD.CALENDAR}
+          />
         </Section>
       </FeedLayout>
 
