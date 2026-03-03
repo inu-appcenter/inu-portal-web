@@ -1,16 +1,20 @@
 import styled from "styled-components";
-import BackButton from "@/components/mobile/login/BackButton";
 import LoginLogo from "@/components/mobile/login/LoginLogo";
 import LoginForm from "@/components/mobile/login/LoginForm";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileLoginPage() {
+  useHeader({
+    title: "로그인",
+    hasback: true,
+  });
+
   return (
     <MobileLoginPageWrapper>
-      <BackButtonWrapper>
-        <BackButton />
-      </BackButtonWrapper>
       <Content>
-        <LoginLogo />
+        <LogoWrapper>
+          <LoginLogo />
+        </LogoWrapper>
         <LoginForm />
       </Content>
     </MobileLoginPageWrapper>
@@ -20,17 +24,22 @@ export default function MobileLoginPage() {
 const MobileLoginPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
-`;
-
-const BackButtonWrapper = styled.div`
-  padding: 32px;
+  padding-bottom: 40px;
 `;
 
 const Content = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 128px;
+  gap: 64px;
+  width: 100%;
+`;
+
+const LogoWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 240px;
+  margin-top: 20px;
 `;

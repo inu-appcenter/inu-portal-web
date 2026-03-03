@@ -105,7 +105,7 @@ export default function MobileMyPage() {
 
   return (
     <MyPageWrapper>
-      <Background />
+      {/*<Background />*/}
       <TopBackground>
         <UserWrapper>
           {userInfo.id !== 0 && <UserInfo />}
@@ -220,119 +220,139 @@ const MyPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   width: 100%;
-`;
-
-const Background = styled.div`
-  position: fixed;
-  z-index: -2;
-  width: 100%;
-  height: 100svh;
-  background: #f3f7fe;
+  min-height: 100svh;
+  background: #f8faff; /* 헤더와 일치하는 배경색 */
 `;
 
 const TopBackground = styled.div`
-  background-color: #a1c3ff;
+  /* 투명하게 설정하여 MyPageWrapper의 배경이 보이도록 함 */
+  background: transparent;
   height: fit-content;
-  padding: 48px 0;
-  padding-bottom: 92px;
-  //position: absolute;
-  //top: -72px;
+  padding: 32px 0 80px;
   width: 100%;
-  //z-index: -1;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const UserWrapper = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
-  //margin-top: 32px;
+  z-index: 1;
+  padding: 0 24px;
+  box-sizing: border-box;
 `;
 
 const ActiveWrapper = styled.div`
   position: absolute;
-  bottom: -55px; // TopBackground 아래로 55px 정도 내려서 겹치게
-  left: 50%; // 가로 중앙
-  transform: translateX(-50%); // left:50% 기준으로 중앙 정렬
-  width: 350px;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+  max-width: 320px;
   box-sizing: border-box;
   background-color: #fff;
-  //padding: 27px 38px 11px;
-  padding: 26px 38px;
+  padding: 16px 24px;
   height: fit-content;
   display: flex;
   justify-content: space-between;
-  //gap: 30px;
-  border-radius: 10px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
   overflow: hidden;
+
+  .item {
+    cursor: pointer;
+    transition: opacity 0.2s;
+    &:active {
+      opacity: 0.7;
+    }
+  }
 
   div {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     min-width: fit-content;
 
     img {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
     }
 
     p {
       padding: 0;
       margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #495057;
     }
   }
 `;
 
 const CategoryWrapper = styled.div`
   display: flex;
-  margin-top: 80px;
+  margin-top: 56px;
   border-radius: 10px;
   flex-direction: column;
   align-items: center;
-  width: 80%;
-  max-width: 350px;
-  gap: 16px;
+  width: 85%;
+  max-width: 320px;
+  gap: 12px;
 
   .item {
-    width: calc(100% - 32px);
-    min-height: 50px;
+    width: 100%;
+    min-height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     background-color: #fff;
-    padding: 10px 16px 10px 16px;
-    border-radius: 10px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:active {
+      background-color: #f8f9fa;
+      transform: scale(0.99);
+    }
 
     word-break: keep-all;
 
     span {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 16px;
 
       div {
         display: flex;
         flex-direction: column;
         gap: 2px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #212529;
       }
 
       img {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
       }
 
       .description {
-        font-size: 12px;
-        color: gray;
-        white-space: pre-line; /* \줄바꿈 처리 */
+        font-size: 11px;
+        color: #adb5bd;
+        font-weight: 500;
+        white-space: pre-line;
       }
     }
   }
 
-  padding-bottom: 32px;
+  padding-bottom: 40px;
 `;
 
 const Arrow = styled.img`

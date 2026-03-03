@@ -124,10 +124,12 @@ const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 
   .termofuse {
-    width: 360px;
+    width: 90%;
+    max-width: 384px;
+    margin-top: 20px;
   }
 `;
 

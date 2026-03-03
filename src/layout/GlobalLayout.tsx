@@ -149,13 +149,7 @@ const APP_MAX_WIDTH = "768px";
 const RootBackground = styled.div`
   width: 100%;
   min-height: 100vh;
-  background: conic-gradient(
-    from 85deg at 50.89% 49.77%,
-    #cfe9ea 76.62deg,
-    #d4e3ef 135.72deg,
-    #def 265.16deg,
-    #d4e3ef 314.83deg
-  );
+  background-color: #f3f7fe;
   background-attachment: fixed;
   overflow-x: hidden;
 `;

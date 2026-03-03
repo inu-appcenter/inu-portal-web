@@ -6,5 +6,5 @@ export default function LoginLogo() {
 }
 
 const LogoImage = styled.img`
-  width: 75%;
+  width: 100%;
 `;
