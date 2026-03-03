@@ -379,7 +379,7 @@ const WeekRow = styled.div<{ $maxRows: number }>`
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
   position: relative;
-  min-height: ${({ $maxRows }) => 100 + ($maxRows - 1) * 24}px;
+  min-height: ${({ $maxRows }) => 80 + ($maxRows - 1) * 24}px;
 `;
 
 const DayCell = styled.div<{ $isCurrentMonth: boolean }>`
