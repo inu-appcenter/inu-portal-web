@@ -20,7 +20,7 @@ import useUserStore from "@/stores/useUserStore";
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
 export default function MobileHomePage() {
-  const { userInfo, tokenInfo } = useUserStore();
+  const { tokenInfo } = useUserStore();
   const isBannerOn = false; // 배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); // 배너 모달창 열림 여부
   const [showLoginPromo, setShowLoginPromo] = useState(false);
