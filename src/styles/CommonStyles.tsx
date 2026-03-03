@@ -33,6 +33,7 @@ const CommonStyles = createGlobalStyle`
     all: unset;
     box-sizing: border-box;
     cursor: pointer;
+    text-align: center;
   }
 
 
