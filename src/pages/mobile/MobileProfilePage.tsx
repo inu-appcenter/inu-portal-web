@@ -2,7 +2,6 @@ import styled from "styled-components";
 import UserInfo from "@/containers/mobile/mypage/UserInfo";
 import UserModify from "@/containers/mobile/mypage/UserModify";
 import useUserStore from "@/stores/useUserStore";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
 export default function MobileProfilePage() {
@@ -15,7 +14,6 @@ export default function MobileProfilePage() {
 
   return (
     <MobileProfilePageWrapper>
-      <MobileHeader />
       <Background>
         <UserWrapper>{userInfo.id && <UserInfo />}</UserWrapper>
       </Background>
@@ -30,7 +28,6 @@ const MobileProfilePageWrapper = styled.div`
   align-items: center;
   gap: 8px;
   //padding: 0 16px 0 16px;
-  padding-top: 56px;
   box-sizing: border-box;
 
   height: 96%;

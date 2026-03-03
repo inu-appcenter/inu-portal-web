@@ -35,6 +35,25 @@ const MobileDeptNoticePage = () => {
     setIsLoginModalOpen(!tokenInfo.accessToken);
   }, [tokenInfo.accessToken]);
 
+  // 학과 정보 체크 및 리다이렉트
+  useEffect(() => {
+    if (
+      tokenInfo.accessToken &&
+      userInfo.id !== 0 &&
+      !userInfo.department &&
+      !deptParam
+    ) {
+      alert("학과 정보가 없습니다. 프로필 수정에서 학과 정보를 입력해주세요.");
+      navigate(ROUTES.MYPAGE.ROOT);
+    }
+  }, [
+    tokenInfo.accessToken,
+    userInfo.id,
+    userInfo.department,
+    deptParam,
+    navigate,
+  ]);
+
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
 
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {

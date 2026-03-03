@@ -205,4 +205,6 @@ const StyledButton = styled.button<{ fullWidth?: boolean }>`
 
   font-size: 16px;
   font-weight: 600;
+
+  text-align: center;
 `;
