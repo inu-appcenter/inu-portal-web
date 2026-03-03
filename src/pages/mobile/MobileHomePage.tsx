@@ -14,12 +14,16 @@ import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import { useHeader } from "@/context/HeaderContext";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
+import LoginPromotionBottomSheet from "@/components/mobile/home/LoginPromotionBottomSheet";
+import useUserStore from "@/stores/useUserStore";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
 export default function MobileHomePage() {
+  const { userInfo } = useUserStore();
   const isBannerOn = false; // 배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); // 배너 모달창 열림 여부
+  const [showLoginPromo, setShowLoginPromo] = useState(false);
 
   // 헤더 설정 주입
   useHeader({
@@ -39,6 +43,16 @@ export default function MobileHomePage() {
       setShow(true);
     }
   }, []);
+
+  // 확률적으로 로그인 유도 바텀시트 노출
+  useEffect(() => {
+    if (!userInfo.id) {
+      const probability = 0.3;
+      if (Math.random() < probability) {
+        setShowLoginPromo(true);
+      }
+    }
+  }, [userInfo.id]);
 
   const handleCloseModal = () => {
     const nextWeek = new Date();
@@ -135,6 +149,11 @@ export default function MobileHomePage() {
           }}
         />
       </AppcenterLogoWrapper>
+
+      <LoginPromotionBottomSheet
+        open={showLoginPromo}
+        onDismiss={() => setShowLoginPromo(false)}
+      />
     </MobileHomePageWrapper>
   );
 }
