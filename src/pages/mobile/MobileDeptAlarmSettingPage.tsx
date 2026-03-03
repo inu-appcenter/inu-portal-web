@@ -77,9 +77,9 @@ export default function MobileDeptAlarmSettingPage() {
   };
 
   // 전체 공지 알림 구독 (체크박스 연동)
-  const handleToggleAllAlarm = async () => {
+  const handleToggleAllAlarm = async (checked: boolean) => {
     try {
-      if (!allAlarm) {
+      if (checked) {
         if (
           !window.confirm(
             "전체 알림을 켤까요? 기존에 등록한 키워드는 삭제됩니다.",
@@ -94,7 +94,7 @@ export default function MobileDeptAlarmSettingPage() {
         await Promise.all(nullKeywords.map((k) => deleteKeyword(k.keywordId)));
       }
 
-      setAllAlarm(!allAlarm);
+      setAllAlarm(checked);
       fetchKeywords();
     } catch (error) {
       console.error("전체 공지 알림 설정 실패:", error);
@@ -108,9 +108,16 @@ export default function MobileDeptAlarmSettingPage() {
 
   return (
     <MobileTipsPageWrapper>
-      <Box style={{ background: "#E3E3E5", margin: "0 16px" }}>
-        <AllAlarmCheckBoxWrapper onClick={handleToggleAllAlarm}>
-          {/*<Checkbox checked={allAlarm} onChange={handleToggleAllAlarm} />*/}
+      <Box
+        style={{
+          background: "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)",
+          margin: "0 16px",
+          padding: "24px",
+          boxShadow: "0 8px 24px rgba(94, 146, 240, 0.15)",
+          border: "1px solid rgba(255, 255, 255, 0.5)",
+        }}
+      >
+        <AllAlarmCheckBoxWrapper onClick={() => handleToggleAllAlarm(!allAlarm)}>
           <div>
             <div className="first-line">전체 공지 알림 받기</div>
             <div className="second-line">
@@ -124,16 +131,18 @@ export default function MobileDeptAlarmSettingPage() {
               )}
             </div>
           </div>
-          <Switch
-            checked={allAlarm}
-            onCheckedChange={() => handleToggleAllAlarm}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <Switch checked={allAlarm} onCheckedChange={handleToggleAllAlarm} />
+          </div>
         </AllAlarmCheckBoxWrapper>
       </Box>
 
       <KeyWordSettingWrapper>
-        <TitleContentArea title={"키워드 알림 설정"}>
-          <Box>
+        <TitleContentArea
+          title={"키워드 알림 설정"}
+          style={{ alignItems: "flex-start" }}
+        >
+          <Box style={{ padding: "16px", borderRadius: "16px" }}>
             <Wrapper>
               <InputWrapper>
                 <StyledInput
@@ -150,12 +159,29 @@ export default function MobileDeptAlarmSettingPage() {
           </Box>
         </TitleContentArea>
 
-        <TitleContentArea title={"등록된 키워드 목록"}>
-          <Box style={{ maxHeight: "300px", overflowY: "auto" }}>
+        <TitleContentArea
+          title={"등록된 키워드 목록"}
+          style={{ alignItems: "flex-start" }}
+        >
+          <Box
+            style={{
+              padding: "8px 16px",
+              borderRadius: "16px",
+              minHeight: "160px",
+              maxHeight: "300px",
+              overflowY: "auto",
+              position: "relative",
+              justifyContent:
+                !allAlarm &&
+                keywords.filter((item) => item.keyword !== null).length === 0
+                  ? "center"
+                  : "flex-start",
+            }}
+          >
             <ListWrapper>
               {!allAlarm &&
               keywords.filter((item) => item.keyword !== null).length === 0 ? (
-                <div>등록된 키워드가 없어요.</div>
+                <EmptyState>등록된 키워드가 없어요.</EmptyState>
               ) : (
                 keywords
                   .filter(
@@ -168,26 +194,24 @@ export default function MobileDeptAlarmSettingPage() {
                         keyword={item.keyword}
                         onDelete={() => handleDeleteKeyword(item.keywordId)}
                       />
-                      {index < filtered.length - 1 && (
-                        <Divider margin={"4px 0"} />
-                      )}
+                      {index < filtered.length - 1 && <Divider margin={"0"} />}
                     </React.Fragment>
                   ))
               )}
             </ListWrapper>
-
-            {/* 전체 오버레이 */}
-            {allAlarm && (
-              <Overlay>
-                <OverlayMessage>
-                  전체 공지 알림이 켜져 있어
-                  <br />
-                  키워드 알림 설정을 사용할 수 없습니다.
-                </OverlayMessage>
-              </Overlay>
-            )}
           </Box>
         </TitleContentArea>
+
+        {/* 전체 오버레이 - 키워드 설정 영역 전체를 덮음 */}
+        {allAlarm && (
+          <Overlay>
+            <OverlayMessage>
+              전체 공지 알림이 켜져 있어
+              <br />
+              키워드 알림 설정을 사용할 수 없습니다.
+            </OverlayMessage>
+          </Overlay>
+        )}
       </KeyWordSettingWrapper>
     </MobileTipsPageWrapper>
   );
@@ -196,34 +220,34 @@ export default function MobileDeptAlarmSettingPage() {
 const MobileTipsPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
-
+  gap: 24px;
   flex: 1;
   width: 100%;
-
   box-sizing: border-box;
+  background-color: #f3f7fe;
+  padding: 16px 0 40px;
+  min-height: 100svh;
 `;
 
 const AllAlarmCheckBoxWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  //gap: 8px;
-
   align-items: center;
   justify-content: space-between;
   width: 100%;
 
   .first-line {
-    color: black;
+    color: #1a1a1a;
     font-size: 18px;
     font-weight: 700;
+    margin-bottom: 4px;
   }
 
   .second-line {
-    color: #818181;
-    font-size: 12px;
+    color: #5e92f0;
+    font-size: 13px;
     font-weight: 500;
-    //line-height: 28px;
+    line-height: 1.4;
   }
 `;
 
@@ -238,14 +262,22 @@ const KeyWordSettingWrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
   padding: 0 16px;
 `;
 
 const ListWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  //gap: 8px;
+  width: 100%;
+`;
+
+const EmptyState = styled.div`
+  padding: 32px 0;
+  color: #a0a0a0;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
   width: 100%;
 `;
 
@@ -256,37 +288,45 @@ const InputWrapper = styled.div`
 
 const StyledInput = styled.input`
   width: 100%;
-  border-radius: 5px;
-  border: 1px solid #888;
-  padding: 12px;
-  padding-right: 50px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  padding: 14px 16px;
+  padding-right: 60px;
   box-sizing: border-box;
+  background-color: #f8f9fa;
 
-  color: #444;
-  font-size: 16px;
-  font-weight: 700;
+  color: #333;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #5e92f0;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(94, 146, 240, 0.1);
+  }
 
   &::placeholder {
-    color: #c0c0c0;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 20px;
+    color: #adb5bd;
+    font-weight: 500;
   }
 `;
 
 const TextButton = styled.button<{ disabled?: boolean }>`
   position: absolute;
   top: 50%;
-  right: 12px;
+  right: 16px;
   transform: translateY(-50%);
 
   border: none;
   background: none;
   cursor: pointer;
 
-  font-size: 16px;
-  font-weight: 600;
-  color: ${(props) => (props.disabled ? "#ccc" : "#5e92f0")};
+  font-size: 15px;
+  font-weight: 700;
+  color: ${(props) => (props.disabled ? "#ced4da" : "#5e92f0")};
+  transition: color 0.2s ease;
 
   &:disabled {
     cursor: not-allowed;
@@ -299,24 +339,24 @@ const Overlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.6); // 부드러운 반투명
-  backdrop-filter: blur(1px); // 블러 효과로 시각적으로 깔끔하게
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: all;
   z-index: 10;
-  border-radius: 8px;
+  border-radius: 16px;
 `;
 
 const OverlayMessage = styled.div`
   background-color: #ffffff;
-  padding: 16px 24px;
+  padding: 16px 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  color: #333;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  color: #495057;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.6;
+  border: 1px solid #f1f3f5;
 `;

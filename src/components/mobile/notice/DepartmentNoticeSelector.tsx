@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
+import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
+import { FiChevronRight, FiAlertCircle } from "react-icons/fi";
 
 type SubItem = {
   title: string;
@@ -33,30 +35,37 @@ const DepartmentMenu = ({
 
   useEffect(() => {
     const screenHeight = window.innerHeight;
-    setMaxHeight(screenHeight * 0.7);
+    setMaxHeight(screenHeight * 0.85);
   }, []);
 
   return (
-    <BottomSheet
+    <StyledBottomSheet
       open={isOpen}
       maxHeight={maxHeight}
       blocking={true}
-      onDismiss={() => setIsOpen(false)} // 외부 클릭 시 호출
+      onDismiss={() => setIsOpen(false)}
+      header={
+        <Header>
+          <Title>학과 선택</Title>
+        </Header>
+      }
     >
       <ContentWrapper>
-        <h2>학과 선택</h2>
-        <p>
-          학과 변경 시 푸시 알림 설정을 다시 해야 적용됩니다.(다시 설정하지
-          않으면 변경 전 학과의 알림이 발송됨)
-        </p>
-        <DepartmentsWrapper>
+        <NoticeBox>
+          <FiAlertCircle size={18} />
+          <p>
+            학과 변경 시 푸시 알림 설정을 다시 해야 적용됩니다. (기존 키워드는
+            유지되나 학과 전체 공지 수신 설정은 다시 확인이 필요합니다.)
+          </p>
+        </NoticeBox>
+        <DepartmentsList>
           {departments.map((dept) => (
-            <DepartmentBlock key={dept.title}>
-              <DepartmentTitle>{dept.title}</DepartmentTitle>
-              <SubItemList>
+            <DepartmentSection key={dept.title}>
+              <SectionHeader>{dept.title}</SectionHeader>
+              <SubItemGrid>
                 {dept.subItems &&
                   dept.subItems.map((sub) => (
-                    <SubItem
+                    <SubItemButton
                       key={sub.title}
                       onClick={() => {
                         if (handleClick) {
@@ -67,60 +76,153 @@ const DepartmentMenu = ({
                         setIsOpen(false);
                       }}
                     >
-                      {sub.title}
-                    </SubItem>
+                      <span className="sub-title">{sub.title}</span>
+                      <FiChevronRight className="arrow" size={16} />
+                    </SubItemButton>
                   ))}
-              </SubItemList>
-            </DepartmentBlock>
+              </SubItemGrid>
+            </DepartmentSection>
           ))}
-        </DepartmentsWrapper>
+        </DepartmentsList>
       </ContentWrapper>
-    </BottomSheet>
+    </StyledBottomSheet>
   );
 };
 
 export default DepartmentMenu;
 
 // Styled Components
+const StyledBottomSheet = styled(BottomSheet)`
+  z-index: 10000 !important;
+
+  /* 라이브러리 내부 오버레이에 직접 z-index 부여 */
+  [data-rsbs-overlay] {
+    z-index: 10000 !important;
+  }
+
+  /* 배경색 및 핸들 색상 변수 설정 */
+  --rsbs-bg: #f8f9fa;
+  --rsbs-handle-bg: #e9ecef;
+
+  [data-rsbs-header] {
+    background-color: #fff;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding-bottom: 20px;
+    /* 헤더 영역도 확실히 위로 */
+    z-index: 1;
+  }
+`;
+
+const Header = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+`;
+
+const Title = styled.h2`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #212529;
+`;
+
 const ContentWrapper = styled.div`
-  padding: 16px;
-  padding-top: 0;
+  padding: 0 20px 40px;
   box-sizing: border-box;
 `;
 
-const DepartmentsWrapper = styled.div`
+const NoticeBox = styled.div`
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap; // 넘치는 항목은 다음 줄로 이동
-  align-items: flex-start; // 상단 정렬
+  gap: 10px;
+  background-color: #e7f1ff;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #d0e3ff;
 
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #0056b3;
+    line-height: 1.5;
+    font-weight: 500;
+    word-break: keep-all;
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: #0056b3;
+    margin-top: 2px;
+  }
+`;
+
+const DepartmentsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+`;
+
+const DepartmentSection = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-
-  justify-content: center;
-  //align-items: center;
 `;
 
-const DepartmentBlock = styled.div`
-  //min-width: 100px;
-  //max-width: 120px; // 최대 너비 제한
-  width: 110px;
+const SectionHeader = styled.div`
+  font-size: 14px;
+  font-weight: 700;
+  color: #868e96;
+  padding-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
-const DepartmentTitle = styled.h3`
-  color: #0e4d9d;
-  font-size: 16px;
-  font-weight: 600;
+const SubItemGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 `;
 
-const SubItemList = styled.ul`
-  list-style: none;
-  padding: 0;
+const SubItemButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background-color: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+  .sub-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .arrow {
+    color: #ced4da;
+    transition: transform 0.2s ease;
+  }
+
+  &:active {
+    background-color: #f1f3f5;
+    transform: scale(0.98);
+  }
+
+  &:hover {
+    border-color: #dee2e6;
+    .arrow {
+      color: #adb5bd;
+      transform: translateX(2px);
+    }
+  }
 `;
 
-const SubItem = styled.li`
-  margin: 5px 0;
-  text-decoration: none;
-  color: #000;
-  font-size: 16px;
-  font-weight: 400;
-`;
