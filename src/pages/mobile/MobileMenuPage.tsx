@@ -21,7 +21,6 @@ export default function MobileMenuPage() {
     { dayName: string; date: string }[]
   >([]);
   const date = new Date();
-  const day = date.getDay();
 
   useEffect(() => {
     setWeekDates(getWeekDates(date)); // 주의 날짜 설정
