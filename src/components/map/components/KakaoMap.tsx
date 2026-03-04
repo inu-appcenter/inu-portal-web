@@ -231,16 +231,19 @@ const MyLocationMarker = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 마커가 좌표의 정확히 위에 오도록 앵커 포인트 조정 */
+  transform: translate(-50%, -50%); 
 `;
 
 const MainDot = styled.div`
   width: 14px;
   height: 14px;
-  background: #FF4B4B; // 빨간색 포인트
+  background: #FF4B4B;
   border: 2px solid white;
   border-radius: 50%;
   z-index: 2;
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  position: relative;
 `;
 
 const PulseDot = styled.div`
@@ -260,11 +263,14 @@ const PulseDot = styled.div`
 
 const DirectionShadow = styled.div`
   position: absolute;
-  top: -20px;
-  width: 60px;
-  height: 60px;
-  background: radial-gradient(circle at 50% 100%, rgba(255, 75, 75, 0.3) 0%, rgba(255, 75, 75, 0) 70%);
-  clip-path: polygon(50% 100%, 20% 0%, 80% 0%); // 부채꼴 모양
+  bottom: 50%; // 원의 중심에서 시작
+  left: 50%;
+  width: 100px; // 더 긴 도달 거리
+  height: 100px;
+  background: radial-gradient(circle at 50% 100%, rgba(255, 75, 75, 0.4) 0%, rgba(255, 75, 75, 0) 70%);
+  clip-path: polygon(50% 100%, 15% 0%, 85% 0%); // 더 좁고 선명한 부채꼴
   z-index: 0;
-  transform-origin: 50% 100%;
+  transform-origin: 50% 100%; // 부채꼴의 하단 중앙(원의 중심)을 기준으로 회전
+  margin-left: -50px; // 가로 중앙 정렬
+  pointer-events: none;
 `;
