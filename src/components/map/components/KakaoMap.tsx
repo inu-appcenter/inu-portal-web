@@ -11,6 +11,9 @@ interface Props {
   setMap: any;
   openedMarkerId: string | null;
   setOpenedMarkerId: (id: string | null, coord?: { X: number; Y: number }) => void;
+  offset?: number;
+  isTracking?: boolean;
+  setIsTracking?: (isTracking: boolean) => void;
 }
 
 const KakaoMap = ({
@@ -19,11 +22,13 @@ const KakaoMap = ({
   setMap,
   openedMarkerId,
   setOpenedMarkerId,
+  offset = 0,
+  isTracking = false,
+  setIsTracking,
 }: Props) => {
   const [mapInstance, setInternalMap] = useState<kakao.maps.Map | null>(null);
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
-  const [isTracking, setIsTracking] = useState(false);
 
   const currentTab = selectedTab as TabType;
   const config = MAP_TAB_CONFIG[currentTab];
@@ -52,7 +57,7 @@ const KakaoMap = ({
         const { latitude, longitude } = pos.coords;
         setMyLocation({ lat: latitude, lng: longitude });
         if (isTracking && mapInstance) {
-          mapInstance.panTo(new window.kakao.maps.LatLng(latitude, longitude));
+          mapInstance.panTo(new window.kakao.maps.LatLng(latitude - offset, longitude));
         }
       },
       (err) => console.error(err),
@@ -60,7 +65,7 @@ const KakaoMap = ({
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [isTracking, mapInstance]);
+  }, [isTracking, mapInstance, offset]);
 
   // 2. 기기 방향 감지
   useEffect(() => {
@@ -79,7 +84,7 @@ const KakaoMap = ({
     }
     if (!myLocation) return;
     if (mapInstance) {
-      mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng));
+      mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat - offset, myLocation.lng));
       mapInstance.setLevel(3);
     }
     setIsTracking(true);

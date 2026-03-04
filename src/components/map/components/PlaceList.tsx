@@ -26,6 +26,7 @@ interface PlaceListProps {
   setOpenedMarkerId: (id: string | null) => void;
   renderDetail: (place: Place) => ReactNode;
   setSnap: (snap: string | number | null) => void;
+  setIsTracking?: (isTracking: boolean) => void;
 }
 
 const PlaceList = ({
@@ -37,6 +38,7 @@ const PlaceList = ({
   setOpenedMarkerId,
   renderDetail,
   setSnap,
+  setIsTracking,
 }: PlaceListProps) => {
   const [openIndex, setOpenIndex] = useState(-1);
   const config = MAP_TAB_CONFIG[selectedTab];
@@ -88,6 +90,11 @@ const PlaceList = ({
   const handleItemClick = (place: Place, index: number) => {
     const isClosing = index === openIndex;
     setOpenIndex(isClosing ? -1 : index);
+
+    // 장소 클릭 시 현위치 트래킹 해제
+    if (setIsTracking) {
+      setIsTracking(false);
+    }
 
     // 1. 즉시 바텀시트를 기본 높이로 내림
     setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);

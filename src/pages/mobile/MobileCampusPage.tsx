@@ -27,6 +27,7 @@ export default function MobileCampusPage() {
   const [snap, setSnap] = useState<string | number | null>(
     BOTTOM_SHEET_HEIGHT.DEFAULT,
   );
+  const [isTracking, setIsTracking] = useState(false);
 
   const [selectedCoord, setSelectedCoord] = useState<XY>(SCHOOL_COORD);
 
@@ -95,6 +96,9 @@ export default function MobileCampusPage() {
           setMap={setMap}
           openedMarkerId={openedMarkerId}
           setOpenedMarkerId={handleMarkerClick}
+          offset={offset}
+          isTracking={isTracking}
+          setIsTracking={setIsTracking}
         />
       </MapWrapper>
 
@@ -108,6 +112,7 @@ export default function MobileCampusPage() {
         setOpenedMarkerId={setOpenedMarkerId}
         snap={snap}
         setSnap={setSnap}
+        setIsTracking={setIsTracking}
       />
     </MobileCampusPageWrapper>
   );

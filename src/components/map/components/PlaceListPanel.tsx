@@ -21,6 +21,7 @@ interface PlaceListPanelProps {
   setOpenedMarkerId: (id: string | null) => void;
   snap: string | number | null;
   setSnap: (snap: string | number | null) => void;
+  setIsTracking?: (isTracking: boolean) => void;
 }
 
 const PlaceListPanel = ({
@@ -33,12 +34,18 @@ const PlaceListPanel = ({
   setOpenedMarkerId,
   snap,
   setSnap,
+  setIsTracking,
 }: PlaceListPanelProps) => {
   const currentTab = selectedTab;
 
   const handleTabClick = (tab: TabType) => {
     setSelectedTab(tab);
     setOpenedMarkerId(null);
+
+    // 탭 클릭 시 현위치 트래킹 해제
+    if (setIsTracking) {
+      setIsTracking(false);
+    }
 
     // 탭 클릭 시 기본 높이로 바텀시트 올림
     setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
@@ -115,6 +122,7 @@ const PlaceListPanel = ({
                 openedMarkerId={openedMarkerId}
                 setOpenedMarkerId={setOpenedMarkerId}
                 setSnap={setSnap}
+                setIsTracking={setIsTracking}
                 renderDetail={(place) => {
                   switch (currentTab) {
                     case "학교":
