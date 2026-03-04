@@ -13,7 +13,8 @@ const Circle = styled.div<{ $isGreen?: boolean }>`
   //background-color: #ffffff;
   //box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.15);
   color: ${(props) => (props.$isGreen ? "#2c9b37" : "#1b4e9b")};
-  width: 40px;
+  width: fit-content;
+  min-width: fit-content;
   height: 40px;
   border-radius: 50%;
   font-weight: 600;

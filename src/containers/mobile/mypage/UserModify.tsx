@@ -6,12 +6,14 @@ import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "../../../components/mobile/notice/DepartmentNoticeSelector.tsx";
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
+import { subscribeDepartment } from "@/apis/notices";
 
 export default function UserModify() {
   const { setUserInfo, userInfo } = useUserStore();
   const [nickname, setNickname] = useState(userInfo.nickname);
   const [fireId, setFireId] = useState(userInfo.fireId);
-  const [initialNickname] = useState(userInfo.nickname); // 최초 닉네임 저장
+  const [initialNickname] = useState(userInfo.nickname); // 최초 닉네임
+  const [initialDepartment] = useState(userInfo.department); // 최초 학과
   const [department, setDepartment] = useState(userInfo.department);
   const navigate = useNavigate();
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
@@ -26,7 +28,7 @@ export default function UserModify() {
     const Code = findTitleOrCode(department);
 
     try {
-      // 닉네임이 변경되지 않은 경우 null로 처리
+      // 미변경 닉네임
       const updatedNickname = nickname === initialNickname ? null : nickname;
 
       const response = await putMembers(updatedNickname, fireId);
@@ -35,12 +37,22 @@ export default function UserModify() {
       }
       setUserInfo({
         id: response.data,
-        nickname: updatedNickname || initialNickname, // 변경된 닉네임 또는 초기 닉네임 설정
+        nickname: updatedNickname || initialNickname,
         department: department,
         role: userInfo.role,
         fireId: Number(fireId),
       });
-      alert("성공적으로 수정되었습니다.");
+
+      // 신규 학과 구독 및 알림
+      if (!initialDepartment && department && Code) {
+        await subscribeDepartment(Code);
+        alert(
+          "성공적으로 수정되었습니다.\n\n학과공지 알리미 기능이 자동으로 활성화됩니다. 학과 공지 화면에서 설정을 변경할 수 있어요.",
+        );
+      } else {
+        alert("성공적으로 수정되었습니다.");
+      }
+
       navigate(`/mypage`);
     } catch (error) {
       console.error("회원정보 수정 실패", error);
@@ -165,7 +177,7 @@ const UserModifyWrapper = styled.div`
 
         input {
           flex: 1;
-          background-color: #f1f3f5; /* 읽기 전용 느낌 */
+          background-color: #f1f3f5; /* 읽기 전용 */
         }
 
         button {
@@ -220,7 +232,8 @@ const ImageOption = styled.div<{ selected: boolean }>`
     width: 100%;
     height: 100%;
     border-radius: 16px;
-    border: 3px solid ${({ selected }) => (selected ? "#5e92f0" : "transparent")};
+    border: 3px solid
+      ${({ selected }) => (selected ? "#5e92f0" : "transparent")};
     transition: all 0.2s;
     background-color: #fff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);

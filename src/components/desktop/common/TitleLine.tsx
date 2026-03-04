@@ -44,10 +44,12 @@ const TitleLineWrapper = styled.div`
 
   .title {
     color: #000;
-    text-align: center;
+    //text-align: center;
     font-size: 18px;
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+
+    width: 100%;
   }
 `;

@@ -117,7 +117,9 @@ export default function MobileDeptAlarmSettingPage() {
           border: "1px solid rgba(255, 255, 255, 0.5)",
         }}
       >
-        <AllAlarmCheckBoxWrapper onClick={() => handleToggleAllAlarm(!allAlarm)}>
+        <AllAlarmCheckBoxWrapper
+          onClick={() => handleToggleAllAlarm(!allAlarm)}
+        >
           <div>
             <div className="first-line">전체 공지 알림 받기</div>
             <div className="second-line">
@@ -236,6 +238,8 @@ const AllAlarmCheckBoxWrapper = styled.div`
   justify-content: space-between;
   width: 100%;
 
+  gap: 16px;
+  word-break: keep-all;
   .first-line {
     color: #1a1a1a;
     font-size: 18px;

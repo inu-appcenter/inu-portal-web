@@ -22,17 +22,17 @@ export default function BusStopBox({
   bstopId,
 }: Props) {
   const navigate = useNavigate();
-  const { busArrivalList, isLoading, refetch, isFetching, lastUpdated } = 
+  const { busArrivalList, isLoading, refetch, isFetching, lastUpdated } =
     useBusArrival(bstopId, busList);
 
   const [isCooldown, setIsCooldown] = useState(false);
 
   const handleRefresh = useCallback(() => {
     if (isCooldown || isFetching) return;
-    
+
     refetch();
     setIsCooldown(true);
-    
+
     // 10초 쿨타임 (여러 번 누름 방지)
     setTimeout(() => {
       setIsCooldown(false);
@@ -40,7 +40,7 @@ export default function BusStopBox({
   }, [isCooldown, isFetching, refetch]);
 
   const formatTime = (date: Date) => {
-    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+    return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`;
   };
 
   return (
@@ -51,15 +51,15 @@ export default function BusStopBox({
             {sectionName} {showInfoIcon && <InfoIcon onClick={onClickInfo} />}
           </LabelGroup>
           <RefreshArea>
-             <LastUpdated>업데이트: {formatTime(lastUpdated)}</LastUpdated>
-             <RefreshButton 
-                onClick={handleRefresh} 
-                $isFetching={isFetching}
-                $isCooldown={isCooldown}
-                disabled={isCooldown || isFetching}
-             >
-                <RotateCw size={14} />
-             </RefreshButton>
+            <LastUpdated>업데이트: {formatTime(lastUpdated)}</LastUpdated>
+            <RefreshButton
+              onClick={handleRefresh}
+              $isFetching={isFetching}
+              $isCooldown={isCooldown}
+              disabled={isCooldown || isFetching}
+            >
+              <RotateCw size={14} />
+            </RefreshButton>
           </RefreshArea>
         </HeaderGroup>
       }
@@ -107,7 +107,6 @@ const HeaderGroup = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
 `;
 
 const LabelGroup = styled.div`
@@ -128,7 +127,10 @@ const LastUpdated = styled.span`
   font-weight: normal;
 `;
 
-const RefreshButton = styled.button<{ $isFetching: boolean; $isCooldown: boolean }>`
+const RefreshButton = styled.button<{
+  $isFetching: boolean;
+  $isCooldown: boolean;
+}>`
   background: none;
   border: none;
   padding: 4px;
@@ -136,17 +138,19 @@ const RefreshButton = styled.button<{ $isFetching: boolean; $isCooldown: boolean
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.$isCooldown ? '#ccc' : '#666'};
+  color: ${(props) => (props.$isCooldown ? "#ccc" : "#666")};
   transition: color 0.2s;
 
-  ${props => props.$isFetching && css`
-    animation: ${rotate} 1s linear infinite;
-  `}
+  ${(props) =>
+    props.$isFetching &&
+    css`
+      animation: ${rotate} 1s linear infinite;
+    `}
 
   &:active {
     transform: scale(0.9);
   }
-  
+
   &:disabled {
     cursor: not-allowed;
   }

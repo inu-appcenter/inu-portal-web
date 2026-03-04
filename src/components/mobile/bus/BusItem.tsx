@@ -114,6 +114,7 @@ const StatusInfo = styled.span`
   font-size: 12px;
   color: #666;
   font-weight: 400;
+  word-break: keep-all;
 `;
 
 // 상태별 텍스트 색상 정의

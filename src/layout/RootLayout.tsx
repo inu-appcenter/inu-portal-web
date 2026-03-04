@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useOutlet } from "react-router-dom";
+import { useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { ROUTES } from "@/constants/routes";
@@ -13,6 +13,7 @@ type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 
 export default function RootLayout() {
   const outlet = useOutlet();
+  const navigate = useNavigate();
 
   const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
@@ -37,6 +38,10 @@ export default function RootLayout() {
         try {
           const { data } = await getMembers();
           setUserInfo(data);
+          if (data.department == null) {
+            alert("학과 정보 등록이 필요해요. 마이페이지로 이동합니다.");
+            navigate(ROUTES.MYPAGE.PROFILE);
+          }
         } catch (e) {
           console.error("회원 조회 실패", e);
         }
