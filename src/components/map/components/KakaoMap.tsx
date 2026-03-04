@@ -30,20 +30,55 @@ const KakaoMap = ({
 
   // 1. 실시간 위치 추적
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      console.error("이 브라우저에서는 위치 서비스를 지원하지 않습니다.");
+      return;
+    }
 
+    const options: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    };
+
+    // 초기 위치를 즉시 한 번 가져오기
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setMyLocation({ lat: latitude, lng: longitude });
+      },
+      (err) => {
+        console.error("초기 위치 가져오기 실패:", err.message);
+      },
+      options
+    );
+
+    // 지속적인 위치 변화 감지
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setMyLocation({ lat: latitude, lng: longitude });
         
-        // 추적 모드일 경우 지도 중심 이동
         if (isTracking && mapInstance) {
           mapInstance.panTo(new window.kakao.maps.LatLng(latitude, longitude));
         }
       },
-      (err) => console.error(err),
-      { enableHighAccuracy: true }
+      (err) => {
+        let errorMsg = "위치 정보를 가져올 수 없습니다.";
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            errorMsg = "위치 권한이 거부되었습니다. 설정에서 허용해주세요.";
+            break;
+          case err.POSITION_UNAVAILABLE:
+            errorMsg = "위치 정보를 사용할 수 없습니다 (GPS 신호 약함).";
+            break;
+          case err.TIMEOUT:
+            errorMsg = "위치 요청 시간이 초과되었습니다.";
+            break;
+        }
+        console.error(errorMsg);
+      },
+      options
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
