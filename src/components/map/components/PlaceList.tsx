@@ -9,27 +9,58 @@ import ManRestIcon from "@/resources/assets/mapIcons/manRest.svg";
 import WomanRestIcon from "@/resources/assets/mapIcons/womanRest.svg";
 import PublicRestIcon from "@/resources/assets/mapIcons/publicRest.svg";
 
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, useRef, useEffect } from "react";
 import { Place } from "@/components/map/DB";
-import { MAP_CENTER_OFFSET, MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
+import { MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
 
 interface PlaceListProps {
   places: Place[];
   map: any;
   selectedTab: TabType;
+  setSelectedCoord: (coord: { X: number; Y: number }) => void;
+  openedMarkerId: string | null; // 추가
   setOpenedMarkerId: (id: string | null) => void;
   renderDetail: (place: Place) => ReactNode;
+  offset: number;
+  setSnap: (snap: string | number | null) => void;
 }
 
 const PlaceList = ({
   places,
   map,
   selectedTab,
+  setSelectedCoord,
+  openedMarkerId, // 추가
   setOpenedMarkerId,
   renderDetail,
+  offset,
+  setSnap,
 }: PlaceListProps) => {
   const [openIndex, setOpenIndex] = useState(-1);
   const config = MAP_TAB_CONFIG[selectedTab];
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // 탭 변경 시 리스트 상단으로 스크롤 및 인덱스 초기화
+  useEffect(() => {
+    setOpenIndex(-1);
+  }, [selectedTab]);
+
+  // 외부(지도 핀 클릭)에서 openedMarkerId가 변경될 때 대응
+  useEffect(() => {
+    if (openedMarkerId) {
+      const index = places.findIndex(p => config.getMarkerId(p) === openedMarkerId);
+      if (index !== -1) {
+        setOpenIndex(index);
+        // 바텀시트가 올라오고 리스트가 렌더링될 시간을 벌기 위해 지연 스크롤
+        setTimeout(() => {
+          itemRefs.current[index]?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 400);
+      }
+    }
+  }, [openedMarkerId, places, config]);
 
   const getIcon = (place: Place) => {
     if (selectedTab === "카페") return CafeIcon;
@@ -45,18 +76,31 @@ const PlaceList = ({
   };
 
   const handleItemClick = (place: Place, index: number) => {
-    setOpenIndex(index === openIndex ? -1 : index);
+    const isClosing = index === openIndex;
+    setOpenIndex(isClosing ? -1 : index);
     
+    // 아이템 선택 시 바텀시트를 기본 높이(0.4)로 내림
+    setSnap(0.4);
+
+    // 좌표 상태 업데이트 (보정 전 원본 좌표)
+    setSelectedCoord({ X: Number(place.latitude), Y: place.longitude });
+
     if (map) {
-      const moveLatLon = new window.kakao.maps.LatLng(
-        Number(place.latitude) + MAP_CENTER_OFFSET,
-        place.longitude
-      );
-      map.setCenter(moveLatLon);
       map.setLevel(3);
     }
     
-    setOpenedMarkerId(config.getMarkerId(place));
+    // 바텀시트에서 선택 시 인포윈도우를 띄우지 않음 (기존 창 닫기)
+    setOpenedMarkerId(null);
+
+    // 바텀시트가 내려간 후 해당 아이템이 보이도록 스크롤 보정
+    if (!isClosing) {
+      setTimeout(() => {
+        itemRefs.current[index]?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 300); // 바텀시트가 내려가는 애니메이션 시간을 고려
+    }
   };
 
   return (
@@ -64,7 +108,10 @@ const PlaceList = ({
       {places.map((place, index) => {
         const isOpen = openIndex === index;
         return (
-          <ItemContainer key={index}>
+          <ItemContainer 
+            key={index}
+            ref={(el) => (itemRefs.current[index] = el)}
+          >
             <Header onClick={() => handleItemClick(place, index)}>
               <Icon src={getIcon(place)} />
               <Title>

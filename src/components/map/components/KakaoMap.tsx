@@ -131,6 +131,13 @@ const handleMyLocationClick = async () => {
     if (isTracking) setIsTracking(false);
   };
 
+  // 3. 외부 viewXY 변경 감지 및 지도 이동
+  useEffect(() => {
+    if (mapInstance && viewXY) {
+      mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+    }
+  }, [viewXY, mapInstance]);
+
   const placesToRender = useMemo(() => {
     switch (currentTab) {
       case "학교": return places;
@@ -167,7 +174,9 @@ const handleMyLocationClick = async () => {
                   src: config.getIcon(place),
                   size: { width: 24, height: 35 },
                 }}
-                onClick={() => {
+                onClick={(marker) => {
+                  const latLng = marker.getPosition();
+                  mapInstance?.panTo(latLng);
                   setOpenedMarkerId(isOpen ? null : markerId);
                   setIsTracking(false); // 장소 클릭 시 위치 추적 일시 중지
                 }}

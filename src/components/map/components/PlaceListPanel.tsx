@@ -9,7 +9,7 @@ import RestaurantInfoBox from "@/components/mobile/map/RestaurantInfoBox";
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB.tsx";
 import { Drawer } from "vaul";
 import { setZoom } from "../utils/mapUtils.ts";
-import { MAP_CENTER_OFFSET, TabType } from "../constants/mapConfig";
+import { TabType } from "../constants/mapConfig";
 
 interface PlaceListPanelProps {
   isOpen: boolean;
@@ -17,7 +17,12 @@ interface PlaceListPanelProps {
   setSelectedTab: React.Dispatch<React.SetStateAction<TabType>>;
   map: any;
   viewXY: { X: number; Y: number };
+  setSelectedCoord: (coord: { X: number; Y: number }) => void;
+  openedMarkerId: string | null;
   setOpenedMarkerId: (id: string | null) => void;
+  snap: string | number | null;
+  setSnap: (snap: string | number | null) => void;
+  offset: number;
 }
 
 const PlaceListPanel = ({
@@ -25,21 +30,26 @@ const PlaceListPanel = ({
   selectedTab,
   setSelectedTab,
   map,
-  viewXY,
+  setSelectedCoord,
+  openedMarkerId,
   setOpenedMarkerId,
+  snap,
+  setSnap,
+  offset,
 }: PlaceListPanelProps) => {
-  const currentTab = selectedTab; // as TabType 제거 (이미 상단에서 정의됨)
+  const currentTab = selectedTab;
 
   const handleTabClick = (tab: TabType) => {
     setSelectedTab(tab);
     setOpenedMarkerId(null);
 
+    // 탭 클릭 시 기본 높이(0.4)로 바텀시트 올림
+    setSnap(0.4);
+
+    // 학교 원본 위치로 좌표 상태 업데이트
+    setSelectedCoord({ X: 37.374474020920864, Y: 126.63361466845616 });
+
     if (map) {
-      const moveLatLon = new window.kakao.maps.LatLng(
-        viewXY.X + MAP_CENTER_OFFSET,
-        viewXY.Y,
-      );
-      map.setCenter(moveLatLon);
       setZoom(map, 4);
     }
   };
@@ -60,7 +70,14 @@ const PlaceListPanel = ({
   };
 
   return (
-    <Drawer.Root open={isOpen} dismissible={false} modal={false}>
+    <Drawer.Root
+      open={isOpen}
+      dismissible={false}
+      modal={false}
+      snapPoints={[0.15, 0.4, 1]}
+      activeSnapPoint={snap}
+      setActiveSnapPoint={setSnap}
+    >
       <Drawer.Portal>
         <DrawerOverlay />
         <DrawerContent>
@@ -76,39 +93,57 @@ const PlaceListPanel = ({
           </HandleWrapper>
           <PlaceListPanelWrapper>
             <Tab handleTabClick={handleTabClick} selectedTab={selectedTab} />
-            <PlaceList
-              places={getPlacesData()}
-              map={map}
-              selectedTab={currentTab}
-              setOpenedMarkerId={setOpenedMarkerId}
-              renderDetail={(place) => {
-                switch (currentTab) {
-                  case "학교":
-                    return <SchoolInfoBox place={place} />;
-                  case "휴게실":
-                    return (
-                      <>
-                        <RestInfoBox
-                          title="여성용품 배치"
-                          isExist={place.restareaInfo?.hasFemaleProducts}
-                        />
-                        <RestInfoBox
-                          title="침대, 빈백(개)"
-                          num={place.restareaInfo?.bedCount}
-                        />
-                        <RestInfoBox
-                          title="샤워실"
-                          isExist={place.restareaInfo?.hasShowerRoom}
-                        />
-                      </>
-                    );
-                  case "카페":
-                    return <CafeInfoBox place={place} />;
-                  case "식당":
-                    return <RestaurantInfoBox place={place} />;
-                }
+            <div
+              style={{
+                flex: 1,
+                overflow: "hidden",
+                display: "flex",
+                // 현재 snap 포인트 높이에서 탭과 핸들 높이(약 100px)를 뺀 만큼만 높이 할당
+                maxHeight:
+                  typeof snap === "number"
+                    ? `calc(${snap * 100}dvh - 100px)`
+                    : "none",
+                transition: "max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1)", // vaul의 기본 애니메이션과 맞춤
               }}
-            />
+            >
+              <PlaceList
+                places={getPlacesData()}
+                map={map}
+                selectedTab={currentTab}
+                setSelectedCoord={setSelectedCoord}
+                openedMarkerId={openedMarkerId}
+                setOpenedMarkerId={setOpenedMarkerId}
+                offset={offset}
+                setSnap={setSnap}
+                renderDetail={(place) => {
+                  switch (currentTab) {
+                    case "학교":
+                      return <SchoolInfoBox place={place} />;
+                    case "휴게실":
+                      return (
+                        <>
+                          <RestInfoBox
+                            title="여성용품 배치"
+                            isExist={place.restareaInfo?.hasFemaleProducts}
+                          />
+                          <RestInfoBox
+                            title="침대, 빈백(개)"
+                            num={place.restareaInfo?.bedCount}
+                          />
+                          <RestInfoBox
+                            title="샤워실"
+                            isExist={place.restareaInfo?.hasShowerRoom}
+                          />
+                        </>
+                      );
+                    case "카페":
+                      return <CafeInfoBox place={place} />;
+                    case "식당":
+                      return <RestaurantInfoBox place={place} />;
+                  }
+                }}
+              />
+            </div>
           </PlaceListPanelWrapper>
         </DrawerContent>
       </Drawer.Portal>
@@ -129,7 +164,8 @@ const DrawerContent = styled(Drawer.Content)`
   flex-direction: column;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  height: 40dvh;
+  height: 100%;
+  max-height: 96%; // 상단 약간의 여백
   position: fixed;
   bottom: 0;
   left: 0;
@@ -158,4 +194,5 @@ const PlaceListPanelWrapper = styled.div`
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: hidden; // 내부 스크롤을 위해
 `;
