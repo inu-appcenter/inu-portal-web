@@ -3,18 +3,17 @@ import Map from "@/components/map/components/KakaoMap.tsx";
 import { useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
 import PlaceListPanel from "./components/PlaceListPanel.tsx";
-import { deleteMarkers } from "@/components/map/utils/markerUtils.ts";
+import { TabType } from "./constants/mapConfig";
 
 interface XY {
   X: number;
   Y: number;
 }
 
-let markers: any[] = []; // any 타입 명시
-
 export default function MapManager() {
-  const [selectedTab, setSelectedTab] = useState<string>("학교");
+  const [selectedTab, setSelectedTab] = useState<TabType>("학교");
   const [map, setMap] = useState<any>(null);
+  const [openedMarkerId, setOpenedMarkerId] = useState<string | null>(null);
 
   const location = useLocation();
 
@@ -35,12 +34,10 @@ export default function MapManager() {
       <MapWrapper>
         <Map
           selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
           viewXY={viewXY}
-          map={map}
           setMap={setMap}
-          markers={markers}
-          deleteMarkers={deleteMarkers}
+          openedMarkerId={openedMarkerId}
+          setOpenedMarkerId={setOpenedMarkerId}
         />
       </MapWrapper>
 
@@ -50,8 +47,8 @@ export default function MapManager() {
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
         map={map}
-        markers={markers}
         viewXY={viewXY}
+        setOpenedMarkerId={setOpenedMarkerId}
       />
     </>
   );
@@ -60,4 +57,10 @@ export default function MapManager() {
 const MapWrapper = styled.div`
   height: 70dvh;
   width: 100%;
+  overflow: hidden;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    height: 100%;
+  }
 `;

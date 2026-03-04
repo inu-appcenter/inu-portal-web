@@ -32,14 +32,15 @@ const MobileCampusPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  width: 100dvw;
-
+  width: 100%;
   box-sizing: border-box;
 `;
 
 const Wrapper = styled.div`
   width: 100%;
-  height: 100%;
+  height: 400px;
   box-sizing: border-box;
   padding: 0 16px;
+  border-radius: 20px;
+  overflow: hidden;
 `;

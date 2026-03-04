@@ -13,9 +13,11 @@ import CloseIcon from "../../../resources/assets/mapIcons/CloseIcon.svg";
 const List = ({
   placesToRender,
   map,
+  setOpenedMarkerId,
 }: {
   placesToRender: Place[];
   map: any;
+  setOpenedMarkerId: (id: string | null) => void;
 }) => {
   const [openIndex, setOpenIndex] = useState(-1);
 
@@ -38,11 +40,13 @@ const List = ({
             onClick={() => {
               handleClick({ index });
               const moveLatLon = new window.kakao.maps.LatLng(
-                place.latitude,
+                Number(place.latitude) + 0.001,
                 place.longitude,
               );
               map.setCenter(moveLatLon);
               zoomLocation(map);
+              // @ts-ignore
+              setOpenedMarkerId(place.location + place.restaurantInfo.name);
             }}
           >
             <FirstLine>
@@ -83,14 +87,13 @@ const List = ({
 
 const NewPlacesListWrapper = styled.div`
   width: 100%;
-  height: calc(100% - 50px);
+  flex: 1;
   display: flex;
   flex-direction: column;
   margin-top: 20px;
-
   overflow-y: auto;
-
   padding-right: 10px;
+  padding-bottom: 20px;
   box-sizing: border-box;
 `;
 
