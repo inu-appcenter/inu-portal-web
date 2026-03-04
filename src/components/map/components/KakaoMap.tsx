@@ -87,11 +87,11 @@ const KakaoMap = ({
       mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat - offset, myLocation.lng));
       mapInstance.setLevel(3);
     }
-    setIsTracking(true);
+    if (setIsTracking) setIsTracking(true);
   };
 
   const handleDragStart = () => {
-    if (isTracking) setIsTracking(false);
+    if (isTracking && setIsTracking) setIsTracking(false);
   };
 
   // 3. 외부 viewXY 변경 감지 및 지도 이동
@@ -138,7 +138,7 @@ const KakaoMap = ({
                 }}
                 onClick={() => {
                   setOpenedMarkerId(isOpen ? null : markerId);
-                  setIsTracking(false);
+                  if (setIsTracking) setIsTracking(false);
                 }}
                 infoWindowOptions={{ removable: true }}
               >
