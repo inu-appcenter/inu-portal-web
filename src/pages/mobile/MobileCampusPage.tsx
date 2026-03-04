@@ -108,7 +108,6 @@ export default function MobileCampusPage() {
         setOpenedMarkerId={setOpenedMarkerId}
         snap={snap}
         setSnap={setSnap}
-        offset={offset}
       />
     </MobileCampusPageWrapper>
   );

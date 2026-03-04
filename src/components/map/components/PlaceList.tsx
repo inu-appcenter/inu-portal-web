@@ -11,7 +11,11 @@ import PublicRestIcon from "@/resources/assets/mapIcons/publicRest.svg";
 
 import { useState, ReactNode, useRef, useEffect } from "react";
 import { Place } from "@/components/map/DB";
-import { BOTTOM_SHEET_HEIGHT, MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
+import {
+  BOTTOM_SHEET_HEIGHT,
+  MAP_TAB_CONFIG,
+  TabType,
+} from "../constants/mapConfig";
 
 interface PlaceListProps {
   places: Place[];
@@ -21,7 +25,6 @@ interface PlaceListProps {
   openedMarkerId: string | null;
   setOpenedMarkerId: (id: string | null) => void;
   renderDetail: (place: Place) => ReactNode;
-  offset: number;
   setSnap: (snap: string | number | null) => void;
 }
 
@@ -33,7 +36,6 @@ const PlaceList = ({
   openedMarkerId,
   setOpenedMarkerId,
   renderDetail,
-  offset,
   setSnap,
 }: PlaceListProps) => {
   const [openIndex, setOpenIndex] = useState(-1);
@@ -48,7 +50,9 @@ const PlaceList = ({
   // 외부(지도 핀 클릭)에서 openedMarkerId가 변경될 때 대응
   useEffect(() => {
     if (openedMarkerId) {
-      const index = places.findIndex(p => config.getMarkerId(p) === openedMarkerId);
+      const index = places.findIndex(
+        (p) => config.getMarkerId(p) === openedMarkerId,
+      );
       if (index !== -1) {
         setOpenIndex(index);
         // 바텀시트가 올라오고 리스트가 렌더링될 시간을 벌기 위해 지연 스크롤
@@ -65,12 +69,18 @@ const PlaceList = ({
   const getIcon = (place: Place) => {
     if (selectedTab === "카페") return CafeIcon;
     if (selectedTab === "식당") {
-      return place.category === "식당" ? RestaurantIcon : 
-             place.category === "편의점" ? ConvienienceStoreIcon : LocationIcon;
+      return place.category === "식당"
+        ? RestaurantIcon
+        : place.category === "편의점"
+          ? ConvienienceStoreIcon
+          : LocationIcon;
     }
     if (selectedTab === "휴게실") {
-      return place.category === "여자휴게실" ? WomanRestIcon :
-             place.category === "남자휴게실" ? ManRestIcon : PublicRestIcon;
+      return place.category === "여자휴게실"
+        ? WomanRestIcon
+        : place.category === "남자휴게실"
+          ? ManRestIcon
+          : PublicRestIcon;
     }
     return LocationIcon;
   };
@@ -78,20 +88,23 @@ const PlaceList = ({
   const handleItemClick = (place: Place, index: number) => {
     const isClosing = index === openIndex;
     setOpenIndex(isClosing ? -1 : index);
-    
+
     // 1. 즉시 바텀시트를 기본 높이로 내림
     setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
 
-    // 2. 바텀시트가 내려가는 애니메이션(300ms) 후에 지도 중심점을 업데이트하여 
+    // 2. 바텀시트가 내려가는 애니메이션(300ms) 후에 지도 중심점을 업데이트하여
     // 가시 영역 중앙에 정확히 위치하게 함
     setTimeout(() => {
-      setSelectedCoord({ X: Number(place.latitude), Y: place.longitude });
+      setSelectedCoord({
+        X: Number(place.latitude),
+        Y: Number(place.longitude),
+      });
     }, 300);
 
     if (map) {
       map.setLevel(3);
     }
-    
+
     // 바텀시트에서 선택 시 인포윈도우를 띄우지 않음 (기존 창 닫기)
     setOpenedMarkerId(null);
 
@@ -102,7 +115,7 @@ const PlaceList = ({
           behavior: "smooth",
           block: "center",
         });
-      }, 300); 
+      }, 300);
     }
   };
 
@@ -111,7 +124,7 @@ const PlaceList = ({
       {places.map((place, index) => {
         const isOpen = openIndex === index;
         return (
-          <ItemContainer 
+          <ItemContainer
             key={index}
             ref={(el) => (itemRefs.current[index] = el)}
           >
@@ -119,12 +132,17 @@ const PlaceList = ({
               <Icon src={getIcon(place)} />
               <Title>
                 {selectedTab === "학교" ? (
-                  <><strong>{place.location}</strong> {place.place_name} {place.category}</>
+                  <>
+                    <strong>{place.location}</strong> {place.place_name}{" "}
+                    {place.category}
+                  </>
                 ) : (
                   <>
                     <strong>{config.getPlaceTitle(place)}</strong>
                     <br />
-                    <small>{place.category} {place.location} {place.place_name}</small>
+                    <small>
+                      {place.category} {place.location} {place.place_name}
+                    </small>
                   </>
                 )}
               </Title>
@@ -178,7 +196,7 @@ const Title = styled.div`
   flex: 1;
   padding-left: 15px;
   line-height: 1.4;
-  
+
   small {
     font-size: 12px;
     color: #888;

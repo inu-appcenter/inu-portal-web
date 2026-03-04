@@ -21,7 +21,6 @@ interface PlaceListPanelProps {
   setOpenedMarkerId: (id: string | null) => void;
   snap: string | number | null;
   setSnap: (snap: string | number | null) => void;
-  offset: number;
 }
 
 const PlaceListPanel = ({
@@ -34,7 +33,6 @@ const PlaceListPanel = ({
   setOpenedMarkerId,
   snap,
   setSnap,
-  offset,
 }: PlaceListPanelProps) => {
   const currentTab = selectedTab;
 
@@ -116,7 +114,6 @@ const PlaceListPanel = ({
                 setSelectedCoord={setSelectedCoord}
                 openedMarkerId={openedMarkerId}
                 setOpenedMarkerId={setOpenedMarkerId}
-                offset={offset}
                 setSnap={setSnap}
                 renderDetail={(place) => {
                   switch (currentTab) {
