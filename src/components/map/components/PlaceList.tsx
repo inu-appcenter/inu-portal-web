@@ -11,14 +11,14 @@ import PublicRestIcon from "@/resources/assets/mapIcons/publicRest.svg";
 
 import { useState, ReactNode, useRef, useEffect } from "react";
 import { Place } from "@/components/map/DB";
-import { MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
+import { BOTTOM_SHEET_HEIGHT, MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
 
 interface PlaceListProps {
   places: Place[];
   map: any;
   selectedTab: TabType;
   setSelectedCoord: (coord: { X: number; Y: number }) => void;
-  openedMarkerId: string | null; // 추가
+  openedMarkerId: string | null;
   setOpenedMarkerId: (id: string | null) => void;
   renderDetail: (place: Place) => ReactNode;
   offset: number;
@@ -30,7 +30,7 @@ const PlaceList = ({
   map,
   selectedTab,
   setSelectedCoord,
-  openedMarkerId, // 추가
+  openedMarkerId,
   setOpenedMarkerId,
   renderDetail,
   offset,
@@ -79,11 +79,14 @@ const PlaceList = ({
     const isClosing = index === openIndex;
     setOpenIndex(isClosing ? -1 : index);
     
-    // 아이템 선택 시 바텀시트를 기본 높이(0.4)로 내림
-    setSnap(0.4);
+    // 1. 즉시 바텀시트를 기본 높이로 내림
+    setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
 
-    // 좌표 상태 업데이트 (보정 전 원본 좌표)
-    setSelectedCoord({ X: Number(place.latitude), Y: place.longitude });
+    // 2. 바텀시트가 내려가는 애니메이션(300ms) 후에 지도 중심점을 업데이트하여 
+    // 가시 영역 중앙에 정확히 위치하게 함
+    setTimeout(() => {
+      setSelectedCoord({ X: Number(place.latitude), Y: place.longitude });
+    }, 300);
 
     if (map) {
       map.setLevel(3);
@@ -99,7 +102,7 @@ const PlaceList = ({
           behavior: "smooth",
           block: "center",
         });
-      }, 300); // 바텀시트가 내려가는 애니메이션 시간을 고려
+      }, 300); 
     }
   };
 

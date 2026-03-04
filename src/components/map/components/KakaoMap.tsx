@@ -10,7 +10,7 @@ interface Props {
   viewXY: { X: number; Y: number };
   setMap: any;
   openedMarkerId: string | null;
-  setOpenedMarkerId: (id: string | null) => void;
+  setOpenedMarkerId: (id: string | null, coord?: { X: number; Y: number }) => void;
 }
 
 const KakaoMap = ({
@@ -30,10 +30,7 @@ const KakaoMap = ({
 
   // 1. 실시간 위치 추적
   useEffect(() => {
-    if (!navigator.geolocation) {
-      console.error("이 브라우저에서는 위치 서비스를 지원하지 않습니다.");
-      return;
-    }
+    if (!navigator.geolocation) return;
 
     const options: PositionOptions = {
       enableHighAccuracy: true,
@@ -41,92 +38,53 @@ const KakaoMap = ({
       maximumAge: 0,
     };
 
-    // 초기 위치를 즉시 한 번 가져오기
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setMyLocation({ lat: latitude, lng: longitude });
       },
-      (err) => {
-        console.error("초기 위치 가져오기 실패:", err.message);
-      },
+      (err) => console.error(err),
       options
     );
 
-    // 지속적인 위치 변화 감지
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setMyLocation({ lat: latitude, lng: longitude });
-        
         if (isTracking && mapInstance) {
           mapInstance.panTo(new window.kakao.maps.LatLng(latitude, longitude));
         }
       },
-      (err) => {
-        let errorMsg = "위치 정보를 가져올 수 없습니다.";
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            errorMsg = "위치 권한이 거부되었습니다. 설정에서 허용해주세요.";
-            break;
-          case err.POSITION_UNAVAILABLE:
-            errorMsg = "위치 정보를 사용할 수 없습니다 (GPS 신호 약함).";
-            break;
-          case err.TIMEOUT:
-            errorMsg = "위치 요청 시간이 초과되었습니다.";
-            break;
-        }
-        console.error(errorMsg);
-      },
+      (err) => console.error(err),
       options
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [isTracking, mapInstance]);
 
-  // 2. 기기 방향(Heading) 감지
+  // 2. 기기 방향 감지
   useEffect(() => {
     const handleOrientation = (e: DeviceOrientationEvent) => {
-      // @ts-ignore (webkitCompassHeading은 iOS 전용)
+      // @ts-ignore
       const compass = e.webkitCompassHeading || (360 - (e.alpha || 0));
       if (compass) setHeading(compass);
     };
-
     window.addEventListener("deviceorientation", handleOrientation, true);
     return () => window.removeEventListener("deviceorientation", handleOrientation);
   }, []);
-const handleMyLocationClick = async () => {
-  // iOS 13+ 방향 센서 권한 요청
-  if (
-    typeof (DeviceOrientationEvent as any).requestPermission === "function"
-  ) {
-    try {
-      const permission = await (
-        DeviceOrientationEvent as any
-      ).requestPermission();
-      if (permission !== "granted") {
-        console.warn("방향 센서 권한이 거부되었습니다.");
-      }
-    } catch (error) {
-      console.error("방향 센서 권한 요청 중 오류 발생:", error);
+
+  const handleMyLocationClick = async () => {
+    if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
+      try { await (DeviceOrientationEvent as any).requestPermission(); } catch (e) {}
     }
-  }
+    if (!myLocation) return;
+    if (mapInstance) {
+      mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng));
+      mapInstance.setLevel(3);
+    }
+    setIsTracking(true);
+  };
 
-  if (!myLocation) {
-    alert("위치 정보를 불러오는 중입니다...");
-    return;
-  }
-
-  if (mapInstance) {
-    mapInstance.panTo(
-      new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng),
-    );
-    mapInstance.setLevel(3);
-  }
-  setIsTracking(true);
-};
-
-  // 지도 드래그 시 추적 모드 해제
   const handleDragStart = () => {
     if (isTracking) setIsTracking(false);
   };
@@ -161,7 +119,6 @@ const handleMyLocationClick = async () => {
         }}
         onDragStart={handleDragStart}
       >
-        {/* 기존 장소 마커들 */}
         {placesToRender.map((place) => {
           const markerId = config.getMarkerId(place);
           const isOpen = openedMarkerId === markerId;
@@ -174,11 +131,9 @@ const handleMyLocationClick = async () => {
                   src: config.getIcon(place),
                   size: { width: 24, height: 35 },
                 }}
-                onClick={(marker) => {
-                  const latLng = marker.getPosition();
-                  mapInstance?.panTo(latLng);
+                onClick={() => {
                   setOpenedMarkerId(isOpen ? null : markerId);
-                  setIsTracking(false); // 장소 클릭 시 위치 추적 일시 중지
+                  setIsTracking(false);
                 }}
                 infoWindowOptions={{ removable: true }}
               >
@@ -194,7 +149,6 @@ const handleMyLocationClick = async () => {
           );
         })}
 
-        {/* 내 위치 마커 (빨간색 원 + 방향 표시) */}
         {myLocation && (
           <CustomOverlayMap position={myLocation} zIndex={10}>
             <MyLocationMarker>
@@ -212,7 +166,6 @@ const handleMyLocationClick = async () => {
         )}
       </Map>
 
-      {/* 내 위치 이동 버튼 */}
       <MyLocationButton onClick={handleMyLocationClick} $active={isTracking}>
         <Navigation size={20} fill={isTracking ? "#3E69D1" : "none"} />
       </MyLocationButton>
@@ -230,7 +183,7 @@ const Container = styled.div`
 
 const MyLocationButton = styled.button<{ $active: boolean }>`
   position: absolute;
-  top: 60px; // 지도 타입 컨트롤 아래 배치
+  top: 60px;
   right: 10px;
   z-index: 10;
   width: 36px;
@@ -257,7 +210,6 @@ const MyLocationMarker = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 마커가 좌표의 정확히 위에 오도록 앵커 포인트 조정 */
   transform: translate(-50%, -50%); 
 `;
 
@@ -289,14 +241,14 @@ const PulseDot = styled.div`
 
 const DirectionShadow = styled.div`
   position: absolute;
-  bottom: 50%; // 원의 중심에서 시작
+  bottom: 50%;
   left: 50%;
-  width: 100px; // 더 긴 도달 거리
+  width: 100px;
   height: 100px;
   background: radial-gradient(circle at 50% 100%, rgba(255, 75, 75, 0.4) 0%, rgba(255, 75, 75, 0) 70%);
-  clip-path: polygon(50% 100%, 15% 0%, 85% 0%); // 더 좁고 선명한 부채꼴
+  clip-path: polygon(50% 100%, 15% 0%, 85% 0%);
   z-index: 0;
-  transform-origin: 50% 100%; // 부채꼴의 하단 중앙(원의 중심)을 기준으로 회전
-  margin-left: -50px; // 가로 중앙 정렬
+  transform-origin: 50% 100%;
+  margin-left: -50px;
   pointer-events: none;
 `;

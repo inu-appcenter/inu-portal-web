@@ -9,14 +9,13 @@ import RestaurantInfoBox from "@/components/mobile/map/RestaurantInfoBox";
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB.tsx";
 import { Drawer } from "vaul";
 import { setZoom } from "../utils/mapUtils.ts";
-import { TabType } from "../constants/mapConfig";
+import { BOTTOM_SHEET_HEIGHT, TabType } from "../constants/mapConfig";
 
 interface PlaceListPanelProps {
   isOpen: boolean;
   selectedTab: TabType;
   setSelectedTab: React.Dispatch<React.SetStateAction<TabType>>;
   map: any;
-  viewXY: { X: number; Y: number };
   setSelectedCoord: (coord: { X: number; Y: number }) => void;
   openedMarkerId: string | null;
   setOpenedMarkerId: (id: string | null) => void;
@@ -43,8 +42,8 @@ const PlaceListPanel = ({
     setSelectedTab(tab);
     setOpenedMarkerId(null);
 
-    // 탭 클릭 시 기본 높이(0.4)로 바텀시트 올림
-    setSnap(0.4);
+    // 탭 클릭 시 기본 높이로 바텀시트 올림
+    setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
 
     // 학교 원본 위치로 좌표 상태 업데이트
     setSelectedCoord({ X: 37.374474020920864, Y: 126.63361466845616 });
@@ -74,7 +73,11 @@ const PlaceListPanel = ({
       open={isOpen}
       dismissible={false}
       modal={false}
-      snapPoints={[0.15, 0.4, 1]}
+      snapPoints={[
+        BOTTOM_SHEET_HEIGHT.MIN,
+        BOTTOM_SHEET_HEIGHT.DEFAULT,
+        BOTTOM_SHEET_HEIGHT.MAX,
+      ]}
       activeSnapPoint={snap}
       setActiveSnapPoint={setSnap}
     >
