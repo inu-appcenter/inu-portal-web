@@ -95,19 +95,36 @@ const KakaoMap = ({
     window.addEventListener("deviceorientation", handleOrientation, true);
     return () => window.removeEventListener("deviceorientation", handleOrientation);
   }, []);
+const handleMyLocationClick = async () => {
+  // iOS 13+ 방향 센서 권한 요청
+  if (
+    typeof (DeviceOrientationEvent as any).requestPermission === "function"
+  ) {
+    try {
+      const permission = await (
+        DeviceOrientationEvent as any
+      ).requestPermission();
+      if (permission !== "granted") {
+        console.warn("방향 센서 권한이 거부되었습니다.");
+      }
+    } catch (error) {
+      console.error("방향 센서 권한 요청 중 오류 발생:", error);
+    }
+  }
 
-  const handleMyLocationClick = () => {
-    if (!myLocation) {
-      alert("위치 정보를 불러오는 중입니다...");
-      return;
-    }
-    
-    if (mapInstance) {
-      mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng));
-      mapInstance.setLevel(3);
-    }
-    setIsTracking(true);
-  };
+  if (!myLocation) {
+    alert("위치 정보를 불러오는 중입니다...");
+    return;
+  }
+
+  if (mapInstance) {
+    mapInstance.panTo(
+      new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng),
+    );
+    mapInstance.setLevel(3);
+  }
+  setIsTracking(true);
+};
 
   // 지도 드래그 시 추적 모드 해제
   const handleDragStart = () => {
