@@ -7,6 +7,7 @@ import LoginPassword from "@/resources/assets/login/login-password.svg";
 import useUserStore from "@/stores/useUserStore";
 import axios from "axios";
 import TermOfUse from "@/components/desktop/login/TermsOfUse";
+import { ROUTES } from "@/constants/routes";
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -45,7 +46,7 @@ export default function LoginForm() {
         }
       }
 
-      navigate(-1);
+      navigate(ROUTES.HOME);
       setLoading(false);
     } catch (error) {
       console.error("로그인 실패", error);
