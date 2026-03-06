@@ -45,9 +45,6 @@ export default function LoginForm() {
           console.error("로그인 후 FCM 토큰 등록 실패", tokenError);
         }
       }
-
-      navigate(ROUTES.HOME);
-      setLoading(false);
     } catch (error) {
       console.error("로그인 실패", error);
       setLoading(false);

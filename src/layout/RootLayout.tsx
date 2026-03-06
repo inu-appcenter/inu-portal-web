@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useOutlet } from "react-router-dom";
+import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { ROUTES } from "@/constants/routes";
@@ -14,8 +14,9 @@ type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 export default function RootLayout() {
   const outlet = useOutlet();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
+  const { tokenInfo, userInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
 
   const [fcmToken, setFcmToken] = useState<string | null>(null);
@@ -38,16 +39,26 @@ export default function RootLayout() {
         try {
           const { data } = await getMembers();
           setUserInfo(data);
-          if (data.department == null) {
-            alert("학과 정보 등록이 필요해요. 마이페이지로 이동합니다.");
-            navigate(ROUTES.MYPAGE.PROFILE);
-          }
         } catch (e) {
           console.error("회원 조회 실패", e);
         }
       })();
     }
   }, [tokenInfo.accessToken, setUserInfo]);
+
+  // 학과 정보 여부에 따른 리다이렉트 처리
+  useEffect(() => {
+    if (tokenInfo.accessToken && userInfo.id !== 0) {
+      if (userInfo.department == null || userInfo.department === "") {
+        if (location.pathname !== ROUTES.MYPAGE.PROFILE) {
+          alert("학과 정보 등록이 필요해요. 마이페이지로 이동합니다.");
+          navigate(ROUTES.MYPAGE.PROFILE);
+        }
+      } else if (location.pathname === ROUTES.LOGIN) {
+        navigate(ROUTES.HOME);
+      }
+    }
+  }, [tokenInfo.accessToken, userInfo, location.pathname, navigate]);
 
   // 웹뷰 FCM 수신 등록
   useEffect(() => {
