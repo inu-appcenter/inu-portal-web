@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { login, postFcmToken } from "@/apis/members";
 import styled from "styled-components";
@@ -7,7 +6,6 @@ import LoginPassword from "@/resources/assets/login/login-password.svg";
 import useUserStore from "@/stores/useUserStore";
 import axios from "axios";
 import TermOfUse from "@/components/desktop/login/TermsOfUse";
-import { ROUTES } from "@/constants/routes";
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -17,7 +15,6 @@ export default function LoginForm() {
     "password",
   );
   const { setTokenInfo } = useUserStore();
-  const navigate = useNavigate();
 
   const isActive = studentId.trim() !== "" && password.trim() !== "";
 
