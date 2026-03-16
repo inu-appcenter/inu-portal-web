@@ -29,6 +29,7 @@ import MobileMyPagePost from "@/pages/mobile/MobileMyPagePost";
 import MobileMyPageLike from "@/pages/mobile/MobileMyPageLike";
 import MobileMyPageComment from "@/pages/mobile/MobileMyPageComment";
 import MobileDeletePage from "@/pages/mobile/MobileDelete";
+import MobileFcmStatusPage from "@/pages/mobile/MobileFcmStatusPage";
 import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
 import MobileBusInfoPage from "@/pages/mobile/MobileBus/MobileBusInfoPage";
 import MobileBusDetailPage from "@/pages/mobile/MobileBus/MobileBusDetailPage";
@@ -160,6 +161,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.LIKES, element: <MobileMyPageLike /> },
           { path: ROUTES.MYPAGE.COMMENTS, element: <MobileMyPageComment /> },
           { path: ROUTES.MYPAGE.DELETE, element: <MobileDeletePage /> },
+          { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.INFO, element: <MobileBusInfoPage /> },

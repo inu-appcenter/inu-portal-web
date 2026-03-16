@@ -20,7 +20,7 @@ export default function RootLayout() {
   const { setIsAppUrl } = useAppStateStore();
 
   const [fcmToken, setFcmToken] = useState<string | null>(null);
-  const LAST_SENT_TOKEN_KEY = "lastSentFcmToken";
+  // const LAST_SENT_TOKEN_KEY = "lastSentFcmToken";
 
   // 토큰 및 초기 경로 설정
   useEffect(() => {
@@ -63,6 +63,7 @@ export default function RootLayout() {
   // 웹뷰 FCM 수신 등록
   useEffect(() => {
     (window as any).onReceiveFcmToken = (token: string) => {
+      // 빈 값이나 공백만 올 경우 무시 (제대로 된 값이 올 때까지 대기)
       if (!token || token.trim() === "") return;
 
       localStorage.setItem("fcmToken", token);
@@ -79,7 +80,7 @@ export default function RootLayout() {
     const timer = setTimeout(() => {
       if (!fcmToken) {
         const savedToken = localStorage.getItem("fcmToken");
-        if (savedToken) {
+        if (savedToken && savedToken.trim() !== "") {
           setFcmToken(savedToken);
         }
       }
@@ -91,15 +92,26 @@ export default function RootLayout() {
   // 토큰 서버 동기화
   useEffect(() => {
     const syncToken = async () => {
-      if (!fcmToken) return;
-
-      const lastSent = localStorage.getItem(LAST_SENT_TOKEN_KEY);
-      if (lastSent === fcmToken) return;
+      // 유효한 토큰이 없으면 전송하지 않음 (대기 상태)
+      if (!fcmToken || fcmToken.trim() === "") return;
 
       try {
+        // 앱 실행 시마다 무조건 전송하도록 중복 체크(lastSent) 로직 제거
         await postFcmToken(fcmToken);
-        localStorage.setItem(LAST_SENT_TOKEN_KEY, fcmToken);
+        const log = {
+          status: "success",
+          timestamp: new Date().toLocaleString(),
+          token: fcmToken,
+        };
+        localStorage.setItem("fcmSendLog", JSON.stringify(log));
+        console.log("FCM 토큰 동기화 성공", log);
       } catch (error) {
+        const log = {
+          status: "fail",
+          timestamp: new Date().toLocaleString(),
+          error: error instanceof Error ? error.message : String(error),
+        };
+        localStorage.setItem("fcmSendLog", JSON.stringify(log));
         console.error("FCM 토큰 동기화 실패", error);
       }
     };

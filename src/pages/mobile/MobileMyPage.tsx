@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
 import loginImg from "@/resources/assets/login/login-modal-logo.svg";
@@ -77,6 +78,10 @@ export default function MobileMyPage() {
         break;
       case "회원탈퇴":
         navigate(`/mypage/delete`);
+        break;
+
+      case "알림 설정 확인":
+        navigate(ROUTES.MYPAGE.FCM);
         break;
 
       case "관리자 페이지":
@@ -187,6 +192,16 @@ export default function MobileMyPage() {
             <Arrow src={arrowImg} />
           </div>
         ))}{" "}
+        <div className="item" onClick={() => handleClick("알림 설정 확인")}>
+          <span>
+            <img src={""} alt="" />
+            <div>
+              <div>알림 설정 확인 (디버그)</div>
+              <div className="description">FCM 토큰 및 전송 상태 확인</div>
+            </div>
+          </span>
+          <Arrow src={arrowImg} />
+        </div>
       </CategoryWrapper>
       {isModalOpen && (
         <ModalOverlay>

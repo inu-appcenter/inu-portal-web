@@ -29,6 +29,7 @@ export const ROUTES = {
     LIKES: "/mypage/like",
     COMMENTS: "/mypage/comment",
     DELETE: "/mypage/delete",
+    FCM: "/mypage/fcm",
   },
 
   // 게시판 및 기능
