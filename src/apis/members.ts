@@ -134,10 +134,11 @@ export const getAlerts = async (
 // FCM 토큰 등록
 export const postFcmToken = async (
   token: string,
+  deviceType?: string,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.post<ApiResponse<number>>(
     "/api/tokens",
-    { token },
+    { token, deviceType },
   );
   return response.data;
 };
