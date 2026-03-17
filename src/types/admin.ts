@@ -9,32 +9,36 @@ export interface ApiLogData {
   apiCount: number;
 }
 
-// 관리자 FCM 로그 데이터 인터페이스
+export type AdminNotificationTargetType =
+  | "ALL"
+  | "LOGGED_IN"
+  | "LOGGED_OUT"
+  | "MEMBERS"
+  | "STUDENT_IDS"
+  | "DEPARTMENTS";
+
+export type FcmSendStatus =
+  | "PENDING"
+  | "SUCCESS"
+  | "PARTIAL_FAILURE"
+  | "FAILED"
+  | "NO_TARGET";
+
 export interface FcmAdminLogData {
   id: number;
   title: string;
   body: string;
+  targetCount: number;
   sendCount: number;
+  failureCount: number;
+  status: FcmSendStatus;
 }
 
-// 알림 전송 요청 데이터 인터페이스
 export interface FcmSendRequest {
-  memberIds: number[];
-  title: string;
-  content: string;
-}
-
-// 관리자 FCM 로그 데이터 인터페이스
-export interface FcmAdminLogData {
-  id: number;
-  title: string;
-  body: string;
-  sendCount: number;
-}
-
-// 알림 전송 요청 데이터 인터페이스
-export interface FcmSendRequest {
-  memberIds: number[];
+  targetType: AdminNotificationTargetType;
+  memberIds?: number[];
+  studentIds?: string[];
+  departments?: string[];
   title: string;
   content: string;
 }
