@@ -10,7 +10,7 @@ import { DESKTOP_MEDIA } from "@/styles/responsive";
 import deptNoticeBanner from "@/resources/assets/banner/학과공지알리미.webp";
 import busBanner from "@/resources/assets/banner/인입런.webp";
 import surveyBanner from "@/resources/assets/banner/설문배너.webp";
-import unidormBanner from "@/resources/assets/banner/유니돔배너.svg";
+import appcenterBanner from "@/resources/assets/banner/앱센터배너.webp";
 
 import WeatherForm from "./Weather.tsx";
 
@@ -98,16 +98,29 @@ const Banner = () => {
           </BannerSurface>
         ),
       },
+      // {
+      //   id: "unidorm",
+      //   alt: "유니돔 배너",
+      //   onClick: () => openExternalLink("https://unidorm.inuappcenter.kr"),
+      //   render: () => (
+      //     <BannerSurface>
+      //       <BannerImage
+      //         src={unidormBanner}
+      //         alt="유니돔 배너"
+      //         loading="eager"
+      //       />
+      //     </BannerSurface>
+      //   ),
+      // },
       {
-        id: "unidorm",
-        alt: "유니돔 배너",
-        onClick: () => openExternalLink("https://unidorm.inuappcenter.kr"),
+        id: "appcenter",
+        alt: "앱센터 배너",
+        onClick: () => openExternalLink("https://home.inuappcenter.kr"),
         render: () => (
           <BannerSurface>
             <BannerImage
-              className="banner-image--overscan"
-              src={unidormBanner}
-              alt="유니돔 배너"
+              src={appcenterBanner}
+              alt="앱센터 배너"
               loading="eager"
             />
           </BannerSurface>

@@ -23,6 +23,7 @@ export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const navigate = useNavigate();
+  const isLoggedIn = userInfo.id !== 0;
   const renderMenuIcon = (image?: string) =>
     image ? (
       <img src={image} alt="" />
@@ -122,10 +123,10 @@ export default function MobileMyPage() {
   return (
     <MyPageWrapper>
       <DesktopContentGrid>
-        <TopBackground>
+        <TopBackground $hasActiveSummary={isLoggedIn}>
           <UserWrapper>
-            {userInfo.id !== 0 && <UserInfo />}
-            {!userInfo.id && (
+            {isLoggedIn && <UserInfo />}
+            {!isLoggedIn && (
               <ErrorWrapper>
                 <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
                 <div className="error">
@@ -141,7 +142,7 @@ export default function MobileMyPage() {
               </ErrorWrapper>
             )}
           </UserWrapper>
-          <ActiveWrapper>
+          {isLoggedIn && <ActiveWrapper>
             {MyPageActive.map((active, index) => (
               <div
                 className="item"
@@ -153,11 +154,11 @@ export default function MobileMyPage() {
               </div>
             ))}
             {!userInfo.id && <Overlay />} {/* 로그인 안 됐으면 오버레이 */}
-          </ActiveWrapper>
+          </ActiveWrapper>}
         </TopBackground>
 
-        <CategoryWrapper>
-          {userInfo.id !== 0 &&
+        <CategoryWrapper $hasActiveSummary={isLoggedIn}>
+          {isLoggedIn &&
             MyPageCategoryLoggeedIn.map((category, index) => (
               <div
                 className="item"
@@ -276,10 +277,10 @@ const DesktopContentGrid = styled.div`
   }
 `;
 
-const TopBackground = styled.div`
+const TopBackground = styled.div<{ $hasActiveSummary: boolean }>`
   background: transparent;
   height: fit-content;
-  padding: 32px 0 80px;
+  padding: 32px 0 ${({ $hasActiveSummary }) => ($hasActiveSummary ? "80px" : "24px")};
   width: 100%;
   position: relative;
   display: flex;
@@ -404,9 +405,9 @@ const ActiveWrapper = styled.div`
   }
 `;
 
-const CategoryWrapper = styled.div`
+const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
   display: flex;
-  margin-top: 56px;
+  margin-top: ${({ $hasActiveSummary }) => ($hasActiveSummary ? "56px" : "12px")};
   border-radius: 10px;
   flex-direction: column;
   align-items: center;

@@ -48,7 +48,7 @@ const MobileBusPageWrapper = styled.div`
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  padding: 0 ${MOBILE_PAGE_GUTTER} 32px;
+  padding: 10px ${MOBILE_PAGE_GUTTER} 32px;
   box-sizing: border-box;
 
   @media ${BUS_PAGE_TABLET_MEDIA} {
@@ -71,8 +71,13 @@ const MobileBusPageWrapper = styled.div`
 `;
 
 const LeadSection = styled.section`
+  display: none;
   width: 100%;
   padding-top: 4px;
+
+  @media ${BUS_PAGE_TABLET_MEDIA} {
+    display: block;
+  }
 
   @media ${DESKTOP_MEDIA} {
     grid-column: 1 / 2;
