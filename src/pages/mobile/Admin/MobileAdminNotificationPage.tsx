@@ -14,6 +14,7 @@ import {
   FcmSendStatus,
 } from "@/types/admin.ts";
 import { useHeader } from "@/context/HeaderContext.tsx";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { navBarList } from "old/resource/string/navBarList";
 
 type DepartmentNode = {
@@ -505,12 +506,16 @@ export default function MobileAdminNotificationPage() {
 }
 
 const Wrapper = styled.div`
-  padding: 0 16px 24px;
+  padding: 0 ${MOBILE_PAGE_GUTTER} 24px;
   box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
   min-height: 100vh;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0 0 24px;
+  }
 `;
 
 const Content = styled.div`

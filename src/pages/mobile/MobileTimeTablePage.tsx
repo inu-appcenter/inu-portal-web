@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 // 목업 데이터
 const MOCK_TIMETABLE: ClassItem[] = [
@@ -114,5 +115,9 @@ const MobileTimeTablePageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 0 16px 40px 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER} 40px;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0 0 40px;
+  }
 `;

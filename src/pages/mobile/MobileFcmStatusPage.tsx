@@ -85,10 +85,18 @@ export default function MobileFcmStatusPage() {
       </Section>
 
       <InfoBox>
-        <p>※ 앱을 완전히 종료 후 다시 실행하면 토큰 전송이 다시 시도됩니다.</p>
+        <p>※ INTIP 모바일 앱에서만 작동하는 페이지입니다.</p>
+        <p>
+          ※ 앱을 완전히 종료 후 다시 실행하면 토큰 전송이 다시 시도됩니다.(단,
+          24시간 이내에 전송을 성공한 적이 없어야 합니다.)
+        </p>
         <p>
           ※ 네이티브 앱에서 토큰을 전달받지 못하면 '발급된 토큰이 없습니다'로
           표시됩니다.
+        </p>
+        <p>
+          ※ '발급된 토큰이 없습니다' 또는 최근 전송 결과가 실패인 경우 앱을
+          완전히 껐다가 켜보시고, 계속된다면 앱을 삭제 후 다시 설치해주세요.
         </p>
       </InfoBox>
     </Container>
@@ -97,7 +105,7 @@ export default function MobileFcmStatusPage() {
 
 const Container = styled.div`
   padding: 20px;
-  background-color: #f8f9fa;
+  //background-color: #f8f9fa;
   min-height: calc(100vh - 100px);
 `;
 

@@ -2,22 +2,37 @@ import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import intipLogo from "@/resources/assets/intip-logo.webp";
 import { useNavigate } from "react-router-dom";
+import { forwardRef } from "react";
 
 import { Bell } from "lucide-react";
 import BackButton from "@/components/mobile/login/BackButton";
 import Title from "@/components/mobile/mypage/Title";
 import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
 import { useHeaderConfig } from "@/context/HeaderContext";
+import useUserStore from "@/stores/useUserStore";
+import {
+  DESKTOP_MEDIA,
+  MOBILE_BACK_ICON_VISUAL_OFFSET,
+  MOBILE_PAGE_GUTTER,
+} from "@/styles/responsive";
 
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+
   const handleNotiBtnClick = () => {
+    if (!tokenInfo.accessToken) {
+      alert("로그인해주세요.");
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+
     navigate(ROUTES.BOARD.ALERT);
   };
 
   return (
-    <BellWrapper>
-      <Bell size={24} onClick={handleNotiBtnClick} />
+    <BellWrapper onClick={handleNotiBtnClick}>
+      <Bell size={24} />
       {hasNew && <Badge />}
     </BellWrapper>
   );
@@ -42,98 +57,116 @@ const Badge = styled.div`
 // [변경] targetPath를 필수 props로 받음
 interface MobileHeaderProps {
   targetPath?: string;
+  contained?: boolean;
 }
 
-export default function MobileHeader({ targetPath }: MobileHeaderProps) {
-  // [변경] 현재 URL이 아닌, 전달받은 targetPath의 설정을 가져옴
-  const {
-    title,
-    hasback,
-    backPath,
-    onBack,
-    showAlarm,
-    menuItems,
-    visible,
-    subHeader,
-    floatingSubHeader,
-    isScrolled,
-  } = useHeaderConfig(targetPath);
+const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
+  function MobileHeader(
+    { targetPath, contained = false }: MobileHeaderProps,
+    ref,
+  ) {
+    // [변경] 현재 URL이 아닌, 전달받은 targetPath의 설정을 가져옴
+    const {
+      title,
+      hasback,
+      backPath,
+      onBack,
+      showAlarm,
+      menuItems,
+      visible,
+      subHeader,
+      floatingSubHeader,
+      isScrolled,
+    } = useHeaderConfig(targetPath);
 
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const handleLogoClick = () => {
-    navigate(ROUTES.HOME);
-  };
+    const handleLogoClick = () => {
+      navigate(ROUTES.HOME);
+    };
 
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-      return;
-    }
-    if (backPath) {
-      navigate(backPath);
-      return;
-    }
-    navigate(-1);
-  };
+    const handleBack = () => {
+      if (onBack) {
+        onBack();
+        return;
+      }
+      if (backPath) {
+        navigate(backPath);
+        return;
+      }
+      navigate(-1);
+    };
 
-  if (visible === false) return null;
+    if (visible === false) return null;
 
-  return (
-    <MobileHeaderWrapper $visible={true}>
-      <MainHeaderWrapper $isScrolled={isScrolled}>
-        {title ? (
-          <TitleArea>
-            {hasback && (
-              <IconBackgroundWrapper $isScrolled={isScrolled} $isCircle={true}>
-                <BackButton onClick={handleBack} />
-              </IconBackgroundWrapper>
-            )}
-            <TitleWrapper $isScrolled={isScrolled} $hasBack={hasback ?? false}>
-              <Title title={title} />
-            </TitleWrapper>
-          </TitleArea>
-        ) : (
-          <img className="logo" onClick={handleLogoClick} src={intipLogo} />
-        )}
-
-        {(showAlarm || menuItems) && (
-          <IconBackgroundWrapper
-            $isScrolled={isScrolled}
-            $isCircle={!(showAlarm && menuItems)}
-            $marginRight="16px"
-          >
-            {showAlarm && <NotificationBell hasNew={false} />}
-            {menuItems && <TopRightDropdownMenu items={menuItems} />}
-          </IconBackgroundWrapper>
-        )}
-      </MainHeaderWrapper>
-
-      {subHeader && (
-        <SubHeaderWrapper>
-          {floatingSubHeader ? (
-            <FloatingWrapper>{subHeader}</FloatingWrapper>
+    return (
+      <MobileHeaderWrapper ref={ref} $contained={contained} $visible={true}>
+        <MainHeaderWrapper $isScrolled={isScrolled}>
+          {title ? (
+            <TitleArea>
+              {hasback && (
+                <IconBackgroundWrapper $isScrolled={isScrolled} $isCircle={true}>
+                  <BackButton onClick={handleBack} />
+                </IconBackgroundWrapper>
+              )}
+              <TitleWrapper
+                $isScrolled={isScrolled}
+                $hasBack={hasback ?? false}
+              >
+                <Title title={title} />
+              </TitleWrapper>
+            </TitleArea>
           ) : (
-            subHeader
+            <img className="logo" onClick={handleLogoClick} src={intipLogo} />
           )}
-        </SubHeaderWrapper>
-      )}
-    </MobileHeaderWrapper>
-  );
-}
 
-const APP_MAX_WIDTH = "768px";
+          {(showAlarm || menuItems) && (
+            <IconBackgroundWrapper
+              $isScrolled={isScrolled}
+              $isCircle={!(showAlarm && menuItems)}
+              $marginRight={MOBILE_PAGE_GUTTER}
+            >
+              {showAlarm && <NotificationBell hasNew={false} />}
+              {menuItems && <TopRightDropdownMenu items={menuItems} />}
+            </IconBackgroundWrapper>
+          )}
+        </MainHeaderWrapper>
 
-const MobileHeaderWrapper = styled.header<{ $visible: boolean }>`
-  position: fixed;
-  top: 0;
+        {subHeader && (
+          <SubHeaderWrapper $floating={!!floatingSubHeader}>
+            {floatingSubHeader ? (
+              <FloatingWrapper>{subHeader}</FloatingWrapper>
+            ) : (
+              subHeader
+            )}
+          </SubHeaderWrapper>
+        )}
+      </MobileHeaderWrapper>
+    );
+  },
+);
+
+MobileHeader.displayName = "MobileHeader";
+
+export default MobileHeader;
+
+const MobileHeaderWrapper = styled.header<{
+  $visible: boolean;
+  $contained: boolean;
+}>`
+  position: ${({ $contained }) => ($contained ? "relative" : "fixed")};
+  top: ${({ $contained }) => ($contained ? "auto" : "0")};
   width: 100%;
-  max-width: ${APP_MAX_WIDTH};
   padding-top: 24px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   pointer-events: none;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: none;
+    padding-top: 20px;
+  }
 `;
 
 const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
@@ -143,6 +176,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
 
   .logo {
     pointer-events: auto;
@@ -150,7 +184,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
     width: 100px;
     cursor: pointer;
     padding: 4px 0;
-    margin-left: 36px;
+    margin-left: ${MOBILE_PAGE_GUTTER};
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:
@@ -158,19 +192,40 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
       visibility 0s linear
         ${({ $isScrolled }) => ($isScrolled ? "0.15s" : "0s")};
   }
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+
+    .logo {
+      width: 124px;
+      margin-left: 12px;
+    }
+  }
 `;
 
-const SubHeaderWrapper = styled.div`
+const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
   width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
+  box-sizing: border-box;
   pointer-events: auto;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;
 
 const TitleArea = styled.div`
   display: flex;
   align-items: center;
-  margin-left: 16px;
+  margin-left: 0;
   pointer-events: auto;
   gap: 0;
+
+  @media ${DESKTOP_MEDIA} {
+    margin-left: ${MOBILE_BACK_ICON_VISUAL_OFFSET};
+  }
 `;
 
 const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
@@ -185,6 +240,11 @@ const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
   transition:
     all 0.2s ease-in-out,
     visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
+
+  @media ${DESKTOP_MEDIA} {
+    min-width: 280px;
+    max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "420px")};
+  }
 `;
 
 const IconBackgroundWrapper = styled.div<{
@@ -197,7 +257,7 @@ const IconBackgroundWrapper = styled.div<{
   justify-content: center;
   gap: 12px;
   border-radius: 50px;
-  margin-right: ${({ $marginRight }) => $marginRight ?? "0"};
+  margin-right: 0;
   padding: ${({ $isCircle }) => ($isCircle ? "0" : "0 20px")}; /* 상하 패딩 제거 */
   width: ${({ $isCircle }) => ($isCircle ? "48px" : "auto")};
   height: 48px;
@@ -216,6 +276,10 @@ const IconBackgroundWrapper = styled.div<{
 
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
+  @media ${DESKTOP_MEDIA} {
+    margin-right: ${({ $marginRight }) => $marginRight ?? "0"};
+  }
+
   /* 내부 요소(버튼, 아이콘)들의 강제 중앙 정렬 */
   & > * {
     display: flex !important;
@@ -233,8 +297,9 @@ const IconBackgroundWrapper = styled.div<{
 `;
 
 const FloatingWrapper = styled.div`
+  width: fit-content;
+  max-width: 100%;
   padding: 4px 16px;
-  margin: 0 16px;
   border-radius: 50px;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.7);

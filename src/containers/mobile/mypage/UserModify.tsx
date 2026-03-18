@@ -191,7 +191,6 @@ const UserModifyWrapper = styled.div`
 
 const ButtonWrapper = styled.div`
   width: 100%;
-  max-width: 768px;
   display: flex;
   justify-content: center;
   position: fixed;

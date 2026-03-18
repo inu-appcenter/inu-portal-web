@@ -1,8 +1,9 @@
 import styled from "styled-components";
-import { cafeterias } from "@/resources/strings/cafeterias";
 import { useState } from "react";
 import { BottomSheet } from "react-spring-bottom-sheet";
 
+import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { cafeterias } from "@/resources/strings/cafeterias";
 import arrowImg from "@/resources/assets/mobile-cafeteria/Vector.svg";
 
 interface CafeteriaTitleContainerProps {
@@ -20,9 +21,9 @@ export default function CafeteriaToggle({
     setIsOpen(!isOpen);
   };
 
-  const handleItemClick = (title: string) => {
-    setTitle(title);
-    setIsOpen(false); // Optionally close the list after selecting an item
+  const handleItemClick = (nextTitle: string) => {
+    setTitle(nextTitle);
+    setIsOpen(false);
   };
 
   const onClose = () => {
@@ -31,23 +32,39 @@ export default function CafeteriaToggle({
 
   return (
     <ToggleWrapper>
-      <div className="title" onClick={handleToggle}>
+      <div className="mobile-title" onClick={handleToggle}>
         <div>{title}</div>
-        <img src={arrowImg} alt="화살표 이미지" />
+        <img src={arrowImg} alt="open cafeteria list" />
       </div>
+
+      <div className="desktop-header">
+        <p className="eyebrow">Cafeteria</p>
+        <div className="selected-title">{title}</div>
+      </div>
+
+      <div className="desktop-selector">
+        {cafeterias.map((item, index) => (
+          <button
+            key={index}
+            type="button"
+            className={`desktop-item ${item.title === title ? "selected" : ""}`}
+            onClick={() => handleItemClick(item.title)}
+          >
+            {item.title}
+          </button>
+        ))}
+      </div>
+
       <BottomSheet
         open={isOpen}
         onDismiss={onClose}
         snapPoints={() => {
-          // 임의의 값으로 스냅 포인트 설정
-          const snapPoint1 = 400; // 최소 스냅 포인트
-
-          return [snapPoint1]; // 임의의 값을 배열로 반환
+          const snapPoint = 400;
+          return [snapPoint];
         }}
       >
-        {/*<Backdrop onClick={handleToggle} />*/}
         <List>
-          {cafeterias.map((item: any, index: number) => (
+          {cafeterias.map((item, index) => (
             <ListItem key={index} onClick={() => handleItemClick(item.title)}>
               {item.title}
             </ListItem>
@@ -63,12 +80,85 @@ const ToggleWrapper = styled.div`
   height: fit-content;
   cursor: pointer;
 
-  .title {
+  .mobile-title {
     display: flex;
     flex-direction: row;
     gap: 12px;
     font-size: 30px;
     font-weight: 500;
+  }
+
+  .desktop-header,
+  .desktop-selector {
+    display: none;
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+    cursor: default;
+
+    .mobile-title {
+      display: none;
+    }
+
+    .desktop-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b86b6;
+    }
+
+    .selected-title {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #1a2540;
+    }
+
+    .desktop-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .desktop-item {
+      border: 1px solid #d9e4f5;
+      border-radius: 999px;
+      background: #fff;
+      color: #4f648f;
+      padding: 11px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+      transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .desktop-item:hover {
+      transform: translateY(-1px);
+      border-color: #b8caea;
+      box-shadow: 0 6px 16px rgba(64, 113, 185, 0.12);
+    }
+
+    .desktop-item.selected {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(90deg, #6ea9d8 0%, #5d87d7 100%);
+      box-shadow: 0 10px 20px rgba(93, 135, 215, 0.24);
+    }
   }
 `;
 
@@ -77,9 +167,9 @@ const List = styled.div`
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+  padding-bottom: 80px;
   background-color: #f9f9f9;
   border-radius: 12px;
-  padding-bottom: 80px;
 `;
 
 const ListItem = styled.div`
@@ -96,14 +186,3 @@ const ListItem = styled.div`
     transform: translateY(-2px);
   }
 `;
-
-// const Backdrop = styled.div`
-//   position: fixed;
-//   top: 0;
-//   left: 0;
-//   width: 100%;
-//   height: 100%;
-//   background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-//   backdrop-filter: blur(0.5px); /* Blur effect */
-//   z-index: 1000; /* Ensure backdrop is behind the modal but above the rest of the content */
-// `;

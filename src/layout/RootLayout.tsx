@@ -15,6 +15,7 @@ import {
   shouldSyncFcmToken,
   subscribeToFcmToken,
 } from "@/utils/fcm";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 
@@ -158,10 +159,14 @@ export default function RootLayout() {
 
 const ScreenContainer = styled.div`
   width: 100%;
-  max-width: 768px;
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
   background-color: #f1f1f3;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: none;
+    box-shadow: none;
+  }
 `;

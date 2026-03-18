@@ -1,18 +1,21 @@
 import React from "react";
 import styled from "styled-components";
+import { Drawer } from "vaul";
+
 import Tab from "@/components/mobile/map/Tab.tsx";
-import PlaceList from "./PlaceList";
 import SchoolInfoBox from "@/components/mobile/map/SchoolInfoBox";
 import RestInfoBox from "@/components/mobile/map/RestInfoBox";
 import CafeInfoBox from "@/components/mobile/map/CafeInfoBox";
 import RestaurantInfoBox from "@/components/mobile/map/RestaurantInfoBox";
+
+import PlaceList from "./PlaceList";
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB.tsx";
-import { Drawer } from "vaul";
 import { setZoom } from "../utils/mapUtils.ts";
 import { BOTTOM_SHEET_HEIGHT, TabType } from "../constants/mapConfig";
 
 interface PlaceListPanelProps {
   isOpen: boolean;
+  isDesktop?: boolean;
   selectedTab: TabType;
   setSelectedTab: React.Dispatch<React.SetStateAction<TabType>>;
   map: any;
@@ -26,6 +29,7 @@ interface PlaceListPanelProps {
 
 const PlaceListPanel = ({
   isOpen,
+  isDesktop = false,
   selectedTab,
   setSelectedTab,
   map,
@@ -36,21 +40,15 @@ const PlaceListPanel = ({
   setSnap,
   setIsTracking,
 }: PlaceListPanelProps) => {
-  const currentTab = selectedTab;
-
   const handleTabClick = (tab: TabType) => {
     setSelectedTab(tab);
     setOpenedMarkerId(null);
 
-    // 탭 클릭 시 현위치 트래킹 해제
     if (setIsTracking) {
       setIsTracking(false);
     }
 
-    // 탭 클릭 시 기본 높이로 바텀시트 올림
     setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
-
-    // 학교 원본 위치로 좌표 상태 업데이트
     setSelectedCoord({ X: 37.374474020920864, Y: 126.63361466845616 });
 
     if (map) {
@@ -59,7 +57,7 @@ const PlaceListPanel = ({
   };
 
   const getPlacesData = () => {
-    switch (currentTab) {
+    switch (selectedTab) {
       case "학교":
         return places;
       case "휴게실":
@@ -72,6 +70,72 @@ const PlaceListPanel = ({
         return [];
     }
   };
+
+  const renderDetail = (place: (typeof places)[number]) => {
+    switch (selectedTab) {
+      case "학교":
+        return <SchoolInfoBox place={place} />;
+      case "휴게실":
+        return (
+          <>
+            <RestInfoBox
+              title="여성용품 비치"
+              isExist={place.restareaInfo?.hasFemaleProducts}
+            />
+            <RestInfoBox title="침대, 빈백(개)" num={place.restareaInfo?.bedCount} />
+            <RestInfoBox
+              title="샤워실"
+              isExist={place.restareaInfo?.hasShowerRoom}
+            />
+          </>
+        );
+      case "카페":
+        return <CafeInfoBox place={place} />;
+      case "식당":
+        return <RestaurantInfoBox place={place} />;
+      default:
+        return null;
+    }
+  };
+
+  const panelContent = (
+    <PanelSurface $isDesktop={isDesktop}>
+      {!isDesktop && (
+        <HandleWrapper>
+          <HandleBar />
+        </HandleWrapper>
+      )}
+
+      <PlaceListPanelWrapper $isDesktop={isDesktop}>
+        {isDesktop && (
+          <DesktopPanelHeader>
+            <DesktopPanelEyebrow>Campus Map</DesktopPanelEyebrow>
+            <DesktopPanelTitle>장소 정보</DesktopPanelTitle>
+          </DesktopPanelHeader>
+        )}
+
+        <Tab handleTabClick={handleTabClick} selectedTab={selectedTab} />
+
+        <ListViewport $isDesktop={isDesktop} $snap={snap}>
+          <PlaceList
+            places={getPlacesData()}
+            map={map}
+            selectedTab={selectedTab}
+            setSelectedCoord={setSelectedCoord}
+            openedMarkerId={openedMarkerId}
+            setOpenedMarkerId={setOpenedMarkerId}
+            setSnap={setSnap}
+            setIsTracking={setIsTracking}
+            renderDetail={renderDetail}
+          />
+        </ListViewport>
+      </PlaceListPanelWrapper>
+    </PanelSurface>
+  );
+
+  if (isDesktop) {
+    return <DesktopPanelShell>{panelContent}</DesktopPanelShell>;
+  }
 
   return (
     <Drawer.Root
@@ -88,72 +152,7 @@ const PlaceListPanel = ({
     >
       <Drawer.Portal>
         <DrawerOverlay />
-        <DrawerContent>
-          <HandleWrapper>
-            <div
-              style={{
-                width: "40px",
-                height: "4px",
-                background: "#E5E5E5",
-                borderRadius: "2px",
-              }}
-            />
-          </HandleWrapper>
-          <PlaceListPanelWrapper>
-            <Tab handleTabClick={handleTabClick} selectedTab={selectedTab} />
-            <div
-              style={{
-                flex: 1,
-                overflow: "hidden",
-                display: "flex",
-                // 현재 snap 포인트 높이에서 탭과 핸들 높이(약 100px)를 뺀 만큼만 높이 할당
-                maxHeight:
-                  typeof snap === "number"
-                    ? `calc(${snap * 100}dvh - 100px)`
-                    : "none",
-                transition: "max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1)", // vaul의 기본 애니메이션과 맞춤
-              }}
-            >
-              <PlaceList
-                places={getPlacesData()}
-                map={map}
-                selectedTab={currentTab}
-                setSelectedCoord={setSelectedCoord}
-                openedMarkerId={openedMarkerId}
-                setOpenedMarkerId={setOpenedMarkerId}
-                setSnap={setSnap}
-                setIsTracking={setIsTracking}
-                renderDetail={(place) => {
-                  switch (currentTab) {
-                    case "학교":
-                      return <SchoolInfoBox place={place} />;
-                    case "휴게실":
-                      return (
-                        <>
-                          <RestInfoBox
-                            title="여성용품 배치"
-                            isExist={place.restareaInfo?.hasFemaleProducts}
-                          />
-                          <RestInfoBox
-                            title="침대, 빈백(개)"
-                            num={place.restareaInfo?.bedCount}
-                          />
-                          <RestInfoBox
-                            title="샤워실"
-                            isExist={place.restareaInfo?.hasShowerRoom}
-                          />
-                        </>
-                      );
-                    case "카페":
-                      return <CafeInfoBox place={place} />;
-                    case "식당":
-                      return <RestaurantInfoBox place={place} />;
-                  }
-                }}
-              />
-            </div>
-          </PlaceListPanelWrapper>
-        </DrawerContent>
+        <DrawerContent>{panelContent}</DrawerContent>
       </Drawer.Portal>
     </Drawer.Root>
   );
@@ -161,27 +160,47 @@ const PlaceListPanel = ({
 
 export default PlaceListPanel;
 
+const DesktopPanelShell = styled.aside`
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+`;
+
+const PanelSurface = styled.div<{ $isDesktop: boolean }>`
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  ${({ $isDesktop }) =>
+    $isDesktop
+      ? `
+        border-radius: 28px;
+        border: 1px solid rgba(64, 113, 185, 0.1);
+        box-shadow: 0 20px 40px rgba(35, 60, 115, 0.08), 0 4px 12px rgba(35, 60, 115, 0.06);
+      `
+      : `
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+      `}
+`;
+
 const DrawerOverlay = styled(Drawer.Overlay)`
   position: fixed;
   inset: 0;
 `;
 
 const DrawerContent = styled(Drawer.Content)`
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
   height: 100%;
-  max-height: 96%; // 상단 약간의 여백
+  max-height: 96%;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   outline: none;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  max-width: 768px;
   margin-left: auto;
   margin-right: auto;
 `;
@@ -194,13 +213,54 @@ const HandleWrapper = styled.div`
   flex-shrink: 0;
 `;
 
-const PlaceListPanelWrapper = styled.div`
+const HandleBar = styled.div`
+  width: 40px;
+  height: 4px;
+  background: #e5e5e5;
+  border-radius: 999px;
+`;
+
+const PlaceListPanelWrapper = styled.div<{ $isDesktop: boolean }>`
   width: 100%;
-  padding: 0 20px;
+  padding: ${({ $isDesktop }) => ($isDesktop ? "24px 24px 20px" : "0 20px")};
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: hidden; // 내부 스크롤을 위해
+  overflow: hidden;
+`;
+
+const DesktopPanelHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+`;
+
+const DesktopPanelEyebrow = styled.span`
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7d94bb;
+`;
+
+const DesktopPanelTitle = styled.h2`
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+  color: #20355d;
+`;
+
+const ListViewport = styled.div<{ $isDesktop: boolean; $snap: string | number | null }>`
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  margin-top: ${({ $isDesktop }) => ($isDesktop ? "8px" : "0")};
+  max-height: ${({ $isDesktop, $snap }) =>
+    $isDesktop ? "none" : typeof $snap === "number" ? `calc(${$snap * 100}dvh - 100px)` : "none"};
+  transition: ${({ $isDesktop }) =>
+    $isDesktop ? "none" : "max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1)"};
 `;

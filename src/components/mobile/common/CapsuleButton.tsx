@@ -1,10 +1,10 @@
 import styled from "styled-components";
-
 interface CapsuleButtonProps {
   iconSrc: string;
   title: string;
   description: string;
   onClick?: () => void;
+  compact?: boolean;
 }
 
 const CapsuleButton = ({
@@ -12,9 +12,10 @@ const CapsuleButton = ({
   title,
   description,
   onClick,
+  compact = false,
 }: CapsuleButtonProps) => {
   return (
-    <CapsuleButtonWrapper onClick={onClick}>
+    <CapsuleButtonWrapper onClick={onClick} $compact={compact}>
       <Icon src={iconSrc} alt="" />
       <ContentArea>
         <div className="title">{title}</div>
@@ -26,13 +27,13 @@ const CapsuleButton = ({
 
 export default CapsuleButton;
 
-const CapsuleButtonWrapper = styled.button`
+const CapsuleButtonWrapper = styled.button<{ $compact: boolean }>`
   display: flex;
   flex-direction: row;
   gap: 8px;
   align-items: center;
   justify-content: start;
-  padding: 16px 12px;
+  padding: ${({ $compact }) => ($compact ? "12px 12px" : "16px 12px")};
   box-sizing: border-box;
 
   border-radius: 50px;

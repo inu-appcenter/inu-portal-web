@@ -1,11 +1,14 @@
 import styled from "styled-components";
 import { Reply } from "@/types/posts";
+import { useNavigate } from "react-router-dom";
 import CommentImg from "@/resources/assets/mobile-tips/comment-img.svg";
 import rereplyImage from "@/resources/assets/posts/rereply.svg";
 import ReplyLikeButton from "@/components/desktop/posts/ReplyLikeButton";
 import React from "react";
 import axios, { AxiosError } from "axios";
+import { ROUTES } from "@/constants/routes";
 import { deleteReply } from "@/apis/replies";
+import useUserStore from "@/stores/useUserStore";
 
 interface CommentListProps {
   bestReply: Reply;
@@ -24,6 +27,9 @@ export default function CommentListMobile({
   setReplyContent,
   onCommentUpdate,
 }: CommentListProps) {
+  const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
   const allComments = bestReply
     ? [bestReply, ...replies.filter((reply) => reply.id !== bestReply.id)]
     : replies;
@@ -83,6 +89,11 @@ export default function CommentListMobile({
   };
 
   const handleReplyTo = (reply: Reply) => {
+    if (!isLoggedIn) {
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+
     setReplyToReply(reply);
     setReplyToEdit(null);
     setReplyContent("");

@@ -120,7 +120,10 @@ const KakaoMap = ({
         onCreate={(map) => {
           setMap(map);
           setInternalMap(map);
-          setTimeout(() => map.relayout(), 100);
+          setTimeout(() => {
+            map.relayout();
+            map.setCenter(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+          }, 100);
         }}
         onDragStart={handleDragStart}
       >
@@ -137,10 +140,18 @@ const KakaoMap = ({
                   size: { width: 24, height: 35 },
                 }}
                 onClick={() => {
-                  setOpenedMarkerId(isOpen ? null : markerId);
+                  setOpenedMarkerId(
+                    isOpen ? null : markerId,
+                    isOpen
+                      ? undefined
+                      : {
+                          X: Number(place.latitude),
+                          Y: Number(place.longitude),
+                        },
+                  );
                   if (setIsTracking) setIsTracking(false);
                 }}
-                infoWindowOptions={{ removable: true }}
+                infoWindowOptions={{ removable: true, disableAutoPan: true }}
               >
                 {isOpen && (
                   <div

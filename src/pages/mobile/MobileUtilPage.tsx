@@ -10,6 +10,7 @@ import useUserStore from "@/stores/useUserStore";
 
 import useReloadKeyStore from "@/stores/useReloadKeyStore";
 import Rental from "../../components/desktop/rental/Rental.tsx";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileUtilPage() {
   const { userInfo } = useUserStore();
@@ -135,5 +136,9 @@ const Wrapper = styled.div`
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;

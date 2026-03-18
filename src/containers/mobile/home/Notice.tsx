@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { getNotices } from "@/apis/notices";
+import { getNotices, type NoticeSort } from "@/apis/notices";
 import { Notice } from "@/types/notices";
 import SortDropBox from "@/components/mobile/notice/Sort";
 import Box from "@/components/common/Box";
@@ -24,13 +24,13 @@ const NoticeSkeletonItem = () => {
 };
 
 export default function NoticeForm() {
-  const [sort, setSort] = useState("date");
+  const [sort, setSort] = useState<NoticeSort>("date");
   const [notices, setNotices] = useState<Notice[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const swiperRef = useRef<any>(null);
 
-  const fetchNotices = async (sort: string) => {
+  const fetchNotices = async (sort: NoticeSort) => {
     setIsLoading(true);
     try {
       const response = await getNotices("전체", sort, 1);
@@ -66,6 +66,7 @@ export default function NoticeForm() {
                   category={notice.category}
                   date={notice.createDate}
                   writer={notice.writer}
+                  isEllipsis={false}
                   onClick={() => {
                     if (notice.url)
                       window.open("https://" + notice.url, "_blank");

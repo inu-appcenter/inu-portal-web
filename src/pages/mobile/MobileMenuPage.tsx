@@ -1,9 +1,16 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCafeterias } from "@/apis/cafeterias";
 import CafeteriaInfoContainer from "@/containers/mobile/cafeteria/CafeteriaInfoContainer";
 import CafeteriaTitleContainer from "@/containers/mobile/cafeteria/CafeteriaTitleContainer";
 import { useHeader } from "@/context/HeaderContext";
+import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
+import {
+  DESKTOP_CONTENT_MAX_WIDTH,
+  DESKTOP_MEDIA,
+} from "@/styles/responsive";
+import { cafeterias } from "@/resources/strings/cafeterias";
+import { useLocation } from "react-router-dom";
 
 interface CafeteriaDetail {
   구성원가: string;
@@ -11,7 +18,6 @@ interface CafeteriaDetail {
 }
 
 export default function MobileMenuPage() {
-  const [title, setTitle] = useState("학생식당");
   const [cafeteriaDetail, setCafeteriaDetail] = useState<
     (CafeteriaDetail | null)[]
   >([]);
@@ -21,6 +27,9 @@ export default function MobileMenuPage() {
     { dayName: string; date: string }[]
   >([]);
   const date = new Date();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const selectedCafeteria = params.get("category") || "학생식당";
 
   useEffect(() => {
     setWeekDates(getWeekDates(date)); // 주의 날짜 설정
@@ -28,11 +37,11 @@ export default function MobileMenuPage() {
 
   useEffect(() => {
     fetchCafeteriaData(nowday);
-  }, [title, nowday]);
+  }, [selectedCafeteria, nowday]);
 
   const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
     const weekDates = [];
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
     const currentDay = date.getDay();
     const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
     const monday = new Date(date);
@@ -54,7 +63,7 @@ export default function MobileMenuPage() {
   const fetchCafeteriaData = async (date: number) => {
     try {
       setIsLoading(true);
-      const response = await getCafeterias(title, date);
+      const response = await getCafeterias(selectedCafeteria, date);
       const processedData = response.data.map((info: string) =>
         extractValues(info),
       );
@@ -84,22 +93,38 @@ export default function MobileMenuPage() {
     return match ? match[1].trim() : input;
   };
 
+  const cafeteriaCategories = useMemo(
+    () => cafeterias.map((cafeteria) => cafeteria.title),
+    [],
+  );
+
+  const subHeader = useMemo(
+    () => (
+      <CategorySelectorNew
+        categories={cafeteriaCategories}
+        selectedCategory={selectedCafeteria}
+      />
+    ),
+    [cafeteriaCategories, selectedCafeteria],
+  );
+
   // 헤더 설정 주입
   useHeader({
     title: "식당 메뉴",
+    subHeader,
+    floatingSubHeader: true,
   });
 
   return (
     <CafeteriaWrapper>
       <CafeteriaTitleContainer
-        title={title}
-        setTitle={setTitle}
+        title={selectedCafeteria}
         nowday={nowday}
         setNowDay={setNowDay}
         weekDates={weekDates}
       />
       <CafeteriaInfoContainer
-        title={title}
+        title={selectedCafeteria}
         cafeteriaDetail={cafeteriaDetail}
         cafeteriaInfo={cafeteriaInfo}
         isLoading={isLoading}
@@ -116,7 +141,14 @@ const CafeteriaWrapper = styled.div`
   box-sizing: border-box;
   gap: 16px;
 
+  padding-top: 12px;
   padding-bottom: 100px;
 
-  //padding: 0 16px;
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    margin: 0 auto;
+    gap: 24px;
+    padding-top: 16px;
+    padding-bottom: 48px;
+  }
 `;

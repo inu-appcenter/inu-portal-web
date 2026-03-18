@@ -5,6 +5,7 @@ import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import { useNavigate } from "react-router-dom";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
@@ -75,6 +76,12 @@ const MaskContainer = styled.div`
     rgba(0, 0, 0, 1) 90%,
     rgba(0, 0, 0, 0) 100%
   );
+
+  @media ${DESKTOP_MEDIA} {
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
 `;
 
 const ChipGroupWrapper = styled.div`
@@ -95,5 +102,11 @@ const ChipGroupWrapper = styled.div`
 
   &::-webkit-scrollbar {
     display: none;
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    flex-wrap: wrap;
+    overflow: visible;
+    padding-right: 0;
   }
 `;

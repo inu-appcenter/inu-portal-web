@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import scrapEmptyImg from "@/resources/assets/posts/scrap-empty.svg";
 import scrapFilledImg from "@/resources/assets/posts/scrap-filled.svg";
 import styled from "styled-components";
+import { ROUTES } from "@/constants/routes";
 import { putScrap } from "@/apis/posts";
+import useUserStore from "@/stores/useUserStore";
 import axios, { AxiosError } from "axios";
 
 interface PostScrapProps {
@@ -18,13 +21,36 @@ export default function PostScrap({
 }: PostScrapProps) {
   const [scrapState, setScrapState] = useState(scrap);
   const [isScrapedState, setIsScrapedState] = useState(isScrapedProp);
+  const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
 
   useEffect(() => {
     setScrapState(scrap);
     setIsScrapedState(isScrapedProp);
   }, [scrap, isScrapedProp]);
 
+  const confirmLoginRedirect = () => {
+    if (isLoggedIn) {
+      return true;
+    }
+
+    const shouldMoveLoginPage = window.confirm(
+      "로그인이 필요해요. 로그인페이지로 이동할까요?",
+    );
+
+    if (shouldMoveLoginPage) {
+      navigate(ROUTES.LOGIN);
+    }
+
+    return false;
+  };
+
   const handleScrap = async () => {
+    if (!confirmLoginRedirect()) {
+      return;
+    }
+
     try {
       const response = await putScrap(id);
       if (response.data === 1) {

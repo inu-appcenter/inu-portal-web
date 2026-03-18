@@ -8,6 +8,7 @@ import { ROUTES } from "@/constants/routes";
 import callinuBanner from "@/resources/assets/phonebook/callinu-banner.webp";
 import callinuLogo from "@/resources/assets/phonebook/callinu-logo.webp";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const MobilePhoneBookPage = () => {
   const navigate = useNavigate();
@@ -112,7 +113,11 @@ const MobilePhoneBookPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 0 16px 40px 16px;
+  padding: 12px ${MOBILE_PAGE_GUTTER} 40px;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 16px 0 40px;
+  }
 `;
 
 const BannerSection = styled.div`

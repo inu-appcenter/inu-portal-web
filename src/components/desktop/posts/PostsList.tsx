@@ -1,140 +1,136 @@
+import { useEffect, useMemo, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
-import PostsSort from "@/components/desktop/posts/PostsSort";
-import { Post } from "@/types/posts";
-import { Notice } from "@/types/notices";
-import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getNotices } from "@/apis/notices";
-import { getSearch } from "@/apis/search";
-import { getPosts } from "@/apis/posts";
-import heart from "@/resources/assets/posts/posts-heart.svg";
+import PostsSort from "@/components/desktop/posts/PostsSort";
 import Pagination from "@/components/desktop/posts/Pagination";
 import WriteButton from "@/components/desktop/posts/WriteButton";
+import {
+  ALL_NOTICE_CATEGORY,
+  getNoticeListQueryKey,
+  getNotices,
+  getNoticeSortParam,
+  NOTICE_LIST_STALE_TIME,
+} from "@/apis/notices";
+import { getSearch } from "@/apis/search";
+import { getPosts } from "@/apis/posts";
+import { Post } from "@/types/posts";
+import heart from "@/resources/assets/posts/posts-heart.svg";
 
 export default function PostsList() {
   const location = useLocation();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [notices, setNotices] = useState<Notice[]>([]);
   const [pages, setPages] = useState(1);
 
-  const [type, setType] = useState(""); // 이전 상태와 동일한지 확인
-  const [category, setCategory] = useState(""); // 이전 상태와 동일한지 확인
-  const [page, setPage] = useState(""); // 이전 상태와 동일한지 확인
-  const [sort, setSort] = useState(""); // 이전 상태와 동일한지 확인
-  const [query, setQuery] = useState("");
+  const params = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
 
-  const handleClickPost = (postId: number) => {
-    const params = new URLSearchParams(location.search);
-    params.set("id", String(postId));
-    navigate(`/posts?${params.toString()}`);
-  };
+  const type = params.get("type") ?? "tips";
+  const category = params.get("category") ?? ALL_NOTICE_CATEGORY;
+  const page = Number(params.get("page")) || 1;
+  const sort = params.get("sort") ?? "date";
+  const query = params.get("search") ?? "";
+  const isNoticeType = type === "notice";
+  const noticeSort = getNoticeSortParam(sort);
+
+  const { data: noticeResponse } = useQuery({
+    queryKey: getNoticeListQueryKey(category, noticeSort, page),
+    queryFn: () => getNotices(category, noticeSort, page),
+    enabled: isNoticeType,
+    staleTime: NOTICE_LIST_STALE_TIME,
+    placeholderData: keepPreviousData,
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (isNoticeType) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchPosts = async () => {
       try {
-        if (params.get("type") === "notice") {
-          const response = await getNotices(
-            params.get("category") || "전체",
-            params.get("sort") === "like" ? "view" : "date",
-            Number(params.get("page")) || 1,
-          );
-          setNotices(response.data.contents);
-          setPosts([]);
-          setPages(response.data.pages);
-        } else {
-          if (params.get("search")) {
-            const response = await getSearch(
-              params.get("search") || "",
-              params.get("sort") || "date",
-              Number(params.get("page")) || 1,
-            );
-            setPosts(response.data.contents);
-            setPages(response.data.pages);
-          } else {
-            const response = await getPosts(
-              params.get("category") || "전체",
-              params.get("sort") || "date",
-              Number(params.get("page")) || 1,
-            );
-            setPosts(response.data.contents);
-            setPages(response.data.pages);
-          }
-          setNotices([]);
+        const response = query
+          ? await getSearch(query, sort, page)
+          : await getPosts(category, sort, page);
+
+        if (isCancelled) {
+          return;
         }
+
+        setPosts(response.data.contents);
+        setPages(response.data.pages);
       } catch (error) {
-        console.error("게시글/공지 가져오기 실패", error);
+        if (!isCancelled) {
+          console.error("게시글/공지 가져오기 실패", error);
+        }
       }
     };
 
-    const params = new URLSearchParams(location.search);
-    const tmpType = params.get("type") ? params.get("type") : "tips";
-    const tmpCategory = params.get("category")
-      ? params.get("category")
-      : "전체";
-    const tmpPage = params.get("page") ? params.get("page") : "1";
-    const tmpSort = params.get("sort") ? params.get("sort") : "date";
-    const tmpQuery = params.get("search") ? params.get("search") : "";
-    console.log(tmpQuery, query);
-    if (
-      tmpType === type &&
-      tmpCategory === category &&
-      tmpPage === page &&
-      tmpSort === sort &&
-      tmpQuery === query
-    ) {
-      return; // 이전 상태와 동일한지 확인
-    }
-    setType(tmpType || "tips");
-    setCategory(tmpCategory || "전체");
-    setPage(tmpPage || "1");
-    setSort(tmpSort || "date");
-    setQuery(tmpQuery || "");
-    fetchData();
-  }, [location.search]);
+    fetchPosts();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [category, isNoticeType, page, query, sort]);
+
+  const notices = noticeResponse?.data.contents ?? [];
+  const totalPages = isNoticeType ? noticeResponse?.data.pages ?? page : pages;
+
+  const handleClickPost = (postId: number) => {
+    const nextParams = new URLSearchParams(location.search);
+    nextParams.set("id", String(postId));
+    navigate(`/posts?${nextParams.toString()}`);
+  };
 
   return (
     <PostsListWrapper>
       <PostsSort />
       <CardsWrapper>
-        {posts.map((post) => (
-          <PostCard key={post.id} onClick={() => handleClickPost(post.id)}>
-            <div className="category-like-comment">
-              <span className="category">{post.category}</span>
-              <span className="like-comment">
-                <img src={heart} alt="" />
-                <span>{post.like}</span>
-                <span></span>
-                <span>댓글</span>
-                <span>{post.replyCount}</span>
-              </span>
-            </div>
-            <div className="title">{post.title}</div>
-            <div className="content flex-1">{post.content}</div>
-            <div className="createDate">{post.createDate}</div>
-          </PostCard>
-        ))}
-        {notices.map((notice) => (
-          <PostCard
-            key={notice.id}
-            onClick={() => window.open("https://" + notice.url)}
-          >
-            <div className="category-like-comment">
-              <span className="category">{notice.category}</span>
-              <span className="like-comment">
-                <span>조회</span>
-                <span>{notice.view}</span>
-              </span>
-            </div>
-            <div className="content">{notice.writer}</div>
-            <div className="title flex-1">{notice.title}</div>
-            <div className="createDate">{notice.createDate}</div>
-          </PostCard>
-        ))}
+        {!isNoticeType &&
+          posts.map((post) => (
+            <PostCard key={post.id} onClick={() => handleClickPost(post.id)}>
+              <div className="category-like-comment">
+                <span className="category">{post.category}</span>
+                <span className="like-comment">
+                  <img src={heart} alt="" />
+                  <span>{post.like}</span>
+                  <span></span>
+                  <span>댓글</span>
+                  <span>{post.replyCount}</span>
+                </span>
+              </div>
+              <div className="title">{post.title}</div>
+              <div className="content flex-1">{post.content}</div>
+              <div className="createDate">{post.createDate}</div>
+            </PostCard>
+          ))}
+
+        {isNoticeType &&
+          notices.map((notice) => (
+            <PostCard
+              key={notice.id}
+              onClick={() => window.open("https://" + notice.url)}
+            >
+              <div className="category-like-comment">
+                <span className="category">{notice.category}</span>
+                <span className="like-comment">
+                  <span>조회</span>
+                  <span>{notice.view}</span>
+                </span>
+              </div>
+              <div className="content">{notice.writer}</div>
+              <div className="title flex-1">{notice.title}</div>
+              <div className="createDate">{notice.createDate}</div>
+            </PostCard>
+          ))}
       </CardsWrapper>
       <div className="pagination-writebutton">
         <span />
-        <Pagination pages={pages} />
+        <Pagination pages={totalPages} />
         <WriteButton />
       </div>
     </PostsListWrapper>

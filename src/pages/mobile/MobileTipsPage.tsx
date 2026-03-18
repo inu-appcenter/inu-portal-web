@@ -12,6 +12,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
 import PostItem from "@/components/mobile/notice/PostItem";
+import {
+  DESKTOP_CONTENT_MAX_WIDTH,
+  DESKTOP_MEDIA,
+  MOBILE_PAGE_GUTTER,
+} from "@/styles/responsive";
 
 interface CategoryPosts {
   category: string;
@@ -128,8 +133,8 @@ const MobileTipsPage = () => {
                           <PostItem
                             title={tip.title}
                             // category={tip.category}
-                            date={tip.createDate}
-                            writer={tip.writer}
+                            showDate={false}
+                            showWriter={false}
                             onClick={() => {
                               navigate(ROUTES.BOARD.TIPS_DETAIL(tip.id));
                             }}
@@ -158,19 +163,37 @@ export default MobileTipsPage;
 /* 스타일 정의 */
 const MobileTipsPageWrapper = styled.div`
   width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    margin: 0 auto;
+  }
 `;
 
 const CategorySection = styled.div`
   scroll-margin-top: 150px;
+
+  @media ${DESKTOP_MEDIA} {
+    height: 100%;
+  }
 `;
 
 const TipsListContainerWrapper = styled.div`
   width: 100%;
-  padding: 0 16px 40px;
+  padding: 12px ${MOBILE_PAGE_GUTTER} 40px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  @media ${DESKTOP_MEDIA} {
+    margin: 0;
+    padding: 16px 0 120px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+  }
 `;
 
 const EmptyState = styled.div`

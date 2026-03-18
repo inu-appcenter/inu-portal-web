@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+import { DESKTOP_MEDIA } from "@/styles/responsive";
+
 interface WeekDatesProps {
   dayName: string;
   date: string;
@@ -11,122 +13,220 @@ interface CafeteriaDateProps {
   weekDates: WeekDatesProps[];
 }
 
+type DayTone = "weekday" | "saturday" | "sunday";
+
+const getDayTone = (dayName: string): DayTone => {
+  if (dayName === "일") {
+    return "sunday";
+  }
+
+  if (dayName === "토") {
+    return "saturday";
+  }
+
+  return "weekday";
+};
+
 export default function CafeteriaDate({
   nowday,
   setNowDay,
   weekDates,
 }: CafeteriaDateProps) {
-  const handleChangeDay = (day: number) => {
-    setNowDay(day);
-  };
-
-  // 일요일(0) 처리
   const activeDay = nowday === 0 ? 7 : nowday;
 
   return (
     <DateListContainer>
-      {weekDates.map((weekDate, index) => (
-        <div
-          className={`date ${index + 1 === activeDay ? "check" : ""}`}
-          key={index}
-          onClick={() => handleChangeDay(index + 1)}
-        >
-          <p
-            className="day-name"
-            style={{
-              color:
-                weekDate.dayName === "Sun"
-                  ? "red"
-                  : weekDate.dayName === "Sat"
-                    ? "blue"
-                    : "#444444",
-            }}
+      {weekDates.map((weekDate, index) => {
+        const tone = getDayTone(weekDate.dayName);
+        const isActive = index + 1 === activeDay;
+
+        return (
+          <DateButton
+            key={index}
+            type="button"
+            $tone={tone}
+            $isActive={isActive}
+            onClick={() => setNowDay(index + 1)}
+            aria-pressed={isActive}
           >
-            {weekDate.dayName}
-          </p>
-          <p
-            className="date-number"
-            style={{
-              color:
-                weekDate.dayName === "Sun"
-                  ? "red"
-                  : weekDate.dayName === "Sat"
-                    ? "blue"
-                    : "#444444",
-            }}
-          >
-            {weekDate.date}
-          </p>
-        </div>
-      ))}
+            <span className="day-name">{weekDate.dayName}</span>
+            <span className="date-number">{weekDate.date}</span>
+          </DateButton>
+        );
+      })}
     </DateListContainer>
   );
 }
 
 const DateListContainer = styled.div`
-  display: flex;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   width: 100%;
-  gap: 8px;
-  justify-content: space-around;
-
-  /* 그림자 공간 확보 및 좌우 여백 */
-  padding: 10px 32px;
-  //padding-right: 24px;
+  gap: 6px;
   box-sizing: border-box;
 
-  /* 스크롤바 제거 */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, 580px);
+    margin: 0;
+    justify-self: start;
+    gap: 8px;
+  }
+`;
+
+const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 54px;
+  padding: 7px 4px;
+  border-radius: 11px;
+  border: 1px solid
+    ${({ $tone, $isActive }) => {
+      if ($isActive && $tone === "sunday") {
+        return "#efc1c1";
+      }
+
+      if ($isActive && $tone === "saturday") {
+        return "#c3d2fb";
+      }
+
+      if ($isActive) {
+        return "#91aee4";
+      }
+
+      return "#e3e8f1";
+    }};
+  background:
+    ${({ $tone, $isActive }) => {
+      if ($isActive && $tone === "sunday") {
+        return "#fff6f6";
+      }
+
+      if ($isActive && $tone === "saturday") {
+        return "#f5f8ff";
+      }
+
+      if ($isActive) {
+        return "#eff4ff";
+      }
+
+      return "#fbfcfe";
+    }};
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+
+  .day-name {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.1;
+    color:
+      ${({ $tone, $isActive }) => {
+        if ($isActive && $tone === "sunday") {
+          return "#e05656";
+        }
+
+        if ($isActive && $tone === "saturday") {
+          return "#4d77e8";
+        }
+
+        if ($isActive) {
+          return "#5f78a7";
+        }
+
+        if ($tone === "sunday") {
+          return "#e05656";
+        }
+
+        if ($tone === "saturday") {
+          return "#4d77e8";
+        }
+
+        return "#6a7485";
+      }};
   }
 
-  /* 우측 페이드 효과 */
-  mask-image: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 1) 80%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 1) 80%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  .date-number {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.15;
+    color:
+      ${({ $tone, $isActive }) => {
+        if ($isActive && $tone === "sunday") {
+          return "#cc4747";
+        }
 
-  .date {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+        if ($isActive && $tone === "saturday") {
+          return "#3d67d7";
+        }
 
-    /* 그림자 설정 */
-    box-shadow: 0px 4px 4px 0px #00000040;
+        if ($isActive) {
+          return "#2f5fb8";
+        }
 
-    padding: 8px 10px;
-    border-radius: 10px;
-    background-color: white;
-    cursor: pointer;
+        if ($tone === "sunday") {
+          return "#d64b4b";
+        }
+
+        if ($tone === "saturday") {
+          return "#3f6fe4";
+        }
+
+        return "#273142";
+      }};
+  }
+
+  &:hover {
+    border-color:
+      ${({ $tone, $isActive }) => {
+        if ($isActive && $tone === "sunday") {
+          return "#e7b2b2";
+        }
+
+        if ($isActive && $tone === "saturday") {
+          return "#b8cbfb";
+        }
+
+        if ($isActive) {
+          return "#85a5df";
+        }
+
+        return "#ccd6e5";
+      }};
+    background:
+      ${({ $tone, $isActive }) => {
+        if ($isActive && $tone === "sunday") {
+          return "#fff2f2";
+        }
+
+        if ($isActive && $tone === "saturday") {
+          return "#eef4ff";
+        }
+
+        if ($isActive) {
+          return "#e8f0ff";
+        }
+
+        return "#ffffff";
+      }};
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    min-height: 58px;
+    padding: 8px 5px;
+    border-radius: 12px;
 
     .day-name {
-      font-size: 10px;
-      font-weight: 700;
-      margin: 0;
+      font-size: 11px;
     }
 
     .date-number {
-      font-size: 15px;
-      font-weight: 700;
-      margin: 0;
-    }
-  }
-
-  .check {
-    background-color: #4071b9;
-    .day-name,
-    .date-number {
-      color: white !important;
+      font-size: 16px;
     }
   }
 `;

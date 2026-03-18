@@ -1,12 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import MobileNav from "@/containers/mobile/common/MobileNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { useHeaderConfig } from "@/context/HeaderContext";
+import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
 import { ROUTES } from "@/constants/routes";
 import UpperBackgroundImg from "@/resources/assets/mobile-common/upperBackgroundImg.svg";
+import {
+  DESKTOP_CONTENT_MAX_WIDTH,
+  DESKTOP_GUTTER,
+  DESKTOP_MEDIA,
+} from "@/styles/responsive";
 
 export default function MainTabLayout({
   showHeader = true,
@@ -18,6 +24,7 @@ export default function MainTabLayout({
   const location = useLocation();
   const outlet = useOutlet();
   const { setIsScrolled } = useHeaderConfig();
+  const headerRef = useRef<HTMLElement | null>(null);
 
   const isHome = location.pathname === ROUTES.HOME || location.pathname === "/";
 
@@ -35,7 +42,8 @@ export default function MainTabLayout({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [setIsScrolled]);
 
-  const headerHeight = showHeader ? 100 : 20;
+  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader);
+  const headerHeight = showHeader ? measuredHeaderHeight : 20;
   const navHeight = showNav ? 100 : 40;
 
   return (
@@ -43,7 +51,11 @@ export default function MainTabLayout({
       {isHome && <UpperBackground src={UpperBackgroundImg} alt="" />}
       {showHeader && (
         <HeaderFloating>
-          <MobileHeader targetPath={location.pathname as any} />
+          <MobileHeader
+            ref={headerRef}
+            targetPath={location.pathname as any}
+            contained
+          />
         </HeaderFloating>
       )}
       <ContentArea $pt={headerHeight} $pb={navHeight}>
@@ -95,6 +107,13 @@ const ContentArea = styled.div<{ $pt: number; $pb: number }>`
   padding-top: ${(props) => props.$pt}px;
   padding-bottom: ${(props) => props.$pb}px;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    margin: 0 auto;
+    padding-left: ${DESKTOP_GUTTER};
+    padding-right: ${DESKTOP_GUTTER};
+  }
 `;
 
 const HeaderFloating = styled.div`
@@ -103,8 +122,14 @@ const HeaderFloating = styled.div`
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 768px;
   z-index: 100;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+    padding: 0 ${DESKTOP_GUTTER};
+    box-sizing: border-box;
+  }
 `;
 
 const NavFloating = styled.div`
@@ -113,6 +138,13 @@ const NavFloating = styled.div`
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 768px;
   z-index: 100;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+    padding: 0 ${DESKTOP_GUTTER};
+    box-sizing: border-box;
+    bottom: 20px;
+  }
 `;

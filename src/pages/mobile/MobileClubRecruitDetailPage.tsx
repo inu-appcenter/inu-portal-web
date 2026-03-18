@@ -8,6 +8,7 @@ import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import ClubContent from "@/components/mobile/club/clubcontent.tsx";
 import { useHeader } from "@/context/HeaderContext";
 // import UploadBook from "../util/book/UploadBook.tsx";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileClubRecruitDetailPage() {
   const location = useLocation();
@@ -59,8 +60,12 @@ const MobileClubPageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
 
   width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;

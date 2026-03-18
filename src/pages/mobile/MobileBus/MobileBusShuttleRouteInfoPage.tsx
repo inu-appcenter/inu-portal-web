@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { SHUTTLE_ROUTES } from "@/constants/bus";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const MobileBusShuttleRouteInfoPage = () => {
   const location = useLocation();
@@ -36,6 +37,10 @@ export default MobileBusShuttleRouteInfoPage;
 const Wrapper = styled.div`
   width: 100%;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;

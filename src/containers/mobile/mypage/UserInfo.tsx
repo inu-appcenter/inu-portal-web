@@ -3,6 +3,7 @@ import styled from "styled-components";
 import useUserStore from "@/stores/useUserStore";
 import { FiChevronRight } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 export default function UserInfo() {
   const { userInfo } = useUserStore();
@@ -45,6 +46,10 @@ const UserInfoWrapper = styled.div`
   &:active {
     transform: scale(0.98);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: none;
   }
 `;
 

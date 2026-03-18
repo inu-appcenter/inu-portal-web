@@ -1,14 +1,16 @@
-import styled from "styled-components";
-import Map from "@/components/map/components/KakaoMap";
-import { useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import styled from "styled-components";
+
+import { postApiLogs } from "@/apis/members";
+import Map from "@/components/map/components/KakaoMap";
 import PlaceListPanel from "@/components/map/components/PlaceListPanel";
 import {
   BOTTOM_SHEET_HEIGHT,
   TabType,
 } from "@/components/map/constants/mapConfig";
 import { useHeader } from "@/context/HeaderContext";
-import { postApiLogs } from "@/apis/members";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 interface XY {
   X: number;
@@ -28,7 +30,11 @@ export default function MobileCampusPage() {
     BOTTOM_SHEET_HEIGHT.DEFAULT,
   );
   const [isTracking, setIsTracking] = useState(false);
-
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia(DESKTOP_MEDIA).matches
+      : false,
+  );
   const [selectedCoord, setSelectedCoord] = useState<XY>(SCHOOL_COORD);
 
   const location = useLocation();
@@ -38,12 +44,17 @@ export default function MobileCampusPage() {
     [location.pathname],
   );
 
-  // 핀 클릭 핸들러
-  const handleMarkerClick = (markerId: string | null) => {
+  const handleMarkerClick = (markerId: string | null, coord?: XY) => {
     setOpenedMarkerId(markerId);
-    if (markerId) {
-      // 핀 클릭 시 바텀시트만 목록이 보이는 높이로 올림
-      setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
+
+    if (!markerId) {
+      return;
+    }
+
+    setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
+
+    if (coord) {
+      setSelectedCoord(coord);
     }
   };
 
@@ -56,29 +67,52 @@ export default function MobileCampusPage() {
   );
 
   useEffect(() => {
-    if (isCampus) {
-      const logApi = async () => {
-        console.log("캠퍼스맵 로그");
-        await postApiLogs("/api/campusmap");
-      };
-      logApi();
+    const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
+    const updateDesktopState = (matches: boolean) => {
+      setIsDesktop(matches);
+    };
 
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "auto";
-      };
+    updateDesktopState(mediaQuery.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      updateDesktopState(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isCampus) {
+      return;
     }
+
+    const logApi = async () => {
+      await postApiLogs("/api/campusmap");
+    };
+
+    logApi();
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [isCampus]);
 
-  // 바텀시트 높이에 따른 지도 중심점 보정값 계산
   const offset = useMemo(() => {
+    if (isDesktop) {
+      return 0;
+    }
+
     const currentSnap =
       typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
-    // 0.0022에서 0.0018로 하향 조정하여 마커 위치를 조금 더 아래(중앙 방향)로 내림
-    return currentSnap * 0.0018;
-  }, [snap]);
 
-  // 최종적으로 지도에 전달할 중심점 (보정됨)
+    return currentSnap * 0.0018;
+  }, [isDesktop, snap]);
+
   const viewXY = useMemo(
     () => ({
       X: selectedCoord.X - offset,
@@ -89,6 +123,22 @@ export default function MobileCampusPage() {
 
   return (
     <MobileCampusPageWrapper>
+      {isDesktop && (
+        <PlaceListPanel
+          isOpen={isCampus}
+          isDesktop={isDesktop}
+          selectedTab={selectedTab}
+          setSelectedTab={setSelectedTab}
+          map={map}
+          setSelectedCoord={setSelectedCoord}
+          openedMarkerId={openedMarkerId}
+          setOpenedMarkerId={setOpenedMarkerId}
+          snap={snap}
+          setSnap={setSnap}
+          setIsTracking={setIsTracking}
+        />
+      )}
+
       <MapWrapper>
         <Map
           selectedTab={selectedTab}
@@ -102,18 +152,21 @@ export default function MobileCampusPage() {
         />
       </MapWrapper>
 
-      <PlaceListPanel
-        isOpen={isCampus}
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
-        map={map}
-        setSelectedCoord={setSelectedCoord}
-        openedMarkerId={openedMarkerId}
-        setOpenedMarkerId={setOpenedMarkerId}
-        snap={snap}
-        setSnap={setSnap}
-        setIsTracking={setIsTracking}
-      />
+      {!isDesktop && (
+        <PlaceListPanel
+          isOpen={isCampus}
+          isDesktop={isDesktop}
+          selectedTab={selectedTab}
+          setSelectedTab={setSelectedTab}
+          map={map}
+          setSelectedCoord={setSelectedCoord}
+          openedMarkerId={openedMarkerId}
+          setOpenedMarkerId={setOpenedMarkerId}
+          snap={snap}
+          setSnap={setSnap}
+          setIsTracking={setIsTracking}
+        />
+      )}
     </MobileCampusPageWrapper>
   );
 }
@@ -126,6 +179,16 @@ const MobileCampusPageWrapper = styled.div`
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: clamp(340px, 27vw, 400px) minmax(0, 1fr);
+    gap: 20px;
+    height: calc(100dvh - 140px);
+    min-height: 720px;
+    padding-bottom: 12px;
+    overflow: visible;
+  }
 `;
 
 const MapWrapper = styled.div`
@@ -135,4 +198,16 @@ const MapWrapper = styled.div`
   position: absolute;
   top: 0;
   left: 0;
+
+  @media ${DESKTOP_MEDIA} {
+    position: relative;
+    min-width: 0;
+    border-radius: 28px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow:
+      0 20px 40px rgba(35, 60, 115, 0.08),
+      0 4px 12px rgba(35, 60, 115, 0.06);
+    border: 1px solid rgba(64, 113, 185, 0.1);
+  }
 `;

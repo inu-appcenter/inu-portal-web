@@ -14,6 +14,8 @@ interface NoticeItemProps {
   onClick?: () => void;
   /** 말줄임 여부 설정 (기본값: true) */
   isEllipsis?: boolean;
+  showDate?: boolean;
+  showWriter?: boolean;
 }
 
 const PostItem = ({
@@ -26,7 +28,12 @@ const PostItem = ({
   isLoading,
   onClick,
   isEllipsis = true,
+  showDate = true,
+  showWriter = true,
 }: NoticeItemProps) => {
+  const hasInfoLine =
+    (showDate && !!date) || (showWriter && !!writer) || views !== undefined;
+
   if (isLoading) {
     return (
       <NoticeItemWrapper>
@@ -53,18 +60,20 @@ const PostItem = ({
       {category && <Category>{category}</Category>}
       <Title isEllipsis={isEllipsis}>{title || ""}</Title>
       {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
-      <InfoLine>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <div className="date">{date}</div>
-          {writer && <Badge text={writer} />}
-        </div>
-        {views !== undefined && (
-          <ViewCount>
-            <Eye size={14} />
-            {views}
-          </ViewCount>
-        )}
-      </InfoLine>
+      {hasInfoLine && (
+        <InfoLine>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            {showDate && date && <div className="date">{date}</div>}
+            {showWriter && writer && <Badge text={writer} />}
+          </div>
+          {views !== undefined && (
+            <ViewCount>
+              <Eye size={14} />
+              {views}
+            </ViewCount>
+          )}
+        </InfoLine>
+      )}
     </NoticeItemWrapper>
   );
 };
