@@ -82,7 +82,10 @@ const PlaceListPanel = ({
               title="여성용품 비치"
               isExist={place.restareaInfo?.hasFemaleProducts}
             />
-            <RestInfoBox title="침대, 빈백(개)" num={place.restareaInfo?.bedCount} />
+            <RestInfoBox
+              title="침대, 빈백(개)"
+              num={place.restareaInfo?.bedCount}
+            />
             <RestInfoBox
               title="샤워실"
               isExist={place.restareaInfo?.hasShowerRoom}
@@ -100,26 +103,35 @@ const PlaceListPanel = ({
 
   const panelContent = (
     <PanelSurface $isDesktop={isDesktop}>
-      {!isDesktop && (
-        <HandleWrapper>
-          <HandleBar />
-        </HandleWrapper>
-      )}
-
       <PlaceListPanelWrapper $isDesktop={isDesktop}>
-        {isDesktop && (
-          <DesktopPanelHeader>
-            <DesktopPanelEyebrow>Campus Map</DesktopPanelEyebrow>
-            <DesktopPanelTitle>장소 정보</DesktopPanelTitle>
-          </DesktopPanelHeader>
+        {!isDesktop && (
+          <DragHeader>
+            <HandleWrapper>
+              <HandleBar />
+            </HandleWrapper>
+            <Tab handleTabClick={handleTabClick} selectedTab={selectedTab} />
+          </DragHeader>
         )}
 
-        <Tab handleTabClick={handleTabClick} selectedTab={selectedTab} />
+        {isDesktop && (
+          <>
+            <DesktopPanelHeader>
+              <DesktopPanelEyebrow>Campus Map</DesktopPanelEyebrow>
+              <DesktopPanelTitle>장소 정보</DesktopPanelTitle>
+            </DesktopPanelHeader>
+            <Tab handleTabClick={handleTabClick} selectedTab={selectedTab} />
+          </>
+        )}
 
-        <ListViewport $isDesktop={isDesktop} $snap={snap}>
+        <ListViewport
+          $isDesktop={isDesktop}
+          $snap={snap}
+          data-vaul-no-drag={isDesktop ? undefined : ""}
+        >
           <PlaceList
             places={getPlacesData()}
             map={map}
+            snap={snap}
             selectedTab={selectedTab}
             setSelectedCoord={setSelectedCoord}
             openedMarkerId={openedMarkerId}
@@ -203,6 +215,13 @@ const DrawerContent = styled(Drawer.Content)`
   z-index: 1000;
   margin-left: auto;
   margin-right: auto;
+`;
+
+const DragHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 10px;
 `;
 
 const HandleWrapper = styled.div`

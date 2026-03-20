@@ -144,6 +144,7 @@ export default function MobileCampusPage() {
           selectedTab={selectedTab}
           viewXY={viewXY}
           setMap={setMap}
+          setSelectedCoord={setSelectedCoord}
           openedMarkerId={openedMarkerId}
           setOpenedMarkerId={handleMarkerClick}
           offset={offset}

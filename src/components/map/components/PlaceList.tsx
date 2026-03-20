@@ -20,6 +20,7 @@ import {
 interface PlaceListProps {
   places: Place[];
   map: any;
+  snap: string | number | null;
   selectedTab: TabType;
   setSelectedCoord: (coord: { X: number; Y: number }) => void;
   openedMarkerId: string | null;
@@ -32,6 +33,7 @@ interface PlaceListProps {
 const PlaceList = ({
   places,
   map,
+  snap,
   selectedTab,
   setSelectedCoord,
   openedMarkerId,
@@ -43,6 +45,86 @@ const PlaceList = ({
   const [openIndex, setOpenIndex] = useState(-1);
   const config = MAP_TAB_CONFIG[selectedTab];
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const touchGestureRef = useRef({
+    startY: 0,
+    lastY: 0,
+    startAtTop: false,
+    startAtBottom: false,
+    isEdgeSwipe: false,
+  });
+  const snapPoints = [
+    BOTTOM_SHEET_HEIGHT.MIN,
+    BOTTOM_SHEET_HEIGHT.DEFAULT,
+    BOTTOM_SHEET_HEIGHT.MAX,
+  ] as const;
+
+  const getSnapIndex = () => {
+    const currentSnap =
+      typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
+    const currentIndex = snapPoints.findIndex((point) => point === currentSnap);
+
+    return currentIndex === -1 ? 1 : currentIndex;
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const listElement = event.currentTarget;
+    const touchY = event.touches[0]?.clientY ?? 0;
+    const maxScrollTop = Math.max(
+      listElement.scrollHeight - listElement.clientHeight,
+      0,
+    );
+
+    touchGestureRef.current = {
+      startY: touchY,
+      lastY: touchY,
+      startAtTop: listElement.scrollTop <= 1,
+      startAtBottom: listElement.scrollTop >= maxScrollTop - 1,
+      isEdgeSwipe: false,
+    };
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touchY = event.touches[0]?.clientY ?? touchGestureRef.current.lastY;
+    const deltaY = touchY - touchGestureRef.current.startY;
+
+    touchGestureRef.current.lastY = touchY;
+
+    const isDraggingDown = deltaY > 0;
+    const canResizeDrawer =
+      (isDraggingDown && touchGestureRef.current.startAtTop) ||
+      (!isDraggingDown && touchGestureRef.current.startAtBottom);
+
+    if (!canResizeDrawer || deltaY === 0) {
+      touchGestureRef.current.isEdgeSwipe = false;
+      return;
+    }
+
+    touchGestureRef.current.isEdgeSwipe = true;
+  };
+
+  const handleTouchEnd = () => {
+    const { isEdgeSwipe, startY, lastY } = touchGestureRef.current;
+
+    if (!isEdgeSwipe) {
+      return;
+    }
+
+    const deltaY = lastY - startY;
+
+    if (Math.abs(deltaY) < 48) {
+      return;
+    }
+
+    const currentIndex = getSnapIndex();
+    const nextIndex =
+      deltaY < 0
+        ? Math.min(currentIndex + 1, snapPoints.length - 1)
+        : Math.max(currentIndex - 1, 0);
+
+    if (nextIndex !== currentIndex) {
+      setSnap(snapPoints[nextIndex]);
+    }
+  };
 
   // 탭 변경 시 리스트 상단으로 스크롤 및 인덱스 초기화
   useEffect(() => {
@@ -127,7 +209,12 @@ const PlaceList = ({
   };
 
   return (
-    <ListWrapper>
+    <ListWrapper
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+    >
       {places.map((place, index) => {
         const isOpen = openIndex === index;
         return (
@@ -172,6 +259,9 @@ const ListWrapper = styled.div`
   flex-direction: column;
   margin-top: 20px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding-right: 10px;
   padding-bottom: 20px;
   box-sizing: border-box;
