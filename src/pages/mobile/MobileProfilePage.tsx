@@ -15,7 +15,7 @@ export default function MobileProfilePage() {
   return (
     <MobileProfilePageWrapper>
       <Background>
-        <UserWrapper>{userInfo.id && <UserInfo />}</UserWrapper>
+        <UserWrapper>{userInfo.id && <UserInfo clickable={false} />}</UserWrapper>
       </Background>
       <UserModify />
     </MobileProfilePageWrapper>

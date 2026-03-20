@@ -4,9 +4,13 @@ import styled from "styled-components";
 
 interface ProfileImageProps {
   fireId: number;
+  clickable?: boolean;
 }
 
-export default function ProfileImage({ fireId }: ProfileImageProps) {
+export default function ProfileImage({
+  fireId,
+  clickable = true,
+}: ProfileImageProps) {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -17,14 +21,16 @@ export default function ProfileImage({ fireId }: ProfileImageProps) {
     <ProfileImg
       src={`https://portal.inuappcenter.kr/images/profile/${fireId}`}
       alt={`Profile Image`}
-      onClick={handleClick}
+      onClick={clickable ? handleClick : undefined}
+      $clickable={clickable}
     />
   );
 }
 
-const ProfileImg = styled.img`
+const ProfileImg = styled.img<{ $clickable: boolean }>`
   width: 30px;
   height: 30px;
   border-radius: 100%;
   border: 2px solid #ccc;
+  cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
 `;

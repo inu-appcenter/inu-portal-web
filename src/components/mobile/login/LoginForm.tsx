@@ -1,12 +1,24 @@
 import { useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { login } from "@/apis/members";
+import { ROUTES } from "@/constants/routes";
 import TermOfUse from "@/components/desktop/login/TermsOfUse";
 import useUserStore from "@/stores/useUserStore";
 import LoginPassword from "@/resources/assets/login/login-password.svg";
 import LoginUser from "@/resources/assets/login/login-user.svg";
+
+function getRedirectPath(search: string) {
+  const redirect = new URLSearchParams(search).get("redirect");
+
+  if (!redirect || !redirect.startsWith("/") || redirect.startsWith("//")) {
+    return null;
+  }
+
+  return redirect;
+}
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -16,6 +28,8 @@ export default function LoginForm() {
     "password",
   );
   const { setTokenInfo } = useUserStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const isActive = studentId.trim() !== "" && password.trim() !== "";
 
@@ -34,6 +48,11 @@ export default function LoginForm() {
       setLoading(true);
       const response = await login(studentId, password);
       setTokenInfo(response.data);
+      setLoading(false);
+
+      const redirectPath = getRedirectPath(location.search);
+
+      navigate(redirectPath ?? ROUTES.HOME, { replace: true });
     } catch (error) {
       console.error("로그인 실패", error);
       setLoading(false);
@@ -41,7 +60,7 @@ export default function LoginForm() {
       if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 401:
-            alert("학번 또는 비밀번호가 틀립니다.");
+            alert("학번 또는 비밀번호가 올바르지 않습니다.");
             break;
           default:
             alert("로그인에 실패했습니다.");
@@ -65,7 +84,7 @@ export default function LoginForm() {
         <FormInputWrapper>
           <Input
             type="text"
-            placeholder="예 202100000"
+            placeholder="예: 202100000"
             value={studentId}
             onChange={(event) => setStudentId(event.target.value)}
             onKeyDown={handleKeyPress}
@@ -99,7 +118,7 @@ export default function LoginForm() {
         $isActive={isActive && !loading}
         id="login-button"
       >
-        {loading ? "로딩 중.." : "로그인"}
+        {loading ? "로그인 중..." : "로그인"}
       </LoginButton>
 
       <span className="termofuse">

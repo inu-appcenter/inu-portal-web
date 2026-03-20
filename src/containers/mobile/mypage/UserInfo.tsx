@@ -5,27 +5,34 @@ import { FiChevronRight } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 
-export default function UserInfo() {
+interface UserInfoProps {
+  clickable?: boolean;
+}
+
+export default function UserInfo({ clickable = true }: UserInfoProps) {
   const { userInfo } = useUserStore();
   const navigate = useNavigate();
 
   return (
-    <UserInfoWrapper onClick={() => navigate("/mypage/profile")}>
+    <UserInfoWrapper
+      $clickable={clickable}
+      onClick={clickable ? () => navigate("/mypage/profile") : undefined}
+    >
       <ProfileSection>
         <ImageWrapper>
-          <ProfileImage fireId={userInfo.fireId} />
+          <ProfileImage fireId={userInfo.fireId} clickable={clickable} />
         </ImageWrapper>
         <TextSection>
           <Nickname>{userInfo.nickname}</Nickname>
           <Department>{userInfo.department || "학과 정보 없음"}</Department>
         </TextSection>
       </ProfileSection>
-      <FiChevronRight size={24} color="#adb5bd" />
+      {clickable && <FiChevronRight size={24} color="#adb5bd" />}
     </UserInfoWrapper>
   );
 }
 
-const UserInfoWrapper = styled.div`
+const UserInfoWrapper = styled.div<{ $clickable: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -40,13 +47,18 @@ const UserInfoWrapper = styled.div`
     0 12px 28px rgba(0, 0, 0, 0.06);
   /* 아주 연한 테두리 추가로 구분감 부여 */
   border: 1px solid rgba(0, 0, 0, 0.03);
-  cursor: pointer;
+  cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
   transition: all 0.2s ease;
 
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-  }
+  ${({ $clickable }) =>
+    $clickable
+      ? `
+        &:active {
+          transform: scale(0.98);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        }
+      `
+      : ""}
 
   @media ${DESKTOP_MEDIA} {
     max-width: none;
