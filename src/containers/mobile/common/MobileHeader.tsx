@@ -210,6 +210,7 @@ const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
   padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
   pointer-events: auto;
+  overflow: visible;
 
   @media ${DESKTOP_MEDIA} {
     padding: 0;
@@ -307,4 +308,5 @@ const FloatingWrapper = styled.div`
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   min-height: 36px;
+  overflow: visible;
 `;

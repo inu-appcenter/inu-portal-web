@@ -26,7 +26,10 @@ export default function MainTabLayout({
   const { setIsScrolled } = useHeaderConfig();
   const headerRef = useRef<HTMLElement | null>(null);
 
-  const isHome = location.pathname === ROUTES.HOME || location.pathname === "/";
+  const isHome =
+    location.pathname === ROUTES.HOME ||
+    location.pathname === ROUTES.MOBILE_HOME ||
+    location.pathname === "/";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -48,7 +51,11 @@ export default function MainTabLayout({
 
   return (
     <LayoutContainer id="app-scroll-view" $isHome={isHome}>
-      {isHome && <UpperBackground src={UpperBackgroundImg} alt="" />}
+      {isHome && (
+        <HomeBackground aria-hidden="true">
+          <UpperBackground src={UpperBackgroundImg} alt="" />
+        </HomeBackground>
+      )}
       {showHeader && (
         <HeaderFloating>
           <MobileHeader
@@ -75,19 +82,33 @@ const LayoutContainer = styled.div<{ $isHome: boolean }>`
   width: 100%;
   min-height: 100vh;
   position: relative;
-  background-color: #f1f1f3;
+  isolation: isolate;
+  background-color: ${(props) => (props.$isHome ? "transparent" : "#f1f1f3")};
+`;
 
-  ${(props) =>
-    props.$isHome &&
-    `
-    background: conic-gradient(
-      from 85deg at 50.89% 49.77%,
-      #cfe9ea 76.62deg,
-      #d4e3ef 135.72deg,
-      #def 265.16deg,
-      #d4e3ef 314.83deg
-    );
-  `}
+const HomeBackground = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      76% 58% at 92% 88%,
+      rgba(207, 233, 234, 0.94) 0%,
+      rgba(207, 233, 234, 0) 100%
+    ),
+    radial-gradient(
+      64% 48% at 86% 14%,
+      rgba(212, 227, 239, 0.88) 0%,
+      rgba(212, 227, 239, 0) 100%
+    ),
+    radial-gradient(
+      82% 58% at 18% 18%,
+      rgba(221, 238, 255, 0.9) 0%,
+      rgba(221, 238, 255, 0) 100%
+    ),
+    linear-gradient(180deg, #f4fbff 0%, #edf6ff 48%, #f3f9ff 100%);
 `;
 
 const UpperBackground = styled.img`
@@ -95,8 +116,8 @@ const UpperBackground = styled.img`
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 0;
-  pointer-events: none;
+  max-width: none;
+  opacity: 0.72;
 `;
 
 const ContentArea = styled.div<{ $pt: number; $pb: number }>`

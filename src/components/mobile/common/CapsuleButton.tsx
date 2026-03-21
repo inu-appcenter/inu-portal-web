@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SOFT_PILL_SHADOW } from "@/styles/shadows";
 interface CapsuleButtonProps {
   iconSrc: string;
   title: string;
@@ -38,7 +39,7 @@ const CapsuleButtonWrapper = styled.button<{ $compact: boolean }>`
 
   border-radius: 50px;
   background: #fff;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: ${SOFT_PILL_SHADOW};
 
   text-align: start;
 `;

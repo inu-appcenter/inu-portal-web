@@ -65,18 +65,18 @@ const MaskContainer = styled.div`
   width: 100%;
   overflow: hidden;
 
-  /* 우측 끝부분을 투명하게 처리 (배경색 무관) */
   mask-image: linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 1) 88%,
     rgba(0, 0, 0, 0) 100%
   );
   -webkit-mask-image: linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 1) 88%,
     rgba(0, 0, 0, 0) 100%
   );
 
+  /* 우측 끝부분을 투명하게 처리 (배경색 무관) */
   @media ${DESKTOP_MEDIA} {
     overflow: visible;
     mask-image: none;
@@ -93,10 +93,9 @@ const ChipGroupWrapper = styled.div`
   overflow-y: hidden;
   white-space: nowrap;
 
-  padding: 4px 0;
+  padding: 8px 20px 12px 2px;
 
   /* 마스크에 가려지는 영역 보정 */
-  padding-right: 20px;
 
   -webkit-overflow-scrolling: touch;
 
@@ -107,6 +106,6 @@ const ChipGroupWrapper = styled.div`
   @media ${DESKTOP_MEDIA} {
     flex-wrap: wrap;
     overflow: visible;
-    padding-right: 0;
+    padding: 8px 0 12px;
   }
 `;

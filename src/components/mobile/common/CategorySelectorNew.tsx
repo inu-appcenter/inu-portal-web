@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 
 interface CategorySelectorNewProps {
   categories: string[];
@@ -87,6 +88,7 @@ const CategorySelectorWrapper = styled.div`
   width: fit-content;
   max-width: 100%;
   height: fit-content;
+  overflow: visible;
 `;
 
 const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
@@ -95,9 +97,13 @@ const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
   max-width: 100%;
   flex-direction: row;
   gap: 6px;
-  overflow-x: auto;
+  overflow-x: ${({ $hasHorizontalOverflow }) =>
+    $hasHorizontalOverflow ? "auto" : "visible"};
+  overflow-y: visible;
   padding: ${({ $hasHorizontalOverflow }) =>
-    $hasHorizontalOverflow ? "4px 20px 4px 0" : "4px 0"};
+    $hasHorizontalOverflow ? "4px 16px 4px 2px" : "4px 0 4px 2px"};
+  margin: ${({ $hasHorizontalOverflow }) =>
+    $hasHorizontalOverflow ? "0 -16px 0 0" : "0"};
   box-sizing: border-box;
 
   /* Keep the right fade only while horizontal scroll is actually possible. */
@@ -105,7 +111,7 @@ const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
     $hasHorizontalOverflow
       ? `linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 1) 94%,
     rgba(0, 0, 0, 0) 100%
   )`
       : "none"};
@@ -113,7 +119,7 @@ const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
     $hasHorizontalOverflow
       ? `linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 90%,
+    rgba(0, 0, 0, 1) 94%,
     rgba(0, 0, 0, 0) 100%
   )`
       : "none"};
@@ -137,6 +143,6 @@ const FillItem = styled.div<{ $selected: boolean }>`
 
   background: ${({ $selected }) => ($selected ? "#5E92F0" : "#ffffff")};
   color: ${({ $selected }) => ($selected ? "#F4F4F4" : "#666")};
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: ${SOFT_CHIP_SHADOW};
   cursor: pointer;
 `;

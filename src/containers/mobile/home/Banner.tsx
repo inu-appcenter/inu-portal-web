@@ -6,6 +6,7 @@ import styled from "styled-components";
 
 import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 
 import deptNoticeBanner from "@/resources/assets/banner/학과공지알리미.webp";
 import busBanner from "@/resources/assets/banner/인입런.webp";
@@ -213,6 +214,11 @@ const BannerWrapper = styled.div`
   background: transparent;
   border-radius: 20px;
   overflow: hidden;
+  box-shadow: ${SOFT_CARD_SHADOW};
+
+  @media ${DESKTOP_MEDIA} {
+    box-shadow: none;
+  }
 `;
 
 const Viewport = styled.div`

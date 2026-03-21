@@ -10,6 +10,7 @@ import clubImg from "@/resources/assets/mobile-home/category-form/club.svg";
 import busImg from "@/resources/assets/mobile-home/category-form/bus.svg";
 import schoolNoticeImg from "@/resources/assets/mobile-home/category-form/school-notice.svg";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 
 const categories = [
   { title: "식당 메뉴", img: menuImg, href: "/home/menu" },
@@ -52,7 +53,7 @@ const CategoryFormWrapper = styled.div`
   padding: 16px;
   border-radius: 20px;
   background: #fff;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: ${SOFT_CARD_SHADOW};
 
   @media ${DESKTOP_MEDIA} {
     grid-template-columns: repeat(8, minmax(0, 1fr));
