@@ -1,6 +1,6 @@
 # InTip (인팁) - 인천대학교 통합 포털 서비스
 
-![InTip Logo](./public/pwa-192x192.png)
+![InTip Logo](./public/icon.svg)
 
 **InTip(인팁)**은 인천대학교 학생들의 편리한 대학 생활을 위해 실시간 버스 정보, 학사 공지, 식단, 시간표 등 흩어져 있는 학교 정보를 한데 모아 제공하는 통합 포털 웹 서비스입니다.
 
@@ -26,7 +26,6 @@
 
 ### 👤 개인화 서비스
 - **마이페이지**: 내가 쓴 글, 좋아요 한 게시글, 스크랩한 정보 관리.
-- **PWA 지원**: 모바일 앱처럼 홈 화면에 추가하여 간편하게 접속 가능.
 
 ---
 
@@ -45,7 +44,6 @@
 
 ### Environment & Tools
 - **Language**: TypeScript
-- **PWA**: vite-plugin-pwa
 - **Linting**: ESLint, Prettier
 
 ---
@@ -88,8 +86,3 @@ npm run dev
 ```bash
 npm run build
 ```
-
----
-
-## 📱 서비스 화면 (PWA)
-본 서비스는 모바일 환경에 최적화되어 있으며, 브라우저의 '홈 화면에 추가' 기능을 통해 앱처럼 사용할 수 있습니다.

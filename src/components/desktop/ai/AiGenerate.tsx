@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import useUserStore from "@/stores/useUserStore";
 import AiGallery from "@/components/desktop/ai/AiGallery";
 import { result } from "@/apis/genTorch";
-import { openDB } from "idb"; // IndexedDB 사용
+
 export default function AiGenerate() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -19,31 +19,6 @@ export default function AiGenerate() {
   const navigate = useNavigate();
 
   const [newImageGenerated, setNewImageGenerated] = useState(false);
-
-  // IndexedDB 초기화
-  const initDB = async () => {
-    return openDB("ImageDB", 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains("images")) {
-          db.createObjectStore("images");
-        }
-      },
-    });
-  };
-
-  // IndexedDB에서 이미지 가져오기
-  const getImageFromIndexedDB = async (
-    requestId: string,
-  ): Promise<string | null> => {
-    const db = await initDB();
-    return (await db.get("images", requestId)) || null;
-  };
-
-  // IndexedDB에 이미지 저장
-  const saveImageToIndexedDB = async (requestId: string, b64Img: string) => {
-    const db = await initDB();
-    await db.put("images", b64Img, requestId);
-  };
 
   // ETA 감소를 위한 useEffect
   useEffect(() => {
@@ -157,14 +132,6 @@ export default function AiGenerate() {
       const requestId = response.data.request_id;
       setRequestId(requestId);
 
-      // IndexedDB에서 이미지가 있는지 확인
-      const cachedImage = await getImageFromIndexedDB(requestId);
-      if (cachedImage) {
-        setMainImage(cachedImage);
-        setLoading(false);
-        return;
-      }
-
       // 이미지 생성 결과 가져오기
       fetchResult(requestId);
     } catch (error) {
@@ -187,7 +154,6 @@ export default function AiGenerate() {
       const res = await result(requestId);
       if (res.status === 201 && res.body.b64_img) {
         const b64Img = res.body.b64_img;
-        await saveImageToIndexedDB(requestId, b64Img);
         setMainImage(b64Img);
         setLoading(false);
         setEta(0);
