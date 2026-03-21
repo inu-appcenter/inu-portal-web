@@ -241,7 +241,7 @@ const HandleBar = styled.div`
 
 const PlaceListPanelWrapper = styled.div<{ $isDesktop: boolean }>`
   width: 100%;
-  padding: ${({ $isDesktop }) => ($isDesktop ? "24px 24px 20px" : "0 20px")};
+  padding: ${({ $isDesktop }) => ($isDesktop ? "24px 24px 20px" : "0 16px")};
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -272,14 +272,21 @@ const DesktopPanelTitle = styled.h2`
   color: #20355d;
 `;
 
-const ListViewport = styled.div<{ $isDesktop: boolean; $snap: string | number | null }>`
+const ListViewport = styled.div<{
+  $isDesktop: boolean;
+  $snap: string | number | null;
+}>`
   flex: 1;
   min-height: 0;
   overflow: hidden;
   display: flex;
   margin-top: ${({ $isDesktop }) => ($isDesktop ? "8px" : "0")};
   max-height: ${({ $isDesktop, $snap }) =>
-    $isDesktop ? "none" : typeof $snap === "number" ? `calc(${$snap * 100}dvh - 100px)` : "none"};
+    $isDesktop
+      ? "none"
+      : typeof $snap === "number"
+        ? `calc(${$snap * 100}dvh - 100px)`
+        : "none"};
   transition: ${({ $isDesktop }) =>
     $isDesktop ? "none" : "max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1)"};
 `;
