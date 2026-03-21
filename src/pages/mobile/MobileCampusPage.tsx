@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 
@@ -94,11 +94,59 @@ export default function MobileCampusPage() {
       await postApiLogs("/api/campusmap");
     };
 
-    logApi();
+    void logApi();
+  }, [isCampus]);
 
-    document.body.style.overflow = "hidden";
+  useLayoutEffect(() => {
+    if (!isCampus || typeof window === "undefined") {
+      return;
+    }
+
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const previousStyles = {
+      htmlOverflow: html.style.overflow,
+      htmlOverscrollBehavior: html.style.overscrollBehavior,
+      htmlHeight: html.style.height,
+      bodyOverflow: body.style.overflow,
+      bodyOverscrollBehavior: body.style.overscrollBehavior,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+      bodyHeight: body.style.height,
+    };
+
+    html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    html.style.height = "100%";
+
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.height = "100%";
+
     return () => {
-      document.body.style.overflow = "auto";
+      html.style.overflow = previousStyles.htmlOverflow;
+      html.style.overscrollBehavior = previousStyles.htmlOverscrollBehavior;
+      html.style.height = previousStyles.htmlHeight;
+
+      body.style.overflow = previousStyles.bodyOverflow;
+      body.style.overscrollBehavior = previousStyles.bodyOverscrollBehavior;
+      body.style.position = previousStyles.bodyPosition;
+      body.style.top = previousStyles.bodyTop;
+      body.style.left = previousStyles.bodyLeft;
+      body.style.right = previousStyles.bodyRight;
+      body.style.width = previousStyles.bodyWidth;
+      body.style.height = previousStyles.bodyHeight;
+
+      window.scrollTo(0, scrollY);
     };
   }, [isCampus]);
 
