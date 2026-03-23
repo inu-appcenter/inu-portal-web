@@ -1,26 +1,28 @@
 import styled from "styled-components";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
-import { useState, useEffect, useMemo } from "react";
-import { Notice } from "@/types/notices";
-import { getDepartmentNotices } from "@/apis/notices";
-import Box from "@/components/common/Box";
-import PostItem from "@/components/mobile/notice/PostItem";
-import { putMemberDepartment } from "@/apis/members";
-import findTitleOrCode from "@/utils/findTitleOrCode";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import useUserStore from "@/stores/useUserStore";
-import { navBarList } from "old/resource/string/navBarList";
-import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
-import LoginRequiredModal from "@/components/mobile/common/LoginRequiredModal";
-import { ROUTES } from "@/constants/routes";
-import { Bell } from "lucide-react";
-import { useInView } from "react-intersection-observer";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
+import { Bell } from "lucide-react";
+import { getDepartmentNotices } from "@/apis/notices";
+import { putMemberDepartment } from "@/apis/members";
+import Box from "@/components/common/Box";
+import LoginRequiredModal from "@/components/mobile/common/LoginRequiredModal";
+import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
+import PostItem from "@/components/mobile/notice/PostItem";
+import { ROUTES } from "@/constants/routes";
+import useUserStore from "@/stores/useUserStore";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+import { Notice } from "@/types/notices";
+import findTitleOrCode, {
+  findDepartmentHomepageUrl,
+} from "@/utils/findTitleOrCode";
+import { navBarList } from "old/resource/string/navBarList";
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo, tokenInfo } = useUserStore();
@@ -34,13 +36,12 @@ const MobileDeptNoticePage = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(
     !tokenInfo.accessToken,
   );
+  const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
 
-  // 로그인 체크
   useEffect(() => {
     setIsLoginModalOpen(!tokenInfo.accessToken);
   }, [tokenInfo.accessToken]);
 
-  // 학과 정보 체크 및 리다이렉트
   useEffect(() => {
     if (
       tokenInfo.accessToken &&
@@ -48,24 +49,44 @@ const MobileDeptNoticePage = () => {
       !userInfo.department &&
       !deptParam
     ) {
-      alert("학과 정보가 없습니다. 프로필 수정에서 학과 정보를 입력해주세요.");
+      alert(
+        "학과 정보가 없습니다. 프로필 수정에서 학과 정보를 입력해 주세요.",
+      );
       navigate(ROUTES.MYPAGE.ROOT);
     }
   }, [
-    tokenInfo.accessToken,
-    userInfo.id,
-    userInfo.department,
     deptParam,
     navigate,
+    tokenInfo.accessToken,
+    userInfo.department,
+    userInfo.id,
   ]);
 
-  const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
+  const departmentHomepageUrl = useMemo(() => {
+    return currentDept ? findDepartmentHomepageUrl(currentDept) : "";
+  }, [currentDept]);
 
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
-    return userInfo.department
-      ? [{ label: "학과 변경", onClick: () => setIsDeptSelectorOpen(true) }]
-      : undefined;
-  }, [userInfo.department]);
+    const items: MenuItemType[] = [];
+
+    if (departmentHomepageUrl) {
+      items.push({
+        label: "학과 홈페이지로 이동",
+        onClick: () => {
+          window.open(departmentHomepageUrl, "_blank", "noopener,noreferrer");
+        },
+      });
+    }
+
+    if (userInfo.department) {
+      items.push({
+        label: "학과 변경",
+        onClick: () => setIsDeptSelectorOpen(true),
+      });
+    }
+
+    return items.length > 0 ? items : undefined;
+  }, [departmentHomepageUrl, userInfo.department]);
 
   useHeader({
     title: currentDept ? `${currentDept} 공지사항` : "학과 공지사항",
@@ -100,7 +121,7 @@ const MobileDeptNoticePage = () => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage]);
 
   const deptNotices = useMemo(() => {
     return data?.pages.flatMap((page) => page.data.contents) || [];
@@ -115,14 +136,14 @@ const MobileDeptNoticePage = () => {
       navigate(ROUTES.BOARD.DEPT_NOTICE_DETAIL(deptKorean), { replace: true });
     } catch (error) {
       console.error(error);
-      alert("학과 변경 실패");
+      alert("학과 변경에 실패했습니다.");
     }
   };
 
   if (!tokenInfo.accessToken) {
     return (
       <MobileDeptNoticePageWrapper>
-        <LoginRequiredModal isOpen={true} />
+        <LoginRequiredModal isOpen />
       </MobileDeptNoticePageWrapper>
     );
   }
@@ -164,7 +185,6 @@ const MobileDeptNoticePage = () => {
         )}
       </TipsCardWrapper>
 
-      {/* 무한 스크롤 트리거 */}
       <div ref={ref} style={{ height: "20px" }}>
         {isFetchingNextPage && (
           <TipsCardWrapper>
@@ -190,7 +210,7 @@ const MobileDeptNoticePage = () => {
 
       {userInfo.department && (
         <FixedButtonWrapper>
-          <FloatingButton onClick={() => navigate("/home/deptnotice/setting")}>
+          <FloatingButton onClick={() => navigate(ROUTES.BOARD.DEPT_SETTING)}>
             <Bell size={18} color="white" />
             학과 공지 알림 받기
           </FloatingButton>
