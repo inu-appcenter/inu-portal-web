@@ -42,6 +42,11 @@ export const navBarList = [
             url: "https://inuchina.inu.ac.kr/inuchina/index.do?epTicket=LOG",
             code: "CHINESE",
           },
+          {
+            title: "불어불문학과",
+            url: "https://inufrance.inu.ac.kr",
+            code: "FRENCH",
+          },
         ],
       },
       {
