@@ -55,6 +55,10 @@ export default function MobileHomePage() {
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
   const hasEvaluatedPromoRef = useRef(false);
 
+  if (new URLSearchParams(window.location.search).get("errorTest") === "1") {
+    throw new Error("에러바운더리 UI 확인용");
+  }
+
   // 헤더 설정 주입
   useHeader({
     showAlarm: true,

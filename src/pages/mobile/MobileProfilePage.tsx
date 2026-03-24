@@ -16,7 +16,9 @@ export default function MobileProfilePage() {
     <MobileProfilePageWrapper>
       <ContentShell>
         <TopSection>
-          <UserWrapper>{userInfo.id && <UserInfo clickable={false} />}</UserWrapper>
+          <UserWrapper>
+            {userInfo.id && <UserInfo clickable={false} />}
+          </UserWrapper>
         </TopSection>
 
         <FormSection>

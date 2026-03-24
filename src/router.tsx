@@ -5,6 +5,7 @@ import { ROUTES } from "@/constants/routes";
 import RootLayout from "@/layout/RootLayout";
 import MainTabLayout from "@/layout/MainTabLayout";
 import SubLayout from "@/layout/SubLayout";
+import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
 // Pages (Imports 생략 - 기존과 동일)
 import MobileHomePage from "@/pages/mobile/MobileHomePage";
@@ -54,6 +55,7 @@ import InstallPage from "@/pages/mobile/InstallPage";
 export const router = createBrowserRouter([
   {
     path: ROUTES.ROOT,
+    errorElement: <RouteErrorBoundary />,
     element: <RootLayout />, // 최상위 슬라이드 제어
     children: [
       // ----------------------------------------------------------------

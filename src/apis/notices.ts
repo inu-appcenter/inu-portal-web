@@ -17,6 +17,16 @@ export const getNoticeListQueryKey = (
   page: number,
 ) => ["notices", "list", category, sort, page] as const;
 
+const normalizeRequiredDepartment = (department: string): string => {
+  const normalizedDepartment = department.trim();
+
+  if (!normalizedDepartment) {
+    throw new Error("Department is required.");
+  }
+
+  return normalizedDepartment;
+};
+
 // Fetch all notices.
 export const getNotices = async (
   category: string = ALL_NOTICE_CATEGORY,
@@ -45,12 +55,10 @@ export const getDepartmentNotices = async (
   sort: "date" | "view" = "date",
   page: number = 1,
 ): Promise<ApiResponse<Pagination<Notice[]>>> => {
-  if (!department) {
-    throw new Error("Department is required.");
-  }
+  const normalizedDepartment = normalizeRequiredDepartment(department);
 
   const params: { [key: string]: string | number } = {
-    department,
+    department: normalizedDepartment,
     sort,
     page,
   };
@@ -81,7 +89,16 @@ export const createKeyword = async (
   keyword: string,
   department: string,
 ): Promise<ApiResponse<Keyword>> => {
-  const params = { keyword, department };
+  const normalizedKeyword = keyword.trim();
+
+  if (!normalizedKeyword) {
+    throw new Error("Keyword is required.");
+  }
+
+  const params = {
+    keyword: normalizedKeyword,
+    department: normalizeRequiredDepartment(department),
+  };
   const response = await tokenInstance.post<ApiResponse<Keyword>>(
     "/api/keywords",
     null,
@@ -104,7 +121,7 @@ export const getSubscribedDepartments = async (): Promise<
 export const subscribeDepartment = async (
   department: string,
 ): Promise<ApiResponse<Keyword>> => {
-  const params = { department };
+  const params = { department: normalizeRequiredDepartment(department) };
   const response = await tokenInstance.post<ApiResponse<Keyword>>(
     "/api/keywords/department",
     null,

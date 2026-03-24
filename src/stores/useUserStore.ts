@@ -1,11 +1,12 @@
-import { TokenInfo, UserInfo } from "@/types/members";
+import { TokenInfo, UserInfo, UserInfoInput } from "@/types/members";
+import { normalizeUserInfo } from "@/utils/userInfo";
 import { create } from "zustand";
 
 interface UserState {
   tokenInfo: TokenInfo;
   userInfo: UserInfo;
   setTokenInfo: (tokenInfo: TokenInfo) => void;
-  setUserInfo: (userProfile: UserInfo) => void;
+  setUserInfo: (userProfile: UserInfoInput) => void;
   isLoading: boolean;
 }
 
@@ -16,20 +17,15 @@ const useUserStore = create<UserState>((set) => ({
     refreshToken: "",
     refreshTokenExpiredTime: "",
   },
-  userInfo: {
-    id: 0,
-    nickname: "",
-    department: "",
-    fireId: 0,
-    role: "",
-  },
+  userInfo: normalizeUserInfo(),
   isLoading: true, // 초기 상태를 true로 설정
 
   setTokenInfo: (tokenInfo) => {
     set(() => ({ tokenInfo }));
     localStorage.setItem("tokenInfo", JSON.stringify(tokenInfo));
   },
-  setUserInfo: (userInfo) => set(() => ({ userInfo })),
+  setUserInfo: (userInfo) =>
+    set(() => ({ userInfo: normalizeUserInfo(userInfo) })),
 }));
 
 export default useUserStore;

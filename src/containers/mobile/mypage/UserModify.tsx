@@ -8,6 +8,11 @@ import DepartmentNoticeSelector from "../../../components/mobile/notice/Departme
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
 import { subscribeDepartment } from "@/apis/notices";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import {
+  DEFAULT_PROFILE_IMAGE_ID,
+  normalizeOptionalText,
+  normalizeProfileImageId,
+} from "@/utils/userInfo";
 
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
 const MAX_NICKNAME_LENGTH = 10;
@@ -17,28 +22,48 @@ const getProfileImageUrl = (fireId: number) =>
 
 export default function UserModify() {
   const { setUserInfo, userInfo } = useUserStore();
-  const [nickname, setNickname] = useState(userInfo.nickname);
-  const [fireId, setFireId] = useState(userInfo.fireId || 1);
-  const [department, setDepartment] = useState(userInfo.department);
+  const [nickname, setNickname] = useState(() =>
+    normalizeOptionalText(userInfo.nickname),
+  );
+  const [fireId, setFireId] = useState(() =>
+    normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
+  );
+  const [department, setDepartment] = useState(() =>
+    normalizeOptionalText(userInfo.department),
+  );
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setNickname(userInfo.nickname);
-    setFireId(userInfo.fireId || 1);
-    setDepartment(userInfo.department);
+    setNickname(normalizeOptionalText(userInfo.nickname));
+    setFireId(
+      normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
+    );
+    setDepartment(normalizeOptionalText(userInfo.department));
   }, [userInfo.department, userInfo.fireId, userInfo.nickname]);
 
-  const trimmedNickname = nickname.trim();
-  const normalizedDepartment = department.trim();
-  const selectedFireId = fireId || 1;
+  const originalNickname = normalizeOptionalText(userInfo.nickname).trim();
+  const originalDepartment = normalizeOptionalText(userInfo.department).trim();
+  const trimmedNickname = normalizeOptionalText(nickname).trim();
+  const normalizedDepartment = normalizeOptionalText(department).trim();
+  const selectedFireId = normalizeProfileImageId(
+    fireId,
+    DEFAULT_PROFILE_IMAGE_ID,
+  );
   const nicknameLength = nickname.length;
-  const hasNicknameChanged = trimmedNickname !== userInfo.nickname;
-  const hasDepartmentChanged = normalizedDepartment !== userInfo.department;
-  const hasImageChanged = selectedFireId !== (userInfo.fireId || 1);
+  const normalizedDepartmentCode = normalizedDepartment
+    ? findTitleOrCode(normalizedDepartment)
+    : "";
+  const hasNicknameChanged = trimmedNickname !== originalNickname;
+  const hasDepartmentChanged = normalizedDepartment !== originalDepartment;
+  const hasValidDepartmentChange =
+    hasDepartmentChanged && Boolean(normalizedDepartmentCode);
+  const hasImageChanged =
+    selectedFireId !==
+    normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID);
   const hasChanges =
-    hasNicknameChanged || hasDepartmentChanged || hasImageChanged;
+    hasNicknameChanged || hasValidDepartmentChange || hasImageChanged;
 
   const handleModifyClick = async () => {
     if (isSaving || !hasChanges) {
@@ -55,13 +80,8 @@ export default function UserModify() {
       return;
     }
 
-    const departmentCode = normalizedDepartment
-      ? findTitleOrCode(normalizedDepartment)
-      : "";
     const shouldSubscribeDepartment =
-      !userInfo.department &&
-      Boolean(normalizedDepartment) &&
-      Boolean(departmentCode);
+      !originalDepartment && hasValidDepartmentChange;
 
     try {
       setIsSaving(true);
@@ -69,22 +89,24 @@ export default function UserModify() {
       const updatedNickname = hasNicknameChanged ? trimmedNickname : null;
       const response = await putMembers(updatedNickname, selectedFireId);
 
-      if (hasDepartmentChanged && departmentCode) {
-        await putMemberDepartment(departmentCode);
+      if (hasValidDepartmentChange) {
+        await putMemberDepartment(normalizedDepartmentCode);
       }
 
       setUserInfo({
         id: response.data,
-        nickname: updatedNickname ?? userInfo.nickname,
-        department: normalizedDepartment,
+        nickname: updatedNickname ?? originalNickname,
+        department: hasValidDepartmentChange
+          ? normalizedDepartment
+          : originalDepartment,
         role: userInfo.role,
         fireId: selectedFireId,
       });
 
-      if (shouldSubscribeDepartment && departmentCode) {
-        await subscribeDepartment(departmentCode);
+      if (shouldSubscribeDepartment) {
+        await subscribeDepartment(normalizedDepartmentCode);
         alert(
-          "성공적으로 수정되었습니다.\n\n학과공지 알리미 기능도 자동으로 활성화되었습니다. 학과 공지 화면에서 설정을 변경할 수 있어요.",
+          "성공적으로 수정되었습니다.\n\n학과공지 알리미 기능도 자동으로 활성화되었습니다. 학과 공지 페이지에서 설정을 변경할 수 있어요.",
         );
       } else {
         alert("성공적으로 수정되었습니다.");
@@ -135,7 +157,9 @@ export default function UserModify() {
           placeholder="닉네임을 입력해주세요"
           maxLength={MAX_NICKNAME_LENGTH}
         />
-        <HelperText>띄어쓰기를 포함해 최대 10자까지 설정할 수 있어요.</HelperText>
+        <HelperText>
+          띄어쓰기를 포함해 최대 10자까지 설정할 수 있어요.
+        </HelperText>
       </SectionCard>
 
       <SectionCard>
@@ -144,7 +168,9 @@ export default function UserModify() {
             <h3>학과</h3>
             <p>학과 공지 연동에 사용할 정보를 선택해주세요.</p>
           </div>
-          {normalizedDepartment ? <SelectionPill>선택 완료</SelectionPill> : null}
+          {normalizedDepartment ? (
+            <SelectionPill>선택 완료</SelectionPill>
+          ) : null}
         </SectionTop>
 
         <DepartmentRow>
@@ -154,7 +180,10 @@ export default function UserModify() {
             placeholder="학과를 선택해주세요"
             readOnly
           />
-          <ActionButton type="button" onClick={() => setIsDeptSelectorOpen(true)}>
+          <ActionButton
+            type="button"
+            onClick={() => setIsDeptSelectorOpen(true)}
+          >
             학과 선택
           </ActionButton>
         </DepartmentRow>
@@ -164,17 +193,24 @@ export default function UserModify() {
         <SectionTop>
           <div>
             <h3>프로필 이미지</h3>
-            <p>선택한 이미지는 저장 전에 아래 미리보기에서 바로 확인할 수 있어요.</p>
+            <p>
+              선택한 이미지는 저장 전에 아래 미리보기에서 바로 확인할 수 있어요.
+            </p>
           </div>
         </SectionTop>
 
         <PreviewCard>
           <PreviewAvatar>
-            <img src={getProfileImageUrl(selectedFireId)} alt="선택한 프로필 이미지" />
+            <img
+              src={getProfileImageUrl(selectedFireId)}
+              alt="선택한 프로필 이미지"
+            />
           </PreviewAvatar>
           <PreviewText>
             <strong>{trimmedNickname || "닉네임 없음"}</strong>
-            <span>{normalizedDepartment || "학과를 아직 선택하지 않았어요."}</span>
+            <span>
+              {normalizedDepartment || "학과를 아직 선택하지 않았어요."}
+            </span>
           </PreviewText>
         </PreviewCard>
 
@@ -209,7 +245,11 @@ export default function UserModify() {
           disabled={!hasChanges || isSaving}
           onClick={handleModifyClick}
         >
-          {isSaving ? "저장 중..." : hasChanges ? "변경 사항 저장" : "저장 완료"}
+          {isSaving
+            ? "저장 중..."
+            : hasChanges
+              ? "변경 사항 저장"
+              : "저장 완료"}
         </SubmitButton>
         <SubmitHint>
           {hasChanges
