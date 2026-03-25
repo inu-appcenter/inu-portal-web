@@ -23,6 +23,7 @@ import {
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+import TopPopupNotification from "@/components/common/TopPopupNotification";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.3;
@@ -135,6 +136,30 @@ export default function MobileHomePage() {
     setShow(false);
   };
 
+  interface NotificationData {
+    title: string;
+    message: string;
+  }
+
+  const isBeforeDeadline = () => {
+    const now = new Date();
+    const deadline = new Date("2026-03-27T19:00:00"); // 필요하면 연도 수정
+    return now < deadline;
+  };
+
+  const [notification, setNotification] = useState<NotificationData | null>(
+    isBeforeDeadline()
+      ? {
+          title: "서비스 점검 예정 안내",
+          message:
+            "3월 27일(금) 17시 30분부터 19시까지 서버 점검이 예정되어 있습니다. 해당 기간동안 인입런 기능을 제외한 기능의 사용이 불가능합니다. 이용에 참고 부탁드립니다.",
+        }
+      : null,
+  );
+  const handleCloseNotification = () => {
+    setNotification(null);
+  };
+
   const noticeSection = (
     <Section>
       <TitleContentArea
@@ -178,6 +203,14 @@ export default function MobileHomePage() {
 
   return (
     <MobileHomePageWrapper>
+      {notification && (
+        <TopPopupNotification
+          title={notification.title}
+          message={notification.message}
+          onClose={handleCloseNotification}
+          duration={10000}
+        />
+      )}
       {show && isBannerOn && (
         <ModalBackGround>
           <Modal>
