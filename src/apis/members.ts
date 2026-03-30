@@ -7,14 +7,14 @@ import {
   MembersReplies,
   Notification,
   TokenInfo,
-  UserInfo,
+  UserInfoInput,
 } from "@/types/members";
 import { Post } from "@/types/posts";
 
 // 회원 가져오기
-export const getMembers = async (): Promise<ApiResponse<UserInfo>> => {
+export const getMembers = async (): Promise<ApiResponse<UserInfoInput>> => {
   const response =
-    await tokenInstance.get<ApiResponse<UserInfo>>(`/api/members`);
+    await tokenInstance.get<ApiResponse<UserInfoInput>>(`/api/members`);
   return response.data;
 };
 
@@ -41,9 +41,15 @@ export const putMembers = async (
 // 회원 학과 수정
 export const putMemberDepartment = async (
   department: string,
-): Promise<ApiResponse<UserInfo>> => {
-  const response = await tokenInstance.put<ApiResponse<UserInfo>>(
-    `/api/members/department?department=${encodeURIComponent(department)}`,
+): Promise<ApiResponse<UserInfoInput>> => {
+  const normalizedDepartment = department.trim();
+
+  if (!normalizedDepartment) {
+    throw new Error("Department is required.");
+  }
+
+  const response = await tokenInstance.put<ApiResponse<UserInfoInput>>(
+    `/api/members/department?department=${encodeURIComponent(normalizedDepartment)}`,
   );
   return response.data;
 };
@@ -134,10 +140,11 @@ export const getAlerts = async (
 // FCM 토큰 등록
 export const postFcmToken = async (
   token: string,
+  deviceType?: string,
 ): Promise<ApiResponse<number>> => {
   const response = await tokenInstance.post<ApiResponse<number>>(
     "/api/tokens",
-    { token },
+    { token, deviceType },
   );
   return response.data;
 };

@@ -1,39 +1,156 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Map, MapTypeControl, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
 import styled from "styled-components";
 import { Navigation } from "lucide-react"; // 내 위치 아이콘용
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB";
 import { MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
 
+type HeadingSource = "gps" | "compass" | null;
+
+const GPS_HEADING_MIN_SPEED = 0.8;
+const GPS_HEADING_HOLD_MS = 2500;
+const GPS_HEADING_SMOOTHING = 0.35;
+const COMPASS_HEADING_SMOOTHING = 0.18;
+
+const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
+
+const getShortestAngleDelta = (from: number, to: number) =>
+  ((to - from + 540) % 360) - 180;
+
+const smoothHeading = (
+  previous: number | null,
+  next: number,
+  smoothingFactor: number,
+) => {
+  if (previous === null) {
+    return normalizeAngle(next);
+  }
+
+  return normalizeAngle(
+    previous + getShortestAngleDelta(previous, next) * smoothingFactor,
+  );
+};
+
+const getScreenOrientationAngle = () => {
+  if (typeof window === "undefined") {
+    return 0;
+  }
+
+  if (
+    window.screen?.orientation &&
+    typeof window.screen.orientation.angle === "number"
+  ) {
+    return window.screen.orientation.angle;
+  }
+
+  const legacyOrientation = (window as Window & { orientation?: number })
+    .orientation;
+
+  return typeof legacyOrientation === "number" ? legacyOrientation : 0;
+};
+
+const getCompassHeading = (event: DeviceOrientationEvent) => {
+  const iosEvent = event as DeviceOrientationEvent & {
+    webkitCompassHeading?: number;
+  };
+
+  if (
+    typeof iosEvent.webkitCompassHeading === "number" &&
+    !Number.isNaN(iosEvent.webkitCompassHeading)
+  ) {
+    return normalizeAngle(iosEvent.webkitCompassHeading);
+  }
+
+  if (typeof event.alpha !== "number" || Number.isNaN(event.alpha)) {
+    return null;
+  }
+
+  return normalizeAngle(360 - event.alpha + getScreenOrientationAngle());
+};
+
+const getGpsHeading = (coords: GeolocationCoordinates) => {
+  if (typeof coords.heading !== "number" || Number.isNaN(coords.heading)) {
+    return null;
+  }
+
+  if (typeof coords.speed === "number" && coords.speed < GPS_HEADING_MIN_SPEED) {
+    return null;
+  }
+
+  return normalizeAngle(coords.heading);
+};
+
 interface Props {
   selectedTab: string;
   viewXY: { X: number; Y: number };
   setMap: any;
+  setSelectedCoord?: React.Dispatch<
+    React.SetStateAction<{ X: number; Y: number }>
+  >;
   openedMarkerId: string | null;
-  setOpenedMarkerId: (id: string | null) => void;
+  setOpenedMarkerId: (id: string | null, coord?: { X: number; Y: number }) => void;
+  offset?: number;
+  isTracking?: boolean;
+  setIsTracking?: (isTracking: boolean) => void;
 }
 
 const KakaoMap = ({
   selectedTab,
   viewXY,
   setMap,
+  setSelectedCoord,
   openedMarkerId,
   setOpenedMarkerId,
+  offset = 0,
+  isTracking = false,
+  setIsTracking,
 }: Props) => {
   const [mapInstance, setInternalMap] = useState<kakao.maps.Map | null>(null);
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
-  const [isTracking, setIsTracking] = useState(false);
+  const [headingSource, setHeadingSource] = useState<HeadingSource>(null);
+  const [showHeadingHint, setShowHeadingHint] = useState(false);
+  const lastGpsHeadingAtRef = useRef(0);
+  const hasShownHeadingHintRef = useRef(false);
+  const isDraggingRef = useRef(false);
 
   const currentTab = selectedTab as TabType;
   const config = MAP_TAB_CONFIG[currentTab];
+  const mapCenter = useMemo(
+    () => ({ lat: viewXY.X, lng: viewXY.Y }),
+    [viewXY.X, viewXY.Y],
+  );
+
+  const syncSelectedCoordWithMapCenter = () => {
+    if (!mapInstance || !setSelectedCoord) return;
+
+    const center = mapInstance.getCenter();
+    const nextCoord = {
+      X: center.getLat() + offset,
+      Y: center.getLng(),
+    };
+
+    setSelectedCoord((prev) =>
+      Math.abs(prev.X - nextCoord.X) < 0.0000001 &&
+      Math.abs(prev.Y - nextCoord.Y) < 0.0000001
+        ? prev
+        : nextCoord,
+    );
+  };
+
+  const syncSelectedCoordWithLocation = (lat: number, lng: number) => {
+    if (!setSelectedCoord) return;
+
+    setSelectedCoord((prev) =>
+      Math.abs(prev.X - lat) < 0.0000001 && Math.abs(prev.Y - lng) < 0.0000001
+        ? prev
+        : { X: lat, Y: lng },
+    );
+  };
 
   // 1. 실시간 위치 추적
   useEffect(() => {
-    if (!navigator.geolocation) {
-      console.error("이 브라우저에서는 위치 서비스를 지원하지 않습니다.");
-      return;
-    }
+    if (!navigator.geolocation) return;
 
     const options: PositionOptions = {
       enableHighAccuracy: true,
@@ -41,95 +158,146 @@ const KakaoMap = ({
       maximumAge: 0,
     };
 
-    // 초기 위치를 즉시 한 번 가져오기
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setMyLocation({ lat: latitude, lng: longitude });
       },
-      (err) => {
-        console.error("초기 위치 가져오기 실패:", err.message);
-      },
+      (err) => console.error(err),
       options
     );
 
-    // 지속적인 위치 변화 감지
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setMyLocation({ lat: latitude, lng: longitude });
-        
-        if (isTracking && mapInstance) {
-          mapInstance.panTo(new window.kakao.maps.LatLng(latitude, longitude));
+        const { latitude, longitude, speed } = pos.coords;
+        setMyLocation((prev) =>
+          prev &&
+          Math.abs(prev.lat - latitude) < 0.0000001 &&
+          Math.abs(prev.lng - longitude) < 0.0000001
+            ? prev
+            : { lat: latitude, lng: longitude },
+        );
+
+        if (!isTracking || isDraggingRef.current) {
+          return;
+        }
+
+        const gpsHeading = getGpsHeading(pos.coords);
+        if (gpsHeading !== null) {
+          lastGpsHeadingAtRef.current = Date.now();
+          setHeading((prev) =>
+            smoothHeading(prev, gpsHeading, GPS_HEADING_SMOOTHING),
+          );
+          setHeadingSource("gps");
+        } else if (typeof speed === "number" && speed < GPS_HEADING_MIN_SPEED) {
+          lastGpsHeadingAtRef.current = 0;
+        }
+
+        if (mapInstance) {
+          syncSelectedCoordWithLocation(latitude, longitude);
+          mapInstance.panTo(new window.kakao.maps.LatLng(latitude - offset, longitude));
         }
       },
-      (err) => {
-        let errorMsg = "위치 정보를 가져올 수 없습니다.";
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            errorMsg = "위치 권한이 거부되었습니다. 설정에서 허용해주세요.";
-            break;
-          case err.POSITION_UNAVAILABLE:
-            errorMsg = "위치 정보를 사용할 수 없습니다 (GPS 신호 약함).";
-            break;
-          case err.TIMEOUT:
-            errorMsg = "위치 요청 시간이 초과되었습니다.";
-            break;
-        }
-        console.error(errorMsg);
-      },
+      (err) => console.error(err),
       options
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [isTracking, mapInstance]);
+  }, [isTracking, mapInstance, offset]);
 
-  // 2. 기기 방향(Heading) 감지
+  // 2. 기기 방향 감지
   useEffect(() => {
-    const handleOrientation = (e: DeviceOrientationEvent) => {
-      // @ts-ignore (webkitCompassHeading은 iOS 전용)
-      const compass = e.webkitCompassHeading || (360 - (e.alpha || 0));
-      if (compass) setHeading(compass);
+    if (!isTracking) {
+      return;
+    }
+
+    const orientationEventName =
+      "ondeviceorientationabsolute" in window
+        ? "deviceorientationabsolute"
+        : "deviceorientation";
+
+    const handleOrientation = (event: Event) => {
+      if (isDraggingRef.current) {
+        return;
+      }
+
+      const compassHeading = getCompassHeading(event as DeviceOrientationEvent);
+      if (compassHeading === null) {
+        return;
+      }
+
+      if (Date.now() - lastGpsHeadingAtRef.current < GPS_HEADING_HOLD_MS) {
+        return;
+      }
+
+      setHeading((prev) =>
+        smoothHeading(prev, compassHeading, COMPASS_HEADING_SMOOTHING),
+      );
+      setHeadingSource("compass");
     };
 
-    window.addEventListener("deviceorientation", handleOrientation, true);
-    return () => window.removeEventListener("deviceorientation", handleOrientation);
-  }, []);
-const handleMyLocationClick = async () => {
-  // iOS 13+ 방향 센서 권한 요청
-  if (
-    typeof (DeviceOrientationEvent as any).requestPermission === "function"
-  ) {
-    try {
-      const permission = await (
-        DeviceOrientationEvent as any
-      ).requestPermission();
-      if (permission !== "granted") {
-        console.warn("방향 센서 권한이 거부되었습니다.");
-      }
-    } catch (error) {
-      console.error("방향 센서 권한 요청 중 오류 발생:", error);
+    window.addEventListener(orientationEventName, handleOrientation, true);
+
+    return () => {
+      window.removeEventListener(orientationEventName, handleOrientation, true);
+    };
+  }, [isTracking]);
+
+  useEffect(() => {
+    if (!isTracking) {
+      hasShownHeadingHintRef.current = false;
+      setShowHeadingHint(false);
+      return;
     }
-  }
 
-  if (!myLocation) {
-    alert("위치 정보를 불러오는 중입니다...");
-    return;
-  }
+    if (headingSource !== "compass") {
+      setShowHeadingHint(false);
+      return;
+    }
 
-  if (mapInstance) {
-    mapInstance.panTo(
-      new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng),
-    );
-    mapInstance.setLevel(3);
-  }
-  setIsTracking(true);
-};
+    if (hasShownHeadingHintRef.current) {
+      return;
+    }
 
-  // 지도 드래그 시 추적 모드 해제
-  const handleDragStart = () => {
-    if (isTracking) setIsTracking(false);
+    hasShownHeadingHintRef.current = true;
+    setShowHeadingHint(true);
+
+    const timeoutId = window.setTimeout(() => {
+      setShowHeadingHint(false);
+    }, 4200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [headingSource, isTracking]);
+
+  const handleMyLocationClick = async () => {
+    if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
+      try { await (DeviceOrientationEvent as any).requestPermission(); } catch (e) {}
+    }
+    if (!myLocation) return;
+    syncSelectedCoordWithLocation(myLocation.lat, myLocation.lng);
+    if (mapInstance) {
+      mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat - offset, myLocation.lng));
+      mapInstance.setLevel(3);
+    }
+    if (setIsTracking) setIsTracking(true);
   };
+
+  const handleDragStart = () => {
+    isDraggingRef.current = true;
+    if (isTracking && setIsTracking) setIsTracking(false);
+  };
+
+  const handleDragEnd = () => {
+    isDraggingRef.current = false;
+    syncSelectedCoordWithMapCenter();
+  };
+
+  // 3. 외부 viewXY 변경 감지 및 지도 이동
+  useEffect(() => {
+    if (mapInstance && viewXY && !isDraggingRef.current) {
+      mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+    }
+  }, [viewXY, mapInstance]);
 
   const placesToRender = useMemo(() => {
     switch (currentTab) {
@@ -144,17 +312,22 @@ const handleMyLocationClick = async () => {
   return (
     <Container>
       <Map
-        center={{ lat: viewXY.X, lng: viewXY.Y }}
+        center={mapCenter}
         level={4}
+        draggable={true}
+        zoomable={true}
         style={{ width: "100%", height: "100%" }}
         onCreate={(map) => {
           setMap(map);
           setInternalMap(map);
-          setTimeout(() => map.relayout(), 100);
+          setTimeout(() => {
+            map.relayout();
+            map.setCenter(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+          }, 100);
         }}
         onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
       >
-        {/* 기존 장소 마커들 */}
         {placesToRender.map((place) => {
           const markerId = config.getMarkerId(place);
           const isOpen = openedMarkerId === markerId;
@@ -166,30 +339,58 @@ const handleMyLocationClick = async () => {
                 image={{
                   src: config.getIcon(place),
                   size: { width: 24, height: 35 },
+                  options: {
+                    offset: { x: 12, y: 35 },
+                  },
                 }}
                 onClick={() => {
-                  setOpenedMarkerId(isOpen ? null : markerId);
-                  setIsTracking(false); // 장소 클릭 시 위치 추적 일시 중지
+                  setOpenedMarkerId(
+                    isOpen ? null : markerId,
+                    isOpen
+                      ? undefined
+                      : {
+                          X: Number(place.latitude),
+                          Y: Number(place.longitude),
+                        },
+                  );
+                  if (setIsTracking) setIsTracking(false);
                 }}
-                infoWindowOptions={{ removable: true }}
-              >
-                {isOpen && (
-                  <div
-                    style={{ cursor: "default", padding: "5px", color: "#000" }}
-                    dangerouslySetInnerHTML={{ __html: config.getInfoWindowHtml(place) }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                )}
-              </MapMarker>
+              />
+
+              {isOpen && (
+                <CustomOverlayMap
+                  position={{
+                    lat: Number(place.latitude),
+                    lng: Number(place.longitude),
+                  }}
+                  xAnchor={0.5}
+                  yAnchor={1}
+                  zIndex={20}
+                >
+                  <OverlayBubble onClick={(e) => e.stopPropagation()}>
+                    <OverlayCloseButton
+                      type="button"
+                      aria-label="인포윈도우 닫기"
+                      onClick={() => setOpenedMarkerId(null)}
+                    >
+                      ×
+                    </OverlayCloseButton>
+                    <OverlayBody
+                      dangerouslySetInnerHTML={{
+                        __html: config.getInfoWindowHtml(place),
+                      }}
+                    />
+                  </OverlayBubble>
+                </CustomOverlayMap>
+              )}
             </React.Fragment>
           );
         })}
 
-        {/* 내 위치 마커 (빨간색 원 + 방향 표시) */}
         {myLocation && (
           <CustomOverlayMap position={myLocation} zIndex={10}>
             <MyLocationMarker>
-              {heading !== null && (
+              {isTracking && heading !== null && (
                 <DirectionShadow style={{ transform: `rotate(${heading}deg)` }} />
               )}
               <PulseDot />
@@ -203,10 +404,15 @@ const handleMyLocationClick = async () => {
         )}
       </Map>
 
-      {/* 내 위치 이동 버튼 */}
       <MyLocationButton onClick={handleMyLocationClick} $active={isTracking}>
         <Navigation size={20} fill={isTracking ? "#3E69D1" : "none"} />
       </MyLocationButton>
+
+      {showHeadingHint && (
+        <HeadingHint>
+          방향이 어긋나면 휴대폰을 8자 모양으로 천천히 움직여 보정해보세요.
+        </HeadingHint>
+      )}
     </Container>
   );
 };
@@ -221,7 +427,7 @@ const Container = styled.div`
 
 const MyLocationButton = styled.button<{ $active: boolean }>`
   position: absolute;
-  top: 60px; // 지도 타입 컨트롤 아래 배치
+  top: 60px;
   right: 10px;
   z-index: 10;
   width: 36px;
@@ -241,6 +447,21 @@ const MyLocationButton = styled.button<{ $active: boolean }>`
   }
 `;
 
+const HeadingHint = styled.div`
+  position: absolute;
+  top: 104px;
+  right: 10px;
+  z-index: 10;
+  max-width: 200px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(32, 53, 93, 0.92);
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: 0 10px 24px rgba(25, 45, 85, 0.18);
+`;
+
 const MyLocationMarker = styled.div`
   position: relative;
   width: 20px;
@@ -248,7 +469,6 @@ const MyLocationMarker = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 마커가 좌표의 정확히 위에 오도록 앵커 포인트 조정 */
   transform: translate(-50%, -50%); 
 `;
 
@@ -280,14 +500,70 @@ const PulseDot = styled.div`
 
 const DirectionShadow = styled.div`
   position: absolute;
-  bottom: 50%; // 원의 중심에서 시작
+  bottom: 50%;
   left: 50%;
-  width: 100px; // 더 긴 도달 거리
+  width: 100px;
   height: 100px;
   background: radial-gradient(circle at 50% 100%, rgba(255, 75, 75, 0.4) 0%, rgba(255, 75, 75, 0) 70%);
-  clip-path: polygon(50% 100%, 15% 0%, 85% 0%); // 더 좁고 선명한 부채꼴
+  clip-path: polygon(50% 100%, 15% 0%, 85% 0%);
   z-index: 0;
-  transform-origin: 50% 100%; // 부채꼴의 하단 중앙(원의 중심)을 기준으로 회전
-  margin-left: -50px; // 가로 중앙 정렬
+  transform-origin: 50% 100%;
+  margin-left: -50px;
   pointer-events: none;
+`;
+
+const OverlayBubble = styled.div`
+  position: relative;
+  transform: translateY(-46px);
+  background: #ffffff;
+  border: 1px solid rgba(64, 113, 185, 0.16);
+  border-radius: 16px;
+  box-shadow:
+    0 18px 36px rgba(25, 45, 85, 0.16),
+    0 4px 12px rgba(25, 45, 85, 0.1);
+  overflow: visible;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    width: 18px;
+    height: 18px;
+    background: #ffffff;
+    border-right: 1px solid rgba(64, 113, 185, 0.16);
+    border-bottom: 1px solid rgba(64, 113, 185, 0.16);
+    transform: translateX(-50%) rotate(45deg);
+  }
+`;
+
+const OverlayBody = styled.div`
+  position: relative;
+  z-index: 1;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+`;
+
+const OverlayCloseButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(32, 53, 93, 0.08);
+  color: #20355d;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:active {
+    background: rgba(32, 53, 93, 0.14);
+  }
 `;

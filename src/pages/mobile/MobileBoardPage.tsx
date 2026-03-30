@@ -15,6 +15,7 @@ import findTitleOrCode from "../../utils/findTitleOrCode.ts";
 import { putMemberDepartment } from "@/apis/members";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileBoardPage() {
   console.log(navBarList[1].child);
@@ -203,10 +204,14 @@ const MobileTipsPageWrapper = styled.div`
   flex: 1;
   width: 100%;
   gap: 8px;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   //padding-top: 72px;
 
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;
 
 const TitleCategorySelectorWrapper = styled.div`

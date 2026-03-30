@@ -5,6 +5,14 @@ export interface TokenInfo {
   refreshTokenExpiredTime: string;
 }
 
+export interface UserInfoInput {
+  id?: number | null;
+  nickname?: string | null;
+  department?: string | null;
+  fireId?: number | null;
+  role?: string | null;
+}
+
 export interface UserInfo {
   id: number;
   nickname: string;

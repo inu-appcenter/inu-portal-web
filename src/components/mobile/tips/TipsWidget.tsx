@@ -31,6 +31,7 @@ const TipsWidget = () => {
           title={item.title}
           description={item.description}
           iconSrc={item.icon}
+          compact={true}
           onClick={() => handleCategoryClick(item.title)}
         />
       ))}

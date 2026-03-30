@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SOFT_PILL_SHADOW } from "@/styles/shadows";
 import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink-white.svg";
 
 // 버튼 속성 상속 인터페이스
@@ -33,7 +34,7 @@ const FillButtonWrapper = styled.button`
 
   background: #5e92f0;
   color: #f4f4f4;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: ${SOFT_PILL_SHADOW};
   cursor: pointer;
 
   /* 비활성화 상태 스타일 */

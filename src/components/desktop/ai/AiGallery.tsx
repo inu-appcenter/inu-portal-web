@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { result } from "@/apis/genTorch";
 import useUserStore from "@/stores/useUserStore";
 import { getFires } from "@/apis/fires";
-import { openDB } from "idb"; // IndexedDB 사용
 
 interface ImageRequest {
   id: string;
@@ -57,31 +56,6 @@ export default function AiGallery({ newImageGenerated }: AiGalleryProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // IndexedDB 초기화
-  const initDB = async () => {
-    return openDB("ImageDB", 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains("images")) {
-          db.createObjectStore("images");
-        }
-      },
-    });
-  };
-
-  // IndexedDB에서 이미지 가져오기
-  const getImageFromIndexedDB = async (
-    requestId: string,
-  ): Promise<string | null> => {
-    const db = await initDB();
-    return (await db.get("images", requestId)) || null;
-  };
-
-  // IndexedDB에 이미지 저장
-  const saveImageToIndexedDB = async (requestId: string, b64Img: string) => {
-    const db = await initDB();
-    await db.put("images", b64Img, requestId);
-  };
-
   const fetchImageRequests = async () => {
     try {
       const response = await getFires(page);
@@ -111,26 +85,7 @@ export default function AiGallery({ newImageGenerated }: AiGalleryProps) {
 
   const fetchResultForRequest = async (req: ImageRequest) => {
     try {
-      // IndexedDB에서 이미지 확인
-      const cachedImage = await getImageFromIndexedDB(req.id);
-      if (cachedImage) {
-        setImageRequests((prevRequests) =>
-          prevRequests.map((r) =>
-            r.id === req.id
-              ? {
-                  ...r,
-                  status: "success",
-                  b64_img: cachedImage,
-                  isLoading: false,
-                  canRefresh: false,
-                }
-              : r,
-          ),
-        );
-        return;
-      }
-
-      // IndexedDB에 없으면 API 호출
+      // API 호출
       setImageRequests((prevRequests) =>
         prevRequests.map((r) =>
           r.id === req.id ? { ...r, isLoading: true, canRefresh: false } : r,
@@ -140,7 +95,6 @@ export default function AiGallery({ newImageGenerated }: AiGalleryProps) {
       const response = await result(req.id);
       if (response.status === 201) {
         const b64Img = response.body.b64_img;
-        await saveImageToIndexedDB(req.id, b64Img);
         setImageRequests((prevRequests) =>
           prevRequests.map((r) =>
             r.id === req.id

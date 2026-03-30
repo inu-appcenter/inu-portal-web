@@ -10,6 +10,7 @@ import PostItem from "@/components/mobile/notice/PostItem";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import { Fragment } from "react";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 interface TipsCardContainerProps {
   post: Post[];
@@ -118,11 +119,16 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
 
 const CardWrapper = styled.div`
   //padding: 0 8px 10px 28px;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
   font-size: 15px;
   font-weight: 600;
   color: #0e4d9d;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
+
   span {
     color: #969696;
   }

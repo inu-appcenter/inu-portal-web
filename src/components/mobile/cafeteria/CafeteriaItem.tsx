@@ -3,6 +3,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton"; // 스켈레톤 컴포넌트 임포트
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 interface CafeteriaDeatilProps {
   구성원가: string;
@@ -136,6 +137,25 @@ const DetailWrapper = styled.div`
       font-size: 10px;
       font-weight: 500;
       color: #888888;
+    }
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    min-height: 220px;
+
+    .info {
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .detail-wrapper {
+      margin-top: auto;
+
+      .sub-detail-wrapper {
+        gap: 12px;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
     }
   }
 `;

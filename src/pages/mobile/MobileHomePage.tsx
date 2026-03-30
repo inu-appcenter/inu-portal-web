@@ -6,7 +6,7 @@ import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
 import X_Vector from "../../resources/assets/mobile-mypage/X-Vector.svg";
 import PopupNotice from "@/components/desktop/banner/PopupNotice.tsx";
 import 배너이미지 from "@/resources/assets/banner/intip설문조사.png";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
@@ -14,16 +14,51 @@ import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import { useHeader } from "@/context/HeaderContext";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
+import InstallPromotionBottomSheet from "@/components/mobile/home/InstallPromotionBottomSheet";
 import LoginPromotionBottomSheet from "@/components/mobile/home/LoginPromotionBottomSheet";
 import useUserStore from "@/stores/useUserStore";
+import { getMobilePlatform } from "@/utils/getMobilePlatform";
+import {
+  DESKTOP_CONTENT_MAX_WIDTH,
+  DESKTOP_MEDIA,
+  MOBILE_PAGE_GUTTER,
+} from "@/styles/responsive";
+import TopPopupNotification from "@/components/common/TopPopupNotification";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
+const PROMO_PROBABILITY = 0.3;
+
+function getStoredAccessToken() {
+  const storedTokenInfo = localStorage.getItem("tokenInfo");
+
+  if (!storedTokenInfo) {
+    return "";
+  }
+
+  try {
+    const parsedTokenInfo = JSON.parse(storedTokenInfo) as {
+      accessToken?: string;
+    };
+
+    return parsedTokenInfo.accessToken ?? "";
+  } catch (error) {
+    console.error("Failed to parse stored tokenInfo", error);
+    return "";
+  }
+}
 
 export default function MobileHomePage() {
   const { tokenInfo } = useUserStore();
   const isBannerOn = false; // 배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); // 배너 모달창 열림 여부
   const [showLoginPromo, setShowLoginPromo] = useState(false);
+  const [showInstallPromo, setShowInstallPromo] = useState(false);
+  const [isDesktopLayout, setIsDesktopLayout] = useState(false);
+  const hasEvaluatedPromoRef = useRef(false);
+
+  if (new URLSearchParams(window.location.search).get("errorTest") === "1") {
+    throw new Error("에러바운더리 UI 확인용");
+  }
 
   // 헤더 설정 주입
   useHeader({
@@ -47,13 +82,52 @@ export default function MobileHomePage() {
   // 확률적으로 로그인 유도 바텀시트 노출
   useEffect(() => {
     // userInfo.id 대신 tokenInfo.accessToken 존재 여부로 로그인 확인
-    if (!tokenInfo.accessToken) {
-      const probability = 0.3;
-      if (Math.random() < probability) {
+    if (hasEvaluatedPromoRef.current) {
+      return;
+    }
+
+    hasEvaluatedPromoRef.current = true;
+
+    if (Math.random() >= PROMO_PROBABILITY) {
+      return;
+    }
+
+    const platform = getMobilePlatform();
+    const isInstalledApp =
+      platform === "ios_webview" || platform === "android_webview";
+    const isMobileBrowser =
+      platform === "ios_browser" || platform === "android_browser";
+    const isLoggedIn =
+      Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
+
+    if (isInstalledApp) {
+      if (!isLoggedIn) {
         setShowLoginPromo(true);
       }
+      return;
+    }
+
+    if (isMobileBrowser) {
+      setShowInstallPromo(true);
     }
   }, [tokenInfo.accessToken]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
+    const updateLayoutMode = (event: MediaQueryList | MediaQueryListEvent) => {
+      setIsDesktopLayout(event.matches);
+    };
+
+    updateLayoutMode(mediaQuery);
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", updateLayoutMode);
+      return () => mediaQuery.removeEventListener("change", updateLayoutMode);
+    }
+
+    mediaQuery.addListener(updateLayoutMode);
+    return () => mediaQuery.removeListener(updateLayoutMode);
+  }, []);
 
   const handleCloseModal = () => {
     const nextWeek = new Date();
@@ -62,8 +136,81 @@ export default function MobileHomePage() {
     setShow(false);
   };
 
+  interface NotificationData {
+    title: string;
+    message: string;
+  }
+
+  const isBeforeDeadline = () => {
+    const now = new Date();
+    const deadline = new Date("2026-03-27T19:00:00"); // 필요하면 연도 수정
+    return now < deadline;
+  };
+
+  const [notification, setNotification] = useState<NotificationData | null>(
+    isBeforeDeadline()
+      ? {
+          title: "서비스 점검 예정 안내",
+          message:
+            "3월 27일(금) 17시 30분부터 19시까지 서버 점검이 예정되어 있습니다. 해당 기간동안 인입런 기능을 제외한 기능의 사용이 불가능합니다. 이용에 참고 부탁드립니다.",
+        }
+      : null,
+  );
+  const handleCloseNotification = () => {
+    setNotification(null);
+  };
+
+  const noticeSection = (
+    <Section>
+      <TitleContentArea
+        title={"학교 공지사항"}
+        children={<NoticeForm />}
+        link={ROUTES.BOARD.NOTICE}
+      />
+    </Section>
+  );
+
+  const tipsSection = (
+    <Section>
+      <TitleContentArea
+        title={"TIPS 알아보기"}
+        children={<TipsWidget />}
+        link={ROUTES.BOARD.TIPS}
+      />
+    </Section>
+  );
+
+  const youtubeSection = (
+    <Section>
+      <TitleContentArea
+        title={"인천대학교 YouTube"}
+        externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
+      >
+        <YoutubeWidget />
+      </TitleContentArea>
+    </Section>
+  );
+
+  const calendarSection = (
+    <Section>
+      <TitleContentArea
+        title={"학사일정"}
+        children={<Calendar mode={"weekly"} />}
+        link={ROUTES.BOARD.CALENDAR}
+      />
+    </Section>
+  );
+
   return (
     <MobileHomePageWrapper>
+      {notification && (
+        <TopPopupNotification
+          title={notification.title}
+          message={notification.message}
+          onClose={handleCloseNotification}
+          duration={10000}
+        />
+      )}
       {show && isBannerOn && (
         <ModalBackGround>
           <Modal>
@@ -106,39 +253,25 @@ export default function MobileHomePage() {
           <HomeChipGroup />
         </Section>
 
-        {/* 모든 TitleContentArea를 Section으로 감싸서 패딩 통일 */}
-        <Section>
-          <TitleContentArea
-            title={"학교 공지사항"}
-            children={<NoticeForm />}
-            link={ROUTES.BOARD.NOTICE}
-          />
-        </Section>
-
-        <Section>
-          <TitleContentArea
-            title={"TIPS 알아보기"}
-            children={<TipsWidget />}
-            link={ROUTES.BOARD.TIPS}
-          />
-        </Section>
-
-        <Section>
-          <TitleContentArea
-            title={"인천대학교 YouTube"}
-            externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
-          >
-            <YoutubeWidget />
-          </TitleContentArea>
-        </Section>
-
-        <Section>
-          <TitleContentArea
-            title={"학사일정"}
-            children={<Calendar mode={"weekly"} />}
-            link={ROUTES.BOARD.CALENDAR}
-          />
-        </Section>
+        {isDesktopLayout ? (
+          <DesktopWidgetColumns>
+            <DesktopWidgetColumn>
+              {noticeSection}
+              {youtubeSection}
+            </DesktopWidgetColumn>
+            <DesktopWidgetColumn>
+              {tipsSection}
+              {calendarSection}
+            </DesktopWidgetColumn>
+          </DesktopWidgetColumns>
+        ) : (
+          <>
+            {noticeSection}
+            {tipsSection}
+            {youtubeSection}
+            {calendarSection}
+          </>
+        )}
       </FeedLayout>
 
       <AppcenterLogoWrapper>
@@ -155,6 +288,10 @@ export default function MobileHomePage() {
         open={showLoginPromo}
         onDismiss={() => setShowLoginPromo(false)}
       />
+      <InstallPromotionBottomSheet
+        open={showInstallPromo}
+        onDismiss={() => setShowInstallPromo(false)}
+      />
     </MobileHomePageWrapper>
   );
 }
@@ -165,13 +302,23 @@ const MobileHomePageWrapper = styled.div`
   width: 100%;
   position: relative;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+    margin: 0 auto;
+    padding-bottom: 120px;
+  }
 `;
 
 // 역할: 컨텐츠가 안전 영역(Safe Area) 내에 배치되도록 함 (기존 MediumPaddingWrapper 대체)
 const Section = styled.section`
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
   width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;
 
 // 역할: 수직 리듬(Vertical Rhythm) 관리 (기존 ContainerWrapper 대체)
@@ -181,8 +328,26 @@ const FeedLayout = styled.div`
   gap: 28px;
   padding: 24px 0;
   width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    gap: 24px;
+  }
 `;
 
+const DesktopWidgetColumns = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+`;
+
+const DesktopWidgetColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+`;
 const AppcenterLogoWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -195,6 +360,15 @@ const AppcenterLogoWrapper = styled.div`
     max-width: 200px;
     min-width: 150px;
     cursor: pointer;
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    padding-top: 16px;
+
+    img {
+      width: 220px;
+      max-width: 220px;
+    }
   }
 `;
 

@@ -14,6 +14,7 @@ import { Folder } from "@/types/folders";
 import { Post } from "@/types/posts";
 import axios, { AxiosError } from "axios";
 import useAppStateStore from "@/stores/useAppStateStore";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 interface ScrapContentsProps {
   folders: Folder[];
@@ -416,6 +417,10 @@ const ScrapContentsContainerWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+  }
 `;
 
 const ScrapHeader = styled.div`
@@ -468,6 +473,11 @@ const Wrapper = styled.div`
   display: flex;
   width: 100svw;
   height: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    left: 0;
+    width: 100%;
+  }
 `;
 
 const ScrapContentsWrapper = styled.div<{
@@ -485,6 +495,11 @@ const ScrapContentsWrapper = styled.div<{
   };
   overflow-y: auto;
   position: relative;
+
+  @media ${DESKTOP_MEDIA} {
+    height: auto;
+    max-height: calc(100vh - 280px);
+  }
 `;
 
 const PageGroup = styled.div`
@@ -508,6 +523,11 @@ const PostWrapper = styled.div`
   display: flex;
   flex-direction: row;
   overflow-x: scroll;
+
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+    padding-left: 0;
+  }
   /* 스크롤바 숨기기 */
   scrollbar-width: none; // Firefox용
   -ms-overflow-style: none; // IE 및 Edge용

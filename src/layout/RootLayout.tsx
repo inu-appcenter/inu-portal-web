@@ -1,102 +1,142 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useOutlet } from "react-router-dom";
+import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
-import { ROUTES } from "@/constants/routes";
-import useUserStore from "@/stores/useUserStore";
-import useAppStateStore from "@/stores/useAppStateStore";
 import { getMembers, postApiLogs, postFcmToken } from "@/apis/members";
-import ScrollBarStyles from "@/styles/ScrollBarStyles";
 import { HeaderProvider } from "@/context/HeaderContext";
+import { ROUTES } from "@/constants/routes";
+import useAppStateStore from "@/stores/useAppStateStore";
+import useUserStore from "@/stores/useUserStore";
+import ScrollBarStyles from "@/styles/ScrollBarStyles";
+import {
+  getBootstrappedFcmToken,
+  getFcmDeviceType,
+  saveLastFcmSyncState,
+  shouldSyncFcmToken,
+  subscribeToFcmToken,
+} from "@/utils/fcm";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 
 export default function RootLayout() {
   const outlet = useOutlet();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { tokenInfo, setTokenInfo, setUserInfo } = useUserStore();
+  const { tokenInfo, userInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
 
-  const [fcmToken, setFcmToken] = useState<string | null>(null);
-  const LAST_SENT_TOKEN_KEY = "lastSentFcmToken";
+  const [fcmToken, setFcmToken] = useState<string | null>(() =>
+    getBootstrappedFcmToken(),
+  );
 
-  // 토큰 및 초기 경로 설정
   useEffect(() => {
     setIsAppUrl(ROUTES.ROOT as MainTabPath);
 
-    const storedToken = localStorage.getItem("tokenInfo");
-    if (storedToken) {
-      setTokenInfo(JSON.parse(storedToken));
+    const storedTokenInfo = localStorage.getItem("tokenInfo");
+    if (storedTokenInfo) {
+      setTokenInfo(JSON.parse(storedTokenInfo));
     }
-  }, [setTokenInfo, setIsAppUrl]);
+  }, [setIsAppUrl, setTokenInfo]);
 
-  // 사용자 데이터 동기화
   useEffect(() => {
-    if (tokenInfo.accessToken) {
-      (async () => {
-        try {
-          const { data } = await getMembers();
-          setUserInfo(data);
-          if (data.department == null) {
-            alert("학과 정보 등록이 필요해요. 마이페이지로 이동합니다.");
-            navigate(ROUTES.MYPAGE.PROFILE);
-          }
-        } catch (e) {
-          console.error("회원 조회 실패", e);
-        }
-      })();
+    if (!tokenInfo.accessToken) {
+      return;
     }
-  }, [tokenInfo.accessToken, setUserInfo]);
 
-  // 웹뷰 FCM 수신 등록
+    void (async () => {
+      try {
+        const { data } = await getMembers();
+        setUserInfo(data);
+      } catch (error) {
+        console.error("회원 조회 실패", error);
+      }
+    })();
+  }, [setUserInfo, tokenInfo.accessToken]);
+
   useEffect(() => {
-    (window as any).onReceiveFcmToken = (token: string) => {
-      if (!token || token.trim() === "") return;
+    if (!tokenInfo.accessToken || userInfo.id === 0) {
+      return;
+    }
 
-      localStorage.setItem("fcmToken", token);
-      setFcmToken(token);
-    };
+    if (userInfo.department == null || userInfo.department === "") {
+      if (location.pathname !== ROUTES.MYPAGE.PROFILE) {
+        alert("학과 정보 등록이 필요해요. 마이페이지로 이동합니다.");
+        navigate(ROUTES.MYPAGE.PROFILE);
+      }
+      return;
+    }
 
-    return () => {
-      (window as any).onReceiveFcmToken = null;
-    };
+    if (location.pathname === ROUTES.LOGIN) {
+      navigate(ROUTES.HOME);
+    }
+  }, [location.pathname, navigate, tokenInfo.accessToken, userInfo]);
+
+  useEffect(() => {
+    const initialToken = getBootstrappedFcmToken();
+    if (initialToken) {
+      setFcmToken(initialToken);
+    }
+
+    return subscribeToFcmToken((token) => {
+      setFcmToken((currentToken) => (currentToken === token ? currentToken : token));
+    });
   }, []);
 
-  // 앱 토큰 우선 전략
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!fcmToken) {
-        const savedToken = localStorage.getItem("fcmToken");
-        if (savedToken) {
-          setFcmToken(savedToken);
-        }
-      }
-    }, 300);
+    if (!fcmToken) {
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, [fcmToken]);
+    const hasPersistedAuth = Boolean(localStorage.getItem("tokenInfo"));
+    const isAuthenticated = Boolean(tokenInfo.accessToken);
 
-  // 토큰 서버 동기화
-  useEffect(() => {
-    const syncToken = async () => {
-      if (!fcmToken) return;
+    if (!isAuthenticated && hasPersistedAuth) {
+      return;
+    }
 
-      const lastSent = localStorage.getItem(LAST_SENT_TOKEN_KEY);
-      if (lastSent === fcmToken) return;
+    if (!shouldSyncFcmToken(fcmToken, isAuthenticated)) {
+      return;
+    }
 
+    const deviceType = getFcmDeviceType();
+
+    void (async () => {
       try {
-        await postFcmToken(fcmToken);
-        localStorage.setItem(LAST_SENT_TOKEN_KEY, fcmToken);
+        await postFcmToken(fcmToken, deviceType);
+
+        const log = {
+          status: "success",
+          timestamp: new Date().toLocaleString(),
+          token: fcmToken,
+          deviceType,
+          authState: isAuthenticated ? "authenticated" : "anonymous",
+        };
+
+        saveLastFcmSyncState({
+          token: fcmToken,
+          isAuthenticated,
+          syncedAt: Date.now(),
+        });
+        localStorage.setItem("fcmSendLog", JSON.stringify(log));
+        console.log("FCM 토큰 동기화 성공", log);
       } catch (error) {
+        const log = {
+          status: "fail",
+          timestamp: new Date().toLocaleString(),
+          token: fcmToken,
+          deviceType,
+          authState: isAuthenticated ? "authenticated" : "anonymous",
+          error: error instanceof Error ? error.message : String(error),
+        };
+
+        localStorage.setItem("fcmSendLog", JSON.stringify(log));
         console.error("FCM 토큰 동기화 실패", error);
       }
-    };
+    })();
+  }, [fcmToken, tokenInfo.accessToken]);
 
-    syncToken();
-  }, [fcmToken]);
-
-  // 접속 로그
   useEffect(() => {
     const apiCount = async () => {
       const today = new Date().toISOString().split("T")[0];
@@ -105,7 +145,8 @@ export default function RootLayout() {
         localStorage.setItem("user_count_date", today);
       }
     };
-    apiCount();
+
+    void apiCount();
   }, []);
 
   return (
@@ -118,10 +159,14 @@ export default function RootLayout() {
 
 const ScreenContainer = styled.div`
   width: 100%;
-  max-width: 768px;
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
   background-color: #f1f1f3;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: none;
+    box-shadow: none;
+  }
 `;

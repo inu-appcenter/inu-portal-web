@@ -1,5 +1,4 @@
 import styled, { keyframes, css } from "styled-components";
-import busIcon from "/Bus/busIcon.svg";
 import useBusArrival from "../../../hooks/useBusArrival";
 import { BusData } from "@/types/bus";
 import Box from "@/components/common/Box";
@@ -10,6 +9,8 @@ interface BusRouteBarProps {
   bus: BusData;
   bstopId: string;
 }
+
+const BUS_ICON_SRC = "/Bus/busIcon.svg";
 
 export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
   // 현재 정류장 기준 도착 정보
@@ -133,11 +134,11 @@ export default function BusRouteBar({ bus, bstopId }: BusRouteBarProps) {
                   )}
                   {dot.showPassBus && (
                     <>
-                      <BusIcon src={busIcon} />
+                      <BusIcon src={BUS_ICON_SRC} />
                       <InfoBox>{dot.passText}</InfoBox>
                     </>
                   )}
-                  {dot.showBus && <BusIcon src={busIcon} />}
+                  {dot.showBus && <BusIcon src={BUS_ICON_SRC} />}
                   <Dot $current={dot.isCurrent} />
                   {dot.label && <Label>{dot.label}</Label>}
                 </DotBox>

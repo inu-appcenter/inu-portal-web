@@ -18,6 +18,7 @@ import {
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileBusDetailPage() {
   // 헤더 설정 주입
@@ -85,6 +86,10 @@ const MobileBusDetailPageWrapper = styled.div`
 `;
 
 const MediumPaddingWrapper = styled.div`
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;

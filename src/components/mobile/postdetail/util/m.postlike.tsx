@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import heartEmptyImg from "@/resources/assets/posts/heart-empty.svg";
 import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
 import styled from "styled-components";
+import { ROUTES } from "@/constants/routes";
 import { putLike } from "@/apis/posts";
+import useUserStore from "@/stores/useUserStore";
 import axios, { AxiosError } from "axios";
 
 interface PostLikeProps {
@@ -14,13 +17,36 @@ interface PostLikeProps {
 export default function PostLike({ id, like, isLikedProp }: PostLikeProps) {
   const [likeState, setLikeState] = useState(like);
   const [isLikedState, setIsLikedState] = useState(isLikedProp);
+  const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
 
   useEffect(() => {
     setLikeState(like);
     setIsLikedState(isLikedProp);
   }, [like, isLikedProp]);
 
+  const confirmLoginRedirect = () => {
+    if (isLoggedIn) {
+      return true;
+    }
+
+    const shouldMoveLoginPage = window.confirm(
+      "로그인이 필요해요. 로그인페이지로 이동할까요?",
+    );
+
+    if (shouldMoveLoginPage) {
+      navigate(ROUTES.LOGIN);
+    }
+
+    return false;
+  };
+
   const handleLike = async () => {
+    if (!confirmLoginRedirect()) {
+      return;
+    }
+
     try {
       const response = await putLike(id);
       if (response.data === 1) {

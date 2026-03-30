@@ -1,30 +1,71 @@
 import { navBarList } from "old/resource/string/navBarList";
 
+type NavBarItem = {
+  title?: string;
+  code?: string;
+  url?: string;
+  child?: NavBarItem[];
+  subItems?: NavBarItem[];
+};
+
+const traverseNavBarList = (
+  items: NavBarItem[],
+  matcher: (item: NavBarItem) => string,
+): string => {
+  for (const item of items) {
+    const matchedValue = matcher(item);
+    if (matchedValue) return matchedValue;
+
+    if (item.child) {
+      const found = traverseNavBarList(item.child, matcher);
+      if (found) return found;
+    }
+
+    if (item.subItems) {
+      const found = traverseNavBarList(item.subItems, matcher);
+      if (found) return found;
+    }
+  }
+
+  return "";
+};
+
 /**
  * title을 인자로 주면 code를 반환
  * code를 인자로 주면 title을 반환
  */
-export default function findTitleOrCode(value: string): string {
-  function dfs(items: any): string {
-    for (const item of items) {
-      // code와 title 매칭 확인
-      if (item.code && item.title === value) return item.code;
-      if (item.code && item.code === value) return item.title;
+export default function findTitleOrCode(
+  value: string | null | undefined,
+): string {
+  const normalizedValue =
+    typeof value === "string" ? value.trim() : "";
 
-      // child 탐색
-      if (item.child) {
-        const found = dfs(item.child);
-        if (found) return found;
-      }
-
-      // subItems 탐색
-      if (item.subItems) {
-        const found = dfs(item.subItems);
-        if (found) return found;
-      }
-    }
+  if (!normalizedValue) {
     return "";
   }
 
-  return dfs(navBarList);
+  return traverseNavBarList(navBarList as NavBarItem[], (item) => {
+    if (item.code && item.title === normalizedValue) return item.code;
+    if (item.code && item.code === normalizedValue) return item.title ?? "";
+    return "";
+  });
 }
+
+export const findDepartmentHomepageUrl = (
+  value: string | null | undefined,
+): string => {
+  const normalizedValue =
+    typeof value === "string" ? value.trim() : "";
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  return traverseNavBarList(navBarList as NavBarItem[], (item) => {
+    if (!item.url) return "";
+    if (item.code === normalizedValue || item.title === normalizedValue) {
+      return item.url;
+    }
+    return "";
+  });
+};

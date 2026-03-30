@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import useUserStore from "@/stores/useUserStore";
 import useAppStateStore from "@/stores/useAppStateStore";
 import { getMembers, postApiLogs } from "@/apis/members";
-import tokenInstance from "@/apis/tokenInstance";
 
 import MobileIntroPage from "@/pages/mobile/MobileIntroPage";
 import ScrollBarStyles from "@/styles/ScrollBarStyles";
@@ -71,11 +70,6 @@ function RootLayoutContent({
   }, [tokenInfo.accessToken, setUserInfo]);
 
   useEffect(() => {
-    (window as any).onReceiveFcmToken = async (token: string) => {
-      localStorage.setItem("fcmToken", token);
-      await tokenInstance.post("/api/tokens", { token });
-    };
-
     const apiCount = async () => {
       const today = new Date().toISOString().split("T")[0];
       if (localStorage.getItem("user_count_date") !== today) {
@@ -84,9 +78,6 @@ function RootLayoutContent({
       }
     };
     apiCount();
-    return () => {
-      (window as any).onReceiveFcmToken = null;
-    };
   }, []);
 
   return (

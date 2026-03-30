@@ -14,8 +14,12 @@ import { CafeimageMap } from "@/resources/assets/mapCafeImages/cafeImageManage.t
 import { RestaurantimageMap } from "@/resources/assets/mapRestaurantImages/restaurantImageManage";
 import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
 
-// 지도 중심점 보정값 (마커와 인포윈도우가 한눈에 들어오게 함)
-export const MAP_CENTER_OFFSET = 0.001;
+// 바텀시트 높이 설정 상수
+export const BOTTOM_SHEET_HEIGHT = {
+  MIN: 0.15,
+  DEFAULT: 0.45,
+  MAX: 1.0,
+} as const;
 
 export type TabType = "학교" | "휴게실" | "카페" | "식당";
 

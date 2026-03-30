@@ -58,13 +58,23 @@ export default TopRightDropdownMenu;
 
 const Container = styled.div`
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: fit-content;
-  height: fit-content;
+  height: 100%;
 `;
 
 const MenuButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  line-height: 0;
   background-color: transparent;
-  border-color: transparent;
+  border: none;
   cursor: pointer;
 `;
 
@@ -96,7 +106,7 @@ const Dropdown = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: start;
+  align-items: stretch;
 
   /* 3. 애니메이션 속성 추가 */
   transform-origin: top right; /* 애니메이션 기준점을 우측 상단으로 설정 */
@@ -105,12 +115,15 @@ const Dropdown = styled.div`
 
 const MenuItem = styled.button`
   all: unset;
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
+  min-height: 24px;
   box-sizing: border-box;
   cursor: pointer;
   color: black;
   font-size: 14px;
+  line-height: 1.4;
   padding: 4px 0;
   word-break: keep-all;
 

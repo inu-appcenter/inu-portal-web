@@ -10,6 +10,11 @@ import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"
 import { useLocation } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  DESKTOP_CONTENT_MAX_WIDTH,
+  DESKTOP_MEDIA,
+  MOBILE_PAGE_GUTTER,
+} from "@/styles/responsive";
 
 const MobileSchoolNoticePage = () => {
   const [categoryList, setCategoryList] = useState<string[]>([]);
@@ -135,14 +140,30 @@ export default MobileSchoolNoticePage;
 
 const MobileSchoolNoticePageWrapper = styled.div`
   width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    margin: 0 auto;
+  }
 `;
 
 const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin: 0 16px;
+  margin: 0 ${MOBILE_PAGE_GUTTER};
+  padding-top: 12px;
   padding-bottom: 20px;
+  box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+    margin: 0;
+    padding: 16px 0 32px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
 `;
 
 const LoadingText = styled.h4`

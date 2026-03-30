@@ -1,14 +1,6 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  FC,
-  ReactNode,
-  // MouseEvent와 TouchEvent를 react에서 import하지 않습니다.
-} from "react";
-import styled, { keyframes, css } from "styled-components";
-
-// --- STYLED COMPONENTS ---
+import React, { FC, ReactNode, useEffect, useRef, useState } from "react";
+import styled, { keyframes } from "styled-components";
+import { createPortal } from "react-dom";
 
 const slideDown = keyframes`
   from {
@@ -21,47 +13,11 @@ const slideDown = keyframes`
   }
 `;
 
-const slideUp = keyframes`
-  from {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(-50%) translateY(-120%);
-    opacity: 0;
-  }
-`;
-
-const swipeOutToSide = keyframes`
-  from {
-    /* 수정: X축과 Y축 모두 드래그가 끝난 지점에서 시작하도록 수정 
-    */
-    transform: translateX(-50%) translate(
-      var(--swipe-translate-x, 0px),
-      var(--swipe-translate-y, 0px)
-    );
-    opacity: 1;
-  }
-  to {
-    /*
-      수정: X축만 3배로 멀리 보내고, Y축은 유지
-    */
-    transform: translateX(-50%) translate(
-      calc(var(--swipe-translate-x, 0px) * 3),
-      var(--swipe-translate-y, 0px)
-    );
-    opacity: 0;
-  }
-`;
-
-const NotificationWrapper = styled.div<{
-  isClosing: boolean;
-  swipeDirection: "up" | "side" | "none";
-}>`
+const NotificationWrapper = styled.div`
   position: fixed;
-  top: 20px;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
   left: 50%;
-  z-index: 9999;
+  z-index: 999999;
   width: calc(100% - 10px);
   max-width: 450px;
   padding: 12px 40px;
@@ -74,31 +30,25 @@ const NotificationWrapper = styled.div<{
   -webkit-user-select: none;
   touch-action: none;
 
-  /* --- 수정됨: 화이트 테마 및 블러 효과 적용 --- */
-  background-color: rgba(255, 255, 255, 0.85);
-  color: #333;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+
+  backdrop-filter: blur(35px) saturate(200%);
+  -webkit-backdrop-filter: blur(35px) saturate(200%);
+
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  /* --- --------------------------------- --- */
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.6),
+    0 20px 40px -10px rgba(0, 0, 0, 0.2);
 
+  color: #222;
   animation: ${slideDown} 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-
-  ${({ isClosing, swipeDirection }) => {
-    if (!isClosing) return "";
-    if (swipeDirection === "up")
-      return css`
-        animation: ${slideUp} 0.3s ease-out forwards;
-      `;
-    if (swipeDirection === "side")
-      return css`
-        animation: ${swipeOutToSide} 0.3s ease-out forwards;
-      `;
-    return css`
-      animation: ${slideUp} 0.3s ease-out forwards;
-    `;
-  }}
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  will-change: transform, opacity;
 `;
 
 const NotificationHeader = styled.div`
@@ -119,53 +69,34 @@ const AppIcon = styled.div`
   font-size: 12px;
   font-weight: bold;
   flex-shrink: 0;
-  color: white; /* --- 수정됨: 아이콘 글자색 흰색으로 --- */
+  color: white;
+  box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);
 `;
 
 const AppName = styled.span`
   font-size: 14px;
   font-weight: 600;
-  opacity: 0.8;
-  color: #333; /* --- 수정됨: 색상 명시 --- */
+  opacity: 0.7;
+  color: #444;
 `;
 
-const NotificationBody = styled.div`
-  //padding-left: 28px;
-`;
+const NotificationBody = styled.div``;
 
 const Title = styled.h3`
   margin: 0 0 4px 0;
   font-size: 15px;
   font-weight: bold;
-  color: #111; /* --- 수정됨: 가독성을 위해 더 진하게 --- */
+  color: #000;
 `;
 
 const Message = styled.p`
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
-  color: #444; /* --- 수정됨: 가독성을 위해 조정 --- */
-  white-space: pre-line; /* ← \\n을 실제 줄바꿈으로 표시 */
+  color: #333;
+  white-space: pre-line;
+  opacity: 0.9;
 `;
-
-// const CloseButton = styled.button`
-//   background: none;
-//   border: none;
-//   color: #999; /* --- 수정됨: 색상 조정 --- */
-//   font-size: 14px;
-//   font-weight: 500;
-//   padding: 8px 0;
-//   margin-top: 12px;
-//   width: 100%;
-//   //text-align: right;
-//   cursor: pointer;
-//   transition: color 0.2s;
-//
-//   &:hover {
-//     color: #555; /* --- 수정됨: 호버 색상 조정 --- */
-//   }
-// `;
-// --- COMPONENT ---
 
 interface TopPopupNotificationProps {
   onClose: () => void;
@@ -185,28 +116,44 @@ const TopPopupNotification: FC<TopPopupNotificationProps> = ({
   duration = 5000,
 }) => {
   const [isClosing, setIsClosing] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<"up" | "side" | "none">(
-    "none",
-  );
+  const [mounted, setMounted] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
+
   const isDragging = useRef(false);
   const startPos = useRef({ x: 0, y: 0 });
-  const lastDragPos = useRef({ x: 0, y: 0 });
+  const currentTranslate = useRef({ x: 0, y: 0 });
+  const dragAxis = useRef<"x" | "y" | null>(null);
 
-  const handleClose = (direction: "up" | "side" | "none" = "none") => {
-    if (isClosing) return;
-    setSwipeDirection(direction);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => triggerExitAnimation("up"), duration);
+    return () => clearTimeout(timer);
+  }, [duration]);
+
+  const triggerExitAnimation = (direction: "up" | "left" | "right") => {
+    if (isClosing || !notificationRef.current) return;
     setIsClosing(true);
+
+    const el = notificationRef.current;
+
+    el.style.transition =
+      "transform 0.25s cubic-bezier(0.32, 0, 0.67, 0), opacity 0.2s ease-in";
+    el.style.opacity = "0";
+
+    if (direction === "up") {
+      el.style.transform = `translateX(-50%) translateY(-150%)`;
+    } else {
+      const screenWidth = window.innerWidth;
+      const targetX = direction === "right" ? screenWidth : -screenWidth;
+      el.style.transform = `translateX(-50%) translate(${targetX}px, 0px)`;
+    }
+
     setTimeout(onClose, 300);
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => handleClose("up"), duration);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // 수정: 파라미터 'e'의 타입을 브라우저 네이티브 이벤트로 명시합니다.
   const getPosition = (
     e: globalThis.MouseEvent | globalThis.TouchEvent,
   ): { x: number; y: number } => {
@@ -217,39 +164,60 @@ const TopPopupNotification: FC<TopPopupNotificationProps> = ({
   };
 
   const onDragStart = (
-    // 수정: 파라미터 'e'의 타입을 React 이벤트로 명시합니다.
     e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
   ) => {
     if (isClosing) return;
     isDragging.current = true;
-    // e.nativeEvent는 네이티브 이벤트이므로 getPosition과 타입이 일치합니다.
+    dragAxis.current = null;
     startPos.current = getPosition(e.nativeEvent);
-    lastDragPos.current = { x: 0, y: 0 };
+
     if (notificationRef.current) {
       notificationRef.current.style.transition = "none";
+      notificationRef.current.style.animation = "none";
     }
+
     window.addEventListener("mousemove", onDragMove);
     window.addEventListener("touchmove", onDragMove, { passive: false });
     window.addEventListener("mouseup", onDragEnd);
     window.addEventListener("touchend", onDragEnd);
   };
 
-  // 수정: 파라미터 'e'의 타입을 브라우저 네이티브 이벤트로 명시합니다.
   const onDragMove = (e: globalThis.MouseEvent | globalThis.TouchEvent) => {
     if (!isDragging.current || !notificationRef.current) return;
+    if (e.cancelable && "touches" in e) e.preventDefault();
 
-    if (e.cancelable) {
-      e.preventDefault();
+    const currentPos = getPosition(e);
+    const rawDeltaX = currentPos.x - startPos.current.x;
+    const rawDeltaY = currentPos.y - startPos.current.y;
+
+    if (!dragAxis.current) {
+      if (Math.abs(rawDeltaX) > Math.abs(rawDeltaY)) {
+        if (Math.abs(rawDeltaX) > 5) dragAxis.current = "x";
+      } else {
+        if (Math.abs(rawDeltaY) > 5) dragAxis.current = "y";
+      }
     }
 
-    // e는 네이티브 이벤트이므로 getPosition과 타입이 일치합니다.
-    const currentPos = getPosition(e);
-    const deltaX = currentPos.x - startPos.current.x;
-    const deltaY = currentPos.y - startPos.current.y;
+    let finalX = 0;
+    let finalY = 0;
 
-    lastDragPos.current = { x: deltaX, y: deltaY };
+    if (dragAxis.current === "x") {
+      finalX = rawDeltaX;
+      finalY = 0;
+    } else if (dragAxis.current === "y") {
+      finalX = 0;
+      finalY = rawDeltaY > 0 ? rawDeltaY * 0.2 : rawDeltaY;
+    }
 
-    notificationRef.current.style.transform = `translateX(-50%) translate(${deltaX}px, ${deltaY}px)`;
+    currentTranslate.current = { x: finalX, y: finalY };
+
+    const elementWidth = notificationRef.current.offsetWidth;
+    const progressX = Math.min(Math.abs(finalX) / (elementWidth * 0.6), 1);
+    const progressY = finalY < 0 ? Math.min(Math.abs(finalY) / 80, 1) : 0;
+    const opacity = 1 - Math.max(progressX, progressY);
+
+    notificationRef.current.style.transform = `translateX(-50%) translate(${finalX}px, ${finalY}px)`;
+    notificationRef.current.style.opacity = `${opacity}`;
   };
 
   const onDragEnd = () => {
@@ -261,39 +229,30 @@ const TopPopupNotification: FC<TopPopupNotificationProps> = ({
     window.removeEventListener("mouseup", onDragEnd);
     window.removeEventListener("touchend", onDragEnd);
 
-    if (notificationRef.current) {
-      const finalDeltaX = lastDragPos.current.x;
-      const finalDeltaY = lastDragPos.current.y; // Y축 값도 가져옵니다.
+    if (!notificationRef.current) return;
 
-      const swipeOutThresholdX = notificationRef.current.offsetWidth * 0.4;
-      const swipeOutThresholdY = 60;
+    const { x, y } = currentTranslate.current;
+    const thresholdX = 100;
+    const thresholdY = -50;
 
-      if (Math.abs(finalDeltaX) > swipeOutThresholdX) {
-        // 수정: X축과 Y축 변수를 모두 설정합니다.
-        notificationRef.current.style.setProperty(
-          "--swipe-translate-x",
-          `${finalDeltaX}px`,
-        );
-        notificationRef.current.style.setProperty(
-          "--swipe-translate-y",
-          `${finalDeltaY}px`,
-        );
-        handleClose("side");
-      } else if (finalDeltaY < -swipeOutThresholdY) {
-        handleClose("up");
-      } else {
-        notificationRef.current.style.transition =
-          "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-        notificationRef.current.style.transform = "translateX(-50%)";
-      }
+    if (y < thresholdY) {
+      triggerExitAnimation("up");
+    } else if (Math.abs(x) > thresholdX) {
+      triggerExitAnimation(x > 0 ? "right" : "left");
+    } else {
+      notificationRef.current.style.transition =
+        "transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.3s";
+      notificationRef.current.style.transform =
+        "translateX(-50%) translate(0, 0)";
+      notificationRef.current.style.opacity = "1";
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <NotificationWrapper
       ref={notificationRef}
-      isClosing={isClosing}
-      swipeDirection={swipeDirection}
       onMouseDown={onDragStart}
       onTouchStart={onDragStart}
     >
@@ -303,20 +262,12 @@ const TopPopupNotification: FC<TopPopupNotificationProps> = ({
           <AppName>{appName}</AppName>
         </NotificationHeader>
       )}
-
       <NotificationBody>
         <Title>{title}</Title>
         <Message>{message}</Message>
       </NotificationBody>
-      {/*<CloseButton*/}
-      {/*  onClick={(e) => {*/}
-      {/*    e.stopPropagation();*/}
-      {/*    handleClose("up");*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  닫기*/}
-      {/*</CloseButton>*/}
-    </NotificationWrapper>
+    </NotificationWrapper>,
+    document.body,
   );
 };
 

@@ -2,6 +2,7 @@ import styled from "styled-components";
 import HelloBus from "@/components/mobile/bus/shuttle/HelloBus.tsx";
 import { useHeader } from "@/context/HeaderContext";
 import { useState, useCallback } from "react";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const MobileBusShuttleHelloBusPage = () => {
   const [show, setShow] = useState(0);
@@ -39,9 +40,13 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   //padding-top: calc(56px + 16px);
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 
   img {
     width: 100%;

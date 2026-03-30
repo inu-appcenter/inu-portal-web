@@ -9,6 +9,7 @@ import { useState } from "react";
 import useUserStore from "@/stores/useUserStore";
 import PencilImg from "@/resources/assets/posts/pencil-white.svg";
 import useReloadKeyStore from "@/stores/useReloadKeyStore";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileCouncilPage() {
   const { userInfo } = useUserStore();
@@ -115,7 +116,12 @@ const MobileCouncilPageWrapper = styled.div`
 const Wrapper = styled.div`
   width: 100%;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   padding-bottom: 32px;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding-left: 0;
+    padding-right: 0;
+  }
 `;

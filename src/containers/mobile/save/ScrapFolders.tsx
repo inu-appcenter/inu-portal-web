@@ -2,6 +2,7 @@ import styled from "styled-components";
 import Gear from "@/resources/assets/mobile-save/Gear.svg";
 import { useState } from "react";
 import FolderActionModal from "@/containers/mobile/save/FolderActionModal";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 interface ScrapFoldersProps {
   folders: { id: number; name: string }[];
@@ -87,6 +88,10 @@ const ScrapFoldersWrapper = styled.div`
   /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+  }
 `;
 
 const BottomBorder = styled.div`

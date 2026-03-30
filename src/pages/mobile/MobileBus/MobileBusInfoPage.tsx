@@ -12,6 +12,7 @@ import SchoolShuttle from "@/components/mobile/bus/shuttle/SchoolShuttle.tsx";
 import { postApiLogs } from "@/apis/members";
 import { useHeader } from "@/context/HeaderContext";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function BusInfoPage() {
   const location = useLocation();
@@ -108,6 +109,10 @@ const BusInfoPageWrapper = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  padding: 0 16px;
+  padding: 8px ${MOBILE_PAGE_GUTTER} 0;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 8px 0 0;
+  }
 `;

@@ -5,6 +5,7 @@ import { ROUTES } from "@/constants/routes";
 import RootLayout from "@/layout/RootLayout";
 import MainTabLayout from "@/layout/MainTabLayout";
 import SubLayout from "@/layout/SubLayout";
+import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
 // Pages (Imports 생략 - 기존과 동일)
 import MobileHomePage from "@/pages/mobile/MobileHomePage";
@@ -29,6 +30,7 @@ import MobileMyPagePost from "@/pages/mobile/MobileMyPagePost";
 import MobileMyPageLike from "@/pages/mobile/MobileMyPageLike";
 import MobileMyPageComment from "@/pages/mobile/MobileMyPageComment";
 import MobileDeletePage from "@/pages/mobile/MobileDelete";
+import MobileFcmStatusPage from "@/pages/mobile/MobileFcmStatusPage";
 import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
 import MobileBusInfoPage from "@/pages/mobile/MobileBus/MobileBusInfoPage";
 import MobileBusDetailPage from "@/pages/mobile/MobileBus/MobileBusDetailPage";
@@ -47,11 +49,13 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
-import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage.tsx";
+import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage";
+import InstallPage from "@/pages/mobile/InstallPage";
 
 export const router = createBrowserRouter([
   {
     path: ROUTES.ROOT,
+    errorElement: <RouteErrorBoundary />,
     element: <RootLayout />, // 최상위 슬라이드 제어
     children: [
       // ----------------------------------------------------------------
@@ -93,6 +97,7 @@ export const router = createBrowserRouter([
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
+          { path: ROUTES.INSTALL, element: <InstallPage /> },
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
@@ -160,6 +165,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.LIKES, element: <MobileMyPageLike /> },
           { path: ROUTES.MYPAGE.COMMENTS, element: <MobileMyPageComment /> },
           { path: ROUTES.MYPAGE.DELETE, element: <MobileDeletePage /> },
+          { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.INFO, element: <MobileBusInfoPage /> },

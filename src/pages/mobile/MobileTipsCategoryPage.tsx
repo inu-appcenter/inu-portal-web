@@ -9,6 +9,7 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import { ROUTES } from "@/constants/routes";
 import PostItem from "@/components/mobile/notice/PostItem";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const MobileTipsCategoryPage = () => {
   const { category } = useParams<{ category: string }>();
@@ -82,8 +83,8 @@ const MobileTipsCategoryPage = () => {
                     <PostItem
                       title={post.title}
                       // category={post.category}
-                      date={post.createDate}
-                      writer={post.writer}
+                      showDate={false}
+                      showWriter={false}
                       onClick={() => {
                         navigate(ROUTES.BOARD.TIPS_DETAIL(post.id));
                       }}
@@ -110,8 +111,12 @@ const Wrapper = styled.div`
 `;
 
 const ListContainer = styled.div`
-  padding: 0 16px 40px;
+  padding: 0 ${MOBILE_PAGE_GUTTER} 40px;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0 0 40px;
+  }
 `;
 
 const EmptyState = styled.div`

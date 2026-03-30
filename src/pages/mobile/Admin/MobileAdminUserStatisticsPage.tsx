@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getMemberLogs } from "@/apis/admin";
 import { MemberLogData } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const MobileAdminUserStatisticsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -136,12 +137,16 @@ export default MobileAdminUserStatisticsPage;
 
 // 스타일
 export const Wrapper = styled.div`
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
 
   box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;
 
 const Content = styled.div`

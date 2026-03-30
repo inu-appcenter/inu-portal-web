@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import heartEmpty from "@/resources/assets/posts/heart-empty.svg";
 import heartFilled from "@/resources/assets/posts/heart-filled.svg";
 import scrapEmpty from "@/resources/assets/posts/scrap-empty.svg";
 import scrapFilled from "@/resources/assets/posts/scrap-filled.svg";
+import { ROUTES } from "@/constants/routes";
 import { putLike, putScrap } from "@/apis/posts";
 import { postReports } from "@/apis/reports";
 import { reportsReasons } from "@/resources/strings/reportsReasons";
+import useUserStore from "@/stores/useUserStore";
 import axios, { AxiosError } from "axios";
 
 interface Props {
@@ -30,8 +33,31 @@ export default function LikeScrapButtons({
   const [isScrapedState, setIsScrapedState] = useState(isScraped);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
+  const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
+
+  const confirmLoginRedirect = () => {
+    if (isLoggedIn) {
+      return true;
+    }
+
+    const shouldMoveLoginPage = window.confirm(
+      "로그인이 필요해요. 로그인페이지로 이동할까요?",
+    );
+
+    if (shouldMoveLoginPage) {
+      navigate(ROUTES.LOGIN);
+    }
+
+    return false;
+  };
 
   const handleLike = async () => {
+    if (!confirmLoginRedirect()) {
+      return;
+    }
+
     try {
       const response = await putLike(id);
       if (response.data === 1) {
@@ -65,6 +91,10 @@ export default function LikeScrapButtons({
   };
 
   const handleScrap = async () => {
+    if (!confirmLoginRedirect()) {
+      return;
+    }
+
     try {
       const response = await putScrap(id);
       if (response.data === 1) {

@@ -5,6 +5,7 @@ import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
 import SortDropBox from "@/components/mobile/notice/Sort";
 import Box from "@/components/common/Box";
+import type { NoticeSort } from "@/apis/notices";
 
 interface VideoData {
   id: string;
@@ -18,7 +19,7 @@ const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const UPLOADS_PLAYLIST_ID = "UUqOO8FqoVW6Y87jLnqhdflA";
 
-const fetchYoutubeVideos = async (sort: string): Promise<VideoData[]> => {
+const fetchYoutubeVideos = async (sort: NoticeSort): Promise<VideoData[]> => {
   let videoIds = "";
 
   if (sort === "date") {
@@ -78,7 +79,7 @@ const fetchYoutubeVideos = async (sort: string): Promise<VideoData[]> => {
 };
 
 const YoutubeListWidget = () => {
-  const [sort, setSort] = useState("date");
+  const [sort, setSort] = useState<NoticeSort>("date");
 
   const {
     data: videos = [],

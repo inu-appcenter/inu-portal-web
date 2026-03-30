@@ -11,6 +11,11 @@ import FillButton from "@/components/mobile/common/FillButton";
 import Label from "@/components/mobile/common/Label";
 import Skeleton from "@/components/common/Skeleton";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"; // 스켈레톤 컴포넌트
+import {
+  DESKTOP_CONTENT_MAX_WIDTH,
+  DESKTOP_MEDIA,
+  MOBILE_PAGE_GUTTER,
+} from "@/styles/responsive";
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -182,6 +187,7 @@ const MobileClubPageWrapper = styled.div`
   gap: 16px;
   box-sizing: border-box;
   width: 100%;
+  padding-top: 12px;
 
   .upload-button {
     position: sticky;
@@ -200,6 +206,12 @@ const MobileClubPageWrapper = styled.div`
     justify-content: space-evenly;
     font-size: 12px;
   }
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    margin: 0 auto;
+    padding-top: 16px;
+  }
 `;
 
 const StickyBottomWrapper = styled.div`
@@ -215,8 +227,22 @@ const ClubList = styled.div`
   align-items: center;
   width: 100%;
   gap: 8px;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
+
+  > * {
+    width: 100%;
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 16px;
+  }
 `;
 
 const ContentWrapper = styled.div`
@@ -235,6 +261,10 @@ const ContentWrapper = styled.div`
     object-fit: cover;
     border-radius: 10px;
   }
+
+  @media ${DESKTOP_MEDIA} {
+    align-items: flex-start;
+  }
 `;
 
 const RightArea = styled.div`
@@ -244,24 +274,32 @@ const RightArea = styled.div`
   gap: 16px;
   height: 100%;
   width: 100%;
+  min-width: 0;
 `;
 
 const FirstLine = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   width: 100%;
+  gap: 8px 12px;
 
   h3 {
     margin: 0;
     font-weight: 500;
     font-size: 16px;
+    flex: 1 1 180px;
+    min-width: 0;
+    word-break: keep-all;
   }
 
   .label-wrapper {
     display: flex;
     flex-direction: row;
     gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 `;
 
@@ -270,4 +308,5 @@ const ButtonsWrapper = styled.div`
   flex-direction: row;
   gap: 4px;
   flex-wrap: wrap;
+  align-items: center;
 `;

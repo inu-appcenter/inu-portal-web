@@ -8,6 +8,7 @@ import TimetableGrid, {
 import MobileCourseSearchSheet, {
   CourseResult,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 // --- 목업 데이터 ---
 const MY_TIMETABLE: ClassItem[] = [
@@ -142,6 +143,10 @@ export default MobileTimeTableEditPage;
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 16px 400px 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER} 400px;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0 0 400px;
+  }
 `;

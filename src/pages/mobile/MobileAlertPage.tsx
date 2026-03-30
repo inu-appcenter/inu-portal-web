@@ -1,24 +1,51 @@
 import styled from "styled-components";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
+
 import Box from "@/components/common/Box";
+import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { getAlerts } from "@/apis/members";
-import { useNavigate } from "react-router-dom";
-import { Notification } from "@/types/members";
-import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
 import { ROUTES } from "@/constants/routes";
-import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import useUserStore from "@/stores/useUserStore";
+import { Notification } from "@/types/members";
+
+function getStoredAccessToken() {
+  const storedTokenInfo = localStorage.getItem("tokenInfo");
+
+  if (!storedTokenInfo) {
+    return "";
+  }
+
+  try {
+    const parsedTokenInfo = JSON.parse(storedTokenInfo) as {
+      accessToken?: string;
+    };
+
+    return parsedTokenInfo.accessToken ?? "";
+  } catch (error) {
+    console.error("Failed to parse stored tokenInfo", error);
+    return "";
+  }
+}
 
 const MobileAlertPage = () => {
+  const { tokenInfo } = useUserStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const { ref, inView } = useInView();
+  const hasShownLoginConfirmRef = useRef(false);
+
+  const isLoggedIn =
+    Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
 
   const menuItems = useMemo<MenuItemType[]>(
     () => [
       {
-        label: "푸시 알림 설정",
+        label: "알림 설정",
         onClick: () => navigate(ROUTES.BOARD.DEPT_SETTING),
       },
     ],
@@ -30,6 +57,30 @@ const MobileAlertPage = () => {
     hasback: true,
     menuItems,
   });
+
+  useEffect(() => {
+    if (isLoggedIn || hasShownLoginConfirmRef.current) {
+      return;
+    }
+
+    hasShownLoginConfirmRef.current = true;
+
+    const shouldMoveLoginPage = window.confirm(
+      "로그인 후 알림을 볼 수 있어요. 로그인 페이지로 이동할까요?",
+    );
+
+    if (shouldMoveLoginPage) {
+      const redirectPath = `${location.pathname}${location.search}${location.hash}`;
+
+      navigate(
+        `${ROUTES.LOGIN}?redirect=${encodeURIComponent(redirectPath)}`,
+        { replace: true },
+      );
+      return;
+    }
+
+    navigate(ROUTES.HOME, { replace: true });
+  }, [isLoggedIn, location.hash, location.pathname, location.search, navigate]);
 
   const {
     data,
@@ -45,13 +96,15 @@ const MobileAlertPage = () => {
     getNextPageParam: (lastPage, allPages) => {
       const totalPages = lastPage.data.pages;
       const currentPage = allPages.length;
+
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
+    enabled: isLoggedIn,
   });
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+      void fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
@@ -59,13 +112,17 @@ const MobileAlertPage = () => {
     return data?.pages.flatMap((page) => page.data.contents) || [];
   }, [data]);
 
+  if (!isLoggedIn) {
+    return null;
+  }
+
   return (
     <MobileAlertPageWrapper>
       <TipsListContainerWrapper>
         {isLoading && alerts.length === 0 ? (
           <TipsCardWrapper>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Box key={`alert-init-skeleton-${i}`}>
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Box key={`alert-init-skeleton-${index}`}>
                 <PostItem isLoading />
               </Box>
             ))}
@@ -97,7 +154,6 @@ const MobileAlertPage = () => {
         )}
       </TipsListContainerWrapper>
 
-      {/* 무한 스크롤 트리거 */}
       <div ref={ref} style={{ height: "20px" }}>
         {isFetchingNextPage && (
           <TipsCardWrapper>
@@ -113,10 +169,8 @@ const MobileAlertPage = () => {
       )}
 
       <MoreFeaturesBox
-        title={"푸시알림이 오지 않나요?"}
-        content={
-          "핸드폰 설정에서 INTIP 앱의 알림 권한이 허용으로 되어있는지 확인해주세요!"
-        }
+        title="푸시 알림이 오지 않나요?"
+        content="휴대폰 설정에서 INTIP 앱의 알림 권한이 허용되어 있는지 확인해 주세요!"
       />
     </MobileAlertPageWrapper>
   );

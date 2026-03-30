@@ -3,6 +3,7 @@ export const ROUTES = {
   MOBILE_ROOT: "/m",
 
   LOGIN: "/login",
+  INSTALL: "/install",
 
   HOME: "/home",
   MOBILE_HOME: "/m/home",
@@ -29,6 +30,7 @@ export const ROUTES = {
     LIKES: "/mypage/like",
     COMMENTS: "/mypage/comment",
     DELETE: "/mypage/delete",
+    FCM: "/mypage/fcm",
   },
 
   // 게시판 및 기능

@@ -3,51 +3,67 @@ import UserInfo from "@/containers/mobile/mypage/UserInfo";
 import UserModify from "@/containers/mobile/mypage/UserModify";
 import useUserStore from "@/stores/useUserStore";
 import { useHeader } from "@/context/HeaderContext";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 export default function MobileProfilePage() {
   const { userInfo } = useUserStore();
 
-  // 헤더 설정 주입
   useHeader({
     title: "프로필 수정",
   });
 
   return (
     <MobileProfilePageWrapper>
-      <Background>
-        <UserWrapper>{userInfo.id && <UserInfo />}</UserWrapper>
-      </Background>
-      <UserModify />
+      <ContentShell>
+        <TopSection>
+          <UserWrapper>
+            {userInfo.id && <UserInfo clickable={false} />}
+          </UserWrapper>
+        </TopSection>
+
+        <FormSection>
+          <UserModify />
+        </FormSection>
+      </ContentShell>
     </MobileProfilePageWrapper>
   );
 }
 
 const MobileProfilePageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  //padding: 0 16px 0 16px;
-  box-sizing: border-box;
-
-  height: 96%;
   width: 100%;
+  min-height: 100%;
 `;
 
-const Background = styled.div`
-  background-color: #a1c3ff;
-  height: 200px;
-  top: 0;
+const ContentShell = styled.div`
   width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+  box-sizing: border-box;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @media ${DESKTOP_MEDIA} {
+    padding-top: 28px;
+    padding-bottom: 48px;
+  }
+`;
+
+const TopSection = styled.section`
+  margin-bottom: 16px;
+
+  @media ${DESKTOP_MEDIA} {
+    margin-bottom: 20px;
+  }
 `;
 
 const UserWrapper = styled.div`
   width: 100%;
-  display: flex;
-  justify-content: center;
-  //margin-top: 32px;
+
+  > div {
+    width: 100%;
+    max-width: 100%;
+  }
+`;
+
+const FormSection = styled.div`
+  position: relative;
 `;

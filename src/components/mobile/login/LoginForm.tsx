@@ -1,12 +1,24 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { login, postFcmToken } from "@/apis/members";
-import styled from "styled-components";
-import LoginUser from "@/resources/assets/login/login-user.svg";
-import LoginPassword from "@/resources/assets/login/login-password.svg";
-import useUserStore from "@/stores/useUserStore";
 import axios from "axios";
+import styled from "styled-components";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { login } from "@/apis/members";
+import { ROUTES } from "@/constants/routes";
 import TermOfUse from "@/components/desktop/login/TermsOfUse";
+import useUserStore from "@/stores/useUserStore";
+import LoginPassword from "@/resources/assets/login/login-password.svg";
+import LoginUser from "@/resources/assets/login/login-user.svg";
+
+function getRedirectPath(search: string) {
+  const redirect = new URLSearchParams(search).get("redirect");
+
+  if (!redirect || !redirect.startsWith("/") || redirect.startsWith("//")) {
+    return null;
+  }
+
+  return redirect;
+}
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -17,46 +29,41 @@ export default function LoginForm() {
   );
   const { setTokenInfo } = useUserStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isActive = studentId.trim() !== "" && password.trim() !== "";
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && isActive) {
-      handleLogin();
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && isActive) {
+      void handleLogin();
     }
   };
 
   const handleLogin = async () => {
-    if (!isActive) return;
-    if (loading) return;
+    if (!isActive || loading) {
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await login(studentId, password);
       setTokenInfo(response.data);
-
-      // 로그인 성공 후 FCM 토큰 서버로 전달
-      const fcmToken = localStorage.getItem("fcmToken");
-      if (fcmToken) {
-        try {
-          await postFcmToken(fcmToken);
-          console.log("로그인 후 FCM 토큰 등록 완료");
-        } catch (tokenError) {
-          console.error("로그인 후 FCM 토큰 등록 실패", tokenError);
-        }
-      }
-
-      navigate(-1);
       setLoading(false);
+
+      const redirectPath = getRedirectPath(location.search);
+
+      navigate(redirectPath ?? ROUTES.HOME, { replace: true });
     } catch (error) {
       console.error("로그인 실패", error);
       setLoading(false);
+
       if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {
           case 401:
-            alert("학번 또는 비밀번호가 틀립니다.");
+            alert("학번 또는 비밀번호가 올바르지 않습니다.");
             break;
           default:
-            alert("로그인 실패");
+            alert("로그인에 실패했습니다.");
             break;
         }
       }
@@ -71,15 +78,15 @@ export default function LoginForm() {
     <FormWrapper>
       <FormItemWrapper>
         <span className="info">
-          인천대학교 포털시스템 계정으로 로그인 할 수 있습니다.
+          인천대학교 포털시스템 계정으로 로그인할 수 있습니다.
         </span>
         <Label>학번</Label>
         <FormInputWrapper>
           <Input
             type="text"
-            placeholder="예) 202100000"
+            placeholder="예: 202100000"
             value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
+            onChange={(event) => setStudentId(event.target.value)}
             onKeyDown={handleKeyPress}
           />
           <FormIcon src={LoginUser} alt="LoginUser" />
@@ -93,7 +100,7 @@ export default function LoginForm() {
             type={passwordType}
             placeholder="비밀번호"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(event) => setPassword(event.target.value)}
             onKeyDown={handleKeyPress}
           />
           <FormIcon
@@ -105,11 +112,13 @@ export default function LoginForm() {
         <InputLine />
       </FormItemWrapper>
       <LoginButton
-        onClick={handleLogin}
+        onClick={() => {
+          void handleLogin();
+        }}
         $isActive={isActive && !loading}
         id="login-button"
       >
-        {loading ? "로딩 중..." : "로그인"}
+        {loading ? "로그인 중..." : "로그인"}
       </LoginButton>
 
       <span className="termofuse">

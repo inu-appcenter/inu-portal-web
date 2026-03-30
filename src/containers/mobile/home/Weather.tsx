@@ -1,19 +1,29 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+
 import sunImg from "@/resources/assets/weather/sun.svg";
 import snowImg from "@/resources/assets/weather/snow.svg";
 import cloudImg from "@/resources/assets/weather/cloud.svg";
 import sleetImg from "@/resources/assets/weather/sleet.svg";
 import rainImg from "@/resources/assets/weather/rain.svg";
 import moonImg from "@/resources/assets/weather/moon.svg";
-import cloud_moonImg from "@/resources/assets/weather/cloud_moon.svg";
+import cloudMoonImg from "@/resources/assets/weather/cloud_moon.svg";
 import pmGradeGood from "@/resources/assets/weather/pmGrade-good.svg";
 import pmGradeNormal from "@/resources/assets/weather/pmGrade-normal.svg";
 import pmGradeHarm from "@/resources/assets/weather/pmGrade-harm.svg";
-import pmGradeverHarm from "@/resources/assets/weather/pmGrade-veryharm.svg";
-import back from "@/resources/assets/weather/weather-background.svg";
+import pmGradeVeryHarm from "@/resources/assets/weather/pmGrade-veryharm.svg";
+import backgroundImg from "@/resources/assets/weather/weather-background.svg";
 import { getWeathers } from "@/apis/weathers";
 import { WeatherInfo } from "@/types/weathers";
+
+type SkyPresentation = {
+  image: string;
+  gradient: string;
+  isShiftedIcon: boolean;
+};
+
+const getTemperatureValue = (temperature: string) =>
+  temperature.replace(/\s+/g, "").replace(/[°℃]|C$/gi, "");
 
 export default function WeatherForm() {
   const [weather, setWeather] = useState<WeatherInfo>({
@@ -35,74 +45,64 @@ export default function WeatherForm() {
         console.error("날씨 가져오기 실패", error);
       }
     };
+
     fetchWeather();
   }, []);
 
-  const getSky = (sky: string, day: string) => {
-    let image = "";
-    let gradient = "";
+  const getSkyPresentation = (sky: string, day: string): SkyPresentation => {
+    const isNight = day === "night";
 
     switch (sky) {
       case "맑음":
-        if (day === "night") {
-          image = moonImg;
-          gradient =
-            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
-        } else {
-          image = sunImg;
-          gradient = "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)";
-        }
-        break;
+        return {
+          image: isNight ? moonImg : sunImg,
+          gradient: isNight
+            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
+            : "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
+          isShiftedIcon: false,
+        };
       case "구름":
-        if (day === "night") {
-          image = cloud_moonImg;
-          gradient =
-            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
-        } else {
-          image = cloudImg;
-          gradient = "linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%)";
-        }
-        break;
+        return {
+          image: isNight ? cloudMoonImg : cloudImg,
+          gradient: isNight
+            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
+            : "linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%)",
+          isShiftedIcon: false,
+        };
       case "눈":
-        if (day === "night") {
-          image = snowImg;
-          gradient =
-            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
-        } else {
-          image = snowImg;
-          gradient = "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)";
-        }
-        break;
+        return {
+          image: snowImg,
+          gradient: isNight
+            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
+            : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+          isShiftedIcon: true,
+        };
       case "진눈깨비":
-        if (day === "night") {
-          image = sleetImg;
-          gradient =
-            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
-        } else {
-          image = sleetImg;
-          gradient = "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)";
-        }
-        break;
+        return {
+          image: sleetImg,
+          gradient: isNight
+            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
+            : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+          isShiftedIcon: true,
+        };
       case "비":
-        if (day === "night") {
-          image = rainImg;
-          gradient =
-            "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
-        } else {
-          image = rainImg;
-          gradient = "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)";
-        }
-        break;
+        return {
+          image: rainImg,
+          gradient: isNight
+            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
+            : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+          isShiftedIcon: true,
+        };
       default:
-        image = "";
-        gradient = "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)";
-        break;
+        return {
+          image: "",
+          gradient: "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
+          isShiftedIcon: false,
+        };
     }
-
-    return { image, gradient };
   };
 
-  const getPm10Grade = (pm10Grade: string) => {
+  const getPm10GradeImage = (pm10Grade: string) => {
     switch (pm10Grade) {
       case "좋음":
         return pmGradeGood;
@@ -111,43 +111,54 @@ export default function WeatherForm() {
       case "나쁨":
         return pmGradeHarm;
       case "매우나쁨":
-        return pmGradeverHarm;
+        return pmGradeVeryHarm;
       default:
-        return;
+        return undefined;
     }
   };
 
-  const { image, gradient } = getSky(weather.sky, weather.day);
-  const pm10GradeImage = getPm10Grade(weather.pm10Grade);
+  const { image, gradient, isShiftedIcon } = getSkyPresentation(
+    weather.sky,
+    weather.day,
+  );
+  const pm10GradeImage = getPm10GradeImage(weather.pm10Grade);
+  const temperatureValue = getTemperatureValue(weather.temperature);
 
   return (
     <WeatherWrapper>
       <WeatherBackground $gradient={gradient}>
-        <BackImage src={back} alt="" />
-        <WeatherIcon src={image} alt={weather.sky} />
-        <Wrapper>
-          <p className="temperature">{weather.temperature}</p>
-          <p className="pm10grade">
-            <img
-              className="pmGradeColor"
-              src={pm10GradeImage}
-              alt={weather.pm10Grade}
-            />
-            미세먼지 : {weather.pm10Grade}
-          </p>
-          <p className="location">연수구 송도동</p>
-        </Wrapper>
+        <BackImage src={backgroundImg} alt="" />
+        <WeatherContent>
+          <WeatherIcon src={image} alt={weather.sky} $isShifted={isShiftedIcon} />
+          <Info>
+            <p className="temperature">
+              <span className="temperatureValue">{temperatureValue || "-"}</span>
+              <span className="temperatureUnit">°</span>
+            </p>
+            <p className="pm10grade">
+              {pm10GradeImage ? (
+                <img
+                  className="pmGradeColor"
+                  src={pm10GradeImage}
+                  alt={weather.pm10Grade}
+                />
+              ) : null}
+              미세먼지 : {weather.pm10Grade || "-"}
+            </p>
+            <p className="location">연수구 송도동</p>
+          </Info>
+        </WeatherContent>
       </WeatherBackground>
     </WeatherWrapper>
   );
 }
 
 const WeatherWrapper = styled.div`
-  height: 100%;
   width: 100%;
+  height: 100%;
   display: flex;
+  align-items: stretch;
   justify-content: center;
-  align-items: center;
 `;
 
 const WeatherBackground = styled.div<{ $gradient: string }>`
@@ -155,73 +166,108 @@ const WeatherBackground = styled.div<{ $gradient: string }>`
   height: 100%;
   position: relative;
   display: flex;
-  align-items: flex-end;
-  padding: 20px 0 40px 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   box-sizing: border-box;
-  justify-content: space-around;
+  overflow: hidden;
   background: ${(props) => props.$gradient};
 `;
 
 const BackImage = styled.img`
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 `;
 
-const WeatherIcon = styled.img`
-  max-width: 180px;
-  max-height: 180px;
+const WeatherContent = styled.div`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(8px, 2.2vw, 20px);
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(8px, 2vw, 18px) 0 clamp(2px, 0.8vw, 10px);
+  box-sizing: border-box;
 `;
 
-const Wrapper = styled.div`
+const WeatherIcon = styled.img<{ $isShifted: boolean }>`
+  flex: 0 0 auto;
+  width: ${(props) =>
+    props.$isShifted
+      ? "clamp(132px, 29vw, 214px)"
+      : "clamp(142px, 32vw, 236px)"};
+  max-width: 48%;
+  max-height: 100%;
+  object-fit: contain;
+`;
+
+const Info = styled.div`
   display: flex;
+  gap: clamp(6px, 1.2vw, 12px);
+  flex: 0 1 auto;
+  min-width: 0;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  padding-right: clamp(12px, 3vw, 28px);
 
   .temperature {
-    width: 100px;
-    font-size: 50px;
-    font-weight: normal;
-    color: white;
-    margin: 0 20px 0 0;
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 2px;
+    width: fit-content;
+    min-width: 0;
+    margin: 0;
+    padding: 0 0 4px;
     border-bottom: 2px solid #fff;
-    position: relative;
-    padding-right: 40px;
+    color: white;
+    line-height: 1;
+    white-space: nowrap;
+  }
 
-    &::after {
-      content: " ";
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 20;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      border: 1px solid transparent;
-      box-shadow: 0 0 0 1px #fff inset;
-      margin-right: 8px;
-    }
+  .temperatureValue {
+    font-size: clamp(40px, 7vw, 66px);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+  }
+
+  .temperatureUnit {
+    font-size: clamp(18px, 3vw, 26px);
+    font-weight: 400;
+    line-height: 1;
+    margin-top: clamp(2px, 0.5vw, 4px);
   }
 
   .pm10grade {
-    font-size: 12px;
-    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
     color: white;
-    margin-bottom: 1em;
+    font-size: clamp(12px, 2.1vw, 16px);
+    font-weight: 400;
+    line-height: 1.25;
+    white-space: nowrap;
   }
 
   .pmGradeColor {
-    margin: 0 5px;
+    width: clamp(12px, 2.1vw, 16px);
+    height: clamp(12px, 2.1vw, 16px);
+    flex: 0 0 auto;
   }
 
   .location {
-    font-size: 20px;
-    font-weight: normal;
-    color: white;
     margin: 0;
+    color: white;
+    font-size: clamp(20px, 3.2vw, 26px);
+    font-weight: 400;
+    line-height: 1.15;
+    white-space: nowrap;
   }
 `;

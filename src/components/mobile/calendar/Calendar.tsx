@@ -298,6 +298,10 @@ const CalendarContainer = styled.div`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+
+  @media (min-width: 1024px) {
+    max-width: 1280px;
+  }
 `;
 
 const LayoutWrapper = styled.div`
@@ -308,6 +312,7 @@ const LayoutWrapper = styled.div`
   @media (min-width: 1024px) {
     flex-direction: row;
     align-items: flex-start;
+    gap: 32px;
   }
 `;
 
@@ -322,6 +327,22 @@ const LeftSection = styled.div`
 const RightSection = styled.div`
   flex: 1;
   width: 100%;
+
+  @media (min-width: 1024px) {
+    > div {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 16px;
+    }
+
+    > div > :first-child {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+    }
+  }
 `;
 
 const CalendarHeader = styled.div`
@@ -329,6 +350,7 @@ const CalendarHeader = styled.div`
   justify-content: space-around;
   align-items: center;
   padding: 0 32px;
+  min-height: 32px;
 `;
 
 const MonthDisplay = styled.h2`
@@ -404,7 +426,10 @@ const TodayCircle = styled.div`
   z-index: 1;
 `;
 
-const DateNumber = styled.div<{ $isToday: boolean; $isCurrentMonth: boolean }>`
+const DateNumber = styled.div<{
+  $isToday: boolean;
+  $isCurrentMonth: boolean;
+}>`
   position: relative;
   z-index: 2;
   font-size: 14px;
@@ -413,7 +438,11 @@ const DateNumber = styled.div<{ $isToday: boolean; $isCurrentMonth: boolean }>`
   color: ${({ $isToday }) => ($isToday ? "#fff" : "#000")};
 `;
 
-const EventBar = styled.div<{ $start: number; $end: number; $row: number }>`
+const EventBar = styled.div<{
+  $start: number;
+  $end: number;
+  $row: number;
+}>`
   position: absolute;
   top: ${({ $row }) => 40 + $row * 24}px;
   left: ${({ $start }) =>

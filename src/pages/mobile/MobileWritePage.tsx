@@ -9,6 +9,7 @@ import CategorySelect from "@/components/mobile/write/CategorySelect";
 import { useState } from "react";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
 import { useHeader } from "@/context/HeaderContext";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileWritePage() {
   const { tokenInfo } = useUserStore();
@@ -53,12 +54,17 @@ const MobileWritePageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
   min-height: calc(100svh - 72px - 72px - 24px);
   width: 100%;
 
   padding-top: 65px;
+
+  @media ${DESKTOP_MEDIA} {
+    padding-left: 0;
+    padding-right: 0;
+  }
 `;
 
 const TitleCategorySelectorWrapper = styled.div`

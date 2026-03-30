@@ -1,8 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
+
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { useHeaderConfig } from "@/context/HeaderContext";
+import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
+import {
+  DESKTOP_CONTENT_MAX_WIDTH,
+  DESKTOP_GUTTER,
+  DESKTOP_MEDIA,
+} from "@/styles/responsive";
 
 interface SubLayoutProps {
   showHeader?: boolean;
@@ -16,10 +23,7 @@ export default function SubLayout({
   const location = useLocation();
   const outlet = useOutlet();
   const { setIsScrolled } = useHeaderConfig();
-
-  // 헤더 설정 로드
-  const config = useHeaderConfig(location.pathname);
-  const hasSubHeader = !!config.subHeader;
+  const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -28,64 +32,41 @@ export default function SubLayout({
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop >= 24);
+      setIsScrolled(window.scrollY >= 24);
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [setIsScrolled]);
 
-  // 헤더 및 네비게이션 높이 계산
-  const headerHeight = showHeader ? (hasSubHeader ? 140 : 100) : 20;
+  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader);
+  const headerHeight = showHeader ? measuredHeaderHeight : 20;
   const navHeight = showNav ? 100 : 40;
 
   return (
     <LayoutContainer id="app-scroll-view">
-      <div style={{ position: "relative", minHeight: "100vh" }}>
+      <ContentShell>
         {showHeader && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "100%",
-              maxWidth: "768px", // Keep the content width manageable if desired, or remove if truly "web"
-              zIndex: 100,
-              pointerEvents: "none",
-            }}
-          >
-            <div style={{ pointerEvents: "auto" }}>
-              <MobileHeader targetPath={location.pathname as any} />
-            </div>
-          </div>
+          <HeaderFloating>
+            <PointerArea>
+              <MobileHeader
+                ref={headerRef}
+                contained
+                targetPath={location.pathname as any}
+              />
+            </PointerArea>
+          </HeaderFloating>
         )}
 
-        <div
-          style={{
-            paddingTop: headerHeight,
-            paddingBottom: navHeight,
-          }}
-        >
+        <ContentArea $pt={headerHeight} $pb={navHeight}>
           {outlet}
-        </div>
-      </div>
+        </ContentArea>
+      </ContentShell>
 
       {showNav && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "100%",
-            maxWidth: "768px",
-            zIndex: 100,
-            pointerEvents: "none",
-          }}
-        >
-          <div style={{ pointerEvents: "auto" }}>{/* Nav Component */}</div>
-        </div>
+        <NavFloating>
+          <PointerArea>{/* Nav Component */}</PointerArea>
+        </NavFloating>
       )}
     </LayoutContainer>
   );
@@ -97,4 +78,61 @@ const LayoutContainer = styled.div`
   position: relative;
   background-color: #f1f1f3;
   margin: 0 auto;
+`;
+
+const ContentShell = styled.div`
+  position: relative;
+  min-height: 100vh;
+`;
+
+const ContentArea = styled.div<{ $pt: number; $pb: number }>`
+  padding-top: ${(props) => props.$pt}px;
+  padding-bottom: ${(props) => props.$pb}px;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    margin: 0 auto;
+    padding-left: ${DESKTOP_GUTTER};
+    padding-right: ${DESKTOP_GUTTER};
+    box-sizing: border-box;
+  }
+`;
+
+const HeaderFloating = styled.div`
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 100;
+  pointer-events: none;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+    padding: 0 ${DESKTOP_GUTTER};
+    box-sizing: border-box;
+  }
+`;
+
+const NavFloating = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  z-index: 100;
+  pointer-events: none;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+    padding: 0 ${DESKTOP_GUTTER};
+    box-sizing: border-box;
+    bottom: 20px;
+  }
+`;
+
+const PointerArea = styled.div`
+  pointer-events: auto;
 `;

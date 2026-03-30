@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import { BusStopDummy } from "@/components/mobile/bus/data/BusStopDummy";
 import BusStopMap from "@/components/mobile/bus/BusStopMap.tsx";
 import { useHeader } from "@/context/HeaderContext";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileBusStopPage() {
   const location = useLocation();
@@ -44,9 +45,13 @@ const MobileBusStopPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   width: 100%;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    padding: 0;
+  }
 `;
 
 const StopMapSection = styled.div`

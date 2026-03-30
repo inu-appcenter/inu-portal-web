@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getNotices } from "@/apis/notices";
-import { Notice } from "@/types/notices";
+import {
+  ALL_NOTICE_CATEGORY,
+  getNoticeListQueryKey,
+  getNotices,
+  NOTICE_LIST_STALE_TIME,
+} from "@/apis/notices";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Swiper as SwiperClass } from "swiper";
@@ -10,21 +15,16 @@ import 횃불Logo from "@/resources/assets/notice/횃불-logo.svg";
 import 횃불Flag from "@/resources/assets/notice/횃불-flag.svg";
 
 export default function Notices() {
-  const [notices, setNotices] = useState<Notice[]>([]);
   const navigate = useNavigate();
   const swiperRef = useRef<SwiperClass | null>(null);
 
-  useEffect(() => {
-    const fetchNotices = async () => {
-      try {
-        const response = await getNotices("전체", "date", 1);
-        setNotices(response.data.contents);
-      } catch (error) {
-        console.error("모든 공지사항 가져오기 실패", error);
-      }
-    };
-    fetchNotices();
-  }, []);
+  const { data } = useQuery({
+    queryKey: getNoticeListQueryKey(ALL_NOTICE_CATEGORY, "date", 1),
+    queryFn: () => getNotices(ALL_NOTICE_CATEGORY, "date", 1),
+    staleTime: NOTICE_LIST_STALE_TIME,
+  });
+
+  const notices = data?.data.contents ?? [];
 
   const handlePrevSlide = () => {
     swiperRef.current?.slidePrev();
@@ -127,9 +127,19 @@ const NoticeCard = styled.button`
   }
 
   .title {
+    width: 100%;
     text-align: start;
     font-size: 16px;
     font-weight: 600;
+    line-height: 1.4;
+    min-height: calc(1.4em * 2);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: anywhere;
   }
 
   .createDate {

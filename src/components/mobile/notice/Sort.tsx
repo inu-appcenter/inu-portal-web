@@ -1,9 +1,10 @@
 // SortDropBox.tsx
 import styled from "styled-components";
+import type { NoticeSort } from "@/apis/notices";
 
 interface SortDropBoxProps {
-  sort: string;
-  setSort: (sort: string) => void;
+  sort: NoticeSort;
+  setSort: (sort: NoticeSort) => void;
 }
 
 export default function SortDropBox({ sort, setSort }: SortDropBoxProps) {

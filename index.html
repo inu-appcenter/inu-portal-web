@@ -10,14 +10,10 @@
       src="//dapi.kakao.com/v2/maps/sdk.js?appkey=2c47e11928ed2d4c2829fa7dfabb59f8&libraries=services,clusterer,drawing"
     ></script>
     <meta name="description" content="인천대학교 학생들을 위한 팁을 담다" />
-    <!-- PWA 관련 메타 태그 -->
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/icon.svg" />
-    <meta name="theme-color" content="#ffffff" />
     <!-- 공유 관련 메타 태그-->
     <meta property="og:title" content="INTIP" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/pwa-512x512.png" />
+    <meta property="og:image" content="/icon.svg" />
     <meta property="og:site_name" content="INTIP" />
     <meta
       property="og:description"
@@ -27,6 +23,53 @@
 <!--    네이버 검색 등록을 위한 태그-->
     <meta name="naver-site-verification" content="d21e463ea38d2db93ba9d1a7ae7cbba5da7dc29f" />
 
+    <script>
+      (function () {
+        var STORAGE_KEY = "fcmToken";
+        var EVENT_NAME = "intip:fcm-token";
+
+        function normalizeToken(token) {
+          if (typeof token !== "string") {
+            return "";
+          }
+
+          return token.trim();
+        }
+
+        function dispatchToken(token) {
+          var normalizedToken = normalizeToken(token);
+
+          if (!normalizedToken) {
+            return;
+          }
+
+          var payload = {
+            token: normalizedToken,
+            receivedAt: Date.now(),
+          };
+
+          try {
+            localStorage.setItem(STORAGE_KEY, normalizedToken);
+          } catch (error) {
+            console.error("FCM 토큰 저장 실패", error);
+          }
+
+          window.__INTIP_FCM_BOOTSTRAP__ = payload;
+          window.dispatchEvent(
+            new CustomEvent(EVENT_NAME, {
+              detail: payload,
+            }),
+          );
+        }
+
+        window.__INTIP_FCM_BOOTSTRAP__ = {
+          token: normalizeToken(localStorage.getItem(STORAGE_KEY)),
+          receivedAt: Date.now(),
+        };
+
+        window.onReceiveFcmToken = dispatchToken;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

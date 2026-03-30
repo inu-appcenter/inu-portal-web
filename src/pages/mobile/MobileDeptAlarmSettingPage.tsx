@@ -19,6 +19,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Divider from "@/components/common/Divider";
 import React from "react";
 import Switch from "@/components/common/Switch";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 export default function MobileDeptAlarmSettingPage() {
   const { userInfo } = useUserStore();
@@ -111,7 +112,7 @@ export default function MobileDeptAlarmSettingPage() {
       <Box
         style={{
           background: "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)",
-          margin: "0 16px",
+          margin: "0 var(--page-inline)",
           padding: "24px",
           boxShadow: "0 8px 24px rgba(94, 146, 240, 0.15)",
           border: "1px solid rgba(255, 255, 255, 0.5)",
@@ -220,6 +221,7 @@ export default function MobileDeptAlarmSettingPage() {
 }
 
 const MobileTipsPageWrapper = styled.div`
+  --page-inline: ${MOBILE_PAGE_GUTTER};
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -229,6 +231,10 @@ const MobileTipsPageWrapper = styled.div`
   background-color: #f3f7fe;
   padding: 16px 0 40px;
   min-height: 100svh;
+
+  @media ${DESKTOP_MEDIA} {
+    --page-inline: 0px;
+  }
 `;
 
 const AllAlarmCheckBoxWrapper = styled.div`
@@ -267,7 +273,7 @@ const KeyWordSettingWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 0 16px;
+  padding: 0 var(--page-inline);
 `;
 
 const ListWrapper = styled.div`

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { cafeterias } from "@/resources/strings/cafeterias";
 import CafeteriaItem from "@/components/mobile/cafeteria/CafeteriaItem";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 interface CafeteriaDeatilProps {
   구성원가: string;
@@ -63,7 +64,7 @@ const CafeteriaInfoWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   box-sizing: border-box;
-  padding: 0 16px;
+  padding: 0 ${MOBILE_PAGE_GUTTER};
   //margin: 0 16px;
   min-height: fit-content;
   border-radius: 10px;
@@ -101,5 +102,15 @@ const CafeteriaInfoWrapper = styled.div`
       width: 38px;
       height: 38px;
     }
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    align-items: stretch;
   }
 `;

@@ -8,6 +8,10 @@ import loginImg from "@/resources/assets/login/login-modal-logo.svg";
 import { Folder } from "@/types/folders";
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/stores/useUserStore";
+import {
+  DESKTOP_MEDIA,
+  DESKTOP_READING_WIDTH,
+} from "@/styles/responsive";
 
 export default function MobileSavePage() {
   const { tokenInfo } = useUserStore();
@@ -96,6 +100,12 @@ const MobileSavePageWrapper = styled.div`
   gap: 16px;
   height: 100%;
   width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(100%, ${DESKTOP_READING_WIDTH});
+    margin: 0 auto;
+    padding-bottom: 120px;
+  }
 `;
 
 const ErrorWrapper = styled.div`

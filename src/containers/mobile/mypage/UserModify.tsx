@@ -1,69 +1,130 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { putMemberDepartment, putMembers } from "@/apis/members";
 import useUserStore from "@/stores/useUserStore";
 import { navBarList } from "old/resource/string/navBarList";
 import DepartmentNoticeSelector from "../../../components/mobile/notice/DepartmentNoticeSelector.tsx";
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
 import { subscribeDepartment } from "@/apis/notices";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
+import {
+  DEFAULT_PROFILE_IMAGE_ID,
+  normalizeOptionalText,
+  normalizeProfileImageId,
+} from "@/utils/userInfo";
+
+const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
+const MAX_NICKNAME_LENGTH = 10;
+
+const getProfileImageUrl = (fireId: number) =>
+  `https://portal.inuappcenter.kr/images/profile/${fireId}`;
 
 export default function UserModify() {
   const { setUserInfo, userInfo } = useUserStore();
-  const [nickname, setNickname] = useState(userInfo.nickname);
-  const [fireId, setFireId] = useState(userInfo.fireId);
-  const [initialNickname] = useState(userInfo.nickname); // 최초 닉네임
-  const [initialDepartment] = useState(userInfo.department); // 최초 학과
-  const [department, setDepartment] = useState(userInfo.department);
-  const navigate = useNavigate();
+  const [nickname, setNickname] = useState(() =>
+    normalizeOptionalText(userInfo.nickname),
+  );
+  const [fireId, setFireId] = useState(() =>
+    normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
+  );
+  const [department, setDepartment] = useState(() =>
+    normalizeOptionalText(userInfo.department),
+  );
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const navigate = useNavigate();
 
-  console.log(userInfo);
+  useEffect(() => {
+    setNickname(normalizeOptionalText(userInfo.nickname));
+    setFireId(
+      normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
+    );
+    setDepartment(normalizeOptionalText(userInfo.department));
+  }, [userInfo.department, userInfo.fireId, userInfo.nickname]);
+
+  const originalNickname = normalizeOptionalText(userInfo.nickname).trim();
+  const originalDepartment = normalizeOptionalText(userInfo.department).trim();
+  const trimmedNickname = normalizeOptionalText(nickname).trim();
+  const normalizedDepartment = normalizeOptionalText(department).trim();
+  const selectedFireId = normalizeProfileImageId(
+    fireId,
+    DEFAULT_PROFILE_IMAGE_ID,
+  );
+  const nicknameLength = nickname.length;
+  const normalizedDepartmentCode = normalizedDepartment
+    ? findTitleOrCode(normalizedDepartment)
+    : "";
+  const hasNicknameChanged = trimmedNickname !== originalNickname;
+  const hasDepartmentChanged = normalizedDepartment !== originalDepartment;
+  const hasValidDepartmentChange =
+    hasDepartmentChanged && Boolean(normalizedDepartmentCode);
+  const hasImageChanged =
+    selectedFireId !==
+    normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID);
+  const hasChanges =
+    hasNicknameChanged || hasValidDepartmentChange || hasImageChanged;
+
   const handleModifyClick = async () => {
-    if (nickname && nickname.length > 10) {
-      alert("닉네임은 10글자를 초과할 수 없습니다.");
+    if (isSaving || !hasChanges) {
       return;
     }
 
-    const Code = findTitleOrCode(department);
+    if (!trimmedNickname) {
+      alert("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (nicknameLength > MAX_NICKNAME_LENGTH) {
+      alert("닉네임은 10자를 초과할 수 없습니다.");
+      return;
+    }
+
+    const shouldSubscribeDepartment =
+      !originalDepartment && hasValidDepartmentChange;
 
     try {
-      // 미변경 닉네임
-      const updatedNickname = nickname === initialNickname ? null : nickname;
+      setIsSaving(true);
 
-      const response = await putMembers(updatedNickname, fireId);
-      if (Code) {
-        await putMemberDepartment(Code);
+      const updatedNickname = hasNicknameChanged ? trimmedNickname : null;
+      const response = await putMembers(updatedNickname, selectedFireId);
+
+      if (hasValidDepartmentChange) {
+        await putMemberDepartment(normalizedDepartmentCode);
       }
+
       setUserInfo({
         id: response.data,
-        nickname: updatedNickname || initialNickname,
-        department: department,
+        nickname: updatedNickname ?? originalNickname,
+        department: hasValidDepartmentChange
+          ? normalizedDepartment
+          : originalDepartment,
         role: userInfo.role,
-        fireId: Number(fireId),
+        fireId: selectedFireId,
       });
 
-      // 신규 학과 구독 및 알림
-      if (!initialDepartment && department && Code) {
-        await subscribeDepartment(Code);
+      if (shouldSubscribeDepartment) {
+        await subscribeDepartment(normalizedDepartmentCode);
         alert(
-          "성공적으로 수정되었습니다.\n\n학과공지 알리미 기능이 자동으로 활성화됩니다. 학과 공지 화면에서 설정을 변경할 수 있어요.",
+          "성공적으로 수정되었습니다.\n\n학과공지 알리미 기능도 자동으로 활성화되었습니다. 학과 공지 페이지에서 설정을 변경할 수 있어요.",
         );
       } else {
         alert("성공적으로 수정되었습니다.");
       }
 
-      navigate(`/mypage`);
+      navigate("/mypage");
     } catch (error) {
       console.error("회원정보 수정 실패", error);
       alert("회원정보 수정에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDepartmentClick = (department: string) => {
-    const deptKorean = findTitleOrCode(department);
-    {
-      deptKorean && setDepartment(deptKorean);
+  const handleDepartmentClick = (selectedDepartment: string) => {
+    const departmentName = findTitleOrCode(selectedDepartment);
+    if (departmentName) {
+      setDepartment(departmentName);
     }
     setIsDeptSelectorOpen(false);
   };
@@ -78,210 +139,398 @@ export default function UserModify() {
           handleClick={handleDepartmentClick}
         />
       )}
-      <div className="nickname">
-        <h4>닉네임</h4>
-        <input
+
+      <SectionCard>
+        <SectionTop>
+          <div>
+            <h3>닉네임</h3>
+            <p>커뮤니티와 마이페이지에 표시되는 이름이에요.</p>
+          </div>
+          <Counter>
+            {nicknameLength}/{MAX_NICKNAME_LENGTH}
+          </Counter>
+        </SectionTop>
+
+        <StyledInput
           value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="새로운 닉네임을 입력하세요!"
+          onChange={(event) => setNickname(event.target.value)}
+          placeholder="닉네임을 입력해주세요"
+          maxLength={MAX_NICKNAME_LENGTH}
         />
-      </div>
-      <div className="nickname department">
-        <h4>학과</h4>
-        <div className="input-button-wrapper">
-          <input
+        <HelperText>
+          띄어쓰기를 포함해 최대 10자까지 설정할 수 있어요.
+        </HelperText>
+      </SectionCard>
+
+      <SectionCard>
+        <SectionTop>
+          <div>
+            <h3>학과</h3>
+            <p>학과 공지 연동에 사용할 정보를 선택해주세요.</p>
+          </div>
+          {normalizedDepartment ? (
+            <SelectionPill>선택 완료</SelectionPill>
+          ) : null}
+        </SectionTop>
+
+        <DepartmentRow>
+          <StyledInput
             value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            placeholder="학과 정보를 입력해주세요!"
-            readOnly={true}
+            onChange={(event) => setDepartment(event.target.value)}
+            placeholder="학과를 선택해주세요"
+            readOnly
           />
-          <StyledButton onClick={() => setIsDeptSelectorOpen(true)}>
-            학과 선택
-          </StyledButton>
-        </div>
-      </div>
-      <div className="nickname">
-        <h4>프로필 이미지</h4>
-      </div>
-      <ImageSelection>
-        {Array.from({ length: 12 }, (_, i) => i + 1).map((id) => (
-          <ImageOption
-            key={id}
-            selected={id === fireId}
-            onClick={() => setFireId(id)}
+          <ActionButton
+            type="button"
+            onClick={() => setIsDeptSelectorOpen(true)}
           >
+            학과 선택
+          </ActionButton>
+        </DepartmentRow>
+      </SectionCard>
+
+      <SectionCard>
+        <SectionTop>
+          <div>
+            <h3>프로필 이미지</h3>
+            <p>
+              선택한 이미지는 저장 전에 아래 미리보기에서 바로 확인할 수 있어요.
+            </p>
+          </div>
+        </SectionTop>
+
+        <PreviewCard>
+          <PreviewAvatar>
             <img
-              src={`https://portal.inuappcenter.kr/images/profile/${id}`}
-              alt={`이미지 ${id}`}
+              src={getProfileImageUrl(selectedFireId)}
+              alt="선택한 프로필 이미지"
             />
-          </ImageOption>
-        ))}
-      </ImageSelection>
-      <ButtonWrapper>
-        <StyledButton fullWidth onClick={handleModifyClick}>
-          수정하기
-        </StyledButton>
-      </ButtonWrapper>
+          </PreviewAvatar>
+          <PreviewText>
+            <strong>{trimmedNickname || "닉네임 없음"}</strong>
+            <span>
+              {normalizedDepartment || "학과를 아직 선택하지 않았어요."}
+            </span>
+          </PreviewText>
+        </PreviewCard>
+
+        <ImageSelection>
+          {PROFILE_IMAGE_IDS.map((id) => {
+            const isSelected = id === selectedFireId;
+
+            return (
+              <ImageOption
+                key={id}
+                type="button"
+                $selected={isSelected}
+                aria-pressed={isSelected}
+                onClick={() => setFireId(id)}
+              >
+                <div className="image-frame">
+                  <img
+                    src={getProfileImageUrl(id)}
+                    alt={`프로필 이미지 ${id}`}
+                  />
+                </div>
+              </ImageOption>
+            );
+          })}
+        </ImageSelection>
+      </SectionCard>
+
+      <SubmitArea>
+        <SubmitButton
+          type="button"
+          $fullWidth
+          disabled={!hasChanges || isSaving}
+          onClick={handleModifyClick}
+        >
+          {isSaving
+            ? "저장 중..."
+            : hasChanges
+              ? "변경 사항 저장"
+              : "저장 완료"}
+        </SubmitButton>
+        <SubmitHint>
+          {hasChanges
+            ? "아직 저장되지 않은 변경 사항이 있어요."
+            : "현재 프로필 정보가 저장된 상태예요."}
+        </SubmitHint>
+      </SubmitArea>
     </UserModifyWrapper>
   );
 }
 
 const UserModifyWrapper = styled.div`
   width: 100%;
-  padding: 24px 16px 120px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background-color: #f8faff;
-
-  .nickname {
-    width: 100%;
-    margin-bottom: 24px;
-    max-width: 384px;
-
-    h4 {
-      margin-bottom: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #495057;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px 16px;
-      box-sizing: border-box;
-      border-radius: 12px;
-      color: #212529;
-      font-size: 15px;
-      font-weight: 600;
-      background-color: #ffffff;
-      border: 1px solid #e9ecef;
-      transition: all 0.2s;
-
-      &:focus {
-        border-color: #5e92f0;
-        box-shadow: 0 0 0 3px rgba(94, 146, 240, 0.1);
-      }
-
-      &::placeholder {
-        color: #adb5bd;
-      }
-    }
-
-    &.department {
-      .input-button-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        input {
-          flex: 1;
-          background-color: #f1f3f5; /* 읽기 전용 */
-        }
-
-        button {
-          flex: 0;
-          white-space: nowrap;
-        }
-      }
-    }
-  }
+  gap: 16px;
+  box-sizing: border-box;
 `;
 
-const ButtonWrapper = styled.div`
+const SectionCard = styled.section`
   width: 100%;
-  max-width: 768px;
+  padding: 20px 18px;
+  box-sizing: border-box;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 10px 30px rgba(39, 94, 180, 0.08),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(232, 239, 248, 0.95);
   display: flex;
-  justify-content: center;
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 14px;
 
-  padding: 16px 20px 32px;
-  box-sizing: border-box;
-
-  background: linear-gradient(180deg, rgba(248, 250, 255, 0) 0%, #f8faff 40%);
-  pointer-events: none;
-
-  button {
-    pointer-events: auto;
+  @media ${DESKTOP_MEDIA} {
+    padding: 24px 22px;
   }
 `;
 
-const ImageSelection = styled.div`
-  margin: 12px 0 24px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+const SectionTop = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e355a;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: #6980a1;
+    font-size: 13px;
+    line-height: 1.55;
+  }
 `;
 
-const ImageOption = styled.div<{ selected: boolean }>`
+const Counter = styled.span`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eff5ff;
+  color: #4274c4;
+  font-size: 12px;
+  font-weight: 800;
+`;
+
+const SelectionPill = styled(Counter)`
+  min-height: 32px;
+  padding: 0 12px;
+`;
+
+const StyledInput = styled.input`
   width: 100%;
-  min-width: 0;
-  aspect-ratio: 1 / 1;
-  position: relative;
-  cursor: pointer;
+  padding: 15px 16px;
   box-sizing: border-box;
+  border-radius: 16px;
+  color: #21324c;
+  font-size: 15px;
+  font-weight: 700;
+  background: #f8fbff;
+  border: 1px solid #dce8f6;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #5e92f0;
+    box-shadow: 0 0 0 4px rgba(94, 146, 240, 0.12);
+    background: #ffffff;
+  }
+
+  &::placeholder {
+    color: #9aa9bd;
+  }
+
+  &[readonly] {
+    color: #51657f;
+    cursor: pointer;
+  }
+`;
+
+const HelperText = styled.p`
+  margin: 0;
+  color: #7b8fa8;
+  font-size: 12px;
+  line-height: 1.55;
+`;
+
+const DepartmentRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  ${StyledInput} {
+    flex: 1;
+    background: #f3f7fc;
+  }
+
+  @media (max-width: 360px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const PreviewCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #eef5ff 0%, #f7fbff 100%);
+  border: 1px solid rgba(211, 225, 243, 0.95);
+`;
+
+const PreviewAvatar = styled.div`
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 50%;
 
   img {
     width: 100%;
     height: 100%;
-    border-radius: 16px;
-    border: 3px solid
-      ${({ selected }) => (selected ? "#5e92f0" : "transparent")};
-    transition: all 0.2s;
-    background-color: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    box-sizing: border-box;
     display: block;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 8px 18px rgba(64, 113, 185, 0.12);
   }
-
-  ${({ selected }) =>
-    selected &&
-    `
-    &::after {
-      content: '✓';
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      width: 24px;
-      height: 24px;
-      background-color: #5e92f0;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    }
-  `}
 `;
 
-const StyledButton = styled.button<{ fullWidth?: boolean }>`
+const PreviewText = styled.div`
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  strong {
+    color: #1e355a;
+    font-size: 16px;
+    font-weight: 800;
+    word-break: break-all;
+  }
+
+  span {
+    color: #6e84a1;
+    font-size: 13px;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+`;
+
+const ImageSelection = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (min-width: 420px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+`;
+
+const ImageOption = styled.button<{ $selected: boolean }>`
+  width: 100%;
+  min-width: 0;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  .image-frame {
+    width: 100%;
+    max-width: 72px;
+    aspect-ratio: 1 / 1;
+  }
+
+  .image-frame img {
+    width: 100%;
+    height: 100%;
+    border: 3px solid
+      ${({ $selected }) => ($selected ? "#7ea9f3" : "transparent")};
+    border-radius: 50%;
+    display: block;
+    object-fit: cover;
+    box-sizing: border-box;
+    box-shadow: ${({ $selected }) =>
+      $selected
+        ? "0 12px 22px rgba(94, 146, 240, 0.18)"
+        : "0 6px 14px rgba(15, 23, 42, 0.08)"};
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+`;
+
+const SubmitArea = styled.div`
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+`;
+
+const SubmitHint = styled.p`
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: #6f84a2;
+  line-height: 1.5;
+`;
+
+const ActionButton = styled.button<{ $fullWidth?: boolean }>`
   box-sizing: border-box;
   background: linear-gradient(135deg, #5e92f0 0%, #4a7fd0 100%);
   color: white;
-  padding: 14px 20px;
-  border-radius: 12px;
-  width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
-  min-width: 100px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
+  min-width: 104px;
   cursor: pointer;
-
-  font-size: 16px;
-  font-weight: 700;
+  border: none;
+  font-size: 14px;
+  font-weight: 800;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.3);
-  transition: all 0.2s;
+  box-shadow: 0 8px 18px rgba(94, 146, 240, 0.24);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
 
-  &:active {
+  &:active:not(:disabled) {
     transform: scale(0.98);
-    box-shadow: 0 2px 6px rgba(94, 146, 240, 0.3);
+    box-shadow: 0 4px 12px rgba(94, 146, 240, 0.24);
   }
+
+  &:disabled {
+    cursor: default;
+  }
+`;
+
+const SubmitButton = styled(ActionButton)`
+  min-height: 54px;
+  font-size: 16px;
 `;
