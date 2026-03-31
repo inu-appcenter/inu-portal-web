@@ -14,10 +14,17 @@ import {
 
 export type BusInfoType = "go-school" | "go-home";
 
+export interface BusMapBusSection {
+  id: string;
+  label?: string;
+  buses: BusData[];
+}
+
 export interface BusMapStop extends BusStopData {
   bstopId?: string;
   supportsLiveArrival: boolean;
   buses: BusData[];
+  busSections: BusMapBusSection[];
 }
 
 interface BusMapTabConfig {
@@ -68,15 +75,70 @@ const goHomeEngineeringBuses: BusData[] = [
   },
 ];
 
-const stopBusGroups: Record<string, BusData[]> = {
-  "go-school-INU2": goSchool_INU2,
-  "go-school-INU1": goSchool_INU1,
-  "go-school-BIT3": goSchool_BIT3,
-  "go-home-main-out": goHome_MainOut,
-  "go-home-main-in": goHome_MainIn,
-  "go-home-science": [...goHome_Nature_INU, ...goHome_Nature_BIT],
-  "go-home-engineering": goHomeEngineeringBuses,
-  "go-home-dorm": [...goHome_Dorm1, ...goHome_Dorm2],
+const stopBusSections: Record<string, BusMapBusSection[]> = {
+  "go-school-INU2": [
+    {
+      id: "go-school-INU2-default",
+      buses: goSchool_INU2,
+    },
+  ],
+  "go-school-INU1": [
+    {
+      id: "go-school-INU1-default",
+      buses: goSchool_INU1,
+    },
+  ],
+  "go-school-BIT3": [
+    {
+      id: "go-school-BIT3-default",
+      buses: goSchool_BIT3,
+    },
+  ],
+  "go-home-main-out": [
+    {
+      id: "go-home-main-out-inu1",
+      label: "인입 1번 출구행",
+      buses: goHome_MainOut,
+    },
+  ],
+  "go-home-main-in": [
+    {
+      id: "go-home-main-in-inu1",
+      label: "인입 1번 출구행",
+      buses: goHome_MainIn,
+    },
+  ],
+  "go-home-science": [
+    {
+      id: "go-home-science-inu1",
+      label: "인입 1번 출구행",
+      buses: goHome_Nature_INU,
+    },
+    {
+      id: "go-home-science-bit",
+      label: "지식정보단지역행",
+      buses: goHome_Nature_BIT,
+    },
+  ],
+  "go-home-engineering": [
+    {
+      id: "go-home-engineering-default",
+      label: "정차 버스",
+      buses: goHomeEngineeringBuses,
+    },
+  ],
+  "go-home-dorm": [
+    {
+      id: "go-home-dorm-inu1",
+      label: "인입 1번 출구행",
+      buses: goHome_Dorm1,
+    },
+    {
+      id: "go-home-dorm-inu2",
+      label: "인입 2번 출구행",
+      buses: goHome_Dorm2,
+    },
+  ],
 };
 
 const stopApiIds: Record<string, string | undefined> = {
@@ -156,12 +218,14 @@ export function getBusMapStopById(stopId: string | null): BusMapStop | null {
     return null;
   }
 
-  const buses = stopBusGroups[stopId] ?? [];
+  const busSections = stopBusSections[stopId] ?? [];
+  const buses = busSections.flatMap((section) => section.buses);
   const bstopId = stopApiIds[stopId];
 
   return {
     ...stop,
     buses,
+    busSections,
     bstopId,
     supportsLiveArrival: Boolean(bstopId && buses.length > 0),
   };

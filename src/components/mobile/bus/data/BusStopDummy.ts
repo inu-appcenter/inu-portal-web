@@ -20,7 +20,7 @@ export const BusStopDummy: BusStopData[] = [
   },
   {
     id: "go-school-BIT3",
-    stopName: "지식정보단지역",
+    stopName: "지식정보단지역 3번 출구",
     stopNotice: "※ 엘리베이터를 타면 정류장을 쉽게 찾을 수 있어요.",
     busList: ["6-1"],
     lat: 37.37862478339092,

@@ -45,6 +45,10 @@ export default function BusMapPanel({
   const { busArrivalList, isLoading, isFetching, refetch, lastUpdated } =
     useBusArrival(selectedStop?.bstopId ?? "", liveBuses);
   const [isCooldown, setIsCooldown] = useState(false);
+  const shouldShowStopSwitcher =
+    Boolean(onSelectStop) &&
+    (stopOptions.length > 1 ||
+      (stopOptions.length === 1 && stopOptions[0]?.label.includes("출구")));
 
   const displayedBuses = useMemo(() => {
     if (!selectedStop) {
@@ -55,6 +59,22 @@ export default function BusMapPanel({
       ? busArrivalList
       : selectedStop.buses;
   }, [busArrivalList, selectedStop]);
+  const displayedBusSections = useMemo(() => {
+    if (!selectedStop) {
+      return [];
+    }
+
+    const busLookup = new Map(displayedBuses.map((bus) => [bus.id, bus]));
+
+    return selectedStop.busSections
+      .map((section) => ({
+        ...section,
+        buses: section.buses
+          .map((bus) => busLookup.get(bus.id) ?? bus)
+          .filter((bus): bus is BusData => Boolean(bus)),
+      }))
+      .filter((section) => section.buses.length > 0);
+  }, [displayedBuses, selectedStop]);
 
   const handleRefresh = useCallback(() => {
     if (!selectedStop?.supportsLiveArrival || isCooldown || isFetching) {
@@ -196,71 +216,92 @@ export default function BusMapPanel({
                 data-vaul-no-drag={isDesktop ? undefined : ""}
               >
                 {isLoading
-                  ? Array.from({
-                      length: Math.max(selectedStop.buses.length, 2),
-                    }).map((_, index) => <BusCardSkeleton key={index} />)
-                  : displayedBuses.map((bus) => {
-                      const isSelected = selectedBusId === bus.id;
-                      const statusContent = renderBusStatus(
-                        bus,
-                        selectedStop.supportsLiveArrival,
-                      );
-                      const canShowRouteProgress =
-                        isSelected &&
-                        selectedStop.supportsLiveArrival &&
-                        Boolean(selectedStop.bstopId && bus.lastStopId);
+                  ? selectedStop.busSections.map((section) => (
+                      <BusSection key={section.id}>
+                        {section.label ? (
+                          <BusSectionHeading>{section.label}</BusSectionHeading>
+                        ) : null}
+                        {Array.from({
+                          length: Math.max(section.buses.length, 1),
+                        }).map((_, index) => (
+                          <BusCardSkeleton
+                            key={`${section.id}-skeleton-${index}`}
+                          />
+                        ))}
+                      </BusSection>
+                    ))
+                  : displayedBusSections.map((section) => (
+                      <BusSection key={section.id}>
+                        {section.label ? (
+                          <BusSectionHeading>{section.label}</BusSectionHeading>
+                        ) : null}
+                        {section.buses.map((bus) => {
+                          const isSelected = selectedBusId === bus.id;
+                          const statusContent = renderBusStatus(
+                            bus,
+                            selectedStop.supportsLiveArrival,
+                          );
+                          const canShowRouteProgress =
+                            isSelected &&
+                            selectedStop.supportsLiveArrival &&
+                            Boolean(selectedStop.bstopId && bus.lastStopId);
 
-                      return (
-                        <BusCardItem
-                          key={bus.id}
-                          ref={setBusItemRef(bus.id)}
-                          $selected={isSelected}
-                        >
-                          <BusCardButton
-                            type="button"
-                            onClick={() => handleBusClick(bus)}
-                          >
-                            <BusCardButtonInnerWrapper>
-                              <RouteDescription>
-                                {formatRouteText(bus)}
-                              </RouteDescription>
-                              <BusMainRow>
-                                <BusCircle
-                                  number={bus.number}
-                                  isGreen={
-                                    bus.number === "41" || bus.number === "46"
-                                  }
+                          return (
+                            <BusCardItem
+                              key={bus.id}
+                              ref={setBusItemRef(bus.id)}
+                              $selected={isSelected}
+                            >
+                              <BusCardButton
+                                type="button"
+                                onClick={() => handleBusClick(bus)}
+                              >
+                                <BusCardButtonInnerWrapper>
+                                  <RouteDescription>
+                                    {formatRouteText(bus)}
+                                  </RouteDescription>
+                                  <BusMainRow>
+                                    <BusCircle
+                                      number={bus.number}
+                                      isGreen={
+                                        bus.number === "41" ||
+                                        bus.number === "46"
+                                      }
+                                    />
+                                    <ArrivalInfo>
+                                      <ArrivalWrapper>
+                                        <ArrivalTime>
+                                          {getBusDisplayTime(
+                                            bus,
+                                            selectedStop.supportsLiveArrival,
+                                          )}
+                                        </ArrivalTime>
+                                        {statusContent ? (
+                                          <StatusBadge>
+                                            {statusContent}
+                                          </StatusBadge>
+                                        ) : null}
+                                      </ArrivalWrapper>
+                                    </ArrivalInfo>
+                                  </BusMainRow>
+                                </BusCardButtonInnerWrapper>
+                                <ChevronIcon $selected={isSelected}>
+                                  <FiChevronRight strokeWidth={3} />
+                                </ChevronIcon>
+                              </BusCardButton>
+
+                              {canShowRouteProgress ? (
+                                <BusRouteBar
+                                  embedded
+                                  bus={bus}
+                                  bstopId={selectedStop.bstopId ?? ""}
                                 />
-                                <ArrivalInfo>
-                                  <ArrivalWrapper>
-                                    <ArrivalTime>
-                                      {getBusDisplayTime(
-                                        bus,
-                                        selectedStop.supportsLiveArrival,
-                                      )}
-                                    </ArrivalTime>
-                                    {statusContent ? (
-                                      <StatusBadge>{statusContent}</StatusBadge>
-                                    ) : null}
-                                  </ArrivalWrapper>
-                                </ArrivalInfo>
-                              </BusMainRow>
-                            </BusCardButtonInnerWrapper>
-                            <ChevronIcon $selected={isSelected}>
-                              <FiChevronRight strokeWidth={3} />
-                            </ChevronIcon>
-                          </BusCardButton>
-
-                          {canShowRouteProgress ? (
-                            <BusRouteBar
-                              embedded
-                              bus={bus}
-                              bstopId={selectedStop.bstopId ?? ""}
-                            />
-                          ) : null}
-                        </BusCardItem>
-                      );
-                    })}
+                              ) : null}
+                            </BusCardItem>
+                          );
+                        })}
+                      </BusSection>
+                    ))}
               </BusList>
             </ListViewport>
           </>
@@ -293,7 +334,7 @@ export default function BusMapPanel({
       <Drawer.Portal>
         <DrawerContent>
           <MobileSheetShell>
-            {stopOptions.length > 1 && onSelectStop ? (
+            {shouldShowStopSwitcher ? (
               <StopSwitcherDock data-vaul-no-drag="">
                 <StopSwitcherRail data-vaul-no-drag="">
                   {stopOptions.map((stop) => {
@@ -306,7 +347,7 @@ export default function BusMapPanel({
                         $selected={isSelected}
                         aria-pressed={isSelected}
                         data-vaul-no-drag=""
-                        onClick={() => onSelectStop(stop.id)}
+                        onClick={() => onSelectStop?.(stop.id)}
                       >
                         {stop.label}
                       </StopSwitcherButton>
@@ -531,7 +572,7 @@ const PanelHeader = styled.div`
 
 const PanelTitle = styled.h2`
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1.2;
   color: #20355d;
   word-break: keep-all;
@@ -539,7 +580,7 @@ const PanelTitle = styled.h2`
 
 const PanelDescription = styled.p`
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.5;
   color: #516a86;
   white-space: pre-wrap;
@@ -611,7 +652,7 @@ const BusList = styled.div`
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -621,6 +662,31 @@ const BusList = styled.div`
 
   & > * {
     flex-shrink: 0;
+  }
+`;
+
+const BusSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const BusSectionHeading = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #1f5fbc;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  word-break: keep-all;
+
+  &::after {
+    content: "";
+    flex: 1;
+    min-width: 24px;
+    height: 1px;
+    background: rgba(31, 95, 188, 0.18);
   }
 `;
 

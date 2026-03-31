@@ -37,7 +37,7 @@ const MOBILE_ROUTE_TOP_PADDING = 130;
 const STOP_SWITCHER_LABELS: Record<string, string> = {
   "go-school-INU2": "2번 출구",
   "go-school-INU1": "1번 출구",
-  "go-school-BIT3": "지정단런",
+  "go-school-BIT3": "3번 출구",
   "go-home-main-out": "정문(길 건너)",
   "go-home-main-in": "정문(앞)",
   "go-home-science": "자연대",
