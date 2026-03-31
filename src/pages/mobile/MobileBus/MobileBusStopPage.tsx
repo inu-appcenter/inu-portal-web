@@ -36,7 +36,17 @@ export default function MobileBusStopPage() {
           <BusStopMap lat={stop.lat} lng={stop.lng} />
         </StopMapSection>
 
-        <BusCircleBox label="정차 버스" busList={stop.busList} />
+        {stop.stopInfoSections?.length ? (
+          stop.stopInfoSections.map((section) => (
+            <BusCircleBox
+              key={`${stop.id}-${section.label}`}
+              label={section.label}
+              busList={section.busList}
+            />
+          ))
+        ) : (
+          <BusCircleBox label="정차 버스" busList={stop.busList} />
+        )}
       </MobileBusStopPageWrapper>
     );
 }

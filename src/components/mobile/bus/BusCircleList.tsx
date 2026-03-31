@@ -25,7 +25,7 @@ const BusCircleListWrapper = styled.div`
   background-color: #e8f0fe;
   border-radius: 12px;
   padding: 12px 16px;
-  margin-bottom: 24px;
+  //margin-bottom: 24px;
 `;
 
 const CircleList = styled.div`

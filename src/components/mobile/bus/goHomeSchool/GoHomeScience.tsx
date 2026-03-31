@@ -32,7 +32,8 @@ export default function GoHomeScience() {
         stopNotice={`※ 이 곳은 출발지라 도착 정보가 표시되지 않습니다.\n자연대 정류장을 참고해주세요.`}
         onClickStopInfo={() => mobileBusStopNavigate("go-home-engineering")}
       />
-      <BusCircleBox label="정차 버스" busList={["셔틀", "8", "6-1", "6"]} />
+      <BusCircleBox label="인입 1번출구행" busList={["8"]} />
+      <BusCircleBox label="지식정보단지역행" busList={["6-1", "6"]} />
     </PageWrapper>
   );
 }

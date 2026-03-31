@@ -65,6 +65,7 @@ export const ROUTES = {
   BUS: {
     ROOT: "/bus",
     INFO: "/bus/info",
+    INFO_MAP: "/bus/info/map",
     DETAIL: "/bus/info/detail",
     STOP_INFO: "/bus/stopinfo",
     SHUTTLE_HELLO: "/bus/shuttle/hellobus",

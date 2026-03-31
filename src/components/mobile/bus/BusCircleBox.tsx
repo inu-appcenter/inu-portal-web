@@ -17,8 +17,8 @@ export default function BusCircleBox({ label, busList }: Props) {
 }
 
 const CircleBusBoxWrapper = styled.div`
-  padding: 12px 0;
-  margin-bottom: 24px;
+  //padding: 12px 0;
+  //margin-bottom: 24px;
   display: flex;
   flex-direction: column;
   gap: 6px;

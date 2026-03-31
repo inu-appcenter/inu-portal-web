@@ -42,6 +42,7 @@ const BellWrapper = styled.div`
   position: relative;
   display: inline-block;
   cursor: pointer;
+  pointer-events: auto;
 `;
 
 const Badge = styled.div`
@@ -105,7 +106,10 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
           {title ? (
             <TitleArea>
               {hasback && (
-                <IconBackgroundWrapper $isScrolled={isScrolled} $isCircle={true}>
+                <IconBackgroundWrapper
+                  $isScrolled={isScrolled}
+                  $isCircle={true}
+                >
                   <BackButton onClick={handleBack} />
                 </IconBackgroundWrapper>
               )}
@@ -170,6 +174,8 @@ const MobileHeaderWrapper = styled.header<{
 `;
 
 const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 56px;
   display: flex;
@@ -177,6 +183,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   align-items: center;
   box-sizing: border-box;
   padding: 0 ${MOBILE_PAGE_GUTTER};
+  pointer-events: none;
 
   .logo {
     pointer-events: auto;
@@ -204,12 +211,14 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
 `;
 
 const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
+  position: relative;
+  z-index: 1;
   width: 100%;
   display: flex;
   justify-content: flex-start;
   padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
-  pointer-events: auto;
+  pointer-events: none;
   overflow: visible;
 
   @media ${DESKTOP_MEDIA} {
@@ -221,9 +230,8 @@ const TitleArea = styled.div`
   display: flex;
   align-items: center;
   margin-left: 0;
-  pointer-events: auto;
+  pointer-events: none;
   gap: 0;
-
   @media ${DESKTOP_MEDIA} {
     margin-left: ${MOBILE_BACK_ICON_VISUAL_OFFSET};
   }
@@ -309,4 +317,5 @@ const FloatingWrapper = styled.div`
   -webkit-backdrop-filter: blur(8px);
   min-height: 36px;
   overflow: visible;
+  pointer-events: auto;
 `;

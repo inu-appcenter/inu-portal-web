@@ -3,6 +3,7 @@ import { BusData } from "@/types/bus.ts";
 import BusCircle from "./BusCircle.tsx";
 import Box from "@/components/common/Box";
 import { FiChevronRight } from "react-icons/fi";
+import { getArrivalStationText } from "@/components/mobile/bus/busArrivalDisplay";
 
 interface BusItemProps extends BusData {
   onClick?: () => void;
@@ -15,6 +16,8 @@ export default function BusItem({
   arrivalInfo,
   onClick,
 }: BusItemProps) {
+  const stationText = getArrivalStationText(arrivalInfo);
+
   return (
     <Box onClick={onClick}>
       <BusItemWrapper>
@@ -34,10 +37,10 @@ export default function BusItem({
             <TimeInfo>
               <ArrivalWrapper>
                 <MainTime>{arrivalInfo.time}</MainTime>
-                {(arrivalInfo.status || arrivalInfo.station) && (
+                {(arrivalInfo.status || stationText) && (
                   <LabelWrapper>
                     <StatusInfo>
-                      {arrivalInfo.station}{" "}
+                      {stationText}{" "}
                       {arrivalInfo.isLastBus ? (
                         <LastBus>🚨막차</LastBus>
                       ) : (

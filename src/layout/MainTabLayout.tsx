@@ -144,6 +144,7 @@ const HeaderFloating = styled.div`
   transform: translateX(-50%);
   width: 100%;
   z-index: 100;
+  pointer-events: none;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
@@ -160,6 +161,7 @@ const NavFloating = styled.div`
   transform: translateX(-50%);
   width: 100%;
   z-index: 100;
+  pointer-events: none;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
