@@ -6,8 +6,8 @@ export const goSchool_INU2: BusData[] = [
     number: "셔틀",
     route: ["정문", "정보대", "송도캠(기숙사)"],
     arrivalInfo: {
-      time: "08:30 ~ 10:20",
-      station: "수시 운행 중 ",
+      time: "08:30 ~ 10:30",
+      dynamicStation: "weekday-morning-shuttle",
     },
   },
   {

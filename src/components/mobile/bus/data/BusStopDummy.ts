@@ -28,7 +28,7 @@ export const BusStopDummy: BusStopData[] = [
   },
   {
     id: "go-home-main-out",
-    stopName: "인천대 정문",
+    stopName: "인천대 정문(길 건너)",
     stopNotice: "※ 인문대 학생들이 이용하기 좋아요.",
     busList: ["셔틀", "8", "16", "58"],
     lat: 37.37838746332504,
@@ -36,7 +36,7 @@ export const BusStopDummy: BusStopData[] = [
   },
   {
     id: "go-home-main-in",
-    stopName: "인천대 정문",
+    stopName: "인천대 정문(앞)",
     stopNotice: "※ 정류장 위치를 꼭 확인해주세요!",
     busList: ["46"],
     lat: 37.377628082135054,
@@ -45,7 +45,8 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-home-engineering",
     stopName: "인천대 공과대학",
-    stopNotice: "※ 줄 서기를 꼭 지켜주세요!",
+    stopNotice:
+      "※ 이 곳은 출발지라 도착 정보가 표시되지 않습니다.\n자연대 정류장을 참고해주세요.",
     busList: ["셔틀", "8", "6-1", "6"],
     lat: 37.37238638306375,
     lng: 126.63451098800367,
@@ -53,7 +54,8 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-home-science",
     stopName: "인천대 자연과학대학",
-    stopNotice: "※ 정보대, 자연대 학생들이 이용하기 좋아요.",
+    stopNotice:
+      "※ 오후 4~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요. 공과대학 정류장 이용을 추천해요.",
     busList: ["8", "6-1", "6"],
     lat: 37.37427959645153,
     lng: 126.63630545656764,
@@ -61,7 +63,8 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-home-dorm",
     stopName: "인천대 송도캠퍼스",
-    stopNotice: "※ 암벽장 앞, 기숙사 근처에 위치해 있어요.",
+    stopNotice:
+      "※ 암벽장 앞, 기숙사 근처에 위치해 있어요.\n※ 버스가 오지 않을 때는 공과대 정류장을 이용해보세요!",
     busList: ["셔틀", "41", "46"],
     lat: 37.37374085801472,
     lng: 126.6310921152427,

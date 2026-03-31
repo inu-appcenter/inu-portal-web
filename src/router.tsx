@@ -35,6 +35,7 @@ import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
 import MobileBusInfoPage from "@/pages/mobile/MobileBus/MobileBusInfoPage";
 import MobileBusDetailPage from "@/pages/mobile/MobileBus/MobileBusDetailPage";
 import MobileBusStopPage from "@/pages/mobile/MobileBus/MobileBusStopPage";
+import MobileBusMapPage from "@/pages/mobile/MobileBus/MobileBusMapPage";
 import MobileBusShuttleHelloBusPage from "@/pages/mobile/MobileBus/MobileBusShuttleHelloBusPage";
 import MobileBusShuttleRouteInfoPage from "@/pages/mobile/MobileBus/MobileBusShuttleRouteInfoPage";
 import MobileUnidormPage from "@/pages/mobile/MobileUnidormPage";
@@ -169,6 +170,7 @@ export const router = createBrowserRouter([
 
           // 버스 상세
           { path: ROUTES.BUS.INFO, element: <MobileBusInfoPage /> },
+          { path: ROUTES.BUS.INFO_MAP, element: <MobileBusMapPage /> },
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },
           { path: ROUTES.BUS.STOP_INFO, element: <MobileBusStopPage /> },
           {

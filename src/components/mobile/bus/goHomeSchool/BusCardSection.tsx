@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 
 const BUS_PAGE_TABLET_MEDIA = "(min-width: 760px)";
 
@@ -9,29 +9,35 @@ const BUS_CARDS = [
   {
     src: "/Bus/학교갈래요버튼.webp",
     alt: "학교갈래요버튼",
-    route: `${ROUTES.BUS.INFO}?type=go-school`,
+    type: "go-school",
     featured: true,
   },
   {
     src: "/Bus/집갈래요버튼.webp",
     alt: "집갈래요버튼",
-    route: `${ROUTES.BUS.INFO}?type=go-home`,
+    type: "go-home",
   },
   {
     src: "/Bus/셔틀버스버튼.webp",
     alt: "셔틀버스버튼",
-    route: `${ROUTES.BUS.INFO}?type=shuttle`,
+    type: "shuttle",
   },
 ] as const;
 
 export default function BusCardSection() {
   const navigate = useNavigate();
   const [featuredCard, ...stackCards] = BUS_CARDS;
+  const handleCardClick = (type: (typeof BUS_CARDS)[number]["type"]) => {
+    navigate(getPreferredBusUiRoute(type));
+  };
 
   return (
     <Wrapper>
       <FeatureColumn>
-        <CardButton type="button" onClick={() => navigate(featuredCard.route)}>
+        <CardButton
+          type="button"
+          onClick={() => handleCardClick(featuredCard.type)}
+        >
           <CardImg src={featuredCard.src} alt={featuredCard.alt} $featured />
         </CardButton>
       </FeatureColumn>
@@ -39,9 +45,9 @@ export default function BusCardSection() {
       <StackColumn>
         {stackCards.map((card) => (
           <CardButton
-            key={card.route}
+            key={card.type}
             type="button"
-            onClick={() => navigate(card.route)}
+            onClick={() => handleCardClick(card.type)}
           >
             <CardImg src={card.src} alt={card.alt} />
           </CardButton>

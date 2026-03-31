@@ -48,13 +48,11 @@ export default function SubLayout({
       <ContentShell>
         {showHeader && (
           <HeaderFloating>
-            <PointerArea>
-              <MobileHeader
-                ref={headerRef}
-                contained
-                targetPath={location.pathname as any}
-              />
-            </PointerArea>
+            <MobileHeader
+              ref={headerRef}
+              contained
+              targetPath={location.pathname as any}
+            />
           </HeaderFloating>
         )}
 
@@ -65,7 +63,7 @@ export default function SubLayout({
 
       {showNav && (
         <NavFloating>
-          <PointerArea>{/* Nav Component */}</PointerArea>
+          {/* Nav Component */}
         </NavFloating>
       )}
     </LayoutContainer>
@@ -133,6 +131,3 @@ const NavFloating = styled.div`
   }
 `;
 
-const PointerArea = styled.div`
-  pointer-events: auto;
-`;

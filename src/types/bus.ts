@@ -1,8 +1,10 @@
 export type BusStatus = "여유" | "보통" | "혼잡";
+export type DynamicArrivalStation = "weekday-morning-shuttle";
 
 export interface ArrivalInfo {
   time: string;
   station?: string;
+  dynamicStation?: DynamicArrivalStation;
   status?: BusStatus;
   seconds?: number; //카운트다운
   isLastBus?: boolean;
