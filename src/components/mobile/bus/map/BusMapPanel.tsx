@@ -553,7 +553,7 @@ const DragHeader = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-bottom: 8px;
+  //margin-bottom: 8px;
 `;
 
 const HandleBar = styled.div`
@@ -640,7 +640,7 @@ const ListViewport = styled.div<{
     $isDesktop
       ? "none"
       : typeof $snap === "number"
-        ? `clamp(0px, calc(${$snap * 100}dvh - 188px), 100dvh)`
+        ? `clamp(0px, calc(${$snap * 100}dvh - 130px), 100dvh)`
         : "none"};
   transition: ${({ $isDesktop }) =>
     $isDesktop ? "none" : "max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1)"};
@@ -658,6 +658,7 @@ const BusList = styled.div`
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   //padding: 12px 8px 24px;
+  padding-bottom: 64px;
   box-sizing: border-box;
 
   & > * {

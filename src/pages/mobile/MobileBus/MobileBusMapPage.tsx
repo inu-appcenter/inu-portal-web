@@ -72,6 +72,11 @@ export default function MobileBusMapPage() {
     : null;
   const activeTab =
     tabs.find((tab) => tab.label === selectedCategory) ?? tabs[0] ?? null;
+  const allStopIds = useMemo(
+    () => Array.from(new Set(tabs.flatMap((tab) => tab.stopIds))),
+    [tabs],
+  );
+  const visibleStops = useMemo(() => getBusMapStops(allStopIds), [allStopIds]);
   const activeStops = useMemo(
     () => getBusMapStops(activeTab?.stopIds ?? []),
     [activeTab],
@@ -96,9 +101,10 @@ export default function MobileBusMapPage() {
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
   const selectedStop =
-    activeStops.find((stop) => stop.id === selectedStopId) ??
+    visibleStops.find((stop) => stop.id === selectedStopId) ??
     defaultStop ??
     activeStops[0] ??
+    visibleStops[0] ??
     null;
   const stopSwitcherOptions = useMemo(
     () =>
@@ -205,10 +211,16 @@ export default function MobileBusMapPage() {
   }, [pageConfig, redirectTarget, type]);
 
   useEffect(() => {
-    setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
+    const isSelectedStopVisible = activeStops.some(
+      (stop) => stop.id === selectedStopId,
+    );
+
+    if (!isSelectedStopVisible) {
+      setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
+    }
     setSelectedBusId(null);
     setSnap(BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT);
-  }, [activeStops, defaultStop?.id, selectedCategory]);
+  }, [activeStops, defaultStop?.id, selectedCategory, selectedStopId]);
 
   useLayoutEffect(() => {
     if (redirectTarget || !pageConfig || typeof window === "undefined") {
@@ -312,8 +324,12 @@ export default function MobileBusMapPage() {
   }, [isDesktop, snap]);
 
   const handleSelectStop = (stopId: string) => {
-    if (stopId === selectedStop?.id) {
-      return;
+    const nextTab = tabs.find((tab) => tab.stopIds.includes(stopId));
+
+    if (nextTab && nextTab.label !== selectedCategory) {
+      const params = new URLSearchParams(location.search);
+      params.set("category", nextTab.label);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
     }
 
     setSelectedStopId(stopId);
@@ -356,7 +372,7 @@ export default function MobileBusMapPage() {
 
         <MapArea>
           <BusInteractiveMap
-            activeStops={activeStops}
+            activeStops={visibleStops}
             selectedStopId={selectedStop.id}
             selectedBus={selectedBus}
             center={center}

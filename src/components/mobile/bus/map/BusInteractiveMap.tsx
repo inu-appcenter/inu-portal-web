@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   CustomOverlayMap,
   Map,
@@ -103,28 +103,6 @@ export default function BusInteractiveMap({
     [routeViewportPadding?.bottom, routeViewportPadding?.left, routeViewportPadding?.right, routeViewportPadding?.top],
   );
 
-  useEffect(() => {
-    if (selectedRouteKey) {
-      return;
-    }
-
-    const nextCenter = getAdjustedCenterFromPadding(
-      mapInstance,
-      center,
-      routePadding,
-    );
-
-    setMapCenter((prev) => (isSameLatLng(prev, nextCenter) ? prev : nextCenter));
-  }, [
-    center,
-    mapInstance,
-    routePadding.bottom,
-    routePadding.left,
-    routePadding.right,
-    routePadding.top,
-    selectedRouteKey,
-  ]);
-
   useLayoutEffect(() => {
     if (!mapInstance || !window.kakao?.maps || selectedRouteKey) {
       return;
@@ -132,6 +110,7 @@ export default function BusInteractiveMap({
 
     previousRouteKeyRef.current = null;
     setRouteCenter(null);
+
     const adjustedCenter = getAdjustedCenterFromPadding(
       mapInstance,
       center,
