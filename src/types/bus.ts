@@ -37,6 +37,10 @@ export interface BusStopData {
   stopName: string;
   stopNotice?: string;
   busList: string[];
+  stopInfoSections?: {
+    label: string;
+    busList: string[];
+  }[];
   sectionLabel?: string;
   lat: number;
   lng: number;

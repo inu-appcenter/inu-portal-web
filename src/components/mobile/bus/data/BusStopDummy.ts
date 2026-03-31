@@ -47,7 +47,17 @@ export const BusStopDummy: BusStopData[] = [
     stopName: "인천대 공과대학",
     stopNotice:
       "※ 이 곳은 출발지라 도착 정보가 표시되지 않습니다.\n자연대 정류장을 참고해주세요.",
-    busList: ["셔틀", "8", "6-1", "6"],
+    busList: ["8", "6-1", "6"],
+    stopInfoSections: [
+      {
+        label: "인입 1번출구행",
+        busList: ["8"],
+      },
+      {
+        label: "지식정보단지역행",
+        busList: ["6-1", "6"],
+      },
+    ],
     lat: 37.37238638306375,
     lng: 126.63451098800367,
   },

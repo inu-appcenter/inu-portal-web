@@ -174,6 +174,8 @@ const MobileHeaderWrapper = styled.header<{
 `;
 
 const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 56px;
   display: flex;
@@ -209,6 +211,8 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
 `;
 
 const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
+  position: relative;
+  z-index: 1;
   width: 100%;
   display: flex;
   justify-content: flex-start;

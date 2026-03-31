@@ -40,27 +40,16 @@ interface BusMapPageConfig {
 
 const stopLookup = new Map(BusStopDummy.map((stop) => [stop.id, stop]));
 
-const goHomeEngineeringBuses: BusData[] = [
-  {
-    id: 1000,
-    number: "셔틀",
-    route: ["공대", "자연대", "정문", "인입"],
-    routeNotice: "공대 정류장은 실시간 도착 정보 대신 정차 안내만 제공돼요.",
-    stopId: "go-home-engineering",
-    sectionLabel: "공대",
-    busNotice:
-      "공대 정류장은 실시간 도착 정보를 제공하지 않아요. 주변 정류장 도착 정보와 함께 참고해 주세요.",
-    arrivalInfo: {
-      time: "실시간 정보 없음",
-      station: "정차 안내",
-    },
-  },
+const goHomeEngineeringInuBuses: BusData[] = [
   {
     ...goHome_Nature_INU[0],
     id: 1001,
     stopId: "go-home-engineering",
     sectionLabel: "공대",
   },
+];
+
+const goHomeEngineeringBitBuses: BusData[] = [
   {
     ...goHome_Nature_BIT[0],
     id: 1002,
@@ -122,9 +111,14 @@ const stopBusSections: Record<string, BusMapBusSection[]> = {
   ],
   "go-home-engineering": [
     {
-      id: "go-home-engineering-default",
-      label: "정차 버스",
-      buses: goHomeEngineeringBuses,
+      id: "go-home-engineering-inu1",
+      label: "인입 1번출구행",
+      buses: goHomeEngineeringInuBuses,
+    },
+    {
+      id: "go-home-engineering-bit",
+      label: "지식정보단지역행",
+      buses: goHomeEngineeringBitBuses,
     },
   ],
   "go-home-dorm": [
