@@ -33,7 +33,7 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
   const { data, dataUpdatedAt, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["busArrival", bstopId, busKey],
     queryFn: () => getBusArrival(bstopId),
-    refetchInterval: 60 * 1000,
+    refetchInterval: 30 * 1000,
     staleTime: 30 * 1000,
     enabled: !!bstopId && stableBusList.length > 0,
   });
@@ -77,7 +77,7 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
         arrivalInfo: {
           time: toTime(seconds),
           seconds,
-          station: `${match.REST_STOP_COUNT}정거장 전`,
+          station: `${match.REST_STOP_COUNT} 전`,
           status: convertStatus(match.CONGESTION),
           isLastBus: match.LASTBUSYN === "1",
           restCount: Number(match.REST_STOP_COUNT),

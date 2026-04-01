@@ -3,7 +3,7 @@ import styled, { css, keyframes } from "styled-components";
 import { RotateCw } from "lucide-react";
 import Box from "@/components/common/Box";
 import useBusArrival from "@/hooks/useBusArrival";
-import type { ArrivalInfo, BusData } from "@/types/bus";
+import type { ArrivalInfo, BusData, BusStatus } from "@/types/bus";
 import { getArrivalStationText } from "@/components/mobile/bus/busArrivalDisplay";
 
 interface ControlledCurrentArrival {
@@ -84,7 +84,9 @@ export default function BusRouteBar({
   ]);
 
   const passArrival = passArrivals[0]?.arrivalInfo;
-  const arrivalStationText = getArrivalStationText(arrivalInfo);
+  const arrivalStationText = getArrivalStationText(arrivalInfo, {
+    compact: true,
+  });
   const restCount = arrivalInfo?.restCount ?? -1;
   const passRestCount = passArrival?.restCount ?? -1;
   const route = bus.route;
@@ -116,7 +118,7 @@ export default function BusRouteBar({
       showBus,
       showInfoBox: showBus,
       showPassBus,
-      passText: `${route.length - passRestCount - 1}정류장 지남`,
+      passText: `${route.length - passRestCount - 1} 정류장 지남`,
     };
   });
 
@@ -134,7 +136,9 @@ export default function BusRouteBar({
                     {arrivalInfo.isLastBus ? (
                       <LastBus>막차</LastBus>
                     ) : (
-                      arrivalInfo.status
+                      <StatusText $status={arrivalInfo.status}>
+                        {arrivalInfo.status}
+                      </StatusText>
                     )}
                   </div>
                   <div>{arrivalInfo.time}</div>
@@ -307,13 +311,13 @@ const Dot = styled.div<{ $current: boolean }>`
 
 const BusIcon = styled.img`
   position: absolute;
-  bottom: 20px;
+  bottom: 12px;
   width: 24px;
 `;
 
 const InfoBox = styled.div`
   position: absolute;
-  bottom: 48px;
+  bottom: 40px;
   width: 66px;
   height: 30px;
   font-size: 10px;
@@ -331,6 +335,21 @@ const InfoBox = styled.div`
 const LastBus = styled.span`
   font-weight: 500;
   color: red;
+`;
+
+const StatusText = styled.span<{ $status?: BusStatus }>`
+  color: ${({ $status }) => {
+    switch ($status) {
+      case "\uC5EC\uC720":
+        return "#006F1E";
+      case "\uBCF4\uD1B5":
+        return "#0E4D9D";
+      case "\uD63C\uC7A1":
+        return "#D10000";
+      default:
+        return "inherit";
+    }
+  }};
 `;
 
 const Label = styled.div`
