@@ -12,12 +12,28 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
     () => busList.map((bus) => bus.routeId ?? bus.id).join(","),
     [busList],
   );
-  const stableBusList = useMemo(() => busList, [busKey]);
+  const busListIdentityKey = useMemo(
+    () =>
+      busList
+        .map((bus) =>
+          [
+            bus.routeId ?? "",
+            bus.id,
+            bus.stopId ?? "",
+            bus.sectionLabel ?? "",
+            bus.routeNotice ?? "",
+            bus.route.join(">"),
+          ].join("|"),
+        )
+        .join(","),
+    [busList],
+  );
+  const stableBusList = useMemo(() => busList, [busListIdentityKey]);
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, dataUpdatedAt, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["busArrival", bstopId, busKey],
     queryFn: () => getBusArrival(bstopId),
-    refetchInterval: 60 * 1000,
+    refetchInterval: 30 * 1000,
     staleTime: 30 * 1000,
     enabled: !!bstopId && stableBusList.length > 0,
   });
@@ -25,7 +41,7 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
   useEffect(() => {
     setBusArrivalList([]);
     setLastUpdated(new Date());
-  }, [bstopId, busKey]);
+  }, [bstopId, busListIdentityKey]);
 
   useEffect(() => {
     if (!data) {
@@ -50,14 +66,18 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
         };
       }
 
-      const seconds = Number(match.ARRIVALESTIMATETIME);
+      const rawSeconds = Number(match.ARRIVALESTIMATETIME);
+      const elapsedSeconds = dataUpdatedAt
+        ? Math.max(0, Math.floor((Date.now() - dataUpdatedAt) / 1000))
+        : 0;
+      const seconds = Math.max(0, rawSeconds - elapsedSeconds);
 
       return {
         ...bus,
         arrivalInfo: {
           time: toTime(seconds),
           seconds,
-          station: `${match.REST_STOP_COUNT}정거장 전`,
+          station: `${match.REST_STOP_COUNT} 전`,
           status: convertStatus(match.CONGESTION),
           isLastBus: match.LASTBUSYN === "1",
           restCount: Number(match.REST_STOP_COUNT),
@@ -66,8 +86,8 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
     });
 
     setBusArrivalList(updated);
-    setLastUpdated(new Date());
-  }, [data, stableBusList]);
+    setLastUpdated(dataUpdatedAt ? new Date(dataUpdatedAt) : new Date());
+  }, [data, dataUpdatedAt, stableBusList]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {

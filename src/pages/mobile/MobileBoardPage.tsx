@@ -8,7 +8,7 @@ import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import MobileWriteButton from "@/components/mobile/tips/MobileWriteButton";
 // import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.tsx";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector.tsx";
-import { navBarList } from "old/resource/string/navBarList";
+import { navBarList } from "@/resources/strings/navBarList";
 import loginImg from "../../resources/assets/login/login-modal-logo.svg";
 import useUserStore from "../../stores/useUserStore.ts";
 import findTitleOrCode from "../../utils/findTitleOrCode.ts";

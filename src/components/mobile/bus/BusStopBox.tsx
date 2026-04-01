@@ -9,6 +9,7 @@ import BusItemSkeleton from "@/components/mobile/bus/BusItemSkeleton";
 import { ROUTES } from "@/constants/routes";
 import { RotateCw } from "lucide-react";
 import { useState, useCallback } from "react";
+import { isRedBusSectionLabel } from "@/components/mobile/bus/busCircleTone";
 
 interface Props extends BusStopBoxProps {
   bstopId: string;
@@ -48,7 +49,10 @@ export default function BusStopBox({
       title={
         <HeaderGroup>
           <LabelGroup>
-            {sectionName} {showInfoIcon && <InfoIcon onClick={onClickInfo} />}
+            <SectionNameText $isRed={isRedBusSectionLabel(sectionName)}>
+              {sectionName}
+            </SectionNameText>
+            {showInfoIcon && <InfoIcon onClick={onClickInfo} />}
           </LabelGroup>
           <RefreshArea>
             <LastUpdated>업데이트: {formatTime(lastUpdated)}</LastUpdated>
@@ -81,6 +85,7 @@ export default function BusStopBox({
                         )
                       : navigate(
                           `${ROUTES.BUS.DETAIL}?bstopId=${bstopId}&id=${bus.id}`,
+                          { state: { bus } },
                         )
                   }
                 />
@@ -113,6 +118,10 @@ const LabelGroup = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+`;
+
+const SectionNameText = styled.span<{ $isRed: boolean }>`
+  color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "inherit")};
 `;
 
 const RefreshArea = styled.div`

@@ -1,5 +1,10 @@
 import type { ArrivalInfo, DynamicArrivalStation } from "@/types/bus";
 
+interface ArrivalStationTextOptions {
+  compact?: boolean;
+  now?: Date;
+}
+
 const SEOUL_TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
   timeZone: "Asia/Seoul",
   weekday: "short",
@@ -17,10 +22,16 @@ const DYNAMIC_STATION_TEXT: Record<DynamicArrivalStation, (date: Date) => string
 
 export function getArrivalStationText(
   arrivalInfo?: ArrivalInfo | null,
-  now: Date = new Date(),
+  options: ArrivalStationTextOptions = {},
 ) {
   if (!arrivalInfo) {
     return "";
+  }
+
+  if (typeof arrivalInfo.restCount === "number") {
+    return options.compact
+      ? `${arrivalInfo.restCount} 전`
+      : `${arrivalInfo.restCount} 정류장 전`;
   }
 
   if (arrivalInfo.station) {
@@ -28,7 +39,11 @@ export function getArrivalStationText(
   }
 
   if (arrivalInfo.dynamicStation) {
-    return DYNAMIC_STATION_TEXT[arrivalInfo.dynamicStation]?.(now) ?? "";
+    return (
+      DYNAMIC_STATION_TEXT[arrivalInfo.dynamicStation]?.(
+        options.now ?? new Date(),
+      ) ?? ""
+    );
   }
 
   return "";

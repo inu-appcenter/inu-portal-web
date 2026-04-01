@@ -15,7 +15,7 @@ import {
 } from "@/types/admin.ts";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { navBarList } from "old/resource/string/navBarList";
+import { navBarList } from "@/resources/strings/navBarList";
 
 type DepartmentNode = {
   title?: string;

@@ -3,7 +3,6 @@ export const ROUTES = {
   MOBILE_ROOT: "/m",
 
   LOGIN: "/login",
-  INSTALL: "/install",
 
   HOME: "/home",
   MOBILE_HOME: "/m/home",

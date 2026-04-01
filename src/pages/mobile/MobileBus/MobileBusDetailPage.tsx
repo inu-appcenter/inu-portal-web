@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import BusStopHeader from "@/components/mobile/bus/BusStopHeader.tsx";
 import BusRouteMap from "@/components/mobile/bus/BusRouteMap.tsx";
 import styled from "styled-components";
@@ -19,6 +19,11 @@ import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import type { BusData } from "@/types/bus";
+
+interface BusDetailLocationState {
+  bus?: BusData;
+}
 
 export default function MobileBusDetailPage() {
   // 헤더 설정 주입
@@ -26,6 +31,7 @@ export default function MobileBusDetailPage() {
     title: "버스 정보",
   });
 
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const id = Number(searchParams.get("id"));
   const bstopId = searchParams.get("bstopId") || "";
@@ -44,7 +50,10 @@ export default function MobileBusDetailPage() {
     ...goHome_Nature_INU,
   ];
 
-  const bus = allBus.find((b) => b.id === id);
+  const navigationBus =
+    (location.state as BusDetailLocationState | null)?.bus ?? null;
+  const bus =
+    navigationBus?.id === id ? navigationBus : allBus.find((b) => b.id === id);
   if (!bus) {
     return null;
   }

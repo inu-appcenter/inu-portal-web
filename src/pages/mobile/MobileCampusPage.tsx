@@ -224,6 +224,7 @@ const MobileCampusPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  flex: 1;
   height: calc(100dvh - 100px);
   box-sizing: border-box;
   position: relative;
@@ -233,10 +234,9 @@ const MobileCampusPageWrapper = styled.div`
     display: grid;
     grid-template-columns: clamp(340px, 27vw, 400px) minmax(0, 1fr);
     gap: 20px;
-    height: calc(100dvh - 140px);
-    min-height: 720px;
-    padding-bottom: 12px;
-    overflow: visible;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
   }
 `;
 

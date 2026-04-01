@@ -1,4 +1,4 @@
-import { navBarList } from "old/resource/string/navBarList";
+import { navBarList } from "@/resources/strings/navBarList";
 
 type NavBarItem = {
   title?: string;

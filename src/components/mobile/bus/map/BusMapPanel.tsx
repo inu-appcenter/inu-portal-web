@@ -2,29 +2,36 @@
 import styled, { css, keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Drawer } from "vaul";
-import { RotateCw } from "lucide-react";
+import { ChevronDown, RotateCw } from "lucide-react";
 import { FiChevronRight } from "react-icons/fi";
 import BusCircle from "@/components/mobile/bus/BusCircle";
 import BusRouteBar from "@/components/mobile/bus/BusRouteBar";
 import { BUS_MAP_BOTTOM_SHEET_HEIGHT } from "@/components/mobile/bus/map/busMapSheetConfig";
+import BusStopSwitcher, {
+  type BusStopSwitcherOption,
+} from "@/components/mobile/bus/map/BusStopSwitcher";
 import Skeleton from "@/components/common/Skeleton";
 import useBusArrival from "@/hooks/useBusArrival";
 import { ROUTES } from "@/constants/routes";
 import type { BusData } from "@/types/bus";
 import type { BusMapStop } from "@/components/mobile/bus/data/busMapConfig";
 import { getArrivalStationText } from "@/components/mobile/bus/busArrivalDisplay";
+import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
+import { isRedBusSectionLabel } from "@/components/mobile/bus/busCircleTone";
 
 interface BusMapPanelProps {
   isDesktop?: boolean;
   selectedStop: BusMapStop | null;
   selectedBusId: number | null;
   onSelectBus: (busId: number) => void;
-  stopOptions?: { id: string; label: string }[];
+  stopOptions?: BusStopSwitcherOption[];
   selectedStopId?: string | null;
   onSelectStop?: (stopId: string) => void;
   snap: string | number | null;
   setSnap: (snap: string | number | null) => void;
 }
+
+type BusSortMode = "arrival" | "default";
 
 export default function BusMapPanel({
   isDesktop = false,
@@ -41,14 +48,19 @@ export default function BusMapPanel({
   const busListRef = useRef<HTMLDivElement | null>(null);
   const busItemRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const previousSnapRef = useRef<string | number | null>(snap);
+  const refreshCooldownTimeoutsRef = useRef<Record<string, number>>({});
   const liveBuses = selectedStop?.supportsLiveArrival ? selectedStop.buses : [];
   const { busArrivalList, isLoading, isFetching, refetch, lastUpdated } =
     useBusArrival(selectedStop?.bstopId ?? "", liveBuses);
-  const [isCooldown, setIsCooldown] = useState(false);
-  const shouldShowStopSwitcher =
-    Boolean(onSelectStop) &&
-    (stopOptions.length > 1 ||
-      (stopOptions.length === 1 && stopOptions[0]?.label.includes("출구")));
+  const [cooldownsByStopKey, setCooldownsByStopKey] = useState<
+    Record<string, boolean>
+  >({});
+  const [sortMode, setSortMode] = useState<BusSortMode>("arrival");
+  const selectedStopCooldownKey =
+    selectedStop?.bstopId ?? selectedStop?.id ?? "";
+  const isSelectedStopCooldown = selectedStopCooldownKey
+    ? Boolean(cooldownsByStopKey[selectedStopCooldownKey])
+    : false;
 
   const displayedBuses = useMemo(() => {
     if (!selectedStop) {
@@ -67,27 +79,70 @@ export default function BusMapPanel({
     const busLookup = new Map(displayedBuses.map((bus) => [bus.id, bus]));
 
     return selectedStop.busSections
-      .map((section) => ({
-        ...section,
-        buses: section.buses
+      .map((section) => {
+        const sectionBusOrder = new Map(
+          section.buses.map((bus, index) => [bus.id, index]),
+        );
+        const sectionBuses = section.buses
           .map((bus) => busLookup.get(bus.id) ?? bus)
-          .filter((bus): bus is BusData => Boolean(bus)),
-      }))
+          .filter((bus): bus is BusData => Boolean(bus));
+
+        return {
+          ...section,
+          buses:
+            sortMode === "arrival" && selectedStop.supportsLiveArrival
+              ? [...sectionBuses].sort((left, right) =>
+                  compareBusesByArrival(left, right, sectionBusOrder),
+                )
+              : sectionBuses,
+        };
+      })
       .filter((section) => section.buses.length > 0);
-  }, [displayedBuses, selectedStop]);
+  }, [displayedBuses, selectedStop, sortMode]);
+
+  const startRefreshCooldown = useCallback((stopKey: string) => {
+    if (!stopKey) {
+      return;
+    }
+
+    const existingTimeout = refreshCooldownTimeoutsRef.current[stopKey];
+    if (existingTimeout) {
+      window.clearTimeout(existingTimeout);
+    }
+
+    setCooldownsByStopKey((prev) => ({
+      ...prev,
+      [stopKey]: true,
+    }));
+
+    refreshCooldownTimeoutsRef.current[stopKey] = window.setTimeout(() => {
+      setCooldownsByStopKey((prev) => ({
+        ...prev,
+        [stopKey]: false,
+      }));
+      delete refreshCooldownTimeoutsRef.current[stopKey];
+    }, 10000);
+  }, []);
 
   const handleRefresh = useCallback(() => {
-    if (!selectedStop?.supportsLiveArrival || isCooldown || isFetching) {
+    if (
+      !selectedStop?.supportsLiveArrival ||
+      isSelectedStopCooldown ||
+      isFetching
+    ) {
       return;
     }
 
     refetch();
-    setIsCooldown(true);
-
-    window.setTimeout(() => {
-      setIsCooldown(false);
-    }, 10000);
-  }, [isCooldown, isFetching, refetch, selectedStop?.supportsLiveArrival]);
+    startRefreshCooldown(selectedStopCooldownKey);
+  }, [
+    isFetching,
+    isSelectedStopCooldown,
+    refetch,
+    selectedStop?.supportsLiveArrival,
+    selectedStopCooldownKey,
+    startRefreshCooldown,
+  ]);
 
   const handleBusClick = useCallback(
     (bus: BusData) => {
@@ -156,13 +211,25 @@ export default function BusMapPanel({
       window.cancelAnimationFrame(frameId);
       window.cancelAnimationFrame(nestedFrameId);
     };
-  }, [isDesktop, selectedBusId, selectedStop?.id]);
+  }, [isDesktop, selectedBusId, selectedStop?.id, sortMode]);
 
   useEffect(() => {
     previousSnapRef.current = snap;
   }, [snap]);
 
   useEffect(() => {
+    return () => {
+      Object.values(refreshCooldownTimeoutsRef.current).forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedBusId !== null) {
+      return;
+    }
+
     const listElement = busListRef.current;
 
     if (!listElement) {
@@ -173,7 +240,7 @@ export default function BusMapPanel({
       top: 0,
       behavior: "auto",
     });
-  }, [selectedStop?.id]);
+  }, [selectedBusId, selectedStop?.id, sortMode]);
 
   const panelContent = (
     <PanelSurface $isDesktop={isDesktop}>
@@ -187,7 +254,23 @@ export default function BusMapPanel({
         {selectedStop ? (
           <>
             <PanelHeader>
-              <PanelTitle>{selectedStop.stopName}</PanelTitle>
+              <PanelHeaderTopRow>
+                <PanelTitle>{selectedStop.stopName}</PanelTitle>
+                <SortSelectWrapper data-vaul-no-drag={isDesktop ? undefined : ""}>
+                  <SortSelect
+                    data-vaul-no-drag={isDesktop ? undefined : ""}
+                    aria-label={`${selectedStop.stopName} 버스 정렬`}
+                    value={sortMode}
+                    onChange={(event) =>
+                      setSortMode(event.target.value as BusSortMode)
+                    }
+                  >
+                    <option value="arrival">도착임박순</option>
+                    <option value="default">기본</option>
+                  </SortSelect>
+                  <SortChevron size={14} aria-hidden="true" />
+                </SortSelectWrapper>
+              </PanelHeaderTopRow>
               <PanelDescription>{selectedStop.stopNotice}</PanelDescription>
             </PanelHeader>
 
@@ -199,8 +282,8 @@ export default function BusMapPanel({
                 type="button"
                 onClick={handleRefresh}
                 $isFetching={isFetching}
-                $isCooldown={isCooldown}
-                disabled={isCooldown || isFetching}
+                $isCooldown={isSelectedStopCooldown}
+                disabled={isSelectedStopCooldown || isFetching}
               >
                 <RotateCw size={12} />
               </RefreshButton>
@@ -219,7 +302,11 @@ export default function BusMapPanel({
                   ? selectedStop.busSections.map((section) => (
                       <BusSection key={section.id}>
                         {section.label ? (
-                          <BusSectionHeading>{section.label}</BusSectionHeading>
+                          <BusSectionHeading
+                            $isRed={isRedBusSectionLabel(section.label)}
+                          >
+                            {section.label}
+                          </BusSectionHeading>
                         ) : null}
                         {Array.from({
                           length: Math.max(section.buses.length, 1),
@@ -233,7 +320,11 @@ export default function BusMapPanel({
                   : displayedBusSections.map((section) => (
                       <BusSection key={section.id}>
                         {section.label ? (
-                          <BusSectionHeading>{section.label}</BusSectionHeading>
+                          <BusSectionHeading
+                            $isRed={isRedBusSectionLabel(section.label)}
+                          >
+                            {section.label}
+                          </BusSectionHeading>
                         ) : null}
                         {section.buses.map((bus) => {
                           const isSelected = selectedBusId === bus.id;
@@ -241,6 +332,8 @@ export default function BusMapPanel({
                             bus,
                             selectedStop.supportsLiveArrival,
                           );
+                          const showBusNotice =
+                            isSelected && Boolean(bus.busNotice);
                           const canShowRouteProgress =
                             isSelected &&
                             selectedStop.supportsLiveArrival &&
@@ -263,10 +356,7 @@ export default function BusMapPanel({
                                   <BusMainRow>
                                     <BusCircle
                                       number={bus.number}
-                                      isGreen={
-                                        bus.number === "41" ||
-                                        bus.number === "46"
-                                      }
+                                      tone={getBusCircleTone(bus.number)}
                                     />
                                     <ArrivalInfo>
                                       <ArrivalWrapper>
@@ -290,11 +380,30 @@ export default function BusMapPanel({
                                 </ChevronIcon>
                               </BusCardButton>
 
+                              {showBusNotice ? (
+                                <BusNoticeText
+                                  $hasRouteProgress={canShowRouteProgress}
+                                >
+                                  {bus.busNotice}
+                                </BusNoticeText>
+                              ) : null}
+
                               {canShowRouteProgress ? (
                                 <BusRouteBar
                                   embedded
                                   bus={bus}
                                   bstopId={selectedStop.bstopId ?? ""}
+                                  currentArrival={{
+                                    arrivalInfo: bus.arrivalInfo,
+                                    isFetching,
+                                    lastUpdated,
+                                    refetch,
+                                    isCooldown: isSelectedStopCooldown,
+                                    startCooldown: () =>
+                                      startRefreshCooldown(
+                                        selectedStopCooldownKey,
+                                      ),
+                                  }}
                                 />
                               ) : null}
                             </BusCardItem>
@@ -334,28 +443,14 @@ export default function BusMapPanel({
       <Drawer.Portal>
         <DrawerContent>
           <MobileSheetShell>
-            {shouldShowStopSwitcher ? (
-              <StopSwitcherDock data-vaul-no-drag="">
-                <StopSwitcherRail data-vaul-no-drag="">
-                  {stopOptions.map((stop) => {
-                    const isSelected = stop.id === selectedStopId;
-
-                    return (
-                      <StopSwitcherButton
-                        key={stop.id}
-                        type="button"
-                        $selected={isSelected}
-                        aria-pressed={isSelected}
-                        data-vaul-no-drag=""
-                        onClick={() => onSelectStop?.(stop.id)}
-                      >
-                        {stop.label}
-                      </StopSwitcherButton>
-                    );
-                  })}
-                </StopSwitcherRail>
-              </StopSwitcherDock>
-            ) : null}
+            <StopSwitcherDock data-vaul-no-drag="">
+              <BusStopSwitcher
+                options={stopOptions}
+                selectedStopId={selectedStopId}
+                onSelectStop={onSelectStop}
+                preventDrawerDrag
+              />
+            </StopSwitcherDock>
 
             {panelContent}
           </MobileSheetShell>
@@ -367,6 +462,55 @@ export default function BusMapPanel({
 
 function formatRouteText(bus: BusData) {
   return bus.routeNotice ?? bus.route.filter(Boolean).join(" -> ");
+}
+
+function compareBusesByArrival(
+  left: BusData,
+  right: BusData,
+  orderLookup: Map<number, number>,
+) {
+  const leftPriority = getBusArrivalPriority(left);
+  const rightPriority = getBusArrivalPriority(right);
+
+  if (leftPriority.bucket !== rightPriority.bucket) {
+    return leftPriority.bucket - rightPriority.bucket;
+  }
+
+  if (leftPriority.seconds !== rightPriority.seconds) {
+    return leftPriority.seconds - rightPriority.seconds;
+  }
+
+  return (
+    (orderLookup.get(left.id) ?? Number.MAX_SAFE_INTEGER) -
+    (orderLookup.get(right.id) ?? Number.MAX_SAFE_INTEGER)
+  );
+}
+
+function getBusArrivalPriority(bus: BusData) {
+  const arrivalInfo = bus.arrivalInfo;
+
+  if (
+    arrivalInfo &&
+    typeof arrivalInfo.seconds === "number" &&
+    typeof arrivalInfo.restCount === "number"
+  ) {
+    return {
+      bucket: 0,
+      seconds: arrivalInfo.seconds,
+    };
+  }
+
+  if (arrivalInfo) {
+    return {
+      bucket: 1,
+      seconds: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
+  return {
+    bucket: 2,
+    seconds: Number.MAX_SAFE_INTEGER,
+  };
 }
 
 function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
@@ -467,52 +611,6 @@ const StopSwitcherDock = styled.div`
   transform: translateY(-100%);
 `;
 
-const StopSwitcherRail = styled.div`
-  max-width: 100%;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 10px 24px rgba(22, 40, 74, 0.14);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  overflow-x: auto;
-  pointer-events: auto;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const StopSwitcherButton = styled.button<{ $selected: boolean }>`
-  border: 0;
-  flex-shrink: 0;
-  min-width: 0;
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  color: ${({ $selected }) => ($selected ? "#ffffff" : "#35506d")};
-  background: ${({ $selected }) =>
-    $selected ? "#1f5fbc" : "rgba(240, 245, 252, 0.92)"};
-  box-shadow: ${({ $selected }) =>
-    $selected ? "0 8px 16px rgba(31, 95, 188, 0.24)" : "none"};
-  transition:
-    background 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
-
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
 const PanelSurface = styled.div<{ $isDesktop: boolean }>`
   background: #ffffff;
   display: flex;
@@ -570,12 +668,20 @@ const PanelHeader = styled.div`
   flex-shrink: 0;
 `;
 
+const PanelHeaderTopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
 const PanelTitle = styled.h2`
   margin: 0;
   font-size: 20px;
   line-height: 1.2;
   color: #20355d;
   word-break: keep-all;
+  min-width: 0;
 `;
 
 const PanelDescription = styled.p`
@@ -585,6 +691,39 @@ const PanelDescription = styled.p`
   color: #516a86;
   white-space: pre-wrap;
   word-break: keep-all;
+`;
+
+const SortSelectWrapper = styled.div`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+`;
+
+const SortSelect = styled.select`
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(133, 164, 210, 0.45);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #35506d;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 8px 30px 8px 12px;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #7da8ea;
+  }
+`;
+
+const SortChevron = styled(ChevronDown)`
+  position: absolute;
+  right: 10px;
+  color: #7a889d;
+  pointer-events: none;
 `;
 
 const RefreshRow = styled.div`
@@ -672,11 +811,11 @@ const BusSection = styled.div`
   gap: 12px;
 `;
 
-const BusSectionHeading = styled.div`
+const BusSectionHeading = styled.div<{ $isRed: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #1f5fbc;
+  color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "#1f5fbc")};
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
@@ -687,7 +826,8 @@ const BusSectionHeading = styled.div`
     flex: 1;
     min-width: 24px;
     height: 1px;
-    background: rgba(31, 95, 188, 0.18);
+    background: ${({ $isRed }) =>
+      $isRed ? "rgba(214, 74, 58, 0.24)" : "rgba(31, 95, 188, 0.18)"};
   }
 `;
 
@@ -784,6 +924,15 @@ const ChevronIcon = styled.span<{ $selected: boolean }>`
   justify-content: center;
   flex-shrink: 0;
   color: ${({ $selected }) => ($selected ? "#5e92f0" : "#8ca0bb")};
+`;
+
+const BusNoticeText = styled.div<{ $hasRouteProgress: boolean }>`
+  color: #4f6482;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: keep-all;
 `;
 
 const StatusText = styled.span<{ $status?: string }>`

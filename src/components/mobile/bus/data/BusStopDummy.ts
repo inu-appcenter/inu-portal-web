@@ -19,6 +19,14 @@ export const BusStopDummy: BusStopData[] = [
     lng: 126.63892065212548,
   },
   {
+    id: "go-school-LOTTEMALL",
+    stopName: "인천대입구역.롯데몰",
+    stopNotice: "※ 롯데몰 앞 정류장에서 바로 탑승할 수 있어요.",
+    busList: ["46"],
+    lat: 37.38399958,
+    lng: 126.6405598,
+  },
+  {
     id: "go-school-BIT3",
     stopName: "지식정보단지역 3번 출구",
     stopNotice: "※ 엘리베이터를 타면 정류장을 쉽게 찾을 수 있어요.",
@@ -47,7 +55,7 @@ export const BusStopDummy: BusStopData[] = [
     stopName: "인천대 공과대학",
     stopNotice:
       "※ 이 곳은 출발지라 도착 정보가 표시되지 않습니다.\n자연대 정류장을 참고해주세요.",
-    busList: ["8", "6-1", "6"],
+    busList: ["8", "6-1", "6", "1301"],
     stopInfoSections: [
       {
         label: "인입 1번출구행",
@@ -56,6 +64,10 @@ export const BusStopDummy: BusStopData[] = [
       {
         label: "지식정보단지역행",
         busList: ["6-1", "6"],
+      },
+      {
+        label: "광역버스",
+        busList: ["1301"],
       },
     ],
     lat: 37.37238638306375,
@@ -66,7 +78,7 @@ export const BusStopDummy: BusStopData[] = [
     stopName: "인천대 자연과학대학",
     stopNotice:
       "※ 오후 4~6시에는 사람이 몰려 버스가 정차하지 않을 수 있어요. 공과대학 정류장 이용을 추천해요.",
-    busList: ["8", "6-1", "6"],
+    busList: ["8", "6-1", "6", "1301"],
     lat: 37.37427959645153,
     lng: 126.63630545656764,
   },

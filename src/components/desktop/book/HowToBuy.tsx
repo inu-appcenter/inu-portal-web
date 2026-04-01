@@ -1,5 +1,4 @@
 import styled from "styled-components";
-// import AiExample from "@/resources/assets/ai/ai-example.svg";
 import howtoBuy from "@/resources/assets/book/howtoBuy.png";
 
 export default function HowToBuy() {

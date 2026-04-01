@@ -22,7 +22,7 @@ import { Notice } from "@/types/notices";
 import findTitleOrCode, {
   findDepartmentHomepageUrl,
 } from "@/utils/findTitleOrCode";
-import { navBarList } from "old/resource/string/navBarList";
+import { navBarList } from "@/resources/strings/navBarList";
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo, tokenInfo } = useUserStore();

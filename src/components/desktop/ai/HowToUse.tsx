@@ -1,5 +1,4 @@
 import styled from "styled-components";
-// import AiExample from "@/resources/assets/ai/ai-example.svg";
 
 export default function HowToUse() {
   return (
