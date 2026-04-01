@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { putMemberDepartment, putMembers } from "@/apis/members";
 import useUserStore from "@/stores/useUserStore";
-import { navBarList } from "old/resource/string/navBarList";
+import { navBarList } from "@/resources/strings/navBarList";
 import DepartmentNoticeSelector from "../../../components/mobile/notice/DepartmentNoticeSelector.tsx";
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
 import { subscribeDepartment } from "@/apis/notices";
