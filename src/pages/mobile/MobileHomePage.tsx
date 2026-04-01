@@ -26,7 +26,7 @@ import {
 import TopPopupNotification from "@/components/common/TopPopupNotification";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
-const PROMO_PROBABILITY = 0.3;
+const PROMO_PROBABILITY = 0.2;
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
