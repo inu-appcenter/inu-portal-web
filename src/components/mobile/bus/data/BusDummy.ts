@@ -78,7 +78,7 @@ export const goSchool_INU1: BusData[] = [
   {
     id: 5,
     number: "46",
-    route: ["인입", "", "", "", "자연대", "공대", "송도캠"],
+    route: ["인입", "롯데몰", "", "", "자연대", "공대", "송도캠"],
     path: [
       { lat: 37.38513, lng: 126.63892 },
       { lat: 37.38557, lng: 126.63939 },
@@ -96,6 +96,34 @@ export const goSchool_INU1: BusData[] = [
     routeId: "164000004",
     sectionLabel: "인입 1번 출구",
     stopId: "go-school-INU1",
+    lastStopId: "164000751",
+    busNotice: `운행시간 | 05:17 ~ 23:38\n배차간격 |  19~31분`,
+  },
+];
+
+export const goSchool_LOTTEMALL: BusData[] = [
+  {
+    id: 18,
+    number: "46",
+    route: ["롯데몰", "", "", "자연대", "공대", "송도캠"],
+    path: [
+      { lat: 37.38513, lng: 126.63892 },
+      { lat: 37.38557, lng: 126.63939 },
+      { lat: 37.38219, lng: 126.64194 },
+      { lat: 37.37617, lng: 126.63763 },
+      { lat: 37.37212, lng: 126.63382 },
+      { lat: 37.37374, lng: 126.63108 },
+    ],
+    stopMarker: [
+      { name: "인입", lat: 37.38513, lng: 126.63892 },
+      { name: "롯데몰", lat: 37.38399958, lng: 126.6405598 },
+      { name: "자연대", lat: 37.37497, lng: 126.63651 },
+      { name: "공대", lat: 37.37318, lng: 126.63481 },
+      { name: "송도캠", lat: 37.37374, lng: 126.63108 },
+    ],
+    routeId: "164000004",
+    sectionLabel: "인천대입구역.롯데몰",
+    stopId: "go-school-LOTTEMALL",
     lastStopId: "164000751",
     busNotice: `운행시간 | 05:17 ~ 23:38\n배차간격 |  19~31분`,
   },
@@ -321,8 +349,38 @@ export const goHome_Nature_INU: BusData[] = [
     ],
     routeId: "165000012",
     sectionLabel: "자연대",
-    stopId: "go-home-dorm",
+    stopId: "go-home-science",
     lastStopId: "164000396",
+    busNotice: `운행시간 | 05:06 ~ 23:07\n배차간격 |  5~13분`,
+  },
+];
+
+export const goHome_Nature_IntercityBuses: BusData[] = [
+  {
+    id: 19,
+    number: "1301",
+    route: ["공대", "자연대", "", "", "", ""],
+    routeNotice: "공대/자연대 → 인천논현 → 부천시청 → 홍대입구",
+
+    path: [
+      { lat: 37.37239, lng: 126.63449 }, //공대
+      { lat: 37.37599, lng: 126.6379 },
+      { lat: 37.39648861286023, lng: 126.65088797201153 },
+      { lat: 37.38229212826008, lng: 126.71997700277508 },
+      { lat: 37.402687002248975, lng: 126.72393318713947 },
+      { lat: 37.504673625638645, lng: 126.76400135163051 },
+      { lat: 37.55686803678284, lng: 126.92377064274741 },
+    ],
+    stopMarker: [
+      { name: "공대", lat: 37.37239, lng: 126.63449 },
+      { name: "자연대", lat: 37.37429, lng: 126.6363 },
+      { name: "정문", lat: 37.37837, lng: 126.63457 },
+      { name: "인입", lat: 37.38514, lng: 126.63892 },
+    ],
+    routeId: "165000150",
+    sectionLabel: "자연대",
+    stopId: "go-home-science",
+    lastStopId: "164000349", //금호아파트 정류장
     busNotice: `운행시간 | 05:06 ~ 23:07\n배차간격 |  5~13분`,
   },
 ];
@@ -385,5 +443,39 @@ export const goHome_Nature_BIT: BusData[] = [
     stopId: "go-home-science",
     lastStopId: "164000380",
     busNotice: `운행시간 | 05:06 ~ 23:03\n배차간격 |  10~13분`,
+  },
+];
+
+export const goHome_Engineering_INU: BusData[] = [
+  {
+    ...goHome_Nature_INU[0],
+    id: 1001,
+    sectionLabel: "공대",
+    stopId: "go-home-engineering",
+  },
+];
+
+export const goHome_Engineering_IntercityBuses: BusData[] = [
+  {
+    ...goHome_Nature_IntercityBuses[0],
+    id: 10011,
+    sectionLabel: "공대",
+    stopId: "go-home-engineering",
+    lastStopId: "164000034", //송도풍림아이원2단지 정류장
+  },
+];
+
+export const goHome_Engineering_BIT: BusData[] = [
+  {
+    ...goHome_Nature_BIT[0],
+    id: 1002,
+    sectionLabel: "공대",
+    stopId: "go-home-engineering",
+  },
+  {
+    ...goHome_Nature_BIT[1],
+    id: 1003,
+    sectionLabel: "공대",
+    stopId: "go-home-engineering",
   },
 ];

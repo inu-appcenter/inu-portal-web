@@ -41,14 +41,21 @@ export default function BusMapPanel({
   const busListRef = useRef<HTMLDivElement | null>(null);
   const busItemRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const previousSnapRef = useRef<string | number | null>(snap);
+  const refreshCooldownTimeoutsRef = useRef<Record<string, number>>({});
   const liveBuses = selectedStop?.supportsLiveArrival ? selectedStop.buses : [];
   const { busArrivalList, isLoading, isFetching, refetch, lastUpdated } =
     useBusArrival(selectedStop?.bstopId ?? "", liveBuses);
-  const [isCooldown, setIsCooldown] = useState(false);
+  const [cooldownsByStopKey, setCooldownsByStopKey] = useState<
+    Record<string, boolean>
+  >({});
   const shouldShowStopSwitcher =
     Boolean(onSelectStop) &&
     (stopOptions.length > 1 ||
       (stopOptions.length === 1 && stopOptions[0]?.label.includes("출구")));
+  const selectedStopCooldownKey = selectedStop?.bstopId ?? selectedStop?.id ?? "";
+  const isSelectedStopCooldown = selectedStopCooldownKey
+    ? Boolean(cooldownsByStopKey[selectedStopCooldownKey])
+    : false;
 
   const displayedBuses = useMemo(() => {
     if (!selectedStop) {
@@ -76,18 +83,49 @@ export default function BusMapPanel({
       .filter((section) => section.buses.length > 0);
   }, [displayedBuses, selectedStop]);
 
+  const startRefreshCooldown = useCallback((stopKey: string) => {
+    if (!stopKey) {
+      return;
+    }
+
+    const existingTimeout = refreshCooldownTimeoutsRef.current[stopKey];
+    if (existingTimeout) {
+      window.clearTimeout(existingTimeout);
+    }
+
+    setCooldownsByStopKey((prev) => ({
+      ...prev,
+      [stopKey]: true,
+    }));
+
+    refreshCooldownTimeoutsRef.current[stopKey] = window.setTimeout(() => {
+      setCooldownsByStopKey((prev) => ({
+        ...prev,
+        [stopKey]: false,
+      }));
+      delete refreshCooldownTimeoutsRef.current[stopKey];
+    }, 10000);
+  }, []);
+
   const handleRefresh = useCallback(() => {
-    if (!selectedStop?.supportsLiveArrival || isCooldown || isFetching) {
+    if (
+      !selectedStop?.supportsLiveArrival ||
+      isSelectedStopCooldown ||
+      isFetching
+    ) {
       return;
     }
 
     refetch();
-    setIsCooldown(true);
-
-    window.setTimeout(() => {
-      setIsCooldown(false);
-    }, 10000);
-  }, [isCooldown, isFetching, refetch, selectedStop?.supportsLiveArrival]);
+    startRefreshCooldown(selectedStopCooldownKey);
+  }, [
+    isFetching,
+    isSelectedStopCooldown,
+    refetch,
+    selectedStop?.supportsLiveArrival,
+    selectedStopCooldownKey,
+    startRefreshCooldown,
+  ]);
 
   const handleBusClick = useCallback(
     (bus: BusData) => {
@@ -163,6 +201,14 @@ export default function BusMapPanel({
   }, [snap]);
 
   useEffect(() => {
+    return () => {
+      Object.values(refreshCooldownTimeoutsRef.current).forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
     const listElement = busListRef.current;
 
     if (!listElement) {
@@ -199,8 +245,8 @@ export default function BusMapPanel({
                 type="button"
                 onClick={handleRefresh}
                 $isFetching={isFetching}
-                $isCooldown={isCooldown}
-                disabled={isCooldown || isFetching}
+                $isCooldown={isSelectedStopCooldown}
+                disabled={isSelectedStopCooldown || isFetching}
               >
                 <RotateCw size={12} />
               </RefreshButton>
@@ -295,6 +341,15 @@ export default function BusMapPanel({
                                   embedded
                                   bus={bus}
                                   bstopId={selectedStop.bstopId ?? ""}
+                                  currentArrival={{
+                                    arrivalInfo: bus.arrivalInfo,
+                                    isFetching,
+                                    lastUpdated,
+                                    refetch,
+                                    isCooldown: isSelectedStopCooldown,
+                                    startCooldown: () =>
+                                      startRefreshCooldown(selectedStopCooldownKey),
+                                  }}
                                 />
                               ) : null}
                             </BusCardItem>

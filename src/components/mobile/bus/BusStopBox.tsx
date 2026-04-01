@@ -81,6 +81,7 @@ export default function BusStopBox({
                         )
                       : navigate(
                           `${ROUTES.BUS.DETAIL}?bstopId=${bstopId}&id=${bus.id}`,
+                          { state: { bus } },
                         )
                   }
                 />

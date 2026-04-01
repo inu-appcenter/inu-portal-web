@@ -3,13 +3,23 @@ import styled, { css, keyframes } from "styled-components";
 import { RotateCw } from "lucide-react";
 import Box from "@/components/common/Box";
 import useBusArrival from "@/hooks/useBusArrival";
-import type { BusData } from "@/types/bus";
+import type { ArrivalInfo, BusData } from "@/types/bus";
 import { getArrivalStationText } from "@/components/mobile/bus/busArrivalDisplay";
+
+interface ControlledCurrentArrival {
+  arrivalInfo?: ArrivalInfo;
+  isFetching: boolean;
+  lastUpdated: Date;
+  refetch: () => void;
+  isCooldown?: boolean;
+  startCooldown?: () => void;
+}
 
 interface BusRouteBarProps {
   bus: BusData;
   bstopId: string;
   embedded?: boolean;
+  currentArrival?: ControlledCurrentArrival;
 }
 
 const BUS_ICON_SRC = "/Bus/busIcon.svg";
@@ -18,20 +28,43 @@ export default function BusRouteBar({
   bus,
   bstopId,
   embedded = false,
+  currentArrival,
 }: BusRouteBarProps) {
   const singleBusList = useMemo(() => [bus], [bus]);
   const {
-    busArrivalList: currentArrivals,
-    refetch: refetchCurrent,
-    isFetching: isFetchingCurrent,
-    lastUpdated,
-  } = useBusArrival(bstopId, singleBusList);
+    busArrivalList: internalCurrentArrivals,
+    refetch: refetchCurrentInternal,
+    isFetching: isFetchingCurrentInternal,
+    lastUpdated: internalLastUpdated,
+  } = useBusArrival(currentArrival ? "" : bstopId, singleBusList);
   const {
     busArrivalList: passArrivals,
     refetch: refetchPass,
     isFetching: isFetchingPass,
   } = useBusArrival(bus.lastStopId ?? "", singleBusList);
-  const [isCooldown, setIsCooldown] = useState(false);
+  const [isLocalCooldown, setIsLocalCooldown] = useState(false);
+
+  const arrivalInfo =
+    currentArrival?.arrivalInfo ??
+    internalCurrentArrivals[0]?.arrivalInfo ??
+    bus.arrivalInfo;
+  const refetchCurrent = currentArrival?.refetch ?? refetchCurrentInternal;
+  const isFetchingCurrent =
+    currentArrival?.isFetching ?? isFetchingCurrentInternal;
+  const lastUpdated = currentArrival?.lastUpdated ?? internalLastUpdated;
+  const isCooldown = currentArrival?.isCooldown ?? isLocalCooldown;
+
+  const startCooldown = useCallback(() => {
+    if (currentArrival?.startCooldown) {
+      currentArrival.startCooldown();
+      return;
+    }
+
+    setIsLocalCooldown(true);
+    window.setTimeout(() => {
+      setIsLocalCooldown(false);
+    }, 10000);
+  }, [currentArrival]);
 
   const handleRefresh = useCallback(() => {
     if (isCooldown || isFetchingCurrent || isFetchingPass) {
@@ -40,20 +73,16 @@ export default function BusRouteBar({
 
     refetchCurrent();
     refetchPass();
-    setIsCooldown(true);
-
-    window.setTimeout(() => {
-      setIsCooldown(false);
-    }, 10000);
+    startCooldown();
   }, [
     isCooldown,
     isFetchingCurrent,
     isFetchingPass,
     refetchCurrent,
     refetchPass,
+    startCooldown,
   ]);
 
-  const arrivalInfo = currentArrivals[0]?.arrivalInfo;
   const passArrival = passArrivals[0]?.arrivalInfo;
   const arrivalStationText = getArrivalStationText(arrivalInfo);
   const restCount = arrivalInfo?.restCount ?? -1;

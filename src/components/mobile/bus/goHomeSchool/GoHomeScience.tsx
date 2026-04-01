@@ -3,6 +3,7 @@ import BusStopHeader from "@/components/mobile/bus/BusStopHeader.tsx";
 import BusStopBox from "@/components/mobile/bus/BusStopBox.tsx";
 import {
   goHome_Nature_BIT,
+  goHome_Nature_IntercityBuses,
   goHome_Nature_INU,
 } from "@/components/mobile/bus/data/BusDummy.ts";
 import BusCircleBox from "@/components/mobile/bus/BusCircleBox.tsx";
@@ -10,6 +11,7 @@ import useBusStopNavigate from "../../../../hooks/useBusStopNavigate.ts";
 
 export default function GoHomeScience() {
   const mobileBusStopNavigate = useBusStopNavigate();
+
   return (
     <PageWrapper>
       <BusStopHeader
@@ -27,6 +29,11 @@ export default function GoHomeScience() {
         busList={goHome_Nature_BIT}
         bstopId={"164000378"}
       />
+      <BusStopBox
+        sectionName="광역버스"
+        busList={goHome_Nature_IntercityBuses}
+        bstopId={"164000378"}
+      />
       <BusStopHeader
         stopName="인천대 공과대학"
         stopNotice={`※ 이 곳은 출발지라 도착 정보가 표시되지 않습니다.\n자연대 정류장을 참고해주세요.`}
@@ -34,6 +41,7 @@ export default function GoHomeScience() {
       />
       <BusCircleBox label="인입 1번출구행" busList={["8"]} />
       <BusCircleBox label="지식정보단지역행" busList={["6-1", "6"]} />
+      <BusCircleBox label="광역버스" busList={["1301"]} />
     </PageWrapper>
   );
 }
