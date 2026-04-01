@@ -6,6 +6,7 @@ import BusUiWelcomeModal from "@/components/mobile/bus/BusUiWelcomeModal";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import BusInteractiveMap from "@/components/mobile/bus/map/BusInteractiveMap";
 import BusMapPanel from "@/components/mobile/bus/map/BusMapPanel";
+import BusStopSwitcher from "@/components/mobile/bus/map/BusStopSwitcher";
 import { BUS_MAP_BOTTOM_SHEET_HEIGHT } from "@/components/mobile/bus/map/busMapSheetConfig";
 import {
   BUS_MAP_FALLBACK_COORD,
@@ -371,6 +372,16 @@ export default function MobileBusMapPage() {
         ) : null}
 
         <MapArea>
+          {isDesktop ? (
+            <DesktopStopSwitcherDock>
+              <BusStopSwitcher
+                options={stopSwitcherOptions}
+                selectedStopId={selectedStop.id}
+                onSelectStop={handleSelectStop}
+              />
+            </DesktopStopSwitcherDock>
+          ) : null}
+
           <BusInteractiveMap
             activeStops={visibleStops}
             selectedStopId={selectedStop.id}
@@ -442,6 +453,20 @@ const MapArea = styled.div`
       0 20px 40px rgba(35, 60, 115, 0.08),
       0 4px 12px rgba(35, 60, 115, 0.06);
     border: 1px solid rgba(64, 113, 185, 0.1);
+  }
+`;
+
+const DesktopStopSwitcherDock = styled.div`
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  display: flex;
+  max-width: min(calc(100% - 40px), 420px);
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
   }
 `;
 

@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-// import AiExample from "@/resources/assets/ai/ai-example.svg";
 import howtofind from "@/resources/assets/lost/howtofind.png";
 
 export default function HowToFind() {

@@ -3,6 +3,7 @@ import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
+import { ROUTES } from "@/constants/routes";
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
 import {
@@ -42,12 +43,18 @@ export default function SubLayout({
   const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader);
   const headerHeight = showHeader ? measuredHeaderHeight : 20;
   const navHeight = showNav ? 100 : 40;
+  const fillsViewportOnDesktop =
+    location.pathname === ROUTES.BUS.INFO ||
+    location.pathname === ROUTES.BOARD.CAMPUS;
 
   return (
-    <LayoutContainer id="app-scroll-view">
-      <ContentShell>
+    <LayoutContainer
+      id="app-scroll-view"
+      $fillsViewportOnDesktop={fillsViewportOnDesktop}
+    >
+      <ContentShell $fillsViewportOnDesktop={fillsViewportOnDesktop}>
         {showHeader && (
-          <HeaderFloating>
+          <HeaderFloating $fillsViewportOnDesktop={fillsViewportOnDesktop}>
             <MobileHeader
               ref={headerRef}
               contained
@@ -56,7 +63,11 @@ export default function SubLayout({
           </HeaderFloating>
         )}
 
-        <ContentArea $pt={headerHeight} $pb={navHeight}>
+        <ContentArea
+          $pt={headerHeight}
+          $pb={navHeight}
+          $fillsViewportOnDesktop={fillsViewportOnDesktop}
+        >
           {outlet}
         </ContentArea>
       </ContentShell>
@@ -70,33 +81,76 @@ export default function SubLayout({
   );
 }
 
-const LayoutContainer = styled.div`
+const LayoutContainer = styled.div<{ $fillsViewportOnDesktop: boolean }>`
   width: 100%;
   min-height: 100vh;
   position: relative;
   background-color: #f1f1f3;
   margin: 0 auto;
+
+  @media ${DESKTOP_MEDIA} {
+    ${({ $fillsViewportOnDesktop }) =>
+      $fillsViewportOnDesktop
+        ? `
+          height: 100dvh;
+          min-height: 0;
+          overflow: hidden;
+        `
+        : ""}
+  }
 `;
 
-const ContentShell = styled.div`
+const ContentShell = styled.div<{ $fillsViewportOnDesktop: boolean }>`
   position: relative;
   min-height: 100vh;
+
+  @media ${DESKTOP_MEDIA} {
+    ${({ $fillsViewportOnDesktop }) =>
+      $fillsViewportOnDesktop
+        ? `
+          height: 100%;
+          min-height: 0;
+          overflow: hidden;
+        `
+        : ""}
+  }
 `;
 
-const ContentArea = styled.div<{ $pt: number; $pb: number }>`
+const ContentArea = styled.div<{
+  $pt: number;
+  $pb: number;
+  $fillsViewportOnDesktop: boolean;
+}>`
   padding-top: ${(props) => props.$pt}px;
   padding-bottom: ${(props) => props.$pb}px;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
     margin: 0 auto;
     padding-left: ${DESKTOP_GUTTER};
     padding-right: ${DESKTOP_GUTTER};
-    box-sizing: border-box;
+    ${({ $fillsViewportOnDesktop }) =>
+      $fillsViewportOnDesktop
+        ? `
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          padding-top: 0;
+          padding-bottom: 0;
+
+          & > * {
+            flex: 1;
+            min-height: 0;
+          }
+        `
+        : ""}
   }
 `;
 
-const HeaderFloating = styled.div`
+const HeaderFloating = styled.div<{ $fillsViewportOnDesktop: boolean }>`
   position: fixed;
   top: 0;
   left: 50%;
@@ -106,10 +160,26 @@ const HeaderFloating = styled.div`
   pointer-events: none;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
-    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
-    padding: 0 ${DESKTOP_GUTTER};
-    box-sizing: border-box;
+    ${({ $fillsViewportOnDesktop }) =>
+      $fillsViewportOnDesktop
+        ? `
+          position: relative;
+          top: auto;
+          left: auto;
+          transform: none;
+          width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+          max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+          margin: 0 auto;
+          padding: 0 ${DESKTOP_GUTTER};
+          box-sizing: border-box;
+          flex-shrink: 0;
+        `
+        : `
+          width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+          max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+          padding: 0 ${DESKTOP_GUTTER};
+          box-sizing: border-box;
+        `}
   }
 `;
 

@@ -155,6 +155,13 @@ const BusInfoPageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   padding-bottom: 100px;
+
+  @media ${DESKTOP_MEDIA} {
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
 `;
 
 const ContentWrapper = styled.div`
@@ -164,6 +171,9 @@ const ContentWrapper = styled.div`
   flex-direction: column;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 8px 0 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px 0 20px;
   }
 `;
