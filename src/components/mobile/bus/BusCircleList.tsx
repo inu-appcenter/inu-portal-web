@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import BusCircle from "@/components/mobile/bus/BusCircle";
+import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
 
 interface Props {
   busList: string[];
@@ -10,11 +11,7 @@ export default function BusCircleList({ busList }: Props) {
     <BusCircleListWrapper>
       <CircleList>
         {busList.map((num, index) => (
-          <BusCircle
-            key={index}
-            number={num}
-            isGreen={num === "41" || num === "46"}
-          />
+          <BusCircle key={index} number={num} tone={getBusCircleTone(num)} />
         ))}
       </CircleList>
     </BusCircleListWrapper>

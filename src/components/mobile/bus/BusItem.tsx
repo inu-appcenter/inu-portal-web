@@ -4,6 +4,7 @@ import BusCircle from "./BusCircle.tsx";
 import Box from "@/components/common/Box";
 import { FiChevronRight } from "react-icons/fi";
 import { getArrivalStationText } from "@/components/mobile/bus/busArrivalDisplay";
+import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
 
 interface BusItemProps extends BusData {
   onClick?: () => void;
@@ -29,10 +30,7 @@ export default function BusItem({
           )}
         </TopSection>
         <MainSection>
-          <BusCircle
-            number={number}
-            isGreen={number === "41" || number === "46"}
-          />
+          <BusCircle number={number} tone={getBusCircleTone(number)} />
           {arrivalInfo && (
             <TimeInfo>
               <ArrivalWrapper>

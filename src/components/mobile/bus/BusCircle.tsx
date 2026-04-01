@@ -1,18 +1,32 @@
 import styled from "styled-components";
 
+import type { BusCircleTone } from "@/components/mobile/bus/busCircleTone";
+
 interface BusCircleProps {
   number: string;
-  isGreen?: boolean;
+  tone?: BusCircleTone;
 }
 
-export default function BusCircle({ number, isGreen }: BusCircleProps) {
-  return <Circle $isGreen={isGreen}>{number}</Circle>;
+export default function BusCircle({
+  number,
+  tone = "default",
+}: BusCircleProps) {
+  return <Circle $tone={tone}>{number}</Circle>;
 }
 
-const Circle = styled.div<{ $isGreen?: boolean }>`
+const Circle = styled.div<{ $tone: BusCircleTone }>`
   //background-color: #ffffff;
   //box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.15);
-  color: ${(props) => (props.$isGreen ? "#2c9b37" : "#1b4e9b")};
+  color: ${({ $tone }) => {
+    switch ($tone) {
+      case "green":
+        return "#2c9b37";
+      case "red":
+        return "#d64a3a";
+      default:
+        return "#1b4e9b";
+    }
+  }};
   width: fit-content;
   min-width: fit-content;
   height: 40px;

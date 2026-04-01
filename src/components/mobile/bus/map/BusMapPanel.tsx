@@ -13,6 +13,8 @@ import { ROUTES } from "@/constants/routes";
 import type { BusData } from "@/types/bus";
 import type { BusMapStop } from "@/components/mobile/bus/data/busMapConfig";
 import { getArrivalStationText } from "@/components/mobile/bus/busArrivalDisplay";
+import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
+import { isRedBusSectionLabel } from "@/components/mobile/bus/busCircleTone";
 
 interface BusMapPanelProps {
   isDesktop?: boolean;
@@ -52,7 +54,8 @@ export default function BusMapPanel({
     Boolean(onSelectStop) &&
     (stopOptions.length > 1 ||
       (stopOptions.length === 1 && stopOptions[0]?.label.includes("출구")));
-  const selectedStopCooldownKey = selectedStop?.bstopId ?? selectedStop?.id ?? "";
+  const selectedStopCooldownKey =
+    selectedStop?.bstopId ?? selectedStop?.id ?? "";
   const isSelectedStopCooldown = selectedStopCooldownKey
     ? Boolean(cooldownsByStopKey[selectedStopCooldownKey])
     : false;
@@ -265,7 +268,11 @@ export default function BusMapPanel({
                   ? selectedStop.busSections.map((section) => (
                       <BusSection key={section.id}>
                         {section.label ? (
-                          <BusSectionHeading>{section.label}</BusSectionHeading>
+                          <BusSectionHeading
+                            $isRed={isRedBusSectionLabel(section.label)}
+                          >
+                            {section.label}
+                          </BusSectionHeading>
                         ) : null}
                         {Array.from({
                           length: Math.max(section.buses.length, 1),
@@ -279,7 +286,11 @@ export default function BusMapPanel({
                   : displayedBusSections.map((section) => (
                       <BusSection key={section.id}>
                         {section.label ? (
-                          <BusSectionHeading>{section.label}</BusSectionHeading>
+                          <BusSectionHeading
+                            $isRed={isRedBusSectionLabel(section.label)}
+                          >
+                            {section.label}
+                          </BusSectionHeading>
                         ) : null}
                         {section.buses.map((bus) => {
                           const isSelected = selectedBusId === bus.id;
@@ -287,6 +298,8 @@ export default function BusMapPanel({
                             bus,
                             selectedStop.supportsLiveArrival,
                           );
+                          const showBusNotice =
+                            isSelected && Boolean(bus.busNotice);
                           const canShowRouteProgress =
                             isSelected &&
                             selectedStop.supportsLiveArrival &&
@@ -309,10 +322,7 @@ export default function BusMapPanel({
                                   <BusMainRow>
                                     <BusCircle
                                       number={bus.number}
-                                      isGreen={
-                                        bus.number === "41" ||
-                                        bus.number === "46"
-                                      }
+                                      tone={getBusCircleTone(bus.number)}
                                     />
                                     <ArrivalInfo>
                                       <ArrivalWrapper>
@@ -336,6 +346,14 @@ export default function BusMapPanel({
                                 </ChevronIcon>
                               </BusCardButton>
 
+                              {showBusNotice ? (
+                                <BusNoticeText
+                                  $hasRouteProgress={canShowRouteProgress}
+                                >
+                                  {bus.busNotice}
+                                </BusNoticeText>
+                              ) : null}
+
                               {canShowRouteProgress ? (
                                 <BusRouteBar
                                   embedded
@@ -348,7 +366,9 @@ export default function BusMapPanel({
                                     refetch,
                                     isCooldown: isSelectedStopCooldown,
                                     startCooldown: () =>
-                                      startRefreshCooldown(selectedStopCooldownKey),
+                                      startRefreshCooldown(
+                                        selectedStopCooldownKey,
+                                      ),
                                   }}
                                 />
                               ) : null}
@@ -727,11 +747,11 @@ const BusSection = styled.div`
   gap: 12px;
 `;
 
-const BusSectionHeading = styled.div`
+const BusSectionHeading = styled.div<{ $isRed: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #1f5fbc;
+  color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "#1f5fbc")};
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
@@ -742,7 +762,8 @@ const BusSectionHeading = styled.div`
     flex: 1;
     min-width: 24px;
     height: 1px;
-    background: rgba(31, 95, 188, 0.18);
+    background: ${({ $isRed }) =>
+      $isRed ? "rgba(214, 74, 58, 0.24)" : "rgba(31, 95, 188, 0.18)"};
   }
 `;
 
@@ -839,6 +860,15 @@ const ChevronIcon = styled.span<{ $selected: boolean }>`
   justify-content: center;
   flex-shrink: 0;
   color: ${({ $selected }) => ($selected ? "#5e92f0" : "#8ca0bb")};
+`;
+
+const BusNoticeText = styled.div<{ $hasRouteProgress: boolean }>`
+  color: #4f6482;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: keep-all;
 `;
 
 const StatusText = styled.span<{ $status?: string }>`
