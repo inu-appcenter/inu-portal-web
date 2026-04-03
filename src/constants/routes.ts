@@ -19,6 +19,7 @@ export const ROUTES = {
   //전화번호부
   PHONEBOOK: {
     ROOT: "/phonebook",
+    SEARCH: "/phonebook/search",
   },
 
   // 마이페이지

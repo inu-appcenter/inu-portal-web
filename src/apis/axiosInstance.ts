@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://portal.inuappcenter.kr/",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 // 응답 인터셉터
