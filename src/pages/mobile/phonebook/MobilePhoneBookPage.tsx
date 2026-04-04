@@ -21,8 +21,8 @@ import {
 
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
-const BANNER_STAGE_GAP = "24px";
-const BANNER_TEXT_REVEAL_DELAY_MS = 850; 
+const BANNER_STAGE_GAP = "20px";
+const BANNER_TEXT_REVEAL_DELAY_MS = 820;
 const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 
 const MobilePhoneBookPage = () => {
@@ -98,13 +98,14 @@ const MobilePhoneBookPage = () => {
     <MobilePhoneBookPageWrapper>
       <HeroSection>
         <HeroBannerColumn>
-          <Box style={{ width: "100%", maxWidth: "500px", padding: 0, overflow: "hidden" }}>
+          <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
               <BannerStage $isShifted={isBannerShifted}>
                 <BannerVisual
-                  layout /* 레이아웃 변경 애니메이션 */
+                  layout="position"
                   transition={{
-                    layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
+                    duration: 0.82,
+                    ease: [0.22, 1, 0.36, 1],
                   }}
                 >
                   <BannerVideo
@@ -126,14 +127,15 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                <LogoInfo $isShifted={isBannerShifted}>
-                  <AnimatePresence>
-                    {isBannerTextVisible && (
-                      <LogoInfoContent
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                      >
+                <AnimatePresence>
+                  {isBannerTextVisible && (
+                    <LogoInfo
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <LogoInfoContent>
                         <p className="sub-text">우리 학교 연락처 앱</p>
                         <h2 className="main-title">
                           <span>Callin U</span>가{" "}
@@ -143,9 +145,9 @@ const MobilePhoneBookPage = () => {
                         </h2>
                         <p className="sub-text">원하는 연락처를 검색해보세요</p>
                       </LogoInfoContent>
-                    )}
-                  </AnimatePresence>
-                </LogoInfo>
+                    </LogoInfo>
+                  )}
+                </AnimatePresence>
               </BannerStage>
             </BannerSection>
           </Box>
@@ -248,7 +250,9 @@ const BannerSection = styled.div`
   display: flex;
   width: 100%;
   height: ${BANNER_SECTION_HEIGHT};
-  background: #fff;
+  /* Box 내부 패딩 유지 */
+  padding: 16px 0; 
+  box-sizing: content-box;
 `;
 
 const BannerStage = styled.div<{ $isShifted: boolean }>`
@@ -256,10 +260,12 @@ const BannerStage = styled.div<{ $isShifted: boolean }>`
   width: 100%;
   height: 100%;
   align-items: center;
-  /* 재생 전 정중앙, 종료 후 왼쪽 정렬 */
+  /* 재생 전 정중앙 배치 */
   justify-content: ${(props) => (props.$isShifted ? "flex-start" : "center")};
-  padding: ${(props) => (props.$isShifted ? `0 ${BANNER_STAGE_GAP}` : "0")};
-  transition: padding 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  /* 이동 완료 후 좌측 여백 제공 */
+  padding-left: ${(props) => (props.$isShifted ? "20px" : "0")};
+  gap: ${(props) => (props.$isShifted ? BANNER_STAGE_GAP : "0")};
+  transition: padding-left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
 `;
 
@@ -274,8 +280,6 @@ const BannerVisual = styled(motion.div)`
   position: relative;
   display: flex;
   justify-content: center;
-
-  /* 그림자 제거 완료 */
 
   &::after {
     content: "";
@@ -299,24 +303,20 @@ const BannerVideo = styled.video`
   object-position: center bottom;
 `;
 
-const LogoInfo = styled.div<{ $isShifted: boolean }>`
-  /* 재생 중 너비 0으로 중앙 유지, 종료 후 공간 확장 */
-  flex: ${(props) => (props.$isShifted ? "1" : "0")};
-  width: ${(props) => (props.$isShifted ? "auto" : "0px")};
-  opacity: ${(props) => (props.$isShifted ? "1" : "0")};
+const LogoInfo = styled(motion.div)`
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   min-width: 0;
+  max-width: 280px;
   overflow: hidden;
-  margin-left: ${(props) => (props.$isShifted ? "12px" : "0px")};
 `;
 
-const LogoInfoContent = styled(motion.div)`
+const LogoInfoContent = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  white-space: nowrap;
 
   .sub-text {
     font-size: 13px;
