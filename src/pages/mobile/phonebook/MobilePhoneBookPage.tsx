@@ -102,10 +102,11 @@ const MobilePhoneBookPage = () => {
             <BannerSection>
               <BannerStage $isShifted={isBannerShifted}>
                 <BannerVisual
-                  layout
+                  layout /* 레이아웃 애니메이션 활성화 */
                   transition={{
                     layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
                   }}
+                  $isShifted={isBannerShifted}
                 >
                   <BannerVideo
                     ref={bannerVideoRef}
@@ -126,7 +127,7 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                <LogoInfo>
+                <LogoInfo $isShifted={isBannerShifted}>
                   <AnimatePresence>
                     {isBannerTextVisible && (
                       <LogoInfoContent
@@ -258,16 +259,22 @@ const BannerStage = styled.div<{ $isShifted: boolean }>`
   display: flex;
   width: 100%;
   height: 100%;
-  /* 상태 기반 정렬 변경 */
+  /* 재생 중 중앙 정렬, 종료 후 evenly 배치 */
   justify-content: ${(props) => (props.$isShifted ? "space-evenly" : "center")};
   align-items: center;
-  gap: ${BANNER_STAGE_GAP};
+  gap: ${(props) => (props.$isShifted ? BANNER_STAGE_GAP : "0px")};
+  position: relative;
 `;
 
-const BannerVisual = styled(motion.div)`
+const BannerVisual = styled(motion.div)<{ $isShifted: boolean }>`
   /* Flex 아이템화 */
   flex-shrink: 0;
   height: 100%;
+  /* 재생 중 중앙 위치 사수, 종료 후 폭 축소 */
+  flex-basis: ${(props) => (props.$isShifted ? "auto" : "100%")};
+  display: flex;
+  justify-content: center; /* 중앙 정렬 유지 */
+  
   background: #fff;
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
@@ -297,14 +304,17 @@ const BannerVideo = styled.video`
   object-position: center bottom;
 `;
 
-const LogoInfo = styled.div`
-  /* 가용 공간 최대 점유 */
-  flex: 1;
+const LogoInfo = styled.div<{ $isShifted: boolean }>`
+  /* 재생 중 미노출, 종료 후 남은 공간 점유 */
+  flex: ${(props) => (props.$isShifted ? "1" : "0")};
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  min-width: 150px;
+  /* 폭 보장 및 최대치 제한 */
+  min-width: ${(props) => (props.$isShifted ? "150px" : "0px")};
   max-width: 300px;
+  overflow: hidden;
+  transition: flex 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const LogoInfoContent = styled(motion.div)`
