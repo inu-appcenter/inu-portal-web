@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -10,13 +11,22 @@ import {
   MIN_PHONEBOOK_QUERY_LENGTH,
   PHONEBOOK_MIN_QUERY_MESSAGE,
 } from "@/pages/mobile/phonebook/phonebookConfig";
+import callinuBannerVideo from "@/resources/assets/phonebook/callinu-banner.mp4";
 import callinuBanner from "@/resources/assets/phonebook/callinu-banner.webp";
-import callinuLogo from "@/resources/assets/phonebook/callinu-logo.webp";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+
+const BANNER_SECTION_HEIGHT_MOBILE = "180px";
+const BANNER_SECTION_HEIGHT_DESKTOP = "220px";
+const BANNER_PHONE_RADIUS = "10px";
+const BANNER_STAGE_GAP = "16px";
+const BANNER_TEXT_WIDTH = "clamp(140px, 60vw, 220px)";
+const BANNER_STAGE_SHIFT = `calc((${BANNER_TEXT_WIDTH} + ${BANNER_STAGE_GAP}) / 2)`;
+const BANNER_TEXT_REVEAL_DELAY_MS = 820;
+const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 
 const MobilePhoneBookPage = () => {
   const navigate = useNavigate();
@@ -25,11 +35,64 @@ const MobilePhoneBookPage = () => {
     () => new URLSearchParams(location.search),
     [location.search],
   );
+  const bannerVideoRef = useRef<HTMLVideoElement | null>(null);
   const [inputValue, setInputValue] = useState(searchParams.get("query") ?? "");
+  const [isBannerShifted, setIsBannerShifted] = useState(false);
+  const [isBannerTextVisible, setIsBannerTextVisible] = useState(false);
 
   useEffect(() => {
     setInputValue(searchParams.get("query") ?? "");
   }, [searchParams]);
+
+  useEffect(() => {
+    const bannerVideo = bannerVideoRef.current;
+
+    if (!bannerVideo) {
+      return;
+    }
+
+    setIsBannerShifted(false);
+    setIsBannerTextVisible(false);
+
+    const startPlayback = () => {
+      bannerVideo.pause();
+
+      try {
+        bannerVideo.currentTime = 0;
+      } catch {
+        return;
+      }
+
+      void bannerVideo.play().catch(() => {
+        setIsBannerShifted(true);
+      });
+    };
+
+    if (bannerVideo.readyState >= 2) {
+      startPlayback();
+      return;
+    }
+
+    bannerVideo.addEventListener("loadeddata", startPlayback, { once: true });
+
+    return () => {
+      bannerVideo.removeEventListener("loadeddata", startPlayback);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isBannerShifted) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsBannerTextVisible(true);
+    }, BANNER_TEXT_REVEAL_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isBannerShifted]);
 
   const handleSearchSubmit = () => {
     const nextQuery = inputValue.trim();
@@ -55,68 +118,105 @@ const MobilePhoneBookPage = () => {
     hasback: true,
   });
 
+  const handleBannerPlaybackEnd = () => {
+    setIsBannerShifted(true);
+  };
+
   return (
     <MobilePhoneBookPageWrapper>
-      <Box>
-        <BannerSection>
-          <BannerImage src={callinuBanner} alt="Callin U" />
-        </BannerSection>
-      </Box>
+      <HeroSection>
+        <HeroBannerColumn>
+          <Box style={{ width: "100%", maxWidth: "500px" }}>
+            <BannerSection>
+              <BannerStage $isRevealed={isBannerShifted}>
+                <BannerVisual $isRevealed={isBannerShifted}>
+                  <BannerVideo
+                    ref={bannerVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    preload="auto"
+                    poster={callinuBanner}
+                    controls={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                    aria-label="Callin U"
+                    onEnded={handleBannerPlaybackEnd}
+                    onError={handleBannerPlaybackEnd}
+                  >
+                    <source src={callinuBannerVideo} type="video/mp4" />
+                  </BannerVideo>
+                </BannerVisual>
 
-      <DescriptionSection>
-        <LogoInfo>
-          <LogoIcon src={callinuLogo} alt="INTIP" />
-          <div className="text-group">
-            <p className="sub-text">우리 학교 연락처를</p>
-            <h2 className="main-title">
-              <span>Callin U</span>가 <span className="highlight">INTIP</span>
-              으로 찾아왔어요
-            </h2>
-            <p className="sub-text">원하는 연락처를 검색해보세요</p>
-          </div>
-        </LogoInfo>
+                <LogoInfo>
+                  {isBannerTextVisible ? (
+                    <LogoInfoContent
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.42,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                    >
+                      <p className="sub-text">우리 학교 연락처 앱</p>
+                      <h2 className="main-title">
+                        <span>Callin U</span>가{" "}
+                        <span className="highlight">INTIP</span>
+                        으로 돌아왔어요
+                      </h2>
+                      <p className="sub-text">원하는 연락처를 검색해보세요</p>
+                    </LogoInfoContent>
+                  ) : null}
+                </LogoInfo>
+              </BannerStage>
+            </BannerSection>
+          </Box>
+        </HeroBannerColumn>
 
-        <GuideList>
-          <GuideItem>
-            <span className="number">1.</span>
-            <div className="content">
-              <h3>
-                <strong>내선번호</strong>로 검색해보세요
-              </h3>
-              <p>
-                우리 학교 전화번호는 032-835-[내선번호] 형식으로 찾을 수
-                있어요.
-              </p>
-            </div>
-          </GuideItem>
+        <DescriptionSection>
+          <GuideList>
+            <GuideItem>
+              <span className="number">1.</span>
+              <div className="content">
+                <h3>
+                  <strong>내선번호</strong>로 검색해보세요
+                </h3>
+                <p>
+                  우리 학교 전화번호는 032-835-<strong>[내선번호]</strong>{" "}
+                  형식으로 찾을 수 있어요.
+                </p>
+              </div>
+            </GuideItem>
 
-          <GuideItem>
-            <span className="number">2.</span>
-            <div className="content">
-              <h3>
-                <strong>이름, 소속, 직위</strong>로 검색해보세요
-              </h3>
-              <p>
-                교직원·교수 정보는 이름, 소속, 상세소속, 직위, 담당업무,
-                이메일로 찾을 수 있어요.
-              </p>
-            </div>
-          </GuideItem>
+            <GuideItem>
+              <span className="number">2.</span>
+              <div className="content">
+                <h3>
+                  <strong>이름, 소속, 직위</strong>로 검색해보세요
+                </h3>
+                <p>
+                  교직원·교수 정보는 이름, 소속, 상세소속, 직위, 담당업무,
+                  이메일로 찾을 수 있어요.
+                </p>
+              </div>
+            </GuideItem>
 
-          <GuideItem>
-            <span className="number">3.</span>
-            <div className="content">
-              <h3>
-                <strong>학과명 또는 위치</strong>로 검색해보세요
-              </h3>
-              <p>
-                학과사무실 전화번호, 위치, 홈페이지, 단과대학 정보까지 함께
-                찾을 수 있어요.
-              </p>
-            </div>
-          </GuideItem>
-        </GuideList>
-      </DescriptionSection>
+            <GuideItem>
+              <span className="number">3.</span>
+              <div className="content">
+                <h3>
+                  <strong>학과명</strong>으로 검색해보세요
+                </h3>
+                <p>
+                  학과사무실 전화번호, 위치, 홈페이지, 단과대학 정보까지 함께
+                  찾을 수 있어요.
+                </p>
+              </div>
+            </GuideItem>
+          </GuideList>
+        </DescriptionSection>
+      </HeroSection>
 
       <SearchSpacer />
 
@@ -125,7 +225,7 @@ const MobilePhoneBookPage = () => {
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearchSubmit}
-          placeholder="이름, 소속, 학과명, 위치, 전화번호를 검색해보세요"
+          placeholder="검색어를 입력해주세요"
         />
       </FloatingSearchBar>
     </MobilePhoneBookPageWrapper>
@@ -140,6 +240,7 @@ const MobilePhoneBookPageWrapper = styled.div`
   gap: 24px;
   padding: 12px ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
+  align-items: center;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
@@ -148,38 +249,164 @@ const MobilePhoneBookPageWrapper = styled.div`
   }
 `;
 
+const HeroSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 24px;
+  width: 100%;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: minmax(0, 500px) minmax(0, 500px);
+    align-items: center;
+    //gap: 24px;
+  }
+`;
+
+const HeroBannerColumn = styled.div`
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
+`;
+
 const BannerSection = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   width: 100%;
+  height: ${BANNER_SECTION_HEIGHT_MOBILE};
+  overflow: visible;
+
+  @media ${DESKTOP_MEDIA} {
+    height: ${BANNER_SECTION_HEIGHT_DESKTOP};
+  }
 `;
 
-const BannerImage = styled.img`
-  width: 100px;
-  max-width: 200px;
-  height: auto;
+const BannerStage = styled.div<{ $isRevealed: boolean }>`
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  max-width: 100%;
+  min-width: 0;
+  gap: ${BANNER_STAGE_GAP};
+  transform: ${(props) =>
+    props.$isRevealed ? "translateX(0)" : `translateX(${BANNER_STAGE_SHIFT})`};
+  transition: transform 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+
+  @media ${DESKTOP_MEDIA} {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: none;
+    transform: none;
+    transition: none;
+  }
+`;
+
+const BannerVisual = styled.div<{ $isRevealed: boolean }>`
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+  width: fit-content;
+  height: 100%;
+  background: #fff;
+  border-top-left-radius: ${BANNER_PHONE_RADIUS};
+  border-top-right-radius: ${BANNER_PHONE_RADIUS};
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+
+  @media ${DESKTOP_MEDIA} {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: ${(props) => (props.$isRevealed ? "25%" : "50%")};
+    transform: translateX(-50%);
+    transition: left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-top: 3px solid #111;
+    border-left: 3px solid #111;
+    border-right: 3px solid #111;
+    border-top-left-radius: ${BANNER_PHONE_RADIUS};
+    border-top-right-radius: ${BANNER_PHONE_RADIUS};
+    pointer-events: none;
+    box-sizing: border-box;
+  }
+`;
+
+const BannerVideo = styled.video`
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+  background: transparent;
+
+  &::-webkit-media-controls {
+    display: none !important;
+  }
+
+  &::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
 `;
 
 const DescriptionSection = styled.div`
   padding: 0 20px;
+
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+    padding: 0;
+    max-width: none;
+  }
 `;
 
 const LogoInfo = styled.div`
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 32px;
+  flex: 0 0 ${BANNER_TEXT_WIDTH};
+  align-self: center;
+  align-items: center;
+  justify-content: flex-start;
+  width: ${BANNER_TEXT_WIDTH};
+  min-width: 0;
+  overflow: hidden;
 
-  .text-group {
-    display: flex;
-    flex-direction: column;
+  @media ${DESKTOP_MEDIA} {
+    position: absolute;
+    top: 50%;
+    left: 75%;
+    transform: translate(-50%, -50%);
+    width: min(${BANNER_TEXT_WIDTH}, calc(50% - 24px));
   }
+`;
+
+const LogoInfoContent = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
 
   .sub-text {
     font-size: 14px;
     color: #666;
     margin: 0;
+    text-wrap: balance;
   }
 
   .main-title {
@@ -188,6 +415,8 @@ const LogoInfo = styled.div`
     color: #333;
     line-height: 1.4;
     margin: 0;
+    word-break: keep-all;
+    text-wrap: balance;
 
     span {
       font-weight: 700;
@@ -200,15 +429,14 @@ const LogoInfo = styled.div`
   }
 `;
 
-const LogoIcon = styled.img`
-  width: 54px;
-  height: 54px;
-`;
-
 const GuideList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media ${DESKTOP_MEDIA} {
+    gap: 24px;
+  }
 `;
 
 const GuideItem = styled.div`
@@ -227,6 +455,7 @@ const GuideItem = styled.div`
       font-size: 16px;
       color: #333;
       margin: 0 0 4px;
+      font-weight: 500;
 
       strong {
         font-weight: 700;
@@ -254,6 +483,6 @@ const FloatingSearchBar = styled.div`
   z-index: 120;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(calc(100% - 48px), ${DESKTOP_CONTENT_MAX_WIDTH});
+    width: min(calc(100% - 48px), ${DESKTOP_SEARCH_BAR_MAX_WIDTH});
   }
 `;

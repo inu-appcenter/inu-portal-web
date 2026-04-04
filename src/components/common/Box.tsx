@@ -29,5 +29,5 @@ const BoxWrapper = styled.div`
 
   border-radius: 20px;
   background: #fff;
-  box-shadow: ${SOFT_CARD_SHADOW};
+  //box-shadow: ${SOFT_CARD_SHADOW};
 `;
