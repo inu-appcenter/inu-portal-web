@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -38,7 +38,7 @@ const MobilePhoneBookPage = () => {
   const [isBannerTextVisible, setIsBannerTextVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  /* 초기 렌더링 애니메이션 차단 방어 로직 */
+  /* 초기 마운트 시 애니메이션 차단 */
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsMounted(true);
@@ -107,58 +107,70 @@ const MobilePhoneBookPage = () => {
     <MobilePhoneBookPageWrapper>
       <HeroSection>
         <HeroBannerColumn>
-          {/* Box 패딩 원상 복구 */}
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
-              <BannerStage $isShifted={isBannerShifted}>
-                <BannerVisual
-                  /* isMounted 상태로 초기 위에서 아래로 내려오는 버그 원천 차단 */
-                  layout={isMounted}
+              <LayoutGroup>
+                <BannerStage 
+                  layout 
+                  $isShifted={isBannerShifted}
                   transition={{
-                    layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
+                    layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] }
                   }}
                 >
-                  <BannerVideo
-                    ref={bannerVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    preload="auto"
-                    poster={callinuBanner}
-                    controls={false}
-                    disablePictureInPicture
-                    disableRemotePlayback
-                    controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
-                    aria-label="Callin U"
-                    onEnded={handleBannerPlaybackEnd}
-                    onError={handleBannerPlaybackEnd}
+                  <BannerVisual
+                    layout={isMounted}
+                    transition={{
+                      layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
+                    }}
                   >
-                    <source src={callinuBannerVideo} type="video/mp4" />
-                  </BannerVideo>
-                </BannerVisual>
+                    <BannerVideo
+                      ref={bannerVideoRef}
+                      autoPlay
+                      muted
+                      playsInline
+                      preload="auto"
+                      poster={callinuBanner}
+                      controls={false}
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                      aria-label="Callin U"
+                      onEnded={handleBannerPlaybackEnd}
+                      onError={handleBannerPlaybackEnd}
+                    >
+                      <source src={callinuBannerVideo} type="video/mp4" />
+                    </BannerVideo>
+                  </BannerVisual>
 
-                <LogoInfo $isShifted={isBannerShifted}>
-                  <AnimatePresence>
-                    {isBannerTextVisible && (
-                      <LogoInfoContent
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                      >
-                        <p className="sub-text">우리 학교 연락처 앱</p>
-                        <h2 className="main-title">
-                          <span>Callin U</span>가{" "}
-                          <span className="highlight">INTIP</span>으로
-                          <br />
-                          돌아왔어요
-                        </h2>
-                        <p className="sub-text">원하는 연락처를 검색해보세요</p>
-                      </LogoInfoContent>
-                    )}
-                  </AnimatePresence>
-                </LogoInfo>
-              </BannerStage>
+                  <LogoInfo 
+                    layout 
+                    $isShifted={isBannerShifted}
+                    transition={{
+                      layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] }
+                    }}
+                  >
+                    <AnimatePresence>
+                      {isBannerTextVisible && (
+                        <LogoInfoContent
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <p className="sub-text">우리 학교 연락처 앱</p>
+                          <h2 className="main-title">
+                            <span>Callin U</span>가{" "}
+                            <span className="highlight">INTIP</span>으로
+                            <br />
+                            돌아왔어요
+                          </h2>
+                          <p className="sub-text">원하는 연락처를 검색해보세요</p>
+                        </LogoInfoContent>
+                      )}
+                    </AnimatePresence>
+                  </LogoInfo>
+                </BannerStage>
+              </LayoutGroup>
             </BannerSection>
           </Box>
         </HeroBannerColumn>
@@ -262,13 +274,15 @@ const BannerSection = styled.div`
   height: ${BANNER_SECTION_HEIGHT};
 `;
 
-const BannerStage = styled.div<{ $isShifted: boolean }>`
+const BannerStage = styled(motion.div)<{ $isShifted: boolean }>`
   display: flex;
   width: 100%;
   height: 100%;
-  /* 정중앙 고정 세팅 */
   align-items: center;
+  /* 정중앙 정렬 */
   justify-content: ${(props) => (props.$isShifted ? "flex-start" : "center")};
+  /* 이동 완료 시 좌측 여백 */
+  padding-left: ${(props) => (props.$isShifted ? "20px" : "0")};
   gap: ${(props) => (props.$isShifted ? BANNER_STAGE_GAP : "0px")};
   position: relative;
 `;
@@ -307,15 +321,15 @@ const BannerVideo = styled.video`
   object-position: center bottom;
 `;
 
-const LogoInfo = styled.div<{ $isShifted: boolean }>`
-  /* 재생 전에는 완전 숨김 및 너비 0 부여 */
+const LogoInfo = styled(motion.div)<{ $isShifted: boolean }>`
+  /* 재생 전 너비 0 부여로 중앙 위치 강제 */
   flex: ${(props) => (props.$isShifted ? "1" : "0")};
   width: ${(props) => (props.$isShifted ? "auto" : "0px")};
-  opacity: ${(props) => (props.$isShifted ? "1" : "0")};
   display: flex;
   align-items: center;
   justify-content: flex-start;
   min-width: 0;
+  max-width: ${(props) => (props.$isShifted ? "300px" : "0px")};
   overflow: hidden;
 `;
 
@@ -323,6 +337,7 @@ const LogoInfoContent = styled(motion.div)`
   display: flex;
   flex-direction: column;
   width: 100%;
+  white-space: nowrap;
 
   .sub-text {
     font-size: 13px;
