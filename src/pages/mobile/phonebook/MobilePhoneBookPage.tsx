@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -22,7 +22,6 @@ import {
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
 const BANNER_STAGE_GAP = "16px";
-const BANNER_STAGE_TEXT_WIDTH = `calc(65% - ${BANNER_STAGE_GAP})`;
 const BANNER_TEXT_REVEAL_DELAY_MS = 820;
 const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 
@@ -44,66 +43,46 @@ const MobilePhoneBookPage = () => {
 
   useEffect(() => {
     const bannerVideo = bannerVideoRef.current;
-
-    if (!bannerVideo) {
-      return;
-    }
+    if (!bannerVideo) return;
 
     setIsBannerShifted(false);
     setIsBannerTextVisible(false);
 
     const startPlayback = () => {
       bannerVideo.pause();
-
       try {
         bannerVideo.currentTime = 0;
       } catch {
         return;
       }
-
-      void bannerVideo.play().catch(() => {
-        setIsBannerShifted(true);
-      });
+      void bannerVideo.play().catch(() => setIsBannerShifted(true));
     };
 
     if (bannerVideo.readyState >= 2) {
       startPlayback();
-      return;
+    } else {
+      bannerVideo.addEventListener("loadeddata", startPlayback, { once: true });
     }
 
-    bannerVideo.addEventListener("loadeddata", startPlayback, { once: true });
-
-    return () => {
-      bannerVideo.removeEventListener("loadeddata", startPlayback);
-    };
+    return () => bannerVideo.removeEventListener("loadeddata", startPlayback);
   }, []);
 
   useEffect(() => {
-    if (!isBannerShifted) {
-      return;
-    }
-
+    if (!isBannerShifted) return;
     const timeoutId = window.setTimeout(() => {
       setIsBannerTextVisible(true);
     }, BANNER_TEXT_REVEAL_DELAY_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    return () => window.clearTimeout(timeoutId);
   }, [isBannerShifted]);
 
   const handleSearchSubmit = () => {
     const nextQuery = inputValue.trim();
-
     if (nextQuery.length < MIN_PHONEBOOK_QUERY_LENGTH) {
       window.alert(PHONEBOOK_MIN_QUERY_MESSAGE);
       return;
     }
-
     const nextParams = new URLSearchParams();
-
     nextParams.set("query", nextQuery);
-
     navigate(
       nextParams.toString()
         ? `${ROUTES.PHONEBOOK.SEARCH}?${nextParams.toString()}`
@@ -111,14 +90,9 @@ const MobilePhoneBookPage = () => {
     );
   };
 
-  useHeader({
-    title: "INU 전화번호부",
-    hasback: true,
-  });
+  useHeader({ title: "INU 전화번호부", hasback: true });
 
-  const handleBannerPlaybackEnd = () => {
-    setIsBannerShifted(true);
-  };
+  const handleBannerPlaybackEnd = () => setIsBannerShifted(true);
 
   return (
     <MobilePhoneBookPageWrapper>
@@ -126,8 +100,13 @@ const MobilePhoneBookPage = () => {
         <HeroBannerColumn>
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
-              <BannerStage>
-                <BannerVisual $isRevealed={isBannerShifted}>
+              <BannerStage $isShifted={isBannerShifted}>
+                <BannerVisual
+                  layout
+                  transition={{
+                    layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
+                  }}
+                >
                   <BannerVideo
                     ref={bannerVideoRef}
                     autoPlay
@@ -148,26 +127,25 @@ const MobilePhoneBookPage = () => {
                 </BannerVisual>
 
                 <LogoInfo>
-                  {isBannerTextVisible ? (
-                    <LogoInfoContent
-                      initial={{ opacity: 0, y: 14 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.42,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                    >
-                      <p className="sub-text">우리 학교 연락처 앱</p>
-                      <h2 className="main-title">
-                        <span>Callin U</span>가{" "}
-                        <span className="highlight">INTIP</span>
-                        으로
-                        <br />
-                        돌아왔어요
-                      </h2>
-                      <p className="sub-text">원하는 연락처를 검색해보세요</p>
-                    </LogoInfoContent>
-                  ) : null}
+                  <AnimatePresence>
+                    {isBannerTextVisible && (
+                      <LogoInfoContent
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        <p className="sub-text">우리 학교 연락처 앱</p>
+                        <h2 className="main-title">
+                          <span>Callin U</span>가{" "}
+                          <span className="highlight">INTIP</span>으로
+                          <br />
+                          돌아왔어요
+                        </h2>
+                        <p className="sub-text">원하는 연락처를 검색해보세요</p>
+                      </LogoInfoContent>
+                    )}
+                  </AnimatePresence>
                 </LogoInfo>
               </BannerStage>
             </BannerSection>
@@ -188,7 +166,6 @@ const MobilePhoneBookPage = () => {
                 </p>
               </div>
             </GuideItem>
-
             <GuideItem>
               <span className="number">2.</span>
               <div className="content">
@@ -201,7 +178,6 @@ const MobilePhoneBookPage = () => {
                 </p>
               </div>
             </GuideItem>
-
             <GuideItem>
               <span className="number">3.</span>
               <div className="content">
@@ -261,7 +237,6 @@ const HeroSection = styled.div`
     display: grid;
     grid-template-columns: minmax(0, 500px) minmax(0, 500px);
     align-items: center;
-    //gap: 24px;
   }
 `;
 
@@ -270,45 +245,35 @@ const HeroBannerColumn = styled.div`
   justify-content: center;
   min-width: 0;
   width: 100%;
-  overflow-x: hidden;
-  overflow-x: clip;
+  overflow: visible;
 `;
 
 const BannerSection = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: stretch;
   width: 100%;
   height: ${BANNER_SECTION_HEIGHT};
-  overflow: visible;
 `;
 
-const BannerStage = styled.div`
-  position: relative;
-  height: 100%;
-  width: 100%;
-  max-width: none;
-  min-width: 0;
-`;
-
-const BannerVisual = styled.div<{ $isRevealed: boolean }>`
-  position: absolute;
+const BannerStage = styled.div<{ $isShifted: boolean }>`
   display: flex;
-  align-items: stretch;
-  flex: 0 0 auto;
-  width: fit-content;
+  width: 100%;
   height: 100%;
-  top: 0;
-  bottom: 0;
-  left: ${(props) => (props.$isRevealed ? "25%" : "50%")};
-  transform: translateX(-50%);
-  transition: left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: left;
+  /* 상태 기반 정렬 변경 */
+  justify-content: ${(props) => (props.$isShifted ? "space-evenly" : "center")};
+  align-items: center;
+  gap: ${BANNER_STAGE_GAP};
+`;
+
+const BannerVisual = styled(motion.div)`
+  /* Flex 아이템화 */
+  flex-shrink: 0;
+  height: 100%;
   background: #fff;
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
   overflow: hidden;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  position: relative;
 
   &::after {
     content: "";
@@ -328,58 +293,29 @@ const BannerVideo = styled.video`
   display: block;
   height: 100%;
   width: auto;
-  max-width: none;
   object-fit: contain;
   object-position: center bottom;
-  pointer-events: none;
-  background: transparent;
-
-  &::-webkit-media-controls {
-    display: none !important;
-  }
-
-  &::-webkit-media-controls-enclosure {
-    display: none !important;
-  }
-`;
-
-const DescriptionSection = styled.div`
-  padding: 0 20px;
-
-  @media ${DESKTOP_MEDIA} {
-    width: 100%;
-    padding: 0;
-    max-width: none;
-  }
 `;
 
 const LogoInfo = styled.div`
+  /* 가용 공간 최대 점유 */
+  flex: 1;
   display: flex;
-  position: absolute;
   align-items: center;
   justify-content: flex-start;
-  top: 50%;
-  left: 75%;
-  transform: translate(-50%, -50%);
-  width: ${BANNER_STAGE_TEXT_WIDTH};
-  min-width: 0;
-  overflow: hidden;
+  min-width: 150px;
+  max-width: 300px;
 `;
 
 const LogoInfoContent = styled(motion.div)`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
   width: 100%;
-  min-width: 0;
-  text-align: left;
 
   .sub-text {
     font-size: 14px;
     color: #666;
     margin: 0;
-    text-wrap: balance;
   }
 
   .main-title {
@@ -387,18 +323,24 @@ const LogoInfoContent = styled(motion.div)`
     font-weight: 500;
     color: #333;
     line-height: 1.4;
-    margin: 0;
+    margin: 4px 0;
     word-break: keep-all;
-    //text-wrap: balance;
 
     span {
       font-weight: 700;
       color: #2b6cb0;
     }
-
     .highlight {
       color: #4a90e2;
     }
+  }
+`;
+
+const DescriptionSection = styled.div`
+  padding: 0 20px;
+  @media ${DESKTOP_MEDIA} {
+    width: 100%;
+    padding: 0;
   }
 `;
 
@@ -406,15 +348,11 @@ const GuideList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-
-  @media ${DESKTOP_MEDIA} {
-    gap: 24px;
-  }
 `;
 
 const GuideItem = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 8px;
 
   .number {
     font-size: 16px;
@@ -429,12 +367,10 @@ const GuideItem = styled.div`
       color: #333;
       margin: 0 0 4px;
       font-weight: 500;
-
       strong {
         font-weight: 700;
       }
     }
-
     p {
       font-size: 14px;
       color: #666;
