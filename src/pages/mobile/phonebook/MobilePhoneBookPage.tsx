@@ -100,10 +100,8 @@ const MobilePhoneBookPage = () => {
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
               <BannerStage>
-                {/* 좌측 여백 */}
                 <FlexSpacer $weight={1} />
 
-                {/* 비디오 비주얼 */}
                 <BannerVisual>
                   <BannerVideo
                     ref={bannerVideoRef}
@@ -124,10 +122,8 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                {/* 중앙 여백 */}
                 <FlexSpacer $weight={isBannerShifted ? 1 : 0} />
 
-                {/* 텍스트 컨테이너 */}
                 <TextStage $isShifted={isBannerShifted}>
                   <AnimatePresence>
                     {isBannerTextVisible && (
@@ -150,7 +146,6 @@ const MobilePhoneBookPage = () => {
                   </AnimatePresence>
                 </TextStage>
 
-                {/* 우측 여백 */}
                 <FlexSpacer $weight={1} />
               </BannerStage>
             </BannerSection>
@@ -263,7 +258,6 @@ const BannerSection = styled.div`
   overflow: visible;
 `;
 
-/* 공간 배치 스테이지 */
 const BannerStage = styled.div`
   display: flex;
   align-items: center;
@@ -271,7 +265,6 @@ const BannerStage = styled.div`
   width: 100%;
 `;
 
-/* 공간 분배 스페이서 */
 const FlexSpacer = styled.div<{ $weight: number }>`
   flex: ${(props) => props.$weight};
   transition: flex 0.82s cubic-bezier(0.22, 1, 0.36, 1);
@@ -303,11 +296,11 @@ const BannerVisual = styled.div`
   }
 `;
 
-/* 텍스트 컨테이너 */
+/* 텍스트 영역 실제 너비에 맞춤 */
 const TextStage = styled.div<{ $isShifted: boolean }>`
   display: flex;
   align-items: center;
-  width: ${(props) => (props.$isShifted ? "190px" : "0px")};
+  width: ${(props) => (props.$isShifted ? "155px" : "0px")};
   overflow: hidden;
   transition: width 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 `;
@@ -331,13 +324,14 @@ const BannerVideo = styled.video`
   }
 `;
 
+/* 레이아웃 찌그러짐 방지용 최소 너비 확보 */
 const LogoInfoContent = styled(motion.div)`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   width: 100%;
-  min-width: 0;
+  min-width: 155px;
   text-align: left;
   white-space: nowrap;
 
