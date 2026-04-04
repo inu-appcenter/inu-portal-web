@@ -42,46 +42,66 @@ const MobilePhoneBookPage = () => {
 
   useEffect(() => {
     const bannerVideo = bannerVideoRef.current;
-    if (!bannerVideo) return;
+
+    if (!bannerVideo) {
+      return;
+    }
 
     setIsBannerShifted(false);
     setIsBannerTextVisible(false);
 
     const startPlayback = () => {
       bannerVideo.pause();
+
       try {
         bannerVideo.currentTime = 0;
       } catch {
         return;
       }
-      void bannerVideo.play().catch(() => setIsBannerShifted(true));
+
+      void bannerVideo.play().catch(() => {
+        setIsBannerShifted(true);
+      });
     };
 
     if (bannerVideo.readyState >= 2) {
       startPlayback();
-    } else {
-      bannerVideo.addEventListener("loadeddata", startPlayback, { once: true });
+      return;
     }
 
-    return () => bannerVideo.removeEventListener("loadeddata", startPlayback);
+    bannerVideo.addEventListener("loadeddata", startPlayback, { once: true });
+
+    return () => {
+      bannerVideo.removeEventListener("loadeddata", startPlayback);
+    };
   }, []);
 
   useEffect(() => {
-    if (!isBannerShifted) return;
+    if (!isBannerShifted) {
+      return;
+    }
+
     const timeoutId = window.setTimeout(() => {
       setIsBannerTextVisible(true);
     }, BANNER_TEXT_REVEAL_DELAY_MS);
-    return () => window.clearTimeout(timeoutId);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [isBannerShifted]);
 
   const handleSearchSubmit = () => {
     const nextQuery = inputValue.trim();
+
     if (nextQuery.length < MIN_PHONEBOOK_QUERY_LENGTH) {
       window.alert(PHONEBOOK_MIN_QUERY_MESSAGE);
       return;
     }
+
     const nextParams = new URLSearchParams();
+
     nextParams.set("query", nextQuery);
+
     navigate(
       nextParams.toString()
         ? `${ROUTES.PHONEBOOK.SEARCH}?${nextParams.toString()}`
@@ -89,9 +109,14 @@ const MobilePhoneBookPage = () => {
     );
   };
 
-  useHeader({ title: "INU 전화번호부", hasback: true });
+  useHeader({
+    title: "INU 전화번호부",
+    hasback: true,
+  });
 
-  const handleBannerPlaybackEnd = () => setIsBannerShifted(true);
+  const handleBannerPlaybackEnd = () => {
+    setIsBannerShifted(true);
+  };
 
   return (
     <MobilePhoneBookPageWrapper>
@@ -100,11 +125,8 @@ const MobilePhoneBookPage = () => {
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
               <BannerStage>
-                {/* 왼쪽 여백 */}
-                <FlexSpacer $weight={1} />
-
-                {/* 영상 영역 */}
-                <BannerVisual>
+                {/* 원본 절대 배치 방식 복구: 레이아웃 간섭 원천 차단 */}
+                <BannerVisual $isRevealed={isBannerShifted}>
                   <BannerVideo
                     ref={bannerVideoRef}
                     autoPlay
@@ -124,23 +146,24 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                {/* 중앙 동적 여백: 시프트 시 무게를 조절해 부드럽게 밀어냄 */}
-                <FlexSpacer $weight={isBannerShifted ? 0.8 : 0} />
-
-                {/* 텍스트 영역: flex-grow와 max-width의 조화로 '퍽' 튀는 현상 방지 */}
-                <TextStage $isShifted={isBannerShifted}>
+                <LogoInfo>
                   <AnimatePresence>
                     {isBannerTextVisible && (
                       <LogoInfoContent
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        /* 사용자 원본 애니메이션 수치 및 타이밍 완전 복구 */
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        transition={{
+                          duration: 0.42,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
                       >
                         <p className="sub-text">우리 학교 연락처 앱</p>
                         <h2 className="main-title">
                           <span>Callin U</span>가{" "}
-                          <span className="highlight">INTIP</span>으로
+                          <span className="highlight">INTIP</span>
+                          으로
                           <br />
                           돌아왔어요
                         </h2>
@@ -148,10 +171,7 @@ const MobilePhoneBookPage = () => {
                       </LogoInfoContent>
                     )}
                   </AnimatePresence>
-                </TextStage>
-
-                {/* 오른쪽 여백 */}
-                <FlexSpacer $weight={1} />
+                </LogoInfo>
               </BannerStage>
             </BannerSection>
           </Box>
@@ -171,6 +191,7 @@ const MobilePhoneBookPage = () => {
                 </p>
               </div>
             </GuideItem>
+
             <GuideItem>
               <span className="number">2.</span>
               <div className="content">
@@ -183,6 +204,7 @@ const MobilePhoneBookPage = () => {
                 </p>
               </div>
             </GuideItem>
+
             <GuideItem>
               <span className="number">3.</span>
               <div className="content">
@@ -260,32 +282,34 @@ const BannerSection = styled.div`
   align-items: stretch;
   width: 100%;
   height: ${BANNER_SECTION_HEIGHT};
+  overflow: visible;
 `;
 
 const BannerStage = styled.div`
-  display: flex;
-  align-items: center;
+  position: relative;
   height: 100%;
   width: 100%;
+  max-width: none;
+  min-width: 0;
 `;
 
-const FlexSpacer = styled.div<{ $weight: number }>`
-  flex: ${(props) => props.$weight};
-  /* 트랜지션 곡선을 영상 이동과 동일하게 맞춰 일체감 부여 */
-  transition: flex 0.82s cubic-bezier(0.22, 1, 0.36, 1);
-`;
-
-const BannerVisual = styled.div`
-  flex-shrink: 0;
-  height: 100%;
+/* CSS transition만 사용한 원본 구조 복원 */
+const BannerVisual = styled.div<{ $isRevealed: boolean }>`
+  position: absolute;
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
   width: fit-content;
+  height: 100%;
+  top: 0;
+  bottom: 0;
+  left: ${(props) => (props.$isRevealed ? "25%" : "50%")};
+  transform: translateX(-50%);
+  transition: left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
   background: #fff;
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
   overflow: hidden;
-  position: relative;
-  display: flex;
-  justify-content: center;
 
   &::after {
     content: "";
@@ -301,22 +325,6 @@ const BannerVisual = styled.div`
   }
 `;
 
-const TextStage = styled.div<{ $isShifted: boolean }>`
-  display: flex;
-  align-items: center;
-  /* flex-grow를 사용해 부드럽게 공간을 점유하도록 변경 */
-  flex-grow: ${(props) => (props.$isShifted ? 1 : 0)};
-  /* 최대 너비를 여유 있게 제한하여 텍스트 잘림 방지 및 급격한 팽창 억제 */
-  max-width: ${(props) => (props.$isShifted ? "180px" : "0px")};
-  min-width: 0;
-  overflow: visible;
-  opacity: ${(props) => (props.$isShifted ? 1 : 0)};
-  transition: 
-    flex-grow 0.82s cubic-bezier(0.22, 1, 0.36, 1),
-    max-width 0.82s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.4s ease-out;
-`;
-
 const BannerVideo = styled.video`
   display: block;
   height: 100%;
@@ -325,6 +333,28 @@ const BannerVideo = styled.video`
   object-fit: contain;
   object-position: center bottom;
   pointer-events: none;
+  background: transparent;
+
+  &::-webkit-media-controls {
+    display: none !important;
+  }
+
+  &::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
+`;
+
+/* 우측 50% 공간 점유 및 텍스트 잘림 방지 */
+const LogoInfo = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
 `;
 
 const LogoInfoContent = styled(motion.div)`
@@ -332,13 +362,9 @@ const LogoInfoContent = styled(motion.div)`
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  width: 100%;
-  /* 텍스트가 찌그러지지 않도록 최소 너비 고정 */
-  min-width: 165px;
+  width: fit-content;
   text-align: left;
   white-space: nowrap;
-  /* 글자 끝부분 미세 잘림 방지 패딩 */
-  padding-right: 8px;
 
   .sub-text {
     font-size: 14px;
@@ -351,13 +377,14 @@ const LogoInfoContent = styled(motion.div)`
     font-weight: 500;
     color: #333;
     line-height: 1.4;
-    margin: 4px 0;
+    margin: 0;
     word-break: keep-all;
 
     span {
       font-weight: 700;
       color: #2b6cb0;
     }
+
     .highlight {
       color: #4a90e2;
     }
@@ -366,9 +393,11 @@ const LogoInfoContent = styled(motion.div)`
 
 const DescriptionSection = styled.div`
   padding: 0 20px;
+
   @media ${DESKTOP_MEDIA} {
     width: 100%;
     padding: 0;
+    max-width: none;
   }
 `;
 
@@ -376,6 +405,10 @@ const GuideList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media ${DESKTOP_MEDIA} {
+    gap: 24px;
+  }
 `;
 
 const GuideItem = styled.div`
@@ -395,10 +428,12 @@ const GuideItem = styled.div`
       color: #333;
       margin: 0 0 4px;
       font-weight: 500;
+
       strong {
         font-weight: 700;
       }
     }
+
     p {
       font-size: 14px;
       color: #666;
