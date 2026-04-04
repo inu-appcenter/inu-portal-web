@@ -22,7 +22,6 @@ import {
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
 const BANNER_STAGE_GAP = "16px";
-/* 영상 이동 시간(0.82s)과 일치시켜 이동 완료 후 텍스트 등장 */
 const BANNER_TEXT_REVEAL_DELAY_MS = 820; 
 const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 
@@ -68,7 +67,6 @@ const MobilePhoneBookPage = () => {
     return () => bannerVideo.removeEventListener("loadeddata", startPlayback);
   }, []);
 
-  /* 영상 이동 완료 후 텍스트 노출 타이머 */
   useEffect(() => {
     if (!isBannerShifted) return;
     const timeoutId = window.setTimeout(() => {
@@ -104,7 +102,7 @@ const MobilePhoneBookPage = () => {
             <BannerSection>
               <BannerStage $isShifted={isBannerShifted}>
                 <BannerVisual
-                  layout /* 위치 이동 애니메이션 */
+                  layout
                   transition={{
                     layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
                   }}
@@ -128,15 +126,15 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                <LogoInfo>
-                  <AnimatePresence>
-                    {isBannerTextVisible && (
-                      <LogoInfoContent
-                        /* 이동 완료 후 아래에서 위로 페이드인 */
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                      >
+                <AnimatePresence>
+                  {isBannerTextVisible && (
+                    <LogoInfo
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <LogoInfoContent>
                         <p className="sub-text">우리 학교 연락처 앱</p>
                         <h2 className="main-title">
                           <span>Callin U</span>가{" "}
@@ -146,9 +144,9 @@ const MobilePhoneBookPage = () => {
                         </h2>
                         <p className="sub-text">원하는 연락처를 검색해보세요</p>
                       </LogoInfoContent>
-                    )}
-                  </AnimatePresence>
-                </LogoInfo>
+                    </LogoInfo>
+                  )}
+                </AnimatePresence>
               </BannerStage>
             </BannerSection>
           </Box>
@@ -260,7 +258,7 @@ const BannerStage = styled.div<{ $isShifted: boolean }>`
   display: flex;
   width: 100%;
   height: 100%;
-  /* 재생 중 중앙 정렬, 종료 후 evenly 배치 */
+  /* 재생 중 정중앙 정렬, 종료 후 균등 배치 */
   justify-content: ${(props) => (props.$isShifted ? "space-evenly" : "center")};
   align-items: center;
   gap: ${(props) => (props.$isShifted ? BANNER_STAGE_GAP : "0px")};
@@ -268,21 +266,18 @@ const BannerStage = styled.div<{ $isShifted: boolean }>`
 `;
 
 const BannerVisual = styled(motion.div)`
-  /* Flex 아이템화 */
   flex-shrink: 0;
   height: 100%;
-  /* 너비를 항상 내부 영상 크기에 맞춤 (넙적해짐 방지) */
   width: fit-content;
-  
   background: #fff;
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
   overflow: hidden;
-  /* 그림자 제거 */
   position: relative;
-  /* 비디오 중앙 정렬용 */
   display: flex;
   justify-content: center;
+
+  /* 그림자 제거 */
 
   &::after {
     content: "";
@@ -306,19 +301,17 @@ const BannerVideo = styled.video`
   object-position: center bottom;
 `;
 
-const LogoInfo = styled.div`
-  /* 가용 공간 점유 */
+const LogoInfo = styled(motion.div)`
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  /* 폭 보장 및 최대치 제한 */
   min-width: 150px;
   max-width: 300px;
   overflow: hidden;
 `;
 
-const LogoInfoContent = styled(motion.div)`
+const LogoInfoContent = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
