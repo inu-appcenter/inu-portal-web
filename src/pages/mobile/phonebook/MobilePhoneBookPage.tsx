@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -21,7 +21,7 @@ import {
 
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
-const BANNER_STAGE_GAP = "20px";
+const BANNER_STAGE_GAP = "16px";
 const BANNER_TEXT_REVEAL_DELAY_MS = 820;
 const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 
@@ -36,15 +36,6 @@ const MobilePhoneBookPage = () => {
   const [inputValue, setInputValue] = useState(searchParams.get("query") ?? "");
   const [isBannerShifted, setIsBannerShifted] = useState(false);
   const [isBannerTextVisible, setIsBannerTextVisible] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  /* 초기 마운트 시 애니메이션 차단 */
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsMounted(true);
-    }, 50);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     setInputValue(searchParams.get("query") ?? "");
@@ -109,68 +100,54 @@ const MobilePhoneBookPage = () => {
         <HeroBannerColumn>
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
-              <LayoutGroup>
-                <BannerStage 
-                  layout 
-                  $isShifted={isBannerShifted}
-                  transition={{
-                    layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] }
-                  }}
-                >
-                  <BannerVisual
-                    layout={isMounted}
-                    transition={{
-                      layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
-                    }}
-                  >
-                    <BannerVideo
-                      ref={bannerVideoRef}
-                      autoPlay
-                      muted
-                      playsInline
-                      preload="auto"
-                      poster={callinuBanner}
-                      controls={false}
-                      disablePictureInPicture
-                      disableRemotePlayback
-                      controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
-                      aria-label="Callin U"
-                      onEnded={handleBannerPlaybackEnd}
-                      onError={handleBannerPlaybackEnd}
-                    >
-                      <source src={callinuBannerVideo} type="video/mp4" />
-                    </BannerVideo>
-                  </BannerVisual>
+              <BannerStage>
+                {/* 좌측 여백 제어 공간 */}
+                <LeftSpacer $isShifted={isBannerShifted} />
 
-                  <LogoInfo 
-                    layout 
-                    $isShifted={isBannerShifted}
-                    transition={{
-                      layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] }
-                    }}
+                {/* 영상 비주얼 영역 */}
+                <BannerVisual>
+                  <BannerVideo
+                    ref={bannerVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    preload="auto"
+                    poster={callinuBanner}
+                    controls={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                    aria-label="Callin U"
+                    onEnded={handleBannerPlaybackEnd}
+                    onError={handleBannerPlaybackEnd}
                   >
-                    <AnimatePresence>
-                      {isBannerTextVisible && (
-                        <LogoInfoContent
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                        >
-                          <p className="sub-text">우리 학교 연락처 앱</p>
-                          <h2 className="main-title">
-                            <span>Callin U</span>가{" "}
-                            <span className="highlight">INTIP</span>으로
-                            <br />
-                            돌아왔어요
-                          </h2>
-                          <p className="sub-text">원하는 연락처를 검색해보세요</p>
-                        </LogoInfoContent>
-                      )}
-                    </AnimatePresence>
-                  </LogoInfo>
-                </BannerStage>
-              </LayoutGroup>
+                    <source src={callinuBannerVideo} type="video/mp4" />
+                  </BannerVideo>
+                </BannerVisual>
+
+                {/* 우측 텍스트 영역 및 여백 */}
+                <RightContent $isShifted={isBannerShifted}>
+                  <AnimatePresence>
+                    {isBannerTextVisible && (
+                      <LogoInfoContent
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        <p className="sub-text">우리 학교 연락처 앱</p>
+                        <h2 className="main-title">
+                          <span>Callin U</span>가{" "}
+                          <span className="highlight">INTIP</span>으로
+                          <br />
+                          돌아왔어요
+                        </h2>
+                        <p className="sub-text">원하는 연락처를 검색해보세요</p>
+                      </LogoInfoContent>
+                    )}
+                  </AnimatePresence>
+                </RightContent>
+              </BannerStage>
             </BannerSection>
           </Box>
         </HeroBannerColumn>
@@ -252,6 +229,7 @@ const HeroSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-evenly;
   gap: 24px;
   width: 100%;
 
@@ -265,29 +243,36 @@ const HeroSection = styled.div`
 const HeroBannerColumn = styled.div`
   display: flex;
   justify-content: center;
+  min-width: 0;
   width: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
 `;
 
 const BannerSection = styled.div`
   display: flex;
+  justify-content: center;
+  align-items: stretch;
   width: 100%;
   height: ${BANNER_SECTION_HEIGHT};
+  overflow: visible;
 `;
 
-const BannerStage = styled(motion.div)<{ $isShifted: boolean }>`
+/* CSS 기반 레이아웃 컨테이너 */
+const BannerStage = styled.div`
   display: flex;
-  width: 100%;
-  height: 100%;
   align-items: center;
-  /* 정중앙 정렬 */
-  justify-content: ${(props) => (props.$isShifted ? "flex-start" : "center")};
-  /* 이동 완료 시 좌측 여백 */
-  padding-left: ${(props) => (props.$isShifted ? "20px" : "0")};
-  gap: ${(props) => (props.$isShifted ? BANNER_STAGE_GAP : "0px")};
-  position: relative;
+  height: 100%;
+  width: 100%;
 `;
 
-const BannerVisual = styled(motion.div)`
+/* 좌측 공간 축소 애니메이션 */
+const LeftSpacer = styled.div<{ $isShifted: boolean }>`
+  flex: ${(props) => (props.$isShifted ? 0 : 1)};
+  transition: flex 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+`;
+
+const BannerVisual = styled.div`
   flex-shrink: 0;
   height: 100%;
   width: fit-content;
@@ -313,40 +298,53 @@ const BannerVisual = styled(motion.div)`
   }
 `;
 
+/* 우측 공간 확장 및 간격 생성 애니메이션 */
+const RightContent = styled.div<{ $isShifted: boolean }>`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-left: ${(props) => (props.$isShifted ? BANNER_STAGE_GAP : "0px")};
+  transition: padding-left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+`;
+
 const BannerVideo = styled.video`
   display: block;
   height: 100%;
   width: auto;
+  max-width: none;
   object-fit: contain;
   object-position: center bottom;
-`;
+  pointer-events: none;
+  background: transparent;
 
-const LogoInfo = styled(motion.div)<{ $isShifted: boolean }>`
-  /* 재생 전 너비 0 부여로 중앙 위치 강제 */
-  flex: ${(props) => (props.$isShifted ? "1" : "0")};
-  width: ${(props) => (props.$isShifted ? "auto" : "0px")};
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-width: 0;
-  max-width: ${(props) => (props.$isShifted ? "300px" : "0px")};
-  overflow: hidden;
+  &::-webkit-media-controls {
+    display: none !important;
+  }
+
+  &::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
 `;
 
 const LogoInfoContent = styled(motion.div)`
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   width: 100%;
+  min-width: 0;
+  text-align: left;
   white-space: nowrap;
 
   .sub-text {
-    font-size: 13px;
+    font-size: 14px;
     color: #666;
     margin: 0;
   }
 
   .main-title {
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 500;
     color: #333;
     line-height: 1.4;
@@ -357,6 +355,7 @@ const LogoInfoContent = styled(motion.div)`
       font-weight: 700;
       color: #2b6cb0;
     }
+
     .highlight {
       color: #4a90e2;
     }
@@ -365,9 +364,11 @@ const LogoInfoContent = styled(motion.div)`
 
 const DescriptionSection = styled.div`
   padding: 0 20px;
+
   @media ${DESKTOP_MEDIA} {
     width: 100%;
     padding: 0;
+    max-width: none;
   }
 `;
 
@@ -375,11 +376,15 @@ const GuideList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media ${DESKTOP_MEDIA} {
+    gap: 24px;
+  }
 `;
 
 const GuideItem = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
 
   .number {
     font-size: 16px;
@@ -394,10 +399,12 @@ const GuideItem = styled.div`
       color: #333;
       margin: 0 0 4px;
       font-weight: 500;
+
       strong {
         font-weight: 700;
       }
     }
+
     p {
       font-size: 14px;
       color: #666;
