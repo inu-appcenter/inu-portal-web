@@ -389,7 +389,7 @@ const LogoInfoContent = styled(motion.div)`
     line-height: 1.4;
     margin: 0;
     word-break: keep-all;
-    text-wrap: balance;
+    //text-wrap: balance;
 
     span {
       font-weight: 700;
