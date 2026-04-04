@@ -331,7 +331,7 @@ const LogoInfoContent = styled(motion.div)`
   align-items: flex-start;
   justify-content: center;
   width: 100%;
-  min-width: 155px;
+  min-width: 160px;
   text-align: left;
   white-space: nowrap;
 
