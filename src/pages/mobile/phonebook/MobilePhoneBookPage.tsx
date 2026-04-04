@@ -100,8 +100,10 @@ const MobilePhoneBookPage = () => {
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
               <BannerStage>
+                {/* 왼쪽 여백 */}
                 <FlexSpacer $weight={1} />
 
+                {/* 영상 영역 */}
                 <BannerVisual>
                   <BannerVideo
                     ref={bannerVideoRef}
@@ -122,16 +124,18 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                <FlexSpacer $weight={isBannerShifted ? 1 : 0} />
+                {/* 중앙 동적 여백: 시프트 시 무게를 조절해 부드럽게 밀어냄 */}
+                <FlexSpacer $weight={isBannerShifted ? 0.8 : 0} />
 
+                {/* 텍스트 영역: flex-grow와 max-width의 조화로 '퍽' 튀는 현상 방지 */}
                 <TextStage $isShifted={isBannerShifted}>
                   <AnimatePresence>
                     {isBannerTextVisible && (
                       <LogoInfoContent
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
                       >
                         <p className="sub-text">우리 학교 연락처 앱</p>
                         <h2 className="main-title">
@@ -146,6 +150,7 @@ const MobilePhoneBookPage = () => {
                   </AnimatePresence>
                 </TextStage>
 
+                {/* 오른쪽 여백 */}
                 <FlexSpacer $weight={1} />
               </BannerStage>
             </BannerSection>
@@ -266,6 +271,7 @@ const BannerStage = styled.div`
 
 const FlexSpacer = styled.div<{ $weight: number }>`
   flex: ${(props) => props.$weight};
+  /* 트랜지션 곡선을 영상 이동과 동일하게 맞춰 일체감 부여 */
   transition: flex 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
@@ -298,12 +304,17 @@ const BannerVisual = styled.div`
 const TextStage = styled.div<{ $isShifted: boolean }>`
   display: flex;
   align-items: center;
-  /* 너비 고정 대신 flex-basis와 max-width 조합으로 잘림 방지 */
-  flex-basis: ${(props) => (props.$isShifted ? "auto" : "0px")};
-  max-width: ${(props) => (props.$isShifted ? "200px" : "0px")};
+  /* flex-grow를 사용해 부드럽게 공간을 점유하도록 변경 */
+  flex-grow: ${(props) => (props.$isShifted ? 1 : 0)};
+  /* 최대 너비를 여유 있게 제한하여 텍스트 잘림 방지 및 급격한 팽창 억제 */
+  max-width: ${(props) => (props.$isShifted ? "180px" : "0px")};
+  min-width: 0;
+  overflow: visible;
   opacity: ${(props) => (props.$isShifted ? 1 : 0)};
-  overflow: visible; /* 잘림 방지를 위해 visible로 변경 */
-  transition: all 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: 
+    flex-grow 0.82s cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 0.82s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease-out;
 `;
 
 const BannerVideo = styled.video`
@@ -321,10 +332,13 @@ const LogoInfoContent = styled(motion.div)`
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  width: fit-content; /* 내부 콘텐츠 크기에 맞춤 */
+  width: 100%;
+  /* 텍스트가 찌그러지지 않도록 최소 너비 고정 */
+  min-width: 165px;
   text-align: left;
   white-space: nowrap;
-  padding-right: 4px; /* 우측 끝 글자 잘림 방지 여유분 */
+  /* 글자 끝부분 미세 잘림 방지 패딩 */
+  padding-right: 8px;
 
   .sub-text {
     font-size: 14px;
