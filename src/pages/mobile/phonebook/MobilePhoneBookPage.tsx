@@ -255,7 +255,6 @@ const BannerSection = styled.div`
   align-items: stretch;
   width: 100%;
   height: ${BANNER_SECTION_HEIGHT};
-  overflow: visible;
 `;
 
 const BannerStage = styled.div`
@@ -296,13 +295,15 @@ const BannerVisual = styled.div`
   }
 `;
 
-/* 텍스트 영역 실제 너비에 맞춤 */
 const TextStage = styled.div<{ $isShifted: boolean }>`
   display: flex;
   align-items: center;
-  width: ${(props) => (props.$isShifted ? "155px" : "0px")};
-  overflow: hidden;
-  transition: width 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  /* 너비 고정 대신 flex-basis와 max-width 조합으로 잘림 방지 */
+  flex-basis: ${(props) => (props.$isShifted ? "auto" : "0px")};
+  max-width: ${(props) => (props.$isShifted ? "200px" : "0px")};
+  opacity: ${(props) => (props.$isShifted ? 1 : 0)};
+  overflow: visible; /* 잘림 방지를 위해 visible로 변경 */
+  transition: all 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const BannerVideo = styled.video`
@@ -313,27 +314,17 @@ const BannerVideo = styled.video`
   object-fit: contain;
   object-position: center bottom;
   pointer-events: none;
-  background: transparent;
-
-  &::-webkit-media-controls {
-    display: none !important;
-  }
-
-  &::-webkit-media-controls-enclosure {
-    display: none !important;
-  }
 `;
 
-/* 레이아웃 찌그러짐 방지용 최소 너비 확보 */
 const LogoInfoContent = styled(motion.div)`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  width: 100%;
-  min-width: 170px;
+  width: fit-content; /* 내부 콘텐츠 크기에 맞춤 */
   text-align: left;
   white-space: nowrap;
+  padding-right: 4px; /* 우측 끝 글자 잘림 방지 여유분 */
 
   .sub-text {
     font-size: 14px;
@@ -353,7 +344,6 @@ const LogoInfoContent = styled(motion.div)`
       font-weight: 700;
       color: #2b6cb0;
     }
-
     .highlight {
       color: #4a90e2;
     }
@@ -362,11 +352,9 @@ const LogoInfoContent = styled(motion.div)`
 
 const DescriptionSection = styled.div`
   padding: 0 20px;
-
   @media ${DESKTOP_MEDIA} {
     width: 100%;
     padding: 0;
-    max-width: none;
   }
 `;
 
@@ -374,10 +362,6 @@ const GuideList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-
-  @media ${DESKTOP_MEDIA} {
-    gap: 24px;
-  }
 `;
 
 const GuideItem = styled.div`
@@ -397,12 +381,10 @@ const GuideItem = styled.div`
       color: #333;
       margin: 0 0 4px;
       font-weight: 500;
-
       strong {
         font-weight: 700;
       }
     }
-
     p {
       font-size: 14px;
       color: #666;
