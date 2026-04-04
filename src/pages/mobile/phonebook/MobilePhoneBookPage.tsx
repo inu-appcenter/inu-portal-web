@@ -21,7 +21,6 @@ import {
 
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
-const BANNER_STAGE_GAP = "16px";
 const BANNER_TEXT_REVEAL_DELAY_MS = 820;
 const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 
@@ -101,10 +100,10 @@ const MobilePhoneBookPage = () => {
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
               <BannerStage>
-                {/* 좌측 여백 제어 공간 */}
-                <LeftSpacer $isShifted={isBannerShifted} />
+                {/* 좌측 여백 */}
+                <FlexSpacer $weight={1} />
 
-                {/* 영상 비주얼 영역 */}
+                {/* 비디오 비주얼 */}
                 <BannerVisual>
                   <BannerVideo
                     ref={bannerVideoRef}
@@ -125,8 +124,11 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                {/* 우측 텍스트 영역 및 여백 */}
-                <RightContent $isShifted={isBannerShifted}>
+                {/* 중앙 여백 */}
+                <FlexSpacer $weight={isBannerShifted ? 1 : 0} />
+
+                {/* 텍스트 컨테이너 */}
+                <TextStage $isShifted={isBannerShifted}>
                   <AnimatePresence>
                     {isBannerTextVisible && (
                       <LogoInfoContent
@@ -146,7 +148,10 @@ const MobilePhoneBookPage = () => {
                       </LogoInfoContent>
                     )}
                   </AnimatePresence>
-                </RightContent>
+                </TextStage>
+
+                {/* 우측 여백 */}
+                <FlexSpacer $weight={1} />
               </BannerStage>
             </BannerSection>
           </Box>
@@ -258,7 +263,7 @@ const BannerSection = styled.div`
   overflow: visible;
 `;
 
-/* CSS 기반 레이아웃 컨테이너 */
+/* 공간 배치 스테이지 */
 const BannerStage = styled.div`
   display: flex;
   align-items: center;
@@ -266,9 +271,9 @@ const BannerStage = styled.div`
   width: 100%;
 `;
 
-/* 좌측 공간 축소 애니메이션 */
-const LeftSpacer = styled.div<{ $isShifted: boolean }>`
-  flex: ${(props) => (props.$isShifted ? 0 : 1)};
+/* 공간 분배 스페이서 */
+const FlexSpacer = styled.div<{ $weight: number }>`
+  flex: ${(props) => props.$weight};
   transition: flex 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
@@ -298,14 +303,13 @@ const BannerVisual = styled.div`
   }
 `;
 
-/* 우측 공간 확장 및 간격 생성 애니메이션 */
-const RightContent = styled.div<{ $isShifted: boolean }>`
-  flex: 1;
+/* 텍스트 컨테이너 */
+const TextStage = styled.div<{ $isShifted: boolean }>`
   display: flex;
   align-items: center;
-  padding-left: ${(props) => (props.$isShifted ? BANNER_STAGE_GAP : "0px")};
-  transition: padding-left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  width: ${(props) => (props.$isShifted ? "190px" : "0px")};
   overflow: hidden;
+  transition: width 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 const BannerVideo = styled.video`
