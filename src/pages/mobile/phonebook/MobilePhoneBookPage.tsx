@@ -102,11 +102,10 @@ const MobilePhoneBookPage = () => {
             <BannerSection>
               <BannerStage $isShifted={isBannerShifted}>
                 <BannerVisual
-                  layout /* 레이아웃 애니메이션 활성화 */
+                  layout /* 위치 이동 애니메이션 */
                   transition={{
                     layout: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
                   }}
-                  $isShifted={isBannerShifted}
                 >
                   <BannerVideo
                     ref={bannerVideoRef}
@@ -127,15 +126,15 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                <LogoInfo $isShifted={isBannerShifted}>
-                  <AnimatePresence>
-                    {isBannerTextVisible && (
-                      <LogoInfoContent
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                      >
+                <AnimatePresence>
+                  {isBannerTextVisible && (
+                    <LogoInfo
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <LogoInfoContent>
                         <p className="sub-text">우리 학교 연락처 앱</p>
                         <h2 className="main-title">
                           <span>Callin U</span>가{" "}
@@ -145,9 +144,9 @@ const MobilePhoneBookPage = () => {
                         </h2>
                         <p className="sub-text">원하는 연락처를 검색해보세요</p>
                       </LogoInfoContent>
-                    )}
-                  </AnimatePresence>
-                </LogoInfo>
+                    </LogoInfo>
+                  )}
+                </AnimatePresence>
               </BannerStage>
             </BannerSection>
           </Box>
@@ -266,14 +265,12 @@ const BannerStage = styled.div<{ $isShifted: boolean }>`
   position: relative;
 `;
 
-const BannerVisual = styled(motion.div)<{ $isShifted: boolean }>`
+const BannerVisual = styled(motion.div)`
   /* Flex 아이템화 */
   flex-shrink: 0;
   height: 100%;
-  /* 재생 중 중앙 위치 사수, 종료 후 폭 축소 */
-  flex-basis: ${(props) => (props.$isShifted ? "auto" : "100%")};
-  display: flex;
-  justify-content: center; /* 중앙 정렬 유지 */
+  /* 핵심: 너비를 항상 내부 영상 크기에 맞춤 (넙적해짐 방지) */
+  width: fit-content;
   
   background: #fff;
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
@@ -281,6 +278,9 @@ const BannerVisual = styled(motion.div)<{ $isShifted: boolean }>`
   overflow: hidden;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
   position: relative;
+  /* 비디오 중앙 정렬용 */
+  display: flex;
+  justify-content: center;
 
   &::after {
     content: "";
@@ -304,20 +304,19 @@ const BannerVideo = styled.video`
   object-position: center bottom;
 `;
 
-const LogoInfo = styled.div<{ $isShifted: boolean }>`
-  /* 재생 중 미노출, 종료 후 남은 공간 점유 */
-  flex: ${(props) => (props.$isShifted ? "1" : "0")};
+const LogoInfo = styled(motion.div)`
+  /* 종료 후 등장, 남은 공간 점유 */
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   /* 폭 보장 및 최대치 제한 */
-  min-width: ${(props) => (props.$isShifted ? "150px" : "0px")};
+  min-width: 150px;
   max-width: 300px;
   overflow: hidden;
-  transition: flex 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
-const LogoInfoContent = styled(motion.div)`
+const LogoInfoContent = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
