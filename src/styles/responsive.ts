@@ -1,4 +1,4 @@
-export const DESKTOP_BREAKPOINT = "1100px";
+export const DESKTOP_BREAKPOINT = "768px";
 export const DESKTOP_MEDIA = `(min-width: ${DESKTOP_BREAKPOINT})`;
 export const DESKTOP_CONTENT_MAX_WIDTH = "1600px";
 export const DESKTOP_GUTTER = "clamp(24px, 4vw, 48px)";
