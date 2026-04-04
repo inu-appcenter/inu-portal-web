@@ -19,12 +19,10 @@ import {
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 
-const BANNER_SECTION_HEIGHT_MOBILE = "180px";
-const BANNER_SECTION_HEIGHT_DESKTOP = "220px";
+const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
 const BANNER_STAGE_GAP = "16px";
-const BANNER_TEXT_WIDTH = "clamp(140px, 60vw, 220px)";
-const BANNER_STAGE_SHIFT = `calc((${BANNER_TEXT_WIDTH} + ${BANNER_STAGE_GAP}) / 2)`;
+const BANNER_STAGE_TEXT_WIDTH = `calc(60% - ${BANNER_STAGE_GAP})`;
 const BANNER_TEXT_REVEAL_DELAY_MS = 820;
 const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 
@@ -128,7 +126,7 @@ const MobilePhoneBookPage = () => {
         <HeroBannerColumn>
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
-              <BannerStage $isRevealed={isBannerShifted}>
+              <BannerStage>
                 <BannerVisual $isRevealed={isBannerShifted}>
                   <BannerVideo
                     ref={bannerVideoRef}
@@ -163,7 +161,9 @@ const MobilePhoneBookPage = () => {
                       <h2 className="main-title">
                         <span>Callin U</span>가{" "}
                         <span className="highlight">INTIP</span>
-                        으로 돌아왔어요
+                        으로
+                        <br />
+                        돌아왔어요
                       </h2>
                       <p className="sub-text">원하는 연락처를 검색해보세요</p>
                     </LogoInfoContent>
@@ -279,57 +279,36 @@ const BannerSection = styled.div`
   justify-content: center;
   align-items: stretch;
   width: 100%;
-  height: ${BANNER_SECTION_HEIGHT_MOBILE};
+  height: ${BANNER_SECTION_HEIGHT};
   overflow: visible;
-
-  @media ${DESKTOP_MEDIA} {
-    height: ${BANNER_SECTION_HEIGHT_DESKTOP};
-  }
 `;
 
-const BannerStage = styled.div<{ $isRevealed: boolean }>`
-  display: flex;
-  align-items: stretch;
+const BannerStage = styled.div`
+  position: relative;
   height: 100%;
-  max-width: 100%;
+  width: 100%;
+  max-width: none;
   min-width: 0;
-  gap: ${BANNER_STAGE_GAP};
-  transform: ${(props) =>
-    props.$isRevealed ? "translateX(0)" : `translateX(${BANNER_STAGE_SHIFT})`};
-  transition: transform 0.82s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
-
-  @media ${DESKTOP_MEDIA} {
-    position: relative;
-    display: block;
-    width: 100%;
-    max-width: none;
-    transform: none;
-    transition: none;
-  }
 `;
 
 const BannerVisual = styled.div<{ $isRevealed: boolean }>`
-  position: relative;
+  position: absolute;
   display: flex;
   align-items: stretch;
   flex: 0 0 auto;
   width: fit-content;
   height: 100%;
+  top: 0;
+  bottom: 0;
+  left: ${(props) => (props.$isRevealed ? "25%" : "50%")};
+  transform: translateX(-50%);
+  transition: left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left;
   background: #fff;
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
   overflow: hidden;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-
-  @media ${DESKTOP_MEDIA} {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: ${(props) => (props.$isRevealed ? "25%" : "50%")};
-    transform: translateX(-50%);
-    transition: left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
-  }
 
   &::after {
     content: "";
@@ -376,21 +355,15 @@ const DescriptionSection = styled.div`
 
 const LogoInfo = styled.div`
   display: flex;
-  flex: 0 0 ${BANNER_TEXT_WIDTH};
-  align-self: center;
+  position: absolute;
   align-items: center;
   justify-content: flex-start;
-  width: ${BANNER_TEXT_WIDTH};
+  top: 50%;
+  left: 75%;
+  transform: translate(-50%, -50%);
+  width: ${BANNER_STAGE_TEXT_WIDTH};
   min-width: 0;
   overflow: hidden;
-
-  @media ${DESKTOP_MEDIA} {
-    position: absolute;
-    top: 50%;
-    left: 75%;
-    transform: translate(-50%, -50%);
-    width: min(${BANNER_TEXT_WIDTH}, calc(50% - 24px));
-  }
 `;
 
 const LogoInfoContent = styled(motion.div)`
