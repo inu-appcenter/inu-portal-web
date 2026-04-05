@@ -20,6 +20,7 @@ export const ROUTES = {
   PHONEBOOK: {
     ROOT: "/phonebook",
     SEARCH: "/phonebook/search",
+    DETAIL: "/phonebook/detail",
   },
 
   // 마이페이지

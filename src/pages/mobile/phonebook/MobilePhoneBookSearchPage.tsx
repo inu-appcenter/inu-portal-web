@@ -1,8 +1,6 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import {
-  Copy,
-} from "lucide-react";
+import { ChevronRight, Phone } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -16,16 +14,18 @@ import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
+import {
+  getPhonebookDetailPath,
+  savePhonebookDetailState,
+} from "@/pages/mobile/phonebook/phonebookDetailState";
 import PhonebookSectionSelector, {
   PhonebookSectionKey,
 } from "@/pages/mobile/phonebook/PhonebookSectionSelector";
 import {
   MIN_PHONEBOOK_QUERY_LENGTH,
-  PHONEBOOK_MIN_QUERY_MESSAGE,
   PEOPLE_CATEGORY_OPTIONS,
   getCategoryLabel,
   getCategoryValue,
-  normalizeExternalUrl,
 } from "@/pages/mobile/phonebook/phonebookConfig";
 import { CollegeOfficeContact, DirectoryEntry } from "@/types/directory";
 import {
@@ -33,12 +33,13 @@ import {
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+import Divider from "@/components/common/Divider";
 
 const DEFAULT_SECTION: PhonebookSectionKey = "people";
-const URL_SPLIT_PATTERN =
-  /((?:https?:\/\/|www\.)[^\s]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?)/gi;
-const URL_MATCH_PATTERN =
-  /^((?:https?:\/\/|www\.)[^\s]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?)$/i;
+const MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
+const PEOPLE_SECTION_TITLE = "교직원/교수";
+const OFFICE_SECTION_TITLE = "학과/부서";
+const SEARCH_PLACEHOLDER = "이름, 소속, 학과명, 위치, 전화번호를 검색해보세요";
 
 function scrollToResultTop(behavior: ScrollBehavior = "auto") {
   const scrollContainer = document.getElementById("app-scroll-view");
@@ -59,72 +60,22 @@ function getSection(section: string | null): PhonebookSectionKey {
   return DEFAULT_SECTION;
 }
 
-function splitTrailingPunctuation(value: string) {
-  const match = value.match(/^(.*?)([),.!?;:]*)$/);
+function joinDistinctText(
+  values: Array<string | null | undefined>,
+  separator: string,
+) {
+  const uniqueValues = values.reduce<string[]>((accumulator, value) => {
+    const trimmedValue = value?.trim();
 
-  if (!match) {
-    return { core: value, suffix: "" };
-  }
+    if (!trimmedValue || accumulator.includes(trimmedValue)) {
+      return accumulator;
+    }
 
-  return {
-    core: match[1],
-    suffix: match[2] ?? "",
-  };
-}
+    accumulator.push(trimmedValue);
+    return accumulator;
+  }, []);
 
-const LinkedMultilineText = ({ text }: { text: string }) => {
-  const parts = text.split(URL_SPLIT_PATTERN);
-
-  return (
-    <RichTextValue>
-      {parts.map((part, index) => {
-        if (!part) {
-          return null;
-        }
-
-        const { core, suffix } = splitTrailingPunctuation(part);
-        const isUrlLike = URL_MATCH_PATTERN.test(core) && !core.includes("@");
-
-        if (!isUrlLike) {
-          return <Fragment key={`${part}-${index}`}>{part}</Fragment>;
-        }
-
-        return (
-          <Fragment key={`${core}-${index}`}>
-            <a
-              href={normalizeExternalUrl(core)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {core}
-            </a>
-            {suffix}
-          </Fragment>
-        );
-      })}
-    </RichTextValue>
-  );
-};
-
-async function copyText(value: string) {
-  if (!value) {
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(value);
-    return;
-  } catch {
-    const textarea = document.createElement("textarea");
-    textarea.value = value;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "absolute";
-    textarea.style.left = "-9999px";
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textarea);
-  }
+  return uniqueValues.join(separator);
 }
 
 const MobilePhoneBookSearchPage = () => {
@@ -149,16 +100,15 @@ const MobilePhoneBookSearchPage = () => {
   }, [committedQuery]);
 
   const handleSearchSubmit = () => {
-    const nextParams = new URLSearchParams(location.search);
     const nextQuery = inputValue.trim();
 
     if (nextQuery.length < MIN_PHONEBOOK_QUERY_LENGTH) {
-      window.alert(PHONEBOOK_MIN_QUERY_MESSAGE);
+      window.alert(MIN_QUERY_MESSAGE);
       return;
     }
 
+    const nextParams = new URLSearchParams(location.search);
     nextParams.set("query", nextQuery);
-
     nextParams.delete("section");
 
     navigate(`${ROUTES.PHONEBOOK.SEARCH}?${nextParams.toString()}`, {
@@ -220,13 +170,27 @@ const MobilePhoneBookSearchPage = () => {
   const peopleTotal = peopleQuery.data?.pages[0]?.data.total ?? 0;
   const officeTotal = officeQuery.data?.pages[0]?.data.total ?? 0;
 
+  const handleOpenPersonDetail = (entry: DirectoryEntry) => {
+    savePhonebookDetailState({ kind: "person", entry });
+    navigate(getPhonebookDetailPath("person", entry.id), {
+      state: { kind: "person", entry },
+    });
+  };
+
+  const handleOpenOfficeDetail = (entry: CollegeOfficeContact) => {
+    savePhonebookDetailState({ kind: "office", entry });
+    navigate(getPhonebookDetailPath("office", entry.id), {
+      state: { kind: "office", entry },
+    });
+  };
+
   const subHeader = useMemo(
     () => (
       <PhonebookSectionSelector
         selectedSection={selectedSection}
         sections={[
-          { key: "people", label: "교직원·교수", count: peopleTotal },
-          { key: "office", label: "학과사무실", count: officeTotal },
+          { key: "people", label: PEOPLE_SECTION_TITLE, count: peopleTotal },
+          { key: "office", label: OFFICE_SECTION_TITLE, count: officeTotal },
         ]}
         onSelect={handleSectionSelect}
       />
@@ -268,7 +232,7 @@ const MobilePhoneBookSearchPage = () => {
   return (
     <PageWrapper>
       <SectionWrapper id="section-people">
-        <TitleContentArea title="교직원·교수">
+        <TitleContentArea title={PEOPLE_SECTION_TITLE}>
           <SectionInner>
             <CategorySelectorPadding>
               <CategorySelectorNew
@@ -278,35 +242,39 @@ const MobilePhoneBookSearchPage = () => {
             </CategorySelectorPadding>
 
             {!canSearch ? (
-              <EmptyState>{PHONEBOOK_MIN_QUERY_MESSAGE}</EmptyState>
+              <EmptyState>{MIN_QUERY_MESSAGE}</EmptyState>
             ) : peopleQuery.isLoading ? (
               <CardList>
                 {Array.from({ length: 4 }).map((_, index) => (
                   <Box key={`people-skeleton-${index}`}>
                     <SkeletonCard>
-                      <div className="chip" />
-                      <div className="title" />
-                      <div className="line" />
-                      <div className="line short" />
+                      <div className="icon" />
+                      <div className="content">
+                        <div className="title" />
+                        <div className="line" />
+                        <div className="line short" />
+                      </div>
                     </SkeletonCard>
                   </Box>
                 ))}
               </CardList>
             ) : peopleQuery.isError ? (
               <EmptyState>
-                교직원·교수 검색 결과를 불러오는 중 오류가 발생했어요.
+                검색 결과를 불러오는 중 오류가 발생했어요.
               </EmptyState>
             ) : peopleEntries.length === 0 ? (
-              <EmptyState>
-                조건에 맞는 교직원·교수 검색 결과가 없어요.
-              </EmptyState>
+              <EmptyState>조건에 맞는 검색 결과가 없어요.</EmptyState>
             ) : (
-              <>
+              <Box>
                 <CardList>
-                  {peopleEntries.map((entry) => (
-                    <Box key={`directory-entry-${entry.id}`}>
-                      <PersonResultCard entry={entry} />
-                    </Box>
+                  {peopleEntries.map((entry, index) => (
+                    <>
+                      <PersonResultCard
+                        entry={entry}
+                        onClick={() => handleOpenPersonDetail(entry)}
+                      />
+                      {index < peopleEntries.length - 1 && <Divider />}
+                    </>
                   ))}
                 </CardList>
                 {peopleQuery.hasNextPage && (
@@ -316,48 +284,52 @@ const MobilePhoneBookSearchPage = () => {
                     disabled={peopleQuery.isFetchingNextPage}
                   >
                     {peopleQuery.isFetchingNextPage
-                      ? "교직원·교수 검색 결과를 더 불러오는 중..."
-                      : "교직원·교수 검색 결과 더보기"}
+                      ? "검색 결과를 불러오는 중..."
+                      : "검색 결과 더 보기"}
                   </LoadMoreButton>
                 )}
-              </>
+              </Box>
             )}
           </SectionInner>
         </TitleContentArea>
       </SectionWrapper>
 
       <SectionWrapper id="section-office">
-        <TitleContentArea title="학과사무실">
+        <TitleContentArea title={OFFICE_SECTION_TITLE}>
           <SectionInner>
             {!canSearch ? (
-              <EmptyState>{PHONEBOOK_MIN_QUERY_MESSAGE}</EmptyState>
+              <EmptyState>{MIN_QUERY_MESSAGE}</EmptyState>
             ) : officeQuery.isLoading ? (
               <CardList>
                 {Array.from({ length: 4 }).map((_, index) => (
                   <Box key={`office-skeleton-${index}`}>
                     <SkeletonCard>
-                      <div className="chip" />
-                      <div className="title" />
-                      <div className="line" />
-                      <div className="line short" />
+                      <div className="icon" />
+                      <div className="content">
+                        <div className="title" />
+                        <div className="line" />
+                        <div className="line short" />
+                      </div>
                     </SkeletonCard>
                   </Box>
                 ))}
               </CardList>
             ) : officeQuery.isError ? (
               <EmptyState>
-                학과사무실 검색 결과를 불러오는 중 오류가 발생했어요.
+                검색 결과를 불러오는 중 오류가 발생했어요.
               </EmptyState>
             ) : officeEntries.length === 0 ? (
-              <EmptyState>
-                조건에 맞는 학과사무실 검색 결과가 없어요.
-              </EmptyState>
+              <EmptyState>조건에 맞는 검색 결과가 없어요.</EmptyState>
             ) : (
               <>
                 <CardList>
-                  {officeEntries.map((entry) => (
+                  {officeEntries.map((entry, index) => (
                     <Box key={`college-office-${entry.id}`}>
-                      <OfficeResultCard entry={entry} />
+                      <OfficeResultCard
+                        entry={entry}
+                        onClick={() => handleOpenOfficeDetail(entry)}
+                      />
+                      {index < officeEntries.length - 1 && <Divider />}
                     </Box>
                   ))}
                 </CardList>
@@ -368,8 +340,8 @@ const MobilePhoneBookSearchPage = () => {
                     disabled={officeQuery.isFetchingNextPage}
                   >
                     {officeQuery.isFetchingNextPage
-                      ? "학과사무실 검색 결과를 더 불러오는 중..."
-                      : "학과사무실 검색 결과 더보기"}
+                      ? "검색 결과를 불러오는 중..."
+                      : "검색 결과 더 보기"}
                   </LoadMoreButton>
                 )}
               </>
@@ -385,7 +357,7 @@ const MobilePhoneBookSearchPage = () => {
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearchSubmit}
-          placeholder="이름, 소속, 학과명, 위치, 전화번호를 검색해보세요"
+          placeholder={SEARCH_PLACEHOLDER}
         />
       </FloatingSearchBar>
     </PageWrapper>
@@ -394,170 +366,75 @@ const MobilePhoneBookSearchPage = () => {
 
 export default MobilePhoneBookSearchPage;
 
-const PersonResultCard = ({ entry }: { entry: DirectoryEntry }) => {
-  const title = entry.name?.trim() || entry.position || entry.detailAffiliation;
-  const subtitle = entry.name?.trim()
-    ? [entry.position, entry.detailAffiliation || entry.affiliation]
-        .filter(Boolean)
-        .join(" · ")
-    : entry.affiliation;
+interface SearchResultCardProps {
+  onClick: () => void;
+}
+
+const PersonResultCard = ({
+  entry,
+  onClick,
+}: SearchResultCardProps & { entry: DirectoryEntry }) => {
+  const name = entry.name?.trim();
+  const title =
+    name || entry.position || entry.detailAffiliation || entry.affiliation;
+  const affiliation = joinDistinctText(
+    [entry.affiliation, entry.detailAffiliation],
+    " ",
+  );
+  const subtitle = name
+    ? joinDistinctText([entry.position, affiliation], " · ")
+    : affiliation;
+  const phone =
+    entry.phoneNumber?.trim() || entry.email?.trim() || "연락처 정보 없음";
 
   return (
-    <CardContent>
-      <ChipRow>
-        <InfoChip>{entry.categoryName}</InfoChip>
-        {(entry.detailAffiliation || entry.affiliation) && (
-          <MutedChip>{entry.detailAffiliation || entry.affiliation}</MutedChip>
-        )}
-      </ChipRow>
+    <SearchResultButton type="button" onClick={onClick}>
+      <ResultIconCircle aria-hidden="true">
+        <Phone size={16} strokeWidth={2.4} />
+      </ResultIconCircle>
 
-      <HeaderBlock>
-        <CardTitle>{title}</CardTitle>
-        {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
-      </HeaderBlock>
+      <ResultBody>
+        <ResultTitle>{title}</ResultTitle>
+        {subtitle && <ResultSubtitle>{subtitle}</ResultSubtitle>}
+        <ResultPhone>{phone}</ResultPhone>
+      </ResultBody>
 
-      <InfoList>
-        <InfoRow>
-          <span className="label">소속</span>
-          <span className="value">{entry.affiliation}</span>
-        </InfoRow>
-        {entry.duties && (
-          <InfoRow>
-            <span className="label">담당업무</span>
-            <LinkedMultilineText text={entry.duties} />
-          </InfoRow>
-        )}
-        {entry.phoneNumber && (
-          <InfoRow>
-            <span className="label">전화번호</span>
-            <InlineValueGroup>
-              <ValueLink href={`tel:${entry.phoneNumber}`}>
-                {entry.phoneNumber}
-              </ValueLink>
-              <CopyIconButton
-                type="button"
-                aria-label="전화번호 복사"
-                onClick={() => void copyText(entry.phoneNumber ?? "")}
-              >
-                <Copy size={14} />
-              </CopyIconButton>
-            </InlineValueGroup>
-          </InfoRow>
-        )}
-        {entry.email && (
-          <InfoRow>
-            <span className="label">이메일</span>
-            <InlineValueGroup>
-              <ValueLink href={`mailto:${entry.email}`}>{entry.email}</ValueLink>
-              <CopyIconButton
-                type="button"
-                aria-label="이메일 복사"
-                onClick={() => void copyText(entry.email ?? "")}
-              >
-                <Copy size={14} />
-              </CopyIconButton>
-            </InlineValueGroup>
-          </InfoRow>
-        )}
-        {entry.profileUrl && (
-          <InfoRow>
-            <span className="label">프로필</span>
-            <InlineValueGroup>
-              <ValueLink
-                href={normalizeExternalUrl(entry.profileUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                상세 페이지
-              </ValueLink>
-              <CopyIconButton
-                type="button"
-                aria-label="프로필 링크 복사"
-                onClick={() => void copyText(entry.profileUrl ?? "")}
-              >
-                <Copy size={14} />
-              </CopyIconButton>
-            </InlineValueGroup>
-          </InfoRow>
-        )}
-      </InfoList>
-    </CardContent>
+      <ResultArrow aria-hidden="true">
+        <ChevronRight size={18} strokeWidth={2.4} />
+      </ResultArrow>
+    </SearchResultButton>
   );
 };
 
-const OfficeResultCard = ({ entry }: { entry: CollegeOfficeContact }) => {
+const OfficeResultCard = ({
+  entry,
+  onClick,
+}: SearchResultCardProps & { entry: CollegeOfficeContact }) => {
+  const subtitle = joinDistinctText(
+    [entry.collegeName, entry.officeLocation || entry.collegeLocationSummary],
+    " · ",
+  );
+  const phone =
+    entry.officePhoneNumber?.trim() ||
+    entry.homepageUrl?.trim() ||
+    "연락처 정보 없음";
+
   return (
-    <CardContent>
-      <ChipRow>
-        <InfoChip>{entry.collegeName}</InfoChip>
-        {entry.collegeLocationSummary && (
-          <MutedChip>{entry.collegeLocationSummary}</MutedChip>
-        )}
-      </ChipRow>
+    <SearchResultButton type="button" onClick={onClick}>
+      <ResultIconCircle aria-hidden="true">
+        <Phone size={22} strokeWidth={2.4} />
+      </ResultIconCircle>
 
-      <HeaderBlock>
-        <CardTitle>{entry.departmentName}</CardTitle>
-        {entry.officeLocation && (
-          <CardSubtitle>{entry.officeLocation}</CardSubtitle>
-        )}
-      </HeaderBlock>
+      <ResultBody>
+        <ResultTitle>{entry.departmentName}</ResultTitle>
+        {subtitle && <ResultSubtitle>{subtitle}</ResultSubtitle>}
+        <ResultPhone>{phone}</ResultPhone>
+      </ResultBody>
 
-      <InfoList>
-        {entry.officeLocation && (
-          <InfoRow>
-            <span className="label">위치</span>
-            <InlineValueGroup>
-              <span className="value">{entry.officeLocation}</span>
-              <CopyIconButton
-                type="button"
-                aria-label="위치 복사"
-                onClick={() => void copyText(entry.officeLocation ?? "")}
-              >
-                <Copy size={14} />
-              </CopyIconButton>
-            </InlineValueGroup>
-          </InfoRow>
-        )}
-        {entry.homepageUrl && (
-          <InfoRow>
-            <span className="label">홈페이지</span>
-            <InlineValueGroup>
-              <ValueLink
-                href={normalizeExternalUrl(entry.homepageUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {entry.homepageUrl}
-              </ValueLink>
-              <CopyIconButton
-                type="button"
-                aria-label="홈페이지 주소 복사"
-                onClick={() => void copyText(entry.homepageUrl ?? "")}
-              >
-                <Copy size={14} />
-              </CopyIconButton>
-            </InlineValueGroup>
-          </InfoRow>
-        )}
-        {entry.officePhoneNumber && (
-          <InfoRow>
-            <span className="label">전화번호</span>
-            <InlineValueGroup>
-              <ValueLink href={`tel:${entry.officePhoneNumber}`}>
-                {entry.officePhoneNumber}
-              </ValueLink>
-              <CopyIconButton
-                type="button"
-                aria-label="전화번호 복사"
-                onClick={() => void copyText(entry.officePhoneNumber ?? "")}
-              >
-                <Copy size={14} />
-              </CopyIconButton>
-            </InlineValueGroup>
-          </InfoRow>
-        )}
-      </InfoList>
-    </CardContent>
+      <ResultArrow aria-hidden="true">
+        <ChevronRight size={18} strokeWidth={2.4} />
+      </ResultArrow>
+    </SearchResultButton>
   );
 };
 
@@ -596,7 +473,10 @@ const CategorySelectorPadding = styled.div`
 const CardList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  //gap: 12px;
+  width: 100%;
+
+  //padding: 20px;
 
   @media ${DESKTOP_MEDIA} {
     display: grid;
@@ -605,149 +485,87 @@ const CardList = styled.div`
   }
 `;
 
-const CardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+const SearchResultButton = styled.button`
+  //width: calc(100% + 40px);
+  //margin: -20px;
   width: 100%;
+  //padding: 0 20px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  //gap: 8px;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      background: #f8fbff;
+    }
+  }
 `;
 
-const ChipRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const InfoChip = styled.span`
+const ResultIconCircle = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  background: #eef4ff;
-  color: #3468c0;
-  font-size: 12px;
-  font-weight: 700;
+  background: #c9ced8;
+  color: #fff;
+  flex-shrink: 0;
 `;
 
-const MutedChip = styled.span`
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #f4f6fb;
-  color: #667085;
-  font-size: 12px;
-  font-weight: 600;
-`;
-
-const HeaderBlock = styled.div`
+const ResultBody = styled.div`
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  //gap: 4px;
 `;
 
-const CardTitle = styled.h3`
+const ResultTitle = styled.h3`
   margin: 0;
-  font-size: 19px;
+  font-size: 14px;
   font-weight: 800;
-  color: #111827;
+  color: #2456ad;
   line-height: 1.35;
   word-break: keep-all;
 `;
 
-const CardSubtitle = styled.p`
+const ResultSubtitle = styled.p`
   margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #1f2937;
   word-break: keep-all;
 `;
 
-const InfoList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const RichTextValue = styled.div`
+const ResultPhone = styled.p`
+  margin: 0;
   font-size: 14px;
-  color: #1f2937;
-  line-height: 1.5;
-  word-break: break-word;
-  white-space: pre-wrap;
-
-  a {
-    color: #2f5fb3;
-    text-decoration: none;
-  }
-`;
-
-const InfoRow = styled.div`
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 10px;
-  align-items: flex-start;
-
-  .label {
-    font-size: 13px;
-    font-weight: 700;
-    color: #8a94a6;
-  }
-
-  .value {
-    font-size: 14px;
-    color: #1f2937;
-    line-height: 1.5;
-    word-break: break-word;
-    min-width: 0;
-  }
-
-  .multiline {
-    white-space: pre-line;
-  }
-`;
-
-const InlineValueGroup = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  min-width: 0;
-`;
-
-const ValueLink = styled.a`
-  display: inline-flex;
-  align-items: center;
-  color: #2f5fb3;
-  text-decoration: none;
-  font-size: 14px;
-  line-height: 1.5;
-  min-width: 0;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #111827;
   word-break: break-word;
 `;
 
-const CopyIconButton = styled.button`
+const ResultArrow = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 999px;
-  padding: 0;
-  background: #f6f8fc;
-  color: #2f5fb3;
-  cursor: pointer;
-  flex-shrink: 0;
-  align-self: center;
+  color: #98a2b3;
 `;
 
 const SkeletonCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
   width: 100%;
 
   div {
@@ -757,13 +575,20 @@ const SkeletonCard = styled.div`
     animation: pulse 1.4s ease-in-out infinite;
   }
 
-  .chip {
-    width: 92px;
-    height: 28px;
+  .icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .content {
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .title {
-    width: 68%;
+    width: 64%;
     height: 24px;
     border-radius: 12px;
   }
@@ -775,7 +600,7 @@ const SkeletonCard = styled.div`
   }
 
   .short {
-    width: 72%;
+    width: 74%;
   }
 
   @keyframes pulse {
