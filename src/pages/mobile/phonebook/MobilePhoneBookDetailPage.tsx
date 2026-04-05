@@ -254,10 +254,6 @@ function OfficeDetailContent({ entry }: { entry: CollegeOfficeContact }) {
     ),
   ].filter(Boolean);
 
-  // 디버깅 로그: 필드 배열 상태 확인
-  console.log("Office Fields:", fields);
-  console.log("Office Fields Length:", fields.length);
-
   return (
     <>
       {fields.map((field, index) => {

@@ -1,21 +1,39 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 
+interface CategoryOption {
+  label: string;
+  value?: string;
+}
+
 interface CategorySelectorNewProps {
-  categories: string[];
+  categories: Array<string | CategoryOption>;
   selectedCategory?: string;
+  queryParam?: string;
+  paramsToReset?: string[];
 }
 
 export default function CategorySelectorNew({
   categories,
   selectedCategory,
+  queryParam = "category",
+  paramsToReset = ["search"],
 }: CategorySelectorNewProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
+  const normalizedCategories = useMemo(
+    () =>
+      categories.map((category) =>
+        typeof category === "string"
+          ? { label: category, value: category }
+          : { label: category.label, value: category.value ?? category.label },
+      ),
+    [categories],
+  );
 
   useLayoutEffect(() => {
     const element = scrollAreaRef.current;
@@ -52,12 +70,13 @@ export default function CategorySelectorNew({
       window.removeEventListener("resize", updateOverflow);
       observer.disconnect();
     };
-  }, [categories, selectedCategory]);
+  }, [normalizedCategories, selectedCategory]);
 
   const handleClickCategory = (category: string) => {
     const params = new URLSearchParams(location.search);
-    params.delete("search");
-    params.set("category", category);
+
+    paramsToReset.forEach((paramKey) => params.delete(paramKey));
+    params.set(queryParam, category);
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
   };
 
@@ -67,13 +86,13 @@ export default function CategorySelectorNew({
         ref={scrollAreaRef}
         $hasHorizontalOverflow={hasHorizontalOverflow}
       >
-        {categories.map((category, index) => (
+        {normalizedCategories.map((category, index) => (
           <FillItem
             key={index}
-            $selected={selectedCategory === category}
-            onClick={() => handleClickCategory(category)}
+            $selected={selectedCategory === category.value}
+            onClick={() => handleClickCategory(category.value)}
           >
-            <div>{category}</div>
+            <div>{category.label}</div>
           </FillItem>
         ))}
       </CategoryScrollArea>

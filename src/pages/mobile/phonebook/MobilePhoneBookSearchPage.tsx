@@ -18,9 +18,6 @@ import {
   getPhonebookDetailPath,
   savePhonebookDetailState,
 } from "@/pages/mobile/phonebook/phonebookDetailState";
-import PhonebookSectionSelector, {
-  PhonebookSectionKey,
-} from "@/pages/mobile/phonebook/PhonebookSectionSelector";
 import {
   MIN_PHONEBOOK_QUERY_LENGTH,
   PEOPLE_CATEGORY_OPTIONS,
@@ -34,6 +31,8 @@ import {
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import Divider from "@/components/common/Divider";
+
+type PhonebookSectionKey = "people" | "office";
 
 const DEFAULT_SECTION: PhonebookSectionKey = "people";
 const MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
@@ -116,15 +115,6 @@ const MobilePhoneBookSearchPage = () => {
     });
   };
 
-  const handleSectionSelect = (section: PhonebookSectionKey) => {
-    const nextParams = new URLSearchParams(location.search);
-    nextParams.set("section", section);
-
-    navigate(`${ROUTES.PHONEBOOK.SEARCH}?${nextParams.toString()}`, {
-      replace: true,
-    });
-  };
-
   const peopleQuery = useInfiniteQuery({
     queryKey: [
       "directory-search",
@@ -184,18 +174,24 @@ const MobilePhoneBookSearchPage = () => {
     });
   };
 
+  const sectionCategories = useMemo(
+    () => [
+      { label: `${PEOPLE_SECTION_TITLE} ${peopleTotal}`, value: "people" },
+      { label: `${OFFICE_SECTION_TITLE} ${officeTotal}`, value: "office" },
+    ],
+    [officeTotal, peopleTotal],
+  );
+
   const subHeader = useMemo(
     () => (
-      <PhonebookSectionSelector
-        selectedSection={selectedSection}
-        sections={[
-          { key: "people", label: PEOPLE_SECTION_TITLE, count: peopleTotal },
-          { key: "office", label: OFFICE_SECTION_TITLE, count: officeTotal },
-        ]}
-        onSelect={handleSectionSelect}
+      <CategorySelectorNew
+        categories={sectionCategories}
+        selectedCategory={selectedSection}
+        queryParam="section"
+        paramsToReset={[]}
       />
     ),
-    [officeTotal, peopleTotal, selectedSection],
+    [sectionCategories, selectedSection],
   );
 
   useHeader({
