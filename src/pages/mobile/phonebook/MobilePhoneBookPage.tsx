@@ -21,24 +21,48 @@ import {
 
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
-const BANNER_TEXT_REVEAL_DELAY_MS = 820;
 const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
+const BANNER_EXPAND_DURATION = 820;
+const BANNER_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 const MobilePhoneBookPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search],
   );
+
   const bannerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const bannerVisualRef = useRef<HTMLDivElement | null>(null);
+  const pendingFlipRectRef = useRef<DOMRect | null>(null);
+  const flipAnimationFrameRef = useRef<number | null>(null);
+  const hasExpandedRef = useRef(false);
+
   const [inputValue, setInputValue] = useState(searchParams.get("query") ?? "");
-  const [isBannerShifted, setIsBannerShifted] = useState(false);
+  const [isBannerExpanded, setIsBannerExpanded] = useState(false);
   const [isBannerTextVisible, setIsBannerTextVisible] = useState(false);
 
   useEffect(() => {
     setInputValue(searchParams.get("query") ?? "");
   }, [searchParams]);
+
+  const runExpandAnimation = () => {
+    if (hasExpandedRef.current) {
+      return;
+    }
+
+    hasExpandedRef.current = true;
+
+    const visual = bannerVisualRef.current;
+
+    if (visual) {
+      pendingFlipRectRef.current = visual.getBoundingClientRect();
+    }
+
+    setIsBannerExpanded(true);
+  };
 
   useEffect(() => {
     const bannerVideo = bannerVideoRef.current;
@@ -47,7 +71,9 @@ const MobilePhoneBookPage = () => {
       return;
     }
 
-    setIsBannerShifted(false);
+    hasExpandedRef.current = false;
+    pendingFlipRectRef.current = null;
+    setIsBannerExpanded(false);
     setIsBannerTextVisible(false);
 
     const startPlayback = () => {
@@ -56,11 +82,12 @@ const MobilePhoneBookPage = () => {
       try {
         bannerVideo.currentTime = 0;
       } catch {
+        runExpandAnimation();
         return;
       }
 
       void bannerVideo.play().catch(() => {
-        setIsBannerShifted(true);
+        runExpandAnimation();
       });
     };
 
@@ -77,18 +104,41 @@ const MobilePhoneBookPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!isBannerShifted) {
+    if (!isBannerExpanded) {
       return;
     }
 
-    const timeoutId = window.setTimeout(() => {
-      setIsBannerTextVisible(true);
-    }, BANNER_TEXT_REVEAL_DELAY_MS);
+    const visual = bannerVisualRef.current;
+    const prevRect = pendingFlipRectRef.current;
+
+    if (!visual || !prevRect) {
+      return;
+    }
+
+    const nextRect = visual.getBoundingClientRect();
+    const deltaX = prevRect.left - nextRect.left;
+
+    pendingFlipRectRef.current = null;
+
+    if (Math.abs(deltaX) < 1) {
+      return;
+    }
+
+    visual.style.transition = "none";
+    visual.style.transform = `translate3d(${deltaX}px, 0, 0)`;
+
+    flipAnimationFrameRef.current = window.requestAnimationFrame(() => {
+      visual.style.transition = `transform ${BANNER_EXPAND_DURATION}ms ${BANNER_EASE}`;
+      visual.style.transform = "translate3d(0, 0, 0)";
+    });
 
     return () => {
-      window.clearTimeout(timeoutId);
+      if (flipAnimationFrameRef.current !== null) {
+        window.cancelAnimationFrame(flipAnimationFrameRef.current);
+        flipAnimationFrameRef.current = null;
+      }
     };
-  }, [isBannerShifted]);
+  }, [isBannerExpanded]);
 
   const handleSearchSubmit = () => {
     const nextQuery = inputValue.trim();
@@ -109,14 +159,14 @@ const MobilePhoneBookPage = () => {
     );
   };
 
+  const handleBannerPlaybackEnd = () => {
+    runExpandAnimation();
+  };
+
   useHeader({
     title: "INU 전화번호부",
     hasback: true,
   });
-
-  const handleBannerPlaybackEnd = () => {
-    setIsBannerShifted(true);
-  };
 
   return (
     <MobilePhoneBookPageWrapper>
@@ -124,9 +174,8 @@ const MobilePhoneBookPage = () => {
         <HeroBannerColumn>
           <Box style={{ width: "100%", maxWidth: "500px" }}>
             <BannerSection>
-              <BannerStage>
-                {/* 원본 절대 배치 방식 복구: 레이아웃 간섭 원천 차단 */}
-                <BannerVisual $isRevealed={isBannerShifted}>
+              <BannerStage $isExpanded={isBannerExpanded}>
+                <BannerVisual ref={bannerVisualRef}>
                   <BannerVideo
                     ref={bannerVideoRef}
                     autoPlay
@@ -146,24 +195,29 @@ const MobilePhoneBookPage = () => {
                   </BannerVideo>
                 </BannerVisual>
 
-                <LogoInfo>
+                <LogoInfo
+                  $isExpanded={isBannerExpanded}
+                  onTransitionEnd={(event) => {
+                    if (!isBannerExpanded) return;
+                    if (event.propertyName !== "width") return;
+                    setIsBannerTextVisible(true);
+                  }}
+                >
                   <AnimatePresence>
                     {isBannerTextVisible && (
                       <LogoInfoContent
-                        /* 사용자 원본 애니메이션 수치 및 타이밍 완전 복구 */
-                        initial={{ opacity: 0, y: 14 }}
+                        initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
+                        exit={{ opacity: 0, y: 6 }}
                         transition={{
-                          duration: 0.42,
+                          duration: 0.36,
                           ease: [0.22, 1, 0.36, 1],
                         }}
                       >
                         <p className="sub-text">우리 학교 연락처 앱</p>
                         <h2 className="main-title">
                           <span>Callin U</span>가{" "}
-                          <span className="highlight">INTIP</span>
-                          으로
+                          <span className="highlight">INTIP</span>으로
                           <br />
                           돌아왔어요
                         </h2>
@@ -273,8 +327,6 @@ const HeroBannerColumn = styled.div`
   justify-content: center;
   min-width: 0;
   width: 100%;
-  overflow-x: hidden;
-  overflow-x: clip;
 `;
 
 const BannerSection = styled.div`
@@ -283,34 +335,38 @@ const BannerSection = styled.div`
   align-items: stretch;
   width: 100%;
   height: ${BANNER_SECTION_HEIGHT};
-  overflow: visible;
+  overflow: hidden;
 `;
 
-const BannerStage = styled.div`
-  position: relative;
-  height: 100%;
+const BannerStage = styled.div<{ $isExpanded: boolean }>`
   width: 100%;
-  max-width: none;
+  height: 100%;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: ${({ $isExpanded }) =>
+    $isExpanded ? "space-evenly" : "center"};
+  gap: ${({ $isExpanded }) => ($isExpanded ? "clamp(12px, 4vw, 28px)" : "0px")};
+  box-sizing: border-box;
+  transition: gap ${BANNER_EXPAND_DURATION}ms ${BANNER_EASE};
 `;
 
-/* CSS transition만 사용한 원본 구조 복원 */
-const BannerVisual = styled.div<{ $isRevealed: boolean }>`
-  position: absolute;
+const BannerVisual = styled.div`
   display: flex;
   align-items: stretch;
+  justify-content: center;
   flex: 0 0 auto;
   width: fit-content;
   height: 100%;
-  top: 0;
-  bottom: 0;
-  left: ${(props) => (props.$isRevealed ? "25%" : "50%")};
-  transform: translateX(-50%);
-  transition: left 0.82s cubic-bezier(0.22, 1, 0.36, 1);
   background: #fff;
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
   overflow: hidden;
+  position: relative;
+
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 
   &::after {
     content: "";
@@ -345,17 +401,21 @@ const BannerVideo = styled.video`
   }
 `;
 
-/* 우측 50% 공간 점유 및 텍스트 잘림 방지 */
-const LogoInfo = styled.div`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  right: 0;
+const LogoInfo = styled.div<{ $isExpanded: boolean }>`
+  width: ${({ $isExpanded }) =>
+    $isExpanded ? "clamp(120px, 50vw, 220px)" : "0px"};
+  min-width: 0;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: visible;
+  overflow: hidden;
+  opacity: ${({ $isExpanded }) => ($isExpanded ? 1 : 0)};
+  transition:
+    width ${BANNER_EXPAND_DURATION}ms ease,
+    opacity 0.2s ease;
+
+  will-change: width, opacity;
 `;
 
 const LogoInfoContent = styled(motion.div)`
@@ -363,9 +423,16 @@ const LogoInfoContent = styled(motion.div)`
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  width: fit-content;
+  min-width: 0;
+  max-width: 100%;
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 
   .sub-text {
     font-size: 14px;
