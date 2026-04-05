@@ -48,4 +48,6 @@ const DescriptionText = styled.p`
   margin: 0 8px;
   text-align: start;
   width: 100%;
+
+  padding: 0 20px;
 `;

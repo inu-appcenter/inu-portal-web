@@ -1,60 +1,27 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import styled from "styled-components";
-import searchImg from "@/resources/assets/mobile-home/category-form/input.svg";
+import { useNavigate } from "react-router-dom";
 
-export default function SerachForm() {
+import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+
+export default function BookSearchForm() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
   const handleSearch = () => {
     if (query.trim().length < 2) {
-      alert("검색어는 두 글자 이상이어야 합니다.");
+      alert("검색어는 두 글자 이상 입력해주세요.");
       return;
     }
+
     navigate(`/home/util?type=book&search=${query}`);
   };
 
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      handleSearch();
-    }
-  };
-
   return (
-    <SearchFormWrapper>
-      <div>
-        <input
-          type="text"
-          placeholder="검색어를 입력하세요."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyPress}
-        />
-        <img src={searchImg} alt="" onClick={handleSearch} />
-      </div>
-    </SearchFormWrapper>
+    <MobilePillSearchBar
+      value={query}
+      onChange={setQuery}
+      onSubmit={handleSearch}
+      placeholder="검색어를 입력해주세요"
+    />
   );
 }
-
-const SearchFormWrapper = styled.div`
-  width: 100%;
-  div {
-    box-sizing: border-box;
-    border-radius: 10px;
-    box-shadow: 0px 2px 8px 0px #0000001a;
-    width: 100%;
-    background-color: white;
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 14px;
-    gap: 8px;
-    input {
-      border: none;
-      font-size: 16px;
-      color: #888888;
-      font-weight: 500;
-      flex-grow: 1;
-    }
-  }
-`;

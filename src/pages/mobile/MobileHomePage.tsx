@@ -241,18 +241,14 @@ export default function MobileHomePage() {
       {/* 상단 배너 영역 */}
       <Section>
         <Banner />
+        <CategoryFormSection>
+          <CategoryForm />
+          <HomeChipGroup />
+        </CategoryFormSection>
       </Section>
 
       {/* 메인 피드 영역 */}
       <FeedLayout>
-        <Section>
-          <CategoryForm />
-        </Section>
-
-        <Section>
-          <HomeChipGroup />
-        </Section>
-
         {isDesktopLayout ? (
           <DesktopWidgetColumns>
             <DesktopWidgetColumn>
@@ -316,17 +312,27 @@ const Section = styled.section`
   box-sizing: border-box;
   width: 100%;
 
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
   @media ${DESKTOP_MEDIA} {
     padding: 0;
   }
+`;
+
+const CategoryFormSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 `;
 
 // 역할: 수직 리듬(Vertical Rhythm) 관리 (기존 ContainerWrapper 대체)
 const FeedLayout = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  padding: 24px 0;
+  gap: 24px;
+  padding: 12px 0;
   width: 100%;
 
   @media ${DESKTOP_MEDIA} {
