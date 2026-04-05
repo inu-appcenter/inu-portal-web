@@ -269,7 +269,11 @@ const MobilePhoneBookSearchPage = () => {
                         entry={entry}
                         onClick={() => handleOpenPersonDetail(entry)}
                       />
-                      {index < peopleEntries.length - 1 && <Divider />}
+                      {index < peopleEntries.length - 1 && (
+                        <DividerWrapper>
+                          <Divider />
+                        </DividerWrapper>
+                      )}
                     </>
                   ))}
                 </CardList>
@@ -317,16 +321,21 @@ const MobilePhoneBookSearchPage = () => {
             ) : officeEntries.length === 0 ? (
               <EmptyState>조건에 맞는 검색 결과가 없어요.</EmptyState>
             ) : (
-              <>
+              <Box>
                 <CardList>
                   {officeEntries.map((entry, index) => (
-                    <Box key={`college-office-${entry.id}`}>
+                    <>
                       <OfficeResultCard
                         entry={entry}
                         onClick={() => handleOpenOfficeDetail(entry)}
+                        key={`college-office-${entry.id}`}
                       />
-                      {index < officeEntries.length - 1 && <Divider />}
-                    </Box>
+                      {index < officeEntries.length - 1 && (
+                        <DividerWrapper>
+                          <Divider />
+                        </DividerWrapper>
+                      )}
+                    </>
                   ))}
                 </CardList>
                 {officeQuery.hasNextPage && (
@@ -340,7 +349,7 @@ const MobilePhoneBookSearchPage = () => {
                       : "검색 결과 더 보기"}
                   </LoadMoreButton>
                 )}
-              </>
+              </Box>
             )}
           </SectionInner>
         </TitleContentArea>
@@ -478,6 +487,13 @@ const CardList = styled.div`
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
+  }
+`;
+
+/* DividerWrapper 추가: 모바일에서만 보이도록 설정 */
+const DividerWrapper = styled.div`
+  @media ${DESKTOP_MEDIA} {
+    display: none; /* PC 레이아웃에서는 Divider 제거 */
   }
 `;
 
@@ -620,6 +636,8 @@ const LoadMoreButton = styled.button`
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+
+  margin-top: 20px;
 
   &:disabled {
     cursor: default;

@@ -187,7 +187,7 @@ const MobilePhoneBookPage = () => {
                 </h3>
                 <p>
                   우리 학교 전화번호는 032-835-<strong>[내선번호]</strong>{" "}
-                  형식으로 찾을 수 있어요.
+                  형식이에요.
                 </p>
               </div>
             </GuideItem>
@@ -201,6 +201,8 @@ const MobilePhoneBookPage = () => {
                 <p>
                   교직원·교수 정보는 이름, 소속, 상세소속, 직위, 담당업무,
                   이메일로 찾을 수 있어요.
+                  <br />
+                  학과 사무실 교직원 검색은 지원되지 않아요.
                 </p>
               </div>
             </GuideItem>
@@ -212,8 +214,7 @@ const MobilePhoneBookPage = () => {
                   <strong>학과명</strong>으로 검색해보세요
                 </h3>
                 <p>
-                  학과사무실 전화번호, 위치, 홈페이지, 단과대학 정보까지 함께
-                  찾을 수 있어요.
+                  학과사무실 대표 전화번호와 위치, 홈페이지를 확인할 수 있어요.
                 </p>
               </div>
             </GuideItem>
