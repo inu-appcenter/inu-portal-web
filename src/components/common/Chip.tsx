@@ -50,8 +50,7 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
     $isAIButton
       ? "linear-gradient(270deg, #EFFFF4 0%, #DEEFFF 67.31%, #FEEDFF 100%)"
       : "#fff"};
-
-  box-shadow: ${SOFT_CHIP_SHADOW};
+  //box-shadow: ${SOFT_CHIP_SHADOW};
 `;
 
 const Icon = styled.img`

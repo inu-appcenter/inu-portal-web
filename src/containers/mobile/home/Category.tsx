@@ -15,12 +15,17 @@ import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 const categories = [
   { title: "식당 메뉴", img: menuImg, href: "/home/menu" },
   { title: "학교 공지", img: schoolNoticeImg, href: "/home/notice" },
-  { title: "학과 공지", img: noticeImg, href: "/home/deptnotice", isNew: true },
+  {
+    title: "학과 공지",
+    img: noticeImg,
+    href: "/home/deptnotice",
+    isNew: false,
+  },
   { title: "학사 일정", img: calendarImg, href: "/home/calendar" },
   { title: "캠퍼스맵", img: mapImg, href: "/home/campus" },
   { title: "동아리", img: clubImg, href: "/home/club" },
   { title: "TIPS", img: tipImg, href: "/home/tips" },
-  { title: "인입런", img: busImg, href: "/bus", isNew: true },
+  { title: "인입런", img: busImg, href: "/bus", isNew: false },
 ];
 
 export default function CategoryForm() {
@@ -117,5 +122,4 @@ const NewBadge = styled.span`
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-
 `;

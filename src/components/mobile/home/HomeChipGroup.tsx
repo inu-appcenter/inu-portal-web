@@ -1,16 +1,31 @@
 import styled from "styled-components";
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Chip from "src/components/common/Chip";
 
+import TooltipMessage from "@/components/common/TooltipMessage";
 import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
-import { useNavigate } from "react-router-dom";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import {
+  dismissTooltip,
+  isTooltipDismissed,
+} from "@/utils/dismissibleTooltipStorage";
+
+const PHONEBOOK_TOOLTIP_ID = "home-phonebook-search";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
+  const phonebookTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
+  const [isPhonebookTooltipVisible, setIsPhonebookTooltipVisible] = useState(
+    () => !isTooltipDismissed(PHONEBOOK_TOOLTIP_ID),
+  );
+
   const chips = [
     {
+      id: "ai",
       iconSrc: AIIcon,
       title: "횃불이 AI",
       onClick: () => {
@@ -19,6 +34,7 @@ const HomeChipGroup = () => {
       isAIButton: true,
     },
     {
+      id: "phonebook",
       iconSrc: CallINU,
       title: "INU 전화번호부",
       onClick: () => {
@@ -26,6 +42,7 @@ const HomeChipGroup = () => {
       },
     },
     {
+      id: "unidorm",
       iconSrc: Unidorm,
       title: "유니돔",
       isExternalLink: true,
@@ -39,19 +56,47 @@ const HomeChipGroup = () => {
     },
   ];
 
+  const handleClosePhonebookTooltip = () => {
+    dismissTooltip(PHONEBOOK_TOOLTIP_ID);
+    setIsPhonebookTooltipVisible(false);
+  };
+
   return (
     <MaskContainer>
       <ChipGroupWrapper>
-        {chips.map((chip, index) => (
-          <Chip
-            key={index}
-            iconSrc={chip.iconSrc}
-            title={chip.title}
-            isExternalLink={chip.isExternalLink}
-            isAIButton={chip.isAIButton}
-            onClick={chip.onClick}
-          />
-        ))}
+        {chips.map((chip) => {
+          const isPhonebookChip = chip.id === "phonebook";
+
+          return (
+            <ChipSlot
+              key={chip.id}
+              $reserveTooltipSpace={
+                isPhonebookChip && isPhonebookTooltipVisible
+              }
+            >
+              <TooltipAnchor
+                ref={isPhonebookChip ? phonebookTooltipAnchorRef : undefined}
+              >
+                <Chip
+                  iconSrc={chip.iconSrc}
+                  title={chip.title}
+                  isExternalLink={chip.isExternalLink}
+                  isAIButton={chip.isAIButton}
+                  onClick={chip.onClick}
+                />
+                {isPhonebookChip && isPhonebookTooltipVisible && (
+                  <TooltipMessage
+                    message="신규 기능 오픈!\n원하는 학교 연락처를\n찾아보세요."
+                    onClose={handleClosePhonebookTooltip}
+                    position="bottom"
+                    align="center"
+                    anchorRef={phonebookTooltipAnchorRef}
+                  />
+                )}
+              </TooltipAnchor>
+            </ChipSlot>
+          );
+        })}
       </ChipGroupWrapper>
     </MaskContainer>
   );
@@ -59,7 +104,6 @@ const HomeChipGroup = () => {
 
 export default HomeChipGroup;
 
-/* 마스킹 효과 컨테이너 */
 const MaskContainer = styled.div`
   position: relative;
   width: 100%;
@@ -76,7 +120,6 @@ const MaskContainer = styled.div`
     rgba(0, 0, 0, 0) 100%
   );
 
-  /* 우측 끝부분을 투명하게 처리 (배경색 무관) */
   @media ${DESKTOP_MEDIA} {
     overflow: visible;
     mask-image: none;
@@ -93,9 +136,7 @@ const ChipGroupWrapper = styled.div`
   overflow-y: hidden;
   white-space: nowrap;
 
-  padding: 8px 20px 12px 2px;
-
-  /* 마스크에 가려지는 영역 보정 */
+  padding: 0 20px 0 2px;
 
   -webkit-overflow-scrolling: touch;
 
@@ -108,4 +149,14 @@ const ChipGroupWrapper = styled.div`
     overflow: visible;
     padding: 8px 0 12px;
   }
+`;
+
+const ChipSlot = styled.div<{ $reserveTooltipSpace: boolean }>`
+  display: flex;
+  flex: 0 0 auto;
+`;
+
+const TooltipAnchor = styled.div`
+  position: relative;
+  width: fit-content;
 `;
