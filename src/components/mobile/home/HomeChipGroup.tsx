@@ -38,16 +38,16 @@ const HomeChipGroup = () => {
       iconSrc: CallINU,
       title: "INU 전화번호부",
       onClick: () => {
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-        // iOS WebView 판별 (Safari 제외)
-        const isIOSWebView = isIOS && !/Safari/i.test(navigator.userAgent);
-
-        if (isIOSWebView) {
-          alert(
-            "iPhone의 경우 페이지 진입 시 동영상이 전체화면으로 재생되는 문제가 있습니다.\n동영상을 닫고 이용해주세요. 문제를 수정한 앱을 곧 배포하겠습니다.",
-          );
-        }
+        // const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        //
+        // // iOS WebView 판별 (Safari 제외)
+        // const isIOSWebView = isIOS && !/Safari/i.test(navigator.userAgent);
+        //
+        // if (isIOSWebView) {
+        //   alert(
+        //     "iPhone의 경우 페이지 진입 시 동영상이 전체화면으로 재생되는 문제가 있습니다.\n동영상을 닫고 이용해주세요. 문제를 수정한 앱을 곧 배포하겠습니다.",
+        //   );
+        // }
         navigate(`/phonebook`);
       },
     },
