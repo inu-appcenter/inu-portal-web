@@ -53,6 +53,7 @@ import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookDetailPage";
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
 import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage";
+import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 
 export const router = createBrowserRouter([
   {
@@ -105,6 +106,10 @@ export const router = createBrowserRouter([
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },
+
+          //앱센터의 다른 앱
+          { path: ROUTES.MORE_APPS.ROOT, element: <MoreAppsPage /> },
+
           {
             path: ROUTES.PHONEBOOK.SEARCH,
             element: <MobilePhoneBookSearchPage />,

@@ -8,6 +8,7 @@ import TooltipMessage from "@/components/common/TooltipMessage";
 import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
+import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import {
   dismissTooltip,
@@ -32,6 +33,7 @@ const HomeChipGroup = () => {
         navigate(`/ai`);
       },
       isAIButton: true,
+      isActive: false,
     },
     {
       id: "phonebook",
@@ -41,6 +43,16 @@ const HomeChipGroup = () => {
         navigate(`/phonebook`);
       },
     },
+
+    {
+      id: "more-apps",
+      iconSrc: AppcenterLogo_NoText,
+      title: "앱센터의 다른 앱",
+      onClick: () => {
+        navigate(`/more-apps`);
+      },
+    },
+
     {
       id: "unidorm",
       iconSrc: Unidorm,
@@ -53,6 +65,7 @@ const HomeChipGroup = () => {
           "noopener,noreferrer",
         );
       },
+      isActive: false,
     },
   ];
 
@@ -64,39 +77,41 @@ const HomeChipGroup = () => {
   return (
     <MaskContainer>
       <ChipGroupWrapper>
-        {chips.map((chip) => {
-          const isPhonebookChip = chip.id === "phonebook";
+        {chips
+          .filter((chip) => chip.isActive !== false)
+          .map((chip) => {
+            const isPhonebookChip = chip.id === "phonebook";
 
-          return (
-            <ChipSlot
-              key={chip.id}
-              $reserveTooltipSpace={
-                isPhonebookChip && isPhonebookTooltipVisible
-              }
-            >
-              <TooltipAnchor
-                ref={isPhonebookChip ? phonebookTooltipAnchorRef : undefined}
+            return (
+              <ChipSlot
+                key={chip.id}
+                $reserveTooltipSpace={
+                  isPhonebookChip && isPhonebookTooltipVisible
+                }
               >
-                <Chip
-                  iconSrc={chip.iconSrc}
-                  title={chip.title}
-                  isExternalLink={chip.isExternalLink}
-                  isAIButton={chip.isAIButton}
-                  onClick={chip.onClick}
-                />
-                {isPhonebookChip && isPhonebookTooltipVisible && (
-                  <TooltipMessage
-                    message="신규 기능 오픈!\n원하는 학교 연락처를\n찾아보세요."
-                    onClose={handleClosePhonebookTooltip}
-                    position="bottom"
-                    align="center"
-                    anchorRef={phonebookTooltipAnchorRef}
+                <TooltipAnchor
+                  ref={isPhonebookChip ? phonebookTooltipAnchorRef : undefined}
+                >
+                  <Chip
+                    iconSrc={chip.iconSrc}
+                    title={chip.title}
+                    isExternalLink={chip.isExternalLink}
+                    isAIButton={chip.isAIButton}
+                    onClick={chip.onClick}
                   />
-                )}
-              </TooltipAnchor>
-            </ChipSlot>
-          );
-        })}
+                  {isPhonebookChip && isPhonebookTooltipVisible && (
+                    <TooltipMessage
+                      message="신규 기능 오픈!\n원하는 학교 연락처를\n찾아보세요."
+                      onClose={handleClosePhonebookTooltip}
+                      position="bottom"
+                      align="center"
+                      anchorRef={phonebookTooltipAnchorRef}
+                    />
+                  )}
+                </TooltipAnchor>
+              </ChipSlot>
+            );
+          })}
       </ChipGroupWrapper>
     </MaskContainer>
   );
