@@ -23,6 +23,11 @@ export const ROUTES = {
     DETAIL: "/phonebook/detail",
   },
 
+  //앱센터의 다른 앱
+  MORE_APPS: {
+    ROOT: "more-apps",
+  },
+
   // 마이페이지
   MYPAGE: {
     ROOT: "/mypage",

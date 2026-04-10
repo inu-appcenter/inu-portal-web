@@ -3,11 +3,11 @@ import TitleLine from "./TitleLine.tsx";
 import { CSSProperties } from "react";
 
 interface TitleContentAreaProps {
-  title: string | React.ReactNode;
+  title?: string | React.ReactNode;
   link?: string;
   externalLink?: string;
   description?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   style?: CSSProperties;
 }
 
@@ -21,7 +21,9 @@ const TitleContentArea = ({
 }: TitleContentAreaProps) => {
   return (
     <TitleContentAreaWrapper style={style}>
-      <TitleLine title={title} link={link} externalLink={externalLink} />
+      {title && (
+        <TitleLine title={title} link={link} externalLink={externalLink} />
+      )}
       {description && <DescriptionText>{description}</DescriptionText>}
       {children}
     </TitleContentAreaWrapper>

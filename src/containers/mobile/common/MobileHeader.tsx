@@ -161,7 +161,7 @@ const MobileHeaderWrapper = styled.header<{
   position: ${({ $contained }) => ($contained ? "relative" : "fixed")};
   top: ${({ $contained }) => ($contained ? "auto" : "0")};
   width: 100%;
-  padding-top: 24px;
+  padding-top: 20px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -267,7 +267,8 @@ const IconBackgroundWrapper = styled.div<{
   gap: 12px;
   border-radius: 50px;
   margin-right: 0;
-  padding: ${({ $isCircle }) => ($isCircle ? "0" : "0 20px")}; /* 상하 패딩 제거 */
+  padding: ${({ $isCircle }) =>
+    $isCircle ? "0" : "0 20px"}; /* 상하 패딩 제거 */
   width: ${({ $isCircle }) => ($isCircle ? "48px" : "auto")};
   height: 48px;
   pointer-events: auto;
