@@ -58,6 +58,7 @@ const Container = styled.div<{ $borderRadius: string }>`
   position: relative;
   border-radius: ${({ $borderRadius }) => $borderRadius};
   overflow: hidden;
+  justify-items: center;
 `;
 
 const StyledImg = styled.img<{ $isLoading: boolean }>`

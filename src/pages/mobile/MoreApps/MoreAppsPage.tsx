@@ -80,7 +80,7 @@ const MoreAppsPage = () => {
               skeletonHeight="200px"
               skeletonWidth="100%"
               borderRadius="20px"
-              style={{ maxWidth: "500px", cursor: "pointer" }}
+              style={{ maxWidth: DESKTOP_MEDIA, cursor: "pointer" }}
               onClick={() =>
                 window.open("https://home.inuappcenter.kr", "_blank")
               }
@@ -183,9 +183,11 @@ const MainLayoutGrid = styled.div`
 
   /* 데스크탑 환경 그리드 설정 */
   @media ${DESKTOP_MEDIA} {
-    display: grid;
-    grid-template-columns: 1fr 1fr; // 좌우 1:1 비율
-    align-items: start;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    //grid-template-columns: 1fr 1fr; // 좌우 1:1 비율
+    align-items: center;
     gap: 40px;
   }
 `;
