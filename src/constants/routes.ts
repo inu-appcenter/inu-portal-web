@@ -31,6 +31,9 @@ export const ROUTES = {
   //실험실
   LABS: {
     ROOT: "/labs",
+    PORTAL: {
+      BASIC_INFO: "/labs/portal/basic-info",
+    },
   },
 
   // 마이페이지

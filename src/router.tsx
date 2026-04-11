@@ -55,6 +55,7 @@ import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookS
 import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 import LabsPage from "@/pages/mobile/Labs/LabsPage";
+import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 
 export const router = createBrowserRouter([
   {
@@ -112,8 +113,20 @@ export const router = createBrowserRouter([
           { path: ROUTES.MORE_APPS.ROOT, element: <MoreAppsPage /> },
 
           //실험실
-          { path: ROUTES.LABS.ROOT, element: <LabsPage /> },
-
+          {
+            path: ROUTES.LABS.ROOT, // "/labs"
+            children: [
+              {
+                index: true,
+                element: <LabsPage />,
+              },
+              {
+                /* 실제 경로: /labs/portal/basic-info */
+                path: "portal/basic-info",
+                element: <BasicInfoPage />,
+              },
+            ],
+          },
           {
             path: ROUTES.PHONEBOOK.SEARCH,
             element: <MobilePhoneBookSearchPage />,

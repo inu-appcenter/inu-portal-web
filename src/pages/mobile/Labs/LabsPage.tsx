@@ -1,12 +1,16 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
-import Divider from "@/components/common/Divider";
 
 import 실험실배너 from "@/resources/assets/labs/실험실배너.webp";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
+import { ROUTES } from "@/constants/routes";
+import { useNavigate } from "react-router-dom";
+import useUserStore from "@/stores/useUserStore";
+import { useEffect } from "react";
+import { postApiLogs } from "@/apis/members";
 
 interface AppItemProps {
   iconSrc?: string | null;
@@ -28,7 +32,18 @@ const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
 };
 
 const LabsPage = () => {
+  const { tokenInfo } = useUserStore();
   useHeader({ title: "실험실" });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const logApi = async () => {
+      await postApiLogs("/api/labs");
+    };
+
+    void logApi();
+  }, []);
 
   return (
     <MoreAppsPageWrapper>
@@ -52,16 +67,29 @@ const LabsPage = () => {
 
         {/* 우측 영역: 타이틀 및 앱 리스트 */}
         <ContentSection>
-          <TitleContentArea description="실험 기능을 사용해 보세요. 안정적이지 않을 수 있으며, 오류가 발생할 수 있습니다." />
+          <TitleContentArea description="실험 기능을 사용해 보세요. 실험실 기능은 바람처럼 나타났다 소리 없이 사라질 수 있어요." />
           <TitleContentArea title={"포털 관련 기능"}>
             <Box>
               <div style={{ width: "100%" }}>
                 <AppItem
-                  title={"내 학적 정보 가져오기"}
-                  description={"포털에서 내 학적 정보를 가져옵니다."}
-                  onClick={() => {}}
+                  title={"내 기본 학적 정보 가져오기"}
+                  description={
+                    "인천대학교 포털 사이트에서 내 기본 학적 정보를 가져옵니다."
+                  }
+                  onClick={() => {
+                    if (!tokenInfo.accessToken) {
+                      if (
+                        window.confirm(
+                          "INTIP 로그인이 필요해요. 로그인 페이지로 이동할까요?",
+                        )
+                      ) {
+                        navigate(ROUTES.LOGIN);
+                      }
+                    } else {
+                      navigate(ROUTES.LABS.PORTAL.BASIC_INFO);
+                    }
+                  }}
                 />
-                <Divider />
               </div>
             </Box>
           </TitleContentArea>
@@ -134,7 +162,7 @@ const MainLayoutGrid = styled.div`
     flex-direction: row;
     justify-content: space-evenly;
     //grid-template-columns: 1fr 1fr; // 좌우 1:1 비율
-    align-items: center;
+    //align-items: center;
     gap: 40px;
   }
 `;
