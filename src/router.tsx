@@ -54,6 +54,7 @@ import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookD
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
 import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
+import LabsPage from "@/pages/mobile/Labs/LabsPage";
 
 export const router = createBrowserRouter([
   {
@@ -109,6 +110,9 @@ export const router = createBrowserRouter([
 
           //앱센터의 다른 앱
           { path: ROUTES.MORE_APPS.ROOT, element: <MoreAppsPage /> },
+
+          //실험실
+          { path: ROUTES.LABS.ROOT, element: <LabsPage /> },
 
           {
             path: ROUTES.PHONEBOOK.SEARCH,
