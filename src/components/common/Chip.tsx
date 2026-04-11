@@ -4,6 +4,7 @@ import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink
 
 interface ChipButtonProps {
   iconSrc?: string;
+  iconComponent?: React.ElementType;
   title: string;
   isExternalLink?: boolean;
   isAIButton?: boolean;
@@ -12,6 +13,7 @@ interface ChipButtonProps {
 
 const Chip = ({
   iconSrc,
+  iconComponent: IconComponent,
   title,
   isExternalLink,
   isAIButton,
@@ -26,6 +28,7 @@ const Chip = ({
       $isAIButton={isAIButton}
     >
       {iconSrc && <Icon src={iconSrc} alt="" />}
+      {IconComponent && <IconComponent size={18} color="#4071B9" />}
       <ContentArea>
         <div className="title">{title}</div>
         {isExternalLink && <img src={외부연결버튼} />}

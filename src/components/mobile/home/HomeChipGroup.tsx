@@ -9,11 +9,13 @@ import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png";
+import { LuFlaskConical } from "react-icons/lu";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import {
   dismissTooltip,
   isTooltipDismissed,
 } from "@/utils/dismissibleTooltipStorage";
+import { ROUTES } from "@/constants/routes";
 
 const PHONEBOOK_TOOLTIP_ID = "home-phonebook-search";
 
@@ -40,7 +42,7 @@ const HomeChipGroup = () => {
       iconSrc: CallINU,
       title: "INU 전화번호부",
       onClick: () => {
-        navigate(`/phonebook`);
+        navigate(ROUTES.PHONEBOOK.ROOT);
       },
     },
 
@@ -49,7 +51,16 @@ const HomeChipGroup = () => {
       iconSrc: AppcenterLogo_NoText,
       title: "앱센터의 다른 앱",
       onClick: () => {
-        navigate(`/more-apps`);
+        navigate(ROUTES.MORE_APPS.ROOT);
+      },
+    },
+
+    {
+      id: "lab",
+      iconComponent: LuFlaskConical,
+      title: "실험실",
+      onClick: () => {
+        navigate(ROUTES.LABS.ROOT);
       },
     },
 
@@ -94,6 +105,7 @@ const HomeChipGroup = () => {
                 >
                   <Chip
                     iconSrc={chip.iconSrc}
+                    iconComponent={chip.iconComponent}
                     title={chip.title}
                     isExternalLink={chip.isExternalLink}
                     isAIButton={chip.isAIButton}

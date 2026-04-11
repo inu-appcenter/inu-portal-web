@@ -11,10 +11,11 @@ import {
 } from "@/pages/mobile/phonebook/phonebookDetailState";
 import { normalizeExternalUrl } from "@/pages/mobile/phonebook/phonebookConfig";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { SOFT_CARD_SHADOW, SOFT_PILL_SHADOW } from "@/styles/shadows";
+import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 import { CollegeOfficeContact, DirectoryEntry } from "@/types/directory";
 import Divider from "@/components/common/Divider";
 import Box from "@/components/common/Box";
+import ActionButton from "@/components/common/ActionButton";
 
 const URL_SPLIT_PATTERN =
   /((?:https?:\/\/|www\.)[^\s]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?)/gi;
@@ -514,22 +515,6 @@ const CopyIconButton = styled.button`
   cursor: pointer;
   flex-shrink: 0;
   align-self: center;
-`;
-
-const ActionButton = styled.a`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  min-width: 176px;
-  border-radius: 999px;
-  padding: 13px 22px;
-  background: linear-gradient(180deg, #6f9ffc 0%, #4d7ee2 100%);
-  color: #fff;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 700;
-  box-shadow: ${SOFT_PILL_SHADOW};
 `;
 
 const EmptyStateCard = styled.section`

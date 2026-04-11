@@ -25,7 +25,15 @@ export const ROUTES = {
 
   //앱센터의 다른 앱
   MORE_APPS: {
-    ROOT: "more-apps",
+    ROOT: "/more-apps",
+  },
+
+  //실험실
+  LABS: {
+    ROOT: "/labs",
+    PORTAL: {
+      BASIC_INFO: "/labs/portal/basic-info",
+    },
   },
 
   // 마이페이지
