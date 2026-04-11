@@ -19,12 +19,12 @@ export default function InstallPromotionBottomSheet({
   const handleInstallClick = () => {
     if (platform === "ios_browser") {
       window.open(
-        "https://apps.apple.com/kr/app/%EC%9C%A0%EB%8B%88%EB%8F%94/id6751404748",
+        "https://apps.apple.com/kr/app/intip-인팁-인천대-공지알리미-인입런-전화번호부/id6740070975",
         "_blank",
       );
     } else if (platform === "android_browser") {
       window.open(
-        "https://play.google.com/store/apps/details?id=com.hjunieee.inudormitory",
+        "https://play.google.com/store/apps/details?id=inu.appcenter.intip_android&pcampaignid=web_share",
         "_blank",
       );
     }
