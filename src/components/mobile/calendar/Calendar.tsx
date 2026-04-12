@@ -16,7 +16,7 @@ import {
   subWeeks,
 } from "date-fns";
 import { useEffect, useState } from "react";
-import { getSchedules } from "@/apis/schedules";
+import { getMyDeptSchedules, getSchedules } from "@/apis/schedules";
 import { EventInput } from "@fullcalendar/core";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
@@ -51,13 +51,18 @@ interface CalendarbarProps {
   baseDate?: Date;
 }
 
+// 이벤트 타입 정의
+type ScheduleType = "school" | "dept";
+
 export default function Calendar({
   mode = "monthly",
   baseDate = new Date(),
 }: CalendarbarProps) {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(baseDate);
-  const [monthEvents, setMonthEvents] = useState<EventInput[]>([]);
+  const [monthEvents, setMonthEvents] = useState<
+    (EventInput & { type: ScheduleType })[]
+  >([]);
   const [weeks, setWeeks] = useState<Date[][]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
     {
@@ -66,6 +71,7 @@ export default function Calendar({
       end: number;
       title: string;
       row: number;
+      type: ScheduleType;
     }[]
   >([]);
 
@@ -76,7 +82,6 @@ export default function Calendar({
     const weeksArr: Date[][] = [];
 
     if (mode === "weekly") {
-      // 주간 모드: 이전 주, 현재 주, 다음 주 계산
       const currentWeekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
       const prevWeekStart = subWeeks(currentWeekStart, 1);
       const nextWeekStart = addWeeks(currentWeekStart, 1);
@@ -86,7 +91,6 @@ export default function Calendar({
         weeksArr.push(week);
       });
     } else {
-      // 월간 모드: 한 달 전체 계산
       const firstDay = startOfMonth(currentDate);
       const lastDay = endOfMonth(firstDay);
       const calendarStart = startOfWeek(firstDay, { weekStartsOn: 0 });
@@ -115,9 +119,25 @@ export default function Calendar({
     const fetchEvents = async () => {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
-      const res = await getSchedules(year, month);
-      const events: EventInput[] = res.data;
-      setMonthEvents(events);
+
+      // 학교 및 학과 일정 동시 호출
+      const [resSchool, resDept] = await Promise.all([
+        getSchedules(year, month),
+        getMyDeptSchedules(year, month),
+      ]);
+
+      // 타입 부여 및 데이터 통합
+      const schoolEvents = resSchool.data.map((e: EventInput) => ({
+        ...e,
+        type: "school" as ScheduleType,
+      }));
+      const deptEvents = resDept.data.map((e: EventInput) => ({
+        ...e,
+        type: "dept" as ScheduleType,
+      }));
+      const combinedEvents = [...schoolEvents, ...deptEvents];
+
+      setMonthEvents(combinedEvents);
 
       const parsedEvents: typeof eventsByWeek = [];
 
@@ -125,7 +145,7 @@ export default function Calendar({
         const weekStart = week[0];
         const weekEnd = week[6];
 
-        const eventsInWeek = events
+        const eventsInWeek = combinedEvents
           .map((event) => {
             const start = parseISO(String(event.start));
             const end = parseISO(String(event.end));
@@ -145,11 +165,17 @@ export default function Calendar({
                 start: startIdx,
                 end: endIdx,
                 title: String(event.title),
+                type: event.type,
               };
             }
             return null;
           })
-          .filter(Boolean) as { start: number; end: number; title: string }[];
+          .filter(Boolean) as {
+          start: number;
+          end: number;
+          title: string;
+          type: ScheduleType;
+        }[];
 
         const placed: typeof parsedEvents = [];
         eventsInWeek.forEach((ev) => {
@@ -192,7 +218,6 @@ export default function Calendar({
     <CalendarContainer>
       <LayoutWrapper>
         <LeftSection>
-          {/* 모드에 따른 헤더 노출 제어 */}
           {mode === "monthly" && (
             <CalendarHeader>
               <ArrowButton onClick={goToPrev}>
@@ -221,7 +246,6 @@ export default function Calendar({
                   <WeekRow key={weekIdx} $maxRows={maxRows}>
                     {week.map((date, idx) => {
                       const isToday = isSameDay(date, today);
-                      // 모드에 따라 날짜 투명도 처리 기준 변경
                       const isActive =
                         mode === "weekly"
                           ? true
@@ -246,6 +270,7 @@ export default function Calendar({
                           $start={event.start}
                           $end={event.end}
                           $row={event.row}
+                          $type={event.type}
                         >
                           {event.title}
                         </EventBar>
@@ -271,7 +296,7 @@ export default function Calendar({
                   monthEvents.map((event, index) => (
                     <EventItem key={index}>
                       <EventInfo>
-                        <EventDot />
+                        <EventDot $type={event.type} />
                         <EventDate>
                           {formatDateRange(event.start, event.end)}
                         </EventDate>
@@ -442,6 +467,7 @@ const EventBar = styled.div<{
   $start: number;
   $end: number;
   $row: number;
+  $type: ScheduleType;
 }>`
   position: absolute;
   top: ${({ $row }) => 40 + $row * 24}px;
@@ -452,7 +478,9 @@ const EventBar = styled.div<{
     return `calc((100% - 24px) / 7 * ${count} + ${(count - 1) * 4}px)`;
   }};
   height: 20px;
-  background-color: rgba(64, 113, 185, 1);
+  /* 타입에 따른 배경색 조건부 렌더링 */
+  background-color: ${({ $type }) =>
+    $type === "dept" ? "rgba(139, 92, 246, 1)" : "rgba(64, 113, 185, 1)"};
   color: white;
   font-size: 11px;
   padding: 0 8px;
@@ -484,10 +512,12 @@ const EventInfo = styled.div`
   gap: 8px;
 `;
 
-const EventDot = styled.div`
+const EventDot = styled.div<{ $type: ScheduleType }>`
   width: 8px;
   height: 8px;
-  background-color: rgba(64, 113, 185, 1);
+  /* 우측 리스트 도트 색상 처리 */
+  background-color: ${({ $type }) =>
+    $type === "dept" ? "rgba(139, 92, 246, 1)" : "rgba(64, 113, 185, 1)"};
   border-radius: 50%;
 `;
 
