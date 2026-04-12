@@ -15,11 +15,15 @@ import {
   addWeeks,
   subWeeks,
 } from "date-fns";
-import { useEffect, useState } from "react";
-import { getSchedules } from "@/apis/schedules";
+import { Fragment, useEffect, useState } from "react";
+import { getMyDeptSchedules, getSchedules } from "@/apis/schedules";
 import { EventInput } from "@fullcalendar/core";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import { ScheduleType } from "@/types/schedules";
+import EventItem from "@/components/mobile/calendar/EventItem";
+import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
+import Divider from "@/components/common/Divider";
 
 // 아이콘 컴포넌트
 const ChevronLeft = () => (
@@ -55,9 +59,15 @@ export default function Calendar({
   mode = "monthly",
   baseDate = new Date(),
 }: CalendarbarProps) {
+  // 모달 관련 상태
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(baseDate);
-  const [monthEvents, setMonthEvents] = useState<EventInput[]>([]);
+  const [monthEvents, setMonthEvents] = useState<
+    (EventInput & { type: ScheduleType })[]
+  >([]);
   const [weeks, setWeeks] = useState<Date[][]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
     {
@@ -66,8 +76,26 @@ export default function Calendar({
       end: number;
       title: string;
       row: number;
+      type: ScheduleType;
     }[]
   >([]);
+
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    setIsModalOpen(true);
+  };
+
+  const selectedDateEvents = monthEvents.filter((event) => {
+    if (!selectedDate) return false;
+    const start = parseISO(String(event.start));
+    const end = parseISO(String(event.end));
+    // 선택한 날짜가 시작일과 종료일 사이에 있는지 확인
+    return (
+      (isAfter(selectedDate, addDays(start, -1)) ||
+        isSameDay(selectedDate, start)) &&
+      (isBefore(selectedDate, addDays(end, 1)) || isSameDay(selectedDate, end))
+    );
+  });
 
   const selectedMonthStr = format(currentDate, "yyyy-MM");
 
@@ -76,7 +104,6 @@ export default function Calendar({
     const weeksArr: Date[][] = [];
 
     if (mode === "weekly") {
-      // 주간 모드: 이전 주, 현재 주, 다음 주 계산
       const currentWeekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
       const prevWeekStart = subWeeks(currentWeekStart, 1);
       const nextWeekStart = addWeeks(currentWeekStart, 1);
@@ -86,7 +113,6 @@ export default function Calendar({
         weeksArr.push(week);
       });
     } else {
-      // 월간 모드: 한 달 전체 계산
       const firstDay = startOfMonth(currentDate);
       const lastDay = endOfMonth(firstDay);
       const calendarStart = startOfWeek(firstDay, { weekStartsOn: 0 });
@@ -115,9 +141,25 @@ export default function Calendar({
     const fetchEvents = async () => {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
-      const res = await getSchedules(year, month);
-      const events: EventInput[] = res.data;
-      setMonthEvents(events);
+
+      // 학교 및 학과 일정 동시 호출
+      const [resSchool, resDept] = await Promise.all([
+        getSchedules(year, month),
+        getMyDeptSchedules(year, month),
+      ]);
+
+      // 타입 부여 및 데이터 통합
+      const schoolEvents = resSchool.data.map((e: EventInput) => ({
+        ...e,
+        type: "school" as ScheduleType,
+      }));
+      const deptEvents = resDept.data.map((e: EventInput) => ({
+        ...e,
+        type: "dept" as ScheduleType,
+      }));
+      const combinedEvents = [...schoolEvents, ...deptEvents];
+
+      setMonthEvents(combinedEvents);
 
       const parsedEvents: typeof eventsByWeek = [];
 
@@ -125,7 +167,7 @@ export default function Calendar({
         const weekStart = week[0];
         const weekEnd = week[6];
 
-        const eventsInWeek = events
+        const eventsInWeek = combinedEvents
           .map((event) => {
             const start = parseISO(String(event.start));
             const end = parseISO(String(event.end));
@@ -145,11 +187,17 @@ export default function Calendar({
                 start: startIdx,
                 end: endIdx,
                 title: String(event.title),
+                type: event.type,
               };
             }
             return null;
           })
-          .filter(Boolean) as { start: number; end: number; title: string }[];
+          .filter(Boolean) as {
+          start: number;
+          end: number;
+          title: string;
+          type: ScheduleType;
+        }[];
 
         const placed: typeof parsedEvents = [];
         eventsInWeek.forEach((ev) => {
@@ -179,12 +227,6 @@ export default function Calendar({
     return rows.length > 0 ? Math.max(...rows) + 1 : 1;
   });
 
-  const formatDateRange = (start?: any, end?: any) => {
-    const s = format(parseISO(String(start)), "yyyy.MM.dd");
-    const e = format(parseISO(String(end)), "yyyy.MM.dd");
-    return `${s} ~ ${e}`;
-  };
-
   const goToNext = () => setCurrentDate((prev) => addMonths(prev, 1));
   const goToPrev = () => setCurrentDate((prev) => subMonths(prev, 1));
 
@@ -192,7 +234,13 @@ export default function Calendar({
     <CalendarContainer>
       <LayoutWrapper>
         <LeftSection>
-          {/* 모드에 따른 헤더 노출 제어 */}
+          <ScheduleModal
+            isOpen={isModalOpen}
+            onOpenChange={setIsModalOpen}
+            selectedDate={selectedDate}
+            events={selectedDateEvents}
+          />
+
           {mode === "monthly" && (
             <CalendarHeader>
               <ArrowButton onClick={goToPrev}>
@@ -204,7 +252,6 @@ export default function Calendar({
               </ArrowButton>
             </CalendarHeader>
           )}
-
           <Box>
             <Weekdays>
               {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
@@ -221,13 +268,17 @@ export default function Calendar({
                   <WeekRow key={weekIdx} $maxRows={maxRows}>
                     {week.map((date, idx) => {
                       const isToday = isSameDay(date, today);
-                      // 모드에 따라 날짜 투명도 처리 기준 변경
                       const isActive =
                         mode === "weekly"
                           ? true
                           : date.getMonth() === currentDate.getMonth();
                       return (
-                        <DayCell key={idx} $isCurrentMonth={isActive}>
+                        <DayCell
+                          key={idx}
+                          $isCurrentMonth={isActive}
+                          onClick={() => handleDayClick(date)} // 날짜 클릭 시 모달 열기
+                          style={{ cursor: "pointer" }}
+                        >
                           {isToday && <TodayCircle />}
                           <DateNumber
                             $isToday={isToday}
@@ -246,6 +297,7 @@ export default function Calendar({
                           $start={event.start}
                           $end={event.end}
                           $row={event.row}
+                          $type={event.type}
                         >
                           {event.title}
                         </EventBar>
@@ -268,16 +320,11 @@ export default function Calendar({
             >
               <Box>
                 {monthEvents.length > 0 ? (
-                  monthEvents.map((event, index) => (
-                    <EventItem key={index}>
-                      <EventInfo>
-                        <EventDot />
-                        <EventDate>
-                          {formatDateRange(event.start, event.end)}
-                        </EventDate>
-                      </EventInfo>
-                      <EventTitle>{event.title}</EventTitle>
-                    </EventItem>
+                  monthEvents.map((event, idx) => (
+                    <Fragment key={idx}>
+                      <EventItem {...event} />
+                      {idx < monthEvents.length - 1 && <Divider />}
+                    </Fragment>
                   ))
                 ) : (
                   <EmptyMessage>등록된 이벤트가 없습니다.</EmptyMessage>
@@ -442,9 +489,10 @@ const EventBar = styled.div<{
   $start: number;
   $end: number;
   $row: number;
+  $type: ScheduleType;
 }>`
   position: absolute;
-  top: ${({ $row }) => 40 + $row * 24}px;
+  top: ${({ $row }) => 28 + $row * 24}px;
   left: ${({ $start }) =>
     `calc((100% - 24px) / 7 * ${$start} + ${$start * 4}px)`};
   width: ${({ $start, $end }) => {
@@ -452,7 +500,9 @@ const EventBar = styled.div<{
     return `calc((100% - 24px) / 7 * ${count} + ${(count - 1) * 4}px)`;
   }};
   height: 20px;
-  background-color: rgba(64, 113, 185, 1);
+  /* 타입에 따른 배경색 조건부 렌더링 */
+  background-color: ${({ $type }) =>
+    $type === "dept" ? "rgba(11, 128, 67, 1)" : "rgba(3, 155, 229, 1)"};
   color: white;
   font-size: 11px;
   padding: 0 8px;
@@ -464,43 +514,7 @@ const EventBar = styled.div<{
   overflow: hidden;
   text-overflow: ellipsis;
   z-index: 3;
-`;
-
-const EventItem = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f2f2f7;
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const EventInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const EventDot = styled.div`
-  width: 8px;
-  height: 8px;
-  background-color: rgba(64, 113, 185, 1);
-  border-radius: 50%;
-`;
-
-const EventDate = styled.span`
-  font-size: 12px;
-  color: #8e8e93;
-  font-weight: 500;
-`;
-
-const EventTitle = styled.strong`
-  font-size: 15px;
-  color: #1c1c1e;
-  padding-left: 16px;
+  pointer-events: none; //클릭 통과
 `;
 
 const EmptyMessage = styled.p`
