@@ -12,3 +12,11 @@ export interface DeptSchedule extends SchoolSchedule {
   sourceNoticeTitle: string; // 원본 공지 제목
   url: string; // 상세 페이지 주소
 }
+
+// 이벤트 타입 정의
+export type ScheduleType = "school" | "dept";
+
+// types/schedules.ts 또는 컴포넌트 상단
+export type EventItemData =
+  | ({ type: "school" } & SchoolSchedule)
+  | ({ type: "dept" } & DeptSchedule);
