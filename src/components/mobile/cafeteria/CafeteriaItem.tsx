@@ -67,6 +67,12 @@ export default function CafeteriaItem({
             <p className="info">
               {cafeteriaInfo[typeIndex] === "오늘은 쉽니다" ? (
                 <>오늘은 쉽니다</>
+              ) : cafeteriaInfo[typeIndex] === "업데이트 전" ? (
+                <>
+                  아직 업데이트 되지 않았습니다.
+                  <br />
+                  2기숙사 식당은 당일 식사 시간 전에 업데이트 됩니다!
+                </>
               ) : (
                 cafeteriaInfo[typeIndex]?.split(" ").map((line, index) => (
                   <span key={index}>
