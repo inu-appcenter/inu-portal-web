@@ -3,10 +3,13 @@ import styled from "styled-components";
 interface Props {
   title?: string;
   content?: string;
+  style?: React.CSSProperties;
+  onClick?: () => void; // 클릭 이벤트 추가
 }
-const MoreFeaturesBox = ({ title, content }: Props) => {
+
+const MoreFeaturesBox = ({ title, content, style, onClick }: Props) => {
   return (
-    <Container>
+    <Container style={style} onClick={onClick} $isClickable={!!onClick}>
       <Title>{title}</Title>
       <Content>{content}</Content>
     </Container>
@@ -15,15 +18,25 @@ const MoreFeaturesBox = ({ title, content }: Props) => {
 
 export default MoreFeaturesBox;
 
-const Container = styled.div`
-  background-color: #e2e8f4; /* 연한 회색 배경 */
+const Container = styled.div<{ $isClickable: boolean }>`
+  background-color: #e2e8f4;
   border-radius: 20px;
   padding: 20px 24px;
-  margin: 20px 16px;
+  margin: 20px 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+
+  /* 클릭 가능 여부에 따른 스타일 */
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+  transition: opacity 0.2s ease-in-out;
+
+  &:active {
+    opacity: ${({ $isClickable }) => ($isClickable ? 0.7 : 1)};
+  }
 `;
 
 const Title = styled.p`
@@ -36,5 +49,5 @@ const Title = styled.p`
 const Content = styled.div`
   color: #3d6fd0;
   font-size: 16px;
-  white-space: pre-line; /* 엔터 처리 */
+  white-space: pre-line;
 `;

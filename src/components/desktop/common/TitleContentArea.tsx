@@ -6,7 +6,7 @@ interface TitleContentAreaProps {
   title?: string | React.ReactNode;
   link?: string;
   externalLink?: string;
-  description?: string;
+  description?: React.ReactNode; // string에서 React.ReactNode로 변경
   children?: React.ReactNode;
   style?: CSSProperties;
 }
@@ -65,4 +65,8 @@ const DescriptionText = styled.p`
   line-height: normal;
 
   padding: 0 20px;
+
+  strong {
+    font-weight: 600;
+  }
 `;

@@ -72,10 +72,9 @@ const MobileAlertPage = () => {
     if (shouldMoveLoginPage) {
       const redirectPath = `${location.pathname}${location.search}${location.hash}`;
 
-      navigate(
-        `${ROUTES.LOGIN}?redirect=${encodeURIComponent(redirectPath)}`,
-        { replace: true },
-      );
+      navigate(`${ROUTES.LOGIN}?redirect=${encodeURIComponent(redirectPath)}`, {
+        replace: true,
+      });
       return;
     }
 
@@ -180,6 +179,7 @@ export default MobileAlertPage;
 
 const MobileAlertPageWrapper = styled.div`
   width: 100%;
+  padding: 0 16px;
 `;
 
 const TipsListContainerWrapper = styled.div`
@@ -191,7 +191,7 @@ const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin: 4px 16px;
+  margin: 4px 0;
 `;
 
 const LoadingText = styled.h4`
