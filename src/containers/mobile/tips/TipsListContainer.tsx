@@ -7,7 +7,7 @@ import { getDepartmentNotices, getNotices } from "@/apis/notices";
 import { getSearch } from "@/apis/search";
 import { getCouncilNoticesList } from "@/apis/councilNotices";
 import { Post } from "@/types/posts";
-import { Notice } from "@/types/notices";
+import { DepartmentNotice, Notice } from "@/types/notices";
 import { CouncilNotice } from "@/types/councilNotices";
 import { getAlerts } from "@/apis/members";
 import { Notification } from "@/types/members";
@@ -43,7 +43,7 @@ export default function TipsListContainer({
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
-  const [deptNotices, setDeptNotices] = useState<Notice[]>([]);
+  const [deptNotices, setDeptNotices] = useState<DepartmentNotice[]>([]);
   const [councilNotices, setCouncilNotices] = useState<CouncilNotice[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [fetchState, setFetchState] = useState<FetchState>({
@@ -143,7 +143,7 @@ export default function TipsListContainer({
         const response = await getDepartmentNotices(deptCode, "date", page);
 
         console.log(response);
-        const newNotices: Notice[] = response.data.contents;
+        const newNotices: DepartmentNotice[] = response.data.contents;
         if (newNotices && newNotices.length > 0) {
           setDeptNotices((prev) => [...prev, ...newNotices]);
           // lastPostId 및 페이지 수 업데이트

@@ -1,37 +1,36 @@
 import { useState } from "react";
-import styled from "styled-components";
-import { ScheduleType } from "@/types/schedules";
-import useUserStore from "@/stores/useUserStore";
-import { EventInput } from "@fullcalendar/core";
 import { format, parseISO } from "date-fns";
 import { ChevronDown, ExternalLink } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import styled from "styled-components";
 import ActionButton from "@/components/common/ActionButton";
-import 챗불이요약이미지 from "@/resources/assets/calendar/챗불이요약.png";
+import useUserStore from "@/stores/useUserStore";
+import { ScheduleEvent, ScheduleType } from "@/types/schedules";
+import AI_LOGO from "@/resources/assets/calendar/챗불이요약.png";
 
-interface EventItemProps extends EventInput {
-  type: ScheduleType;
-  description?: string;
-  aiGenerated?: boolean;
-  department?: string;
-  sourceNoticeId?: number;
-  sourceNoticeTitle?: string;
-  url?: string;
-}
-
-const EventItem = (props: EventItemProps) => {
+type EventItemProps = ScheduleEvent & {
+  isOpenMode?: boolean;
+};
+const EventItem = ({ isOpenMode, ...props }: EventItemProps) => {
   const { userInfo } = useUserStore();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(isOpenMode || false);
 
-  const formatDateRange = (start?: any, end?: any) => {
-    if (!start || !end) return "";
-    const s = format(parseISO(String(start)), "yyyy.MM.dd");
-    const e = format(parseISO(String(end)), "yyyy.MM.dd");
-    return `${s} ~ ${e}`;
+  const formatDateRange = (start: string, end: string) => {
+    const startDate = format(parseISO(start), "yyyy.MM.dd");
+    const endDate = format(parseISO(end), "yyyy.MM.dd");
+
+    // 시작일과 종료일 동일 여부 확인
+    if (startDate === endDate) {
+      return startDate;
+    }
+
+    return `${startDate} ~ ${endDate}`;
   };
 
   const toggleOpen = () => {
-    if (props.type === "dept") setIsOpen(!isOpen);
+    if (props.type === "dept") {
+      setIsOpen((current) => !current);
+    }
   };
 
   return (
@@ -43,8 +42,7 @@ const EventItem = (props: EventItemProps) => {
             <EventTypeText>
               {props.type === "school"
                 ? "학교"
-                : props.type === "dept" &&
-                  (props.department || userInfo.department)}
+                : props.department || userInfo.department}
             </EventTypeText>
             <EventDate>{formatDateRange(props.start, props.end)}</EventDate>
           </EventInfo>
@@ -70,12 +68,14 @@ const EventItem = (props: EventItemProps) => {
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <DetailContainer>
-              <Description>{props.description}</Description>
+              {props.description && (
+                <Description>{props.description}</Description>
+              )}
               {props.aiGenerated && (
                 <AiBadge>
-                  <img src={챗불이요약이미지} alt="챗불이 요약 이미지" />
+                  <img src={AI_LOGO} alt="횃불이AI" />
                   <AiText>
-                    횃불이 <strong>AI</strong>로 생성된 콘텐츠입니다.
+                    <strong>횃불이 AI</strong>로 생성된 콘텐츠입니다.
                     <br />
                     중요한 내용은 직접 확인하세요.
                   </AiText>
@@ -90,9 +90,10 @@ const EventItem = (props: EventItemProps) => {
                 )}
               </InfoGrid>
               <DetailFooter>
-                <Spacer /> {/* 왼쪽 균형용 빈 공간 */}
+                <Spacer />
                 {props.url && (
                   <ActionButton
+                    as="a"
                     href={props.url}
                     target="_blank"
                     rel="noreferrer"
@@ -103,10 +104,10 @@ const EventItem = (props: EventItemProps) => {
                 )}
                 <SirenWrapper
                   onClick={() => {
-                    alert("오류 신고 기능 구현 예정입니다.");
+                    alert("Report feature coming soon.");
                   }}
                 >
-                  🚨<span className="title">오류 신고</span>
+                  🚨
                 </SirenWrapper>
               </DetailFooter>
             </DetailContainer>
@@ -123,7 +124,7 @@ const EventItemWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  //padding: 12px 0;
+
   &:last-child {
     border-bottom: none;
   }
@@ -153,7 +154,7 @@ const EventDot = styled.div<{ $type: ScheduleType }>`
   width: 8px;
   height: 8px;
   background-color: ${({ $type }) =>
-    $type === "dept" ? "rgba(11, 128, 67, 1)" : "rgba(3, 155, 229, 1)"};
+    $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
   border-radius: 50%;
 `;
 
@@ -205,7 +206,6 @@ const AiBadge = styled.div`
   width: 100%;
   font-size: 10px;
   color: gray;
-  //padding: 2px 6px;
   border-radius: 4px;
 
   img {
@@ -253,26 +253,19 @@ const InfoValue = styled.span`
 
 const DetailFooter = styled.div`
   display: flex;
-  justify-content: space-between; // 양 끝과 중앙 배분
+  justify-content: space-between;
   align-items: center;
   width: 100%;
 `;
 
 const Spacer = styled.div`
-  width: 30px; // 사이렌과 동일한 너비
+  width: 30px;
 `;
 
 const SirenWrapper = styled.div`
-  width: 30px; // 너비 고정
+  width: 30px;
   font-size: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  .title {
-    font-size: 8px;
-    line-height: 8px;
-    color: darkred;
-    font-weight: 600;
-  }
 `;

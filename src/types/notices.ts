@@ -8,10 +8,20 @@ export interface Notice {
   url: string;
 }
 
+export interface DepartmentNotice {
+  id: number;
+  title: string;
+  department: string;
+  createDate: string;
+  view: number;
+  url: string;
+  hasSchedules: boolean;
+}
+
 export interface Keyword {
   keywordId: number;
   memberId: number;
-  keyword: string | null; // 일부 API에서는 null 반환
-  type: string; // "DEPARTMENT" 등
+  keyword: string | null;
+  type: string;
   department: string;
 }

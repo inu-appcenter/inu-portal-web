@@ -1,5 +1,4 @@
-// Calendarbar.tsx → 3주치 전용으로 수정
-import styled from "styled-components";
+import { useEffect, useState } from "react";
 import {
   addDays,
   format,
@@ -9,19 +8,20 @@ import {
   parseISO,
   startOfWeek,
 } from "date-fns";
-import { useEffect, useState } from "react";
+import styled from "styled-components";
 import { getSchedules } from "@/apis/schedules";
-import { EventInput } from "@fullcalendar/core";
+import { Schedule } from "@/types/schedules";
 
 export default function ThreeWeekCalendar() {
   const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // 이번주 시작
-  const startDate = addDays(weekStart, -7); // 지난주 시작
-  const dates = Array.from({ length: 21 }, (_, i) => addDays(startDate, i)); // 3주치 날짜
+  const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+  const startDate = addDays(weekStart, -7);
+  const dates = Array.from({ length: 21 }, (_, index) =>
+    addDays(startDate, index),
+  );
 
-  // 7일 단위로 잘라서 weeks 배열 생성
-  const weeks = Array.from({ length: 3 }, (_, i) =>
-    dates.slice(i * 7, i * 7 + 7),
+  const weeks = Array.from({ length: 3 }, (_, index) =>
+    dates.slice(index * 7, index * 7 + 7),
   );
 
   const [eventsByWeek, setEventsByWeek] = useState<
@@ -36,20 +36,21 @@ export default function ThreeWeekCalendar() {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      // 3주치에 걸친 달 정보 모으기
       const months = new Set<string>();
+
       dates.forEach((date) => {
-        const y = date.getFullYear();
-        const m = date.getMonth() + 1;
-        months.add(`${y}-${m}`);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        months.add(`${year}-${month}`);
       });
 
-      const events: EventInput[] = [];
+      const events: Schedule[] = [];
+
       await Promise.all(
-        Array.from(months).map(async (ym) => {
-          const [year, month] = ym.split("-").map(Number);
-          const res = await getSchedules(year, month);
-          res.data.forEach((item: EventInput) => events.push(item));
+        Array.from(months).map(async (yearMonth) => {
+          const [year, month] = yearMonth.split("-").map(Number);
+          const response = await getSchedules(year, month);
+          response.data.forEach((item) => events.push(item));
         }),
       );
 
@@ -72,8 +73,8 @@ export default function ThreeWeekCalendar() {
         }[] = [];
 
         events.forEach((event) => {
-          const start = parseISO(String(event.start));
-          const end = parseISO(String(event.end));
+          const start = parseISO(event.start);
+          const end = parseISO(event.end);
 
           if (
             (isBefore(start, addDays(weekEndDate, 1)) ||
@@ -81,36 +82,41 @@ export default function ThreeWeekCalendar() {
             (isAfter(end, addDays(weekStartDate, -1)) ||
               isSameDay(end, weekStartDate))
           ) {
-            const startIdx = week.findIndex((d) =>
+            const startIdx = week.findIndex((date) =>
               isSameDay(
-                d,
+                date,
                 isBefore(start, weekStartDate) ? weekStartDate : start,
               ),
             );
-            const endIdx = week.findIndex((d) =>
-              isSameDay(d, isAfter(end, weekEndDate) ? weekEndDate : end),
+            const endIdx = week.findIndex((date) =>
+              isSameDay(date, isAfter(end, weekEndDate) ? weekEndDate : end),
             );
 
             eventsInWeek.push({
               start: startIdx,
               end: endIdx,
-              title: String(event.title),
+              title: event.title,
             });
           }
         });
 
-        // 이벤트 배치 (row 겹치지 않게)
         const placed: typeof parsedEvents = [];
-        eventsInWeek.forEach((ev) => {
+
+        eventsInWeek.forEach((event) => {
           let row = 0;
+
           while (
             placed.some(
-              (p) => p.row === row && ev.start <= p.end && ev.end >= p.start,
+              (placedEvent) =>
+                placedEvent.row === row &&
+                event.start <= placedEvent.end &&
+                event.end >= placedEvent.start,
             )
           ) {
             row++;
           }
-          placed.push({ ...ev, weekIndex, row });
+
+          placed.push({ ...event, weekIndex, row });
         });
 
         parsedEvents.push(...placed);
@@ -122,41 +128,42 @@ export default function ThreeWeekCalendar() {
     fetchEvents();
   }, []);
 
-  const maxRowsByWeek = weeks.map((_, weekIdx) => {
+  const maxRowsByWeek = weeks.map((_, weekIndex) => {
     const rows = eventsByWeek
-      .filter((e) => e.weekIndex === weekIdx)
-      .map((e) => e.row);
+      .filter((event) => event.weekIndex === weekIndex)
+      .map((event) => event.row);
+
     return rows.length > 0 ? Math.max(...rows) + 1 : 1;
   });
 
   return (
     <CalendarContainer>
       <Weekdays>
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, i) => (
-          <div key={i}>{d}</div>
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
+          <div key={index}>{day}</div>
         ))}
       </Weekdays>
 
-      {weeks.map((week, weekIdx) => {
-        const maxRows = maxRowsByWeek[weekIdx];
+      {weeks.map((week, weekIndex) => {
+        const maxRows = maxRowsByWeek[weekIndex];
+
         return (
-          <WeekRow key={weekIdx} $maxRows={maxRows}>
-            {week.map((date, idx) => {
+          <WeekRow key={weekIndex} $maxRows={maxRows}>
+            {week.map((date, index) => {
               const isToday = isSameDay(date, today);
+
               return (
-                <DayCell key={idx} $isToday={isToday}>
-                  <DateNumber $isToday={isToday}>
-                    {format(date, "d")}
-                  </DateNumber>
+                <DayCell key={index} $isToday={isToday}>
+                  <DateNumber $isToday={isToday}>{format(date, "d")}</DateNumber>
                 </DayCell>
               );
             })}
 
             {eventsByWeek
-              .filter((e) => e.weekIndex === weekIdx)
-              .map((event, i) => (
+              .filter((event) => event.weekIndex === weekIndex)
+              .map((event, index) => (
                 <EventBar
-                  key={i}
+                  key={index}
                   $start={event.start}
                   $end={event.end}
                   $row={event.row}
