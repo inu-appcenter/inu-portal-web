@@ -27,6 +27,7 @@ import TopPopupNotification from "@/components/common/TopPopupNotification";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.05;
+const PROMO_STORAGE_KEY = "promoLastShownDate";
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
@@ -79,14 +80,20 @@ export default function MobileHomePage() {
     }
   }, []);
 
-  // 확률적으로 로그인 유도 바텀시트 노출
   useEffect(() => {
-    // userInfo.id 대신 tokenInfo.accessToken 존재 여부로 로그인 확인
     if (hasEvaluatedPromoRef.current) {
       return;
     }
-
     hasEvaluatedPromoRef.current = true;
+
+    const today = new Date().toDateString();
+    const lastShownDate = localStorage.getItem(PROMO_STORAGE_KEY);
+
+    if (lastShownDate === today) {
+      return;
+    }
+
+    localStorage.setItem(PROMO_STORAGE_KEY, today);
 
     if (Math.random() >= PROMO_PROBABILITY) {
       return;
