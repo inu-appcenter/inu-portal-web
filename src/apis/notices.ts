@@ -1,11 +1,12 @@
 import axiosInstance from "@/apis/axiosInstance";
 import { ApiResponse, Pagination } from "@/types/common";
-import { Keyword, Notice } from "@/types/notices";
+import { DepartmentNotice, Keyword, Notice } from "@/types/notices";
+import { Schedule } from "@/types/schedules";
 import tokenInstance from "./tokenInstance.ts";
 
 export type NoticeSort = "date" | "view";
 
-export const ALL_NOTICE_CATEGORY = "\uC804\uCCB4";
+export const ALL_NOTICE_CATEGORY = "전체";
 export const NOTICE_LIST_STALE_TIME = 60 * 1000;
 
 export const getNoticeSortParam = (sort?: string): NoticeSort =>
@@ -54,7 +55,7 @@ export const getDepartmentNotices = async (
   department: string,
   sort: "date" | "view" = "date",
   page: number = 1,
-): Promise<ApiResponse<Pagination<Notice[]>>> => {
+): Promise<ApiResponse<Pagination<DepartmentNotice[]>>> => {
   const normalizedDepartment = normalizeRequiredDepartment(department);
 
   const params: { [key: string]: string | number } = {
@@ -63,9 +64,17 @@ export const getDepartmentNotices = async (
     page,
   };
 
-  const response = await axiosInstance.get<ApiResponse<Pagination<Notice[]>>>(
-    "/api/notices/department",
-    { params },
+  const response = await axiosInstance.get<
+    ApiResponse<Pagination<DepartmentNotice[]>>
+  >("/api/notices/department", { params });
+  return response.data;
+};
+
+export const getDepartmentNoticeSchedules = async (
+  departmentNoticeId: number,
+): Promise<ApiResponse<Schedule[]>> => {
+  const response = await axiosInstance.get<ApiResponse<Schedule[]>>(
+    `/api/notices/department/${departmentNoticeId}/schedules`,
   );
   return response.data;
 };

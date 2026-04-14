@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import {
   addDays,
+  addMonths,
+  addWeeks,
   endOfMonth,
   endOfWeek,
   format,
@@ -10,17 +12,18 @@ import {
   parseISO,
   startOfMonth,
   startOfWeek,
-  addMonths,
-  subMonths,
-  addWeeks,
   subWeeks,
+  subMonths,
 } from "date-fns";
 import { Fragment, useEffect, useState } from "react";
 import { getMyDeptSchedules, getSchedules } from "@/apis/schedules";
-import { EventInput } from "@fullcalendar/core";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import { ScheduleType } from "@/types/schedules";
+import {
+  ScheduleEvent,
+  ScheduleType,
+  toScheduleEvent,
+} from "@/types/schedules";
 import EventItem from "@/components/mobile/calendar/EventItem";
 import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
 import Divider from "@/components/common/Divider";
@@ -65,9 +68,7 @@ export default function Calendar({
 
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(baseDate);
-  const [monthEvents, setMonthEvents] = useState<
-    (EventInput & { type: ScheduleType })[]
-  >([]);
+  const [monthEvents, setMonthEvents] = useState<ScheduleEvent[]>([]);
   const [weeks, setWeeks] = useState<Date[][]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
     {
@@ -149,14 +150,12 @@ export default function Calendar({
       ]);
 
       // 타입 부여 및 데이터 통합
-      const schoolEvents = resSchool.data.map((e: EventInput) => ({
-        ...e,
-        type: "school" as ScheduleType,
-      }));
-      const deptEvents = resDept.data.map((e: EventInput) => ({
-        ...e,
-        type: "dept" as ScheduleType,
-      }));
+      const schoolEvents = resSchool.data.map((schedule) =>
+        toScheduleEvent(schedule, "school"),
+      );
+      const deptEvents = resDept.data.map((schedule) =>
+        toScheduleEvent(schedule, "dept"),
+      );
       const combinedEvents = [...schoolEvents, ...deptEvents];
 
       setMonthEvents(combinedEvents);
@@ -321,7 +320,7 @@ export default function Calendar({
               <Box>
                 {monthEvents.length > 0 ? (
                   monthEvents.map((event, idx) => (
-                    <Fragment key={idx}>
+                    <Fragment key={event.id}>
                       <EventItem {...event} />
                       {idx < monthEvents.length - 1 && <Divider />}
                     </Fragment>
@@ -516,6 +515,7 @@ const EventBar = styled.div<{
   text-overflow: ellipsis;
   z-index: 3;
   pointer-events: none; //클릭 통과
+  line-height: normal;
 `;
 
 const EmptyMessage = styled.p`

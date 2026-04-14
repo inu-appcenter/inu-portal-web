@@ -1,29 +1,36 @@
-import styled from "styled-components";
-import { MenuItemType, useHeader } from "@/context/HeaderContext";
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useInView } from "react-intersection-observer";
 import { Bell } from "lucide-react";
-import { getDepartmentNotices } from "@/apis/notices";
+import { useEffect, useMemo, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { useLocation, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import {
+  getDepartmentNoticeSchedules,
+  getDepartmentNotices,
+} from "@/apis/notices";
 import { putMemberDepartment } from "@/apis/members";
+import ActionButton from "@/components/common/ActionButton";
 import Box from "@/components/common/Box";
+import FloatingActionButton from "@/components/common/FloatingActionButton";
+import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
 import LoginRequiredModal from "@/components/mobile/common/LoginRequiredModal";
 import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { ROUTES } from "@/constants/routes";
+import { MenuItemType, useHeader } from "@/context/HeaderContext";
+import AI_LOGO from "@/resources/assets/calendar/챗불이요약.png";
+import { navBarList } from "@/resources/strings/navBarList";
 import useUserStore from "@/stores/useUserStore";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
-import { Notice } from "@/types/notices";
+import { DepartmentNotice } from "@/types/notices";
+import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
 import findTitleOrCode, {
   findDepartmentHomepageUrl,
 } from "@/utils/findTitleOrCode";
-import { navBarList } from "@/resources/strings/navBarList";
-import FloatingActionButton from "@/components/common/FloatingActionButton";
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo, tokenInfo } = useUserStore();
@@ -38,6 +45,33 @@ const MobileDeptNoticePage = () => {
     !tokenInfo.accessToken,
   );
   const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [selectedDepartmentNoticeId, setSelectedDepartmentNoticeId] = useState<
+    number | null
+  >(null);
+  const [selectedSchedules, setSelectedSchedules] = useState<ScheduleEvent[]>(
+    [],
+  );
+  const [isScheduleLoading, setIsScheduleLoading] = useState(false);
+
+  const handleCalendarClick = (
+    e: React.MouseEvent,
+    departmentNoticeId: number,
+  ) => {
+    e.stopPropagation();
+    setSelectedDepartmentNoticeId(departmentNoticeId);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleScheduleModalOpenChange = (open: boolean) => {
+    setIsScheduleModalOpen(open);
+
+    if (!open) {
+      setSelectedDepartmentNoticeId(null);
+      setSelectedSchedules([]);
+      setIsScheduleLoading(false);
+    }
+  };
 
   useEffect(() => {
     setIsLoginModalOpen(!tokenInfo.accessToken);
@@ -50,7 +84,7 @@ const MobileDeptNoticePage = () => {
       !userInfo.department &&
       !deptParam
     ) {
-      alert("학과 정보가 없습니다. 프로필 수정에서 학과 정보를 입력해 주세요.");
+      alert("학과 정보가 없습니다. 프로필 설정에서 학과 정보를 입력해 주세요.");
       navigate(ROUTES.MYPAGE.ROOT);
     }
   }, [
@@ -60,6 +94,46 @@ const MobileDeptNoticePage = () => {
     userInfo.department,
     userInfo.id,
   ]);
+
+  useEffect(() => {
+    if (!isScheduleModalOpen || selectedDepartmentNoticeId == null) {
+      return;
+    }
+
+    let isIgnored = false;
+
+    const fetchSchedules = async () => {
+      setIsScheduleLoading(true);
+
+      try {
+        const response = await getDepartmentNoticeSchedules(
+          selectedDepartmentNoticeId,
+        );
+
+        if (!isIgnored) {
+          setSelectedSchedules(
+            response.data.map((schedule) => toScheduleEvent(schedule, "dept")),
+          );
+        }
+      } catch (error) {
+        console.error("학과 공지 연결 일정을 불러오지 못했습니다.", error);
+
+        if (!isIgnored) {
+          setSelectedSchedules([]);
+        }
+      } finally {
+        if (!isIgnored) {
+          setIsScheduleLoading(false);
+        }
+      }
+    };
+
+    fetchSchedules();
+
+    return () => {
+      isIgnored = true;
+    };
+  }, [isScheduleModalOpen, selectedDepartmentNoticeId]);
 
   const departmentHomepageUrl = useMemo(() => {
     return currentDept ? findDepartmentHomepageUrl(currentDept) : "";
@@ -152,6 +226,13 @@ const MobileDeptNoticePage = () => {
   return (
     <MobileDeptNoticePageWrapper>
       <LoginRequiredModal isOpen={isLoginModalOpen} />
+      <ScheduleModal
+        isOpen={isScheduleModalOpen}
+        onOpenChange={handleScheduleModalOpenChange}
+        events={selectedSchedules}
+        isLoading={isScheduleLoading}
+      />
+
       <TipsCardWrapper>
         {isLoading && deptNotices.length === 0 ? (
           Array.from({ length: 8 }).map((_, i) => (
@@ -164,7 +245,7 @@ const MobileDeptNoticePage = () => {
         ) : deptNotices.length === 0 ? (
           <LoadingText>게시물이 없습니다.</LoadingText>
         ) : (
-          deptNotices.map((deptNotice: Notice, index: number) => (
+          deptNotices.map((deptNotice: DepartmentNotice, index: number) => (
             <Box
               key={`${deptNotice.id || index}`}
               onClick={() => {
@@ -173,12 +254,22 @@ const MobileDeptNoticePage = () => {
             >
               <PostItem
                 title={deptNotice.title}
-                category={deptNotice.category}
-                writer={deptNotice.writer}
                 date={deptNotice.createDate}
                 views={deptNotice.view}
                 isEllipsis={false}
+                showWriter={false}
               />
+              {deptNotice.hasSchedules && (
+                <CalendarActionButton
+                  style={{ alignSelf: "end" }}
+                  onClick={(e) => handleCalendarClick(e, deptNotice.id)}
+                >
+                  <img src={AI_LOGO} alt="횃불이AI" />
+                  <span>
+                    <strong>횃불이 AI</strong> 캘린더
+                  </span>
+                </CalendarActionButton>
+              )}
             </Box>
           ))
         )}
@@ -195,7 +286,7 @@ const MobileDeptNoticePage = () => {
       </div>
 
       {!hasNextPage && deptNotices.length > 0 && (
-        <LoadingText>더 이상 게시물이 없습니다.</LoadingText>
+        <LoadingText>더이상 게시물이 없습니다.</LoadingText>
       )}
 
       {navBarList[1].child && (
@@ -255,4 +346,21 @@ const LoadingText = styled.h4`
   padding: 20px 0;
   color: #888;
   font-size: 14px;
+`;
+
+const CalendarActionButton = styled(ActionButton)`
+  align-self: flex-end;
+  min-width: auto;
+  padding: 6px 12px;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 8px;
+  line-height: normal;
+
+  img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
 `;

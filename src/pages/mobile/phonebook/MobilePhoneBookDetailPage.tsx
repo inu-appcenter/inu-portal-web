@@ -367,6 +367,7 @@ const MobilePhoneBookDetailPage = () => {
 
         {actionUrl && (
           <ActionButton
+            as="a"
             href={normalizeExternalUrl(actionUrl)}
             target="_blank"
             rel="noopener noreferrer"

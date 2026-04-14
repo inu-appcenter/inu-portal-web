@@ -1,11 +1,12 @@
 import styled, { css } from "styled-components";
 import { SOFT_PILL_SHADOW } from "@/styles/shadows";
+import { ButtonHTMLAttributes } from "react";
 
-interface ActionButtonProps {
+interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   disabled?: boolean;
 }
 
-const ActionButton = styled.a<ActionButtonProps>`
+const ActionButton = styled.button<ActionButtonProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -22,7 +23,10 @@ const ActionButton = styled.a<ActionButtonProps>`
   transition: all 0.2s ease-in-out;
   cursor: pointer;
 
-  /* disabled 속성이 true일 때 적용할 스타일 */
+  /* button 태그 기본 스타일 초기화 */
+  border: none;
+  outline: none;
+
   ${(props) =>
     props.disabled &&
     css`
