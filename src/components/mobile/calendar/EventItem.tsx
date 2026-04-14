@@ -106,7 +106,7 @@ const EventItem = (props: EventItemProps) => {
                     alert("오류 신고 기능 구현 예정입니다.");
                   }}
                 >
-                  🚨<span className="title">오류 신고</span>
+                  🚨
                 </SirenWrapper>
               </DetailFooter>
             </DetailContainer>
@@ -153,7 +153,7 @@ const EventDot = styled.div<{ $type: ScheduleType }>`
   width: 8px;
   height: 8px;
   background-color: ${({ $type }) =>
-    $type === "dept" ? "rgba(11, 128, 67, 1)" : "rgba(3, 155, 229, 1)"};
+    $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
   border-radius: 50%;
 `;
 

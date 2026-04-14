@@ -502,9 +502,10 @@ const EventBar = styled.div<{
   height: 20px;
   /* 타입에 따른 배경색 조건부 렌더링 */
   background-color: ${({ $type }) =>
-    $type === "dept" ? "rgba(11, 128, 67, 1)" : "rgba(3, 155, 229, 1)"};
-  color: white;
+    $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
+  color: black;
   font-size: 11px;
+  font-weight: 400;
   padding: 0 8px;
   box-sizing: border-box;
   border-radius: 6px;
