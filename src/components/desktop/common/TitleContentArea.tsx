@@ -21,10 +21,15 @@ const TitleContentArea = ({
 }: TitleContentAreaProps) => {
   return (
     <TitleContentAreaWrapper style={style}>
-      {title && (
-        <TitleLine title={title} link={link} externalLink={externalLink} />
+      {(title || description) && (
+        <HeaderWrapper>
+          {title && (
+            <TitleLine title={title} link={link} externalLink={externalLink} />
+          )}
+          {description && <DescriptionText>{description}</DescriptionText>}
+        </HeaderWrapper>
       )}
-      {description && <DescriptionText>{description}</DescriptionText>}
+
       {children}
     </TitleContentAreaWrapper>
   );
@@ -44,12 +49,20 @@ const TitleContentAreaWrapper = styled.div`
   gap: 8px;
 `;
 
+const HeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+`;
+
 const DescriptionText = styled.p`
   font-size: 14px;
   color: #666;
-  margin: 0 8px;
+  margin: 0;
   text-align: start;
   width: 100%;
+  line-height: normal;
 
   padding: 0 20px;
 `;

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import RegisteredKeywordItem from "../../components/desktop/notice/RegisteredKeywordItem.tsx";
 import { Keyword } from "@/types/notices";
 import {
@@ -27,9 +27,8 @@ export default function MobileDeptAlarmSettingPage() {
 
   const [keyword, setKeyword] = useState("");
   const [keywords, setKeywords] = useState<Keyword[]>([]);
-  const [allAlarm, setAllAlarm] = useState(false); // 전체 공지 알림 체크박스 상태
+  const [allAlarm, setAllAlarm] = useState(false);
 
-  // location.search가 바뀔 때마다 keyword 업데이트
   useEffect(() => {
     const newParams = new URLSearchParams(location.search);
     setKeyword(newParams.get("category") || "");
@@ -38,12 +37,18 @@ export default function MobileDeptAlarmSettingPage() {
   useEffect(() => {
     fetchKeywords();
   }, []);
+
   useEffect(() => {
-    // keyword가 null인 항목이 하나라도 있으면 allAlarm true
-    if (keywords.some((k) => k.keyword === null)) {
-      setAllAlarm(true);
-    }
+    setAllAlarm(keywords.some((k) => k.keyword === null));
   }, [keywords]);
+
+  const registeredKeywords = useMemo(
+    () =>
+      keywords.filter(
+        (item): item is Keyword & { keyword: string } => item.keyword !== null,
+      ),
+    [keywords],
+  );
 
   const fetchKeywords = async () => {
     try {
@@ -55,7 +60,8 @@ export default function MobileDeptAlarmSettingPage() {
   };
 
   const handleAddKeyword = async () => {
-    if (!keyword) return;
+    if (!keyword || allAlarm) return;
+
     try {
       await createKeyword(keyword, findTitleOrCode(userInfo.department));
       setKeyword("");
@@ -69,6 +75,7 @@ export default function MobileDeptAlarmSettingPage() {
     if (!window.confirm("키워드를 삭제할까요?")) {
       return;
     }
+
     try {
       await deleteKeyword(keywordId);
       fetchKeywords();
@@ -77,7 +84,6 @@ export default function MobileDeptAlarmSettingPage() {
     }
   };
 
-  // 전체 공지 알림 구독 (체크박스 연동)
   const handleToggleAllAlarm = async (checked: boolean) => {
     try {
       if (checked) {
@@ -90,7 +96,6 @@ export default function MobileDeptAlarmSettingPage() {
         }
         await subscribeDepartment(findTitleOrCode(userInfo.department));
       } else {
-        // keyword가 null인 항목만 필터링 - null은 학과 전체 알림
         const nullKeywords = keywords.filter((k) => k.keyword === null);
         await Promise.all(nullKeywords.map((k) => deleteKeyword(k.keywordId)));
       }
@@ -102,7 +107,6 @@ export default function MobileDeptAlarmSettingPage() {
     }
   };
 
-  // 헤더 설정 주입
   useHeader({
     title: "학과 공지 푸시알림 설정",
   });
@@ -143,77 +147,70 @@ export default function MobileDeptAlarmSettingPage() {
       <KeyWordSettingWrapper>
         <TitleContentArea
           title={"키워드 알림 설정"}
+          description={
+            allAlarm
+              ? "전체 공지 알림이 켜져 있어 키워드 알림 설정을 사용할 수 없어요."
+              : undefined
+          }
           style={{ alignItems: "flex-start" }}
         >
           <Box style={{ padding: "16px", borderRadius: "16px" }}>
             <Wrapper>
               <InputWrapper>
                 <StyledInput
-                  placeholder="알림 받을 키워드를 입력해주세요."
+                  placeholder={
+                    allAlarm
+                      ? "전체 공지 알림 사용 중에는 키워드를 등록할 수 없어요."
+                      : "알림 받을 키워드를 입력해주세요."
+                  }
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
+                  disabled={allAlarm}
                 />
-                <TextButton disabled={!keyword} onClick={handleAddKeyword}>
+                <TextButton
+                  disabled={!keyword || allAlarm}
+                  onClick={handleAddKeyword}
+                >
                   등록
                 </TextButton>
               </InputWrapper>
-              <CategorySelectorNew categories={NoticeRecommendKeywords} />
+
+              <CategorySelectorDisabledWrapper $disabled={allAlarm}>
+                <CategorySelectorNew categories={NoticeRecommendKeywords} />
+              </CategorySelectorDisabledWrapper>
             </Wrapper>
           </Box>
         </TitleContentArea>
 
-        <TitleContentArea
-          title={"등록된 키워드 목록"}
-          style={{ alignItems: "flex-start" }}
-        >
-          <Box
-            style={{
-              padding: "8px 16px",
-              borderRadius: "16px",
-              minHeight: "160px",
-              maxHeight: "300px",
-              overflowY: "auto",
-              position: "relative",
-              justifyContent:
-                !allAlarm &&
-                keywords.filter((item) => item.keyword !== null).length === 0
-                  ? "center"
-                  : "flex-start",
-            }}
+        {registeredKeywords.length > 0 && (
+          <TitleContentArea
+            title={"등록된 키워드 목록"}
+            style={{ alignItems: "flex-start" }}
           >
-            <ListWrapper>
-              {!allAlarm &&
-              keywords.filter((item) => item.keyword !== null).length === 0 ? (
-                <EmptyState>등록된 키워드가 없어요.</EmptyState>
-              ) : (
-                keywords
-                  .filter(
-                    (item): item is typeof item & { keyword: string } =>
-                      item.keyword !== null,
-                  )
-                  .map((item, index, filtered) => (
-                    <React.Fragment key={item.keywordId}>
-                      <RegisteredKeywordItem
-                        keyword={item.keyword}
-                        onDelete={() => handleDeleteKeyword(item.keywordId)}
-                      />
-                      {index < filtered.length - 1 && <Divider margin={"0"} />}
-                    </React.Fragment>
-                  ))
-              )}
-            </ListWrapper>
-          </Box>
-        </TitleContentArea>
-
-        {/* 전체 오버레이 - 키워드 설정 영역 전체를 덮음 */}
-        {allAlarm && (
-          <Overlay>
-            <OverlayMessage>
-              전체 공지 알림이 켜져 있어
-              <br />
-              키워드 알림 설정을 사용할 수 없습니다.
-            </OverlayMessage>
-          </Overlay>
+            <Box
+              style={{
+                padding: "8px 16px",
+                borderRadius: "16px",
+                minHeight: "160px",
+                maxHeight: "300px",
+                overflowY: "auto",
+              }}
+            >
+              <ListWrapper>
+                {registeredKeywords.map((item, index) => (
+                  <React.Fragment key={item.keywordId}>
+                    <RegisteredKeywordItem
+                      keyword={item.keyword}
+                      onDelete={() => handleDeleteKeyword(item.keywordId)}
+                    />
+                    {index < registeredKeywords.length - 1 && (
+                      <Divider margin={"0"} />
+                    )}
+                  </React.Fragment>
+                ))}
+              </ListWrapper>
+            </Box>
+          </TitleContentArea>
         )}
       </KeyWordSettingWrapper>
     </MobileTipsPageWrapper>
@@ -228,7 +225,6 @@ const MobileTipsPageWrapper = styled.div`
   flex: 1;
   width: 100%;
   box-sizing: border-box;
-  background-color: #f3f7fe;
   padding: 16px 0 40px;
   min-height: 100svh;
 
@@ -246,6 +242,7 @@ const AllAlarmCheckBoxWrapper = styled.div`
 
   gap: 16px;
   word-break: keep-all;
+
   .first-line {
     color: #1a1a1a;
     font-size: 18px;
@@ -269,7 +266,6 @@ const Wrapper = styled.div`
 `;
 
 const KeyWordSettingWrapper = styled.div`
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -279,15 +275,6 @@ const KeyWordSettingWrapper = styled.div`
 const ListWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-`;
-
-const EmptyState = styled.div`
-  padding: 32px 0;
-  color: #a0a0a0;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
   width: 100%;
 `;
 
@@ -321,6 +308,14 @@ const StyledInput = styled.input`
     color: #adb5bd;
     font-weight: 500;
   }
+
+  &:disabled {
+    background-color: #f1f3f5;
+    color: #adb5bd;
+    cursor: not-allowed;
+    border-color: #e9ecef;
+    box-shadow: none;
+  }
 `;
 
 const TextButton = styled.button<{ disabled?: boolean }>`
@@ -343,30 +338,13 @@ const TextButton = styled.button<{ disabled?: boolean }>`
   }
 `;
 
-const Overlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  border-radius: 16px;
-`;
-
-const OverlayMessage = styled.div`
-  background-color: #ffffff;
-  padding: 16px 20px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  color: #495057;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.6;
-  border: 1px solid #f1f3f5;
+const CategorySelectorDisabledWrapper = styled.div<{ $disabled: boolean }>`
+  ${({ $disabled }) =>
+    $disabled &&
+    `
+      pointer-events: none;
+      opacity: 0.45;
+      user-select: none;
+      filter: grayscale(0.15);
+    `}
 `;
