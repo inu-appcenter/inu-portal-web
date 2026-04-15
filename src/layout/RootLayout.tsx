@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { getMembers, postApiLogs, postFcmToken } from "@/apis/members";
 import { HeaderProvider } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import useAppStateStore from "@/stores/useAppStateStore";
 import useUserStore from "@/stores/useUserStore";
 import ScrollBarStyles from "@/styles/ScrollBarStyles";
@@ -23,6 +24,8 @@ export default function RootLayout() {
   const outlet = useOutlet();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useFeatureFlags();
 
   const { tokenInfo, userInfo, setTokenInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();

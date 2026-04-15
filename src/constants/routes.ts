@@ -95,5 +95,6 @@ export const ROUTES = {
     USER_STAT: "/admin/userstatistics",
     API_STAT: "/admin/apistatistics",
     USER_NOTIFICATIION: "/admin/usernotification",
+    FEATURE_FLAGS: "/admin/feature-flags",
   },
 } as const;
