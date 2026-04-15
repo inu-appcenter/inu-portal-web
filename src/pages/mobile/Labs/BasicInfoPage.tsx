@@ -1,9 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import ActionButton from "@/components/common/ActionButton";
+import { ROUTES } from "@/constants/routes";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 
 // API 및 타입 임포트
 import { getMyBasicInfo } from "@/apis/portal";
@@ -12,6 +15,7 @@ import Divider from "@/components/common/Divider";
 import InfoBottomSheet from "@/components/mobile/portal/InfoBottomSheet";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { postApiLogs } from "@/apis/members";
+import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { formatKoreanDateTime } from "@/utils/date";
 
 /**
@@ -36,6 +40,10 @@ const BasicInfoPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetched, setIsFetched] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const navigate = useNavigate();
+  const { enabled: isLabsEnabled, isFetched: isLabsFlagFetched } = useFeatureFlag(
+    FEATURE_FLAG_KEYS.LABS,
+  );
 
   // 입력 필드 상태
   const [portalId, setPortalId] = useState("");
@@ -57,12 +65,22 @@ const BasicInfoPage = () => {
   }, []);
 
   useEffect(() => {
+    if (isLabsFlagFetched && !isLabsEnabled) {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [isLabsEnabled, isLabsFlagFetched, navigate]);
+
+  useEffect(() => {
+    if (!isLabsFlagFetched || !isLabsEnabled) {
+      return;
+    }
+
     const logApi = async () => {
       await postApiLogs("/api/labs/basic-info");
     };
 
     void logApi();
-  }, []);
+  }, [isLabsEnabled, isLabsFlagFetched]);
 
   const isInputValid = portalId.trim() !== "" && portalPassword.trim() !== "";
 
@@ -138,6 +156,10 @@ const BasicInfoPage = () => {
     title: "내 기본 학적 정보",
     menuItems,
   });
+
+  if (isLabsFlagFetched && !isLabsEnabled) {
+    return null;
+  }
 
   return (
     <MoreAppsPageWrapper>

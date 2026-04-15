@@ -10,18 +10,21 @@ import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png";
 import { LuFlaskConical } from "react-icons/lu";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import {
   dismissTooltip,
   isTooltipDismissed,
 } from "@/utils/dismissibleTooltipStorage";
 import { ROUTES } from "@/constants/routes";
+import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 
 const PHONEBOOK_TOOLTIP_ID = "home-phonebook-search";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
   const phonebookTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
+  const { enabled: isLabsEnabled } = useFeatureFlag(FEATURE_FLAG_KEYS.LABS);
   const [isPhonebookTooltipVisible, setIsPhonebookTooltipVisible] = useState(
     () => !isTooltipDismissed(PHONEBOOK_TOOLTIP_ID),
   );
@@ -62,6 +65,7 @@ const HomeChipGroup = () => {
       onClick: () => {
         navigate(ROUTES.LABS.ROOT);
       },
+      isActive: isLabsEnabled,
     },
 
     {

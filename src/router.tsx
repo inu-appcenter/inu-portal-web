@@ -42,6 +42,7 @@ import MobileUnidormPage from "@/pages/mobile/MobileUnidormPage";
 import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
+import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
@@ -228,6 +229,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.ADMIN.USER_NOTIFICATIION,
             element: <MobileAdminNotificationPage />,
+          },
+          {
+            path: ROUTES.ADMIN.FEATURE_FLAGS,
+            element: <MobileAdminFeatureFlagsPage />,
           },
         ],
       },

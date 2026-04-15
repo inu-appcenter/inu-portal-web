@@ -8,9 +8,11 @@ import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import useUserStore from "@/stores/useUserStore";
 import { useEffect } from "react";
 import { postApiLogs } from "@/apis/members";
+import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 
 interface AppItemProps {
   iconSrc?: string | null;
@@ -33,17 +35,34 @@ const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
 
 const LabsPage = () => {
   const { tokenInfo } = useUserStore();
+  const { enabled: isLabsEnabled, isFetched: isLabsFlagFetched } = useFeatureFlag(
+    FEATURE_FLAG_KEYS.LABS,
+  );
   useHeader({ title: "실험실" });
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (isLabsFlagFetched && !isLabsEnabled) {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [isLabsEnabled, isLabsFlagFetched, navigate]);
+
+  useEffect(() => {
+    if (!isLabsFlagFetched || !isLabsEnabled) {
+      return;
+    }
+
     const logApi = async () => {
       await postApiLogs("/api/labs");
     };
 
     void logApi();
-  }, []);
+  }, [isLabsEnabled, isLabsFlagFetched]);
+
+  if (isLabsFlagFetched && !isLabsEnabled) {
+    return null;
+  }
 
   return (
     <MoreAppsPageWrapper>
