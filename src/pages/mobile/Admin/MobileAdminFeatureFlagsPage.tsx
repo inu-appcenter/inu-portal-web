@@ -48,7 +48,7 @@ export default function MobileAdminFeatureFlagsPage() {
   const [savingKey, setSavingKey] = useState<string | null>(null);
 
   useHeader({
-    title: "기능 플래그 관리",
+    title: "Feature Flag 관리",
   });
 
   useEffect(() => {
@@ -74,7 +74,10 @@ export default function MobileAdminFeatureFlagsPage() {
   });
 
   const sortedFlags = useMemo(
-    () => [...featureFlags].sort((left, right) => left.key.localeCompare(right.key)),
+    () =>
+      [...featureFlags].sort((left, right) =>
+        left.key.localeCompare(right.key),
+      ),
     [featureFlags],
   );
 
@@ -107,14 +110,16 @@ export default function MobileAdminFeatureFlagsPage() {
   const createMutation = useMutation({
     mutationFn: createFeatureFlag,
     onSuccess: async (createdFlag) => {
-      setNotice(`${createdFlag.key} 기능 플래그를 생성했습니다.`);
+      setNotice(`${createdFlag.key} Feature Flag를 생성했습니다.`);
       setCreateForm(createInitialCreateForm());
       await syncFeatureFlagQueries();
     },
     onError: (error) => {
       console.error(error);
       setNotice(
-        error instanceof Error ? error.message : "기능 플래그 생성에 실패했습니다.",
+        error instanceof Error
+          ? error.message
+          : "Feature Flag 생성에 실패했습니다.",
       );
     },
   });
@@ -131,13 +136,15 @@ export default function MobileAdminFeatureFlagsPage() {
       return updateFeatureFlag(key, body);
     },
     onSuccess: async (updatedFlag) => {
-      setNotice(`${updatedFlag.key} 기능 플래그를 저장했습니다.`);
+      setNotice(`${updatedFlag.key} Feature Flag를 저장했습니다.`);
       await syncFeatureFlagQueries();
     },
     onError: (error) => {
       console.error(error);
       setNotice(
-        error instanceof Error ? error.message : "기능 플래그 저장에 실패했습니다.",
+        error instanceof Error
+          ? error.message
+          : "Feature Flag 저장에 실패했습니다.",
       );
     },
     onSettled: () => {
@@ -174,7 +181,7 @@ export default function MobileAdminFeatureFlagsPage() {
 
     const normalizedKey = createForm.key.trim().toUpperCase();
     if (!normalizedKey) {
-      setNotice("기능 플래그 키를 입력해주세요.");
+      setNotice("Feature Flag 키를 입력해주세요.");
       return;
     }
 
@@ -208,10 +215,10 @@ export default function MobileAdminFeatureFlagsPage() {
     <Wrapper>
       <Content>
         <SectionCard as="form" onSubmit={handleCreateSubmit}>
-          <CardTitle>새 기능 플래그 만들기</CardTitle>
+          <CardTitle>새 Feature Flag 만들기</CardTitle>
           <Description>
-            새 기능 플래그 키를 등록하고, 활성화 여부와 공개 API 노출 여부를 함께
-            설정할 수 있습니다.
+            새 Feature Flag 키를 등록하고, 활성화 여부와 공개 API 노출 여부를
+            함께 설정할 수 있습니다.
           </Description>
 
           <FormGroup>
@@ -221,7 +228,9 @@ export default function MobileAdminFeatureFlagsPage() {
               type="text"
               placeholder="예: LABS"
               value={createForm.key}
-              onChange={(event) => handleCreateInputChange("key", event.target.value)}
+              onChange={(event) =>
+                handleCreateInputChange("key", event.target.value)
+              }
             />
           </FormGroup>
 
@@ -230,7 +239,7 @@ export default function MobileAdminFeatureFlagsPage() {
             <TextArea
               id="feature-flag-description"
               rows={3}
-              placeholder="이 기능 플래그가 무엇을 제어하는지 적어주세요."
+              placeholder="이 Feature Flag가 무엇을 제어하는지 적어주세요."
               value={createForm.description ?? ""}
               onChange={(event) =>
                 handleCreateInputChange("description", event.target.value)
@@ -281,16 +290,17 @@ export default function MobileAdminFeatureFlagsPage() {
           </ToggleGroup>
 
           <PrimaryButton type="submit" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "생성 중..." : "기능 플래그 생성"}
+            {createMutation.isPending ? "생성 중..." : "Feature Flag 생성"}
           </PrimaryButton>
         </SectionCard>
 
         <SectionCard>
           <CardHeader>
             <div>
-              <CardTitle>등록된 기능 플래그</CardTitle>
+              <CardTitle>등록된 Feature Flag</CardTitle>
               <Description>
-                `enabled`는 실제 사용 여부, 공개 여부는 프론트 공개 API 노출 여부입니다.
+                `enabled`는 실제 사용 여부, 공개 여부는 프론트 공개 API 노출
+                여부입니다.
               </Description>
             </div>
             <RefreshButton
@@ -309,9 +319,9 @@ export default function MobileAdminFeatureFlagsPage() {
           {notice && <Notice>{notice}</Notice>}
 
           {isLoading ? (
-            <EmptyState>기능 플래그 목록을 불러오는 중입니다.</EmptyState>
+            <EmptyState>Feature Flag 목록을 불러오는 중입니다.</EmptyState>
           ) : sortedFlags.length === 0 ? (
-            <EmptyState>등록된 기능 플래그가 없습니다.</EmptyState>
+            <EmptyState>등록된 Feature Flag가 없습니다.</EmptyState>
           ) : (
             <FlagList>
               {sortedFlags.map((flag) => {
@@ -382,7 +392,11 @@ export default function MobileAdminFeatureFlagsPage() {
                           <Switch
                             checked={draft.clientVisible}
                             onCheckedChange={(checked) =>
-                              handleDraftChange(flag.key, "clientVisible", checked)
+                              handleDraftChange(
+                                flag.key,
+                                "clientVisible",
+                                checked,
+                              )
                             }
                           />
                         </ToggleAction>

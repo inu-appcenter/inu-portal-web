@@ -23,9 +23,9 @@ const adminPages = [
     description: "사용자에게 푸시 알림을 전송합니다.",
   },
   {
-    label: "기능 플래그 관리",
+    label: "Feature Flag 관리",
     path: ROUTES.ADMIN.FEATURE_FLAGS,
-    description: "기능 플래그를 생성하고 상태를 변경합니다.",
+    description: "Feature Flag를 생성하고 상태를 변경합니다.",
   },
 ];
 
