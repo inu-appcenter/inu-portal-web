@@ -21,7 +21,7 @@ export const BusStopDummy: BusStopData[] = [
   {
     id: "go-school-LOTTEMALL",
     stopName: "인천대입구역.롯데몰",
-    stopNotice: "※ 롯데몰 앞 정류장에서 바로 탑승할 수 있어요.",
+    stopNotice: "※ 청라에서 오셨나요? 이 정류장에서 환승도 좋은 선택지에요.",
     busList: ["46"],
     lat: 37.38399958,
     lng: 126.6405598,

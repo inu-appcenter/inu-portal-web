@@ -18,6 +18,7 @@ import {
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+import { postApiLogs } from "@/apis/members";
 
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
@@ -28,6 +29,14 @@ const BANNER_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const MobilePhoneBookPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const logApi = async () => {
+      await postApiLogs("/api/directory");
+    };
+
+    void logApi();
+  }, []);
 
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
