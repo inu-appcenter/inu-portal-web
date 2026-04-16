@@ -428,11 +428,11 @@ const PageWrapper = styled.div`
     display: grid;
     grid-template-columns: clamp(340px, 28vw, 410px) minmax(0, 1fr);
     gap: 20px;
-    min-height: 720px;
-    height: calc(100dvh - 150px);
+    height: 100%;
+    min-height: 0;
     margin-top: 0;
-    padding-bottom: 12px;
-    overflow: visible;
+    padding-bottom: 0;
+    overflow: hidden;
   }
 `;
 
@@ -449,9 +449,6 @@ const MapArea = styled.div`
     border-radius: 28px;
     overflow: hidden;
     background: #ffffff;
-    box-shadow:
-      0 20px 40px rgba(35, 60, 115, 0.08),
-      0 4px 12px rgba(35, 60, 115, 0.06);
     border: 1px solid rgba(64, 113, 185, 0.1);
   }
 `;

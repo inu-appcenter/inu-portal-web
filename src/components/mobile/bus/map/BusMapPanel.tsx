@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled, { css, keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Drawer } from "vaul";
@@ -624,9 +624,6 @@ const PanelSurface = styled.div<{ $isDesktop: boolean }>`
       ? `
         border-radius: 28px;
         border: 1px solid rgba(64, 113, 185, 0.1);
-        box-shadow:
-          0 20px 40px rgba(35, 60, 115, 0.08),
-          0 4px 12px rgba(35, 60, 115, 0.06);
       `
       : `
         border-top-left-radius: 24px;
