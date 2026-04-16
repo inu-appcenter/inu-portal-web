@@ -15,11 +15,13 @@ import {
 interface SubLayoutProps {
   showHeader?: boolean;
   showNav?: boolean;
+  fillsViewportOnDesktop?: boolean;
 }
 
 export default function SubLayout({
   showHeader = true,
   showNav = false,
+  fillsViewportOnDesktop = false,
 }: SubLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
@@ -43,9 +45,6 @@ export default function SubLayout({
   const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader);
   const headerHeight = showHeader ? measuredHeaderHeight : 20;
   const navHeight = showNav ? 100 : 40;
-  const fillsViewportOnDesktop =
-    location.pathname === ROUTES.BUS.INFO ||
-    location.pathname === ROUTES.BOARD.CAMPUS;
 
   return (
     <LayoutContainer
@@ -111,6 +110,8 @@ const ContentShell = styled.div<{ $fillsViewportOnDesktop: boolean }>`
           height: 100%;
           min-height: 0;
           overflow: hidden;
+          display: flex;
+          flex-direction: column;
         `
         : ""}
   }
@@ -139,7 +140,7 @@ const ContentArea = styled.div<{
           flex-direction: column;
           overflow: hidden;
           padding-top: 0;
-          padding-bottom: 0;
+          padding-bottom: 20px;
 
           & > * {
             flex: 1;

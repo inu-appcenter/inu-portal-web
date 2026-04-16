@@ -171,7 +171,6 @@ export const router = createBrowserRouter([
           // 기능 메뉴
           { path: ROUTES.BOARD.MENU, element: <MobileMenuPage /> },
           { path: ROUTES.BOARD.CALENDAR, element: <MobileCalendarPage /> },
-          { path: ROUTES.BOARD.CAMPUS, element: <MobileCampusPage /> },
           { path: ROUTES.BOARD.UTIL, element: <MobileUtilPage /> },
           { path: ROUTES.BOARD.COUNCIL, element: <MobileCouncilPage /> },
           { path: ROUTES.BOARD.CLUB, element: <MobileClubPage /> },
@@ -200,8 +199,6 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
 
           // 버스 상세
-          { path: ROUTES.BUS.INFO, element: <MobileBusInfoPage /> },
-          { path: ROUTES.BUS.INFO_MAP, element: <MobileBusMapPage /> },
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },
           { path: ROUTES.BUS.STOP_INFO, element: <MobileBusStopPage /> },
           {
@@ -234,6 +231,17 @@ export const router = createBrowserRouter([
             path: ROUTES.ADMIN.FEATURE_FLAGS,
             element: <MobileAdminFeatureFlagsPage />,
           },
+        ],
+      },
+      // ----------------------------------------------------------------
+      // 3. 서브 페이지 (풀스크린 뷰포트 고정 - 지도 등)
+      // ----------------------------------------------------------------
+      {
+        element: <SubLayout showNav={false} fillsViewportOnDesktop={true} />,
+        children: [
+          { path: ROUTES.BOARD.CAMPUS, element: <MobileCampusPage /> },
+          { path: ROUTES.BUS.INFO, element: <MobileBusInfoPage /> },
+          { path: ROUTES.BUS.INFO_MAP, element: <MobileBusMapPage /> },
         ],
       },
     ],

@@ -191,7 +191,6 @@ const PanelSurface = styled.div<{ $isDesktop: boolean }>`
       ? `
         border-radius: 28px;
         border: 1px solid rgba(64, 113, 185, 0.1);
-        box-shadow: 0 20px 40px rgba(35, 60, 115, 0.08), 0 4px 12px rgba(35, 60, 115, 0.06);
       `
       : `
         border-top-left-radius: 20px;
