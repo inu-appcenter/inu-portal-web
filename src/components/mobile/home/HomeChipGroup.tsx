@@ -9,17 +9,22 @@ import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png";
+import { LuFlaskConical } from "react-icons/lu";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import {
   dismissTooltip,
   isTooltipDismissed,
 } from "@/utils/dismissibleTooltipStorage";
+import { ROUTES } from "@/constants/routes";
+import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 
 const PHONEBOOK_TOOLTIP_ID = "home-phonebook-search";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
   const phonebookTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
+  const { enabled: isLabsEnabled } = useFeatureFlag(FEATURE_FLAG_KEYS.LABS);
   const [isPhonebookTooltipVisible, setIsPhonebookTooltipVisible] = useState(
     () => !isTooltipDismissed(PHONEBOOK_TOOLTIP_ID),
   );
@@ -40,17 +45,7 @@ const HomeChipGroup = () => {
       iconSrc: CallINU,
       title: "INU 전화번호부",
       onClick: () => {
-        // const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        //
-        // // iOS WebView 판별 (Safari 제외)
-        // const isIOSWebView = isIOS && !/Safari/i.test(navigator.userAgent);
-        //
-        // if (isIOSWebView) {
-        //   alert(
-        //     "iPhone의 경우 페이지 진입 시 동영상이 전체화면으로 재생되는 문제가 있습니다.\n동영상을 닫고 이용해주세요. 문제를 수정한 앱을 곧 배포하겠습니다.",
-        //   );
-        // }
-        navigate(`/phonebook`);
+        navigate(ROUTES.PHONEBOOK.ROOT);
       },
     },
 
@@ -59,8 +54,18 @@ const HomeChipGroup = () => {
       iconSrc: AppcenterLogo_NoText,
       title: "앱센터의 다른 앱",
       onClick: () => {
-        navigate(`/more-apps`);
+        navigate(ROUTES.MORE_APPS.ROOT);
       },
+    },
+
+    {
+      id: "lab",
+      iconComponent: LuFlaskConical,
+      title: "실험실",
+      onClick: () => {
+        navigate(ROUTES.LABS.ROOT);
+      },
+      isActive: isLabsEnabled,
     },
 
     {
@@ -104,6 +109,7 @@ const HomeChipGroup = () => {
                 >
                   <Chip
                     iconSrc={chip.iconSrc}
+                    iconComponent={chip.iconComponent}
                     title={chip.title}
                     isExternalLink={chip.isExternalLink}
                     isAIButton={chip.isAIButton}

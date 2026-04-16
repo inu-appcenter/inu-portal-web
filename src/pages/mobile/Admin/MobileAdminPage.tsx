@@ -1,51 +1,58 @@
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
-import styled from "styled-components";
-import useUserStore from "../../../stores/useUserStore.ts";
 import { useEffect } from "react";
-import { useHeader } from "@/context/HeaderContext";
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
 
-const MobileAdminPage: React.FC = () => {
+import { ROUTES } from "@/constants/routes";
+import { useHeader } from "@/context/HeaderContext";
+import useUserStore from "@/stores/useUserStore";
+
+const adminPages = [
+  {
+    label: "접속 유저 통계",
+    path: ROUTES.ADMIN.USER_STAT,
+    description: "일자별 접속 유저 통계를 확인합니다.",
+  },
+  {
+    label: "API 사용 통계",
+    path: ROUTES.ADMIN.API_STAT,
+    description: "일자별 API 사용 통계를 확인합니다.",
+  },
+  {
+    label: "푸시 알림 전송",
+    path: ROUTES.ADMIN.USER_NOTIFICATIION,
+    description: "사용자에게 푸시 알림을 전송합니다.",
+  },
+  {
+    label: "Feature Flag 관리",
+    path: ROUTES.ADMIN.FEATURE_FLAGS,
+    description: "Feature Flag를 생성하고 상태를 변경합니다.",
+  },
+];
+
+const MobileAdminPage = () => {
   const navigate = useNavigate();
-  const { tokenInfo, userInfo, isLoading } = useUserStore();
+  const { tokenInfo, userInfo } = useUserStore();
 
   useEffect(() => {
-    // isLoading이 false일 때만 다음 로직 실행
-    if (!isLoading) {
-      console.log(userInfo && userInfo.role === "admin");
-      if (!tokenInfo.accessToken || !(userInfo && userInfo.role === "admin")) {
-        navigate(ROUTES.HOME);
-      }
+    const hasStoredToken = Boolean(localStorage.getItem("tokenInfo"));
+
+    if (!tokenInfo.accessToken && !hasStoredToken) {
+      navigate(ROUTES.HOME, { replace: true });
+      return;
     }
-  }, [tokenInfo, userInfo, isLoading]);
 
-  // 관리자 페이지 목록
-  const adminPages = [
-    {
-      label: "접속 유저 통계",
-      path: ROUTES.ADMIN.USER_STAT,
-      description: "일자별로 접속한 유저 통계를 볼 수 있어요.",
-    },
-    {
-      label: "서비스 사용 통계",
-      path: ROUTES.ADMIN.API_STAT,
-      description: "일자별로 API 요청 횟수 통계를 볼 수 있어요.",
-    },
-    {
-      label: "푸시 알림 전송",
-      path: ROUTES.ADMIN.USER_NOTIFICATIION,
-      description: "유저에게 푸시알림을 보낼 수 있어요.",
-    },
-  ];
+    if (tokenInfo.accessToken && userInfo.role && userInfo.role !== "admin") {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [navigate, tokenInfo.accessToken, userInfo.role]);
 
-  // 헤더 설정 주입
   useHeader({
     title: "관리자 페이지",
   });
 
   return (
     <Wrapper>
-      <Title>관리자 기능 선택</Title>
+      <Title>관리 기능 선택</Title>
       <MenuGrid>
         {adminPages.map((page) => (
           <MenuCard key={page.path} onClick={() => navigate(page.path)}>
@@ -61,12 +68,10 @@ const MobileAdminPage: React.FC = () => {
 export default MobileAdminPage;
 
 export const Wrapper = styled.div`
-  padding: 0px 16px;
-
+  padding: 0 16px;
   box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;
-
   width: 100%;
 `;
 

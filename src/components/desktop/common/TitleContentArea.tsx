@@ -6,7 +6,7 @@ interface TitleContentAreaProps {
   title?: string | React.ReactNode;
   link?: string;
   externalLink?: string;
-  description?: string;
+  description?: React.ReactNode; // string에서 React.ReactNode로 변경
   children?: React.ReactNode;
   style?: CSSProperties;
 }
@@ -21,10 +21,15 @@ const TitleContentArea = ({
 }: TitleContentAreaProps) => {
   return (
     <TitleContentAreaWrapper style={style}>
-      {title && (
-        <TitleLine title={title} link={link} externalLink={externalLink} />
+      {(title || description) && (
+        <HeaderWrapper>
+          {title && (
+            <TitleLine title={title} link={link} externalLink={externalLink} />
+          )}
+          {description && <DescriptionText>{description}</DescriptionText>}
+        </HeaderWrapper>
       )}
-      {description && <DescriptionText>{description}</DescriptionText>}
+
       {children}
     </TitleContentAreaWrapper>
   );
@@ -44,12 +49,24 @@ const TitleContentAreaWrapper = styled.div`
   gap: 8px;
 `;
 
+const HeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+`;
+
 const DescriptionText = styled.p`
   font-size: 14px;
   color: #666;
-  margin: 0 8px;
+  margin: 0;
   text-align: start;
   width: 100%;
+  line-height: normal;
 
   padding: 0 20px;
+
+  strong {
+    font-weight: 600;
+  }
 `;

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { Post } from "@/types/posts";
-import { Notice } from "@/types/notices";
+import { DepartmentNotice, Notice } from "@/types/notices";
 import heart from "@/resources/assets/posts/posts-heart.svg";
 import { CouncilNotice } from "@/types/councilNotices";
 import { FaEye } from "react-icons/fa";
@@ -12,7 +12,7 @@ import notificationCategory from "../../../resources/strings/notificationCategor
 interface TipsCardContainerProps {
   post?: Post;
   notice?: Notice;
-  deptNotice?: Notice;
+  deptNotice?: DepartmentNotice;
   councilNotice?: CouncilNotice;
   notification?: Notification;
   viewMode: "grid" | "list";
@@ -92,7 +92,7 @@ export default function ({
             <TipsCardGridWrapper onClick={handleDocumentClick}>
               <GridTopWrapper>
                 <GridTopTopWrapper>
-                  <Category>{deptNotice.category}</Category>
+                  <Category>{deptNotice.department}</Category>
                   <Date>{deptNotice.createDate}</Date>
                 </GridTopTopWrapper>
                 <GridTitle>{deptNotice.title}</GridTitle>

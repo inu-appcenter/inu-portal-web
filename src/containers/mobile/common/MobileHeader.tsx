@@ -6,7 +6,6 @@ import { forwardRef } from "react";
 
 import { Bell } from "lucide-react";
 import BackButton from "@/components/mobile/login/BackButton";
-import Title from "@/components/mobile/mypage/Title";
 import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
@@ -117,7 +116,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
                 $isScrolled={isScrolled}
                 $hasBack={hasback ?? false}
               >
-                <Title title={title} />
+                <HeaderTitle>{title}</HeaderTitle>
               </TitleWrapper>
             </TitleArea>
           ) : (
@@ -228,7 +227,9 @@ const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
 
 const TitleArea = styled.div`
   display: flex;
+  flex: 1;
   align-items: center;
+  min-width: 0;
   margin-left: 0;
   pointer-events: none;
   gap: 0;
@@ -238,22 +239,38 @@ const TitleArea = styled.div`
 `;
 
 const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
+  flex: 1;
+  width: 100%;
+  min-width: 0;
   pointer-events: none;
   opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
   visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
-  max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "300px")};
+  max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "100%")};
   overflow: hidden;
   white-space: nowrap;
-  min-width: 200px;
   margin-left: -4px; /* 타이틀을 버튼 쪽으로 조금 더 당김 */
   transition:
     all 0.2s ease-in-out,
     visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
 
   @media ${DESKTOP_MEDIA} {
-    min-width: 280px;
-    max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "420px")};
+    max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "100%")};
   }
+`;
+
+const HeaderTitle = styled.div`
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding-left: 8px;
+  overflow: hidden;
+  //text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
 `;
 
 const IconBackgroundWrapper = styled.div<{
@@ -262,6 +279,7 @@ const IconBackgroundWrapper = styled.div<{
   $marginRight?: string;
 }>`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: 12px;

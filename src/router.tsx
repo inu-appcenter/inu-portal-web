@@ -42,6 +42,7 @@ import MobileUnidormPage from "@/pages/mobile/MobileUnidormPage";
 import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
+import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
@@ -54,6 +55,8 @@ import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookD
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
 import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
+import LabsPage from "@/pages/mobile/Labs/LabsPage";
+import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 
 export const router = createBrowserRouter([
   {
@@ -110,6 +113,21 @@ export const router = createBrowserRouter([
           //앱센터의 다른 앱
           { path: ROUTES.MORE_APPS.ROOT, element: <MoreAppsPage /> },
 
+          //실험실
+          {
+            path: ROUTES.LABS.ROOT, // "/labs"
+            children: [
+              {
+                index: true,
+                element: <LabsPage />,
+              },
+              {
+                /* 실제 경로: /labs/portal/basic-info */
+                path: "portal/basic-info",
+                element: <BasicInfoPage />,
+              },
+            ],
+          },
           {
             path: ROUTES.PHONEBOOK.SEARCH,
             element: <MobilePhoneBookSearchPage />,
@@ -211,6 +229,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.ADMIN.USER_NOTIFICATIION,
             element: <MobileAdminNotificationPage />,
+          },
+          {
+            path: ROUTES.ADMIN.FEATURE_FLAGS,
+            element: <MobileAdminFeatureFlagsPage />,
           },
         ],
       },
