@@ -3,7 +3,6 @@ import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
-import { ROUTES } from "@/constants/routes";
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
 import {
@@ -71,11 +70,7 @@ export default function SubLayout({
         </ContentArea>
       </ContentShell>
 
-      {showNav && (
-        <NavFloating>
-          {/* Nav Component */}
-        </NavFloating>
-      )}
+      {showNav && <NavFloating>{/* Nav Component */}</NavFloating>}
     </LayoutContainer>
   );
 }
@@ -201,4 +196,3 @@ const NavFloating = styled.div`
     bottom: 20px;
   }
 `;
-
