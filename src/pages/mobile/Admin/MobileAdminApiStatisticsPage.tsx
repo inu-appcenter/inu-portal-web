@@ -141,7 +141,7 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
                   <th style={{ width: "60px", textAlign: "center", whiteSpace: "nowrap" }}>순위</th>
                   <th style={{ width: "80px" }}>메소드</th>
                   <th>엔드포인트 (URI)</th>
-                  <th style={{ width: "100px", textAlign: "right", paddingRight: "16px" }}>호출 횟수</th>
+                  <th style={{ width: "100px", textAlign: "right", paddingRight: "16px", whiteSpace: "nowrap" }}>호출 횟수</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,7 +180,7 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
             value={searchQuery}
             onChange={setSearchQuery}
             onSubmit={() => { }}
-            placeholder="메소드 또는 URI를 검색하세요."
+            placeholder="메소드 또는 엔드포인트를 검색하세요."
           />
         </FloatingSearchBar>
       </PageWrapper>
@@ -292,7 +292,7 @@ const TableContainer = styled.div`
   background: #fff;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: ${SOFT_CARD_SHADOW};
 `;
 
