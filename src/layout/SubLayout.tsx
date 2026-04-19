@@ -74,11 +74,7 @@ export default function SubLayout({
         </ContentArea>
       </ContentShell>
 
-      {showNav && (
-        <NavFloating>
-          {/* Nav Component */}
-        </NavFloating>
-      )}
+      {showNav && <NavFloating>{/* Nav Component */}</NavFloating>}
     </LayoutContainer>
   );
 }
@@ -206,4 +202,3 @@ const NavFloating = styled.div`
     bottom: 20px;
   }
 `;
-
