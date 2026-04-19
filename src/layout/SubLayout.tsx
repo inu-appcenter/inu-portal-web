@@ -3,7 +3,7 @@ import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
-import { ROUTES } from "@/constants/routes";
+
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
 import {
@@ -16,12 +16,14 @@ interface SubLayoutProps {
   showHeader?: boolean;
   showNav?: boolean;
   fillsViewportOnDesktop?: boolean;
+  backgroundColor?: string;
 }
 
 export default function SubLayout({
   showHeader = true,
   showNav = false,
   fillsViewportOnDesktop = false,
+  backgroundColor,
 }: SubLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
@@ -50,6 +52,7 @@ export default function SubLayout({
     <LayoutContainer
       id="app-scroll-view"
       $fillsViewportOnDesktop={fillsViewportOnDesktop}
+      $backgroundColor={backgroundColor}
     >
       <ContentShell $fillsViewportOnDesktop={fillsViewportOnDesktop}>
         {showHeader && (
@@ -80,11 +83,14 @@ export default function SubLayout({
   );
 }
 
-const LayoutContainer = styled.div<{ $fillsViewportOnDesktop: boolean }>`
+const LayoutContainer = styled.div<{ 
+  $fillsViewportOnDesktop: boolean;
+  $backgroundColor?: string;
+}>`
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
-  background-color: #f1f1f3;
+  background-color: ${(props) => props.$backgroundColor ?? "#f1f1f3"};
   margin: 0 auto;
 
   @media ${DESKTOP_MEDIA} {
@@ -101,7 +107,6 @@ const LayoutContainer = styled.div<{ $fillsViewportOnDesktop: boolean }>`
 
 const ContentShell = styled.div<{ $fillsViewportOnDesktop: boolean }>`
   position: relative;
-  min-height: 100vh;
 
   @media ${DESKTOP_MEDIA} {
     ${({ $fillsViewportOnDesktop }) =>

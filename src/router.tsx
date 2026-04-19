@@ -99,7 +99,7 @@ export const router = createBrowserRouter([
       // 2. 서브 페이지 (SubLayout) - RootLayout에 의해 슬라이드, 하단 탭바 숨김
       // ----------------------------------------------------------------
       {
-        element: <SubLayout showNav={false} />,
+        element: <SubLayout showNav={false} backgroundColor="transparent" />,
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
