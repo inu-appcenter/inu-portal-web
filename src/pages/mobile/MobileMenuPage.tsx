@@ -142,7 +142,6 @@ const CafeteriaWrapper = styled.div`
   gap: 16px;
 
   padding-top: 12px;
-  padding-bottom: 100px;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});

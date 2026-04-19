@@ -243,19 +243,19 @@ const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
   width: 100%;
   min-width: 0;
   pointer-events: none;
+  
   opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
   visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
-  max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "100%")};
+  
   overflow: hidden;
   white-space: nowrap;
-  margin-left: -4px; /* 타이틀을 버튼 쪽으로 조금 더 당김 */
+  margin-left: -4px;
+
   transition:
-    all 0.2s ease-in-out,
+    opacity 0.2s ease-in-out,
     visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
 
-  @media ${DESKTOP_MEDIA} {
-    max-width: ${({ $isScrolled }) => ($isScrolled ? "0px" : "100%")};
-  }
+
 `;
 
 const HeaderTitle = styled.div`
