@@ -187,7 +187,7 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
             value={searchQuery}
             onChange={setSearchQuery}
             onSubmit={() => { }}
-            placeholder="학번으로 검색하세요."
+            placeholder="검색어를 입력하세요."
           />
         </FloatingSearchBar>
       </PageWrapper>
@@ -213,7 +213,7 @@ const PageHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
   gap: 20px;
   flex-wrap: wrap;
 `;
