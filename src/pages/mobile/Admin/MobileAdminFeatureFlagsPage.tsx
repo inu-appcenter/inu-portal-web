@@ -143,10 +143,12 @@ export default function MobileAdminFeatureFlagsPage() {
                     </FlagIconBox>
                     <FlagKey>{flag.key}</FlagKey>
                   </FlagTitleContainer>
-                  <Switch
-                    checked={flag.enabled}
-                    onCheckedChange={(checked) => handleToggleEnable(flag, checked)}
-                  />
+                  <SwitchWrapper>
+                    <Switch
+                      checked={flag.enabled}
+                      onCheckedChange={(checked) => handleToggleEnable(flag, checked)}
+                    />
+                  </SwitchWrapper>
                 </FlagHeader>
                 <FlagDescription>{flag.description || "설명이 없습니다."}</FlagDescription>
                 <FlagFooter>
@@ -391,13 +393,21 @@ const FlagCard = styled.div`
 const FlagHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
+`;
+
+const SwitchWrapper = styled.div`
+  flex-shrink: 0;
+  padding-top: 2px;
 `;
 
 const FlagTitleContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  overflow: hidden;
 `;
 
 const FlagIconBox = styled.div<{ $enabled: boolean }>`
@@ -416,6 +426,8 @@ const FlagKey = styled.h4`
   font-size: 1rem;
   font-weight: 700;
   color: #1e293b;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 `;
 
 const FlagDescription = styled.p`
