@@ -79,8 +79,8 @@ const Card = styled.div<{ $isClickable: boolean }>`
 
   &:hover {
     ${(props) =>
-      props.$isClickable &&
-      `
+    props.$isClickable &&
+    `
       transform: translateY(-4px);
       border-color: #cbd5e1;
       box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.12);

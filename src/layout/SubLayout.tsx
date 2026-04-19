@@ -83,7 +83,7 @@ export default function SubLayout({
   );
 }
 
-const LayoutContainer = styled.div<{ 
+const LayoutContainer = styled.div<{
   $fillsViewportOnDesktop: boolean;
   $backgroundColor?: string;
 }>`
@@ -95,13 +95,13 @@ const LayoutContainer = styled.div<{
 
   @media ${DESKTOP_MEDIA} {
     ${({ $fillsViewportOnDesktop }) =>
-      $fillsViewportOnDesktop
-        ? `
+    $fillsViewportOnDesktop
+      ? `
           height: 100dvh;
           min-height: 0;
           overflow: hidden;
         `
-        : ""}
+      : ""}
   }
 `;
 
@@ -110,15 +110,15 @@ const ContentShell = styled.div<{ $fillsViewportOnDesktop: boolean }>`
 
   @media ${DESKTOP_MEDIA} {
     ${({ $fillsViewportOnDesktop }) =>
-      $fillsViewportOnDesktop
-        ? `
+    $fillsViewportOnDesktop
+      ? `
           height: 100%;
           min-height: 0;
           overflow: hidden;
           display: flex;
           flex-direction: column;
         `
-        : ""}
+      : ""}
   }
 `;
 
@@ -137,8 +137,8 @@ const ContentArea = styled.div<{
     padding-left: ${DESKTOP_GUTTER};
     padding-right: ${DESKTOP_GUTTER};
     ${({ $fillsViewportOnDesktop }) =>
-      $fillsViewportOnDesktop
-        ? `
+    $fillsViewportOnDesktop
+      ? `
           flex: 1;
           min-height: 0;
           display: flex;
@@ -152,7 +152,7 @@ const ContentArea = styled.div<{
             min-height: 0;
           }
         `
-        : ""}
+      : ""}
   }
 `;
 
@@ -167,8 +167,8 @@ const HeaderFloating = styled.div<{ $fillsViewportOnDesktop: boolean }>`
 
   @media ${DESKTOP_MEDIA} {
     ${({ $fillsViewportOnDesktop }) =>
-      $fillsViewportOnDesktop
-        ? `
+    $fillsViewportOnDesktop
+      ? `
           position: relative;
           top: auto;
           left: auto;
@@ -180,7 +180,7 @@ const HeaderFloating = styled.div<{ $fillsViewportOnDesktop: boolean }>`
           box-sizing: border-box;
           flex-shrink: 0;
         `
-        : `
+      : `
           width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
           max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
           padding: 0 ${DESKTOP_GUTTER};

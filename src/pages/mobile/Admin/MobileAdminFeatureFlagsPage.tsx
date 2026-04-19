@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled, { css, keyframes } from "styled-components";
 import { Plus, RefreshCw, Eye, EyeOff, Settings2, Flag as FlagIcon } from "lucide-react";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 import {
   createFeatureFlag,
@@ -110,184 +111,197 @@ export default function MobileAdminFeatureFlagsPage() {
 
   return (
     <AdminLayout>
-      <PageHeader>
-        <HeaderActions>
-          <RefreshBtn
-            onClick={() => queryClient.invalidateQueries({ queryKey: ADMIN_FEATURE_FLAGS_QUERY_KEY })}
-            disabled={isFetching}
-          >
-            <LoadingIcon size={18} $loading={isFetching} />
-          </RefreshBtn>
-          <CreateBtn onClick={() => setIsCreateModalOpen(true)}>
-            <Plus size={20} />
-            <span>새 플래그 추가</span>
-          </CreateBtn>
-        </HeaderActions>
-      </PageHeader>
-
-
-      <FlagsGrid>
-        {isLoading ? (
-          <EmptyState>불러오는 중...</EmptyState>
-        ) : filteredFlags.length === 0 ? (
-          <EmptyState>검색 결과가 없습니다.</EmptyState>
-        ) : (
-          filteredFlags.map((flag) => (
-            <FlagCard key={flag.key}>
-              <FlagHeader>
-                <FlagTitleContainer>
-                  <FlagIconBox $enabled={flag.enabled}>
-                    <FlagIcon size={20} />
-                  </FlagIconBox>
-                  <FlagKey>{flag.key}</FlagKey>
-                </FlagTitleContainer>
-                <Switch
-                  checked={flag.enabled}
-                  onCheckedChange={(checked) => handleToggleEnable(flag, checked)}
-                />
-              </FlagHeader>
-              <FlagDescription>{flag.description || "설명이 없습니다."}</FlagDescription>
-              <FlagFooter>
-                <VisibilityIndicator $visible={flag.clientVisible}>
-                  {flag.clientVisible ? <Eye size={14} /> : <EyeOff size={14} />}
-                  <span>{flag.clientVisible ? "공개" : "비공개"}</span>
-                </VisibilityIndicator>
-                <SettingBtn onClick={() => setEditingFlag(flag)}>
-                  <Settings2 size={16} />
-                  <span>설정</span>
-                </SettingBtn>
-              </FlagFooter>
-            </FlagCard>
-          ))
-        )}
-        <SearchSpacer />
-      </FlagsGrid>
-
-      <FloatingSearchBar>
-        <MobilePillSearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onSubmit={() => { }}
-          placeholder="플래그 키를 검색하세요."
-        />
-      </FloatingSearchBar>
-
-      {/* 생성 모달 */}
-      <AdminModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="새 Feature Flag 추가"
-        footer={
-          <ModalFooter>
-            <CancelBtn onClick={() => setIsCreateModalOpen(false)}>취소</CancelBtn>
-            <PrimaryBtn
-              onClick={() => createMutation.mutate(createForm)}
-              disabled={createMutation.isPending || !createForm.key}
+      <PageWrapper>
+        <PageHeader>
+          <HeaderActions>
+            <RefreshBtn
+              onClick={() => queryClient.invalidateQueries({ queryKey: ADMIN_FEATURE_FLAGS_QUERY_KEY })}
+              disabled={isFetching}
             >
-              생성하기
-            </PrimaryBtn>
-          </ModalFooter>
-        }
-      >
-        <Form>
-          <FormGroup>
-            <Label>플래그 키 (Unique Key)</Label>
-            <Input
-              placeholder="예: NEW_UI_BETA"
-              value={createForm.key}
-              onChange={(e) => setCreateForm({ ...createForm, key: e.target.value.toUpperCase() })}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>상세 설명</Label>
-            <TextArea
-              placeholder="이 플래그가 무엇을 제어하는지 설명해주세요."
-              value={createForm.description}
-              onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-              rows={3}
-            />
-          </FormGroup>
-          <ToggleRow>
-            <ToggleInfo>
-              <ToggleTitle>클라이언트 공개</ToggleTitle>
-              <ToggleDesc>프론트엔드 API 응답에 이 플래그를 포함합니다.</ToggleDesc>
-            </ToggleInfo>
-            <Switch
-              checked={createForm.clientVisible}
-              onCheckedChange={(v) => setCreateForm({ ...createForm, clientVisible: v })}
-            />
-          </ToggleRow>
-        </Form>
-      </AdminModal>
+              <LoadingIcon size={18} $loading={isFetching} />
+            </RefreshBtn>
+            <CreateBtn onClick={() => setIsCreateModalOpen(true)}>
+              <Plus size={20} />
+              <span>새 플래그 추가</span>
+            </CreateBtn>
+          </HeaderActions>
+        </PageHeader>
 
-      {/* 편집 모달 */}
-      <AdminModal
-        isOpen={!!editingFlag}
-        onClose={() => setEditingFlag(null)}
-        title="Feature Flag 설정 편집"
-        footer={
-          <ModalFooter>
-            <CancelBtn onClick={() => setEditingFlag(null)}>취소</CancelBtn>
-            <PrimaryBtn
-              onClick={() => {
-                if (editingFlag) {
-                  updateMutation.mutate({
-                    key: editingFlag.key,
-                    body: {
-                      description: editingFlag.description ?? undefined,
-                      clientVisible: editingFlag.clientVisible,
-                      enabled: editingFlag.enabled
-                    }
-                  });
-                }
-              }}
-              disabled={updateMutation.isPending}
-            >
-              저장하기
-            </PrimaryBtn>
-          </ModalFooter>
-        }
-      >
-        {editingFlag && (
+
+        <FlagsGrid>
+          {isLoading ? (
+            <EmptyState>불러오는 중...</EmptyState>
+          ) : filteredFlags.length === 0 ? (
+            <EmptyState>검색 결과가 없습니다.</EmptyState>
+          ) : (
+            filteredFlags.map((flag) => (
+              <FlagCard key={flag.key}>
+                <FlagHeader>
+                  <FlagTitleContainer>
+                    <FlagIconBox $enabled={flag.enabled}>
+                      <FlagIcon size={20} />
+                    </FlagIconBox>
+                    <FlagKey>{flag.key}</FlagKey>
+                  </FlagTitleContainer>
+                  <Switch
+                    checked={flag.enabled}
+                    onCheckedChange={(checked) => handleToggleEnable(flag, checked)}
+                  />
+                </FlagHeader>
+                <FlagDescription>{flag.description || "설명이 없습니다."}</FlagDescription>
+                <FlagFooter>
+                  <VisibilityIndicator $visible={flag.clientVisible}>
+                    {flag.clientVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+                    <span>{flag.clientVisible ? "공개" : "비공개"}</span>
+                  </VisibilityIndicator>
+                  <SettingBtn onClick={() => setEditingFlag(flag)}>
+                    <Settings2 size={16} />
+                    <span>설정</span>
+                  </SettingBtn>
+                </FlagFooter>
+              </FlagCard>
+            ))
+          )}
+          <SearchSpacer />
+        </FlagsGrid>
+
+        <FloatingSearchBar>
+          <MobilePillSearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={() => { }}
+            placeholder="플래그 키를 검색하세요."
+          />
+        </FloatingSearchBar>
+
+        {/* 생성 모달 */}
+        <AdminModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          title="새 Feature Flag 추가"
+          footer={
+            <ModalFooter>
+              <CancelBtn onClick={() => setIsCreateModalOpen(false)}>취소</CancelBtn>
+              <PrimaryBtn
+                onClick={() => createMutation.mutate(createForm)}
+                disabled={createMutation.isPending || !createForm.key}
+              >
+                생성하기
+              </PrimaryBtn>
+            </ModalFooter>
+          }
+        >
           <Form>
             <FormGroup>
-              <Label>플래그 키</Label>
-              <ReadOnlyValue>{editingFlag.key}</ReadOnlyValue>
+              <Label>플래그 키 (Unique Key)</Label>
+              <Input
+                placeholder="예: NEW_UI_BETA"
+                value={createForm.key}
+                onChange={(e) => setCreateForm({ ...createForm, key: e.target.value.toUpperCase() })}
+              />
             </FormGroup>
             <FormGroup>
               <Label>상세 설명</Label>
               <TextArea
-                value={editingFlag.description ?? ""}
-                onChange={(e) => setEditingFlag({ ...editingFlag, description: e.target.value })}
+                placeholder="이 플래그가 무엇을 제어하는지 설명해주세요."
+                value={createForm.description}
+                onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
                 rows={3}
               />
             </FormGroup>
             <ToggleRow>
               <ToggleInfo>
-                <ToggleTitle>활성화 상태</ToggleTitle>
-                <ToggleDesc>기능의 실제 작동 여부를 제어합니다.</ToggleDesc>
+                <ToggleTitle>클라이언트 공개</ToggleTitle>
+                <ToggleDesc>프론트엔드 API 응답에 이 플래그를 포함합니다.</ToggleDesc>
               </ToggleInfo>
               <Switch
-                checked={editingFlag.enabled}
-                onCheckedChange={(v) => setEditingFlag({ ...editingFlag, enabled: v })}
-              />
-            </ToggleRow>
-            <ToggleRow>
-              <ToggleInfo>
-                <ToggleTitle>클라이언트 공개 여부</ToggleTitle>
-                <ToggleDesc>프론트엔드 노출 여부를 제어합니다.</ToggleDesc>
-              </ToggleInfo>
-              <Switch
-                checked={editingFlag.clientVisible}
-                onCheckedChange={(v) => setEditingFlag({ ...editingFlag, clientVisible: v })}
+                checked={createForm.clientVisible}
+                onCheckedChange={(v) => setCreateForm({ ...createForm, clientVisible: v })}
               />
             </ToggleRow>
           </Form>
-        )}
-      </AdminModal>
+        </AdminModal>
+
+        {/* 편집 모달 */}
+        <AdminModal
+          isOpen={!!editingFlag}
+          onClose={() => setEditingFlag(null)}
+          title="Feature Flag 설정 편집"
+          footer={
+            <ModalFooter>
+              <CancelBtn onClick={() => setEditingFlag(null)}>취소</CancelBtn>
+              <PrimaryBtn
+                onClick={() => {
+                  if (editingFlag) {
+                    updateMutation.mutate({
+                      key: editingFlag.key,
+                      body: {
+                        description: editingFlag.description ?? undefined,
+                        clientVisible: editingFlag.clientVisible,
+                        enabled: editingFlag.enabled
+                      }
+                    });
+                  }
+                }}
+                disabled={updateMutation.isPending}
+              >
+                저장하기
+              </PrimaryBtn>
+            </ModalFooter>
+          }
+        >
+          {editingFlag && (
+            <Form>
+              <FormGroup>
+                <Label>플래그 키</Label>
+                <ReadOnlyValue>{editingFlag.key}</ReadOnlyValue>
+              </FormGroup>
+              <FormGroup>
+                <Label>상세 설명</Label>
+                <TextArea
+                  value={editingFlag.description ?? ""}
+                  onChange={(e) => setEditingFlag({ ...editingFlag, description: e.target.value })}
+                  rows={3}
+                />
+              </FormGroup>
+              <ToggleRow>
+                <ToggleInfo>
+                  <ToggleTitle>활성화 상태</ToggleTitle>
+                  <ToggleDesc>기능의 실제 작동 여부를 제어합니다.</ToggleDesc>
+                </ToggleInfo>
+                <Switch
+                  checked={editingFlag.enabled}
+                  onCheckedChange={(v) => setEditingFlag({ ...editingFlag, enabled: v })}
+                />
+              </ToggleRow>
+              <ToggleRow>
+                <ToggleInfo>
+                  <ToggleTitle>클라이언트 공개 여부</ToggleTitle>
+                  <ToggleDesc>프론트엔드 노출 여부를 제어합니다.</ToggleDesc>
+                </ToggleInfo>
+                <Switch
+                  checked={editingFlag.clientVisible}
+                  onCheckedChange={(v) => setEditingFlag({ ...editingFlag, clientVisible: v })}
+                />
+              </ToggleRow>
+            </Form>
+          )}
+        </AdminModal>
+      </PageWrapper>
     </AdminLayout>
   );
 }
+
+const PageWrapper = styled.div`
+  margin: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 20px 0 24px;
+  box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    margin: 0;
+    padding: 40px 48px;
+  }
+`;
 
 const PageHeader = styled.div`
   display: flex;
@@ -336,7 +350,7 @@ const LoadingIcon = styled(RefreshCw) <{ $loading: boolean }>`
 
 const FlagsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 16px;
 `;
 
@@ -351,6 +365,10 @@ const FloatingSearchBar = styled.div`
   transform: translateX(-50%);
   width: calc(100% - 32px);
   z-index: 100;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(calc(100% - 48px), 760px);
+  }
 `;
 
 const FlagCard = styled.div`

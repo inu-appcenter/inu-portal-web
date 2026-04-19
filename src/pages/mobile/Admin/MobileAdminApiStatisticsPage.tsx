@@ -12,7 +12,7 @@ import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
-import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const METHOD_COLORS: Record<string, string> = {
   GET: "#10b981",
@@ -91,97 +91,99 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <PageHeader>
-        <DateSelector>
-          <Calendar size={18} />
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+      <PageWrapper>
+        <PageHeader>
+          <DateSelector>
+            <Calendar size={18} />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
+          </DateSelector>
+        </PageHeader>
+
+        {error && <ErrorBox>{error}</ErrorBox>}
+
+        <StatsGrid>
+          <StatsDashboardCard
+            title="총 API 호출"
+            value={totalCalls.toLocaleString()}
+            icon={Activity}
+            color="#0f766e"
+            description="오늘 발생한 총 요청"
           />
-        </DateSelector>
-      </PageHeader>
+          <StatsDashboardCard
+            title="가장 많이 호출됨"
+            value={topEndpoint ? topEndpoint.apiCount.toLocaleString() : 0}
+            icon={Zap}
+            color="#f59e0b"
+            description={topEndpoint ? topEndpoint.uri : "데이터 없음"}
+          />
+          <StatsDashboardCard
+            title="엔드포인트 개수"
+            value={apiLogs.length}
+            icon={BarChart3}
+            color="#3b82f6"
+            description="활성 API 경로 수"
+          />
+        </StatsGrid>
 
-      {error && <ErrorBox>{error}</ErrorBox>}
+        <LogsSection>
+          <LogsHeader>
+            <SectionTitle>상세 호출 로그</SectionTitle>
+          </LogsHeader>
 
-      <StatsGrid>
-        <StatsDashboardCard
-          title="총 API 호출"
-          value={totalCalls.toLocaleString()}
-          icon={Activity}
-          color="#0f766e"
-          description="오늘 발생한 총 요청"
-        />
-        <StatsDashboardCard
-          title="가장 많이 호출됨"
-          value={topEndpoint ? topEndpoint.apiCount.toLocaleString() : 0}
-          icon={Zap}
-          color="#f59e0b"
-          description={topEndpoint ? topEndpoint.uri : "데이터 없음"}
-        />
-        <StatsDashboardCard
-          title="엔드포인트 개수"
-          value={apiLogs.length}
-          icon={BarChart3}
-          color="#3b82f6"
-          description="활성 API 경로 수"
-        />
-      </StatsGrid>
-
-      <LogsSection>
-        <LogsHeader>
-          <SectionTitle>상세 호출 로그</SectionTitle>
-        </LogsHeader>
-
-        <TableContainer>
-          <Table>
-            <thead>
-              <tr>
-                <th style={{ width: "60px", textAlign: "center", whiteSpace: "nowrap" }}>순위</th>
-                <th style={{ width: "80px" }}>메소드</th>
-                <th>엔드포인트 (URI)</th>
-                <th style={{ width: "100px", textAlign: "right", paddingRight: "16px" }}>호출 횟수</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
+          <TableContainer>
+            <Table>
+              <thead>
                 <tr>
-                  <td colSpan={4} className="loading">데이터 로딩 중...</td>
+                  <th style={{ width: "60px", textAlign: "center", whiteSpace: "nowrap" }}>순위</th>
+                  <th style={{ width: "80px" }}>메소드</th>
+                  <th>엔드포인트 (URI)</th>
+                  <th style={{ width: "100px", textAlign: "right", paddingRight: "16px" }}>호출 횟수</th>
                 </tr>
-              ) : filteredLogs.length > 0 ? (
-                filteredLogs.map((log, idx) => (
-                  <tr key={idx}>
-                    <td className="rank">{idx + 1}</td>
-                    <td>
-                      <MethodBadge $method={log.method}>
-                        {log.method}
-                      </MethodBadge>
-                    </td>
-                    <td className="uri">
-                      <span>{log.uri}</span>
-                    </td>
-                    <td className="count">{log.apiCount.toLocaleString()} <small>회</small></td>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="loading">데이터 로딩 중...</td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="empty">조회된 데이터가 없습니다.</td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
-        </TableContainer>
-        <SearchSpacer />
-      </LogsSection>
+                ) : filteredLogs.length > 0 ? (
+                  filteredLogs.map((log, idx) => (
+                    <tr key={idx}>
+                      <td className="rank">{idx + 1}</td>
+                      <td>
+                        <MethodBadge $method={log.method}>
+                          {log.method}
+                        </MethodBadge>
+                      </td>
+                      <td className="uri">
+                        <span>{log.uri}</span>
+                      </td>
+                      <td className="count">{log.apiCount.toLocaleString()} <small>회</small></td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="empty">조회된 데이터가 없습니다.</td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </TableContainer>
+          <SearchSpacer />
+        </LogsSection>
 
-      <FloatingSearchBar>
-        <MobilePillSearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onSubmit={() => { }}
-          placeholder="메소드 또는 URI를 검색하세요."
-        />
-      </FloatingSearchBar>
+        <FloatingSearchBar>
+          <MobilePillSearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={() => { }}
+            placeholder="메소드 또는 URI를 검색하세요."
+          />
+        </FloatingSearchBar>
+      </PageWrapper>
     </AdminLayout>
   );
 };
@@ -192,9 +194,9 @@ const PageHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
   gap: 20px;
   flex-wrap: wrap;
+  margin-bottom: 16px;
 `;
 
 
@@ -220,9 +222,20 @@ const DateSelector = styled.div`
   }
 `;
 
+const PageWrapper = styled.div`
+  margin: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 20px 0 24px;
+  box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    margin: 0;
+    padding: 40px 48px;
+  }
+`;
+
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(90px, 100%), 1fr));
   gap: 8px;
   margin-bottom: 32px;
 

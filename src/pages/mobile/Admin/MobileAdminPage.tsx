@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { Users, Activity, Bell, Flag, ArrowRight } from "lucide-react";
 
 import { ROUTES } from "@/constants/routes";
-import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -100,18 +100,13 @@ const MobileAdminPage = () => {
   }, [userInfo.role, featureFlags]);
 
   useHeader({
-    title: "관리자 센터",
+    title: "관리자 페이지",
   });
 
   return (
     <AdminLayout>
       <Wrapper>
-        <DashboardHeader>
-          <WelcomeSection>
-            <WelcomeTitle>안녕하세요, {userInfo.nickname}님</WelcomeTitle>
-            <WelcomeSubtitle>INTIP 주요 지표를 확인하고 관리하세요.</WelcomeSubtitle>
-          </WelcomeSection>
-        </DashboardHeader>
+
 
         <StatsGrid>
           <StatsDashboardCard
@@ -169,37 +164,21 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 20px 0 24px;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
+    margin: 0;
+    padding: 40px 48px;
     gap: 32px;
   }
 `;
 
-const DashboardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-`;
-
-const WelcomeSection = styled.div``;
-
-const WelcomeTitle = styled.h2`
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.02em;
-`;
-
-const WelcomeSubtitle = styled.p`
-  margin: 8px 0 0;
-  color: #64748b;
-  font-size: 1rem;
-`;
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(90px, 100%), 1fr));
   gap: 8px;
 
   @media ${DESKTOP_MEDIA} {
@@ -217,7 +196,7 @@ const SectionTitle = styled.h3`
 
 const MenuGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 16px;
 `;
 

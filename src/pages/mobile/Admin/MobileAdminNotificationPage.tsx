@@ -16,6 +16,7 @@ import {
 } from "@/types/admin.ts";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import AdminLayout from "@/components/admin/AdminLayout";
 import NotificationFormModal from "@/containers/mobile/admin/NotificationFormModal";
 import AdminModal from "@/components/admin/AdminModal";
@@ -112,6 +113,7 @@ export default function MobileAdminNotificationPage() {
 
   return (
     <AdminLayout>
+      <PageWrapper>
       <PageHeader>
         <HeaderActions>
           <RefreshBtn onClick={fetchLogs} disabled={loading}>
@@ -202,9 +204,21 @@ export default function MobileAdminNotificationPage() {
           </DetailView>
         )}
       </AdminModal>
+      </PageWrapper>
     </AdminLayout>
   );
 }
+
+const PageWrapper = styled.div`
+  margin: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 20px 0 24px;
+  box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    margin: 0;
+    padding: 40px 48px;
+  }
+`;
 
 const PageHeader = styled.div`
   display: flex;

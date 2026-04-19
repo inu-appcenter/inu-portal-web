@@ -7,7 +7,7 @@ import useUserStore from "@/stores/useUserStore.ts";
 import { getMemberLogs } from "@/apis/admin";
 import { MemberLogData } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
-import { DESKTOP_MEDIA } from "@/styles/responsive.ts";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive.ts";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
@@ -91,111 +91,123 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <PageHeader>
-        <DateSelector>
-          <Calendar size={18} />
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+      <PageWrapper>
+        <PageHeader>
+          <DateSelector>
+            <Calendar size={18} />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
+          </DateSelector>
+        </PageHeader>
+
+        {error && <ErrorBox>{error}</ErrorBox>}
+
+        <StatsGrid>
+          <StatsDashboardCard
+            title="총 방문자"
+            value={memberLog?.memberCount || 0}
+            icon={Users}
+            color="#0f766e"
           />
-        </DateSelector>
-      </PageHeader>
+          <StatsDashboardCard
+            title="로그인 유저"
+            value={counts.login}
+            icon={UserCheck}
+            color="#3b82f6"
+          />
+          <StatsDashboardCard
+            title="비로그인 유저"
+            value={counts.guest}
+            icon={UserMinus}
+            color="#64748b"
+          />
+        </StatsGrid>
 
-      {error && <ErrorBox>{error}</ErrorBox>}
+        <Row>
+          <VisualSection>
+            <SectionTitle>유저 분포</SectionTitle>
+            <DistributionCard>
+              <RatioInfo>
+                <RatioItem>
+                  <RatioLabel>
+                    <ColorDot $color="#3b82f6" />
+                    <LabelText>로그인 유저</LabelText>
+                  </RatioLabel>
+                  <RatioValue $color="#3b82f6">{loginRatio.toFixed(1)}%</RatioValue>
+                </RatioItem>
+                <RatioItem>
+                  <RatioLabel>
+                    <ColorDot $color="#cbd5e1" />
+                    <LabelText>비로그인</LabelText>
+                  </RatioLabel>
+                  <RatioValue $color="#94a3b8">{guestRatio.toFixed(1)}%</RatioValue>
+                </RatioItem>
+              </RatioInfo>
+              <ProgressBar>
+                <ProgressFill $width={loginRatio} $color="#3b82f6" />
+                <ProgressFill $width={guestRatio} $color="#cbd5e1" />
+              </ProgressBar>
+            </DistributionCard>
+          </VisualSection>
 
-      <StatsGrid>
-        <StatsDashboardCard
-          title="총 방문자"
-          value={memberLog?.memberCount || 0}
-          icon={Users}
-          color="#0f766e"
-        />
-        <StatsDashboardCard
-          title="로그인 유저"
-          value={counts.login}
-          icon={UserCheck}
-          color="#3b82f6"
-        />
-        <StatsDashboardCard
-          title="비로그인 유저"
-          value={counts.guest}
-          icon={UserMinus}
-          color="#64748b"
-        />
-      </StatsGrid>
+          <ListSection>
+            <ListHeader>
+              <SectionTitle>세부 접속 목록</SectionTitle>
+            </ListHeader>
+            <MemberList>
+              {loading ? (
+                <LoadingMsg>데이터 분석 중...</LoadingMsg>
+              ) : filteredMembers.length > 0 ? (
+                filteredMembers.map((id, idx) => {
+                  const isUser = !id.includes(".");
+                  return (
+                    <MemberItem key={idx}>
+                      <MemberIcon $isUser={isUser}>
+                        {isUser ? <UserCheck size={14} /> : <UserMinus size={14} />}
+                      </MemberIcon>
+                      <MemberInfo>
+                        <MemberId>{id}</MemberId>
+                        <MemberType>{isUser ? "로그인 유저" : "비로그인"}</MemberType>
+                      </MemberInfo>
+                    </MemberItem>
+                  );
+                })
+              ) : (
+                <EmptyMsg>데이터가 없습니다.</EmptyMsg>
+              )}
+            </MemberList>
+          </ListSection>
+        </Row>
 
-      <Row>
-        <VisualSection>
-          <SectionTitle>유저 분포</SectionTitle>
-          <DistributionCard>
-            <RatioInfo>
-              <RatioItem>
-                <RatioLabel>
-                  <ColorDot $color="#3b82f6" />
-                  <LabelText>로그인 유저</LabelText>
-                </RatioLabel>
-                <RatioValue $color="#3b82f6">{loginRatio.toFixed(1)}%</RatioValue>
-              </RatioItem>
-              <RatioItem>
-                <RatioLabel>
-                  <ColorDot $color="#cbd5e1" />
-                  <LabelText>비로그인</LabelText>
-                </RatioLabel>
-                <RatioValue $color="#94a3b8">{guestRatio.toFixed(1)}%</RatioValue>
-              </RatioItem>
-            </RatioInfo>
-            <ProgressBar>
-              <ProgressFill $width={loginRatio} $color="#3b82f6" />
-              <ProgressFill $width={guestRatio} $color="#cbd5e1" />
-            </ProgressBar>
-          </DistributionCard>
-        </VisualSection>
-
-        <ListSection>
-          <ListHeader>
-            <SectionTitle>세부 접속 목록</SectionTitle>
-          </ListHeader>
-          <MemberList>
-            {loading ? (
-              <LoadingMsg>데이터 분석 중...</LoadingMsg>
-            ) : filteredMembers.length > 0 ? (
-              filteredMembers.map((id, idx) => {
-                const isUser = !id.includes(".");
-                return (
-                  <MemberItem key={idx}>
-                    <MemberIcon $isUser={isUser}>
-                      {isUser ? <UserCheck size={14} /> : <UserMinus size={14} />}
-                    </MemberIcon>
-                    <MemberInfo>
-                      <MemberId>{id}</MemberId>
-                      <MemberType>{isUser ? "로그인 유저" : "비로그인"}</MemberType>
-                    </MemberInfo>
-                  </MemberItem>
-                );
-              })
-            ) : (
-              <EmptyMsg>데이터가 없습니다.</EmptyMsg>
-            )}
-            <SearchSpacer />
-          </MemberList>
-        </ListSection>
-      </Row>
-
-      <FloatingSearchBar>
-        <MobilePillSearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onSubmit={() => { }}
-          placeholder="학번으로 검색하세요."
-        />
-      </FloatingSearchBar>
+        <FloatingSearchBar>
+          <MobilePillSearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={() => { }}
+            placeholder="학번으로 검색하세요."
+          />
+        </FloatingSearchBar>
+      </PageWrapper>
     </AdminLayout>
   );
 };
 
 export default MobileAdminUserStatisticsPage;
 
+
+const PageWrapper = styled.div`
+  margin: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 20px 0 56px;
+  box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    margin: 0;
+    padding: 40px 48px 56px 40px;
+  }
+`;
 
 const PageHeader = styled.div`
   display: flex;
@@ -229,7 +241,7 @@ const DateSelector = styled.div`
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(90px, 100%), 1fr));
   gap: 8px;
   margin-bottom: 32px;
 
@@ -339,9 +351,6 @@ const ListHeader = styled.div`
   }
 `;
 
-const SearchSpacer = styled.div`
-  height: 88px;
-`;
 
 const FloatingSearchBar = styled.div`
   position: fixed;
