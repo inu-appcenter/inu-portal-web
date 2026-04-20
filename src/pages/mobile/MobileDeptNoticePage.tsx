@@ -302,7 +302,7 @@ const MobileDeptNoticePage = () => {
         <FloatingActionButton
           text="공지 알리미 설정"
           icon={<Bell size={18} color="white" />}
-          onClick={() => navigate(ROUTES.BOARD.DEPT_SETTING)}
+          onClick={() => navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`)}
         />
       )}
     </MobileDeptNoticePageWrapper>

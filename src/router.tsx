@@ -14,7 +14,7 @@ import AiPage from "@/pages/desktop/AiPage";
 import MobileSavePage from "@/pages/mobile/MobileSavePage";
 import MobileMyPage from "@/pages/mobile/MobileMyPage";
 import MobileWritePage from "@/pages/mobile/MobileWritePage";
-import MobileDeptAlarmSettingPage from "@/pages/mobile/MobileDeptAlarmSettingPage";
+import AlarmSettingPage from "@/pages/mobile/AlarmSettingPage";
 import MobileMenuPage from "@/pages/mobile/MobileMenuPage";
 import MobileCalendarPage from "@/pages/mobile/MobileCalendarPage";
 import MobileCampusPage from "@/pages/mobile/MobileCampusPage";
@@ -165,7 +165,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTES.BOARD.DEPT_SETTING,
-            element: <MobileDeptAlarmSettingPage />,
+            element: <AlarmSettingPage />,
           },
 
           // 기능 메뉴

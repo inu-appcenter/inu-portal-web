@@ -25,12 +25,14 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 
+import Skeleton from "@/components/common/Skeleton";
+
 const ALARM_TABS = [
   { label: "학교 공지 알리미", value: "school" },
   { label: "학과 공지 알리미", value: "dept" },
 ];
 
-export default function MobileDeptAlarmSettingPage() {
+export default function AlarmSettingPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const currentTab = params.get("tab") || "school";
@@ -53,13 +55,13 @@ export default function MobileDeptAlarmSettingPage() {
   });
 
   return (
-    <MobileTipsPageWrapper>
+    <AlarmSettingPageWrapper>
       {currentTab === "school" ? (
         <MobileSchoolAlarmSetting />
       ) : (
         <MobileDeptAlarmSetting />
       )}
-    </MobileTipsPageWrapper>
+    </AlarmSettingPageWrapper>
   );
 }
 
@@ -75,8 +77,10 @@ function MobileSchoolAlarmSetting() {
   const [newKeyword, setNewKeyword] = useState("");
   const [selectedCategoryForKeyword, setSelectedCategoryForKeyword] =
     useState("전체");
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchSchoolData = useCallback(async () => {
+    setIsLoading(true);
     try {
       const [catRes, subRes, keyRes] = await Promise.all([
         getSchoolNoticeCategories(),
@@ -92,6 +96,8 @@ function MobileSchoolAlarmSetting() {
       );
     } catch (error) {
       console.error("학교 공지 알리미 데이터 로드 실패:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -99,7 +105,17 @@ function MobileSchoolAlarmSetting() {
     fetchSchoolData();
   }, [fetchSchoolData]);
 
-  // 키워드 목록만 따로 새로고침하는 함수
+  //구독 카테고리 목록 갱신
+  const refreshSubscribedCategories = useCallback(async () => {
+    try {
+      const subRes = await getKeywordsNotice();
+      setSubscribedCategories(subRes.data.map((k) => k.category || ""));
+    } catch (error) {
+      console.error("구독 카테고리 목록 갱신 실패:", error);
+    }
+  }, []);
+
+  //키워드 목록 갱신
   const refreshKeywords = useCallback(async () => {
     try {
       const keyRes = await getKeywords();
@@ -133,7 +149,7 @@ function MobileSchoolAlarmSetting() {
     try {
       await subscribeKeywordsNotice(nextCategories);
       setSubscribedCategories(nextCategories);
-      await refreshKeywords();
+      refreshKeywords();
     } catch (error) {
       console.error("학교 공지 카테고리 구독 실패:", error);
     }
@@ -154,8 +170,17 @@ function MobileSchoolAlarmSetting() {
           (k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null,
         ),
       );
+
+      refreshSubscribedCategories();
     } catch (error) {
       console.error("학교 공지 키워드 등록 실패:", error);
+    }
+  };
+
+  // 엔터 키 핸들러
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      handleAddKeyword();
     }
   };
 
@@ -173,54 +198,94 @@ function MobileSchoolAlarmSetting() {
     <>
       <KeyWordSettingWrapper>
         <TitleContentArea
-          title={"카테고리 알림 설정"}
+          description={
+            <>
+              학교 공지 알리미를 설정해보세요.
+              <br />새 글이 올라오면 횃불이가 푸시알림으로 알려드려요.
+            </>
+          }
+        />
+
+        <TitleContentArea
+          title={"학교 공지 모두 알림 받기"}
           description={
             "선택한 카테고리의 모든 공지사항 새 글 알림을 받을 수 있어요."
           }
         >
           <Box>
             <ChipContainer>
-              {categories.map((cat) => (
-                <SelectableChip
-                  key={cat}
-                  $selected={subscribedCategories.includes(cat)}
-                  onClick={() => handleToggleCategory(cat)}
-                >
-                  {cat}
-                </SelectableChip>
-              ))}
+              {isLoading
+                ? Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton
+                      key={`cat-skeleton-${i}`}
+                      variant="tag"
+                      width={60}
+                      height={32}
+                      style={{ borderRadius: "100px" }}
+                    />
+                  ))
+                : categories.map((cat) => (
+                    <SelectableChip
+                      key={cat}
+                      $selected={subscribedCategories.includes(cat)}
+                      onClick={() => handleToggleCategory(cat)}
+                    >
+                      {cat}
+                    </SelectableChip>
+                  ))}
             </ChipContainer>
           </Box>
         </TitleContentArea>
 
         <TitleContentArea
-          title={"키워드 알림 설정"}
-          description={"특정 카테고리에 키워드 알림을 설정할 수 있어요."}
+          title={"키워드로 알림 받기"}
+          description={
+            <>
+              특정 카테고리에 키워드 알림을 설정할 수 있어요.
+              <br />
+              해당 카테고리 전체 알림은 해제됩니다.
+            </>
+          }
         >
           <Box>
             <Wrapper>
               <HorizontalScrollWrapper>
-                <SelectableChip
-                  $selected={selectedCategoryForKeyword === "전체"}
-                  onClick={() => setSelectedCategoryForKeyword("전체")}
-                >
-                  전체
-                </SelectableChip>
-                {categories.map((cat) => (
-                  <SelectableChip
-                    key={`select-${cat}`}
-                    $selected={selectedCategoryForKeyword === cat}
-                    onClick={() => setSelectedCategoryForKeyword(cat)}
-                  >
-                    {cat}
-                  </SelectableChip>
-                ))}
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton
+                      key={`select-skeleton-${i}`}
+                      variant="tag"
+                      width={60}
+                      height={32}
+                      style={{ borderRadius: "100px" }}
+                    />
+                  ))
+                ) : (
+                  <>
+                    <SelectableChip
+                      $selected={selectedCategoryForKeyword === "전체"}
+                      onClick={() => setSelectedCategoryForKeyword("전체")}
+                    >
+                      전체
+                    </SelectableChip>
+                    {categories.map((cat) => (
+                      <SelectableChip
+                        key={`select-${cat}`}
+                        $selected={selectedCategoryForKeyword === cat}
+                        onClick={() => setSelectedCategoryForKeyword(cat)}
+                      >
+                        {cat}
+                      </SelectableChip>
+                    ))}
+                  </>
+                )}
               </HorizontalScrollWrapper>
               <InputWrapper>
                 <StyledInput
                   placeholder={"알림 받을 키워드를 입력해주세요."}
                   value={newKeyword}
                   onChange={(e) => setNewKeyword(e.target.value)}
+                  onKeyDown={handleKeyDown} // 엔터 감지
                 />
                 <TextButton
                   disabled={!newKeyword.trim()}
@@ -233,21 +298,33 @@ function MobileSchoolAlarmSetting() {
           </Box>
         </TitleContentArea>
 
-        {keywords.length > 0 && (
+        {(isLoading || keywords.length > 0) && (
           <TitleContentArea title={"등록된 키워드 목록"}>
             <Box>
               <ListWrapper>
-                {keywords.map((item, index) => (
-                  <React.Fragment key={item.keywordId}>
-                    <RegisteredKeywordItem
-                      keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
-                      onDelete={() => handleDeleteKeyword(item.keywordId)}
-                    />
-                    {index < keywords.length - 1 && (
-                      <Divider margin={"16px 0"} />
-                    )}
-                  </React.Fragment>
-                ))}
+                {isLoading
+                  ? Array.from({ length: 3 }).map((_, i) => (
+                      <React.Fragment key={`key-skeleton-${i}`}>
+                        <Skeleton
+                          variant="text"
+                          width="100%"
+                          height={20}
+                          style={{ margin: "4px 0" }}
+                        />
+                        {i < 2 && <Divider margin={"16px 0"} />}
+                      </React.Fragment>
+                    ))
+                  : keywords.map((item, index) => (
+                      <React.Fragment key={item.keywordId}>
+                        <RegisteredKeywordItem
+                          keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
+                          onDelete={() => handleDeleteKeyword(item.keywordId)}
+                        />
+                        {index < keywords.length - 1 && (
+                          <Divider margin={"16px 0"} />
+                        )}
+                      </React.Fragment>
+                    ))}
               </ListWrapper>
             </Box>
           </TitleContentArea>
@@ -267,6 +344,7 @@ function MobileDeptAlarmSetting() {
   const [keyword, setKeyword] = useState("");
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [allAlarm, setAllAlarm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const newParams = new URLSearchParams(location.search);
@@ -294,11 +372,14 @@ function MobileDeptAlarmSetting() {
   );
 
   const fetchKeywords = async () => {
+    setIsLoading(true);
     try {
       const res = await getKeywords();
       setKeywords(res.data);
     } catch (error) {
       console.error("키워드 목록 불러오기 실패:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -311,6 +392,13 @@ function MobileDeptAlarmSetting() {
       fetchKeywords();
     } catch (error) {
       console.error("키워드 등록 실패:", error);
+    }
+  };
+
+  // 엔터 키 핸들러
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      handleAddKeyword();
     }
   };
 
@@ -353,6 +441,16 @@ function MobileDeptAlarmSetting() {
 
   return (
     <>
+      <KeyWordSettingWrapper>
+        <TitleContentArea
+          description={
+            <>
+              학과 공지 알리미를 설정해보세요.
+              <br />새 글이 올라오면 횃불이가 푸시알림으로 알려드려요.
+            </>
+          }
+        />
+      </KeyWordSettingWrapper>
       <Box
         style={{
           // 토글 상태에 따른 스타일 분기
@@ -360,7 +458,6 @@ function MobileDeptAlarmSetting() {
             ? "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)"
             : "#f2f2f2", // 무채색 배경
           margin: "0 var(--page-inline)",
-          padding: "24px",
           boxShadow: allAlarm
             ? "0 8px 24px rgba(94, 146, 240, 0.15)"
             : "0 8px 24px rgba(0, 0, 0, 0.05)", // 그림자 명도 낮춤
@@ -373,9 +470,11 @@ function MobileDeptAlarmSetting() {
           onClick={() => handleToggleAllAlarm(!allAlarm)}
         >
           <div>
-            <div className="first-line">학과 전체 공지 알림</div>
+            <div className="first-line">학과 공지 모두 알림 받기</div>
             <div className="second-line">
-              {allAlarm ? (
+              {isLoading ? (
+                <Skeleton width={200} height={14} />
+              ) : allAlarm ? (
                 <>
                   {
                     keywords.find(
@@ -385,7 +484,7 @@ function MobileDeptAlarmSetting() {
                   의 모든 공지사항 푸시알림을 받고 있어요.
                 </>
               ) : (
-                <>키워드에 상관 없이 모든 알림을 받을 수 있습니다.</>
+                <>키워드에 상관 없이 모든 새 글 알림을 받을 수 있어요.</>
               )}
             </div>
           </div>
@@ -397,7 +496,7 @@ function MobileDeptAlarmSetting() {
 
       <KeyWordSettingWrapper>
         <TitleContentArea
-          title={"키워드 알림 설정"}
+          title={"키워드로 알림 받기"}
           description={
             allAlarm
               ? "전체 공지 알림이 켜져 있어 키워드 알림 설정을 사용할 수 없어요."
@@ -415,6 +514,7 @@ function MobileDeptAlarmSetting() {
                   }
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
+                  onKeyDown={handleKeyDown} // 엔터 감지
                   disabled={allAlarm}
                 />
                 <TextButton
@@ -432,21 +532,33 @@ function MobileDeptAlarmSetting() {
           </Box>
         </TitleContentArea>
 
-        {registeredKeywords.length > 0 && (
+        {(isLoading || registeredKeywords.length > 0) && (
           <TitleContentArea title={"등록된 키워드 목록"}>
             <Box>
               <ListWrapper>
-                {registeredKeywords.map((item, index) => (
-                  <React.Fragment key={item.keywordId}>
-                    <RegisteredKeywordItem
-                      keyword={item.keyword}
-                      onDelete={() => handleDeleteKeyword(item.keywordId)}
-                    />
-                    {index < registeredKeywords.length - 1 && (
-                      <Divider margin={"16px 0"} />
-                    )}
-                  </React.Fragment>
-                ))}
+                {isLoading
+                  ? Array.from({ length: 2 }).map((_, i) => (
+                      <React.Fragment key={`key-skeleton-${i}`}>
+                        <Skeleton
+                          variant="text"
+                          width="100%"
+                          height={20}
+                          style={{ margin: "4px 0" }}
+                        />
+                        {i < 1 && <Divider margin={"16px 0"} />}
+                      </React.Fragment>
+                    ))
+                  : registeredKeywords.map((item, index) => (
+                      <React.Fragment key={item.keywordId}>
+                        <RegisteredKeywordItem
+                          keyword={item.keyword}
+                          onDelete={() => handleDeleteKeyword(item.keywordId)}
+                        />
+                        {index < registeredKeywords.length - 1 && (
+                          <Divider margin={"16px 0"} />
+                        )}
+                      </React.Fragment>
+                    ))}
               </ListWrapper>
             </Box>
           </TitleContentArea>
@@ -456,7 +568,7 @@ function MobileDeptAlarmSetting() {
   );
 }
 
-const MobileTipsPageWrapper = styled.div`
+const AlarmSettingPageWrapper = styled.div`
   --page-inline: ${MOBILE_PAGE_GUTTER};
   display: flex;
   flex-direction: column;
@@ -490,7 +602,7 @@ const AllAlarmCheckBoxWrapper = styled.div`
   }
 
   .second-line {
-    color: #5e92f0;
+    color: #666;
     font-size: 13px;
     font-weight: 500;
     line-height: 1.4;
