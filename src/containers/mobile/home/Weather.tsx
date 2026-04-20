@@ -93,10 +93,13 @@ export default function WeatherForm() {
             : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
           isShiftedIcon: true,
         };
+      case "맑음":
       default:
         return {
-          image: "",
-          gradient: "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
+          image: isNight ? moonImg : sunImg,
+          gradient: isNight
+            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
+            : "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
           isShiftedIcon: false,
         };
     }
@@ -117,19 +120,20 @@ export default function WeatherForm() {
     }
   };
 
+  const pm10GradeImage = weather?.pm10Grade ? getPm10GradeImage(weather.pm10Grade) : undefined;
+  const temperatureValue = weather?.temperature ? getTemperatureValue(weather.temperature) : "";
+
   const { image, gradient, isShiftedIcon } = getSkyPresentation(
-    weather.sky,
-    weather.day,
+    weather?.sky || "",
+    weather?.day || "",
   );
-  const pm10GradeImage = getPm10GradeImage(weather.pm10Grade);
-  const temperatureValue = getTemperatureValue(weather.temperature);
 
   return (
     <WeatherWrapper>
       <WeatherBackground $gradient={gradient}>
         <BackImage src={backgroundImg} alt="" />
         <WeatherContent>
-          <WeatherIcon src={image} alt={weather.sky} $isShifted={isShiftedIcon} />
+          <WeatherIcon src={image} alt={weather?.sky || ""} $isShifted={isShiftedIcon} />
           <Info>
             <p className="temperature">
               <span className="temperatureValue">{temperatureValue || "-"}</span>
@@ -140,10 +144,10 @@ export default function WeatherForm() {
                 <img
                   className="pmGradeColor"
                   src={pm10GradeImage}
-                  alt={weather.pm10Grade}
+                  alt={weather?.pm10Grade || ""}
                 />
               ) : null}
-              미세먼지 : {weather.pm10Grade || "-"}
+              미세먼지 : {weather?.pm10Grade || "-"}
             </p>
             <p className="location">연수구 송도동</p>
           </Info>

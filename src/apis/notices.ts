@@ -1,6 +1,6 @@
 import axiosInstance from "@/apis/axiosInstance";
 import { ApiResponse, Pagination } from "@/types/common";
-import { DepartmentNotice, Keyword, Notice } from "@/types/notices";
+import { DepartmentNotice, Keyword, Notice, SearchNotice } from "@/types/notices";
 import { Schedule } from "@/types/schedules";
 import tokenInstance from "./tokenInstance.ts";
 
@@ -17,6 +17,11 @@ export const getNoticeListQueryKey = (
   sort: NoticeSort,
   page: number,
 ) => ["notices", "list", category, sort, page] as const;
+
+export const getNoticeSearchQueryKey = (
+  query: string,
+  category?: string,
+) => ["notices", "search", query, category] as const;
 
 const normalizeRequiredDepartment = (department: string): string => {
   const normalizedDepartment = department.trim();
@@ -47,6 +52,27 @@ export const getNotices = async (
     "/api/notices",
     { params },
   );
+  return response.data;
+};
+
+// Search notices.
+export const searchNotices = async (
+  query: string,
+  category?: string,
+  page: number = 1,
+): Promise<ApiResponse<Pagination<SearchNotice[]>>> => {
+  const params: { [key: string]: string | number } = {
+    query,
+    page,
+  };
+
+  if (category && category !== ALL_NOTICE_CATEGORY) {
+    params.category = category;
+  }
+
+  const response = await axiosInstance.get<
+    ApiResponse<Pagination<SearchNotice[]>>
+  >("/api/notices/search", { params });
   return response.data;
 };
 

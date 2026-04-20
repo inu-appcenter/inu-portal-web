@@ -8,6 +8,17 @@ export interface Notice {
   url: string;
 }
 
+export interface SearchNotice {
+  id: number;
+  category: string;
+  subCategory: string;
+  title: string;
+  writer: string;
+  createDate: string;
+  url: string;
+  description: string;
+}
+
 export interface DepartmentNotice {
   id: number;
   title: string;
