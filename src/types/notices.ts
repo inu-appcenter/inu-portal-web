@@ -33,6 +33,7 @@ export interface Keyword {
   keywordId: number;
   memberId: number;
   keyword: string | null;
-  type: string;
+  type: "DEPARTMENT" | "SCHOOL_NOTICE";
   department: string;
+  category: string | null;
 }

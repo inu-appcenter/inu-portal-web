@@ -300,7 +300,7 @@ const MobileDeptNoticePage = () => {
 
       {userInfo.department && (
         <FloatingActionButton
-          text="학과 공지 알림 받기"
+          text="공지 알리미 설정"
           icon={<Bell size={18} color="white" />}
           onClick={() => navigate(ROUTES.BOARD.DEPT_SETTING)}
         />
