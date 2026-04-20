@@ -1,6 +1,11 @@
 import axiosInstance from "@/apis/axiosInstance";
 import { ApiResponse, Pagination } from "@/types/common";
-import { DepartmentNotice, Keyword, Notice } from "@/types/notices";
+import {
+  DepartmentNotice,
+  Keyword,
+  Notice,
+  SearchNotice,
+} from "@/types/notices";
 import { Schedule } from "@/types/schedules";
 import tokenInstance from "./tokenInstance.ts";
 
@@ -18,6 +23,9 @@ export const getNoticeListQueryKey = (
   page: number,
 ) => ["notices", "list", category, sort, page] as const;
 
+export const getNoticeSearchQueryKey = (query: string, category?: string) =>
+  ["notices", "search", query, category] as const;
+
 const normalizeRequiredDepartment = (department: string): string => {
   const normalizedDepartment = department.trim();
 
@@ -28,7 +36,7 @@ const normalizeRequiredDepartment = (department: string): string => {
   return normalizedDepartment;
 };
 
-// Fetch all notices.
+// 전체 공지사항 조회
 export const getNotices = async (
   category: string = ALL_NOTICE_CATEGORY,
   sort: NoticeSort = "date",
@@ -50,7 +58,28 @@ export const getNotices = async (
   return response.data;
 };
 
-// Fetch department notices.
+// 공지사항 검색
+export const searchNotices = async (
+  query: string,
+  category?: string,
+  page: number = 1,
+): Promise<ApiResponse<Pagination<SearchNotice[]>>> => {
+  const params: { [key: string]: string | number } = {
+    query,
+    page,
+  };
+
+  if (category && category !== ALL_NOTICE_CATEGORY) {
+    params.category = category;
+  }
+
+  const response = await axiosInstance.get<
+    ApiResponse<Pagination<SearchNotice[]>>
+  >("/api/notices/search", { params });
+  return response.data;
+};
+
+// 학과 공지사항 조회
 export const getDepartmentNotices = async (
   department: string,
   sort: "date" | "view" = "date",
@@ -79,24 +108,25 @@ export const getDepartmentNoticeSchedules = async (
   return response.data;
 };
 
-// Fetch top notices.
+// 인기 공지사항 조회
 export const getNoticesTop = async (): Promise<ApiResponse<Notice[]>> => {
   const response =
     await axiosInstance.get<ApiResponse<Notice[]>>("/api/notices/top");
   return response.data;
 };
 
-// Fetch all keyword subscriptions.
+// 키워드 구독 목록 조회
 export const getKeywords = async (): Promise<ApiResponse<Keyword[]>> => {
   const response =
     await tokenInstance.get<ApiResponse<Keyword[]>>("/api/keywords");
   return response.data;
 };
 
-// Create a keyword subscription.
+// 키워드 구독 생성
 export const createKeyword = async (
   keyword: string,
-  department: string,
+  department?: string,
+  category?: string,
 ): Promise<ApiResponse<Keyword>> => {
   const normalizedKeyword = keyword.trim();
 
@@ -104,10 +134,13 @@ export const createKeyword = async (
     throw new Error("Keyword is required.");
   }
 
-  const params = {
+  const params: { keyword: string; department?: string; category?: string } = {
     keyword: normalizedKeyword,
-    department: normalizeRequiredDepartment(department),
   };
+
+  if (department) params.department = department;
+  if (category) params.category = category;
+
   const response = await tokenInstance.post<ApiResponse<Keyword>>(
     "/api/keywords",
     null,
@@ -116,7 +149,26 @@ export const createKeyword = async (
   return response.data;
 };
 
-// Fetch subscribed departments.
+// 구독 중인 학교 공지 카테고리 조회
+export const getKeywordsNotice = async (): Promise<ApiResponse<Keyword[]>> => {
+  const response = await tokenInstance.get<ApiResponse<Keyword[]>>(
+    "/api/keywords/notice",
+  );
+  return response.data;
+};
+
+// 학교 공지 카테고리 구독
+export const subscribeKeywordsNotice = async (
+  categories: string[],
+): Promise<ApiResponse<Keyword[]>> => {
+  const response = await tokenInstance.post<ApiResponse<Keyword[]>>(
+    "/api/keywords/notice",
+    categories,
+  );
+  return response.data;
+};
+
+// 구독 중인 학과 목록 조회
 export const getSubscribedDepartments = async (): Promise<
   ApiResponse<Keyword[]>
 > => {
@@ -126,20 +178,18 @@ export const getSubscribedDepartments = async (): Promise<
   return response.data;
 };
 
-// Subscribe to department notifications.
+// 학과 공지 알림 구독
 export const subscribeDepartment = async (
-  department: string,
-): Promise<ApiResponse<Keyword>> => {
-  const params = { department: normalizeRequiredDepartment(department) };
-  const response = await tokenInstance.post<ApiResponse<Keyword>>(
+  departments: string[],
+): Promise<ApiResponse<Keyword[]>> => {
+  const response = await tokenInstance.post<ApiResponse<Keyword[]>>(
     "/api/keywords/department",
-    null,
-    { params },
+    departments,
   );
   return response.data;
 };
 
-// Delete a keyword subscription.
+// 키워드 구독 삭제
 export const deleteKeyword = async (
   keywordId: number,
 ): Promise<ApiResponse<number>> => {

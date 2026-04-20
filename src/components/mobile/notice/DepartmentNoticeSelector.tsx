@@ -54,8 +54,8 @@ const DepartmentMenu = ({
         <NoticeBox>
           <FiAlertCircle size={18} />
           <p>
-            학과 변경 시 푸시 알림 설정을 다시 해야 적용됩니다. (기존 키워드는
-            유지되나 학과 전체 공지 수신 설정은 다시 확인이 필요합니다.)
+            학과 변경 시 학과 공지 알리미 설정을 다시 해야합니다. 다시 설정하지
+            않으면 이전 학과 알림이 갈 수 있습니다.
           </p>
         </NoticeBox>
         <DepartmentsList>
@@ -225,4 +225,3 @@ const SubItemButton = styled.button`
     }
   }
 `;
-
