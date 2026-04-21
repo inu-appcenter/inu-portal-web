@@ -138,6 +138,8 @@ const MobileAlertPage = () => {
                 onClick={() => {
                   if (alert.type === "DEPARTMENT") {
                     navigate(ROUTES.BOARD.DEPT_NOTICE);
+                  } else if (alert.type === "SCHOOL_NOTICE") {
+                    navigate(ROUTES.BOARD.NOTICE);
                   }
                 }}
               >
