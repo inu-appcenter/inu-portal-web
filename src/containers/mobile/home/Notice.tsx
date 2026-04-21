@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { getNotices, type NoticeSort } from "@/apis/notices";
 import { Notice } from "@/types/notices";
-import SortDropBox from "@/components/mobile/notice/Sort";
 import Box from "@/components/common/Box";
 import PostItem from "@/components/mobile/notice/PostItem";
 import Divider from "@/components/common/Divider";
@@ -24,7 +23,7 @@ const NoticeSkeletonItem = () => {
 };
 
 export default function NoticeForm() {
-  const [sort, setSort] = useState<NoticeSort>("date");
+  // const [sort, setSort] = useState<NoticeSort>("date");
   const [notices, setNotices] = useState<Notice[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -35,21 +34,25 @@ export default function NoticeForm() {
     try {
       const response = await getNotices("전체", sort, 1);
       setNotices(response.data.contents);
-      if (swiperRef.current) swiperRef.current.slideTo(0);
-      setIsLoading(false);
+
+      if (swiperRef.current) {
+        swiperRef.current.slideTo(0);
+      }
     } catch (error) {
-      console.error("모든 공지사항 가져오기 실패", error);
+      console.error("공지사항 가져오기 실패", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchNotices(sort);
-  }, [sort]);
+    fetchNotices("date");
+  }, []);
 
   return (
     <Box>
       <NoticeFormWrapper>
-        <SortDropBox sort={sort} setSort={setSort} />
+        {/*<SortDropBox sort={sort} setSort={setSort} />*/}
 
         {isLoading //스켈레톤 로딩
           ? Array.from({ length: 3 }).map((_, index) => (
