@@ -201,7 +201,7 @@ function MobileSchoolAlarmSetting() {
           description={
             <>
               학교 공지 알리미를 설정해보세요.
-              <br />새 글이 올라오면 횃불이가 푸시알림으로 알려드려요.
+              <br />새 글이 올라오면 푸시알림으로 알려드려요.
             </>
           }
         />
@@ -446,7 +446,7 @@ function MobileDeptAlarmSetting() {
           description={
             <>
               학과 공지 알리미를 설정해보세요.
-              <br />새 글이 올라오면 횃불이가 푸시알림으로 알려드려요.
+              <br />새 글이 올라오면 푸시알림으로 알려드려요.
             </>
           }
         />
@@ -456,14 +456,14 @@ function MobileDeptAlarmSetting() {
           // 토글 상태에 따른 스타일 분기
           background: allAlarm
             ? "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)"
-            : "#f2f2f2", // 무채색 배경
+            : "#f2f2f2",
           margin: "0 var(--page-inline)",
           boxShadow: allAlarm
             ? "0 8px 24px rgba(94, 146, 240, 0.15)"
-            : "0 8px 24px rgba(0, 0, 0, 0.05)", // 그림자 명도 낮춤
+            : "0 8px 24px rgba(0, 0, 0, 0.05)",
           border: allAlarm
             ? "1px solid rgba(255, 255, 255, 0.5)"
-            : "1px solid #e0e0e0", // 테두리 강조
+            : "1px solid #e0e0e0",
         }}
       >
         <AllAlarmCheckBoxWrapper

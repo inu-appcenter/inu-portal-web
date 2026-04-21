@@ -26,7 +26,10 @@ const HomeChipGroup = () => {
   const phonebookTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
   const { enabled: isLabsEnabled } = useFeatureFlag(FEATURE_FLAG_KEYS.LABS);
   const [isPhonebookTooltipVisible, setIsPhonebookTooltipVisible] = useState(
-    () => !isTooltipDismissed(PHONEBOOK_TOOLTIP_ID),
+    () => {
+      return false; //비활성화
+      !isTooltipDismissed(PHONEBOOK_TOOLTIP_ID);
+    },
   );
 
   const chips = [

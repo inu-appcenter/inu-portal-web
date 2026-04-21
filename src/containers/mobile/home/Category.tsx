@@ -40,7 +40,18 @@ type CategoryItem = {
 
 const categories: CategoryItem[] = [
   { title: "식당 메뉴", img: menuImg, href: "/home/menu" },
-  { title: "학교 공지", img: schoolNoticeImg, href: "/home/notice" },
+  {
+    title: "학교 공지",
+    img: schoolNoticeImg,
+    href: "/home/notice",
+    tooltip: {
+      id: "school-notice-tooltip",
+      message: "학교 공지 알리미 오픈!",
+      position: "top",
+      align: "right",
+      width: "max-content",
+    },
+  },
   {
     title: "학과 공지",
     img: noticeImg,
