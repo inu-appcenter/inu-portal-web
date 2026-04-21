@@ -34,6 +34,10 @@ const MobileSchoolNoticePage = () => {
   const [inputValue, setInputValue] = useState(committedQuery);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedCategory, committedQuery]);
+
+  useEffect(() => {
     setInputValue(committedQuery);
   }, [committedQuery]);
 
