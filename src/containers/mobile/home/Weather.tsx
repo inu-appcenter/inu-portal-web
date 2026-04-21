@@ -93,7 +93,6 @@ export default function WeatherForm() {
             : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
           isShiftedIcon: true,
         };
-      case "맑음":
       default:
         return {
           image: isNight ? moonImg : sunImg,
