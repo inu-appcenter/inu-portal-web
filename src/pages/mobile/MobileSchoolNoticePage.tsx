@@ -17,11 +17,16 @@ import {
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingActionButton from "@/components/common/FloatingActionButton";
+import { Bell } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
+import useUserStore from "@/stores/useUserStore";
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
 
 const MobileSchoolNoticePage = () => {
+  const { tokenInfo } = useUserStore();
   const [categoryList, setCategoryList] = useState<string[]>([]);
   const { ref, inView } = useInView();
   const navigate = useNavigate();
@@ -185,7 +190,24 @@ const MobileSchoolNoticePage = () => {
         <LoadingText>더 이상 게시물이 없습니다.</LoadingText>
       )}
 
-      <SearchSpacer />
+      <FloatingActionButton
+        text="공지 알리미 설정"
+        icon={<Bell size={18} color="white" />}
+        onClick={() => {
+          if (!tokenInfo.accessToken) {
+            if (
+              window.confirm(
+                "로그인이 필요해요. 로그인 페이지로 이동할까요?\nINTIP은 학교 포털 계정으로 간편하게 로그인할 수 있어요.",
+              )
+            ) {
+              navigate(ROUTES.LOGIN);
+            }
+          } else {
+            navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
+          }
+        }}
+        bottom={"100px"}
+      />
 
       <FloatingSearchBar>
         <MobilePillSearchBar
@@ -203,6 +225,8 @@ export default MobileSchoolNoticePage;
 
 const MobileSchoolNoticePageWrapper = styled.div`
   width: 100%;
+
+  padding-bottom: 120px;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
@@ -234,10 +258,6 @@ const LoadingText = styled.h4`
   padding: 20px 0;
   color: #888;
   font-size: 14px;
-`;
-
-const SearchSpacer = styled.div`
-  height: 88px;
 `;
 
 const FloatingSearchBar = styled.div`
