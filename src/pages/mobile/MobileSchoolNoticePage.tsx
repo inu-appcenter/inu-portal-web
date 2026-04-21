@@ -155,7 +155,7 @@ const MobileSchoolNoticePage = () => {
             <Box
               key={`${notice.id || index}`}
               onClick={() => {
-                if (notice.url) window.open("https://" + notice.url, "_blank");
+                if (notice.url) window.open(notice.url, "_blank");
               }}
             >
               <PostItem
