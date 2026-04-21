@@ -105,42 +105,8 @@ function MobileSchoolAlarmSetting() {
     fetchSchoolData();
   }, [fetchSchoolData]);
 
-  //구독 카테고리 목록 갱신
-  const refreshSubscribedCategories = useCallback(async () => {
-    try {
-      const subRes = await getKeywordsNotice();
-      setSubscribedCategories(subRes.data.map((k) => k.category || ""));
-    } catch (error) {
-      console.error("구독 카테고리 목록 갱신 실패:", error);
-    }
-  }, []);
-
-  //키워드 목록 갱신
-  const refreshKeywords = useCallback(async () => {
-    try {
-      const keyRes = await getKeywords();
-      setKeywords(
-        keyRes.data.filter(
-          (k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null,
-        ),
-      );
-    } catch (error) {
-      console.error("키워드 목록 갱신 실패:", error);
-    }
-  }, []);
-
   const handleToggleCategory = async (category: string) => {
     const isSubscribed = subscribedCategories.includes(category);
-
-    if (!isSubscribed) {
-      if (
-        !window.confirm(
-          `${category} 전체 새 글 알림을 켤까요?\n${category} 카테고리 이외에 등록된 키워드는 삭제됩니다!`,
-        )
-      ) {
-        return;
-      }
-    }
 
     const nextCategories = isSubscribed
       ? subscribedCategories.filter((c) => c !== category)
@@ -149,7 +115,6 @@ function MobileSchoolAlarmSetting() {
     try {
       await subscribeKeywordsNotice(nextCategories);
       setSubscribedCategories(nextCategories);
-      refreshKeywords();
     } catch (error) {
       console.error("학교 공지 카테고리 구독 실패:", error);
     }
@@ -170,8 +135,6 @@ function MobileSchoolAlarmSetting() {
           (k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null,
         ),
       );
-
-      refreshSubscribedCategories();
     } catch (error) {
       console.error("학교 공지 키워드 등록 실패:", error);
     }
@@ -209,7 +172,9 @@ function MobileSchoolAlarmSetting() {
         <TitleContentArea
           title={"학교 공지 모두 알림 받기"}
           description={
-            "선택한 카테고리의 모든 공지사항 새 글 알림을 받을 수 있어요."
+            subscribedCategories.length > 0
+              ? `${subscribedCategories.length}개 카테고리에서 전체 새 글 알림을 받고 있어요.`
+              : "원하는 카테고리의 모든 새 글 알림을 설정해보세요."
           }
         >
           <Box>
@@ -239,13 +204,7 @@ function MobileSchoolAlarmSetting() {
 
         <TitleContentArea
           title={"키워드로 알림 받기"}
-          description={
-            <>
-              특정 카테고리에 키워드 알림을 설정할 수 있어요.
-              <br />
-              해당 카테고리 전체 알림은 해제됩니다.
-            </>
-          }
+          description={"원하는 카테고리에 키워드 알림을 설정해보세요."}
         >
           <Box>
             <Wrapper>
@@ -299,7 +258,9 @@ function MobileSchoolAlarmSetting() {
         </TitleContentArea>
 
         {(isLoading || keywords.length > 0) && (
-          <TitleContentArea title={"등록된 키워드 목록"}>
+          <TitleContentArea
+            description={`${keywords.length}개 키워드로 알림을 받고 있어요.`}
+          >
             <Box>
               <ListWrapper>
                 {isLoading
@@ -384,7 +345,7 @@ function MobileDeptAlarmSetting() {
   };
 
   const handleAddKeyword = async () => {
-    if (!keyword || allAlarm) return;
+    if (!keyword) return;
 
     try {
       await createKeyword(keyword, findTitleOrCode(userInfo.department));
@@ -418,13 +379,6 @@ function MobileDeptAlarmSetting() {
   const handleToggleAllAlarm = async (checked: boolean) => {
     try {
       if (checked) {
-        if (
-          !window.confirm(
-            "전체 알림을 켤까요?\n기존에 등록한 키워드는 삭제됩니다!",
-          )
-        ) {
-          return;
-        }
         // 학과 전체 알림 구독
         await subscribeDepartment([findTitleOrCode(userInfo.department)]);
       } else {
@@ -433,7 +387,6 @@ function MobileDeptAlarmSetting() {
       }
 
       setAllAlarm(checked);
-      fetchKeywords();
     } catch (error) {
       console.error("전체 공지 알림 설정 실패:", error);
     }
@@ -484,7 +437,7 @@ function MobileDeptAlarmSetting() {
                   의 모든 공지사항 푸시알림을 받고 있어요.
                 </>
               ) : (
-                <>키워드에 상관 없이 모든 새 글 알림을 받을 수 있어요.</>
+                <>키워드에 상관 없이 모든 새 글 알림을 받아보세요.</>
               )}
             </div>
           </div>
@@ -495,45 +448,31 @@ function MobileDeptAlarmSetting() {
       </Box>
 
       <KeyWordSettingWrapper>
-        <TitleContentArea
-          title={"키워드로 알림 받기"}
-          description={
-            allAlarm
-              ? "전체 공지 알림이 켜져 있어 키워드 알림 설정을 사용할 수 없어요."
-              : undefined
-          }
-        >
+        <TitleContentArea title={"키워드로 알림 받기"}>
           <Box>
             <Wrapper>
               <InputWrapper>
                 <StyledInput
-                  placeholder={
-                    allAlarm
-                      ? "전체 공지 알림 사용 중에는 키워드를 등록할 수 없어요."
-                      : "알림 받을 키워드를 입력해주세요."
-                  }
+                  placeholder={"알림 받을 키워드를 입력해주세요."}
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                   onKeyDown={handleKeyDown} // 엔터 감지
-                  disabled={allAlarm}
                 />
-                <TextButton
-                  disabled={!keyword || allAlarm}
-                  onClick={handleAddKeyword}
-                >
+                <TextButton disabled={!keyword} onClick={handleAddKeyword}>
                   등록
                 </TextButton>
               </InputWrapper>
 
-              <CategorySelectorDisabledWrapper $disabled={allAlarm}>
-                <CategorySelectorNew categories={NoticeRecommendKeywords} />
-              </CategorySelectorDisabledWrapper>
+              <CategorySelectorNew categories={NoticeRecommendKeywords} />
             </Wrapper>
           </Box>
         </TitleContentArea>
 
         {(isLoading || registeredKeywords.length > 0) && (
-          <TitleContentArea title={"등록된 키워드 목록"}>
+          <TitleContentArea
+            // title={"등록된 키워드 목록"}
+            description={`${registeredKeywords.length}개 키워드로 알림을 받고 있어요.`}
+          >
             <Box>
               <ListWrapper>
                 {isLoading
@@ -687,17 +626,6 @@ const TextButton = styled.button<{ disabled?: boolean }>`
   &:disabled {
     cursor: not-allowed;
   }
-`;
-
-const CategorySelectorDisabledWrapper = styled.div<{ $disabled: boolean }>`
-  ${({ $disabled }) =>
-    $disabled &&
-    `
-      pointer-events: none;
-      opacity: 0.45;
-      user-select: none;
-      filter: grayscale(0.15);
-    `}
 `;
 
 const ChipContainer = styled.div`
