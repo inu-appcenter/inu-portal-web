@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/stores/useUserStore";
 import { refresh } from "@/apis/members";
+import { resetMixpanel } from "@/utils/mixpanel";
 
 const tokenInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -60,6 +61,7 @@ tokenInstance.interceptors.response.use(
       } catch (refreshError) {
         // 리프레시 토큰 재발급 실패 시
         alert("로그인 정보가 만료되었습니다. 다시 로그인해 주세요.");
+        resetMixpanel();
         useUserStore.getState().setTokenInfo({
           accessToken: "",
           accessTokenExpiredTime: "",

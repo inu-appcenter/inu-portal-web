@@ -14,6 +14,7 @@ import surveyBanner from "@/resources/assets/banner/설문배너.webp";
 import appcenterBanner from "@/resources/assets/banner/앱센터배너.webp";
 
 import WeatherForm from "./Weather.tsx";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 type BannerItem = {
   id: string;
@@ -166,6 +167,10 @@ const Banner = () => {
       return;
     }
 
+    const banner = banners[index];
+    if (banner) {
+      mixpanelTrack.featureClicked(banner.alt, "Home Banner");
+    }
     onClick?.();
   };
 

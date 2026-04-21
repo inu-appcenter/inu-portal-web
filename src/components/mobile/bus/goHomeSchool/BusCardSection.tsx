@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const BUS_PAGE_TABLET_MEDIA = "(min-width: 760px)";
 
@@ -28,6 +29,7 @@ export default function BusCardSection() {
   const navigate = useNavigate();
   const [featuredCard, ...stackCards] = BUS_CARDS;
   const handleCardClick = (type: (typeof BUS_CARDS)[number]["type"]) => {
+    mixpanelTrack.busChecked(type, "N/A", "Category Select");
     navigate(getPreferredBusUiRoute(type));
   };
 

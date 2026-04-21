@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface TitleLineProps {
   title: string | React.ReactNode;
@@ -11,17 +12,22 @@ const TitleLine = ({ title, link, externalLink }: TitleLineProps) => {
   const navigate = useNavigate();
   const hasMoreLink = Boolean(link || externalLink);
 
+  const handleClick = () => {
+    if (!hasMoreLink) return;
+
+    // 타이틀이 문자열인 경우 이를 사용, 아니면 기본값 사용
+    const featureName = typeof title === "string" ? `${title} 더보기` : "위젯 더보기";
+    mixpanelTrack.featureClicked(featureName, "Home Widget Header");
+
+    if (link) {
+      navigate(link);
+    } else if (externalLink) {
+      window.open(externalLink, "_blank");
+    }
+  };
+
   return (
-    <TitleLineWrapper
-      $clickable={hasMoreLink}
-      onClick={() => {
-        if (link) {
-          navigate(link);
-        } else if (externalLink) {
-          window.open(externalLink, "_blank");
-        }
-      }}
-    >
+    <TitleLineWrapper $clickable={hasMoreLink} onClick={handleClick}>
       <div className="title">{title}</div>
       {hasMoreLink && (
         <MoreIcon

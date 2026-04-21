@@ -31,6 +31,7 @@ import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
 import findTitleOrCode, {
   findDepartmentHomepageUrl,
 } from "@/utils/findTitleOrCode";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo, tokenInfo } = useUserStore();
@@ -249,6 +250,7 @@ const MobileDeptNoticePage = () => {
             <Box
               key={`${deptNotice.id || index}`}
               onClick={() => {
+                mixpanelTrack.deptNoticeViewed(currentDept, deptNotice.title);
                 if (deptNotice.url) window.open(deptNotice.url, "_blank");
               }}
             >
@@ -262,7 +264,10 @@ const MobileDeptNoticePage = () => {
               {deptNotice.hasSchedules && (
                 <CalendarActionButton
                   style={{ alignSelf: "end" }}
-                  onClick={(e) => handleCalendarClick(e, deptNotice.id)}
+                  onClick={(e) => {
+                    mixpanelTrack.featureClicked("Dept AI Calendar", "Dept Notice List");
+                    handleCalendarClick(e, deptNotice.id);
+                  }}
                 >
                   <img src={AI_LOGO} alt="횃불이AI" />
                   <span>

@@ -8,6 +8,8 @@ import { BusStopDummy } from "@/components/mobile/bus/data/BusStopDummy";
 import BusStopMap from "@/components/mobile/bus/BusStopMap.tsx";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { useEffect } from "react";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function MobileBusStopPage() {
   const location = useLocation();
@@ -20,6 +22,12 @@ export default function MobileBusStopPage() {
   useHeader({
     title: "정류장 정보",
   });
+
+  useEffect(() => {
+    if (stop) {
+      mixpanelTrack.busChecked(stop.sectionLabel ?? "", "N/A", stop.stopName);
+    }
+  }, [stop]);
 
   if (stop)
     return (
