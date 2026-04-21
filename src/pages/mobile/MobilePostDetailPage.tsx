@@ -31,6 +31,7 @@ export default function PostDetailPage() {
       const response = await getPostDetail(id);
       console.log("게시글 가져오기 성공!!!");
       setPost(response.data);
+
       console.log(response);
       setCommentUpdated(false);
     } catch (error) {

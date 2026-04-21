@@ -21,6 +21,7 @@ import FloatingActionButton from "@/components/common/FloatingActionButton";
 import { Bell } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
@@ -99,6 +100,9 @@ const MobileSchoolNoticePage = () => {
       return;
     }
 
+    // 검색 수행 트래킹
+    mixpanelTrack.searchPerformed("Notice", nextQuery, notices.length);
+
     const nextParams = new URLSearchParams(location.search);
     if (nextQuery) {
       nextParams.set("query", nextQuery);
@@ -155,6 +159,7 @@ const MobileSchoolNoticePage = () => {
             <Box
               key={`${notice.id || index}`}
               onClick={() => {
+                mixpanelTrack.noticeViewed(notice.category, notice.title);
                 if (notice.url) window.open("https://" + notice.url, "_blank");
               }}
             >

@@ -24,6 +24,7 @@ import {
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import TopPopupNotification from "@/components/common/TopPopupNotification";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.05;
@@ -235,7 +236,12 @@ export default function MobileHomePage() {
                   30초만 시간 내어 작성해주시면 더 좋은 서비스를 준비하는 데 큰
                   도움이 됩니다
                   <br />
-                  <a href={"https://forms.gle/DHk5zsAF8Ko3SN38A"}>
+                  <a
+                    href={"https://forms.gle/DHk5zsAF8Ko3SN38A"}
+                    onClick={() =>
+                      mixpanelTrack.featureClicked("Survey Link", "Home Popup")
+                    }
+                  >
                     설문 조사 바로가기
                   </a>
                 </>
@@ -282,6 +288,7 @@ export default function MobileHomePage() {
           src={AppcenterLogo}
           alt={"appcenterLogo"}
           onClick={() => {
+            mixpanelTrack.featureClicked("Appcenter Website", "Home Bottom");
             window.open("https://home.inuappcenter.kr");
           }}
         />

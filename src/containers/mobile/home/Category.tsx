@@ -20,6 +20,7 @@ import {
   dismissTooltip,
   isTooltipDismissed,
 } from "@/utils/dismissibleTooltipStorage";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 type CategoryTooltip = {
   id: string;
@@ -124,7 +125,13 @@ export default function CategoryForm() {
               }
             }}
           >
-            <CategoryCard type="button" onClick={() => navigate(category.href)}>
+            <CategoryCard
+              type="button"
+              onClick={() => {
+                mixpanelTrack.featureClicked(category.title, "Home Category");
+                navigate(category.href);
+              }}
+            >
               <IconWrapper>
                 <img src={category.img} alt={`${category.title} 아이콘`} />
                 {category.isNew && <NewBadge>NEW!</NewBadge>}

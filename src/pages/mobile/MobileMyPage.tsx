@@ -14,6 +14,7 @@ import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { deleteFcmToken } from "@/apis/members";
+import { resetMixpanel } from "@/utils/mixpanel";
 import {
   DESKTOP_MEDIA,
   DESKTOP_READING_WIDTH,
@@ -42,6 +43,7 @@ export default function MobileMyPage() {
       }
     }
 
+    resetMixpanel();
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
     setTokenInfo({
       accessToken: "",

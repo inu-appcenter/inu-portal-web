@@ -18,6 +18,7 @@ import {
 } from "@/utils/dismissibleTooltipStorage";
 import { ROUTES } from "@/constants/routes";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const PHONEBOOK_TOOLTIP_ID = "home-phonebook-search";
 
@@ -38,6 +39,7 @@ const HomeChipGroup = () => {
       iconSrc: AIIcon,
       title: "횃불이 AI",
       onClick: () => {
+        mixpanelTrack.featureClicked("횃불이 AI", "Home Chip");
         navigate(`/ai`);
       },
       isAIButton: true,
@@ -48,6 +50,7 @@ const HomeChipGroup = () => {
       iconSrc: CallINU,
       title: "INU 전화번호부",
       onClick: () => {
+        mixpanelTrack.featureClicked("INU 전화번호부", "Home Chip");
         navigate(ROUTES.PHONEBOOK.ROOT);
       },
     },
@@ -57,6 +60,7 @@ const HomeChipGroup = () => {
       iconSrc: AppcenterLogo_NoText,
       title: "앱센터의 다른 앱",
       onClick: () => {
+        mixpanelTrack.featureClicked("앱센터의 다른 앱", "Home Chip");
         navigate(ROUTES.MORE_APPS.ROOT);
       },
     },
@@ -66,6 +70,7 @@ const HomeChipGroup = () => {
       iconComponent: LuFlaskConical,
       title: "실험실",
       onClick: () => {
+        mixpanelTrack.featureClicked("실험실", "Home Chip");
         navigate(ROUTES.LABS.ROOT);
       },
       isActive: isLabsEnabled,
@@ -77,6 +82,7 @@ const HomeChipGroup = () => {
       title: "유니돔",
       isExternalLink: true,
       onClick: () => {
+        mixpanelTrack.featureClicked("유니돔", "Home Chip");
         window.open(
           "https://unidorm.inuappcenter.kr",
           "_blank",
