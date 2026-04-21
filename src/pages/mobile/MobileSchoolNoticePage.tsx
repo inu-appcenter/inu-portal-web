@@ -1,13 +1,14 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import { useEffect, useState, useMemo } from "react";
-import { Notice } from "@/types/notices";
-import { getNotices } from "@/apis/notices";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { Notice, SearchNotice } from "@/types/notices";
+import { ApiResponse, Pagination } from "@/types/common";
+import { getNotices, searchNotices } from "@/apis/notices";
 import Box from "@/components/common/Box";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import {
@@ -15,14 +16,35 @@ import {
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingActionButton from "@/components/common/FloatingActionButton";
+import { Bell } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
+import useUserStore from "@/stores/useUserStore";
+
+const SEARCH_MIN_QUERY_LENGTH = 2;
+const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
 
 const MobileSchoolNoticePage = () => {
+  const { tokenInfo } = useUserStore();
   const [categoryList, setCategoryList] = useState<string[]>([]);
   const { ref, inView } = useInView();
+  const navigate = useNavigate();
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "전체";
+  const committedQuery = params.get("query")?.trim() ?? "";
+
+  const [inputValue, setInputValue] = useState(committedQuery);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selectedCategory, committedQuery]);
+
+  useEffect(() => {
+    setInputValue(committedQuery);
+  }, [committedQuery]);
 
   // 카테고리 로드
   useEffect(() => {
@@ -45,9 +67,12 @@ const MobileSchoolNoticePage = () => {
     isFetchingNextPage,
     isLoading,
     isError,
-  } = useInfiniteQuery({
-    queryKey: ["notices", selectedCategory],
-    queryFn: ({ pageParam = 1 }) => getNotices(selectedCategory, "date", pageParam),
+  } = useInfiniteQuery<ApiResponse<Pagination<(Notice | SearchNotice)[]>>>({
+    queryKey: ["notices", selectedCategory, committedQuery],
+    queryFn: ({ pageParam = 1 }) =>
+      committedQuery
+        ? searchNotices(committedQuery, selectedCategory, pageParam as number)
+        : getNotices(selectedCategory, "date", pageParam as number),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
       const totalPages = lastPage.data.pages;
@@ -66,6 +91,33 @@ const MobileSchoolNoticePage = () => {
     return data?.pages.flatMap((page) => page.data.contents) || [];
   }, [data]);
 
+  const handleSearchSubmit = () => {
+    const nextQuery = inputValue.trim();
+
+    if (nextQuery && nextQuery.length < SEARCH_MIN_QUERY_LENGTH) {
+      window.alert(SEARCH_MIN_QUERY_MESSAGE);
+      return;
+    }
+
+    const nextParams = new URLSearchParams(location.search);
+    if (nextQuery) {
+      nextParams.set("query", nextQuery);
+    } else {
+      nextParams.delete("query");
+    }
+    nextParams.set("page", "1");
+
+    // 이미 검색 중인 상태에서 검색어를 바꾸는 것이라면 히스토리를 쌓지 않고 교체(replace)합니다.
+    navigate(`${location.pathname}?${nextParams.toString()}`, {
+      replace: !!committedQuery,
+    });
+  };
+
+  const handleBackToAll = useCallback(() => {
+    // 검색 모드에서 뒤로가기를 누르면 단순히 이전 히스토리(전체 목록)로 돌아갑니다.
+    navigate(-1);
+  }, [navigate]);
+
   const subHeader = useMemo(
     () => (
       <CategorySelectorNew
@@ -77,8 +129,9 @@ const MobileSchoolNoticePage = () => {
   );
 
   useHeader({
-    title: "학교 공지사항",
+    title: committedQuery ? "검색 결과" : "학교 공지사항",
     hasback: true,
+    onBack: committedQuery ? handleBackToAll : undefined,
     subHeader: subHeader,
     floatingSubHeader: true,
   });
@@ -98,7 +151,7 @@ const MobileSchoolNoticePage = () => {
         ) : notices.length === 0 ? (
           <LoadingText>게시물이 없습니다.</LoadingText>
         ) : (
-          notices.map((notice: Notice, index: number) => (
+          notices.map((notice: Notice | SearchNotice, index: number) => (
             <Box
               key={`${notice.id || index}`}
               onClick={() => {
@@ -107,10 +160,14 @@ const MobileSchoolNoticePage = () => {
             >
               <PostItem
                 title={notice.title}
-                category={notice.category}
+                category={
+                  "subCategory" in notice && notice.subCategory
+                    ? `${notice.category} - ${notice.subCategory}`
+                    : notice.category
+                }
                 writer={notice.writer}
                 date={notice.createDate}
-                views={notice.view}
+                views={"view" in notice ? notice.view : undefined}
                 isEllipsis={false}
               />
             </Box>
@@ -132,6 +189,34 @@ const MobileSchoolNoticePage = () => {
       {!hasNextPage && notices.length > 0 && (
         <LoadingText>더 이상 게시물이 없습니다.</LoadingText>
       )}
+
+      <FloatingActionButton
+        text="공지 알리미 설정"
+        icon={<Bell size={18} color="white" />}
+        onClick={() => {
+          if (!tokenInfo.accessToken) {
+            if (
+              window.confirm(
+                "로그인이 필요해요. 로그인 페이지로 이동할까요?\nINTIP은 학교 포털 계정으로 간편하게 로그인할 수 있어요.",
+              )
+            ) {
+              navigate(ROUTES.LOGIN);
+            }
+          } else {
+            navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
+          }
+        }}
+        bottom={"100px"}
+      />
+
+      <FloatingSearchBar>
+        <MobilePillSearchBar
+          value={inputValue}
+          onChange={setInputValue}
+          onSubmit={handleSearchSubmit}
+          placeholder="검색어를 입력하세요."
+        />
+      </FloatingSearchBar>
     </MobileSchoolNoticePageWrapper>
   );
 };
@@ -140,6 +225,8 @@ export default MobileSchoolNoticePage;
 
 const MobileSchoolNoticePageWrapper = styled.div`
   width: 100%;
+
+  padding-bottom: 120px;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
@@ -171,4 +258,17 @@ const LoadingText = styled.h4`
   padding: 20px 0;
   color: #888;
   font-size: 14px;
+`;
+
+const FloatingSearchBar = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  z-index: 120;
+
+  @media ${DESKTOP_MEDIA} {
+    width: min(calc(100% - 48px), ${DESKTOP_CONTENT_MAX_WIDTH});
+  }
 `;

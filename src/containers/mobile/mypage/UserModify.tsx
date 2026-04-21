@@ -104,7 +104,7 @@ export default function UserModify() {
       });
 
       if (shouldSubscribeDepartment) {
-        await subscribeDepartment(normalizedDepartmentCode);
+        await subscribeDepartment([normalizedDepartmentCode]);
         alert(
           "성공적으로 수정되었습니다.\n\n학과공지 알리미 기능도 자동으로 활성화되었습니다. 학과 공지 페이지에서 설정을 변경할 수 있어요.",
         );
@@ -157,45 +157,29 @@ export default function UserModify() {
           placeholder="닉네임을 입력해주세요"
           maxLength={MAX_NICKNAME_LENGTH}
         />
-        <HelperText>
-          띄어쓰기를 포함해 최대 10자까지 설정할 수 있어요.
-        </HelperText>
       </SectionCard>
 
       <SectionCard>
         <SectionTop>
           <div>
-            <h3>학과</h3>
-            <p>학과 공지 연동에 사용할 정보를 선택해주세요.</p>
+            <h3>학과(주전공)</h3>
+            <p>추후 부/복수전공 선택 기능이 추가될 예정이에요.</p>
           </div>
-          {normalizedDepartment ? (
-            <SelectionPill>선택 완료</SelectionPill>
-          ) : null}
         </SectionTop>
 
-        <DepartmentRow>
-          <StyledInput
-            value={department}
-            onChange={(event) => setDepartment(event.target.value)}
-            placeholder="학과를 선택해주세요"
-            readOnly
-          />
-          <ActionButton
-            type="button"
-            onClick={() => setIsDeptSelectorOpen(true)}
-          >
-            학과 선택
-          </ActionButton>
-        </DepartmentRow>
+        <StyledInput
+          value={department}
+          onChange={(event) => setDepartment(event.target.value)}
+          placeholder="학과를 선택해주세요"
+          readOnly
+          onClick={() => setIsDeptSelectorOpen(true)}
+        />
       </SectionCard>
 
       <SectionCard>
         <SectionTop>
           <div>
             <h3>프로필 이미지</h3>
-            <p>
-              선택한 이미지는 저장 전에 아래 미리보기에서 바로 확인할 수 있어요.
-            </p>
           </div>
         </SectionTop>
 
@@ -245,17 +229,8 @@ export default function UserModify() {
           disabled={!hasChanges || isSaving}
           onClick={handleModifyClick}
         >
-          {isSaving
-            ? "저장 중..."
-            : hasChanges
-              ? "변경 사항 저장"
-              : "저장 완료"}
+          {isSaving ? "저장 중..." : "저장하기"}
         </SubmitButton>
-        <SubmitHint>
-          {hasChanges
-            ? "아직 저장되지 않은 변경 사항이 있어요."
-            : "현재 프로필 정보가 저장된 상태예요."}
-        </SubmitHint>
       </SubmitArea>
     </UserModifyWrapper>
   );
@@ -267,6 +242,12 @@ const UserModifyWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   box-sizing: border-box;
+  /* 하단 고정 버튼 영역만큼 여백 확보 */
+  padding-bottom: 120px;
+
+  @media ${DESKTOP_MEDIA} {
+    padding-bottom: 140px;
+  }
 `;
 
 const SectionCard = styled.section`
@@ -323,11 +304,6 @@ const Counter = styled.span`
   font-weight: 800;
 `;
 
-const SelectionPill = styled(Counter)`
-  min-height: 32px;
-  padding: 0 12px;
-`;
-
 const StyledInput = styled.input`
   width: 100%;
   padding: 15px 16px;
@@ -357,29 +333,6 @@ const StyledInput = styled.input`
   &[readonly] {
     color: #51657f;
     cursor: pointer;
-  }
-`;
-
-const HelperText = styled.p`
-  margin: 0;
-  color: #7b8fa8;
-  font-size: 12px;
-  line-height: 1.55;
-`;
-
-const DepartmentRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  ${StyledInput} {
-    flex: 1;
-    background: #f3f7fc;
-  }
-
-  @media (max-width: 360px) {
-    flex-direction: column;
-    align-items: stretch;
   }
 `;
 
@@ -485,20 +438,22 @@ const ImageOption = styled.button<{ $selected: boolean }>`
 `;
 
 const SubmitArea = styled.div`
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 4px calc(8px + env(safe-area-inset-bottom, 0px));
-`;
-
-const SubmitHint = styled.p`
-  margin: 0;
-  text-align: center;
-  font-size: 12px;
-  color: #6f84a2;
-  line-height: 1.5;
+  width: 100%;
+  box-sizing: border-box;
+  /* 내부 여백은 유지하여 버튼이 벽에 붙지 않게 함 */
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-top: 1px solid rgba(232, 239, 248, 0.9);
+  z-index: 100;
 `;
 
 const ActionButton = styled.button<{ $fullWidth?: boolean }>`
@@ -527,10 +482,15 @@ const ActionButton = styled.button<{ $fullWidth?: boolean }>`
 
   &:disabled {
     cursor: default;
+    background: #dce8f6;
+    color: #9aa9bd;
+    box-shadow: none;
   }
 `;
 
 const SubmitButton = styled(ActionButton)`
   min-height: 54px;
   font-size: 16px;
+  max-width: 600px;
+  margin: 0 auto;
 `;

@@ -13,7 +13,12 @@ const RegisteredKeywordItem = ({
   return (
     <RegisteredKeywordItemWrapper>
       <div className="keyword">{keyword}</div>{" "}
-      <FiTrash2 size={20} onClick={onDelete} />
+      <FiTrash2
+        size={18}
+        onClick={onDelete}
+        color={"#444"}
+        style={{ cursor: "pointer" }}
+      />
     </RegisteredKeywordItemWrapper>
   );
 };
@@ -26,7 +31,7 @@ const RegisteredKeywordItemWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
 
-  padding: 16px 0;
+  //padding: 16px 0;
 
   .keyword {
     color: #444;

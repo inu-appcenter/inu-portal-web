@@ -41,19 +41,22 @@ export default function CategorySelectorNew({
     if (!element) return;
 
     const updateOverflow = () => {
-      // 패딩이나 마진 영향을 제외한 순수 가시 너비와 전체 너비 비교
-      const isOverflowing = element.scrollWidth > element.offsetWidth;
+      const { scrollWidth, clientWidth } = element;
+      const isOverflowing = scrollWidth > clientWidth + 1;
       setHasHorizontalOverflow(isOverflowing);
     };
 
-    updateOverflow();
+    const handle = requestAnimationFrame(updateOverflow);
 
-    const observer = new ResizeObserver(updateOverflow);
+    const observer = new ResizeObserver(() => {
+      updateOverflow();
+    });
+
     observer.observe(element);
-    // 윈도우 리사이즈도 감지하여 정확도 향상
     window.addEventListener("resize", updateOverflow);
 
     return () => {
+      cancelAnimationFrame(handle);
       observer.disconnect();
       window.removeEventListener("resize", updateOverflow);
     };
@@ -88,7 +91,6 @@ export default function CategorySelectorNew({
 
 const CategorySelectorWrapper = styled.div`
   width: 100%;
-  max-width: 100%;
   overflow: hidden;
 `;
 
@@ -98,25 +100,23 @@ const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
   gap: 6px;
   width: 100%;
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 
-  /* 스크롤 발생 여부에 따른 가변 레이아웃 */
   overflow-x: ${({ $hasHorizontalOverflow }) =>
-    $hasHorizontalOverflow ? "auto" : "visible"};
+    $hasHorizontalOverflow ? "auto" : "hidden"};
 
-  /* 오버플로우가 없을 때는 패딩과 마진을 0으로 초기화하여 우측 여백 제거 */
-  padding: ${({ $hasHorizontalOverflow }) =>
-    $hasHorizontalOverflow ? "4px 24px 4px 2px" : "4px 0"};
-  margin-right: ${({ $hasHorizontalOverflow }) =>
-    $hasHorizontalOverflow ? "-24px" : "0"};
+  /* 스크롤 시에만 우측 여백 확보 */
+  padding: 4px 0;
+  padding-right: ${({ $hasHorizontalOverflow }) =>
+    $hasHorizontalOverflow ? "24px" : "0px"};
 
-  /* 마스크 효과도 스크롤 시에만 적용 */
   mask-image: ${({ $hasHorizontalOverflow }) =>
     $hasHorizontalOverflow
-      ? `linear-gradient(to right, rgba(0, 0, 0, 1) 85%, rgba(0, 0, 0, 0) 100%)`
+      ? `linear-gradient(to right, #000 85%, transparent 100%)`
       : "none"};
   -webkit-mask-image: ${({ $hasHorizontalOverflow }) =>
     $hasHorizontalOverflow
-      ? `linear-gradient(to right, rgba(0, 0, 0, 1) 85%, rgba(0, 0, 0, 0) 100%)`
+      ? `linear-gradient(to right, #000 85%, transparent 100%)`
       : "none"};
 
   &::-webkit-scrollbar {
@@ -125,19 +125,18 @@ const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
 `;
 
 const FillItem = styled.div<{ $selected: boolean }>`
-  flex-shrink: 0; /* 아이템이 눌리지 않도록 설정 */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   height: fit-content;
   border-radius: 100px;
   padding: 8px 14px;
-  box-sizing: border-box;
   font-size: 14px;
   font-weight: 500;
   background: ${({ $selected }) => ($selected ? "#5E92F0" : "#ffffff")};
   color: ${({ $selected }) => ($selected ? "#F4F4F4" : "#666")};
   box-shadow: ${SOFT_CHIP_SHADOW};
   cursor: pointer;
-  white-space: nowrap; /* 글자 줄바꿈 방지 */
+  white-space: nowrap;
 `;
