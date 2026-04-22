@@ -9,6 +9,7 @@ import { postReply, postReReply, putReply } from "@/apis/replies";
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
 import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 import enter from "@/resources/assets/posts/enter.svg";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface ReplyInputProps {
   postId: number;
@@ -122,12 +123,14 @@ export default function ReplyInput({
     try {
       if (replyToReply) {
         await postReReply(replyToReply.id, replyContent, isAnonymous);
+        mixpanelTrack.boardInteraction("Comment", "TIPS", "Re-Reply");
         setReplyToReply(null);
       } else if (replyToEdit) {
         await putReply(replyToEdit.id, replyContent, isAnonymous);
         setReplyToEdit(null);
       } else {
         await postReply(postId, replyContent, isAnonymous);
+        mixpanelTrack.boardInteraction("Comment", "TIPS", "Reply");
       }
 
       setReplyContent("");

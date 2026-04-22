@@ -8,6 +8,7 @@ import DepartmentNoticeSelector from "../../../components/mobile/notice/Departme
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
 import { subscribeDepartment } from "@/apis/notices";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   DEFAULT_PROFILE_IMAGE_ID,
   normalizeOptionalText,
@@ -91,6 +92,16 @@ export default function UserModify() {
 
       if (hasValidDepartmentChange) {
         await putMemberDepartment(normalizedDepartmentCode);
+      }
+
+      // 믹스패널 트래킹: 어떤 필드가 수정되었는지 기록
+      const updatedFields: string[] = [];
+      if (hasNicknameChanged) updatedFields.push("nickname");
+      if (hasValidDepartmentChange) updatedFields.push("department");
+      if (hasImageChanged) updatedFields.push("profile_image");
+
+      if (updatedFields.length > 0) {
+        mixpanelTrack.profileUpdated(updatedFields);
       }
 
       setUserInfo({

@@ -9,6 +9,7 @@ import ClubContent from "@/components/mobile/club/clubcontent.tsx";
 import { useHeader } from "@/context/HeaderContext";
 // import UploadBook from "../util/book/UploadBook.tsx";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function MobileClubRecruitDetailPage() {
   const location = useLocation();
@@ -24,6 +25,7 @@ export default function MobileClubRecruitDetailPage() {
         if (clubId != null) {
           const response = await getClubRecruit(clubId);
           setClubRecruitDetail(response.data);
+          mixpanelTrack.clubRecruitViewed(clubName || "");
           console.log(response);
         }
       } catch (error) {
@@ -31,7 +33,7 @@ export default function MobileClubRecruitDetailPage() {
       }
     };
     fetchClubRecruit();
-  }, [clubId]);
+  }, [clubId, clubName]);
 
   // 헤더 설정 주입
   useHeader({

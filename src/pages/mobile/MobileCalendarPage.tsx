@@ -9,6 +9,7 @@ import useUserStore from "@/stores/useUserStore";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function MobileCalendarPage() {
   const { userInfo } = useUserStore();
@@ -17,6 +18,16 @@ export default function MobileCalendarPage() {
   useHeader({
     title: "학사일정",
   });
+
+  const handleNotificationClick = () => {
+    mixpanelTrack.calendarNotificationClicked();
+    alert("Daily Brief 설정 구현 예정입니다.");
+  };
+
+  const handleMypageNavigation = () => {
+    mixpanelTrack.featureClicked("Mypage via Calendar", "Calendar Page");
+    navigate(ROUTES.MYPAGE.ROOT);
+  };
 
   return (
     <MobileCalendarPageWrapper>
@@ -49,14 +60,14 @@ export default function MobileCalendarPage() {
       <FloatingActionButton
         text="일정 알림 받기"
         icon={<Bell size={18} color="white" />}
-        onClick={() => alert("Daily Brief 설정 구현 예정입니다.")}
+        onClick={handleNotificationClick}
       />
 
       {!userInfo.department && (
         <MoreFeaturesBox
           title="내 학과 정보를 아직 설정하지 않으셨나요?"
           content="마이페이지에서 설정하기"
-          onClick={() => navigate(ROUTES.MYPAGE.ROOT)}
+          onClick={handleMypageNavigation}
         />
       )}
     </MobileCalendarPageWrapper>

@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { LogIn, Bell } from "lucide-react";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface LoginPromotionBottomSheetProps {
   open: boolean;
@@ -16,8 +17,26 @@ export default function LoginPromotionBottomSheet({
 }: LoginPromotionBottomSheetProps) {
   const navigate = useNavigate();
 
+  const handleLoginClick = () => {
+    mixpanelTrack.promotionClicked(
+      "Login Promotion",
+      "Login Button",
+      "Home Bottom Sheet",
+    );
+    navigate(ROUTES.LOGIN);
+  };
+
+  const handleDismiss = () => {
+    mixpanelTrack.promotionClicked(
+      "Login Promotion",
+      "Dismiss Button",
+      "Home Bottom Sheet",
+    );
+    onDismiss();
+  };
+
   return (
-    <StyledBottomSheet open={open} onDismiss={onDismiss}>
+    <StyledBottomSheet open={open} onDismiss={handleDismiss}>
       <ContentWrapper>
         <Title>로그인하고 더 많은 기능을 누려보세요!</Title>
         <PromoList>
@@ -42,10 +61,8 @@ export default function LoginPromotionBottomSheet({
         </PromoList>
 
         <ButtonGroup>
-          <LoginButton onClick={() => navigate(ROUTES.LOGIN)}>
-            로그인하러 가기
-          </LoginButton>
-          <DismissButton onClick={onDismiss}>다음에 할게요</DismissButton>
+          <LoginButton onClick={handleLoginClick}>로그인하러 가기</LoginButton>
+          <DismissButton onClick={handleDismiss}>다음에 할게요</DismissButton>
         </ButtonGroup>
       </ContentWrapper>
     </StyledBottomSheet>

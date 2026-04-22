@@ -6,6 +6,7 @@ import 도서관 from "@/resources/assets/tips/도서관.svg";
 import 수강신청 from "@/resources/assets/tips/수강신청.svg";
 import 기숙사 from "@/resources/assets/tips/기숙사.svg";
 import CapsuleButton from "@/components/mobile/common/CapsuleButton";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const TipsWidget = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const TipsWidget = () => {
 
   // 카테고리 페이지 이동 함수
   const handleCategoryClick = (title: string) => {
+    mixpanelTrack.featureClicked(title, "Home Tips Widget");
     navigate(`${ROUTES.BOARD.TIPS}?category=${title}`);
   };
 

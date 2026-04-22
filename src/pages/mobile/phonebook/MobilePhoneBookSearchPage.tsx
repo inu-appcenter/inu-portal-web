@@ -31,6 +31,7 @@ import {
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import Divider from "@/components/common/Divider";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 type PhonebookSectionKey = "people" | "office";
 
@@ -106,6 +107,12 @@ const MobilePhoneBookSearchPage = () => {
       return;
     }
 
+    mixpanelTrack.phonebookSearchPerformed(
+      nextQuery,
+      selectedCategoryLabel ?? "전체",
+      selectedSection,
+    );
+
     const nextParams = new URLSearchParams(location.search);
     nextParams.set("query", nextQuery);
     nextParams.delete("section");
@@ -161,6 +168,7 @@ const MobilePhoneBookSearchPage = () => {
   const officeTotal = officeQuery.data?.pages[0]?.data.total ?? 0;
 
   const handleOpenPersonDetail = (entry: DirectoryEntry) => {
+    mixpanelTrack.phonebookDetailViewed(entry.name || "", "person");
     savePhonebookDetailState({ kind: "person", entry });
     navigate(getPhonebookDetailPath("person", entry.id), {
       state: { kind: "person", entry },
@@ -168,6 +176,7 @@ const MobilePhoneBookSearchPage = () => {
   };
 
   const handleOpenOfficeDetail = (entry: CollegeOfficeContact) => {
+    mixpanelTrack.phonebookDetailViewed(entry.departmentName || "", "office");
     savePhonebookDetailState({ kind: "office", entry });
     navigate(getPhonebookDetailPath("office", entry.id), {
       state: { kind: "office", entry },

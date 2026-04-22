@@ -9,6 +9,7 @@ import BackButton from "@/components/mobile/login/BackButton";
 import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   DESKTOP_MEDIA,
   MOBILE_BACK_ICON_VISUAL_OFFSET,
@@ -20,6 +21,7 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   const { tokenInfo } = useUserStore();
 
   const handleNotiBtnClick = () => {
+    mixpanelTrack.featureClicked("Notification Bell", "Header");
     if (!tokenInfo.accessToken) {
       alert("로그인해주세요.");
       navigate(ROUTES.LOGIN);
@@ -82,10 +84,12 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
     const navigate = useNavigate();
 
     const handleLogoClick = () => {
+      mixpanelTrack.featureClicked("Logo", "Header");
       navigate(ROUTES.HOME);
     };
 
     const handleBack = () => {
+      mixpanelTrack.featureClicked("Back Button", "Header");
       if (onBack) {
         onBack();
         return;

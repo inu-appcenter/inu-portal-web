@@ -6,6 +6,7 @@ import Skeleton from "@/components/common/Skeleton";
 import SortDropBox from "@/components/mobile/notice/Sort";
 import Box from "@/components/common/Box";
 import type { NoticeSort } from "@/apis/notices";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface VideoData {
   id: string;
@@ -81,6 +82,11 @@ const fetchYoutubeVideos = async (sort: NoticeSort): Promise<VideoData[]> => {
 const YoutubeListWidget = () => {
   const [sort, setSort] = useState<NoticeSort>("date");
 
+  const handleSortChange = (nextSort: NoticeSort) => {
+    mixpanelTrack.featureClicked(`Youtube Sort: ${nextSort}`, "Home Youtube Widget");
+    setSort(nextSort);
+  };
+
   const {
     data: videos = [],
     isLoading,
@@ -98,13 +104,14 @@ const YoutubeListWidget = () => {
     return `${num.toLocaleString()}회`;
   };
 
-  const handleVideoClick = (videoId: string) => {
+  const handleVideoClick = (videoTitle: string, videoId: string) => {
+    mixpanelTrack.featureClicked(videoTitle, "Home Youtube Widget");
     window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank");
   };
 
   return (
     <Box>
-      <SortDropBox sort={sort} setSort={setSort} />
+      <SortDropBox sort={sort} setSort={handleSortChange} />
 
       {/* 로딩 중이거나 에러 발생 시 스켈레톤 유지 */}
       {isLoading || isError ? (
@@ -134,7 +141,7 @@ const YoutubeListWidget = () => {
         <ListContainer>
           {videos.map((video, i) => (
             <div key={video.id}>
-              <VideoItem onClick={() => handleVideoClick(video.id)}>
+              <VideoItem onClick={() => handleVideoClick(video.title, video.id)}>
                 <Thumbnail src={video.thumbnailUrl} alt={video.title} />
                 <InfoWrapper>
                   <VideoTitle

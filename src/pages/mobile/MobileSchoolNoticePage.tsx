@@ -14,6 +14,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
+  DESKTOP_SEARCH_BAR_MAX_WIDTH,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
@@ -100,7 +101,7 @@ const MobileSchoolNoticePage = () => {
       return;
     }
 
-    // 검색 수행 트래킹
+    // 검색 수행 트래킹 (결과가 0건인 경우도 포함하여 추적)
     mixpanelTrack.searchPerformed("Notice", nextQuery, notices.length);
 
     const nextParams = new URLSearchParams(location.search);
@@ -159,7 +160,11 @@ const MobileSchoolNoticePage = () => {
             <Box
               key={`${notice.id || index}`}
               onClick={() => {
-                mixpanelTrack.noticeViewed(notice.category, notice.title);
+                mixpanelTrack.noticeViewed(
+                  notice.category,
+                  notice.title,
+                  !!committedQuery,
+                );
                 if (notice.url) window.open("https://" + notice.url, "_blank");
               }}
             >
@@ -274,6 +279,6 @@ const FloatingSearchBar = styled.div`
   z-index: 120;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(calc(100% - 48px), ${DESKTOP_CONTENT_MAX_WIDTH});
+    width: min(calc(100% - 48px), ${DESKTOP_SEARCH_BAR_MAX_WIDTH});
   }
 `;

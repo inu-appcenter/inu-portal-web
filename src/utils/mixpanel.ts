@@ -73,6 +73,15 @@ export const mixpanelTrack = {
   // --- 1. 진입 및 이동 (Navigation) ---
 
   /**
+   * 하단 네비게이션 탭 클릭
+   */
+  navTabClicked: (tabName: string) => {
+    trackEvent('Nav Tab Clicked', {
+      tab_name: tabName,
+    });
+  },
+
+  /**
    * 주요 기능 버튼 클릭 (홈 카테고리, 칩, 하단 탭, 메뉴 버튼 등)
    */
   featureClicked: (featureName: string, location: string) => {
@@ -119,22 +128,160 @@ export const mixpanelTrack = {
   /**
    * 학교 공지사항 상세 조회
    */
-  noticeViewed: (category: string, title: string) => {
+  noticeViewed: (category: string, title: string, isFromSearch: boolean = false) => {
     trackEvent('Notice Viewed', {
       notice_type: 'School',
       category: category,
       title: title,
+      is_from_search: isFromSearch,
     });
   },
 
   /**
    * 학과 공지사항 상세 조회
    */
-  deptNoticeViewed: (deptName: string, title: string) => {
+  deptNoticeViewed: (deptName: string, title: string, isFromSearch: boolean = false) => {
     trackEvent('Notice Viewed', {
       notice_type: 'Department',
       department_name: deptName,
       title: title,
+      is_from_search: isFromSearch,
+    });
+  },
+
+  /**
+   * 학사 일정 조회 및 인터랙션 (월 단위)
+   */
+  academicCalendarViewed: (year: number, month: number) => {
+    trackEvent('Academic Calendar Viewed', {
+      year: year,
+      month: month,
+    });
+  },
+
+  /**
+   * 특정 날짜의 상세 일정 클릭
+   */
+  calendarDateClicked: (date: string) => {
+    trackEvent('Calendar Date Clicked', {
+      clicked_date: date,
+    });
+  },
+
+  /**
+   * 학사 일정 알림 설정 버튼 클릭
+   */
+  calendarNotificationClicked: () => {
+    trackEvent('Calendar Notification Clicked');
+  },
+
+  /**
+   * 일정 상세 모달 조회
+   */
+  scheduleModalViewed: (source: 'Calendar' | 'Dept Notice', scheduleCount: number) => {
+    trackEvent('Schedule Modal Viewed', {
+      source: source,
+      schedule_count: scheduleCount,
+    });
+  },
+
+  /**
+   * 일정 상세 인터랙션 (토글, 링크 클릭 등)
+   */
+  scheduleInteraction: (actionType: 'Toggle Detail' | 'View Original Notice', title: string, type: 'school' | 'dept') => {
+    trackEvent('Schedule Interaction', {
+      action_type: actionType,
+      schedule_title: title,
+      schedule_type: type,
+    });
+  },
+
+  /**
+   * 캠퍼스맵 탭 전환
+   */
+  campusMapTabSwitched: (tabName: string) => {
+    trackEvent('Campus Map Tab Switched', {
+      tab_name: tabName,
+    });
+  },
+
+  /**
+   * 캠퍼스맵 장소 선택 (리스트 혹은 마커 클릭)
+   */
+  campusMapPlaceSelected: (placeName: string, category: string, method: 'List' | 'Marker') => {
+    trackEvent('Campus Map Place Selected', {
+      place_name: placeName,
+      category: category,
+      selection_method: method,
+    });
+  },
+
+  /**
+   * 캠퍼스맵 현위치 추적 토글
+   */
+  campusMapTrackingToggled: (isEnabled: boolean) => {
+    trackEvent('Campus Map Tracking Toggled', {
+      is_enabled: isEnabled,
+    });
+  },
+
+  /**
+   * 동아리 카테고리 필터링
+   */
+  clubCategorySelected: (category: string) => {
+    trackEvent('Club Category Selected', {
+      category: category,
+    });
+  },
+
+  /**
+   * 동아리 관련 외부 링크 클릭 (소개 페이지, 홈페이지 등)
+   */
+  clubExternalLinkClicked: (clubName: string, linkType: 'Intro' | 'Homepage') => {
+    trackEvent('Club External Link Clicked', {
+      club_name: clubName,
+      link_type: linkType,
+    });
+  },
+
+  /**
+   * 동아리 모집 공고 조회
+   */
+  clubRecruitViewed: (clubName: string) => {
+    trackEvent('Club Recruit Viewed', {
+      club_name: clubName,
+    });
+  },
+
+  /**
+   * 전화번호부 검색 수행
+   */
+  phonebookSearchPerformed: (keyword: string, category: string, section: string) => {
+    trackEvent('Phonebook Search Performed', {
+      keyword: keyword,
+      category: category,
+      section: section,
+    });
+  },
+
+  /**
+   * 전화번호부 상세 정보 조회
+   */
+  phonebookDetailViewed: (name: string, kind: 'person' | 'office') => {
+    trackEvent('Phonebook Detail Viewed', {
+      entry_name: name,
+      entry_kind: kind,
+    });
+  },
+
+  /**
+   * 전화번호부 내 인터랙션 (전화, 복사, 사이트 방문 등)
+   */
+  phonebookInteraction: (actionType: 'Call' | 'Copy' | 'Email' | 'Visit', entryName: string, label: string) => {
+    trackEvent('Phonebook Interaction', {
+      action_type: actionType,
+      entry_name: entryName,
+      field_label: label,
     });
   },
 
@@ -168,5 +315,81 @@ export const mixpanelTrack = {
       keyword: keyword,
       result_count: resultCount,
     });
+  },
+
+  /**
+   * 알림 상세 클릭
+   */
+  notificationClicked: (type: string, title: string) => {
+    trackEvent('Notification Clicked', {
+      notification_type: type,
+      title: title,
+    });
+  },
+
+  /**
+   * 알림 설정 페이지 진입
+   */
+  notificationSettingsOpened: (location: string) => {
+    trackEvent('Notification Settings Opened', {
+      location: location,
+    });
+  },
+
+  /**
+   * 프로모션/배너 노출
+   */
+  promotionImpression: (promoName: string, location: string) => {
+    trackEvent('Promotion Impression', {
+      promo_name: promoName,
+      location: location,
+    });
+  },
+
+  /**
+   * 프로모션/배너 클릭 혹은 액션
+   */
+  promotionClicked: (promoName: string, actionType: string, location: string) => {
+    trackEvent('Promotion Clicked', {
+      promo_name: promoName,
+      action_type: actionType,
+      location: location,
+    });
+  },
+
+  /**
+   * 마이페이지 메뉴 클릭
+   */
+  mypageMenuClicked: (menuName: string) => {
+    trackEvent('Mypage Menu Clicked', {
+      menu_name: menuName,
+    });
+  },
+
+  /**
+   * 프로필 수정 완료
+   */
+  profileUpdated: (updatedFields: string[]) => {
+    trackEvent('Profile Updated', {
+      updated_fields: updatedFields,
+    });
+  },
+
+  /**
+   * 로그아웃
+   */
+  userLoggedOut: () => {
+    trackEvent('User Logged Out');
+    resetMixpanel();
+  },
+
+  /**
+   * 회원 탈퇴
+   */
+  userAccountDeleted: (reason?: string) => {
+    trackEvent('User Account Deleted', {
+      reason: reason,
+    });
+    resetMixpanel();
   },
 };
