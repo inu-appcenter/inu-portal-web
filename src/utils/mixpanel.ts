@@ -11,6 +11,8 @@ export const initMixpanel = () => {
       debug: import.meta.env.DEV,
       track_pageview: false, // SPA이므로 수동 추적 권장
       persistence: "localStorage",
+
+      record_sessions_percent: 100, // 0~100 (샘플링 비율)
     });
 
     // 모든 이벤트에 공통으로 포함될 전역 속성 등록
