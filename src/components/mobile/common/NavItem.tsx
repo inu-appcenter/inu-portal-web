@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface NavItemProps {
   to: string;
@@ -18,6 +19,7 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
     (location.pathname.startsWith(to) && to !== ROUTES.HOME);
 
   const handleClick = () => {
+    mixpanelTrack.navTabClicked(label);
     navigate(to, { replace: true });
   };
 

@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { Bell, Smartphone } from "lucide-react";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { getMobilePlatform } from "@/utils/getMobilePlatform";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface InstallPromotionBottomSheetProps {
   open: boolean;
@@ -17,6 +18,11 @@ export default function InstallPromotionBottomSheet({
   const platform = getMobilePlatform();
 
   const handleInstallClick = () => {
+    mixpanelTrack.promotionClicked(
+      "Install Promotion",
+      "Install Button",
+      "Home Bottom Sheet",
+    );
     if (platform === "ios_browser") {
       window.open(
         "https://apps.apple.com/kr/app/intip-인팁-인천대-공지알리미-인입런-전화번호부/id6740070975",
@@ -30,8 +36,17 @@ export default function InstallPromotionBottomSheet({
     }
   };
 
+  const handleDismiss = () => {
+    mixpanelTrack.promotionClicked(
+      "Install Promotion",
+      "Dismiss Button",
+      "Home Bottom Sheet",
+    );
+    onDismiss();
+  };
+
   return (
-    <StyledBottomSheet open={open} onDismiss={onDismiss}>
+    <StyledBottomSheet open={open} onDismiss={handleDismiss}>
       <ContentWrapper>
         <Title>INTIP 앱을 설치해보세요!</Title>
         <PromoList>
@@ -60,7 +75,7 @@ export default function InstallPromotionBottomSheet({
           <InstallButton onClick={handleInstallClick}>
             스토어에서 설치하기
           </InstallButton>
-          <DismissButton onClick={onDismiss}>다음에 할래요</DismissButton>
+          <DismissButton onClick={handleDismiss}>다음에 할래요</DismissButton>
         </ButtonGroup>
       </ContentWrapper>
     </StyledBottomSheet>

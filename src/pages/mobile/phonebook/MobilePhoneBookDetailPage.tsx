@@ -16,6 +16,7 @@ import { CollegeOfficeContact, DirectoryEntry } from "@/types/directory";
 import Divider from "@/components/common/Divider";
 import Box from "@/components/common/Box";
 import ActionButton from "@/components/common/ActionButton";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const URL_SPLIT_PATTERN =
   /((?:https?:\/\/|www\.)[^\s]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?)/gi;
@@ -87,10 +88,12 @@ const LinkedMultilineText = ({ text }: { text: string }) => {
   );
 };
 
-async function copyText(value: string) {
+async function copyText(value: string, label: string, entryName: string) {
   if (!value) {
     return;
   }
+
+  mixpanelTrack.phonebookInteraction("Copy", entryName, label);
 
   try {
     await navigator.clipboard.writeText(value);
@@ -115,6 +118,7 @@ interface DetailFieldProps {
   copyValue?: string | null;
   href?: string;
   external?: boolean;
+  entryName: string;
 }
 
 const DetailField = ({
@@ -124,7 +128,16 @@ const DetailField = ({
   copyValue,
   href,
   external = false,
+  entryName,
 }: DetailFieldProps) => {
+  const handleLinkClick = () => {
+    let action: "Call" | "Email" | "Visit" = "Visit";
+    if (href?.startsWith("tel:")) action = "Call";
+    if (href?.startsWith("mailto:")) action = "Email";
+
+    mixpanelTrack.phonebookInteraction(action, entryName, label);
+  };
+
   const content = valueNode ? (
     <FieldValue as="div">{valueNode}</FieldValue>
   ) : href && value ? (
@@ -132,6 +145,7 @@ const DetailField = ({
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
+      onClick={handleLinkClick}
     >
       {value}
     </FieldLink>
@@ -150,7 +164,7 @@ const DetailField = ({
         <CopyIconButton
           type="button"
           aria-label={`${label} 복사`}
-          onClick={() => void copyText(copyValue)}
+          onClick={() => void copyText(copyValue, label, entryName)}
         >
           <Copy size={14} />
         </CopyIconButton>
@@ -159,7 +173,13 @@ const DetailField = ({
   );
 };
 
-function PersonDetailContent({ entry }: { entry: DirectoryEntry }) {
+function PersonDetailContent({
+  entry,
+  entryName,
+}: {
+  entry: DirectoryEntry;
+  entryName: string;
+}) {
   const siteUrl = entry.profileUrl?.trim() ?? "";
 
   const fields = [
@@ -170,6 +190,7 @@ function PersonDetailContent({ entry }: { entry: DirectoryEntry }) {
         value={entry.phoneNumber}
         copyValue={entry.phoneNumber}
         href={`tel:${entry.phoneNumber}`}
+        entryName={entryName}
       />
     ),
     entry.email && (
@@ -179,6 +200,7 @@ function PersonDetailContent({ entry }: { entry: DirectoryEntry }) {
         value={entry.email}
         copyValue={entry.email}
         href={`mailto:${entry.email}`}
+        entryName={entryName}
       />
     ),
     siteUrl && (
@@ -189,6 +211,7 @@ function PersonDetailContent({ entry }: { entry: DirectoryEntry }) {
         copyValue={siteUrl}
         href={normalizeExternalUrl(siteUrl)}
         external
+        entryName={entryName}
       />
     ),
     entry.duties && (
@@ -196,6 +219,7 @@ function PersonDetailContent({ entry }: { entry: DirectoryEntry }) {
         key="duties"
         label="담당업무"
         valueNode={<LinkedMultilineText text={entry.duties} />}
+        entryName={entryName}
       />
     ),
   ].filter(Boolean);
@@ -222,7 +246,13 @@ function PersonDetailContent({ entry }: { entry: DirectoryEntry }) {
   );
 }
 
-function OfficeDetailContent({ entry }: { entry: CollegeOfficeContact }) {
+function OfficeDetailContent({
+  entry,
+  entryName,
+}: {
+  entry: CollegeOfficeContact;
+  entryName: string;
+}) {
   const siteUrl = entry.homepageUrl?.trim() || entry.sourceUrl?.trim() || "";
 
   const fields = [
@@ -233,6 +263,7 @@ function OfficeDetailContent({ entry }: { entry: CollegeOfficeContact }) {
         value={entry.officePhoneNumber}
         copyValue={entry.officePhoneNumber}
         href={`tel:${entry.officePhoneNumber}`}
+        entryName={entryName}
       />
     ),
     entry.officeLocation && (
@@ -241,6 +272,7 @@ function OfficeDetailContent({ entry }: { entry: CollegeOfficeContact }) {
         label="위치"
         value={entry.officeLocation}
         copyValue={entry.officeLocation}
+        entryName={entryName}
       />
     ),
     siteUrl && (
@@ -251,6 +283,7 @@ function OfficeDetailContent({ entry }: { entry: CollegeOfficeContact }) {
         copyValue={siteUrl}
         href={normalizeExternalUrl(siteUrl)}
         external
+        entryName={entryName}
       />
     ),
   ].filter(Boolean);
@@ -359,9 +392,11 @@ const MobilePhoneBookDetailPage = () => {
 
         <Box>
           {personEntry ? (
-            <PersonDetailContent entry={personEntry} />
+            <PersonDetailContent entry={personEntry} entryName={title} />
           ) : (
-            officeEntry && <OfficeDetailContent entry={officeEntry} />
+            officeEntry && (
+              <OfficeDetailContent entry={officeEntry} entryName={title} />
+            )
           )}
         </Box>
 
@@ -371,6 +406,9 @@ const MobilePhoneBookDetailPage = () => {
             href={normalizeExternalUrl(actionUrl)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() =>
+              mixpanelTrack.phonebookInteraction("Visit", title, actionLabel)
+            }
           >
             {actionLabel}
           </ActionButton>

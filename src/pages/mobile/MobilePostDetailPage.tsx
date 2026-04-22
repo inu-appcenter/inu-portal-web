@@ -9,6 +9,7 @@ import axios, { AxiosError } from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import ReplyPortal from "@/components/common/ReplyPortal";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
@@ -31,6 +32,10 @@ export default function PostDetailPage() {
       const response = await getPostDetail(id);
       console.log("게시글 가져오기 성공!!!");
       setPost(response.data);
+
+      // 믹스패널 트래킹: 게시글 상세 조회
+      mixpanelTrack.tipViewed(response.data.category, response.data.title);
+
       console.log(response);
       setCommentUpdated(false);
     } catch (error) {

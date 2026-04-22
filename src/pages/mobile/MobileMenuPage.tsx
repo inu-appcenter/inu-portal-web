@@ -11,6 +11,7 @@ import {
 } from "@/styles/responsive";
 import { cafeterias } from "@/resources/strings/cafeterias";
 import { useLocation } from "react-router-dom";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface CafeteriaDetail {
   구성원가: string;
@@ -71,6 +72,10 @@ export default function MobileMenuPage() {
       setCafeteriaInfo(infoData);
       setCafeteriaDetail(processedData);
       setIsLoading(false);
+
+      // 데이터 로드 성공 시 트래킹
+      const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+      mixpanelTrack.cafeteriaViewed(selectedCafeteria, dayNames[date]);
     } catch (error) {
       console.error("학식 메뉴 가져오기 실패", error);
     }

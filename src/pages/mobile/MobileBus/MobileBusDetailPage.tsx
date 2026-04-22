@@ -20,6 +20,8 @@ import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import type { BusData } from "@/types/bus";
+import { useEffect } from "react";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface BusDetailLocationState {
   bus?: BusData;
@@ -54,6 +56,13 @@ export default function MobileBusDetailPage() {
     (location.state as BusDetailLocationState | null)?.bus ?? null;
   const bus =
     navigationBus?.id === id ? navigationBus : allBus.find((b) => b.id === id);
+
+  useEffect(() => {
+    if (bus) {
+      mixpanelTrack.busChecked(bus.sectionLabel ?? "", bus.number);
+    }
+  }, [bus]);
+
   if (!bus) {
     return null;
   }

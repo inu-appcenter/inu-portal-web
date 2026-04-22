@@ -3,19 +3,29 @@ import { ROUTES } from "@/constants/routes";
 import { useState } from "react";
 import styled from "styled-components";
 import { deleteMembers } from "@/apis/members";
+import { mixpanelTrack } from "@/utils/mixpanel";
+import useUserStore from "@/stores/useUserStore";
 
 export default function DeleteButton() {
   const navigate = useNavigate();
+  const { setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDeleteAccount = async () => {
-    const confirmDelete = window.confirm("정말로 탈퇴하시겠습니까?");
-    if (!confirmDelete) {
-      return;
-    }
-
     try {
       await deleteMembers();
+      mixpanelTrack.userAccountDeleted();
+
+      // 유저 정보 초기화 (로그아웃 처리)
+      setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
+      setTokenInfo({
+        accessToken: "",
+        accessTokenExpiredTime: "",
+        refreshToken: "",
+        refreshTokenExpiredTime: "",
+      });
+      localStorage.removeItem("tokenInfo");
+
       alert("회원 탈퇴가 완료되었습니다.");
       navigate(ROUTES.ROOT);
       return;

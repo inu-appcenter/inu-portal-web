@@ -9,6 +9,7 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import { ROUTES } from "@/constants/routes";
 import PostItem from "@/components/mobile/notice/PostItem";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const MobileTipsCategoryPage = () => {
@@ -86,6 +87,10 @@ const MobileTipsCategoryPage = () => {
                       showDate={false}
                       showWriter={false}
                       onClick={() => {
+                        mixpanelTrack.tipViewed(
+                          selectedCategory,
+                          post.title,
+                        );
                         navigate(ROUTES.BOARD.TIPS_DETAIL(post.id));
                       }}
                     />

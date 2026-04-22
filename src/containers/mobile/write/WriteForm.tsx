@@ -9,6 +9,7 @@ import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import { useResetWriteStore } from "@/reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
 import useAppStateStore from "@/stores/useAppStateStore";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface Props {
   category: string;
@@ -160,6 +161,7 @@ export default function WriteForm({ category, setCategory }: Props) {
           anonymous,
           images,
         );
+        mixpanelTrack.boardInteraction("Write", "TIPS", category);
         triggerResetTips();
         triggerResetWrite();
         navigate(`/postdetail?id=${response.data}`, { replace: true });

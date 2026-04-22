@@ -17,6 +17,8 @@ import {
   TabType,
 } from "../constants/mapConfig";
 
+import { mixpanelTrack } from "@/utils/mixpanel";
+
 interface PlaceListProps {
   places: Place[];
   map: any;
@@ -172,6 +174,14 @@ const PlaceList = ({
   const handleItemClick = (place: Place, index: number) => {
     const isClosing = index === openIndex;
     setOpenIndex(isClosing ? -1 : index);
+
+    if (!isClosing) {
+      mixpanelTrack.campusMapPlaceSelected(
+        config.getPlaceTitle(place),
+        place.category ?? "",
+        "List",
+      );
+    }
 
     // 장소 클릭 시 현위치 트래킹 해제
     if (setIsTracking) {

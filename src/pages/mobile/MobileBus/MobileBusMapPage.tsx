@@ -25,6 +25,7 @@ import {
   markBusUiWelcomeModalSeen,
   setStoredBusUiVersion,
 } from "@/utils/busUiPreference";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const MOBILE_MAP_HEADER_HEIGHT = 100;
 const MOBILE_SUBHEADER_OFFSET = 50;
@@ -137,6 +138,7 @@ export default function MobileBusMapPage() {
       {
         label: "구버전으로 돌아가기",
         onClick: () => {
+          mixpanelTrack.busUiSwitched("legacy", "New Map UI");
           setStoredBusUiVersion("legacy");
           navigate(
             buildBusUiRoute({
@@ -157,6 +159,12 @@ export default function MobileBusMapPage() {
     menuItems,
     floatingSubHeader: true,
   });
+
+  useEffect(() => {
+    if (pageConfig && type && !redirectTarget) {
+      mixpanelTrack.busChecked(type, "N/A", selectedCategory, "new");
+    }
+  }, [pageConfig, type, selectedCategory, redirectTarget]);
 
   useEffect(() => {
     if (redirectTarget) {

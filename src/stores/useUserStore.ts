@@ -1,6 +1,7 @@
 import { TokenInfo, UserInfo, UserInfoInput } from "@/types/members";
 import { normalizeUserInfo } from "@/utils/userInfo";
 import { create } from "zustand";
+import { identifyUser } from "@/utils/mixpanel";
 
 interface UserState {
   tokenInfo: TokenInfo;
@@ -24,8 +25,19 @@ const useUserStore = create<UserState>((set) => ({
     set(() => ({ tokenInfo }));
     localStorage.setItem("tokenInfo", JSON.stringify(tokenInfo));
   },
-  setUserInfo: (userInfo) =>
-    set(() => ({ userInfo: normalizeUserInfo(userInfo) })),
+  setUserInfo: (userInfo) => {
+    const normalized = normalizeUserInfo(userInfo);
+    set(() => ({ userInfo: normalized }));
+    
+    // Mixpanel 사용자 식별
+    if (normalized.id) {
+      identifyUser(String(normalized.id), {
+        nickname: normalized.nickname,
+        department: normalized.department,
+        memberId: normalized.id,
+      });
+    }
+  },
 }));
 
 export default useUserStore;

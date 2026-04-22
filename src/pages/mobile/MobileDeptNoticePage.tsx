@@ -31,6 +31,7 @@ import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
 import findTitleOrCode, {
   findDepartmentHomepageUrl,
 } from "@/utils/findTitleOrCode";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const MobileDeptNoticePage = () => {
   const { userInfo, setUserInfo, tokenInfo } = useUserStore();
@@ -61,6 +62,8 @@ const MobileDeptNoticePage = () => {
     e.stopPropagation();
     setSelectedDepartmentNoticeId(departmentNoticeId);
     setIsScheduleModalOpen(true);
+    // 믹스패널 트래킹: 학과 공지에서 일정 모달 열림
+    mixpanelTrack.scheduleModalViewed("Dept Notice", 1);
   };
 
   const handleScheduleModalOpenChange = (open: boolean) => {
@@ -249,6 +252,7 @@ const MobileDeptNoticePage = () => {
             <Box
               key={`${deptNotice.id || index}`}
               onClick={() => {
+                mixpanelTrack.deptNoticeViewed(currentDept, deptNotice.title);
                 if (deptNotice.url) window.open(deptNotice.url, "_blank");
               }}
             >
@@ -262,7 +266,13 @@ const MobileDeptNoticePage = () => {
               {deptNotice.hasSchedules && (
                 <CalendarActionButton
                   style={{ alignSelf: "end" }}
-                  onClick={(e) => handleCalendarClick(e, deptNotice.id)}
+                  onClick={(e) => {
+                    mixpanelTrack.featureClicked(
+                      "Dept AI Calendar",
+                      "Dept Notice List",
+                    );
+                    handleCalendarClick(e, deptNotice.id);
+                  }}
                 >
                   <img src={AI_LOGO} alt="횃불이AI" />
                   <span>
@@ -302,7 +312,13 @@ const MobileDeptNoticePage = () => {
         <FloatingActionButton
           text="공지 알리미 설정"
           icon={<Bell size={18} color="white" />}
-          onClick={() => navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`)}
+          onClick={() => {
+            mixpanelTrack.notificationSettingsOpened(
+              "Department Notice Page",
+              "dept",
+            );
+            navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`);
+          }}
         />
       )}
     </MobileDeptNoticePageWrapper>

@@ -16,13 +16,14 @@ import callinuBanner from "@/resources/assets/phonebook/callinu-banner.webp";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
+  DESKTOP_SEARCH_BAR_MAX_WIDTH,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import { postApiLogs } from "@/apis/members";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const BANNER_SECTION_HEIGHT = "clamp(180px, 42vw, 220px)";
 const BANNER_PHONE_RADIUS = "10px";
-const DESKTOP_SEARCH_BAR_MAX_WIDTH = "760px";
 const BANNER_EXPAND_DURATION = 820;
 const BANNER_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
@@ -156,6 +157,8 @@ const MobilePhoneBookPage = () => {
       window.alert(PHONEBOOK_MIN_QUERY_MESSAGE);
       return;
     }
+
+    mixpanelTrack.phonebookSearchPerformed(nextQuery, "ALL", "people");
 
     const nextParams = new URLSearchParams();
 

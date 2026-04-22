@@ -2,12 +2,14 @@ import styled from "styled-components";
 import useUserStore from "@/stores/useUserStore";
 import { useNavigate } from "react-router-dom";
 import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
+import { resetMixpanel } from "@/utils/mixpanel";
 
 export default function Header() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    resetMixpanel();
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
     setTokenInfo({
       accessToken: "",

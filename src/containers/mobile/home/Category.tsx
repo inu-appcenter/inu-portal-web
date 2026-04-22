@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useRef, useState, type RefObject } from "react";
+import { useRef, useState, type RefObject, useEffect } from "react";
 
 import menuImg from "@/resources/assets/mobile-home/category-form/menu.svg";
 import noticeImg from "@/resources/assets/mobile-home/category-form/notice.svg";
@@ -20,6 +20,7 @@ import {
   dismissTooltip,
   isTooltipDismissed,
 } from "@/utils/dismissibleTooltipStorage";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 type CategoryTooltip = {
   id: string;
@@ -96,12 +97,21 @@ export default function CategoryForm() {
   );
 
   const handleCloseTooltip = (tooltipId: string) => {
+    mixpanelTrack.promotionClicked(tooltipId, "Close Button", "Home Category");
     dismissTooltip(tooltipId);
     setVisibleTooltips((prev) => ({
       ...prev,
       [tooltipId]: false,
     }));
   };
+
+  useEffect(() => {
+    Object.entries(visibleTooltips).forEach(([id, visible]) => {
+      if (id && visible) {
+        mixpanelTrack.promotionImpression(id, "Home Category");
+      }
+    });
+  }, []);
 
   return (
     <CategoryFormWrapper>
@@ -124,7 +134,13 @@ export default function CategoryForm() {
               }
             }}
           >
-            <CategoryCard type="button" onClick={() => navigate(category.href)}>
+            <CategoryCard
+              type="button"
+              onClick={() => {
+                mixpanelTrack.featureClicked(category.title, "Home Category");
+                navigate(category.href);
+              }}
+            >
               <IconWrapper>
                 <img src={category.img} alt={`${category.title} 아이콘`} />
                 {category.isNew && <NewBadge>NEW!</NewBadge>}

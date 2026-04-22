@@ -13,6 +13,8 @@ import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB.tsx";
 import { setZoom } from "../utils/mapUtils.ts";
 import { BOTTOM_SHEET_HEIGHT, TabType } from "../constants/mapConfig";
 
+import { mixpanelTrack } from "@/utils/mixpanel";
+
 interface PlaceListPanelProps {
   isOpen: boolean;
   isDesktop?: boolean;
@@ -41,6 +43,7 @@ const PlaceListPanel = ({
   setIsTracking,
 }: PlaceListPanelProps) => {
   const handleTabClick = (tab: TabType) => {
+    mixpanelTrack.campusMapTabSwitched(tab);
     setSelectedTab(tab);
     setOpenedMarkerId(null);
 

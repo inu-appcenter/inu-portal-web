@@ -28,6 +28,8 @@ import EventItem from "@/components/mobile/calendar/EventItem";
 import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
 import Divider from "@/components/common/Divider";
 
+import { mixpanelTrack } from "@/utils/mixpanel";
+
 // 아이콘 컴포넌트
 const ChevronLeft = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -82,8 +84,21 @@ export default function Calendar({
   >([]);
 
   const handleDayClick = (date: Date) => {
+    mixpanelTrack.calendarDateClicked(format(date, "yyyy-MM-dd"));
     setSelectedDate(date);
     setIsModalOpen(true);
+
+    // 믹스패널 트래킹: 캘린더에서 일정 상세 모달 열림
+    const eventsCount = monthEvents.filter((event) => {
+      const start = parseISO(String(event.start));
+      const end = parseISO(String(event.end));
+      return (
+        (isAfter(date, addDays(start, -1)) || isSameDay(date, start)) &&
+        (isBefore(date, addDays(end, 1)) || isSameDay(date, end))
+      );
+    }).length;
+
+    mixpanelTrack.scheduleModalViewed("Calendar", eventsCount);
   };
 
   const selectedDateEvents = monthEvents.filter((event) => {
@@ -148,6 +163,8 @@ export default function Calendar({
         getSchedules(year, month),
         getMyDeptSchedules(year, month),
       ]);
+
+      mixpanelTrack.academicCalendarViewed(year, month);
 
       // 타입 부여 및 데이터 통합
       const schoolEvents = resSchool.data.map((schedule) =>

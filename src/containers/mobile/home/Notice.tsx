@@ -6,6 +6,7 @@ import Box from "@/components/common/Box";
 import PostItem from "@/components/mobile/notice/PostItem";
 import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const NoticeSkeletonItem = () => {
   return (
@@ -71,7 +72,13 @@ export default function NoticeForm() {
                   writer={notice.writer}
                   isEllipsis={false}
                   onClick={() => {
-                    if (notice.url) window.open(notice.url, "_blank");
+                    mixpanelTrack.noticeViewed(
+                      notice.category,
+                      notice.title,
+                      false,
+                    );
+                    if (notice.url)
+                      window.open(notice.url, "_blank");
                   }}
                 />
                 {index !== 2 && <Divider />}

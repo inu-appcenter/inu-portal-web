@@ -12,6 +12,7 @@ import { getAlerts } from "@/apis/members";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { Notification } from "@/types/members";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
@@ -46,7 +47,10 @@ const MobileAlertPage = () => {
     () => [
       {
         label: "알림 설정",
-        onClick: () => navigate(ROUTES.BOARD.DEPT_SETTING),
+        onClick: () => {
+          mixpanelTrack.notificationSettingsOpened("Alert Page Menu");
+          navigate(ROUTES.BOARD.DEPT_SETTING);
+        },
       },
     ],
     [navigate],
@@ -136,6 +140,7 @@ const MobileAlertPage = () => {
               <Box
                 key={`${alert.fcmMessageId || index}`}
                 onClick={() => {
+                  mixpanelTrack.notificationClicked(alert.type, alert.title);
                   if (alert.type === "DEPARTMENT") {
                     navigate(ROUTES.BOARD.DEPT_NOTICE);
                   } else if (alert.type === "SCHOOL_NOTICE") {

@@ -24,6 +24,7 @@ import {
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import TopPopupNotification from "@/components/common/TopPopupNotification";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.05;
@@ -60,6 +61,20 @@ export default function MobileHomePage() {
   if (new URLSearchParams(window.location.search).get("errorTest") === "1") {
     throw new Error("에러바운더리 UI 확인용");
   }
+
+  // 데스크톱 레이아웃 감지
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktopLayout(window.innerWidth >= 1024);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   // 헤더 설정 주입
   useHeader({
@@ -110,33 +125,36 @@ export default function MobileHomePage() {
     if (isInstalledApp) {
       if (!isLoggedIn) {
         setShowLoginPromo(true);
+        mixpanelTrack.promotionImpression(
+          "Login Promotion",
+          "Home Bottom Sheet",
+        );
       }
       return;
     }
 
     if (isMobileBrowser) {
       setShowInstallPromo(true);
+      mixpanelTrack.promotionImpression(
+        "Install Promotion",
+        "Home Bottom Sheet",
+      );
     }
   }, [tokenInfo.accessToken]);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
-    const updateLayoutMode = (event: MediaQueryList | MediaQueryListEvent) => {
-      setIsDesktopLayout(event.matches);
-    };
-
-    updateLayoutMode(mediaQuery);
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updateLayoutMode);
-      return () => mediaQuery.removeEventListener("change", updateLayoutMode);
+    // 공지 팝업 노출 추적
+    if (show && isBannerOn) {
+      mixpanelTrack.promotionImpression("Survey Popup", "Home Popup");
     }
-
-    mediaQuery.addListener(updateLayoutMode);
-    return () => mediaQuery.removeListener(updateLayoutMode);
-  }, []);
+  }, [show, isBannerOn]);
 
   const handleCloseModal = () => {
+    mixpanelTrack.promotionClicked(
+      "Survey Popup",
+      "Close Button",
+      "Home Popup",
+    );
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
     localStorage.setItem("hideModalDate", nextWeek.toISOString());
@@ -163,9 +181,22 @@ export default function MobileHomePage() {
         }
       : null,
   );
+
   const handleCloseNotification = () => {
+    mixpanelTrack.promotionClicked(
+      "Maintenance Notice",
+      "Close Button",
+      "Home Top Popup",
+    );
     setNotification(null);
   };
+
+  useEffect(() => {
+    // 점검 안내 노출 추적
+    if (notification) {
+      mixpanelTrack.promotionImpression("Maintenance Notice", "Home Top Popup");
+    }
+  }, [notification]);
 
   const noticeSection = (
     <Section>
@@ -235,7 +266,12 @@ export default function MobileHomePage() {
                   30초만 시간 내어 작성해주시면 더 좋은 서비스를 준비하는 데 큰
                   도움이 됩니다
                   <br />
-                  <a href={"https://forms.gle/DHk5zsAF8Ko3SN38A"}>
+                  <a
+                    href={"https://forms.gle/DHk5zsAF8Ko3SN38A"}
+                    onClick={() =>
+                      mixpanelTrack.featureClicked("Survey Link", "Home Popup")
+                    }
+                  >
                     설문 조사 바로가기
                   </a>
                 </>
@@ -282,6 +318,7 @@ export default function MobileHomePage() {
           src={AppcenterLogo}
           alt={"appcenterLogo"}
           onClick={() => {
+            mixpanelTrack.featureClicked("Appcenter Website", "Home Bottom");
             window.open("https://home.inuappcenter.kr");
           }}
         />

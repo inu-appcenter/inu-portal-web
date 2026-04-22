@@ -19,6 +19,7 @@ import {
   isSwitchableBusInfoType,
   setStoredBusUiVersion,
 } from "@/utils/busUiPreference";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function BusInfoPage() {
   const location = useLocation();
@@ -45,6 +46,12 @@ export default function BusInfoPage() {
     : null;
 
   const [tabList, setTabList] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (type && !redirectTarget) {
+      mixpanelTrack.busChecked(type, "N/A", selectedTab, "legacy");
+    }
+  }, [type, selectedTab, redirectTarget]);
 
   useEffect(() => {
     if (redirectTarget) {
@@ -95,6 +102,7 @@ export default function BusInfoPage() {
       {
         label: "신 버전으로 사용하기",
         onClick: () => {
+          mixpanelTrack.busUiSwitched("new", "Legacy List UI");
           setStoredBusUiVersion("new");
           navigate(
             buildBusUiRoute({

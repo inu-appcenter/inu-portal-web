@@ -14,6 +14,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
+  DESKTOP_SEARCH_BAR_MAX_WIDTH,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
@@ -21,6 +22,7 @@ import FloatingActionButton from "@/components/common/FloatingActionButton";
 import { Bell } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
@@ -99,6 +101,9 @@ const MobileSchoolNoticePage = () => {
       return;
     }
 
+    // 검색 수행 트래킹 (결과가 0건인 경우도 포함하여 추적)
+    mixpanelTrack.searchPerformed("Notice", nextQuery, notices.length);
+
     const nextParams = new URLSearchParams(location.search);
     if (nextQuery) {
       nextParams.set("query", nextQuery);
@@ -155,6 +160,11 @@ const MobileSchoolNoticePage = () => {
             <Box
               key={`${notice.id || index}`}
               onClick={() => {
+                mixpanelTrack.noticeViewed(
+                  notice.category,
+                  notice.title,
+                  !!committedQuery,
+                );
                 if (notice.url) window.open(notice.url, "_blank");
               }}
             >
@@ -203,6 +213,10 @@ const MobileSchoolNoticePage = () => {
               navigate(ROUTES.LOGIN);
             }
           } else {
+            mixpanelTrack.notificationSettingsOpened(
+              "School Notice Page",
+              "school",
+            );
             navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
           }
         }}
@@ -269,6 +283,6 @@ const FloatingSearchBar = styled.div`
   z-index: 120;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(calc(100% - 48px), ${DESKTOP_CONTENT_MAX_WIDTH});
+    width: min(calc(100% - 48px), ${DESKTOP_SEARCH_BAR_MAX_WIDTH});
   }
 `;
