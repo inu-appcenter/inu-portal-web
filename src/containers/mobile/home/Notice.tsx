@@ -71,8 +71,7 @@ export default function NoticeForm() {
                   writer={notice.writer}
                   isEllipsis={false}
                   onClick={() => {
-                    if (notice.url)
-                      window.open("https://" + notice.url, "_blank");
+                    if (notice.url) window.open(notice.url, "_blank");
                   }}
                 />
                 {index !== 2 && <Divider />}
