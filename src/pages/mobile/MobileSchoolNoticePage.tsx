@@ -213,6 +213,10 @@ const MobileSchoolNoticePage = () => {
               navigate(ROUTES.LOGIN);
             }
           } else {
+            mixpanelTrack.notificationSettingsOpened(
+              "School Notice Page",
+              "school",
+            );
             navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
           }
         }}

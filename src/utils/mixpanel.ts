@@ -381,9 +381,83 @@ export const mixpanelTrack = {
   /**
    * 알림 설정 페이지 진입
    */
-  notificationSettingsOpened: (location: string) => {
+  notificationSettingsOpened: (location: string, tab?: string) => {
     trackEvent("Notification Settings Opened", {
       location: location,
+      tab: tab,
+    });
+  },
+
+  /**
+   * 알림 설정 탭 전환
+   */
+  noticeSettingTabSwitched: (toTab: string) => {
+    trackEvent("Notice Setting Tab Switched", {
+      to_tab: toTab,
+    });
+  },
+
+  /**
+   * 학교 공지 카테고리 알림 토글
+   */
+  noticeCategoryToggled: (category: string, isSubscribed: boolean) => {
+    trackEvent("Notice Category Toggled", {
+      notice_type: "School",
+      category_name: category,
+      is_subscribed: isSubscribed,
+    });
+  },
+
+  /**
+   * 공지 키워드 추가
+   */
+  noticeKeywordAdded: (
+    noticeType: "School" | "Department",
+    keyword: string,
+    extraInfo?: string,
+  ) => {
+    const properties: Record<string, any> = {
+      notice_type: noticeType,
+      keyword: keyword,
+    };
+    if (noticeType === "School") {
+      properties.category_scope = extraInfo || "전체";
+    } else {
+      properties.department_name = extraInfo;
+    }
+
+    trackEvent("Notice Keyword Added", properties);
+  },
+
+  /**
+   * 공지 키워드 삭제
+   */
+  noticeKeywordDeleted: (
+    noticeType: "School" | "Department",
+    keyword: string,
+    extraInfo?: string,
+  ) => {
+    const properties: Record<string, any> = {
+      notice_type: noticeType,
+      keyword: keyword,
+    };
+    if (noticeType === "School") {
+      properties.category_scope = extraInfo || "전체";
+    } else {
+      properties.department_name = extraInfo;
+    }
+
+    trackEvent("Notice Keyword Deleted", properties);
+  },
+
+  /**
+   * 학과 공지 전체 알림 토글
+   */
+  noticeAllToggled: (departmentName: string, isSubscribed: boolean) => {
+    trackEvent("Notice All Toggled", {
+      notice_type: "Department",
+      department_name: departmentName,
+      is_subscribed: isSubscribed,
     });
   },
 
