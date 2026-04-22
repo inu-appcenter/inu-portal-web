@@ -33,7 +33,6 @@ const EventItem = ({ isOpenMode, ...props }: EventItemProps) => {
       const nextState = !isOpen;
       setIsOpen(nextState);
 
-      // 믹스패널 트래킹: 상세 내용 토글 (열릴 때만 기록하거나 둘 다 기록 가능)
       if (nextState) {
         mixpanelTrack.scheduleInteraction(
           "Toggle Detail",
