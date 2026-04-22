@@ -9,6 +9,7 @@ import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import useAppStateStore from "@/stores/useAppStateStore";
 import useUserStore from "@/stores/useUserStore";
 import ScrollBarStyles from "@/styles/ScrollBarStyles";
+import { trackPageView } from "@/utils/mixpanel";
 import {
   getBootstrappedFcmToken,
   getFcmDeviceType,
@@ -151,6 +152,11 @@ export default function RootLayout() {
 
     void apiCount();
   }, []);
+
+  // 전역 페이지 뷰 추적
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   return (
     <HeaderProvider>

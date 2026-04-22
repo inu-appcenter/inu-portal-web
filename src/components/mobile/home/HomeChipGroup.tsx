@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Chip from "src/components/common/Chip";
@@ -93,7 +93,18 @@ const HomeChipGroup = () => {
     },
   ];
 
+  useEffect(() => {
+    if (isPhonebookTooltipVisible) {
+      mixpanelTrack.promotionImpression("Phonebook Tooltip", "Home Chip Group");
+    }
+  }, [isPhonebookTooltipVisible]);
+
   const handleClosePhonebookTooltip = () => {
+    mixpanelTrack.promotionClicked(
+      "Phonebook Tooltip",
+      "Close Button",
+      "Home Chip Group",
+    );
     dismissTooltip(PHONEBOOK_TOOLTIP_ID);
     setIsPhonebookTooltipVisible(false);
   };

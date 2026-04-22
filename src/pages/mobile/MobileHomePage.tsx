@@ -62,6 +62,20 @@ export default function MobileHomePage() {
     throw new Error("에러바운더리 UI 확인용");
   }
 
+  // 데스크톱 레이아웃 감지
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktopLayout(window.innerWidth >= 1024);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   // 헤더 설정 주입
   useHeader({
     showAlarm: true,
@@ -111,33 +125,36 @@ export default function MobileHomePage() {
     if (isInstalledApp) {
       if (!isLoggedIn) {
         setShowLoginPromo(true);
+        mixpanelTrack.promotionImpression(
+          "Login Promotion",
+          "Home Bottom Sheet",
+        );
       }
       return;
     }
 
     if (isMobileBrowser) {
       setShowInstallPromo(true);
+      mixpanelTrack.promotionImpression(
+        "Install Promotion",
+        "Home Bottom Sheet",
+      );
     }
   }, [tokenInfo.accessToken]);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(DESKTOP_MEDIA);
-    const updateLayoutMode = (event: MediaQueryList | MediaQueryListEvent) => {
-      setIsDesktopLayout(event.matches);
-    };
-
-    updateLayoutMode(mediaQuery);
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updateLayoutMode);
-      return () => mediaQuery.removeEventListener("change", updateLayoutMode);
+    // 공지 팝업 노출 추적
+    if (show && isBannerOn) {
+      mixpanelTrack.promotionImpression("Survey Popup", "Home Popup");
     }
-
-    mediaQuery.addListener(updateLayoutMode);
-    return () => mediaQuery.removeListener(updateLayoutMode);
-  }, []);
+  }, [show, isBannerOn]);
 
   const handleCloseModal = () => {
+    mixpanelTrack.promotionClicked(
+      "Survey Popup",
+      "Close Button",
+      "Home Popup",
+    );
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
     localStorage.setItem("hideModalDate", nextWeek.toISOString());
@@ -164,9 +181,22 @@ export default function MobileHomePage() {
         }
       : null,
   );
+
   const handleCloseNotification = () => {
+    mixpanelTrack.promotionClicked(
+      "Maintenance Notice",
+      "Close Button",
+      "Home Top Popup",
+    );
     setNotification(null);
   };
+
+  useEffect(() => {
+    // 점검 안내 노출 추적
+    if (notification) {
+      mixpanelTrack.promotionImpression("Maintenance Notice", "Home Top Popup");
+    }
+  }, [notification]);
 
   const noticeSection = (
     <Section>

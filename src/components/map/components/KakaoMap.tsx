@@ -5,6 +5,8 @@ import { Navigation } from "lucide-react"; // 내 위치 아이콘용
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB";
 import { MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
 
+import { mixpanelTrack } from "@/utils/mixpanel";
+
 type HeadingSource = "gps" | "compass" | null;
 
 const GPS_HEADING_MIN_SPEED = 0.8;
@@ -274,6 +276,9 @@ const KakaoMap = ({
       try { await (DeviceOrientationEvent as any).requestPermission(); } catch (e) {}
     }
     if (!myLocation) return;
+
+    mixpanelTrack.campusMapTrackingToggled(!isTracking);
+
     syncSelectedCoordWithLocation(myLocation.lat, myLocation.lng);
     if (mapInstance) {
       mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat - offset, myLocation.lng));
@@ -344,6 +349,13 @@ const KakaoMap = ({
                   },
                 }}
                 onClick={() => {
+                  if (!isOpen) {
+                    mixpanelTrack.campusMapPlaceSelected(
+                      config.getPlaceTitle(place),
+                      place.category ?? "",
+                      "Marker",
+                    );
+                  }
                   setOpenedMarkerId(
                     isOpen ? null : markerId,
                     isOpen

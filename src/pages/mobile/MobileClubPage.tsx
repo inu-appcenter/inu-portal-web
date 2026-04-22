@@ -16,6 +16,7 @@ import {
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -32,6 +33,7 @@ export default function MobileClubPage() {
   // 데이터 패칭
   useEffect(() => {
     const fetchClubs = async () => {
+      mixpanelTrack.clubCategorySelected(selectedCategory);
       setIsLoading(true);
       try {
         const response = await getClubs(selectedCategory);
@@ -135,7 +137,13 @@ export default function MobileClubPage() {
                       <ButtonsWrapper>
                         {club.url && (
                           <FillButton
-                            onClick={() => window.open(club.url, "_blank")}
+                            onClick={() => {
+                              mixpanelTrack.clubExternalLinkClicked(
+                                club.name,
+                                "Intro",
+                              );
+                              window.open(club.url, "_blank");
+                            }}
                             isExternalLink={true}
                           >
                             소개 페이지
@@ -143,7 +151,13 @@ export default function MobileClubPage() {
                         )}
                         {club.homeUrl && (
                           <FillButton
-                            onClick={() => window.open(club.homeUrl, "_blank")}
+                            onClick={() => {
+                              mixpanelTrack.clubExternalLinkClicked(
+                                club.name,
+                                "Homepage",
+                              );
+                              window.open(club.homeUrl, "_blank");
+                            }}
                             isExternalLink={true}
                           >
                             동아리 홈페이지

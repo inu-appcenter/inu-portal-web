@@ -14,7 +14,7 @@ import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { deleteFcmToken } from "@/apis/members";
-import { resetMixpanel } from "@/utils/mixpanel";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   DESKTOP_MEDIA,
   DESKTOP_READING_WIDTH,
@@ -43,7 +43,7 @@ export default function MobileMyPage() {
       }
     }
 
-    resetMixpanel();
+    mixpanelTrack.userLoggedOut();
     setUserInfo({ id: 0, nickname: "", role: "", fireId: 0, department: "" });
     setTokenInfo({
       accessToken: "",
@@ -54,12 +54,6 @@ export default function MobileMyPage() {
     localStorage.removeItem("tokenInfo");
 
     navigate(`/home`);
-
-    // if (window.AndroidBridge && window.AndroidBridge.handleLogout) {
-    //   window.AndroidBridge.handleLogout();
-    // } else {
-    //   navigate(`/home`);
-    // }
   };
 
   const handleLogoutModalClick = () => {
@@ -71,6 +65,7 @@ export default function MobileMyPage() {
   };
 
   const handleClick = (title: string) => {
+    mixpanelTrack.mypageMenuClicked(title);
     switch (title) {
       case "내가 쓴 글":
         navigate(`/mypage/post`);

@@ -19,7 +19,7 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
     (location.pathname.startsWith(to) && to !== ROUTES.HOME);
 
   const handleClick = () => {
-    mixpanelTrack.featureClicked(label, "Bottom Tab");
+    mixpanelTrack.navTabClicked(label);
     navigate(to, { replace: true });
   };
 

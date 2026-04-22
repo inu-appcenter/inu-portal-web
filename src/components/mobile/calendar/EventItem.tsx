@@ -7,6 +7,7 @@ import ActionButton from "@/components/common/ActionButton";
 import useUserStore from "@/stores/useUserStore";
 import { ScheduleEvent, ScheduleType } from "@/types/schedules";
 import AI_LOGO from "@/resources/assets/calendar/챗불이요약.png";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 type EventItemProps = ScheduleEvent & {
   isOpenMode?: boolean;
@@ -29,7 +30,17 @@ const EventItem = ({ isOpenMode, ...props }: EventItemProps) => {
 
   const toggleOpen = () => {
     if (props.type === "dept") {
-      setIsOpen((current) => !current);
+      const nextState = !isOpen;
+      setIsOpen(nextState);
+
+      // 믹스패널 트래킹: 상세 내용 토글 (열릴 때만 기록하거나 둘 다 기록 가능)
+      if (nextState) {
+        mixpanelTrack.scheduleInteraction(
+          "Toggle Detail",
+          props.title,
+          props.type,
+        );
+      }
     }
   };
 
@@ -97,6 +108,13 @@ const EventItem = ({ isOpenMode, ...props }: EventItemProps) => {
                     href={props.url}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() =>
+                      mixpanelTrack.scheduleInteraction(
+                        "View Original Notice",
+                        props.title,
+                        props.type,
+                      )
+                    }
                   >
                     공지사항 보기
                     <ExternalLink size={14} style={{ marginLeft: "8px" }} />

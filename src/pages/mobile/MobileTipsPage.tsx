@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
 import PostItem from "@/components/mobile/notice/PostItem";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
@@ -136,6 +137,10 @@ const MobileTipsPage = () => {
                             showDate={false}
                             showWriter={false}
                             onClick={() => {
+                              mixpanelTrack.tipViewed(
+                                categoryItem.category,
+                                tip.title,
+                              );
                               navigate(ROUTES.BOARD.TIPS_DETAIL(tip.id));
                             }}
                           />

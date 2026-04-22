@@ -62,6 +62,8 @@ const MobileDeptNoticePage = () => {
     e.stopPropagation();
     setSelectedDepartmentNoticeId(departmentNoticeId);
     setIsScheduleModalOpen(true);
+    // 믹스패널 트래킹: 학과 공지에서 일정 모달 열림
+    mixpanelTrack.scheduleModalViewed("Dept Notice", 1);
   };
 
   const handleScheduleModalOpenChange = (open: boolean) => {
