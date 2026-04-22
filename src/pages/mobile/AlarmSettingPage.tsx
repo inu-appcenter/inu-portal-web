@@ -24,6 +24,7 @@ import Switch from "@/components/common/Switch";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 import Skeleton from "@/components/common/Skeleton";
 
@@ -36,6 +37,10 @@ export default function AlarmSettingPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const currentTab = params.get("tab") || "school";
+
+  useEffect(() => {
+    mixpanelTrack.noticeSettingTabSwitched(currentTab);
+  }, [currentTab]);
 
   const subHeader = useMemo(
     () => (
@@ -115,6 +120,7 @@ function MobileSchoolAlarmSetting() {
     try {
       await subscribeKeywordsNotice(nextCategories);
       setSubscribedCategories(nextCategories);
+      mixpanelTrack.noticeCategoryToggled(category, !isSubscribed);
     } catch (error) {
       console.error("학교 공지 카테고리 구독 실패:", error);
     }
@@ -128,6 +134,11 @@ function MobileSchoolAlarmSetting() {
           ? undefined
           : selectedCategoryForKeyword;
       await createKeyword(newKeyword, undefined, categoryParam);
+      mixpanelTrack.noticeKeywordAdded(
+        "School",
+        newKeyword,
+        selectedCategoryForKeyword,
+      );
       setNewKeyword("");
       const keyRes = await getKeywords();
       setKeywords(
@@ -148,9 +159,17 @@ function MobileSchoolAlarmSetting() {
   };
 
   const handleDeleteKeyword = async (keywordId: number) => {
+    const targetKeyword = keywords.find((k) => k.keywordId === keywordId);
     if (!window.confirm("키워드를 삭제할까요?")) return;
     try {
       await deleteKeyword(keywordId);
+      if (targetKeyword) {
+        mixpanelTrack.noticeKeywordDeleted(
+          "School",
+          targetKeyword.keyword || "",
+          targetKeyword.category || "전체",
+        );
+      }
       setKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
     } catch (error) {
       console.error("학교 공지 키워드 삭제 실패:", error);
@@ -348,7 +367,9 @@ function MobileDeptAlarmSetting() {
     if (!keyword) return;
 
     try {
-      await createKeyword(keyword, findTitleOrCode(userInfo.department));
+      const deptCode = findTitleOrCode(userInfo.department);
+      await createKeyword(keyword, deptCode);
+      mixpanelTrack.noticeKeywordAdded("Department", keyword, userInfo.department);
       setKeyword("");
       fetchKeywords();
     } catch (error) {
@@ -364,12 +385,20 @@ function MobileDeptAlarmSetting() {
   };
 
   const handleDeleteKeyword = async (keywordId: number) => {
+    const targetKeyword = keywords.find((k) => k.keywordId === keywordId);
     if (!window.confirm("키워드를 삭제할까요?")) {
       return;
     }
 
     try {
       await deleteKeyword(keywordId);
+      if (targetKeyword) {
+        mixpanelTrack.noticeKeywordDeleted(
+          "Department",
+          targetKeyword.keyword || "",
+          userInfo.department,
+        );
+      }
       fetchKeywords();
     } catch (error) {
       console.error("키워드 삭제 실패:", error);
@@ -387,6 +416,7 @@ function MobileDeptAlarmSetting() {
       }
 
       setAllAlarm(checked);
+      mixpanelTrack.noticeAllToggled(userInfo.department, checked);
     } catch (error) {
       console.error("전체 공지 알림 설정 실패:", error);
     }

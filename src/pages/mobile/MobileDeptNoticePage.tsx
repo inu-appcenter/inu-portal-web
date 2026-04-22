@@ -267,7 +267,10 @@ const MobileDeptNoticePage = () => {
                 <CalendarActionButton
                   style={{ alignSelf: "end" }}
                   onClick={(e) => {
-                    mixpanelTrack.featureClicked("Dept AI Calendar", "Dept Notice List");
+                    mixpanelTrack.featureClicked(
+                      "Dept AI Calendar",
+                      "Dept Notice List",
+                    );
                     handleCalendarClick(e, deptNotice.id);
                   }}
                 >
@@ -309,7 +312,13 @@ const MobileDeptNoticePage = () => {
         <FloatingActionButton
           text="공지 알리미 설정"
           icon={<Bell size={18} color="white" />}
-          onClick={() => navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`)}
+          onClick={() => {
+            mixpanelTrack.notificationSettingsOpened(
+              "Department Notice Page",
+              "dept",
+            );
+            navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`);
+          }}
         />
       )}
     </MobileDeptNoticePageWrapper>
