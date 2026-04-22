@@ -113,6 +113,7 @@ const ContentLine = styled.div<{ isEllipsis: boolean }>`
   color: #666;
   font-size: 13px;
   line-height: 1.4;
+  white-space: pre-wrap;
 
   ${({ isEllipsis }) =>
     isEllipsis &&

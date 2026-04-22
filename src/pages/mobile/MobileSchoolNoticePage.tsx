@@ -165,7 +165,7 @@ const MobileSchoolNoticePage = () => {
                   notice.title,
                   !!committedQuery,
                 );
-                if (notice.url) window.open("https://" + notice.url, "_blank");
+                if (notice.url) window.open(notice.url, "_blank");
               }}
             >
               <PostItem

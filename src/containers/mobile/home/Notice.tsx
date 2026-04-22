@@ -78,7 +78,7 @@ export default function NoticeForm() {
                       false,
                     );
                     if (notice.url)
-                      window.open("https://" + notice.url, "_blank");
+                      window.open(notice.url, "_blank");
                   }}
                 />
                 {index !== 2 && <Divider />}
