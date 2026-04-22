@@ -67,7 +67,7 @@ export const trackPageView = (
   pageName: string,
   properties?: Record<string, any>,
 ) => {
-  trackEvent("Page Viewed", {
+  trackEvent("페이지 조회", {
     page_name: pageName,
     ...properties,
   });
@@ -84,7 +84,7 @@ export const mixpanelTrack = {
    * 하단 네비게이션 탭 클릭
    */
   navTabClicked: (tabName: string) => {
-    trackEvent("Nav Tab Clicked", {
+    trackEvent("바텀바 탭 클릭", {
       tab_name: tabName,
     });
   },
@@ -93,7 +93,7 @@ export const mixpanelTrack = {
    * 주요 기능 버튼 클릭 (홈 카테고리, 칩, 하단 탭, 메뉴 버튼 등)
    */
   featureClicked: (featureName: string, location: string) => {
-    trackEvent("Feature Clicked", {
+    trackEvent("기능 클릭", {
       feature_name: featureName,
       location: location,
     });
@@ -105,7 +105,7 @@ export const mixpanelTrack = {
    * 버스 UI 버전 스위칭 (신버전 <-> 구버전)
    */
   busUiSwitched: (toVersion: "new" | "legacy", fromLocation: string) => {
-    trackEvent("Bus UI Switched", {
+    trackEvent("[인입런] UI 전환", {
       to_version: toVersion,
       location: fromLocation,
     });
@@ -120,7 +120,7 @@ export const mixpanelTrack = {
     stopName?: string,
     uiVersion?: string,
   ) => {
-    trackEvent("Bus Checked", {
+    trackEvent("[인입런] 버스 정보 확인", {
       bus_type: busType,
       route_name: routeName,
       stop_name: stopName,
@@ -132,7 +132,7 @@ export const mixpanelTrack = {
    * 식당 메뉴 조회
    */
   cafeteriaViewed: (cafeteriaName: string, day: string) => {
-    trackEvent("Cafeteria Viewed", {
+    trackEvent("[식당 메뉴] 조회", {
       cafeteria_name: cafeteriaName,
       day_of_week: day,
     });
@@ -146,7 +146,7 @@ export const mixpanelTrack = {
     title: string,
     isFromSearch: boolean = false,
   ) => {
-    trackEvent("Notice Viewed", {
+    trackEvent("[학교 공지] 조회", {
       notice_type: "School",
       category: category,
       title: title,
@@ -162,7 +162,7 @@ export const mixpanelTrack = {
     title: string,
     isFromSearch: boolean = false,
   ) => {
-    trackEvent("Notice Viewed", {
+    trackEvent("[학과 공지] 조회", {
       notice_type: "Department",
       department_name: deptName,
       title: title,
@@ -174,7 +174,7 @@ export const mixpanelTrack = {
    * 학사 일정 조회 및 인터랙션 (월 단위)
    */
   academicCalendarViewed: (year: number, month: number) => {
-    trackEvent("Academic Calendar Viewed", {
+    trackEvent("[학사 일정] 조회", {
       year: year,
       month: month,
     });
@@ -184,7 +184,7 @@ export const mixpanelTrack = {
    * 특정 날짜의 상세 일정 클릭
    */
   calendarDateClicked: (date: string) => {
-    trackEvent("Calendar Date Clicked", {
+    trackEvent("[학사 일정] 날짜 클릭", {
       clicked_date: date,
     });
   },
@@ -193,7 +193,7 @@ export const mixpanelTrack = {
    * 학사 일정 알림 설정 버튼 클릭
    */
   calendarNotificationClicked: () => {
-    trackEvent("Calendar Notification Clicked");
+    trackEvent("[학사 일정] 알림 설정 버튼 클릭", {});
   },
 
   /**
@@ -203,7 +203,7 @@ export const mixpanelTrack = {
     source: "Calendar" | "Dept Notice",
     scheduleCount: number,
   ) => {
-    trackEvent("Schedule Modal Viewed", {
+    trackEvent("[학사 일정] 상세 모달 조회", {
       source: source,
       schedule_count: scheduleCount,
     });
@@ -217,7 +217,7 @@ export const mixpanelTrack = {
     title: string,
     type: "school" | "dept",
   ) => {
-    trackEvent("Schedule Interaction", {
+    trackEvent("[학사 일정] 상세 모달 상호작용", {
       action_type: actionType,
       schedule_title: title,
       schedule_type: type,
@@ -228,7 +228,7 @@ export const mixpanelTrack = {
    * 캠퍼스맵 탭 전환
    */
   campusMapTabSwitched: (tabName: string) => {
-    trackEvent("Campus Map Tab Switched", {
+    trackEvent("[캠퍼스맵] 탭 전환", {
       tab_name: tabName,
     });
   },
@@ -241,7 +241,7 @@ export const mixpanelTrack = {
     category: string,
     method: "List" | "Marker",
   ) => {
-    trackEvent("Campus Map Place Selected", {
+    trackEvent("[캠퍼스맵] 장소 선택", {
       place_name: placeName,
       category: category,
       selection_method: method,
@@ -252,7 +252,7 @@ export const mixpanelTrack = {
    * 캠퍼스맵 현위치 추적 토글
    */
   campusMapTrackingToggled: (isEnabled: boolean) => {
-    trackEvent("Campus Map Tracking Toggled", {
+    trackEvent("[캠퍼스맵] 내 위치 버튼", {
       is_enabled: isEnabled,
     });
   },
@@ -261,7 +261,7 @@ export const mixpanelTrack = {
    * 동아리 카테고리 필터링
    */
   clubCategorySelected: (category: string) => {
-    trackEvent("Club Category Selected", {
+    trackEvent("[동아리] 카테고리 선택", {
       category: category,
     });
   },
@@ -273,7 +273,7 @@ export const mixpanelTrack = {
     clubName: string,
     linkType: "Intro" | "Homepage",
   ) => {
-    trackEvent("Club External Link Clicked", {
+    trackEvent("[동아리] 외부 링크 클릭", {
       club_name: clubName,
       link_type: linkType,
     });
@@ -283,7 +283,7 @@ export const mixpanelTrack = {
    * 동아리 모집 공고 조회
    */
   clubRecruitViewed: (clubName: string) => {
-    trackEvent("Club Recruit Viewed", {
+    trackEvent("[동아리] 공고 조회", {
       club_name: clubName,
     });
   },
@@ -296,7 +296,7 @@ export const mixpanelTrack = {
     category: string,
     section: string,
   ) => {
-    trackEvent("Phonebook Search Performed", {
+    trackEvent("[전화번호부] 검색", {
       keyword: keyword,
       category: category,
       section: section,
@@ -307,7 +307,7 @@ export const mixpanelTrack = {
    * 전화번호부 상세 정보 조회
    */
   phonebookDetailViewed: (name: string, kind: "person" | "office") => {
-    trackEvent("Phonebook Detail Viewed", {
+    trackEvent("[전화번호부] 상세 조회", {
       entry_name: name,
       entry_kind: kind,
     });
@@ -321,7 +321,7 @@ export const mixpanelTrack = {
     entryName: string,
     label: string,
   ) => {
-    trackEvent("Phonebook Interaction", {
+    trackEvent("[전화번호부] 상호작용", {
       action_type: actionType,
       entry_name: entryName,
       field_label: label,
@@ -332,7 +332,7 @@ export const mixpanelTrack = {
    * 게시판(TIPS) 상세 조회
    */
   tipViewed: (category: string, title: string) => {
-    trackEvent("Tip Viewed", {
+    trackEvent("[TIPS] 글 조회", {
       category: category,
       title: title,
     });
@@ -346,7 +346,7 @@ export const mixpanelTrack = {
     boardType: string,
     category?: string,
   ) => {
-    trackEvent("Board Interaction", {
+    trackEvent("[TIPS] 상호작용", {
       action_type: actionType,
       board_type: boardType,
       category: category,
@@ -361,7 +361,7 @@ export const mixpanelTrack = {
     keyword: string,
     resultCount: number,
   ) => {
-    trackEvent("Search Performed", {
+    trackEvent("[TIPS] 수행", {
       search_type: searchType,
       keyword: keyword,
       result_count: resultCount,
@@ -372,7 +372,7 @@ export const mixpanelTrack = {
    * 알림 상세 클릭
    */
   notificationClicked: (type: string, title: string) => {
-    trackEvent("Notification Clicked", {
+    trackEvent("[알림] 클릭", {
       notification_type: type,
       title: title,
     });
@@ -382,7 +382,7 @@ export const mixpanelTrack = {
    * 알림 설정 페이지 진입
    */
   notificationSettingsOpened: (location: string, tab?: string) => {
-    trackEvent("Notification Settings Opened", {
+    trackEvent("[공지알리미] 설정 진입", {
       location: location,
       tab: tab,
     });
@@ -392,7 +392,7 @@ export const mixpanelTrack = {
    * 알림 설정 탭 전환
    */
   noticeSettingTabSwitched: (toTab: string) => {
-    trackEvent("Notice Setting Tab Switched", {
+    trackEvent("[공지알리미] 탭 전환", {
       to_tab: toTab,
     });
   },
@@ -401,7 +401,7 @@ export const mixpanelTrack = {
    * 학교 공지 카테고리 알림 토글
    */
   noticeCategoryToggled: (category: string, isSubscribed: boolean) => {
-    trackEvent("Notice Category Toggled", {
+    trackEvent("[공지알리미] 학교 공지 카테고리 토글", {
       notice_type: "School",
       category_name: category,
       is_subscribed: isSubscribed,
@@ -426,7 +426,7 @@ export const mixpanelTrack = {
       properties.department_name = extraInfo;
     }
 
-    trackEvent("Notice Keyword Added", properties);
+    trackEvent("[공지알리미] 키워드 추가", properties);
   },
 
   /**
@@ -447,14 +447,14 @@ export const mixpanelTrack = {
       properties.department_name = extraInfo;
     }
 
-    trackEvent("Notice Keyword Deleted", properties);
+    trackEvent("[공지알리미] 공지 키워드 삭제", properties);
   },
 
   /**
    * 학과 공지 전체 알림 토글
    */
   noticeAllToggled: (departmentName: string, isSubscribed: boolean) => {
-    trackEvent("Notice All Toggled", {
+    trackEvent("[공지알리미] 학과 공지 전체 토글", {
       notice_type: "Department",
       department_name: departmentName,
       is_subscribed: isSubscribed,
@@ -465,7 +465,7 @@ export const mixpanelTrack = {
    * 프로모션/배너 노출
    */
   promotionImpression: (promoName: string, location: string) => {
-    trackEvent("Promotion Impression", {
+    trackEvent("[프로모션/배너] 노출", {
       promo_name: promoName,
       location: location,
     });
@@ -479,7 +479,7 @@ export const mixpanelTrack = {
     actionType: string,
     location: string,
   ) => {
-    trackEvent("Promotion Clicked", {
+    trackEvent("[프로모션/배너] 클릭", {
       promo_name: promoName,
       action_type: actionType,
       location: location,
@@ -490,7 +490,7 @@ export const mixpanelTrack = {
    * 마이페이지 메뉴 클릭
    */
   mypageMenuClicked: (menuName: string) => {
-    trackEvent("Mypage Menu Clicked", {
+    trackEvent("[마이페이지] 메뉴 클릭", {
       menu_name: menuName,
     });
   },
@@ -499,7 +499,7 @@ export const mixpanelTrack = {
    * 프로필 수정 완료
    */
   profileUpdated: (updatedFields: string[]) => {
-    trackEvent("Profile Updated", {
+    trackEvent("[내정보] 프로필 수정 완료", {
       updated_fields: updatedFields,
     });
   },
@@ -508,7 +508,7 @@ export const mixpanelTrack = {
    * 로그아웃
    */
   userLoggedOut: () => {
-    trackEvent("User Logged Out");
+    trackEvent("사용자 로그아웃");
     resetMixpanel();
   },
 
@@ -516,7 +516,7 @@ export const mixpanelTrack = {
    * 회원 탈퇴
    */
   userAccountDeleted: (reason?: string) => {
-    trackEvent("User Account Deleted", {
+    trackEvent("회원 탈퇴", {
       reason: reason,
     });
     resetMixpanel();
