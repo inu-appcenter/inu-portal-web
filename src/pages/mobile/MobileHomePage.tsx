@@ -24,7 +24,7 @@ import {
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import TopPopupNotification from "@/components/common/TopPopupNotification";
-import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.05;
@@ -80,10 +80,6 @@ export default function MobileHomePage() {
   useHeader({
     showAlarm: true,
   });
-
-  useEffect(() => {
-    trackPageView("Home Page");
-  }, []);
 
   useEffect(() => {
     const today = new Date();
