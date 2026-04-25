@@ -60,12 +60,17 @@ export default function MobileHomePage() {
   const [showInstallPromo, setShowInstallPromo] = useState(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
   const hasEvaluatedPromoRef = useRef(false);
-  const [isOpenNoticeAlarmPromotion, setIsOpenNoticeAlarmPromotion] = useState(
-    () => !localStorage.getItem(NOTICE_ALARM_PROMO_KEY),
-  );
+  const isLoggedIn =
+    Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
+
+  const [isManuallyClosed, setIsManuallyClosed] = useState(false);
+  const isOpenNoticeAlarmPromotion =
+    isLoggedIn &&
+    !localStorage.getItem(NOTICE_ALARM_PROMO_KEY) &&
+    !isManuallyClosed;
 
   const closeNoticeAlarmPromotion = () => {
-    setIsOpenNoticeAlarmPromotion(false);
+    setIsManuallyClosed(true);
     localStorage.setItem(NOTICE_ALARM_PROMO_KEY, "true");
   };
 
@@ -81,7 +86,7 @@ export default function MobileHomePage() {
   const handleNavigateToNoticeAlarm = () => {
     mixpanelTrack.promotionClicked(
       "Notice Alarm Promotion",
-      "Move to Setting",
+      "Move to Notice Alarm Setting",
       "Home Bottom Sheet",
     );
     closeNoticeAlarmPromotion();
