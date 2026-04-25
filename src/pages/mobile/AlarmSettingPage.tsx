@@ -62,9 +62,9 @@ export default function AlarmSettingPage() {
   return (
     <AlarmSettingPageWrapper>
       {currentTab === "school" ? (
-        <MobileSchoolAlarmSetting />
+        <MobileSchoolAlarmSetting location="Notice Alarm Page" />
       ) : (
-        <MobileDeptAlarmSetting />
+        <MobileDeptAlarmSetting location="Notice Alarm Page" />
       )}
     </AlarmSettingPageWrapper>
   );
@@ -73,7 +73,11 @@ export default function AlarmSettingPage() {
 /**
  * 학교 공지 알리미 설정 컴포넌트
  */
-function MobileSchoolAlarmSetting() {
+export function MobileSchoolAlarmSetting({
+  location = "Notice Alarm Page",
+}: {
+  location?: string;
+}) {
   const [categories, setCategories] = useState<string[]>([]);
   const [subscribedCategories, setSubscribedCategories] = useState<string[]>(
     [],
@@ -120,7 +124,7 @@ function MobileSchoolAlarmSetting() {
     try {
       await subscribeKeywordsNotice(nextCategories);
       setSubscribedCategories(nextCategories);
-      mixpanelTrack.noticeCategoryToggled(category, !isSubscribed);
+      mixpanelTrack.noticeCategoryToggled(category, !isSubscribed, location);
     } catch (error) {
       console.error("학교 공지 카테고리 구독 실패:", error);
     }
@@ -138,6 +142,7 @@ function MobileSchoolAlarmSetting() {
         "School",
         newKeyword,
         selectedCategoryForKeyword,
+        location,
       );
       setNewKeyword("");
       const keyRes = await getKeywords();
@@ -168,6 +173,7 @@ function MobileSchoolAlarmSetting() {
           "School",
           targetKeyword.keyword || "",
           targetKeyword.category || "전체",
+          location,
         );
       }
       setKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
@@ -317,9 +323,13 @@ function MobileSchoolAlarmSetting() {
 /**
  * 학과 공지 알리미 설정 컴포넌트 (기존 로직 보정)
  */
-function MobileDeptAlarmSetting() {
+function MobileDeptAlarmSetting({
+  location = "Notice Alarm Page",
+}: {
+  location?: string;
+}) {
   const { userInfo } = useUserStore();
-  const location = useLocation();
+  const locationPath = useLocation();
 
   const [keyword, setKeyword] = useState("");
   const [keywords, setKeywords] = useState<Keyword[]>([]);
@@ -327,9 +337,9 @@ function MobileDeptAlarmSetting() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const newParams = new URLSearchParams(location.search);
+    const newParams = new URLSearchParams(locationPath.search);
     setKeyword(newParams.get("category") || "");
-  }, [location.search]);
+  }, [locationPath.search]);
 
   useEffect(() => {
     fetchKeywords();
@@ -369,7 +379,12 @@ function MobileDeptAlarmSetting() {
     try {
       const deptCode = findTitleOrCode(userInfo.department);
       await createKeyword(keyword, deptCode);
-      mixpanelTrack.noticeKeywordAdded("Department", keyword, userInfo.department);
+      mixpanelTrack.noticeKeywordAdded(
+        "Department",
+        keyword,
+        userInfo.department,
+        location,
+      );
       setKeyword("");
       fetchKeywords();
     } catch (error) {
@@ -397,6 +412,7 @@ function MobileDeptAlarmSetting() {
           "Department",
           targetKeyword.keyword || "",
           userInfo.department,
+          location,
         );
       }
       fetchKeywords();
@@ -416,7 +432,7 @@ function MobileDeptAlarmSetting() {
       }
 
       setAllAlarm(checked);
-      mixpanelTrack.noticeAllToggled(userInfo.department, checked);
+      mixpanelTrack.noticeAllToggled(userInfo.department, checked, location);
     } catch (error) {
       console.error("전체 공지 알림 설정 실패:", error);
     }

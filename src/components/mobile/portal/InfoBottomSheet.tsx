@@ -43,7 +43,7 @@ export default function InfoBottomSheet({
               <Title>{title}</Title>
             </HeaderSection>
 
-            <BodySection data-vaul-no-drag="">{children}</BodySection>
+            <BodySection>{children}</BodySection>
           </SheetInner>
         </StyledContent>
       </Drawer.Portal>
@@ -63,7 +63,7 @@ const StyledContent = styled(Drawer.Content)`
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
+  z-index: 9999;
   outline: none;
 
   height: 90dvh;

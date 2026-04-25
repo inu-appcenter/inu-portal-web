@@ -140,12 +140,12 @@ const Banner = () => {
     const syncSelectedIndex = () => {
       const index = emblaApi.selectedScrollSnap();
       setSelectedIndex(index);
-      
-      // 믹스패널 트래킹: 배너 슬라이드 노출
-      const banner = banners[index];
-      if (banner) {
-        mixpanelTrack.promotionImpression(banner.alt, "Home Banner");
-      }
+
+      // // 믹스패널 트래킹: 배너 슬라이드 노출
+      // const banner = banners[index];
+      // if (banner) {
+      //   mixpanelTrack.promotionImpression(banner.alt, "Home Banner");
+      // }
     };
 
     syncSelectedIndex();

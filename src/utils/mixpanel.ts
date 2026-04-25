@@ -11,6 +11,8 @@ export const initMixpanel = () => {
       debug: import.meta.env.DEV,
       track_pageview: false, // SPA이므로 수동 추적 권장
       persistence: "localStorage",
+
+      record_sessions_percent: 100, // 0~100 (샘플링 비율)
     });
 
     // 모든 이벤트에 공통으로 포함될 전역 속성 등록
@@ -400,11 +402,16 @@ export const mixpanelTrack = {
   /**
    * 학교 공지 카테고리 알림 토글
    */
-  noticeCategoryToggled: (category: string, isSubscribed: boolean) => {
+  noticeCategoryToggled: (
+    category: string,
+    isSubscribed: boolean,
+    location?: string,
+  ) => {
     trackEvent("[공지알리미] 학교 공지 카테고리 토글", {
       notice_type: "School",
       category_name: category,
       is_subscribed: isSubscribed,
+      location: location,
     });
   },
 
@@ -415,10 +422,12 @@ export const mixpanelTrack = {
     noticeType: "School" | "Department",
     keyword: string,
     extraInfo?: string,
+    location?: string,
   ) => {
     const properties: Record<string, any> = {
       notice_type: noticeType,
       keyword: keyword,
+      location: location,
     };
     if (noticeType === "School") {
       properties.category_scope = extraInfo || "전체";
@@ -436,10 +445,12 @@ export const mixpanelTrack = {
     noticeType: "School" | "Department",
     keyword: string,
     extraInfo?: string,
+    location?: string,
   ) => {
     const properties: Record<string, any> = {
       notice_type: noticeType,
       keyword: keyword,
+      location: location,
     };
     if (noticeType === "School") {
       properties.category_scope = extraInfo || "전체";
@@ -453,11 +464,16 @@ export const mixpanelTrack = {
   /**
    * 학과 공지 전체 알림 토글
    */
-  noticeAllToggled: (departmentName: string, isSubscribed: boolean) => {
+  noticeAllToggled: (
+    departmentName: string,
+    isSubscribed: boolean,
+    location?: string,
+  ) => {
     trackEvent("[공지알리미] 학과 공지 전체 토글", {
       notice_type: "Department",
       department_name: departmentName,
       is_subscribed: isSubscribed,
+      location: location,
     });
   },
 
