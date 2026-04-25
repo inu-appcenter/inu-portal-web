@@ -3,9 +3,6 @@ import styled from "styled-components";
 import CategoryForm from "@/containers/mobile/home/Category";
 import NoticeForm from "@/containers/mobile/home/Notice";
 import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
-import X_Vector from "../../resources/assets/mobile-mypage/X-Vector.svg";
-import PopupNotice from "@/components/desktop/banner/PopupNotice.tsx";
-import 배너이미지 from "@/resources/assets/banner/intip설문조사.png";
 import { useEffect, useRef, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";
@@ -25,10 +22,15 @@ import {
 } from "@/styles/responsive";
 import TopPopupNotification from "@/components/common/TopPopupNotification";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import InfoBottomSheet from "@/components/mobile/portal/InfoBottomSheet";
+import { MobileSchoolAlarmSetting } from "@/pages/mobile/AlarmSettingPage";
+import BottomButtonGroup from "@/components/common/BottomButtonGroup";
+import { useNavigate } from "react-router-dom";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.05;
 const PROMO_STORAGE_KEY = "promoLastShownDate";
+const NOTICE_ALARM_PROMO_KEY = "noticeAlarmPromotionOpened";
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
@@ -44,19 +46,52 @@ function getStoredAccessToken() {
 
     return parsedTokenInfo.accessToken ?? "";
   } catch (error) {
-    console.error("Failed to parse stored tokenInfo", error);
+    console.error("tokenInfo 파싱 실패", error);
     return "";
   }
 }
 
 export default function MobileHomePage() {
   const { tokenInfo } = useUserStore();
+  const navigate = useNavigate();
   const isBannerOn = false; // 배너 온오프 - on:true off:false
   const [show, setShow] = useState(false); // 배너 모달창 열림 여부
   const [showLoginPromo, setShowLoginPromo] = useState(false);
   const [showInstallPromo, setShowInstallPromo] = useState(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
   const hasEvaluatedPromoRef = useRef(false);
+  const isLoggedIn =
+    Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
+
+  const [isManuallyClosed, setIsManuallyClosed] = useState(false);
+  const isOpenNoticeAlarmPromotion =
+    isLoggedIn &&
+    !localStorage.getItem(NOTICE_ALARM_PROMO_KEY) &&
+    !isManuallyClosed;
+
+  const closeNoticeAlarmPromotion = () => {
+    setIsManuallyClosed(true);
+    localStorage.setItem(NOTICE_ALARM_PROMO_KEY, "true");
+  };
+
+  const handleCloseNoticeAlarmPromotion = () => {
+    mixpanelTrack.promotionClicked(
+      "Notice Alarm Promotion",
+      "Close",
+      "Home Bottom Sheet",
+    );
+    closeNoticeAlarmPromotion();
+  };
+
+  const handleNavigateToNoticeAlarm = () => {
+    mixpanelTrack.promotionClicked(
+      "Notice Alarm Promotion",
+      "Move to Notice Alarm Setting",
+      "Home Bottom Sheet",
+    );
+    closeNoticeAlarmPromotion();
+    navigate(ROUTES.BOARD.DEPT_SETTING);
+  };
 
   if (new URLSearchParams(window.location.search).get("errorTest") === "1") {
     throw new Error("에러바운더리 UI 확인용");
@@ -149,17 +184,15 @@ export default function MobileHomePage() {
     }
   }, [show, isBannerOn]);
 
-  const handleCloseModal = () => {
-    mixpanelTrack.promotionClicked(
-      "Survey Popup",
-      "Close Button",
-      "Home Popup",
-    );
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    localStorage.setItem("hideModalDate", nextWeek.toISOString());
-    setShow(false);
-  };
+  useEffect(() => {
+    // 학교 공지 알리미 프로모션 노출 추적
+    if (isOpenNoticeAlarmPromotion) {
+      mixpanelTrack.promotionImpression(
+        "Notice Alarm Promotion",
+        "Home Bottom Sheet",
+      );
+    }
+  }, [isOpenNoticeAlarmPromotion]);
 
   interface NotificationData {
     title: string;
@@ -249,37 +282,6 @@ export default function MobileHomePage() {
           duration={10000}
         />
       )}
-      {show && isBannerOn && (
-        <ModalBackGround>
-          <Modal>
-            <div className="close" onClick={handleCloseModal}>
-              <span>일주일동안 안 보기</span>
-              <img src={X_Vector} alt="X" />
-            </div>
-            <PopupNotice
-              title={"📣 INTIP 사용 경험을 들려주세요!\n"}
-              imgsrc={배너이미지}
-              content={
-                <>
-                  자유롭게 의견을 남겨주세요!
-                  <br />
-                  30초만 시간 내어 작성해주시면 더 좋은 서비스를 준비하는 데 큰
-                  도움이 됩니다
-                  <br />
-                  <a
-                    href={"https://forms.gle/DHk5zsAF8Ko3SN38A"}
-                    onClick={() =>
-                      mixpanelTrack.featureClicked("Survey Link", "Home Popup")
-                    }
-                  >
-                    설문 조사 바로가기
-                  </a>
-                </>
-              }
-            />
-          </Modal>
-        </ModalBackGround>
-      )}
 
       {/* 상단 배너 영역 */}
       <Section>
@@ -332,6 +334,34 @@ export default function MobileHomePage() {
         open={showInstallPromo}
         onDismiss={() => setShowInstallPromo(false)}
       />
+
+      <InfoBottomSheet
+        open={isOpenNoticeAlarmPromotion}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseNoticeAlarmPromotion();
+          }
+        }}
+        title="신규 기능: 학교 공지 알리미"
+      >
+        <MobileSchoolAlarmSetting location="Home Bottom Sheet" />
+        <BottomButtonGroup
+          leftButton={{
+            label: "닫기",
+            onClick: handleCloseNoticeAlarmPromotion,
+            backgroundColor: "#f3f4f6",
+            textColor: "#6b7280",
+          }}
+          rightButton={{
+            label: "공지 알리미로 이동",
+            onClick: handleNavigateToNoticeAlarm,
+            backgroundColor: "#5E92F0",
+            textColor: "#F4F4F4",
+            flex: 2,
+          }}
+          gap="12px"
+        />
+      </InfoBottomSheet>
     </MobileHomePageWrapper>
   );
 }
@@ -350,7 +380,6 @@ const MobileHomePageWrapper = styled.div`
   }
 `;
 
-// 역할: 컨텐츠가 안전 영역(Safe Area) 내에 배치되도록 함 (기존 MediumPaddingWrapper 대체)
 const Section = styled.section`
   padding: 0 ${MOBILE_PAGE_GUTTER};
   box-sizing: border-box;
@@ -371,7 +400,6 @@ const CategoryFormSection = styled.div`
   gap: 16px;
 `;
 
-// 역할: 수직 리듬(Vertical Rhythm) 관리 (기존 ContainerWrapper 대체)
 const FeedLayout = styled.div`
   display: flex;
   flex-direction: column;
@@ -418,69 +446,6 @@ const AppcenterLogoWrapper = styled.div`
     img {
       width: 220px;
       max-width: 220px;
-    }
-  }
-`;
-
-const ModalBackGround = styled.div`
-  position: fixed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.5);
-  inset: 0 0 0 0;
-  z-index: 9999;
-`;
-
-const Modal = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  box-sizing: border-box;
-  padding: 32px 20px;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 420px;
-  height: fit-content;
-  max-height: 80%;
-  background: #9cafe2;
-  color: #333366;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-out;
-
-  .close {
-    align-self: flex-end;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #ffffff;
-    color: #555;
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: 20px;
-    padding: 6px 12px;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #f0f0f0;
-    }
-
-    img {
-      width: 12px;
-      height: 12px;
-    }
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
     }
   }
 `;
