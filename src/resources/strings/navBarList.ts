@@ -165,7 +165,7 @@ export const navBarList = [
             code: "ENERGY_CHEMICAL",
           },
           {
-            title: "바이오-로봇시스템공학과",
+            title: "바이오로봇시스템공학과",
             url: "https://bio-robot.inu.ac.kr/",
             code: "BIO_ROBOTICS_ENGINEERING",
           },
@@ -300,12 +300,12 @@ export const navBarList = [
             code: "URBAN_ADMINISTRATION",
           },
           {
-            title: "건설환경공학",
+            title: "도시환경학부 (건설환경공학전공)",
             url: "https://civil.inu.ac.kr/",
             code: "CIVIL_ENVIRONMENT_ENGINEERING",
           },
           {
-            title: "환경공학",
+            title: "도시환경학부 (환경공학전공)",
             url: "https://et.inu.ac.kr/",
             code: "ENVIRONMENT_ENGINEERING",
           },
@@ -315,12 +315,7 @@ export const navBarList = [
             code: "URBAN_ENGINEERING",
           },
           {
-            title: "건축공학",
-            url: "https://archi.inu.ac.kr/",
-            code: "URBAN_ARCHITECTURE",
-          },
-          {
-            title: "도시건축학",
+            title: "도시건축학부",
             url: "https://archi.inu.ac.kr/",
             code: "URBAN_ARCHITECTURE",
           },
@@ -330,22 +325,22 @@ export const navBarList = [
         title: "생명과학기술대학",
         subItems: [
           {
-            title: "생명과학전공",
+            title: "생명과학부 (생명과학전공)",
             url: "https://life.inu.ac.kr/",
             code: "LIFE_SCIENCE",
           },
           {
-            title: "분자의생명전공",
+            title: "생명과학부 (분자의생명전공)",
             url: "https://molbio.inu.ac.kr/",
             code: "LIFE_SCIENCE_MOLECULAR",
           },
           {
-            title: "생명공학전공",
+            title: "생명공학부 (생명공학전공)",
             url: "https://bioeng.inu.ac.kr/",
             code: "BIOENGINEERING",
           },
           {
-            title: "나노바이오공학전공",
+            title: "생명공학부 (나노바이오공학전공)",
             url: "https://nanobio.inu.ac.kr/",
             code: "BIOENGINEERING_NANO",
           },

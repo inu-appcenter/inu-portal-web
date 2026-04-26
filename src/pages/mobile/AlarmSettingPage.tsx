@@ -365,6 +365,7 @@ function MobileDeptAlarmSetting({
     setIsLoading(true);
     try {
       const res = await getKeywords();
+      console.log(res);
       setKeywords(res.data);
     } catch (error) {
       console.error("키워드 목록 불러오기 실패:", error);
@@ -425,7 +426,9 @@ function MobileDeptAlarmSetting({
     try {
       if (checked) {
         // 학과 전체 알림 구독
+        console.log(userInfo.department, findTitleOrCode(userInfo.department));
         await subscribeDepartment([findTitleOrCode(userInfo.department)]);
+        fetchKeywords();
       } else {
         // 빈 배열 전달로 전체 알림 해제
         await subscribeDepartment([]);
@@ -446,6 +449,8 @@ function MobileDeptAlarmSetting({
             <>
               학과 공지 알리미를 설정해보세요.
               <br />새 글이 올라오면 푸시알림으로 알려드려요.
+              <br />
+              학과 정보를 변경한 경우 모든 알림을 해제 후 다시 설정해주세요.
             </>
           }
         />
