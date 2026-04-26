@@ -425,6 +425,7 @@ function MobileDeptAlarmSetting({
     try {
       if (checked) {
         // 학과 전체 알림 구독
+        console.log(userInfo.department, findTitleOrCode(userInfo.department));
         await subscribeDepartment([findTitleOrCode(userInfo.department)]);
       } else {
         // 빈 배열 전달로 전체 알림 해제
