@@ -164,8 +164,6 @@ export default function Calendar({
         getMyDeptSchedules(year, month),
       ]);
 
-      mixpanelTrack.academicCalendarViewed(year, month);
-
       // 타입 부여 및 데이터 통합
       const schoolEvents = resSchool.data.map((schedule) =>
         toScheduleEvent(schedule, "school"),
@@ -243,8 +241,29 @@ export default function Calendar({
     return rows.length > 0 ? Math.max(...rows) + 1 : 1;
   });
 
-  const goToNext = () => setCurrentDate((prev) => addMonths(prev, 1));
-  const goToPrev = () => setCurrentDate((prev) => subMonths(prev, 1));
+  const goToNext = () => {
+    setCurrentDate((prev) => {
+      const nextDate = addMonths(prev, 1);
+      mixpanelTrack.academicCalendarMonthChanged(
+        nextDate.getFullYear(),
+        nextDate.getMonth() + 1,
+        "Next",
+      );
+      return nextDate;
+    });
+  };
+
+  const goToPrev = () => {
+    setCurrentDate((prev) => {
+      const prevDate = subMonths(prev, 1);
+      mixpanelTrack.academicCalendarMonthChanged(
+        prevDate.getFullYear(),
+        prevDate.getMonth() + 1,
+        "Prev",
+      );
+      return prevDate;
+    });
+  };
 
   return (
     <CalendarContainer>

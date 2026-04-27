@@ -7,13 +7,18 @@ import { Bell } from "lucide-react";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
 import useUserStore from "@/stores/useUserStore";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
+import { useEffect } from "react";
+import { trackPageView, mixpanelTrack } from "@/utils/mixpanel";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function MobileCalendarPage() {
   const { userInfo } = useUserStore();
-  const navigate = useNavigate(); // 라우터 인스턴스
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    trackPageView("학사일정");
+  }, []);
 
   useHeader({
     title: "학사일정",

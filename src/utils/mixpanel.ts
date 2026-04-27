@@ -1,4 +1,5 @@
 import mixpanel from "mixpanel-browser";
+import { getMobilePlatform } from "./getMobilePlatform";
 
 const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN;
 
@@ -17,8 +18,8 @@ export const initMixpanel = () => {
 
     // 모든 이벤트에 공통으로 포함될 전역 속성 등록
     mixpanel.register({
-      platform: "Web",
-      service_name: "inu-portal-web",
+      platform: getMobilePlatform(),
+      service_name: "INTIP",
     });
   } else {
     if (import.meta.env.DEV) {
@@ -173,12 +174,17 @@ export const mixpanelTrack = {
   },
 
   /**
-   * 학사 일정 조회 및 인터랙션 (월 단위)
+   * 학사 일정 월 변경
    */
-  academicCalendarViewed: (year: number, month: number) => {
-    trackEvent("[학사 일정] 조회", {
+  academicCalendarMonthChanged: (
+    year: number,
+    month: number,
+    direction: "Prev" | "Next",
+  ) => {
+    trackEvent("[학사 일정] 월 변경", {
       year: year,
       month: month,
+      direction: direction,
     });
   },
 
@@ -473,6 +479,16 @@ export const mixpanelTrack = {
       notice_type: "Department",
       department_name: departmentName,
       is_subscribed: isSubscribed,
+      location: location,
+    });
+  },
+
+  /**
+   * 홈 위젯 노출 (Impression)
+   */
+  widgetImpression: (widgetName: string, location: string) => {
+    trackEvent("[홈 위젯] 노출", {
+      widget_name: widgetName,
       location: location,
     });
   },
