@@ -28,13 +28,14 @@ const useUserStore = create<UserState>((set) => ({
   setUserInfo: (userInfo) => {
     const normalized = normalizeUserInfo(userInfo);
     set(() => ({ userInfo: normalized }));
-    
+
     // Mixpanel 사용자 식별
     if (normalized.id) {
       identifyUser(String(normalized.id), {
         nickname: normalized.nickname,
         department: normalized.department,
         memberId: normalized.id,
+        role: normalized.role,
       });
     }
   },
