@@ -26,6 +26,7 @@ import InfoBottomSheet from "@/components/mobile/portal/InfoBottomSheet";
 import { MobileSchoolAlarmSetting } from "@/pages/mobile/AlarmSettingPage";
 import BottomButtonGroup from "@/components/common/BottomButtonGroup";
 import { useNavigate } from "react-router-dom";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.05;
@@ -55,6 +56,18 @@ export default function MobileHomePage() {
   const { tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const isBannerOn = false; // 배너 온오프 - on:true off:false
+
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const calendarEntry = useIntersectionObserver(calendarRef, {
+    threshold: 0.5,
+  });
+
+  useEffect(() => {
+    if (calendarEntry?.isIntersecting) {
+      mixpanelTrack.widgetImpression("Academic Calendar", "Home");
+    }
+  }, [calendarEntry?.isIntersecting]);
+
   const [show, setShow] = useState(false); // 배너 모달창 열림 여부
   const [showLoginPromo, setShowLoginPromo] = useState(false);
   const [showInstallPromo, setShowInstallPromo] = useState(false);
@@ -263,13 +276,15 @@ export default function MobileHomePage() {
   );
 
   const calendarSection = (
-    <Section>
-      <TitleContentArea
-        title={"학사일정"}
-        children={<Calendar mode={"weekly"} />}
-        link={ROUTES.BOARD.CALENDAR}
-      />
-    </Section>
+    <div ref={calendarRef}>
+      <Section>
+        <TitleContentArea
+          title={"학사일정"}
+          children={<Calendar mode={"weekly"} />}
+          link={ROUTES.BOARD.CALENDAR}
+        />
+      </Section>
+    </div>
   );
 
   return (
