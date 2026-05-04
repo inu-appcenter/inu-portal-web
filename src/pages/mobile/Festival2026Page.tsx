@@ -5,7 +5,7 @@ import { useMemo, useEffect } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import { useLocation, useNavigate } from "react-router-dom";
-import 배너이미지 from "@/resources/assets/festival/2026-1/paint_the_union_배너이미지.webp";
+import 배너이미지 from "@/resources/assets/Festival/2026-1/PaintTheUnion배너이미지.webp";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Divider from "@/components/common/Divider";
@@ -71,7 +71,10 @@ export default function Festival2026Page() {
   });
 
   const handleItemClick = (type: string) => {
-    mixpanelTrack.featureClicked(FESTIVAL_INFO[type as FestivalInfoType].title, `축제 안내 - ${selectedCategory} 탭`);
+    mixpanelTrack.featureClicked(
+      FESTIVAL_INFO[type as FestivalInfoType].title,
+      `축제 안내 - ${selectedCategory} 탭`,
+    );
     navigate(`${ROUTES.FESTIVAL2026_DETAIL}?type=${type}`);
   };
 
@@ -162,10 +165,7 @@ export default function Festival2026Page() {
                     <Divider />
                     <AppItem type="entrance_guide" onClick={handleItemClick} />
                     <Divider />
-                    <AppItem
-                      type="forbidden_items"
-                      onClick={handleItemClick}
-                    />
+                    <AppItem type="forbidden_items" onClick={handleItemClick} />
                   </div>
                 </Box>
               </TitleContentArea>
