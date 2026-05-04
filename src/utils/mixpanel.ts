@@ -553,4 +553,23 @@ export const mixpanelTrack = {
     });
     resetMixpanel();
   },
+
+  /**
+   * 축제 페이지 카테고리 탭 전환
+   */
+  festivalCategorySwitched: (categoryName: string) => {
+    trackEvent("[축제] 카테고리 탭 전환", {
+      category_name: categoryName,
+    });
+  },
+
+  /**
+   * 축제 상세 정보 조회
+   */
+  festivalDetailViewed: (infoType: string, infoTitle: string) => {
+    trackEvent("[축제] 상세 정보 조회", {
+      info_type: infoType,
+      info_title: infoTitle,
+    });
+  },
 };

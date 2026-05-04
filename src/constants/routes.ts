@@ -10,6 +10,9 @@ export const ROUTES = {
   AI: "/ai",
   SAVE: "/save",
 
+  FESTIVAL2026: "/festival2026",
+  FESTIVAL2026_DETAIL: "/festival2026/detail",
+
   //시간표
   TIMETABLE: {
     ROOT: "/timetable",

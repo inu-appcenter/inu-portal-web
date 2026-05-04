@@ -57,6 +57,8 @@ import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotific
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 import LabsPage from "@/pages/mobile/Labs/LabsPage";
 import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
+import Festival2026Page from "@/pages/mobile/Festival2026Page";
+import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -112,6 +114,9 @@ export const router = createBrowserRouter([
 
           //앱센터의 다른 앱
           { path: ROUTES.MORE_APPS.ROOT, element: <MoreAppsPage /> },
+          
+          { path: ROUTES.FESTIVAL2026, element: <Festival2026Page /> },
+          { path: ROUTES.FESTIVAL2026_DETAIL, element: <Festival2026DetailPage /> },
 
           //실험실
           {

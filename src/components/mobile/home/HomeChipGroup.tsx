@@ -9,7 +9,7 @@ import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png";
-import { LuFlaskConical } from "react-icons/lu";
+import { LuFlaskConical, LuPartyPopper } from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import {
@@ -20,16 +20,17 @@ import { ROUTES } from "@/constants/routes";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
-const PHONEBOOK_TOOLTIP_ID = "home-phonebook-search";
+const FESTIVAL_TOOLTIP_ID = "home-festival-2026";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
   const phonebookTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
+  const festivalTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
   const { enabled: isLabsEnabled } = useFeatureFlag(FEATURE_FLAG_KEYS.LABS);
-  const [isPhonebookTooltipVisible, setIsPhonebookTooltipVisible] = useState(
+
+  const [isFestivalTooltipVisible, setIsFestivalTooltipVisible] = useState(
     () => {
-      return false; //비활성화
-      !isTooltipDismissed(PHONEBOOK_TOOLTIP_ID);
+      return !isTooltipDismissed(FESTIVAL_TOOLTIP_ID);
     },
   );
 
@@ -44,6 +45,18 @@ const HomeChipGroup = () => {
       },
       isAIButton: true,
       isActive: false,
+    },
+    {
+      id: "festival2026",
+      iconComponent: LuPartyPopper,
+      title: "2026년 대동제: PAINT THE UNION",
+      onClick: () => {
+        mixpanelTrack.featureClicked(
+          "2026년 대동제: PAINT THE UNION",
+          "Home Chip",
+        );
+        navigate(ROUTES.FESTIVAL2026);
+      },
     },
     {
       id: "phonebook",
@@ -94,19 +107,19 @@ const HomeChipGroup = () => {
   ];
 
   useEffect(() => {
-    if (isPhonebookTooltipVisible) {
-      mixpanelTrack.promotionImpression("Phonebook Tooltip", "Home Chip Group");
+    if (isFestivalTooltipVisible) {
+      mixpanelTrack.promotionImpression("Festival Tooltip", "Home Chip Group");
     }
-  }, [isPhonebookTooltipVisible]);
+  }, [isFestivalTooltipVisible]);
 
-  const handleClosePhonebookTooltip = () => {
+  const handleCloseFestivalTooltip = () => {
     mixpanelTrack.promotionClicked(
-      "Phonebook Tooltip",
+      "Festival Tooltip",
       "Close Button",
       "Home Chip Group",
     );
-    dismissTooltip(PHONEBOOK_TOOLTIP_ID);
-    setIsPhonebookTooltipVisible(false);
+    dismissTooltip(FESTIVAL_TOOLTIP_ID);
+    setIsFestivalTooltipVisible(false);
   };
 
   return (
@@ -116,16 +129,24 @@ const HomeChipGroup = () => {
           .filter((chip) => chip.isActive !== false)
           .map((chip) => {
             const isPhonebookChip = chip.id === "phonebook";
+            const isFestivalChip = chip.id === "festival2026";
+
+            const reserveTooltipSpace =
+              isFestivalChip && isFestivalTooltipVisible;
 
             return (
               <ChipSlot
                 key={chip.id}
-                $reserveTooltipSpace={
-                  isPhonebookChip && isPhonebookTooltipVisible
-                }
+                $reserveTooltipSpace={reserveTooltipSpace}
               >
                 <TooltipAnchor
-                  ref={isPhonebookChip ? phonebookTooltipAnchorRef : undefined}
+                  ref={
+                    isPhonebookChip
+                      ? phonebookTooltipAnchorRef
+                      : isFestivalChip
+                        ? festivalTooltipAnchorRef
+                        : undefined
+                  }
                 >
                   <Chip
                     iconSrc={chip.iconSrc}
@@ -135,13 +156,13 @@ const HomeChipGroup = () => {
                     isAIButton={chip.isAIButton}
                     onClick={chip.onClick}
                   />
-                  {isPhonebookChip && isPhonebookTooltipVisible && (
+                  {isFestivalChip && isFestivalTooltipVisible && (
                     <TooltipMessage
-                      message="신규 기능 오픈!\n원하는 학교 연락처를\n찾아보세요."
-                      onClose={handleClosePhonebookTooltip}
+                      message="2026년 대동제 정보를\n확인해보세요!"
+                      onClose={handleCloseFestivalTooltip}
                       position="bottom"
                       align="center"
-                      anchorRef={phonebookTooltipAnchorRef}
+                      anchorRef={festivalTooltipAnchorRef}
                     />
                   )}
                 </TooltipAnchor>
