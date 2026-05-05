@@ -12,18 +12,33 @@ import Divider from "@/components/common/Divider";
 import { ROUTES } from "@/constants/routes";
 import { FESTIVAL_INFO, FestivalInfoType } from "@/constants/festival";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
+import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
 
 const CATEGORIES = ["홈", "무대", "부스", "이벤트", "기타"];
 
 interface AppItemProps {
   iconSrc?: string | null;
-  type: FestivalInfoType;
+  type: FestivalInfoType | "chat";
   onClick: (type: string) => void;
 }
 
 const AppItem = ({ iconSrc, type, onClick }: AppItemProps) => {
-  const title = FESTIVAL_INFO[type].title;
-  const description = FESTIVAL_INFO[type].description;
+  let itemTitle: string;
+  let itemDescription: string;
+
+  if (type === "chat") {
+    itemTitle = "실시간 채팅방";
+    itemDescription = "축제 참가자들과 소통해보세요.";
+  } else if (!FESTIVAL_INFO[type]) {
+    // console.error(`FESTIVAL_INFO for type '${type}' is undefined.`);
+    return null;
+  } else {
+    itemTitle = FESTIVAL_INFO[type].title;
+    itemDescription = FESTIVAL_INFO[type].description;
+  }
+
+  const title = itemTitle;
+  const description = itemDescription;
   return (
     <AppItemWrapper onClick={() => onClick(type)}>
       {iconSrc && <Icon src={iconSrc || "/default-icon.png"} alt={title} />}
@@ -42,7 +57,7 @@ export default function Festival2026Page() {
   const selectedCategory = params.get("category") || "홈";
 
   useEffect(() => {
-    trackPageView("축제 안내 메인");
+    trackPageView("[축제] 홈");
   }, []);
 
   useEffect(() => {
@@ -72,7 +87,7 @@ export default function Festival2026Page() {
   const handleItemClick = (type: string) => {
     mixpanelTrack.featureClicked(
       FESTIVAL_INFO[type as FestivalInfoType].title,
-      `축제 안내 - ${selectedCategory} 탭`,
+      `[축제] - ${selectedCategory} 탭`,
     );
     navigate(`${ROUTES.FESTIVAL2026_DETAIL}?type=${type}`);
   };
@@ -91,6 +106,8 @@ export default function Festival2026Page() {
                 borderRadius="20px"
                 style={{ maxWidth: DESKTOP_MEDIA }}
               />
+              {/* 여기에 ChatPreviewWidget 삽입 */}
+              <ChatPreviewWidget roomId={1} />
             </HeroBannerColumn>
           </HeroSection>
           <ContentSection>
@@ -128,11 +145,11 @@ export default function Festival2026Page() {
                 >
                   <Link to="/chat/1" style={{ textDecoration: "none" }}>
                     <AppItem
-                      type="chat" // 'chat' 타입을 임시로 사용
+                      type="chat"
                       onClick={() => {
                         mixpanelTrack.featureClicked(
                           "실시간 채팅방",
-                          `축제 안내 - 홈 탭`,
+                          `[축제] - 홈 탭`,
                         );
                       }}
                     />
@@ -327,6 +344,7 @@ const HeroSection = styled.div`
 
 const HeroBannerColumn = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   width: 100%;
 

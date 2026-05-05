@@ -1,6 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
-import { joinChatRoom, getChatMessages } from "../apis/chat";
+import {
+  joinChatRoom,
+  getChatMessages,
+  getPreviousMessages,
+  sendImageMessage,
+} from "../apis/chat";
 import { createStompClient, publishMessage as publish } from "../utils/stomp";
 import useUserStore from "@/stores/useUserStore";
 import { ChatMessage, ChatRoom } from "@/types/chat";
@@ -10,6 +15,8 @@ export const useChat = (roomId: string) => {
   const [roomInfo, setRoomInfo] = useState<ChatRoom | null>(null);
   const [myHash, setMyHash] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
@@ -56,7 +63,7 @@ export const useChat = (roomId: string) => {
 
         connectStomp();
       } catch (err) {
-        console.error("채팅방 입장 실패:", err);
+        console.error("채팅방 입장에 실패했습니다:", err);
         setError("채팅방 입장에 실패했습니다. 다시 시도해주세요.");
       } finally {
         setIsLoading(false);
@@ -81,8 +88,8 @@ export const useChat = (roomId: string) => {
       };
 
       client.onStompError = (frame) => {
-        console.error("브로커 에러:", frame.headers["message"]);
-        console.error("상세 정보:", frame.body);
+        console.error("STOMP 브로커 연결 오류:", frame.headers["message"]);
+        console.error("STOMP 상세 오류 정보:", frame.body);
         setError("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
       };
 
@@ -99,9 +106,73 @@ export const useChat = (roomId: string) => {
     };
   }, [roomId]);
 
-  const sendMessage = (content: string, isAnonymous: boolean) => {
-    publish(clientRef.current, roomId, content, isAnonymous);
+  const sendMessage = (
+    content: string,
+    isAnonymous: boolean,
+    imageFiles: File[] = [],
+  ) => {
+    if (imageFiles.length > 0 && roomInfo?.id) {
+      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles) // 변경: 파일 배열 전달
+        .then((response) => {
+          console.log("이미지 메시지 전송 완료:", response);
+        })
+        .catch((error) => {
+          console.error("이미지 메시지 전송 실패:", error);
+          window.alert("이미지 메시지 전송에 실패했습니다.");
+        });
+    } else {
+      publish(clientRef.current, roomId, content, isAnonymous);
+    }
   };
 
-  return { messages, sendMessage, isLoading, error, myHash, roomInfo };
+  const fetchPreviousMessages = useCallback(async () => {
+    console.log("무한스크롤 시도:", {
+      isFetchingPrevious,
+      hasMore,
+      msgLength: messages.length,
+    });
+    console.log("전체 메시지 배열:", messages);
+    console.log("첫 번째 메시지 상세:", messages[0]);
+
+    const firstMsg = messages[0];
+    const lastId = firstMsg ? firstMsg.messageId : null;
+    console.log("추출된 lastId:", lastId);
+
+    // lastId가 없으면 요청을 보내지 않음 (초기 로딩 전 방지)
+    if (isFetchingPrevious || !hasMore || lastId === null) return;
+
+    setIsFetchingPrevious(true);
+    try {
+      const response: any = await getPreviousMessages(roomId, lastId);
+      const actualMessages = response.data || response;
+
+      if (!actualMessages || actualMessages.length === 0) {
+        setHasMore(false);
+      } else {
+        setMessages((prev) => [...actualMessages, ...prev]);
+        if (actualMessages.length < 20) {
+          // 페이지 당 개수가 20개 미만이면 더 이상 없음
+          setHasMore(false);
+        }
+      }
+    } catch (err) {
+      console.error("이전 메시지 로드 실패:", err);
+      // 2. 에러 발생 시 무한 루프 방지를 위해 잠시 중단하거나 hasMore를 false로 처리
+      setHasMore(false);
+    } finally {
+      setIsFetchingPrevious(false);
+    }
+  }, [roomId, messages, isFetchingPrevious, hasMore]);
+
+  return {
+    messages,
+    sendMessage,
+    isLoading,
+    isFetchingPrevious,
+    hasMore,
+    error,
+    myHash,
+    roomInfo,
+    fetchPreviousMessages,
+  };
 };

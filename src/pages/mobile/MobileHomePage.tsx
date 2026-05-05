@@ -8,6 +8,7 @@ import TitleContentArea from "../../components/desktop/common/TitleContentArea.t
 import Banner from "../../containers/mobile/home/Banner.tsx";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
+import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
 import { useHeader } from "@/context/HeaderContext";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
@@ -304,6 +305,7 @@ export default function MobileHomePage() {
         <CategoryFormSection>
           <CategoryForm />
           <HomeChipGroup />
+          <ChatPreviewWidget roomId={1} /> {/* ChatPreviewWidget 삽입 */}
         </CategoryFormSection>
       </Section>
 
