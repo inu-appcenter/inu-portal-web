@@ -9,7 +9,7 @@ export interface ChatMessage {
   senderNickname: string;
   senderHash?: string;
   content: string;
-  imageUrl?: string; // 이미지 URL (선택 사항)
+  imageCount: number; // 이미지 개수
   createDate: string; // ISO 8601 날짜 문자열
 }
 

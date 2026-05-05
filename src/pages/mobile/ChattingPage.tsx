@@ -6,6 +6,7 @@ import { Send, Users, Loader2, Image } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import ImageModal from "@/components/mobile/chat/ImageModal";
+import { ChatMessage } from "@/types/chat";
 
 // 이미지 리소스 임포트
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
@@ -111,10 +112,10 @@ export default function ChattingPage() {
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // 추후 서버 API 연동 예정
-      console.log("이미지 업로드 시도:", file);
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length > 0) {
+      sendMessage("", isAnonymous, files); // 이미지 전송 시 내용 없이, 파일 배열 전달
+      e.target.value = ""; // 파일 입력 초기화
     }
   };
 
@@ -176,25 +177,14 @@ export default function ChattingPage() {
               )}
               {isMe ? (
                 <ChatItemMy
-                  content={msg.content}
-                  imageUrl={msg.imageUrl}
+                  message={msg}
                   onImageClick={handleImageClick}
-                  time={new Date(msg.createDate).toLocaleTimeString("ko-KR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
                 />
               ) : (
                 <ChatItemOtherPerson
-                  content={msg.content}
-                  imageUrl={msg.imageUrl}
+                  message={msg}
                   onImageClick={handleImageClick}
-                  time={new Date(msg.createDate).toLocaleTimeString("ko-KR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
                   userImageUrl={null}
-                  senderNickname={msg.senderNickname}
                 />
               )}
             </React.Fragment>
@@ -210,6 +200,7 @@ export default function ChattingPage() {
               id="image-upload"
               type="file"
               accept="image/*"
+              multiple // 여러 파일 선택 가능하도록 추가
               style={{ display: "none" }}
               onChange={handleImageUpload}
             />
@@ -463,71 +454,110 @@ const Time = styled.span`
 `;
 
 const ChatItemOtherPerson = ({
-  content,
-  imageUrl,
+  message,
   onImageClick,
-  time,
   userImageUrl,
-  senderNickname,
-}: any) => (
-  <MessageContainer>
-    {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
-    <MessageContent>
-      <SenderName>{senderNickname}</SenderName>
+}: {
+  message: ChatMessage;
+  onImageClick: (url: string) => void;
+  userImageUrl: string | null;
+}) => {
+  const thumbnailUrl =
+    message.imageCount > 0
+      ? `/images/chat/${message.roomId}/thumbnail/${message.messageId}.webp`
+      : undefined;
+  const originalImageUrl =
+    message.imageCount > 0
+      ? `/images/chat/${message.roomId}/${message.messageId}-1.webp`
+      : undefined;
+
+  const time = new Date(message.createDate).toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return (
+    <MessageContainer>
+      {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
+      <MessageContent>
+        <SenderName>{message.senderNickname}</SenderName>
+        <MessageBubble>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            }}
+          >
+            {thumbnailUrl && (
+              <ImageThumbnail
+                src={thumbnailUrl}
+                alt="이미지"
+                onClick={() => originalImageUrl && onImageClick(originalImageUrl)}
+              />
+            )}
+            {message.content && (
+              <Bubble style={{ background: "#FFF", color: "#1C1C1E" }}>
+                {message.content}
+              </Bubble>
+            )}
+          </div>
+          <Time>{time}</Time>
+        </MessageBubble>
+      </MessageContent>
+    </MessageContainer>
+  );
+};
+
+const ChatItemMy = ({
+  message,
+  onImageClick,
+}: {
+  message: ChatMessage;
+  onImageClick: (url: string) => void;
+}) => {
+  const thumbnailUrl =
+    message.imageCount > 0
+      ? `/images/chat/${message.roomId}/thumbnail/${message.messageId}.webp`
+      : undefined;
+  const originalImageUrl =
+    message.imageCount > 0
+      ? `/images/chat/${message.roomId}/${message.messageId}-1.webp`
+      : undefined;
+
+  const time = new Date(message.createDate).toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return (
+    <MyMessageContainer>
       <MessageBubble>
+        <Time>{time}</Time>
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-start",
+            alignItems: "flex-end",
           }}
         >
-          {imageUrl && (
+          {thumbnailUrl && (
             <ImageThumbnail
-              src={imageUrl}
+              src={thumbnailUrl}
               alt="이미지"
-              onClick={() => onImageClick(imageUrl)}
+              onClick={() => originalImageUrl && onImageClick(originalImageUrl)}
             />
           )}
-          {content && (
-            <Bubble style={{ background: "#FFF", color: "#1C1C1E" }}>
-              {content}
+          {message.content && (
+            <Bubble style={{ background: "#5844E4", color: "#FFF" }}>
+              {message.content}
             </Bubble>
           )}
         </div>
-        <Time>{time}</Time>
       </MessageBubble>
-    </MessageContent>
-  </MessageContainer>
-);
-
-const ChatItemMy = ({ content, imageUrl, onImageClick, time }: any) => (
-  <MyMessageContainer>
-    <MessageBubble>
-      <Time>{time}</Time>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-        }}
-      >
-        {imageUrl && (
-          <ImageThumbnail
-            src={imageUrl}
-            alt="이미지"
-            onClick={() => onImageClick(imageUrl)}
-          />
-        )}
-        {content && (
-          <Bubble style={{ background: "#5844E4", color: "#FFF" }}>
-            {content}
-          </Bubble>
-        )}
-      </div>
-    </MessageBubble>
-  </MyMessageContainer>
-);
+    </MyMessageContainer>
+  );
+};
 
 const MyMessageContainer = styled(MessageContainer)`
   justify-content: flex-end;

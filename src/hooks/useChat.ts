@@ -4,6 +4,7 @@ import {
   joinChatRoom,
   getChatMessages,
   getPreviousMessages,
+  sendImageMessage,
 } from "../apis/chat";
 import { createStompClient, publishMessage as publish } from "../utils/stomp";
 import useUserStore from "@/stores/useUserStore";
@@ -62,7 +63,7 @@ export const useChat = (roomId: string) => {
 
         connectStomp();
       } catch (err) {
-        console.error("채팅방 입장 실패:", err);
+        console.error("채팅방 입장에 실패했습니다:", err);
         setError("채팅방 입장에 실패했습니다. 다시 시도해주세요.");
       } finally {
         setIsLoading(false);
@@ -87,8 +88,8 @@ export const useChat = (roomId: string) => {
       };
 
       client.onStompError = (frame) => {
-        console.error("브로커 에러:", frame.headers["message"]);
-        console.error("상세 정보:", frame.body);
+        console.error("STOMP 브로커 연결 오류:", frame.headers["message"]);
+        console.error("STOMP 상세 오류 정보:", frame.body);
         setError("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
       };
 
@@ -105,9 +106,25 @@ export const useChat = (roomId: string) => {
     };
   }, [roomId]);
 
-  const sendMessage = (content: string, isAnonymous: boolean) => {
-    publish(clientRef.current, roomId, content, isAnonymous);
+  const sendMessage = (
+    content: string,
+    isAnonymous: boolean,
+    imageFiles?: File[], // 변경: 단일 파일에서 파일 배열로
+  ) => {
+    if (imageFiles && imageFiles.length > 0 && roomInfo?.id) {
+      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles) // 변경: 파일 배열 전달
+        .then((response) => {
+          console.log("이미지 메시지 전송 완료:", response);
+        })
+        .catch((error) => {
+          console.error("이미지 메시지 전송 실패:", error);
+          window.alert("이미지 메시지 전송에 실패했습니다.");
+        });
+    } else {
+      publish(clientRef.current, roomId, content, isAnonymous);
+    }
   };
+
 
   const fetchPreviousMessages = useCallback(async () => {
     if (isFetchingPrevious || !hasMore || messages.length === 0) return;

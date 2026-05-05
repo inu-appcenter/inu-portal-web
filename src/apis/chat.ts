@@ -5,6 +5,7 @@ import {
   JoinChatRoomResponse,
   GetChatRoomResponse,
   GetPreviousChatMessagesResponse,
+  ChatMessage, // ChatMessage 타입 추가
 } from "@/types/chat";
 
 // 채팅방 생성
@@ -53,6 +54,47 @@ export const getPreviousMessages = async (
     `/api/chat-rooms/${roomId}/messages`,
     {
       params: { lastId },
+    },
+  );
+  return response.data;
+};
+
+// 이미지 포함 채팅 메시지 전송
+export const sendImageMessage = async (
+  roomId: number,
+  content: string,
+  isAnonymous: boolean,
+  imageFiles: File[], // 변경: 단일 파일에서 파일 배열로
+): Promise<ChatMessage> => {
+  const formData = new FormData();
+  formData.append(
+    "messageDto",
+    new Blob(
+      [
+        JSON.stringify({
+          roomId,
+          content,
+          isAnonymous,
+          imageCount: imageFiles.length, // 변경: 파일 배열의 길이로 설정
+        }),
+      ],
+      { type: "application/json" },
+    ),
+  );
+
+  // 변경: 각 이미지 파일을 'images' 이름으로 개별적으로 추가
+  imageFiles.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  const response = await tokenInstance.post<ChatMessage>(
+    "/api/chat/messages",
+    formData,
+    {
+      // 변경: Content-Type 헤더를 명시적으로 지정하지 않음 (Axios가 자동으로 처리)
+      // headers: {
+      //   "Content-Type": "multipart/form-data",
+      // },
     },
   );
   return response.data;

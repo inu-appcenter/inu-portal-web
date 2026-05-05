@@ -31,7 +31,7 @@ const Festival2026DetailPage = () => {
   });
 
   useEffect(() => {
-    trackPageView(`축제 안내 - ${infoData?.title || "상세"}`);
+    trackPageView(`[축제] - ${infoData?.title || "상세"}`);
     if (type && infoData) {
       mixpanelTrack.festivalDetailViewed(type, infoData.title);
     }
