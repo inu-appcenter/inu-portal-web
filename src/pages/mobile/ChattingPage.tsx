@@ -5,7 +5,7 @@ import { useChat } from "@/hooks/useChat";
 import { Send, Users } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 
-// 이미지 리소스 임포트 (기존 ReplyInput 참고)
+// 이미지 리소스 임포트
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
 import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 
@@ -120,44 +120,47 @@ export default function ChattingPage() {
         })}
       </ChattingWrapper>
 
+      {/* 입력창 영역 (fixed 유지) */}
       <FixedInputArea>
-        {/* 커스텀 이미지 체크박스 적용 */}
-        <AnonymousToggle onClick={() => setIsAnonymous(!isAnonymous)}>
-          <img
-            src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
-            alt="익명 체크박스"
-          />
-          <span>익명</span>
-        </AnonymousToggle>
+        <div className="input-wrapper">
+          <AnonymousToggle onClick={() => setIsAnonymous(!isAnonymous)}>
+            <img
+              src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
+              alt="익명 체크박스"
+            />
+            <span>익명</span>
+          </AnonymousToggle>
 
-        <Input
-          placeholder="메시지 입력"
-          ref={inputRef}
-          onInput={handleInput}
-          rows={1}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSendMessage();
-            }
-          }}
-        />
-        <SendButton onClick={handleSendMessage}>
-          <Send size={24} color="#5844E4" />
-        </SendButton>
+          <Input
+            placeholder="메시지 입력"
+            ref={inputRef}
+            onInput={handleInput}
+            rows={1}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+          />
+          <SendButton onClick={handleSendMessage}>
+            <Send size={24} color="#5844E4" />
+          </SendButton>
+        </div>
       </FixedInputArea>
     </ChatPageWrapper>
   );
 }
 
 const ChatPageWrapper = styled.div`
+  position: relative;
   width: 100%;
-  background: #f4f4f4;
   height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
+  background: #f4f4f4;
   overflow: hidden;
 `;
 
@@ -176,39 +179,40 @@ const RoomInfoBanner = styled.div`
 `;
 
 const ChattingWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 10px;
+
+  padding-bottom: 64px;
   box-sizing: border-box;
   background: #f4f4f4;
-`;
 
-const DateDivider = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 24px 0 16px 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: #767676;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #d1d1d1;
+    border-radius: 2px;
+  }
 `;
 
 const FixedInputArea = styled.div`
-  width: 100%;
-  min-height: 64px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background-color: #ffffff;
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  padding-bottom: calc(
-    8px + env(safe-area-inset-bottom)
-  ); /* 아이폰 하단 대응 */
-  box-sizing: border-box;
-  gap: 8px;
   border-top: 1px solid #eaeaea;
-  flex-shrink: 0;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    gap: 8px;
+    min-height: 64px;
+    box-sizing: border-box;
+  }
 `;
 
 const Input = styled.textarea`
@@ -244,52 +248,51 @@ const AnonymousToggle = styled.div`
   gap: 6px;
   cursor: pointer;
   user-select: none;
-
   img {
     width: 18px;
     height: 18px;
-    display: block;
-    flex-shrink: 0;
   }
-
   span {
     font-size: 13px;
     color: #9fa3a6;
-    white-space: nowrap;
   }
 `;
 
-// 메시지 컴포넌트들 스타일 동일 유지
+const DateDivider = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px 0 16px 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #767676;
+`;
+
 const MessageContainer = styled.div`
   display: flex;
   margin: 0 16px 12px;
 `;
-
 const ProfileImage = styled.img`
   width: 36px;
   height: 36px;
   border-radius: 50%;
   margin-right: 12px;
 `;
-
 const MessageContent = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const SenderName = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: #1c1c1e;
   margin-bottom: 4px;
 `;
-
 const MessageBubble = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
 `;
-
 const Bubble = styled.div`
   padding: 10px 14px;
   border-radius: 20px;
@@ -298,7 +301,6 @@ const Bubble = styled.div`
   max-width: 240px;
   word-break: break-word;
 `;
-
 const Time = styled.span`
   font-size: 12px;
   color: #767676;
@@ -310,12 +312,7 @@ const ChatItemOtherPerson = ({
   time,
   userImageUrl,
   senderNickname,
-}: {
-  content: string;
-  time: string;
-  userImageUrl: string | null;
-  senderNickname: string;
-}) => (
+}: any) => (
   <MessageContainer>
     {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
     <MessageContent>
@@ -330,11 +327,7 @@ const ChatItemOtherPerson = ({
   </MessageContainer>
 );
 
-const MyMessageContainer = styled(MessageContainer)`
-  justify-content: flex-end;
-`;
-
-const ChatItemMy = ({ content, time }: { content: string; time: string }) => (
+const ChatItemMy = ({ content, time }: any) => (
   <MyMessageContainer>
     <MessageBubble>
       <Time>{time}</Time>
@@ -344,3 +337,7 @@ const ChatItemMy = ({ content, time }: { content: string; time: string }) => (
     </MessageBubble>
   </MyMessageContainer>
 );
+
+const MyMessageContainer = styled(MessageContainer)`
+  justify-content: flex-end;
+`;
