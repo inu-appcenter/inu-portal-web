@@ -6,20 +6,23 @@ interface TitleLineProps {
   title: string | React.ReactNode;
   link?: string;
   externalLink?: string;
+  onClick?: () => void;
 }
 
-const TitleLine = ({ title, link, externalLink }: TitleLineProps) => {
+const TitleLine = ({ title, link, externalLink, onClick }: TitleLineProps) => {
   const navigate = useNavigate();
-  const hasMoreLink = Boolean(link || externalLink);
+  const hasMoreLink = Boolean(link || externalLink || onClick);
 
   const handleClick = () => {
     if (!hasMoreLink) return;
 
-    // 타이틀이 문자열인 경우 이를 사용, 아니면 기본값 사용
-    const featureName = typeof title === "string" ? `${title} 더보기` : "위젯 더보기";
+    const featureName =
+      typeof title === "string" ? `${title} 더보기` : "위젯 더보기";
     mixpanelTrack.featureClicked(featureName, "Home Widget Header");
 
-    if (link) {
+    if (onClick) {
+      onClick();
+    } else if (link) {
       navigate(link);
     } else if (externalLink) {
       window.open(externalLink, "_blank");
@@ -60,18 +63,15 @@ const TitleLineWrapper = styled.div<{ $clickable: boolean }>`
   box-sizing: border-box;
   gap: 8px;
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
-
   width: 100%;
   height: fit-content;
 
   .title {
     color: #000;
-    //text-align: center;
     font-size: 18px;
     font-style: normal;
     font-weight: 600;
     line-height: normal;
-
     width: 100%;
   }
 `;

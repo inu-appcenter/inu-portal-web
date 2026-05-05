@@ -553,4 +553,49 @@ export const mixpanelTrack = {
     });
     resetMixpanel();
   },
+
+  /**
+   * 축제 페이지 카테고리 탭 전환
+   */
+  festivalCategorySwitched: (categoryName: string) => {
+    trackEvent("[축제] 카테고리 탭 전환", {
+      category_name: categoryName,
+    });
+  },
+
+  /**
+   * 축제 상세 정보 조회
+   */
+  festivalDetailViewed: (infoType: string, infoTitle: string) => {
+    trackEvent("[축제] 상세 정보 조회", {
+      info_type: infoType,
+      info_title: infoTitle,
+    });
+  },
+
+  /**
+   * 축제 채팅방 진입 시도
+   */
+  festivalChatEntered: (roomId: number) => {
+    trackEvent("[축제] 채팅방 진입", {
+      room_id: roomId,
+    });
+  },
+
+  /**
+   * 채팅 메시지 전송
+   */
+  chatMessageSent: (
+    roomId: string,
+    isAnonymous: boolean,
+    hasImage: boolean,
+    isFestivalChat: boolean = false,
+  ) => {
+    trackEvent("[채팅] 메시지 전송", {
+      room_id: roomId,
+      is_anonymous: isAnonymous,
+      has_image: hasImage,
+      is_festival_chat: isFestivalChat,
+    });
+  },
 };

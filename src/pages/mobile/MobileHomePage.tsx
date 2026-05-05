@@ -8,6 +8,7 @@ import TitleContentArea from "../../components/desktop/common/TitleContentArea.t
 import Banner from "../../containers/mobile/home/Banner.tsx";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
+import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
 import { useHeader } from "@/context/HeaderContext";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
@@ -25,7 +26,7 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import InfoBottomSheet from "@/components/mobile/portal/InfoBottomSheet";
 import { MobileSchoolAlarmSetting } from "@/pages/mobile/AlarmSettingPage";
 import BottomButtonGroup from "@/components/common/BottomButtonGroup";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
@@ -304,6 +305,14 @@ export default function MobileHomePage() {
         <CategoryFormSection>
           <CategoryForm />
           <HomeChipGroup />
+          <Link to={ROUTES.FESTIVAL2026} style={{ textDecoration: "none" }}>
+            <TitleContentArea
+              title={"PAINT THE UNION 오픈채팅방"}
+              description={"UNI와 함께 축제를 공유해보세요!"}
+            >
+              <ChatPreviewWidget roomId={1} />
+            </TitleContentArea>
+          </Link>
         </CategoryFormSection>
       </Section>
 
