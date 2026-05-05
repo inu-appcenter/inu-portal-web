@@ -7,6 +7,10 @@ import Box from "@/components/common/Box";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import { createChatRoom } from "@/apis/chat";
 
+// 체크박스 이미지 리소스 임포트
+import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
+import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
+
 const MobileAdminChatPage = () => {
   useHeader({
     title: "채팅방 관리",
@@ -25,9 +29,15 @@ const MobileAdminChatPage = () => {
 
     setIsLoading(true);
     try {
-      const response = await createChatRoom(title, maxCapacity, isAnonymous);
+      const response: any = await createChatRoom(
+        title,
+        maxCapacity,
+        isAnonymous,
+      );
+      // API 응답 구조에 따른 데이터 추출
+      const actualData = response.data || response;
+      const roomId = actualData.roomId || actualData.id;
 
-      const roomId = response.data?.roomId || response.data?.id || response.id;
       alert(`채팅방이 생성되었습니다. ID: ${roomId}`);
       setTitle("");
     } catch (error) {
@@ -71,15 +81,13 @@ const MobileAdminChatPage = () => {
               />
             </FormGroup>
 
+            {/* 이미지 기반 커스텀 체크박스 적용 */}
             <CheckboxGroup onClick={() => setIsAnonymous(!isAnonymous)}>
-              <input
-                type="checkbox"
-                id="isAnonymous"
-                checked={isAnonymous}
-                onChange={() => {}}
-                readOnly
+              <img
+                src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
+                alt="익명 체크"
               />
-              <label htmlFor="isAnonymous">익명 전용 채팅</label>
+              <span>익명 전용 채팅</span>
             </CheckboxGroup>
 
             <ButtonGroup>
@@ -167,17 +175,16 @@ const CheckboxGroup = styled.div`
   padding: 4px 0;
   user-select: none;
 
-  input {
+  img {
     width: 20px;
     height: 20px;
-    cursor: pointer;
-    pointer-events: none;
+    flex-shrink: 0;
+    display: block;
   }
 
-  label {
-    cursor: pointer;
-    pointer-events: none;
+  span {
     font-weight: 500;
+    color: #1e293b;
   }
 `;
 
