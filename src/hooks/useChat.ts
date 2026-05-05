@@ -109,9 +109,9 @@ export const useChat = (roomId: string) => {
   const sendMessage = (
     content: string,
     isAnonymous: boolean,
-    imageFiles?: File[], // 변경: 단일 파일에서 파일 배열로
+    imageFiles: File[] = [],
   ) => {
-    if (imageFiles && imageFiles.length > 0 && roomInfo?.id) {
+    if (imageFiles.length > 0 && roomInfo?.id) {
       sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles) // 변경: 파일 배열 전달
         .then((response) => {
           console.log("이미지 메시지 전송 완료:", response);
@@ -125,26 +125,40 @@ export const useChat = (roomId: string) => {
     }
   };
 
-
   const fetchPreviousMessages = useCallback(async () => {
-    if (isFetchingPrevious || !hasMore || messages.length === 0) return;
+    console.log("무한스크롤 시도:", {
+      isFetchingPrevious,
+      hasMore,
+      msgLength: messages.length,
+    });
+    console.log("전체 메시지 배열:", messages);
+    console.log("첫 번째 메시지 상세:", messages[0]);
+
+    const firstMsg = messages[0];
+    const lastId = firstMsg ? firstMsg.messageId : null;
+    console.log("추출된 lastId:", lastId);
+
+    // lastId가 없으면 요청을 보내지 않음 (초기 로딩 전 방지)
+    if (isFetchingPrevious || !hasMore || lastId === null) return;
 
     setIsFetchingPrevious(true);
     try {
-      const lastId = messages[0].messageId;
-      const previousMessages: any = await getPreviousMessages(roomId, lastId);
-      const actualMessages = previousMessages.data || previousMessages;
+      const response: any = await getPreviousMessages(roomId, lastId);
+      const actualMessages = response.data || response;
 
-      if (actualMessages.length === 0) {
+      if (!actualMessages || actualMessages.length === 0) {
         setHasMore(false);
       } else {
         setMessages((prev) => [...actualMessages, ...prev]);
-        if (actualMessages.length < 50) {
+        if (actualMessages.length < 20) {
+          // 페이지 당 개수가 20개 미만이면 더 이상 없음
           setHasMore(false);
         }
       }
     } catch (err) {
       console.error("이전 메시지 로드 실패:", err);
+      // 2. 에러 발생 시 무한 루프 방지를 위해 잠시 중단하거나 hasMore를 false로 처리
+      setHasMore(false);
     } finally {
       setIsFetchingPrevious(false);
     }

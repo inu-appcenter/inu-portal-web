@@ -17,11 +17,6 @@ const fadeIn = keyframes`
   to { opacity: 1; }
 `;
 
-const fadeOut = keyframes`
-  from { opacity: 1; }
-  to { opacity: 0; }
-`;
-
 interface ImageModalProps {
   imageUrl: string | null;
   isOpen: boolean;
@@ -56,15 +51,9 @@ const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.85);
-
-  &[data-state="open"] {
-    animation: ${fadeIn} 200ms ease-out;
-  }
-
-  &[data-state="closed"] {
-    animation: ${fadeOut} 200ms ease-in;
-  }
+  background-color: rgba(0, 0, 0, 0.4); // 투명도 낮춤
+  backdrop-filter: blur(2px); // 블러 최소화
+  animation: ${fadeIn} 200ms ease-out;
 `;
 
 const StyledContent = styled(Dialog.Content)`

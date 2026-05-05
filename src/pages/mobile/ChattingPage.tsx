@@ -12,6 +12,8 @@ import { ChatMessage } from "@/types/chat";
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
 import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [inputValue, setInputValue] = useState<string>("");
@@ -49,15 +51,30 @@ export default function ChattingPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollHeightRef = useRef<number>(0);
+  const [intersectionRoot, setIntersectionRoot] = useState<Element | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      setIntersectionRoot(scrollRef.current);
+    }
+  }, []);
 
   const entry = useIntersectionObserver(sentinelRef, {
     threshold: 0,
-    root: scrollRef.current,
+    root: intersectionRoot,
     freezeOnceVisible: false,
   });
 
   useEffect(() => {
-    if (entry?.isIntersecting && hasMore && !isFetchingPrevious) {
+    if (
+      !isLoading &&
+      entry?.isIntersecting &&
+      hasMore &&
+      !isFetchingPrevious &&
+      messages.length > 0
+    ) {
       fetchPreviousMessages();
     }
   }, [
@@ -67,7 +84,6 @@ export default function ChattingPage() {
     fetchPreviousMessages,
   ]);
 
-  // 이전 메시지 로딩 시 스크롤 위치 보존
   useLayoutEffect(() => {
     if (isFetchingPrevious && scrollRef.current) {
       scrollHeightRef.current = scrollRef.current.scrollHeight;
@@ -77,16 +93,17 @@ export default function ChattingPage() {
   useEffect(() => {
     if (!scrollRef.current) return;
 
-    if (isFetchingPrevious) {
-      // 메시지가 추가된 후 스크롤 위치 조정
+    if (!isFetchingPrevious && scrollHeightRef.current > 0) {
       const delta = scrollRef.current.scrollHeight - scrollHeightRef.current;
       if (delta > 0) {
-        scrollRef.current.scrollTop += delta;
+        scrollRef.current.scrollTop = delta; // 위치 보존
       }
-    } else {
-      // 새 메시지가 오거나 초기 로드 시 맨 아래로
-      // 단, 사용자가 이미 위를 보고 있는 경우(스크롤이 맨 아래가 아닌 경우)는 선택적으로 처리 가능
-      // 여기서는 단순하게 항상 맨 아래로 이동
+      scrollHeightRef.current = 0; // 참조값 초기화
+      return;
+    }
+
+    // 이전 메시지 로딩 중이 아닐 때만 맨 아래로 이동
+    if (!isFetchingPrevious) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isFetchingPrevious]);
@@ -176,10 +193,7 @@ export default function ChattingPage() {
                 <DateDivider>{formatDateLine(msg.createDate)}</DateDivider>
               )}
               {isMe ? (
-                <ChatItemMy
-                  message={msg}
-                  onImageClick={handleImageClick}
-                />
+                <ChatItemMy message={msg} onImageClick={handleImageClick} />
               ) : (
                 <ChatItemOtherPerson
                   message={msg}
@@ -259,7 +273,7 @@ const ChatPageWrapper = styled.div`
   height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
-  background: #f4f4f4;
+  //background: #f4f4f4;
   overflow: hidden;
 `;
 
@@ -283,7 +297,7 @@ const ChattingWrapper = styled.div`
 
   padding-bottom: 64px;
   box-sizing: border-box;
-  background: #f4f4f4;
+  //background: #f4f4f4;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -439,12 +453,19 @@ const Bubble = styled.div`
 `;
 
 const ImageThumbnail = styled.img`
-  max-width: 200px;
-  max-height: 200px;
+  width: 50vw;
+  height: auto;
+  min-width: 100px;
+  background: gray;
   border-radius: 12px;
   cursor: pointer;
   object-fit: cover;
   margin-bottom: 4px;
+
+  /* PC 환경 대응 미디어 쿼리 */
+  @media (min-width: 1024px) {
+    width: 30vw;
+  }
 `;
 
 const Time = styled.span`
@@ -464,11 +485,11 @@ const ChatItemOtherPerson = ({
 }) => {
   const thumbnailUrl =
     message.imageCount > 0
-      ? `/images/chat/${message.roomId}/thumbnail/${message.messageId}.webp`
+      ? `${BASE_URL}images/chat/${message.roomId}/thumbnail/${message.messageId}`
       : undefined;
   const originalImageUrl =
     message.imageCount > 0
-      ? `/images/chat/${message.roomId}/${message.messageId}-1.webp`
+      ? `${BASE_URL}images/chat/${message.roomId}/${message.messageId}-1`
       : undefined;
 
   const time = new Date(message.createDate).toLocaleTimeString("ko-KR", {
@@ -493,7 +514,9 @@ const ChatItemOtherPerson = ({
               <ImageThumbnail
                 src={thumbnailUrl}
                 alt="이미지"
-                onClick={() => originalImageUrl && onImageClick(originalImageUrl)}
+                onClick={() =>
+                  originalImageUrl && onImageClick(originalImageUrl)
+                }
               />
             )}
             {message.content && (
@@ -518,11 +541,11 @@ const ChatItemMy = ({
 }) => {
   const thumbnailUrl =
     message.imageCount > 0
-      ? `/images/chat/${message.roomId}/thumbnail/${message.messageId}.webp`
+      ? `${BASE_URL}images/chat/${message.roomId}/thumbnail/${message.messageId}`
       : undefined;
   const originalImageUrl =
     message.imageCount > 0
-      ? `/images/chat/${message.roomId}/${message.messageId}-1.webp`
+      ? `${BASE_URL}images/chat/${message.roomId}/${message.messageId}-1`
       : undefined;
 
   const time = new Date(message.createDate).toLocaleTimeString("ko-KR", {

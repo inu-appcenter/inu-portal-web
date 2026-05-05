@@ -6,7 +6,9 @@ import {
   GetChatRoomResponse,
   GetPreviousChatMessagesResponse,
   ChatMessage, // ChatMessage 타입 추가
+  GetPublicChatMessagesResponse, // GetPublicChatMessagesResponse 타입 추가
 } from "@/types/chat";
+import axiosInstance from "@/apis/axiosInstance";
 
 // 채팅방 생성
 export const createChatRoom = async (
@@ -90,12 +92,16 @@ export const sendImageMessage = async (
   const response = await tokenInstance.post<ChatMessage>(
     "/api/chat/messages",
     formData,
-    {
-      // 변경: Content-Type 헤더를 명시적으로 지정하지 않음 (Axios가 자동으로 처리)
-      // headers: {
-      //   "Content-Type": "multipart/form-data",
-      // },
-    },
+  );
+  return response.data;
+};
+
+// 채팅방 최신 메시지 2개 조회 (Public)
+export const getPublicChatMessages = async (
+  roomId: number,
+): Promise<GetPublicChatMessagesResponse> => {
+  const response = await axiosInstance.get<GetPublicChatMessagesResponse>(
+    `/api/chat-rooms/${roomId}/messages/public`,
   );
   return response.data;
 };

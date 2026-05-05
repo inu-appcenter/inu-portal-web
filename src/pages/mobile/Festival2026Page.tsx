@@ -12,6 +12,7 @@ import Divider from "@/components/common/Divider";
 import { ROUTES } from "@/constants/routes";
 import { FESTIVAL_INFO, FestivalInfoType } from "@/constants/festival";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
+import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
 
 const CATEGORIES = ["홈", "무대", "부스", "이벤트", "기타"];
 
@@ -105,6 +106,8 @@ export default function Festival2026Page() {
                 borderRadius="20px"
                 style={{ maxWidth: DESKTOP_MEDIA }}
               />
+              {/* 여기에 ChatPreviewWidget 삽입 */}
+              <ChatPreviewWidget roomId={1} />
             </HeroBannerColumn>
           </HeroSection>
           <ContentSection>
@@ -341,6 +344,7 @@ const HeroSection = styled.div`
 
 const HeroBannerColumn = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   width: 100%;
 
