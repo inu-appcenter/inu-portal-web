@@ -13,6 +13,26 @@ import { ROUTES } from "@/constants/routes";
 import { FESTIVAL_INFO, FestivalInfoType } from "@/constants/festival";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
+import useUserStore from "@/stores/useUserStore";
+
+function getStoredAccessToken() {
+  const storedTokenInfo = localStorage.getItem("tokenInfo");
+
+  if (!storedTokenInfo) {
+    return "";
+  }
+
+  try {
+    const parsedTokenInfo = JSON.parse(storedTokenInfo) as {
+      accessToken?: string;
+    };
+
+    return parsedTokenInfo.accessToken ?? "";
+  } catch (error) {
+    console.error("tokenInfo 파싱 실패", error);
+    return "";
+  }
+}
 
 const CATEGORIES = ["홈", "무대", "부스", "이벤트", "기타"];
 
@@ -92,6 +112,23 @@ export default function Festival2026Page() {
     navigate(`${ROUTES.FESTIVAL2026_DETAIL}?type=${type}`);
   };
 
+  const { tokenInfo } = useUserStore();
+
+  const isLoggedIn =
+    Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
+  const handleLinkClick = (e: any) => {
+    if (!isLoggedIn) {
+      e.preventDefault(); // Link 태그 기본 이동 방지
+      const confirmLogin = window.confirm(
+        "로그인 후 채팅방에 입장할 수 있어요.\n로그인 페이지로 이동할까요?",
+      );
+
+      if (confirmLogin) {
+        navigate(ROUTES.LOGIN); // 로그인 페이지 경로
+      }
+    }
+  };
+
   return (
     <Container>
       {selectedCategory === "홈" ? (
@@ -106,8 +143,19 @@ export default function Festival2026Page() {
                 borderRadius="20px"
                 style={{ maxWidth: DESKTOP_MEDIA }}
               />
-              {/* 여기에 ChatPreviewWidget 삽입 */}
-              <ChatPreviewWidget roomId={1} />
+              <Link
+                to="/chat/1"
+                style={{ textDecoration: "none" }}
+                onClick={handleLinkClick}
+              >
+                <TitleContentArea
+                  title={"PAINT THE UNION 오픈채팅방"}
+                  description={"UNI와 함께 축제를 공유해보세요!"}
+                  style={{ marginTop: "16px" }}
+                >
+                  <ChatPreviewWidget roomId={1} />
+                </TitleContentArea>
+              </Link>
             </HeroBannerColumn>
           </HeroSection>
           <ContentSection>
@@ -129,31 +177,6 @@ export default function Festival2026Page() {
                   <AppItem type="anti_scalping" onClick={handleItemClick} />
                   <Divider />
                   <AppItem type="faq" onClick={handleItemClick} />
-                </div>
-              </Box>
-            </TitleContentArea>
-
-            {/* 실시간 소통 섹션 추가 */}
-            <TitleContentArea title="실시간 소통">
-              <Box>
-                <div
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Link to="/chat/1" style={{ textDecoration: "none" }}>
-                    <AppItem
-                      type="chat"
-                      onClick={() => {
-                        mixpanelTrack.featureClicked(
-                          "실시간 채팅방",
-                          `[축제] - 홈 탭`,
-                        );
-                      }}
-                    />
-                  </Link>
                 </div>
               </Box>
             </TitleContentArea>

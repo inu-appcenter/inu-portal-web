@@ -12,7 +12,9 @@ const ChatPreviewWrapper = styled.div`
   background-color: #f4f4f4;
   border-radius: 12px;
   padding: 16px;
-  margin-bottom: 20px;
+  //margin-bottom: 20px;
+  width: 100%;
+  min-height: 100px;
 `;
 
 const MessageContainer = styled.div`

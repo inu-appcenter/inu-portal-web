@@ -456,6 +456,7 @@ const ImageThumbnail = styled.img`
   width: 50vw;
   height: auto;
   min-width: 100px;
+  min-height: 150px;
   background: gray;
   border-radius: 12px;
   cursor: pointer;
