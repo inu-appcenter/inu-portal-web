@@ -12,6 +12,7 @@ import deptNoticeBanner from "@/resources/assets/banner/학과공지알리미.we
 import busBanner from "@/resources/assets/banner/인입런.webp";
 import surveyBanner from "@/resources/assets/banner/설문배너.webp";
 import appcenterBanner from "@/resources/assets/banner/앱센터배너.webp";
+import 축제배너 from "@/resources/assets/Festival/2026-1/PaintTheUnion배너이미지.webp";
 
 import WeatherForm from "./Weather.tsx";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -63,6 +64,16 @@ const Banner = () => {
         render: () => (
           <BannerSurface>
             <WeatherForm />
+          </BannerSurface>
+        ),
+      },
+      {
+        id: "festival",
+        alt: "축제 배너",
+        onClick: () => navigate(ROUTES.FESTIVAL2026),
+        render: () => (
+          <BannerSurface>
+            <BannerImage src={축제배너} alt="축제 배너" loading="eager" />
           </BannerSurface>
         ),
       },

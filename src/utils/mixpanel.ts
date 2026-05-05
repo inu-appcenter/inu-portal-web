@@ -572,4 +572,30 @@ export const mixpanelTrack = {
       info_title: infoTitle,
     });
   },
+
+  /**
+   * 축제 채팅방 진입 시도
+   */
+  festivalChatEntered: (roomId: number) => {
+    trackEvent("[축제] 채팅방 진입", {
+      room_id: roomId,
+    });
+  },
+
+  /**
+   * 채팅 메시지 전송
+   */
+  chatMessageSent: (
+    roomId: string,
+    isAnonymous: boolean,
+    hasImage: boolean,
+    isFestivalChat: boolean = false,
+  ) => {
+    trackEvent("[채팅] 메시지 전송", {
+      room_id: roomId,
+      is_anonymous: isAnonymous,
+      has_image: hasImage,
+      is_festival_chat: isFestivalChat,
+    });
+  },
 };

@@ -160,7 +160,7 @@ const HomeChipGroup = () => {
                     <TooltipMessage
                       message="2026년 대동제 정보를\n확인해보세요!"
                       onClose={handleCloseFestivalTooltip}
-                      position="bottom"
+                      position="top"
                       align="center"
                       anchorRef={festivalTooltipAnchorRef}
                     />

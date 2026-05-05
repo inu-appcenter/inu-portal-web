@@ -4,7 +4,7 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useMemo, useEffect } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import 배너이미지 from "@/resources/assets/Festival/2026-1/PaintTheUnion배너이미지.webp";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
@@ -13,6 +13,26 @@ import { ROUTES } from "@/constants/routes";
 import { FESTIVAL_INFO, FestivalInfoType } from "@/constants/festival";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
+import useUserStore from "@/stores/useUserStore";
+
+function getStoredAccessToken() {
+  const storedTokenInfo = localStorage.getItem("tokenInfo");
+
+  if (!storedTokenInfo) {
+    return "";
+  }
+
+  try {
+    const parsedTokenInfo = JSON.parse(storedTokenInfo) as {
+      accessToken?: string;
+    };
+
+    return parsedTokenInfo.accessToken ?? "";
+  } catch (error) {
+    console.error("tokenInfo 파싱 실패", error);
+    return "";
+  }
+}
 
 const CATEGORIES = ["홈", "무대", "부스", "이벤트", "기타"];
 
@@ -92,6 +112,26 @@ export default function Festival2026Page() {
     navigate(`${ROUTES.FESTIVAL2026_DETAIL}?type=${type}`);
   };
 
+  const { tokenInfo } = useUserStore();
+
+  const isLoggedIn =
+    Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
+  const handleLinkClick = () => {
+    mixpanelTrack.festivalChatEntered(1);
+
+    if (!isLoggedIn) {
+      const confirmLogin = window.confirm(
+        "로그인 후 채팅방에 입장할 수 있어요.\n로그인 페이지로 이동할까요?",
+      );
+
+      if (confirmLogin) {
+        navigate(ROUTES.LOGIN); // 로그인 페이지 경로
+      }
+    } else {
+      navigate("/chat/1");
+    }
+  };
+
   return (
     <Container>
       {selectedCategory === "홈" ? (
@@ -106,8 +146,14 @@ export default function Festival2026Page() {
                 borderRadius="20px"
                 style={{ maxWidth: DESKTOP_MEDIA }}
               />
-              {/* 여기에 ChatPreviewWidget 삽입 */}
-              <ChatPreviewWidget roomId={1} />
+              <TitleContentArea
+                title={"PAINT THE UNION 오픈채팅방"}
+                description={"여기를 눌러 다른 UNI와 함께 축제를 공유해보세요!"}
+                style={{ marginTop: "16px" }}
+                onClick={handleLinkClick}
+              >
+                <ChatPreviewWidget roomId={1} />
+              </TitleContentArea>
             </HeroBannerColumn>
           </HeroSection>
           <ContentSection>
@@ -129,31 +175,6 @@ export default function Festival2026Page() {
                   <AppItem type="anti_scalping" onClick={handleItemClick} />
                   <Divider />
                   <AppItem type="faq" onClick={handleItemClick} />
-                </div>
-              </Box>
-            </TitleContentArea>
-
-            {/* 실시간 소통 섹션 추가 */}
-            <TitleContentArea title="실시간 소통">
-              <Box>
-                <div
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Link to="/chat/1" style={{ textDecoration: "none" }}>
-                    <AppItem
-                      type="chat"
-                      onClick={() => {
-                        mixpanelTrack.featureClicked(
-                          "실시간 채팅방",
-                          `[축제] - 홈 탭`,
-                        );
-                      }}
-                    />
-                  </Link>
                 </div>
               </Box>
             </TitleContentArea>

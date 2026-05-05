@@ -7,6 +7,7 @@ import { useHeader } from "@/context/HeaderContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import { ChatMessage } from "@/types/chat";
+import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 
 // 이미지 리소스 임포트
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
@@ -14,12 +15,34 @@ import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// 축제 로고에서 추출한 파스텔 팔레트
+const PASTEL_COLORS = [
+  "#FFF4BD", // 파스텔 노랑
+  "#E2F0D9", // 파스텔 초록
+  "#FFD9D9", // 파스텔 빨강
+  "#D9EFFF", // 파스텔 파랑
+  "#EADBFF", // 파스텔 보라
+  "#FFE5D0", // 파스텔 주황
+];
+
+// 메시지 ID를 기반으로 고유 색상을 반환하는 함수
+const getMessageColor = (messageId: number | string) => {
+  const idStr = String(messageId);
+  const lastChar = idStr.charAt(idStr.length - 1);
+  const index = isNaN(parseInt(lastChar)) ? 0 : parseInt(lastChar);
+  return PASTEL_COLORS[index % PASTEL_COLORS.length];
+};
+
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [inputValue, setInputValue] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  useEffect(() => {
+    trackPageView("채팅방", { room_id: roomId });
+  }, [roomId]);
 
   const {
     messages,
@@ -37,10 +60,8 @@ export default function ChattingPage() {
     title: roomInfo ? roomInfo.title : "채팅방",
   });
 
-  // 채팅방 정보가 로드되면 초기 익명 상태 설정
   useEffect(() => {
     if (roomInfo) {
-      // 익명 방이 아니면 익명 체크 해제 및 고정
       if (!roomInfo.anonymous) {
         setIsAnonymous(false);
       }
@@ -82,6 +103,8 @@ export default function ChattingPage() {
     hasMore,
     isFetchingPrevious,
     fetchPreviousMessages,
+    messages.length,
+    isLoading,
   ]);
 
   useLayoutEffect(() => {
@@ -96,13 +119,12 @@ export default function ChattingPage() {
     if (!isFetchingPrevious && scrollHeightRef.current > 0) {
       const delta = scrollRef.current.scrollHeight - scrollHeightRef.current;
       if (delta > 0) {
-        scrollRef.current.scrollTop = delta; // 위치 보존
+        scrollRef.current.scrollTop = delta;
       }
-      scrollHeightRef.current = 0; // 참조값 초기화
+      scrollHeightRef.current = 0;
       return;
     }
 
-    // 이전 메시지 로딩 중이 아닐 때만 맨 아래로 이동
     if (!isFetchingPrevious) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -118,6 +140,15 @@ export default function ChattingPage() {
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
+
+    const isFestivalChat = roomId === "1";
+    mixpanelTrack.chatMessageSent(
+      roomId ?? "",
+      isAnonymous,
+      false,
+      isFestivalChat,
+    );
+
     sendMessage(inputValue.trim(), isAnonymous);
     setInputValue("");
     if (inputRef.current) inputRef.current.style.height = "auto";
@@ -131,8 +162,16 @@ export default function ChattingPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     if (files.length > 0) {
-      sendMessage("", isAnonymous, files); // 이미지 전송 시 내용 없이, 파일 배열 전달
-      e.target.value = ""; // 파일 입력 초기화
+      const isFestivalChat = roomId === "1";
+      mixpanelTrack.chatMessageSent(
+        roomId ?? "",
+        isAnonymous,
+        true,
+        isFestivalChat,
+      );
+
+      sendMessage("", isAnonymous, files);
+      e.target.value = "";
     }
   };
 
@@ -206,7 +245,6 @@ export default function ChattingPage() {
         })}
       </ChattingWrapper>
 
-      {/* 입력창 영역 (fixed 유지) */}
       <FixedInputArea>
         <div className="input-wrapper">
           <label htmlFor="image-upload">
@@ -214,7 +252,7 @@ export default function ChattingPage() {
               id="image-upload"
               type="file"
               accept="image/*"
-              multiple // 여러 파일 선택 가능하도록 추가
+              multiple
               style={{ display: "none" }}
               onChange={handleImageUpload}
             />
@@ -273,7 +311,6 @@ const ChatPageWrapper = styled.div`
   height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
-  //background: #f4f4f4;
   overflow: hidden;
 `;
 
@@ -294,10 +331,8 @@ const RoomInfoBanner = styled.div`
 const ChattingWrapper = styled.div`
   flex: 1;
   overflow-y: auto;
-
   padding-bottom: 64px;
   box-sizing: border-box;
-  //background: #f4f4f4;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -422,47 +457,56 @@ const MessageContainer = styled.div`
   display: flex;
   margin: 0 16px 12px;
 `;
+
 const ProfileImage = styled.img`
   width: 36px;
   height: 36px;
   border-radius: 50%;
   margin-right: 12px;
 `;
+
 const MessageContent = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
 const SenderName = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: #1c1c1e;
   margin-bottom: 4px;
 `;
+
 const MessageBubble = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
 `;
-const Bubble = styled.div`
+
+// 파스텔톤 배경색과 그림자가 적용된 말풍선
+const Bubble = styled.div<{ $bgColor: string }>`
   padding: 10px 14px;
   border-radius: 20px;
   font-size: 16px;
   line-height: 22px;
   max-width: 240px;
   word-break: break-word;
+  background-color: ${(props) => props.$bgColor};
+  color: #1c1c1e;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 `;
 
 const ImageThumbnail = styled.img`
   width: 50vw;
   height: auto;
   min-width: 100px;
+  min-height: 150px;
   background: gray;
   border-radius: 12px;
   cursor: pointer;
   object-fit: cover;
   margin-bottom: 4px;
 
-  /* PC 환경 대응 미디어 쿼리 */
   @media (min-width: 1024px) {
     width: 30vw;
   }
@@ -497,6 +541,8 @@ const ChatItemOtherPerson = ({
     minute: "2-digit",
   });
 
+  const bgColor = getMessageColor(message.messageId);
+
   return (
     <MessageContainer>
       {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
@@ -520,9 +566,7 @@ const ChatItemOtherPerson = ({
               />
             )}
             {message.content && (
-              <Bubble style={{ background: "#FFF", color: "#1C1C1E" }}>
-                {message.content}
-              </Bubble>
+              <Bubble $bgColor={bgColor}>{message.content}</Bubble>
             )}
           </div>
           <Time>{time}</Time>
@@ -553,6 +597,8 @@ const ChatItemMy = ({
     minute: "2-digit",
   });
 
+  const bgColor = getMessageColor(message.messageId);
+
   return (
     <MyMessageContainer>
       <MessageBubble>
@@ -572,9 +618,7 @@ const ChatItemMy = ({
             />
           )}
           {message.content && (
-            <Bubble style={{ background: "#5844E4", color: "#FFF" }}>
-              {message.content}
-            </Bubble>
+            <Bubble $bgColor={bgColor}>{message.content}</Bubble>
           )}
         </div>
       </MessageBubble>
