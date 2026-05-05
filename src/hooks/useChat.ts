@@ -3,18 +3,12 @@ import { Client } from "@stomp/stompjs";
 import { joinChatRoom, getChatMessages } from "../apis/chat";
 import { createStompClient, publishMessage as publish } from "../utils/stomp";
 import useUserStore from "@/stores/useUserStore";
-
-// 서버 수신 메시지 타입
-interface ChatMessage {
-  messageId: number;
-  roomId: number;
-  senderNickname: string;
-  content: string;
-  createDate: string;
-}
+import { ChatMessage, ChatRoom } from "@/types/chat";
 
 export const useChat = (roomId: string) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [roomInfo, setRoomInfo] = useState<ChatRoom | null>(null);
+  const [myHash, setMyHash] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const clientRef = useRef<Client | null>(null);
@@ -24,20 +18,42 @@ export const useChat = (roomId: string) => {
     const enterChatRoom = async () => {
       try {
         try {
-          await joinChatRoom(roomId);
+          const joinResponse: any = await joinChatRoom(roomId);
+          const joinData = joinResponse.data || joinResponse;
+          if (joinData.myHash) {
+            setMyHash(joinData.myHash);
+          }
         } catch (err: any) {
-          // 이미 참여 중인 경우(409) 예외 처리 후 진행
+          // 상태 코드 409 예외 처리
           if (err.response?.status === 409) {
-            console.log(
-              "이미 채팅방에 참여 중입니다. 메시지 로드를 시작합니다.",
-            );
+            if (err.response?.data?.data?.myHash) {
+              setMyHash(err.response.data.data.myHash);
+            }
           } else {
-            throw err; // 기타 에러 상위 전달
+            throw err;
           }
         }
 
-        const initialMessages = await getChatMessages(roomId);
-        setMessages(initialMessages.data);
+        const roomResponse: any = await getChatMessages(roomId);
+        const actualRoomData = roomResponse.data || roomResponse;
+
+        // 채팅방 정보 저장
+        setRoomInfo(actualRoomData);
+
+        // 초기 메시지 저장
+        if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
+          setMessages(actualRoomData.messages);
+        } else if (Array.isArray(actualRoomData)) {
+          setMessages(actualRoomData);
+        } else {
+          setMessages([]);
+        }
+
+        // 사용자 해시값 갱신
+        if (actualRoomData.myHash) {
+          setMyHash(actualRoomData.myHash);
+        }
+
         connectStomp();
       } catch (err) {
         console.error("채팅방 입장 실패:", err);
@@ -65,7 +81,7 @@ export const useChat = (roomId: string) => {
       };
 
       client.onStompError = (frame) => {
-        console.error("브로커 에러 발생:", frame.headers["message"]);
+        console.error("브로커 에러:", frame.headers["message"]);
         console.error("상세 정보:", frame.body);
         setError("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
       };
@@ -87,5 +103,5 @@ export const useChat = (roomId: string) => {
     publish(clientRef.current, roomId, content, isAnonymous);
   };
 
-  return { messages, sendMessage, isLoading, error };
+  return { messages, sendMessage, isLoading, error, myHash, roomInfo };
 };
