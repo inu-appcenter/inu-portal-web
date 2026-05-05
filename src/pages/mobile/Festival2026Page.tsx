@@ -4,7 +4,7 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useMemo, useEffect } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import 배너이미지 from "@/resources/assets/Festival/2026-1/PaintTheUnion배너이미지.webp";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
@@ -116,9 +116,10 @@ export default function Festival2026Page() {
 
   const isLoggedIn =
     Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
-  const handleLinkClick = (e: any) => {
+  const handleLinkClick = () => {
+    mixpanelTrack.festivalChatEntered(1);
+
     if (!isLoggedIn) {
-      e.preventDefault(); // Link 태그 기본 이동 방지
       const confirmLogin = window.confirm(
         "로그인 후 채팅방에 입장할 수 있어요.\n로그인 페이지로 이동할까요?",
       );
@@ -126,6 +127,8 @@ export default function Festival2026Page() {
       if (confirmLogin) {
         navigate(ROUTES.LOGIN); // 로그인 페이지 경로
       }
+    } else {
+      navigate("/chat/1");
     }
   };
 
@@ -143,19 +146,14 @@ export default function Festival2026Page() {
                 borderRadius="20px"
                 style={{ maxWidth: DESKTOP_MEDIA }}
               />
-              <Link
-                to="/chat/1"
-                style={{ textDecoration: "none" }}
+              <TitleContentArea
+                title={"PAINT THE UNION 오픈채팅방"}
+                description={"여기를 눌러 다른 UNI와 함께 축제를 공유해보세요!"}
+                style={{ marginTop: "16px" }}
                 onClick={handleLinkClick}
               >
-                <TitleContentArea
-                  title={"PAINT THE UNION 오픈채팅방"}
-                  description={"UNI와 함께 축제를 공유해보세요!"}
-                  style={{ marginTop: "16px" }}
-                >
-                  <ChatPreviewWidget roomId={1} />
-                </TitleContentArea>
-              </Link>
+                <ChatPreviewWidget roomId={1} />
+              </TitleContentArea>
             </HeroBannerColumn>
           </HeroSection>
           <ContentSection>

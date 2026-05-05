@@ -75,8 +75,10 @@ export interface PublicChatMessage {
  * 공개 채팅 메시지 조회 응답
  * GET /api/chat-rooms/{roomId}/messages/public (200)
  */
-export type GetPublicChatMessagesResponse = PublicChatMessage[];
-
+export interface GetPublicChatMessagesResponse {
+  data: PublicChatMessage[];
+  msg: string | null;
+}
 /**
  * 공통 에러 응답 구조
  */
