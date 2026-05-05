@@ -1,6 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
-import { joinChatRoom, getChatMessages } from "../apis/chat";
+import {
+  joinChatRoom,
+  getChatMessages,
+  getPreviousMessages,
+} from "../apis/chat";
 import { createStompClient, publishMessage as publish } from "../utils/stomp";
 import useUserStore from "@/stores/useUserStore";
 import { ChatMessage, ChatRoom } from "@/types/chat";
@@ -10,6 +14,8 @@ export const useChat = (roomId: string) => {
   const [roomInfo, setRoomInfo] = useState<ChatRoom | null>(null);
   const [myHash, setMyHash] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
@@ -103,5 +109,39 @@ export const useChat = (roomId: string) => {
     publish(clientRef.current, roomId, content, isAnonymous);
   };
 
-  return { messages, sendMessage, isLoading, error, myHash, roomInfo };
+  const fetchPreviousMessages = useCallback(async () => {
+    if (isFetchingPrevious || !hasMore || messages.length === 0) return;
+
+    setIsFetchingPrevious(true);
+    try {
+      const lastId = messages[0].messageId;
+      const previousMessages: any = await getPreviousMessages(roomId, lastId);
+      const actualMessages = previousMessages.data || previousMessages;
+
+      if (actualMessages.length === 0) {
+        setHasMore(false);
+      } else {
+        setMessages((prev) => [...actualMessages, ...prev]);
+        if (actualMessages.length < 50) {
+          setHasMore(false);
+        }
+      }
+    } catch (err) {
+      console.error("이전 메시지 로드 실패:", err);
+    } finally {
+      setIsFetchingPrevious(false);
+    }
+  }, [roomId, messages, isFetchingPrevious, hasMore]);
+
+  return {
+    messages,
+    sendMessage,
+    isLoading,
+    isFetchingPrevious,
+    hasMore,
+    error,
+    myHash,
+    roomInfo,
+    fetchPreviousMessages,
+  };
 };

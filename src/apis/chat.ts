@@ -4,6 +4,7 @@ import {
   CreateChatRoomResponse,
   JoinChatRoomResponse,
   GetChatRoomResponse,
+  GetPreviousChatMessagesResponse,
 } from "@/types/chat";
 
 // 채팅방 생성
@@ -39,6 +40,20 @@ export const getChatMessages = async (
 ): Promise<GetChatRoomResponse> => {
   const response = await tokenInstance.get<GetChatRoomResponse>(
     `/api/chat-rooms/${roomId}`,
+  );
+  return response.data;
+};
+
+// 이전 채팅 메시지 로드
+export const getPreviousMessages = async (
+  roomId: string | number,
+  lastId: number,
+): Promise<GetPreviousChatMessagesResponse> => {
+  const response = await tokenInstance.get<GetPreviousChatMessagesResponse>(
+    `/api/chat-rooms/${roomId}/messages`,
+    {
+      params: { lastId },
+    },
   );
   return response.data;
 };

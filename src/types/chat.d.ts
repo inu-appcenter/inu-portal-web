@@ -9,6 +9,7 @@ export interface ChatMessage {
   senderNickname: string;
   senderHash?: string;
   content: string;
+  imageUrl?: string; // 이미지 URL (선택 사항)
   createDate: string; // ISO 8601 날짜 문자열
 }
 
@@ -53,6 +54,12 @@ export type JoinChatRoomResponse = ChatRoom;
  * GET /api/chat-rooms/{roomId} (200)
  */
 export type GetChatRoomResponse = ChatRoom;
+
+/**
+ * 이전 채팅 메시지 조회 응답
+ * GET /api/chat-rooms/{roomId}/messages?lastId={lastId} (200)
+ */
+export type GetPreviousChatMessagesResponse = ChatMessage[];
 
 /**
  * 공개 채팅 메시지
