@@ -2,20 +2,25 @@ import styled from "styled-components";
 import { useParams } from "react-router-dom";
 import React, { useState, useRef, useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
-import { Send } from "lucide-react";
-import useUserStore from "@/stores/useUserStore";
+import { Send, Users } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
+
+// 이미지 리소스 임포트 (기존 ReplyInput 참고)
+import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
+import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
-  useHeader({
-    title: roomId === "1" ? "실시간 채팅방" : "채팅방",
-  });
   const [inputValue, setInputValue] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState(true);
 
-  const { userInfo } = useUserStore(); // Zustand 스토어에서 사용자 정보 가져오기
-  const { messages, sendMessage, isLoading, error } = useChat(roomId ?? "");
+  const { messages, sendMessage, isLoading, error, myHash, roomInfo } = useChat(
+    roomId ?? "",
+  );
+
+  useHeader({
+    title: roomInfo ? roomInfo.title : "채팅방",
+  });
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -48,6 +53,7 @@ export default function ChattingPage() {
       day: "numeric",
       weekday: "long",
     });
+
   const isSameDate = (date1: string, date2: string) => {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -68,15 +74,22 @@ export default function ChattingPage() {
 
   return (
     <ChatPageWrapper>
+      {roomInfo && (
+        <RoomInfoBanner>
+          <Users size={16} color="#767676" />
+          <span>
+            참여 인원 {roomInfo.currentParticipants}명 / 최대{" "}
+            {roomInfo.maxCapacity}명
+          </span>
+        </RoomInfoBanner>
+      )}
+
       <ChattingWrapper ref={scrollRef}>
         {messages.map((msg, index) => {
           const showDateLine =
             index === 0 ||
             !isSameDate(messages[index - 1].createDate, msg.createDate);
-          // 서버에서 받은 닉네임과 내 닉네임을 비교하여 내가 보낸 메시지인지 판단
-          const isMe =
-            msg.senderNickname === userInfo.nickname ||
-            msg.senderNickname?.startsWith("익명");
+          const isMe = msg.senderHash === myHash;
 
           return (
             <React.Fragment key={msg.messageId || `msg-${index}`}>
@@ -99,7 +112,7 @@ export default function ChattingPage() {
                     minute: "2-digit",
                   })}
                   userImageUrl={null}
-                  senderNickname={msg.senderNickname} // senderNickname prop 추가
+                  senderNickname={msg.senderNickname}
                 />
               )}
             </React.Fragment>
@@ -108,14 +121,15 @@ export default function ChattingPage() {
       </ChattingWrapper>
 
       <FixedInputArea>
-        <AnonymousToggle>
-          <input
-            type="checkbox"
-            checked={isAnonymous}
-            onChange={(e) => setIsAnonymous(e.target.checked)}
+        {/* 커스텀 이미지 체크박스 적용 */}
+        <AnonymousToggle onClick={() => setIsAnonymous(!isAnonymous)}>
+          <img
+            src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
+            alt="익명 체크박스"
           />
           <span>익명</span>
         </AnonymousToggle>
+
         <Input
           placeholder="메시지 입력"
           ref={inputRef}
@@ -147,6 +161,20 @@ const ChatPageWrapper = styled.div`
   overflow: hidden;
 `;
 
+const RoomInfoBanner = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #767676;
+  flex-shrink: 0;
+`;
+
 const ChattingWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -155,13 +183,6 @@ const ChattingWrapper = styled.div`
   padding-bottom: 10px;
   box-sizing: border-box;
   background: #f4f4f4;
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: #d1d1d1;
-    border-radius: 2px;
-  }
 `;
 
 const DateDivider = styled.div`
@@ -176,29 +197,34 @@ const DateDivider = styled.div`
 
 const FixedInputArea = styled.div`
   width: 100%;
-  min-height: 56px;
-  background-color: #fafafa;
+  min-height: 64px;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   padding: 8px 16px;
+  padding-bottom: calc(
+    8px + env(safe-area-inset-bottom)
+  ); /* 아이폰 하단 대응 */
   box-sizing: border-box;
   gap: 8px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #eaeaea;
   flex-shrink: 0;
 `;
 
 const Input = styled.textarea`
-  width: 100%;
-  padding: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 16px;
   box-sizing: border-box;
-  background: #ffffff;
-  border-radius: 4px;
+  background: #eff2f9;
+  border-radius: 20px;
   border: none;
   font-size: 16px;
   line-height: 24px;
   color: #1c1c1e;
   resize: none;
   outline: none;
+  max-height: 96px;
 `;
 
 const SendButton = styled.button`
@@ -208,19 +234,32 @@ const SendButton = styled.button`
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  padding: 4px;
 `;
 
-const AnonymousToggle = styled.label`
+const AnonymousToggle = styled.div`
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
+  gap: 6px;
   cursor: pointer;
-  white-space: nowrap;
-  color: #333;
+  user-select: none;
+
+  img {
+    width: 18px;
+    height: 18px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-size: 13px;
+    color: #9fa3a6;
+    white-space: nowrap;
+  }
 `;
 
-// 기존 메시지 컴포넌트 스타일 재사용 및 수정
+// 메시지 컴포넌트들 스타일 동일 유지
 const MessageContainer = styled.div`
   display: flex;
   margin: 0 16px 12px;
@@ -280,7 +319,7 @@ const ChatItemOtherPerson = ({
   <MessageContainer>
     {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
     <MessageContent>
-      <SenderName>{senderNickname}</SenderName> {/* SenderName 사용 */}
+      <SenderName>{senderNickname}</SenderName>
       <MessageBubble>
         <Bubble style={{ background: "#FFF", color: "#1C1C1E" }}>
           {content}
