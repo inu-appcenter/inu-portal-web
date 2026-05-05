@@ -54,11 +54,13 @@ import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookDetailPage";
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
 import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage";
+import MobileAdminChatPage from "@/pages/mobile/Admin/MobileAdminChatPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 import LabsPage from "@/pages/mobile/Labs/LabsPage";
 import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
+import ChattingPage from "@/pages/mobile/ChattingPage";
 
 export const router = createBrowserRouter([
   {
@@ -105,6 +107,9 @@ export const router = createBrowserRouter([
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
+
+          // 채팅
+          { path: "/chat/:roomId", element: <ChattingPage /> },
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
@@ -235,6 +240,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.ADMIN.FEATURE_FLAGS,
             element: <MobileAdminFeatureFlagsPage />,
+          },
+          {
+            path: ROUTES.ADMIN.CHAT,
+            element: <MobileAdminChatPage />,
           },
         ],
       },

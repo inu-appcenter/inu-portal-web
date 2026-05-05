@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { Client } from '@stomp/stompjs';
-import { joinChatRoom, getChatMessages } from '../apis/chat';
-import { createStompClient, publishMessage as publish } from '../utils/stomp';
+import { useState, useEffect, useRef } from "react";
+import { Client } from "@stomp/stompjs";
+import { joinChatRoom, getChatMessages } from "../apis/chat";
+import { createStompClient, publishMessage as publish } from "../utils/stomp";
+import useUserStore from "@/stores/useUserStore";
 
-// 서버에서 받는 메시지 타입 정의
+// 서버 수신 메시지 타입
 interface ChatMessage {
   messageId: number;
   roomId: number;
@@ -17,31 +18,44 @@ export const useChat = (roomId: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const clientRef = useRef<Client | null>(null);
+  const { tokenInfo } = useUserStore();
 
   useEffect(() => {
     const enterChatRoom = async () => {
       try {
-        await joinChatRoom(roomId);
+        try {
+          await joinChatRoom(roomId);
+        } catch (err: any) {
+          // 이미 참여 중인 경우(409) 예외 처리 후 진행
+          if (err.response?.status === 409) {
+            console.log(
+              "이미 채팅방에 참여 중입니다. 메시지 로드를 시작합니다.",
+            );
+          } else {
+            throw err; // 기타 에러 상위 전달
+          }
+        }
+
         const initialMessages = await getChatMessages(roomId);
         setMessages(initialMessages.data);
         connectStomp();
       } catch (err) {
-        console.error("Failed to enter chat room:", err);
-        setError("Failed to enter chat room. Please try again.");
+        console.error("채팅방 입장 실패:", err);
+        setError("채팅방 입장에 실패했습니다. 다시 시도해주세요.");
       } finally {
         setIsLoading(false);
       }
     };
 
     const connectStomp = () => {
-      const jwtToken = localStorage.getItem('accessToken'); // 예시: localStorage에서 토큰 가져오기
+      const jwtToken = tokenInfo.accessToken;
       if (!jwtToken) {
-        setError("Authentication token not found.");
+        setError("인증 토큰을 찾을 수 없습니다.");
         return;
       }
 
       const client = createStompClient();
-      client.connectHeaders = { 'Auth': `Bearer ${jwtToken}` };
+      client.connectHeaders = { Auth: `${jwtToken}` };
 
       client.onConnect = () => {
         client.subscribe(`/sub/room/${roomId}`, (message) => {
@@ -51,11 +65,11 @@ export const useChat = (roomId: string) => {
       };
 
       client.onStompError = (frame) => {
-        console.error('Broker reported error:', frame.headers['message']);
-        console.error('Additional details:', frame.body);
-        setError("Connection error. Please refresh the page.");
+        console.error("브로커 에러 발생:", frame.headers["message"]);
+        console.error("상세 정보:", frame.body);
+        setError("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
       };
-      
+
       client.activate();
       clientRef.current = client;
     };

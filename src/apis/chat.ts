@@ -1,4 +1,4 @@
-import { tokenInstance } from './tokenInstance';
+import tokenInstance from './tokenInstance';
 
 // 채팅방 생성
 export const createChatRoom = async (title: string, maxCapacity: number, isAnonymous: boolean) => {

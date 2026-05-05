@@ -99,5 +99,6 @@ export const ROUTES = {
     API_STAT: "/admin/apistatistics",
     USER_NOTIFICATIION: "/admin/usernotification",
     FEATURE_FLAGS: "/admin/feature-flags",
+    CHAT: "/admin/chat",
   },
 } as const;

@@ -4,7 +4,7 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useMemo, useEffect } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import 배너이미지 from "@/resources/assets/Festival/2026-1/PaintTheUnion배너이미지.webp";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
@@ -46,7 +46,6 @@ export default function Festival2026Page() {
   }, []);
 
   useEffect(() => {
-    // URL에 카테고리가 없으면 기본값으로 업데이트
     if (!params.get("category")) {
       navigate("?category=홈", { replace: true });
     } else {
@@ -116,6 +115,32 @@ export default function Festival2026Page() {
                 </div>
               </Box>
             </TitleContentArea>
+
+            {/* 실시간 소통 섹션 추가 */}
+            <TitleContentArea title="실시간 소통">
+              <Box>
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Link to="/chat/1" style={{ textDecoration: "none" }}>
+                    <AppItem
+                      type="chat" // 'chat' 타입을 임시로 사용
+                      onClick={() => {
+                        mixpanelTrack.featureClicked(
+                          "실시간 채팅방",
+                          `축제 안내 - 홈 탭`,
+                        );
+                      }}
+                    />
+                  </Link>
+                </div>
+              </Box>
+            </TitleContentArea>
+
             <TitleContentArea title="교통 및 편의">
               <Box>
                 <div

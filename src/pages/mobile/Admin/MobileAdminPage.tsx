@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Users, Activity, Bell, Flag, ArrowRight } from "lucide-react";
+import { Users, Activity, Bell, Flag, ArrowRight, MessageSquare } from "lucide-react";
 
 import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -40,6 +40,13 @@ const adminPages = [
     description: "배포 없이 즉각적인 신규 기능 제어",
     icon: Flag,
     color: "#8b5cf6",
+  },
+  {
+    label: "채팅방 관리",
+    path: ROUTES.ADMIN.CHAT,
+    description: "축제 및 상시 채팅방 생성 및 제어",
+    icon: MessageSquare,
+    color: "#5844e4",
   },
 ];
 

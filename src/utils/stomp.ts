@@ -1,25 +1,29 @@
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
-// STOMP 클라이언트를 생성하고 반환하는 함수
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const createStompClient = () => {
+  // baseURL 끝에 /가 있을 경우를 대비
+  const normalizedBaseURL = API_BASE_URL.replace(/\/$/, "");
+
+  // baseURL이 http/https로 시작하는 경우 ws/wss로 변환
+  const brokerURL = normalizedBaseURL.replace(/^http/, "ws") + "/ws-chat";
+
   const client = new Client({
-    brokerURL: 'ws://localhost:8080/ws-chat', // 개발 환경용 URL
-    // brokerURL: 'wss://[YOUR_DOMAIN]/ws-chat', // 배포 환경용 URL
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws-chat'), // SockJS 사용
-    // webSocketFactory: () => new SockJS('https://[YOUR_DOMAIN]/ws-chat'), // 배포 환경용
-    reconnectDelay: 5000, // 5초 후 재연결 시도
+    brokerURL: brokerURL,
+    webSocketFactory: () => new SockJS(`${normalizedBaseURL}/ws-chat`), // SockJS 사용
+    reconnectDelay: 5000, // 재연결 시도
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
     debug: (str) => {
-      console.log(new Date(), str); // 디버그 로그
+      console.log(new Date(), str);
     },
   });
 
   return client;
 };
 
-// 메시지 발행(publish) 함수
 export const publishMessage = (
   client: Client | null,
   roomId: string | number,
@@ -27,12 +31,12 @@ export const publishMessage = (
   isAnonymous: boolean,
 ) => {
   if (!client || !client.connected) {
-    console.error('STOMP client is not connected.');
+    console.error("STOMP 클라이언트가 연결되지 않았습니다.");
     return;
   }
 
   client.publish({
-    destination: '/pub/message',
+    destination: "/pub/message",
     body: JSON.stringify({
       roomId,
       content,
