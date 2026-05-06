@@ -150,7 +150,9 @@ const ChatPreviewWidget: React.FC<ChatPreviewWidgetProps> = ({ roomId }) => {
                   backgroundColor={getPastelColor(message.messageId)}
                   isRight={isRight}
                 >
-                  {message.content}
+                  {message.content === ""
+                    ? "사진을 보냈습니다."
+                    : message.content}
                 </Bubble>
                 <TimeText>{formatTime(message.createDate)}</TimeText>
               </MessageBubble>
