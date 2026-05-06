@@ -19,6 +19,7 @@ export type AdminNotificationTargetType =
 
 export type FcmSendStatus =
   | "PENDING"
+  | "PROCESSING"
   | "SUCCESS"
   | "PARTIAL_FAILURE"
   | "FAILED"
