@@ -13,7 +13,7 @@ import busBanner from "@/resources/assets/banner/인입런.webp";
 import surveyBanner from "@/resources/assets/banner/설문배너.webp";
 import appcenterBanner from "@/resources/assets/banner/앱센터배너.webp";
 import 축제배너 from "@/resources/assets/Festival/2026-1/PaintTheUnion배너이미지.webp";
-import 축제이벤트배너 from "@/resources/assets/Festival/2026-1/배민상품권 추첨이벤트 배너.webp";
+import 축제이벤트배너 from "@/resources/assets/Festival/2026-1/축제이벤트배너.webp";
 
 import WeatherForm from "./Weather.tsx";
 import { mixpanelTrack } from "@/utils/mixpanel";
