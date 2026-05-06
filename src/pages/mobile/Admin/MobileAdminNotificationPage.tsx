@@ -25,7 +25,8 @@ const STATUS_CONFIG: Record<
   FcmSendStatus,
   { label: string; color: string; bg: string; icon: any }
 > = {
-  PENDING: { label: "처리 중", color: "#3b82f6", bg: "#eff6ff", icon: Clock },
+  PENDING: { label: "대기 중", color: "#64748b", bg: "#f1f5f9", icon: Clock },
+  PROCESSING: { label: "처리 중", color: "#3b82f6", bg: "#eff6ff", icon: Clock },
   SUCCESS: { label: "성공", color: "#10b981", bg: "#ecfdf5", icon: CheckCircle2 },
   PARTIAL_FAILURE: { label: "부분 실패", color: "#f59e0b", bg: "#fffbeb", icon: AlertCircle },
   FAILED: { label: "실패", color: "#ef4444", bg: "#fef2f2", icon: AlertCircle },
@@ -77,7 +78,7 @@ export default function MobileAdminNotificationPage() {
     for (let attempt = 0; attempt < 8; attempt += 1) {
       const response = await getFcmAdminLogResult(fcmMessageId);
       const result = response.data;
-      if (result.status !== "PENDING") return result;
+      if (result.status !== "PENDING" && result.status !== "PROCESSING") return result;
       await sleep(1200);
     }
     return null;
