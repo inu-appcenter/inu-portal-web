@@ -89,7 +89,7 @@ const ChatPreviewWidget: React.FC<ChatPreviewWidgetProps> = ({ roomId }) => {
   } = useQuery<GetPublicChatMessagesResponse, Error>({
     queryKey: ["publicChatMessages", roomId],
     queryFn: () => getPublicChatMessages(roomId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
   });
 
