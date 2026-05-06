@@ -18,6 +18,7 @@ export interface BottomButtonGroupProps {
   gap?: string;
   padding?: string;
   containerBackgroundColor?: string;
+  position?: "fixed" | "static" | "relative" | "absolute";
 }
 
 const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
@@ -27,6 +28,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   gap = "10px",
   padding = "10px 16px",
   containerBackgroundColor = "#ffffff",
+  position = "fixed",
 }) => {
   // 실제 버튼이 담긴 고정 컨테이너 스타일
   const fixedContainerStyle: React.CSSProperties = {
@@ -40,13 +42,16 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
     gap: gap,
     backgroundColor: containerBackgroundColor,
     boxSizing: "border-box",
-    position: "fixed",
+    position: position,
     bottom: 0,
     left: 0,
-    boxShadow: "0 -2px 10px rgba(0, 0, 0, 0.05)",
+    boxShadow: position === "fixed" ? "0 -2px 10px rgba(0, 0, 0, 0.05)" : "none",
     zIndex: 1000,
     // 기기 하단 safe area 대응
-    paddingBottom: `calc(${padding.split(" ")[0]} + env(safe-area-inset-bottom, 0px))`,
+    paddingBottom:
+      position === "fixed"
+        ? `calc(${padding.split(" ")[0]} + env(safe-area-inset-bottom, 0px))`
+        : padding.split(" ")[0],
   };
 
   // 버튼 스타일 생성
@@ -92,14 +97,16 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
       </div>
 
       {/* 2. 레이아웃용 스페이서: fixed 버튼이 차지하는 만큼 공간 확보 */}
-      <div
-        style={{
-          height: `calc(${height} + env(safe-area-inset-bottom, 0px))`,
-          width: "100%",
-          visibility: "hidden",
-          pointerEvents: "none",
-        }}
-      />
+      {position === "fixed" && (
+        <div
+          style={{
+            height: `calc(${height} + env(safe-area-inset-bottom, 0px))`,
+            width: "100%",
+            visibility: "hidden",
+            pointerEvents: "none",
+          }}
+        />
+      )}
     </>
   );
 };

@@ -6,6 +6,7 @@ import { Send, Users, Loader2, Image } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import ImageModal from "@/components/mobile/chat/ImageModal";
+import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 
@@ -39,6 +40,8 @@ export default function ChattingPage() {
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -162,6 +165,14 @@ export default function ChattingPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     if (files.length > 0) {
+      setPendingFiles(files);
+      setIsUploadModalOpen(true);
+      e.target.value = "";
+    }
+  };
+
+  const handleConfirmUpload = () => {
+    if (pendingFiles.length > 0) {
       const isFestivalChat = roomId === "1";
       mixpanelTrack.chatMessageSent(
         roomId ?? "",
@@ -170,9 +181,15 @@ export default function ChattingPage() {
         isFestivalChat,
       );
 
-      sendMessage("", isAnonymous, files);
-      e.target.value = "";
+      sendMessage("", isAnonymous, pendingFiles);
+      setPendingFiles([]);
+      setIsUploadModalOpen(false);
     }
+  };
+
+  const handleCancelUpload = () => {
+    setPendingFiles([]);
+    setIsUploadModalOpen(false);
   };
 
   const formatDateLine = (dateString: string) =>
@@ -300,6 +317,14 @@ export default function ChattingPage() {
         imageUrl={selectedImageUrl}
         isOpen={isImageModalOpen}
         onOpenChange={setIsImageModalOpen}
+      />
+
+      <ImageUploadModal
+        files={pendingFiles}
+        isOpen={isUploadModalOpen}
+        onOpenChange={setIsUploadModalOpen}
+        onSend={handleConfirmUpload}
+        onCancel={handleCancelUpload}
       />
     </ChatPageWrapper>
   );
@@ -494,6 +519,8 @@ const Bubble = styled.div<{ $bgColor: string }>`
   background-color: ${(props) => props.$bgColor};
   color: #1c1c1e;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  white-space: pre-wrap;
 `;
 
 const ImageThumbnail = styled.img`

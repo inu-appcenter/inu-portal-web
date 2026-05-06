@@ -62,7 +62,18 @@ const Bubble = styled.div<{ backgroundColor: string; isRight: boolean }>`
   font-size: 15px;
   line-height: 1.4;
   max-width: 240px;
+
+  /* 줄바꿈 처리 */
+  white-space: pre-wrap;
   word-break: break-word;
+
+  /* 2줄 제한 및 말줄임표 처리 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
   background-color: ${(props) => props.backgroundColor};
   color: #1c1c1e;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
