@@ -628,30 +628,44 @@ const ChatItemMy = ({
 
   return (
     <MyMessageContainer>
-      <MessageBubble>
-        <Time>{time}</Time>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-          }}
-        >
-          {thumbnailUrl && (
-            <ImageThumbnail
-              src={thumbnailUrl}
-              alt="이미지"
-              onClick={() => originalImageUrl && onImageClick(originalImageUrl)}
-            />
-          )}
-          {message.content && (
-            <Bubble $bgColor={bgColor}>{message.content}</Bubble>
-          )}
-        </div>
-      </MessageBubble>
+      <MyMessageContent>
+        <MySenderName>{message.senderNickname}</MySenderName>
+        <MessageBubble>
+          <Time>{time}</Time>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+            }}
+          >
+            {thumbnailUrl && (
+              <ImageThumbnail
+                src={thumbnailUrl}
+                alt="이미지"
+                onClick={() =>
+                  originalImageUrl && onImageClick(originalImageUrl)
+                }
+              />
+            )}
+            {message.content && (
+              <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+            )}
+          </div>
+        </MessageBubble>
+      </MyMessageContent>
     </MyMessageContainer>
   );
 };
+
+const MyMessageContent = styled(MessageContent)`
+  align-items: flex-end;
+`;
+
+const MySenderName = styled(SenderName)`
+  text-align: right;
+  //margin-right: 4px;
+`;
 
 const MyMessageContainer = styled(MessageContainer)`
   justify-content: flex-end;
