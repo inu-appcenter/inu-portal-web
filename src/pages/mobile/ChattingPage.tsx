@@ -10,28 +10,25 @@ import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 
-// 이미지 리소스 임포트
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
 import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// 축제 로고에서 추출한 파스텔 팔레트
-const PASTEL_COLORS = [
-  "#FFF4BD", // 파스텔 노랑
-  "#E2F0D9", // 파스텔 초록
-  "#FFD9D9", // 파스텔 빨강
-  "#D9EFFF", // 파스텔 파랑
-  "#EADBFF", // 파스텔 보라
-  "#FFE5D0", // 파스텔 주황
+const MESSAGE_COLORS = [
+  "#FFF4BD",
+  "#E2F0D9",
+  "#FFD9D9",
+  "#D9EFFF",
+  "#EADBFF",
+  "#FFE5D0",
 ];
 
-// 메시지 ID를 기반으로 고유 색상을 반환하는 함수
 const getMessageColor = (messageId: number | string) => {
   const idStr = String(messageId);
   const lastChar = idStr.charAt(idStr.length - 1);
   const index = isNaN(parseInt(lastChar)) ? 0 : parseInt(lastChar);
-  return PASTEL_COLORS[index % PASTEL_COLORS.length];
+  return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
 };
 
 export default function ChattingPage() {
@@ -83,7 +80,7 @@ export default function ChattingPage() {
     if (scrollRef.current) {
       setIntersectionRoot(scrollRef.current);
     }
-  }, []);
+  }, [isLoading]);
 
   const entry = useIntersectionObserver(sentinelRef, {
     threshold: 0,
@@ -99,6 +96,7 @@ export default function ChattingPage() {
       !isFetchingPrevious &&
       messages.length > 0
     ) {
+      console.log("이전 메시지 불러오기");
       fetchPreviousMessages();
     }
   }, [
