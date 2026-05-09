@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import NavItem from "@/components/mobile/common/NavItem";
 import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import homeIcon from "@/resources/assets/mobile-common/home-gray.svg";
 import homeIconActive from "@/resources/assets/mobile-common/home-blue.svg";
 import busIcon from "@/resources/assets/mobile-common/bus-gray.svg";
@@ -51,6 +52,7 @@ const NAV_ITEMS = [
 
 export default function MobileNav() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const getIndexByPath = (path: string) => {
     const index = NAV_ITEMS.findIndex((item) => {
@@ -69,6 +71,24 @@ export default function MobileNav() {
     setActiveIndex(getIndexByPath(location.pathname));
   }, [location.pathname]);
 
+  const handleNavClick = (to: string, label: string) => {
+    const isChat = to === ROUTES.CHAT.LIST;
+    const isCurrentlyActive =
+      location.pathname === to || location.pathname.startsWith(to);
+
+    if (isChat && isCurrentlyActive) {
+      const params = new URLSearchParams(location.search);
+      const currentCategory = params.get("category") || "개인";
+      const nextCategory = currentCategory === "개인" ? "오픈채팅" : "개인";
+      params.set("category", nextCategory);
+      navigate(`${to}?${params.toString()}`, { replace: true });
+      return;
+    }
+
+    mixpanelTrack.navTabClicked(label);
+    navigate(to, { replace: true });
+  };
+
   return (
     <AreaWrapper>
       <MobileNavWrapper>
@@ -80,6 +100,7 @@ export default function MobileNav() {
             icon={item.icon}
             activeIcon={item.activeIcon}
             label={item.label}
+            onClick={() => handleNavClick(item.to, item.label)}
           />
         ))}
       </MobileNavWrapper>

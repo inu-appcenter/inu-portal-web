@@ -4,6 +4,7 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { User } from "lucide-react";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
@@ -12,7 +13,7 @@ import { trackPageView } from "@/utils/mixpanel";
 import { getPublicChatMessages } from "@/apis/chat";
 import { GetPublicChatMessagesResponse } from "@/types/chat";
 
-const CATEGORIES = ["1대1", "오픈채팅"];
+const CATEGORIES = ["개인", "오픈채팅"];
 
 // Mock data for chat rooms
 const MOCK_CHAT_ROOMS = [
@@ -20,37 +21,41 @@ const MOCK_CHAT_ROOMS = [
     id: "1",
     title: "PAINT THE UNION 오픈채팅방",
     lastMessage: "축제 재미있네요!",
-    lastMessageTime: "오후 2:30",
+    lastMessageTime: new Date().toISOString(),
     unreadCount: 5,
     type: "오픈채팅",
     participantCount: 156,
+    imageUrl: null,
   },
   {
     id: "2",
     title: "인천대 대신 전해드립니다",
     lastMessage: "누가 에어팟 잃어버리셨나요?",
-    lastMessageTime: "오전 11:15",
+    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
     unreadCount: 0,
     type: "오픈채팅",
     participantCount: 89,
+    imageUrl: "https://via.placeholder.com/48",
   },
   {
     id: "3",
     title: "컴퓨터공학부 단톡방",
     lastMessage: "과제 제출 기한이 언제인가요?",
-    lastMessageTime: "어제",
+    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     unreadCount: 12,
     type: "오픈채팅",
     participantCount: 45,
+    imageUrl: null,
   },
   {
     id: "4",
     title: "홍길동",
     lastMessage: "안녕하세요!",
-    lastMessageTime: "오전 10:00",
+    lastMessageTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
     unreadCount: 1,
-    type: "1대1",
+    type: "개인",
     participantCount: 2,
+    imageUrl: null,
   },
 ];
 
@@ -79,6 +84,7 @@ const ChatRoomItem = ({
   lastMessageTime,
   unreadCount,
   participantCount,
+  imageUrl,
   onClick,
 }: {
   title: string;
@@ -86,17 +92,27 @@ const ChatRoomItem = ({
   lastMessageTime: string;
   unreadCount: number;
   participantCount: number;
+  imageUrl?: string | null;
   onClick: () => void;
 }) => {
   return (
     <ChatRoomItemWrapper onClick={onClick}>
+      <ProfileImageArea>
+        {imageUrl ? (
+          <ProfileImage src={imageUrl} />
+        ) : (
+          <DefaultProfileIcon>
+            <User size={24} color="#D6D1D5" />
+          </DefaultProfileIcon>
+        )}
+      </ProfileImageArea>
       <ContentArea>
         <TopRow>
           <TitleArea>
             <div className="title">{title}</div>
             <div className="participant-count">{participantCount}</div>
           </TitleArea>
-          <div className="time">{lastMessageTime}</div>
+          <div className="time">{formatTime(lastMessageTime)}</div>
         </TopRow>
         <BottomRow>
           <div className="last-message">{lastMessage}</div>
@@ -114,6 +130,7 @@ const DynamicChatRoomItem = ({
   title,
   unreadCount,
   participantCount,
+  imageUrl,
   onClick,
   fallbackMessage,
   fallbackTime,
@@ -122,6 +139,7 @@ const DynamicChatRoomItem = ({
   title: string;
   unreadCount: number;
   participantCount: number;
+  imageUrl?: string | null;
   onClick: () => void;
   fallbackMessage: string;
   fallbackTime: string;
@@ -132,13 +150,11 @@ const DynamicChatRoomItem = ({
     staleTime: 60 * 1000,
   });
 
-  const latestMessage = response?.data?.[1];
+  const latestMessage = response?.data?.[0];
   const displayMessage = latestMessage
     ? latestMessage.content || "사진을 보냈습니다."
     : fallbackMessage;
-  const displayTime = latestMessage
-    ? formatTime(latestMessage.createDate)
-    : fallbackTime;
+  const displayTime = latestMessage ? latestMessage.createDate : fallbackTime;
 
   return (
     <ChatRoomItem
@@ -147,6 +163,7 @@ const DynamicChatRoomItem = ({
       lastMessageTime={displayTime}
       unreadCount={unreadCount}
       participantCount={participantCount}
+      imageUrl={imageUrl}
       onClick={onClick}
     />
   );
@@ -156,7 +173,7 @@ export default function MobileChatListPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const selectedCategory = params.get("category") || "1대1";
+  const selectedCategory = params.get("category") || "개인";
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -182,9 +199,15 @@ export default function MobileChatListPage() {
     navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
   };
 
-  const filteredRooms = MOCK_CHAT_ROOMS.filter(
-    (room) => room.type === selectedCategory,
-  );
+  const filteredRooms = useMemo(() => {
+    return MOCK_CHAT_ROOMS.filter(
+      (room) => room.type === selectedCategory,
+    ).sort(
+      (a, b) =>
+        new Date(b.lastMessageTime).getTime() -
+        new Date(a.lastMessageTime).getTime(),
+    );
+  }, [selectedCategory]);
 
   return (
     <Container>
@@ -199,6 +222,7 @@ export default function MobileChatListPage() {
                     title={room.title}
                     unreadCount={room.unreadCount}
                     participantCount={room.participantCount}
+                    imageUrl={room.imageUrl}
                     onClick={() => handleRoomClick(room.id)}
                     fallbackMessage={room.lastMessage}
                     fallbackTime={room.lastMessageTime}
@@ -210,6 +234,7 @@ export default function MobileChatListPage() {
                     lastMessageTime={room.lastMessageTime}
                     unreadCount={room.unreadCount}
                     participantCount={room.participantCount}
+                    imageUrl={room.imageUrl}
                     onClick={() => handleRoomClick(room.id)}
                   />
                 )}
@@ -257,11 +282,36 @@ const ChatRoomItemWrapper = styled.div`
   width: 100%;
 `;
 
+const ProfileImageArea = styled.div`
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+`;
+
+const ProfileImage = styled.img`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f4f4f4;
+`;
+
+const DefaultProfileIcon = styled.div`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const ContentArea = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
+  flex: 1;
   gap: 4px;
+  overflow: hidden;
 `;
 
 const TopRow = styled.div`
@@ -283,6 +333,7 @@ const TitleArea = styled.div`
   align-items: center;
   gap: 6px;
   overflow: hidden;
+  margin-right: 8px;
 
   .title {
     color: #000;

@@ -8,9 +8,16 @@ interface NavItemProps {
   icon: string;
   activeIcon: string;
   label: string;
+  onClick?: () => void;
 }
 
-export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
+export default function NavItem({
+  to,
+  icon,
+  activeIcon,
+  label,
+  onClick,
+}: NavItemProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -19,6 +26,10 @@ export default function NavItem({ to, icon, activeIcon, label }: NavItemProps) {
     (location.pathname.startsWith(to) && to !== ROUTES.HOME);
 
   const handleClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
     mixpanelTrack.navTabClicked(label);
     navigate(to, { replace: true });
   };
