@@ -61,6 +61,7 @@ import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
 import ChattingPage from "@/pages/mobile/ChattingPage";
+import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
 
 export const router = createBrowserRouter([
   {
@@ -77,6 +78,7 @@ export const router = createBrowserRouter([
           { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.HOME, element: <MobileHomePage /> },
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
+          { path: ROUTES.CHAT.LIST, element: <MobileChatListPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
           { path: ROUTES.MYPAGE.ROOT, element: <MobileMyPage /> },
           { path: ROUTES.TIMETABLE.ROOT, element: <MobileTimeTablePage /> },
@@ -93,6 +95,7 @@ export const router = createBrowserRouter([
           { path: "", element: <Navigate to={ROUTES.MOBILE_HOME} replace /> },
           { path: "home", element: <MobileHomePage /> },
           { path: "bus", element: <MobileBusPage /> },
+          { path: "chat/list", element: <MobileChatListPage /> },
           { path: "save", element: <MobileSavePage /> },
           { path: "mypage", element: <MobileMyPage /> },
           { path: "timetable", element: <MobileTimeTablePage /> },

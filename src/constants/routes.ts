@@ -89,6 +89,12 @@ export const ROUTES = {
     SHUTTLE_ROUTE: "/bus/shuttle",
   },
 
+  // 채팅
+  CHAT: {
+    ROOT: "/chat",
+    LIST: "/chat/list",
+  },
+
   // 기타
   UNIDORM: "/unidorm",
 
