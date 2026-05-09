@@ -506,7 +506,6 @@ const MessageBubble = styled.div`
   gap: 8px;
 `;
 
-// 파스텔톤 배경색과 그림자가 적용된 말풍선
 const Bubble = styled.div<{ $bgColor: string }>`
   padding: 10px 14px;
   border-radius: 20px;

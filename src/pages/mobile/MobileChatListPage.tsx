@@ -3,14 +3,18 @@ import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import { ROUTES } from "@/constants/routes";
 import { trackPageView } from "@/utils/mixpanel";
+import { getPublicChatMessages } from "@/apis/chat";
+import { GetPublicChatMessagesResponse } from "@/types/chat";
 
-const CATEGORIES = ["개인", "오픈채팅"];
+const CATEGORIES = ["1대1", "오픈채팅"];
 
+// Mock data for chat rooms
 const MOCK_CHAT_ROOMS = [
   {
     id: "1",
@@ -45,10 +49,29 @@ const MOCK_CHAT_ROOMS = [
     lastMessage: "안녕하세요!",
     lastMessageTime: "오전 10:00",
     unreadCount: 1,
-    type: "개인",
+    type: "1대1",
     participantCount: 2,
   },
 ];
+
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  if (diff < oneDay && now.getDate() === date.getDate()) {
+    return date.toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } else if (diff < oneDay * 2) {
+    return "어제";
+  } else {
+    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+  }
+};
 
 const ChatRoomItem = ({
   title,
@@ -86,11 +109,54 @@ const ChatRoomItem = ({
   );
 };
 
+const DynamicChatRoomItem = ({
+  roomId,
+  title,
+  unreadCount,
+  participantCount,
+  onClick,
+  fallbackMessage,
+  fallbackTime,
+}: {
+  roomId: string;
+  title: string;
+  unreadCount: number;
+  participantCount: number;
+  onClick: () => void;
+  fallbackMessage: string;
+  fallbackTime: string;
+}) => {
+  const { data: response } = useQuery<GetPublicChatMessagesResponse, Error>({
+    queryKey: ["publicChatMessages", roomId],
+    queryFn: () => getPublicChatMessages(Number(roomId)),
+    staleTime: 60 * 1000,
+  });
+
+  const latestMessage = response?.data?.[1];
+  const displayMessage = latestMessage
+    ? latestMessage.content || "사진을 보냈습니다."
+    : fallbackMessage;
+  const displayTime = latestMessage
+    ? formatTime(latestMessage.createDate)
+    : fallbackTime;
+
+  return (
+    <ChatRoomItem
+      title={title}
+      lastMessage={displayMessage}
+      lastMessageTime={displayTime}
+      unreadCount={unreadCount}
+      participantCount={participantCount}
+      onClick={onClick}
+    />
+  );
+};
+
 export default function MobileChatListPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const selectedCategory = params.get("category") || "개인";
+  const selectedCategory = params.get("category") || "1대1";
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -110,7 +176,6 @@ export default function MobileChatListPage() {
     title: "채팅",
     subHeader: subHeader,
     floatingSubHeader: true,
-    hasback: false,
   });
 
   const handleRoomClick = (roomId: string) => {
@@ -128,14 +193,26 @@ export default function MobileChatListPage() {
           {filteredRooms.length > 0 ? (
             filteredRooms.map((room, index) => (
               <div key={room.id} style={{ width: "100%" }}>
-                <ChatRoomItem
-                  title={room.title}
-                  lastMessage={room.lastMessage}
-                  lastMessageTime={room.lastMessageTime}
-                  unreadCount={room.unreadCount}
-                  participantCount={room.participantCount}
-                  onClick={() => handleRoomClick(room.id)}
-                />
+                {room.type === "오픈채팅" ? (
+                  <DynamicChatRoomItem
+                    roomId={room.id}
+                    title={room.title}
+                    unreadCount={room.unreadCount}
+                    participantCount={room.participantCount}
+                    onClick={() => handleRoomClick(room.id)}
+                    fallbackMessage={room.lastMessage}
+                    fallbackTime={room.lastMessageTime}
+                  />
+                ) : (
+                  <ChatRoomItem
+                    title={room.title}
+                    lastMessage={room.lastMessage}
+                    lastMessageTime={room.lastMessageTime}
+                    unreadCount={room.unreadCount}
+                    participantCount={room.participantCount}
+                    onClick={() => handleRoomClick(room.id)}
+                  />
+                )}
                 {index < filteredRooms.length - 1 && <Divider />}
               </div>
             ))
