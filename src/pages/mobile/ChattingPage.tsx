@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { Send, Users, Loader2, Image } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import { ChatMessage } from "@/types/chat";
@@ -70,64 +69,56 @@ export default function ChattingPage() {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollHeightRef = useRef<number>(0);
-  const [intersectionRoot, setIntersectionRoot] = useState<Element | null>(
-    null,
+  const lastScrollTopRef = useRef<number>(0);
+
+  // 메시지 역순 메모이제이션
+  const reversedMessages = React.useMemo(
+    () => [...messages].reverse(),
+    [messages],
   );
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      setIntersectionRoot(scrollRef.current);
-    }
-  }, [isLoading]);
+  // 스크롤 이벤트로 이전 메시지 트리거 감지
+  const handleScroll = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || isLoading || isFetchingPrevious || !hasMore || messages.length === 0) return;
 
-  const entry = useIntersectionObserver(sentinelRef, {
-    threshold: 0,
-    root: intersectionRoot,
-    freezeOnceVisible: false,
-  });
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const absScrollTop = Math.abs(scrollTop);
 
-  useEffect(() => {
-    if (
-      !isLoading &&
-      entry?.isIntersecting &&
-      hasMore &&
-      !isFetchingPrevious &&
-      messages.length > 0
-    ) {
-      console.log("이전 메시지 불러오기");
+    // 시각적 상단(물리적 하단) 도달 확인
+    if (absScrollTop + clientHeight >= scrollHeight - 100) {
+      // 위치 기억
+      lastScrollTopRef.current = scrollTop;
       fetchPreviousMessages();
     }
-  }, [
-    entry?.isIntersecting,
-    hasMore,
-    isFetchingPrevious,
-    fetchPreviousMessages,
-    messages.length,
-    isLoading,
-  ]);
+  }, [isLoading, isFetchingPrevious, hasMore, messages.length, fetchPreviousMessages]);
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // 데이터 업데이트 직전 높이 저장
   useLayoutEffect(() => {
     if (isFetchingPrevious && scrollRef.current) {
       scrollHeightRef.current = scrollRef.current.scrollHeight;
     }
   }, [isFetchingPrevious]);
 
-  useEffect(() => {
-    if (!scrollRef.current) return;
+  // 데이터 업데이트 후 위치 보정
+  useLayoutEffect(() => {
+    const scrollEl = scrollRef.current;
+    if (!scrollEl || isFetchingPrevious) return;
 
-    if (!isFetchingPrevious && scrollHeightRef.current > 0) {
-      const delta = scrollRef.current.scrollHeight - scrollHeightRef.current;
-      if (delta > 0) {
-        scrollRef.current.scrollTop = delta;
-      }
+    // 이전 메시지 로드 완료 후
+    if (scrollHeightRef.current > 0) {
+      // 튀는 현상 방지를 위해 기억해둔 scrollTop으로 강제 복원
+      scrollEl.scrollTop = lastScrollTopRef.current;
       scrollHeightRef.current = 0;
-      return;
-    }
-
-    if (!isFetchingPrevious) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isFetchingPrevious]);
 
@@ -229,23 +220,16 @@ export default function ChattingPage() {
       )}
 
       <ChattingWrapper ref={scrollRef}>
-        <Sentinel ref={sentinelRef} />
-        {isFetchingPrevious && (
-          <LoadingWrapper>
-            <Loader2 size={20} color="#5844E4" />
-          </LoadingWrapper>
-        )}
-        {messages.map((msg, index) => {
+        {/* column-reverse를 위해 메시지를 역순으로 렌더링 */}
+        {reversedMessages.map((msg, index) => {
+          const originalIndex = messages.length - 1 - index;
           const showDateLine =
-            index === 0 ||
-            !isSameDate(messages[index - 1].createDate, msg.createDate);
+            originalIndex === 0 ||
+            !isSameDate(messages[originalIndex - 1].createDate, msg.createDate);
           const isMe = msg.senderHash === myHash;
 
           return (
-            <React.Fragment key={msg.messageId || `msg-${index}`}>
-              {showDateLine && (
-                <DateDivider>{formatDateLine(msg.createDate)}</DateDivider>
-              )}
+            <React.Fragment key={msg.messageId || `msg-${originalIndex}`}>
               {isMe ? (
                 <ChatItemMy message={msg} onImageClick={handleImageClick} />
               ) : (
@@ -255,9 +239,17 @@ export default function ChattingPage() {
                   userImageUrl={null}
                 />
               )}
+              {showDateLine && (
+                <DateDivider>{formatDateLine(msg.createDate)}</DateDivider>
+              )}
             </React.Fragment>
           );
         })}
+        {isFetchingPrevious && (
+          <LoadingWrapper>
+            <Loader2 size={20} color="#5844E4" />
+          </LoadingWrapper>
+        )}
       </ChattingWrapper>
 
       <FixedInputArea>
@@ -353,6 +345,8 @@ const RoomInfoBanner = styled.div`
 
 const ChattingWrapper = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column-reverse;
   overflow-y: auto;
   padding-bottom: 64px;
   box-sizing: border-box;
@@ -364,11 +358,6 @@ const ChattingWrapper = styled.div`
     background-color: #d1d1d1;
     border-radius: 2px;
   }
-`;
-
-const Sentinel = styled.div`
-  height: 1px;
-  width: 100%;
 `;
 
 const LoadingWrapper = styled.div`
