@@ -23,7 +23,7 @@
     },
     "types": ["node"]
   },
-  "include": ["src"],
+  "include": ["src", "src/types/turbo.d.ts"],
   "references": [
     {
       "path": "./tsconfig.node.json"

@@ -6,6 +6,7 @@ import { Send, Users, Loader2, Image } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
+import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 
@@ -34,6 +35,7 @@ export default function ChattingPage() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isMemberListOpen, setIsMemberListOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -51,8 +53,17 @@ export default function ChattingPage() {
     fetchPreviousMessages,
   } = useChat(roomId ?? "");
 
+  const headerRight = (
+    <HeaderRightArea>
+      <IconButton onClick={() => setIsMemberListOpen(true)}>
+        <Users size={24} color="#1C1C1E" />
+      </IconButton>
+    </HeaderRightArea>
+  );
+
   useHeader({
     title: roomInfo ? roomInfo.title : "채팅방",
+    rightArea: headerRight,
   });
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -291,6 +302,12 @@ export default function ChattingPage() {
         onSend={handleConfirmUpload}
         onCancel={handleCancelUpload}
       />
+
+      <MemberListDrawer
+        roomId={roomId ?? ""}
+        isOpen={isMemberListOpen}
+        onOpenChange={setIsMemberListOpen}
+      />
     </ChatPageWrapper>
   );
 }
@@ -302,6 +319,12 @@ const ChatPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+`;
+
+const HeaderRightArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const RoomInfoBanner = styled.div`

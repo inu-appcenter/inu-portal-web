@@ -13,8 +13,9 @@ import { trackPageView } from "@/utils/mixpanel";
 import { getMyChatRooms } from "@/apis/chat";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
+import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 
-const CATEGORIES = ["개인", "오픈채팅"];
+const CATEGORIES = ["개인", "오픈채팅", "친구"];
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function MobileChatListPage() {
     queryKey: ["myChatRooms"],
     queryFn: getMyChatRooms,
     refetchOnWindowFocus: true,
+    enabled: selectedCategory !== "친구",
   });
 
   const chatRooms = response?.data || [];
@@ -56,6 +58,7 @@ export default function MobileChatListPage() {
   };
 
   const filteredRooms = useMemo(() => {
+    if (selectedCategory === "친구") return [];
     const typeFilter = selectedCategory === "개인" ? "PERSONAL" : "OPEN";
     return chatRooms
       .filter((room) => room.type === typeFilter)
@@ -68,34 +71,40 @@ export default function MobileChatListPage() {
 
   return (
     <Container>
-      <Box>
-        <ListWrapper>
-          {isLoading ? (
-            <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
-          ) : filteredRooms.length > 0 ? (
-            filteredRooms.map((room, index) => (
-              <div key={room.roomId} style={{ width: "100%" }}>
-                <ChatRoomListItem 
-                  room={room} 
-                  onClick={handleRoomClick} 
-                />
-                {index < filteredRooms.length - 1 && <Divider />}
-              </div>
-            ))
-          ) : (
-            <EmptyState>채팅방이 없습니다.</EmptyState>
-          )}
-        </ListWrapper>
-      </Box>
+      {selectedCategory === "친구" ? (
+        <FriendManagementView />
+      ) : (
+        <>
+          <Box>
+            <ListWrapper>
+              {isLoading ? (
+                <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
+              ) : filteredRooms.length > 0 ? (
+                filteredRooms.map((room, index) => (
+                  <div key={room.roomId} style={{ width: "100%" }}>
+                    <ChatRoomListItem 
+                      room={room} 
+                      onClick={handleRoomClick} 
+                    />
+                    {index < filteredRooms.length - 1 && <Divider />}
+                  </div>
+                ))
+              ) : (
+                <EmptyState>채팅방이 없습니다.</EmptyState>
+              )}
+            </ListWrapper>
+          </Box>
 
-      <FloatingActionButton onClick={() => setIsCreateModalOpen(true)}>
-        <Plus size={28} color="white" />
-      </FloatingActionButton>
+          <FloatingActionButton onClick={() => setIsCreateModalOpen(true)}>
+            <Plus size={28} color="white" />
+          </FloatingActionButton>
 
-      <CreateChatModal 
-        isOpen={isCreateModalOpen} 
-        onOpenChange={setIsCreateModalOpen} 
-      />
+          <CreateChatModal 
+            isOpen={isCreateModalOpen} 
+            onOpenChange={setIsCreateModalOpen} 
+          />
+        </>
+      )}
     </Container>
   );
 }
