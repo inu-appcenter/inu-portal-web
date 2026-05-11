@@ -33,6 +33,7 @@ const MobileAdminChatPage = () => {
         title,
         maxCapacity,
         isAnonymous,
+        "OPEN",
       );
       // API 응답 구조에 따른 데이터 추출
       const actualData = response.data || response;
