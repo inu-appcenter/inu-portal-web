@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useQuery } from "@tanstack/react-query";
 
 import NavItem from "@/components/mobile/common/NavItem";
 import { ROUTES } from "@/constants/routes";
@@ -16,6 +17,7 @@ import mypageIconActive from "@/resources/assets/mobile-common/mypage-blue.svg";
 import chatIcon from "@/resources/assets/mobile-common/chat-gray.svg";
 import chatIconActive from "@/resources/assets/mobile-common/chat-blue.svg";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { getUnreadTotalCount } from "@/apis/chat";
 
 const NAV_ITEMS = [
   {
@@ -41,6 +43,7 @@ const NAV_ITEMS = [
     icon: chatIcon,
     activeIcon: chatIconActive,
     label: "채팅",
+    key: "chat",
   },
   {
     to: ROUTES.MYPAGE.ROOT,
@@ -53,6 +56,14 @@ const NAV_ITEMS = [
 export default function MobileNav() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { data: unreadResponse } = useQuery({
+    queryKey: ["unreadTotalCount"],
+    queryFn: getUnreadTotalCount,
+    refetchInterval: 30000, // 30초마다 갱신
+  });
+
+  const totalUnreadCount = unreadResponse?.data?.totalUnreadCount || 0;
 
   const getIndexByPath = (path: string) => {
     const index = NAV_ITEMS.findIndex((item) => {
@@ -101,6 +112,7 @@ export default function MobileNav() {
             activeIcon={item.activeIcon}
             label={item.label}
             onClick={() => handleNavClick(item.to, item.label)}
+            badge={item.key === "chat" ? Number(totalUnreadCount) : undefined}
           />
         ))}
       </MobileNavWrapper>

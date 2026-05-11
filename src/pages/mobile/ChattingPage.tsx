@@ -10,9 +10,6 @@ import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
-
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const MESSAGE_COLORS = [
@@ -34,7 +31,6 @@ const getMessageColor = (messageId: number | string) => {
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [inputValue, setInputValue] = useState<string>("");
-  const [isAnonymous, setIsAnonymous] = useState(true);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -59,14 +55,6 @@ export default function ChattingPage() {
   useHeader({
     title: roomInfo ? roomInfo.title : "채팅방",
   });
-
-  useEffect(() => {
-    if (roomInfo) {
-      if (!roomInfo.anonymous) {
-        setIsAnonymous(false);
-      }
-    }
-  }, [roomInfo]);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -140,17 +128,17 @@ export default function ChattingPage() {
   };
 
   const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !roomInfo) return;
 
     const isFestivalChat = roomId === "1";
     mixpanelTrack.chatMessageSent(
       roomId ?? "",
-      isAnonymous,
+      roomInfo.anonymous,
       false,
       isFestivalChat,
     );
 
-    sendMessage(inputValue.trim(), isAnonymous);
+    sendMessage(inputValue.trim(), roomInfo.anonymous);
     setInputValue("");
     if (inputRef.current) inputRef.current.style.height = "auto";
   };
@@ -170,16 +158,16 @@ export default function ChattingPage() {
   };
 
   const handleConfirmUpload = () => {
-    if (pendingFiles.length > 0) {
+    if (pendingFiles.length > 0 && roomInfo) {
       const isFestivalChat = roomId === "1";
       mixpanelTrack.chatMessageSent(
         roomId ?? "",
-        isAnonymous,
+        roomInfo.anonymous,
         true,
         isFestivalChat,
       );
 
-      sendMessage("", isAnonymous, pendingFiles);
+      sendMessage("", roomInfo.anonymous, pendingFiles);
       setPendingFiles([]);
       setIsUploadModalOpen(false);
     }
@@ -276,20 +264,7 @@ export default function ChattingPage() {
             </IconButton>
           </label>
 
-          <AnonymousToggle
-            $disabled={!roomInfo?.anonymous}
-            onClick={() => {
-              if (roomInfo?.anonymous) {
-                setIsAnonymous(!isAnonymous);
-              }
-            }}
-          >
-            <img
-              src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
-              alt="익명 체크박스"
-            />
-            <span>익명</span>
-          </AnonymousToggle>
+
 
           <Input
             placeholder="메시지 입력"
@@ -448,24 +423,6 @@ const IconButton = styled.button`
   padding: 4px;
 `;
 
-const AnonymousToggle = styled.div<{ $disabled?: boolean }>`
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: ${({ $disabled }) => ($disabled ? "default" : "pointer")};
-  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
-  user-select: none;
-  img {
-    width: 18px;
-    height: 18px;
-  }
-  span {
-    font-size: 13px;
-    color: #9fa3a6;
-  }
-`;
-
 const DateDivider = styled.div`
   display: flex;
   justify-content: center;
@@ -593,7 +550,10 @@ const ChatItemOtherPerson = ({
               <Bubble $bgColor={bgColor}>{message.content}</Bubble>
             )}
           </div>
-          <Time>{time}</Time>
+          <TimeArea>
+            {message.unreadCount > 0 && <UnreadCount>{message.unreadCount}</UnreadCount>}
+            <Time>{time}</Time>
+          </TimeArea>
         </MessageBubble>
       </MessageContent>
     </MessageContainer>
@@ -628,7 +588,10 @@ const ChatItemMy = ({
       <MyMessageContent>
         <MySenderName>{message.senderNickname}</MySenderName>
         <MessageBubble>
-          <Time>{time}</Time>
+          <TimeArea style={{ alignItems: "flex-end" }}>
+            {message.unreadCount > 0 && <UnreadCount>{message.unreadCount}</UnreadCount>}
+            <Time>{time}</Time>
+          </TimeArea>
           <div
             style={{
               display: "flex",
@@ -654,6 +617,18 @@ const ChatItemMy = ({
     </MyMessageContainer>
   );
 };
+
+const TimeArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const UnreadCount = styled.span`
+  font-size: 10px;
+  font-weight: 700;
+  color: #5844E4;
+`;
 
 const MyMessageContent = styled(MessageContent)`
   align-items: flex-end;

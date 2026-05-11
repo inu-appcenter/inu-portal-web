@@ -9,6 +9,7 @@ interface NavItemProps {
   activeIcon: string;
   label: string;
   onClick?: () => void;
+  badge?: number;
 }
 
 export default function NavItem({
@@ -17,6 +18,7 @@ export default function NavItem({
   activeIcon,
   label,
   onClick,
+  badge,
 }: NavItemProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,7 +38,12 @@ export default function NavItem({
 
   return (
     <NavItemWrapper onClick={handleClick}>
-      <Icon src={isActive ? activeIcon : icon} alt={label} />
+      <IconWrapper>
+        <Icon src={isActive ? activeIcon : icon} alt={label} />
+        {badge !== undefined && badge > 0 && (
+          <Badge>{badge > 99 ? "99+" : badge}</Badge>
+        )}
+      </IconWrapper>
       <Label $isActive={isActive}>{label}</Label>
     </NavItemWrapper>
   );
@@ -60,11 +67,36 @@ const NavItemWrapper = styled.button`
   padding: 0;
 `;
 
+const IconWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const Icon = styled.img`
   width: 24px;
   height: 24px;
   margin-bottom: 3px;
   transition: transform 0.2s ease;
+`;
+
+const Badge = styled.div`
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background-color: #ff3b30;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 10px;
+  min-width: 12px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid white;
 `;
 
 const Label = styled.span<{ $isActive: boolean }>`

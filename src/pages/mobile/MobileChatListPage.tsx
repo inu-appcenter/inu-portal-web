@@ -1,183 +1,39 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { User } from "lucide-react";
+import { Plus } from "lucide-react";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import { ROUTES } from "@/constants/routes";
 import { trackPageView } from "@/utils/mixpanel";
-import { getPublicChatMessages } from "@/apis/chat";
-import { GetPublicChatMessagesResponse } from "@/types/chat";
+import { getMyChatRooms } from "@/apis/chat";
+import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
+import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 
 const CATEGORIES = ["개인", "오픈채팅"];
-
-// Mock data for chat rooms
-const MOCK_CHAT_ROOMS = [
-  {
-    id: "1",
-    title: "PAINT THE UNION 오픈채팅방",
-    lastMessage: "축제 재미있네요!",
-    lastMessageTime: new Date().toISOString(),
-    unreadCount: 5,
-    type: "오픈채팅",
-    participantCount: 156,
-    imageUrl: null,
-  },
-  {
-    id: "2",
-    title: "인천대 대신 전해드립니다",
-    lastMessage: "누가 에어팟 잃어버리셨나요?",
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-    unreadCount: 0,
-    type: "오픈채팅",
-    participantCount: 89,
-    imageUrl: "https://via.placeholder.com/48",
-  },
-  {
-    id: "3",
-    title: "컴퓨터공학부 단톡방",
-    lastMessage: "과제 제출 기한이 언제인가요?",
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    unreadCount: 12,
-    type: "오픈채팅",
-    participantCount: 45,
-    imageUrl: null,
-  },
-  {
-    id: "4",
-    title: "홍길동",
-    lastMessage: "안녕하세요!",
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    unreadCount: 1,
-    type: "개인",
-    participantCount: 2,
-    imageUrl: null,
-  },
-];
-
-const formatTime = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const oneDay = 24 * 60 * 60 * 1000;
-
-  if (diff < oneDay && now.getDate() === date.getDate()) {
-    return date.toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  } else if (diff < oneDay * 2) {
-    return "어제";
-  } else {
-    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-  }
-};
-
-const ChatRoomItem = ({
-  title,
-  lastMessage,
-  lastMessageTime,
-  unreadCount,
-  participantCount,
-  imageUrl,
-  onClick,
-}: {
-  title: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
-  participantCount: number;
-  imageUrl?: string | null;
-  onClick: () => void;
-}) => {
-  return (
-    <ChatRoomItemWrapper onClick={onClick}>
-      <ProfileImageArea>
-        {imageUrl ? (
-          <ProfileImage src={imageUrl} />
-        ) : (
-          <DefaultProfileIcon>
-            <User size={24} color="#D6D1D5" />
-          </DefaultProfileIcon>
-        )}
-      </ProfileImageArea>
-      <ContentArea>
-        <TopRow>
-          <TitleArea>
-            <div className="title">{title}</div>
-            <div className="participant-count">{participantCount}</div>
-          </TitleArea>
-          <div className="time">{formatTime(lastMessageTime)}</div>
-        </TopRow>
-        <BottomRow>
-          <div className="last-message">{lastMessage}</div>
-          {unreadCount > 0 && (
-            <UnreadDot>{unreadCount > 99 ? "99+" : unreadCount}</UnreadDot>
-          )}
-        </BottomRow>
-      </ContentArea>
-    </ChatRoomItemWrapper>
-  );
-};
-
-const DynamicChatRoomItem = ({
-  roomId,
-  title,
-  unreadCount,
-  participantCount,
-  imageUrl,
-  onClick,
-  fallbackMessage,
-  fallbackTime,
-}: {
-  roomId: string;
-  title: string;
-  unreadCount: number;
-  participantCount: number;
-  imageUrl?: string | null;
-  onClick: () => void;
-  fallbackMessage: string;
-  fallbackTime: string;
-}) => {
-  const { data: response } = useQuery<GetPublicChatMessagesResponse, Error>({
-    queryKey: ["publicChatMessages", roomId],
-    queryFn: () => getPublicChatMessages(Number(roomId)),
-    staleTime: 60 * 1000,
-  });
-
-  const latestMessage = response?.data?.[0];
-  const displayMessage = latestMessage
-    ? latestMessage.content || "사진을 보냈습니다."
-    : fallbackMessage;
-  const displayTime = latestMessage ? latestMessage.createDate : fallbackTime;
-
-  return (
-    <ChatRoomItem
-      title={title}
-      lastMessage={displayMessage}
-      lastMessageTime={displayTime}
-      unreadCount={unreadCount}
-      participantCount={participantCount}
-      imageUrl={imageUrl}
-      onClick={onClick}
-    />
-  );
-};
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "개인";
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅 목록");
   }, []);
+
+  const { data: response, isLoading } = useQuery({
+    queryKey: ["myChatRooms"],
+    queryFn: getMyChatRooms,
+    refetchOnWindowFocus: true,
+  });
+
+  const chatRooms = response?.data || [];
 
   const subHeader = useMemo(
     () => (
@@ -195,49 +51,34 @@ export default function MobileChatListPage() {
     floatingSubHeader: true,
   });
 
-  const handleRoomClick = (roomId: string) => {
+  const handleRoomClick = (roomId: number) => {
     navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
   };
 
   const filteredRooms = useMemo(() => {
-    return MOCK_CHAT_ROOMS.filter(
-      (room) => room.type === selectedCategory,
-    ).sort(
-      (a, b) =>
-        new Date(b.lastMessageTime).getTime() -
-        new Date(a.lastMessageTime).getTime(),
-    );
-  }, [selectedCategory]);
+    const typeFilter = selectedCategory === "개인" ? "PERSONAL" : "OPEN";
+    return chatRooms
+      .filter((room) => room.type === typeFilter)
+      .sort(
+        (a, b) =>
+          new Date(b.lastMessageTime).getTime() -
+          new Date(a.lastMessageTime).getTime(),
+      );
+  }, [chatRooms, selectedCategory]);
 
   return (
     <Container>
       <Box>
         <ListWrapper>
-          {filteredRooms.length > 0 ? (
+          {isLoading ? (
+            <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
+          ) : filteredRooms.length > 0 ? (
             filteredRooms.map((room, index) => (
-              <div key={room.id} style={{ width: "100%" }}>
-                {room.type === "오픈채팅" ? (
-                  <DynamicChatRoomItem
-                    roomId={room.id}
-                    title={room.title}
-                    unreadCount={room.unreadCount}
-                    participantCount={room.participantCount}
-                    imageUrl={room.imageUrl}
-                    onClick={() => handleRoomClick(room.id)}
-                    fallbackMessage={room.lastMessage}
-                    fallbackTime={room.lastMessageTime}
-                  />
-                ) : (
-                  <ChatRoomItem
-                    title={room.title}
-                    lastMessage={room.lastMessage}
-                    lastMessageTime={room.lastMessageTime}
-                    unreadCount={room.unreadCount}
-                    participantCount={room.participantCount}
-                    imageUrl={room.imageUrl}
-                    onClick={() => handleRoomClick(room.id)}
-                  />
-                )}
+              <div key={room.roomId} style={{ width: "100%" }}>
+                <ChatRoomListItem 
+                  room={room} 
+                  onClick={handleRoomClick} 
+                />
                 {index < filteredRooms.length - 1 && <Divider />}
               </div>
             ))
@@ -246,6 +87,15 @@ export default function MobileChatListPage() {
           )}
         </ListWrapper>
       </Box>
+
+      <FloatingActionButton onClick={() => setIsCreateModalOpen(true)}>
+        <Plus size={28} color="white" />
+      </FloatingActionButton>
+
+      <CreateChatModal 
+        isOpen={isCreateModalOpen} 
+        onOpenChange={setIsCreateModalOpen} 
+      />
     </Container>
   );
 }
@@ -255,6 +105,8 @@ const Container = styled.div`
   flex-direction: column;
   padding: 24px ${MOBILE_PAGE_GUTTER};
   gap: 24px;
+  min-height: calc(100vh - 150px);
+  position: relative;
 `;
 
 const ListWrapper = styled.div`
@@ -270,116 +122,24 @@ const EmptyState = styled.div`
   font-size: 14px;
 `;
 
-const ChatRoomItemWrapper = styled.div`
+const FloatingActionButton = styled.button`
+  position: fixed;
+  bottom: 120px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background-color: #5844e4;
   display: flex;
-  flex-direction: row;
-  gap: 12px;
   align-items: center;
-  justify-content: start;
-  box-sizing: border-box;
-  text-align: start;
+  justify-content: center;
+  border: none;
+  box-shadow: 0 4px 12px rgba(88, 68, 228, 0.4);
   cursor: pointer;
-  width: 100%;
-`;
+  z-index: 10;
+  transition: transform 0.2s;
 
-const ProfileImageArea = styled.div`
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-`;
-
-const ProfileImage = styled.img`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: #f4f4f4;
-`;
-
-const DefaultProfileIcon = styled.div`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: #f4f4f4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ContentArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: 4px;
-  overflow: hidden;
-`;
-
-const TopRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-
-  .time {
-    color: #969696;
-    font-size: 12px;
-    font-weight: 500;
-    flex-shrink: 0;
+  &:active {
+    transform: scale(0.9);
   }
-`;
-
-const TitleArea = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow: hidden;
-  margin-right: 8px;
-
-  .title {
-    color: #000;
-    font-size: 16px;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .participant-count {
-    color: #969696;
-    font-size: 14px;
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-`;
-
-const BottomRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-
-  .last-message {
-    color: #969696;
-    font-size: 14px;
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 8px;
-  }
-`;
-
-const UnreadDot = styled.div`
-  background-color: #ff3b30;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 14px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 `;
