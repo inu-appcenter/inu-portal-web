@@ -3,7 +3,6 @@ import styled, { keyframes } from "styled-components";
 import Box from "@/components/common/Box";
 import BottomButtonGroup from "@/components/common/BottomButtonGroup";
 import { useState } from "react";
-import { ChatRoomType } from "@/types/chat";
 import { createChatRoom } from "@/apis/chat";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -32,7 +31,6 @@ export default function CreateChatModal({
 }: CreateChatModalProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<ChatRoomType>("PERSONAL");
   const [maxCapacity, setMaxCapacity] = useState(10);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,8 +46,8 @@ export default function CreateChatModal({
       const response = await createChatRoom(
         title.trim(),
         maxCapacity,
-        type === "PERSONAL" ? false : isAnonymous,
-        type
+        isAnonymous,
+        "OPEN", // 오픈 채팅 고정
       );
       const roomId = response.id;
       onOpenChange(false);
@@ -59,13 +57,6 @@ export default function CreateChatModal({
       alert("채팅방 생성에 실패했습니다.");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleTypeChange = (newType: ChatRoomType) => {
-    setType(newType);
-    if (newType === "PERSONAL") {
-      setIsAnonymous(false);
     }
   };
 
@@ -86,59 +77,41 @@ export default function CreateChatModal({
             }}
           >
             <Header>
-              <Title>새 채팅방 생성</Title>
+              <Title>새 오픈채팅방 생성</Title>
             </Header>
-            
+
             <FormArea>
               <FormGroup>
-                <Label>채팅 종류</Label>
-                <TypeSelector>
-                  <TypeButton 
-                    $active={type === "PERSONAL"} 
-                    onClick={() => handleTypeChange("PERSONAL")}
-                  >
-                    개인 채팅
-                  </TypeButton>
-                  <TypeButton 
-                    $active={type === "OPEN"} 
-                    onClick={() => handleTypeChange("OPEN")}
-                  >
-                    오픈 채팅
-                  </TypeButton>
-                </TypeSelector>
-              </FormGroup>
-
-              <FormGroup>
                 <Label>방 제목</Label>
-                <Input 
-                  placeholder={type === "PERSONAL" ? "채팅방 이름을 입력하세요" : "오픈채팅방 주제를 입력하세요"}
+                <Input
+                  placeholder="오픈채팅방 주제를 입력하세요"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </FormGroup>
 
-              {type === "OPEN" && (
-                <>
-                  <FormGroup>
-                    <Label>최대 인원 (2~500명)</Label>
-                    <Input 
-                      type="number"
-                      min={2}
-                      max={500}
-                      value={maxCapacity}
-                      onChange={(e) => setMaxCapacity(Math.min(500, Math.max(2, parseInt(e.target.value) || 2)))}
-                    />
-                  </FormGroup>
+              <FormGroup>
+                <Label>최대 인원 (2~500명)</Label>
+                <Input
+                  type="number"
+                  min={2}
+                  max={500}
+                  value={maxCapacity}
+                  onChange={(e) =>
+                    setMaxCapacity(
+                      Math.min(500, Math.max(2, parseInt(e.target.value) || 2)),
+                    )
+                  }
+                />
+              </FormGroup>
 
-                  <CheckboxGroup onClick={() => setIsAnonymous(!isAnonymous)}>
-                    <img
-                      src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
-                      alt="익명 체크"
-                    />
-                    <span>익명으로 개설하기</span>
-                  </CheckboxGroup>
-                </>
-              )}
+              <CheckboxGroup onClick={() => setIsAnonymous(!isAnonymous)}>
+                <img
+                  src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
+                  alt="익명 체크"
+                />
+                <span>익명 채팅</span>
+              </CheckboxGroup>
             </FormArea>
 
             <BottomButtonGroup
@@ -153,7 +126,7 @@ export default function CreateChatModal({
                 onClick: handleCreate,
                 backgroundColor: "#5844E4",
                 textColor: "#FFFFFF",
-                disabled: isLoading
+                disabled: isLoading,
               }}
               padding="16px 24px 24px"
               height="88px"
@@ -223,36 +196,14 @@ const Input = styled.input`
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
 
   &:focus {
-    border-color: #5844E4;
+    border-color: #5844e4;
   }
-`;
-
-const TypeSelector = styled.div`
-  display: flex;
-  background: #F1F5F9;
-  padding: 4px;
-  border-radius: 12px;
-  gap: 4px;
-`;
-
-const TypeButton = styled.button<{ $active: boolean }>`
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  background: ${({ $active }) => ($active ? "#FFFFFF" : "transparent")};
-  color: ${({ $active }) => ($active ? "#5844E4" : "#64748B")};
-  box-shadow: ${({ $active }) => ($active ? "0 2px 4px rgba(0,0,0,0.05)" : "none")};
-  transition: all 0.2s;
 `;
 
 const CheckboxGroup = styled.div`
