@@ -48,6 +48,7 @@ export default function ChatRoomListItem({ room, onClick }: ChatRoomListItemProp
         <TopRow>
           <TitleArea>
             <div className="title">{room.title}</div>
+            {room.isOwner && <OwnerTag>방장</OwnerTag>}
             {room.type === "OPEN" && <OpenTag>오픈</OpenTag>}
           </TitleArea>
           <div className="time">{formatTime(room.lastMessageTime)}</div>
@@ -156,6 +157,11 @@ const OpenTag = styled.span`
   padding: 1px 4px;
   border-radius: 4px;
   flex-shrink: 0;
+`;
+
+const OwnerTag = styled(OpenTag)`
+  color: #ff3b30;
+  background: #fff5f5;
 `;
 
 const BottomRow = styled.div`

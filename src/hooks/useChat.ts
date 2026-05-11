@@ -62,9 +62,10 @@ export const useChat = (roomId: string) => {
         }
 
         connectStomp();
-      } catch (err) {
+      } catch (err: any) {
         console.error("채팅방 입장에 실패했습니다:", err);
-        setError("채팅방 입장에 실패했습니다. 다시 시도해주세요.");
+        const serverMsg = err.response?.data?.msg;
+        setError(serverMsg || "채팅방 입장에 실패했습니다. 다시 시도해주세요.");
       } finally {
         setIsLoading(false);
       }

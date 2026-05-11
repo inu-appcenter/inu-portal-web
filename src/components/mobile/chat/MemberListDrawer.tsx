@@ -1,11 +1,12 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { X, LogOut, Trash2 } from "lucide-react"; // LogOut, Trash2 아이콘 추가
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
-import { getChatRoomMembers } from "@/apis/chat";
+import { useNavigate } from "react-router-dom";
+import { getChatRoomMembers, leaveChatRoom, closeChatRoom } from "@/apis/chat";
 import { blockUser } from "@/apis/blocks";
 
 const contentShow = keyframes`
@@ -18,18 +19,23 @@ const fadeIn = keyframes`
   to { opacity: 1; }
 `;
 
+import { ChatRoom } from "@/types/chat";
+
 interface MemberListDrawerProps {
   roomId: string | number;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  roomInfo: ChatRoom | null;
 }
 
 export default function MemberListDrawer({
   roomId,
   isOpen,
   onOpenChange,
+  roomInfo,
 }: MemberListDrawerProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -51,6 +57,46 @@ export default function MemberListDrawer({
   const handleBlock = (memberId: number, nickname: string) => {
     if (confirm(`${nickname}님을 차단하시겠습니까?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`)) {
       blockMutation.mutate(memberId);
+    }
+  };
+
+  const leaveMutation = useMutation({
+    mutationFn: () => leaveChatRoom(roomId),
+    onSuccess: () => {
+      alert("채팅방에서 나갔습니다.");
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
+      queryClient.invalidateQueries({ queryKey: ["unreadTotalCount"] });
+      onOpenChange(false);
+      navigate("/chat/list", { replace: true });
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "채팅방 나가기에 실패했습니다.");
+    },
+  });
+
+  const closeMutation = useMutation({
+    mutationFn: () => closeChatRoom(roomId),
+    onSuccess: () => {
+      alert("채팅방이 폐쇄되었습니다.");
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
+      queryClient.invalidateQueries({ queryKey: ["unreadTotalCount"] });
+      onOpenChange(false);
+      navigate("/chat/list", { replace: true });
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "채팅방 폐쇄에 실패했습니다.");
+    },
+  });
+
+  const handleLeave = () => {
+    if (confirm("채팅방에서 나가시겠습니까?\n나간 후에는 이전 대화 내용을 볼 수 없습니다.")) {
+      leaveMutation.mutate();
+    }
+  };
+
+  const handleClose = () => {
+    if (confirm("오픈채팅방을 폐쇄하시겠습니까?\n폐쇄 시 모든 참여자가 대화할 수 없게 됩니다.")) {
+      closeMutation.mutate();
     }
   };
 
@@ -76,7 +122,11 @@ export default function MemberListDrawer({
                 members.map((member, index) => (
                   <div key={`${member.nickname}-${index}`}>
                     <SocialUserCard
-                      name={member.nickname + (member.me ? " (나)" : "")}
+                      name={
+                        member.nickname + 
+                        (member.me ? " (나)" : "") + 
+                        (member.isOwner ? " (방장)" : "")
+                      }
                       subtitle={member.studentId || "익명"}
                       fireId={member.fireId || 0}
                       onActionClick={!member.me && member.fireId ? () => handleBlock(member.fireId!, member.nickname) : undefined}
@@ -88,11 +138,53 @@ export default function MemberListDrawer({
               )}
             </Box>
           </ScrollArea>
+
+          <Footer>
+            {roomInfo?.type === "OPEN" && roomInfo?.isOwner && (
+              <ActionButton onClick={handleClose} $variant="danger">
+                <Trash2 size={20} />
+                오픈채팅방 폐쇄
+              </ActionButton>
+            )}
+            <ActionButton onClick={handleLeave}>
+              <LogOut size={20} />
+              채팅방 나가기
+            </ActionButton>
+          </Footer>
         </StyledContent>
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
+
+const Footer = styled.div`
+  padding: 16px;
+  border-top: 1px solid #F2F2F7;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const ActionButton = styled.button<{ $variant?: "danger" | "default" }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  
+  background-color: ${props => props.$variant === "danger" ? "#FFF5F5" : "#F2F2F7"};
+  color: ${props => props.$variant === "danger" ? "#FF3B30" : "#1C1C1E"};
+
+  &:active {
+    opacity: 0.7;
+  }
+`;
 
 const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;

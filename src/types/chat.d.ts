@@ -38,6 +38,7 @@ export interface ChatRoom {
   myHash: string;
   messages: ChatMessage[];
   anonymous: boolean;
+  isOwner: boolean;
 }
 
 /**
@@ -52,6 +53,7 @@ export interface MyChatRoomResponseDto {
   unreadCount: number;
   senderName: string;
   senderProfileImageNumber: number;
+  isOwner: boolean;
 }
 
 /**
@@ -62,6 +64,7 @@ export interface ChatRoomMemberResponseDto {
   studentId: string | null;
   fireId: number | null;
   me: boolean;
+  isOwner: boolean;
 }
 
 /**

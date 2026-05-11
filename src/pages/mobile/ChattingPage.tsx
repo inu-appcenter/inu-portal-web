@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { Send, Users, Loader2, Image } from "lucide-react";
@@ -30,6 +30,7 @@ const getMessageColor = (messageId: number | string) => {
 
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate(); // useNavigate 훅 사용
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -52,6 +53,14 @@ export default function ChattingPage() {
     roomInfo,
     fetchPreviousMessages,
   } = useChat(roomId ?? "");
+
+  // 에러 처리 useEffect 추가
+  useEffect(() => {
+    if (error) {
+      alert(error); // 에러 메시지 표시
+      navigate("/chat/list"); // 채팅 목록 페이지로 이동
+    }
+  }, [error, navigate]);
 
   const headerRight = (
     <HeaderRightArea>
@@ -202,9 +211,9 @@ export default function ChattingPage() {
     return <div>채팅 내역을 가져오고 있습니다...</div>;
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  // if (error) {
+  //   return <div>{error}</div>; // 이 부분은 위의 useEffect로 대체
+  // }
 
   return (
     <ChatPageWrapper>
@@ -307,6 +316,7 @@ export default function ChattingPage() {
         roomId={roomId ?? ""}
         isOpen={isMemberListOpen}
         onOpenChange={setIsMemberListOpen}
+        roomInfo={roomInfo} // roomInfo 전달
       />
     </ChatPageWrapper>
   );
