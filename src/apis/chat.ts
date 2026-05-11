@@ -161,3 +161,17 @@ export const getPublicChatMessages = async (
   );
   return response.data;
 };
+
+/**
+ * 개인 채팅방 생성
+ * targetMemberIds: 나를 제외한 상대방들의 memberId 리스트
+ */
+export const createPersonalChatRoom = async (
+  targetMemberIds: number[],
+): Promise<CreateChatRoomResponse> => {
+  const response = await tokenInstance.post<CreateChatRoomResponse>(
+    "/api/chat-rooms/personal",
+    { targetMemberIds },
+  );
+  return response.data;
+};

@@ -62,6 +62,7 @@ import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
 import ChattingPage from "@/pages/mobile/ChattingPage";
 import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
+import CreatePersonalChatPage from "@/pages/mobile/CreatePersonalChatPage";
 
 export const router = createBrowserRouter([
   {
@@ -113,6 +114,7 @@ export const router = createBrowserRouter([
 
           // 채팅
           { path: "/chat/:roomId", element: <ChattingPage /> },
+          { path: ROUTES.CHAT.CREATE_PERSONAL, element: <CreatePersonalChatPage /> },
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },

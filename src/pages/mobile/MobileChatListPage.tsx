@@ -141,7 +141,15 @@ export default function MobileChatListPage() {
             </ListWrapper>
           </Box>
 
-          <FloatingActionButton onClick={() => setIsCreateModalOpen(true)}>
+          <FloatingActionButton
+            onClick={() => {
+              if (selectedCategory === "개인") {
+                navigate(ROUTES.CHAT.CREATE_PERSONAL);
+              } else {
+                setIsCreateModalOpen(true);
+              }
+            }}
+          >
             <Plus size={28} color="white" />
           </FloatingActionButton>
 

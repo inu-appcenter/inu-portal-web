@@ -93,6 +93,7 @@ export const ROUTES = {
   CHAT: {
     ROOT: "/chat",
     LIST: "/chat/list",
+    CREATE_PERSONAL: "/chat/create/personal",
   },
 
   // 기타
