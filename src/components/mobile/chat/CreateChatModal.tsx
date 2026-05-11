@@ -43,13 +43,13 @@ export default function CreateChatModal({
 
     setIsLoading(true);
     try {
-      const response = await createChatRoom(
+      const response: any = await createChatRoom(
         title.trim(),
         maxCapacity,
         isAnonymous,
         "OPEN", // 오픈 채팅 고정
       );
-      const roomId = response.id;
+      const roomId = response.data?.id || response.id;
       onOpenChange(false);
       navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
     } catch (error) {

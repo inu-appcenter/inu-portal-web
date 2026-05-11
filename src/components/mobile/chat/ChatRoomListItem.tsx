@@ -1,7 +1,10 @@
 import styled from "styled-components";
 import { User } from "lucide-react";
 import { MyChatRoomResponseDto } from "@/types/chat";
-import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
+import {
+  normalizeProfileImageId,
+  DEFAULT_PROFILE_IMAGE_ID,
+} from "@/utils/userInfo";
 
 interface ChatRoomListItemProps {
   room: MyChatRoomResponseDto;
@@ -27,8 +30,14 @@ const formatTime = (dateString: string) => {
   }
 };
 
-export default function ChatRoomListItem({ room, onClick }: ChatRoomListItemProps) {
-  const safeFireId = normalizeProfileImageId(room.senderProfileImageNumber, DEFAULT_PROFILE_IMAGE_ID);
+export default function ChatRoomListItem({
+  room,
+  onClick,
+}: ChatRoomListItemProps) {
+  const safeFireId = normalizeProfileImageId(
+    room.senderProfileImageNumber,
+    DEFAULT_PROFILE_IMAGE_ID,
+  );
 
   return (
     <ItemWrapper onClick={() => onClick(room.roomId)}>
@@ -37,7 +46,7 @@ export default function ChatRoomListItem({ room, onClick }: ChatRoomListItemProp
           src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
           alt="Profile"
           onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
+            (e.target as HTMLImageElement).style.display = "none";
           }}
         />
         <DefaultProfileIcon className="fallback">
@@ -48,14 +57,16 @@ export default function ChatRoomListItem({ room, onClick }: ChatRoomListItemProp
         <TopRow>
           <TitleArea>
             <div className="title">{room.title}</div>
-            {room.isOwner && <OwnerTag>방장</OwnerTag>}
+            {room.owner && <OwnerTag>방장</OwnerTag>}
             {room.type === "OPEN" && <OpenTag>오픈</OpenTag>}
           </TitleArea>
           <div className="time">{formatTime(room.lastMessageTime)}</div>
         </TopRow>
         <BottomRow>
           <div className="last-message">
-            {room.senderName && <span className="sender">{room.senderName}: </span>}
+            {room.senderName && (
+              <span className="sender">{room.senderName}: </span>
+            )}
             {room.lastMessage || "메시지가 없습니다."}
           </div>
           {room.unreadCount > 0 && (

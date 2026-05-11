@@ -11,15 +11,32 @@ interface UserState {
   isLoading: boolean;
 }
 
-const useUserStore = create<UserState>((set) => ({
-  tokenInfo: {
+const getInitialToken = () => {
+  const stored = localStorage.getItem("tokenInfo");
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      return {
+        accessToken: "",
+        accessTokenExpiredTime: "",
+        refreshToken: "",
+        refreshTokenExpiredTime: "",
+      };
+    }
+  }
+  return {
     accessToken: "",
     accessTokenExpiredTime: "",
     refreshToken: "",
     refreshTokenExpiredTime: "",
-  },
+  };
+};
+
+const useUserStore = create<UserState>((set) => ({
+  tokenInfo: getInitialToken(),
   userInfo: normalizeUserInfo(),
-  isLoading: true, // 초기 상태를 true로 설정
+  isLoading: false, // 초기화 완료됨
 
   setTokenInfo: (tokenInfo) => {
     set(() => ({ tokenInfo }));
