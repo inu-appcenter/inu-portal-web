@@ -26,9 +26,15 @@ export default function CreatePersonalChatPage() {
 
   const createMutation = useMutation({
     mutationFn: createPersonalChatRoom,
-    onSuccess: (res) => {
-      // res.id (roomId)를 사용하여 채팅방으로 이동
-      navigate(`${ROUTES.CHAT.ROOT}/${res.id}`);
+    onSuccess: (res: any) => {
+      // res.data.id (roomId)를 사용하여 채팅방으로 이동
+      const roomId = res.data?.id || res.id;
+      if (roomId) {
+        navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
+      } else {
+        console.error("채팅방 ID를 찾을 수 없습니다:", res);
+        alert("채팅방 생성은 완료되었으나 이동에 실패했습니다.");
+      }
     },
     onError: (error: any) => {
       alert(error.response?.data?.msg || "채팅방 생성에 실패했습니다.");
@@ -70,7 +76,9 @@ export default function CreatePersonalChatPage() {
                   subtitle={friend.studentId}
                   fireId={friend.fireId}
                 />
-                <Checkbox $selected={selectedMemberIds.includes(friend.memberId)}>
+                <Checkbox
+                  $selected={selectedMemberIds.includes(friend.memberId)}
+                >
                   {selectedMemberIds.includes(friend.memberId) && (
                     <Check size={16} color="white" strokeWidth={3} />
                   )}
@@ -124,7 +132,8 @@ const Checkbox = styled.div<{ $selected: boolean }>`
   height: 24px;
   border-radius: 50%;
   border: 2px solid ${({ $selected }) => ($selected ? "#5844E4" : "#E5E5EA")};
-  background-color: ${({ $selected }) => ($selected ? "#5844E4" : "transparent")};
+  background-color: ${({ $selected }) =>
+    $selected ? "#5844E4" : "transparent"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -146,7 +155,7 @@ const FixedFooter = styled.div`
 const SubmitButton = styled.button`
   width: 100%;
   height: 56px;
-  background-color: #5844E4;
+  background-color: #5844e4;
   color: white;
   border: none;
   border-radius: 16px;
@@ -157,8 +166,8 @@ const SubmitButton = styled.button`
   transition: all 0.2s;
 
   &:disabled {
-    background-color: #E5E5EA;
-    color: #8E8E93;
+    background-color: #e5e5ea;
+    color: #8e8e93;
     box-shadow: none;
     cursor: not-allowed;
   }

@@ -37,12 +37,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     setIsAppUrl(ROUTES.ROOT as MainTabPath);
-
-    const storedTokenInfo = localStorage.getItem("tokenInfo");
-    if (storedTokenInfo) {
-      setTokenInfo(JSON.parse(storedTokenInfo));
-    }
-  }, [setIsAppUrl, setTokenInfo]);
+  }, [setIsAppUrl]);
 
   useEffect(() => {
     if (!tokenInfo.accessToken) {

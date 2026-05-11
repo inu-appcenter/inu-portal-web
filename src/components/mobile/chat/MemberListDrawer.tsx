@@ -159,7 +159,7 @@ export default function MemberListDrawer({
           </ScrollArea>
 
           <Footer>
-            {roomInfo?.type === "OPEN" && roomInfo?.isOwner && (
+            {roomInfo?.type === "OPEN" && roomInfo?.owner && (
               <ActionButton onClick={handleClose} $variant="danger">
                 <Trash2 size={20} />
                 오픈채팅방 폐쇄

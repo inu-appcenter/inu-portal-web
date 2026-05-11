@@ -74,7 +74,7 @@ export default function ChattingPage() {
   );
 
   useHeader({
-    title: roomInfo ? roomInfo.title : "채팅방",
+    title: roomInfo?.title ? roomInfo.title : "채팅방",
     rightArea: headerRight,
   });
 
@@ -92,7 +92,14 @@ export default function ChattingPage() {
   // 스크롤 이벤트로 이전 메시지 트리거 감지
   const handleScroll = React.useCallback(() => {
     const el = scrollRef.current;
-    if (!el || isLoading || isFetchingPrevious || !hasMore || messages.length === 0) return;
+    if (
+      !el ||
+      isLoading ||
+      isFetchingPrevious ||
+      !hasMore ||
+      messages.length === 0
+    )
+      return;
 
     const { scrollTop, scrollHeight, clientHeight } = el;
     const absScrollTop = Math.abs(scrollTop);
@@ -103,7 +110,13 @@ export default function ChattingPage() {
       lastScrollTopRef.current = scrollTop;
       fetchPreviousMessages();
     }
-  }, [isLoading, isFetchingPrevious, hasMore, messages.length, fetchPreviousMessages]);
+  }, [
+    isLoading,
+    isFetchingPrevious,
+    hasMore,
+    messages.length,
+    fetchPreviousMessages,
+  ]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -278,8 +291,6 @@ export default function ChattingPage() {
               <Image size={24} color="#767676" />
             </IconButton>
           </label>
-
-
 
           <Input
             placeholder="메시지 입력"
@@ -576,7 +587,9 @@ const ChatItemOtherPerson = ({
             )}
           </div>
           <TimeArea>
-            {message.unreadCount > 0 && <UnreadCount>{message.unreadCount}</UnreadCount>}
+            {message.unreadCount > 0 && (
+              <UnreadCount>{message.unreadCount}</UnreadCount>
+            )}
             <Time>{time}</Time>
           </TimeArea>
         </MessageBubble>
@@ -614,7 +627,9 @@ const ChatItemMy = ({
         <MySenderName>{message.senderNickname}</MySenderName>
         <MessageBubble>
           <TimeArea style={{ alignItems: "flex-end" }}>
-            {message.unreadCount > 0 && <UnreadCount>{message.unreadCount}</UnreadCount>}
+            {message.unreadCount > 0 && (
+              <UnreadCount>{message.unreadCount}</UnreadCount>
+            )}
             <Time>{time}</Time>
           </TimeArea>
           <div
@@ -652,7 +667,7 @@ const TimeArea = styled.div`
 const UnreadCount = styled.span`
   font-size: 10px;
   font-weight: 700;
-  color: #5844E4;
+  color: #5844e4;
 `;
 
 const MyMessageContent = styled(MessageContent)`

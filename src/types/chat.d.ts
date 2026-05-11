@@ -38,7 +38,7 @@ export interface ChatRoom {
   myHash: string;
   messages: ChatMessage[];
   anonymous: boolean;
-  isOwner: boolean;
+  owner: boolean;
 }
 
 /**
@@ -53,7 +53,7 @@ export interface MyChatRoomResponseDto {
   unreadCount: number;
   senderName: string;
   senderProfileImageNumber: number;
-  isOwner: boolean;
+  owner: boolean;
 }
 
 /**
@@ -89,19 +89,19 @@ export interface CreateChatRoomRequest {
  * 채팅방 생성 응답
  * POST /api/chat-rooms (201)
  */
-export type CreateChatRoomResponse = ChatRoom;
+export type CreateChatRoomResponse = ApiResponse<ChatRoom>;
 
 /**
  * 채팅방 참여 응답
  * POST /api/chat-rooms/{roomId}/join (200)
  */
-export type JoinChatRoomResponse = ChatRoom;
+export type JoinChatRoomResponse = ApiResponse<ChatRoom>;
 
 /**
  * 채팅방 정보 및 메시지 조회 응답
  * GET /api/chat-rooms/{roomId} (200)
  */
-export type GetChatRoomResponse = ChatRoom;
+export type GetChatRoomResponse = ApiResponse<ChatRoom>;
 
 /**
  * 이전 채팅 메시지 조회 응답
