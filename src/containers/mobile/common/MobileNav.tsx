@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useQuery } from "@tanstack/react-query";
 
 import NavItem from "@/components/mobile/common/NavItem";
 import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import homeIcon from "@/resources/assets/mobile-common/home-gray.svg";
 import homeIconActive from "@/resources/assets/mobile-common/home-blue.svg";
 import busIcon from "@/resources/assets/mobile-common/bus-gray.svg";
@@ -12,7 +14,10 @@ import saveIcon from "@/resources/assets/mobile-common/save-gray.svg";
 import saveIconActive from "@/resources/assets/mobile-common/save-blue.svg";
 import mypageIcon from "@/resources/assets/mobile-common/mypage-gray.svg";
 import mypageIconActive from "@/resources/assets/mobile-common/mypage-blue.svg";
+import chatIcon from "@/resources/assets/mobile-common/chat-gray.svg";
+import chatIconActive from "@/resources/assets/mobile-common/chat-blue.svg";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { getUnreadTotalCount } from "@/apis/chat";
 
 const NAV_ITEMS = [
   {
@@ -34,6 +39,13 @@ const NAV_ITEMS = [
     label: "인입런",
   },
   {
+    to: ROUTES.CHAT.LIST,
+    icon: chatIcon,
+    activeIcon: chatIconActive,
+    label: "채팅",
+    key: "chat",
+  },
+  {
     to: ROUTES.MYPAGE.ROOT,
     icon: mypageIcon,
     activeIcon: mypageIconActive,
@@ -43,6 +55,15 @@ const NAV_ITEMS = [
 
 export default function MobileNav() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const { data: unreadResponse } = useQuery({
+    queryKey: ["unreadTotalCount"],
+    queryFn: getUnreadTotalCount,
+    refetchInterval: 30000, // 30초마다 갱신
+  });
+
+  const totalUnreadCount = unreadResponse?.data?.totalUnreadCount || 0;
 
   const getIndexByPath = (path: string) => {
     const index = NAV_ITEMS.findIndex((item) => {
@@ -61,6 +82,29 @@ export default function MobileNav() {
     setActiveIndex(getIndexByPath(location.pathname));
   }, [location.pathname]);
 
+  const handleNavClick = (to: string, label: string) => {
+    const isChat = to === ROUTES.CHAT.LIST;
+    const isCurrentlyActive =
+      location.pathname === to || location.pathname.startsWith(to);
+
+    if (isChat && isCurrentlyActive) {
+      const params = new URLSearchParams(location.search);
+      const currentCategory = params.get("category") || "개인";
+      const nextCategory =
+        currentCategory === "개인"
+          ? "오픈채팅"
+          : currentCategory === "오픈채팅"
+            ? "친구"
+            : "개인";
+      params.set("category", nextCategory);
+      navigate(`${to}?${params.toString()}`, { replace: true });
+      return;
+    }
+
+    mixpanelTrack.navTabClicked(label);
+    navigate(to, { replace: true });
+  };
+
   return (
     <AreaWrapper>
       <MobileNavWrapper>
@@ -72,6 +116,8 @@ export default function MobileNav() {
             icon={item.icon}
             activeIcon={item.activeIcon}
             label={item.label}
+            onClick={() => handleNavClick(item.to, item.label)}
+            badge={item.key === "chat" ? Number(totalUnreadCount) : undefined}
           />
         ))}
       </MobileNavWrapper>
@@ -103,7 +149,7 @@ const MobileNavWrapper = styled.nav`
   min-width: 250px;
   padding: 8px 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   align-items: center;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.7);
@@ -126,10 +172,10 @@ const ActiveIndicator = styled.div<{ $index: number }>`
   top: 0;
   bottom: 0;
   z-index: 0;
-  width: 25%;
+  width: 20%;
   height: 100%;
   border-radius: 50px;
   background: rgba(231, 231, 231, 0.5);
-  left: ${({ $index }) => $index * 25}%;
+  left: ${({ $index }) => $index * 20}%;
   transition: left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 `;

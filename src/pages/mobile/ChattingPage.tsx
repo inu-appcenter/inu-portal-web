@@ -1,17 +1,14 @@
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { Send, Users, Loader2, Image } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
+import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
-
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,12 +30,13 @@ const getMessageColor = (messageId: number | string) => {
 
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate(); // useNavigate 훅 사용
   const [inputValue, setInputValue] = useState<string>("");
-  const [isAnonymous, setIsAnonymous] = useState(true);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isMemberListOpen, setIsMemberListOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -56,78 +54,82 @@ export default function ChattingPage() {
     fetchPreviousMessages,
   } = useChat(roomId ?? "");
 
+  // 에러 처리 useEffect 추가
+  useEffect(() => {
+    if (error) {
+      alert(error); // 에러 메시지 표시
+      navigate("/chat/list"); // 채팅 목록 페이지로 이동
+    }
+  }, [error, navigate]);
+
+  const headerRight = React.useMemo(
+    () => (
+      <HeaderRightArea>
+        <IconButton onClick={() => setIsMemberListOpen(true)}>
+          <Users size={24} color="#1C1C1E" />
+        </IconButton>
+      </HeaderRightArea>
+    ),
+    [],
+  );
+
   useHeader({
     title: roomInfo ? roomInfo.title : "채팅방",
+    rightArea: headerRight,
   });
-
-  useEffect(() => {
-    if (roomInfo) {
-      if (!roomInfo.anonymous) {
-        setIsAnonymous(false);
-      }
-    }
-  }, [roomInfo]);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollHeightRef = useRef<number>(0);
-  const [intersectionRoot, setIntersectionRoot] = useState<Element | null>(
-    null,
+  const lastScrollTopRef = useRef<number>(0);
+
+  // 메시지 역순 메모이제이션
+  const reversedMessages = React.useMemo(
+    () => [...messages].reverse(),
+    [messages],
   );
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      setIntersectionRoot(scrollRef.current);
-    }
-  }, [isLoading]);
+  // 스크롤 이벤트로 이전 메시지 트리거 감지
+  const handleScroll = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || isLoading || isFetchingPrevious || !hasMore || messages.length === 0) return;
 
-  const entry = useIntersectionObserver(sentinelRef, {
-    threshold: 0,
-    root: intersectionRoot,
-    freezeOnceVisible: false,
-  });
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const absScrollTop = Math.abs(scrollTop);
 
-  useEffect(() => {
-    if (
-      !isLoading &&
-      entry?.isIntersecting &&
-      hasMore &&
-      !isFetchingPrevious &&
-      messages.length > 0
-    ) {
-      console.log("이전 메시지 불러오기");
+    // 시각적 상단(물리적 하단) 도달 확인
+    if (absScrollTop + clientHeight >= scrollHeight - 100) {
+      // 위치 기억
+      lastScrollTopRef.current = scrollTop;
       fetchPreviousMessages();
     }
-  }, [
-    entry?.isIntersecting,
-    hasMore,
-    isFetchingPrevious,
-    fetchPreviousMessages,
-    messages.length,
-    isLoading,
-  ]);
+  }, [isLoading, isFetchingPrevious, hasMore, messages.length, fetchPreviousMessages]);
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // 데이터 업데이트 직전 높이 저장
   useLayoutEffect(() => {
     if (isFetchingPrevious && scrollRef.current) {
       scrollHeightRef.current = scrollRef.current.scrollHeight;
     }
   }, [isFetchingPrevious]);
 
-  useEffect(() => {
-    if (!scrollRef.current) return;
+  // 데이터 업데이트 후 위치 보정
+  useLayoutEffect(() => {
+    const scrollEl = scrollRef.current;
+    if (!scrollEl || isFetchingPrevious) return;
 
-    if (!isFetchingPrevious && scrollHeightRef.current > 0) {
-      const delta = scrollRef.current.scrollHeight - scrollHeightRef.current;
-      if (delta > 0) {
-        scrollRef.current.scrollTop = delta;
-      }
+    // 이전 메시지 로드 완료 후
+    if (scrollHeightRef.current > 0) {
+      // 튀는 현상 방지를 위해 기억해둔 scrollTop으로 강제 복원
+      scrollEl.scrollTop = lastScrollTopRef.current;
       scrollHeightRef.current = 0;
-      return;
-    }
-
-    if (!isFetchingPrevious) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isFetchingPrevious]);
 
@@ -140,17 +142,17 @@ export default function ChattingPage() {
   };
 
   const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !roomInfo) return;
 
     const isFestivalChat = roomId === "1";
     mixpanelTrack.chatMessageSent(
       roomId ?? "",
-      isAnonymous,
+      roomInfo.anonymous,
       false,
       isFestivalChat,
     );
 
-    sendMessage(inputValue.trim(), isAnonymous);
+    sendMessage(inputValue.trim(), roomInfo.anonymous);
     setInputValue("");
     if (inputRef.current) inputRef.current.style.height = "auto";
   };
@@ -170,16 +172,16 @@ export default function ChattingPage() {
   };
 
   const handleConfirmUpload = () => {
-    if (pendingFiles.length > 0) {
+    if (pendingFiles.length > 0 && roomInfo) {
       const isFestivalChat = roomId === "1";
       mixpanelTrack.chatMessageSent(
         roomId ?? "",
-        isAnonymous,
+        roomInfo.anonymous,
         true,
         isFestivalChat,
       );
 
-      sendMessage("", isAnonymous, pendingFiles);
+      sendMessage("", roomInfo.anonymous, pendingFiles);
       setPendingFiles([]);
       setIsUploadModalOpen(false);
     }
@@ -212,9 +214,9 @@ export default function ChattingPage() {
     return <div>채팅 내역을 가져오고 있습니다...</div>;
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  // if (error) {
+  //   return <div>{error}</div>; // 이 부분은 위의 useEffect로 대체
+  // }
 
   return (
     <ChatPageWrapper>
@@ -229,23 +231,16 @@ export default function ChattingPage() {
       )}
 
       <ChattingWrapper ref={scrollRef}>
-        <Sentinel ref={sentinelRef} />
-        {isFetchingPrevious && (
-          <LoadingWrapper>
-            <Loader2 size={20} color="#5844E4" />
-          </LoadingWrapper>
-        )}
-        {messages.map((msg, index) => {
+        {/* column-reverse를 위해 메시지를 역순으로 렌더링 */}
+        {reversedMessages.map((msg, index) => {
+          const originalIndex = messages.length - 1 - index;
           const showDateLine =
-            index === 0 ||
-            !isSameDate(messages[index - 1].createDate, msg.createDate);
+            originalIndex === 0 ||
+            !isSameDate(messages[originalIndex - 1].createDate, msg.createDate);
           const isMe = msg.senderHash === myHash;
 
           return (
-            <React.Fragment key={msg.messageId || `msg-${index}`}>
-              {showDateLine && (
-                <DateDivider>{formatDateLine(msg.createDate)}</DateDivider>
-              )}
+            <React.Fragment key={msg.messageId || `msg-${originalIndex}`}>
               {isMe ? (
                 <ChatItemMy message={msg} onImageClick={handleImageClick} />
               ) : (
@@ -255,9 +250,17 @@ export default function ChattingPage() {
                   userImageUrl={null}
                 />
               )}
+              {showDateLine && (
+                <DateDivider>{formatDateLine(msg.createDate)}</DateDivider>
+              )}
             </React.Fragment>
           );
         })}
+        {isFetchingPrevious && (
+          <LoadingWrapper>
+            <Loader2 size={20} color="#5844E4" />
+          </LoadingWrapper>
+        )}
       </ChattingWrapper>
 
       <FixedInputArea>
@@ -276,20 +279,7 @@ export default function ChattingPage() {
             </IconButton>
           </label>
 
-          <AnonymousToggle
-            $disabled={!roomInfo?.anonymous}
-            onClick={() => {
-              if (roomInfo?.anonymous) {
-                setIsAnonymous(!isAnonymous);
-              }
-            }}
-          >
-            <img
-              src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
-              alt="익명 체크박스"
-            />
-            <span>익명</span>
-          </AnonymousToggle>
+
 
           <Input
             placeholder="메시지 입력"
@@ -324,6 +314,13 @@ export default function ChattingPage() {
         onSend={handleConfirmUpload}
         onCancel={handleCancelUpload}
       />
+
+      <MemberListDrawer
+        roomId={roomId ?? ""}
+        isOpen={isMemberListOpen}
+        onOpenChange={setIsMemberListOpen}
+        roomInfo={roomInfo} // roomInfo 전달
+      />
     </ChatPageWrapper>
   );
 }
@@ -335,6 +332,12 @@ const ChatPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+`;
+
+const HeaderRightArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const RoomInfoBanner = styled.div`
@@ -353,6 +356,8 @@ const RoomInfoBanner = styled.div`
 
 const ChattingWrapper = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column-reverse;
   overflow-y: auto;
   padding-bottom: 64px;
   box-sizing: border-box;
@@ -364,11 +369,6 @@ const ChattingWrapper = styled.div`
     background-color: #d1d1d1;
     border-radius: 2px;
   }
-`;
-
-const Sentinel = styled.div`
-  height: 1px;
-  width: 100%;
 `;
 
 const LoadingWrapper = styled.div`
@@ -448,24 +448,6 @@ const IconButton = styled.button`
   padding: 4px;
 `;
 
-const AnonymousToggle = styled.div<{ $disabled?: boolean }>`
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: ${({ $disabled }) => ($disabled ? "default" : "pointer")};
-  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
-  user-select: none;
-  img {
-    width: 18px;
-    height: 18px;
-  }
-  span {
-    font-size: 13px;
-    color: #9fa3a6;
-  }
-`;
-
 const DateDivider = styled.div`
   display: flex;
   justify-content: center;
@@ -506,7 +488,6 @@ const MessageBubble = styled.div`
   gap: 8px;
 `;
 
-// 파스텔톤 배경색과 그림자가 적용된 말풍선
 const Bubble = styled.div<{ $bgColor: string }>`
   padding: 10px 14px;
   border-radius: 20px;
@@ -594,7 +575,10 @@ const ChatItemOtherPerson = ({
               <Bubble $bgColor={bgColor}>{message.content}</Bubble>
             )}
           </div>
-          <Time>{time}</Time>
+          <TimeArea>
+            {message.unreadCount > 0 && <UnreadCount>{message.unreadCount}</UnreadCount>}
+            <Time>{time}</Time>
+          </TimeArea>
         </MessageBubble>
       </MessageContent>
     </MessageContainer>
@@ -629,7 +613,10 @@ const ChatItemMy = ({
       <MyMessageContent>
         <MySenderName>{message.senderNickname}</MySenderName>
         <MessageBubble>
-          <Time>{time}</Time>
+          <TimeArea style={{ alignItems: "flex-end" }}>
+            {message.unreadCount > 0 && <UnreadCount>{message.unreadCount}</UnreadCount>}
+            <Time>{time}</Time>
+          </TimeArea>
           <div
             style={{
               display: "flex",
@@ -655,6 +642,18 @@ const ChatItemMy = ({
     </MyMessageContainer>
   );
 };
+
+const TimeArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const UnreadCount = styled.span`
+  font-size: 10px;
+  font-weight: 700;
+  color: #5844E4;
+`;
 
 const MyMessageContent = styled(MessageContent)`
   align-items: flex-end;

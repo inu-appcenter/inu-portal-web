@@ -1,30 +1,77 @@
 // src/types/chat.d.ts
 
 /**
+ * 채팅방 종류
+ */
+export type ChatRoomType = "PERSONAL" | "OPEN";
+
+/**
+ * 채팅방 상태
+ */
+export type ChatRoomStatus = "ACTIVE" | "CLOSED";
+
+/**
  * 채팅 메시지
  */
 export interface ChatMessage {
   messageId: number;
-  roomId?: number;
+  roomId: number;
   senderNickname: string;
-  senderHash?: string;
+  senderHash: string;
   content: string;
-  imageCount: number; // 이미지 개수
+  imageCount: number;
+  unreadCount: number;
   createDate: string; // ISO 8601 날짜 문자열
 }
 
 /**
- * 채팅방
+ * 채팅방 상세 정보
  */
 export interface ChatRoom {
   id: number;
   title: string;
   maxCapacity: number;
+  type: ChatRoomType;
+  status: ChatRoomStatus;
   currentParticipants: number;
   createDate: string; // ISO 8601 날짜 문자열
   myHash: string;
   messages: ChatMessage[];
   anonymous: boolean;
+  isOwner: boolean;
+}
+
+/**
+ * 내 채팅방 목록 응답 DTO
+ */
+export interface MyChatRoomResponseDto {
+  roomId: number;
+  title: string;
+  type: ChatRoomType;
+  lastMessage: string;
+  lastMessageTime: string; // ISO 8601
+  unreadCount: number;
+  senderName: string;
+  senderProfileImageNumber: number;
+  isOwner: boolean;
+}
+
+/**
+ * 채팅방 멤버 응답 DTO
+ */
+export interface ChatRoomMemberResponseDto {
+  nickname: string;
+  studentId: string | null;
+  fireId: number | null;
+  me: boolean;
+  isOwner: boolean;
+}
+
+/**
+ * 안 읽은 메시지 총합 응답 DTO
+ */
+export interface UnreadTotalCountResponseDto {
+  totalUnreadCount: number;
 }
 
 /**
@@ -35,6 +82,7 @@ export interface CreateChatRoomRequest {
   title: string;
   maxCapacity: number;
   isAnonymous: boolean;
+  type: ChatRoomType;
 }
 
 /**
