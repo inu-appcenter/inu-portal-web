@@ -90,7 +90,12 @@ export default function MobileNav() {
     if (isChat && isCurrentlyActive) {
       const params = new URLSearchParams(location.search);
       const currentCategory = params.get("category") || "개인";
-      const nextCategory = currentCategory === "개인" ? "오픈채팅" : "개인";
+      const nextCategory =
+        currentCategory === "개인"
+          ? "오픈채팅"
+          : currentCategory === "오픈채팅"
+            ? "친구"
+            : "개인";
       params.set("category", nextCategory);
       navigate(`${to}?${params.toString()}`, { replace: true });
       return;

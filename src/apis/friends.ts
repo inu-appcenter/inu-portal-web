@@ -62,3 +62,28 @@ export const getFriends = async (): Promise<
   );
   return response.data;
 };
+
+/**
+ * 내가 보낸 친구 요청 목록 조회
+ */
+export const getSentPendingFriends = async (): Promise<
+  ApiResponse<FriendResponseDto[]>
+> => {
+  const response = await tokenInstance.get<ApiResponse<FriendResponseDto[]>>(
+    "/api/friends/pending/sent",
+  );
+  return response.data;
+};
+
+/**
+ * 친구 검색 (신청 전 확인용)
+ */
+export const searchFriend = async (
+  studentId: string,
+): Promise<ApiResponse<FriendResponseDto>> => {
+  const response = await tokenInstance.get<ApiResponse<FriendResponseDto>>(
+    "/api/friends/search",
+    { params: { studentId } },
+  );
+  return response.data;
+};

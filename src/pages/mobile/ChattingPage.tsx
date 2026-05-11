@@ -62,12 +62,15 @@ export default function ChattingPage() {
     }
   }, [error, navigate]);
 
-  const headerRight = (
-    <HeaderRightArea>
-      <IconButton onClick={() => setIsMemberListOpen(true)}>
-        <Users size={24} color="#1C1C1E" />
-      </IconButton>
-    </HeaderRightArea>
+  const headerRight = React.useMemo(
+    () => (
+      <HeaderRightArea>
+        <IconButton onClick={() => setIsMemberListOpen(true)}>
+          <Users size={24} color="#1C1C1E" />
+        </IconButton>
+      </HeaderRightArea>
+    ),
+    [],
   );
 
   useHeader({

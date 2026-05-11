@@ -73,7 +73,7 @@ const ItemWrapper = styled.div`
   display: flex;
   flex-direction: row;
   gap: 12px;
-  padding: 12px 0;
+  // padding: 12px 0;
   align-items: center;
   cursor: pointer;
   width: 100%;

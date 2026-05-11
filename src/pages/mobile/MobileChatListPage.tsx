@@ -14,6 +14,10 @@ import { getMyChatRooms } from "@/apis/chat";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
+import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
+import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
+import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
+import EmptyState from "@/components/common/EmptyState";
 
 const CATEGORIES = ["개인", "오픈채팅", "친구"];
 
@@ -23,6 +27,9 @@ export default function MobileChatListPage() {
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "개인";
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
+  const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
+  const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -47,10 +54,28 @@ export default function MobileChatListPage() {
     [selectedCategory],
   );
 
+  const menuItems = useMemo(() => {
+    if (selectedCategory === "친구") {
+      return [
+        {
+          label: "보낸 친구 요청 목록",
+          onClick: () => setIsSentRequestsModalOpen(true),
+        },
+        {
+          label: "차단 유저 관리",
+          onClick: () => setIsBlockedModalOpen(true),
+        },
+      ];
+    }
+    return undefined;
+  }, [selectedCategory]);
+
   useHeader({
     title: "채팅",
     subHeader: subHeader,
     floatingSubHeader: true,
+    hasback: false,
+    menuItems: menuItems,
   });
 
   const handleRoomClick = (roomId: number) => {
@@ -72,7 +97,31 @@ export default function MobileChatListPage() {
   return (
     <Container>
       {selectedCategory === "친구" ? (
-        <FriendManagementView />
+        <>
+          <FriendManagementView />
+          
+          <FloatingActionButton 
+            onClick={() => setIsAddFriendModalOpen(true)}
+            $bottom="180px"
+          >
+            <Plus size={28} color="white" />
+          </FloatingActionButton>
+
+          <AddFriendModal 
+            isOpen={isAddFriendModalOpen}
+            onOpenChange={setIsAddFriendModalOpen}
+          />
+
+          <BlockedUsersModal
+            isOpen={isBlockedModalOpen}
+            onOpenChange={setIsBlockedModalOpen}
+          />
+
+          <SentRequestsModal
+            isOpen={isSentRequestsModalOpen}
+            onOpenChange={setIsSentRequestsModalOpen}
+          />
+        </>
       ) : (
         <>
           <Box>
@@ -82,10 +131,7 @@ export default function MobileChatListPage() {
               ) : filteredRooms.length > 0 ? (
                 filteredRooms.map((room, index) => (
                   <div key={room.roomId} style={{ width: "100%" }}>
-                    <ChatRoomListItem 
-                      room={room} 
-                      onClick={handleRoomClick} 
-                    />
+                    <ChatRoomListItem room={room} onClick={handleRoomClick} />
                     {index < filteredRooms.length - 1 && <Divider />}
                   </div>
                 ))
@@ -99,9 +145,9 @@ export default function MobileChatListPage() {
             <Plus size={28} color="white" />
           </FloatingActionButton>
 
-          <CreateChatModal 
-            isOpen={isCreateModalOpen} 
-            onOpenChange={setIsCreateModalOpen} 
+          <CreateChatModal
+            isOpen={isCreateModalOpen}
+            onOpenChange={setIsCreateModalOpen}
           />
         </>
       )}
@@ -124,16 +170,9 @@ const ListWrapper = styled.div`
   flex-direction: column;
 `;
 
-const EmptyState = styled.div`
-  padding: 40px 0;
-  text-align: center;
-  color: #969696;
-  font-size: 14px;
-`;
-
-const FloatingActionButton = styled.button`
+const FloatingActionButton = styled.button<{ $bottom?: string }>`
   position: fixed;
-  bottom: 120px;
+  bottom: ${({ $bottom }) => $bottom || "120px"};
   right: 24px;
   width: 56px;
   height: 56px;
