@@ -77,7 +77,7 @@ export default function CreateChatModal({
             }}
           >
             <Header>
-              <Title>새 오픈채팅방 생성</Title>
+              <Title>오픈채팅방 만들기</Title>
             </Header>
 
             <FormArea>

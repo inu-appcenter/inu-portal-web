@@ -1,13 +1,12 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X, Search, UserPlus } from "lucide-react";
+import { X, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { requestFriend, searchFriend } from "@/apis/friends";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { FriendResponseDto } from "@/types/friends";
-import Box from "@/components/common/Box";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -87,25 +86,19 @@ export default function AddFriendModal({
               <X size={24} color="#1C1C1E" />
             </CloseButton>
           </Header>
+
           <Content>
             <Description>
-              학번을 입력하여 친구를 검색하고 요청을 보낼 수 있습니다.
+              학번으로 친구를 검색하고 요청을 보낼 수 있어요.
+              <br />
+              INTIP에 한번이라도 로그인한 적이 있어야 검색할 수 있어요.
             </Description>
-            <MobilePillSearchBar
-              value={studentIdInput}
-              onChange={(val) => {
-                setStudentIdInput(val);
-                if (searchResult) setSearchResult(null);
-              }}
-              onSubmit={handleSearch}
-              placeholder="친구의 학번을 입력하세요"
-            />
 
             <ResultArea>
               {isSearching ? (
                 <EmptyResult>검색 중...</EmptyResult>
               ) : searchResult ? (
-                <Box>
+                <div>
                   <SocialUserCard
                     name={searchResult.nickname}
                     subtitle={searchResult.studentId}
@@ -120,14 +113,26 @@ export default function AddFriendModal({
                       ? "요청 중..."
                       : "친구 요청 보내기"}
                   </SubmitButton>
-                </Box>
+                </div>
               ) : (
                 studentIdInput.trim() &&
                 !isSearching && (
-                  <EmptyResult>학번을 입력하고 돋보기를 눌러주세요.</EmptyResult>
+                  <EmptyResult>
+                    학번을 입력하고 돋보기를 눌러주세요.
+                  </EmptyResult>
                 )
               )}
             </ResultArea>
+
+            <MobilePillSearchBar
+              value={studentIdInput}
+              onChange={(val) => {
+                setStudentIdInput(val);
+                if (searchResult) setSearchResult(null);
+              }}
+              onSubmit={handleSearch}
+              placeholder="친구의 학번을 입력하세요"
+            />
           </Content>
         </StyledContent>
       </Dialog.Portal>
@@ -162,15 +167,15 @@ const StyledContent = styled(Dialog.Content)`
 `;
 
 const Header = styled.div`
-  padding: 20px 24px;
+  padding: 20px;
+  padding-bottom: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f2f2f7;
 `;
 
 const Title = styled.h2`
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1c1c1e;
   margin: 0;
@@ -184,10 +189,11 @@ const CloseButton = styled.button`
 `;
 
 const Content = styled.div`
-  padding: 24px;
+  padding: 0 20px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  justify-content: space-between;
+  min-height: 50vh;
 `;
 
 const Description = styled.p`

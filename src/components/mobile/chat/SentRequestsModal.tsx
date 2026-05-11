@@ -1,11 +1,10 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X, Send } from "lucide-react";
+import { X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSentPendingFriends, deleteFriend } from "@/apis/friends";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import Divider from "@/components/common/Divider";
-import Box from "@/components/common/Box";
 import EmptyState from "@/components/common/EmptyState";
 
 const contentShow = keyframes`
@@ -23,7 +22,10 @@ interface SentRequestsModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function SentRequestsModal({ isOpen, onOpenChange }: SentRequestsModalProps) {
+export default function SentRequestsModal({
+  isOpen,
+  onOpenChange,
+}: SentRequestsModalProps) {
   const queryClient = useQueryClient();
 
   const { data: sentRes, isLoading } = useQuery({
@@ -39,8 +41,8 @@ export default function SentRequestsModal({ isOpen, onOpenChange }: SentRequests
       queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
     },
     onError: (error: any) => {
-        alert(error.response?.data?.msg || "요청 취소에 실패했습니다.");
-    }
+      alert(error.response?.data?.msg || "요청 취소에 실패했습니다.");
+    },
   });
 
   const sentRequests = sentRes?.data || [];
@@ -51,10 +53,7 @@ export default function SentRequestsModal({ isOpen, onOpenChange }: SentRequests
         <StyledOverlay />
         <StyledContent>
           <Header>
-            <TitleArea>
-              <Send size={20} color="#5844E4" />
-              <Title>보낸 친구 요청 목록</Title>
-            </TitleArea>
+            <Title>보낸 친구 요청 목록</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
               <X size={24} color="#1C1C1E" />
             </CloseButton>
@@ -63,9 +62,9 @@ export default function SentRequestsModal({ isOpen, onOpenChange }: SentRequests
             {isLoading ? (
               <EmptyState>불러오는 중...</EmptyState>
             ) : sentRequests.length > 0 ? (
-              <Box style={{ padding: '0 16px' }}>
+              <div style={{ padding: "0 20px" }}>
                 {sentRequests.map((req, index) => (
-                  <div key={req.friendId}>
+                  <div key={req.friendId} style={{ width: "100%" }}>
                     <SocialUserCard
                       name={req.nickname}
                       subtitle={req.studentId}
@@ -80,7 +79,7 @@ export default function SentRequestsModal({ isOpen, onOpenChange }: SentRequests
                     {index < sentRequests.length - 1 && <Divider />}
                   </div>
                 ))}
-              </Box>
+              </div>
             ) : (
               <EmptyState>보낸 친구 요청이 없습니다.</EmptyState>
             )}
@@ -118,17 +117,10 @@ const StyledContent = styled(Dialog.Content)`
 `;
 
 const Header = styled.div`
-  padding: 20px 24px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #F2F2F7;
-`;
-
-const TitleArea = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
 `;
 
 const Title = styled.h2`

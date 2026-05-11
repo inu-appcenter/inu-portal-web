@@ -1,11 +1,10 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X, ShieldAlert } from "lucide-react";
+import { X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getBlockedUsers, unblockUser } from "@/apis/blocks";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import Divider from "@/components/common/Divider";
-import Box from "@/components/common/Box";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -22,7 +21,10 @@ interface BlockedUsersModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function BlockedUsersModal({ isOpen, onOpenChange }: BlockedUsersModalProps) {
+export default function BlockedUsersModal({
+  isOpen,
+  onOpenChange,
+}: BlockedUsersModalProps) {
   const queryClient = useQueryClient();
 
   const { data: blockedRes, isLoading } = useQuery({
@@ -48,8 +50,7 @@ export default function BlockedUsersModal({ isOpen, onOpenChange }: BlockedUsers
         <StyledContent>
           <Header>
             <TitleArea>
-              <ShieldAlert size={20} color="#FF3B30" />
-              <Title>차단 유저 관리</Title>
+              <Title>차단 친구 관리</Title>
             </TitleArea>
             <CloseButton onClick={() => onOpenChange(false)}>
               <X size={24} color="#1C1C1E" />
@@ -59,7 +60,7 @@ export default function BlockedUsersModal({ isOpen, onOpenChange }: BlockedUsers
             {isLoading ? (
               <EmptyState>불러오는 중...</EmptyState>
             ) : blockedUsers.length > 0 ? (
-              <Box style={{ padding: '0 16px' }}>
+              <div style={{ padding: "0 20px" }}>
                 {blockedUsers.map((user, index) => (
                   <div key={user.blockId}>
                     <SocialUserCard
@@ -73,7 +74,7 @@ export default function BlockedUsersModal({ isOpen, onOpenChange }: BlockedUsers
                     {index < blockedUsers.length - 1 && <Divider />}
                   </div>
                 ))}
-              </Box>
+              </div>
             ) : (
               <EmptyState>차단한 유저가 없습니다.</EmptyState>
             )}
@@ -111,11 +112,11 @@ const StyledContent = styled(Dialog.Content)`
 `;
 
 const Header = styled.div`
-  padding: 20px 24px;
+  padding: 20px;
+  padding-bottom: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #F2F2F7;
 `;
 
 const TitleArea = styled.div`
@@ -125,7 +126,7 @@ const TitleArea = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #1c1c1e;
   margin: 0;
@@ -141,7 +142,7 @@ const CloseButton = styled.button`
 const ScrollArea = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 12px 0;
+  padding: 20px 0;
 `;
 
 const EmptyState = styled.div`

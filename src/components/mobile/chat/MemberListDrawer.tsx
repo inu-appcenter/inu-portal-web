@@ -55,7 +55,11 @@ export default function MemberListDrawer({
   });
 
   const handleBlock = (memberId: number, nickname: string) => {
-    if (confirm(`${nickname}님을 차단하시겠습니까?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`)) {
+    if (
+      confirm(
+        `${nickname}님을 차단하시겠습니까?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`,
+      )
+    ) {
       blockMutation.mutate(memberId);
     }
   };
@@ -89,13 +93,21 @@ export default function MemberListDrawer({
   });
 
   const handleLeave = () => {
-    if (confirm("채팅방에서 나가시겠습니까?\n나간 후에는 이전 대화 내용을 볼 수 없습니다.")) {
+    if (
+      confirm(
+        "채팅방에서 나가시겠습니까?\n나간 후에는 이전 대화 내용을 볼 수 없습니다.",
+      )
+    ) {
       leaveMutation.mutate();
     }
   };
 
   const handleClose = () => {
-    if (confirm("오픈채팅방을 폐쇄하시겠습니까?\n폐쇄 시 모든 참여자가 대화할 수 없게 됩니다.")) {
+    if (
+      confirm(
+        "오픈채팅방을 폐쇄하시겠습니까?\n폐쇄 시 모든 참여자가 대화할 수 없게 됩니다.",
+      )
+    ) {
       closeMutation.mutate();
     }
   };
@@ -113,23 +125,30 @@ export default function MemberListDrawer({
               <X size={24} color="#1C1C1E" />
             </CloseButton>
           </Header>
-          
+
           <ScrollArea>
-            <Box style={{ padding: '0 16px' }}>
+            <Box style={{ padding: "0 16px" }}>
               {isLoading ? (
                 <EmptyState>멤버를 불러오는 중...</EmptyState>
               ) : (
                 members.map((member, index) => (
-                  <div key={`${member.nickname}-${index}`}>
+                  <div
+                    key={`${member.nickname}-${index}`}
+                    style={{ width: "100%" }}
+                  >
                     <SocialUserCard
                       name={
-                        member.nickname + 
-                        (member.me ? " (나)" : "") + 
+                        member.nickname +
+                        (member.me ? " (나)" : "") +
                         (member.isOwner ? " (방장)" : "")
                       }
                       subtitle={member.studentId || "익명"}
                       fireId={member.fireId || 0}
-                      onActionClick={!member.me && member.fireId ? () => handleBlock(member.fireId!, member.nickname) : undefined}
+                      onActionClick={
+                        !member.me && member.fireId
+                          ? () => handleBlock(member.fireId!, member.nickname)
+                          : undefined
+                      }
                       actionLabel="차단"
                     />
                     {index < members.length - 1 && <Divider />}
@@ -159,7 +178,7 @@ export default function MemberListDrawer({
 
 const Footer = styled.div`
   padding: 16px;
-  border-top: 1px solid #F2F2F7;
+  border-top: 1px solid #f2f2f7;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -177,9 +196,10 @@ const ActionButton = styled.button<{ $variant?: "danger" | "default" }>`
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  
-  background-color: ${props => props.$variant === "danger" ? "#FFF5F5" : "#F2F2F7"};
-  color: ${props => props.$variant === "danger" ? "#FF3B30" : "#1C1C1E"};
+
+  background-color: ${(props) =>
+    props.$variant === "danger" ? "#FFF5F5" : "#F2F2F7"};
+  color: ${(props) => (props.$variant === "danger" ? "#FF3B30" : "#1C1C1E")};
 
   &:active {
     opacity: 0.7;
@@ -215,7 +235,7 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #F2F2F7;
+  border-bottom: 1px solid #f2f2f7;
 `;
 
 const Title = styled.h2`

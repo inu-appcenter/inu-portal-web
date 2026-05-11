@@ -62,7 +62,7 @@ export default function MobileChatListPage() {
           onClick: () => setIsSentRequestsModalOpen(true),
         },
         {
-          label: "차단 유저 관리",
+          label: "차단 친구 관리",
           onClick: () => setIsBlockedModalOpen(true),
         },
       ];
@@ -99,15 +99,15 @@ export default function MobileChatListPage() {
       {selectedCategory === "친구" ? (
         <>
           <FriendManagementView />
-          
-          <FloatingActionButton 
+
+          <FloatingActionButton
             onClick={() => setIsAddFriendModalOpen(true)}
             $bottom="180px"
           >
             <Plus size={28} color="white" />
           </FloatingActionButton>
 
-          <AddFriendModal 
+          <AddFriendModal
             isOpen={isAddFriendModalOpen}
             onOpenChange={setIsAddFriendModalOpen}
           />
