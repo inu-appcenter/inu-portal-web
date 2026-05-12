@@ -1,6 +1,9 @@
 import styled from "styled-components";
 import { User, ChevronRight } from "lucide-react";
-import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
+import {
+  normalizeProfileImageId,
+  DEFAULT_PROFILE_IMAGE_ID,
+} from "@/utils/userInfo";
 
 interface SocialUserCardProps {
   name: string;
@@ -30,7 +33,7 @@ export default function SocialUserCard({
           src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
           alt="Profile"
           onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
+            (e.target as HTMLImageElement).style.display = "none";
           }}
         />
         <DefaultIconArea>
@@ -65,7 +68,7 @@ export default function SocialUserCard({
 const CardWrapper = styled.div`
   display: flex;
   align-items: center;
-  padding: 14px 0;
+  //padding: 14px 0;
   gap: 12px;
   width: 100%;
 `;
@@ -141,8 +144,9 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
   border: none;
   cursor: pointer;
   transition: opacity 0.2s;
-  
-  background-color: ${({ $variant }) => ($variant === "primary" ? "#5844E4" : "#F2F2F7")};
+
+  background-color: ${({ $variant }) =>
+    $variant === "primary" ? "#5844E4" : "#F2F2F7"};
   color: ${({ $variant }) => ($variant === "primary" ? "white" : "#3A3A3C")};
 
   &:active {

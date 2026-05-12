@@ -21,6 +21,32 @@ export const useChat = (roomId: string) => {
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
 
+  const fetchMessages = useCallback(async () => {
+    try {
+      const roomResponse: any = await getChatMessages(roomId);
+      const actualRoomData = roomResponse.data || roomResponse;
+
+      // 채팅방 정보 저장
+      setRoomInfo(actualRoomData);
+
+      // 메시지 저장 (unreadCount 등이 갱신됨)
+      if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
+        setMessages(actualRoomData.messages);
+      } else if (Array.isArray(actualRoomData)) {
+        setMessages(actualRoomData);
+      } else {
+        setMessages([]);
+      }
+
+      // 사용자 해시값 갱신
+      if (actualRoomData.myHash) {
+        setMyHash(actualRoomData.myHash);
+      }
+    } catch (err) {
+      console.error("메시지 동기화 실패:", err);
+    }
+  }, [roomId]);
+
   useEffect(() => {
     const enterChatRoom = async () => {
       try {
@@ -41,26 +67,7 @@ export const useChat = (roomId: string) => {
           }
         }
 
-        const roomResponse: any = await getChatMessages(roomId);
-        const actualRoomData = roomResponse.data || roomResponse;
-
-        // 채팅방 정보 저장
-        setRoomInfo(actualRoomData);
-
-        // 초기 메시지 저장
-        if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
-          setMessages(actualRoomData.messages);
-        } else if (Array.isArray(actualRoomData)) {
-          setMessages(actualRoomData);
-        } else {
-          setMessages([]);
-        }
-
-        // 사용자 해시값 갱신
-        if (actualRoomData.myHash) {
-          setMyHash(actualRoomData.myHash);
-        }
-
+        await fetchMessages();
         connectStomp();
       } catch (err: any) {
         console.error("채팅방 입장에 실패했습니다:", err);
@@ -82,9 +89,18 @@ export const useChat = (roomId: string) => {
       client.connectHeaders = { Auth: `${jwtToken}` };
 
       client.onConnect = () => {
+        // 새 메시지 구독
         client.subscribe(`/sub/room/${roomId}`, (message) => {
           const receivedMessage: ChatMessage = JSON.parse(message.body);
           setMessages((prev) => [...prev, receivedMessage]);
+        });
+
+        // 읽음 상태 업데이트 구독
+        client.subscribe(`/sub/room/${roomId}/read`, (message) => {
+          if (message.body === "updated") {
+            console.log("읽음 상태 업데이트 감지 - 메시지 동기화");
+            fetchMessages();
+          }
         });
       };
 
@@ -105,7 +121,7 @@ export const useChat = (roomId: string) => {
         clientRef.current.deactivate();
       }
     };
-  }, [roomId]);
+  }, [roomId, fetchMessages, tokenInfo.accessToken]);
 
   const sendMessage = (
     content: string,
@@ -175,5 +191,6 @@ export const useChat = (roomId: string) => {
     myHash,
     roomInfo,
     fetchPreviousMessages,
+    refreshRoom: fetchMessages,
   };
 };

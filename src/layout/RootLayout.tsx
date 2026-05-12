@@ -28,7 +28,7 @@ export default function RootLayout() {
 
   useFeatureFlags();
 
-  const { tokenInfo, userInfo, setTokenInfo, setUserInfo } = useUserStore();
+  const { tokenInfo, userInfo, setUserInfo } = useUserStore();
   const { setIsAppUrl } = useAppStateStore();
 
   const [fcmToken, setFcmToken] = useState<string | null>(() =>

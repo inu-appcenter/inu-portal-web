@@ -130,7 +130,7 @@ const ChatPreviewWidget: React.FC<ChatPreviewWidgetProps> = ({ roomId }) => {
     );
   }
 
-  const latestMessages = messages.slice(0, 2);
+  const latestMessages = messages.slice(0, 2).reverse();
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);

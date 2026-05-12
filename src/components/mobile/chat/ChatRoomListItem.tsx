@@ -57,8 +57,10 @@ export default function ChatRoomListItem({
         <TopRow>
           <TitleArea>
             <div className="title">{room.title}</div>
-            {room.owner && <OwnerTag>방장</OwnerTag>}
-            {room.type === "OPEN" && <OpenTag>오픈</OpenTag>}
+            {room.currentParticipants > 1 && (
+              <ParticipantCount>{room.currentParticipants}</ParticipantCount>
+            )}
+            {room.isOfficial && <OfficialTag>공식</OfficialTag>}
           </TitleArea>
           <div className="time">{formatTime(room.lastMessageTime)}</div>
         </TopRow>
@@ -67,7 +69,7 @@ export default function ChatRoomListItem({
             {room.senderName && (
               <span className="sender">{room.senderName}: </span>
             )}
-            {room.lastMessage || "메시지가 없습니다."}
+            {room.lastMessage === "" ? "사진을 보냈습니다." : (room.lastMessage || "메시지가 없습니다.")}
           </div>
           {room.unreadCount > 0 && (
             <UnreadBadge>
@@ -170,9 +172,17 @@ const OpenTag = styled.span`
   flex-shrink: 0;
 `;
 
-const OwnerTag = styled(OpenTag)`
-  color: #ff3b30;
-  background: #fff5f5;
+const OfficialTag = styled(OpenTag)`
+  color: #ffffff;
+  background: #1c1c1e;
+`;
+
+const ParticipantCount = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: #8e8e93;
+  margin-left: -2px;
+  flex-shrink: 0;
 `;
 
 const BottomRow = styled.div`

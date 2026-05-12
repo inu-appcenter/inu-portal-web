@@ -39,6 +39,7 @@ export interface ChatRoom {
   messages: ChatMessage[];
   anonymous: boolean;
   owner: boolean;
+  isOfficial: boolean;
 }
 
 /**
@@ -54,6 +55,8 @@ export interface MyChatRoomResponseDto {
   senderName: string;
   senderProfileImageNumber: number;
   owner: boolean;
+  isOfficial: boolean;
+  currentParticipants: number;
 }
 
 /**

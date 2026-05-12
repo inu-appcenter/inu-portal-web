@@ -6,8 +6,14 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { useNavigate } from "react-router-dom";
-import { getChatRoomMembers, leaveChatRoom, closeChatRoom } from "@/apis/chat";
+import {
+  getChatRoomMembers,
+  leaveChatRoom,
+  closeChatRoom,
+  deleteChatRoom,
+} from "@/apis/chat";
 import { blockUser } from "@/apis/blocks";
+import useUserStore from "@/stores/useUserStore";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translateX(100%); }
@@ -36,6 +42,8 @@ export default function MemberListDrawer({
 }: MemberListDrawerProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { userInfo } = useUserStore();
+  const isAdmin = userInfo?.role?.toLowerCase() === "admin";
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -79,16 +87,18 @@ export default function MemberListDrawer({
   });
 
   const closeMutation = useMutation({
-    mutationFn: () => closeChatRoom(roomId),
+    mutationFn: () =>
+      isAdmin ? deleteChatRoom(Number(roomId)) : closeChatRoom(roomId),
     onSuccess: () => {
-      alert("채팅방이 폐쇄되었습니다.");
+      alert(isAdmin ? "채팅방이 삭제되었습니다." : "채팅방이 폐쇄되었습니다.");
       queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
       queryClient.invalidateQueries({ queryKey: ["unreadTotalCount"] });
       onOpenChange(false);
       navigate("/chat/list", { replace: true });
     },
     onError: (error: any) => {
-      alert(error.response?.data?.msg || "채팅방 폐쇄에 실패했습니다.");
+      const action = isAdmin ? "삭제" : "폐쇄";
+      alert(error.response?.data?.msg || `채팅방 ${action}에 실패했습니다.`);
     },
   });
 
@@ -103,11 +113,12 @@ export default function MemberListDrawer({
   };
 
   const handleClose = () => {
-    if (
-      confirm(
-        "오픈채팅방을 폐쇄하시겠습니까?\n폐쇄 시 모든 참여자가 대화할 수 없게 됩니다.",
-      )
-    ) {
+    const actionText = isAdmin ? "삭제" : "폐쇄";
+    const subText = isAdmin
+      ? "삭제 시 모든 메시지가 사라지며 복구할 수 없습니다."
+      : "폐쇄 시 모든 참여자가 대화할 수 없게 됩니다.";
+
+    if (confirm(`채팅방을 ${actionText}하시겠습니까?\n${subText}`)) {
       closeMutation.mutate();
     }
   };
@@ -159,10 +170,14 @@ export default function MemberListDrawer({
           </ScrollArea>
 
           <Footer>
-            {roomInfo?.type === "OPEN" && roomInfo?.owner && (
+            {(roomInfo?.owner || isAdmin) && (
               <ActionButton onClick={handleClose} $variant="danger">
                 <Trash2 size={20} />
-                오픈채팅방 폐쇄
+                {isAdmin
+                  ? "채팅방 삭제"
+                  : roomInfo?.type === "OPEN"
+                    ? "오픈채팅방 폐쇄"
+                    : "채팅방 삭제"}
               </ActionButton>
             )}
             <ActionButton onClick={handleLeave}>

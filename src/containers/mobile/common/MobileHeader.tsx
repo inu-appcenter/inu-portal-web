@@ -131,7 +131,9 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
           {(showAlarm || menuItems || rightArea) && (
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
-              $isCircle={!(showAlarm && menuItems)}
+              $isCircle={
+                [showAlarm, menuItems, rightArea].filter(Boolean).length === 1
+              }
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
@@ -292,7 +294,7 @@ const IconBackgroundWrapper = styled.div<{
   border-radius: 50px;
   margin-right: 0;
   padding: ${({ $isCircle }) =>
-    $isCircle ? "0" : "0 20px"}; /* 상하 패딩 제거 */
+    $isCircle ? "0" : "0 14px"}; /* 상하 패딩 제거 */
   width: ${({ $isCircle }) => ($isCircle ? "48px" : "auto")};
   height: 48px;
   pointer-events: auto;

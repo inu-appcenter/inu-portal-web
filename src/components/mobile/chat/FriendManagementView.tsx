@@ -66,7 +66,7 @@ export default function FriendManagementView() {
         <TitleContentArea title={`받은 친구 요청 (${pendingRequests.length})`}>
           <Box>
             {pendingRequests.map((req, index) => (
-              <div key={req.friendId}>
+              <div key={req.friendId} style={{ width: "100%" }}>
                 <SocialUserCard
                   name={req.nickname}
                   subtitle={req.studentId}
@@ -91,7 +91,7 @@ export default function FriendManagementView() {
             <EmptyState>불러오는 중...</EmptyState>
           ) : filteredFriends.length > 0 ? (
             filteredFriends.map((friend, index) => (
-              <div key={friend.friendId}>
+              <div key={friend.friendId} style={{ width: "100%" }}>
                 <SocialUserCard
                   name={friend.nickname}
                   subtitle={friend.studentId}

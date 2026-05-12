@@ -28,9 +28,15 @@ const getMessageColor = (messageId: number | string) => {
   return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
 };
 
+import { updateChatRoomTitle } from "@/apis/chat";
+import useUserStore from "@/stores/useUserStore";
+
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  const navigate = useNavigate();
+  const { userInfo } = useUserStore();
+  const isAdmin = userInfo?.role?.toLowerCase() === "admin";
+
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -52,7 +58,37 @@ export default function ChattingPage() {
     myHash,
     roomInfo,
     fetchPreviousMessages,
+    refreshRoom,
   } = useChat(roomId ?? "");
+
+  const handleUpdateTitle = async () => {
+    if (roomInfo?.isOfficial) {
+      alert("공식 채팅방의 이름은 변경할 수 없습니다.");
+      return;
+    }
+
+    // 오픈채팅인 경우 방장 또는 어드민만 가능
+    if (roomInfo?.type === "OPEN" && !roomInfo.owner && !isAdmin) {
+      alert("오픈채팅방 이름은 방장 또는 관리자만 변경할 수 있습니다.");
+      return;
+    }
+
+    const newTitle = prompt(
+      "새로운 채팅방 이름을 입력하세요:",
+      roomInfo?.title || "",
+    );
+    if (newTitle === null) return;
+    if (!newTitle.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+    try {
+      await updateChatRoomTitle(Number(roomId), newTitle.trim());
+      refreshRoom();
+    } catch (err: any) {
+      alert(err.response?.data?.msg || "방 이름 변경에 실패했습니다.");
+    }
+  };
 
   // 에러 처리 useEffect 추가
   useEffect(() => {
@@ -73,9 +109,40 @@ export default function ChattingPage() {
     [],
   );
 
+  const headerTitle = React.useMemo(
+    () =>
+      roomInfo ? (
+        <TitleWrapper>
+          <span className="text">{roomInfo.title}</span>
+          {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
+        </TitleWrapper>
+      ) : (
+        "채팅방"
+      ),
+    [roomInfo],
+  );
+
+  const menuItems = React.useMemo(() => {
+    const items = [];
+
+    // 이름 변경 조건: 오픈채팅이면 방장/어드민만, 그 외엔 누구나 (공식방 제외)
+    const canChangeTitle =
+      roomInfo?.type !== "OPEN" || roomInfo.owner || isAdmin;
+
+    if (canChangeTitle) {
+      items.push({
+        label: "채팅방 이름 변경",
+        onClick: handleUpdateTitle,
+      });
+    }
+
+    return items;
+  }, [roomInfo, isAdmin]);
+
   useHeader({
-    title: roomInfo?.title ? roomInfo.title : "채팅방",
+    title: headerTitle,
     rightArea: headerRight,
+    menuItems: menuItems,
   });
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -680,5 +747,31 @@ const MySenderName = styled(SenderName)`
 `;
 
 const MyMessageContainer = styled(MessageContainer)`
-  justify-content: flex-end;
+  flex-direction: row-reverse;
+`;
+
+const TitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+
+  .text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+`;
+
+const OfficialTag = styled.span`
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1c1c1e;
+  padding: 1px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
 `;
