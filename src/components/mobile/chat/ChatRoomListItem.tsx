@@ -60,7 +60,7 @@ export default function ChatRoomListItem({
             {room.currentParticipants > 1 && (
               <ParticipantCount>{room.currentParticipants}</ParticipantCount>
             )}
-            {room.isOfficial && <OfficialTag>공식</OfficialTag>}
+            {room.official && <OfficialTag>공식</OfficialTag>}
           </TitleArea>
           <div className="time">{formatTime(room.lastMessageTime)}</div>
         </TopRow>
@@ -69,7 +69,9 @@ export default function ChatRoomListItem({
             {room.senderName && (
               <span className="sender">{room.senderName}: </span>
             )}
-            {room.lastMessage === "" ? "사진을 보냈습니다." : (room.lastMessage || "메시지가 없습니다.")}
+            {room.lastMessage === ""
+              ? "사진을 보냈습니다."
+              : room.lastMessage || "메시지가 없습니다."}
           </div>
           {room.unreadCount > 0 && (
             <UnreadBadge>
