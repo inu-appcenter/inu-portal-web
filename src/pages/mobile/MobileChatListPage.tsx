@@ -11,6 +11,7 @@ import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"
 import { ROUTES } from "@/constants/routes";
 import { trackPageView } from "@/utils/mixpanel";
 import { getMyChatRooms } from "@/apis/chat";
+import { getFriends } from "@/apis/friends";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
@@ -18,8 +19,6 @@ import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
-
-const CATEGORIES = ["개인", "오픈채팅", "친구"];
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
@@ -39,19 +38,43 @@ export default function MobileChatListPage() {
     queryKey: ["myChatRooms"],
     queryFn: getMyChatRooms,
     refetchOnWindowFocus: true,
-    enabled: selectedCategory !== "친구",
+  });
+
+  const { data: friendsRes } = useQuery({
+    queryKey: ["friends"],
+    queryFn: getFriends,
   });
 
   const chatRooms = response?.data || [];
+  const friends = friendsRes?.data || [];
+
+  const personalCount = useMemo(
+    () => chatRooms.filter((r) => r.type === "PERSONAL").length,
+    [chatRooms],
+  );
+  const openCount = useMemo(
+    () => chatRooms.filter((r) => r.type === "OPEN").length,
+    [chatRooms],
+  );
+  const friendCount = friends.length;
+
+  const categories = useMemo(
+    () => [
+      { label: "개인", value: "개인", count: personalCount },
+      { label: "오픈채팅", value: "오픈채팅", count: openCount },
+      { label: "친구", value: "친구", count: friendCount },
+    ],
+    [personalCount, openCount, friendCount],
+  );
 
   const subHeader = useMemo(
     () => (
       <CategorySelectorNew
-        categories={CATEGORIES}
+        categories={categories}
         selectedCategory={selectedCategory}
       />
     ),
-    [selectedCategory],
+    [categories, selectedCategory],
   );
 
   const menuItems = useMemo(() => {

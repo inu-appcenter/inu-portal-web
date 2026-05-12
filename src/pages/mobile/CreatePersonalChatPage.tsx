@@ -24,6 +24,7 @@ export default function CreatePersonalChatPage() {
 
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
+  const [title, setTitle] = useState("");
   const [studentIdSearch, setStudentIdSearch] = useState("");
   const [searchedUsers, setSearchedUsers] = useState<FriendResponseDto[]>([]);
 
@@ -52,8 +53,15 @@ export default function CreatePersonalChatPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: ({ ids, isAdmin }: { ids: number[]; isAdmin: boolean }) =>
-      createPersonalChatRoom(ids, isAdmin),
+    mutationFn: ({
+      ids,
+      isAdmin,
+      title,
+    }: {
+      ids: number[];
+      isAdmin: boolean;
+      title?: string;
+    }) => createPersonalChatRoom(ids, isAdmin, title),
     onSuccess: (res: any) => {
       const roomId = res.data?.id || res.id;
       if (roomId) {
@@ -85,7 +93,11 @@ export default function CreatePersonalChatPage() {
       alert("대화 상대를 한 명 이상 선택해주세요.");
       return;
     }
-    createMutation.mutate({ ids: selectedMemberIds, isAdmin: isAdminMode });
+    createMutation.mutate({
+      ids: selectedMemberIds,
+      isAdmin: isAdminMode,
+      title: isAdminMode ? "INTIP 운영자" : title.trim() || undefined,
+    });
   };
 
   const handleSearch = () => {
@@ -107,10 +119,34 @@ export default function CreatePersonalChatPage() {
               setIsAdminMode(checked);
               setSelectedMemberIds([]);
               setSearchedUsers([]);
+              setTitle("");
             }}
           />
         </AdminToggleArea>
       )}
+
+      <Box style={{ padding: "16px" }}>
+        <InputWrapper>
+          <div className="label">채팅방 이름</div>
+          <TitleInput
+            value={isAdminMode ? "INTIP 운영자" : title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={
+              selectedMemberIds.length > 1
+                ? "그룹 채팅 (기본값)"
+                : "상대방 이름 (기본값)"
+            }
+            disabled={isAdminMode}
+          />
+          {!isAdminMode && (
+            <p className="hint">
+              {selectedMemberIds.length > 1
+                ? "미입력 시 '그룹 채팅'으로 설정됩니다."
+                : "미입력 시 상대방의 닉네임이 이름으로 사용됩니다."}
+            </p>
+          )}
+        </InputWrapper>
+      </Box>
 
       {isAdminMode && (
         <SearchArea>
@@ -220,6 +256,46 @@ const AdminToggleArea = styled.div`
 
 const SearchArea = styled.div`
   margin-bottom: 8px;
+`;
+
+const InputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c1c1e;
+    margin-left: 4px;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: #8e8e93;
+    margin-left: 4px;
+    margin-top: 4px;
+  }
+`;
+
+const TitleInput = styled.input`
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #1c1c1e;
+  background-color: ${({ disabled }) => (disabled ? "#F2F2F7" : "white")};
+
+  &::placeholder {
+    color: #aeaeb2;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #5844e4;
+  }
 `;
 
 const SelectableCard = styled.div`

@@ -60,14 +60,6 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
   const [headerConfigs, setHeaderConfigs] = useState<HeaderConfigMap>({});
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // 경로별 조회
-  const getHeaderConfig = useCallback(
-    (path: string) => {
-      return headerConfigs[path] || defaultHeaderConfig;
-    },
-    [headerConfigs],
-  );
-
   // 경로별 업데이트
   const updateHeaderConfig = useCallback(
     (path: string, config: HeaderConfig) => {

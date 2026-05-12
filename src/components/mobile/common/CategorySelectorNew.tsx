@@ -6,6 +6,7 @@ import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 interface CategoryOption {
   label: string;
   value?: string;
+  count?: number;
 }
 
 interface CategorySelectorNewProps {
@@ -30,8 +31,12 @@ export default function CategorySelectorNew({
     () =>
       categories.map((category) =>
         typeof category === "string"
-          ? { label: category, value: category }
-          : { label: category.label, value: category.value ?? category.label },
+          ? { label: category, value: category, count: undefined }
+          : {
+              label: category.label,
+              value: category.value ?? category.label,
+              count: category.count,
+            },
       ),
     [categories],
   );
@@ -81,7 +86,14 @@ export default function CategorySelectorNew({
             $selected={selectedCategory === category.value}
             onClick={() => handleClickCategory(category.value)}
           >
-            <div>{category.label}</div>
+            <div>
+              {category.label}
+              {category.count !== undefined && (
+                <Count $selected={selectedCategory === category.value}>
+                  {category.count}
+                </Count>
+              )}
+            </div>
           </FillItem>
         ))}
       </CategoryScrollArea>
@@ -139,4 +151,12 @@ const FillItem = styled.div<{ $selected: boolean }>`
   box-shadow: ${SOFT_CHIP_SHADOW};
   cursor: pointer;
   white-space: nowrap;
+`;
+
+const Count = styled.span<{ $selected: boolean }>`
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${({ $selected }) => ($selected ? "#ffffff" : "#5E92F0")};
+  opacity: ${({ $selected }) => ($selected ? 0.9 : 1)};
 `;

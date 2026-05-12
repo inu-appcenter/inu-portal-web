@@ -21,33 +21,33 @@ export const useChat = (roomId: string) => {
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const roomResponse: any = await getChatMessages(roomId);
-        const actualRoomData = roomResponse.data || roomResponse;
+  const fetchMessages = useCallback(async () => {
+    try {
+      const roomResponse: any = await getChatMessages(roomId);
+      const actualRoomData = roomResponse.data || roomResponse;
 
-        // 채팅방 정보 저장
-        setRoomInfo(actualRoomData);
+      // 채팅방 정보 저장
+      setRoomInfo(actualRoomData);
 
-        // 메시지 저장 (unreadCount 등이 갱신됨)
-        if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
-          setMessages(actualRoomData.messages);
-        } else if (Array.isArray(actualRoomData)) {
-          setMessages(actualRoomData);
-        } else {
-          setMessages([]);
-        }
-
-        // 사용자 해시값 갱신
-        if (actualRoomData.myHash) {
-          setMyHash(actualRoomData.myHash);
-        }
-      } catch (err) {
-        console.error("메시지 동기화 실패:", err);
+      // 메시지 저장 (unreadCount 등이 갱신됨)
+      if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
+        setMessages(actualRoomData.messages);
+      } else if (Array.isArray(actualRoomData)) {
+        setMessages(actualRoomData);
+      } else {
+        setMessages([]);
       }
-    };
 
+      // 사용자 해시값 갱신
+      if (actualRoomData.myHash) {
+        setMyHash(actualRoomData.myHash);
+      }
+    } catch (err) {
+      console.error("메시지 동기화 실패:", err);
+    }
+  }, [roomId]);
+
+  useEffect(() => {
     const enterChatRoom = async () => {
       try {
         try {
@@ -121,7 +121,7 @@ export const useChat = (roomId: string) => {
         clientRef.current.deactivate();
       }
     };
-  }, [roomId]);
+  }, [roomId, fetchMessages, tokenInfo.accessToken]);
 
   const sendMessage = (
     content: string,
@@ -191,5 +191,6 @@ export const useChat = (roomId: string) => {
     myHash,
     roomInfo,
     fetchPreviousMessages,
+    refreshRoom: fetchMessages,
   };
 };

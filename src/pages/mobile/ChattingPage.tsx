@@ -28,9 +28,15 @@ const getMessageColor = (messageId: number | string) => {
   return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
 };
 
+import { updateChatRoomTitle, deleteChatRoom } from "@/apis/chat";
+import useUserStore from "@/stores/useUserStore";
+
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  const navigate = useNavigate();
+  const { userInfo } = useUserStore();
+  const isAdmin = userInfo?.role?.toLowerCase() === "admin";
+
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -52,7 +58,54 @@ export default function ChattingPage() {
     myHash,
     roomInfo,
     fetchPreviousMessages,
+    refreshRoom,
   } = useChat(roomId ?? "");
+
+  const handleUpdateTitle = async () => {
+    if (roomInfo?.isOfficial) {
+      alert("공식 채팅방의 이름은 변경할 수 없습니다.");
+      return;
+    }
+
+    // 오픈채팅인 경우 방장 또는 어드민만 가능
+    if (roomInfo?.type === "OPEN" && !roomInfo.owner && !isAdmin) {
+      alert("오픈채팅방 이름은 방장 또는 관리자만 변경할 수 있습니다.");
+      return;
+    }
+
+    const newTitle = prompt(
+      "새로운 채팅방 이름을 입력하세요:",
+      roomInfo?.title || "",
+    );
+    if (newTitle === null) return;
+    if (!newTitle.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+    try {
+      await updateChatRoomTitle(Number(roomId), newTitle.trim());
+      refreshRoom();
+    } catch (err: any) {
+      alert(err.response?.data?.msg || "방 이름 변경에 실패했습니다.");
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!isAdmin) return;
+
+    const confirmed = window.confirm(
+      "정말로 이 채팅방을 삭제하시겠습니까? 삭제된 방은 복구할 수 없으며 모든 메시지가 사라집니다.",
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteChatRoom(Number(roomId));
+      alert("채팅방이 삭제되었습니다.");
+      navigate("/chat/list");
+    } catch (err: any) {
+      alert(err.response?.data?.msg || "채팅방 삭제에 실패했습니다.");
+    }
+  };
 
   // 에러 처리 useEffect 추가
   useEffect(() => {
@@ -86,9 +139,35 @@ export default function ChattingPage() {
     [roomInfo],
   );
 
+  const menuItems = React.useMemo(() => {
+    const items = [];
+
+    // 이름 변경 조건: 오픈채팅이면 방장/어드민만, 그 외엔 누구나 (공식방 제외)
+    const canChangeTitle =
+      roomInfo?.type !== "OPEN" || roomInfo.owner || isAdmin;
+
+    if (canChangeTitle) {
+      items.push({
+        label: "채팅방 이름 변경",
+        onClick: handleUpdateTitle,
+      });
+    }
+
+    // 어드민 전용 삭제 기능
+    if (isAdmin) {
+      items.push({
+        label: "채팅방 삭제 (Admin)",
+        onClick: handleDeleteRoom,
+      });
+    }
+
+    return items;
+  }, [roomInfo, isAdmin]);
+
   useHeader({
     title: headerTitle,
     rightArea: headerRight,
+    menuItems: menuItems,
   });
 
   const inputRef = useRef<HTMLTextAreaElement>(null);

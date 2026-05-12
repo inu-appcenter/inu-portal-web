@@ -169,10 +169,39 @@ export const getPublicChatMessages = async (
 export const createPersonalChatRoom = async (
   targetMemberIds: number[],
   isAdminMode: boolean = false,
+  title?: string,
 ): Promise<CreateChatRoomResponse> => {
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     "/api/chat-rooms/personal",
-    { targetMemberIds, isAdminMode },
+    { targetMemberIds, isAdminMode, title },
+  );
+  return response.data;
+};
+
+/**
+ * 채팅방 이름 변경
+ * PATCH /api/chat-rooms/{roomId}/title
+ */
+export const updateChatRoomTitle = async (
+  roomId: number,
+  title: string,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/title`,
+    { title },
+  );
+  return response.data;
+};
+
+/**
+ * 채팅방 삭제 (관리자 전용)
+ * DELETE /api/chat-rooms/{roomId}
+ */
+export const deleteChatRoom = async (
+  roomId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.delete<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}`,
   );
   return response.data;
 };
