@@ -72,9 +72,10 @@ export const getPreviousMessages = async (
 export const getMyChatRooms = async (): Promise<
   ApiResponse<MyChatRoomResponseDto[]>
 > => {
-  const response = await tokenInstance.get<
-    ApiResponse<MyChatRoomResponseDto[]>
-  >("/api/chat-rooms/my");
+  const response =
+    await tokenInstance.get<ApiResponse<MyChatRoomResponseDto[]>>(
+      "/api/chat-rooms/my",
+    );
   return response.data;
 };
 
@@ -189,19 +190,6 @@ export const updateChatRoomTitle = async (
   const response = await tokenInstance.patch<ApiResponse<void>>(
     `/api/chat-rooms/${roomId}/title`,
     { title },
-  );
-  return response.data;
-};
-
-/**
- * 채팅방 삭제 (관리자 전용)
- * DELETE /api/chat-rooms/{roomId}
- */
-export const deleteChatRoom = async (
-  roomId: number,
-): Promise<ApiResponse<void>> => {
-  const response = await tokenInstance.delete<ApiResponse<void>>(
-    `/api/chat-rooms/${roomId}`,
   );
   return response.data;
 };

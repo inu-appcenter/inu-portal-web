@@ -406,7 +406,7 @@ export default function ChattingPage() {
 const ChatPageWrapper = styled.div`
   position: relative;
   width: 100%;
-  height: calc(100vh - 80px);
+  height: calc(100dvh - 80px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
