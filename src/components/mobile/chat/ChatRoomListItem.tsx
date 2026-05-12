@@ -57,9 +57,7 @@ export default function ChatRoomListItem({
         <TopRow>
           <TitleArea>
             <div className="title">{room.title}</div>
-            {room.isOfficial && <OfficialTag>공식</OfficialTag>}
-            {room.owner && <OwnerTag>방장</OwnerTag>}
-            {room.type === "OPEN" && <OpenTag>오픈</OpenTag>}
+            {room.isOfficial && <OfficialTag>운영자</OfficialTag>}
           </TitleArea>
           <div className="time">{formatTime(room.lastMessageTime)}</div>
         </TopRow>
@@ -169,11 +167,6 @@ const OpenTag = styled.span`
   padding: 1px 4px;
   border-radius: 4px;
   flex-shrink: 0;
-`;
-
-const OwnerTag = styled(OpenTag)`
-  color: #ff3b30;
-  background: #fff5f5;
 `;
 
 const OfficialTag = styled(OpenTag)`
