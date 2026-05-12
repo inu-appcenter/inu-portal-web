@@ -73,8 +73,21 @@ export default function ChattingPage() {
     [],
   );
 
+  const headerTitle = React.useMemo(
+    () =>
+      roomInfo ? (
+        <TitleWrapper>
+          {roomInfo.title}
+          {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
+        </TitleWrapper>
+      ) : (
+        "채팅방"
+      ),
+    [roomInfo],
+  );
+
   useHeader({
-    title: roomInfo?.title ? roomInfo.title : "채팅방",
+    title: headerTitle,
     rightArea: headerRight,
   });
 
@@ -680,5 +693,21 @@ const MySenderName = styled(SenderName)`
 `;
 
 const MyMessageContainer = styled(MessageContainer)`
-  justify-content: flex-end;
+  flex-direction: row-reverse;
+`;
+
+const TitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const OfficialTag = styled.span`
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1c1c1e;
+  padding: 1px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
 `;

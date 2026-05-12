@@ -57,6 +57,7 @@ export default function ChatRoomListItem({
         <TopRow>
           <TitleArea>
             <div className="title">{room.title}</div>
+            {room.isOfficial && <OfficialTag>공식</OfficialTag>}
             {room.owner && <OwnerTag>방장</OwnerTag>}
             {room.type === "OPEN" && <OpenTag>오픈</OpenTag>}
           </TitleArea>
@@ -173,6 +174,11 @@ const OpenTag = styled.span`
 const OwnerTag = styled(OpenTag)`
   color: #ff3b30;
   background: #fff5f5;
+`;
+
+const OfficialTag = styled(OpenTag)`
+  color: #ffffff;
+  background: #1c1c1e;
 `;
 
 const BottomRow = styled.div`
