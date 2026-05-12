@@ -169,12 +169,12 @@ export const getPublicChatMessages = async (
  */
 export const createPersonalChatRoom = async (
   targetMemberIds: number[],
-  isAdminMode: boolean = false,
+  adminMode: boolean = false,
   title?: string,
 ): Promise<CreateChatRoomResponse> => {
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     "/api/chat-rooms/personal",
-    { targetMemberIds, isAdminMode, title },
+    { targetMemberIds, adminMode, title },
   );
   return response.data;
 };
