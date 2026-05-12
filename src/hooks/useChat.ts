@@ -92,7 +92,14 @@ export const useChat = (roomId: string) => {
         // 새 메시지 구독
         client.subscribe(`/sub/room/${roomId}`, (message) => {
           const receivedMessage: ChatMessage = JSON.parse(message.body);
-          setMessages((prev) => [...prev, receivedMessage]);
+          setMessages((prev) => {
+            // 중복 메시지 방지 로직 추가
+            const isDuplicate = prev.some(
+              (m) => m.messageId === receivedMessage.messageId,
+            );
+            if (isDuplicate) return prev;
+            return [...prev, receivedMessage];
+          });
         });
 
         // 읽음 상태 업데이트 구독
