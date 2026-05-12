@@ -69,7 +69,7 @@ export default function ChatRoomListItem({
             {room.senderName && (
               <span className="sender">{room.senderName}: </span>
             )}
-            {room.lastMessage || "메시지가 없습니다."}
+            {room.lastMessage === "" ? "사진을 보냈습니다." : (room.lastMessage || "메시지가 없습니다.")}
           </div>
           {room.unreadCount > 0 && (
             <UnreadBadge>

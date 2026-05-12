@@ -28,7 +28,7 @@ const getMessageColor = (messageId: number | string) => {
   return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
 };
 
-import { updateChatRoomTitle, deleteChatRoom } from "@/apis/chat";
+import { updateChatRoomTitle } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 
 export default function ChattingPage() {
@@ -90,23 +90,6 @@ export default function ChattingPage() {
     }
   };
 
-  const handleDeleteRoom = async () => {
-    if (!isAdmin) return;
-
-    const confirmed = window.confirm(
-      "정말로 이 채팅방을 삭제하시겠습니까? 삭제된 방은 복구할 수 없으며 모든 메시지가 사라집니다.",
-    );
-    if (!confirmed) return;
-
-    try {
-      await deleteChatRoom(Number(roomId));
-      alert("채팅방이 삭제되었습니다.");
-      navigate("/chat/list");
-    } catch (err: any) {
-      alert(err.response?.data?.msg || "채팅방 삭제에 실패했습니다.");
-    }
-  };
-
   // 에러 처리 useEffect 추가
   useEffect(() => {
     if (error) {
@@ -130,7 +113,7 @@ export default function ChattingPage() {
     () =>
       roomInfo ? (
         <TitleWrapper>
-          {roomInfo.title}
+          <span className="text">{roomInfo.title}</span>
           {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
         </TitleWrapper>
       ) : (
@@ -150,14 +133,6 @@ export default function ChattingPage() {
       items.push({
         label: "채팅방 이름 변경",
         onClick: handleUpdateTitle,
-      });
-    }
-
-    // 어드민 전용 삭제 기능
-    if (isAdmin) {
-      items.push({
-        label: "채팅방 삭제 (Admin)",
-        onClick: handleDeleteRoom,
       });
     }
 
@@ -779,6 +754,16 @@ const TitleWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+  width: 100%;
+
+  .text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 `;
 
 const OfficialTag = styled.span`
