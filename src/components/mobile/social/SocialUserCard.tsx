@@ -146,7 +146,7 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
   transition: opacity 0.2s;
 
   background-color: ${({ $variant }) =>
-    $variant === "primary" ? "#5844E4" : "#F2F2F7"};
+    $variant === "primary" ? "#5E92F0" : "#F2F2F7"};
   color: ${({ $variant }) => ($variant === "primary" ? "white" : "#3A3A3C")};
 
   &:active {

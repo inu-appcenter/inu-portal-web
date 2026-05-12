@@ -167,7 +167,7 @@ const TitleArea = styled.div`
 const OpenTag = styled.span`
   font-size: 10px;
   font-weight: 600;
-  color: #5844e4;
+  color: #5E92F0;
   background: #f0eeff;
   padding: 1px 4px;
   border-radius: 4px;

@@ -110,7 +110,7 @@ export default function CreatePersonalChatPage() {
       {isAdmin && (
         <AdminToggleArea>
           <div className="label">
-            <ShieldCheck size={20} color="#5844E4" />
+            <ShieldCheck size={20} color="#5E92F0" />
             <span>공식 메시지 모드 (Admin)</span>
           </div>
           <Switch
@@ -294,7 +294,7 @@ const TitleInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #5844e4;
+    border-color: #5E92F0;
   }
 `;
 
@@ -316,9 +316,9 @@ const Checkbox = styled.div<{ $selected: boolean }>`
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#5844E4" : "#E5E5EA")};
+  border: 2px solid ${({ $selected }) => ($selected ? "#5E92F0" : "#E5E5EA")};
   background-color: ${({ $selected }) =>
-    $selected ? "#5844E4" : "transparent"};
+    $selected ? "#5E92F0" : "transparent"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -340,7 +340,7 @@ const FixedFooter = styled.div`
 const SubmitButton = styled.button<{ $isAdmin?: boolean }>`
   width: 100%;
   height: 56px;
-  background-color: ${({ $isAdmin }) => ($isAdmin ? "#1C1C1E" : "#5844E4")};
+  background-color: ${({ $isAdmin }) => ($isAdmin ? "#1C1C1E" : "#5E92F0")};
   color: white;
   border: none;
   border-radius: 16px;
