@@ -124,7 +124,7 @@ export default function CreateChatModal({
               rightButton={{
                 label: isLoading ? "생성 중..." : "방 만들기",
                 onClick: handleCreate,
-                backgroundColor: "#5844E4",
+                backgroundColor: "#5E92F0",
                 textColor: "#FFFFFF",
                 disabled: isLoading,
               }}
@@ -202,7 +202,7 @@ const Input = styled.input`
   outline: none;
 
   &:focus {
-    border-color: #5844e4;
+    border-color: #5E92F0;
   }
 `;
 

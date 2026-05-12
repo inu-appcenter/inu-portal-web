@@ -190,8 +190,9 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   padding: 24px ${MOBILE_PAGE_GUTTER};
+  padding-bottom: 120px;
   gap: 24px;
-  min-height: calc(100vh - 150px);
+  //min-height: calc(100vh - 150px);
   position: relative;
 `;
 
@@ -208,7 +209,7 @@ const FloatingActionButton = styled.button<{ $bottom?: string }>`
   width: 56px;
   height: 56px;
   border-radius: 28px;
-  background-color: #5844e4;
+  background-color: #5E92F0;
   display: flex;
   align-items: center;
   justify-content: center;

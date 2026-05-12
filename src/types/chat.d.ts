@@ -55,7 +55,7 @@ export interface MyChatRoomResponseDto {
   senderName: string;
   senderProfileImageNumber: number;
   owner: boolean;
-  isOfficial: boolean;
+  official: boolean;
   currentParticipants: number;
 }
 

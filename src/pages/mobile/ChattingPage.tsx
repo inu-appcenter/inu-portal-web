@@ -74,7 +74,7 @@ export default function ChattingPage() {
     }
 
     const newTitle = prompt(
-      "새로운 채팅방 이름을 입력하세요:",
+      "새로운 채팅방 이름을 입력하세요. 참여자 모두에게 적용됩니다.",
       roomInfo?.title || "",
     );
     if (newTitle === null) return;
@@ -338,7 +338,7 @@ export default function ChattingPage() {
         })}
         {isFetchingPrevious && (
           <LoadingWrapper>
-            <Loader2 size={20} color="#5844E4" />
+            <Loader2 size={20} color="#5E92F0" />
           </LoadingWrapper>
         )}
       </ChattingWrapper>
@@ -375,7 +375,7 @@ export default function ChattingPage() {
             }}
           />
           <SendButton onClick={handleSendMessage}>
-            <Send size={24} color="#5844E4" />
+            <Send size={24} color="#5E92F0" />
           </SendButton>
         </div>
       </FixedInputArea>
@@ -735,7 +735,7 @@ const TimeArea = styled.div`
 const UnreadCount = styled.span`
   font-size: 10px;
   font-weight: 700;
-  color: #5844e4;
+  color: #5e92f0;
 `;
 
 const MyMessageContent = styled(MessageContent)`
