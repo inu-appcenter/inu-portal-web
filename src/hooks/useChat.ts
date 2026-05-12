@@ -102,6 +102,17 @@ export const useChat = (roomId: string) => {
             fetchMessages();
           }
         });
+
+        // 서버 Redis에 접속 정보 기록을 위한 ENTER 이벤트 전송
+        client.publish({
+          destination: "/pub/enter",
+          body: JSON.stringify({
+            roomId: Number(roomId),
+          }),
+        });
+
+        // 입장 시 데이터 동기화 (읽음 처리 반영 포함)
+        fetchMessages();
       };
 
       client.onStompError = (frame) => {
@@ -115,9 +126,19 @@ export const useChat = (roomId: string) => {
     };
 
     enterChatRoom();
+    connectStomp();
 
     return () => {
       if (clientRef.current) {
+        // 퇴장 시 LEAVE 이벤트 전송
+        if (clientRef.current.connected) {
+          clientRef.current.publish({
+            destination: "/pub/leave",
+            body: JSON.stringify({
+              roomId: Number(roomId),
+            }),
+          });
+        }
         clientRef.current.deactivate();
       }
     };
