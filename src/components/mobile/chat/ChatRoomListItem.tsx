@@ -56,7 +56,7 @@ export default function ChatRoomListItem({
       <ContentArea>
         <TopRow>
           <TitleArea>
-            <div className="title">{room.title}</div>
+            <div className="title">{room.friendAlias || room.title}</div>
             {room.currentParticipants > 1 && (
               <ParticipantCount>{room.currentParticipants}</ParticipantCount>
             )}
@@ -67,7 +67,12 @@ export default function ChatRoomListItem({
         <BottomRow>
           <div className="last-message">
             {room.senderName && (
-              <span className="sender">{room.senderName}: </span>
+              <span className="sender">
+                {room.friendAlias && room.senderName === room.title
+                  ? room.friendAlias
+                  : room.senderName}
+                :{" "}
+              </span>
             )}
             {room.lastMessage === ""
               ? "사진을 보냈습니다."

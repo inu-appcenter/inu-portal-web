@@ -57,6 +57,7 @@ export interface MyChatRoomResponseDto {
   owner: boolean;
   official: boolean;
   currentParticipants: number;
+  friendAlias: string | null;
 }
 
 /**

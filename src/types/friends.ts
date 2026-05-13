@@ -17,4 +17,5 @@ export interface FriendResponseDto {
   nickname: string;
   studentId: string;
   fireId: number;
+  friendAlias?: string;
 }

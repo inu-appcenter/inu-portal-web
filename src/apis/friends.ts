@@ -6,19 +6,6 @@ import { ApiResponse } from "@/types/common";
  * 친구 요청 보내기
  */
 export const requestFriend = async (
-  studentId: string,
-): Promise<ApiResponse<void>> => {
-  const response = await tokenInstance.post<ApiResponse<void>>(
-    "/api/friends/request",
-    { studentId } as FriendRequestDto,
-  );
-  return response.data;
-};
-
-/**
- * 닉네임으로 친구 요청 보내기
- */
-export const requestFriendByNickname = async (
   nickname: string,
 ): Promise<ApiResponse<void>> => {
   const response = await tokenInstance.post<ApiResponse<void>>(
@@ -27,6 +14,7 @@ export const requestFriendByNickname = async (
   );
   return response.data;
 };
+
 
 /**
  * 대기 중인 친구 요청 목록 조회
@@ -92,11 +80,25 @@ export const getSentPendingFriends = async (): Promise<
  * 친구 검색 (신청 전 확인용)
  */
 export const searchFriend = async (
-  studentId: string,
+  nickname: string,
 ): Promise<ApiResponse<FriendResponseDto>> => {
   const response = await tokenInstance.get<ApiResponse<FriendResponseDto>>(
     "/api/friends/search",
-    { params: { studentId } },
+    { params: { nickname } },
+  );
+  return response.data;
+};
+
+/**
+ * 친구 별명 수정
+ */
+export const updateFriendAlias = async (
+  friendId: number,
+  alias: string,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    `/api/friends/${friendId}/alias`,
+    { alias },
   );
   return response.data;
 };

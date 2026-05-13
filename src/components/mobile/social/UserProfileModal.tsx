@@ -1,12 +1,13 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X, UserPlus, UserCheck, UserMinus, UserX } from "lucide-react";
+import { X, UserPlus, UserCheck, UserMinus, UserX, Edit3 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMemberProfile } from "@/apis/members";
 import { 
-  requestFriendByNickname, 
+  requestFriend, 
   acceptFriend, 
-  deleteFriend 
+  deleteFriend,
+  updateFriendAlias
 } from "@/apis/friends";
 import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
 
@@ -52,7 +53,7 @@ export default function UserProfileModal({
   }
 
   const requestMutation = useMutation({
-    mutationFn: (nickname: string) => requestFriendByNickname(nickname),
+    mutationFn: (nickname: string) => requestFriend(nickname),
     onSuccess: () => {
       alert("친구 요청을 보냈습니다.");
       queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
@@ -83,6 +84,29 @@ export default function UserProfileModal({
       queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
     },
   });
+
+  const updateAliasMutation = useMutation({
+    mutationFn: ({ friendId, alias }: { friendId: number; alias: string }) =>
+      updateFriendAlias(friendId, alias),
+    onSuccess: () => {
+      alert("별명이 수정되었습니다.");
+      queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.msg || "별명 수정에 실패했습니다.");
+    },
+  });
+
+  const handleEditAlias = () => {
+    if (!profile?.friendId) return;
+    const newAlias = prompt("새로운 별명을 입력하세요.", profile.friendAlias || "");
+    if (newAlias === null) return;
+    updateAliasMutation.mutate({
+      friendId: profile.friendId,
+      alias: newAlias.trim(),
+    });
+  };
 
   const handleAction = () => {
     if (!profile) return;
@@ -145,6 +169,11 @@ export default function UserProfileModal({
                     <Nickname>{profile.nickname}</Nickname>
                     {profile.friendAlias && (
                       <Alias>({profile.friendAlias})</Alias>
+                    )}
+                    {profile.friendStatus === "ACCEPTED" && (
+                      <EditAliasButton onClick={handleEditAlias}>
+                        <Edit3 size={16} color="#8E8E93" />
+                      </EditAliasButton>
                     )}
                   </NicknameArea>
                   <SubInfo>
@@ -293,6 +322,20 @@ const Nickname = styled.h2`
   font-weight: 700;
   color: #1c1c1e;
   margin: 0;
+`;
+
+const EditAliasButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  &:active {
+    background-color: #f2f2f7;
+  }
 `;
 
 const Alias = styled.span`
