@@ -22,10 +22,13 @@ const MESSAGE_COLORS = [
   "#FFE5D0",
 ];
 
-const getMessageColor = (messageId: number | string) => {
-  const idStr = String(messageId);
-  const lastChar = idStr.charAt(idStr.length - 1);
-  const index = isNaN(parseInt(lastChar)) ? 0 : parseInt(lastChar);
+const getMessageColor = (identifier: string) => {
+  if (!identifier) return MESSAGE_COLORS[0];
+  let hash = 0;
+  for (let i = 0; i < identifier.length; i++) {
+    hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash);
   return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
 };
 
@@ -636,7 +639,7 @@ const ChatItemOtherPerson = ({
     minute: "2-digit",
   });
 
-  const bgColor = getMessageColor(message.messageId);
+  const bgColor = getMessageColor(message.senderHash);
 
   return (
     <MessageContainer>
@@ -697,7 +700,7 @@ const ChatItemMy = ({
     minute: "2-digit",
   });
 
-  const bgColor = getMessageColor(message.messageId);
+  const bgColor = getMessageColor(message.senderHash);
 
   return (
     <MyMessageContainer>
