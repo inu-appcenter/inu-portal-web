@@ -14,7 +14,7 @@ import {
   OpenChatRoomResponseDto,
 } from "@/types/chat";
 import axiosInstance from "@/apis/axiosInstance";
-import { ApiResponse } from "@/types/common";
+import { ApiResponse, PageResponse } from "@/types/common";
 
 // 채팅방 생성
 export const createChatRoom = async (
@@ -81,12 +81,12 @@ export const getMyChatRooms = async (): Promise<
 };
 
 // 전체 오픈채팅방 목록 조회
-export const getOpenChatRooms = async (): Promise<
-  ApiResponse<OpenChatRoomResponseDto[]>
+export const getOpenChatRooms = async (page: number = 0): Promise<
+  ApiResponse<PageResponse<OpenChatRoomResponseDto>>
 > => {
   const response =
-    await tokenInstance.get<ApiResponse<OpenChatRoomResponseDto[]>>(
-      "/api/chat-rooms/open",
+    await tokenInstance.get<ApiResponse<PageResponse<OpenChatRoomResponseDto>>>(
+      `/api/chat-rooms/open?page=${page}`,
     );
   return response.data;
 };

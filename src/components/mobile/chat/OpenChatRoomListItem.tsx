@@ -30,15 +30,23 @@ export default function OpenChatRoomListItem({
         </DefaultIcon>
       </ThumbnailArea>
       <ContentArea>
-        <Title>{room.title}</Title>
+        <TitleArea>
+          <Title>{room.title}</Title>
+          {room.official && <OfficialTag>공식</OfficialTag>}
+        </TitleArea>
+        {room.description && <Description>{room.description}</Description>}
         <ParticipantInfo>
           <Users size={14} color="#8E8E93" />
           <span>
             {room.currentParticipants} / {room.maxCapacity}
           </span>
+          <span style={{ margin: "0 4px" }}>·</span>
+          <span>방장 {room.ownerNickname}</span>
         </ParticipantInfo>
       </ContentArea>
-      <JoinButton>참여하기</JoinButton>
+      <JoinButton $joined={room.joined}>
+        {room.joined ? "참여중" : "참여하기"}
+      </JoinButton>
     </ItemWrapper>
   );
 }
@@ -93,10 +101,34 @@ const ContentArea = styled.div`
   overflow: hidden;
 `;
 
+const TitleArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
 const Title = styled.div`
   color: #000;
   font-size: 16px;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const OfficialTag = styled.span`
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1c1c1e;
+  padding: 1px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+`;
+
+const Description = styled.div`
+  color: #666;
+  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -111,16 +143,17 @@ const ParticipantInfo = styled.div`
   font-weight: 500;
 `;
 
-const JoinButton = styled.div`
+const JoinButton = styled.div<{ $joined?: boolean }>`
   padding: 6px 12px;
-  background-color: #f2f2f7;
-  color: #5e92f0;
+  background-color: ${(props) => (props.$joined ? "#ffffff" : "#f2f2f7")};
+  color: ${(props) => (props.$joined ? "#1c1c1e" : "#5e92f0")};
+  border: ${(props) => (props.$joined ? "1px solid #e0e0e0" : "none")};
   border-radius: 20px;
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
   
   &:active {
-    background-color: #e5e5ea;
+    background-color: ${(props) => (props.$joined ? "#f4f4f4" : "#e5e5ea")};
   }
 `;

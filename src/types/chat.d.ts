@@ -70,9 +70,15 @@ export interface MyChatRoomResponseDto {
 export interface OpenChatRoomResponseDto {
   roomId: number;
   title: string;
-  currentParticipants: number;
-  maxCapacity: number;
+  description: string;
   thumbnailUrl: string | null;
+  ownerNickname: string;
+  maxCapacity: number;
+  currentParticipants: number;
+  createDate: string;
+  official: boolean;
+  anonymous: boolean;
+  joined: boolean;
 }
 
 /**

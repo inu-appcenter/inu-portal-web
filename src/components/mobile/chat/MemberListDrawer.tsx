@@ -37,6 +37,7 @@ interface MemberListDrawerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   roomInfo: ChatRoom | null;
+  refreshRoom?: () => void;
 }
 
 export default function MemberListDrawer({
@@ -44,6 +45,7 @@ export default function MemberListDrawer({
   isOpen,
   onOpenChange,
   roomInfo,
+  refreshRoom,
 }: MemberListDrawerProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -112,9 +114,10 @@ export default function MemberListDrawer({
     mutationFn: () => patchRoomPushSetting(roomId),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
-      alert(
-        res.data.pushEnabled ? "알림이 켜졌습니다." : "알림이 꺼졌습니다.",
-      );
+      alert(res.data ? "알림이 켜졌습니다." : "알림이 꺼졌습니다.");
+      if (refreshRoom) {
+        refreshRoom();
+      }
     },
     onError: (error: any) => {
       alert(error.response?.data?.msg || "알림 설정 변경에 실패했습니다.");
@@ -215,7 +218,9 @@ export default function MemberListDrawer({
                       subtitle={member.studentId || "익명"}
                       fireId={member.fireId || 0}
                       onActionClick={
-                        !member.me && (roomInfo?.owner || isAdmin) && member.memberId
+                        !member.me &&
+                        (roomInfo?.owner || isAdmin) &&
+                        member.memberId
                           ? () => handleKick(member.memberId!, member.nickname)
                           : !member.me && member.fireId
                             ? () => handleBlock(member.fireId!, member.nickname)
@@ -228,7 +233,8 @@ export default function MemberListDrawer({
                       }
                       onSecondaryActionClick={
                         !member.me && roomInfo?.owner && member.memberId
-                          ? () => handleDelegate(member.memberId!, member.nickname)
+                          ? () =>
+                              handleDelegate(member.memberId!, member.nickname)
                           : undefined
                       }
                       secondaryActionLabel="위임"

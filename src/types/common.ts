@@ -9,3 +9,15 @@ export interface Pagination<T = any> {
   total: number;
   contents: T;
 }
+
+export interface PageResponse<T = any> {
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  content: T[];
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}

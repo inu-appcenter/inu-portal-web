@@ -416,6 +416,7 @@ export default function ChattingPage() {
         isOpen={isMemberListOpen}
         onOpenChange={setIsMemberListOpen}
         roomInfo={roomInfo} // roomInfo 전달
+        refreshRoom={refreshRoom}
       />
     </ChatPageWrapper>
   );

@@ -66,7 +66,7 @@ export default function MobileChatListPage() {
   const { data: openRoomsDiscoveryRes, isLoading: isOpenRoomsLoading } =
     useQuery({
       queryKey: ["openChatRoomsDiscovery"],
-      queryFn: getOpenChatRooms,
+      queryFn: () => getOpenChatRooms(0),
       enabled: selectedCategory === "오픈채팅" && isOpenChatDiscoveryMode,
     });
 
@@ -240,17 +240,20 @@ export default function MobileChatListPage() {
                 isOpenRoomsLoading ? (
                   <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
                 ) : openRoomsDiscoveryRes?.data &&
-                  openRoomsDiscoveryRes.data.length > 0 ? (
-                  openRoomsDiscoveryRes.data.map((room, index) => (
+                  openRoomsDiscoveryRes.data.content.length > 0 ? (
+                  openRoomsDiscoveryRes.data.content.map((room, index) => (
                     <div key={room.roomId} style={{ width: "100%" }}>
                       <OpenChatRoomListItem
                         room={room}
                         onClick={() => {
-                          mixpanelTrack.chatRoomClicked(room.roomId, "discovery");
+                          mixpanelTrack.chatRoomClicked(
+                            room.roomId,
+                            "discovery",
+                          );
                           navigate(`${ROUTES.CHAT.ROOT}/${room.roomId}`);
                         }}
                       />
-                      {index < openRoomsDiscoveryRes.data.length - 1 && (
+                      {index < openRoomsDiscoveryRes.data.content.length - 1 && (
                         <Divider />
                       )}
                     </div>
@@ -360,7 +363,7 @@ const SubTab = styled.div<{ $active: boolean }>`
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   background-color: ${(props) => (props.$active ? "white" : "transparent")};
   color: ${(props) => (props.$active ? "#1C1C1E" : "#8E8E93")};
   box-shadow: ${(props) =>
