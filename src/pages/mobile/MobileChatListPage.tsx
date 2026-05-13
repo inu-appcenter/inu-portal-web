@@ -31,7 +31,6 @@ export default function MobileChatListPage() {
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
-  const [isOpenChatDiscoveryMode, setIsOpenChatDiscoveryMode] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -67,7 +66,7 @@ export default function MobileChatListPage() {
     useQuery({
       queryKey: ["openChatRoomsDiscovery"],
       queryFn: () => getOpenChatRooms(0),
-      enabled: selectedCategory === "오픈채팅" && isOpenChatDiscoveryMode,
+      enabled: selectedCategory === "오픈채팅",
     });
 
   const chatRooms = response?.data || [];
@@ -216,52 +215,9 @@ export default function MobileChatListPage() {
               "채팅 기능은 beta 버전이며, 불안정한 부분이 있을 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
             }
           />
-          {selectedCategory === "오픈채팅" && (
-            <Box style={{ marginBottom: "16px" }}>
-              <SubTabContainer>
-                <SubTab
-                  $active={!isOpenChatDiscoveryMode}
-                  onClick={() => setIsOpenChatDiscoveryMode(false)}
-                >
-                  내 채팅
-                </SubTab>
-                <SubTab
-                  $active={isOpenChatDiscoveryMode}
-                  onClick={() => setIsOpenChatDiscoveryMode(true)}
-                >
-                  채팅 탐색
-                </SubTab>
-              </SubTabContainer>
-            </Box>
-          )}
           <Box>
             <ListWrapper>
-              {selectedCategory === "오픈채팅" && isOpenChatDiscoveryMode ? (
-                isOpenRoomsLoading ? (
-                  <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
-                ) : openRoomsDiscoveryRes?.data &&
-                  openRoomsDiscoveryRes.data.content.length > 0 ? (
-                  openRoomsDiscoveryRes.data.content.map((room, index) => (
-                    <div key={room.roomId} style={{ width: "100%" }}>
-                      <OpenChatRoomListItem
-                        room={room}
-                        onClick={() => {
-                          mixpanelTrack.chatRoomClicked(
-                            room.roomId,
-                            "discovery",
-                          );
-                          navigate(`${ROUTES.CHAT.ROOT}/${room.roomId}`);
-                        }}
-                      />
-                      {index < openRoomsDiscoveryRes.data.content.length - 1 && (
-                        <Divider />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <EmptyState>개설된 오픈채팅방이 없습니다.</EmptyState>
-                )
-              ) : isLoading ? (
+              {isLoading ? (
                 <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
               ) : filteredRooms.length > 0 ? (
                 filteredRooms.map((room, index) => (
@@ -278,6 +234,43 @@ export default function MobileChatListPage() {
               )}
             </ListWrapper>
           </Box>
+
+          {selectedCategory === "오픈채팅" && (
+            <TitleContentArea
+              title="오픈채팅방 둘러보기"
+              style={{ marginTop: "24px" }}
+            >
+              <Box>
+                <ListWrapper>
+                  {isOpenRoomsLoading ? (
+                    <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
+                  ) : openRoomsDiscoveryRes?.data &&
+                    openRoomsDiscoveryRes.data.content.length > 0 ? (
+                    openRoomsDiscoveryRes.data.content.map((room, index) => (
+                      <div key={room.roomId} style={{ width: "100%" }}>
+                        <OpenChatRoomListItem
+                          room={room}
+                          onClick={() => {
+                            mixpanelTrack.chatRoomClicked(
+                              room.roomId,
+                              "discovery",
+                            );
+                            navigate(`${ROUTES.CHAT.ROOT}/${room.roomId}`);
+                          }}
+                        />
+                        {index <
+                          openRoomsDiscoveryRes.data.content.length - 1 && (
+                          <Divider />
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState>개설된 오픈채팅방이 없습니다.</EmptyState>
+                  )}
+                </ListWrapper>
+              </Box>
+            </TitleContentArea>
+          )}
 
           <FloatingActionButton
             onClick={() => {
@@ -344,28 +337,4 @@ const FloatingActionButton = styled.button<{ $bottom?: string }>`
   &:active {
     transform: scale(0.9);
   }
-`;
-
-const SubTabContainer = styled.div`
-  display: flex;
-  gap: 12px;
-  padding: 4px;
-  background-color: #f2f2f7;
-  border-radius: 12px;
-`;
-
-const SubTab = styled.div<{ $active: boolean }>`
-  flex: 1;
-  text-align: center;
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  background-color: ${(props) => (props.$active ? "white" : "transparent")};
-  color: ${(props) => (props.$active ? "#1C1C1E" : "#8E8E93")};
-  box-shadow: ${(props) =>
-    props.$active ? "0 2px 8px rgba(0,0,0,0.05)" : "none"};
 `;

@@ -58,7 +58,7 @@ const ItemWrapper = styled.div`
   align-items: center;
   cursor: pointer;
   width: 100%;
-  padding: 8px 0;
+  //padding: 8px 0;
 `;
 
 const ThumbnailArea = styled.div`
@@ -152,7 +152,7 @@ const JoinButton = styled.div<{ $joined?: boolean }>`
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
-  
+
   &:active {
     background-color: ${(props) => (props.$joined ? "#f4f4f4" : "#e5e5ea")};
   }
