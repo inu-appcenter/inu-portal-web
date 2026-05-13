@@ -53,3 +53,16 @@ export interface Notification {
 export interface ApiLog {
   uri: string;
 }
+
+export type FriendStatus = "NONE" | "PENDING" | "RECEIVED" | "ACCEPTED";
+
+export interface MemberProfileResponseDto {
+  memberId: number;
+  nickname: string;
+  fireId: number;
+  department: string;
+  maskedStudentId: string;
+  friendStatus: FriendStatus;
+  friendId: number | null;
+  friendAlias: string | null;
+}

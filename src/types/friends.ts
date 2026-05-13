@@ -4,7 +4,8 @@
  * 친구 요청 DTO
  */
 export interface FriendRequestDto {
-  studentId: string;
+  studentId?: string;
+  nickname?: string;
 }
 
 /**

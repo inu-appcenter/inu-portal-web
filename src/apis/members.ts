@@ -8,6 +8,7 @@ import {
   Notification,
   TokenInfo,
   UserInfoInput,
+  MemberProfileResponseDto,
 } from "@/types/members";
 import { Post } from "@/types/posts";
 
@@ -167,5 +168,15 @@ export const postApiLogs = async (
     `/api/logs/apis`,
     { uri },
   );
+  return response.data;
+};
+
+// 타인 프로필 조회
+export const getMemberProfile = async (
+  memberId: number,
+): Promise<ApiResponse<MemberProfileResponseDto>> => {
+  const response = await tokenInstance.get<
+    ApiResponse<MemberProfileResponseDto>
+  >(`/api/members/${memberId}/profile`);
   return response.data;
 };

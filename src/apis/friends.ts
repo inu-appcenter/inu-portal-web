@@ -16,6 +16,19 @@ export const requestFriend = async (
 };
 
 /**
+ * 닉네임으로 친구 요청 보내기
+ */
+export const requestFriendByNickname = async (
+  nickname: string,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.post<ApiResponse<void>>(
+    "/api/friends/request",
+    { nickname } as FriendRequestDto,
+  );
+  return response.data;
+};
+
+/**
  * 대기 중인 친구 요청 목록 조회
  */
 export const getPendingFriends = async (): Promise<

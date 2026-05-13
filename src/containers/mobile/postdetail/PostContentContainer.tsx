@@ -9,12 +9,14 @@ interface PostContentContainerProps {
   ClubRecruit?: PostDetail;
   councilNotice?: CouncilNotice;
   petition?: Petition;
+  onWriterClick?: (id: number) => void;
 }
 
 export default function PostContentContainer({
   ClubRecruit,
   councilNotice,
   petition,
+  onWriterClick,
 }: PostContentContainerProps) {
   return (
     <Wrapper>
@@ -30,6 +32,8 @@ export default function PostContentContainer({
             isLiked={ClubRecruit.isLiked}
             scrap={ClubRecruit.scrap}
             isScraped={ClubRecruit.isScraped}
+            memberId={ClubRecruit.memberId}
+            onWriterClick={onWriterClick}
           />
           <PostContent
             id={ClubRecruit.id}

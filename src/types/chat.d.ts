@@ -63,6 +63,7 @@ export interface MyChatRoomResponseDto {
  * 채팅방 멤버 응답 DTO
  */
 export interface ChatRoomMemberResponseDto {
+  memberId: number | null;
   nickname: string;
   studentId: string | null;
   fireId: number | null;

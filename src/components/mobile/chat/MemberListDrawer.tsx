@@ -13,6 +13,8 @@ import {
 } from "@/apis/chat";
 import { blockUser } from "@/apis/blocks";
 import useUserStore from "@/stores/useUserStore";
+import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import { useState } from "react";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translateX(100%); }
@@ -43,6 +45,8 @@ export default function MemberListDrawer({
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -157,6 +161,12 @@ export default function MemberListDrawer({
                           : undefined
                       }
                       actionLabel="차단"
+                      onClick={() => {
+                        if (!member.me && member.memberId) {
+                          setSelectedMemberId(member.memberId);
+                          setIsProfileModalOpen(true);
+                        }
+                      }}
                     />
                     {index < members.length - 1 && <Divider />}
                   </div>
@@ -177,6 +187,11 @@ export default function MemberListDrawer({
               채팅방 나가기
             </ActionButton>
           </Footer>
+          <UserProfileModal
+            memberId={selectedMemberId}
+            isOpen={isProfileModalOpen}
+            onOpenChange={setIsProfileModalOpen}
+          />
         </StyledContent>
       </Dialog.Portal>
     </Dialog.Root>
