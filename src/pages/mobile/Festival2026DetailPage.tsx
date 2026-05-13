@@ -1,9 +1,12 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { FESTIVAL_INFO, FestivalInfoType } from "@/constants/festival";
+import { ROUTES } from "@/constants/routes";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { useEffect, useState } from "react";
 import Skeleton from "@/components/common/Skeleton";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
@@ -17,7 +20,18 @@ interface FestivalData {
 
 const Festival2026DetailPage = () => {
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { enabled: isFestivalEnabled, isFetched } = useFeatureFlag(
+    FEATURE_FLAG_KEYS.FESTIVAL,
+  );
+
+  useEffect(() => {
+    if (isFetched && !isFestivalEnabled) {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [isFestivalEnabled, isFetched, navigate]);
+
   const type = searchParams.get("type") as FestivalInfoType;
 
   const rawInfoData = FESTIVAL_INFO[type];

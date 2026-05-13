@@ -1,5 +1,6 @@
 export const FEATURE_FLAG_KEYS = {
   LABS: "LABS",
+  FESTIVAL: "FESTIVAL",
 } as const;
 
 export type ClientFeatureFlags = Record<string, boolean>;

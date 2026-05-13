@@ -14,6 +14,8 @@ import { FESTIVAL_INFO, FestivalInfoType } from "@/constants/festival";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
 import useUserStore from "@/stores/useUserStore";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
@@ -75,6 +77,16 @@ export default function Festival2026Page() {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "홈";
+
+  const { enabled: isFestivalEnabled, isFetched } = useFeatureFlag(
+    FEATURE_FLAG_KEYS.FESTIVAL,
+  );
+
+  useEffect(() => {
+    if (isFetched && !isFestivalEnabled) {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [isFestivalEnabled, isFetched, navigate]);
 
   useEffect(() => {
     trackPageView("[축제] 홈");
