@@ -214,8 +214,8 @@ export default function TipsListContainer({
   return (
     <TipsListContainerWrapper
       id="scrollableDiv"
-      // $docType={docType}
-      // $isAppUrl={isAppUrl}
+    // $docType={docType}
+    // $isAppUrl={isAppUrl}
     >
       <InfiniteScroll
         key={docType}
@@ -241,7 +241,7 @@ export default function TipsListContainer({
       >
         <TipsCardWrapper $viewMode={viewMode}>
           {(docType === "TIPS" || docType === "SEARCH") &&
-          viewMode === "list" ? (
+            viewMode === "list" ? (
             posts.length > 0 && (
               <Box>
                 {posts.map((p, i) => (

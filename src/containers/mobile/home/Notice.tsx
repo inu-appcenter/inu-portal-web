@@ -57,33 +57,33 @@ export default function NoticeForm() {
 
         {isLoading //스켈레톤 로딩
           ? Array.from({ length: 3 }).map((_, index) => (
-              <div key={`skeleton-${index}`}>
-                <NoticeSkeletonItem />
-                {/* 마지막 아이템이 아니면 Divider 표시 */}
-                {index !== 2 && <Divider />}
-              </div>
-            ))
+            <div key={`skeleton-${index}`}>
+              <NoticeSkeletonItem />
+              {/* 마지막 아이템이 아니면 Divider 표시 */}
+              {index !== 2 && <Divider />}
+            </div>
+          ))
           : notices.slice(0, 3).map((notice, index) => (
-              <div key={notice.id || index}>
-                <PostItem
-                  title={notice.title}
-                  category={notice.category}
-                  date={notice.createDate}
-                  writer={notice.writer}
-                  isEllipsis={false}
-                  onClick={() => {
-                    mixpanelTrack.noticeViewed(
-                      notice.category,
-                      notice.title,
-                      false,
-                    );
-                    if (notice.url)
-                      window.open(notice.url, "_blank");
-                  }}
-                />
-                {index !== 2 && <Divider />}
-              </div>
-            ))}
+            <div key={notice.id || index}>
+              <PostItem
+                title={notice.title}
+                category={notice.category}
+                date={notice.createDate}
+                writer={notice.writer}
+                isEllipsis={false}
+                onClick={() => {
+                  mixpanelTrack.noticeViewed(
+                    notice.category,
+                    notice.title,
+                    false,
+                  );
+                  if (notice.url)
+                    window.open(notice.url, "_blank");
+                }}
+              />
+              {index !== 2 && <Divider />}
+            </div>
+          ))}
       </NoticeFormWrapper>
     </Box>
   );

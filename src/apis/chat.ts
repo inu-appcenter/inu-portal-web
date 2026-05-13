@@ -11,9 +11,10 @@ import {
   MyChatRoomResponseDto,
   UnreadTotalCountResponseDto,
   ChatRoomMemberResponseDto,
+  OpenChatRoomResponseDto,
 } from "@/types/chat";
 import axiosInstance from "@/apis/axiosInstance";
-import { ApiResponse } from "@/types/common";
+import { ApiResponse, PageResponse } from "@/types/common";
 
 // 채팅방 생성
 export const createChatRoom = async (
@@ -75,6 +76,17 @@ export const getMyChatRooms = async (): Promise<
   const response =
     await tokenInstance.get<ApiResponse<MyChatRoomResponseDto[]>>(
       "/api/chat-rooms/my",
+    );
+  return response.data;
+};
+
+// 전체 오픈채팅방 목록 조회
+export const getOpenChatRooms = async (page: number = 0): Promise<
+  ApiResponse<PageResponse<OpenChatRoomResponseDto>>
+> => {
+  const response =
+    await tokenInstance.get<ApiResponse<PageResponse<OpenChatRoomResponseDto>>>(
+      `/api/chat-rooms/open?page=${page}`,
     );
   return response.data;
 };
@@ -190,6 +202,69 @@ export const updateChatRoomTitle = async (
   const response = await tokenInstance.patch<ApiResponse<void>>(
     `/api/chat-rooms/${roomId}/title`,
     { title },
+  );
+  return response.data;
+};
+
+/**
+ * 특정 채팅방 푸시 알림 설정 토글
+ */
+export const patchRoomPushSetting = async (
+  roomId: number | string,
+): Promise<ApiResponse<{ pushEnabled: boolean }>> => {
+  const response = await tokenInstance.patch<
+    ApiResponse<{ pushEnabled: boolean }>
+  >(`/api/chat-rooms/${roomId}/push-setting`);
+  return response.data;
+};
+
+/**
+ * 채팅방 정보 수정 (방 이름, 최대 인원, 썸네일 등)
+ */
+export const updateChatRoomInfo = async (
+  roomId: number | string,
+  info: { title?: string; maxCapacity?: number },
+  thumbnail?: File,
+): Promise<ApiResponse<void>> => {
+  const formData = new FormData();
+  formData.append(
+    "roomInfo",
+    new Blob([JSON.stringify(info)], { type: "application/json" }),
+  );
+  if (thumbnail) {
+    formData.append("thumbnail", thumbnail);
+  }
+
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/info`,
+    formData,
+  );
+  return response.data;
+};
+
+/**
+ * 방장 위임
+ */
+export const delegateOwner = async (
+  roomId: number | string,
+  targetMemberId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/delegate`,
+    { targetMemberId },
+  );
+  return response.data;
+};
+
+/**
+ * 멤버 강퇴
+ */
+export const kickMember = async (
+  roomId: number | string,
+  targetMemberId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.delete<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/members/${targetMemberId}`,
   );
   return response.data;
 };

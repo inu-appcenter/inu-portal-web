@@ -10,9 +10,10 @@ import Divider from "@/components/common/Divider";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
-import { getMyChatRooms } from "@/apis/chat";
+import { getMyChatRooms, getOpenChatRooms } from "@/apis/chat";
 import { getFriends } from "@/apis/friends";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
+import OpenChatRoomListItem from "@/components/mobile/chat/OpenChatRoomListItem";
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
@@ -60,6 +61,13 @@ export default function MobileChatListPage() {
     queryKey: ["friends"],
     queryFn: getFriends,
   });
+
+  const { data: openRoomsDiscoveryRes, isLoading: isOpenRoomsLoading } =
+    useQuery({
+      queryKey: ["openChatRoomsDiscovery"],
+      queryFn: () => getOpenChatRooms(0),
+      enabled: selectedCategory === "오픈채팅",
+    });
 
   const chatRooms = response?.data || [];
 
@@ -227,6 +235,43 @@ export default function MobileChatListPage() {
             </ListWrapper>
           </Box>
 
+          {selectedCategory === "오픈채팅" && (
+            <TitleContentArea
+              title="오픈채팅방 둘러보기"
+              style={{ marginTop: "24px" }}
+            >
+              <Box>
+                <ListWrapper>
+                  {isOpenRoomsLoading ? (
+                    <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
+                  ) : openRoomsDiscoveryRes?.data &&
+                    openRoomsDiscoveryRes.data.content.length > 0 ? (
+                    openRoomsDiscoveryRes.data.content.map((room, index) => (
+                      <div key={room.roomId} style={{ width: "100%" }}>
+                        <OpenChatRoomListItem
+                          room={room}
+                          onClick={() => {
+                            mixpanelTrack.chatRoomClicked(
+                              room.roomId,
+                              "discovery",
+                            );
+                            navigate(`${ROUTES.CHAT.ROOT}/${room.roomId}`);
+                          }}
+                        />
+                        {index <
+                          openRoomsDiscoveryRes.data.content.length - 1 && (
+                          <Divider />
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState>개설된 오픈채팅방이 없습니다.</EmptyState>
+                  )}
+                </ListWrapper>
+              </Box>
+            </TitleContentArea>
+          )}
+
           <FloatingActionButton
             onClick={() => {
               if (selectedCategory === "개인") {
@@ -263,7 +308,6 @@ const Container = styled.div`
   padding: 24px ${MOBILE_PAGE_GUTTER};
   padding-bottom: 120px;
   gap: 24px;
-  //min-height: calc(100vh - 150px);
   position: relative;
 `;
 

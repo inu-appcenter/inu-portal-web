@@ -9,6 +9,7 @@ export interface Post {
   title: string;
   category: string;
   writer: string;
+  memberId: number | null;
   content: string;
   like: number;
   scrap: number;
@@ -21,6 +22,7 @@ export interface Post {
 export interface Reply {
   id: number;
   writer: string;
+  memberId: number | null;
   fireId: number;
   content: string;
   like: number;
@@ -37,6 +39,7 @@ export interface PostDetail {
   title: string;
   category: string;
   writer: string;
+  memberId: number | null;
   fireId: number;
   content: string;
   like: number;

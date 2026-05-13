@@ -636,4 +636,14 @@ export const mixpanelTrack = {
       room_id: roomId,
     });
   },
+
+  /**
+   * 채팅 푸시 알림 설정 토글
+   */
+  chatPushToggled: (isEnabled: boolean, location?: string) => {
+    trackEvent("[채팅] 푸시 알림 토글", {
+      is_enabled: isEnabled,
+      location: location,
+    });
+  },
 };

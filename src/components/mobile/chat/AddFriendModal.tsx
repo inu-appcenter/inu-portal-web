@@ -28,7 +28,7 @@ export default function AddFriendModal({
   onOpenChange,
 }: AddFriendModalProps) {
   const queryClient = useQueryClient();
-  const [studentIdInput, setStudentIdInput] = useState("");
+  const [nicknameInput, setNicknameInput] = useState("");
   const [searchResult, setSearchResult] = useState<FriendResponseDto | null>(
     null,
   );
@@ -52,10 +52,10 @@ export default function AddFriendModal({
   });
 
   const requestMutation = useMutation({
-    mutationFn: (studentId: string) => requestFriend(studentId),
+    mutationFn: (nickname: string) => requestFriend(nickname),
     onSuccess: () => {
       alert("친구 요청을 보냈습니다.");
-      setStudentIdInput("");
+      setNicknameInput("");
       setSearchResult(null);
       queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
       onOpenChange(false);
@@ -66,13 +66,13 @@ export default function AddFriendModal({
   });
 
   const handleSearch = () => {
-    if (!studentIdInput.trim()) return;
-    searchMutation.mutate(studentIdInput.trim());
+    if (!nicknameInput.trim()) return;
+    searchMutation.mutate(nicknameInput.trim());
   };
 
   const handleRequest = () => {
     if (!searchResult) return;
-    requestMutation.mutate(searchResult.studentId);
+    requestMutation.mutate(searchResult.nickname);
   };
 
   return (
@@ -89,7 +89,7 @@ export default function AddFriendModal({
 
           <Content>
             <Description>
-              학번으로 친구를 검색하고 요청을 보낼 수 있어요.
+              닉네임으로 친구를 검색하고 요청을 보낼 수 있어요.
               <br />
               INTIP에 한번이라도 로그인한 적이 있어야 검색할 수 있어요.
             </Description>
@@ -115,23 +115,23 @@ export default function AddFriendModal({
                   </SubmitButton>
                 </div>
               ) : (
-                studentIdInput.trim() &&
+                nicknameInput.trim() &&
                 !isSearching && (
                   <EmptyResult>
-                    학번을 입력하고 돋보기를 눌러주세요.
+                    닉네임을 입력하고 돋보기를 눌러주세요.
                   </EmptyResult>
                 )
               )}
             </ResultArea>
 
             <MobilePillSearchBar
-              value={studentIdInput}
+              value={nicknameInput}
               onChange={(val) => {
-                setStudentIdInput(val);
+                setNicknameInput(val);
                 if (searchResult) setSearchResult(null);
               }}
               onSubmit={handleSearch}
-              placeholder="친구의 학번을 입력하세요"
+              placeholder="친구의 닉네임을 입력하세요"
             />
           </Content>
         </StyledContent>

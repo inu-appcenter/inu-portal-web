@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { User } from "lucide-react";
+import { User, Users, BellOff } from "lucide-react";
 import { MyChatRoomResponseDto } from "@/types/chat";
 import {
   normalizeProfileImageId,
@@ -39,26 +39,43 @@ export default function ChatRoomListItem({
     DEFAULT_PROFILE_IMAGE_ID,
   );
 
+  const isGroupChat = room.type === "PERSONAL" && room.currentParticipants >= 3;
+  const showDefaultGroupIcon = isGroupChat && !room.senderProfileImageNumber;
+
   return (
     <ItemWrapper onClick={() => onClick(room.roomId)}>
       <ProfileImageArea>
         <ProfileImage
-          src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+          src={
+            room.thumbnailUrl
+              ? room.thumbnailUrl
+              : room.senderProfileImageNumber
+                ? `https://portal.inuappcenter.kr/images/profile/${safeFireId}`
+                : "" // null이면 빈 값으로 해서 fallback 노출
+          }
           alt="Profile"
+          $visible={!!(room.thumbnailUrl || room.senderProfileImageNumber)}
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = "none";
           }}
         />
         <DefaultProfileIcon className="fallback">
-          <User size={24} color="#D6D1D5" />
+          {showDefaultGroupIcon ? (
+            <Users size={24} color="#D6D1D5" />
+          ) : (
+            <User size={24} color="#D6D1D5" />
+          )}
         </DefaultProfileIcon>
       </ProfileImageArea>
       <ContentArea>
         <TopRow>
           <TitleArea>
-            <div className="title">{room.title}</div>
+            <div className="title">{room.friendAlias || room.title}</div>
             {room.currentParticipants > 1 && (
               <ParticipantCount>{room.currentParticipants}</ParticipantCount>
+            )}
+            {!room.pushEnabled && (
+              <BellOff size={14} color="#8E8E93" style={{ flexShrink: 0 }} />
             )}
             {room.official && <OfficialTag>공식</OfficialTag>}
           </TitleArea>
@@ -67,7 +84,12 @@ export default function ChatRoomListItem({
         <BottomRow>
           <div className="last-message">
             {room.senderName && (
-              <span className="sender">{room.senderName}: </span>
+              <span className="sender">
+                {room.friendAlias && room.senderName === room.title
+                  ? room.friendAlias
+                  : room.senderName}
+                :{" "}
+              </span>
             )}
             {room.lastMessage === ""
               ? "사진을 보냈습니다."
@@ -101,7 +123,7 @@ const ProfileImageArea = styled.div`
   position: relative;
 `;
 
-const ProfileImage = styled.img`
+const ProfileImage = styled.img<{ $visible?: boolean }>`
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -109,6 +131,7 @@ const ProfileImage = styled.img`
   background-color: #f4f4f4;
   position: relative;
   z-index: 2;
+  display: ${(props) => (props.$visible ? "block" : "none")};
 `;
 
 const DefaultProfileIcon = styled.div`

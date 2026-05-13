@@ -13,6 +13,7 @@ interface SocialUserCardProps {
   onSecondaryActionClick?: () => void;
   actionLabel?: string;
   secondaryActionLabel?: string;
+  onClick?: () => void;
 }
 
 export default function SocialUserCard({
@@ -23,11 +24,12 @@ export default function SocialUserCard({
   onSecondaryActionClick,
   actionLabel,
   secondaryActionLabel,
+  onClick,
 }: SocialUserCardProps) {
   const safeFireId = normalizeProfileImageId(fireId, DEFAULT_PROFILE_IMAGE_ID);
 
   return (
-    <CardWrapper>
+    <CardWrapper onClick={onClick} style={{ cursor: onClick ? "pointer" : "default" }}>
       <ProfileArea>
         <ProfileImage
           src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}

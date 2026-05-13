@@ -12,6 +12,8 @@ interface PostTitleProps {
   isLiked?: boolean;
   scrap?: number;
   isScraped?: boolean;
+  memberId?: number | null;
+  onWriterClick?: (id: number) => void;
 }
 
 export default function PostTitle({
@@ -24,6 +26,8 @@ export default function PostTitle({
   isLiked,
   scrap,
   isScraped,
+  memberId,
+  onWriterClick,
 }: PostTitleProps) {
   // const token = useSelector((state: any) => state.user.token);
   return (
@@ -53,7 +57,17 @@ export default function PostTitle({
           <div className="postinfo2">
             <img src={eyeImg} />
             <span className="viewInfo">{view}</span>
-            <span className="m-writerInfo">{writer || "총학생회"}</span>
+            <span
+              className="m-writerInfo"
+              onClick={() => {
+                if (memberId && onWriterClick) {
+                  onWriterClick(memberId);
+                }
+              }}
+              style={{ cursor: memberId ? "pointer" : "default" }}
+            >
+              {writer || "총학생회"}
+            </span>
           </div>
         </PostInfo>
       </div>

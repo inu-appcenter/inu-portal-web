@@ -56,6 +56,7 @@ export default function FriendManagementView() {
     return friends.filter(
       (friend) =>
         friend.nickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        friend.friendAlias?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (friend.studentId && friend.studentId.includes(searchTerm)),
     );
   }, [friends, searchTerm]);
@@ -92,17 +93,17 @@ export default function FriendManagementView() {
           ) : filteredFriends.length > 0 ? (
             filteredFriends.map((friend, index) => (
               <div key={friend.friendId} style={{ width: "100%" }}>
-                <SocialUserCard
-                  name={friend.nickname}
-                  subtitle={friend.studentId}
-                  fireId={friend.fireId}
-                  onActionClick={() => {
-                    if (confirm("친구를 삭제하시겠습니까?")) {
-                      deleteMutation.mutate(friend.friendId);
-                    }
-                  }}
-                  actionLabel="삭제"
-                />
+                 <SocialUserCard
+                   name={friend.friendAlias || friend.nickname}
+                   subtitle={friend.friendAlias ? friend.nickname : friend.studentId}
+                   fireId={friend.fireId}
+                   onActionClick={() => {
+                     if (confirm("친구를 삭제하시겠습니까?")) {
+                       deleteMutation.mutate(friend.friendId);
+                     }
+                   }}
+                   actionLabel="삭제"
+                 />
                 {index < filteredFriends.length - 1 && <Divider />}
               </div>
             ))
