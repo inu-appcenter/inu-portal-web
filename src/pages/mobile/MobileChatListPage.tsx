@@ -179,10 +179,10 @@ export default function MobileChatListPage() {
           <TitleContentArea
             description={
               <>
-                친구의 학번으로 친구를 맺어보세요.
+                닉네임으로 친구를 찾아보세요.
                 <br />
-                아직 학번 닉네임을 사용중이라면, 마이페이지에서 닉네임을
-                변경해보세요.
+                아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운 닉네임을
+                설정해보세요.
               </>
             }
           />

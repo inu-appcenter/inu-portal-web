@@ -22,6 +22,7 @@ export const createChatRoom = async (
   maxCapacity: number,
   isAnonymous: boolean,
   type: ChatRoomType,
+  description?: string,
 ): Promise<CreateChatRoomResponse> => {
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     "/api/chat-rooms",
@@ -30,6 +31,7 @@ export const createChatRoom = async (
       maxCapacity,
       isAnonymous,
       type,
+      description,
     } as CreateChatRoomRequest,
   );
   return response.data;
@@ -223,7 +225,7 @@ export const patchRoomPushSetting = async (
  */
 export const updateChatRoomInfo = async (
   roomId: number | string,
-  info: { title?: string; maxCapacity?: number },
+  info: { title?: string; maxCapacity?: number; description?: string },
   thumbnail?: File,
 ): Promise<ApiResponse<void>> => {
   const formData = new FormData();

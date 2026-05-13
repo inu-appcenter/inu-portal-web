@@ -42,6 +42,7 @@ export interface ChatRoom {
   isOfficial: boolean;
   pushEnabled: boolean;
   thumbnailUrl: string | null;
+  description: string | null;
 }
 
 /**
@@ -99,6 +100,7 @@ export interface ChatRoomMemberResponseDto {
 export interface UpdateChatRoomInfoRequest {
   title?: string;
   maxCapacity?: number;
+  description?: string;
 }
 
 /**
@@ -117,6 +119,7 @@ export interface CreateChatRoomRequest {
   maxCapacity: number;
   isAnonymous: boolean;
   type: ChatRoomType;
+  description?: string;
 }
 
 /**

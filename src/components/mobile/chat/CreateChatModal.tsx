@@ -31,6 +31,7 @@ export default function CreateChatModal({
 }: CreateChatModalProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [maxCapacity, setMaxCapacity] = useState(10);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +49,7 @@ export default function CreateChatModal({
         maxCapacity,
         isAnonymous,
         "OPEN", // 오픈 채팅 고정
+        description.trim(),
       );
       const roomId = response.data?.id || response.id;
       onOpenChange(false);
@@ -87,6 +89,16 @@ export default function CreateChatModal({
                   placeholder="오픈채팅방 주제를 입력하세요"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>방 소개 (선택)</Label>
+                <TextArea
+                  placeholder="채팅방에 대해 짧게 소개해주세요"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
                 />
               </FormGroup>
 
@@ -200,6 +212,22 @@ const Input = styled.input`
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
+
+  &:focus {
+    border-color: #5E92F0;
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 16px;
+  box-sizing: border-box;
+  outline: none;
+  resize: none;
+  font-family: inherit;
 
   &:focus {
     border-color: #5E92F0;
