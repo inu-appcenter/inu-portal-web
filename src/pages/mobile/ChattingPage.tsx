@@ -90,6 +90,7 @@ export default function ChattingPage() {
       return;
     }
     try {
+      mixpanelTrack.chatRoomMenuClicked("채팅방 이름 변경", roomId ?? "");
       await updateChatRoomTitle(Number(roomId), newTitle.trim());
       refreshRoom();
     } catch (err: any) {
@@ -108,12 +109,17 @@ export default function ChattingPage() {
   const headerRight = React.useMemo(
     () => (
       <HeaderRightArea>
-        <IconButton onClick={() => setIsMemberListOpen(true)}>
+        <IconButton
+          onClick={() => {
+            mixpanelTrack.chatRoomMenuClicked("멤버 목록 열기", roomId ?? "");
+            setIsMemberListOpen(true);
+          }}
+        >
           <Users size={24} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
     ),
-    [],
+    [roomId],
   );
 
   const headerTitle = React.useMemo(
@@ -245,6 +251,7 @@ export default function ChattingPage() {
   };
 
   const handleImageClick = (url: string) => {
+    mixpanelTrack.chatRoomMenuClicked("이미지 크게 보기", roomId ?? "");
     setSelectedImageUrl(url);
     setIsImageModalOpen(true);
   };

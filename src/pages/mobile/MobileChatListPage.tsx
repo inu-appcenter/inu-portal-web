@@ -9,7 +9,7 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import { ROUTES } from "@/constants/routes";
-import { trackPageView } from "@/utils/mixpanel";
+import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import { getMyChatRooms } from "@/apis/chat";
 import { getFriends } from "@/apis/friends";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
@@ -41,10 +41,12 @@ export default function MobileChatListPage() {
     }
   }, []);
 
-  // 카테고리가 변경될 때마다 localStorage에 저장
+  // 카테고리가 변경될 때마다 localStorage에 저장 및 트래킹
   useEffect(() => {
-    if (params.get("category")) {
-      localStorage.setItem("lastChatCategory", params.get("category")!);
+    const category = params.get("category");
+    if (category) {
+      localStorage.setItem("lastChatCategory", category);
+      mixpanelTrack.chatTabSwitched(category);
     }
   }, [location.search]);
 
@@ -115,11 +117,17 @@ export default function MobileChatListPage() {
       return [
         {
           label: "보낸 친구 요청 목록",
-          onClick: () => setIsSentRequestsModalOpen(true),
+          onClick: () => {
+            mixpanelTrack.friendActionClicked("보낸 친구 요청 목록");
+            setIsSentRequestsModalOpen(true);
+          },
         },
         {
           label: "차단 친구 관리",
-          onClick: () => setIsBlockedModalOpen(true),
+          onClick: () => {
+            mixpanelTrack.friendActionClicked("차단 친구 관리");
+            setIsBlockedModalOpen(true);
+          },
         },
       ];
     }
@@ -134,8 +142,9 @@ export default function MobileChatListPage() {
     menuItems: menuItems,
   });
 
-  const handleRoomClick = (roomId: number) => {
-    navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
+  const handleRoomClick = (room: any) => {
+    mixpanelTrack.chatRoomClicked(room.roomId, room.type);
+    navigate(`${ROUTES.CHAT.ROOT}/${room.roomId}`);
   };
 
   const filteredRooms = useMemo(() => {
@@ -167,7 +176,10 @@ export default function MobileChatListPage() {
           <FriendManagementView />
 
           <FloatingActionButton
-            onClick={() => setIsAddFriendModalOpen(true)}
+            onClick={() => {
+              mixpanelTrack.friendActionClicked("친구 추가 버튼");
+              setIsAddFriendModalOpen(true);
+            }}
             $bottom="180px"
           >
             <Plus size={28} color="white" />
@@ -202,7 +214,10 @@ export default function MobileChatListPage() {
               ) : filteredRooms.length > 0 ? (
                 filteredRooms.map((room, index) => (
                   <div key={room.roomId} style={{ width: "100%" }}>
-                    <ChatRoomListItem room={room} onClick={handleRoomClick} />
+                    <ChatRoomListItem
+                      room={room}
+                      onClick={() => handleRoomClick(room)}
+                    />
                     {index < filteredRooms.length - 1 && <Divider />}
                   </div>
                 ))
@@ -215,8 +230,16 @@ export default function MobileChatListPage() {
           <FloatingActionButton
             onClick={() => {
               if (selectedCategory === "개인") {
+                mixpanelTrack.chatRoomMenuClicked(
+                  "개인 채팅방 생성",
+                  "new_personal",
+                );
                 navigate(ROUTES.CHAT.CREATE_PERSONAL);
               } else {
+                mixpanelTrack.chatRoomMenuClicked(
+                  "오픈 채팅방 생성",
+                  "new_open",
+                );
                 setIsCreateModalOpen(true);
               }
             }}

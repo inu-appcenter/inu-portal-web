@@ -598,4 +598,42 @@ export const mixpanelTrack = {
       is_festival_chat: isFestivalChat,
     });
   },
+
+  /**
+   * 채팅 탭 전환
+   */
+  chatTabSwitched: (tabName: string) => {
+    trackEvent("[채팅] 탭 전환", {
+      tab_name: tabName,
+    });
+  },
+
+  /**
+   * 채팅 목록에서 채팅방 클릭
+   */
+  chatRoomClicked: (roomId: number, roomType: string) => {
+    trackEvent("[채팅] 채팅방 클릭", {
+      room_id: roomId,
+      room_type: roomType,
+    });
+  },
+
+  /**
+   * 친구 관련 기능 클릭
+   */
+  friendActionClicked: (actionName: string) => {
+    trackEvent("[친구] 기능 클릭", {
+      action_name: actionName,
+    });
+  },
+
+  /**
+   * 채팅방 내 메뉴/기능 클릭
+   */
+  chatRoomMenuClicked: (featureName: string, roomId: string) => {
+    trackEvent("[채팅] 메뉴 클릭", {
+      feature_name: featureName,
+      room_id: roomId,
+    });
+  },
 };
