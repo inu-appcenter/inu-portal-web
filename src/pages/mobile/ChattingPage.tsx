@@ -138,9 +138,23 @@ export default function ChattingPage() {
   const menuItems = React.useMemo(() => {
     const items = [];
 
-    // 이름 변경 조건: 오픈채팅이면 방장/어드민만, 그 외엔 누구나 (공식방 제외)
-    const canChangeTitle =
-      roomInfo?.type !== "OPEN" || roomInfo.owner || isAdmin;
+    let canChangeTitle = false;
+    
+    if (roomInfo) {
+      if (roomInfo.type === "OPEN") {
+        // 오픈 채팅방: 방장 또는 시스템 관리자만
+        canChangeTitle = !!(roomInfo.owner || isAdmin);
+      } else if (roomInfo.type === "PERSONAL") {
+        // 개인 채팅방
+        if (roomInfo.maxCapacity > 2) {
+          // 그룹 개인 채팅방 (3명 이상): 누구나 자유롭게
+          canChangeTitle = true;
+        } else {
+          // 1:1 채팅방 (2명): 변경 불가
+          canChangeTitle = false;
+        }
+      }
+    }
 
     if (canChangeTitle) {
       items.push({
