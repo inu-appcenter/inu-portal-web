@@ -158,7 +158,7 @@ const MobileNavWrapper = styled.nav`
   backdrop-filter: blur(5px);
   overflow: hidden;
   pointer-events: auto;
-  margin-bottom: calc(32px + env(safe-area-inset-bottom));
+  margin-bottom: calc(24px + env(safe-area-inset-bottom));
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, 520px);
