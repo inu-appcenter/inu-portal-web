@@ -27,6 +27,9 @@ const HomeChipGroup = () => {
   const phonebookTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
   const festivalTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
   const { enabled: isLabsEnabled } = useFeatureFlag(FEATURE_FLAG_KEYS.LABS);
+  const { enabled: isFestivalEnabled } = useFeatureFlag(
+    FEATURE_FLAG_KEYS.FESTIVAL,
+  );
 
   const [isFestivalTooltipVisible, setIsFestivalTooltipVisible] = useState(
     () => {
@@ -57,6 +60,7 @@ const HomeChipGroup = () => {
         );
         navigate(ROUTES.FESTIVAL2026);
       },
+      isActive: isFestivalEnabled,
     },
     {
       id: "phonebook",

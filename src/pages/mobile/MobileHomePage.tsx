@@ -28,6 +28,8 @@ import { MobileSchoolAlarmSetting } from "@/pages/mobile/AlarmSettingPage";
 import BottomButtonGroup from "@/components/common/BottomButtonGroup";
 import { Link, useNavigate } from "react-router-dom";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 const PROMO_PROBABILITY = 0.05;
@@ -56,6 +58,9 @@ function getStoredAccessToken() {
 export default function MobileHomePage() {
   const { tokenInfo } = useUserStore();
   const navigate = useNavigate();
+  const { enabled: isFestivalEnabled } = useFeatureFlag(
+    FEATURE_FLAG_KEYS.FESTIVAL,
+  );
   const isBannerOn = false; // 배너 온오프 - on:true off:false
 
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -305,14 +310,16 @@ export default function MobileHomePage() {
         <CategoryFormSection>
           <CategoryForm />
           <HomeChipGroup />
-          <Link to={ROUTES.FESTIVAL2026} style={{ textDecoration: "none" }}>
-            <TitleContentArea
-              title={"PAINT THE UNION 오픈채팅방"}
-              description={"UNI와 함께 축제를 공유해보세요!"}
-            >
-              <ChatPreviewWidget roomId={1} />
-            </TitleContentArea>
-          </Link>
+          {isFestivalEnabled && (
+            <Link to={ROUTES.FESTIVAL2026} style={{ textDecoration: "none" }}>
+              <TitleContentArea
+                title={"PAINT THE UNION 오픈채팅방"}
+                description={"UNI와 함께 축제를 공유해보세요!"}
+              >
+                <ChatPreviewWidget roomId={1} />
+              </TitleContentArea>
+            </Link>
+          )}
         </CategoryFormSection>
       </Section>
 
