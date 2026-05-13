@@ -13,6 +13,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { Notification } from "@/types/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import notificationCategory from "@/resources/strings/notificationCategory";
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
@@ -145,10 +146,19 @@ const MobileAlertPage = () => {
                     navigate(ROUTES.BOARD.DEPT_NOTICE);
                   } else if (alert.type === "SCHOOL_NOTICE") {
                     navigate(ROUTES.BOARD.NOTICE);
+                  } else if (alert.type === "CHAT") {
+                    if (alert.targetId) {
+                      navigate(`${ROUTES.CHAT.ROOT}/${alert.targetId}`);
+                    } else {
+                      navigate(ROUTES.CHAT.LIST);
+                    }
+                  } else if (alert.type === "FRIEND") {
+                    navigate(`${ROUTES.CHAT.LIST}?category=친구`);
                   }
                 }}
               >
                 <PostItem
+                  category={notificationCategory[alert.type] || alert.type}
                   title={alert.title}
                   content={alert.body}
                   date={alert.createDate}

@@ -19,6 +19,7 @@ import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
+import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
@@ -32,7 +33,20 @@ export default function MobileChatListPage() {
 
   useEffect(() => {
     trackPageView("채팅 목록");
+
+    // 초기 로드 시 URL에 카테고리가 없으면 마지막으로 선택했던 카테고리로 이동
+    const savedCategory = localStorage.getItem("lastChatCategory");
+    if (!params.get("category") && savedCategory) {
+      navigate(`?category=${savedCategory}`, { replace: true });
+    }
   }, []);
+
+  // 카테고리가 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    if (params.get("category")) {
+      localStorage.setItem("lastChatCategory", params.get("category")!);
+    }
+  }, [location.search]);
 
   const { data: response, isLoading } = useQuery({
     queryKey: ["myChatRooms"],
@@ -46,25 +60,44 @@ export default function MobileChatListPage() {
   });
 
   const chatRooms = response?.data || [];
-  const friends = friendsRes?.data || [];
 
-  const personalCount = useMemo(
-    () => chatRooms.filter((r) => r.type === "PERSONAL").length,
+  const personalUnreadCount = useMemo(
+    () =>
+      chatRooms
+        .filter((r) => r.type === "PERSONAL")
+        .reduce((acc, r) => acc + (r.unreadCount || 0), 0),
     [chatRooms],
   );
-  const openCount = useMemo(
-    () => chatRooms.filter((r) => r.type === "OPEN").length,
+
+  const openUnreadCount = useMemo(
+    () =>
+      chatRooms
+        .filter((r) => r.type === "OPEN")
+        .reduce((acc, r) => acc + (r.unreadCount || 0), 0),
     [chatRooms],
   );
-  const friendCount = friends.length;
+
+  const friendCount = friendsRes?.data?.length || 0;
 
   const categories = useMemo(
     () => [
-      { label: "개인", value: "개인", count: personalCount },
-      { label: "오픈채팅", value: "오픈채팅", count: openCount },
-      { label: "친구", value: "친구", count: friendCount },
+      {
+        label: "개인",
+        value: "개인",
+        count: personalUnreadCount > 0 ? personalUnreadCount : undefined,
+      },
+      {
+        label: "오픈채팅",
+        value: "오픈채팅",
+        count: openUnreadCount > 0 ? openUnreadCount : undefined,
+      },
+      {
+        label: "친구",
+        value: "친구",
+        count: friendCount,
+      },
     ],
-    [personalCount, openCount, friendCount],
+    [personalUnreadCount, openUnreadCount, friendCount],
   );
 
   const subHeader = useMemo(
@@ -121,6 +154,16 @@ export default function MobileChatListPage() {
     <Container>
       {selectedCategory === "친구" ? (
         <>
+          <TitleContentArea
+            description={
+              <>
+                친구의 학번으로 친구를 맺어보세요.
+                <br />
+                아직 학번 닉네임을 사용중이라면, 마이페이지에서 닉네임을
+                변경해보세요.
+              </>
+            }
+          />
           <FriendManagementView />
 
           <FloatingActionButton
@@ -147,6 +190,11 @@ export default function MobileChatListPage() {
         </>
       ) : (
         <>
+          <TitleContentArea
+            description={
+              "채팅 기능은 beta 버전이며, 불안정한 부분이 있을 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
+            }
+          />
           <Box>
             <ListWrapper>
               {isLoading ? (
@@ -209,7 +257,7 @@ const FloatingActionButton = styled.button<{ $bottom?: string }>`
   width: 56px;
   height: 56px;
   border-radius: 28px;
-  background-color: #5E92F0;
+  background-color: #5e92f0;
   display: flex;
   align-items: center;
   justify-content: center;
