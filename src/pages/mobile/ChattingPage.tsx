@@ -429,7 +429,8 @@ const ChatPageWrapper = styled.div`
   height: calc(var(--visual-viewport-height, 100dvh) - 76px);
   overflow: hidden;
   position: fixed;
-  top: 76px;
+  /* iOS에서 뷰포트가 밀릴 경우 offset-top만큼 보정하여 헤더 위치 사수 */
+  top: calc(76px + var(--visual-viewport-offset-top, 0px));
   left: 0;
   right: 0;
   background-color: #ffffff;
