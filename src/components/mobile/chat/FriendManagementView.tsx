@@ -93,17 +93,19 @@ export default function FriendManagementView() {
           ) : filteredFriends.length > 0 ? (
             filteredFriends.map((friend, index) => (
               <div key={friend.friendId} style={{ width: "100%" }}>
-                 <SocialUserCard
-                   name={friend.friendAlias || friend.nickname}
-                   subtitle={friend.friendAlias ? friend.nickname : friend.studentId}
-                   fireId={friend.fireId}
-                   onActionClick={() => {
-                     if (confirm("친구를 삭제하시겠습니까?")) {
-                       deleteMutation.mutate(friend.friendId);
-                     }
-                   }}
-                   actionLabel="삭제"
-                 />
+                <SocialUserCard
+                  name={friend.friendAlias || friend.nickname}
+                  subtitle={
+                    friend.friendAlias ? friend.nickname : friend.studentId
+                  }
+                  fireId={friend.fireId}
+                  onActionClick={() => {
+                    if (confirm("친구를 삭제하시겠습니까?")) {
+                      deleteMutation.mutate(friend.friendId);
+                    }
+                  }}
+                  actionLabel="삭제"
+                />
                 {index < filteredFriends.length - 1 && <Divider />}
               </div>
             ))
@@ -117,7 +119,7 @@ export default function FriendManagementView() {
 
       <FloatingSearchContainer>
         <MobilePillSearchBar
-          placeholder="이름 또는 학번으로 친구 검색"
+          placeholder="닉네임을 입력하세요."
           value={searchTerm}
           onChange={setSearchTerm}
           onSubmit={() => {}} // 실시간 검색이므로 별도 제출 로직 필요 없음

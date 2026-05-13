@@ -131,7 +131,7 @@ export default function AddFriendModal({
                 if (searchResult) setSearchResult(null);
               }}
               onSubmit={handleSearch}
-              placeholder="친구의 닉네임을 입력하세요"
+              placeholder="닉네임을 입력하세요."
             />
           </Content>
         </StyledContent>
@@ -221,7 +221,7 @@ const SubmitButton = styled.button`
   margin-top: 12px;
   width: 100%;
   padding: 14px;
-  background-color: #5E92F0;
+  background-color: #5e92f0;
   color: white;
   border: none;
   border-radius: 12px;

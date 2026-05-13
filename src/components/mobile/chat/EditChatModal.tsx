@@ -33,6 +33,7 @@ export default function EditChatModal({
 }: EditChatModalProps) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState(initialData?.title || "");
+  const [description, setDescription] = useState(initialData?.description || "");
   const [maxCapacity, setMaxCapacity] = useState(initialData?.maxCapacity || 10);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.thumbnailUrl || null);
@@ -41,6 +42,7 @@ export default function EditChatModal({
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title);
+      setDescription(initialData.description || "");
       setMaxCapacity(initialData.maxCapacity);
       setPreviewUrl(initialData.thumbnailUrl);
     }
@@ -71,6 +73,7 @@ export default function EditChatModal({
         {
           title: title.trim(),
           maxCapacity,
+          description: description.trim(),
         },
         thumbnail || undefined,
       );
@@ -130,6 +133,16 @@ export default function EditChatModal({
                   placeholder="오픈채팅방 주제를 입력하세요"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>방 소개 (선택)</Label>
+                <TextArea
+                  placeholder="채팅방에 대해 짧게 소개해주세요"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
                 />
               </FormGroup>
 
@@ -281,6 +294,22 @@ const Input = styled.input`
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
+
+  &:focus {
+    border-color: #5E92F0;
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 16px;
+  box-sizing: border-box;
+  outline: none;
+  resize: none;
+  font-family: inherit;
 
   &:focus {
     border-color: #5E92F0;

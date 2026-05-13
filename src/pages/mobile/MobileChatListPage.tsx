@@ -21,6 +21,8 @@ import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal";
+import { OpenChatRoomResponseDto } from "@/types/chat";
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
@@ -31,6 +33,9 @@ export default function MobileChatListPage() {
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [selectedRoomForPreview, setSelectedRoomForPreview] =
+    useState<OpenChatRoomResponseDto | null>(null);
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -174,10 +179,10 @@ export default function MobileChatListPage() {
           <TitleContentArea
             description={
               <>
-                친구의 학번으로 친구를 맺어보세요.
+                닉네임으로 친구를 찾아보세요.
                 <br />
-                아직 학번 닉네임을 사용중이라면, 마이페이지에서 닉네임을
-                변경해보세요.
+                아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운 닉네임을
+                설정해보세요.
               </>
             }
           />
@@ -212,7 +217,7 @@ export default function MobileChatListPage() {
         <>
           <TitleContentArea
             description={
-              "채팅 기능은 beta 버전이며, 불안정한 부분이 있을 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
+              "채팅 기능은 beta 버전이며, 불안정할 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
             }
           />
           <Box>
@@ -251,11 +256,8 @@ export default function MobileChatListPage() {
                         <OpenChatRoomListItem
                           room={room}
                           onClick={() => {
-                            mixpanelTrack.chatRoomClicked(
-                              room.roomId,
-                              "discovery",
-                            );
-                            navigate(`${ROUTES.CHAT.ROOT}/${room.roomId}`);
+                            setSelectedRoomForPreview(room);
+                            setIsPreviewModalOpen(true);
                           }}
                         />
                         {index <
@@ -295,6 +297,11 @@ export default function MobileChatListPage() {
           <CreateChatModal
             isOpen={isCreateModalOpen}
             onOpenChange={setIsCreateModalOpen}
+          />
+          <OpenChatPreviewModal
+            isOpen={isPreviewModalOpen}
+            onOpenChange={setIsPreviewModalOpen}
+            room={selectedRoomForPreview}
           />
         </>
       )}
