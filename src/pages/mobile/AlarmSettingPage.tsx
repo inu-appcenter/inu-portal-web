@@ -85,11 +85,7 @@ function ChatPushSettingSection() {
       const res = await patchChatPushSetting();
       const userRes = await getMembers();
       setUserInfo(userRes.data);
-      mixpanelTrack.noticeAllToggled(
-        "Chat",
-        res.data.chatPushEnabled,
-        "Alarm Setting Page",
-      );
+      mixpanelTrack.chatPushToggled(res.data.chatPushEnabled, "Alarm Setting Page");
     } catch (error) {
       console.error("채팅 알림 설정 변경 실패:", error);
       alert("알림 설정 변경에 실패했습니다.");
@@ -276,23 +272,23 @@ export function MobileSchoolAlarmSetting({
             <ChipContainer>
               {isLoading
                 ? Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton
-                      key={`cat-skeleton-${i}`}
-                      variant="tag"
-                      width={60}
-                      height={32}
-                      style={{ borderRadius: "100px" }}
-                    />
-                  ))
+                  <Skeleton
+                    key={`cat-skeleton-${i}`}
+                    variant="tag"
+                    width={60}
+                    height={32}
+                    style={{ borderRadius: "100px" }}
+                  />
+                ))
                 : categories.map((cat) => (
-                    <SelectableChip
-                      key={cat}
-                      $selected={subscribedCategories.includes(cat)}
-                      onClick={() => handleToggleCategory(cat)}
-                    >
-                      {cat}
-                    </SelectableChip>
-                  ))}
+                  <SelectableChip
+                    key={cat}
+                    $selected={subscribedCategories.includes(cat)}
+                    onClick={() => handleToggleCategory(cat)}
+                  >
+                    {cat}
+                  </SelectableChip>
+                ))}
             </ChipContainer>
           </Box>
         </TitleContentArea>
@@ -360,27 +356,27 @@ export function MobileSchoolAlarmSetting({
               <ListWrapper>
                 {isLoading
                   ? Array.from({ length: 3 }).map((_, i) => (
-                      <React.Fragment key={`key-skeleton-${i}`}>
-                        <Skeleton
-                          variant="text"
-                          width="100%"
-                          height={20}
-                          style={{ margin: "4px 0" }}
-                        />
-                        {i < 2 && <Divider margin={"16px 0"} />}
-                      </React.Fragment>
-                    ))
+                    <React.Fragment key={`key-skeleton-${i}`}>
+                      <Skeleton
+                        variant="text"
+                        width="100%"
+                        height={20}
+                        style={{ margin: "4px 0" }}
+                      />
+                      {i < 2 && <Divider margin={"16px 0"} />}
+                    </React.Fragment>
+                  ))
                   : keywords.map((item, index) => (
-                      <React.Fragment key={item.keywordId}>
-                        <RegisteredKeywordItem
-                          keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
-                          onDelete={() => handleDeleteKeyword(item.keywordId)}
-                        />
-                        {index < keywords.length - 1 && (
-                          <Divider margin={"16px 0"} />
-                        )}
-                      </React.Fragment>
-                    ))}
+                    <React.Fragment key={item.keywordId}>
+                      <RegisteredKeywordItem
+                        keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
+                        onDelete={() => handleDeleteKeyword(item.keywordId)}
+                      />
+                      {index < keywords.length - 1 && (
+                        <Divider margin={"16px 0"} />
+                      )}
+                    </React.Fragment>
+                  ))}
               </ListWrapper>
             </Box>
           </TitleContentArea>
@@ -598,27 +594,27 @@ function MobileDeptAlarmSetting({
               <ListWrapper>
                 {isLoading
                   ? Array.from({ length: 2 }).map((_, i) => (
-                      <React.Fragment key={`key-skeleton-${i}`}>
-                        <Skeleton
-                          variant="text"
-                          width="100%"
-                          height={20}
-                          style={{ margin: "4px 0" }}
-                        />
-                        {i < 1 && <Divider margin={"16px 0"} />}
-                      </React.Fragment>
-                    ))
+                    <React.Fragment key={`key-skeleton-${i}`}>
+                      <Skeleton
+                        variant="text"
+                        width="100%"
+                        height={20}
+                        style={{ margin: "4px 0" }}
+                      />
+                      {i < 1 && <Divider margin={"16px 0"} />}
+                    </React.Fragment>
+                  ))
                   : registeredKeywords.map((item, index) => (
-                      <React.Fragment key={item.keywordId}>
-                        <RegisteredKeywordItem
-                          keyword={item.keyword}
-                          onDelete={() => handleDeleteKeyword(item.keywordId)}
-                        />
-                        {index < registeredKeywords.length - 1 && (
-                          <Divider margin={"16px 0"} />
-                        )}
-                      </React.Fragment>
-                    ))}
+                    <React.Fragment key={item.keywordId}>
+                      <RegisteredKeywordItem
+                        keyword={item.keyword}
+                        onDelete={() => handleDeleteKeyword(item.keywordId)}
+                      />
+                      {index < registeredKeywords.length - 1 && (
+                        <Divider margin={"16px 0"} />
+                      )}
+                    </React.Fragment>
+                  ))}
               </ListWrapper>
             </Box>
           </TitleContentArea>

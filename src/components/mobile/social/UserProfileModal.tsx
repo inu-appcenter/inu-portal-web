@@ -3,9 +3,9 @@ import styled, { keyframes } from "styled-components";
 import { X, UserPlus, UserCheck, UserMinus, UserX, Edit3 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMemberProfile } from "@/apis/members";
-import { 
-  requestFriend, 
-  acceptFriend, 
+import {
+  requestFriend,
+  acceptFriend,
   deleteFriend,
   updateFriendAlias
 } from "@/apis/friends";

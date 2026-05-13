@@ -51,11 +51,11 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
         } else {
           response = searchQuery
             ? await getSearchFolderScrap(
-                searchQuery,
-                "date",
-                pageToLoad,
-                folder.id,
-              )
+              searchQuery,
+              "date",
+              pageToLoad,
+              folder.id,
+            )
             : await getFoldersPosts(folder.id, "date", pageToLoad);
         }
         const newPosts = response.data.contents;
@@ -487,11 +487,10 @@ const ScrapContentsWrapper = styled.div<{
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: ${
-    ({ $isAppUrl }) =>
-      $isAppUrl === "/m"
-        ? " calc(100svh - 72px - 64px - 16px - 32px - 42px - 49px - 16px)" // 100% 로 하면 안먹혀서 header, nav, gap, ScrapFolders, SearchForm, ScrapHeader 크기 직접 빼주기
-        : " calc(100svh - 64px - 16px - 32px - 42px - 49px - 16px)" // isAppUrl이 "/app" 이면 nav는 없음
+  height: ${({ $isAppUrl }) =>
+    $isAppUrl === "/m"
+      ? " calc(100svh - 72px - 64px - 16px - 32px - 42px - 49px - 16px)" // 100% 로 하면 안먹혀서 header, nav, gap, ScrapFolders, SearchForm, ScrapHeader 크기 직접 빼주기
+      : " calc(100svh - 64px - 16px - 32px - 42px - 49px - 16px)" // isAppUrl이 "/app" 이면 nav는 없음
   };
   overflow-y: auto;
   position: relative;
