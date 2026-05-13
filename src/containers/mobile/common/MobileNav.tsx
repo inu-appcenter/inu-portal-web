@@ -143,7 +143,7 @@ const AreaWrapper = styled.div`
 const MobileNavWrapper = styled.nav`
   position: relative;
   z-index: 1001;
-  //margin-bottom: 24px;
+  margin-bottom: 24px;
   width: 90vw;
   max-width: 400px;
   min-width: 250px;
@@ -158,7 +158,7 @@ const MobileNavWrapper = styled.nav`
   backdrop-filter: blur(5px);
   overflow: hidden;
   pointer-events: auto;
-  margin-bottom: calc(24px + env(safe-area-inset-bottom));
+  //margin-bottom: calc(18px + env(safe-area-inset-bottom));
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, 520px);
