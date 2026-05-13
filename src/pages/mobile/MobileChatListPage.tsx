@@ -21,6 +21,8 @@ import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal";
+import { OpenChatRoomResponseDto } from "@/types/chat";
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
@@ -31,6 +33,9 @@ export default function MobileChatListPage() {
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [selectedRoomForPreview, setSelectedRoomForPreview] =
+    useState<OpenChatRoomResponseDto | null>(null);
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -251,11 +256,8 @@ export default function MobileChatListPage() {
                         <OpenChatRoomListItem
                           room={room}
                           onClick={() => {
-                            mixpanelTrack.chatRoomClicked(
-                              room.roomId,
-                              "discovery",
-                            );
-                            navigate(`${ROUTES.CHAT.ROOT}/${room.roomId}`);
+                            setSelectedRoomForPreview(room);
+                            setIsPreviewModalOpen(true);
                           }}
                         />
                         {index <
@@ -295,6 +297,11 @@ export default function MobileChatListPage() {
           <CreateChatModal
             isOpen={isCreateModalOpen}
             onOpenChange={setIsCreateModalOpen}
+          />
+          <OpenChatPreviewModal
+            isOpen={isPreviewModalOpen}
+            onOpenChange={setIsPreviewModalOpen}
+            room={selectedRoomForPreview}
           />
         </>
       )}
