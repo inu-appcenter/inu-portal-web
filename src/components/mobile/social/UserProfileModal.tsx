@@ -10,6 +10,7 @@ import {
   updateFriendAlias
 } from "@/apis/friends";
 import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
+import findTitleOrCode from "@/utils/findTitleOrCode";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -177,7 +178,7 @@ export default function UserProfileModal({
                     )}
                   </NicknameArea>
                   <SubInfo>
-                    {profile.department} · {profile.maskedStudentId}
+                    {findTitleOrCode(profile.department)} · {profile.maskedStudentId}
                   </SubInfo>
                 </UserInfoArea>
 
