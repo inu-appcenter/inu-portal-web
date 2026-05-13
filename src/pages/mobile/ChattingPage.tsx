@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { Send, Users, Loader2, Image } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
+import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
@@ -30,6 +31,7 @@ const getMessageColor = (messageId: number | string) => {
 
 import { updateChatRoomTitle } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
+import { ROUTES } from "@/constants/routes";
 
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -60,6 +62,8 @@ export default function ChattingPage() {
     fetchPreviousMessages,
     refreshRoom,
   } = useChat(roomId ?? "");
+
+  useVisualViewport();
 
   const handleUpdateTitle = async () => {
     if (roomInfo?.isOfficial) {
@@ -94,7 +98,7 @@ export default function ChattingPage() {
   useEffect(() => {
     if (error) {
       alert(error); // 에러 메시지 표시
-      navigate("/chat/list"); // 채팅 목록 페이지로 이동
+      navigate(ROUTES.CHAT.LIST, { replace: true }); // 채팅 목록 페이지로 이동
     }
   }, [error, navigate]);
 
@@ -374,7 +378,10 @@ export default function ChattingPage() {
               }
             }}
           />
-          <SendButton onClick={handleSendMessage}>
+          <SendButton
+            onClick={handleSendMessage}
+            onMouseDown={(e) => e.preventDefault()}
+          >
             <Send size={24} color="#5E92F0" />
           </SendButton>
         </div>
@@ -405,12 +412,18 @@ export default function ChattingPage() {
 }
 
 const ChatPageWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  height: calc(100dvh - 80px);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  /* 헤더 높이(약 76px)를 제외한 나머지 영역이 Visual Viewport 내에 들어오도록 설정 */
+  height: calc(var(--visual-viewport-height, 100dvh) - 76px);
   overflow: hidden;
+  position: fixed;
+  top: 76px;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  overscroll-behavior: none;
 `;
 
 const HeaderRightArea = styled.div`
@@ -425,7 +438,7 @@ const RoomInfoBanner = styled.div`
   align-items: center;
   gap: 6px;
   padding: 12px;
-  background-color: #ffffff;
+  //background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
   font-size: 13px;
   font-weight: 500;
@@ -438,7 +451,7 @@ const ChattingWrapper = styled.div`
   display: flex;
   flex-direction: column-reverse;
   overflow-y: auto;
-  padding-bottom: 64px;
+  //padding-bottom: 64px;
   box-sizing: border-box;
 
   &::-webkit-scrollbar {
@@ -471,14 +484,11 @@ const LoadingWrapper = styled.div`
 `;
 
 const FixedInputArea = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   background-color: #ffffff;
   border-top: 1px solid #eaeaea;
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom);
+  flex-shrink: 0;
 
   .input-wrapper {
     display: flex;
