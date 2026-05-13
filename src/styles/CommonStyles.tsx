@@ -17,8 +17,10 @@ const CommonStyles = createGlobalStyle`
   /* 반드시 포함되어야 합니다! */
   html, body, #root {
     width: 100%;
+    height: 100%;
     margin: 0;
     padding: 0;
+    overscroll-behavior: none;
   }
 
   /* 모든 요소에 폰트 상속 강제 */
