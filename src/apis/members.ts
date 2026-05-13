@@ -184,9 +184,11 @@ export const getMemberProfile = async (
 /**
  * 전체 채팅 푸시 알림 설정 토글
  */
-export const patchChatPushSetting = async (): Promise<ApiResponse<boolean>> => {
-  const response = await tokenInstance.patch<ApiResponse<boolean>>(
-    "/api/members/push-setting/chat",
-  );
+export const patchChatPushSetting = async (): Promise<
+  ApiResponse<{ chatPushEnabled: boolean }>
+> => {
+  const response = await tokenInstance.patch<
+    ApiResponse<{ chatPushEnabled: boolean }>
+  >("/api/members/push-setting/chat");
   return response.data;
 };

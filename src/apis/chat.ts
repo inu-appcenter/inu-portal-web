@@ -211,10 +211,10 @@ export const updateChatRoomTitle = async (
  */
 export const patchRoomPushSetting = async (
   roomId: number | string,
-): Promise<ApiResponse<boolean>> => {
-  const response = await tokenInstance.patch<ApiResponse<boolean>>(
-    `/api/chat-rooms/${roomId}/push-setting`,
-  );
+): Promise<ApiResponse<{ pushEnabled: boolean }>> => {
+  const response = await tokenInstance.patch<
+    ApiResponse<{ pushEnabled: boolean }>
+  >(`/api/chat-rooms/${roomId}/push-setting`);
   return response.data;
 };
 

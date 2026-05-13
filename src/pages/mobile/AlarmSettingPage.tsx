@@ -85,7 +85,11 @@ function ChatPushSettingSection() {
       const res = await patchChatPushSetting();
       const userRes = await getMembers();
       setUserInfo(userRes.data);
-      mixpanelTrack.noticeAllToggled("Chat", res.data, "Alarm Setting Page");
+      mixpanelTrack.noticeAllToggled(
+        "Chat",
+        res.data.chatPushEnabled,
+        "Alarm Setting Page",
+      );
     } catch (error) {
       console.error("채팅 알림 설정 변경 실패:", error);
       alert("알림 설정 변경에 실패했습니다.");

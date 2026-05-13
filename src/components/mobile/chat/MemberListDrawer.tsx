@@ -112,7 +112,9 @@ export default function MemberListDrawer({
     mutationFn: () => patchRoomPushSetting(roomId),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
-      alert(res.data ? "알림이 켜졌습니다." : "알림이 꺼졌습니다.");
+      alert(
+        res.data.pushEnabled ? "알림이 켜졌습니다." : "알림이 꺼졌습니다.",
+      );
     },
     onError: (error: any) => {
       alert(error.response?.data?.msg || "알림 설정 변경에 실패했습니다.");
