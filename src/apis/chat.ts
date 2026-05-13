@@ -193,3 +193,15 @@ export const updateChatRoomTitle = async (
   );
   return response.data;
 };
+
+/**
+ * 특정 채팅방 푸시 알림 설정 토글
+ */
+export const patchRoomPushSetting = async (
+  roomId: number | string,
+): Promise<ApiResponse<boolean>> => {
+  const response = await tokenInstance.patch<ApiResponse<boolean>>(
+    `/api/chat-rooms/${roomId}/push-setting`,
+  );
+  return response.data;
+};

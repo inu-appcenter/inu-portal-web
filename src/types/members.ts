@@ -11,6 +11,7 @@ export interface UserInfoInput {
   department?: string | null;
   fireId?: number | null;
   role?: string | null;
+  chatPushEnabled?: boolean | null;
 }
 
 export interface UserInfo {
@@ -19,6 +20,7 @@ export interface UserInfo {
   department: string; //학과 정보
   fireId: number;
   role: string; // "admin" | ""
+  chatPushEnabled: boolean;
 }
 
 export interface MembersReplies {

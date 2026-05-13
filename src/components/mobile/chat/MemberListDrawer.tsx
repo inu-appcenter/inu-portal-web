@@ -1,7 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, LogOut, Trash2 } from "lucide-react"; // LogOut, Trash2 아이콘 추가
+import { X, LogOut, Trash2, Bell, BellOff } from "lucide-react"; // LogOut, Trash2 아이콘 추가
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
@@ -10,6 +10,7 @@ import {
   getChatRoomMembers,
   leaveChatRoom,
   closeChatRoom,
+  patchRoomPushSetting,
 } from "@/apis/chat";
 import { blockUser } from "@/apis/blocks";
 import useUserStore from "@/stores/useUserStore";
@@ -103,6 +104,17 @@ export default function MemberListDrawer({
     },
   });
 
+  const togglePushMutation = useMutation({
+    mutationFn: () => patchRoomPushSetting(roomId),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
+      alert(res.data ? "알림이 켜졌습니다." : "알림이 꺼졌습니다.");
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "알림 설정 변경에 실패했습니다.");
+    },
+  });
+
   const handleLeave = () => {
     if (
       confirm(
@@ -176,6 +188,22 @@ export default function MemberListDrawer({
           </ScrollArea>
 
           <Footer>
+            <ActionButton
+              onClick={() => togglePushMutation.mutate()}
+              $variant="default"
+            >
+              {roomInfo?.pushEnabled ? (
+                <>
+                  <Bell size={20} />
+                  채팅 알림 끄기
+                </>
+              ) : (
+                <>
+                  <BellOff size={20} />
+                  채팅 알림 켜기
+                </>
+              )}
+            </ActionButton>
             {(roomInfo?.owner || isAdmin) && (
               <ActionButton onClick={handleClose} $variant="danger">
                 <Trash2 size={20} />

@@ -40,6 +40,7 @@ export interface ChatRoom {
   anonymous: boolean;
   owner: boolean;
   isOfficial: boolean;
+  pushEnabled: boolean;
 }
 
 /**
@@ -58,6 +59,7 @@ export interface MyChatRoomResponseDto {
   official: boolean;
   currentParticipants: number;
   friendAlias: string | null;
+  pushEnabled: boolean;
 }
 
 /**

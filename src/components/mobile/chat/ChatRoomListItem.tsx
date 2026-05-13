@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { User } from "lucide-react";
+import { User, BellOff } from "lucide-react";
 import { MyChatRoomResponseDto } from "@/types/chat";
 import {
   normalizeProfileImageId,
@@ -59,6 +59,9 @@ export default function ChatRoomListItem({
             <div className="title">{room.friendAlias || room.title}</div>
             {room.currentParticipants > 1 && (
               <ParticipantCount>{room.currentParticipants}</ParticipantCount>
+            )}
+            {!room.pushEnabled && (
+              <BellOff size={14} color="#8E8E93" style={{ flexShrink: 0 }} />
             )}
             {room.official && <OfficialTag>공식</OfficialTag>}
           </TitleArea>

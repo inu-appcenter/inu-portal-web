@@ -180,3 +180,13 @@ export const getMemberProfile = async (
   >(`/api/members/${memberId}/profile`);
   return response.data;
 };
+
+/**
+ * 전체 채팅 푸시 알림 설정 토글
+ */
+export const patchChatPushSetting = async (): Promise<ApiResponse<boolean>> => {
+  const response = await tokenInstance.patch<ApiResponse<boolean>>(
+    "/api/members/push-setting/chat",
+  );
+  return response.data;
+};
