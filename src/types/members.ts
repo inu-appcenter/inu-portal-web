@@ -38,7 +38,14 @@ export interface Notification {
   memberId: number;
   title: string;
   body: string;
-  type: "GENERAL" | string;
+  type:
+    | "GENERAL"
+    | "DEPARTMENT"
+    | "SCHOOL_NOTICE"
+    | "CHAT"
+    | "FRIEND"
+    | string;
+  targetId?: number; // 게시글 ID, 채팅방 ID 등
   createDate: string;
 }
 

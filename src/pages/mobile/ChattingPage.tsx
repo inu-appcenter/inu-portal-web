@@ -1,16 +1,15 @@
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { Send, Users, Loader2, Image } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
+import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
+import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
-
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -23,21 +22,32 @@ const MESSAGE_COLORS = [
   "#FFE5D0",
 ];
 
-const getMessageColor = (messageId: number | string) => {
-  const idStr = String(messageId);
-  const lastChar = idStr.charAt(idStr.length - 1);
-  const index = isNaN(parseInt(lastChar)) ? 0 : parseInt(lastChar);
+const getMessageColor = (identifier: string) => {
+  if (!identifier) return MESSAGE_COLORS[0];
+  let hash = 0;
+  for (let i = 0; i < identifier.length; i++) {
+    hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash);
   return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
 };
 
+import { updateChatRoomTitle } from "@/apis/chat";
+import useUserStore from "@/stores/useUserStore";
+import { ROUTES } from "@/constants/routes";
+
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
+  const { userInfo } = useUserStore();
+  const isAdmin = userInfo?.role?.toLowerCase() === "admin";
+
   const [inputValue, setInputValue] = useState<string>("");
-  const [isAnonymous, setIsAnonymous] = useState(true);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isMemberListOpen, setIsMemberListOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -53,19 +63,100 @@ export default function ChattingPage() {
     myHash,
     roomInfo,
     fetchPreviousMessages,
+    refreshRoom,
   } = useChat(roomId ?? "");
 
-  useHeader({
-    title: roomInfo ? roomInfo.title : "채팅방",
-  });
+  useVisualViewport();
 
-  useEffect(() => {
-    if (roomInfo) {
-      if (!roomInfo.anonymous) {
-        setIsAnonymous(false);
-      }
+  const handleUpdateTitle = async () => {
+    if (roomInfo?.isOfficial) {
+      alert("공식 채팅방의 이름은 변경할 수 없습니다.");
+      return;
     }
-  }, [roomInfo]);
+
+    // 오픈채팅인 경우 방장 또는 어드민만 가능
+    if (roomInfo?.type === "OPEN" && !roomInfo.owner && !isAdmin) {
+      alert("오픈채팅방 이름은 방장 또는 관리자만 변경할 수 있습니다.");
+      return;
+    }
+
+    const newTitle = prompt(
+      "새로운 채팅방 이름을 입력하세요. 참여자 모두에게 적용됩니다.",
+      roomInfo?.title || "",
+    );
+    if (newTitle === null) return;
+    if (!newTitle.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+    try {
+      mixpanelTrack.chatRoomMenuClicked("채팅방 이름 변경", roomId ?? "");
+      await updateChatRoomTitle(Number(roomId), newTitle.trim());
+      refreshRoom();
+    } catch (err: any) {
+      alert(err.response?.data?.msg || "방 이름 변경에 실패했습니다.");
+    }
+  };
+
+  // 에러 처리 useEffect 추가
+  useEffect(() => {
+    if (error) {
+      alert(error); // 에러 메시지 표시
+      navigate(ROUTES.CHAT.LIST, { replace: true }); // 채팅 목록 페이지로 이동
+    }
+  }, [error, navigate]);
+
+  const headerRight = React.useMemo(
+    () => (
+      <HeaderRightArea>
+        <IconButton
+          onClick={() => {
+            mixpanelTrack.chatRoomMenuClicked("멤버 목록 열기", roomId ?? "");
+            setIsMemberListOpen(true);
+          }}
+        >
+          <Users size={24} color="#1C1C1E" />
+        </IconButton>
+      </HeaderRightArea>
+    ),
+    [roomId],
+  );
+
+  const headerTitle = React.useMemo(
+    () =>
+      roomInfo ? (
+        <TitleWrapper>
+          <span className="text">{roomInfo.title}</span>
+          {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
+        </TitleWrapper>
+      ) : (
+        "채팅방"
+      ),
+    [roomInfo],
+  );
+
+  const menuItems = React.useMemo(() => {
+    const items = [];
+
+    // 이름 변경 조건: 오픈채팅이면 방장/어드민만, 그 외엔 누구나 (공식방 제외)
+    const canChangeTitle =
+      roomInfo?.type !== "OPEN" || roomInfo.owner || isAdmin;
+
+    if (canChangeTitle) {
+      items.push({
+        label: "채팅방 이름 변경",
+        onClick: handleUpdateTitle,
+      });
+    }
+
+    return items;
+  }, [roomInfo, isAdmin]);
+
+  useHeader({
+    title: headerTitle,
+    rightArea: headerRight,
+    menuItems: menuItems,
+  });
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -81,7 +172,14 @@ export default function ChattingPage() {
   // 스크롤 이벤트로 이전 메시지 트리거 감지
   const handleScroll = React.useCallback(() => {
     const el = scrollRef.current;
-    if (!el || isLoading || isFetchingPrevious || !hasMore || messages.length === 0) return;
+    if (
+      !el ||
+      isLoading ||
+      isFetchingPrevious ||
+      !hasMore ||
+      messages.length === 0
+    )
+      return;
 
     const { scrollTop, scrollHeight, clientHeight } = el;
     const absScrollTop = Math.abs(scrollTop);
@@ -92,7 +190,13 @@ export default function ChattingPage() {
       lastScrollTopRef.current = scrollTop;
       fetchPreviousMessages();
     }
-  }, [isLoading, isFetchingPrevious, hasMore, messages.length, fetchPreviousMessages]);
+  }, [
+    isLoading,
+    isFetchingPrevious,
+    hasMore,
+    messages.length,
+    fetchPreviousMessages,
+  ]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -131,22 +235,23 @@ export default function ChattingPage() {
   };
 
   const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !roomInfo) return;
 
     const isFestivalChat = roomId === "1";
     mixpanelTrack.chatMessageSent(
       roomId ?? "",
-      isAnonymous,
+      roomInfo.anonymous,
       false,
       isFestivalChat,
     );
 
-    sendMessage(inputValue.trim(), isAnonymous);
+    sendMessage(inputValue.trim(), roomInfo.anonymous);
     setInputValue("");
     if (inputRef.current) inputRef.current.style.height = "auto";
   };
 
   const handleImageClick = (url: string) => {
+    mixpanelTrack.chatRoomMenuClicked("이미지 크게 보기", roomId ?? "");
     setSelectedImageUrl(url);
     setIsImageModalOpen(true);
   };
@@ -161,16 +266,16 @@ export default function ChattingPage() {
   };
 
   const handleConfirmUpload = () => {
-    if (pendingFiles.length > 0) {
+    if (pendingFiles.length > 0 && roomInfo) {
       const isFestivalChat = roomId === "1";
       mixpanelTrack.chatMessageSent(
         roomId ?? "",
-        isAnonymous,
+        roomInfo.anonymous,
         true,
         isFestivalChat,
       );
 
-      sendMessage("", isAnonymous, pendingFiles);
+      sendMessage("", roomInfo.anonymous, pendingFiles);
       setPendingFiles([]);
       setIsUploadModalOpen(false);
     }
@@ -203,9 +308,9 @@ export default function ChattingPage() {
     return <div>채팅 내역을 가져오고 있습니다...</div>;
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  // if (error) {
+  //   return <div>{error}</div>; // 이 부분은 위의 useEffect로 대체
+  // }
 
   return (
     <ChatPageWrapper>
@@ -247,7 +352,7 @@ export default function ChattingPage() {
         })}
         {isFetchingPrevious && (
           <LoadingWrapper>
-            <Loader2 size={20} color="#5844E4" />
+            <Loader2 size={20} color="#5E92F0" />
           </LoadingWrapper>
         )}
       </ChattingWrapper>
@@ -268,21 +373,6 @@ export default function ChattingPage() {
             </IconButton>
           </label>
 
-          <AnonymousToggle
-            $disabled={!roomInfo?.anonymous}
-            onClick={() => {
-              if (roomInfo?.anonymous) {
-                setIsAnonymous(!isAnonymous);
-              }
-            }}
-          >
-            <img
-              src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
-              alt="익명 체크박스"
-            />
-            <span>익명</span>
-          </AnonymousToggle>
-
           <Input
             placeholder="메시지 입력"
             ref={inputRef}
@@ -292,13 +382,17 @@ export default function ChattingPage() {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
+                if (e.nativeEvent.isComposing) return;
                 e.preventDefault();
                 handleSendMessage();
               }
             }}
           />
-          <SendButton onClick={handleSendMessage}>
-            <Send size={24} color="#5844E4" />
+          <SendButton
+            onClick={handleSendMessage}
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            <Send size={24} color="#5E92F0" />
           </SendButton>
         </div>
       </FixedInputArea>
@@ -316,17 +410,36 @@ export default function ChattingPage() {
         onSend={handleConfirmUpload}
         onCancel={handleCancelUpload}
       />
+
+      <MemberListDrawer
+        roomId={roomId ?? ""}
+        isOpen={isMemberListOpen}
+        onOpenChange={setIsMemberListOpen}
+        roomInfo={roomInfo} // roomInfo 전달
+      />
     </ChatPageWrapper>
   );
 }
 
 const ChatPageWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  /* 헤더 높이(약 76px)를 제외한 나머지 영역이 Visual Viewport 내에 들어오도록 설정 */
+  height: calc(var(--visual-viewport-height, 100dvh) - 76px);
   overflow: hidden;
+  position: fixed;
+  top: 76px;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  overscroll-behavior: none;
+`;
+
+const HeaderRightArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const RoomInfoBanner = styled.div`
@@ -335,7 +448,7 @@ const RoomInfoBanner = styled.div`
   align-items: center;
   gap: 6px;
   padding: 12px;
-  background-color: #ffffff;
+  //background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
   font-size: 13px;
   font-weight: 500;
@@ -348,7 +461,7 @@ const ChattingWrapper = styled.div`
   display: flex;
   flex-direction: column-reverse;
   overflow-y: auto;
-  padding-bottom: 64px;
+  //padding-bottom: 64px;
   box-sizing: border-box;
 
   &::-webkit-scrollbar {
@@ -381,14 +494,11 @@ const LoadingWrapper = styled.div`
 `;
 
 const FixedInputArea = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   background-color: #ffffff;
   border-top: 1px solid #eaeaea;
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom);
+  flex-shrink: 0;
 
   .input-wrapper {
     display: flex;
@@ -437,24 +547,6 @@ const IconButton = styled.button`
   padding: 4px;
 `;
 
-const AnonymousToggle = styled.div<{ $disabled?: boolean }>`
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: ${({ $disabled }) => ($disabled ? "default" : "pointer")};
-  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
-  user-select: none;
-  img {
-    width: 18px;
-    height: 18px;
-  }
-  span {
-    font-size: 13px;
-    color: #9fa3a6;
-  }
-`;
-
 const DateDivider = styled.div`
   display: flex;
   justify-content: center;
@@ -495,7 +587,6 @@ const MessageBubble = styled.div`
   gap: 8px;
 `;
 
-// 파스텔톤 배경색과 그림자가 적용된 말풍선
 const Bubble = styled.div<{ $bgColor: string }>`
   padding: 10px 14px;
   border-radius: 20px;
@@ -555,7 +646,7 @@ const ChatItemOtherPerson = ({
     minute: "2-digit",
   });
 
-  const bgColor = getMessageColor(message.messageId);
+  const bgColor = getMessageColor(message.senderHash);
 
   return (
     <MessageContainer>
@@ -583,7 +674,12 @@ const ChatItemOtherPerson = ({
               <Bubble $bgColor={bgColor}>{message.content}</Bubble>
             )}
           </div>
-          <Time>{time}</Time>
+          <TimeArea>
+            {message.unreadCount > 0 && (
+              <UnreadCount>{message.unreadCount}</UnreadCount>
+            )}
+            <Time>{time}</Time>
+          </TimeArea>
         </MessageBubble>
       </MessageContent>
     </MessageContainer>
@@ -611,14 +707,19 @@ const ChatItemMy = ({
     minute: "2-digit",
   });
 
-  const bgColor = getMessageColor(message.messageId);
+  const bgColor = getMessageColor(message.senderHash);
 
   return (
     <MyMessageContainer>
       <MyMessageContent>
         <MySenderName>{message.senderNickname}</MySenderName>
         <MessageBubble>
-          <Time>{time}</Time>
+          <TimeArea style={{ alignItems: "flex-end" }}>
+            {message.unreadCount > 0 && (
+              <UnreadCount>{message.unreadCount}</UnreadCount>
+            )}
+            <Time>{time}</Time>
+          </TimeArea>
           <div
             style={{
               display: "flex",
@@ -645,6 +746,18 @@ const ChatItemMy = ({
   );
 };
 
+const TimeArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const UnreadCount = styled.span`
+  font-size: 10px;
+  font-weight: 700;
+  color: #5e92f0;
+`;
+
 const MyMessageContent = styled(MessageContent)`
   align-items: flex-end;
 `;
@@ -655,5 +768,31 @@ const MySenderName = styled(SenderName)`
 `;
 
 const MyMessageContainer = styled(MessageContainer)`
-  justify-content: flex-end;
+  flex-direction: row-reverse;
+`;
+
+const TitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+
+  .text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+`;
+
+const OfficialTag = styled.span`
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1c1c1e;
+  padding: 1px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
 `;

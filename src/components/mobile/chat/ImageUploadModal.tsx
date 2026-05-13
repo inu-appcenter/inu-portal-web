@@ -85,7 +85,7 @@ export default function ImageUploadModal({
               rightButton={{
                 label: "보내기",
                 onClick: onSend,
-                backgroundColor: "#5844E4",
+                backgroundColor: "#5E92F0",
                 textColor: "#FFFFFF",
               }}
               padding="16px 24px 24px"

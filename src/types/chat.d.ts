@@ -1,30 +1,80 @@
 // src/types/chat.d.ts
 
 /**
+ * 채팅방 종류
+ */
+export type ChatRoomType = "PERSONAL" | "OPEN";
+
+/**
+ * 채팅방 상태
+ */
+export type ChatRoomStatus = "ACTIVE" | "CLOSED";
+
+/**
  * 채팅 메시지
  */
 export interface ChatMessage {
   messageId: number;
-  roomId?: number;
+  roomId: number;
   senderNickname: string;
-  senderHash?: string;
+  senderHash: string;
   content: string;
-  imageCount: number; // 이미지 개수
+  imageCount: number;
+  unreadCount: number;
   createDate: string; // ISO 8601 날짜 문자열
 }
 
 /**
- * 채팅방
+ * 채팅방 상세 정보
  */
 export interface ChatRoom {
   id: number;
   title: string;
   maxCapacity: number;
+  type: ChatRoomType;
+  status: ChatRoomStatus;
   currentParticipants: number;
   createDate: string; // ISO 8601 날짜 문자열
   myHash: string;
   messages: ChatMessage[];
   anonymous: boolean;
+  owner: boolean;
+  isOfficial: boolean;
+}
+
+/**
+ * 내 채팅방 목록 응답 DTO
+ */
+export interface MyChatRoomResponseDto {
+  roomId: number;
+  title: string;
+  type: ChatRoomType;
+  lastMessage: string;
+  lastMessageTime: string; // ISO 8601
+  unreadCount: number;
+  senderName: string;
+  senderProfileImageNumber: number;
+  owner: boolean;
+  official: boolean;
+  currentParticipants: number;
+}
+
+/**
+ * 채팅방 멤버 응답 DTO
+ */
+export interface ChatRoomMemberResponseDto {
+  nickname: string;
+  studentId: string | null;
+  fireId: number | null;
+  me: boolean;
+  isOwner: boolean;
+}
+
+/**
+ * 안 읽은 메시지 총합 응답 DTO
+ */
+export interface UnreadTotalCountResponseDto {
+  totalUnreadCount: number;
 }
 
 /**
@@ -35,25 +85,26 @@ export interface CreateChatRoomRequest {
   title: string;
   maxCapacity: number;
   isAnonymous: boolean;
+  type: ChatRoomType;
 }
 
 /**
  * 채팅방 생성 응답
  * POST /api/chat-rooms (201)
  */
-export type CreateChatRoomResponse = ChatRoom;
+export type CreateChatRoomResponse = ApiResponse<ChatRoom>;
 
 /**
  * 채팅방 참여 응답
  * POST /api/chat-rooms/{roomId}/join (200)
  */
-export type JoinChatRoomResponse = ChatRoom;
+export type JoinChatRoomResponse = ApiResponse<ChatRoom>;
 
 /**
  * 채팅방 정보 및 메시지 조회 응답
  * GET /api/chat-rooms/{roomId} (200)
  */
-export type GetChatRoomResponse = ChatRoom;
+export type GetChatRoomResponse = ApiResponse<ChatRoom>;
 
 /**
  * 이전 채팅 메시지 조회 응답

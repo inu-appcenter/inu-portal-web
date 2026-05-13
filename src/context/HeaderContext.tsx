@@ -15,12 +15,13 @@ export interface MenuItemType {
 }
 
 export interface HeaderConfig {
-  title?: string;
+  title?: ReactNode;
   hasback?: boolean;
   backPath?: string;
   onBack?: () => void;
   showAlarm?: boolean;
   menuItems?: MenuItemType[];
+  rightArea?: ReactNode; // 추가
   visible?: boolean;
   subHeader?: ReactNode;
   floatingSubHeader?: boolean;
@@ -28,10 +29,13 @@ export interface HeaderConfig {
 
 type HeaderConfigMap = Record<string, HeaderConfig>;
 
-interface HeaderContextType {
-  getHeaderConfig: (path: string) => HeaderConfig;
-  updateHeaderConfig: (path: string, config: HeaderConfig) => void;
+interface HeaderStateContextType {
+  headerConfigs: HeaderConfigMap;
   isScrolled: boolean;
+}
+
+interface HeaderActionContextType {
+  updateHeaderConfig: (path: string, config: HeaderConfig) => void;
   setIsScrolled: (scrolled: boolean) => void;
 }
 
@@ -44,20 +48,17 @@ const defaultHeaderConfig: HeaderConfig = {
   floatingSubHeader: false,
 };
 
-const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
+const HeaderStateContext = createContext<HeaderStateContextType | undefined>(
+  undefined,
+);
+const HeaderActionContext = createContext<HeaderActionContextType | undefined>(
+  undefined,
+);
 
 // --- Provider ---
 export const HeaderProvider = ({ children }: { children: ReactNode }) => {
   const [headerConfigs, setHeaderConfigs] = useState<HeaderConfigMap>({});
   const [isScrolled, setIsScrolled] = useState(false);
-
-  // 경로별 조회
-  const getHeaderConfig = useCallback(
-    (path: string) => {
-      return headerConfigs[path] || defaultHeaderConfig;
-    },
-    [headerConfigs],
-  );
 
   // 경로별 업데이트
   const updateHeaderConfig = useCallback(
@@ -70,26 +71,31 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
           return { ...prev, [path]: config };
         }
 
-        // 2. 안전한 비교를 위해 ReactNode(subHeader)와 함수(menuItems, onBack)를 제외하고 비교
+        // 2. 안전한 비교를 위해 ReactNode와 함수를 제외하고 비교
         const {
           subHeader: prevSub,
           menuItems: prevMenu,
           onBack: prevOnBack,
+          rightArea: prevRightArea,
+          title: prevTitle,
           ...prevRest
         } = prevConfig;
         const {
           subHeader: newSub,
           menuItems: newMenu,
           onBack: newOnBack,
+          rightArea: newRightArea,
+          title: newTitle,
           ...newRest
         } = config;
 
         // 3. 나머지 단순 값(문자열, 불리언)만 JSON 문자열로 비교
-        // subHeader, menuItems, onBack은 참조값(===)으로 비교
         if (
           prevSub === newSub &&
           prevMenu === newMenu &&
           prevOnBack === newOnBack &&
+          prevRightArea === newRightArea &&
+          prevTitle === newTitle &&
           JSON.stringify(prevRest) === JSON.stringify(newRest)
         ) {
           return prev; // 변경사항 없으면 리렌더링 방지
@@ -102,32 +108,35 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <HeaderContext.Provider
+    <HeaderStateContext.Provider
       value={{
-        getHeaderConfig,
-        updateHeaderConfig,
+        headerConfigs,
         isScrolled,
-        setIsScrolled,
       }}
     >
-      {children}
-    </HeaderContext.Provider>
+      <HeaderActionContext.Provider
+        value={{
+          updateHeaderConfig,
+          setIsScrolled,
+        }}
+      >
+        {children}
+      </HeaderActionContext.Provider>
+    </HeaderStateContext.Provider>
   );
 };
 
 // --- Custom Hooks ---
 
 export const useHeader = (config?: HeaderConfig) => {
-  const context = useContext(HeaderContext);
+  const context = useContext(HeaderActionContext);
   if (!context) throw new Error("HeaderProvider 미존재");
 
   const { updateHeaderConfig } = context;
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // subHeader는 stringify에서 제외해야 함
   const configString = JSON.stringify({
-    title: config?.title,
     hasback: config?.hasback,
     backPath: config?.backPath,
     showAlarm: config?.showAlarm,
@@ -141,24 +150,29 @@ export const useHeader = (config?: HeaderConfig) => {
   }, [
     currentPath,
     configString,
-    config?.menuItems, // 참조값 비교
-    config?.onBack, // 참조값 비교
-    config?.subHeader, // 참조값 비교
+    config?.menuItems,
+    config?.onBack,
+    config?.subHeader,
+    config?.rightArea,
+    config?.title,
     updateHeaderConfig,
   ]);
 };
 
 export const useHeaderConfig = (path?: string) => {
-  const context = useContext(HeaderContext);
+  const stateContext = useContext(HeaderStateContext);
+  const actionContext = useContext(HeaderActionContext);
   const location = useLocation();
-  if (!context) throw new Error("HeaderProvider 미존재");
+
+  if (!stateContext || !actionContext) throw new Error("HeaderProvider 미존재");
 
   const targetPath = path || location.pathname;
+  const config = stateContext.headerConfigs[targetPath] || defaultHeaderConfig;
 
   return {
-    ...context.getHeaderConfig(targetPath),
-    isScrolled: context.isScrolled,
-    setIsScrolled: context.setIsScrolled,
+    ...config,
+    isScrolled: stateContext.isScrolled,
+    setIsScrolled: actionContext.setIsScrolled,
   };
 };
 

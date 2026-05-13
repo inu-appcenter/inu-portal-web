@@ -21,6 +21,32 @@ export const useChat = (roomId: string) => {
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
 
+  const fetchMessages = useCallback(async () => {
+    try {
+      const roomResponse: any = await getChatMessages(roomId);
+      const actualRoomData = roomResponse.data || roomResponse;
+
+      // 채팅방 정보 저장
+      setRoomInfo(actualRoomData);
+
+      // 메시지 저장 (unreadCount 등이 갱신됨)
+      if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
+        setMessages(actualRoomData.messages);
+      } else if (Array.isArray(actualRoomData)) {
+        setMessages(actualRoomData);
+      } else {
+        setMessages([]);
+      }
+
+      // 사용자 해시값 갱신
+      if (actualRoomData.myHash) {
+        setMyHash(actualRoomData.myHash);
+      }
+    } catch (err) {
+      console.error("메시지 동기화 실패:", err);
+    }
+  }, [roomId]);
+
   useEffect(() => {
     const enterChatRoom = async () => {
       try {
@@ -41,30 +67,12 @@ export const useChat = (roomId: string) => {
           }
         }
 
-        const roomResponse: any = await getChatMessages(roomId);
-        const actualRoomData = roomResponse.data || roomResponse;
-
-        // 채팅방 정보 저장
-        setRoomInfo(actualRoomData);
-
-        // 초기 메시지 저장
-        if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
-          setMessages(actualRoomData.messages);
-        } else if (Array.isArray(actualRoomData)) {
-          setMessages(actualRoomData);
-        } else {
-          setMessages([]);
-        }
-
-        // 사용자 해시값 갱신
-        if (actualRoomData.myHash) {
-          setMyHash(actualRoomData.myHash);
-        }
-
+        await fetchMessages();
         connectStomp();
-      } catch (err) {
+      } catch (err: any) {
         console.error("채팅방 입장에 실패했습니다:", err);
-        setError("채팅방 입장에 실패했습니다. 다시 시도해주세요.");
+        const serverMsg = err.response?.data?.msg;
+        setError(serverMsg || "채팅방 입장에 실패했습니다. 다시 시도해주세요.");
       } finally {
         setIsLoading(false);
       }
@@ -81,10 +89,37 @@ export const useChat = (roomId: string) => {
       client.connectHeaders = { Auth: `${jwtToken}` };
 
       client.onConnect = () => {
+        // 새 메시지 구독
         client.subscribe(`/sub/room/${roomId}`, (message) => {
           const receivedMessage: ChatMessage = JSON.parse(message.body);
-          setMessages((prev) => [...prev, receivedMessage]);
+          setMessages((prev) => {
+            // 중복 메시지 방지 로직 추가
+            const isDuplicate = prev.some(
+              (m) => m.messageId === receivedMessage.messageId,
+            );
+            if (isDuplicate) return prev;
+            return [...prev, receivedMessage];
+          });
         });
+
+        // 읽음 상태 업데이트 구독
+        client.subscribe(`/sub/room/${roomId}/read`, (message) => {
+          if (message.body === "updated") {
+            console.log("읽음 상태 업데이트 감지 - 메시지 동기화");
+            fetchMessages();
+          }
+        });
+
+        // 서버 Redis에 접속 정보 기록을 위한 ENTER 이벤트 전송
+        client.publish({
+          destination: "/pub/enter",
+          body: JSON.stringify({
+            roomId: Number(roomId),
+          }),
+        });
+
+        // 입장 시 데이터 동기화 (읽음 처리 반영 포함)
+        fetchMessages();
       };
 
       client.onStompError = (frame) => {
@@ -98,13 +133,23 @@ export const useChat = (roomId: string) => {
     };
 
     enterChatRoom();
+    connectStomp();
 
     return () => {
       if (clientRef.current) {
+        // 퇴장 시 LEAVE 이벤트 전송
+        if (clientRef.current.connected) {
+          clientRef.current.publish({
+            destination: "/pub/leave",
+            body: JSON.stringify({
+              roomId: Number(roomId),
+            }),
+          });
+        }
         clientRef.current.deactivate();
       }
     };
-  }, [roomId]);
+  }, [roomId, fetchMessages, tokenInfo.accessToken]);
 
   const sendMessage = (
     content: string,
@@ -174,5 +219,6 @@ export const useChat = (roomId: string) => {
     myHash,
     roomInfo,
     fetchPreviousMessages,
+    refreshRoom: fetchMessages,
   };
 };
