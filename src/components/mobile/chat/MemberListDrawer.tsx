@@ -1,7 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, LogOut, Trash2, Bell, BellOff } from "lucide-react"; // LogOut, Trash2 아이콘 추가
+import { X, LogOut, Trash2, Bell, BellOff, Edit3 } from "lucide-react"; // LogOut, Trash2 아이콘 추가
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
@@ -11,10 +11,13 @@ import {
   leaveChatRoom,
   closeChatRoom,
   patchRoomPushSetting,
+  kickMember,
+  delegateOwner,
 } from "@/apis/chat";
 import { blockUser } from "@/apis/blocks";
 import useUserStore from "@/stores/useUserStore";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import EditChatModal from "@/components/mobile/chat/EditChatModal";
 import { useState } from "react";
 
 const contentShow = keyframes`
@@ -48,6 +51,7 @@ export default function MemberListDrawer({
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -115,6 +119,47 @@ export default function MemberListDrawer({
     },
   });
 
+  const kickMutation = useMutation({
+    mutationFn: (targetMemberId: number) => kickMember(roomId, targetMemberId),
+    onSuccess: () => {
+      alert("멤버를 강퇴했습니다.");
+      queryClient.invalidateQueries({ queryKey: ["chatMembers", roomId] });
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "강퇴에 실패했습니다.");
+    },
+  });
+
+  const delegateMutation = useMutation({
+    mutationFn: (targetMemberId: number) =>
+      delegateOwner(roomId, targetMemberId),
+    onSuccess: () => {
+      alert("방장을 위임했습니다.");
+      queryClient.invalidateQueries({ queryKey: ["chatMembers", roomId] });
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "위임에 실패했습니다.");
+    },
+  });
+
+  const handleKick = (targetMemberId: number, nickname: string) => {
+    if (confirm(`'${nickname}'님을 강퇴하시겠습니까?`)) {
+      kickMutation.mutate(targetMemberId);
+    }
+  };
+
+  const handleDelegate = (targetMemberId: number, nickname: string) => {
+    if (
+      confirm(
+        `'${nickname}'님에게 방장을 위임하시겠습니까?\n위임 후에는 방장 권한이 상실됩니다.`,
+      )
+    ) {
+      delegateMutation.mutate(targetMemberId);
+    }
+  };
+
   const handleLeave = () => {
     if (
       confirm(
@@ -168,11 +213,23 @@ export default function MemberListDrawer({
                       subtitle={member.studentId || "익명"}
                       fireId={member.fireId || 0}
                       onActionClick={
-                        !member.me && member.fireId
-                          ? () => handleBlock(member.fireId!, member.nickname)
+                        !member.me && (roomInfo?.owner || isAdmin) && member.memberId
+                          ? () => handleKick(member.memberId!, member.nickname)
+                          : !member.me && member.fireId
+                            ? () => handleBlock(member.fireId!, member.nickname)
+                            : undefined
+                      }
+                      actionLabel={
+                        !member.me && (roomInfo?.owner || isAdmin)
+                          ? "강퇴"
+                          : "차단"
+                      }
+                      onSecondaryActionClick={
+                        !member.me && roomInfo?.owner && member.memberId
+                          ? () => handleDelegate(member.memberId!, member.nickname)
                           : undefined
                       }
-                      actionLabel="차단"
+                      secondaryActionLabel="위임"
                       onClick={() => {
                         if (!member.me && member.memberId) {
                           setSelectedMemberId(member.memberId);
@@ -205,10 +262,19 @@ export default function MemberListDrawer({
               )}
             </ActionButton>
             {(roomInfo?.owner || isAdmin) && (
-              <ActionButton onClick={handleClose} $variant="danger">
-                <Trash2 size={20} />
-                채팅방 폐쇄
-              </ActionButton>
+              <>
+                <ActionButton
+                  onClick={() => setIsEditModalOpen(true)}
+                  $variant="default"
+                >
+                  <Edit3 size={20} />
+                  채팅방 정보 수정
+                </ActionButton>
+                <ActionButton onClick={handleClose} $variant="danger">
+                  <Trash2 size={20} />
+                  채팅방 폐쇄
+                </ActionButton>
+              </>
             )}
             <ActionButton onClick={handleLeave}>
               <LogOut size={20} />
@@ -219,6 +285,12 @@ export default function MemberListDrawer({
             memberId={selectedMemberId}
             isOpen={isProfileModalOpen}
             onOpenChange={setIsProfileModalOpen}
+          />
+          <EditChatModal
+            isOpen={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            roomId={roomId}
+            initialData={roomInfo}
           />
         </StyledContent>
       </Dialog.Portal>

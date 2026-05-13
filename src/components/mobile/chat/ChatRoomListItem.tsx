@@ -43,7 +43,11 @@ export default function ChatRoomListItem({
     <ItemWrapper onClick={() => onClick(room.roomId)}>
       <ProfileImageArea>
         <ProfileImage
-          src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+          src={
+            room.thumbnailUrl
+              ? room.thumbnailUrl
+              : `https://portal.inuappcenter.kr/images/profile/${safeFireId}`
+          }
           alt="Profile"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = "none";

@@ -41,6 +41,7 @@ export interface ChatRoom {
   owner: boolean;
   isOfficial: boolean;
   pushEnabled: boolean;
+  thumbnailUrl: string | null;
 }
 
 /**
@@ -60,6 +61,18 @@ export interface MyChatRoomResponseDto {
   currentParticipants: number;
   friendAlias: string | null;
   pushEnabled: boolean;
+  thumbnailUrl: string | null;
+}
+
+/**
+ * 오픈 채팅방 목록 응답 DTO
+ */
+export interface OpenChatRoomResponseDto {
+  roomId: number;
+  title: string;
+  currentParticipants: number;
+  maxCapacity: number;
+  thumbnailUrl: string | null;
 }
 
 /**
@@ -72,6 +85,14 @@ export interface ChatRoomMemberResponseDto {
   fireId: number | null;
   me: boolean;
   isOwner: boolean;
+}
+
+/**
+ * 채팅방 정보 수정 요청
+ */
+export interface UpdateChatRoomInfoRequest {
+  title?: string;
+  maxCapacity?: number;
 }
 
 /**

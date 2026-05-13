@@ -205,3 +205,54 @@ export const patchRoomPushSetting = async (
   );
   return response.data;
 };
+
+/**
+ * 채팅방 정보 수정 (방 이름, 최대 인원, 썸네일 등)
+ */
+export const updateChatRoomInfo = async (
+  roomId: number | string,
+  info: { title?: string; maxCapacity?: number },
+  thumbnail?: File,
+): Promise<ApiResponse<void>> => {
+  const formData = new FormData();
+  formData.append(
+    "roomInfo",
+    new Blob([JSON.stringify(info)], { type: "application/json" }),
+  );
+  if (thumbnail) {
+    formData.append("thumbnail", thumbnail);
+  }
+
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/info`,
+    formData,
+  );
+  return response.data;
+};
+
+/**
+ * 방장 위임
+ */
+export const delegateOwner = async (
+  roomId: number | string,
+  targetMemberId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/delegate`,
+    { targetMemberId },
+  );
+  return response.data;
+};
+
+/**
+ * 멤버 강퇴
+ */
+export const kickMember = async (
+  roomId: number | string,
+  targetMemberId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.delete<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/members/${targetMemberId}`,
+  );
+  return response.data;
+};
