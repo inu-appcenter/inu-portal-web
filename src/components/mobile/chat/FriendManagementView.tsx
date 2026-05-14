@@ -13,10 +13,13 @@ import {
   deleteFriend,
 } from "@/apis/friends";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
 export default function FriendManagementView() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // 친구 목록 조회
   const { data: friendsRes, isLoading: friendsLoading } = useQuery({
@@ -78,6 +81,10 @@ export default function FriendManagementView() {
                   }
                   actionLabel="수락"
                   secondaryActionLabel="거절"
+                  onClick={() => {
+                    setSelectedMemberId(req.memberId);
+                    setIsProfileModalOpen(true);
+                  }}
                 />
                 {index < pendingRequests.length - 1 && <Divider />}
               </div>
@@ -99,12 +106,10 @@ export default function FriendManagementView() {
                     friend.friendAlias ? friend.nickname : friend.studentId
                   }
                   fireId={friend.fireId}
-                  onActionClick={() => {
-                    if (confirm("친구를 삭제하시겠습니까?")) {
-                      deleteMutation.mutate(friend.friendId);
-                    }
+                  onClick={() => {
+                    setSelectedMemberId(friend.memberId);
+                    setIsProfileModalOpen(true);
                   }}
-                  actionLabel="삭제"
                 />
                 {index < filteredFriends.length - 1 && <Divider />}
               </div>
@@ -125,6 +130,11 @@ export default function FriendManagementView() {
           onSubmit={() => {}} // 실시간 검색이므로 별도 제출 로직 필요 없음
         />
       </FloatingSearchContainer>
+      <UserProfileModal
+        memberId={selectedMemberId}
+        isOpen={isProfileModalOpen}
+        onOpenChange={setIsProfileModalOpen}
+      />
     </ViewWrapper>
   );
 }
