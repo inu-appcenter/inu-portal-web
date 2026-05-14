@@ -10,6 +10,7 @@ import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
+import Skeleton from "@/components/common/Skeleton";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -126,7 +127,7 @@ export default function ChattingPage() {
     () =>
       roomInfo ? (
         <TitleWrapper>
-          <span className="text">{roomInfo.title}</span>
+          <span className="text">{roomInfo.friendAlias || roomInfo.title}</span>
           {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
         </TitleWrapper>
       ) : (
@@ -139,7 +140,7 @@ export default function ChattingPage() {
     const items = [];
 
     let canChangeTitle = false;
-    
+
     if (roomInfo) {
       if (roomInfo.type === "OPEN") {
         // 오픈 채팅방: 방장 또는 시스템 관리자만
@@ -319,7 +320,42 @@ export default function ChattingPage() {
   };
 
   if (isLoading) {
-    return <div>채팅 내역을 가져오고 있습니다...</div>;
+    return (
+      <ChatPageWrapper>
+        <ChattingWrapper style={{ flexDirection: "column" }}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              style={{
+                margin: "12px 16px",
+                display: "flex",
+                flexDirection: i % 2 === 0 ? "row-reverse" : "row",
+                gap: "12px",
+              }}
+            >
+              <Skeleton width="36px" height="36px" circle />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  alignItems: i % 2 === 0 ? "flex-end" : "flex-start",
+                }}
+              >
+                {i % 2 !== 0 && <Skeleton width="60px" height="14px" />}
+                <Skeleton
+                  width={i % 3 === 0 ? "180px" : i % 2 === 0 ? "140px" : "100px"}
+                  height="36px"
+                  style={{
+                    borderRadius: i % 2 === 0 ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </ChattingWrapper>
+      </ChatPageWrapper>
+    );
   }
 
   // if (error) {
@@ -342,20 +378,48 @@ export default function ChattingPage() {
         {/* column-reverse를 위해 메시지를 역순으로 렌더링 */}
         {reversedMessages.map((msg, index) => {
           const originalIndex = messages.length - 1 - index;
+          const prevMsg =
+            originalIndex > 0 ? messages[originalIndex - 1] : null;
+          const nextMsg =
+            originalIndex < messages.length - 1
+              ? messages[originalIndex + 1]
+              : null;
+
           const showDateLine =
-            originalIndex === 0 ||
-            !isSameDate(messages[originalIndex - 1].createDate, msg.createDate);
+            !prevMsg || !isSameDate(prevMsg.createDate, msg.createDate);
+
           const isMe = msg.senderHash === myHash;
+
+          // 사용자가 같으면 연속된 메시지로 판단
+          const isConsecutive =
+            prevMsg && prevMsg.senderHash === msg.senderHash;
+
+          // 상단 메시지에만 이름 표시 (연속된 경우 숨김)
+          // 단, 날짜 구분선이 있으면 무조건 표시
+          const showName = !isConsecutive || showDateLine;
+
+          // 마지막 메시지에만 시간 표시 (연속된 경우 숨김)
+          // 분 단위와 상관없이 묶음의 마지막에만 표시하도록 통일
+          const showTime =
+            !nextMsg ||
+            nextMsg.senderHash !== msg.senderHash ||
+            !isSameDate(msg.createDate, nextMsg.createDate);
 
           return (
             <React.Fragment key={msg.messageId || `msg-${originalIndex}`}>
               {isMe ? (
-                <ChatItemMy message={msg} onImageClick={handleImageClick} />
+                <ChatItemMy
+                  message={msg}
+                  onImageClick={handleImageClick}
+                  showTime={showTime}
+                />
               ) : (
                 <ChatItemOtherPerson
                   message={msg}
                   onImageClick={handleImageClick}
                   userImageUrl={null}
+                  showName={showName}
+                  showTime={showTime}
                 />
               )}
               {showDateLine && (
@@ -575,7 +639,7 @@ const DateDivider = styled.div`
 
 const MessageContainer = styled.div`
   display: flex;
-  margin: 0 16px 12px;
+  margin: 0 16px 8px;
 `;
 
 const ProfileImage = styled.img`
@@ -643,10 +707,14 @@ const ChatItemOtherPerson = ({
   message,
   onImageClick,
   userImageUrl,
+  showName,
+  showTime,
 }: {
   message: ChatMessage;
   onImageClick: (url: string) => void;
   userImageUrl: string | null;
+  showName: boolean;
+  showTime: boolean;
 }) => {
   const thumbnailUrl =
     message.imageCount > 0
@@ -668,7 +736,11 @@ const ChatItemOtherPerson = ({
     <MessageContainer>
       {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
       <MessageContent>
-        <SenderName>{message.senderNickname}</SenderName>
+        {showName && (
+          <SenderName>
+            {message.senderAlias || message.senderNickname}
+          </SenderName>
+        )}
         <MessageBubble>
           <div
             style={{
@@ -690,12 +762,14 @@ const ChatItemOtherPerson = ({
               <Bubble $bgColor={bgColor}>{message.content}</Bubble>
             )}
           </div>
-          <TimeArea>
-            {message.unreadCount > 0 && (
-              <UnreadCount>{message.unreadCount}</UnreadCount>
-            )}
-            <Time>{time}</Time>
-          </TimeArea>
+          {(message.unreadCount > 0 || showTime) && (
+            <TimeArea>
+              {message.unreadCount > 0 && (
+                <UnreadCount>{message.unreadCount}</UnreadCount>
+              )}
+              {showTime && <Time>{time}</Time>}
+            </TimeArea>
+          )}
         </MessageBubble>
       </MessageContent>
     </MessageContainer>
@@ -705,9 +779,11 @@ const ChatItemOtherPerson = ({
 const ChatItemMy = ({
   message,
   onImageClick,
+  showTime,
 }: {
   message: ChatMessage;
   onImageClick: (url: string) => void;
+  showTime: boolean;
 }) => {
   const thumbnailUrl =
     message.imageCount > 0
@@ -728,14 +804,15 @@ const ChatItemMy = ({
   return (
     <MyMessageContainer>
       <MyMessageContent>
-        <MySenderName>{message.senderNickname}</MySenderName>
         <MessageBubble>
-          <TimeArea style={{ alignItems: "flex-end" }}>
-            {message.unreadCount > 0 && (
-              <UnreadCount>{message.unreadCount}</UnreadCount>
-            )}
-            <Time>{time}</Time>
-          </TimeArea>
+          {(message.unreadCount > 0 || showTime) && (
+            <TimeArea style={{ alignItems: "flex-end" }}>
+              {message.unreadCount > 0 && (
+                <UnreadCount>{message.unreadCount}</UnreadCount>
+              )}
+              {showTime && <Time>{time}</Time>}
+            </TimeArea>
+          )}
           <div
             style={{
               display: "flex",
@@ -776,11 +853,6 @@ const UnreadCount = styled.span`
 
 const MyMessageContent = styled(MessageContent)`
   align-items: flex-end;
-`;
-
-const MySenderName = styled(SenderName)`
-  text-align: right;
-  //margin-right: 4px;
 `;
 
 const MyMessageContainer = styled(MessageContainer)`

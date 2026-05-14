@@ -1,16 +1,33 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X, UserPlus, UserCheck, UserMinus, UserX, Edit3 } from "lucide-react";
+import {
+  X,
+  UserPlus,
+  UserCheck,
+  UserMinus,
+  UserX,
+  Edit3,
+  ShieldAlert,
+  LogOut,
+} from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMemberProfile } from "@/apis/members";
 import {
   requestFriend,
   acceptFriend,
   deleteFriend,
-  updateFriendAlias
+  updateFriendAlias,
 } from "@/apis/friends";
-import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
+import {
+  normalizeProfileImageId,
+  DEFAULT_PROFILE_IMAGE_ID,
+} from "@/utils/userInfo";
 import findTitleOrCode from "@/utils/findTitleOrCode";
+import { useNavigate } from "react-router-dom";
+import useUserStore from "@/stores/useUserStore";
+import { blockUser } from "@/apis/blocks";
+import { kickMember, delegateOwner } from "@/apis/chat";
+import { ROUTES } from "@/constants/routes";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -26,14 +43,24 @@ interface UserProfileModalProps {
   memberId: number | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  roomContext?: {
+    roomId: number | string;
+    chatType: string;
+    participantCount: number;
+    isOwner: boolean;
+  };
 }
 
 export default function UserProfileModal({
   memberId,
   isOpen,
   onOpenChange,
+  roomContext,
 }: UserProfileModalProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { userInfo } = useUserStore();
+  const isAdmin = userInfo?.role?.toLowerCase() === "admin";
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["memberProfile", memberId],
@@ -140,6 +167,88 @@ export default function UserProfileModal({
     }
   };
 
+  const blockMutation = useMutation({
+    mutationFn: (targetMemberId: number) => blockUser(targetMemberId),
+    onSuccess: () => {
+      alert("유저를 차단했습니다.");
+      queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "차단에 실패했습니다.");
+    },
+  });
+
+  const kickMutation = useMutation({
+    mutationFn: (targetMemberId: number) =>
+      kickMember(roomContext!.roomId, targetMemberId),
+    onSuccess: () => {
+      alert("멤버를 강퇴했습니다.");
+      queryClient.invalidateQueries({
+        queryKey: ["chatMembers", roomContext?.roomId],
+      });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "강퇴에 실패했습니다.");
+    },
+  });
+
+  const delegateMutation = useMutation({
+    mutationFn: (targetMemberId: number) =>
+      delegateOwner(roomContext!.roomId, targetMemberId),
+    onSuccess: () => {
+      alert("방장을 위임했습니다.");
+      queryClient.invalidateQueries({
+        queryKey: ["chatMembers", roomContext?.roomId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "위임에 실패했습니다.");
+    },
+  });
+
+  const handleBlock = () => {
+    if (!profile) return;
+    if (
+      confirm(
+        `${profile.nickname}님을 차단하시겠습니까?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`,
+      )
+    ) {
+      blockMutation.mutate(profile.memberId);
+    }
+  };
+
+  const handleKick = () => {
+    if (!profile || !roomContext) return;
+    if (confirm(`'${profile.nickname}'님을 강퇴하시겠습니까?`)) {
+      kickMutation.mutate(profile.memberId);
+    }
+  };
+
+  const handleDelegate = () => {
+    if (!profile || !roomContext) return;
+    if (
+      confirm(
+        `'${profile.nickname}'님에게 방장을 위임하시겠습니까?\n위임 후에는 방장 권한이 상실됩니다.`,
+      )
+    ) {
+      delegateMutation.mutate(profile.memberId);
+    }
+  };
+
+  const isMe = userInfo?.id === profile?.memberId;
+
+  const canManage =
+    !isMe &&
+    (roomContext?.isOwner || isAdmin) &&
+    (roomContext?.chatType === "OPEN" ||
+      (roomContext?.chatType === "PERSONAL" &&
+        roomContext.participantCount >= 3));
+
   const safeFireId = normalizeProfileImageId(profile?.fireId, DEFAULT_PROFILE_IMAGE_ID);
 
   return (
@@ -167,9 +276,9 @@ export default function UserProfileModal({
 
                 <UserInfoArea>
                   <NicknameArea>
-                    <Nickname>{profile.nickname}</Nickname>
+                    <Nickname>{profile.friendAlias || profile.nickname}</Nickname>
                     {profile.friendAlias && (
-                      <Alias>({profile.friendAlias})</Alias>
+                      <Alias>({profile.nickname})</Alias>
                     )}
                     {profile.friendStatus === "ACCEPTED" && (
                       <EditAliasButton onClick={handleEditAlias}>
@@ -183,42 +292,98 @@ export default function UserProfileModal({
                 </UserInfoArea>
 
                 <ActionArea>
-                  {profile.friendStatus === "RECEIVED" ? (
-                    <ButtonGroup>
-                      <ActionButton onClick={handleReject} $variant="secondary">
-                        <UserX size={20} />
-                        거절
-                      </ActionButton>
-                      <ActionButton onClick={handleAction} $variant="primary">
-                        <UserCheck size={20} />
-                        수락
-                      </ActionButton>
-                    </ButtonGroup>
-                  ) : (
+                  {isMe ? (
                     <ActionButton
-                      onClick={handleAction}
-                      $variant={profile.friendStatus === "NONE" ? "primary" : "secondary"}
-                      disabled={requestMutation.isPending || acceptMutation.isPending || deleteMutation.isPending}
+                      onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}
+                      $variant="primary"
                     >
-                      {profile.friendStatus === "NONE" && (
-                        <>
-                          <UserPlus size={20} />
-                          친구 요청
-                        </>
-                      )}
-                      {profile.friendStatus === "PENDING" && (
-                        <>
-                          <UserCheck size={20} color="#8E8E93" />
-                          요청 대기 중
-                        </>
-                      )}
-                      {profile.friendStatus === "ACCEPTED" && (
-                        <>
-                          <UserMinus size={20} color="#8E8E93" />
-                          친구 삭제
-                        </>
-                      )}
+                      <Edit3 size={20} />
+                      프로필 수정
                     </ActionButton>
+                  ) : (
+                    <VerticalButtonGroup>
+                      {profile.friendStatus === "RECEIVED" ? (
+                        <ButtonGroup>
+                          <ActionButton
+                            onClick={handleReject}
+                            $variant="secondary"
+                          >
+                            <UserX size={20} />
+                            거절
+                          </ActionButton>
+                          <ActionButton
+                            onClick={handleAction}
+                            $variant="primary"
+                          >
+                            <UserCheck size={20} />
+                            수락
+                          </ActionButton>
+                        </ButtonGroup>
+                      ) : (
+                        <ActionButton
+                          onClick={handleAction}
+                          $variant={
+                            profile.friendStatus === "NONE"
+                              ? "primary"
+                              : "secondary"
+                          }
+                          disabled={
+                            requestMutation.isPending ||
+                            acceptMutation.isPending ||
+                            deleteMutation.isPending
+                          }
+                        >
+                          {profile.friendStatus === "NONE" && (
+                            <>
+                              <UserPlus size={20} />
+                              친구 요청
+                            </>
+                          )}
+                          {profile.friendStatus === "PENDING" && (
+                            <>
+                              <UserCheck size={20} color="#8E8E93" />
+                              요청 대기 중
+                            </>
+                          )}
+                          {profile.friendStatus === "ACCEPTED" && (
+                            <>
+                              <UserMinus size={20} color="#8E8E93" />
+                              친구 삭제
+                            </>
+                          )}
+                        </ActionButton>
+                      )}
+
+                      <ButtonGroup>
+                        <ActionButton
+                          onClick={handleBlock}
+                          $variant="danger"
+                        >
+                          <ShieldAlert size={20} color="#FF3B30" />
+                          차단
+                        </ActionButton>
+
+                        {canManage && (
+                          <ActionButton
+                            onClick={handleKick}
+                            $variant="danger"
+                          >
+                            <LogOut size={20} color="#FF3B30" />
+                            강퇴
+                          </ActionButton>
+                        )}
+                      </ButtonGroup>
+
+                      {canManage && roomContext?.isOwner && (
+                        <ActionButton
+                          onClick={handleDelegate}
+                          $variant="secondary"
+                        >
+                          <UserCheck size={20} />
+                          방장 위임
+                        </ActionButton>
+                      )}
+                    </VerticalButtonGroup>
                   )}
                 </ActionArea>
               </>
@@ -355,6 +520,13 @@ const ActionArea = styled.div`
   width: 100%;
 `;
 
+const VerticalButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+`;
+
 const ButtonGroup = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -362,7 +534,7 @@ const ButtonGroup = styled.div`
   width: 100%;
 `;
 
-const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
+const ActionButton = styled.button<{ $variant: "primary" | "secondary" | "danger" }>`
   width: 100%;
   padding: 16px;
   border-radius: 16px;
@@ -376,9 +548,16 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
   gap: 8px;
   transition: all 0.2s;
 
-  background-color: ${({ $variant }) =>
-    $variant === "primary" ? "#5E92F0" : "#F2F2F7"};
-  color: ${({ $variant }) => ($variant === "primary" ? "white" : "#3A3A3C")};
+  background-color: ${({ $variant }) => {
+    if ($variant === "primary") return "#5E92F0";
+    if ($variant === "danger") return "#FFF5F5";
+    return "#F2F2F7";
+  }};
+  color: ${({ $variant }) => {
+    if ($variant === "primary") return "white";
+    if ($variant === "danger") return "#FF3B30";
+    return "#3A3A3C";
+  }};
 
   &:active:not(:disabled) {
     transform: scale(0.97);

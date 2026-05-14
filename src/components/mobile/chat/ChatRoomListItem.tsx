@@ -70,7 +70,9 @@ export default function ChatRoomListItem({
       <ContentArea>
         <TopRow>
           <TitleArea>
-            <div className="title">{room.friendAlias || room.title}</div>
+            <div className="title">
+              {room.friendAlias ? `${room.friendAlias} (${room.title})` : room.title}
+            </div>
             {room.currentParticipants > 1 && (
               <ParticipantCount>{room.currentParticipants}</ParticipantCount>
             )}

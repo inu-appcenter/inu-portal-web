@@ -31,9 +31,10 @@ export const useChat = (roomId: string) => {
 
       // 메시지 저장 (unreadCount 등이 갱신됨)
       if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
-        setMessages(actualRoomData.messages);
+        console.log("초기 메시지 데이터 확인:", actualRoomData.messages[0]);
+        setMessages([...actualRoomData.messages]);
       } else if (Array.isArray(actualRoomData)) {
-        setMessages(actualRoomData);
+        setMessages([...actualRoomData]);
       } else {
         setMessages([]);
       }

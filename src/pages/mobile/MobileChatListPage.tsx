@@ -23,6 +23,7 @@ import EmptyState from "@/components/common/EmptyState";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal";
 import { OpenChatRoomResponseDto } from "@/types/chat";
+import Skeleton from "@/components/common/Skeleton";
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
@@ -223,7 +224,33 @@ export default function MobileChatListPage() {
           <Box>
             <ListWrapper>
               {isLoading ? (
-                <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
+                <ListWrapper>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: "100%",
+                        padding: "12px 0",
+                        display: "flex",
+                        gap: "12px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Skeleton width="48px" height="48px" circle />
+                      <div
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        <Skeleton width="40%" height="18px" />
+                        <Skeleton width="70%" height="14px" />
+                      </div>
+                    </div>
+                  ))}
+                </ListWrapper>
               ) : filteredRooms.length > 0 ? (
                 filteredRooms.map((room, index) => (
                   <div key={room.roomId} style={{ width: "100%" }}>
@@ -248,7 +275,33 @@ export default function MobileChatListPage() {
               <Box>
                 <ListWrapper>
                   {isOpenRoomsLoading ? (
-                    <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
+                    <ListWrapper>
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          style={{
+                            width: "100%",
+                            padding: "12px 0",
+                            display: "flex",
+                            gap: "12px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                            }}
+                          >
+                            <Skeleton width="60%" height="18px" />
+                            <Skeleton width="40%" height="14px" />
+                          </div>
+                        </div>
+                      ))}
+                    </ListWrapper>
                   ) : openRoomsDiscoveryRes?.data &&
                     openRoomsDiscoveryRes.data.content.length > 0 ? (
                     openRoomsDiscoveryRes.data.content.map((room, index) => (
@@ -262,8 +315,8 @@ export default function MobileChatListPage() {
                         />
                         {index <
                           openRoomsDiscoveryRes.data.content.length - 1 && (
-                          <Divider />
-                        )}
+                            <Divider />
+                          )}
                       </div>
                     ))
                   ) : (
