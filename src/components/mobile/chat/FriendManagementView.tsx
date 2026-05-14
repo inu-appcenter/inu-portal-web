@@ -101,7 +101,11 @@ export default function FriendManagementView() {
             filteredFriends.map((friend, index) => (
               <div key={friend.friendId} style={{ width: "100%" }}>
                 <SocialUserCard
-                  name={friend.friendAlias || friend.nickname}
+                  name={
+                    friend.friendAlias
+                      ? `${friend.friendAlias} (${friend.nickname})`
+                      : friend.nickname
+                  }
                   subtitle={
                     friend.friendAlias ? friend.nickname : friend.studentId
                   }

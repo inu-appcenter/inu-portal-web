@@ -276,9 +276,9 @@ export default function UserProfileModal({
 
                 <UserInfoArea>
                   <NicknameArea>
-                    <Nickname>{profile.nickname}</Nickname>
+                    <Nickname>{profile.friendAlias || profile.nickname}</Nickname>
                     {profile.friendAlias && (
-                      <Alias>({profile.friendAlias})</Alias>
+                      <Alias>({profile.nickname})</Alias>
                     )}
                     {profile.friendStatus === "ACCEPTED" && (
                       <EditAliasButton onClick={handleEditAlias}>

@@ -126,7 +126,7 @@ export default function ChattingPage() {
     () =>
       roomInfo ? (
         <TitleWrapper>
-          <span className="text">{roomInfo.title}</span>
+          <span className="text">{roomInfo.friendAlias || roomInfo.title}</span>
           {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
         </TitleWrapper>
       ) : (
@@ -668,7 +668,7 @@ const ChatItemOtherPerson = ({
     <MessageContainer>
       {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
       <MessageContent>
-        <SenderName>{message.senderNickname}</SenderName>
+        <SenderName>{message.senderAlias || message.senderNickname}</SenderName>
         <MessageBubble>
           <div
             style={{
@@ -728,7 +728,7 @@ const ChatItemMy = ({
   return (
     <MyMessageContainer>
       <MyMessageContent>
-        <MySenderName>{message.senderNickname}</MySenderName>
+        <MySenderName>{message.senderAlias || message.senderNickname}</MySenderName>
         <MessageBubble>
           <TimeArea style={{ alignItems: "flex-end" }}>
             {message.unreadCount > 0 && (

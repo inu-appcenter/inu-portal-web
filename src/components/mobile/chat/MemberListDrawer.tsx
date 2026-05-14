@@ -148,7 +148,9 @@ export default function MemberListDrawer({
                   >
                     <SocialUserCard
                       name={
-                        member.nickname +
+                        (member.friendAlias
+                          ? `${member.friendAlias} (${member.nickname})`
+                          : member.nickname) +
                         (member.me ? " (나)" : "") +
                         (member.isOwner ? " (방장)" : "")
                       }
