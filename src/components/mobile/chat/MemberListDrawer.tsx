@@ -169,23 +169,7 @@ export default function MemberListDrawer({
           </ScrollArea>
 
           <Footer>
-            <ActionButton
-              onClick={() => togglePushMutation.mutate()}
-              $variant="default"
-            >
-              {roomInfo?.pushEnabled ? (
-                <>
-                  <Bell size={20} />
-                  채팅 알림 끄기
-                </>
-              ) : (
-                <>
-                  <BellOff size={20} />
-                  채팅 알림 켜기
-                </>
-              )}
-            </ActionButton>
-            {(roomInfo?.owner || isAdmin) && (
+            {(roomInfo?.owner || isAdmin) && roomInfo?.type === "OPEN" && (
               <>
                 <ActionButton
                   onClick={() => setIsEditModalOpen(true)}
@@ -200,10 +184,21 @@ export default function MemberListDrawer({
                 </ActionButton>
               </>
             )}
-            <ActionButton onClick={handleLeave}>
-              <LogOut size={20} />
-              채팅방 나가기
-            </ActionButton>
+            <BottomActionRow>
+              <IconButton
+                onClick={() => togglePushMutation.mutate()}
+                title={roomInfo?.pushEnabled ? "알림 끄기" : "알림 켜기"}
+              >
+                {roomInfo?.pushEnabled ? (
+                  <Bell size={22} />
+                ) : (
+                  <BellOff size={22} />
+                )}
+              </IconButton>
+              <IconButton onClick={handleLeave} title="채팅방 나가기">
+                <LogOut size={22} />
+              </IconButton>
+            </BottomActionRow>
           </Footer>
           <UserProfileModal
             memberId={selectedMemberId}
@@ -229,11 +224,39 @@ export default function MemberListDrawer({
 }
 
 const Footer = styled.div`
-  padding: 16px;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 12px));
   border-top: 1px solid #f2f2f7;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  background-color: white;
+`;
+
+const BottomActionRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
+`;
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #8e8e93;
+  background-color: #f2f2f7;
+  transition: all 0.2s;
+
+  &:active {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
 `;
 
 const ActionButton = styled.button<{ $variant?: "danger" | "default" }>`
