@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import ReplyPortal from "@/components/common/ReplyPortal";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
@@ -18,6 +19,8 @@ export default function PostDetailPage() {
   const [replyContent, setReplyContent] = useState("");
   const [replyToEdit, setReplyToEdit] = useState<Reply | null>(null);
   const [replyToReply, setReplyToReply] = useState<Reply | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const cancelEditOrReply = () => {
     setReplyToEdit(null);
@@ -100,6 +103,11 @@ export default function PostDetailPage() {
     navigate(`/home/tips/write/${post?.id}`);
   };
 
+  const handleWriterClick = (memberId: number) => {
+    setSelectedMemberId(memberId);
+    setIsProfileModalOpen(true);
+  };
+
   const { id } = useParams<{ id: string }>(); // 경로 파라미터 추출
 
   useEffect(() => {
@@ -140,7 +148,7 @@ export default function PostDetailPage() {
       {post ? (
         <>
           <PostWrapper>
-            <PostContentContainer ClubRecruit={post} />
+            <PostContentContainer ClubRecruit={post} onWriterClick={handleWriterClick} />
             <CommentWrapper>
               <CommentListMobile
                 bestReply={post.bestReplies[0]}
@@ -149,6 +157,7 @@ export default function PostDetailPage() {
                 setReplyToEdit={setReplyToEdit}
                 setReplyContent={setReplyContent}
                 onCommentUpdate={() => setCommentUpdated(true)}
+                onWriterClick={handleWriterClick}
               />
             </CommentWrapper>
           </PostWrapper>
@@ -167,6 +176,11 @@ export default function PostDetailPage() {
               onCommentUpdate={() => setCommentUpdated(true)}
             />
           </ReplyPortal>
+          <UserProfileModal
+            memberId={selectedMemberId}
+            isOpen={isProfileModalOpen}
+            onOpenChange={setIsProfileModalOpen}
+          />
         </>
       ) : (
         <div>Loading...</div>

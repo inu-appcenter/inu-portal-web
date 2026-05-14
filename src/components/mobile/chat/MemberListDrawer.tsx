@@ -1,7 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, LogOut, Trash2 } from "lucide-react"; // LogOut, Trash2 아이콘 추가
+import { X, LogOut, Trash2, Bell, BellOff, Edit3 } from "lucide-react"; // LogOut, Trash2 아이콘 추가
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
@@ -10,9 +10,12 @@ import {
   getChatRoomMembers,
   leaveChatRoom,
   closeChatRoom,
+  patchRoomPushSetting,
 } from "@/apis/chat";
-import { blockUser } from "@/apis/blocks";
 import useUserStore from "@/stores/useUserStore";
+import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import EditChatModal from "@/components/mobile/chat/EditChatModal";
+import { useState } from "react";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translateX(100%); }
@@ -31,6 +34,7 @@ interface MemberListDrawerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   roomInfo: ChatRoom | null;
+  refreshRoom?: () => void;
 }
 
 export default function MemberListDrawer({
@@ -38,11 +42,15 @@ export default function MemberListDrawer({
   isOpen,
   onOpenChange,
   roomInfo,
+  refreshRoom,
 }: MemberListDrawerProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -50,26 +58,6 @@ export default function MemberListDrawer({
     enabled: isOpen,
   });
 
-  const blockMutation = useMutation({
-    mutationFn: blockUser,
-    onSuccess: () => {
-      alert("유저를 차단했습니다.");
-      queryClient.invalidateQueries({ queryKey: ["chatMembers", roomId] });
-    },
-    onError: (error: any) => {
-      alert(error.response?.data?.msg || "차단에 실패했습니다.");
-    },
-  });
-
-  const handleBlock = (memberId: number, nickname: string) => {
-    if (
-      confirm(
-        `${nickname}님을 차단하시겠습니까?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`,
-      )
-    ) {
-      blockMutation.mutate(memberId);
-    }
-  };
 
   const leaveMutation = useMutation({
     mutationFn: () => leaveChatRoom(roomId),
@@ -98,6 +86,21 @@ export default function MemberListDrawer({
       alert(error.response?.data?.msg || "채팅방 폐쇄에 실패했습니다.");
     },
   });
+
+  const togglePushMutation = useMutation({
+    mutationFn: () => patchRoomPushSetting(roomId),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
+      alert(res.data ? "알림이 켜졌습니다." : "알림이 꺼졌습니다.");
+      if (refreshRoom) {
+        refreshRoom();
+      }
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "알림 설정 변경에 실패했습니다.");
+    },
+  });
+
 
   const handleLeave = () => {
     if (
@@ -145,18 +148,20 @@ export default function MemberListDrawer({
                   >
                     <SocialUserCard
                       name={
-                        member.nickname +
+                        (member.friendAlias
+                          ? `${member.friendAlias} (${member.nickname})`
+                          : member.nickname) +
                         (member.me ? " (나)" : "") +
                         (member.isOwner ? " (방장)" : "")
                       }
                       subtitle={member.studentId || "익명"}
                       fireId={member.fireId || 0}
-                      onActionClick={
-                        !member.me && member.fireId
-                          ? () => handleBlock(member.fireId!, member.nickname)
-                          : undefined
-                      }
-                      actionLabel="차단"
+                      onClick={() => {
+                        if (member.memberId) {
+                          setSelectedMemberId(member.memberId);
+                          setIsProfileModalOpen(true);
+                        }
+                      }}
                     />
                     {index < members.length - 1 && <Divider />}
                   </div>
@@ -166,17 +171,54 @@ export default function MemberListDrawer({
           </ScrollArea>
 
           <Footer>
-            {(roomInfo?.owner || isAdmin) && (
-              <ActionButton onClick={handleClose} $variant="danger">
-                <Trash2 size={20} />
-                채팅방 폐쇄
-              </ActionButton>
+            {(roomInfo?.owner || isAdmin) && roomInfo?.type === "OPEN" && (
+              <>
+                <ActionButton
+                  onClick={() => setIsEditModalOpen(true)}
+                  $variant="default"
+                >
+                  <Edit3 size={20} />
+                  채팅방 정보 수정
+                </ActionButton>
+                <ActionButton onClick={handleClose} $variant="danger">
+                  <Trash2 size={20} />
+                  채팅방 폐쇄
+                </ActionButton>
+              </>
             )}
-            <ActionButton onClick={handleLeave}>
-              <LogOut size={20} />
-              채팅방 나가기
-            </ActionButton>
+            <BottomActionRow>
+              <IconButton
+                onClick={() => togglePushMutation.mutate()}
+                title={roomInfo?.pushEnabled ? "알림 끄기" : "알림 켜기"}
+              >
+                {roomInfo?.pushEnabled ? (
+                  <Bell size={22} />
+                ) : (
+                  <BellOff size={22} />
+                )}
+              </IconButton>
+              <IconButton onClick={handleLeave} title="채팅방 나가기">
+                <LogOut size={22} />
+              </IconButton>
+            </BottomActionRow>
           </Footer>
+          <UserProfileModal
+            memberId={selectedMemberId}
+            isOpen={isProfileModalOpen}
+            onOpenChange={setIsProfileModalOpen}
+            roomContext={{
+              roomId: roomId,
+              chatType: roomInfo?.type || "PERSONAL",
+              participantCount: members.length,
+              isOwner: roomInfo?.owner || isAdmin,
+            }}
+          />
+          <EditChatModal
+            isOpen={isEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
+            roomId={roomId}
+            initialData={roomInfo}
+          />
         </StyledContent>
       </Dialog.Portal>
     </Dialog.Root>
@@ -184,11 +226,39 @@ export default function MemberListDrawer({
 }
 
 const Footer = styled.div`
-  padding: 16px;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 12px));
   border-top: 1px solid #f2f2f7;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  background-color: white;
+`;
+
+const BottomActionRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
+`;
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #8e8e93;
+  background-color: #f2f2f7;
+  transition: all 0.2s;
+
+  &:active {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
 `;
 
 const ActionButton = styled.button<{ $variant?: "danger" | "default" }>`

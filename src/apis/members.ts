@@ -8,6 +8,7 @@ import {
   Notification,
   TokenInfo,
   UserInfoInput,
+  MemberProfileResponseDto,
 } from "@/types/members";
 import { Post } from "@/types/posts";
 
@@ -167,5 +168,27 @@ export const postApiLogs = async (
     `/api/logs/apis`,
     { uri },
   );
+  return response.data;
+};
+
+// 타인 프로필 조회
+export const getMemberProfile = async (
+  memberId: number,
+): Promise<ApiResponse<MemberProfileResponseDto>> => {
+  const response = await tokenInstance.get<
+    ApiResponse<MemberProfileResponseDto>
+  >(`/api/members/${memberId}/profile`);
+  return response.data;
+};
+
+/**
+ * 전체 채팅 푸시 알림 설정 토글
+ */
+export const patchChatPushSetting = async (): Promise<
+  ApiResponse<{ chatPushEnabled: boolean }>
+> => {
+  const response = await tokenInstance.patch<
+    ApiResponse<{ chatPushEnabled: boolean }>
+  >("/api/members/push-setting/chat");
   return response.data;
 };

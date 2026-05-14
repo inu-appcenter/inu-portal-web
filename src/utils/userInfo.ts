@@ -29,5 +29,6 @@ export const normalizeUserInfo = (userInfo?: UserInfoInput | null): UserInfo => 
       id > 0 ? DEFAULT_PROFILE_IMAGE_ID : 0,
     ),
     role: normalizeOptionalText(userInfo?.role),
+    chatPushEnabled: !!userInfo?.chatPushEnabled,
   };
 };

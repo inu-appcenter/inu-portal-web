@@ -17,6 +17,8 @@ export interface ChatMessage {
   messageId: number;
   roomId: number;
   senderNickname: string;
+  senderAlias: string | null;
+  senderId: number | null;
   senderHash: string;
   content: string;
   imageCount: number;
@@ -40,6 +42,10 @@ export interface ChatRoom {
   anonymous: boolean;
   owner: boolean;
   isOfficial: boolean;
+  pushEnabled: boolean;
+  thumbnailUrl: string | null;
+  description: string | null;
+  friendAlias: string | null;
 }
 
 /**
@@ -57,17 +63,48 @@ export interface MyChatRoomResponseDto {
   owner: boolean;
   official: boolean;
   currentParticipants: number;
+  friendAlias: string | null;
+  pushEnabled: boolean;
+  thumbnailUrl: string | null;
+}
+
+/**
+ * 오픈 채팅방 목록 응답 DTO
+ */
+export interface OpenChatRoomResponseDto {
+  roomId: number;
+  title: string;
+  description: string;
+  thumbnailUrl: string | null;
+  ownerNickname: string;
+  maxCapacity: number;
+  currentParticipants: number;
+  createDate: string;
+  official: boolean;
+  anonymous: boolean;
+  joined: boolean;
 }
 
 /**
  * 채팅방 멤버 응답 DTO
  */
 export interface ChatRoomMemberResponseDto {
+  memberId: number | null;
   nickname: string;
   studentId: string | null;
   fireId: number | null;
   me: boolean;
   isOwner: boolean;
+  friendAlias: string | null;
+}
+
+/**
+ * 채팅방 정보 수정 요청
+ */
+export interface UpdateChatRoomInfoRequest {
+  title?: string;
+  maxCapacity?: number;
+  description?: string;
 }
 
 /**
@@ -86,6 +123,7 @@ export interface CreateChatRoomRequest {
   maxCapacity: number;
   isAnonymous: boolean;
   type: ChatRoomType;
+  description?: string;
 }
 
 /**

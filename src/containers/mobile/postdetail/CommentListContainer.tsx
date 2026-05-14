@@ -17,6 +17,7 @@ interface CommentListProps {
   setReplyToEdit: (reply: Reply | null) => void;
   setReplyContent: (content: string) => void;
   onCommentUpdate: () => void;
+  onWriterClick: (id: number) => void;
 }
 
 export default function CommentListMobile({
@@ -26,6 +27,7 @@ export default function CommentListMobile({
   setReplyToEdit,
   setReplyContent,
   onCommentUpdate,
+  onWriterClick,
 }: CommentListProps) {
   const navigate = useNavigate();
   const { tokenInfo } = useUserStore();
@@ -120,9 +122,35 @@ export default function CommentListMobile({
                     className="fire"
                     src={`https://portal.inuappcenter.kr/images/profile/${reply.fireId}`}
                     alt=""
+                    onClick={() => {
+                      if (!reply.isAnonymous && reply.memberId) {
+                        onWriterClick(reply.memberId);
+                      }
+                    }}
+                    style={{
+                      cursor:
+                        !reply.isAnonymous && reply.memberId
+                          ? "pointer"
+                          : "default",
+                    }}
                   />
                   <div className="main">
-                    <span className="writer">{reply.writer}</span>
+                    <span
+                      className="writer"
+                      onClick={() => {
+                        if (!reply.isAnonymous && reply.memberId) {
+                          onWriterClick(reply.memberId);
+                        }
+                      }}
+                      style={{
+                        cursor:
+                          !reply.isAnonymous && reply.memberId
+                            ? "pointer"
+                            : "default",
+                      }}
+                    >
+                      {reply.writer}
+                    </span>
                     <p>{reply.content}</p>
                     <div className="util-buttons">
                       <button onClick={() => handleReplyTo(reply)}>답장</button>
@@ -150,7 +178,22 @@ export default function CommentListMobile({
                 {reply.reReplies?.map((reReply) => (
                   <ReReplyContainer key={reReply.id}>
                     <img src={rereplyImage} alt="" />
-                    <span className="writer">{reReply.writer}</span>
+                    <span
+                      className="writer"
+                      onClick={() => {
+                        if (!reReply.isAnonymous && reReply.memberId) {
+                          onWriterClick(reReply.memberId);
+                        }
+                      }}
+                      style={{
+                        cursor:
+                          !reReply.isAnonymous && reReply.memberId
+                            ? "pointer"
+                            : "default",
+                      }}
+                    >
+                      {reReply.writer}
+                    </span>
                     <p>{reReply.content}</p>
                     <div className="util-buttons">
                       {reReply.hasAuthority && (

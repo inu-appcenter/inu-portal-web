@@ -2,13 +2,11 @@ import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import Box from "@/components/common/Box";
 import BottomButtonGroup from "@/components/common/BottomButtonGroup";
-import { useState } from "react";
-import { createChatRoom } from "@/apis/chat";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
-
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
+import { useState, useEffect } from "react";
+import { updateChatRoomInfo } from "@/apis/chat";
+import { useQueryClient } from "@tanstack/react-query";
+import { Camera } from "lucide-react";
+import { ChatRoom } from "@/types/chat";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -20,23 +18,49 @@ const fadeIn = keyframes`
   to { opacity: 1; }
 `;
 
-interface CreateChatModalProps {
+interface EditChatModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  roomId: number | string;
+  initialData?: ChatRoom | null;
 }
 
-export default function CreateChatModal({
+export default function EditChatModal({
   isOpen,
   onOpenChange,
-}: CreateChatModalProps) {
-  const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [maxCapacity, setMaxCapacity] = useState(10);
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  roomId,
+  initialData,
+}: EditChatModalProps) {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [description, setDescription] = useState(initialData?.description || "");
+  const [maxCapacity, setMaxCapacity] = useState(initialData?.maxCapacity || 10);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.thumbnailUrl || null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCreate = async () => {
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description || "");
+      setMaxCapacity(initialData.maxCapacity);
+      setPreviewUrl(initialData.thumbnailUrl);
+    }
+  }, [initialData]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setThumbnail(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpdate = async () => {
     if (!title.trim()) {
       alert("방 제목을 입력해주세요.");
       return;
@@ -44,19 +68,22 @@ export default function CreateChatModal({
 
     setIsLoading(true);
     try {
-      const response: any = await createChatRoom(
-        title.trim(),
-        maxCapacity,
-        isAnonymous,
-        "OPEN", // 오픈 채팅 고정
-        description.trim(),
+      await updateChatRoomInfo(
+        roomId,
+        {
+          title: title.trim(),
+          maxCapacity,
+          description: description.trim(),
+        },
+        thumbnail || undefined,
       );
-      const roomId = response.data?.id || response.id;
+      alert("채팅방 정보가 수정되었습니다.");
+      queryClient.invalidateQueries({ queryKey: ["chatMessages", roomId] });
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
       onOpenChange(false);
-      navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
     } catch (error) {
-      console.error("채팅방 생성 실패:", error);
-      alert("채팅방 생성에 실패했습니다.");
+      console.error("채팅방 수정 실패:", error);
+      alert("채팅방 수정에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -79,10 +106,27 @@ export default function CreateChatModal({
             }}
           >
             <Header>
-              <Title>오픈채팅방 만들기</Title>
+              <Title>채팅방 정보 수정</Title>
             </Header>
 
             <FormArea>
+              <ThumbnailGroup>
+                <Label>방 썸네일</Label>
+                <ThumbnailInputWrapper>
+                  <ThumbnailPreview src={previewUrl || ""}>
+                    {!previewUrl && <Camera size={24} color="#CBD5E1" />}
+                  </ThumbnailPreview>
+                  <FileInput
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <EditBadge>
+                    <Camera size={14} color="white" />
+                  </EditBadge>
+                </ThumbnailInputWrapper>
+              </ThumbnailGroup>
+
               <FormGroup>
                 <Label>방 제목</Label>
                 <Input
@@ -116,14 +160,6 @@ export default function CreateChatModal({
                   }
                 />
               </FormGroup>
-
-              <CheckboxGroup onClick={() => setIsAnonymous(!isAnonymous)}>
-                <img
-                  src={isAnonymous ? checkedCheckbox : uncheckedCheckbox}
-                  alt="익명 체크"
-                />
-                <span>익명 채팅</span>
-              </CheckboxGroup>
             </FormArea>
 
             <BottomButtonGroup
@@ -134,8 +170,8 @@ export default function CreateChatModal({
                 textColor: "#1C1C1E",
               }}
               rightButton={{
-                label: isLoading ? "생성 중..." : "방 만들기",
-                onClick: handleCreate,
+                label: isLoading ? "수정 중..." : "수정하기",
+                onClick: handleUpdate,
                 backgroundColor: "#5E92F0",
                 textColor: "#FFFFFF",
                 disabled: isLoading,
@@ -154,7 +190,7 @@ export default function CreateChatModal({
 const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 2000;
   background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(2px);
   animation: ${fadeIn} 200ms ease-out;
@@ -167,7 +203,7 @@ const StyledContent = styled(Dialog.Content)`
   transform: translate(-50%, -50%);
   width: 90vw;
   max-width: 400px;
-  z-index: 1001;
+  z-index: 2001;
   display: flex;
   flex-direction: column;
   outline: none;
@@ -198,10 +234,56 @@ const FormGroup = styled.div`
   gap: 8px;
 `;
 
+const ThumbnailGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ThumbnailInputWrapper = styled.label`
+  position: relative;
+  cursor: pointer;
+`;
+
+const ThumbnailPreview = styled.div<{ src: string }>`
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  background-color: #f1f5f9;
+  background-image: ${({ src }) => (src ? `url(${src})` : "none")};
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+`;
+
+const FileInput = styled.input`
+  display: none;
+`;
+
+const EditBadge = styled.div`
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #5E92F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+`;
+
 const Label = styled.label`
   font-size: 14px;
   font-weight: 600;
   color: #767676;
+  align-self: flex-start;
 `;
 
 const Input = styled.input`
@@ -231,20 +313,5 @@ const TextArea = styled.textarea`
 
   &:focus {
     border-color: #5E92F0;
-  }
-`;
-
-const CheckboxGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #1e293b;
-  cursor: pointer;
-  user-select: none;
-
-  img {
-    width: 20px;
-    height: 20px;
   }
 `;

@@ -11,6 +11,7 @@ export interface UserInfoInput {
   department?: string | null;
   fireId?: number | null;
   role?: string | null;
+  chatPushEnabled?: boolean | null;
 }
 
 export interface UserInfo {
@@ -19,6 +20,7 @@ export interface UserInfo {
   department: string; //학과 정보
   fireId: number;
   role: string; // "admin" | ""
+  chatPushEnabled: boolean;
 }
 
 export interface MembersReplies {
@@ -52,4 +54,17 @@ export interface Notification {
 //api로그
 export interface ApiLog {
   uri: string;
+}
+
+export type FriendStatus = "NONE" | "PENDING" | "RECEIVED" | "ACCEPTED";
+
+export interface MemberProfileResponseDto {
+  memberId: number;
+  nickname: string;
+  fireId: number;
+  department: string;
+  maskedStudentId: string;
+  friendStatus: FriendStatus;
+  friendId: number | null;
+  friendAlias: string | null;
 }

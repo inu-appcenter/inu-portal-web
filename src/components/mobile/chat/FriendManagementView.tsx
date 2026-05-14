@@ -13,10 +13,14 @@ import {
   deleteFriend,
 } from "@/apis/friends";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import Skeleton from "@/components/common/Skeleton";
 
 export default function FriendManagementView() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // 친구 목록 조회
   const { data: friendsRes, isLoading: friendsLoading } = useQuery({
@@ -56,6 +60,7 @@ export default function FriendManagementView() {
     return friends.filter(
       (friend) =>
         friend.nickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        friend.friendAlias?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (friend.studentId && friend.studentId.includes(searchTerm)),
     );
   }, [friends, searchTerm]);
@@ -77,6 +82,10 @@ export default function FriendManagementView() {
                   }
                   actionLabel="수락"
                   secondaryActionLabel="거절"
+                  onClick={() => {
+                    setSelectedMemberId(req.memberId);
+                    setIsProfileModalOpen(true);
+                  }}
                 />
                 {index < pendingRequests.length - 1 && <Divider />}
               </div>
@@ -88,20 +97,50 @@ export default function FriendManagementView() {
       <TitleContentArea title={`내 친구 (${filteredFriends.length})`}>
         <Box>
           {friendsLoading ? (
-            <EmptyState>불러오는 중...</EmptyState>
+            <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: "100%",
+                    padding: "16px 0",
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "center",
+                  }}
+                >
+                  <Skeleton width="48px" height="48px" circle />
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                    }}
+                  >
+                    <Skeleton width="120px" height="18px" />
+                    <Skeleton width="180px" height="14px" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : filteredFriends.length > 0 ? (
             filteredFriends.map((friend, index) => (
               <div key={friend.friendId} style={{ width: "100%" }}>
                 <SocialUserCard
-                  name={friend.nickname}
-                  subtitle={friend.studentId}
+                  name={
+                    friend.friendAlias
+                      ? `${friend.friendAlias} (${friend.nickname})`
+                      : friend.nickname
+                  }
+                  subtitle={
+                    friend.friendAlias ? friend.nickname : friend.studentId
+                  }
                   fireId={friend.fireId}
-                  onActionClick={() => {
-                    if (confirm("친구를 삭제하시겠습니까?")) {
-                      deleteMutation.mutate(friend.friendId);
-                    }
+                  onClick={() => {
+                    setSelectedMemberId(friend.memberId);
+                    setIsProfileModalOpen(true);
                   }}
-                  actionLabel="삭제"
                 />
                 {index < filteredFriends.length - 1 && <Divider />}
               </div>
@@ -116,12 +155,17 @@ export default function FriendManagementView() {
 
       <FloatingSearchContainer>
         <MobilePillSearchBar
-          placeholder="이름 또는 학번으로 친구 검색"
+          placeholder="닉네임을 입력하세요."
           value={searchTerm}
           onChange={setSearchTerm}
-          onSubmit={() => {}} // 실시간 검색이므로 별도 제출 로직 필요 없음
+          onSubmit={() => { }} // 실시간 검색이므로 별도 제출 로직 필요 없음
         />
       </FloatingSearchContainer>
+      <UserProfileModal
+        memberId={selectedMemberId}
+        isOpen={isProfileModalOpen}
+        onOpenChange={setIsProfileModalOpen}
+      />
     </ViewWrapper>
   );
 }

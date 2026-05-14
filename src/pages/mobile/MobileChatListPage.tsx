@@ -10,9 +10,10 @@ import Divider from "@/components/common/Divider";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
-import { getMyChatRooms } from "@/apis/chat";
+import { getMyChatRooms, getOpenChatRooms } from "@/apis/chat";
 import { getFriends } from "@/apis/friends";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
+import OpenChatRoomListItem from "@/components/mobile/chat/OpenChatRoomListItem";
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
@@ -20,6 +21,9 @@ import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal";
+import { OpenChatRoomResponseDto } from "@/types/chat";
+import Skeleton from "@/components/common/Skeleton";
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
@@ -30,6 +34,9 @@ export default function MobileChatListPage() {
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [selectedRoomForPreview, setSelectedRoomForPreview] =
+    useState<OpenChatRoomResponseDto | null>(null);
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -60,6 +67,13 @@ export default function MobileChatListPage() {
     queryKey: ["friends"],
     queryFn: getFriends,
   });
+
+  const { data: openRoomsDiscoveryRes, isLoading: isOpenRoomsLoading } =
+    useQuery({
+      queryKey: ["openChatRoomsDiscovery"],
+      queryFn: () => getOpenChatRooms(0),
+      enabled: selectedCategory === "오픈채팅",
+    });
 
   const chatRooms = response?.data || [];
 
@@ -166,10 +180,10 @@ export default function MobileChatListPage() {
           <TitleContentArea
             description={
               <>
-                친구의 학번으로 친구를 맺어보세요.
+                닉네임으로 친구를 찾아보세요.
                 <br />
-                아직 학번 닉네임을 사용중이라면, 마이페이지에서 닉네임을
-                변경해보세요.
+                아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운 닉네임을
+                설정해보세요.
               </>
             }
           />
@@ -204,13 +218,39 @@ export default function MobileChatListPage() {
         <>
           <TitleContentArea
             description={
-              "채팅 기능은 beta 버전이며, 불안정한 부분이 있을 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
+              "채팅 기능은 beta 버전이며, 불안정할 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
             }
           />
           <Box>
             <ListWrapper>
               {isLoading ? (
-                <EmptyState>채팅방을 불러오는 중입니다...</EmptyState>
+                <ListWrapper>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: "100%",
+                        padding: "12px 0",
+                        display: "flex",
+                        gap: "12px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Skeleton width="48px" height="48px" circle />
+                      <div
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        <Skeleton width="40%" height="18px" />
+                        <Skeleton width="70%" height="14px" />
+                      </div>
+                    </div>
+                  ))}
+                </ListWrapper>
               ) : filteredRooms.length > 0 ? (
                 filteredRooms.map((room, index) => (
                   <div key={room.roomId} style={{ width: "100%" }}>
@@ -226,6 +266,66 @@ export default function MobileChatListPage() {
               )}
             </ListWrapper>
           </Box>
+
+          {selectedCategory === "오픈채팅" && (
+            <TitleContentArea
+              title="오픈채팅방 둘러보기"
+              style={{ marginTop: "24px" }}
+            >
+              <Box>
+                <ListWrapper>
+                  {isOpenRoomsLoading ? (
+                    <ListWrapper>
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          style={{
+                            width: "100%",
+                            padding: "12px 0",
+                            display: "flex",
+                            gap: "12px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                            }}
+                          >
+                            <Skeleton width="60%" height="18px" />
+                            <Skeleton width="40%" height="14px" />
+                          </div>
+                        </div>
+                      ))}
+                    </ListWrapper>
+                  ) : openRoomsDiscoveryRes?.data &&
+                    openRoomsDiscoveryRes.data.content.length > 0 ? (
+                    openRoomsDiscoveryRes.data.content.map((room, index) => (
+                      <div key={room.roomId} style={{ width: "100%" }}>
+                        <OpenChatRoomListItem
+                          room={room}
+                          onClick={() => {
+                            setSelectedRoomForPreview(room);
+                            setIsPreviewModalOpen(true);
+                          }}
+                        />
+                        {index <
+                          openRoomsDiscoveryRes.data.content.length - 1 && (
+                            <Divider />
+                          )}
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState>개설된 오픈채팅방이 없습니다.</EmptyState>
+                  )}
+                </ListWrapper>
+              </Box>
+            </TitleContentArea>
+          )}
 
           <FloatingActionButton
             onClick={() => {
@@ -251,6 +351,11 @@ export default function MobileChatListPage() {
             isOpen={isCreateModalOpen}
             onOpenChange={setIsCreateModalOpen}
           />
+          <OpenChatPreviewModal
+            isOpen={isPreviewModalOpen}
+            onOpenChange={setIsPreviewModalOpen}
+            room={selectedRoomForPreview}
+          />
         </>
       )}
     </Container>
@@ -263,7 +368,6 @@ const Container = styled.div`
   padding: 24px ${MOBILE_PAGE_GUTTER};
   padding-bottom: 120px;
   gap: 24px;
-  //min-height: calc(100vh - 150px);
   position: relative;
 `;
 

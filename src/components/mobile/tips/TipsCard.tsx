@@ -296,8 +296,8 @@ const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
 
     /* grid 모드일 때만 적용 */
     ${(props) =>
-      props.viewMode === "grid" &&
-      `
+    props.viewMode === "grid" &&
+    `
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
