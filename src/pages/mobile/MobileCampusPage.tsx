@@ -61,8 +61,8 @@ export default function MobileCampusPage() {
   useHeader(
     isCampus
       ? {
-          title: "캠퍼스맵",
-        }
+        title: "캠퍼스맵",
+      }
       : undefined,
   );
 
@@ -195,7 +195,6 @@ export default function MobileCampusPage() {
           setSelectedCoord={setSelectedCoord}
           openedMarkerId={openedMarkerId}
           setOpenedMarkerId={handleMarkerClick}
-          offset={offset}
           isTracking={isTracking}
           setIsTracking={setIsTracking}
         />
