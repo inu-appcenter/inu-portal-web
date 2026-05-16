@@ -297,11 +297,11 @@ const KakaoMap = ({
   };
 
   const handleDragEnd = () => {
-    isDraggingRef.current = false;
     if (isTracking && setIsTracking) setIsTracking(false);
   };
 
   const handleIdle = () => {
+    isDraggingRef.current = false;
     isAnimatingRef.current = false;
     syncSelectedCoordWithMapCenter();
   };
