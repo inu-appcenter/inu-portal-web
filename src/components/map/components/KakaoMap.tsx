@@ -117,6 +117,7 @@ const KakaoMap = ({
   const isDraggingRef = useRef(false);
   const isSyncingCenterRef = useRef(false);
   const isAnimatingRef = useRef(false);
+  const lastOffsetRef = useRef(offset);
 
   const currentTab = selectedTab as TabType;
   const config = MAP_TAB_CONFIG[currentTab];
@@ -125,12 +126,12 @@ const KakaoMap = ({
     [],
   );
 
-  const syncSelectedCoordWithMapCenter = () => {
+  const syncSelectedCoordWithMapCenter = (targetOffset: number) => {
     if (!mapInstance || !setSelectedCoord) return;
 
     const center = mapInstance.getCenter();
     const nextCoord = {
-      X: center.getLat() + offset,
+      X: center.getLat() + targetOffset,
       Y: center.getLng(),
     };
 
@@ -304,28 +305,37 @@ const KakaoMap = ({
     isDraggingRef.current = false;
     isAnimatingRef.current = false;
     if (isTracking && setIsTracking) setIsTracking(false);
-    syncSelectedCoordWithMapCenter();
+    // 드래그가 끝났을 때 즉시 동기화하지 않고, 바텀시트가 움직일 때까지 대기 (성능 최적화)
   };
 
   // 3. 외부 viewXY 변경 감지 및 지도 이동
   useEffect(() => {
-    if (mapInstance && viewXY && !isDraggingRef.current) {
-      if (isSyncingCenterRef.current) {
-        isSyncingCenterRef.current = false;
-        return;
-      }
+    if (!mapInstance || !viewXY || isDraggingRef.current) return;
 
-      const currentCenter = mapInstance.getCenter();
-      const isSamePosition =
-        Math.abs(currentCenter.getLat() - viewXY.X) < 0.00001 &&
-        Math.abs(currentCenter.getLng() - viewXY.Y) < 0.00001;
-
-      if (!isSamePosition) {
-        isAnimatingRef.current = true;
-        mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
-      }
+    // 1. 바텀시트 조작(offset 변경) 감지 시 동기화
+    if (lastOffsetRef.current !== offset) {
+      // 현재 지도의 물리적 위치를 바탕으로 논리적 좌표를 역산하여 부모 상태 업데이트
+      syncSelectedCoordWithMapCenter(lastOffsetRef.current);
+      lastOffsetRef.current = offset;
+      return; // 이번 렌더링은 동기화만 하고, 실제 panTo는 다음 렌더링(상태 반영 후)에 수행
     }
-  }, [viewXY, mapInstance]);
+
+    // 2. 외부 좌표 변경(장소 클릭 등) 또는 동기화 완료 후 이동
+    if (isSyncingCenterRef.current) {
+      isSyncingCenterRef.current = false;
+      return;
+    }
+
+    const currentCenter = mapInstance.getCenter();
+    const isSamePosition =
+      Math.abs(currentCenter.getLat() - viewXY.X) < 0.00001 &&
+      Math.abs(currentCenter.getLng() - viewXY.Y) < 0.00001;
+
+    if (!isSamePosition) {
+      isAnimatingRef.current = true;
+      mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+    }
+  }, [viewXY, offset, mapInstance]);
 
   const placesToRender = useMemo(() => {
     switch (currentTab) {
