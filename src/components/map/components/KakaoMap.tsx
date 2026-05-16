@@ -297,12 +297,13 @@ const KakaoMap = ({
   };
 
   const handleDragEnd = () => {
-    if (isTracking && setIsTracking) setIsTracking(false);
+    // 아무런 React 상태 변경 없음 (드래그 중 렌더링 원천 차단)
   };
 
   const handleIdle = () => {
     isDraggingRef.current = false;
     isAnimatingRef.current = false;
+    if (isTracking && setIsTracking) setIsTracking(false);
     syncSelectedCoordWithMapCenter();
   };
 
