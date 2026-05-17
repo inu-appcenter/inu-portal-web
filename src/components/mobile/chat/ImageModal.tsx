@@ -59,22 +59,24 @@ export default function ImageModal({
     }
   }, [isOpen]);
 
-  // 브라우저의 기본 페이지 줌인/줌아웃 제스처를 차단하기 위해 passive: false 이벤트 바인딩
+  // 모달이 열려 있을 때 브라우저 자체의 전체 화면 pinch-zoom 및 바운스 스크롤 누수를 원천 차단
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    if (!isOpen) return;
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 || scale > 1) {
+    const preventNativePinchZoom = (e: TouchEvent) => {
+      // 두 손가락 이상의 멀티 터치 제스처이거나 이미지가 확대된 상태에서의 터치 이동 시
+      // 브라우저의 기본 페이지 줌 및 스크롤 바운싱 오버스크롤 동작 차단
+      if (e.touches.length > 1 || scale > 1) {
         e.preventDefault();
       }
     };
 
-    container.addEventListener("touchmove", handleTouchMove, { passive: false });
+    // passive: false를 주어 preventDefault()가 즉각 먹히도록 강제 보증
+    document.addEventListener("touchmove", preventNativePinchZoom, { passive: false });
     return () => {
-      container.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchmove", preventNativePinchZoom);
     };
-  }, [scale]);
+  }, [isOpen, scale]);
 
   if (!imageUrl) return null;
 
@@ -210,8 +212,8 @@ export default function ImageModal({
     isDragging.current = false;
     touchStartDistance.current = 0;
 
-    // 확대 상태가 아니면서 화면 드래그가 일어나지 않은 경우 (단순 화면 터치) -> 상하단 컨트롤 바 표시 토글
-    if (!hasMoved.current && scale === 1) {
+    // 화면 드래그가 일어나지 않은 단순 화면 터치(탭) 시 상하단 컨트롤 바 표시 토글 (확대 상태에서도 자유로운 제어 허용)
+    if (!hasMoved.current) {
       setShowControls((prev) => !prev);
     }
 
@@ -221,9 +223,8 @@ export default function ImageModal({
     }
   };
 
-  // 확대된 줌 모드 시에는 오버레이 컨트롤 바를 무조건 은닉하여 콘텐츠 감상 극대화
-  const isZoomed = scale > 1;
-  const effectiveShowControls = showControls && !isZoomed;
+  // 확대 여부와 관계없이 사용자의 탭 조작(showControls)에 따라 툴바를 부드럽게 노출
+  const effectiveShowControls = showControls;
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
