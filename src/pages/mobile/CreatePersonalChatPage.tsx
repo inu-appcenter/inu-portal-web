@@ -349,7 +349,7 @@ const SubmitButton = styled.button<{ $isAdmin?: boolean }>`
   cursor: pointer;
   box-shadow: 0 4px 12px
     ${({ $isAdmin }) =>
-      $isAdmin ? "rgba(0, 0, 0, 0.2)" : "rgba(88, 68, 228, 0.3)"};
+      $isAdmin ? "rgba(0, 0, 0, 0.2)" : "rgba(94, 146, 240, 0.3)"};
   transition: all 0.2s;
 
   &:disabled {

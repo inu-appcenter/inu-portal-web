@@ -4,6 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
+import { Bell } from "lucide-react";
 import loginImg from "@/resources/assets/login/login-modal-logo.svg";
 import {
   MyPageActive,
@@ -25,12 +26,13 @@ export default function MobileMyPage() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   const isLoggedIn = userInfo.id !== 0;
-  const renderMenuIcon = (image?: string) =>
-    image ? (
-      <img src={image} alt="" />
-    ) : (
-      <HiOutlineCog6Tooth className="fallback-icon" aria-hidden="true" />
-    );
+  const renderMenuIcon = (image?: string, title?: string) => {
+    if (image) return <img src={image} alt="" />;
+    if (title === "알림 설정") {
+      return <Bell className="fallback-icon" aria-hidden="true" />;
+    }
+    return <HiOutlineCog6Tooth className="fallback-icon" aria-hidden="true" />;
+  };
 
   const handleLogout = async () => {
     const fcmToken = localStorage.getItem("fcmToken");
@@ -81,6 +83,9 @@ export default function MobileMyPage() {
         break;
       case "스크랩":
         navigate(`/save`);
+        break;
+      case "알림 설정":
+        navigate(ROUTES.MYPAGE.NOTIFICATION);
         break;
       case "로그아웃":
         handleLogoutModalClick();
@@ -163,7 +168,7 @@ export default function MobileMyPage() {
                 onClick={() => handleClick(category.title)}
               >
                 <span>
-                  {renderMenuIcon(category.image)}
+                  {renderMenuIcon(category.image, category.title)}
 
                   <div>
                     {category.title}
@@ -195,7 +200,7 @@ export default function MobileMyPage() {
               onClick={() => handleClick(category.title)}
             >
               <span>
-                {renderMenuIcon(category.image)}
+                {renderMenuIcon(category.image, category.title)}
                 <div>
                   <div>{category.title}</div>
                   <div className="description">{category.description}</div>
