@@ -59,22 +59,30 @@ export default function ImageModal({
     }
   }, [isOpen]);
 
-  // 모달이 열려 있을 때 브라우저 자체의 전체 화면 pinch-zoom 및 바운스 스크롤 누수를 원천 차단
+  // 모달이 열려 있을 때 모바일/PC 브라우저 자체의 전체 화면 pinch-zoom 및 바운스 스크롤 누수를 원천 차단
   useEffect(() => {
     if (!isOpen) return;
 
+    // 1. 모바일 핀치 줌 및 확대 중 드래그 오버스크롤 기본 제스처 잠금
     const preventNativePinchZoom = (e: TouchEvent) => {
-      // 두 손가락 이상의 멀티 터치 제스처이거나 이미지가 확대된 상태에서의 터치 이동 시
-      // 브라우저의 기본 페이지 줌 및 스크롤 바운싱 오버스크롤 동작 차단
       if (e.touches.length > 1 || scale > 1) {
         e.preventDefault();
       }
     };
 
-    // passive: false를 주어 preventDefault()가 즉각 먹히도록 강제 보증
+    // 2. 노트북 터치패드(Mac 트랙패드 / Win 정밀 터치패드) 핀치 줌 차단 (CtrlKey + Wheel 형태)
+    const preventWheelZoom = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    };
+
+    // passive: false를 주어 preventDefault()가 즉각 강제 차단되도록 보증
     document.addEventListener("touchmove", preventNativePinchZoom, { passive: false });
+    document.addEventListener("wheel", preventWheelZoom, { passive: false });
     return () => {
       document.removeEventListener("touchmove", preventNativePinchZoom);
+      document.removeEventListener("wheel", preventWheelZoom);
     };
   }, [isOpen, scale]);
 
