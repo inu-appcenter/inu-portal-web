@@ -160,13 +160,30 @@ export default function ImageModal({
       // 2. 한 손가락 터치 (Double Tap 또는 Drag Pan)
       const now = Date.now();
       if (now - lastTouchTime.current < 300) {
-        // 더블 탭: 줌 토글 (1배 <-> 2.5배)
+        // 더블 탭: 줌 토글 (1배 <-> 2.5배) - 더블 탭한 위치를 중심으로 확대
         if (scale > 1) {
           setScale(1);
           setPosition({ x: 0, y: 0 });
         } else {
-          setScale(2.5);
-          setPosition({ x: 0, y: 0 });
+          const targetScale = 2.5;
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+          
+          const clientX = e.touches[0].clientX;
+          const clientY = e.touches[0].clientY;
+          
+          // 터치 포인트 좌표 기준으로 줌 중심점 보정량 계산
+          let newX = (centerX - clientX) * (targetScale - 1);
+          let newY = (centerY - clientY) * (targetScale - 1);
+          
+          // 이미지 드래그 제한 한계 영역 내로 강제 고정
+          const maxDragX = ((targetScale - 1) * window.innerWidth) / 2;
+          const maxDragY = ((targetScale - 1) * window.innerHeight) / 2;
+          newX = Math.max(-maxDragX, Math.min(maxDragX, newX));
+          newY = Math.max(-maxDragY, Math.min(maxDragY, newY));
+          
+          setScale(targetScale);
+          setPosition({ x: newX, y: newY });
         }
         lastTouchTime.current = 0;
         hasMoved.current = true; // 더블 탭 시에는 싱글 탭 컨트롤 토글을 스킵하도록 마킹
@@ -231,6 +248,34 @@ export default function ImageModal({
     }
   };
 
+  // PC/노트북 마우스 및 터치패드 더블클릭 제어부 (더블클릭한 포인트를 정확히 조준하여 확대)
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if (scale > 1) {
+      setScale(1);
+      setPosition({ x: 0, y: 0 });
+    } else {
+      const targetScale = 2.5;
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      
+      // 클릭한 마우스 좌표 기준 줌 중심점 보정량 계산
+      let newX = (centerX - clientX) * (targetScale - 1);
+      let newY = (centerY - clientY) * (targetScale - 1);
+      
+      const maxDragX = ((targetScale - 1) * window.innerWidth) / 2;
+      const maxDragY = ((targetScale - 1) * window.innerHeight) / 2;
+      newX = Math.max(-maxDragX, Math.min(maxDragX, newX));
+      newY = Math.max(-maxDragY, Math.min(maxDragY, newY));
+      
+      setScale(targetScale);
+      setPosition({ x: newX, y: newY });
+    }
+    hasMoved.current = true; // 컨트롤 바 깜빡임 방지 마킹
+  };
+
   // 확대 여부와 관계없이 사용자의 탭 조작(showControls)에 따라 툴바를 부드럽게 노출
   const effectiveShowControls = showControls;
 
@@ -245,6 +290,7 @@ export default function ImageModal({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            onDoubleClick={handleDoubleClick}
           >
             <StyledImage
               ref={imageRef}
