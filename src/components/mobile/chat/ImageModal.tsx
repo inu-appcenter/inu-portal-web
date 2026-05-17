@@ -60,31 +60,69 @@ export default function ImageModal({
   }, [isOpen]);
 
   // 모달이 열려 있을 때 모바일/PC 브라우저 자체의 전체 화면 pinch-zoom 및 바운스 스크롤 누수를 원천 차단
+  // 동시에 노트북 터치패드/트랙패드의 핀치 줌을 가로채서 이미지만을 마우스 커서 위치 기준으로 조준 확대/축소하도록 정밀 연동
   useEffect(() => {
     if (!isOpen) return;
 
-    // 1. 모바일 핀치 줌 및 확대 중 드래그 오버스크롤 기본 제스처 잠금
+    // 1. 모바일 멀티터치 페이지 줌 절대 차단
     const preventNativePinchZoom = (e: TouchEvent) => {
-      if (e.touches.length > 1 || scale > 1) {
+      // scale 변수를 이펙트 바깥에서 최신 상태로 추적하기 위해 document.touchmove는 container 이벤트를 사용하지 않고 
+      // e.touches.length로 모바일 핀치 줌의 페이지 확장을 영리하게 봉쇄합니다.
+      if (e.touches.length > 1) {
         e.preventDefault();
       }
     };
 
-    // 2. 노트북 터치패드(Mac 트랙패드 / Win 정밀 터치패드) 핀치 줌 차단 (CtrlKey + Wheel 형태)
-    const preventWheelZoom = (e: WheelEvent) => {
+    // 2. 노트북 터치패드(트랙패드) 핀치 줌 가로채기 -> 페이지 전체 확대를 막고, 이미지만을 핀치 중심점으로 줌인/줌아웃
+    const handleWheelZoom = (e: WheelEvent) => {
       if (e.ctrlKey) {
-        e.preventDefault();
+        e.preventDefault(); // 브라우저 자체 페이지 줌 절대 차단
+
+        // 핀치 줌 감도 보정 수치
+        const zoomIntensity = 0.015;
+        const delta = -e.deltaY * zoomIntensity;
+        
+        setScale((prevScale) => {
+          const nextScale = Math.max(1, Math.min(4, prevScale + delta));
+          
+          if (nextScale === 1) {
+            setPosition({ x: 0, y: 0 });
+          } else {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const clientX = e.clientX;
+            const clientY = e.clientY;
+            
+            setPosition((prevPos) => {
+              // 이전 스케일 대비 다음 스케일 변화 비율 계산
+              const scaleRatio = nextScale / prevScale;
+              
+              // 마우스 커서(조준점) 기준으로 드래그 벡터 보정량 연산
+              let newX = prevPos.x - (clientX - centerX - prevPos.x) * (scaleRatio - 1);
+              let newY = prevPos.y - (clientY - centerY - prevPos.y) * (scaleRatio - 1);
+              
+              // 확대 한계선에 부딪혔을 때의 화면 이탈 방지 클램핑
+              const maxDragX = ((nextScale - 1) * window.innerWidth) / 2;
+              const maxDragY = ((nextScale - 1) * window.innerHeight) / 2;
+              newX = Math.max(-maxDragX, Math.min(maxDragX, newX));
+              newY = Math.max(-maxDragY, Math.min(maxDragY, newY));
+              
+              return { x: newX, y: newY };
+            });
+          }
+          return nextScale;
+        });
       }
     };
 
     // passive: false를 주어 preventDefault()가 즉각 강제 차단되도록 보증
     document.addEventListener("touchmove", preventNativePinchZoom, { passive: false });
-    document.addEventListener("wheel", preventWheelZoom, { passive: false });
+    document.addEventListener("wheel", handleWheelZoom, { passive: false });
     return () => {
       document.removeEventListener("touchmove", preventNativePinchZoom);
-      document.removeEventListener("wheel", preventWheelZoom);
+      document.removeEventListener("wheel", handleWheelZoom);
     };
-  }, [isOpen, scale]);
+  }, [isOpen]);
 
   if (!imageUrl) return null;
 
