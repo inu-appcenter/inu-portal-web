@@ -473,6 +473,7 @@ export default function ChattingPage() {
                   message={msg}
                   onImageClick={handleImageClick}
                   showTime={showTime}
+                  members={members}
                 />
               ) : (
                 <ChatItemOtherPerson
@@ -481,6 +482,7 @@ export default function ChattingPage() {
                   userImageUrl={null}
                   showName={showName}
                   showTime={showTime}
+                  members={members}
                 />
               )}
               {showDateLine && (
@@ -797,6 +799,7 @@ const ChatItemOtherPerson = ({
   userImageUrl,
   showName,
   showTime,
+  members,
 }: {
   message: ChatMessage;
   onImageClick: (
@@ -808,7 +811,12 @@ const ChatItemOtherPerson = ({
   userImageUrl: string | null;
   showName: boolean;
   showTime: boolean;
+  members: ChatRoomMemberResponseDto[];
 }) => {
+  const getDisplayName = () => {
+    const matched = members.find((m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname);
+    return matched?.friendAlias || message.senderAlias || message.senderNickname;
+  };
   const thumbnailUrl =
     message.imageCount > 0
       ? `${BASE_URL}images/chat/${message.roomId}/thumbnail/${message.messageId}`
@@ -831,7 +839,7 @@ const ChatItemOtherPerson = ({
       <MessageContent>
         {showName && (
           <SenderName>
-            {message.senderAlias || message.senderNickname}
+            {getDisplayName()}
           </SenderName>
         )}
         <MessageBubble>
@@ -850,7 +858,7 @@ const ChatItemOtherPerson = ({
                   originalImageUrl &&
                   onImageClick(
                     originalImageUrl,
-                    message.senderAlias || message.senderNickname || "알 수 없음",
+                    getDisplayName() || "알 수 없음",
                     message.createDate,
                     message.senderId
                   )
@@ -879,6 +887,7 @@ const ChatItemMy = ({
   message,
   onImageClick,
   showTime,
+  members,
 }: {
   message: ChatMessage;
   onImageClick: (
@@ -888,7 +897,12 @@ const ChatItemMy = ({
     senderId?: number | null
   ) => void;
   showTime: boolean;
+  members: ChatRoomMemberResponseDto[];
 }) => {
+  const getDisplayName = () => {
+    const matched = members.find((m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname);
+    return matched?.friendAlias || message.senderAlias || message.senderNickname;
+  };
   const thumbnailUrl =
     message.imageCount > 0
       ? `${BASE_URL}images/chat/${message.roomId}/thumbnail/${message.messageId}`
@@ -932,7 +946,7 @@ const ChatItemMy = ({
                   originalImageUrl &&
                   onImageClick(
                     originalImageUrl,
-                    message.senderAlias || message.senderNickname || "나",
+                    getDisplayName() || "나",
                     message.createDate,
                     message.senderId
                   )
