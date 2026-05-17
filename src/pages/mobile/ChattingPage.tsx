@@ -1215,28 +1215,23 @@ const ProgressGlassRing = styled.div<{ progress: number }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+
+  /* padding-box(내부)와 border-box(테두리)를 분리하여 테두리에 실제 진행률 conic-gradient 적용 */
+  background: 
+    linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.15)) padding-box,
+    conic-gradient(#5e92f0 0% ${props => props.progress}%, rgba(255, 255, 255, 0.35) ${props => props.progress}% 100%) border-box;
+
+  border: 3px solid transparent; /* 테두리 두께 설정 */
   backdrop-filter: blur(8px); /* 고급스러운 글래스모피즘 효과 */
-  border: 2px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   position: relative;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+  transition: background 150ms linear;
   
   .percentage {
     color: #ffffff;
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 800;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  }
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: -2px; left: -2px; right: -2px; bottom: -2px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    border-top-color: #5e92f0; /* 포인트 블루 컬러 */
-    transform: rotate(${props => (props.progress * 3.6)}deg);
-    transition: transform 150ms linear;
   }
 `;
