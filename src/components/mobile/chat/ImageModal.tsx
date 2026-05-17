@@ -3,6 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { ArrowLeft, Download } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { getMobilePlatform } from "@/utils/getMobilePlatform";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -33,95 +34,17 @@ export default function ImageModal({
   senderId,
   onSenderClick,
 }: ImageModalProps) {
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDownloading, setIsDownloading] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  // 드래그(패닝) 중이었는지 추적하여 단순 탭과 드래그 종료를 구분하는 플래그
+  const wasPanning = useRef(false);
 
-  // Pinch 및 Drag 모션 제어를 위한 가상 Ref 변수들
-  const touchStartDistance = useRef<number>(0);
-  const touchStartScale = useRef<number>(1);
-  const isDragging = useRef<boolean>(false);
-  const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const lastPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const lastTouchTime = useRef<number>(0);
-  const hasMoved = useRef<boolean>(false);
-
-  // 모달 열림/닫힘 상태 변화 시 스케일 및 컨트롤 바 초기화
+  // 모달 열림/닫힘 상태 변화 시 컨트롤 바 초기화
   useEffect(() => {
-    if (!isOpen) {
-      setScale(1);
-      setPosition({ x: 0, y: 0 });
+    if (isOpen) {
       setShowControls(true);
     }
-  }, [isOpen]);
-
-  // 모달이 열려 있을 때 모바일/PC 브라우저 자체의 전체 화면 pinch-zoom 및 바운스 스크롤 누수를 원천 차단
-  // 동시에 노트북 터치패드/트랙패드의 핀치 줌을 가로채서 이미지만을 마우스 커서 위치 기준으로 조준 확대/축소하도록 정밀 연동
-  useEffect(() => {
-    if (!isOpen) return;
-
-    // 1. 모바일 멀티터치 페이지 줌 절대 차단
-    const preventNativePinchZoom = (e: TouchEvent) => {
-      // scale 변수를 이펙트 바깥에서 최신 상태로 추적하기 위해 document.touchmove는 container 이벤트를 사용하지 않고 
-      // e.touches.length로 모바일 핀치 줌의 페이지 확장을 영리하게 봉쇄합니다.
-      if (e.touches.length > 1) {
-        e.preventDefault();
-      }
-    };
-
-    // 2. 노트북 터치패드(트랙패드) 핀치 줌 가로채기 -> 페이지 전체 확대를 막고, 이미지만을 핀치 중심점으로 줌인/줌아웃
-    const handleWheelZoom = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        e.preventDefault(); // 브라우저 자체 페이지 줌 절대 차단
-
-        // 핀치 줌 감도 보정 수치 (트랙패드에서도 쫀득하고 쾌적하게 줌이 먹히도록 대폭 상향)
-        const zoomIntensity = 0.04;
-        const delta = -e.deltaY * zoomIntensity;
-        
-        setScale((prevScale) => {
-          const nextScale = Math.max(1, Math.min(4, prevScale + delta));
-          
-          if (nextScale === 1) {
-            setPosition({ x: 0, y: 0 });
-          } else {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const clientX = e.clientX;
-            const clientY = e.clientY;
-            
-            setPosition((prevPos) => {
-              // 이전 스케일 대비 다음 스케일 변화 비율 계산
-              const scaleRatio = nextScale / prevScale;
-              
-              // 마우스 커서(조준점) 기준으로 드래그 벡터 보정량 연산
-              let newX = prevPos.x - (clientX - centerX - prevPos.x) * (scaleRatio - 1);
-              let newY = prevPos.y - (clientY - centerY - prevPos.y) * (scaleRatio - 1);
-              
-              // 확대 한계선에 부딪혔을 때의 화면 이탈 방지 클램핑
-              const maxDragX = ((nextScale - 1) * window.innerWidth) / 2;
-              const maxDragY = ((nextScale - 1) * window.innerHeight) / 2;
-              newX = Math.max(-maxDragX, Math.min(maxDragX, newX));
-              newY = Math.max(-maxDragY, Math.min(maxDragY, newY));
-              
-              return { x: newX, y: newY };
-            });
-          }
-          return nextScale;
-        });
-      }
-    };
-
-    // passive: false를 주어 preventDefault()가 즉각 강제 차단되도록 보증
-    document.addEventListener("touchmove", preventNativePinchZoom, { passive: false });
-    document.addEventListener("wheel", handleWheelZoom, { passive: false });
-    return () => {
-      document.removeEventListener("touchmove", preventNativePinchZoom);
-      document.removeEventListener("wheel", handleWheelZoom);
-    };
   }, [isOpen]);
 
   if (!imageUrl) return null;
@@ -181,137 +104,10 @@ export default function ImageModal({
     }
   };
 
-  // 터치 제스처 제어부
-  const handleTouchStart = (e: React.TouchEvent) => {
-    hasMoved.current = false;
-
-    if (e.touches.length === 2) {
-      // 1. 두 손가락 터치 시작 (Pinch Zoom)
-      isDragging.current = false;
-      const dist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      touchStartDistance.current = dist;
-      touchStartScale.current = scale;
-    } else if (e.touches.length === 1) {
-      // 2. 한 손가락 터치 (Double Tap 또는 Drag Pan)
-      const now = Date.now();
-      if (now - lastTouchTime.current < 300) {
-        // 더블 탭: 줌 토글 (1배 <-> 2.5배) - 더블 탭한 위치를 중심으로 확대
-        if (scale > 1) {
-          setScale(1);
-          setPosition({ x: 0, y: 0 });
-        } else {
-          const targetScale = 2.5;
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
-          
-          const clientX = e.touches[0].clientX;
-          const clientY = e.touches[0].clientY;
-          
-          // 터치 포인트 좌표 기준으로 줌 중심점 보정량 계산
-          let newX = (centerX - clientX) * (targetScale - 1);
-          let newY = (centerY - clientY) * (targetScale - 1);
-          
-          // 이미지 드래그 제한 한계 영역 내로 강제 고정
-          const maxDragX = ((targetScale - 1) * window.innerWidth) / 2;
-          const maxDragY = ((targetScale - 1) * window.innerHeight) / 2;
-          newX = Math.max(-maxDragX, Math.min(maxDragX, newX));
-          newY = Math.max(-maxDragY, Math.min(maxDragY, newY));
-          
-          setScale(targetScale);
-          setPosition({ x: newX, y: newY });
-        }
-        lastTouchTime.current = 0;
-        hasMoved.current = true; // 더블 탭 시에는 싱글 탭 컨트롤 토글을 스킵하도록 마킹
-        return;
-      }
-      lastTouchTime.current = now;
-
-      if (scale > 1) {
-        isDragging.current = true;
-        dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        lastPosition.current = position;
-      }
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    hasMoved.current = true;
-
-    if (e.touches.length === 2 && touchStartDistance.current > 0) {
-      // 1. 핀치로 크기 조정 중
-      const dist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      const newScale = touchStartScale.current * (dist / touchStartDistance.current);
-      const clampedScale = Math.max(1, Math.min(4, newScale)); // 1배 ~ 4배 제한
-      setScale(clampedScale);
-
-      if (clampedScale === 1) {
-        setPosition({ x: 0, y: 0 });
-      }
-    } else if (e.touches.length === 1 && isDragging.current && scale > 1) {
-      // 2. 확대 상태에서 드래그하여 이동 중
-      const dx = e.touches[0].clientX - dragStart.current.x;
-      const dy = e.touches[0].clientY - dragStart.current.y;
-
-      let newX = lastPosition.current.x + dx;
-      let newY = lastPosition.current.y + dy;
-
-      // 모바일 디바이스 뷰포트를 벗어나서 빈 검은 화면이 크게 보이지 않도록 한계 영역 연산 바인딩
-      const maxDragX = ((scale - 1) * window.innerWidth) / 2;
-      const maxDragY = ((scale - 1) * window.innerHeight) / 2;
-      newX = Math.max(-maxDragX, Math.min(maxDragX, newX));
-      newY = Math.max(-maxDragY, Math.min(maxDragY, newY));
-
-      setPosition({ x: newX, y: newY });
-    }
-  };
-
-  const handleTouchEnd = () => {
-    isDragging.current = false;
-    touchStartDistance.current = 0;
-
-    // 화면 드래그가 일어나지 않은 단순 화면 터치(탭) 시 상하단 컨트롤 바 표시 토글 (확대 상태에서도 자유로운 제어 허용)
-    if (!hasMoved.current) {
-      setShowControls((prev) => !prev);
-    }
-
-    if (scale < 1.05) {
-      setScale(1);
-      setPosition({ x: 0, y: 0 });
-    }
-  };
-
-  // PC/노트북 마우스 및 터치패드 더블클릭 제어부 (더블클릭한 포인트를 정확히 조준하여 확대)
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    if (scale > 1) {
-      setScale(1);
-      setPosition({ x: 0, y: 0 });
-    } else {
-      const targetScale = 2.5;
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      
-      const clientX = e.clientX;
-      const clientY = e.clientY;
-      
-      // 클릭한 마우스 좌표 기준 줌 중심점 보정량 계산
-      let newX = (centerX - clientX) * (targetScale - 1);
-      let newY = (centerY - clientY) * (targetScale - 1);
-      
-      const maxDragX = ((targetScale - 1) * window.innerWidth) / 2;
-      const maxDragY = ((targetScale - 1) * window.innerHeight) / 2;
-      newX = Math.max(-maxDragX, Math.min(maxDragX, newX));
-      newY = Math.max(-maxDragY, Math.min(maxDragY, newY));
-      
-      setScale(targetScale);
-      setPosition({ x: newX, y: newY });
-    }
-    hasMoved.current = true; // 컨트롤 바 깜빡임 방지 마킹
+  // 단순 탭 시 상하단 툴바 토글 - 드래그 종료 시점의 오발 click은 wasPanning으로 걸러냄
+  const handleContainerClick = () => {
+    if (wasPanning.current) return;
+    setShowControls((prev) => !prev);
   };
 
   // 확대 여부와 관계없이 사용자의 탭 조작(showControls)에 따라 툴바를 부드럽게 노출
@@ -323,22 +119,52 @@ export default function ImageModal({
         <StyledOverlay />
         <StyledContent>
           {/* 중앙 전체화면 제스처 미디어 영역 */}
-          <ImageContainer
-            ref={containerRef}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onDoubleClick={handleDoubleClick}
-          >
-            <StyledImage
-              ref={imageRef}
-              src={imageUrl}
-              alt="전체화면 이미지"
-              style={{
-                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                transition: isDragging.current ? "none" : "transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)",
+          <ImageContainer onClick={handleContainerClick}>
+            <TransformWrapper
+              key={isOpen ? "open" : "closed"} // 모달이 닫히고 다시 열릴 때 줌 배율(scale=1) 및 위치 자동 복원
+              initialScale={1}
+              initialPositionX={0}
+              initialPositionY={0}
+              centerOnInit={true}
+              minScale={1}
+              maxScale={4}
+              disablePadding={true} /* minScale 이하로 줌아웃되는 탄성(elastic) 효과 완전 차단 */
+              // 모바일 더블탭 / PC 더블클릭 시 클릭된 좌표 조준 자동 줌 기능 활성화
+              doubleClick={{
+                step: 1.5,
+                mode: "toggle",
               }}
-            />
+              // PC/노트북 트랙패드 핀치 줌 및 마우스 휠 줌(Ctrl 키 연계) 지원
+              wheel={{
+                step: 0.05,
+                activationKeys: ["Control"],
+              }}
+              // 줌 상태에서의 스무스한 관성 드래그(Velocity Panning) 설정
+              panning={{
+                velocityDisabled: false,
+              }}
+              // 드래그(패닝) 시작/종료 마킹 - 단순 탭과 구별하기 위해
+              onPanningStart={() => { wasPanning.current = true; }}
+              onPanningStop={() => {
+                // 패닝이 종료된 직후 click 이벤트가 버블되므로 약간의 유예를 두고 플래그 해제
+                setTimeout(() => { wasPanning.current = false; }, 50);
+              }}
+            >
+              {() => (
+                <TransformComponent
+                  wrapperStyle={{ width: "100%", height: "100%" }}
+                  contentStyle={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <StyledImage src={imageUrl} alt="전체화면 이미지" />
+                </TransformComponent>
+              )}
+            </TransformWrapper>
           </ImageContainer>
 
           {/* 상단 플로팅 정보 바 */}
