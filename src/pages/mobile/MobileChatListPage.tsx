@@ -389,7 +389,7 @@ const FloatingActionButton = styled.button<{ $bottom?: string }>`
   align-items: center;
   justify-content: center;
   border: none;
-  box-shadow: 0 4px 12px rgba(88, 68, 228, 0.4);
+  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.35);
   cursor: pointer;
   z-index: 10;
   transition: transform 0.2s;
