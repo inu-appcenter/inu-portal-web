@@ -3,7 +3,13 @@ import styled, { keyframes } from "styled-components";
 import { ArrowLeft, Download } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { getMobilePlatform } from "@/utils/getMobilePlatform";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Zoom } from "swiper/modules";
+import type { Swiper as SwiperClass } from "swiper";
+
+import "swiper/css";
+import "swiper/css/zoom";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -37,46 +43,10 @@ export default function ImageModal({
   const [isDownloading, setIsDownloading] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const swiperRef = useRef<SwiperClass | null>(null);
+  const tapTimer = useRef<NodeJS.Timeout | null>(null);
+  const lastTapTime = useRef<number>(0);
 
-  // 드래그/핀치와 단순 탭을 구분하기 위한 네이티브 터치 리스너
-  // react-zoom-pan-pinch가 synthetic 이벤트를 소비하므로 네이티브 레벨에서 직접 감지
-  useEffect(() => {
-    if (!isOpen) return;
-    const container = containerRef.current;
-    if (!container) return;
-
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchStartTime = Date.now();
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (e.changedTouches.length !== 1) return;
-      const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-      const dt = Date.now() - touchStartTime;
-      // 이동 거리가 10px 이하이고 300ms 이내인 경우만 단순 탭으로 판정
-      if (dx < 10 && dy < 10 && dt < 300) {
-        setShowControls((prev) => !prev);
-      }
-    };
-
-    container.addEventListener("touchstart", onTouchStart, { passive: true });
-    container.addEventListener("touchend", onTouchEnd, { passive: true });
-    return () => {
-      container.removeEventListener("touchstart", onTouchStart);
-      container.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [isOpen]);
-
-  // 모달 열림/닫힘 상태 변화 시 컨트롤 바 초기화
   useEffect(() => {
     if (isOpen) {
       setShowControls(true);
@@ -85,7 +55,6 @@ export default function ImageModal({
 
   if (!imageUrl) return null;
 
-  // 한국어 전송일자 시간 포맷팅 ("2026. 5. 13. 오후 2:04 >")
   const formatHeaderDate = (dateStr?: string) => {
     if (!dateStr) return "";
     try {
@@ -97,19 +66,17 @@ export default function ImageModal({
       const minutes = d.getMinutes().toString().padStart(2, "0");
       const ampm = hours >= 12 ? "오후" : "오전";
       hours = hours % 12;
-      hours = hours ? hours : 12; // 0시 -> 12시
+      hours = hours ? hours : 12;
       return `${year}. ${month}. ${date}. ${ampm} ${hours}:${minutes} >`;
     } catch {
       return "";
     }
   };
 
-  // Cross-Origin 보안 우회를 위한 Blob 이미지 다운로드 구현 (하이브리드 웹뷰 최적화)
   const handleDownload = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // 이벤트 버블링 차단
+    e.stopPropagation();
     if (!imageUrl || isDownloading) return;
 
-    // 하이브리드 앱 웹뷰 환경인 경우, Blob 다운로드 차단 현상을 방지하고자 기기 브라우저/네이티브단으로 다운로드 위임
     const platform = getMobilePlatform();
     const isWebView = platform === "ios_webview" || platform === "android_webview";
     if (isWebView) {
@@ -133,66 +100,88 @@ export default function ImageModal({
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error("이미지 다운로드 실패, 새 창 열기로 폴백 처리:", error);
-      // CORS 및 Blob 에러 발생 시, 새 창(브라우저)에서 원본을 열 수 있도록 완전한 안전망 제공
       window.open(imageUrl, "_blank");
     } finally {
       setIsDownloading(false);
     }
   };
 
-  // 확대 여부와 관계없이 사용자의 탭 조작(showControls)에 따라 툴바를 부드럽게 노출
-  const effectiveShowControls = showControls;
+  // 싱글탭/더블탭 분리 및 튕김 현상 해결을 위한 공식 제스처 이벤트 연동
+  const handleTap = (_swiper: SwiperClass, event: any) => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 250;
+
+    if (now - lastTapTime.current < DOUBLE_TAP_DELAY) {
+      // 1. [더블 탭 판정 시점] - 보류 중인 싱글 탭 타이머 취소하여 툴바 토글 차단
+      if (tapTimer.current) {
+        clearTimeout(tapTimer.current);
+        tapTimer.current = null;
+      }
+
+      if (swiperRef.current && swiperRef.current.zoom) {
+        const swiperZoom = swiperRef.current.zoom;
+
+        if (swiperZoom.scale > 1) {
+          // 이미 확대된 상태라면 축소
+          swiperZoom.out();
+        } else {
+          // [핵심 변경] 강제 CSS 수동 변조 조항을 전면 제거하고 오직 공식 API 매개변수 조합만 활용
+          // Swiper Zoom 내장 메서드의 정석 명세: zoom.in(e) 구조로 탑승
+          // 이렇게 원본 이벤트(event)를 그대로 넘겨주어야 Swiper 내부 가속 트래커 좌표와 동기화가 깨지지 않습니다.
+          if (event) {
+            swiperZoom.in(event);
+          } else {
+            swiperZoom.in();
+          }
+        }
+      }
+
+      lastTapTime.current = 0;
+    } else {
+      // 2. [싱글 탭 대기 시점]
+      lastTapTime.current = now;
+
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+
+      tapTimer.current = setTimeout(() => {
+        setShowControls((prev) => !prev);
+        tapTimer.current = null;
+      }, DOUBLE_TAP_DELAY);
+    }
+  };
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <StyledOverlay />
         <StyledContent>
-          {/* 중앙 전체화면 제스처 미디어 영역 */}
-          <ImageContainer ref={containerRef}>
-            <TransformWrapper
-              key={isOpen ? "open" : "closed"} // 모달이 닫히고 다시 열릴 때 줌 배율(scale=1) 및 위치 자동 복원
-              initialScale={1}
-              initialPositionX={0}
-              initialPositionY={0}
-              centerOnInit={true}
-              minScale={1}
-              maxScale={4}
-              disablePadding={true} /* minScale 이하로 줌아웃되는 탄성(elastic) 효과 완전 차단 */
-              // 모바일 더블탭 / PC 더블클릭 시 클릭된 좌표 조준 자동 줌 기능 활성화
-              doubleClick={{
-                step: 1.5,
-                mode: "toggle",
+          <ImageContainer>
+            <StyledSwiper
+              modules={[Zoom]}
+              // 더블클릭 확대율 스케일을 선언식으로 설정 (maxRatio를 의도하신 1.8배 수준으로 매핑)
+              // 이렇게 주입해야 zoom.in(event) 호출 시 내부 상태 머신이 완벽히 1.8배 타겟으로 자동 가속 연산합니다.
+              zoom={{
+                maxRatio: 1.8,
+                minRatio: 1,
+                toggle: false,
               }}
-              // PC/노트북 트랙패드 핀치 줌 및 마우스 휠 줌(Ctrl 키 연계) 지원
-              wheel={{
-                step: 0.05,
-                activationKeys: ["Control"],
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
               }}
-              // 줌 상태에서의 스무스한 관성 드래그(Velocity Panning) 설정
-              panning={{
-                velocityDisabled: false,
-              }}
+              onTap={handleTap}
+              // 위치 이동(패닝 드래그)이 내부 좌표 충돌 없이 부드럽게 작동하도록 전면 개방
+              allowTouchMove={true}
+              style={{ width: "100%", height: "100%" }}
             >
-              {() => (
-                <TransformComponent
-                  wrapperStyle={{ width: "100%", height: "100%" }}
-                  contentStyle={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+              <SwiperSlide>
+                <div className="swiper-zoom-container">
                   <StyledImage src={imageUrl} alt="전체화면 이미지" />
-                </TransformComponent>
-              )}
-            </TransformWrapper>
+                </div>
+              </SwiperSlide>
+            </StyledSwiper>
           </ImageContainer>
 
-          {/* 상단 플로팅 정보 바 */}
-          <HeaderBar $show={effectiveShowControls}>
+          <HeaderBar $show={showControls}>
             <BackButton onClick={() => onOpenChange(false)}>
               <ArrowLeft size={24} color="#FFFFFF" />
             </BackButton>
@@ -211,8 +200,7 @@ export default function ImageModal({
             </SenderInfo>
           </HeaderBar>
 
-          {/* 하단 플로팅 도구 바 (동작하지 않는 메뉴 완전 배제 후 다운로드 단일 버튼 배치) */}
-          <FooterBar $show={effectiveShowControls}>
+          <FooterBar $show={showControls}>
             <DownloadButton onClick={handleDownload} disabled={isDownloading}>
               <Download size={24} color={isDownloading ? "#767676" : "#FFFFFF"} />
             </DownloadButton>
@@ -227,7 +215,7 @@ const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   z-index: 5000;
-  background-color: #000000; /* Pure Black 배경색 */
+  background-color: #000000;
   animation: ${fadeIn} 200ms ease-out;
 `;
 
@@ -249,12 +237,19 @@ const ImageContainer = styled.div`
   inset: 0;
   width: 100vw;
   height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
   z-index: 5002;
-  touch-action: none; /* 브라우저 기본 제스처 동작 비활성화 */
+  overflow: hidden;
+`;
+
+const StyledSwiper = styled(Swiper)`
+  .swiper-zoom-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000000;
+  }
 `;
 
 const StyledImage = styled.img`
@@ -263,7 +258,9 @@ const StyledImage = styled.img`
   object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
-  will-change: transform;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 `;
 
 const HeaderBar = styled.div<{ $show: boolean }>`
@@ -280,7 +277,6 @@ const HeaderBar = styled.div<{ $show: boolean }>`
   box-sizing: border-box;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
   
-  /* 애니메이션 트랜지션 처리 */
   opacity: ${(props) => (props.$show ? 1 : 0)};
   transform: translateY(${(props) => (props.$show ? "0" : "-20px")});
   pointer-events: ${(props) => (props.$show ? "auto" : "none")};
@@ -333,7 +329,7 @@ const FooterBar = styled.div<{ $show: boolean }>`
   left: 0;
   width: 100%;
   display: flex;
-  justify-content: center; /* 다운로드 단일 버튼 중앙 정렬 */
+  justify-content: center;
   align-items: center;
   padding: 24px 0;
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
@@ -341,7 +337,6 @@ const FooterBar = styled.div<{ $show: boolean }>`
   box-sizing: border-box;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
   
-  /* 애니메이션 트랜지션 처리 */
   opacity: ${(props) => (props.$show ? 1 : 0)};
   transform: translateY(${(props) => (props.$show ? "0" : "20px")});
   pointer-events: ${(props) => (props.$show ? "auto" : "none")};
@@ -359,7 +354,7 @@ const DownloadButton = styled.button`
   justify-content: center;
   width: 56px;
   height: 56px;
-  border-radius: 50%; /* 고급스러운 원형 디자인 */
+  border-radius: 50%;
   transition: transform 0.1s ease, background-color 0.2s ease;
 
   &:active {
