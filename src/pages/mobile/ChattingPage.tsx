@@ -65,7 +65,13 @@ export default function ChattingPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showNewMessageBanner, setShowNewMessageBanner] = useState(false);
   const lastMessageCountRef = useRef<number>(0);
-  const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>([]);
+  const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>([
+    {
+      tempId: "mock-upload-test",
+      previewUrl: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400",
+      progress: 75,
+    }
+  ]);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -84,15 +90,18 @@ export default function ChattingPage() {
     refreshRoom,
   } = useChat(roomId ?? "");
 
-  // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수
+  // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수 (테스트용 mock 아이템은 유지)
   useEffect(() => {
     if (messages.length > 0 && uploadingImages.length > 0) {
-      uploadingImages.forEach((item) => {
-        URL.revokeObjectURL(item.previewUrl);
-      });
-      setUploadingImages([]);
+      const realUploading = uploadingImages.filter((item) => !item.tempId.startsWith("mock-"));
+      if (realUploading.length > 0) {
+        realUploading.forEach((item) => {
+          URL.revokeObjectURL(item.previewUrl);
+        });
+        setUploadingImages((prev) => prev.filter((item) => item.tempId.startsWith("mock-")));
+      }
     }
-  }, [messages]);
+  }, [messages, uploadingImages]);
 
   // 컴포넌트 언마운트 시 메모리 누수 방지를 위한 일괄 해제
   useEffect(() => {
@@ -535,7 +544,32 @@ export default function ChattingPage() {
             <PreviewContainer>
               <PreviewImage src={upload.previewUrl} alt="업로드 중 프리뷰" />
               <ProgressOverlay>
-                <ProgressGlassRing progress={upload.progress}>
+                <ProgressGlassRing>
+                  <svg width="60" height="60" viewBox="0 0 60 60">
+                    {/* 어두운 반투명 원형 배경 (블러 없이 선명하게 투명화) */}
+                    <circle
+                      cx="30"
+                      cy="30"
+                      r="27"
+                      fill="rgba(0, 0, 0, 0.45)"
+                      stroke="rgba(255, 255, 255, 0.2)"
+                      strokeWidth="3"
+                    />
+                    {/* 진행도에 따라 테두리 바깥둘레만 정밀하게 채워지는 서클 */}
+                    <circle
+                      cx="30"
+                      cy="30"
+                      r="27"
+                      fill="none"
+                      stroke="#5e92f0"
+                      strokeWidth="3"
+                      strokeDasharray={169.646}
+                      strokeDashoffset={169.646 * (1 - upload.progress / 100)}
+                      strokeLinecap="round"
+                      transform="rotate(-90 30 30)"
+                      style={{ transition: "stroke-dashoffset 150ms linear" }}
+                    />
+                  </svg>
                   <span className="percentage">{upload.progress}%</span>
                 </ProgressGlassRing>
               </ProgressOverlay>
@@ -1192,7 +1226,7 @@ const PreviewImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.6) blur(1px); /* 전송 중 느낌을 주기 위한 차분한 어두움과 블러 */
+  filter: brightness(0.7); /* 전송 중 느낌을 주기 위한 차분한 어두움만 적용 (블러 제거) */
   transition: filter 300ms ease;
 `;
 
@@ -1208,30 +1242,29 @@ const ProgressOverlay = styled.div`
   pointer-events: none;
 `;
 
-const ProgressGlassRing = styled.div<{ progress: number }>`
+const ProgressGlassRing = styled.div`
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-
-  /* padding-box(내부)와 border-box(테두리)를 분리하여 테두리에 실제 진행률 conic-gradient 적용 */
-  background: 
-    linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.15)) padding-box,
-    conic-gradient(#5e92f0 0% ${props => props.progress}%, rgba(255, 255, 255, 0.35) ${props => props.progress}% 100%) border-box;
-
-  border: 3px solid transparent; /* 테두리 두께 설정 */
-  backdrop-filter: blur(8px); /* 고급스러운 글래스모피즘 효과 */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-  position: relative;
-  transition: background 150ms linear;
   
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
   .percentage {
+    position: relative;
     color: #ffffff;
     font-size: 13px;
     font-weight: 800;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    z-index: 1;
   }
 `;
