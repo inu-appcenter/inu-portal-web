@@ -1,5 +1,7 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
+import { useState } from "react";
+import EditFriendAliasModal from "./EditFriendAliasModal";
 import {
   UserPlus,
   UserCheck,
@@ -32,7 +34,7 @@ import { ROUTES } from "@/constants/routes";
 const StyledOverlay = styled(Drawer.Overlay)`
   position: fixed;
   inset: 0;
-  z-index: 3000;
+  z-index: 6000;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(2px);
 `;
@@ -48,7 +50,7 @@ const StyledContent = styled(Drawer.Content)`
   background-color: white;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
-  z-index: 3001;
+  z-index: 6001;
   display: flex;
   flex-direction: column;
   outline: none;
@@ -248,6 +250,7 @@ export default function UserProfileModal({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
+  const [isAliasModalOpen, setIsAliasModalOpen] = useState(false);
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
 
   const { data, isLoading, isError, error } = useQuery({
@@ -316,11 +319,14 @@ export default function UserProfileModal({
 
   const handleEditAlias = () => {
     if (!profile?.friendId) return;
-    const newAlias = prompt("새로운 별명을 입력하세요.", profile.friendAlias || "");
-    if (newAlias === null) return;
-    updateAliasMutation.mutate({
+    setIsAliasModalOpen(true);
+  };
+
+  const handleConfirmAliasUpdate = async (newAlias: string) => {
+    if (!profile?.friendId) return;
+    await updateAliasMutation.mutateAsync({
       friendId: profile.friendId,
-      alias: newAlias.trim(),
+      alias: newAlias,
     });
   };
 
@@ -458,7 +464,8 @@ export default function UserProfileModal({
   const safeFireId = normalizeProfileImageId(profile?.fireId, DEFAULT_PROFILE_IMAGE_ID);
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
+    <>
+      <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <StyledOverlay />
         <StyledContent>
@@ -610,5 +617,12 @@ export default function UserProfileModal({
             </StyledContent>
           </Drawer.Portal>
         </Drawer.Root>
-      );
-    }
+        <EditFriendAliasModal
+          isOpen={isAliasModalOpen}
+          onOpenChange={setIsAliasModalOpen}
+          currentAlias={profile?.friendAlias || ""}
+          onConfirm={handleConfirmAliasUpdate}
+        />
+      </>
+    );
+  }

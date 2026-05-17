@@ -156,9 +156,10 @@ export const useChat = (roomId: string) => {
     content: string,
     isAnonymous: boolean,
     imageFiles: File[] = [],
+    onProgress?: (progressEvent: any) => void,
   ) => {
     if (imageFiles.length > 0 && roomInfo?.id) {
-      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles) // 변경: 파일 배열 전달
+      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles, onProgress) // 변경: 파일 배열 및 프로그레스 전달
         .then((response) => {
           console.log("이미지 메시지 전송 완료:", response);
         })
