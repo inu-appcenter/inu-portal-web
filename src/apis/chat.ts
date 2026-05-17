@@ -133,12 +133,12 @@ export const getChatRoomMembers = async (
   return response.data;
 };
 
-// 이미지 포함 채팅 메시지 전송
 export const sendImageMessage = async (
   roomId: number,
   content: string,
   isAnonymous: boolean,
   imageFiles: File[],
+  onProgress?: (progressEvent: any) => void,
 ): Promise<ChatMessage> => {
   const formData = new FormData();
   formData.append(
@@ -163,6 +163,9 @@ export const sendImageMessage = async (
   const response = await tokenInstance.post<ChatMessage>(
     "/api/chat/messages",
     formData,
+    {
+      onUploadProgress: onProgress,
+    }
   );
   return response.data;
 };

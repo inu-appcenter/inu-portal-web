@@ -41,6 +41,12 @@ import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleMo
 import { useQuery } from "@tanstack/react-query";
 import { ChatRoomMemberResponseDto } from "@/types/chat";
 
+interface UploadingMessage {
+  tempId: string;
+  previewUrl: string;
+  progress: number;
+}
+
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -59,6 +65,7 @@ export default function ChattingPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showNewMessageBanner, setShowNewMessageBanner] = useState(false);
   const lastMessageCountRef = useRef<number>(0);
+  const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>([]);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -76,6 +83,25 @@ export default function ChattingPage() {
     fetchPreviousMessages,
     refreshRoom,
   } = useChat(roomId ?? "");
+
+  // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수
+  useEffect(() => {
+    if (messages.length > 0 && uploadingImages.length > 0) {
+      uploadingImages.forEach((item) => {
+        URL.revokeObjectURL(item.previewUrl);
+      });
+      setUploadingImages([]);
+    }
+  }, [messages]);
+
+  // 컴포넌트 언마운트 시 메모리 누수 방지를 위한 일괄 해제
+  useEffect(() => {
+    return () => {
+      uploadingImages.forEach((item) => {
+        URL.revokeObjectURL(item.previewUrl);
+      });
+    };
+  }, [uploadingImages]);
 
   const { data: membersRes } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -390,7 +416,30 @@ export default function ChattingPage() {
         isFestivalChat,
       );
 
-      sendMessage("", roomInfo.anonymous, pendingFiles);
+      // 1. 임시 ID 생성 및 로컬 이미지 프리뷰 URL(Blob URL) 확보
+      const tempId = `upload-${Date.now()}`;
+      const previewUrl = URL.createObjectURL(pendingFiles[0]);
+
+      // 2. 프리뷰 상태 리스트에 등록
+      setUploadingImages((prev) => [...prev, { tempId, previewUrl, progress: 0 }]);
+
+      // 3. 업로드 프로그레스 콜백 연동하여 전송 시작
+      sendMessage(
+        "",
+        roomInfo.anonymous,
+        pendingFiles,
+        (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadingImages((prev) =>
+              prev.map((item) =>
+                item.tempId === tempId ? { ...item, progress: percent } : item
+              )
+            );
+          }
+        }
+      );
+
       setPendingFiles([]);
       setIsUploadModalOpen(false);
 
@@ -480,6 +529,20 @@ export default function ChattingPage() {
       )}
 
       <ChattingWrapper ref={scrollRef}>
+        {/* [우아한 프리뷰 우선 배치] column-reverse 특성 상 맨 위에 선언해야 시각적 최하단(최신)에 배치됩니다. */}
+        {uploadingImages.map((upload) => (
+          <UploadingPreviewItem key={upload.tempId}>
+            <PreviewContainer>
+              <PreviewImage src={upload.previewUrl} alt="업로드 중 프리뷰" />
+              <ProgressOverlay>
+                <ProgressGlassRing progress={upload.progress}>
+                  <span className="percentage">{upload.progress}%</span>
+                </ProgressGlassRing>
+              </ProgressOverlay>
+            </PreviewContainer>
+          </UploadingPreviewItem>
+        ))}
+
         {/* column-reverse를 위해 메시지를 역순으로 렌더링 */}
         {reversedMessages.map((msg, index) => {
           const originalIndex = messages.length - 1 - index;
@@ -1099,5 +1162,81 @@ const NewMessageBanner = styled.div`
   
   &:active {
     background-color: #4b81e0;
+  }
+`;
+
+const UploadingPreviewItem = styled.div`
+  @keyframes previewFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  display: flex;
+  justify-content: flex-end; /* 내가 보낸 메시지이므로 우측 정렬 */
+  padding: 8px 16px;
+  box-sizing: border-box;
+  animation: previewFadeIn 200ms ease-out forwards;
+`;
+
+const PreviewContainer = styled.div`
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #f0f0f0;
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.6) blur(1px); /* 전송 중 느낌을 주기 위한 차분한 어두움과 블러 */
+  transition: filter 300ms ease;
+`;
+
+const ProgressOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+`;
+
+const ProgressGlassRing = styled.div<{ progress: number }>`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px); /* 고급스러운 글래스모피즘 효과 */
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  position: relative;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+  
+  .percentage {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #5e92f0; /* 포인트 블루 컬러 */
+    transform: rotate(${props => (props.progress * 3.6)}deg);
+    transition: transform 150ms linear;
   }
 `;
