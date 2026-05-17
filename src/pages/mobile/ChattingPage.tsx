@@ -551,7 +551,7 @@ export default function ChattingPage() {
                       cx="30"
                       cy="30"
                       r="27"
-                      fill="rgba(0, 0, 0, 0.45)"
+                      fill="rgba(0, 0, 0, 0.18)"
                       stroke="rgba(255, 255, 255, 0.2)"
                       strokeWidth="3"
                     />
