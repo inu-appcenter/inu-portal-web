@@ -36,6 +36,7 @@ const getMessageColor = (identifier: string) => {
 import { updateChatRoomTitle } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
+import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleModal";
 
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -49,6 +50,7 @@ export default function ChattingPage() {
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMemberListOpen, setIsMemberListOpen] = useState(false);
+  const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -69,7 +71,7 @@ export default function ChattingPage() {
 
   useVisualViewport();
 
-  const handleUpdateTitle = async () => {
+  const handleUpdateTitle = () => {
     if (roomInfo?.isOfficial) {
       alert("공식 채팅방의 이름은 변경할 수 없습니다.");
       return;
@@ -81,21 +83,18 @@ export default function ChattingPage() {
       return;
     }
 
-    const newTitle = prompt(
-      "새로운 채팅방 이름을 입력하세요. 참여자 모두에게 적용됩니다.",
-      roomInfo?.title || "",
-    );
-    if (newTitle === null) return;
-    if (!newTitle.trim()) {
-      alert("이름을 입력해주세요.");
-      return;
-    }
+    setIsTitleModalOpen(true);
+  };
+
+  const handleConfirmTitleUpdate = async (newTitle: string) => {
     try {
       mixpanelTrack.chatRoomMenuClicked("채팅방 이름 변경", roomId ?? "");
-      await updateChatRoomTitle(Number(roomId), newTitle.trim());
+      await updateChatRoomTitle(Number(roomId), newTitle);
       refreshRoom();
     } catch (err: any) {
-      alert(err.response?.data?.msg || "방 이름 변경에 실패했습니다.");
+      const errorMsg = err.response?.data?.msg || "방 이름 변경에 실패했습니다.";
+      alert(errorMsg);
+      throw err;
     }
   };
 
@@ -495,6 +494,13 @@ export default function ChattingPage() {
         onOpenChange={setIsMemberListOpen}
         roomInfo={roomInfo} // roomInfo 전달
         refreshRoom={refreshRoom}
+      />
+
+      <EditChatRoomTitleModal
+        isOpen={isTitleModalOpen}
+        onOpenChange={setIsTitleModalOpen}
+        currentTitle={roomInfo?.title || ""}
+        onConfirm={handleConfirmTitleUpdate}
       />
     </ChatPageWrapper>
   );
