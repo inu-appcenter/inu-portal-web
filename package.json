@@ -38,9 +38,10 @@
     "react-router-dom": "^6.21.3",
     "react-spring-bottom-sheet": "^3.4.1",
     "react-svg": "^16.3.0",
+    "react-zoom-pan-pinch": "^4.0.3",
     "sockjs-client": "^1.6.1",
     "styled-components": "^6.1.8",
-    "swiper": "^12.1.2",
+    "swiper": "^12.1.4",
     "vaul": "^1.1.2",
     "zustand": "^4.5.5"
   },
