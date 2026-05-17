@@ -78,8 +78,8 @@ export default function ImageModal({
       if (e.ctrlKey) {
         e.preventDefault(); // 브라우저 자체 페이지 줌 절대 차단
 
-        // 핀치 줌 감도 보정 수치
-        const zoomIntensity = 0.015;
+        // 핀치 줌 감도 보정 수치 (트랙패드에서도 쫀득하고 쾌적하게 줌이 먹히도록 대폭 상향)
+        const zoomIntensity = 0.04;
         const delta = -e.deltaY * zoomIntensity;
         
         setScale((prevScale) => {
