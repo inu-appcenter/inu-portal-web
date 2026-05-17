@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
+import useUserStore from "@/stores/useUserStore";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -27,6 +28,8 @@ import Skeleton from "@/components/common/Skeleton";
 
 export default function MobileChatListPage() {
   const navigate = useNavigate();
+  const { userInfo } = useUserStore();
+  const isLoggedIn = userInfo.id !== 0;
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "개인";
@@ -127,8 +130,19 @@ export default function MobileChatListPage() {
   );
 
   const menuItems = useMemo(() => {
+    const defaultMenu = [
+      {
+        label: "알림 설정",
+        onClick: () => {
+          mixpanelTrack.mypageMenuClicked("채팅헤더 - 알림설정");
+          navigate(ROUTES.MYPAGE.NOTIFICATION);
+        },
+      },
+    ];
+
     if (selectedCategory === "친구") {
       return [
+        ...defaultMenu,
         {
           label: "보낸 친구 요청 목록",
           onClick: () => {
@@ -145,8 +159,8 @@ export default function MobileChatListPage() {
         },
       ];
     }
-    return undefined;
-  }, [selectedCategory]);
+    return defaultMenu;
+  }, [selectedCategory, navigate]);
 
   useHeader({
     title: "채팅",
@@ -221,6 +235,16 @@ export default function MobileChatListPage() {
               "채팅 기능은 beta 버전이며, 불안정할 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
             }
           />
+          {isLoggedIn && !userInfo.chatPushEnabled && (
+
+            <TitleContentArea description={<NotificationWarningBanner >
+              현재 채팅 알림이 꺼져있어요.
+              <span className="link" onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}>
+                알림 설정으로 이동
+              </span>
+            </NotificationWarningBanner>} />
+
+          )}
           <Box>
             <ListWrapper>
               {isLoading ? (
@@ -369,6 +393,21 @@ const Container = styled.div`
   padding-bottom: 120px;
   gap: 24px;
   position: relative;
+`;
+
+const NotificationWarningBanner = styled.div`
+
+  .link {
+    color: #0a84ff;
+    text-decoration: underline;
+    margin-left: 6px;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
 `;
 
 const ListWrapper = styled.div`

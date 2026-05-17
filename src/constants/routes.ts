@@ -48,6 +48,7 @@ export const ROUTES = {
     COMMENTS: "/mypage/comment",
     DELETE: "/mypage/delete",
     FCM: "/mypage/fcm",
+    NOTIFICATION: "/mypage/notification",
   },
 
   // 게시판 및 기능
