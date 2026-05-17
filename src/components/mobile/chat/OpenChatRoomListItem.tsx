@@ -40,8 +40,6 @@ export default function OpenChatRoomListItem({
           <span>
             {room.currentParticipants} / {room.maxCapacity}
           </span>
-          <span style={{ margin: "0 4px" }}>·</span>
-          <span>방장 {room.ownerNickname}</span>
         </ParticipantInfo>
       </ContentArea>
       <JoinButton $joined={room.joined}>

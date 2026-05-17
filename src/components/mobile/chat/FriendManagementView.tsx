@@ -15,9 +15,11 @@ import {
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import Skeleton from "@/components/common/Skeleton";
+import useUserStore from "@/stores/useUserStore";
 
 export default function FriendManagementView() {
   const queryClient = useQueryClient();
+  const { userInfo } = useUserStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -67,6 +69,22 @@ export default function FriendManagementView() {
 
   return (
     <ViewWrapper>
+      {userInfo && userInfo.id > 0 && !searchTerm && (
+        <TitleContentArea title="내 프로필">
+          <Box>
+            <SocialUserCard
+              name={userInfo.nickname}
+              subtitle={userInfo.department || "학과 정보 없음"}
+              fireId={userInfo.fireId}
+              onClick={() => {
+                setSelectedMemberId(userInfo.id);
+                setIsProfileModalOpen(true);
+              }}
+            />
+          </Box>
+        </TitleContentArea>
+      )}
+
       {pendingRequests.length > 0 && (
         <TitleContentArea title={`받은 친구 요청 (${pendingRequests.length})`}>
           <Box>

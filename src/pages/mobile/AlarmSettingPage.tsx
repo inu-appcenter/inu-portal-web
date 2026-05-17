@@ -11,10 +11,6 @@ import {
   subscribeKeywordsNotice,
 } from "@/apis/notices";
 import useUserStore from "../../stores/useUserStore.ts";
-import {
-  getMembers,
-  patchChatPushSetting,
-} from "@/apis/members";
 import findTitleOrCode from "../../utils/findTitleOrCode.ts";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.tsx";
 import { useLocation } from "react-router-dom";
@@ -65,74 +61,12 @@ export default function AlarmSettingPage() {
 
   return (
     <AlarmSettingPageWrapper>
-      <ChatPushSettingSection />
       {currentTab === "school" ? (
         <MobileSchoolAlarmSetting location="Notice Alarm Page" />
       ) : (
         <MobileDeptAlarmSetting location="Notice Alarm Page" />
       )}
     </AlarmSettingPageWrapper>
-  );
-}
-
-function ChatPushSettingSection() {
-  const { userInfo, setUserInfo } = useUserStore();
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const handleToggle = async () => {
-    setIsUpdating(true);
-    try {
-      const res = await patchChatPushSetting();
-      const userRes = await getMembers();
-      setUserInfo(userRes.data);
-      mixpanelTrack.chatPushToggled(res.data.chatPushEnabled, "Alarm Setting Page");
-    } catch (error) {
-      console.error("채팅 알림 설정 변경 실패:", error);
-      alert("알림 설정 변경에 실패했습니다.");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  return (
-    <KeyWordSettingWrapper style={{ marginBottom: "0" }}>
-      <TitleContentArea
-        title="채팅 알림 설정"
-        description="전체 채팅 푸시 알림을 켜거나 끌 수 있습니다."
-      />
-      <Box
-        style={{
-          background: userInfo.chatPushEnabled
-            ? "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)"
-            : "#f2f2f2",
-          boxShadow: userInfo.chatPushEnabled
-            ? "0 8px 24px rgba(94, 146, 240, 0.15)"
-            : "0 8px 24px rgba(0, 0, 0, 0.05)",
-          border: userInfo.chatPushEnabled
-            ? "1px solid rgba(255, 255, 255, 0.5)"
-            : "1px solid #e0e0e0",
-          opacity: isUpdating ? 0.6 : 1,
-          pointerEvents: isUpdating ? "none" : "auto",
-        }}
-      >
-        <AllAlarmCheckBoxWrapper onClick={handleToggle}>
-          <div>
-            <div className="first-line">채팅 알림 받기</div>
-            <div className="second-line">
-              {userInfo.chatPushEnabled
-                ? "모든 채팅방의 푸시 알림을 받고 있어요."
-                : "채팅 푸시 알림이 꺼져 있습니다."}
-            </div>
-          </div>
-          <div onClick={(e) => e.stopPropagation()}>
-            <Switch
-              checked={userInfo.chatPushEnabled}
-              onCheckedChange={handleToggle}
-            />
-          </div>
-        </AllAlarmCheckBoxWrapper>
-      </Box>
-    </KeyWordSettingWrapper>
   );
 }
 
