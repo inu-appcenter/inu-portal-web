@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useParams, useNavigate } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
-import { Send, Users, Loader2, Image } from "lucide-react";
+import { Send, Users, Loader2, Image, ArrowDown } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
@@ -57,6 +57,8 @@ export default function ChattingPage() {
   const [activeImageMeta, setActiveImageMeta] = useState<{ senderName: string; createDate: string; senderId?: number | null } | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [showNewMessageBanner, setShowNewMessageBanner] = useState(false);
+  const lastMessageCountRef = useRef<number>(0);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -199,8 +201,14 @@ export default function ChattingPage() {
   // 스크롤 이벤트로 이전 메시지 트리거 감지
   const handleScroll = React.useCallback(() => {
     const el = scrollRef.current;
+    if (!el) return;
+
+    // 사용자가 직접 최하단 근처로 스크롤하면 알림 배너를 자연스럽게 숨김
+    if (Math.abs(el.scrollTop) < 30) {
+      setShowNewMessageBanner(false);
+    }
+
     if (
-      !el ||
       isLoading ||
       isFetchingPrevious ||
       !hasMore ||
@@ -240,17 +248,36 @@ export default function ChattingPage() {
     }
   }, [isFetchingPrevious]);
 
-  // 데이터 업데이트 후 위치 보정
+  // 데이터 업데이트 후 위치 보정 및 새 메시지 바닥 정렬 & 알림 노출
   useLayoutEffect(() => {
     const scrollEl = scrollRef.current;
     if (!scrollEl || isFetchingPrevious) return;
 
-    // 이전 메시지 로드 완료 후
+    // 이전 메시지 로드 완료 후 위치 복원
     if (scrollHeightRef.current > 0) {
-      // 튀는 현상 방지를 위해 기억해둔 scrollTop으로 강제 복원
       scrollEl.scrollTop = lastScrollTopRef.current;
       scrollHeightRef.current = 0;
+      return;
     }
+
+    // 신규 실시간 메시지 발신/수신 타임라인 감지
+    const currentCount = messages.length;
+    if (currentCount > lastMessageCountRef.current && lastMessageCountRef.current > 0) {
+      const isNearBottom = Math.abs(scrollEl.scrollTop) < 50;
+      if (isNearBottom) {
+        scrollEl.scrollTop = 0;
+        requestAnimationFrame(() => {
+          scrollEl.scrollTop = 0;
+        });
+        setShowNewMessageBanner(false);
+      } else {
+        // 이전 기록을 읽기 위해 스크롤을 올린 상태면
+        // 스크롤 위치를 보존하고 알림 배너 노출
+        setShowNewMessageBanner(true);
+      }
+    }
+
+    lastMessageCountRef.current = currentCount;
   }, [messages, isFetchingPrevious]);
 
   const handleInput = () => {
@@ -275,6 +302,18 @@ export default function ChattingPage() {
     sendMessage(inputValue.trim(), roomInfo.anonymous);
     setInputValue("");
     if (inputRef.current) inputRef.current.style.height = "auto";
+
+    // 본인이 메시지를 직접 보낸 것이므로 즉시 스크롤을 최하단으로 정렬
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  };
+
+  const handleScrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+      setShowNewMessageBanner(false);
+    }
   };
 
   const handleImageClick = (
@@ -354,6 +393,11 @@ export default function ChattingPage() {
       sendMessage("", roomInfo.anonymous, pendingFiles);
       setPendingFiles([]);
       setIsUploadModalOpen(false);
+
+      // 이미지 전송 완료 시 즉시 바닥으로 스냅
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
     }
   };
 
@@ -498,6 +542,13 @@ export default function ChattingPage() {
         )}
       </ChattingWrapper>
 
+      {showNewMessageBanner && (
+        <NewMessageBanner onClick={handleScrollToBottom}>
+          <span>새로운 메시지</span>
+          <ArrowDown size={14} color="#FFFFFF" strokeWidth={3} />
+        </NewMessageBanner>
+      )}
+
       <FixedInputArea>
         <div className="input-wrapper">
           <label htmlFor="image-upload">
@@ -521,6 +572,14 @@ export default function ChattingPage() {
             rows={1}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onFocus={() => {
+              // iOS 가상 키보드가 완전히 열릴 때까지 대기 후 스크롤 하단 자동 고정
+              setTimeout(() => {
+                if (scrollRef.current) {
+                  scrollRef.current.scrollTop = 0;
+                }
+              }, 200);
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 if (e.nativeEvent.isComposing) return;
@@ -633,6 +692,11 @@ const ChattingWrapper = styled.div`
   overflow-y: auto;
   //padding-bottom: 64px;
   box-sizing: border-box;
+
+  /* iOS 하드웨어 가속 모멘텀 스크롤 활성화 */
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+  contain: content;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -1007,4 +1071,33 @@ const OfficialTag = styled.span`
   padding: 1px 4px;
   border-radius: 4px;
   flex-shrink: 0;
+`;
+
+const NewMessageBanner = styled.div`
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, 8px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+
+  position: absolute;
+  bottom: 80px; /* FixedInputArea 위에 부드럽게 플로팅 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #5e92f0;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.3);
+  cursor: pointer;
+  animation: fadeIn 200ms ease-out forwards;
+  
+  &:active {
+    background-color: #4b81e0;
+  }
 `;
