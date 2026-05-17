@@ -109,7 +109,7 @@ export default function EditFriendAliasModal({
 const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
-  z-index: 4000;
+  z-index: 7000;
   background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(2px);
   animation: ${fadeIn} 200ms ease-out;
@@ -122,7 +122,7 @@ const StyledContent = styled(Dialog.Content)`
   transform: translate(-50%, -50%);
   width: 90vw;
   max-width: 400px;
-  z-index: 4001;
+  z-index: 7001;
   display: flex;
   flex-direction: column;
   outline: none;

@@ -11,6 +11,7 @@ import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import Skeleton from "@/components/common/Skeleton";
+import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,10 +34,12 @@ const getMessageColor = (identifier: string) => {
   return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
 };
 
-import { updateChatRoomTitle } from "@/apis/chat";
+import { updateChatRoomTitle, getChatRoomMembers } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleModal";
+import { useQuery } from "@tanstack/react-query";
+import { ChatRoomMemberResponseDto } from "@/types/chat";
 
 export default function ChattingPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -51,6 +54,9 @@ export default function ChattingPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMemberListOpen, setIsMemberListOpen] = useState(false);
   const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
+  const [activeImageMeta, setActiveImageMeta] = useState<{ senderName: string; createDate: string; senderId?: number | null } | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -68,6 +74,13 @@ export default function ChattingPage() {
     fetchPreviousMessages,
     refreshRoom,
   } = useChat(roomId ?? "");
+
+  const { data: membersRes } = useQuery({
+    queryKey: ["chatMembers", roomId],
+    queryFn: () => getChatRoomMembers(roomId ?? ""),
+    enabled: !!roomId,
+  });
+  const members = membersRes?.data || [];
 
   useVisualViewport();
 
@@ -264,11 +277,60 @@ export default function ChattingPage() {
     if (inputRef.current) inputRef.current.style.height = "auto";
   };
 
-  const handleImageClick = (url: string) => {
+  const handleImageClick = (
+    url: string,
+    senderName: string,
+    createDate: string,
+    senderId?: number | null
+  ) => {
     mixpanelTrack.chatRoomMenuClicked("이미지 크게 보기", roomId ?? "");
     setSelectedImageUrl(url);
+
+    // 백엔드 소켓/조회 응답에서 senderId가 null로 올 경우, React Query 캐시의 멤버 목록에서 닉네임/별칭 매칭하여 복원
+    let resolvedId = senderId;
+    if (!resolvedId && senderName) {
+      const matched = members.find(
+        (m: ChatRoomMemberResponseDto) => m.nickname === senderName || m.friendAlias === senderName
+      );
+      resolvedId = matched?.memberId ?? null;
+    }
+
+    // 본인 발송 메시지의 경우, 글로벌 UserStore의 userInfo.id를 최종 폴백으로 삼아 100% 매칭 보장
+    if (!resolvedId && (senderName === "나" || senderName === userInfo?.nickname)) {
+      resolvedId = userInfo?.id ?? null;
+    }
+
+    setActiveImageMeta({ senderName, createDate, senderId: resolvedId });
     setIsImageModalOpen(true);
+    window.history.pushState({ modal: "image" }, "");
   };
+
+  const handleOpenProfileFromImage = (senderId: number) => {
+    setSelectedMemberId(senderId);
+    setIsProfileModalOpen(true);
+  };
+
+  const handleImageModalOpenChange = (open: boolean) => {
+    if (!open) {
+      setIsImageModalOpen(false);
+      if (window.history.state?.modal === "image") {
+        window.history.back();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isImageModalOpen) {
+        setIsImageModalOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isImageModalOpen]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
@@ -477,7 +539,27 @@ export default function ChattingPage() {
       <ImageModal
         imageUrl={selectedImageUrl}
         isOpen={isImageModalOpen}
-        onOpenChange={setIsImageModalOpen}
+        onOpenChange={handleImageModalOpenChange}
+        senderName={activeImageMeta?.senderName}
+        createDate={activeImageMeta?.createDate}
+        senderId={activeImageMeta?.senderId}
+        onSenderClick={handleOpenProfileFromImage}
+      />
+
+      <UserProfileModal
+        memberId={selectedMemberId}
+        isOpen={isProfileModalOpen}
+        onOpenChange={setIsProfileModalOpen}
+        roomContext={
+          roomInfo
+            ? {
+              roomId: roomId ?? "",
+              chatType: roomInfo.type,
+              isOwner: roomInfo.owner,
+              participantCount: roomInfo.currentParticipants,
+            }
+            : undefined
+        }
       />
 
       <ImageUploadModal
@@ -717,7 +799,12 @@ const ChatItemOtherPerson = ({
   showTime,
 }: {
   message: ChatMessage;
-  onImageClick: (url: string) => void;
+  onImageClick: (
+    url: string,
+    senderName: string,
+    createDate: string,
+    senderId?: number | null
+  ) => void;
   userImageUrl: string | null;
   showName: boolean;
   showTime: boolean;
@@ -760,7 +847,13 @@ const ChatItemOtherPerson = ({
                 src={thumbnailUrl}
                 alt="이미지"
                 onClick={() =>
-                  originalImageUrl && onImageClick(originalImageUrl)
+                  originalImageUrl &&
+                  onImageClick(
+                    originalImageUrl,
+                    message.senderAlias || message.senderNickname || "알 수 없음",
+                    message.createDate,
+                    message.senderId
+                  )
                 }
               />
             )}
@@ -788,7 +881,12 @@ const ChatItemMy = ({
   showTime,
 }: {
   message: ChatMessage;
-  onImageClick: (url: string) => void;
+  onImageClick: (
+    url: string,
+    senderName: string,
+    createDate: string,
+    senderId?: number | null
+  ) => void;
   showTime: boolean;
 }) => {
   const thumbnailUrl =
@@ -831,7 +929,13 @@ const ChatItemMy = ({
                 src={thumbnailUrl}
                 alt="이미지"
                 onClick={() =>
-                  originalImageUrl && onImageClick(originalImageUrl)
+                  originalImageUrl &&
+                  onImageClick(
+                    originalImageUrl,
+                    message.senderAlias || message.senderNickname || "나",
+                    message.createDate,
+                    message.senderId
+                  )
                 }
               />
             )}

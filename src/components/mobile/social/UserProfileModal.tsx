@@ -34,7 +34,7 @@ import { ROUTES } from "@/constants/routes";
 const StyledOverlay = styled(Drawer.Overlay)`
   position: fixed;
   inset: 0;
-  z-index: 3000;
+  z-index: 6000;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(2px);
 `;
@@ -50,7 +50,7 @@ const StyledContent = styled(Drawer.Content)`
   background-color: white;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
-  z-index: 3001;
+  z-index: 6001;
   display: flex;
   flex-direction: column;
   outline: none;
