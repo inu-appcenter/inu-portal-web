@@ -37,8 +37,44 @@ export default function ImageModal({
   const [isDownloading, setIsDownloading] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
-  // 드래그(패닝) 중이었는지 추적하여 단순 탭과 드래그 종료를 구분하는 플래그
-  const wasPanning = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 드래그/핀치와 단순 탭을 구분하기 위한 네이티브 터치 리스너
+  // react-zoom-pan-pinch가 synthetic 이벤트를 소비하므로 네이티브 레벨에서 직접 감지
+  useEffect(() => {
+    if (!isOpen) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.changedTouches.length !== 1) return;
+      const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+      const dt = Date.now() - touchStartTime;
+      // 이동 거리가 10px 이하이고 300ms 이내인 경우만 단순 탭으로 판정
+      if (dx < 10 && dy < 10 && dt < 300) {
+        setShowControls((prev) => !prev);
+      }
+    };
+
+    container.addEventListener("touchstart", onTouchStart, { passive: true });
+    container.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      container.removeEventListener("touchstart", onTouchStart);
+      container.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [isOpen]);
 
   // 모달 열림/닫힘 상태 변화 시 컨트롤 바 초기화
   useEffect(() => {
@@ -104,12 +140,6 @@ export default function ImageModal({
     }
   };
 
-  // 단순 탭 시 상하단 툴바 토글 - 드래그 종료 시점의 오발 click은 wasPanning으로 걸러냄
-  const handleContainerClick = () => {
-    if (wasPanning.current) return;
-    setShowControls((prev) => !prev);
-  };
-
   // 확대 여부와 관계없이 사용자의 탭 조작(showControls)에 따라 툴바를 부드럽게 노출
   const effectiveShowControls = showControls;
 
@@ -119,7 +149,7 @@ export default function ImageModal({
         <StyledOverlay />
         <StyledContent>
           {/* 중앙 전체화면 제스처 미디어 영역 */}
-          <ImageContainer onClick={handleContainerClick}>
+          <ImageContainer ref={containerRef}>
             <TransformWrapper
               key={isOpen ? "open" : "closed"} // 모달이 닫히고 다시 열릴 때 줌 배율(scale=1) 및 위치 자동 복원
               initialScale={1}
@@ -142,12 +172,6 @@ export default function ImageModal({
               // 줌 상태에서의 스무스한 관성 드래그(Velocity Panning) 설정
               panning={{
                 velocityDisabled: false,
-              }}
-              // 드래그(패닝) 시작/종료 마킹 - 단순 탭과 구별하기 위해
-              onPanningStart={() => { wasPanning.current = true; }}
-              onPanningStop={() => {
-                // 패닝이 종료된 직후 click 이벤트가 버블되므로 약간의 유예를 두고 플래그 해제
-                setTimeout(() => { wasPanning.current = false; }, 50);
               }}
             >
               {() => (
