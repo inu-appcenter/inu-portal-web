@@ -65,13 +65,7 @@ export default function ChattingPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showNewMessageBanner, setShowNewMessageBanner] = useState(false);
   const lastMessageCountRef = useRef<number>(0);
-  const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>([
-    {
-      tempId: "mock-upload-test",
-      previewUrl: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400",
-      progress: 75,
-    }
-  ]);
+  const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>([]);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -90,18 +84,15 @@ export default function ChattingPage() {
     refreshRoom,
   } = useChat(roomId ?? "");
 
-  // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수 (테스트용 mock 아이템은 유지)
+  // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수
   useEffect(() => {
     if (messages.length > 0 && uploadingImages.length > 0) {
-      const realUploading = uploadingImages.filter((item) => !item.tempId.startsWith("mock-"));
-      if (realUploading.length > 0) {
-        realUploading.forEach((item) => {
-          URL.revokeObjectURL(item.previewUrl);
-        });
-        setUploadingImages((prev) => prev.filter((item) => item.tempId.startsWith("mock-")));
-      }
+      uploadingImages.forEach((item) => {
+        URL.revokeObjectURL(item.previewUrl);
+      });
+      setUploadingImages([]);
     }
-  }, [messages, uploadingImages]);
+  }, [messages]);
 
   // 컴포넌트 언마운트 시 메모리 누수 방지를 위한 일괄 해제
   useEffect(() => {
@@ -1262,9 +1253,7 @@ const ProgressGlassRing = styled.div`
   .percentage {
     position: relative;
     color: #ffffff;
-    font-size: 13px;
-    font-weight: 800;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    font-size: 12px;
     z-index: 1;
   }
 `;
