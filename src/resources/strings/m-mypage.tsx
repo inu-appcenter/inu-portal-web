@@ -24,6 +24,10 @@ export const MyPageCategoryLoggeedIn = [
     title: "스크랩",
     image: `${scrapImg}`,
   },
+  {
+    title: "알림 설정",
+    description: "채팅 및 학과/학교 공지 알림 설정",
+  },
   { title: "로그아웃", image: `${logoutImg}` },
   // { title: "회원탈퇴", image: `${removeImg}` },
 ];

@@ -18,6 +18,16 @@ import {
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
 const MAX_NICKNAME_LENGTH = 10;
 
+const FORBIDDEN_KEYWORDS = [
+  "알림", "공지", "알람", "운영자", "운영진", "관리자", "시스템", "스태프", "어드민",
+  "notice", "admin", "system", "staff", "intip", "인팁", "appcenter", "앱센터"
+];
+
+const checkForbiddenNickname = (nicknameText: string): boolean => {
+  const normalized = nicknameText.replace(/\s+/g, "").toLowerCase();
+  return FORBIDDEN_KEYWORDS.some((keyword) => normalized.includes(keyword.toLowerCase()));
+};
+
 const getProfileImageUrl = (fireId: number) =>
   `https://portal.inuappcenter.kr/images/profile/${fireId}`;
 
@@ -76,6 +86,11 @@ export default function UserModify() {
       return;
     }
 
+    if (checkForbiddenNickname(trimmedNickname)) {
+      alert("사칭 방지를 위해 '알림', '운영진', '시스템' 등의 단어는 닉네임으로 설정할 수 없습니다.");
+      return;
+    }
+
     if (nicknameLength > MAX_NICKNAME_LENGTH) {
       alert("닉네임은 10자를 초과할 수 없습니다.");
       return;
@@ -124,9 +139,18 @@ export default function UserModify() {
       }
 
       navigate("/mypage");
-    } catch (error) {
+    } catch (error: any) {
       console.error("회원정보 수정 실패", error);
-      alert("회원정보 수정에 실패했습니다.");
+      const errorResponse = error.response?.data;
+      const isForbiddenCode =
+        errorResponse?.code === "INVALID_NICKNAME_KEYWORD" ||
+        errorResponse?.status === "BAD_REQUEST";
+
+      if (isForbiddenCode) {
+        alert("사칭 방지를 위해 '알림', '운영진', '시스템' 등의 단어는 닉네임으로 설정할 수 없습니다.");
+      } else {
+        alert(errorResponse?.message || "회원정보 수정에 실패했습니다.");
+      }
     } finally {
       setIsSaving(false);
     }

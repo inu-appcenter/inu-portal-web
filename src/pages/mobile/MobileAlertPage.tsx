@@ -14,6 +14,7 @@ import useUserStore from "@/stores/useUserStore";
 import { Notification } from "@/types/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import notificationCategory from "@/resources/strings/notificationCategory";
+import { formatTimeAgo } from "@/utils/date";
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
@@ -161,7 +162,7 @@ const MobileAlertPage = () => {
                   category={notificationCategory[alert.type] || alert.type}
                   title={alert.title}
                   content={alert.body}
-                  date={alert.createDate}
+                  date={formatTimeAgo(alert.createDate)}
                   isEllipsis={false}
                 />
               </Box>

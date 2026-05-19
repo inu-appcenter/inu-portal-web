@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
@@ -25,6 +25,7 @@ export default function CategorySelectorNew({
   const location = useLocation();
   const navigate = useNavigate();
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const activeItemRef = useRef<HTMLDivElement | null>(null);
   const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
 
   const normalizedCategories = useMemo(
@@ -33,10 +34,10 @@ export default function CategorySelectorNew({
         typeof category === "string"
           ? { label: category, value: category, count: undefined }
           : {
-              label: category.label,
-              value: category.value ?? category.label,
-              count: category.count,
-            },
+            label: category.label,
+            value: category.value ?? category.label,
+            count: category.count,
+          },
       ),
     [categories],
   );
@@ -67,6 +68,17 @@ export default function CategorySelectorNew({
     };
   }, [normalizedCategories]);
 
+  // 활성 탭이 화면 밖에 있거나 가려져 있을 때 부드럽게 화면에 보여지도록 스크롤 이동
+  useEffect(() => {
+    if (activeItemRef.current) {
+      activeItemRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [selectedCategory]);
+
   const handleClickCategory = (category: string) => {
     const params = new URLSearchParams(location.search);
     paramsToReset.forEach((paramKey) => params.delete(paramKey));
@@ -80,22 +92,26 @@ export default function CategorySelectorNew({
         ref={scrollAreaRef}
         $hasHorizontalOverflow={hasHorizontalOverflow}
       >
-        {normalizedCategories.map((category, index) => (
-          <FillItem
-            key={index}
-            $selected={selectedCategory === category.value}
-            onClick={() => handleClickCategory(category.value)}
-          >
-            <div>
-              {category.label}
-              {category.count !== undefined && (
-                <Count $selected={selectedCategory === category.value}>
-                  {category.count}
-                </Count>
-              )}
-            </div>
-          </FillItem>
-        ))}
+        {normalizedCategories.map((category, index) => {
+          const isSelected = selectedCategory === category.value;
+          return (
+            <FillItem
+              key={index}
+              ref={isSelected ? activeItemRef : undefined}
+              $selected={isSelected}
+              onClick={() => handleClickCategory(category.value)}
+            >
+              <div>
+                {category.label}
+                {category.count !== undefined && (
+                  <Count $selected={isSelected}>
+                    {category.count}
+                  </Count>
+                )}
+              </div>
+            </FillItem>
+          );
+        })}
       </CategoryScrollArea>
     </CategorySelectorWrapper>
   );
@@ -109,7 +125,7 @@ const CategorySelectorWrapper = styled.div`
 const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
   display: flex;
   flex-direction: row;
-  gap: 6px;
+  // gap: 6px;
   width: 100%;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
@@ -145,10 +161,10 @@ const FillItem = styled.div<{ $selected: boolean }>`
   border-radius: 100px;
   padding: 8px 14px;
   font-size: 14px;
-  font-weight: 500;
-  background: ${({ $selected }) => ($selected ? "#5E92F0" : "#ffffff")};
+  font-weight: ${({ $selected }) => ($selected ? "600" : "500")};
+  background: ${({ $selected }) => ($selected ? "#5E92F0" : "transparent")};
   color: ${({ $selected }) => ($selected ? "#F4F4F4" : "#666")};
-  box-shadow: ${SOFT_CHIP_SHADOW};
+  // box-shadow: ${SOFT_CHIP_SHADOW};
   cursor: pointer;
   white-space: nowrap;
 `;

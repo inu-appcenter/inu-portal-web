@@ -9,6 +9,7 @@ interface MobilePillSearchBarProps {
   placeholder?: string;
   submitAriaLabel?: string;
   className?: string;
+  autoFocus?: boolean;
 }
 
 export default function MobilePillSearchBar({
@@ -18,6 +19,7 @@ export default function MobilePillSearchBar({
   placeholder = "검색어를 입력해주세요",
   submitAriaLabel = "검색하기",
   className,
+  autoFocus,
 }: MobilePillSearchBarProps) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -31,6 +33,7 @@ export default function MobilePillSearchBar({
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        autoFocus={autoFocus}
       />
       <button type="submit" aria-label={submitAriaLabel}>
         <img src={searchImg} alt="" />

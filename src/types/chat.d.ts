@@ -17,6 +17,8 @@ export interface ChatMessage {
   messageId: number;
   roomId: number;
   senderNickname: string;
+  senderAlias: string | null;
+  senderChatRoomMemberId: number;
   senderHash: string;
   content: string;
   imageCount: number;
@@ -43,6 +45,7 @@ export interface ChatRoom {
   pushEnabled: boolean;
   thumbnailUrl: string | null;
   description: string | null;
+  friendAlias: string | null;
 }
 
 /**
@@ -86,12 +89,13 @@ export interface OpenChatRoomResponseDto {
  * 채팅방 멤버 응답 DTO
  */
 export interface ChatRoomMemberResponseDto {
-  memberId: number | null;
+  chatRoomMemberId: number;
   nickname: string;
   studentId: string | null;
   fireId: number | null;
-  me: boolean;
+  isMe: boolean;
   isOwner: boolean;
+  friendAlias: string | null;
 }
 
 /**

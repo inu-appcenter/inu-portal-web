@@ -115,12 +115,14 @@ const KakaoMap = ({
   const lastGpsHeadingAtRef = useRef(0);
   const hasShownHeadingHintRef = useRef(false);
   const isDraggingRef = useRef(false);
+  const isSyncingCenterRef = useRef(false);
+  const isAnimatingRef = useRef(false);
 
   const currentTab = selectedTab as TabType;
   const config = MAP_TAB_CONFIG[currentTab];
-  const mapCenter = useMemo(
+  const initialMapCenter = useMemo(
     () => ({ lat: viewXY.X, lng: viewXY.Y }),
-    [viewXY.X, viewXY.Y],
+    [],
   );
 
   const syncSelectedCoordWithMapCenter = () => {
@@ -132,23 +134,22 @@ const KakaoMap = ({
       Y: center.getLng(),
     };
 
-    setSelectedCoord((prev) =>
-      Math.abs(prev.X - nextCoord.X) < 0.0000001 &&
-      Math.abs(prev.Y - nextCoord.Y) < 0.0000001
-        ? prev
-        : nextCoord,
-    );
+    isSyncingCenterRef.current = true;
+    setSelectedCoord((prev) => {
+      const isSame =
+        Math.abs(prev.X - nextCoord.X) < 0.00001 &&
+        Math.abs(prev.Y - nextCoord.Y) < 0.00001;
+
+      if (isSame) {
+        isSyncingCenterRef.current = false;
+        return prev;
+      }
+      
+      return nextCoord;
+    });
   };
 
-  const syncSelectedCoordWithLocation = (lat: number, lng: number) => {
-    if (!setSelectedCoord) return;
 
-    setSelectedCoord((prev) =>
-      Math.abs(prev.X - lat) < 0.0000001 && Math.abs(prev.Y - lng) < 0.0000001
-        ? prev
-        : { X: lat, Y: lng },
-    );
-  };
 
   // 1. 실시간 위치 추적
   useEffect(() => {
@@ -195,10 +196,9 @@ const KakaoMap = ({
           lastGpsHeadingAtRef.current = 0;
         }
 
-        if (mapInstance) {
-          syncSelectedCoordWithLocation(latitude, longitude);
-          mapInstance.panTo(new window.kakao.maps.LatLng(latitude - offset, longitude));
-        }
+        // 사용자의 의도에 따라:
+        // 바텀시트 장소 클릭과 동일하게 처음 1회(버튼 클릭 시)만 지도가 이동하도록 하고,
+        // GPS 업데이트 시에는 파란색 내 위치 마커(myLocation)만 갱신하며 지도는 자동으로 따라가지 않습니다.
       },
       (err) => console.error(err),
       options
@@ -279,28 +279,50 @@ const KakaoMap = ({
 
     mixpanelTrack.campusMapTrackingToggled(!isTracking);
 
-    syncSelectedCoordWithLocation(myLocation.lat, myLocation.lng);
     if (mapInstance) {
-      mapInstance.panTo(new window.kakao.maps.LatLng(myLocation.lat - offset, myLocation.lng));
       mapInstance.setLevel(3);
+    }
+    
+    if (setSelectedCoord) {
+      setSelectedCoord({
+        X: myLocation.lat,
+        Y: myLocation.lng,
+      });
     }
     if (setIsTracking) setIsTracking(true);
   };
 
   const handleDragStart = () => {
     isDraggingRef.current = true;
-    if (isTracking && setIsTracking) setIsTracking(false);
   };
 
   const handleDragEnd = () => {
     isDraggingRef.current = false;
+    if (isTracking && setIsTracking) setIsTracking(false);
+  };
+
+  const handleIdle = () => {
+    isAnimatingRef.current = false;
     syncSelectedCoordWithMapCenter();
   };
 
   // 3. 외부 viewXY 변경 감지 및 지도 이동
   useEffect(() => {
     if (mapInstance && viewXY && !isDraggingRef.current) {
-      mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+      if (isSyncingCenterRef.current) {
+        isSyncingCenterRef.current = false;
+        return;
+      }
+
+      const currentCenter = mapInstance.getCenter();
+      const isSamePosition =
+        Math.abs(currentCenter.getLat() - viewXY.X) < 0.00001 &&
+        Math.abs(currentCenter.getLng() - viewXY.Y) < 0.00001;
+
+      if (!isSamePosition) {
+        isAnimatingRef.current = true;
+        mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+      }
     }
   }, [viewXY, mapInstance]);
 
@@ -317,7 +339,7 @@ const KakaoMap = ({
   return (
     <Container>
       <Map
-        center={mapCenter}
+        center={initialMapCenter}
         level={4}
         draggable={true}
         zoomable={true}
@@ -332,6 +354,7 @@ const KakaoMap = ({
         }}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onIdle={handleIdle}
       >
         {placesToRender.map((place) => {
           const markerId = config.getMarkerId(place);
@@ -402,9 +425,14 @@ const KakaoMap = ({
         {myLocation && (
           <CustomOverlayMap position={myLocation} zIndex={10}>
             <MyLocationMarker>
-              {isTracking && heading !== null && (
-                <DirectionShadow style={{ transform: `rotate(${heading}deg)` }} />
-              )}
+              <DirectionShadow 
+                style={{ 
+                  transform: `rotate(${heading || 0}deg)`,
+                  opacity: isTracking && heading !== null ? 1 : 0,
+                  visibility: isTracking && heading !== null ? "visible" : "hidden",
+                  transition: "opacity 0.2s"
+                }} 
+              />
               <PulseDot />
               <MainDot />
             </MyLocationMarker>

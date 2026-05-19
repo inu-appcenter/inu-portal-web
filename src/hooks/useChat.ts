@@ -31,9 +31,10 @@ export const useChat = (roomId: string) => {
 
       // 메시지 저장 (unreadCount 등이 갱신됨)
       if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
-        setMessages(actualRoomData.messages);
+        console.log("초기 메시지 데이터 확인:", actualRoomData.messages[0]);
+        setMessages([...actualRoomData.messages]);
       } else if (Array.isArray(actualRoomData)) {
-        setMessages(actualRoomData);
+        setMessages([...actualRoomData]);
       } else {
         setMessages([]);
       }
@@ -110,14 +111,6 @@ export const useChat = (roomId: string) => {
           }
         });
 
-        // 서버 Redis에 접속 정보 기록을 위한 ENTER 이벤트 전송
-        client.publish({
-          destination: "/pub/enter",
-          body: JSON.stringify({
-            roomId: Number(roomId),
-          }),
-        });
-
         // 입장 시 데이터 동기화 (읽음 처리 반영 포함)
         fetchMessages();
       };
@@ -135,17 +128,24 @@ export const useChat = (roomId: string) => {
     enterChatRoom();
     connectStomp();
 
+    const handleVisibilityChange = () => {
+      const client = clientRef.current;
+      if (!client) return;
+
+      if (document.visibilityState === "hidden") {
+        console.log("브라우저 백그라운드 감지 - 실시간 FCM 푸시 수신을 위해 소켓 비활성화");
+        client.deactivate();
+      } else if (document.visibilityState === "visible") {
+        console.log("브라우저 포그라운드 감지 - 실시간 메시징 수신을 위해 소켓 활성화");
+        client.activate();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (clientRef.current) {
-        // 퇴장 시 LEAVE 이벤트 전송
-        if (clientRef.current.connected) {
-          clientRef.current.publish({
-            destination: "/pub/leave",
-            body: JSON.stringify({
-              roomId: Number(roomId),
-            }),
-          });
-        }
         clientRef.current.deactivate();
       }
     };
@@ -155,9 +155,10 @@ export const useChat = (roomId: string) => {
     content: string,
     isAnonymous: boolean,
     imageFiles: File[] = [],
+    onProgress?: (progressEvent: any) => void,
   ) => {
     if (imageFiles.length > 0 && roomInfo?.id) {
-      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles) // 변경: 파일 배열 전달
+      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles, onProgress) // 변경: 파일 배열 및 프로그레스 전달
         .then((response) => {
           console.log("이미지 메시지 전송 완료:", response);
         })
