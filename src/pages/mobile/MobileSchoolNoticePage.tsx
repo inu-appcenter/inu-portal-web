@@ -36,9 +36,15 @@ interface SchoolNoticeListProps {
   category: string;
   committedQuery: string;
   onNoticeView: (category: string, title: string) => void;
+  onLengthChange?: () => void;
 }
 
-const SchoolNoticeList = ({ category, committedQuery, onNoticeView }: SchoolNoticeListProps) => {
+const SchoolNoticeList = ({
+  category,
+  committedQuery,
+  onNoticeView,
+  onLengthChange,
+}: SchoolNoticeListProps) => {
   const { ref, inView } = useInView();
 
   const {
@@ -71,6 +77,13 @@ const SchoolNoticeList = ({ category, committedQuery, onNoticeView }: SchoolNoti
   const notices = useMemo(() => {
     return data?.pages.flatMap((page) => page.data.contents) || [];
   }, [data]);
+
+  // 데이터 갯수 변경 시 상위 스위퍼 높이 리사이징 콜백 호출
+  useEffect(() => {
+    if (notices.length > 0 && onLengthChange) {
+      onLengthChange();
+    }
+  }, [notices.length, onLengthChange]);
 
   // 카테고리 로딩 및 변경 시 강건하게 최상단 스크롤 리셋
   useEffect(() => {
@@ -180,6 +193,16 @@ const MobileSchoolNoticePage = () => {
     }
   }, [currentIndex, swiperRef]);
 
+  // 스위퍼 내부 데이터 레이아웃 강제 동기화 팩터화
+  const handleUpdateSwiperHeight = useCallback(() => {
+    if (swiperRef) {
+      requestAnimationFrame(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      });
+    }
+  }, [swiperRef]);
+
   // 데이터 로딩 완료 시점을 대비한 스위퍼 리사이징 수동 업데이트 트리거
   useEffect(() => {
     if (swiperRef) {
@@ -207,7 +230,9 @@ const MobileSchoolNoticePage = () => {
     if (nextCategory && nextCategory !== selectedCategory) {
       const nextParams = new URLSearchParams(location.search);
       nextParams.set("category", nextCategory);
-      navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+      navigate(`${location.pathname}?${nextParams.toString()}`, {
+        replace: true,
+      });
     }
   };
 
@@ -284,6 +309,7 @@ const MobileSchoolNoticePage = () => {
                     !!committedQuery,
                   );
                 }}
+                onLengthChange={handleUpdateSwiperHeight}
               />
             </SwiperSlide>
           ))}
@@ -387,5 +413,3 @@ const FloatingSearchBar = styled.div`
     width: min(calc(100% - 48px), ${DESKTOP_SEARCH_BAR_MAX_WIDTH});
   }
 `;
-
-
