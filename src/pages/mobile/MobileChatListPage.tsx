@@ -8,7 +8,8 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Plus } from "lucide-react";
+import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
@@ -511,16 +512,11 @@ export default function MobileChatListPage() {
       />
 
       {/* 가로 스와이프 안내 시각 가이드 (스와이프 조작을 한 번도 안 한 최초 진입 시에만 노출) */}
-      {!hasSwiped && currentIndex > 0 && (
-        <SwipeGuideLeft>
-          <ChevronsLeft size={32} />
-        </SwipeGuideLeft>
-      )}
-      {!hasSwiped && currentIndex < 2 && (
-        <SwipeGuideRight>
-          <ChevronsRight size={32} />
-        </SwipeGuideRight>
-      )}
+      <SwipeChevronGuides
+        hasSwiped={hasSwiped}
+        currentIndex={currentIndex}
+        totalSlides={3}
+      />
     </Viewport>
   );
 }
@@ -586,52 +582,4 @@ const FloatingActionButton = styled.button<{ $bottom?: string }>`
   }
 `;
 
-const SwipeGuideLeft = styled.div`
-  position: fixed;
-  left: 6px;
-  top: 50%;
-  transform: translateY(-50%) scaleY(1.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  pointer-events: none;
-  color: rgba(94, 146, 240, 0.8);
-  animation: bounceLeft 2s infinite ease-in-out;
 
-  @keyframes bounceLeft {
-    0%, 100% {
-      transform: translateY(-50%) scaleY(1.4) translateX(0);
-      opacity: 0.35;
-    }
-    50% {
-      transform: translateY(-50%) scaleY(1.4) translateX(-8px);
-      opacity: 0.95;
-    }
-  }
-`;
-
-const SwipeGuideRight = styled.div`
-  position: fixed;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%) scaleY(1.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  pointer-events: none;
-  color: rgba(94, 146, 240, 0.8);
-  animation: bounceRight 2s infinite ease-in-out;
-
-  @keyframes bounceRight {
-    0%, 100% {
-      transform: translateY(-50%) scaleY(1.4) translateX(0);
-      opacity: 0.35;
-    }
-    50% {
-      transform: translateY(-50%) scaleY(1.4) translateX(8px);
-      opacity: 0.95;
-    }
-  }
-`;

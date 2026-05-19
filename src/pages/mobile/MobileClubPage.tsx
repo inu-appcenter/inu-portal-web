@@ -10,13 +10,137 @@ import Box from "@/components/common/Box.tsx";
 import FillButton from "@/components/mobile/common/FillButton";
 import Label from "@/components/mobile/common/Label";
 import Skeleton from "@/components/common/Skeleton";
-import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"; // 스켈레톤 컴포넌트
+import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
+import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper as SwiperClass } from "swiper";
+import "swiper/css";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { resetScrollToTop } from "@/utils/scroll";
+
+interface ClubListSectionProps {
+  category: string;
+  onRecruitClick: (clubId: number, clubName: string) => void;
+}
+
+const ClubListSection = ({ category, onRecruitClick }: ClubListSectionProps) => {
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchClubs = async () => {
+      mixpanelTrack.clubCategorySelected(category);
+      setIsLoading(true);
+      try {
+        const response = await getClubs(category);
+        setClubs(response.data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("동아리 가져오기 실패", error);
+      }
+    };
+    fetchClubs();
+  }, [category]);
+
+  // 카테고리 로딩 및 변경 시 강건하게 최상단 스크롤 리셋
+  useEffect(() => {
+    resetScrollToTop();
+  }, [category, isLoading]);
+
+  return (
+    <ClubList>
+      {isLoading && clubs.length === 0
+        ? Array.from({ length: 6 }).map((_, i) => (
+            <Box key={`club-skeleton-${i}`}>
+              <ContentWrapper>
+                <Skeleton width={100} height={80} />
+                <RightArea>
+                  <FirstLine>
+                    <Skeleton width="40%" height={20} />
+                    <div style={{ display: "flex", gap: "4px" }}>
+                      <Skeleton width={40} height={22} />
+                      <Skeleton width={40} height={22} />
+                    </div>
+                  </FirstLine>
+                  <ButtonsWrapper>
+                    <Skeleton width={70} height={30} />
+                    <Skeleton width={70} height={30} />
+                  </ButtonsWrapper>
+                </RightArea>
+              </ContentWrapper>
+            </Box>
+          ))
+        : clubs.map((club) => (
+            <Box key={club.id}>
+              <ContentWrapper>
+                <img
+                  src={club.imageUrl}
+                  alt={club.name}
+                  className="club-logo"
+                />
+                <RightArea>
+                  <FirstLine>
+                    <h3>{club.name}</h3>
+                    <span className="label-wrapper">
+                      {club.isRecruiting && (
+                        <Label>
+                          <strong>모집 중🔥</strong>
+                        </Label>
+                      )}
+                      <Label>{club.category}</Label>
+                    </span>
+                  </FirstLine>
+                  <ButtonsWrapper>
+                    {club.url && (
+                      <FillButton
+                        onClick={() => {
+                          mixpanelTrack.clubExternalLinkClicked(
+                            club.name,
+                            "Intro",
+                          );
+                          window.open(club.url, "_blank");
+                        }}
+                        isExternalLink={true}
+                      >
+                        소개 페이지
+                      </FillButton>
+                    )}
+                    {club.homeUrl && (
+                      <FillButton
+                        onClick={() => {
+                          mixpanelTrack.clubExternalLinkClicked(
+                            club.name,
+                            "Homepage",
+                          );
+                          window.open(club.homeUrl, "_blank");
+                        }}
+                        isExternalLink={true}
+                      >
+                        동아리 홈페이지
+                      </FillButton>
+                    )}
+                    {club.isRecruiting && (
+                      <FillButton
+                        onClick={() =>
+                          onRecruitClick(club.id, club.name)
+                        }
+                      >
+                        모집 공고
+                      </FillButton>
+                    )}
+                  </ButtonsWrapper>
+                </RightArea>
+              </ContentWrapper>
+            </Box>
+          ))}
+    </ClubList>
+  );
+};
 
 export default function MobileClubPage() {
   const location = useLocation();
@@ -26,33 +150,11 @@ export default function MobileClubPage() {
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "전체";
 
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
   const [isClubAdminOpen, setIsClubAdminOpen] = useState(false);
-
-  // 데이터 패칭
-  useEffect(() => {
-    const fetchClubs = async () => {
-      mixpanelTrack.clubCategorySelected(selectedCategory);
-      setIsLoading(true);
-      try {
-        const response = await getClubs(selectedCategory);
-        setClubs(response.data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("동아리 가져오기 실패", error);
-      }
-    };
-
-    fetchClubs();
-  }, [selectedCategory]);
 
   // 카테고리 변경 시 스크롤 상단 이동
   useEffect(() => {
-    const scrollableDiv = document.getElementById("app-scroll-view");
-    if (scrollableDiv) {
-      scrollableDiv.scrollTop = 0;
-    }
+    resetScrollToTop();
   }, [selectedCategory]);
 
   const handleRecruitingBtn = (clubId: number, clubName: string) => {
@@ -68,6 +170,53 @@ export default function MobileClubPage() {
     "체육",
     "취미·전시",
   ]);
+
+  const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
+  const [hasSwiped, setHasSwiped] = useState(() => {
+    return localStorage.getItem("has_swiped_club_list") === "true";
+  });
+
+  const currentIndex = useMemo(() => {
+    const idx = clubCategories.indexOf(selectedCategory);
+    return idx === -1 ? 0 : idx;
+  }, [selectedCategory, clubCategories]);
+
+  useEffect(() => {
+    if (swiperRef && swiperRef.activeIndex !== currentIndex) {
+      swiperRef.slideTo(currentIndex);
+    }
+  }, [currentIndex, swiperRef]);
+
+  // 데이터 로딩 완료 시점을 대비한 스위퍼 리사이징 수동 업데이트 트리거
+  useEffect(() => {
+    if (swiperRef) {
+      setTimeout(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      }, 100);
+      setTimeout(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      }, 350);
+    }
+  }, [selectedCategory, swiperRef]);
+
+  const handleSlideChange = (s: SwiperClass) => {
+    const nextCategory = clubCategories[s.activeIndex];
+
+    if (!hasSwiped) {
+      setHasSwiped(true);
+      localStorage.setItem("has_swiped_club_list", "true");
+    }
+
+    resetScrollToTop();
+
+    if (nextCategory && nextCategory !== selectedCategory) {
+      const nextParams = new URLSearchParams(location.search);
+      nextParams.set("category", nextCategory);
+      navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+    }
+  };
 
   const subHeader = useMemo(
     () => (
@@ -91,93 +240,27 @@ export default function MobileClubPage() {
       {isClubAdminOpen ? (
         <ClubAdmin setIsClubAdminOpen={setIsClubAdminOpen} />
       ) : (
-        <ClubList>
-          {/* 초기 로딩 스켈레톤 */}
-          {isLoading && clubs.length === 0
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <Box key={`club-skeleton-${i}`}>
-                  <ContentWrapper>
-                    <Skeleton width={100} height={80} />
-                    <RightArea>
-                      <FirstLine>
-                        <Skeleton width="40%" height={20} />
-                        <div style={{ display: "flex", gap: "4px" }}>
-                          <Skeleton width={40} height={22} />
-                          <Skeleton width={40} height={22} />
-                        </div>
-                      </FirstLine>
-                      <ButtonsWrapper>
-                        <Skeleton width={70} height={30} />
-                        <Skeleton width={70} height={30} />
-                      </ButtonsWrapper>
-                    </RightArea>
-                  </ContentWrapper>
-                </Box>
-              ))
-            : clubs.map((club) => (
-                <Box key={club.id}>
-                  <ContentWrapper>
-                    <img
-                      src={club.imageUrl}
-                      alt={club.name}
-                      className="club-logo"
-                    />
-                    <RightArea>
-                      <FirstLine>
-                        <h3>{club.name}</h3>
-                        <span className="label-wrapper">
-                          {club.isRecruiting && (
-                            <Label>
-                              <strong>모집 중🔥</strong>
-                            </Label>
-                          )}
-                          <Label>{club.category}</Label>
-                        </span>
-                      </FirstLine>
-                      <ButtonsWrapper>
-                        {club.url && (
-                          <FillButton
-                            onClick={() => {
-                              mixpanelTrack.clubExternalLinkClicked(
-                                club.name,
-                                "Intro",
-                              );
-                              window.open(club.url, "_blank");
-                            }}
-                            isExternalLink={true}
-                          >
-                            소개 페이지
-                          </FillButton>
-                        )}
-                        {club.homeUrl && (
-                          <FillButton
-                            onClick={() => {
-                              mixpanelTrack.clubExternalLinkClicked(
-                                club.name,
-                                "Homepage",
-                              );
-                              window.open(club.homeUrl, "_blank");
-                            }}
-                            isExternalLink={true}
-                          >
-                            동아리 홈페이지
-                          </FillButton>
-                        )}
-                        {club.isRecruiting && (
-                          <FillButton
-                            onClick={() =>
-                              handleRecruitingBtn(club.id, club.name)
-                            }
-                          >
-                            모집 공고
-                          </FillButton>
-                        )}
-                      </ButtonsWrapper>
-                    </RightArea>
-                  </ContentWrapper>
-                </Box>
-              ))}
-        </ClubList>
+        <div style={{ width: "100%" }}>
+          <Swiper
+            onSwiper={setSwiperRef}
+            initialSlide={currentIndex}
+            onSlideChange={handleSlideChange}
+            speed={320}
+            autoHeight={true}
+            observer={true}
+            observeParents={true}
+            style={{ width: "100%" }}
+          >
+            {clubCategories.map((category) => (
+              <SwiperSlide key={category} style={{ height: "auto" }}>
+                <ClubListSection
+                  category={category}
+                  onRecruitClick={handleRecruitingBtn}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
       )}
 
       <StickyBottomWrapper>
@@ -190,6 +273,15 @@ export default function MobileClubPage() {
           </button>
         )}
       </StickyBottomWrapper>
+
+      {/* 가로 스와이프 안내 시각 가이드 (스와이프 조작을 한 번도 안 한 최초 진입 시에만 노출) */}
+      {!isClubAdminOpen && (
+        <SwipeChevronGuides
+          hasSwiped={hasSwiped}
+          currentIndex={currentIndex}
+          totalSlides={clubCategories.length}
+        />
+      )}
     </MobileClubPageWrapper>
   );
 }
@@ -202,6 +294,10 @@ const MobileClubPageWrapper = styled.div`
   box-sizing: border-box;
   width: 100%;
   padding-top: 12px;
+
+  .swiper-autoheight {
+    transition: height 0ms !important;
+  }
 
   .upload-button {
     position: sticky;
@@ -324,3 +420,5 @@ const ButtonsWrapper = styled.div`
   flex-wrap: wrap;
   align-items: center;
 `;
+
+
