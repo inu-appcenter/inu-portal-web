@@ -177,7 +177,7 @@ export default function MobileChatListPage() {
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
 
   const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped_chat_list") === "true";
+    return localStorage.getItem("has_swiped") === "true";
   });
 
   const handleCategoryChange = (nextCategory: string) => {
@@ -192,7 +192,7 @@ export default function MobileChatListPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped_chat_list", "true");
+      localStorage.setItem("has_swiped", "true");
     }
 
     if (nextCategory && nextCategory !== selectedCategory) {

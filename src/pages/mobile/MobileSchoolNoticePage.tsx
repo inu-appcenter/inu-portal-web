@@ -144,7 +144,7 @@ const MobileSchoolNoticePage = () => {
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped_notice_list") === "true";
+    return localStorage.getItem("has_swiped") === "true";
   });
 
   useEffect(() => {
@@ -199,7 +199,7 @@ const MobileSchoolNoticePage = () => {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped_notice_list", "true");
+      localStorage.setItem("has_swiped", "true");
     }
 
     resetScrollToTop();

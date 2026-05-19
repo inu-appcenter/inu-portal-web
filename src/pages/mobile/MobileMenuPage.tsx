@@ -144,7 +144,7 @@ export default function MobileMenuPage() {
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped_menu_list") === "true";
+    return localStorage.getItem("has_swiped") === "true";
   });
 
   const currentIndex = useMemo(() => {
@@ -177,7 +177,7 @@ export default function MobileMenuPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped_menu_list", "true");
+      localStorage.setItem("has_swiped", "true");
     }
 
     resetScrollToTop();

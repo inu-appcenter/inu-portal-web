@@ -173,7 +173,7 @@ export default function MobileClubPage() {
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped_club_list") === "true";
+    return localStorage.getItem("has_swiped") === "true";
   });
 
   const currentIndex = useMemo(() => {
@@ -206,7 +206,7 @@ export default function MobileClubPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped_club_list", "true");
+      localStorage.setItem("has_swiped", "true");
     }
 
     resetScrollToTop();
