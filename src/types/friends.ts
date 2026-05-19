@@ -13,7 +13,6 @@ export interface FriendRequestDto {
  */
 export interface FriendResponseDto {
   friendId: number;
-  memberId: number;
   nickname: string;
   studentId: string;
   fireId: number;

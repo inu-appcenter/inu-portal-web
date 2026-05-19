@@ -1,7 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, LogOut, Trash2, Bell, BellOff, Edit3 } from "lucide-react"; // LogOut, Trash2 아이콘 추가
+import { X, LogOut, Trash2, Bell, BellOff, Edit3, UserPlus, Check } from "lucide-react"; // LogOut, Trash2 아이콘 추가
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
@@ -11,7 +11,9 @@ import {
   leaveChatRoom,
   closeChatRoom,
   patchRoomPushSetting,
+  inviteFriendsToChatRoom,
 } from "@/apis/chat";
+import { getFriends } from "@/apis/friends";
 import useUserStore from "@/stores/useUserStore";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import EditChatModal from "@/components/mobile/chat/EditChatModal";
@@ -48,9 +50,33 @@ export default function MemberListDrawer({
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState<number[]>([]);
+
+  const { data: friendsRes } = useQuery({
+    queryKey: ["friends"],
+    queryFn: getFriends,
+    enabled: isInviteOpen,
+  });
+  const friends = friendsRes?.data || [];
+
+  const inviteMutation = useMutation({
+    mutationFn: (friendIds: number[]) => inviteFriendsToChatRoom(roomId, friendIds),
+    onSuccess: () => {
+      alert("성공적으로 초대했습니다.");
+      queryClient.invalidateQueries({ queryKey: ["chatMembers", roomId] });
+      if (refreshRoom) refreshRoom();
+      setIsInviteOpen(false);
+      setSelectedFriendsToInvite([]);
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.msg || "초대에 실패했습니다.");
+    },
+  });
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -131,15 +157,22 @@ export default function MemberListDrawer({
         <StyledContent>
           <Header>
             <Title>대화 상대 ({members.length})</Title>
-            <CloseButton onClick={() => onOpenChange(false)}>
-              <X size={24} color="#1C1C1E" />
-            </CloseButton>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {roomInfo?.type === "PERSONAL" && (
+                <IconButton onClick={() => setIsInviteOpen(true)} title="초대하기">
+                  <UserPlus size={22} color="#5E92F0" />
+                </IconButton>
+              )}
+              <CloseButton onClick={() => onOpenChange(false)}>
+                <X size={24} color="#1C1C1E" />
+              </CloseButton>
+            </div>
           </Header>
 
           <ScrollArea>
             <Box style={{ padding: "0 16px" }}>
               {isLoading ? (
-                <EmptyState>멤버를 불러오는 중...</EmptyState>
+                <div style={{ padding: "40px 0", textAlign: "center", color: "#969696", fontSize: "14px" }}>멤버를 불러오는 중...</div>
               ) : (
                 members.map((member, index) => (
                   <div
@@ -151,14 +184,14 @@ export default function MemberListDrawer({
                         (member.friendAlias
                           ? `${member.friendAlias} (${member.nickname})`
                           : member.nickname) +
-                        (member.me ? " (나)" : "") +
+                        (member.isMe ? " (나)" : "") +
                         (member.isOwner ? " (방장)" : "")
                       }
                       subtitle={member.studentId || "익명"}
                       fireId={member.fireId || 0}
                       onClick={() => {
-                        if (member.memberId) {
-                          setSelectedMemberId(member.memberId);
+                        if (member.chatRoomMemberId) {
+                          setSelectedChatRoomMemberId(member.chatRoomMemberId);
                           setIsProfileModalOpen(true);
                         }
                       }}
@@ -203,7 +236,7 @@ export default function MemberListDrawer({
             </BottomActionRow>
           </Footer>
           <UserProfileModal
-            memberId={selectedMemberId}
+            chatRoomMemberId={selectedChatRoomMemberId}
             isOpen={isProfileModalOpen}
             onOpenChange={setIsProfileModalOpen}
             roomContext={{
@@ -218,6 +251,21 @@ export default function MemberListDrawer({
             onOpenChange={setIsEditModalOpen}
             roomId={roomId}
             initialData={roomInfo}
+          />
+          <InviteFriendsModal
+            isOpen={isInviteOpen}
+            onOpenChange={setIsInviteOpen}
+            friends={friends}
+            selectedIds={selectedFriendsToInvite}
+            onToggle={(friendId) =>
+              setSelectedFriendsToInvite((prev) =>
+                prev.includes(friendId)
+                  ? prev.filter((id) => id !== friendId)
+                  : [...prev, friendId]
+              )
+            }
+            onConfirm={() => inviteMutation.mutate(selectedFriendsToInvite)}
+            isPending={inviteMutation.isPending}
           />
         </StyledContent>
       </Dialog.Portal>
@@ -335,9 +383,142 @@ const ScrollArea = styled.div`
   padding: 12px 0;
 `;
 
-const EmptyState = styled.div`
+const EmptyStateStyle = styled.div`
   padding: 40px 0;
   text-align: center;
   color: #969696;
   font-size: 14px;
+`;
+
+interface InviteFriendsModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  friends: any[];
+  selectedIds: number[];
+  onToggle: (id: number) => void;
+  onConfirm: () => void;
+  isPending: boolean;
+}
+
+const InviteFriendsModal = ({
+  isOpen,
+  onOpenChange,
+  friends,
+  selectedIds,
+  onToggle,
+  onConfirm,
+  isPending,
+}: InviteFriendsModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <StyledOverlay style={{ zIndex: 1000 }} />
+        <InviteContent>
+          <Header style={{ borderBottom: "1px solid #f2f2f7" }}>
+            <Title>친구 초대</Title>
+            <CloseButton onClick={() => onOpenChange(false)}>
+              <X size={24} color="#1C1C1E" />
+            </CloseButton>
+          </Header>
+          <ScrollArea style={{ padding: "16px" }}>
+            {friends.length === 0 ? (
+              <EmptyStateStyle>초대 가능한 친구가 없습니다.</EmptyStateStyle>
+            ) : (
+              friends.map((friend, index) => (
+                <div key={friend.friendId} style={{ width: "100%" }}>
+                  <SelectableCard onClick={() => onToggle(friend.friendId)}>
+                    <SocialUserCard
+                      name={friend.nickname}
+                      subtitle={friend.studentId}
+                      fireId={friend.fireId}
+                    />
+                    <Checkbox $selected={selectedIds.includes(friend.friendId)}>
+                      {selectedIds.includes(friend.friendId) && (
+                        <Check size={16} color="white" strokeWidth={3} />
+                      )}
+                    </Checkbox>
+                  </SelectableCard>
+                  {index < friends.length - 1 && <Divider />}
+                </div>
+              ))
+            )}
+          </ScrollArea>
+          <Footer>
+            <InviteConfirmButton
+              disabled={selectedIds.length === 0 || isPending}
+              onClick={onConfirm}
+            >
+              {isPending ? "초대 중..." : `초대 완료 (${selectedIds.length}명)`}
+            </InviteConfirmButton>
+          </Footer>
+        </InviteContent>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+};
+
+const InviteContent = styled(StyledContent)`
+  max-width: 360px;
+  height: 80vh;
+  margin: auto;
+  border-radius: 24px;
+  z-index: 1001;
+`;
+
+const SelectableCard = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  width: 100%;
+  padding: 8px 0;
+
+  & > :first-child {
+    flex: 1;
+    pointer-events: none;
+  }
+`;
+
+const Checkbox = styled.div<{ $selected: boolean }>`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid ${({ $selected }) => ($selected ? "#5E92F0" : "#E5E5EA")};
+  background-color: ${({ $selected }) =>
+    $selected ? "#5E92F0" : "transparent"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-left: 12px;
+`;
+
+const InviteConfirmButton = styled.button`
+  width: 100%;
+  height: 48px;
+  background-color: #5E92F0;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:disabled {
+    background-color: #e5e5ea;
+    color: #8e8e93;
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
 `;
