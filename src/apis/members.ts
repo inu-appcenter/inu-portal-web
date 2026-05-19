@@ -171,15 +171,7 @@ export const postApiLogs = async (
   return response.data;
 };
 
-// 타인 프로필 조회
-export const getMemberProfile = async (
-  memberId: number,
-): Promise<ApiResponse<MemberProfileResponseDto>> => {
-  const response = await tokenInstance.get<
-    ApiResponse<MemberProfileResponseDto>
-  >(`/api/members/${memberId}/profile`);
-  return response.data;
-};
+
 
 /**
  * 전체 채팅 푸시 알림 설정 토글
@@ -190,5 +182,18 @@ export const patchChatPushSetting = async (): Promise<
   const response = await tokenInstance.patch<
     ApiResponse<{ chatPushEnabled: boolean }>
   >("/api/members/push-setting/chat");
+  return response.data;
+};
+
+/**
+ * 회원 닉네임 변경 (사칭 단어 예외 검증 포함)
+ */
+export const patchMemberNickname = async (
+  nickname: string,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    "/api/members/nickname",
+    { nickname },
+  );
   return response.data;
 };
