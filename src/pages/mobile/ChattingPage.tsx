@@ -598,9 +598,15 @@ export default function ChattingPage() {
             nextMsg.senderHash !== msg.senderHash ||
             !isSameDate(msg.createDate, nextMsg.createDate);
 
+          const isSystemMessage = msg.senderNickname === "알림";
+
           return (
             <React.Fragment key={msg.messageId || `msg-${originalIndex}`}>
-              {isMe ? (
+              {isSystemMessage ? (
+                <SystemMessage>
+                  <div className="bubble">{msg.content}</div>
+                </SystemMessage>
+              ) : isMe ? (
                 <ChatItemMy
                   message={msg}
                   onImageClick={handleImageClick}
@@ -877,6 +883,26 @@ const DateDivider = styled.div`
   font-size: 12px;
   font-weight: 500;
   color: #767676;
+`;
+
+const SystemMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 12px 16px;
+
+  .bubble {
+    background-color: #F2F2F7;
+    color: #8E8E93;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 85%;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
 `;
 
 const MessageContainer = styled.div`
