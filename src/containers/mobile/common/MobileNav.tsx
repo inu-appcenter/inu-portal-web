@@ -102,6 +102,15 @@ export default function MobileNav() {
     }
 
     mixpanelTrack.navTabClicked(label);
+
+    // 채팅 탭 진입 시 마지막으로 보던 카테고리로 바로 이동 (스와이프 복구 애니메이션 방지)
+    if (isChat) {
+      const savedCategory = localStorage.getItem("lastChatCategory");
+      const target = savedCategory ? `${to}?category=${savedCategory}` : to;
+      navigate(target, { replace: true });
+      return;
+    }
+
     navigate(to, { replace: true });
   };
 

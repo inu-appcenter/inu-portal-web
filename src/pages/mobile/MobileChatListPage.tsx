@@ -47,12 +47,6 @@ export default function MobileChatListPage() {
 
   useEffect(() => {
     trackPageView("채팅 목록");
-
-    // 초기 로드 시 URL에 카테고리가 없으면 마지막으로 선택했던 카테고리로 이동
-    const savedCategory = localStorage.getItem("lastChatCategory");
-    if (!params.get("category") && savedCategory) {
-      navigate(`?category=${savedCategory}`, { replace: true });
-    }
   }, []);
 
   // 카테고리가 변경될 때마다 localStorage에 저장 및 트래킹
@@ -247,7 +241,13 @@ export default function MobileChatListPage() {
   return (
     <Viewport>
       <Swiper
-        onSwiper={setSwiperRef}
+        onSwiper={(swiper) => {
+          // 초기화 직후 URL 지정 탭으로 애니메이션 없이 즉시 이동
+          if (currentIndex !== 0) {
+            swiper.slideTo(currentIndex, 0);
+          }
+          setSwiperRef(swiper);
+        }}
         initialSlide={currentIndex}
         onSlideChange={handleSlideChange}
         allowTouchMove={!isAnyModalOpen}
