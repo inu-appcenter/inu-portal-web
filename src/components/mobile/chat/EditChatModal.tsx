@@ -1,6 +1,5 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import Box from "@/components/common/Box";
 import BottomButtonGroup from "@/components/common/BottomButtonGroup";
 import { useState, useEffect } from "react";
 import { updateChatRoomInfo } from "@/apis/chat";
@@ -33,10 +32,16 @@ export default function EditChatModal({
 }: EditChatModalProps) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(initialData?.description || "");
-  const [maxCapacity, setMaxCapacity] = useState(initialData?.maxCapacity || 10);
+  const [description, setDescription] = useState(
+    initialData?.description || "",
+  );
+  const [maxCapacity, setMaxCapacity] = useState(
+    initialData?.maxCapacity || 10,
+  );
   const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.thumbnailUrl || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    initialData?.thumbnailUrl || null,
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -94,93 +99,81 @@ export default function EditChatModal({
       <Dialog.Portal>
         <StyledOverlay />
         <StyledContent>
-          <Box
-            style={{
-              width: "100%",
-              padding: "0",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0",
-              alignItems: "stretch",
-              overflow: "hidden",
+          <Header>
+            <Title>채팅방 정보 수정</Title>
+          </Header>
+
+          <FormArea>
+            <ThumbnailGroup>
+              <Label>방 썸네일</Label>
+              <ThumbnailInputWrapper>
+                <ThumbnailPreview src={previewUrl || ""}>
+                  {!previewUrl && <Camera size={24} color="#CBD5E1" />}
+                </ThumbnailPreview>
+                <FileInput
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                <EditBadge>
+                  <Camera size={14} color="white" />
+                </EditBadge>
+              </ThumbnailInputWrapper>
+            </ThumbnailGroup>
+
+            <FormGroup>
+              <Label>방 제목</Label>
+              <Input
+                placeholder="오픈채팅방 주제를 입력하세요"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>방 소개 (선택)</Label>
+              <TextArea
+                placeholder="채팅방에 대해 짧게 소개해주세요"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>최대 인원 (2~500명)</Label>
+              <Input
+                type="number"
+                min={2}
+                max={500}
+                value={maxCapacity}
+                onChange={(e) =>
+                  setMaxCapacity(
+                    Math.min(500, Math.max(2, parseInt(e.target.value) || 2)),
+                  )
+                }
+              />
+            </FormGroup>
+          </FormArea>
+
+          <BottomButtonGroup
+            leftButton={{
+              label: "취소",
+              onClick: () => onOpenChange(false),
+              backgroundColor: "#F2F2F7",
+              textColor: "#1C1C1E",
             }}
-          >
-            <Header>
-              <Title>채팅방 정보 수정</Title>
-            </Header>
-
-            <FormArea>
-              <ThumbnailGroup>
-                <Label>방 썸네일</Label>
-                <ThumbnailInputWrapper>
-                  <ThumbnailPreview src={previewUrl || ""}>
-                    {!previewUrl && <Camera size={24} color="#CBD5E1" />}
-                  </ThumbnailPreview>
-                  <FileInput
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  <EditBadge>
-                    <Camera size={14} color="white" />
-                  </EditBadge>
-                </ThumbnailInputWrapper>
-              </ThumbnailGroup>
-
-              <FormGroup>
-                <Label>방 제목</Label>
-                <Input
-                  placeholder="오픈채팅방 주제를 입력하세요"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>방 소개 (선택)</Label>
-                <TextArea
-                  placeholder="채팅방에 대해 짧게 소개해주세요"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>최대 인원 (2~500명)</Label>
-                <Input
-                  type="number"
-                  min={2}
-                  max={500}
-                  value={maxCapacity}
-                  onChange={(e) =>
-                    setMaxCapacity(
-                      Math.min(500, Math.max(2, parseInt(e.target.value) || 2)),
-                    )
-                  }
-                />
-              </FormGroup>
-            </FormArea>
-
-            <BottomButtonGroup
-              leftButton={{
-                label: "취소",
-                onClick: () => onOpenChange(false),
-                backgroundColor: "#F2F2F7",
-                textColor: "#1C1C1E",
-              }}
-              rightButton={{
-                label: isLoading ? "수정 중..." : "수정하기",
-                onClick: handleUpdate,
-                backgroundColor: "#5E92F0",
-                textColor: "#FFFFFF",
-                disabled: isLoading,
-              }}
-              padding="16px 24px 24px"
-              height="88px"
-              position="static"
-            />
-          </Box>
+            rightButton={{
+              label: isLoading ? "수정 중..." : "수정하기",
+              onClick: handleUpdate,
+              backgroundColor: "#5E92F0",
+              textColor: "#FFFFFF",
+              disabled: isLoading,
+            }}
+            padding="16px 24px 24px"
+            height="88px"
+            position="static"
+          />
         </StyledContent>
       </Dialog.Portal>
     </Dialog.Root>
@@ -208,10 +201,15 @@ const StyledContent = styled(Dialog.Content)`
   flex-direction: column;
   outline: none;
   animation: ${contentShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: white;
+  border-radius: 24px;
+  max-height: 85vh;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
   padding: 24px 24px 16px;
+  flex-shrink: 0;
 `;
 
 const Title = styled.h2`
@@ -226,6 +224,13 @@ const FormArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    display: none;
+  }
 `;
 
 const FormGroup = styled.div`
@@ -272,7 +277,7 @@ const EditBadge = styled.div`
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background-color: #5E92F0;
+  background-color: #5e92f0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,7 +301,7 @@ const Input = styled.input`
   outline: none;
 
   &:focus {
-    border-color: #5E92F0;
+    border-color: #5e92f0;
   }
 `;
 
@@ -312,6 +317,6 @@ const TextArea = styled.textarea`
   font-family: inherit;
 
   &:focus {
-    border-color: #5E92F0;
+    border-color: #5e92f0;
   }
 `;

@@ -37,11 +37,11 @@ export default function CafeteriaTitleContainer({
 }
 
 const CafeteriaTitleSection = styled.div`
-  margin: 0 ${MOBILE_PAGE_GUTTER};
+  margin: 0 ${MOBILE_PAGE_GUTTER} 16px;
 
   @media ${DESKTOP_MEDIA} {
     width: 100%;
-    margin: 0;
+    margin: 0 0 16px;
     padding: 0;
     box-sizing: border-box;
   }

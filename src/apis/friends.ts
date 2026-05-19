@@ -1,6 +1,7 @@
 import tokenInstance from "./tokenInstance";
 import { FriendRequestDto, FriendResponseDto } from "@/types/friends";
 import { ApiResponse } from "@/types/common";
+import { MemberProfileResponseDto } from "@/types/members";
 
 /**
  * 친구 요청 보내기
@@ -99,6 +100,18 @@ export const updateFriendAlias = async (
   const response = await tokenInstance.patch<ApiResponse<void>>(
     `/api/friends/${friendId}/alias`,
     { alias },
+  );
+  return response.data;
+};
+
+/**
+ * 친구의 상세 프로필 정보 조회
+ */
+export const getFriendProfile = async (
+  friendId: number,
+): Promise<ApiResponse<MemberProfileResponseDto>> => {
+  const response = await tokenInstance.get<ApiResponse<MemberProfileResponseDto>>(
+    `/api/friends/${friendId}/profile`,
   );
   return response.data;
 };

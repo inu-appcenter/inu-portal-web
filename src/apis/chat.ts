@@ -1,6 +1,5 @@
 import tokenInstance from "./tokenInstance";
 import {
-  CreateChatRoomRequest,
   CreateChatRoomResponse,
   JoinChatRoomResponse,
   GetChatRoomResponse,
@@ -15,6 +14,7 @@ import {
 } from "@/types/chat";
 import axiosInstance from "@/apis/axiosInstance";
 import { ApiResponse, PageResponse } from "@/types/common";
+import { MemberProfileResponseDto } from "@/types/members";
 
 // 채팅방 생성
 export const createChatRoom = async (
@@ -23,16 +23,32 @@ export const createChatRoom = async (
   isAnonymous: boolean,
   type: ChatRoomType,
   description?: string,
+  thumbnail?: File,
 ): Promise<CreateChatRoomResponse> => {
+  const formData = new FormData();
+  formData.append(
+    "roomDto",
+    new Blob(
+      [
+        JSON.stringify({
+          title,
+          maxCapacity,
+          isAnonymous,
+          type,
+          description,
+        }),
+      ],
+      { type: "application/json" },
+    ),
+  );
+
+  if (thumbnail) {
+    formData.append("thumbnail", thumbnail);
+  }
+
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     "/api/chat-rooms",
-    {
-      title,
-      maxCapacity,
-      isAnonymous,
-      type,
-      description,
-    } as CreateChatRoomRequest,
+    formData,
   );
   return response.data;
 };
@@ -83,13 +99,13 @@ export const getMyChatRooms = async (): Promise<
 };
 
 // 전체 오픈채팅방 목록 조회
-export const getOpenChatRooms = async (page: number = 0): Promise<
-  ApiResponse<PageResponse<OpenChatRoomResponseDto>>
-> => {
-  const response =
-    await tokenInstance.get<ApiResponse<PageResponse<OpenChatRoomResponseDto>>>(
-      `/api/chat-rooms/open?page=${page}`,
-    );
+export const getOpenChatRooms = async (
+  page: number = 0,
+): Promise<ApiResponse<PageResponse<OpenChatRoomResponseDto>>> => {
+  const response = await tokenInstance.get<
+    ApiResponse<PageResponse<OpenChatRoomResponseDto>>
+  >(`/api/chat-rooms/open?page=${page}`);
+  console.log(response);
   return response.data;
 };
 
@@ -165,7 +181,7 @@ export const sendImageMessage = async (
     formData,
     {
       onUploadProgress: onProgress,
-    }
+    },
   );
   return response.data;
 };
@@ -180,18 +196,12 @@ export const getPublicChatMessages = async (
   return response.data;
 };
 
-/**
- * 개인 채팅방 생성
- * targetMemberIds: 나를 제외한 상대방들의 memberId 리스트
- */
 export const createPersonalChatRoom = async (
-  targetMemberIds: number[],
-  adminMode: boolean = false,
-  title?: string,
+  targetFriendIds: number[],
 ): Promise<CreateChatRoomResponse> => {
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     "/api/chat-rooms/personal",
-    { targetMemberIds, adminMode, title },
+    { targetFriendIds },
   );
   return response.data;
 };
@@ -247,29 +257,63 @@ export const updateChatRoomInfo = async (
   return response.data;
 };
 
-/**
- * 방장 위임
- */
 export const delegateOwner = async (
   roomId: number | string,
-  targetMemberId: number,
+  newOwnerChatRoomMemberId: number,
 ): Promise<ApiResponse<void>> => {
-  const response = await tokenInstance.patch<ApiResponse<void>>(
+  const response = await tokenInstance.post<ApiResponse<void>>(
     `/api/chat-rooms/${roomId}/delegate`,
-    { targetMemberId },
+    { newOwnerChatRoomMemberId },
+  );
+  return response.data;
+};
+
+export const kickMember = async (
+  roomId: number | string,
+  targetChatRoomMemberId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.delete<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/members/${targetChatRoomMemberId}`,
   );
   return response.data;
 };
 
 /**
- * 멤버 강퇴
+ * 채팅방 내 특정 멤버 프로필 조회
  */
-export const kickMember = async (
+export const getChatRoomMemberProfile = async (
   roomId: number | string,
-  targetMemberId: number,
+  chatRoomMemberId: number,
+): Promise<ApiResponse<MemberProfileResponseDto>> => {
+  const response = await tokenInstance.get<
+    ApiResponse<MemberProfileResponseDto>
+  >(`/api/chat-rooms/${roomId}/members/${chatRoomMemberId}/profile`);
+  return response.data;
+};
+
+/**
+ * 단체 채팅방 친구 추가 초대
+ */
+export const inviteFriendsToChatRoom = async (
+  roomId: number | string,
+  targetFriendIds: number[],
 ): Promise<ApiResponse<void>> => {
-  const response = await tokenInstance.delete<ApiResponse<void>>(
-    `/api/chat-rooms/${roomId}/members/${targetMemberId}`,
+  const response = await tokenInstance.post<ApiResponse<void>>(
+    `/api/chat-rooms/${roomId}/invite`,
+    { targetFriendIds },
+  );
+  return response.data;
+};
+
+/**
+ * 단체방/오픈방 내부에서 1대1 개인 채팅방 즉시 개설
+ */
+export const createDirectPersonalChatRoom = async (
+  roomId: number | string,
+  chatRoomMemberId: number,
+): Promise<CreateChatRoomResponse> => {
+  const response = await tokenInstance.post<CreateChatRoomResponse>(
+    `/api/chat-rooms/${roomId}/members/${chatRoomMemberId}/personal`,
   );
   return response.data;
 };

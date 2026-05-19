@@ -23,7 +23,7 @@ export default function CreatePersonalChatPage() {
   const isAdmin = userInfo?.role === "admin";
 
   const [isAdminMode, setIsAdminMode] = useState(false);
-  const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
+  const [selectedFriendIds, setSelectedFriendIds] = useState<number[]>([]);
   const [title, setTitle] = useState("");
   const [studentIdSearch, setStudentIdSearch] = useState("");
   const [searchedUsers, setSearchedUsers] = useState<FriendResponseDto[]>([]);
@@ -40,7 +40,7 @@ export default function CreatePersonalChatPage() {
     mutationFn: searchFriend,
     onSuccess: (res) => {
       const user = res.data;
-      if (searchedUsers.some((u) => u.memberId === user.memberId)) {
+      if (searchedUsers.some((u) => u.friendId === user.friendId)) {
         alert("이미 목록에 있는 유저입니다.");
         return;
       }
@@ -53,15 +53,7 @@ export default function CreatePersonalChatPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: ({
-      ids,
-      isAdmin,
-      title,
-    }: {
-      ids: number[];
-      isAdmin: boolean;
-      title?: string;
-    }) => createPersonalChatRoom(ids, isAdmin, title),
+    mutationFn: (friendIds: number[]) => createPersonalChatRoom(friendIds),
     onSuccess: (res: any) => {
       const roomId = res.data?.id || res.id;
       if (roomId) {
@@ -80,24 +72,20 @@ export default function CreatePersonalChatPage() {
     hasback: true,
   });
 
-  const toggleMember = (memberId: number) => {
-    setSelectedMemberIds((prev) =>
-      prev.includes(memberId)
-        ? prev.filter((id) => id !== memberId)
-        : [...prev, memberId],
+  const toggleFriend = (friendId: number) => {
+    setSelectedFriendIds((prev) =>
+      prev.includes(friendId)
+        ? prev.filter((id) => id !== friendId)
+        : [...prev, friendId],
     );
   };
 
   const handleCreate = () => {
-    if (selectedMemberIds.length === 0) {
+    if (selectedFriendIds.length === 0) {
       alert("대화 상대를 한 명 이상 선택해주세요.");
       return;
     }
-    createMutation.mutate({
-      ids: selectedMemberIds,
-      isAdmin: isAdminMode,
-      title: isAdminMode ? "INTIP 운영자" : title.trim() || undefined,
-    });
+    createMutation.mutate(selectedFriendIds);
   };
 
   const handleSearch = () => {
@@ -117,7 +105,7 @@ export default function CreatePersonalChatPage() {
             checked={isAdminMode}
             onCheckedChange={(checked) => {
               setIsAdminMode(checked);
-              setSelectedMemberIds([]);
+              setSelectedFriendIds([]);
               setSearchedUsers([]);
               setTitle("");
             }}
@@ -132,7 +120,7 @@ export default function CreatePersonalChatPage() {
             value={isAdminMode ? "INTIP 운영자" : title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={
-              selectedMemberIds.length > 1
+              selectedFriendIds.length > 1
                 ? "그룹 채팅 (기본값)"
                 : "상대방 이름 (기본값)"
             }
@@ -140,7 +128,7 @@ export default function CreatePersonalChatPage() {
           />
           {!isAdminMode && (
             <p className="hint">
-              {selectedMemberIds.length > 1
+              {selectedFriendIds.length > 1
                 ? "미입력 시 '그룹 채팅'으로 설정됩니다."
                 : "미입력 시 상대방의 닉네임이 이름으로 사용됩니다."}
             </p>
@@ -163,17 +151,17 @@ export default function CreatePersonalChatPage() {
         {isAdminMode ? (
           searchedUsers.length > 0 ? (
             searchedUsers.map((user, index) => (
-              <div key={user.memberId} style={{ width: "100%" }}>
-                <SelectableCard onClick={() => toggleMember(user.memberId)}>
+              <div key={user.friendId} style={{ width: "100%" }}>
+                <SelectableCard onClick={() => toggleFriend(user.friendId)}>
                   <SocialUserCard
                     name={user.nickname}
                     subtitle={user.studentId}
                     fireId={user.fireId}
                   />
                   <Checkbox
-                    $selected={selectedMemberIds.includes(user.memberId)}
+                    $selected={selectedFriendIds.includes(user.friendId)}
                   >
-                    {selectedMemberIds.includes(user.memberId) && (
+                    {selectedFriendIds.includes(user.friendId) && (
                       <Check size={16} color="white" strokeWidth={3} />
                     )}
                   </Checkbox>
@@ -188,17 +176,17 @@ export default function CreatePersonalChatPage() {
           <EmptyState>친구 목록을 불러오는 중...</EmptyState>
         ) : friends.length > 0 ? (
           friends.map((friend, index) => (
-            <div key={friend.memberId} style={{ width: "100%" }}>
-              <SelectableCard onClick={() => toggleMember(friend.memberId)}>
+            <div key={friend.friendId} style={{ width: "100%" }}>
+              <SelectableCard onClick={() => toggleFriend(friend.friendId)}>
                 <SocialUserCard
                   name={friend.nickname}
                   subtitle={friend.studentId}
                   fireId={friend.fireId}
                 />
                 <Checkbox
-                  $selected={selectedMemberIds.includes(friend.memberId)}
+                  $selected={selectedFriendIds.includes(friend.friendId)}
                 >
-                  {selectedMemberIds.includes(friend.memberId) && (
+                  {selectedFriendIds.includes(friend.friendId) && (
                     <Check size={16} color="white" strokeWidth={3} />
                   )}
                 </Checkbox>
@@ -213,15 +201,15 @@ export default function CreatePersonalChatPage() {
 
       <FixedFooter>
         <SubmitButton
-          disabled={selectedMemberIds.length === 0 || createMutation.isPending}
+          disabled={selectedFriendIds.length === 0 || createMutation.isPending}
           onClick={handleCreate}
           $isAdmin={isAdminMode}
         >
           {createMutation.isPending
             ? "채팅방 생성 중..."
             : isAdminMode
-              ? `공식 방 만들기 (${selectedMemberIds.length}명)`
-              : `방 만들기 (${selectedMemberIds.length}명)`}
+              ? `공식 방 만들기 (${selectedFriendIds.length}명)`
+              : `방 만들기 (${selectedFriendIds.length}명)`}
         </SubmitButton>
       </FixedFooter>
     </Container>

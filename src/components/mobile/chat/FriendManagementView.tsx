@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import EmptyState from "@/components/common/EmptyState";
 import {
   getFriends,
@@ -17,11 +16,15 @@ import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import Skeleton from "@/components/common/Skeleton";
 import useUserStore from "@/stores/useUserStore";
 
-export default function FriendManagementView() {
+interface FriendManagementViewProps {
+  searchTerm: string;
+}
+
+export default function FriendManagementView({ searchTerm }: FriendManagementViewProps) {
   const queryClient = useQueryClient();
   const { userInfo } = useUserStore();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
+  const [selectedMyId, setSelectedMyId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // 친구 목록 조회
@@ -77,7 +80,8 @@ export default function FriendManagementView() {
               subtitle={userInfo.department || "학과 정보 없음"}
               fireId={userInfo.fireId}
               onClick={() => {
-                setSelectedMemberId(userInfo.id);
+                setSelectedMyId(userInfo.id);
+                setSelectedFriendId(null);
                 setIsProfileModalOpen(true);
               }}
             />
@@ -101,7 +105,8 @@ export default function FriendManagementView() {
                   actionLabel="수락"
                   secondaryActionLabel="거절"
                   onClick={() => {
-                    setSelectedMemberId(req.memberId);
+                    setSelectedFriendId(req.friendId);
+                    setSelectedMyId(null);
                     setIsProfileModalOpen(true);
                   }}
                 />
@@ -156,7 +161,8 @@ export default function FriendManagementView() {
                   }
                   fireId={friend.fireId}
                   onClick={() => {
-                    setSelectedMemberId(friend.memberId);
+                    setSelectedFriendId(friend.friendId);
+                    setSelectedMyId(null);
                     setIsProfileModalOpen(true);
                   }}
                 />
@@ -171,16 +177,9 @@ export default function FriendManagementView() {
         </Box>
       </TitleContentArea>
 
-      <FloatingSearchContainer>
-        <MobilePillSearchBar
-          placeholder="닉네임을 입력하세요."
-          value={searchTerm}
-          onChange={setSearchTerm}
-          onSubmit={() => { }} // 실시간 검색이므로 별도 제출 로직 필요 없음
-        />
-      </FloatingSearchContainer>
       <UserProfileModal
-        memberId={selectedMemberId}
+        memberId={selectedMyId}
+        friendId={selectedFriendId}
         isOpen={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
       />
@@ -192,21 +191,5 @@ const ViewWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-bottom: 120px; /* Floating search bar space */
-`;
-
-const FloatingSearchContainer = styled.div`
-  position: fixed;
-  bottom: 100px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  padding: 0 20px;
-  z-index: 100;
-
-  & > * {
-    max-width: 400px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  }
+  padding-bottom: 24px;
 `;

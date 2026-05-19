@@ -14,17 +14,14 @@ export default function OpenChatRoomListItem({
   return (
     <ItemWrapper onClick={() => onClick(room.roomId)}>
       <ThumbnailArea>
-        <Thumbnail
-          src={
-            room.thumbnailUrl
-              ? room.thumbnailUrl
-              : `https://portal.inuappcenter.kr/images/profile/0`
-          }
-          alt="Thumbnail"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
-          }}
-        />
+        {room.thumbnailUrl && (
+          <Thumbnail
+            src={`${import.meta.env.VITE_API_BASE_URL}${room.thumbnailUrl}`.replace(/(?<!:)\/\/+/g, '/')}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        )}
         <DefaultIcon className="fallback">
           <Users size={24} color="#D6D1D5" />
         </DefaultIcon>
