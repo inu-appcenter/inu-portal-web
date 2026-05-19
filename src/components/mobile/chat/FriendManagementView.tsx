@@ -1,11 +1,9 @@
 import styled from "styled-components";
 import { useState, useMemo } from "react";
-import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import EmptyState from "@/components/common/EmptyState";
 import {
   getFriends,
@@ -19,13 +17,12 @@ import Skeleton from "@/components/common/Skeleton";
 import useUserStore from "@/stores/useUserStore";
 
 interface FriendManagementViewProps {
-  isActive: boolean;
+  searchTerm: string;
 }
 
-export default function FriendManagementView({ isActive }: FriendManagementViewProps) {
+export default function FriendManagementView({ searchTerm }: FriendManagementViewProps) {
   const queryClient = useQueryClient();
   const { userInfo } = useUserStore();
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
   const [selectedMyId, setSelectedMyId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -180,17 +177,6 @@ export default function FriendManagementView({ isActive }: FriendManagementViewP
         </Box>
       </TitleContentArea>
 
-      {isActive && createPortal(
-        <FloatingSearchContainer>
-          <MobilePillSearchBar
-            placeholder="닉네임을 입력하세요."
-            value={searchTerm}
-            onChange={setSearchTerm}
-            onSubmit={() => { }} // 실시간 검색이므로 별도 제출 로직 필요 없음
-          />
-        </FloatingSearchContainer>,
-        document.body
-      )}
       <UserProfileModal
         memberId={selectedMyId}
         friendId={selectedFriendId}
@@ -205,21 +191,5 @@ const ViewWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-bottom: 120px; /* Floating search bar space */
-`;
-
-const FloatingSearchContainer = styled.div`
-  position: fixed;
-  bottom: 100px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  padding: 0 20px;
-  z-index: 100;
-
-  & > * {
-    max-width: 400px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  }
+  padding-bottom: 24px;
 `;

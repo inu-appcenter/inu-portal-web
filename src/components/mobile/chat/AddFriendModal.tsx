@@ -164,6 +164,7 @@ const StyledContent = styled(Dialog.Content)`
   outline: none;
   animation: ${contentShow} 250ms cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
+  max-height: 85vh;
 `;
 
 const Header = styled.div`
@@ -172,6 +173,7 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 const Title = styled.h2`
@@ -192,8 +194,13 @@ const Content = styled.div`
   padding: 0 20px 20px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 50vh;
+  overflow-y: auto;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    display: none;
+  }
 `;
 
 const Description = styled.p`

@@ -5,10 +5,10 @@ import "swiper/css";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -25,12 +25,14 @@ import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
+import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal";
 import { OpenChatRoomResponseDto } from "@/types/chat";
 import Skeleton from "@/components/common/Skeleton";
 
-export default function MobileChatListPage() {
+const MobileChatListPage = memo(function MobileChatListPage() {
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const isLoggedIn = userInfo.id !== 0;
@@ -44,6 +46,9 @@ export default function MobileChatListPage() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedRoomForPreview, setSelectedRoomForPreview] =
     useState<OpenChatRoomResponseDto | null>(null);
+
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     trackPageView("채팅 목록");
@@ -128,6 +133,8 @@ export default function MobileChatListPage() {
   );
 
   const menuItems = useMemo(() => {
+    if (isSearching) return undefined;
+
     const defaultMenu = [
       {
         label: "알림 설정",
@@ -158,14 +165,64 @@ export default function MobileChatListPage() {
       ];
     }
     return defaultMenu;
-  }, [selectedCategory, navigate]);
+  }, [selectedCategory, navigate, isSearching]);
+
+  const handleSearchClick = useCallback(() => {
+    setIsSearching(true);
+    window.history.pushState({ modal: "search" }, "");
+    mixpanelTrack.featureClicked("Search Icon", "ChatListHeader");
+  }, []);
+
+  const handleCloseSearch = useCallback(() => {
+    setIsSearching(false);
+    setSearchTerm("");
+    if (window.history.state?.modal === "search") {
+      window.history.back();
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isSearching) {
+        setIsSearching(false);
+        setSearchTerm("");
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isSearching]);
+
+  const headerRight = useMemo(
+    () => (
+      <HeaderRightArea>
+        {!isSearching && selectedCategory === "친구" && (
+          <IconButton onClick={handleSearchClick}>
+            <Search size={24} color="#1C1C1E" />
+          </IconButton>
+        )}
+      </HeaderRightArea>
+    ),
+    [selectedCategory, isSearching],
+  );
+
+  const headerTitle = useMemo(() => {
+    if (isSearching) {
+      return "친구 검색";
+    }
+    return "채팅";
+  }, [isSearching]);
 
   useHeader({
-    title: "채팅",
-    subHeader: subHeader,
+    title: headerTitle,
+    subHeader: isSearching ? null : subHeader,
     floatingSubHeader: true,
-    hasback: false,
+    hasback: isSearching,
+    onBack: isSearching ? handleCloseSearch : undefined,
     menuItems: menuItems,
+    rightArea: headerRight,
   });
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
@@ -250,7 +307,7 @@ export default function MobileChatListPage() {
         }}
         initialSlide={currentIndex}
         onSlideChange={handleSlideChange}
-        allowTouchMove={!isAnyModalOpen}
+        allowTouchMove={!isAnyModalOpen && !isSearching}
         speed={320}
         style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", flex: 1 }}
       >
@@ -451,42 +508,64 @@ export default function MobileChatListPage() {
         {/* 슬라이드 2: 친구 */}
         <SwiperSlide style={{ height: "auto" }}>
           <Slide>
-            <TitleContentArea
-              description={
-                <>
-                  닉네임으로 친구를 찾아보세요.
-                  <br />
-                  아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운 닉네임을
-                  설정해보세요.
-                </>
-              }
+            {!isSearching && (
+              <TitleContentArea
+                description={
+                  <>
+                    닉네임으로 친구를 찾아보세요.
+                    <br />
+                    아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운 닉네임을
+                    설정해보세요.
+                  </>
+                }
+              />
+            )}
+            <FriendManagementView
+              searchTerm={searchTerm}
             />
-            <FriendManagementView isActive={selectedCategory === "친구"} />
           </Slide>
         </SwiperSlide>
       </Swiper>
 
       {/* 공통 플로팅 액션 버튼 */}
-      <FloatingActionButton
-        onClick={() => {
-          if (selectedCategory === "개인") {
-            mixpanelTrack.chatRoomMenuClicked(
-              "개인 채팅방 생성",
-              "new_personal",
-            );
-            navigate(ROUTES.CHAT.CREATE_PERSONAL);
-          } else {
-            mixpanelTrack.chatRoomMenuClicked(
-              "오픈 채팅방 생성",
-              "new_open",
-            );
-            setIsCreateModalOpen(true);
-          }
-        }}
-        $bottom={selectedCategory === "친구" ? "180px" : undefined}
-      >
-        <Plus size={28} color="white" />
-      </FloatingActionButton>
+      {!isSearching && (
+        <FloatingActionButton
+          onClick={() => {
+            if (selectedCategory === "개인") {
+              mixpanelTrack.chatRoomMenuClicked(
+                "개인 채팅방 생성",
+                "new_personal",
+              );
+              navigate(ROUTES.CHAT.CREATE_PERSONAL);
+            } else if (selectedCategory === "친구") {
+              mixpanelTrack.friendActionClicked("친구 추가");
+              setIsAddFriendModalOpen(true);
+            } else {
+              mixpanelTrack.chatRoomMenuClicked(
+                "오픈 채팅방 생성",
+                "new_open",
+              );
+              setIsCreateModalOpen(true);
+            }
+          }}
+          $bottom={selectedCategory === "친구" ? "120px" : undefined}
+        >
+          <Plus size={28} color="white" />
+        </FloatingActionButton>
+      )}
+
+      {/* 검색 모드일 때 하단 플로팅 검색바 */}
+      {isSearching && (
+        <FloatingSearchContainer>
+          <MobilePillSearchBar
+            placeholder="닉네임을 입력하세요."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onSubmit={() => { }}
+            autoFocus
+          />
+        </FloatingSearchContainer>
+      )}
 
       {/* 모달 창 계층 공통 관리 */}
       <CreateChatModal
@@ -512,14 +591,18 @@ export default function MobileChatListPage() {
       />
 
       {/* 가로 스와이프 안내 시각 가이드 (스와이프 조작을 한 번도 안 한 최초 진입 시에만 노출) */}
-      <SwipeChevronGuides
-        hasSwiped={hasSwiped}
-        currentIndex={currentIndex}
-        totalSlides={3}
-      />
+      {!isSearching && (
+        <SwipeChevronGuides
+          hasSwiped={hasSwiped}
+          currentIndex={currentIndex}
+          totalSlides={3}
+        />
+      )}
     </Viewport>
   );
-}
+});
+
+export default MobileChatListPage;
 
 const Viewport = styled.div`
   width: 100%;
@@ -579,6 +662,39 @@ const FloatingActionButton = styled.button<{ $bottom?: string }>`
 
   &:active {
     transform: scale(0.9);
+  }
+`;
+
+const HeaderRightArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 4px;
+`;
+
+const FloatingSearchContainer = styled.div`
+  position: fixed;
+  bottom: 100px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  z-index: 100;
+
+  & > * {
+    max-width: 400px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
 `;
 
