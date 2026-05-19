@@ -6,6 +6,7 @@ import { useState } from "react";
 import { createChatRoom } from "@/apis/chat";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { Camera } from "lucide-react";
 
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
 import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
@@ -34,7 +35,21 @@ export default function CreateChatModal({
   const [description, setDescription] = useState("");
   const [maxCapacity, setMaxCapacity] = useState(10);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setThumbnail(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleCreate = async () => {
     if (!title.trim()) {
@@ -50,6 +65,7 @@ export default function CreateChatModal({
         isAnonymous,
         "OPEN", // 오픈 채팅 고정
         description.trim(),
+        thumbnail || undefined,
       );
       const roomId = response.data?.id || response.id;
       onOpenChange(false);
@@ -83,6 +99,23 @@ export default function CreateChatModal({
             </Header>
 
             <FormArea>
+              <ThumbnailGroup>
+                <Label style={{ alignSelf: "center" }}>방 썸네일</Label>
+                <ThumbnailInputWrapper>
+                  <ThumbnailPreview src={previewUrl || ""}>
+                    {!previewUrl && <Camera size={24} color="#CBD5E1" />}
+                  </ThumbnailPreview>
+                  <FileInput
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <EditBadge>
+                    <Camera size={14} color="white" />
+                  </EditBadge>
+                </ThumbnailInputWrapper>
+              </ThumbnailGroup>
+
               <FormGroup>
                 <Label>방 제목</Label>
                 <Input
@@ -202,6 +235,51 @@ const Label = styled.label`
   font-size: 14px;
   font-weight: 600;
   color: #767676;
+`;
+
+const ThumbnailGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ThumbnailInputWrapper = styled.label`
+  position: relative;
+  cursor: pointer;
+`;
+
+const ThumbnailPreview = styled.div<{ src: string }>`
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  background-color: #f1f5f9;
+  background-image: ${({ src }) => (src ? `url(${src})` : "none")};
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+`;
+
+const FileInput = styled.input`
+  display: none;
+`;
+
+const EditBadge = styled.div`
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #5E92F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
 `;
 
 const Input = styled.input`

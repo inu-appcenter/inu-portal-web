@@ -1,6 +1,5 @@
 import tokenInstance from "./tokenInstance";
 import {
-  CreateChatRoomRequest,
   CreateChatRoomResponse,
   JoinChatRoomResponse,
   GetChatRoomResponse,
@@ -24,16 +23,32 @@ export const createChatRoom = async (
   isAnonymous: boolean,
   type: ChatRoomType,
   description?: string,
+  thumbnail?: File,
 ): Promise<CreateChatRoomResponse> => {
+  const formData = new FormData();
+  formData.append(
+    "roomDto",
+    new Blob(
+      [
+        JSON.stringify({
+          title,
+          maxCapacity,
+          isAnonymous,
+          type,
+          description,
+        }),
+      ],
+      { type: "application/json" },
+    ),
+  );
+
+  if (thumbnail) {
+    formData.append("thumbnail", thumbnail);
+  }
+
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     "/api/chat-rooms",
-    {
-      title,
-      maxCapacity,
-      isAnonymous,
-      type,
-      description,
-    } as CreateChatRoomRequest,
+    formData,
   );
   return response.data;
 };
