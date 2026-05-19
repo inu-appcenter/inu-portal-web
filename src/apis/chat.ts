@@ -106,6 +106,7 @@ export const getOpenChatRooms = async (page: number = 0): Promise<
     await tokenInstance.get<ApiResponse<PageResponse<OpenChatRoomResponseDto>>>(
       `/api/chat-rooms/open?page=${page}`,
     );
+  console.log(response);
   return response.data;
 };
 

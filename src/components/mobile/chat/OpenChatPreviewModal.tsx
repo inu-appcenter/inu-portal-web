@@ -55,14 +55,20 @@ export default function OpenChatPreviewModal({
           >
             <Header>
               <ThumbnailWrapper>
-                 <Thumbnail
-                    src={room.thumbnailUrl || `https://portal.inuappcenter.kr/images/profile/0`}
+                {room.thumbnailUrl && (
+                  <Thumbnail
+                    src={`${import.meta.env.VITE_API_BASE_URL}${room.thumbnailUrl}`.replace(/(?<!:)\/\/+/g, '/')}
                     alt="Room Thumbnail"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://portal.inuappcenter.kr/images/profile/0`;
+                      /* 이미지 로드 실패 시 숨김 처리 */
+                      (e.target as HTMLImageElement).style.display = "none";
                     }}
-                 />
-                 {room.official && <OfficialBadge>공식</OfficialBadge>}
+                  />
+                )}
+                <DefaultIcon className="fallback">
+                  <Users size={32} color="#D6D1D5" />
+                </DefaultIcon>
+                {room.official && <OfficialBadge>공식</OfficialBadge>}
               </ThumbnailWrapper>
               <TitleSection>
                 <Title>{room.title}</Title>
@@ -81,25 +87,25 @@ export default function OpenChatPreviewModal({
                   <span className="label">참여 인원</span>
                   <span className="value">{room.currentParticipants} / {room.maxCapacity}</span>
                 </InfoItem>
-                 <InfoItem>
+                <InfoItem>
                   <Calendar size={16} color="#8E8E93" />
                   <span className="label">생성일</span>
                   <span className="value">
-                    {room.createDate 
-                      ? new Date(room.createDate).toLocaleDateString() 
+                    {room.createDate
+                      ? new Date(room.createDate).toLocaleDateString()
                       : "-"}
                   </span>
                 </InfoItem>
               </InfoGrid>
 
               {room.description && (
-                 <DescriptionSection>
-                    <div className="section-title">
-                       <Info size={14} />
-                       채팅방 소개
-                    </div>
-                    <DescriptionText>{room.description}</DescriptionText>
-                 </DescriptionSection>
+                <DescriptionSection>
+                  <div className="section-title">
+                    <Info size={14} />
+                    채팅방 소개
+                  </div>
+                  <DescriptionText>{room.description}</DescriptionText>
+                </DescriptionSection>
               )}
             </ContentArea>
 
@@ -111,10 +117,10 @@ export default function OpenChatPreviewModal({
                 textColor: "#1C1C1E",
               }}
               rightButton={{
-                label: room.joined ? "채팅방 입장" : "참여하기",
+                label: room.joined ? "참여 중" : "참여하기",
                 onClick: handleJoin,
-                backgroundColor: "#5E92F0",
-                textColor: "#FFFFFF",
+                backgroundColor: room.joined ? "rgba(94, 146, 240, 0.12)" : "#5E92F0",
+                textColor: room.joined ? "#5E92F0" : "#FFFFFF",
               }}
               padding="16px 24px 24px"
               height="88px"
@@ -173,6 +179,24 @@ const Thumbnail = styled.img`
   border-radius: 24px;
   object-fit: cover;
   border: 1px solid #f2f2f7;
+  position: relative;
+  z-index: 2;
+  background-color: #f4f4f4;
+`;
+
+const DefaultIcon = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  background-color: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  border: 1px solid #f2f2f7;
 `;
 
 const OfficialBadge = styled.div`
@@ -186,6 +210,7 @@ const OfficialBadge = styled.div`
   padding: 2px 6px;
   border-radius: 6px;
   border: 2px solid white;
+  z-index: 3;
 `;
 
 const TitleSection = styled.div`
