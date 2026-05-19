@@ -60,8 +60,8 @@ export default function ChattingPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMemberListOpen, setIsMemberListOpen] = useState(false);
   const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
-  const [activeImageMeta, setActiveImageMeta] = useState<{ senderName: string; createDate: string; senderId?: number | null } | null>(null);
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [activeImageMeta, setActiveImageMeta] = useState<{ senderName: string; createDate: string; senderChatRoomMemberId?: number | null } | null>(null);
+  const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showNewMessageBanner, setShowNewMessageBanner] = useState(false);
   const lastMessageCountRef = useRef<number>(0);
@@ -346,18 +346,18 @@ export default function ChattingPage() {
     url: string,
     senderName: string,
     createDate: string,
-    senderId?: number | null
+    senderChatRoomMemberId?: number | null
   ) => {
     mixpanelTrack.chatRoomMenuClicked("이미지 크게 보기", roomId ?? "");
     setSelectedImageUrl(url);
 
-    // 백엔드 소켓/조회 응답에서 senderId가 null로 올 경우, React Query 캐시의 멤버 목록에서 닉네임/별칭 매칭하여 복원
-    let resolvedId = senderId;
+    // 백엔드 소켓/조회 응답에서 senderChatRoomMemberId가 null로 올 경우, React Query 캐시의 멤버 목록에서 닉네임/별칭 매칭하여 복원
+    let resolvedId = senderChatRoomMemberId;
     if (!resolvedId && senderName) {
       const matched = members.find(
         (m: ChatRoomMemberResponseDto) => m.nickname === senderName || m.friendAlias === senderName
       );
-      resolvedId = matched?.memberId ?? null;
+      resolvedId = matched?.chatRoomMemberId ?? null;
     }
 
     // 본인 발송 메시지의 경우, 글로벌 UserStore의 userInfo.id를 최종 폴백으로 삼아 100% 매칭 보장
@@ -365,13 +365,13 @@ export default function ChattingPage() {
       resolvedId = userInfo?.id ?? null;
     }
 
-    setActiveImageMeta({ senderName, createDate, senderId: resolvedId });
+    setActiveImageMeta({ senderName, createDate, senderChatRoomMemberId: resolvedId });
     setIsImageModalOpen(true);
     window.history.pushState({ modal: "image" }, "");
   };
 
-  const handleOpenProfileFromImage = (senderId: number) => {
-    setSelectedMemberId(senderId);
+  const handleOpenProfileFromImage = (chatRoomMemberId: number) => {
+    setSelectedChatRoomMemberId(chatRoomMemberId);
     setIsProfileModalOpen(true);
   };
 
@@ -691,12 +691,12 @@ export default function ChattingPage() {
         onOpenChange={handleImageModalOpenChange}
         senderName={activeImageMeta?.senderName}
         createDate={activeImageMeta?.createDate}
-        senderId={activeImageMeta?.senderId}
+        senderId={activeImageMeta?.senderChatRoomMemberId}
         onSenderClick={handleOpenProfileFromImage}
       />
 
       <UserProfileModal
-        memberId={selectedMemberId}
+        chatRoomMemberId={selectedChatRoomMemberId}
         isOpen={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
         roomContext={
@@ -1012,7 +1012,7 @@ const ChatItemOtherPerson = ({
                     originalImageUrl,
                     getDisplayName() || "알 수 없음",
                     message.createDate,
-                    message.senderId
+                    message.senderChatRoomMemberId
                   )
                 }
               />
@@ -1100,7 +1100,7 @@ const ChatItemMy = ({
                     originalImageUrl,
                     getDisplayName() || "나",
                     message.createDate,
-                    message.senderId
+                    message.senderChatRoomMemberId
                   )
                 }
               />

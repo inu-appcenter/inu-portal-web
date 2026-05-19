@@ -8,7 +8,6 @@ import {
   Notification,
   TokenInfo,
   UserInfoInput,
-  MemberProfileResponseDto,
 } from "@/types/members";
 import { Post } from "@/types/posts";
 

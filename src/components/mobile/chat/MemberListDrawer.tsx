@@ -48,7 +48,7 @@ export default function MemberListDrawer({
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -151,14 +151,14 @@ export default function MemberListDrawer({
                         (member.friendAlias
                           ? `${member.friendAlias} (${member.nickname})`
                           : member.nickname) +
-                        (member.me ? " (나)" : "") +
+                        (member.isMe ? " (나)" : "") +
                         (member.isOwner ? " (방장)" : "")
                       }
                       subtitle={member.studentId || "익명"}
                       fireId={member.fireId || 0}
                       onClick={() => {
-                        if (member.memberId) {
-                          setSelectedMemberId(member.memberId);
+                        if (member.chatRoomMemberId) {
+                          setSelectedChatRoomMemberId(member.chatRoomMemberId);
                           setIsProfileModalOpen(true);
                         }
                       }}
@@ -203,7 +203,7 @@ export default function MemberListDrawer({
             </BottomActionRow>
           </Footer>
           <UserProfileModal
-            memberId={selectedMemberId}
+            chatRoomMemberId={selectedChatRoomMemberId}
             isOpen={isProfileModalOpen}
             onOpenChange={setIsProfileModalOpen}
             roomContext={{
