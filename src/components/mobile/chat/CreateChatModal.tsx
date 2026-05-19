@@ -34,7 +34,7 @@ export default function CreateChatModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [maxCapacity, setMaxCapacity] = useState(10);
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -205,10 +205,15 @@ const StyledContent = styled(Dialog.Content)`
   flex-direction: column;
   outline: none;
   animation: ${contentShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: white;
+  border-radius: 24px;
+  max-height: 85vh;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
   padding: 24px 24px 16px;
+  flex-shrink: 0;
 `;
 
 const Title = styled.h2`
@@ -223,6 +228,13 @@ const FormArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    display: none;
+  }
 `;
 
 const FormGroup = styled.div`

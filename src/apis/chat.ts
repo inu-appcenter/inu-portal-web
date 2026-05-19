@@ -99,13 +99,12 @@ export const getMyChatRooms = async (): Promise<
 };
 
 // 전체 오픈채팅방 목록 조회
-export const getOpenChatRooms = async (page: number = 0): Promise<
-  ApiResponse<PageResponse<OpenChatRoomResponseDto>>
-> => {
-  const response =
-    await tokenInstance.get<ApiResponse<PageResponse<OpenChatRoomResponseDto>>>(
-      `/api/chat-rooms/open?page=${page}`,
-    );
+export const getOpenChatRooms = async (
+  page: number = 0,
+): Promise<ApiResponse<PageResponse<OpenChatRoomResponseDto>>> => {
+  const response = await tokenInstance.get<
+    ApiResponse<PageResponse<OpenChatRoomResponseDto>>
+  >(`/api/chat-rooms/open?page=${page}`);
   console.log(response);
   return response.data;
 };
@@ -182,7 +181,7 @@ export const sendImageMessage = async (
     formData,
     {
       onUploadProgress: onProgress,
-    }
+    },
   );
   return response.data;
 };
@@ -201,7 +200,7 @@ export const createPersonalChatRoom = async (
   targetFriendIds: number[],
 ): Promise<CreateChatRoomResponse> => {
   const response = await tokenInstance.post<CreateChatRoomResponse>(
-    "/api/chat-rooms",
+    "/api/chat-rooms/personal",
     { targetFriendIds },
   );
   return response.data;
@@ -286,9 +285,9 @@ export const getChatRoomMemberProfile = async (
   roomId: number | string,
   chatRoomMemberId: number,
 ): Promise<ApiResponse<MemberProfileResponseDto>> => {
-  const response = await tokenInstance.get<ApiResponse<MemberProfileResponseDto>>(
-    `/api/chat-rooms/${roomId}/members/${chatRoomMemberId}/profile`,
-  );
+  const response = await tokenInstance.get<
+    ApiResponse<MemberProfileResponseDto>
+  >(`/api/chat-rooms/${roomId}/members/${chatRoomMemberId}/profile`);
   return response.data;
 };
 
