@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -17,7 +18,11 @@ import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import Skeleton from "@/components/common/Skeleton";
 import useUserStore from "@/stores/useUserStore";
 
-export default function FriendManagementView() {
+interface FriendManagementViewProps {
+  isActive: boolean;
+}
+
+export default function FriendManagementView({ isActive }: FriendManagementViewProps) {
   const queryClient = useQueryClient();
   const { userInfo } = useUserStore();
   const [searchTerm, setSearchTerm] = useState("");
@@ -175,14 +180,17 @@ export default function FriendManagementView() {
         </Box>
       </TitleContentArea>
 
-      <FloatingSearchContainer>
-        <MobilePillSearchBar
-          placeholder="닉네임을 입력하세요."
-          value={searchTerm}
-          onChange={setSearchTerm}
-          onSubmit={() => { }} // 실시간 검색이므로 별도 제출 로직 필요 없음
-        />
-      </FloatingSearchContainer>
+      {isActive && createPortal(
+        <FloatingSearchContainer>
+          <MobilePillSearchBar
+            placeholder="닉네임을 입력하세요."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onSubmit={() => { }} // 실시간 검색이므로 별도 제출 로직 필요 없음
+          />
+        </FloatingSearchContainer>,
+        document.body
+      )}
       <UserProfileModal
         memberId={selectedMyId}
         friendId={selectedFriendId}
