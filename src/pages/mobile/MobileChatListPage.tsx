@@ -50,11 +50,31 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [isTop, setIsTop] = useState(true);
+
   useEffect(() => {
     trackPageView("채팅 목록");
   }, []);
 
-  // 카테고리가 변경될 때마다 localStorage에 저장 및 트래킹
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsTop(window.scrollY === 0);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   useEffect(() => {
     const category = params.get("category");
     if (category) {
@@ -195,18 +215,18 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     };
   }, [isSearching]);
 
-  const headerRight = useMemo(
-    () => (
-      <HeaderRightArea>
-        {!isSearching && selectedCategory === "친구" && (
+  const headerRight = useMemo(() => {
+    if (!isSearching && selectedCategory === "친구") {
+      return (
+        <HeaderRightArea>
           <IconButton onClick={handleSearchClick}>
             <Search size={24} color="#1C1C1E" />
           </IconButton>
-        )}
-      </HeaderRightArea>
-    ),
-    [selectedCategory, isSearching],
-  );
+        </HeaderRightArea>
+      );
+    }
+    return null;
+  }, [selectedCategory, isSearching, handleSearchClick]);
 
   const headerTitle = useMemo(() => {
     if (isSearching) {
@@ -234,7 +254,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const handleCategoryChange = (nextCategory: string) => {
     const nextParams = new URLSearchParams(location.search);
     nextParams.set("category", nextCategory);
-    navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+    navigate(`${location.pathname}?${nextParams.toString()}`, {
+      replace: true,
+    });
   };
 
   const handleSlideChange = (s: SwiperClass) => {
@@ -295,11 +317,30 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     }
   }, [currentIndex, swiperRef]);
 
+  // 데이터 로딩 완료 및 카테고리 전환 시점을 대비한 스위퍼 리사이징 수동 업데이트 트리거
+  useEffect(() => {
+    if (swiperRef) {
+      setTimeout(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      }, 100);
+      setTimeout(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      }, 350);
+    }
+  }, [selectedCategory, isLoading, isOpenRoomsLoading, swiperRef]);
+
+  const fabLabel = useMemo(() => {
+    if (selectedCategory === "개인") return "새로운 채팅";
+    if (selectedCategory === "친구") return "친구 추가";
+    return "오픈채팅 만들기";
+  }, [selectedCategory]);
+
   return (
     <Viewport>
       <Swiper
         onSwiper={(swiper) => {
-          // 초기화 직후 URL 지정 탭으로 애니메이션 없이 즉시 이동
           if (currentIndex !== 0) {
             swiper.slideTo(currentIndex, 0);
           }
@@ -309,7 +350,16 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         onSlideChange={handleSlideChange}
         allowTouchMove={!isAnyModalOpen && !isSearching}
         speed={320}
-        style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", flex: 1 }}
+        autoHeight={true}
+        observer={true}
+        observeParents={true}
+        style={{
+          width: "100%",
+          height: "auto",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+        }}
       >
         {/* 슬라이드 0: 개인 */}
         <SwiperSlide style={{ height: "auto" }}>
@@ -324,7 +374,10 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                 description={
                   <NotificationWarningBanner>
                     현재 채팅 알림이 꺼져있어요.
-                    <span className="link" onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}>
+                    <span
+                      className="link"
+                      onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}
+                    >
                       알림 설정으로 이동
                     </span>
                   </NotificationWarningBanner>
@@ -392,7 +445,10 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                 description={
                   <NotificationWarningBanner>
                     현재 채팅 알림이 꺼져있어요.
-                    <span className="link" onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}>
+                    <span
+                      className="link"
+                      onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}
+                    >
                       알림 설정으로 이동
                     </span>
                   </NotificationWarningBanner>
@@ -492,8 +548,8 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         />
                         {index <
                           openRoomsDiscoveryRes.data.content.length - 1 && (
-                            <Divider />
-                          )}
+                          <Divider />
+                        )}
                       </div>
                     ))
                   ) : (
@@ -514,20 +570,17 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                   <>
                     닉네임으로 친구를 찾아보세요.
                     <br />
-                    아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운 닉네임을
-                    설정해보세요.
+                    아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운
+                    닉네임을 설정해보세요.
                   </>
                 }
               />
             )}
-            <FriendManagementView
-              searchTerm={searchTerm}
-            />
+            <FriendManagementView searchTerm={searchTerm} />
           </Slide>
         </SwiperSlide>
       </Swiper>
 
-      {/* 공통 플로팅 액션 버튼 */}
       {!isSearching && (
         <FloatingActionButton
           onClick={() => {
@@ -541,33 +594,29 @@ const MobileChatListPage = memo(function MobileChatListPage() {
               mixpanelTrack.friendActionClicked("친구 추가");
               setIsAddFriendModalOpen(true);
             } else {
-              mixpanelTrack.chatRoomMenuClicked(
-                "오픈 채팅방 생성",
-                "new_open",
-              );
+              mixpanelTrack.chatRoomMenuClicked("오픈 채팅방 생성", "new_open");
               setIsCreateModalOpen(true);
             }
           }}
-          $bottom={selectedCategory === "친구" ? "120px" : undefined}
+          $isTop={isTop}
         >
-          <Plus size={28} color="white" />
+          <Plus size={20} color="white" />
+          <ButtonLabel $isTop={isTop}>{fabLabel}</ButtonLabel>
         </FloatingActionButton>
       )}
 
-      {/* 검색 모드일 때 하단 플로팅 검색바 */}
       {isSearching && (
         <FloatingSearchContainer>
           <MobilePillSearchBar
             placeholder="닉네임을 입력하세요."
             value={searchTerm}
             onChange={setSearchTerm}
-            onSubmit={() => { }}
+            onSubmit={() => {}}
             autoFocus
           />
         </FloatingSearchContainer>
       )}
 
-      {/* 모달 창 계층 공통 관리 */}
       <CreateChatModal
         isOpen={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
@@ -590,7 +639,6 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         onOpenChange={setIsSentRequestsModalOpen}
       />
 
-      {/* 가로 스와이프 안내 시각 가이드 (스와이프 조작을 한 번도 안 한 최초 진입 시에만 노출) */}
       {!isSearching && (
         <SwipeChevronGuides
           hasSwiped={hasSwiped}
@@ -610,7 +658,11 @@ const Viewport = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: 24px 0 120px 0;
+  padding: 24px 0 60px 0;
+
+  .swiper-autoheight {
+    transition: height 0ms !important;
+  }
 `;
 
 const Slide = styled.div`
@@ -623,7 +675,6 @@ const Slide = styled.div`
 `;
 
 const NotificationWarningBanner = styled.div`
-
   .link {
     color: #0a84ff;
     text-decoration: underline;
@@ -643,26 +694,53 @@ const ListWrapper = styled.div`
   flex-direction: column;
 `;
 
-const FloatingActionButton = styled.button<{ $bottom?: string }>`
+const FloatingActionButton = styled.button<{ $isTop: boolean }>`
   position: fixed;
-  bottom: ${({ $bottom }) => $bottom || "120px"};
+  bottom: 100px;
   right: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
+
+  height: 48px;
+  border-radius: 24px;
   background-color: #5e92f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border: none;
   box-shadow: 0 4px 12px rgba(94, 146, 240, 0.35);
   cursor: pointer;
   z-index: 10;
-  transition: transform 0.2s;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  display: grid;
+  grid-template-columns: auto ${({ $isTop }) => ($isTop ? "1fr" : "0fr")};
+
+  padding: ${({ $isTop }) => ($isTop ? "0 16px 0 14px" : "0 14px")};
+
+  transition:
+    grid-template-columns 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s;
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
+`;
+
+const ButtonLabel = styled.span<{ $isTop: boolean }>`
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+
+  margin-left: ${({ $isTop }) => ($isTop ? "5px" : "0px")};
+
+  opacity: ${({ $isTop }) => ($isTop ? 1 : 0)};
+
+  transition:
+    margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity ${({ $isTop }) => ($isTop ? "0.2s" : "0.12s")}
+      cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const HeaderRightArea = styled.div`
@@ -697,5 +775,3 @@ const FloatingSearchContainer = styled.div`
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
 `;
-
-
