@@ -265,6 +265,8 @@ export default function UserProfileModal({
 
   const isChatContext = !!roomContext && !!chatRoomMemberId;
   const isFriendContext = !isChatContext && !!friendId;
+  // memberId만 있고 chat/friend context가 없을 때 = 내 프로필
+  const isSelfProfile = !!memberId && !isChatContext && !isFriendContext;
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
@@ -281,7 +283,21 @@ export default function UserProfileModal({
     retry: false,
   });
 
-  const profile = data?.data;
+  // 내 프로필인 경우 userInfo를 profile 형태로 변환해 직접 사용
+  const selfProfile = isSelfProfile && userInfo && userInfo.id > 0
+    ? {
+      memberId: userInfo.id,
+      nickname: userInfo.nickname,
+      department: userInfo.department,
+      maskedStudentId: undefined as string | undefined,
+      fireId: userInfo.fireId,
+      friendStatus: "SELF" as const,
+      friendAlias: undefined as string | undefined,
+      friendId: undefined as number | undefined,
+    }
+    : null;
+
+  const profile = selfProfile ?? data?.data;
 
   // 에러 처리 (차단된 유저 등 404 에러 시)
   if (isError && isOpen) {
@@ -484,7 +500,7 @@ export default function UserProfileModal({
     }
   };
 
-  const isMe = userInfo?.nickname === profile?.nickname;
+  const isMe = isSelfProfile || userInfo?.nickname === profile?.nickname;
 
   const canManage =
     !isMe &&
@@ -498,164 +514,164 @@ export default function UserProfileModal({
   return (
     <>
       <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
-      <Drawer.Portal>
-        <StyledOverlay />
-        <StyledContent>
-          <Header>
-            <SheetHandle />
-            <HeaderActions>
-              {!isMe && profile && (
-                <>
-                  {profile.friendStatus === "ACCEPTED" && (
-                    <IconButton
-                      onClick={handleAction}
-                      title="친구 삭제"
-                    >
-                      <UserMinus size={22} color="#8E8E93" />
-                    </IconButton>
-                  )}
-                  <IconButton
-                    onClick={handleBlock}
-                    title="차단"
-                  >
-                    <ShieldAlert size={22} color="#FF3B30" />
-                  </IconButton>
-                </>
-              )}
-            </HeaderActions>
-          </Header>
-
-              <Body>
-                {isLoading ? (
-                  <LoadingArea>프로필 로딩 중...</LoadingArea>
-                ) : profile ? (
+        <Drawer.Portal>
+          <StyledOverlay />
+          <StyledContent>
+            <Header>
+              <SheetHandle />
+              <HeaderActions>
+                {!isMe && profile && (
                   <>
-                    <ProfileImageWrapper>
-                      <ProfileImage
-                        src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
-                        alt="Profile"
-                      />
-                    </ProfileImageWrapper>
+                    {profile.friendStatus === "ACCEPTED" && (
+                      <IconButton
+                        onClick={handleAction}
+                        title="친구 삭제"
+                      >
+                        <UserMinus size={22} color="#8E8E93" />
+                      </IconButton>
+                    )}
+                    <IconButton
+                      onClick={handleBlock}
+                      title="차단"
+                    >
+                      <ShieldAlert size={22} color="#FF3B30" />
+                    </IconButton>
+                  </>
+                )}
+              </HeaderActions>
+            </Header>
 
-                    <UserInfoArea>
-                      <NicknameArea>
-                        <Nickname>{profile.friendAlias || profile.nickname}</Nickname>
-                        {profile.friendAlias && (
-                          <Alias>({profile.nickname})</Alias>
-                        )}
-                        {profile.friendStatus === "ACCEPTED" && (
-                          <EditAliasButton onClick={handleEditAlias}>
-                            <Edit3 size={16} color="#8E8E93" />
-                          </EditAliasButton>
-                        )}
-                      </NicknameArea>
-                      <SubInfo>
-                        {findTitleOrCode(profile.department)}
-                        {profile.maskedStudentId ? ` · ${profile.maskedStudentId}` : ""}
-                      </SubInfo>
-                    </UserInfoArea>
+            <Body>
+              {isLoading ? (
+                <LoadingArea>프로필 로딩 중...</LoadingArea>
+              ) : profile ? (
+                <>
+                  <ProfileImageWrapper>
+                    <ProfileImage
+                      src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+                      alt="Profile"
+                    />
+                  </ProfileImageWrapper>
 
-                    <ActionArea>
-                      {isMe ? (
-                        <ActionButton
-                          onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}
-                          $variant="primary"
-                        >
-                          <Edit3 size={20} />
-                          프로필 수정
-                        </ActionButton>
-                      ) : (
-                        <VerticalButtonGroup>
-                          {/* 1층: 친구 수락/거절 또는 친구 요청/대기중 버튼 */}
-                          {profile.friendStatus === "RECEIVED" && (
-                            <ButtonGroup>
-                              <ActionButton
-                                onClick={handleReject}
-                                $variant="secondary"
-                              >
-                                <UserX size={20} />
-                                거절
-                              </ActionButton>
-                              <ActionButton
-                                onClick={handleAction}
-                                $variant="primary"
-                              >
-                                <UserCheck size={20} />
-                                수락
-                              </ActionButton>
-                            </ButtonGroup>
-                          )}
+                  <UserInfoArea>
+                    <NicknameArea>
+                      <Nickname>{profile.friendAlias || profile.nickname}</Nickname>
+                      {profile.friendAlias && (
+                        <Alias>({profile.nickname})</Alias>
+                      )}
+                      {profile.friendStatus === "ACCEPTED" && (
+                        <EditAliasButton onClick={handleEditAlias}>
+                          <Edit3 size={16} color="#8E8E93" />
+                        </EditAliasButton>
+                      )}
+                    </NicknameArea>
+                    <SubInfo>
+                      {isMe ? profile.department : findTitleOrCode(profile.department)}
+                      {profile.maskedStudentId ? ` · ${profile.maskedStudentId}` : ""}
+                    </SubInfo>
+                  </UserInfoArea>
 
-                          {profile.friendStatus === "NONE" && (
+                  <ActionArea>
+                    {isMe ? (
+                      <ActionButton
+                        onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}
+                        $variant="primary"
+                      >
+                        <Edit3 size={20} />
+                        프로필 수정
+                      </ActionButton>
+                    ) : (
+                      <VerticalButtonGroup>
+                        {/* 1층: 친구 수락/거절 또는 친구 요청/대기중 버튼 */}
+                        {profile.friendStatus === "RECEIVED" && (
+                          <ButtonGroup>
+                            <ActionButton
+                              onClick={handleReject}
+                              $variant="secondary"
+                            >
+                              <UserX size={20} />
+                              거절
+                            </ActionButton>
                             <ActionButton
                               onClick={handleAction}
                               $variant="primary"
-                              disabled={requestMutation.isPending}
-                            >
-                              <UserPlus size={20} />
-                              친구 요청
-                            </ActionButton>
-                          )}
-
-                          {profile.friendStatus === "PENDING" && (
-                            <ActionButton
-                              onClick={handleAction}
-                              $variant="secondary"
-                              disabled={deleteMutation.isPending}
-                            >
-                              <UserCheck size={20} color="#8E8E93" />
-                              요청 대기 중
-                            </ActionButton>
-                          )}
-
-                          {/* 2층: 강퇴 버튼 (차단은 상단 헤더로 올라갔으므로 강퇴만 조건부 렌더링) */}
-                          {canManage && (
-                            <ActionButton
-                              onClick={handleKick}
-                              $variant="danger"
-                            >
-                              <LogOut size={20} color="#FF3B30" />
-                              강퇴
-                            </ActionButton>
-                          )}
-
-                          {/* 3층: 방장 위임 */}
-                          {canManage && roomContext?.isOwner && (
-                            <ActionButton
-                              onClick={handleDelegate}
-                              $variant="secondary"
                             >
                               <UserCheck size={20} />
-                              방장 위임
+                              수락
                             </ActionButton>
-                          )}
+                          </ButtonGroup>
+                        )}
 
-                          {/* 4층: 1대1 채팅 버튼 */}
+                        {profile.friendStatus === "NONE" && (
                           <ActionButton
-                            onClick={handleStartChat}
+                            onClick={handleAction}
                             $variant="primary"
-                            disabled={chatMutation.isPending}
+                            disabled={requestMutation.isPending}
                           >
-                            <MessageSquare size={20} />
-                            1대1 채팅
+                            <UserPlus size={20} />
+                            친구 요청
                           </ActionButton>
-                        </VerticalButtonGroup>
-                      )}
-                    </ActionArea>
-                  </>
-                ) : (
-                  <LoadingArea>정보를 불러올 수 없습니다.</LoadingArea>
-                )}
-              </Body>
-            </StyledContent>
-          </Drawer.Portal>
-        </Drawer.Root>
-        <EditFriendAliasModal
-          isOpen={isAliasModalOpen}
-          onOpenChange={setIsAliasModalOpen}
-          currentAlias={profile?.friendAlias || ""}
-          onConfirm={handleConfirmAliasUpdate}
-        />
-      </>
-    );
-  }
+                        )}
+
+                        {profile.friendStatus === "PENDING" && (
+                          <ActionButton
+                            onClick={handleAction}
+                            $variant="secondary"
+                            disabled={deleteMutation.isPending}
+                          >
+                            <UserCheck size={20} color="#8E8E93" />
+                            요청 대기 중
+                          </ActionButton>
+                        )}
+
+                        {/* 2층: 강퇴 버튼 (차단은 상단 헤더로 올라갔으므로 강퇴만 조건부 렌더링) */}
+                        {canManage && (
+                          <ActionButton
+                            onClick={handleKick}
+                            $variant="danger"
+                          >
+                            <LogOut size={20} color="#FF3B30" />
+                            강퇴
+                          </ActionButton>
+                        )}
+
+                        {/* 3층: 방장 위임 */}
+                        {canManage && roomContext?.isOwner && (
+                          <ActionButton
+                            onClick={handleDelegate}
+                            $variant="secondary"
+                          >
+                            <UserCheck size={20} />
+                            방장 위임
+                          </ActionButton>
+                        )}
+
+                        {/* 4층: 1대1 채팅 버튼 */}
+                        <ActionButton
+                          onClick={handleStartChat}
+                          $variant="primary"
+                          disabled={chatMutation.isPending}
+                        >
+                          <MessageSquare size={20} />
+                          1대1 채팅
+                        </ActionButton>
+                      </VerticalButtonGroup>
+                    )}
+                  </ActionArea>
+                </>
+              ) : (
+                <LoadingArea>정보를 불러올 수 없습니다.</LoadingArea>
+              )}
+            </Body>
+          </StyledContent>
+        </Drawer.Portal>
+      </Drawer.Root>
+      <EditFriendAliasModal
+        isOpen={isAliasModalOpen}
+        onOpenChange={setIsAliasModalOpen}
+        currentAlias={profile?.friendAlias || ""}
+        onConfirm={handleConfirmAliasUpdate}
+      />
+    </>
+  );
+}
