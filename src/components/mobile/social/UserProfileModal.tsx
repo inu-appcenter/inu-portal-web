@@ -13,12 +13,12 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getMemberProfile } from "@/apis/members";
 import {
   requestFriend,
   acceptFriend,
   deleteFriend,
   updateFriendAlias,
+  getFriendProfile,
 } from "@/apis/friends";
 import {
   normalizeProfileImageId,
@@ -28,7 +28,13 @@ import findTitleOrCode from "@/utils/findTitleOrCode";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
 import { blockUser } from "@/apis/blocks";
-import { kickMember, delegateOwner, createPersonalChatRoom } from "@/apis/chat";
+import {
+  kickMember,
+  delegateOwner,
+  createPersonalChatRoom,
+  getChatRoomMemberProfile,
+  createDirectPersonalChatRoom,
+} from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
 
 const StyledOverlay = styled(Drawer.Overlay)`
@@ -230,7 +236,9 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" | "danger
 `;
 
 interface UserProfileModalProps {
-  memberId: number | null;
+  memberId?: number | null;
+  chatRoomMemberId?: number | null;
+  friendId?: number | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   roomContext?: {
@@ -243,6 +251,8 @@ interface UserProfileModalProps {
 
 export default function UserProfileModal({
   memberId,
+  chatRoomMemberId,
+  friendId,
   isOpen,
   onOpenChange,
   roomContext,
@@ -253,10 +263,21 @@ export default function UserProfileModal({
   const [isAliasModalOpen, setIsAliasModalOpen] = useState(false);
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
 
+  const isChatContext = !!roomContext && !!chatRoomMemberId;
+  const isFriendContext = !isChatContext && !!friendId;
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["memberProfile", memberId],
-    queryFn: () => getMemberProfile(memberId!),
-    enabled: !!memberId && isOpen,
+    queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
+    queryFn: async () => {
+      if (isChatContext) {
+        return getChatRoomMemberProfile(roomContext.roomId, chatRoomMemberId!);
+      }
+      if (isFriendContext) {
+        return getFriendProfile(friendId!);
+      }
+      throw new Error("No context provided for profile query");
+    },
+    enabled: (isChatContext || isFriendContext) && isOpen,
     retry: false,
   });
 
@@ -275,7 +296,7 @@ export default function UserProfileModal({
     mutationFn: (nickname: string) => requestFriend(nickname),
     onSuccess: () => {
       alert("친구 요청을 보냈습니다.");
-      queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
     },
     onError: (err: any) => {
@@ -287,7 +308,7 @@ export default function UserProfileModal({
     mutationFn: (friendId: number) => acceptFriend(friendId),
     onSuccess: () => {
       alert("친구 요청을 수락했습니다.");
-      queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
       queryClient.invalidateQueries({ queryKey: ["friends"] });
     },
@@ -297,7 +318,7 @@ export default function UserProfileModal({
     mutationFn: (friendId: number) => deleteFriend(friendId),
     onSuccess: () => {
       alert("처리되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["friends"] });
       queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
       queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
@@ -309,7 +330,7 @@ export default function UserProfileModal({
       updateFriendAlias(friendId, alias),
     onSuccess: () => {
       alert("별명이 수정되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["friends"] });
     },
     onError: (err: any) => {
@@ -362,8 +383,13 @@ export default function UserProfileModal({
   };
 
   const chatMutation = useMutation({
-    mutationFn: (targetMemberId: number) =>
-      createPersonalChatRoom([targetMemberId]),
+    mutationFn: async () => {
+      if (isChatContext) {
+        return createDirectPersonalChatRoom(roomContext.roomId, chatRoomMemberId!);
+      } else {
+        return createPersonalChatRoom([friendId!]);
+      }
+    },
     onSuccess: (res) => {
       const roomId = res.data.id;
       onOpenChange(false);
@@ -375,15 +401,16 @@ export default function UserProfileModal({
   });
 
   const handleStartChat = () => {
-    if (!profile) return;
-    chatMutation.mutate(profile.memberId);
+    if (isChatContext && !chatRoomMemberId) return;
+    if (isFriendContext && !friendId) return;
+    chatMutation.mutate();
   };
 
   const blockMutation = useMutation({
-    mutationFn: (targetMemberId: number) => blockUser(targetMemberId),
+    mutationFn: (targetId: number) => blockUser(targetId),
     onSuccess: () => {
       alert("유저를 차단했습니다.");
-      queryClient.invalidateQueries({ queryKey: ["memberProfile", memberId] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["friends"] });
       onOpenChange(false);
     },
@@ -393,8 +420,8 @@ export default function UserProfileModal({
   });
 
   const kickMutation = useMutation({
-    mutationFn: (targetMemberId: number) =>
-      kickMember(roomContext!.roomId, targetMemberId),
+    mutationFn: (targetChatRoomMemberId: number) =>
+      kickMember(roomContext!.roomId, targetChatRoomMemberId),
     onSuccess: () => {
       alert("멤버를 강퇴했습니다.");
       queryClient.invalidateQueries({
@@ -408,8 +435,8 @@ export default function UserProfileModal({
   });
 
   const delegateMutation = useMutation({
-    mutationFn: (targetMemberId: number) =>
-      delegateOwner(roomContext!.roomId, targetMemberId),
+    mutationFn: (newOwnerChatRoomMemberId: number) =>
+      delegateOwner(roomContext!.roomId, newOwnerChatRoomMemberId),
     onSuccess: () => {
       alert("방장을 위임했습니다.");
       queryClient.invalidateQueries({
@@ -430,29 +457,34 @@ export default function UserProfileModal({
         `${profile.nickname}님을 차단할까요?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`,
       )
     ) {
-      blockMutation.mutate(profile.memberId);
+      const blockTargetId = profile.memberId || friendId || chatRoomMemberId;
+      if (!blockTargetId) {
+        alert("차단 대상 식별자를 찾을 수 없습니다.");
+        return;
+      }
+      blockMutation.mutate(blockTargetId);
     }
   };
 
   const handleKick = () => {
-    if (!profile || !roomContext) return;
+    if (!profile || !roomContext || !chatRoomMemberId) return;
     if (confirm(`'${profile.nickname}'님을 강퇴할까요?`)) {
-      kickMutation.mutate(profile.memberId);
+      kickMutation.mutate(chatRoomMemberId);
     }
   };
 
   const handleDelegate = () => {
-    if (!profile || !roomContext) return;
+    if (!profile || !roomContext || !chatRoomMemberId) return;
     if (
       confirm(
         `'${profile.nickname}'님에게 방장을 위임할까요?\n위임 후에는 방장 권한이 상실됩니다.`,
       )
     ) {
-      delegateMutation.mutate(profile.memberId);
+      delegateMutation.mutate(chatRoomMemberId);
     }
   };
 
-  const isMe = userInfo?.id === profile?.memberId;
+  const isMe = userInfo?.nickname === profile?.nickname;
 
   const canManage =
     !isMe &&
@@ -518,7 +550,8 @@ export default function UserProfileModal({
                         )}
                       </NicknameArea>
                       <SubInfo>
-                        {findTitleOrCode(profile.department)} · {profile.maskedStudentId}
+                        {findTitleOrCode(profile.department)}
+                        {profile.maskedStudentId ? ` · ${profile.maskedStudentId}` : ""}
                       </SubInfo>
                     </UserInfoArea>
 
