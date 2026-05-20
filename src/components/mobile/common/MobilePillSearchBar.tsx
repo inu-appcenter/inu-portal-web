@@ -70,7 +70,7 @@ const SearchFormWrapper = styled.form`
   input {
     border: none;
     background: transparent;
-    font-size: 15px;
+    font-size: 16px;
     color: #333;
     font-weight: 500;
     flex-grow: 1;
