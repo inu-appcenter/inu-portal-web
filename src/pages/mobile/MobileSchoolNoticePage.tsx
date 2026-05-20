@@ -318,7 +318,7 @@ const MobileSchoolNoticePage = () => {
 
       <FloatingActionButton
         text="공지 알리미 설정"
-        icon={<Bell size={18} color="white" />}
+        icon={<Bell size={16} color="white" fill="currentColor" />}
         onClick={() => {
           if (!tokenInfo.accessToken) {
             if (
@@ -336,7 +336,7 @@ const MobileSchoolNoticePage = () => {
             navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
           }
         }}
-        bottom={"100px"}
+        bottom={"84px"}
       />
 
       <FloatingSearchBar>

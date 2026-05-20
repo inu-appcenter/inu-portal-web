@@ -1,6 +1,5 @@
 import styled from "styled-components";
-
-import searchImg from "@/resources/assets/mobile-home/category-form/input.svg";
+import { IoSearch } from "react-icons/io5";
 
 interface MobilePillSearchBarProps {
   value: string;
@@ -36,7 +35,7 @@ export default function MobilePillSearchBar({
         autoFocus={autoFocus}
       />
       <button type="submit" aria-label={submitAriaLabel}>
-        <img src={searchImg} alt="" />
+        <IoSearch size={20} color="#fff" />
       </button>
     </SearchFormWrapper>
   );
@@ -45,47 +44,73 @@ export default function MobilePillSearchBar({
 const SearchFormWrapper = styled.form`
   box-sizing: border-box;
   border-radius: 999px;
-  box-shadow: 0 2px 8px 0 #0000001a;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
   width: 100%;
-  background-color: #fff;
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  gap: 10px;
-  height: 60px;
+  padding: 4px 6px 4px 16px;
+  gap: 8px;
+  border: 1px solid #eaeaea;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+
+  &:focus-within {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: #9cafe2;
+    box-shadow: 0 4px 14px 0 rgba(156, 175, 226, 0.2);
+  }
 
   input {
     border: none;
     background: transparent;
-    font-size: 16px;
-    color: #666;
+    font-size: 15px;
+    color: #333;
     font-weight: 500;
     flex-grow: 1;
     outline: none;
+    min-width: 0;
+    padding: 0;
+    height: 100%;
   }
 
   input::placeholder {
-    color: #9aa3af;
+    color: #a3a9b3;
   }
 
   button {
     border: none;
-    background: transparent;
-    display: inline-flex;
+    background-color: #9cafe2;
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
     cursor: pointer;
     flex-shrink: 0;
-    border-radius: 999px;
+    height: 38px;
+    width: 38px;
+    border-radius: 50%;
     overflow: hidden;
-    height: 100%;
-    aspect-ratio: 1 / 1;
+    transition:
+      background-color 0.2s,
+      transform 0.1s;
+
+    &:hover {
+      background-color: #8bb1d9;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
   }
 
-  img {
-    height: 100%;
+  svg {
     display: block;
   }
 `;

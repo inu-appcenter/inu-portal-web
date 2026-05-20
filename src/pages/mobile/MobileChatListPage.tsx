@@ -317,6 +317,22 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     }
   }, [currentIndex, swiperRef]);
 
+  // 탭 전환 시 스크롤을 최상단으로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedCategory]);
+
+  // 검색 중이거나 모달이 열려있을 때 터치 스와이프 제스처를 명시적으로 비활성화
+  useEffect(() => {
+    if (!swiperRef) return;
+
+    if (isSearching || isAnyModalOpen) {
+      swiperRef.allowTouchMove = false;
+    } else {
+      swiperRef.allowTouchMove = true;
+    }
+  }, [swiperRef, isSearching, isAnyModalOpen]);
+
   // 데이터 로딩 완료 및 카테고리 전환 시점을 대비한 스위퍼 리사이징 수동 업데이트 트리거
   useEffect(() => {
     if (swiperRef) {
@@ -672,6 +688,7 @@ const Slide = styled.div`
   gap: 24px;
   box-sizing: border-box;
   padding: 0 ${MOBILE_PAGE_GUTTER};
+  min-height: 60vh;
 `;
 
 const NotificationWarningBanner = styled.div`

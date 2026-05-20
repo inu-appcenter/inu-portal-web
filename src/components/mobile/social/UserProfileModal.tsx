@@ -505,9 +505,7 @@ export default function UserProfileModal({
   const canManage =
     !isMe &&
     (roomContext?.isOwner || isAdmin) &&
-    (roomContext?.chatType === "OPEN" ||
-      (roomContext?.chatType === "PERSONAL" &&
-        roomContext.participantCount >= 3));
+    roomContext?.chatType === "OPEN";
 
   const safeFireId = normalizeProfileImageId(profile?.fireId, DEFAULT_PROFILE_IMAGE_ID);
 
