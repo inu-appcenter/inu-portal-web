@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import styled, { keyframes } from "styled-components"; // 1. keyframes 추가
+import React, { useState } from "react";
+import { createPortal } from "react-dom";
+import styled, { keyframes } from "styled-components";
 import { MoreVertical } from "lucide-react";
 
 type MenuItemType = {
@@ -16,45 +17,68 @@ const TopRightDropdownMenu: React.FC<TopRightDropdownMenuProps> = ({
   items,
   color,
 }) => {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isRendered, setIsRendered] = useState(false);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleToggle = () => {
+    if (isOpen) {
+      setIsOpen(false);
+    } else {
+      setIsRendered(true);
+      setIsOpen(true);
+    }
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  const handleAnimationEnd = () => {
+    if (!isOpen) {
+      setIsRendered(false);
+    }
+  };
 
   return (
-    <Container ref={menuRef}>
-      <MenuButton onClick={() => setOpen((prev) => !prev)}>
+    <Container>
+      <MenuButton onClick={handleToggle}>
         <MoreVertical size={24} color={color || "black"} />
       </MenuButton>
 
-      {open && (
-        <Dropdown>
-          {items.map((item, idx) => (
-            <MenuItem
-              key={idx}
-              onClick={() => {
-                item.onClick();
-                setOpen(false); // 메뉴 닫기
-              }}
-            >
-              {item.label}
-            </MenuItem>
-          ))}
-        </Dropdown>
+      {isRendered && (
+        <>
+          {createPortal(
+            <Backdrop onClick={handleClose} />,
+            document.body
+          )}
+          <Dropdown $isOpen={isOpen} onAnimationEnd={handleAnimationEnd}>
+            {items.map((item, idx) => (
+              <MenuItem
+                key={idx}
+                onClick={() => {
+                  item.onClick();
+                  handleClose(); // 메뉴 닫기
+                }}
+              >
+                {item.label}
+              </MenuItem>
+            ))}
+          </Dropdown>
+        </>
       )}
     </Container>
   );
 };
 
 export default TopRightDropdownMenu;
+
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background-color: transparent;
+  pointer-events: auto;
+`;
 
 const Container = styled.div`
   position: relative;
@@ -90,7 +114,18 @@ const unfurlAnimation = keyframes`
   }
 `;
 
-const Dropdown = styled.div`
+const furlAnimation = keyframes`
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+`;
+
+const Dropdown = styled.div<{ $isOpen: boolean }>`
   position: absolute;
   top: 36px; /* 메뉴 버튼 아래로 */
   right: 0;
@@ -110,7 +145,7 @@ const Dropdown = styled.div`
 
   /* 3. 애니메이션 속성 추가 */
   transform-origin: top right; /* 애니메이션 기준점을 우측 상단으로 설정 */
-  animation: ${unfurlAnimation} 0.15s ease-out; /* 애니메이션 적용 */
+  animation: ${({ $isOpen }) => ($isOpen ? unfurlAnimation : furlAnimation)} 0.12s ease-in-out forwards; /* 애니메이션 적용 */
 `;
 
 const MenuItem = styled.button`
