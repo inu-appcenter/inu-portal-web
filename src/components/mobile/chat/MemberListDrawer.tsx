@@ -17,7 +17,7 @@ import { getFriends } from "@/apis/friends";
 import useUserStore from "@/stores/useUserStore";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import EditChatModal from "@/components/mobile/chat/EditChatModal";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translateX(100%); }
@@ -27,6 +27,11 @@ const contentShow = keyframes`
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
+`;
+
+const modalShow = keyframes`
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 `;
 
 import { ChatRoom } from "@/types/chat";
@@ -57,12 +62,31 @@ export default function MemberListDrawer({
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState<number[]>([]);
 
+  const { data: membersRes, isLoading } = useQuery({
+    queryKey: ["chatMembers", roomId],
+    queryFn: () => getChatRoomMembers(roomId),
+    enabled: isOpen,
+  });
+  const members = membersRes?.data || [];
+
   const { data: friendsRes } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
     enabled: isInviteOpen,
   });
   const friends = friendsRes?.data || [];
+
+  // 현재 채팅방에 이미 참여 중인 멤버는 초대 대상에서 제외
+  const filteredFriends = useMemo(() => {
+    return friends.filter(
+      (friend) =>
+        !members.some(
+          (m) =>
+            (m.studentId && m.studentId === friend.studentId) ||
+            m.nickname === friend.nickname
+        )
+    );
+  }, [friends, members]);
 
   const inviteMutation = useMutation({
     mutationFn: (friendIds: number[]) => inviteFriendsToChatRoom(roomId, friendIds),
@@ -78,11 +102,7 @@ export default function MemberListDrawer({
     },
   });
 
-  const { data: membersRes, isLoading } = useQuery({
-    queryKey: ["chatMembers", roomId],
-    queryFn: () => getChatRoomMembers(roomId),
-    enabled: isOpen,
-  });
+
 
 
   const leaveMutation = useMutation({
@@ -148,7 +168,7 @@ export default function MemberListDrawer({
     }
   };
 
-  const members = membersRes?.data || [];
+
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
@@ -158,7 +178,7 @@ export default function MemberListDrawer({
           <Header>
             <Title>대화 상대 ({members.length})</Title>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              {roomInfo?.type === "PERSONAL" && (
+              {roomInfo?.type === "PERSONAL" && members.length >= 3 && (
                 <IconButton onClick={() => setIsInviteOpen(true)} title="초대하기">
                   <UserPlus size={22} color="#5E92F0" />
                 </IconButton>
@@ -255,7 +275,7 @@ export default function MemberListDrawer({
           <InviteFriendsModal
             isOpen={isInviteOpen}
             onOpenChange={setIsInviteOpen}
-            friends={friends}
+            friends={filteredFriends}
             selectedIds={selectedFriendsToInvite}
             onToggle={(friendId) =>
               setSelectedFriendsToInvite((prev) =>
@@ -414,7 +434,7 @@ const InviteFriendsModal = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <StyledOverlay style={{ zIndex: 1000 }} />
+        <InviteOverlay />
         <InviteContent>
           <Header style={{ borderBottom: "1px solid #f2f2f7" }}>
             <Title>친구 초대</Title>
@@ -459,12 +479,32 @@ const InviteFriendsModal = ({
   );
 };
 
-const InviteContent = styled(StyledContent)`
+const InviteOverlay = styled(Dialog.Overlay)`
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  animation: ${fadeIn} 200ms ease-out;
+`;
+
+const InviteContent = styled(Dialog.Content)`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
   max-width: 360px;
   height: 80vh;
-  margin: auto;
-  border-radius: 24px;
+  background-color: white;
   z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
+  animation: ${modalShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 `;
 
 const SelectableCard = styled.div`
