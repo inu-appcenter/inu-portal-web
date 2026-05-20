@@ -44,13 +44,13 @@ const Button = styled.button`
   color: white;
   border: none;
   border-radius: 25px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 600;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   white-space: nowrap;
 

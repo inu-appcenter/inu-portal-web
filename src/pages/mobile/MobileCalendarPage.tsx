@@ -64,7 +64,7 @@ export default function MobileCalendarPage() {
 
       <FloatingActionButton
         text="일정 알림 받기"
-        icon={<Bell size={18} color="white" />}
+        icon={<Bell size={16} color="white" fill="currentColor" />}
         onClick={handleNotificationClick}
       />
 
