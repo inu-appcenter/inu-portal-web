@@ -1,8 +1,16 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, LogOut, Trash2, Bell, BellOff, Edit3, UserPlus, Check } from "lucide-react"; // LogOut, Trash2 아이콘 추가
-import Box from "@/components/common/Box";
+import {
+  X,
+  LogOut,
+  Trash2,
+  Bell,
+  BellOff,
+  Edit3,
+  UserPlus,
+  Check,
+} from "lucide-react";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { useNavigate } from "react-router-dom";
@@ -55,12 +63,16 @@ export default function MemberListDrawer({
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
-  const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<number | null>(null);
+  const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<
+    number | null
+  >(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState<number[]>([]);
+  const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState<
+    number[]
+  >([]);
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -83,13 +95,14 @@ export default function MemberListDrawer({
         !members.some(
           (m) =>
             (m.studentId && m.studentId === friend.studentId) ||
-            m.nickname === friend.nickname
-        )
+            m.nickname === friend.nickname,
+        ),
     );
   }, [friends, members]);
 
   const inviteMutation = useMutation({
-    mutationFn: (friendIds: number[]) => inviteFriendsToChatRoom(roomId, friendIds),
+    mutationFn: (friendIds: number[]) =>
+      inviteFriendsToChatRoom(roomId, friendIds),
     onSuccess: () => {
       alert("성공적으로 초대했습니다.");
       queryClient.invalidateQueries({ queryKey: ["chatMembers", roomId] });
@@ -101,9 +114,6 @@ export default function MemberListDrawer({
       alert(err.response?.data?.msg || "초대에 실패했습니다.");
     },
   });
-
-
-
 
   const leaveMutation = useMutation({
     mutationFn: () => leaveChatRoom(roomId),
@@ -147,7 +157,6 @@ export default function MemberListDrawer({
     },
   });
 
-
   const handleLeave = () => {
     if (
       confirm(
@@ -168,8 +177,6 @@ export default function MemberListDrawer({
     }
   };
 
-
-
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -179,7 +186,10 @@ export default function MemberListDrawer({
             <Title>대화 상대 ({members.length})</Title>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               {roomInfo?.type === "PERSONAL" && members.length >= 3 && (
-                <IconButton onClick={() => setIsInviteOpen(true)} title="초대하기">
+                <IconButton
+                  onClick={() => setIsInviteOpen(true)}
+                  title="초대하기"
+                >
                   <UserPlus size={22} color="#5E92F0" />
                 </IconButton>
               )}
@@ -190,37 +200,44 @@ export default function MemberListDrawer({
           </Header>
 
           <ScrollArea>
-            <Box style={{ padding: "0 16px" }}>
-              {isLoading ? (
-                <div style={{ padding: "40px 0", textAlign: "center", color: "#969696", fontSize: "14px" }}>멤버를 불러오는 중...</div>
-              ) : (
-                members.map((member, index) => (
-                  <div
-                    key={`${member.nickname}-${index}`}
-                    style={{ width: "100%" }}
-                  >
-                    <SocialUserCard
-                      name={
-                        (member.friendAlias
-                          ? `${member.friendAlias} (${member.nickname})`
-                          : member.nickname) +
-                        (member.isMe ? " (나)" : "") +
-                        (member.isOwner ? " (방장)" : "")
+            {isLoading ? (
+              <div
+                style={{
+                  padding: "40px 0",
+                  textAlign: "center",
+                  color: "#969696",
+                  fontSize: "14px",
+                }}
+              >
+                멤버를 불러오는 중...
+              </div>
+            ) : (
+              members.map((member, index) => (
+                <div
+                  key={`${member.nickname}-${index}`}
+                  style={{ width: "100%" }}
+                >
+                  <SocialUserCard
+                    name={
+                      (member.friendAlias
+                        ? `${member.friendAlias} (${member.nickname})`
+                        : member.nickname) +
+                      (member.isMe ? " (나)" : "") +
+                      (member.isOwner ? " (방장)" : "")
+                    }
+                    subtitle={member.studentId || "익명"}
+                    fireId={member.fireId || 0}
+                    onClick={() => {
+                      if (member.chatRoomMemberId) {
+                        setSelectedChatRoomMemberId(member.chatRoomMemberId);
+                        setIsProfileModalOpen(true);
                       }
-                      subtitle={member.studentId || "익명"}
-                      fireId={member.fireId || 0}
-                      onClick={() => {
-                        if (member.chatRoomMemberId) {
-                          setSelectedChatRoomMemberId(member.chatRoomMemberId);
-                          setIsProfileModalOpen(true);
-                        }
-                      }}
-                    />
-                    {index < members.length - 1 && <Divider />}
-                  </div>
-                ))
-              )}
-            </Box>
+                    }}
+                  />
+                  {index < members.length - 1 && <Divider />}
+                </div>
+              ))
+            )}
           </ScrollArea>
 
           <Footer>
@@ -281,7 +298,7 @@ export default function MemberListDrawer({
               setSelectedFriendsToInvite((prev) =>
                 prev.includes(friendId)
                   ? prev.filter((id) => id !== friendId)
-                  : [...prev, friendId]
+                  : [...prev, friendId],
               )
             }
             onConfirm={() => inviteMutation.mutate(selectedFriendsToInvite)}
@@ -376,11 +393,11 @@ const StyledContent = styled(Dialog.Content)`
 `;
 
 const Header = styled.div`
-  padding: 20px 16px;
+  padding: 20px 20px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f2f2f7;
+  //border-bottom: 1px solid #f2f2f7;
 `;
 
 const Title = styled.h2`
@@ -400,7 +417,7 @@ const CloseButton = styled.button`
 const ScrollArea = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 12px 0;
+  padding: 0 20px;
 `;
 
 const EmptyStateStyle = styled.div`
@@ -436,13 +453,13 @@ const InviteFriendsModal = ({
       <Dialog.Portal>
         <InviteOverlay />
         <InviteContent>
-          <Header style={{ borderBottom: "1px solid #f2f2f7" }}>
-            <Title>친구 초대</Title>
+          <Header>
+            <Title>내 친구에서 초대</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
               <X size={24} color="#1C1C1E" />
             </CloseButton>
           </Header>
-          <ScrollArea style={{ padding: "16px" }}>
+          <ScrollArea>
             {friends.length === 0 ? (
               <EmptyStateStyle>초대 가능한 친구가 없습니다.</EmptyStateStyle>
             ) : (
@@ -513,7 +530,7 @@ const SelectableCard = styled.div`
   justify-content: space-between;
   cursor: pointer;
   width: 100%;
-  padding: 8px 0;
+  //padding: 8px 0;
 
   & > :first-child {
     flex: 1;
@@ -539,7 +556,7 @@ const Checkbox = styled.div<{ $selected: boolean }>`
 const InviteConfirmButton = styled.button`
   width: 100%;
   height: 48px;
-  background-color: #5E92F0;
+  background-color: #5e92f0;
   color: white;
   border: none;
   border-radius: 12px;
