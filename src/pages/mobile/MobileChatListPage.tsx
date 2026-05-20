@@ -83,6 +83,10 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     }
   }, [location.search]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedCategory]);
+
   const { data: response, isLoading } = useQuery({
     queryKey: ["myChatRooms"],
     queryFn: getMyChatRooms,
@@ -672,6 +676,8 @@ const Slide = styled.div`
   gap: 24px;
   box-sizing: border-box;
   padding: 0 ${MOBILE_PAGE_GUTTER};
+
+  min-height: calc(100vh - 56px - 100px - 84px);
 `;
 
 const NotificationWarningBanner = styled.div`
