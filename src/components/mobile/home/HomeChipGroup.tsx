@@ -44,10 +44,9 @@ const HomeChipGroup = () => {
       title: "횃불이 AI",
       onClick: () => {
         mixpanelTrack.featureClicked("횃불이 AI", "Home Chip");
-        navigate(`/ai`);
+        navigate(ROUTES.AI.ROOT);
       },
       isAIButton: true,
-      isActive: false,
     },
     {
       id: "festival2026",

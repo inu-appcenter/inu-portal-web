@@ -7,7 +7,11 @@ export const ROUTES = {
   HOME: "/home",
   MOBILE_HOME: "/m/home",
 
-  AI: "/ai",
+  // 횃불이 AI
+  AI: {
+    ROOT: "/ai",
+    IMAGE_GEN: "/ai/image-generation",
+  },
   SAVE: "/save",
 
   FESTIVAL2026: "/festival2026",
