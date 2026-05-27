@@ -23,6 +23,7 @@ interface FriendManagementViewProps {
 export default function FriendManagementView({ searchTerm }: FriendManagementViewProps) {
   const queryClient = useQueryClient();
   const { userInfo } = useUserStore();
+  const isLoggedIn = userInfo.id !== 0;
   const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
   const [selectedMyId, setSelectedMyId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -31,12 +32,14 @@ export default function FriendManagementView({ searchTerm }: FriendManagementVie
   const { data: friendsRes, isLoading: friendsLoading } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
+    enabled: isLoggedIn,
   });
 
   // 대기 중인 요청 조회
   const { data: pendingRes } = useQuery({
     queryKey: ["pendingFriends"],
     queryFn: getPendingFriends,
+    enabled: isLoggedIn,
   });
 
   // 친구 요청 수락

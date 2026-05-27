@@ -18,6 +18,7 @@ import chatIcon from "@/resources/assets/mobile-common/chat-gray.svg";
 import chatIconActive from "@/resources/assets/mobile-common/chat-blue.svg";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
+import useUserStore from "@/stores/useUserStore";
 
 const NAV_ITEMS = [
   {
@@ -56,11 +57,14 @@ const NAV_ITEMS = [
 export default function MobileNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = !!tokenInfo.accessToken;
 
   const { data: unreadResponse } = useQuery({
     queryKey: ["unreadTotalCount"],
     queryFn: getUnreadTotalCount,
     refetchInterval: 30000, // 30초마다 갱신
+    enabled: isLoggedIn,
   });
 
   const totalUnreadCount = unreadResponse?.data?.totalUnreadCount || 0;

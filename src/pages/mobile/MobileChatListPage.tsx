@@ -87,18 +87,20 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     queryKey: ["myChatRooms"],
     queryFn: getMyChatRooms,
     refetchOnWindowFocus: true,
+    enabled: isLoggedIn,
   });
 
   const { data: friendsRes } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
+    enabled: isLoggedIn,
   });
 
   const { data: openRoomsDiscoveryRes, isLoading: isOpenRoomsLoading } =
     useQuery({
       queryKey: ["openChatRoomsDiscovery"],
       queryFn: () => getOpenChatRooms(0),
-      enabled: selectedCategory === "오픈채팅",
+      enabled: selectedCategory === "오픈채팅" && isLoggedIn,
     });
 
   const chatRooms = response?.data || [];
@@ -382,7 +384,19 @@ const MobileChatListPage = memo(function MobileChatListPage() {
           <Slide>
             <TitleContentArea
               description={
-                "채팅 기능은 beta 버전이며, 불안정할 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
+                <NotificationWarningBanner>
+                  친구 탭에서 친구를 등록해보세요!
+                  <span
+                    className="link"
+                    onClick={() =>
+                      navigate(`${ROUTES.CHAT.LIST}?category=친구`, {
+                        replace: true,
+                      })
+                    }
+                  >
+                    친구 탭으로 이동
+                  </span>
+                </NotificationWarningBanner>
               }
             />
             {isLoggedIn && !userInfo.chatPushEnabled && (
@@ -395,6 +409,21 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                       onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}
                     >
                       알림 설정으로 이동
+                    </span>
+                  </NotificationWarningBanner>
+                }
+              />
+            )}
+            {!isLoggedIn && (
+              <TitleContentArea
+                description={
+                  <NotificationWarningBanner>
+                    채팅 기능을 이용하려면 로그인이 필요해요.
+                    <span
+                      className="link"
+                      onClick={() => navigate(ROUTES.LOGIN)}
+                    >
+                      로그인하러 가기
                     </span>
                   </NotificationWarningBanner>
                 }
@@ -466,6 +495,21 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                       onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}
                     >
                       알림 설정으로 이동
+                    </span>
+                  </NotificationWarningBanner>
+                }
+              />
+            )}
+            {!isLoggedIn && (
+              <TitleContentArea
+                description={
+                  <NotificationWarningBanner>
+                    채팅 기능을 이용하려면 로그인이 필요해요.
+                    <span
+                      className="link"
+                      onClick={() => navigate(ROUTES.LOGIN)}
+                    >
+                      로그인하러 가기
                     </span>
                   </NotificationWarningBanner>
                 }
@@ -592,12 +636,27 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                 }
               />
             )}
+            {!isLoggedIn && (
+              <TitleContentArea
+                description={
+                  <NotificationWarningBanner>
+                    친구 기능을 이용하려면 로그인이 필요해요.
+                    <span
+                      className="link"
+                      onClick={() => navigate(ROUTES.LOGIN)}
+                    >
+                      로그인하러 가기
+                    </span>
+                  </NotificationWarningBanner>
+                }
+              />
+            )}
             <FriendManagementView searchTerm={searchTerm} />
           </Slide>
         </SwiperSlide>
       </Swiper>
 
-      {!isSearching && (
+      {!isSearching && isLoggedIn && (
         <FloatingActionButton
           onClick={() => {
             if (selectedCategory === "개인") {
