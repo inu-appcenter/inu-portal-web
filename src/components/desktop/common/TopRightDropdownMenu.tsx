@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { MoreVertical } from "lucide-react";
@@ -19,8 +19,18 @@ const TopRightDropdownMenu: React.FC<TopRightDropdownMenuProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
+  const [position, setPosition] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleToggle = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY,
+        right: window.innerWidth - rect.right,
+      });
+    }
+
     if (isOpen) {
       setIsOpen(false);
     } else {
@@ -39,33 +49,46 @@ const TopRightDropdownMenu: React.FC<TopRightDropdownMenuProps> = ({
     }
   };
 
+  useLayoutEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, [isOpen]);
+
   return (
     <Container>
-      <MenuButton onClick={handleToggle}>
+      <MenuButton ref={buttonRef} onClick={handleToggle}>
         <MoreVertical size={24} color={color || "black"} />
       </MenuButton>
 
-      {isRendered && (
-        <>
-          {createPortal(
-            <Backdrop onClick={handleClose} />,
-            document.body
-          )}
-          <Dropdown $isOpen={isOpen} onAnimationEnd={handleAnimationEnd}>
-            {items.map((item, idx) => (
-              <MenuItem
-                key={idx}
-                onClick={() => {
-                  item.onClick();
-                  handleClose(); // 메뉴 닫기
-                }}
-              >
-                {item.label}
-              </MenuItem>
-            ))}
-          </Dropdown>
-        </>
-      )}
+      {isRendered &&
+        createPortal(
+          <>
+            <Backdrop onClick={handleClose} />
+            <Dropdown
+              style={{ top: `${position.top}px`, right: `${position.right}px` }}
+              $isOpen={isOpen}
+              onAnimationEnd={handleAnimationEnd}
+            >
+              {items.map((item, idx) => (
+                <MenuItem
+                  key={idx}
+                  onClick={() => {
+                    item.onClick();
+                    handleClose();
+                  }}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Dropdown>
+          </>,
+          document.body,
+        )}
     </Container>
   );
 };
@@ -77,7 +100,6 @@ const Backdrop = styled.div`
   inset: 0;
   z-index: 999;
   background-color: transparent;
-  pointer-events: auto;
 `;
 
 const Container = styled.div`
@@ -102,7 +124,6 @@ const MenuButton = styled.button`
   cursor: pointer;
 `;
 
-// 2. 애니메이션 정의
 const unfurlAnimation = keyframes`
   from {
     transform: scale(0.95);
@@ -127,25 +148,20 @@ const furlAnimation = keyframes`
 
 const Dropdown = styled.div<{ $isOpen: boolean }>`
   position: absolute;
-  top: 36px; /* 메뉴 버튼 아래로 */
-  right: 0;
   z-index: 1000;
-
   background-color: white;
   border-radius: 16px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   padding: 16px;
   box-sizing: border-box;
   min-width: 160px;
-
   display: flex;
   flex-direction: column;
   gap: 12px;
   align-items: stretch;
-
-  /* 3. 애니메이션 속성 추가 */
-  transform-origin: top right; /* 애니메이션 기준점을 우측 상단으로 설정 */
-  animation: ${({ $isOpen }) => ($isOpen ? unfurlAnimation : furlAnimation)} 0.12s ease-in-out forwards; /* 애니메이션 적용 */
+  transform-origin: top right;
+  animation: ${({ $isOpen }) => ($isOpen ? unfurlAnimation : furlAnimation)} 0.12s
+    ease-in-out forwards;
 `;
 
 const MenuItem = styled.button`
