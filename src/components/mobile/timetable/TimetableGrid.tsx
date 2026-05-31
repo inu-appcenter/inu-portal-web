@@ -1,5 +1,6 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import styled from "styled-components";
+import ClassDetailBottomSheet from "./ClassDetailBottomSheet";
 
 // --- 타입 정의 ---
 export interface ClassItem {
@@ -9,8 +10,10 @@ export interface ClassItem {
   day: number; // 0:월 ~ 4:금
   startTime: number; // 9 ~ 21
   endTime: number;
-  // 미리보기 구분을 위한 선택적 속성
+  // 미리보기 구분용
   isPreview?: boolean;
+  professor?: string; //교수명
+  memo?: string; //메모
 }
 
 interface TimetableGridProps {
@@ -39,6 +42,10 @@ const COLORS = [
 ];
 
 const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
+  // 바텀시트 상태 정의
+  const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+
   // 1. 동적 시간 범위 계산 (기존 이벤트 + 미리보기 이벤트 포함)
   const timeSlots = useMemo(() => {
     const allEvents = [...events, ...previewEvents];
@@ -78,11 +85,18 @@ const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
       ? "rgba(0, 123, 255, 0.5)" // 반투명 파란색
       : colorMap.get(item.name) || "#FFFFFF";
 
+    const handleClassClick = () => {
+      if (isPreview) return;
+      setSelectedClass(item);
+      setIsBottomSheetOpen(true);
+    };
+
     return (
       <ClassItemBlock
         key={`${isPreview ? "prev" : "evt"}-${item.id}-${index}`}
         $bgColor={bgColor}
         $isPreview={isPreview}
+        onClick={handleClassClick}
         style={{
           gridColumnStart: colStart,
           gridColumnEnd: "span 1",
@@ -99,42 +113,56 @@ const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
   };
 
   return (
-    <GridContainer $rowCount={rowCount}>
-      {/* (1) 요일 헤더 */}
-      <HeaderCell style={{ gridColumn: 1, gridRow: 1 }} />
-      {DAYS.map((day, index) => (
-        <HeaderCell
-          key={`header-${day}`}
-          style={{ gridColumn: index + 2, gridRow: 1 }}
-        >
-          {day}
-        </HeaderCell>
-      ))}
+    <>
+      <GridContainer $rowCount={rowCount}>
+        {/* (1) 요일 헤더 */}
+        <HeaderCell style={{ gridColumn: 1, gridRow: 1 }} />
+        {DAYS.map((day, index) => (
+          <HeaderCell
+            key={`header-${day}`}
+            style={{ gridColumn: index + 2, gridRow: 1 }}
+          >
+            {day}
+          </HeaderCell>
+        ))}
 
-      {/* (2) 시간표 바디 */}
-      {timeSlots.slice(0, -1).map((time, timeIndex) => {
-        const rowIndex = timeIndex + 2;
-        return (
-          <React.Fragment key={`row-${time}`}>
-            <TimeCell style={{ gridColumn: 1, gridRow: rowIndex }}>
-              <span>{time}</span>
-            </TimeCell>
-            {DAYS.map((_, dayIndex) => (
-              <GridBackgroundCell
-                key={`bg-${time}-${dayIndex}`}
-                style={{ gridColumn: dayIndex + 2, gridRow: rowIndex }}
-              />
-            ))}
-          </React.Fragment>
-        );
-      })}
+        {/* (2) 시간표 바디 */}
+        {timeSlots.slice(0, -1).map((time, timeIndex) => {
+          const rowIndex = timeIndex + 2;
+          return (
+            <React.Fragment key={`row-${time}`}>
+              <TimeCell style={{ gridColumn: 1, gridRow: rowIndex }}>
+                <span>{time}</span>
+              </TimeCell>
+              {DAYS.map((_, dayIndex) => (
+                <GridBackgroundCell
+                  key={`bg-${time}-${dayIndex}`}
+                  style={{ gridColumn: dayIndex + 2, gridRow: rowIndex }}
+                />
+              ))}
+            </React.Fragment>
+          );
+        })}
 
-      {/* (3) 기존 수업 아이템 */}
-      {events.map((item, index) => renderEventBlock(item, index, false))}
+        {/* (3) 기존 수업 아이템 */}
+        {events.map((item, index) => renderEventBlock(item, index, false))}
 
-      {/* (4) 미리보기 아이템 (오버레이) */}
-      {previewEvents.map((item, index) => renderEventBlock(item, index, true))}
-    </GridContainer>
+        {/* (4) 미리보기 아이템 (오버레이) */}
+        {previewEvents.map((item, index) =>
+          renderEventBlock(item, index, true),
+        )}
+      </GridContainer>
+
+      <ClassDetailBottomSheet
+        open={isBottomSheetOpen}
+        onOpenChange={setIsBottomSheetOpen}
+        selectedClass={selectedClass}
+        allEvents={events}
+        colorMap={colorMap}
+        onEdit={(id) => alert(`과목 수정 창을 엽니다. (ID: ${id})`)}
+        onDelete={(id) => alert(`과목을 삭제합니다. (ID: ${id})`)}
+      />
+    </>
   );
 };
 
@@ -217,6 +245,7 @@ const ClassItemBlock = styled.div<{ $bgColor: string; $isPreview?: boolean }>`
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   pointer-events: ${({ $isPreview }) =>
     $isPreview ? "none" : "auto"}; /* 미리보기는 클릭 통과 */
+  cursor: ${({ $isPreview }) => ($isPreview ? "default" : "pointer")};
 `;
 
 const ItemContent = styled.div`
