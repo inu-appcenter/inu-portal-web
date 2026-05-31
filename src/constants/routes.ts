@@ -6,6 +6,7 @@ export const ROUTES = {
 
   HOME: "/home",
   MOBILE_HOME: "/m/home",
+  HOME_V2: "/home/v2",
 
   AI: "/ai",
   SAVE: "/save",

@@ -189,7 +189,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  padding: 0 20px;
+  padding: 0 16px;
   pointer-events: none;
 
   .logo {
@@ -198,7 +198,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
     width: 100px;
     cursor: pointer;
     padding: 4px 0;
-    margin-left: ${MOBILE_PAGE_GUTTER};
+    margin-left: var(--padding-card);
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:
@@ -244,9 +244,6 @@ const IconBackgroundWrapper = styled.div<{
   justify-content: center;
   gap: 12px;
   border-radius: 50px;
-
-  /* 우측 아이콘들이 오른쪽 화면 끝선(8px)에 정확히 정렬되도록 음수 마진 적용 */
-  margin-right: -12px;
 
   padding: ${({ $isCircle }) =>
     $isCircle ? "0" : "0 14px"}; /* 상하 패딩 제거 */

@@ -9,6 +9,7 @@ import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
 // Pages (Imports 생략 - 기존과 동일)
 import MobileHomePage from "@/pages/mobile/MobileHomePage";
+import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
 import MobileSavePage from "@/pages/mobile/MobileSavePage";
@@ -81,6 +82,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.HOME, element: <MobileHomePage /> },
+          { path: ROUTES.HOME_V2, element: <MobileHomePageV2 /> },
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
           { path: ROUTES.CHAT.LIST, element: <MobileChatListPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
