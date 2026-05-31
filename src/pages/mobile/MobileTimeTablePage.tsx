@@ -73,7 +73,7 @@ const MOCK_TIMETABLE: ClassItem[] = [
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
-  const [isModalOpen] = useState(true);
+  const [isModalOpen] = useState(false);
 
   const menuItems = useMemo<MenuItemType[]>(
     () => [
