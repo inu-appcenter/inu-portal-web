@@ -98,11 +98,23 @@ const MobileTimeTablePage = () => {
         isOpen={isModalOpen}
         onClose={() => navigate(ROUTES.HOME, { replace: true })}
       />
-      <TitleContentArea title={"2025년 2학기"}>
-        <TimetableGrid events={MOCK_TIMETABLE} />
-      </TitleContentArea>
+      <TimetableGrid events={MOCK_TIMETABLE} />
+      <SemesterInfoLine>
+        <Semester>2026년 1학기</Semester>
+        <ScoreArea>
+          <div className="type1">
+            <span>전공 9</span>
+            <span>교양 9</span>
+          </div>
+          <div className="type2">총 18학점</div>
+        </ScoreArea>
+      </SemesterInfoLine>
 
-      <TitleContentArea title={"학점 계산기"}>
+      <TitleContentArea
+        title={"학점 계산기"}
+        style={{ marginTop: "36px" }}
+        onClick={() => {}}
+      >
         <GradeCalculatorWidget />
       </TitleContentArea>
     </MobileTimeTablePageWrapper>
@@ -114,10 +126,55 @@ export default MobileTimeTablePage;
 const MobileTimeTablePageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  //gap: 24px;
   padding: 0 ${MOBILE_PAGE_GUTTER} 40px;
 
   @media ${DESKTOP_MEDIA} {
     padding: 0 0 40px;
+  }
+`;
+
+const SemesterInfoLine = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 8px;
+`;
+const Semester = styled.div`
+  color: var(--text-secondary);
+
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+`;
+const ScoreArea = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  gap: 12px;
+
+  .type1 {
+    color: #6b7280;
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .type2 {
+    color: var(--text-secondary);
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
   }
 `;

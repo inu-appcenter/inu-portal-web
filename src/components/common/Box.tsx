@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { ReactNode, CSSProperties } from "react";
-import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 
 interface BoxProps {
   children: ReactNode;
@@ -20,14 +19,14 @@ export default Box;
 
 const BoxWrapper = styled.div`
   display: flex;
-  padding: 20px;
+  padding: var(--padding-card);
   box-sizing: border-box;
   flex-direction: column;
   align-items: flex-start;
   //gap: 16px;
   align-self: stretch;
 
-  border-radius: 20px;
-  background: #fff;
-  //box-shadow: ${SOFT_CARD_SHADOW};
+  border-radius: var(--radius-xl, 16px);
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #fff);
 `;
