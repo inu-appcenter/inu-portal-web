@@ -17,6 +17,7 @@ export const ROUTES = {
   TIMETABLE: {
     ROOT: "/timetable",
     EDIT: "/timetable/edit",
+    COMPARE_SELECT: "/timetable/compare/select",
   },
 
   //전화번호부

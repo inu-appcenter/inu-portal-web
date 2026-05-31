@@ -166,13 +166,22 @@ const StyledGroup = styled.div<{
   width: 100%;
   box-sizing: border-box;
 
-  /* 가로 정렬이고 stretch일 때, 자식 버튼들을 1:1 비율로 균등 분할 */
+  /* 가로 stretch 정렬 시 등분할 */
   ${({ $direction, $align }) =>
     $direction === "row" &&
     $align === "stretch" &&
     css`
       & > button {
         flex: 1;
+      }
+    `}
+
+  /* 세로 정렬 시 그림자 효과 추가 */
+  ${({ $direction }) =>
+    $direction === "column" &&
+    css`
+      & > button {
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.16);
       }
     `}
 `;
