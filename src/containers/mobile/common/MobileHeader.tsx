@@ -198,7 +198,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
     width: 100px;
     cursor: pointer;
     padding: 4px 0;
-    margin-left: var(--padding-card);
+    margin-left: var(--space-2);
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:

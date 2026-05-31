@@ -52,27 +52,29 @@ export default function MobileHomePageV2() {
           <GreetingText>좋은 아침이에요!</GreetingText>
         </WelcomeMessage>
 
-        <TodayTimetableCard>
+        <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
           <WidgetHeader>
             <WidgetTitle>오늘의 시간표</WidgetTitle>
-            <TimerText>15분 후 시작</TimerText>
+            <WidgetSubTitle>15분 후 시작</WidgetSubTitle>
           </WidgetHeader>
 
           <ClassList>
             <ClassItem $current={true}>
+              <ClassName>자료구조</ClassName>
+
               <ClassInfo>
-                <ClassName>자료구조</ClassName>
                 <ClassDetail>09:00~10:15</ClassDetail>
+                <ClassRoom>07-504</ClassRoom>
               </ClassInfo>
-              <ClassRoom>07-504</ClassRoom>
             </ClassItem>
 
             <ClassItem $current={false}>
+              <ClassName>디지털공학</ClassName>
+
               <ClassInfo>
-                <ClassName>디지털공학</ClassName>
                 <ClassDetail>16:30~17:45</ClassDetail>
+                <ClassRoom>07-504</ClassRoom>
               </ClassInfo>
-              <ClassRoom>07-504</ClassRoom>
             </ClassItem>
           </ClassList>
         </TodayTimetableCard>
@@ -81,25 +83,31 @@ export default function MobileHomePageV2() {
           <MiniWidgetCard onClick={() => navigate(ROUTES.BUS.ROOT)}>
             <WidgetHeader>
               <WidgetTitle>인입런</WidgetTitle>
-              <LinkText>2번 출구</LinkText>
+              <WidgetSubTitle>2번 출구</WidgetSubTitle>
             </WidgetHeader>
 
             <BusInfoList>
               <BusInfoRow>
-                <BusBadge $color="#3B82F6">8</BusBadge>
+                <BusLeftSection>
+                  <BusIcon color="#0e4d9d" />
+                  <BusNumber>8번</BusNumber>
+                </BusLeftSection>
                 <BusTime>1분 31초</BusTime>
               </BusInfoRow>
               <BusInfoRow>
-                <BusBadge $color="#10B981">41</BusBadge>
+                <BusLeftSection>
+                  <BusIcon color="#00a82f" />
+                  <BusNumber>41번</BusNumber>
+                </BusLeftSection>
                 <BusTime>4분 19초</BusTime>
               </BusInfoRow>
             </BusInfoList>
           </MiniWidgetCard>
 
-          <MiniWidgetCard onClick={() => navigate(ROUTES.BOARD.UTIL)}>
+          <MiniWidgetCard onClick={() => navigate(ROUTES.BOARD.MENU)}>
             <WidgetHeader>
               <WidgetTitle>식당 메뉴</WidgetTitle>
-              <LinkText>학생식당</LinkText>
+              <WidgetSubTitle>학생식당</WidgetSubTitle>
             </WidgetHeader>
 
             <MenuInfo>
@@ -190,7 +198,7 @@ const V2Wrapper = styled.div`
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  background-color: #f0f4fc;
+  background-color: #eff5fc;
   min-height: 100vh;
 
   @media ${DESKTOP_MEDIA} {
@@ -203,7 +211,7 @@ const UpperSection = styled.div`
   display: flex;
   flex-direction: column;
   padding: calc(var(--header-height, 56px) + 20px) ${MOBILE_PAGE_GUTTER} 36px;
-  background: linear-gradient(180deg, #f0f6ff 0%, #e2eeff 100%);
+  background: #eff5fc;
 `;
 
 const WelcomeMessage = styled.div`
@@ -212,26 +220,26 @@ const WelcomeMessage = styled.div`
   gap: 4px;
   margin-bottom: 24px;
   text-align: left;
-`;
+  padding-left: 8px;
 
-const HighlightName = styled.span`
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--text-primary, #1c1c1e);
-`;
-
-const GreetingText = styled.span`
-  font-size: 24px;
+  color: var(--text-secondary, #333d4b);
+  font-size: 20px;
+  font-style: normal;
   font-weight: 700;
-  color: var(--text-primary, #1c1c1e);
+  line-height: 28px;
+  letter-spacing: -0.2px;
 `;
+
+const HighlightName = styled.span``;
+
+const GreetingText = styled.span``;
 
 const TodayTimetableCard = styled.div`
   background-color: #ffffff;
   border-radius: 20px;
-  padding: 16px 20px;
+  padding: 16px;
   box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -244,60 +252,71 @@ const WidgetHeader = styled.div`
 `;
 
 const WidgetTitle = styled.span`
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text-primary, #1c1c1e);
+  color: var(--text-secondary, #333d4b);
+
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: -0.2px;
 `;
 
-const TimerText = styled.span`
-  font-size: 14px;
-  font-weight: 600;
+const WidgetSubTitle = styled.span`
   color: var(--text-brand, #0061ff);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
 `;
 
 const ClassList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  //gap: 12px;
 `;
 
 const ClassItem = styled.div<{ $current: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background-color: var(--bg-muted, #f8f9fa);
+  padding: 4px 16px;
 
   ${({ $current }) =>
     $current &&
     css`
-      background-color: var(--bg-brand-subtle, #eff6ff);
+      background-color: var(--bg-brand);
       border-left: 4px solid var(--interactive-primary, #3b82f6);
+      padding-left: 12px;
     `}
+`;
+
+const ClassName = styled.span`
+  color: var(--text-secondary, #333d4b);
+
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
 `;
 
 const ClassInfo = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-`;
+  gap: 16px;
 
-const ClassName = styled.span`
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary, #1c1c1e);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
 `;
 
 const ClassDetail = styled.span`
-  font-size: 13px;
-  color: var(--text-tertiary, #8e8e93);
+  color: var(--text-secondary, #333d4b);
+  opacity: 0.5;
 `;
 
 const ClassRoom = styled.span`
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary, #48484a);
+  color: var(--text-secondary, #333d4b);
 `;
 
 const GridWidgets = styled.div`
@@ -322,12 +341,6 @@ const MiniWidgetCard = styled.div`
   }
 `;
 
-const LinkText = styled.span`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-brand, #0061ff);
-`;
-
 const BusInfoList = styled.div`
   display: flex;
   flex-direction: column;
@@ -337,26 +350,43 @@ const BusInfoList = styled.div`
 const BusInfoRow = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const BusLeftSection = styled.div`
+  display: flex;
+  align-items: center;
   gap: 8px;
 `;
 
-const BusBadge = styled.div<{ $color: string }>`
-  background-color: ${({ $color }) => $color};
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const BusIcon = ({ color }: { color: string }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 28 28"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ flexShrink: 0 }}
+  >
+    <path
+      d="M20.64 12.627H6.88V6.88744H20.64M18.92 19.5145C18.4638 19.5145 18.0263 19.3331 17.7038 19.0102C17.3812 18.6873 17.2 18.2493 17.2 17.7926C17.2 17.336 17.3812 16.898 17.7038 16.5751C18.0263 16.2522 18.4638 16.0708 18.92 16.0708C19.3762 16.0708 19.8137 16.2522 20.1362 16.5751C20.4588 16.898 20.64 17.336 20.64 17.7926C20.64 18.2493 20.4588 18.6873 20.1362 19.0102C19.8137 19.3331 19.3762 19.5145 18.92 19.5145ZM8.6 19.5145C8.14383 19.5145 7.70634 19.3331 7.38378 19.0102C7.06122 18.6873 6.88 18.2493 6.88 17.7926C6.88 17.336 7.06122 16.898 7.38378 16.5751C7.70634 16.2522 8.14383 16.0708 8.6 16.0708C9.05618 16.0708 9.49366 16.2522 9.81623 16.5751C10.1388 16.898 10.32 17.336 10.32 17.7926C10.32 18.2493 10.1388 18.6873 9.81623 19.0102C9.49366 19.3331 9.05618 19.5145 8.6 19.5145ZM4.58667 18.3666C4.58667 19.3768 5.03387 20.2836 5.73334 20.915V22.9583C5.73334 23.2627 5.85415 23.5547 6.06919 23.77C6.28423 23.9853 6.57589 24.1062 6.88 24.1062H8.02667C8.33078 24.1062 8.62244 23.9853 8.83749 23.77C9.05253 23.5547 9.17334 23.2627 9.17334 22.9583V21.8104H18.3467V22.9583C18.3467 23.2627 18.4675 23.5547 18.6825 23.77C18.8976 23.9853 19.1892 24.1062 19.4933 24.1062H20.64C20.9441 24.1062 21.2358 23.9853 21.4508 23.77C21.6659 23.5547 21.7867 23.2627 21.7867 22.9583V20.915C22.4861 20.2836 22.9333 19.3768 22.9333 18.3666V6.88744C22.9333 2.86973 18.8283 2.29578 13.76 2.29578C8.69174 2.29578 4.58667 2.86973 4.58667 6.88744V18.3666Z"
+      fill={color}
+    />
+  </svg>
+);
+
+const BusNumber = styled.span`
+  color: var(--text-secondary, #333d4b);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
 `;
 
 const BusTime = styled.span`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary, #3a3a3c);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
 `;
 
 const MenuInfo = styled.div`
@@ -367,14 +397,23 @@ const MenuInfo = styled.div`
 `;
 
 const MenuCorner = styled.span`
-  font-size: 12px;
-  color: var(--text-tertiary, #8e8e93);
+  color: var(--text-tertiary, #8b95a1);
+
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
 `;
 
 const MenuName = styled.span`
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary, #1c1c1e);
+  overflow: hidden;
+  color: var(--text-secondary, #333d4b);
+  text-overflow: ellipsis;
+
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
 `;
 
 const LowerSheetSection = styled.div`
