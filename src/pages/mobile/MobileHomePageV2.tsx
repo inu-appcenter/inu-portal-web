@@ -210,7 +210,7 @@ const V2Wrapper = styled.div`
 const UpperSection = styled.div`
   display: flex;
   flex-direction: column;
-  padding: calc(var(--header-height, 56px) + 20px) ${MOBILE_PAGE_GUTTER} 36px;
+  padding: calc(var(--header-height, 56px) + 24px) ${MOBILE_PAGE_GUTTER} 24px;
   background: #eff5fc;
 `;
 
@@ -420,7 +420,7 @@ const LowerSheetSection = styled.div`
   background-color: #ffffff;
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
-  margin-top: -24px;
+  //margin-top: -24px;
   position: relative;
   z-index: 5;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.02);
