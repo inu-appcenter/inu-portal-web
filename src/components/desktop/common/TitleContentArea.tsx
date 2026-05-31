@@ -68,7 +68,7 @@ const DescriptionText = styled.p`
   text-align: start;
   width: 100%;
   line-height: normal;
-  padding: 0 20px;
+  padding: 0 8px;
 
   strong {
     font-weight: 600;

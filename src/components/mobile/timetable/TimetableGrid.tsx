@@ -26,16 +26,16 @@ const DEFAULT_MAX_HOUR = 18;
 
 // 팔레트
 const COLORS = [
-  "#FFD1DC",
-  "#FFE4B5",
-  "#D4F0F0",
-  "#E6E6FA",
-  "#F0E68C",
-  "#E0FFFF",
-  "#FFDEAD",
-  "#F5F5DC",
-  "#E3F2FD",
-  "#F3E5F5",
+  "var(--color-chips-red)",
+  "var(--color-chips-orange)",
+  "var(--color-chips-yellow)",
+  "var(--color-chips-teal)",
+  "var(--color-chips-skyblue)",
+  "var(--color-chips-lilac)",
+  "var(--color-chips-violet)",
+  "var(--color-chips-purple)",
+  "var(--color-chips-pink)",
+  "var(--color-chips-gray)",
 ];
 
 const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
@@ -143,11 +143,11 @@ export default TimetableGrid;
 // --- 스타일 컴포넌트 ---
 const GridContainer = styled.div<{ $rowCount: number }>`
   display: grid;
-  grid-template-columns: 30px repeat(5, minmax(0, 1fr));
-  grid-template-rows: 30px repeat(${({ $rowCount }) => $rowCount}, 50px);
-  border: 1px solid #eee;
-  border-radius: 20px;
-  background-color: white;
+  grid-template-columns: 24px repeat(5, minmax(0, 1fr));
+  grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, 50px);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background-color: var(--bg-base);
   overflow: hidden;
   position: relative;
   transition: all 0.3s ease-in-out;
@@ -163,26 +163,37 @@ const CellBase = styled.div`
 `;
 
 const HeaderCell = styled(CellBase)`
-  font-size: 12px;
-  font-weight: 600;
-  color: #555;
-  background-color: #f9f9f9;
   border-bottom: 1px solid #eee;
   border-right: 1px solid #f0f0f0;
+  background-color: var(--bg-base)
   &:last-child {
     border-right: none;
   }
+
+  color: var(--text-tertiary, #8B95A1);
+  text-align: center;
+  
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
 `;
 
 const TimeCell = styled(CellBase)`
   flex-direction: column;
   justify-content: flex-start;
   padding-top: 4px;
-  font-size: 10px;
-  color: #888;
+
   border-right: 1px solid #eee;
   border-bottom: 1px solid #f0f0f0;
-  background-color: white;
+  background-color: var(--bg-base);
+
+  color: var(--text-tertiary, #8b95a1);
+
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
 `;
 
 const GridBackgroundCell = styled.div`
@@ -215,18 +226,25 @@ const ItemContent = styled.div`
 `;
 
 const ClassName = styled.span`
-  font-size: 11px;
+  color: var(--text-secondary, #333d4b);
+  font-size: 12px;
+  font-style: normal;
   font-weight: 700;
-  color: #333;
-  line-height: 1.2;
-  margin-bottom: 2px;
+  line-height: 14px;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
 `;
 
 const ClassRoom = styled.span`
+  color: var(--text-secondary, #333d4b);
   font-size: 10px;
-  color: #666;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 100%;
   white-space: nowrap;
 `;
