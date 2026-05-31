@@ -117,6 +117,20 @@ const MobileTimeTablePage = () => {
       >
         <GradeCalculatorWidget />
       </TitleContentArea>
+
+      <TitleContentArea
+        title={"시간표 기능 테스트 (임시)"}
+        style={{ marginTop: "24px" }}
+      >
+        <TempLinkGroup>
+          <TempLinkButton onClick={() => navigate(ROUTES.TIMETABLE.COMPARE_SELECT)}>
+            시간표 비교하기 (친구 선택)
+          </TempLinkButton>
+          <TempLinkButton onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}>
+            시간표 공개 설정
+          </TempLinkButton>
+        </TempLinkGroup>
+      </TitleContentArea>
     </MobileTimeTablePageWrapper>
   );
 };
@@ -176,5 +190,43 @@ const ScoreArea = styled.div`
     font-style: normal;
     font-weight: 500;
     line-height: 24px;
+  }
+`;
+
+const TempLinkGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+`;
+
+const TempLinkButton = styled.button`
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border-default, #f1f3f5);
+  background-color: var(--bg-base, #ffffff);
+  color: var(--text-primary, #191f28);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &:hover {
+    background-color: var(--bg-muted, #f1f3f5);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &::after {
+    content: "→";
+    font-size: 16px;
+    color: var(--text-tertiary, #8b95a1);
   }
 `;

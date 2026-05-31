@@ -181,7 +181,6 @@ const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 16px ${MOBILE_PAGE_GUTTER} 120px;
-  background-color: var(--bg-base, #fff);
   min-height: 100vh;
   box-sizing: border-box;
 `;
