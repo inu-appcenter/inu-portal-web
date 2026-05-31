@@ -141,10 +141,13 @@ const MobileTimeTablePageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   //gap: 24px;
-  padding: 0 ${MOBILE_PAGE_GUTTER} 40px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  padding: var(--header-height, 56px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 40px;
+    padding: var(--header-height, 56px) 0 40px;
   }
 `;
 

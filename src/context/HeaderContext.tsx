@@ -25,6 +25,8 @@ export interface HeaderConfig {
   visible?: boolean;
   subHeader?: ReactNode;
   floatingSubHeader?: boolean;
+  pageBgColor?: string; // 전역 페이지 배경색 지정 속성
+  immersive?: boolean; // 상하단 물리 패딩을 제거하고 풀-스크린을 쓸지 여부
 }
 
 type HeaderConfigMap = Record<string, HeaderConfig>;
@@ -46,6 +48,8 @@ const defaultHeaderConfig: HeaderConfig = {
   visible: true,
   subHeader: null,
   floatingSubHeader: false,
+  pageBgColor: undefined,
+  immersive: false,
 };
 
 const HeaderStateContext = createContext<HeaderStateContextType | undefined>(
@@ -142,6 +146,8 @@ export const useHeader = (config?: HeaderConfig) => {
     showAlarm: config?.showAlarm,
     visible: config?.visible,
     floatingSubHeader: config?.floatingSubHeader,
+    pageBgColor: config?.pageBgColor,
+    immersive: config?.immersive,
   });
 
   useLayoutEffect(() => {

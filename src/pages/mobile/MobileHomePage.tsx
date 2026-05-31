@@ -407,10 +407,13 @@ const MobileHomePageWrapper = styled.div`
   width: 100%;
   position: relative;
   box-sizing: border-box;
+  padding-top: var(--header-height, 56px);
+  padding-bottom: var(--nav-height, 100px);
 
   @media ${DESKTOP_MEDIA} {
     max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
     margin: 0 auto;
+    padding-top: var(--header-height, 56px);
     padding-bottom: 120px;
   }
 `;

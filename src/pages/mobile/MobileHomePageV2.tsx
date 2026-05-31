@@ -4,10 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
-import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
+import {
+  MOBILE_PAGE_GUTTER,
+  DESKTOP_MEDIA,
+  DESKTOP_CONTENT_MAX_WIDTH,
+} from "@/styles/responsive";
 
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
-import CategoryForm from "@/containers/mobile/home/Category";
 import NoticeForm from "@/containers/mobile/home/Notice";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
@@ -110,9 +113,6 @@ export default function MobileHomePageV2() {
       <LowerSheetSection>
         <ContentContainer>
           <HomeChipGroup />
-          <CategoryFormSection>
-            <CategoryForm />
-          </CategoryFormSection>
         </ContentContainer>
 
         <FeedLayout>
@@ -202,7 +202,7 @@ const V2Wrapper = styled.div`
 const UpperSection = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 56px ${MOBILE_PAGE_GUTTER} 36px;
+  padding: calc(var(--header-height, 56px) + 20px) ${MOBILE_PAGE_GUTTER} 36px;
   background: linear-gradient(180deg, #f0f6ff 0%, #e2eeff 100%);
 `;
 
@@ -385,7 +385,7 @@ const LowerSheetSection = styled.div`
   position: relative;
   z-index: 5;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.02);
-  padding: 28px ${MOBILE_PAGE_GUTTER} 40px;
+  padding: 28px ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 20px);
 `;
 
 const ContentContainer = styled.div`
@@ -393,12 +393,6 @@ const ContentContainer = styled.div`
   flex-direction: column;
   gap: 20px;
   margin-bottom: 24px;
-`;
-
-const CategoryFormSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 `;
 
 const FeedLayout = styled.div`

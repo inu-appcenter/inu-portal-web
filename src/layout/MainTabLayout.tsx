@@ -23,7 +23,7 @@ export default function MainTabLayout({
 }) {
   const location = useLocation();
   const outlet = useOutlet();
-  const { setIsScrolled } = useHeaderConfig();
+  const { setIsScrolled, pageBgColor } = useHeaderConfig(location.pathname);
   const headerRef = useRef<HTMLElement | null>(null);
 
   const isHome =
@@ -50,7 +50,15 @@ export default function MainTabLayout({
   const navHeight = showNav ? 100 : 40;
 
   return (
-    <LayoutContainer id="app-scroll-view" $isHome={isHome}>
+    <LayoutContainer
+      id="app-scroll-view"
+      $isHome={isHome}
+      $pageBgColor={pageBgColor}
+      style={{
+        "--header-height": `${headerHeight}px`,
+        "--nav-height": `${navHeight}px`,
+      } as React.CSSProperties}
+    >
       {isHome && (
         <HomeBackground aria-hidden="true">
           <UpperBackground src={UpperBackgroundImg} alt="" />
@@ -65,7 +73,7 @@ export default function MainTabLayout({
           />
         </HeaderFloating>
       )}
-      <ContentArea $pt={headerHeight} $pb={navHeight}>
+      <ContentArea>
         {outlet}
       </ContentArea>
 
@@ -78,12 +86,12 @@ export default function MainTabLayout({
   );
 }
 
-const LayoutContainer = styled.div<{ $isHome: boolean }>`
+const LayoutContainer = styled.div<{ $isHome: boolean; $pageBgColor?: string }>`
   width: 100%;
   min-height: 100vh;
   position: relative;
   isolation: isolate;
-  background-color: ${(props) => (props.$isHome ? "transparent" : "#f1f1f3")};
+  background-color: ${(props) => props.$pageBgColor ?? (props.$isHome ? "transparent" : "#f1f1f3")};
 `;
 
 const HomeBackground = styled.div`
@@ -120,13 +128,11 @@ const UpperBackground = styled.img`
   opacity: 0.72;
 `;
 
-const ContentArea = styled.div<{ $pt: number; $pb: number }>`
+const ContentArea = styled.div`
   width: 100%;
   min-height: 100vh;
   position: relative;
   z-index: 1;
-  padding-top: ${(props) => props.$pt}px;
-  padding-bottom: ${(props) => props.$pb}px;
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {

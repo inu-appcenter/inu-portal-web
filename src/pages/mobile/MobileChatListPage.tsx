@@ -733,7 +733,7 @@ const Viewport = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: 24px 0 60px 0;
+  padding: calc(var(--header-height, 56px) + 24px) 0 calc(var(--nav-height, 100px) + 60px) 0;
 
   .swiper-autoheight {
     transition: height 0ms !important;
