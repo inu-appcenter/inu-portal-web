@@ -437,7 +437,7 @@ const ContentContainer = styled.div`
 const FeedLayout = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
   width: 100%;
 `;
 
