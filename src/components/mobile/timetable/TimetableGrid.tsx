@@ -26,6 +26,7 @@ interface TimetableGridProps {
     startTime: number;
     endTime: number;
   } | null;
+  isCompareMode?: boolean; // 추가
 }
 
 // --- 상수 데이터 ---
@@ -51,6 +52,7 @@ const TimetableGrid = ({
   events,
   previewEvents = [],
   highlightedSlot = null,
+  isCompareMode = false, // 추가
 }: TimetableGridProps) => {
   // 바텀시트 상태 정의
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
@@ -108,6 +110,7 @@ const TimetableGrid = ({
         key={`${isPreview ? "prev" : "evt"}-${item.id}-${index}`}
         $bgColor={bgColor}
         $isPreview={isPreview}
+        $isCompareMode={isCompareMode} // 추가
         onClick={handleClassClick}
         style={{
           gridColumnStart: colStart,
@@ -266,7 +269,11 @@ const GridBackgroundCell = styled.div`
   }
 `;
 
-const ClassItemBlock = styled.div<{ $bgColor: string; $isPreview?: boolean }>`
+const ClassItemBlock = styled.div<{
+  $bgColor: string;
+  $isPreview?: boolean;
+  $isCompareMode?: boolean; // 추가
+}>`
   background-color: ${({ $bgColor }) => $bgColor};
   margin: 1px;
   border-radius: 4px;

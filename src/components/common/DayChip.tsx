@@ -17,19 +17,22 @@ const ChipButton = styled.button<{ $isSelected: boolean }>`
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 9999px;
+  border-radius: 999px;
   cursor: pointer;
   box-sizing: border-box;
   transition: all 0.2s ease-in-out;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+
   /* 비선택 상태 */
   background-color: var(--bg-subtle, #f8f9fb);
   border: 1px solid var(--border-default, #e5e8eb);
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-tertiary);
 
   /* 선택 상태 */
   ${({ $isSelected }) =>

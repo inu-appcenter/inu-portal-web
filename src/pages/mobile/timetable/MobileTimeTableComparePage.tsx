@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +10,6 @@ import { Drawer } from "vaul";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
-import TabSub from "@/components/common/TabSub";
 import DayChip from "@/components/common/DayChip";
 import TimetableGrid, {
   ClassItem,
@@ -235,7 +234,7 @@ const formatDuration = (hours: number) => {
 
 export default function MobileTimeTableComparePage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const friendIdsParam = searchParams.get("ids") || "";
 
   // 2. 친구 목록 로드
@@ -259,27 +258,41 @@ export default function MobileTimeTableComparePage() {
     const filtered = friendsMap.filter((f) =>
       selectedFriendIds.includes(f.friendId),
     );
-    // 만약 매칭되는 친구가 없다면 기본 김유니와 더미친구리스트 제공
-    return filtered.length > 0 ? filtered : friendsMap;
+    const baseList = filtered.length > 0 ? filtered : friendsMap;
+    // 맨 앞에 "나" 객체 추가
+    return [
+      { friendId: 99999, nickname: "나", friendAlias: "나" },
+      ...baseList,
+    ];
   }, [friendsMap, selectedFriendIds]);
 
-  // 3. 페이지 탭 상태 정의
-  const [activeTabUpper, setActiveTabUpper] = useState("compare"); // "compare" | "free"
-  const [activeTabSub, setActiveTabSub] = useState("me"); // "me" | "friend" | "all"
+  // 3. 페이지 탭 상태 정의 (URL 쿼리 파라미터 연동)
+  const activeTabUpper =
+    (searchParams.get("tab") as "compare" | "free") || "compare";
 
   // subHeader 정의 (대분류 탭을 고정 헤더 영역으로 이동)
   const subHeader = useMemo(
     () => (
       <TabUpper
         tabs={[
-          { id: "compare", label: "비교" },
+          { id: "compare", label: "겹쳐보기" },
           { id: "free", label: "공강" },
         ]}
         activeTabId={activeTabUpper}
-        onChange={(id) => setActiveTabUpper(id)}
+        onChange={(id) => {
+          const newParams = new URLSearchParams(searchParams);
+          newParams.set("tab", id);
+          setSearchParams(newParams, { replace: true });
+
+          if (id === "free") {
+            setSelectedFriendIdsState([99999, ...selectedFriendIds]);
+          } else if (id === "compare") {
+            setSelectedFriendIdsState([99999]);
+          }
+        }}
       />
     ),
-    [activeTabUpper],
+    [activeTabUpper, selectedFriendIds, searchParams, setSearchParams],
   );
 
   // 1. 헤더 설정
@@ -290,8 +303,66 @@ export default function MobileTimeTableComparePage() {
     floatingSubHeader: false,
   });
 
-  // 선택된 활성 친구 칩 (단일 칩 선택 상태)
-  const [activeFriendName, setActiveFriendName] = useState("김유니");
+  // 다중 선택된 친구 ID 목록 상태 (초기값으로 비교 탭은 "나"만 지정, 공강 탭이면 전체 지정)
+  const [selectedFriendIdsState, setSelectedFriendIdsState] = useState<
+    number[]
+  >(() => {
+    const currentTab = searchParams.get("tab") || "compare";
+    if (currentTab === "free") {
+      return [99999, ...selectedFriendIds];
+    }
+    return [99999];
+  });
+
+  // URL 쿼리 파라미터(ids)가 변경되면 상태를 동기화
+  useEffect(() => {
+    if (activeTabUpper === "free") {
+      setSelectedFriendIdsState([99999, ...selectedFriendIds]);
+    } else {
+      setSelectedFriendIdsState([99999]); // 비교 탭에서는 "나"만 선택된 상태로 리셋
+    }
+  }, [selectedFriendIds]);
+
+  const handleFriendChipClick = (friendId: number) => {
+    if (activeTabUpper === "compare" && friendId === 99999) return; // 비교 탭에서만 "나" 고정 (선택 해제 불가)
+    setSelectedFriendIdsState((prev) => {
+      if (prev.includes(friendId)) {
+        return prev.filter((id) => id !== friendId);
+      }
+      return [...prev, friendId];
+    });
+  };
+
+  // 친구의 시간표를 조회/할당하는 헬퍼 함수
+  const getFriendTimetable = useMemo(() => {
+    return (friend: {
+      friendId: number;
+      nickname: string;
+      friendAlias?: string;
+    }) => {
+      const name = friend.friendAlias || friend.nickname;
+      // 1. 목업 딕셔너리에 이름이 직접 매칭되면 그것을 반환
+      if (FRIEND_CLASSES[name]) {
+        return FRIEND_CLASSES[name];
+      }
+
+      // 2. 매칭되지 않는 실제 친구의 경우, friendsMap에서의 인덱스를 기반으로 순환 매핑
+      const friendIndex = friendsMap.findIndex(
+        (f) => f.friendId === friend.friendId,
+      );
+      const mockKeys = Object.keys(FRIEND_CLASSES); // ["김유니", "친구 2", "친구 3", "친구 4"]
+      const targetIndex =
+        friendIndex !== -1 ? friendIndex % mockKeys.length : 0;
+      const mockKey = mockKeys[targetIndex];
+      const baseClasses = FRIEND_CLASSES[mockKey] || [];
+
+      // ID 충돌 방지 및 고유 ID 부여
+      return baseClasses.map((item) => ({
+        ...item,
+        id: friend.friendId * 1000 + item.id,
+      }));
+    };
+  }, [friendsMap]);
 
   // 공강 시간 선택 상태 (시간표에 하이라이트 표시용)
   const [highlightedSlot, setHighlightedSlot] = useState<{
@@ -400,28 +471,41 @@ export default function MobileTimeTableComparePage() {
     }
   };
 
-  const currentFriendClasses = useMemo(() => {
-    return FRIEND_CLASSES[activeFriendName] || FRIEND_CLASSES["김유니"];
-  }, [activeFriendName]);
-
-  // 겹치는 공강 목록 계산
+  // 공동 공강 목록 계산 (나 + 선택된 모든 친구들)
   const freeSlotsList = useMemo(() => {
+    if (selectedFriendIdsState.length === 0) {
+      return [];
+    }
     const list: {
       day: number;
       startTime: number;
       endTime: number;
       duration: number;
     }[] = [];
+
+    // 선택된 친구들의 시간표들을 미리 구해둠
+    const selectedFriendsTimetables = selectedFriendIdsState
+      .filter((id) => id !== 99999)
+      .map((friendId) => {
+        const friend = friendsMap.find((f) => f.friendId === friendId);
+        return friend ? getFriendTimetable(friend) : [];
+      });
+
     for (let day = 0; day < 5; day++) {
       let currentStart: number | null = null;
       for (let hour = 9; hour < 18; hour++) {
-        const isMeBusy = MY_CLASSES.some(
-          (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-        );
-        const isFriendBusy = currentFriendClasses.some(
-          (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-        );
-        const isBothFree = !isMeBusy && !isFriendBusy;
+        const isMeSelected = selectedFriendIdsState.includes(99999);
+        const isMeBusy =
+          isMeSelected &&
+          MY_CLASSES.some(
+            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
+          );
+        const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
+          return classes.some(
+            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
+          );
+        });
+        const isBothFree = !isMeBusy && !isAnyFriendBusy;
 
         if (isBothFree) {
           if (currentStart === null) {
@@ -449,7 +533,7 @@ export default function MobileTimeTableComparePage() {
       }
     }
     return list;
-  }, [currentFriendClasses]);
+  }, [selectedFriendIdsState, friendsMap, getFriendTimetable]);
 
   // 만나기 좋은 시간: 1시간 초과인 경우 (긴 시간 순으로 정렬)
   const goodMeetingTimes = useMemo(() => {
@@ -463,79 +547,22 @@ export default function MobileTimeTableComparePage() {
     return freeSlotsList.filter((s) => s.duration <= 1.0);
   }, [freeSlotsList]);
 
-  // "모두" 보기 오버레이 시간표 생성 헬퍼
-  const allViewClasses = useMemo(() => {
-    const result: ClassItem[] = [];
-    let idCounter = 10000;
-
-    for (let day = 0; day < 5; day++) {
-      let currentBlock: {
-        type: "me" | "friend" | "overlap" | "free";
-        startTime: number;
-        endTime: number;
-      } | null = null;
-
-      for (let hour = 9; hour < 18; hour++) {
-        const isMeBusy = MY_CLASSES.some(
-          (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-        );
-        const isFriendBusy = currentFriendClasses.some(
-          (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-        );
-
-        let type: "me" | "friend" | "overlap" | "free" = "free";
-        if (isMeBusy && isFriendBusy) type = "overlap";
-        else if (isMeBusy) type = "me";
-        else if (isFriendBusy) type = "friend";
-
-        if (currentBlock && currentBlock.type === type) {
-          currentBlock.endTime = hour + 1;
-        } else {
-          if (currentBlock && currentBlock.type !== "free") {
-            result.push({
-              id: idCounter++,
-              name: "",
-              room: "",
-              day,
-              startTime: currentBlock.startTime,
-              endTime: currentBlock.endTime,
-              color:
-                currentBlock.type === "me"
-                  ? "#FEF3C7" // 노란색
-                  : currentBlock.type === "friend"
-                    ? "#FFE5EE" // 분홍색
-                    : "#FFD5BF", // 주황색
-            });
-          }
-          currentBlock = { type, startTime: hour, endTime: hour + 1 };
-        }
-      }
-
-      if (currentBlock && currentBlock.type !== "free") {
-        result.push({
-          id: idCounter++,
-          name: "",
-          room: "",
-          day,
-          startTime: currentBlock.startTime,
-          endTime: currentBlock.endTime,
-          color:
-            currentBlock.type === "me"
-              ? "#FEF3C7"
-              : currentBlock.type === "friend"
-                ? "#FFE5EE"
-                : "#FFD5BF",
-        });
-      }
-    }
-    return result;
-  }, [currentFriendClasses]);
-
   // "공강" 보기 시간표 생성 헬퍼
   const freeViewClasses = useMemo(() => {
+    if (selectedFriendIdsState.length === 0) {
+      return [];
+    }
     const result: ClassItem[] = [];
     let idCounter = 20000;
 
+    // 선택된 친구들의 시간표들을 미리 구해둠
+    const selectedFriendsTimetables = selectedFriendIdsState
+      .filter((id) => id !== 99999)
+      .map((friendId) => {
+        const friend = friendsMap.find((f) => f.friendId === friendId);
+        return friend ? getFriendTimetable(friend) : [];
+      });
+
     for (let day = 0; day < 5; day++) {
       let currentBlock: {
         startTime: number;
@@ -543,14 +570,19 @@ export default function MobileTimeTableComparePage() {
       } | null = null;
 
       for (let hour = 9; hour < 18; hour++) {
-        const isMeBusy = MY_CLASSES.some(
-          (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-        );
-        const isFriendBusy = currentFriendClasses.some(
-          (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-        );
+        const isMeSelected = selectedFriendIdsState.includes(99999);
+        const isMeBusy =
+          isMeSelected &&
+          MY_CLASSES.some(
+            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
+          );
+        const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
+          return classes.some(
+            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
+          );
+        });
 
-        const isBothFree = !isMeBusy && !isFriendBusy;
+        const isBothFree = !isMeBusy && !isAnyFriendBusy;
 
         if (isBothFree) {
           if (currentBlock) {
@@ -587,22 +619,28 @@ export default function MobileTimeTableComparePage() {
       }
     }
     return result;
-  }, [currentFriendClasses]);
+  }, [selectedFriendIdsState, friendsMap, getFriendTimetable]);
 
   // 현재 탭 선택에 맞는 시간표 이벤트 결정
   const activeEvents = useMemo(() => {
     if (activeTabUpper === "free") {
       return freeViewClasses;
     }
-    // activeTabUpper === "compare"
-    if (activeTabSub === "me") return MY_CLASSES;
-    if (activeTabSub === "friend") return currentFriendClasses;
-    return allViewClasses; // "all"
+    // activeTabUpper === "compare" 일 때: 내 시간표 + 선택된 친구들의 시간표를 겹쳐서 노출
+    const result: ClassItem[] = [...MY_CLASSES];
+    selectedFriendIdsState.forEach((friendId) => {
+      const friend = friendsMap.find((f) => f.friendId === friendId);
+      if (friend) {
+        const classes = getFriendTimetable(friend);
+        result.push(...classes);
+      }
+    });
+    return result;
   }, [
     activeTabUpper,
-    activeTabSub,
-    currentFriendClasses,
-    allViewClasses,
+    selectedFriendIdsState,
+    friendsMap,
+    getFriendTimetable,
     freeViewClasses,
   ]);
 
@@ -614,39 +652,47 @@ export default function MobileTimeTableComparePage() {
       $snapHeight={typeof snap === "number" ? snap : 0.45}
     >
       <ContentArea>
-        {/* 2. 대분류 탭이 "비교"일 때만 소분류 서브탭 노출 */}
-        {activeTabUpper === "compare" && (
-          <TabSubWrapper>
-            <TabSub
-              tabs={[
-                { id: "me", label: "나" },
-                { id: "friend", label: "친구" },
-                { id: "all", label: "모두" },
-              ]}
-              activeTabId={activeTabSub}
-              onChange={(id) => setActiveTabSub(id)}
-            />
-          </TabSubWrapper>
-        )}
-
-        {/* 3. "비교-친구" 혹은 "공강" 탭일 때 친구 필터 칩 목록 노출 */}
-        {((activeTabUpper === "compare" && activeTabSub === "friend") ||
-          activeTabUpper === "free") && (
-          <ChipSection>
-            <ChipContainer>
+        {/* 2. 친구 필터 칩 목록 노출 */}
+        {(activeTabUpper === "compare" || activeTabUpper === "free") && (
+          <ChipSection data-vaul-no-drag="">
+            <ChipContainer data-vaul-no-drag="">
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
+                const isSelected =
+                  activeTabUpper === "compare" && friend.friendId === 99999
+                    ? true
+                    : selectedFriendIdsState.includes(friend.friendId);
                 return (
                   <DayChip
                     key={friend.friendId}
                     label={name}
-                    isSelected={activeFriendName === name}
-                    onClick={() => setActiveFriendName(name)}
+                    isSelected={isSelected}
+                    onClick={() => handleFriendChipClick(friend.friendId)}
                   />
                 );
               })}
               <AddFriendButton
-                onClick={() => navigate(ROUTES.TIMETABLE.COMPARE_SELECT)}
+                data-vaul-no-drag=""
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const allFriendIds = searchParams.get("ids") || "";
+                  navigate(
+                    allFriendIds
+                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                      : ROUTES.TIMETABLE.COMPARE_SELECT,
+                  );
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const allFriendIds = searchParams.get("ids") || "";
+                  navigate(
+                    allFriendIds
+                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                      : ROUTES.TIMETABLE.COMPARE_SELECT,
+                  );
+                }}
               >
                 <Plus size={16} />
               </AddFriendButton>
@@ -659,6 +705,7 @@ export default function MobileTimeTableComparePage() {
           <TimetableGrid
             events={activeEvents}
             highlightedSlot={highlightedSlot}
+            isCompareMode={activeTabUpper === "compare"}
           />
         </GridSection>
       </ContentArea>
@@ -671,6 +718,7 @@ export default function MobileTimeTableComparePage() {
         snapPoints={[0.12, 0.45, 0.85]}
         activeSnapPoint={snap}
         setActiveSnapPoint={setSnap}
+        disablePreventScroll={true}
       >
         <Drawer.Portal>
           <StyledContent>
@@ -748,10 +796,16 @@ export default function MobileTimeTableComparePage() {
                     </TimeGroup>
                   )}
 
-                  {freeSlotsList.length === 0 && (
+                  {selectedFriendIdsState.length === 0 ? (
                     <EmptyStateText>
-                      겹치는 공강 시간이 없습니다.
+                      공강을 비교할 대상을 상단 칩에서 선택해 주세요.
                     </EmptyStateText>
+                  ) : (
+                    freeSlotsList.length === 0 && (
+                      <EmptyStateText>
+                        겹치는 공강 시간이 없습니다.
+                      </EmptyStateText>
+                    )
                   )}
                 </ScrollableBody>
               </ContentAreaBottomSheet>
@@ -787,13 +841,11 @@ const ContentArea = styled.div`
   gap: 12px;
 `;
 
-const TabSubWrapper = styled.div`
-  //margin-bottom: 16px;
-`;
-
 const ChipSection = styled.div`
   //margin-bottom: 16px;
   width: 100%;
+  position: relative;
+  z-index: 10;
 `;
 
 const ChipContainer = styled.div`
@@ -804,6 +856,8 @@ const ChipContainer = styled.div`
   overflow-x: auto;
   //padding: 4px 0;
   width: 100%;
+  position: relative;
+  z-index: 11;
 
   /* 스크롤바 숨기기 */
   &::-webkit-scrollbar {
@@ -827,8 +881,17 @@ const AddFriendButton = styled.button`
   flex-shrink: 0;
   transition: all 0.2s ease-in-out;
 
+  /* 확실하게 터치가 감지되도록 겹침 순서 및 포인터 이벤트 강제 */
+  position: relative;
+  z-index: 12;
+  pointer-events: auto !important;
+
   &:active {
     transform: scale(0.92);
+  }
+
+  svg {
+    pointer-events: none;
   }
 `;
 
@@ -934,7 +997,7 @@ const StyledContent = styled(Drawer.Content)`
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 100;
+  z-index: 10000;
   outline: none;
 
   height: 100%;
@@ -944,6 +1007,7 @@ const StyledContent = styled(Drawer.Content)`
 
   max-width: 768px;
   margin: 0 auto;
+  pointer-events: none;
 `;
 
 const SheetInner = styled.div`
@@ -960,6 +1024,7 @@ const SheetInner = styled.div`
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  pointer-events: auto;
 `;
 
 const DragHeader = styled.div`
