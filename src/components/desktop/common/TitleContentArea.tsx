@@ -51,7 +51,7 @@ const TitleContentAreaWrapper = styled.div`
   justify-content: center;
   width: 100%;
   height: fit-content;
-  gap: 8px;
+  gap: var(--space-3);
 `;
 
 const HeaderWrapper = styled.div`

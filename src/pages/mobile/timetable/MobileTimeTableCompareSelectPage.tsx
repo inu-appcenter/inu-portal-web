@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react";
 import styled, { css } from "styled-components";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getFriends } from "@/apis/friends";
+import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
@@ -37,8 +39,16 @@ const isFriendPublic = (nickname: string) => {
 };
 
 export default function MobileTimeTableCompareSelectPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const initialIds = useMemo(() => {
+    const idsParam = searchParams.get("ids") || "";
+    return idsParam.split(",").map(Number).filter(Boolean);
+  }, [searchParams]);
+
+  const [selectedIds, setSelectedIds] = useState<number[]>(() => initialIds);
   const [isAsc, setIsAsc] = useState(true);
 
   useHeader({
@@ -82,7 +92,7 @@ export default function MobileTimeTableCompareSelectPage() {
 
   const handleCompare = () => {
     if (selectedIds.length === 0) return;
-    alert(`선택된 친구 ID [${selectedIds.join(", ")}]와 시간표를 비교합니다.`);
+    navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`, { replace: true });
   };
 
   return (
@@ -181,7 +191,7 @@ const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 16px ${MOBILE_PAGE_GUTTER} 120px;
-  min-height: 100vh;
+  //min-height: 100vh;
   box-sizing: border-box;
 `;
 
