@@ -14,12 +14,18 @@ export interface ClassItem {
   isPreview?: boolean;
   professor?: string; //교수명
   memo?: string; //메모
+  color?: string; // 개별 배경 색상
 }
 
 interface TimetableGridProps {
   events: ClassItem[];
   // 추가: 미리보기용 이벤트 배열
   previewEvents?: ClassItem[];
+  highlightedSlot?: {
+    day: number;
+    startTime: number;
+    endTime: number;
+  } | null;
 }
 
 // --- 상수 데이터 ---
@@ -41,7 +47,11 @@ const COLORS = [
   "var(--color-chips-gray)",
 ];
 
-const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
+const TimetableGrid = ({
+  events,
+  previewEvents = [],
+  highlightedSlot = null,
+}: TimetableGridProps) => {
   // 바텀시트 상태 정의
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
@@ -59,7 +69,7 @@ const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
     return slots;
   }, [events, previewEvents]);
 
-  const rowCount = timeSlots.length - 1;
+  const rowCount = (timeSlots.length - 1) * 2;
 
   // 2. 색상 매핑
   const colorMap = useMemo(() => {
@@ -78,10 +88,12 @@ const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
     isPreview: boolean,
   ) => {
     const colStart = item.day + 2;
-    const rowStart = item.startTime - START_HOUR + 2;
-    const rowEnd = item.endTime - START_HOUR + 2;
-    // 미리보기면 고정색, 아니면 맵핑된 색
-    const bgColor = isPreview
+    const rowStart = Math.round((item.startTime - START_HOUR) * 2) + 2;
+    const rowEnd = Math.round((item.endTime - START_HOUR) * 2) + 2;
+    // 개별 색상이 지정되어 있으면 우선 사용, 아니면 미리보기면 고정색, 기본은 맵핑된 색
+    const bgColor = item.color
+      ? item.color
+      : isPreview
       ? "rgba(0, 123, 255, 0.5)" // 반투명 파란색
       : colorMap.get(item.name) || "#FFFFFF";
 
@@ -128,16 +140,26 @@ const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
 
         {/* (2) 시간표 바디 */}
         {timeSlots.slice(0, -1).map((time, timeIndex) => {
-          const rowIndex = timeIndex + 2;
+          const rowIndex = timeIndex * 2 + 2;
           return (
             <React.Fragment key={`row-${time}`}>
-              <TimeCell style={{ gridColumn: 1, gridRow: rowIndex }}>
+              <TimeCell
+                style={{
+                  gridColumn: 1,
+                  gridRowStart: rowIndex,
+                  gridRowEnd: "span 2",
+                }}
+              >
                 <span>{time}</span>
               </TimeCell>
               {DAYS.map((_, dayIndex) => (
                 <GridBackgroundCell
                   key={`bg-${time}-${dayIndex}`}
-                  style={{ gridColumn: dayIndex + 2, gridRow: rowIndex }}
+                  style={{
+                    gridColumn: dayIndex + 2,
+                    gridRowStart: rowIndex,
+                    gridRowEnd: "span 2",
+                  }}
                 />
               ))}
             </React.Fragment>
@@ -150,6 +172,18 @@ const TimetableGrid = ({ events, previewEvents = [] }: TimetableGridProps) => {
         {/* (4) 미리보기 아이템 (오버레이) */}
         {previewEvents.map((item, index) =>
           renderEventBlock(item, index, true),
+        )}
+
+        {/* (5) 공강 시간 꾹 누르고 있을 때 하이라이트 박스 */}
+        {highlightedSlot && (
+          <HighlightedBlock
+            style={{
+              gridColumnStart: highlightedSlot.day + 2,
+              gridColumnEnd: "span 1",
+              gridRowStart: Math.round((highlightedSlot.startTime - START_HOUR) * 2) + 2,
+              gridRowEnd: Math.round((highlightedSlot.endTime - START_HOUR) * 2) + 2,
+            }}
+          />
         )}
       </GridContainer>
 
@@ -172,7 +206,7 @@ export default TimetableGrid;
 const GridContainer = styled.div<{ $rowCount: number }>`
   display: grid;
   grid-template-columns: 24px repeat(5, minmax(0, 1fr));
-  grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, 50px);
+  grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, 25px);
   border: 1px solid var(--border-strong);
   border-radius: 16px;
   background-color: var(--bg-base);
@@ -276,4 +310,29 @@ const ClassRoom = styled.span`
   font-weight: 500;
   line-height: 100%;
   white-space: nowrap;
+`;
+
+const HighlightedBlock = styled.div`
+  background-color: rgba(59, 130, 246, 0.25);
+  border: 2px solid var(--interactive-primary, #3b82f6);
+  margin: 1px;
+  border-radius: 4px;
+  z-index: 50;
+  animation: pulse 1.5s infinite ease-in-out;
+  pointer-events: none;
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.6;
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+    }
+    100% {
+      opacity: 0.6;
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+  }
 `;

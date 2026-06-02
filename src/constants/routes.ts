@@ -19,6 +19,7 @@ export const ROUTES = {
     ROOT: "/timetable",
     EDIT: "/timetable/edit",
     COMPARE_SELECT: "/timetable/compare/select",
+    COMPARE: "/timetable/compare",
     VISIBILITY: "/timetable/visibility",
   },
 
