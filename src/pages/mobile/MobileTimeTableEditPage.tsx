@@ -127,11 +127,24 @@ const MobileTimeTableEditPage = () => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  const handleEdit = (id: number) => {
+    alert(`과목 수정 창을 엽니다. (ID: ${id})`);
+  };
+
+  const handleDelete = (id: number) => {
+    alert(`과목을 삭제합니다. (ID: ${id})`);
+  };
+
   const snapHeightValue = typeof snap === "number" ? snap : 0.45;
 
   return (
     <PageWrapper $snapHeight={snapHeightValue} $isSheetOpen={isSheetOpen}>
-      <TimetableGrid events={MY_TIMETABLE} previewEvents={previewSchedules} />
+      <TimetableGrid
+        events={MY_TIMETABLE}
+        previewEvents={previewSchedules}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       <SemesterInfoLine>
         <Semester>2026년 1학기</Semester>
         <ScoreArea>

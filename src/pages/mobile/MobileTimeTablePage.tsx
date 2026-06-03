@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { MenuItemType, useHeader } from "@/context/HeaderContext";
+import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -76,16 +76,6 @@ const MobileTimeTablePage = () => {
   const [isModalOpen] = useState(false);
   const gradeCalculatorRef = useRef<HTMLDivElement>(null);
 
-  const menuItems = useMemo<MenuItemType[]>(
-    () => [
-      {
-        label: "시간표 편집",
-        onClick: () => navigate(ROUTES.TIMETABLE.EDIT),
-      },
-    ],
-    [navigate], // navigate 함수 의존성 추가
-  );
-
   const headerRight = useMemo(
     () => (
       <HeaderRightArea>
@@ -101,7 +91,6 @@ const MobileTimeTablePage = () => {
     title: "시간표",
     showAlarm: true,
     hasback: false,
-    menuItems,
     rightArea: headerRight,
   });
 
