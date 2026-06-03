@@ -5,10 +5,11 @@ import GradeCalculatorWidget from "@/components/mobile/timetable/GradeCalculator
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
+import LinkCardButton from "@/components/mobile/common/LinkCardButton";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 // 목업 데이터
@@ -74,6 +75,7 @@ const MOCK_TIMETABLE: ClassItem[] = [
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
   const [isModalOpen] = useState(false);
+  const gradeCalculatorRef = useRef<HTMLDivElement>(null);
 
   const menuItems = useMemo<MenuItemType[]>(
     () => [
@@ -91,6 +93,13 @@ const MobileTimeTablePage = () => {
     hasback: false,
     menuItems,
   });
+
+  const handleGradeCalculatorClick = () => {
+    gradeCalculatorRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  };
 
   return (
     <MobileTimeTablePageWrapper>
@@ -110,27 +119,40 @@ const MobileTimeTablePage = () => {
         </ScoreArea>
       </SemesterInfoLine>
 
-      <TitleContentArea
-        title={"학점 계산기"}
-        style={{ marginTop: "36px" }}
-        onClick={() => {}}
-      >
-        <GradeCalculatorWidget />
-      </TitleContentArea>
+      <div ref={gradeCalculatorRef}>
+        <TitleContentArea
+          title={"학점 계산기"}
+          style={{ marginTop: "36px" }}
+          onClick={() => {}}
+        >
+          <GradeCalculatorWidget />
+        </TitleContentArea>
+      </div>
 
-      <TitleContentArea
-        title={"시간표 기능 테스트 (임시)"}
-        style={{ marginTop: "24px" }}
+      <ButtonGroup>
+        <ButtonRow>
+          <LinkCardButton
+            label="친구"
+            onClick={() => navigate(ROUTES.TIMETABLE.COMPARE_SELECT)}
+          />
+          <LinkCardButton
+            label="학점계산기"
+            onClick={handleGradeCalculatorClick}
+          />
+        </ButtonRow>
+        <LinkCardButton
+          label="모의수강신청"
+          onClick={() =>
+            window.open("https://inu-sugang-simulator.pages.dev", "_blank")
+          }
+        />
+      </ButtonGroup>
+
+      <AuxiliaryLinkButton
+        onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}
       >
-        <TempLinkGroup>
-          <TempLinkButton onClick={() => navigate(ROUTES.TIMETABLE.COMPARE_SELECT)}>
-            시간표 비교하기 (친구 선택)
-          </TempLinkButton>
-          <TempLinkButton onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}>
-            시간표 공개 설정
-          </TempLinkButton>
-        </TempLinkGroup>
-      </TitleContentArea>
+        시간표 공개 설정
+      </AuxiliaryLinkButton>
     </MobileTimeTablePageWrapper>
   );
 };
@@ -144,7 +166,8 @@ const MobileTimeTablePageWrapper = styled.div`
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  padding: var(--header-height, 56px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 40px);
+  padding: var(--header-height, 56px) ${MOBILE_PAGE_GUTTER}
+    calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
     padding: var(--header-height, 56px) 0 40px;
@@ -196,40 +219,33 @@ const ScoreArea = styled.div`
   }
 `;
 
-const TempLinkGroup = styled.div`
+const ButtonGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  margin-top: 24px;
 `;
 
-const TempLinkButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid var(--border-default, #f1f3f5);
-  background-color: var(--bg-base, #ffffff);
-  color: var(--text-primary, #191f28);
-  font-size: 15px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+const ButtonRow = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+`;
 
-  &:hover {
-    background-color: var(--bg-muted, #f1f3f5);
-  }
+const AuxiliaryLinkButton = styled.button`
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 24px;
+  text-decoration: underline;
+  align-self: center;
 
   &:active {
-    transform: scale(0.99);
-  }
-
-  &::after {
-    content: "→";
-    font-size: 16px;
-    color: var(--text-tertiary, #8b95a1);
+    opacity: 0.7;
   }
 `;

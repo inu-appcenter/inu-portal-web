@@ -753,10 +753,13 @@ export default function MobileTimeTableComparePage() {
                               key={`good-${index}`}
                               $isSelected={!!isSelected}
                               onClick={() => handleSlotClick(slot)}
+                              className="good"
                             >
                               <SlotLeft>
-                                <DayText>{DAYS_KOREAN[slot.day]}</DayText>
-                                <TimeText>{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
+                                <DayText className="good">
+                                  {DAYS_KOREAN[slot.day]}
+                                </DayText>
+                                <TimeText className="good">{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
                               </SlotLeft>
                               <Badge className="good">
                                 {formatDuration(slot.duration)}
@@ -949,38 +952,73 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
   &:active {
     transform: scale(0.98);
   }
+
+  &.good {
+    background-color: var(--bg-warn-subtle);
+  }
 `;
 
 const SlotLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
 `;
 
 const DayText = styled.span`
   font-size: 15px;
   font-weight: 700;
   color: var(--gray-800, #333d4b);
-  min-width: 48px;
+  //min-width: 48px;
+
+  &.good {
+    color: var(--text-warn, #7a5400);
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: -0.2px;
+  }
 `;
 
 const TimeText = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary, #333d4b);
+
+  &.good {
+    color: var(--text-warn, #7a5400);
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+  }
 `;
 
 const Badge = styled.div`
-  padding: 6px 12px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
-  background-color: var(--bg-muted, #f1f3f5);
+  display: flex;
+  min-width: 52px;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--bg-disabled, #e5e8eb);
+
   color: var(--text-tertiary, #8b95a1);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
 
   &.good {
-    background-color: var(--bg-warn, #fef3c7);
-    color: var(--yellow-600, #b58000);
+    background: var(--color-chips-yellow, #ffe589);
+    color: var(--text-warn, #7a5400);
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
   }
 `;
 
