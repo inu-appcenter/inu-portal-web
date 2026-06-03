@@ -1063,6 +1063,7 @@ const SheetInner = styled.div`
   flex: 1;
   min-height: 0;
   pointer-events: auto;
+  touch-action: none;
 `;
 
 const DragHeader = styled.div`
@@ -1071,6 +1072,7 @@ const DragHeader = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  touch-action: none;
 `;
 
 const HandleBar = styled.div`

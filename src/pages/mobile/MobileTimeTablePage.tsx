@@ -1,7 +1,5 @@
 import styled from "styled-components";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
-import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import GradeCalculatorWidget from "@/components/mobile/timetable/GradeCalculatorWidget";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -11,6 +9,7 @@ import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import LinkCardButton from "@/components/mobile/common/LinkCardButton";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { Pencil } from "lucide-react";
 
 // 목업 데이터
 const MOCK_TIMETABLE: ClassItem[] = [
@@ -87,11 +86,23 @@ const MobileTimeTablePage = () => {
     [navigate], // navigate 함수 의존성 추가
   );
 
+  const headerRight = useMemo(
+    () => (
+      <HeaderRightArea>
+        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.EDIT)}>
+          <Pencil size={22} color="#1C1C1E" />
+        </IconButton>
+      </HeaderRightArea>
+    ),
+    [navigate],
+  );
+
   useHeader({
     title: "시간표",
     showAlarm: true,
     hasback: false,
     menuItems,
+    rightArea: headerRight,
   });
 
   const handleGradeCalculatorClick = () => {
@@ -119,16 +130,6 @@ const MobileTimeTablePage = () => {
         </ScoreArea>
       </SemesterInfoLine>
 
-      <div ref={gradeCalculatorRef}>
-        <TitleContentArea
-          title={"학점 계산기"}
-          style={{ marginTop: "36px" }}
-          onClick={() => {}}
-        >
-          <GradeCalculatorWidget />
-        </TitleContentArea>
-      </div>
-
       <ButtonGroup>
         <ButtonRow>
           <LinkCardButton
@@ -136,12 +137,12 @@ const MobileTimeTablePage = () => {
             onClick={() => navigate(ROUTES.TIMETABLE.COMPARE_SELECT)}
           />
           <LinkCardButton
-            label="학점계산기"
+            label="학점 계산기"
             onClick={handleGradeCalculatorClick}
           />
         </ButtonRow>
         <LinkCardButton
-          label="모의수강신청"
+          label="모의 수강 신청(수강 신청 시뮬레이터)"
           onClick={() =>
             window.open("https://inu-sugang-simulator.pages.dev", "_blank")
           }
@@ -224,7 +225,7 @@ const ButtonGroup = styled.div`
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  margin-top: 24px;
+  margin-top: 36px;
 `;
 
 const ButtonRow = styled.div`
@@ -248,4 +249,21 @@ const AuxiliaryLinkButton = styled.button`
   &:active {
     opacity: 0.7;
   }
+`;
+
+const HeaderRightArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 4px;
 `;
