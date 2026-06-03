@@ -324,6 +324,18 @@ export default function MobileTimeTableComparePage() {
   }, [selectedFriendIds]);
 
   const handleFriendChipClick = (friendId: number) => {
+    if (friendId === -1) {
+      // 모두 버튼 클릭
+      const isAllSelected =
+        selectedFriendIdsState.length === activeFriends.length;
+      if (isAllSelected) {
+        setSelectedFriendIdsState([99999]); // 나만 선택
+      } else {
+        setSelectedFriendIdsState(activeFriends.map((f) => f.friendId)); // 모두 선택
+      }
+      return;
+    }
+
     if (activeTabUpper === "compare" && friendId === 99999) return; // 비교 탭에서만 "나" 고정 (선택 해제 불가)
     setSelectedFriendIdsState((prev) => {
       if (prev.includes(friendId)) {
@@ -655,7 +667,7 @@ export default function MobileTimeTableComparePage() {
         {/* 2. 친구 필터 칩 목록 노출 */}
         {(activeTabUpper === "compare" || activeTabUpper === "free") && (
           <ChipSection data-vaul-no-drag="">
-            <ChipContainer data-vaul-no-drag="">
+            <ChipScrollArea data-vaul-no-drag="">
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
                 const isSelected =
@@ -671,32 +683,40 @@ export default function MobileTimeTableComparePage() {
                   />
                 );
               })}
-              <AddFriendButton
-                data-vaul-no-drag=""
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const allFriendIds = searchParams.get("ids") || "";
-                  navigate(
-                    allFriendIds
-                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                      : ROUTES.TIMETABLE.COMPARE_SELECT,
-                  );
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const allFriendIds = searchParams.get("ids") || "";
-                  navigate(
-                    allFriendIds
-                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                      : ROUTES.TIMETABLE.COMPARE_SELECT,
-                  );
-                }}
-              >
-                <Plus size={16} />
-              </AddFriendButton>
-            </ChipContainer>
+              <DayChip
+                key="all"
+                label="모두"
+                isSelected={
+                  selectedFriendIdsState.length === activeFriends.length
+                }
+                onClick={() => handleFriendChipClick(-1)}
+              />
+            </ChipScrollArea>
+            <AddFriendButton
+              data-vaul-no-drag=""
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const allFriendIds = searchParams.get("ids") || "";
+                navigate(
+                  allFriendIds
+                    ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                    : ROUTES.TIMETABLE.COMPARE_SELECT,
+                );
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const allFriendIds = searchParams.get("ids") || "";
+                navigate(
+                  allFriendIds
+                    ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                    : ROUTES.TIMETABLE.COMPARE_SELECT,
+                );
+              }}
+            >
+              <Plus size={16} />
+            </AddFriendButton>
           </ChipSection>
         )}
 
@@ -845,20 +865,22 @@ const ContentArea = styled.div`
 `;
 
 const ChipSection = styled.div`
-  //margin-bottom: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   position: relative;
   z-index: 10;
 `;
 
-const ChipContainer = styled.div`
+const ChipScrollArea = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  //padding: 4px 0;
-  width: 100%;
+  flex: 1;
   position: relative;
   z-index: 11;
 
@@ -868,6 +890,12 @@ const ChipContainer = styled.div`
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
+
+  & > * {
+    flex-shrink: 0;
+    min-width: 52px;
+    justify-content: center;
+  }
 `;
 
 const AddFriendButton = styled.button`
