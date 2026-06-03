@@ -27,6 +27,8 @@ interface TimetableGridProps {
     endTime: number;
   } | null;
   isCompareMode?: boolean; // 추가
+  onEdit?: (id: number) => void;
+  onDelete?: (id: number) => void;
 }
 
 // --- 상수 데이터 ---
@@ -53,6 +55,8 @@ const TimetableGrid = ({
   previewEvents = [],
   highlightedSlot = null,
   isCompareMode = false, // 추가
+  onEdit,
+  onDelete,
 }: TimetableGridProps) => {
   // 바텀시트 상태 정의
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
@@ -196,8 +200,8 @@ const TimetableGrid = ({
         selectedClass={selectedClass}
         allEvents={events}
         colorMap={colorMap}
-        onEdit={(id) => alert(`과목 수정 창을 엽니다. (ID: ${id})`)}
-        onDelete={(id) => alert(`과목을 삭제합니다. (ID: ${id})`)}
+        onEdit={onEdit}
+        onDelete={onDelete}
       />
     </>
   );

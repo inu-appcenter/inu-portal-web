@@ -324,6 +324,18 @@ export default function MobileTimeTableComparePage() {
   }, [selectedFriendIds]);
 
   const handleFriendChipClick = (friendId: number) => {
+    if (friendId === -1) {
+      // 모두 버튼 클릭
+      const isAllSelected =
+        selectedFriendIdsState.length === activeFriends.length;
+      if (isAllSelected) {
+        setSelectedFriendIdsState([99999]); // 나만 선택
+      } else {
+        setSelectedFriendIdsState(activeFriends.map((f) => f.friendId)); // 모두 선택
+      }
+      return;
+    }
+
     if (activeTabUpper === "compare" && friendId === 99999) return; // 비교 탭에서만 "나" 고정 (선택 해제 불가)
     setSelectedFriendIdsState((prev) => {
       if (prev.includes(friendId)) {
@@ -655,7 +667,7 @@ export default function MobileTimeTableComparePage() {
         {/* 2. 친구 필터 칩 목록 노출 */}
         {(activeTabUpper === "compare" || activeTabUpper === "free") && (
           <ChipSection data-vaul-no-drag="">
-            <ChipContainer data-vaul-no-drag="">
+            <ChipScrollArea data-vaul-no-drag="">
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
                 const isSelected =
@@ -671,32 +683,40 @@ export default function MobileTimeTableComparePage() {
                   />
                 );
               })}
-              <AddFriendButton
-                data-vaul-no-drag=""
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const allFriendIds = searchParams.get("ids") || "";
-                  navigate(
-                    allFriendIds
-                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                      : ROUTES.TIMETABLE.COMPARE_SELECT,
-                  );
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const allFriendIds = searchParams.get("ids") || "";
-                  navigate(
-                    allFriendIds
-                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                      : ROUTES.TIMETABLE.COMPARE_SELECT,
-                  );
-                }}
-              >
-                <Plus size={16} />
-              </AddFriendButton>
-            </ChipContainer>
+              <DayChip
+                key="all"
+                label="모두"
+                isSelected={
+                  selectedFriendIdsState.length === activeFriends.length
+                }
+                onClick={() => handleFriendChipClick(-1)}
+              />
+            </ChipScrollArea>
+            <AddFriendButton
+              data-vaul-no-drag=""
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const allFriendIds = searchParams.get("ids") || "";
+                navigate(
+                  allFriendIds
+                    ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                    : ROUTES.TIMETABLE.COMPARE_SELECT,
+                );
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const allFriendIds = searchParams.get("ids") || "";
+                navigate(
+                  allFriendIds
+                    ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                    : ROUTES.TIMETABLE.COMPARE_SELECT,
+                );
+              }}
+            >
+              <Plus size={16} />
+            </AddFriendButton>
           </ChipSection>
         )}
 
@@ -753,10 +773,13 @@ export default function MobileTimeTableComparePage() {
                               key={`good-${index}`}
                               $isSelected={!!isSelected}
                               onClick={() => handleSlotClick(slot)}
+                              className="good"
                             >
                               <SlotLeft>
-                                <DayText>{DAYS_KOREAN[slot.day]}</DayText>
-                                <TimeText>{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
+                                <DayText className="good">
+                                  {DAYS_KOREAN[slot.day]}
+                                </DayText>
+                                <TimeText className="good">{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
                               </SlotLeft>
                               <Badge className="good">
                                 {formatDuration(slot.duration)}
@@ -842,20 +865,22 @@ const ContentArea = styled.div`
 `;
 
 const ChipSection = styled.div`
-  //margin-bottom: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   position: relative;
   z-index: 10;
 `;
 
-const ChipContainer = styled.div`
+const ChipScrollArea = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  //padding: 4px 0;
-  width: 100%;
+  flex: 1;
   position: relative;
   z-index: 11;
 
@@ -865,6 +890,12 @@ const ChipContainer = styled.div`
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
+
+  & > * {
+    flex-shrink: 0;
+    min-width: 52px;
+    justify-content: center;
+  }
 `;
 
 const AddFriendButton = styled.button`
@@ -949,38 +980,73 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
   &:active {
     transform: scale(0.98);
   }
+
+  &.good {
+    background-color: var(--bg-warn-subtle);
+  }
 `;
 
 const SlotLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
 `;
 
 const DayText = styled.span`
   font-size: 15px;
   font-weight: 700;
   color: var(--gray-800, #333d4b);
-  min-width: 48px;
+  //min-width: 48px;
+
+  &.good {
+    color: var(--text-warn, #7a5400);
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: -0.2px;
+  }
 `;
 
 const TimeText = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary, #333d4b);
+
+  &.good {
+    color: var(--text-warn, #7a5400);
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+  }
 `;
 
 const Badge = styled.div`
-  padding: 6px 12px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
-  background-color: var(--bg-muted, #f1f3f5);
+  display: flex;
+  min-width: 52px;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--bg-disabled, #e5e8eb);
+
   color: var(--text-tertiary, #8b95a1);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
 
   &.good {
-    background-color: var(--bg-warn, #fef3c7);
-    color: var(--yellow-600, #b58000);
+    background: var(--color-chips-yellow, #ffe589);
+    color: var(--text-warn, #7a5400);
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
   }
 `;
 
@@ -1025,6 +1091,7 @@ const SheetInner = styled.div`
   flex: 1;
   min-height: 0;
   pointer-events: auto;
+  touch-action: none;
 `;
 
 const DragHeader = styled.div`
@@ -1033,6 +1100,7 @@ const DragHeader = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  touch-action: none;
 `;
 
 const HandleBar = styled.div`

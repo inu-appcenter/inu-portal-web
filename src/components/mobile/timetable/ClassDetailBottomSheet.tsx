@@ -68,7 +68,9 @@ export default function ClassDetailBottomSheet({
                   <ScheduleList>
                     {matchingClasses.map((item, idx) => {
                       const dayStr = DAYS_KOREAN[item.day] || "요일";
-                      const timeStr = `${formatHour(item.startTime)} ~ ${formatHour(item.endTime)}`;
+                      const timeStr = `${formatHour(
+                        item.startTime,
+                      )} ~ ${formatHour(item.endTime)}`;
                       return (
                         <ScheduleItem key={`schedule-${item.id}-${idx}`}>
                           {dayStr} · {timeStr}
@@ -97,26 +99,38 @@ export default function ClassDetailBottomSheet({
               </ScrollableBody>
 
               <FooterSection>
-                <CapsuleButton.Group gap={12}>
-                  <CapsuleButton
-                    variant="brand"
-                    onClick={() => {
-                      if (onEdit) onEdit(selectedClass.id);
-                      onOpenChange(false);
-                    }}
-                  >
-                    수정
-                  </CapsuleButton>
-                  <CapsuleButton
-                    variant="danger"
-                    onClick={() => {
-                      if (onDelete) onDelete(selectedClass.id);
-                      onOpenChange(false);
-                    }}
-                  >
-                    삭제
-                  </CapsuleButton>
-                </CapsuleButton.Group>
+                <CapsuleButton
+                  variant="brand"
+                  onClick={() => {
+                    // TODO: 강의계획서 페이지로 이동 로직 추가
+                    console.log("강의계획서 버튼 클릭됨");
+                    onOpenChange(false);
+                  }}
+                >
+                  강의계획서
+                </CapsuleButton>
+                {onEdit && onDelete && (
+                  <CapsuleButton.Group gap={12}>
+                    <CapsuleButton
+                      variant="brand"
+                      onClick={() => {
+                        if (onEdit) onEdit(selectedClass.id);
+                        onOpenChange(false);
+                      }}
+                    >
+                      수정
+                    </CapsuleButton>
+                    <CapsuleButton
+                      variant="danger"
+                      onClick={() => {
+                        if (onDelete) onDelete(selectedClass.id);
+                        onOpenChange(false);
+                      }}
+                    >
+                      삭제
+                    </CapsuleButton>
+                  </CapsuleButton.Group>
+                )}
               </FooterSection>
             </ContentArea>
           </SheetInner>
@@ -143,7 +157,7 @@ const StyledContent = styled(Drawer.Content)`
   outline: none;
 
   height: auto;
-  min-height: 60dvh;
+  min-height: 55dvh;
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
@@ -288,4 +302,7 @@ const FieldValue = styled.span`
 const FooterSection = styled.div`
   padding-top: 16px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `;

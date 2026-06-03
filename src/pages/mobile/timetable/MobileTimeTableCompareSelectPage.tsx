@@ -10,6 +10,7 @@ import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar"
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { ChevronDown, User } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
+import Skeleton from "@/components/common/Skeleton";
 import {
   normalizeProfileImageId,
   DEFAULT_PROFILE_IMAGE_ID,
@@ -92,7 +93,37 @@ export default function MobileTimeTableCompareSelectPage() {
 
   const handleCompare = () => {
     if (selectedIds.length === 0) return;
-    navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`, { replace: true });
+    navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`, {
+      replace: true,
+    });
+  };
+
+  // 스켈레톤 아이템 렌더링 (로딩 중일 때 표시할 개수: 예 5개)
+  const renderSkeletons = () => {
+    return Array.from({ length: 5 }).map((_, idx) => (
+      <FriendCard key={`skeleton-${idx}`} $selected={false} as="div">
+        <CardInner>
+          <ProfileWrapper>
+            <Skeleton circle width={40} height={40} />
+          </ProfileWrapper>
+          <InfoArea>
+            <Skeleton
+              variant="text"
+              width={100}
+              height={20}
+              style={{ marginBottom: 4 }}
+            />
+            <Skeleton variant="text" width={150} height={16} />
+          </InfoArea>
+          <Skeleton
+            variant="tag"
+            width={56}
+            height={28}
+            style={{ borderRadius: 999 }}
+          />
+        </CardInner>
+      </FriendCard>
+    ));
   };
 
   return (
@@ -112,14 +143,14 @@ export default function MobileTimeTableCompareSelectPage() {
           <HighlightText>{selectedIds.length}명 선택됨</HighlightText>
         </StatusText>
         <SortButton onClick={() => setIsAsc(!isAsc)}>
-          <span>이름순</span>
+          <span>{isAsc ? "오름차순" : "내림차순"}</span>
           <ChevronDown size={16} color={"var(--text-secondary)"} />
         </SortButton>
       </StatusSection>
 
       <ListSection>
         {isLoading ? (
-          <EmptyState>로딩 중...</EmptyState>
+          renderSkeletons()
         ) : filteredFriends.length > 0 ? (
           filteredFriends.map((friend) => {
             const isSelected = selectedIds.includes(friend.friendId);
