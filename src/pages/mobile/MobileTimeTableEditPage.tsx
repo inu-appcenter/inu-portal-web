@@ -9,6 +9,8 @@ import MobileCourseSearchSheet, {
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import LinkCardButton from "@/components/mobile/common/LinkCardButton";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 // --- 목업 데이터 ---
 const MY_TIMETABLE: ClassItem[] = [
@@ -102,6 +104,8 @@ const SEARCH_RESULTS: CourseResult[] = [
 ];
 
 const MobileTimeTableEditPage = () => {
+  const navigate = useNavigate();
+
   useHeader({
     title: "시간표 편집",
     showAlarm: false,
@@ -155,10 +159,10 @@ const MobileTimeTableEditPage = () => {
         <ButtonRow>
           <LinkCardButton
             label="직접 추가"
-            onClick={() => alert("직접 추가 클릭")}
+            onClick={() => navigate(ROUTES.TIMETABLE.ADD)}
           />
           <LinkCardButton
-            label="목록에서 추가"
+            label="편람에서 추가"
             onClick={() => setIsSheetOpen(true)}
           />
         </ButtonRow>
@@ -168,6 +172,12 @@ const MobileTimeTableEditPage = () => {
           onClick={() => alert("시간표 마법사 클릭")}
         />
       </ButtonGroup>
+
+      <AuxiliaryLinkButton
+        onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}
+      >
+        시간표 공개 설정
+      </AuxiliaryLinkButton>
     </PageWrapper>
   );
 };
@@ -251,4 +261,20 @@ const ButtonRow = styled.div`
   flex-direction: row;
   gap: 12px;
   width: 100%;
+`;
+
+const AuxiliaryLinkButton = styled.button`
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 24px;
+  text-decoration: underline;
+  align-self: center;
+
+  &:active {
+    opacity: 0.7;
+  }
 `;

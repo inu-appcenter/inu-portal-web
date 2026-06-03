@@ -21,6 +21,7 @@ export const ROUTES = {
     COMPARE_SELECT: "/timetable/compare/select",
     COMPARE: "/timetable/compare",
     VISIBILITY: "/timetable/visibility",
+    ADD: "/timetable/add",
   },
 
   //전화번호부

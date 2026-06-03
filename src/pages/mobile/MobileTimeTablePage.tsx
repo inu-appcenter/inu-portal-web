@@ -148,12 +148,6 @@ const MobileTimeTablePage = () => {
           }
         />
       </ButtonGroup>
-
-      <AuxiliaryLinkButton
-        onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}
-      >
-        시간표 공개 설정
-      </AuxiliaryLinkButton>
     </MobileTimeTablePageWrapper>
   );
 };
@@ -233,22 +227,6 @@ const ButtonRow = styled.div`
   flex-direction: row;
   gap: 12px;
   width: 100%;
-`;
-
-const AuxiliaryLinkButton = styled.button`
-  background: none;
-  border: none;
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  margin-top: 24px;
-  text-decoration: underline;
-  align-self: center;
-
-  &:active {
-    opacity: 0.7;
-  }
 `;
 
 const HeaderRightArea = styled.div`
