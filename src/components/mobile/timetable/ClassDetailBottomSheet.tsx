@@ -63,6 +63,9 @@ export default function ClassDetailBottomSheet({
                   <TitleLine>
                     <ColorDot $color={dotColor} />
                     <ClassTitle>{selectedClass.name}</ClassTitle>
+                    {selectedClass.ownerName && (
+                      <OwnerBadge>{selectedClass.ownerName}</OwnerBadge>
+                    )}
                   </TitleLine>
 
                   <ScheduleList>
@@ -253,6 +256,20 @@ const ClassTitle = styled.h2`
   font-style: normal;
   font-weight: 700;
   line-height: 28px;
+`;
+
+const OwnerBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: var(--bg-muted, #f1f3f5);
+  color: var(--text-secondary, #333d4b);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  margin-left: 4px;
 `;
 
 const ScheduleList = styled.div`

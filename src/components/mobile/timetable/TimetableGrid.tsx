@@ -15,6 +15,7 @@ export interface ClassItem {
   professor?: string; //교수명
   memo?: string; //메모
   color?: string; // 개별 배경 색상
+  ownerName?: string; // 추가: 소유자 이름 (시간표 구분용)
 }
 
 interface TimetableGridProps {
@@ -27,6 +28,7 @@ interface TimetableGridProps {
     endTime: number;
   } | null;
   isCompareMode?: boolean; // 추가
+  isFreeMode?: boolean; // 추가
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
 }
@@ -54,7 +56,8 @@ const TimetableGrid = ({
   events,
   previewEvents = [],
   highlightedSlot = null,
-  isCompareMode = false, // 추가
+  isCompareMode = false,
+  isFreeMode = false,
   onEdit,
   onDelete,
 }: TimetableGridProps) => {
@@ -100,11 +103,11 @@ const TimetableGrid = ({
     const bgColor = item.color
       ? item.color
       : isPreview
-      ? "rgba(0, 123, 255, 0.5)" // 반투명 파란색
-      : colorMap.get(item.name) || "#FFFFFF";
+        ? "rgba(0, 123, 255, 0.5)" // 반투명 파란색
+        : colorMap.get(item.name) || "#FFFFFF";
 
     const handleClassClick = () => {
-      if (isPreview) return;
+      if (isPreview || isFreeMode) return;
       setSelectedClass(item);
       setIsBottomSheetOpen(true);
     };
@@ -115,6 +118,7 @@ const TimetableGrid = ({
         $bgColor={bgColor}
         $isPreview={isPreview}
         $isCompareMode={isCompareMode} // 추가
+        $isFreeMode={isFreeMode} // 추가
         onClick={handleClassClick}
         style={{
           gridColumnStart: colStart,
@@ -181,14 +185,16 @@ const TimetableGrid = ({
           renderEventBlock(item, index, true),
         )}
 
-        {/* (5) 공강 시간 꾹 누르고 있을 때 하이라이트 박스 */}
         {highlightedSlot && (
           <HighlightedBlock
+            id="timetable-highlighted-block"
             style={{
               gridColumnStart: highlightedSlot.day + 2,
               gridColumnEnd: "span 1",
-              gridRowStart: Math.round((highlightedSlot.startTime - START_HOUR) * 2) + 2,
-              gridRowEnd: Math.round((highlightedSlot.endTime - START_HOUR) * 2) + 2,
+              gridRowStart:
+                Math.round((highlightedSlot.startTime - START_HOUR) * 2) + 2,
+              gridRowEnd:
+                Math.round((highlightedSlot.endTime - START_HOUR) * 2) + 2,
             }}
           />
         )}
@@ -277,6 +283,7 @@ const ClassItemBlock = styled.div<{
   $bgColor: string;
   $isPreview?: boolean;
   $isCompareMode?: boolean; // 추가
+  $isFreeMode?: boolean; // 추가
 }>`
   background-color: ${({ $bgColor }) => $bgColor};
   margin: 1px;
@@ -288,9 +295,12 @@ const ClassItemBlock = styled.div<{
     $isPreview ? 20 : 10}; /* 미리보기가 더 위로 */
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  pointer-events: ${({ $isPreview }) =>
-    $isPreview ? "none" : "auto"}; /* 미리보기는 클릭 통과 */
-  cursor: ${({ $isPreview }) => ($isPreview ? "default" : "pointer")};
+  pointer-events: ${({ $isPreview, $isFreeMode }) =>
+    $isPreview || $isFreeMode
+      ? "none"
+      : "auto"}; /* 미리보기와 공강 모드는 클릭 통과 */
+  cursor: ${({ $isPreview, $isFreeMode }) =>
+    $isPreview || $isFreeMode ? "default" : "pointer"};
 `;
 
 const ItemContent = styled.div`
@@ -324,8 +334,11 @@ const ClassRoom = styled.span`
 `;
 
 const HighlightedBlock = styled.div`
-  background-color: rgba(59, 130, 246, 0.25);
-  border: 2px solid var(--interactive-primary, #3b82f6);
+  background: var(
+    --timeTable-color-available-time-selected,
+    rgba(59, 130, 246, 0.5)
+  );
+  border: 1px solid var(--border-brand, #0061ff);
   margin: 1px;
   border-radius: 4px;
   z-index: 50;
