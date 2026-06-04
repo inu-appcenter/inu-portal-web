@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import styled from "styled-components";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -6,7 +6,7 @@ import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
-import { Drawer } from "vaul";
+import BottomSheet from "@/components/common/BottomSheet";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -237,6 +237,9 @@ export default function MobileTimeTableComparePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const friendIdsParam = searchParams.get("ids") || "";
 
+  const chipScrollRef = useRef<HTMLDivElement | null>(null);
+  const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
+
   // 2. 친구 목록 로드
   const { data: friendsRes } = useQuery({
     queryKey: ["friends"],
@@ -265,6 +268,32 @@ export default function MobileTimeTableComparePage() {
       ...baseList,
     ];
   }, [friendsMap, selectedFriendIds]);
+
+  useLayoutEffect(() => {
+    const element = chipScrollRef.current;
+    if (!element) return;
+
+    const updateOverflow = () => {
+      const { scrollWidth, clientWidth } = element;
+      const isOverflowing = scrollWidth > clientWidth + 1;
+      setHasHorizontalOverflow(isOverflowing);
+    };
+
+    const handle = requestAnimationFrame(updateOverflow);
+
+    const observer = new ResizeObserver(() => {
+      updateOverflow();
+    });
+
+    observer.observe(element);
+    window.addEventListener("resize", updateOverflow);
+
+    return () => {
+      cancelAnimationFrame(handle);
+      observer.disconnect();
+      window.removeEventListener("resize", updateOverflow);
+    };
+  }, [activeFriends]);
 
   // 3. 페이지 탭 상태 정의 (URL 쿼리 파라미터 연동)
   const activeTabUpper =
@@ -403,6 +432,60 @@ export default function MobileTimeTableComparePage() {
 
   // 바텀시트 snap 높이 상태
   const [snap, setSnap] = useState<string | number | null>(0.45);
+
+  // 선택된 시간(공강)이 바텀시트에 의해 가려지는 경우 스크롤 처리
+  useEffect(() => {
+    if (!highlightedSlot) return;
+
+    const timer = setTimeout(() => {
+      const element = document.getElementById("timetable-highlighted-block");
+      if (!element) return;
+
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 130; // 헤더 및 탭 영역 높이 추정치
+      const bottomSheetHeight =
+        typeof snap === "number"
+          ? snap * viewportHeight
+          : 0.45 * viewportHeight;
+      const visibleAreaHeight =
+        viewportHeight - headerHeight - bottomSheetHeight;
+
+      const elementTop = rect.top + window.scrollY;
+      const elementHeight = rect.height;
+
+      const elementBottomInViewport = rect.bottom;
+      const elementTopInViewport = rect.top;
+      const bottomSheetTopInViewport = viewportHeight - bottomSheetHeight;
+
+      const isCoveredByBottomSheet =
+        elementBottomInViewport > bottomSheetTopInViewport;
+      const isCoveredByHeader = elementTopInViewport < headerHeight;
+
+      if (isCoveredByBottomSheet || isCoveredByHeader) {
+        let targetScrollY = window.scrollY;
+
+        if (elementHeight <= visibleAreaHeight) {
+          // 화면에 충분히 노출 가능한 높이인 경우 중앙 정렬
+          targetScrollY =
+            elementTop +
+            elementHeight / 2 -
+            (headerHeight + visibleAreaHeight / 2);
+        } else {
+          // 너무 길어 안 들어가는 경우 위쪽 기준 정렬 (여백 16px)
+          targetScrollY = elementTop - headerHeight - 16;
+        }
+
+        const maxScrollY =
+          document.documentElement.scrollHeight - window.innerHeight;
+        targetScrollY = Math.max(0, Math.min(targetScrollY, maxScrollY));
+
+        window.scrollTo({ top: targetScrollY, behavior: "smooth" });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [highlightedSlot, snap]);
 
   const touchGestureRef = useRef({
     startY: 0,
@@ -606,12 +689,13 @@ export default function MobileTimeTableComparePage() {
           if (currentBlock) {
             result.push({
               id: idCounter++,
-              name: "공강",
+              name: "",
               room: "",
               day,
               startTime: currentBlock.startTime,
               endTime: currentBlock.endTime,
-              color: "rgba(81, 207, 102, 0.25)",
+              color:
+                "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
             });
             currentBlock = null;
           }
@@ -621,12 +705,13 @@ export default function MobileTimeTableComparePage() {
       if (currentBlock) {
         result.push({
           id: idCounter++,
-          name: "공강",
+          name: "",
           room: "",
           day,
           startTime: currentBlock.startTime,
           endTime: currentBlock.endTime,
-          color: "rgba(81, 207, 102, 0.25)",
+          color:
+            "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
         });
       }
     }
@@ -639,12 +724,20 @@ export default function MobileTimeTableComparePage() {
       return freeViewClasses;
     }
     // activeTabUpper === "compare" 일 때: 내 시간표 + 선택된 친구들의 시간표를 겹쳐서 노출
-    const result: ClassItem[] = [...MY_CLASSES];
+    const result: ClassItem[] = MY_CLASSES.map((c) => ({
+      ...c,
+      ownerName: "내 시간표",
+    }));
     selectedFriendIdsState.forEach((friendId) => {
       const friend = friendsMap.find((f) => f.friendId === friendId);
       if (friend) {
         const classes = getFriendTimetable(friend);
-        result.push(...classes);
+        result.push(
+          ...classes.map((c) => ({
+            ...c,
+            ownerName: (friend.friendAlias || friend.nickname) + "의 시간표",
+          })),
+        );
       }
     });
     return result;
@@ -665,9 +758,13 @@ export default function MobileTimeTableComparePage() {
     >
       <ContentArea>
         {/* 2. 친구 필터 칩 목록 노출 */}
-        {(activeTabUpper === "compare" || activeTabUpper === "free") && (
+        {activeTabUpper === "compare" && (
           <ChipSection data-vaul-no-drag="">
-            <ChipScrollArea data-vaul-no-drag="">
+            <ChipScrollArea
+              ref={chipScrollRef}
+              $hasHorizontalOverflow={hasHorizontalOverflow}
+              data-vaul-no-drag=""
+            >
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
                 const isSelected =
@@ -683,6 +780,8 @@ export default function MobileTimeTableComparePage() {
                   />
                 );
               })}
+            </ChipScrollArea>
+            <RightActionGroup data-vaul-no-drag="">
               <DayChip
                 key="all"
                 label="모두"
@@ -691,32 +790,31 @@ export default function MobileTimeTableComparePage() {
                 }
                 onClick={() => handleFriendChipClick(-1)}
               />
-            </ChipScrollArea>
-            <AddFriendButton
-              data-vaul-no-drag=""
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const allFriendIds = searchParams.get("ids") || "";
-                navigate(
-                  allFriendIds
-                    ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                    : ROUTES.TIMETABLE.COMPARE_SELECT,
-                );
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const allFriendIds = searchParams.get("ids") || "";
-                navigate(
-                  allFriendIds
-                    ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                    : ROUTES.TIMETABLE.COMPARE_SELECT,
-                );
-              }}
-            >
-              <Plus size={16} />
-            </AddFriendButton>
+              <AddFriendButton
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const allFriendIds = searchParams.get("ids") || "";
+                  navigate(
+                    allFriendIds
+                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                      : ROUTES.TIMETABLE.COMPARE_SELECT,
+                  );
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const allFriendIds = searchParams.get("ids") || "";
+                  navigate(
+                    allFriendIds
+                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
+                      : ROUTES.TIMETABLE.COMPARE_SELECT,
+                  );
+                }}
+              >
+                <Plus size={18} strokeWidth={2} />
+              </AddFriendButton>
+            </RightActionGroup>
           </ChipSection>
         )}
 
@@ -726,12 +824,13 @@ export default function MobileTimeTableComparePage() {
             events={activeEvents}
             highlightedSlot={highlightedSlot}
             isCompareMode={activeTabUpper === "compare"}
+            isFreeMode={activeTabUpper === "free"}
           />
         </GridSection>
       </ContentArea>
 
       {/* 5. 겹치는 공강 바텀시트 (대분류가 공강일 때만 상시 노출) */}
-      <Drawer.Root
+      <BottomSheet
         open={isFreeTab}
         modal={false}
         dismissible={false}
@@ -740,102 +839,96 @@ export default function MobileTimeTableComparePage() {
         setActiveSnapPoint={setSnap}
         disablePreventScroll={true}
       >
-        <Drawer.Portal>
-          <StyledContent>
-            <SheetInner>
-              <DragHeader>
-                <HandleBar />
-              </DragHeader>
-              <ContentAreaBottomSheet>
-                <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
-                <ScrollableBody
-                  $snapHeight={typeof snap === "number" ? snap : 0.45}
-                  data-vaul-no-drag=""
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                  onTouchCancel={handleTouchEnd}
-                >
-                  {goodMeetingTimes.length > 0 && (
-                    <TimeGroup>
-                      <GroupTitle className="good">
-                        ★ 만나기 좋은 시간
-                      </GroupTitle>
-                      <SlotList>
-                        {goodMeetingTimes.map((slot, index) => {
-                          const isSelected =
-                            highlightedSlot &&
-                            highlightedSlot.day === slot.day &&
-                            highlightedSlot.startTime === slot.startTime &&
-                            highlightedSlot.endTime === slot.endTime;
-                          return (
-                            <SlotItem
-                              key={`good-${index}`}
-                              $isSelected={!!isSelected}
-                              onClick={() => handleSlotClick(slot)}
-                              className="good"
-                            >
-                              <SlotLeft>
-                                <DayText className="good">
-                                  {DAYS_KOREAN[slot.day]}
-                                </DayText>
-                                <TimeText className="good">{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
-                              </SlotLeft>
-                              <Badge className="good">
-                                {formatDuration(slot.duration)}
-                              </Badge>
-                            </SlotItem>
-                          );
-                        })}
-                      </SlotList>
-                    </TimeGroup>
-                  )}
+        <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
+        <ScrollableBody
+          $snapHeight={typeof snap === "number" ? snap : 0.45}
+          data-vaul-no-drag=""
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
+        >
+          {goodMeetingTimes.length > 0 && (
+            <TimeGroup>
+              <GroupTitle className="good">
+                <span className="star">★ </span>만나기 좋은 시간
+              </GroupTitle>
+              <SlotList>
+                {goodMeetingTimes.map((slot, index) => {
+                  const isSelected =
+                    highlightedSlot &&
+                    highlightedSlot.day === slot.day &&
+                    highlightedSlot.startTime === slot.startTime &&
+                    highlightedSlot.endTime === slot.endTime;
+                  return (
+                    <SlotItem
+                      key={`good-${index}`}
+                      $isSelected={!!isSelected}
+                      onClick={() => handleSlotClick(slot)}
+                      className="good"
+                    >
+                      <SlotLeft>
+                        <DayText className="good">
+                          {DAYS_KOREAN[slot.day]}
+                        </DayText>
+                        <TimeText className="good">{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
+                      </SlotLeft>
+                      <Badge
+                        className="good"
+                        $isSelected={!!isSelected}
+                      >
+                        {formatDuration(slot.duration)}
+                      </Badge>
+                    </SlotItem>
+                  );
+                })}
+              </SlotList>
+            </TimeGroup>
+          )}
 
-                  {shortFreeTimes.length > 0 && (
-                    <TimeGroup>
-                      <GroupTitle>짧은 공강</GroupTitle>
-                      <SlotList>
-                        {shortFreeTimes.map((slot, index) => {
-                          const isSelected =
-                            highlightedSlot &&
-                            highlightedSlot.day === slot.day &&
-                            highlightedSlot.startTime === slot.startTime &&
-                            highlightedSlot.endTime === slot.endTime;
-                          return (
-                            <SlotItem
-                              key={`short-${index}`}
-                              $isSelected={!!isSelected}
-                              onClick={() => handleSlotClick(slot)}
-                            >
-                              <SlotLeft>
-                                <DayText>{DAYS_KOREAN[slot.day]}</DayText>
-                                <TimeText>{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
-                              </SlotLeft>
-                              <Badge>{formatDuration(slot.duration)}</Badge>
-                            </SlotItem>
-                          );
-                        })}
-                      </SlotList>
-                    </TimeGroup>
-                  )}
+          {shortFreeTimes.length > 0 && (
+            <TimeGroup>
+              <GroupTitle>짧은 공강</GroupTitle>
+              <SlotList>
+                {shortFreeTimes.map((slot, index) => {
+                  const isSelected =
+                    highlightedSlot &&
+                    highlightedSlot.day === slot.day &&
+                    highlightedSlot.startTime === slot.startTime &&
+                    highlightedSlot.endTime === slot.endTime;
+                  return (
+                    <SlotItem
+                      key={`short-${index}`}
+                      $isSelected={!!isSelected}
+                      onClick={() => handleSlotClick(slot)}
+                    >
+                      <SlotLeft>
+                        <DayText>{DAYS_KOREAN[slot.day]}</DayText>
+                        <TimeText>{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
+                      </SlotLeft>
+                      <Badge $isSelected={!!isSelected}>
+                        {formatDuration(slot.duration)}
+                      </Badge>
+                    </SlotItem>
+                  );
+                })}
+              </SlotList>
+            </TimeGroup>
+          )}
 
-                  {selectedFriendIdsState.length === 0 ? (
-                    <EmptyStateText>
-                      공강을 비교할 대상을 상단 칩에서 선택해 주세요.
-                    </EmptyStateText>
-                  ) : (
-                    freeSlotsList.length === 0 && (
-                      <EmptyStateText>
-                        겹치는 공강 시간이 없습니다.
-                      </EmptyStateText>
-                    )
-                  )}
-                </ScrollableBody>
-              </ContentAreaBottomSheet>
-            </SheetInner>
-          </StyledContent>
-        </Drawer.Portal>
-      </Drawer.Root>
+          {selectedFriendIdsState.length === 0 ? (
+            <EmptyStateText>
+              공강을 비교할 대상을 상단 칩에서 선택해 주세요.
+            </EmptyStateText>
+          ) : (
+            freeSlotsList.length === 0 && (
+              <EmptyStateText>
+                겹치는 공강 시간이 없습니다.
+              </EmptyStateText>
+            )
+          )}
+        </ScrollableBody>
+      </BottomSheet>
     </PageWrapper>
   );
 }
@@ -874,15 +967,30 @@ const ChipSection = styled.div`
   z-index: 10;
 `;
 
-const ChipScrollArea = styled.div`
+const ChipScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  overflow-x: auto;
   flex: 1;
   position: relative;
   z-index: 11;
+  -webkit-overflow-scrolling: touch;
+
+  overflow-x: ${({ $hasHorizontalOverflow }) =>
+    $hasHorizontalOverflow ? "auto" : "hidden"};
+
+  padding-right: ${({ $hasHorizontalOverflow }) =>
+    $hasHorizontalOverflow ? "24px" : "0px"};
+
+  mask-image: ${({ $hasHorizontalOverflow }) =>
+    $hasHorizontalOverflow
+      ? `linear-gradient(to right, #000 92%, transparent 100%)`
+      : "none"};
+  -webkit-mask-image: ${({ $hasHorizontalOverflow }) =>
+    $hasHorizontalOverflow
+      ? `linear-gradient(to right, #000 92%, transparent 100%)`
+      : "none"};
 
   /* 스크롤바 숨기기 */
   &::-webkit-scrollbar {
@@ -898,12 +1006,21 @@ const ChipScrollArea = styled.div`
   }
 `;
 
+const RightActionGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 12;
+`;
+
 const AddFriendButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--border-default, #e5e8eb);
   background-color: var(--bg-subtle, #f8f9fb);
@@ -912,7 +1029,6 @@ const AddFriendButton = styled.button`
   flex-shrink: 0;
   transition: all 0.2s ease-in-out;
 
-  /* 확실하게 터치가 감지되도록 겹침 순서 및 포인터 이벤트 강제 */
   position: relative;
   z-index: 12;
   pointer-events: auto !important;
@@ -939,16 +1055,19 @@ const TimeGroup = styled.div`
 `;
 
 const GroupTitle = styled.h3`
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-secondary, #333d4b);
+  font-size: 16px;
+  font-weight: 700;
+  color: #6b7280;
   margin: 0 0 12px 0;
   display: flex;
   align-items: center;
   gap: 4px;
 
   &.good {
-    color: var(--orange-500, #f59e0b);
+    color: var(--text-warn, #7a5400);
+    .star {
+      color: var(--border-warn, #ffc72c);
+    }
   }
 `;
 
@@ -963,14 +1082,15 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
-  background-color: ${({ $isSelected }) =>
-    $isSelected ? "var(--bg-muted, #f1f3f5)" : "var(--bg-subtle, #f8f9fb)"};
+  padding: 4px 16px;
   border: 1px solid
     ${({ $isSelected }) =>
-      $isSelected
-        ? "var(--text-brand, #0061FF)"
-        : "var(--border-default, #e5e8eb)"};
+      $isSelected ? "var(--border-brand, #0061FF)" : "transparent"};
+  background: ${({ $isSelected }) =>
+    $isSelected
+      ? "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))"
+      : "transparent"};
+
   border-radius: 12px;
   cursor: pointer;
   user-select: none;
@@ -982,7 +1102,10 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
   }
 
   &.good {
-    background-color: var(--bg-warn-subtle);
+    background: ${({ $isSelected }) =>
+      $isSelected
+        ? "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))"
+        : "var(--bg-warn-subtle)"};
   }
 `;
 
@@ -993,55 +1116,57 @@ const SlotLeft = styled.div`
 `;
 
 const DayText = styled.span`
-  font-size: 15px;
+  color: var(--text-secondary, #333d4b);
+
+  font-size: 14px;
+  font-style: normal;
   font-weight: 700;
-  color: var(--gray-800, #333d4b);
-  //min-width: 48px;
-
-  &.good {
-    color: var(--text-warn, #7a5400);
-
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 24px;
-    letter-spacing: -0.2px;
-  }
+  line-height: 24px;
+  letter-spacing: -0.2px;
 `;
 
 const TimeText = styled.span`
+  color: var(--text-tertiary, #8b95a1);
+
   font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary, #333d4b);
-
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
   &.good {
-    color: var(--text-warn, #7a5400);
-
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px;
+    color: var(--text-secondary, #333d4b);
   }
 `;
 
-const Badge = styled.div`
+const Badge = styled.div<{ $isSelected?: boolean }>`
   display: flex;
   min-width: 52px;
-  padding: 4px;
+  padding: 4px 8px;
   justify-content: center;
   align-items: center;
-  border-radius: 999px;
-  background: var(--bg-disabled, #e5e8eb);
+  border-radius: 8px;
+  background: ${({ $isSelected }) =>
+    $isSelected
+      ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
+      : "var(--bg-disabled, #e5e8eb)"};
 
-  color: var(--text-tertiary, #8b95a1);
+  color: ${({ $isSelected }) =>
+    $isSelected
+      ? "var(--text-secondary, #333D4B)"
+      : "var(--text-tertiary, #8b95a1)"};
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: 20px;
 
   &.good {
-    background: var(--color-chips-yellow, #ffe589);
-    color: var(--text-warn, #7a5400);
+    background: ${({ $isSelected }) =>
+      $isSelected
+        ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
+        : "var(--color-chips-yellow, #ffe589)"};
+    color: ${({ $isSelected }) =>
+      $isSelected
+        ? "var(--text-secondary, #333D4B)"
+        : "var(--text-warn, #7a5400)"};
 
     font-size: 14px;
     font-style: normal;
@@ -1058,72 +1183,13 @@ const EmptyStateText = styled.div`
   font-weight: 500;
 `;
 
-const StyledContent = styled(Drawer.Content)`
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10000;
-  outline: none;
 
-  height: 100%;
-  max-height: 96%;
-  display: flex;
-  flex-direction: column;
-
-  max-width: 768px;
-  margin: 0 auto;
-  pointer-events: none;
-`;
-
-const SheetInner = styled.div`
-  background: var(--bg-base, #ffffff);
-  width: 100%;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  border-top: 1px solid var(--border-default, #e5e8eb);
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  pointer-events: auto;
-  touch-action: none;
-`;
-
-const DragHeader = styled.div`
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  touch-action: none;
-`;
-
-const HandleBar = styled.div`
-  width: 36px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--border-default, #e5e8eb);
-`;
-
-const ContentAreaBottomSheet = styled.div`
-  padding: 8px 20px 0;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-`;
 
 const SectionTitleBottomSheet = styled.h2`
   font-size: 20px;
   font-weight: 700;
   color: var(--gray-900, #191f28);
-  margin: 0 0 16px 0;
+  margin: 0 0 32px 0;
 `;
 
 const ScrollableBody = styled.div<{ $snapHeight?: number }>`

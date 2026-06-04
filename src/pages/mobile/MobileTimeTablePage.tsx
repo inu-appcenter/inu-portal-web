@@ -132,9 +132,7 @@ const MobileTimeTablePage = () => {
         </ButtonRow>
         <LinkCardButton
           label="모의 수강 신청(수강 신청 시뮬레이터)"
-          onClick={() =>
-            window.open("https://inu-sugang-simulator.pages.dev", "_blank")
-          }
+          onClick={() => navigate(ROUTES.TIMETABLE.SIMULATOR)}
         />
       </ButtonGroup>
     </MobileTimeTablePageWrapper>

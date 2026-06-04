@@ -28,6 +28,7 @@ const ChipButton = styled.button<{ $isSelected: boolean }>`
   font-style: normal;
   font-weight: 600;
   line-height: 24px;
+  white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
 
   /* 비선택 상태 */
   background-color: var(--bg-subtle, #f8f9fb);

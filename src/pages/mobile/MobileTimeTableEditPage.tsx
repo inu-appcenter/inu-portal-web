@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid, {
@@ -6,6 +6,7 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 import MobileCourseSearchSheet, {
   CourseResult,
+  COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import LinkCardButton from "@/components/mobile/common/LinkCardButton";
@@ -114,7 +115,7 @@ const MobileTimeTableEditPage = () => {
 
   // 상태 관리
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [snap, setSnap] = useState<string | number | null>(0.45);
+  const [snap, setSnap] = useState<string | number | null>(COURSE_SEARCH_SNAP_POINTS[0]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // 프리뷰 연산
@@ -122,6 +123,57 @@ const MobileTimeTableEditPage = () => {
     () => SEARCH_RESULTS.find((c) => c.id === expandedId)?.schedules || [],
     [expandedId],
   );
+
+  // 선택된 강의(미리보기)가 바텀시트에 의해 가려지는 경우 스크롤 처리
+  useEffect(() => {
+    if (expandedId === null) return;
+
+    const timer = setTimeout(() => {
+      const element = document.getElementById("timetable-preview-block");
+      if (!element) return;
+
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 130; // 헤더 영역 높이 추정치
+      const bottomSheetHeight = typeof snap === "number" ? snap * viewportHeight : COURSE_SEARCH_SNAP_POINTS[0] * viewportHeight;
+      const visibleAreaHeight =
+        viewportHeight - headerHeight - bottomSheetHeight;
+
+      const elementTop = rect.top + window.scrollY;
+      const elementHeight = rect.height;
+
+      const elementBottomInViewport = rect.bottom;
+      const elementTopInViewport = rect.top;
+      const bottomSheetTopInViewport = viewportHeight - bottomSheetHeight;
+
+      const isCoveredByBottomSheet =
+        elementBottomInViewport > bottomSheetTopInViewport;
+      const isCoveredByHeader = elementTopInViewport < headerHeight;
+
+      if (isCoveredByBottomSheet || isCoveredByHeader) {
+        let targetScrollY = window.scrollY;
+
+        if (elementHeight <= visibleAreaHeight) {
+          // 화면에 충분히 노출 가능한 높이인 경우 중앙 정렬
+          targetScrollY =
+            elementTop +
+            elementHeight / 2 -
+            (headerHeight + visibleAreaHeight / 2);
+        } else {
+          // 너무 길어 안 들어가는 경우 위쪽 기준 정렬 (여백 16px)
+          targetScrollY = elementTop - headerHeight - 16;
+        }
+
+        const maxScrollY =
+          document.documentElement.scrollHeight - window.innerHeight;
+        targetScrollY = Math.max(0, Math.min(targetScrollY, maxScrollY));
+
+        window.scrollTo({ top: targetScrollY, behavior: "smooth" });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [expandedId, snap]);
 
   const toggleExpand = (id: number) => {
     setExpandedId((prev) => (prev === id ? null : id));

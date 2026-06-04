@@ -22,6 +22,7 @@ export const ROUTES = {
     COMPARE: "/timetable/compare",
     VISIBILITY: "/timetable/visibility",
     ADD: "/timetable/add",
+    SIMULATOR: "/timetable/simulator",
   },
 
   //전화번호부

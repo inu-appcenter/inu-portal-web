@@ -96,7 +96,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
         return;
       }
       if (backPath) {
-        navigate(backPath);
+        navigate(backPath, { replace: true });
         return;
       }
       navigate(-1);
