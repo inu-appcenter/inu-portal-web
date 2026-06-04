@@ -6,7 +6,7 @@ import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
-import { Drawer } from "vaul";
+import BottomSheet from "@/components/common/BottomSheet";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -830,7 +830,7 @@ export default function MobileTimeTableComparePage() {
       </ContentArea>
 
       {/* 5. 겹치는 공강 바텀시트 (대분류가 공강일 때만 상시 노출) */}
-      <Drawer.Root
+      <BottomSheet
         open={isFreeTab}
         modal={false}
         dismissible={false}
@@ -839,107 +839,96 @@ export default function MobileTimeTableComparePage() {
         setActiveSnapPoint={setSnap}
         disablePreventScroll={true}
       >
-        <Drawer.Portal>
-          <StyledContent>
-            <SheetInner>
-              <DragHeader>
-                <HandleBar />
-              </DragHeader>
-              <ContentAreaBottomSheet>
-                <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
-                <ScrollableBody
-                  $snapHeight={typeof snap === "number" ? snap : 0.45}
-                  data-vaul-no-drag=""
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                  onTouchCancel={handleTouchEnd}
-                >
-                  {goodMeetingTimes.length > 0 && (
-                    <TimeGroup>
-                      <GroupTitle className="good">
-                        <span className="star">★ </span>만나기 좋은 시간
-                      </GroupTitle>
-                      <SlotList>
-                        {goodMeetingTimes.map((slot, index) => {
-                          const isSelected =
-                            highlightedSlot &&
-                            highlightedSlot.day === slot.day &&
-                            highlightedSlot.startTime === slot.startTime &&
-                            highlightedSlot.endTime === slot.endTime;
-                          return (
-                            <SlotItem
-                              key={`good-${index}`}
-                              $isSelected={!!isSelected}
-                              onClick={() => handleSlotClick(slot)}
-                              className="good"
-                            >
-                              <SlotLeft>
-                                <DayText className="good">
-                                  {DAYS_KOREAN[slot.day]}
-                                </DayText>
-                                <TimeText className="good">{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
-                              </SlotLeft>
-                              <Badge
-                                className="good"
-                                $isSelected={!!isSelected}
-                              >
-                                {formatDuration(slot.duration)}
-                              </Badge>
-                            </SlotItem>
-                          );
-                        })}
-                      </SlotList>
-                    </TimeGroup>
-                  )}
+        <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
+        <ScrollableBody
+          $snapHeight={typeof snap === "number" ? snap : 0.45}
+          data-vaul-no-drag=""
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
+        >
+          {goodMeetingTimes.length > 0 && (
+            <TimeGroup>
+              <GroupTitle className="good">
+                <span className="star">★ </span>만나기 좋은 시간
+              </GroupTitle>
+              <SlotList>
+                {goodMeetingTimes.map((slot, index) => {
+                  const isSelected =
+                    highlightedSlot &&
+                    highlightedSlot.day === slot.day &&
+                    highlightedSlot.startTime === slot.startTime &&
+                    highlightedSlot.endTime === slot.endTime;
+                  return (
+                    <SlotItem
+                      key={`good-${index}`}
+                      $isSelected={!!isSelected}
+                      onClick={() => handleSlotClick(slot)}
+                      className="good"
+                    >
+                      <SlotLeft>
+                        <DayText className="good">
+                          {DAYS_KOREAN[slot.day]}
+                        </DayText>
+                        <TimeText className="good">{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
+                      </SlotLeft>
+                      <Badge
+                        className="good"
+                        $isSelected={!!isSelected}
+                      >
+                        {formatDuration(slot.duration)}
+                      </Badge>
+                    </SlotItem>
+                  );
+                })}
+              </SlotList>
+            </TimeGroup>
+          )}
 
-                  {shortFreeTimes.length > 0 && (
-                    <TimeGroup>
-                      <GroupTitle>짧은 공강</GroupTitle>
-                      <SlotList>
-                        {shortFreeTimes.map((slot, index) => {
-                          const isSelected =
-                            highlightedSlot &&
-                            highlightedSlot.day === slot.day &&
-                            highlightedSlot.startTime === slot.startTime &&
-                            highlightedSlot.endTime === slot.endTime;
-                          return (
-                            <SlotItem
-                              key={`short-${index}`}
-                              $isSelected={!!isSelected}
-                              onClick={() => handleSlotClick(slot)}
-                            >
-                              <SlotLeft>
-                                <DayText>{DAYS_KOREAN[slot.day]}</DayText>
-                                <TimeText>{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
-                              </SlotLeft>
-                              <Badge $isSelected={!!isSelected}>
-                                {formatDuration(slot.duration)}
-                              </Badge>
-                            </SlotItem>
-                          );
-                        })}
-                      </SlotList>
-                    </TimeGroup>
-                  )}
+          {shortFreeTimes.length > 0 && (
+            <TimeGroup>
+              <GroupTitle>짧은 공강</GroupTitle>
+              <SlotList>
+                {shortFreeTimes.map((slot, index) => {
+                  const isSelected =
+                    highlightedSlot &&
+                    highlightedSlot.day === slot.day &&
+                    highlightedSlot.startTime === slot.startTime &&
+                    highlightedSlot.endTime === slot.endTime;
+                  return (
+                    <SlotItem
+                      key={`short-${index}`}
+                      $isSelected={!!isSelected}
+                      onClick={() => handleSlotClick(slot)}
+                    >
+                      <SlotLeft>
+                        <DayText>{DAYS_KOREAN[slot.day]}</DayText>
+                        <TimeText>{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
+                      </SlotLeft>
+                      <Badge $isSelected={!!isSelected}>
+                        {formatDuration(slot.duration)}
+                      </Badge>
+                    </SlotItem>
+                  );
+                })}
+              </SlotList>
+            </TimeGroup>
+          )}
 
-                  {selectedFriendIdsState.length === 0 ? (
-                    <EmptyStateText>
-                      공강을 비교할 대상을 상단 칩에서 선택해 주세요.
-                    </EmptyStateText>
-                  ) : (
-                    freeSlotsList.length === 0 && (
-                      <EmptyStateText>
-                        겹치는 공강 시간이 없습니다.
-                      </EmptyStateText>
-                    )
-                  )}
-                </ScrollableBody>
-              </ContentAreaBottomSheet>
-            </SheetInner>
-          </StyledContent>
-        </Drawer.Portal>
-      </Drawer.Root>
+          {selectedFriendIdsState.length === 0 ? (
+            <EmptyStateText>
+              공강을 비교할 대상을 상단 칩에서 선택해 주세요.
+            </EmptyStateText>
+          ) : (
+            freeSlotsList.length === 0 && (
+              <EmptyStateText>
+                겹치는 공강 시간이 없습니다.
+              </EmptyStateText>
+            )
+          )}
+        </ScrollableBody>
+      </BottomSheet>
     </PageWrapper>
   );
 }
@@ -1194,69 +1183,7 @@ const EmptyStateText = styled.div`
   font-weight: 500;
 `;
 
-const StyledContent = styled(Drawer.Content)`
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10000;
-  outline: none;
 
-  height: 100%;
-  max-height: 96%;
-  display: flex;
-  flex-direction: column;
-
-  max-width: 768px;
-  margin: 0 auto;
-  pointer-events: none;
-`;
-
-const SheetInner = styled.div`
-  border-radius: 32px 32px 0 0;
-  background: var(--bg-base, #fff);
-
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
-
-  background: var(--bg-base, #ffffff);
-  width: 100%;
-  border-top: 1px solid var(--border-default, #e5e8eb);
-  overflow: hidden;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  pointer-events: auto;
-  touch-action: none;
-`;
-
-const DragHeader = styled.div`
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  touch-action: none;
-  //margin-top: 16px;
-`;
-
-const HandleBar = styled.div`
-  width: 36px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--border-default, #e5e8eb);
-`;
-
-const ContentAreaBottomSheet = styled.div`
-  padding: 0 20px 0;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-`;
 
 const SectionTitleBottomSheet = styled.h2`
   font-size: 20px;
