@@ -114,6 +114,7 @@ const TimetableGrid = ({
 
     return (
       <ClassItemBlock
+        id={isPreview ? "timetable-preview-block" : undefined}
         key={`${isPreview ? "prev" : "evt"}-${item.id}-${index}`}
         $bgColor={bgColor}
         $isPreview={isPreview}
@@ -301,6 +302,24 @@ const ClassItemBlock = styled.div<{
       : "auto"}; /* 미리보기와 공강 모드는 클릭 통과 */
   cursor: ${({ $isPreview, $isFreeMode }) =>
     $isPreview || $isFreeMode ? "default" : "pointer"};
+
+  ${({ $isPreview }) =>
+    $isPreview &&
+    `
+    animation: previewPulse 1.5s infinite ease-in-out;
+  `}
+
+  @keyframes previewPulse {
+    0% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.6;
+    }
+  }
 `;
 
 const ItemContent = styled.div`
