@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import MobileNav from "@/containers/mobile/common/MobileNav";
+import MobileBottomNav, { BOTTOM_NAV_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
@@ -47,7 +48,26 @@ export default function MainTabLayout({
 
   const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader);
   const headerHeight = showHeader ? measuredHeaderHeight : 20;
-  const navHeight = showNav ? 100 : 40;
+
+  const [isV2Mode, setIsV2Mode] = useState(false);
+
+  useEffect(() => {
+    if (location.pathname === ROUTES.HOME_V2) {
+      setIsV2Mode(true);
+    } else if (
+      location.pathname === ROUTES.HOME ||
+      location.pathname === ROUTES.MOBILE_HOME ||
+      location.pathname === "/"
+    ) {
+      setIsV2Mode(false);
+    }
+  }, [location.pathname]);
+
+  const navHeight = showNav
+    ? isV2Mode
+      ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`
+      : "100px"
+    : "40px";
 
   return (
     <LayoutContainer
@@ -56,7 +76,7 @@ export default function MainTabLayout({
       $pageBgColor={pageBgColor}
       style={{
         "--header-height": `${headerHeight}px`,
-        "--nav-height": `${navHeight}px`,
+        "--nav-height": navHeight,
       } as React.CSSProperties}
     >
       {isHome && (
@@ -73,13 +93,13 @@ export default function MainTabLayout({
           />
         </HeaderFloating>
       )}
-      <ContentArea>
+      <ContentArea $isV2Home={location.pathname === ROUTES.HOME_V2}>
         {outlet}
       </ContentArea>
 
       {showNav && (
-        <NavFloating>
-          <MobileNav />
+        <NavFloating $isHomeV2={isV2Mode}>
+          {isV2Mode ? <MobileBottomNav /> : <MobileNav />}
         </NavFloating>
       )}
     </LayoutContainer>
@@ -128,7 +148,7 @@ const UpperBackground = styled.img`
   opacity: 0.72;
 `;
 
-const ContentArea = styled.div`
+const ContentArea = styled.div<{ $isV2Home?: boolean }>`
   width: 100%;
   min-height: 100vh;
   position: relative;
@@ -136,10 +156,10 @@ const ContentArea = styled.div`
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    width: ${({ $isV2Home }) => ($isV2Home ? "100%" : `min(100%, ${DESKTOP_CONTENT_MAX_WIDTH})`)};
     margin: 0 auto;
-    padding-left: ${DESKTOP_GUTTER};
-    padding-right: ${DESKTOP_GUTTER};
+    padding-left: ${({ $isV2Home }) => ($isV2Home ? "0" : DESKTOP_GUTTER)};
+    padding-right: ${({ $isV2Home }) => ($isV2Home ? "0" : DESKTOP_GUTTER)};
   }
 `;
 
@@ -160,7 +180,7 @@ const HeaderFloating = styled.div`
   }
 `;
 
-const NavFloating = styled.div`
+const NavFloating = styled.div<{ $isHomeV2?: boolean }>`
   position: fixed;
   bottom: 0;
   left: 50%;
@@ -170,10 +190,10 @@ const NavFloating = styled.div`
   pointer-events: none;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
-    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
-    padding: 0 ${DESKTOP_GUTTER};
+    width: ${({ $isHomeV2 }) => ($isHomeV2 ? "100%" : `min(100%, ${DESKTOP_CONTENT_MAX_WIDTH})`)};
+    max-width: ${({ $isHomeV2 }) => ($isHomeV2 ? "none" : DESKTOP_CONTENT_MAX_WIDTH)};
+    padding: ${({ $isHomeV2 }) => ($isHomeV2 ? "0" : `0 ${DESKTOP_GUTTER}`)};
     box-sizing: border-box;
-    bottom: 20px;
+    bottom: ${({ $isHomeV2 }) => ($isHomeV2 ? "0" : "20px")};
   }
 `;
