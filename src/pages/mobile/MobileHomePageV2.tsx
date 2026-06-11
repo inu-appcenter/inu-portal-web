@@ -10,14 +10,13 @@ import {
   DESKTOP_CONTENT_MAX_WIDTH,
 } from "@/styles/responsive";
 
-import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import NoticeForm from "@/containers/mobile/home/Notice";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
+import AppcenterLogo from "@/resources/assets/앱센터로고_new.svg";
 import Banner from "@/containers/mobile/home/Banner";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
@@ -44,89 +43,119 @@ export default function MobileHomePageV2() {
 
   return (
     <V2Wrapper>
-      <MobileHeader />
 
       <UpperSection>
-        <WelcomeMessage>
-          <HighlightName>{nickname}님,</HighlightName>
-          <GreetingText>좋은 아침이에요!</GreetingText>
-        </WelcomeMessage>
+        <SectionInner>
+          <WelcomeMessage>
+            <HighlightName>{nickname}님,</HighlightName>
+            <GreetingText>좋은 아침이에요!</GreetingText>
+          </WelcomeMessage>
 
-        <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
-          <WidgetHeader>
-            <WidgetTitle>오늘의 시간표</WidgetTitle>
-            <WidgetSubTitle>15분 후 시작</WidgetSubTitle>
-          </WidgetHeader>
-
-          <ClassList>
-            <ClassItem $current={true}>
-              <ClassName>자료구조</ClassName>
-
-              <ClassInfo>
-                <ClassDetail>09:00~10:15</ClassDetail>
-                <ClassRoom>07-504</ClassRoom>
-              </ClassInfo>
-            </ClassItem>
-
-            <ClassItem $current={false}>
-              <ClassName>디지털공학</ClassName>
-
-              <ClassInfo>
-                <ClassDetail>16:30~17:45</ClassDetail>
-                <ClassRoom>07-504</ClassRoom>
-              </ClassInfo>
-            </ClassItem>
-          </ClassList>
-        </TodayTimetableCard>
-
-        <GridWidgets>
-          <MiniWidgetCard onClick={() => navigate(ROUTES.BUS.ROOT)}>
+          <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
             <WidgetHeader>
-              <WidgetTitle>인입런</WidgetTitle>
-              <WidgetSubTitle>2번 출구</WidgetSubTitle>
+              <WidgetTitle>오늘의 시간표</WidgetTitle>
+              <WidgetSubTitle>15분 후 시작</WidgetSubTitle>
             </WidgetHeader>
 
-            <BusInfoList>
-              <BusInfoRow>
-                <BusLeftSection>
-                  <BusIcon color="#0e4d9d" />
-                  <BusNumber>8번</BusNumber>
-                </BusLeftSection>
-                <BusTime>1분 31초</BusTime>
-              </BusInfoRow>
-              <BusInfoRow>
-                <BusLeftSection>
-                  <BusIcon color="#00a82f" />
-                  <BusNumber>41번</BusNumber>
-                </BusLeftSection>
-                <BusTime>4분 19초</BusTime>
-              </BusInfoRow>
-            </BusInfoList>
-          </MiniWidgetCard>
+            <ClassList>
+              <ClassItem $current={true}>
+                <ClassName>자료구조</ClassName>
 
-          <MiniWidgetCard onClick={() => navigate(ROUTES.BOARD.MENU)}>
-            <WidgetHeader>
-              <WidgetTitle>식당 메뉴</WidgetTitle>
-              <WidgetSubTitle>학생식당</WidgetSubTitle>
-            </WidgetHeader>
+                <ClassInfo>
+                  <ClassDetail>09:00~10:15</ClassDetail>
+                  <ClassRoom>07-504</ClassRoom>
+                </ClassInfo>
+              </ClassItem>
 
-            <MenuInfo>
-              <MenuCorner>1코너 (백반)</MenuCorner>
-              <MenuName>참치김치찌개</MenuName>
-            </MenuInfo>
-          </MiniWidgetCard>
-        </GridWidgets>
+              <ClassItem $current={false}>
+                <ClassName>디지털공학</ClassName>
+
+                <ClassInfo>
+                  <ClassDetail>16:30~17:45</ClassDetail>
+                  <ClassRoom>07-504</ClassRoom>
+                </ClassInfo>
+              </ClassItem>
+            </ClassList>
+          </TodayTimetableCard>
+
+          <GridWidgets>
+            <MiniWidgetCard onClick={() => navigate(ROUTES.BUS.ROOT)}>
+              <WidgetHeader>
+                <WidgetTitle>인입런</WidgetTitle>
+                <WidgetSubTitle>2번 출구</WidgetSubTitle>
+              </WidgetHeader>
+
+              <BusInfoList>
+                <BusInfoRow>
+                  <BusLeftSection>
+                    <BusIcon color="#0e4d9d" />
+                    <BusNumber>8번</BusNumber>
+                  </BusLeftSection>
+                  <BusTime>1분 31초</BusTime>
+                </BusInfoRow>
+                <BusInfoRow>
+                  <BusLeftSection>
+                    <BusIcon color="#00a82f" />
+                    <BusNumber>41번</BusNumber>
+                  </BusLeftSection>
+                  <BusTime>4분 19초</BusTime>
+                </BusInfoRow>
+              </BusInfoList>
+            </MiniWidgetCard>
+
+            <MiniWidgetCard onClick={() => navigate(ROUTES.BOARD.MENU)}>
+              <WidgetHeader>
+                <WidgetTitle>식당 메뉴</WidgetTitle>
+                <WidgetSubTitle>학생식당</WidgetSubTitle>
+              </WidgetHeader>
+
+              <MenuInfo>
+                <MenuCorner>1코너 (백반)</MenuCorner>
+                <MenuName>참치김치찌개</MenuName>
+              </MenuInfo>
+            </MiniWidgetCard>
+          </GridWidgets>
+        </SectionInner>
       </UpperSection>
 
       <LowerSheetSection>
-        <ContentContainer>
-          <HomeChipGroup />
-        </ContentContainer>
+        <SectionInner>
+          <ContentContainer>
+            <HomeChipGroup />
+          </ContentContainer>
 
-        <FeedLayout>
-          {isDesktopLayout ? (
-            <DesktopWidgetColumns>
-              <DesktopWidgetColumn>
+          <FeedLayout>
+            {isDesktopLayout ? (
+              <DesktopWidgetColumns>
+                <DesktopWidgetColumn>
+                  <TitleContentArea
+                    title="TIPS 알아보기"
+                    children={<TipsWidget />}
+                    link={ROUTES.BOARD.TIPS}
+                  />
+                  <Banner />
+                  <TitleContentArea
+                    title="학교 공지사항"
+                    children={<NoticeForm />}
+                    link={ROUTES.BOARD.NOTICE}
+                  />
+                </DesktopWidgetColumn>
+                <DesktopWidgetColumn>
+                  <TitleContentArea
+                    title="학사일정"
+                    children={<Calendar mode="weekly" />}
+                    link={ROUTES.BOARD.CALENDAR}
+                  />
+                  <TitleContentArea
+                    title="인천대학교 YouTube"
+                    externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
+                  >
+                    <YoutubeWidget />
+                  </TitleContentArea>
+                </DesktopWidgetColumn>
+              </DesktopWidgetColumns>
+            ) : (
+              <>
                 <TitleContentArea
                   title="TIPS 알아보기"
                   children={<TipsWidget />}
@@ -138,8 +167,6 @@ export default function MobileHomePageV2() {
                   children={<NoticeForm />}
                   link={ROUTES.BOARD.NOTICE}
                 />
-              </DesktopWidgetColumn>
-              <DesktopWidgetColumn>
                 <TitleContentArea
                   title="학사일정"
                   children={<Calendar mode="weekly" />}
@@ -151,44 +178,21 @@ export default function MobileHomePageV2() {
                 >
                   <YoutubeWidget />
                 </TitleContentArea>
-              </DesktopWidgetColumn>
-            </DesktopWidgetColumns>
-          ) : (
-            <>
-              <TitleContentArea
-                title="TIPS 알아보기"
-                children={<TipsWidget />}
-                link={ROUTES.BOARD.TIPS}
-              />
-              <Banner />
-              <TitleContentArea
-                title="학교 공지사항"
-                children={<NoticeForm />}
-                link={ROUTES.BOARD.NOTICE}
-              />
-              <TitleContentArea
-                title="학사일정"
-                children={<Calendar mode="weekly" />}
-                link={ROUTES.BOARD.CALENDAR}
-              />
-              <TitleContentArea
-                title="인천대학교 YouTube"
-                externalLink={`https://www.youtube.com/channel/${CHANNEL_ID}`}
-              >
-                <YoutubeWidget />
-              </TitleContentArea>
-            </>
-          )}
-        </FeedLayout>
+              </>
+            )}
+          </FeedLayout>
+        </SectionInner>
+      </LowerSheetSection>
 
-        <AppcenterLogoWrapper>
+      <AppcenterLogoWrapper>
+        <LogoInner>
           <img
             src={AppcenterLogo}
             alt="appcenterLogo"
             onClick={() => window.open("https://home.inuappcenter.kr")}
           />
-        </AppcenterLogoWrapper>
-      </LowerSheetSection>
+        </LogoInner>
+      </AppcenterLogoWrapper>
     </V2Wrapper>
   );
 }
@@ -200,17 +204,13 @@ const V2Wrapper = styled.div`
   box-sizing: border-box;
   background-color: #eff5fc;
   min-height: 100vh;
-
-  @media ${DESKTOP_MEDIA} {
-    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
-    margin: 0 auto;
-  }
 `;
 
 const UpperSection = styled.div`
   display: flex;
   flex-direction: column;
-  padding: calc(var(--header-height, 56px) + 24px) ${MOBILE_PAGE_GUTTER} 24px;
+  padding-top: calc(var(--header-height, 56px) + 24px);
+  padding-bottom: 24px;
   background: #eff5fc;
 `;
 
@@ -424,7 +424,8 @@ const LowerSheetSection = styled.div`
   position: relative;
   z-index: 5;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.02);
-  padding: 28px ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 20px);
+  padding-top: 28px;
+  padding-bottom: 40px;
 `;
 
 const ContentContainer = styled.div`
@@ -457,24 +458,42 @@ const DesktopWidgetColumn = styled.div`
 `;
 
 const AppcenterLogoWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 40px;
-  padding-bottom: 20px;
+  background: var(--gray-1000, #000);
+  padding: 48px 0 148px;
+  width: 100%;
+  box-sizing: border-box;
 
   img {
-    width: 50%;
-    height: auto;
-    max-width: 200px;
-    min-width: 150px;
+    width: 136px;
+    height: 52px;
+    aspect-ratio: 34/13;
     cursor: pointer;
   }
+`;
+
+const SectionInner = styled.div`
+  width: 100%;
+  max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding-left: ${MOBILE_PAGE_GUTTER};
+  padding-right: ${MOBILE_PAGE_GUTTER};
 
   @media ${DESKTOP_MEDIA} {
-    img {
-      width: 220px;
-      max-width: 220px;
-    }
+    padding-left: clamp(24px, 4vw, 48px);
+    padding-right: clamp(24px, 4vw, 48px);
+  }
+`;
+
+const LogoInner = styled(SectionInner)`
+  padding-left: 32px;
+  padding-right: 32px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  @media ${DESKTOP_MEDIA} {
+    padding-left: clamp(24px, 4vw, 48px);
+    padding-right: clamp(24px, 4vw, 48px);
   }
 `;

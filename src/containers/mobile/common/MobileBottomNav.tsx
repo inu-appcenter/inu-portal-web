@@ -11,7 +11,7 @@ import TimetableIcon from "@/resources/assets/mobile-nav-v2/Icon_Timetable.svg?r
 import BusIcon from "@/resources/assets/mobile-nav-v2/Icon_Bus.svg?react";
 import ChatIcon from "@/resources/assets/mobile-nav-v2/Icon_Chat.svg?react";
 import MyIcon from "@/resources/assets/mobile-nav-v2/Icon_My.svg?react";
-import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 
@@ -184,7 +184,11 @@ export default function MobileBottomNav() {
     navigate(to, { replace: true });
   };
 
-  const activeX = ((activeIndex + 0.5) / 5) * dimensions.width;
+  const maxContentWidth = parseInt(DESKTOP_CONTENT_MAX_WIDTH, 10) || 1600;
+  const contentWidth = Math.min(dimensions.width, maxContentWidth);
+  const leftOffset = (dimensions.width - contentWidth) / 2;
+
+  const activeX = leftOffset + ((activeIndex + 0.5) / 5) * contentWidth;
   const pathD = getPath(dimensions.width, dimensions.height, activeX);
   const lineD = getLinePath(dimensions.width, activeX);
 
@@ -198,12 +202,22 @@ export default function MobileBottomNav() {
           viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          style={{ filter: "drop-shadow(0 -4px 16px rgba(0, 0, 0, 0.16))" }}
+          style={{ overflow: "visible" }}
         >
+          <defs>
+            {/* 원래 그래픽(선)은 숨기고 그림자만 출력하는 필터 */}
+            <filter id="shadow-only" x="-20%" y="-300%" width="140%" height="600%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="8" />
+              <feOffset dx="0" dy="-4" result="offsetblur" />
+              <feFlood flood-color="black" flood-opacity="0.16" />
+              <feComposite in2="offsetblur" operator="in" />
+            </filter>
+          </defs>
           <motion.path
             d={lineD}
-            stroke="white"
+            stroke="black"
             strokeWidth="6"
+            filter="url(#shadow-only)"
             animate={{ d: lineD }}
             transition={{ type: "spring", stiffness: 260, damping: 28 }}
           />
@@ -217,6 +231,26 @@ export default function MobileBottomNav() {
         animate={{ clipPath: `path("${pathD}")` }}
         transition={{ type: "spring", stiffness: 260, damping: 28 }}
       />
+
+      {/* 글래스모피즘 테두리 하이라이트 효과 */}
+      <GlassBorderWrapper>
+        <svg
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ overflow: "visible" }}
+        >
+          <motion.path
+            d={lineD}
+            stroke="rgba(255, 255, 255, 0.45)"
+            strokeWidth="1.2"
+            animate={{ d: lineD }}
+            transition={{ type: "spring", stiffness: 260, damping: 28 }}
+          />
+        </svg>
+      </GlassBorderWrapper>
 
       <NavItemsContainer>
         {NAV_ITEMS.map((item, idx) => {
@@ -298,10 +332,19 @@ const NavBackground = styled(motion.div)`
   pointer-events: none;
 `;
 
+const GlassBorderWrapper = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+`;
+
 const NavItemsContainer = styled.nav`
   position: relative;
-  z-index: 2;
+  z-index: 3;
   width: 100%;
+  max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+  margin: 0 auto;
   height: 100%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);

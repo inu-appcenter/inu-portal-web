@@ -93,7 +93,7 @@ export default function MainTabLayout({
           />
         </HeaderFloating>
       )}
-      <ContentArea>
+      <ContentArea $isV2Home={location.pathname === ROUTES.HOME_V2}>
         {outlet}
       </ContentArea>
 
@@ -148,7 +148,7 @@ const UpperBackground = styled.img`
   opacity: 0.72;
 `;
 
-const ContentArea = styled.div`
+const ContentArea = styled.div<{ $isV2Home?: boolean }>`
   width: 100%;
   min-height: 100vh;
   position: relative;
@@ -156,10 +156,10 @@ const ContentArea = styled.div`
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
+    width: ${({ $isV2Home }) => ($isV2Home ? "100%" : `min(100%, ${DESKTOP_CONTENT_MAX_WIDTH})`)};
     margin: 0 auto;
-    padding-left: ${DESKTOP_GUTTER};
-    padding-right: ${DESKTOP_GUTTER};
+    padding-left: ${({ $isV2Home }) => ($isV2Home ? "0" : DESKTOP_GUTTER)};
+    padding-right: ${({ $isV2Home }) => ($isV2Home ? "0" : DESKTOP_GUTTER)};
   }
 `;
 
@@ -190,9 +190,9 @@ const NavFloating = styled.div<{ $isHomeV2?: boolean }>`
   pointer-events: none;
 
   @media ${DESKTOP_MEDIA} {
-    width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
-    max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
-    padding: 0 ${DESKTOP_GUTTER};
+    width: ${({ $isHomeV2 }) => ($isHomeV2 ? "100%" : `min(100%, ${DESKTOP_CONTENT_MAX_WIDTH})`)};
+    max-width: ${({ $isHomeV2 }) => ($isHomeV2 ? "none" : DESKTOP_CONTENT_MAX_WIDTH)};
+    padding: ${({ $isHomeV2 }) => ($isHomeV2 ? "0" : `0 ${DESKTOP_GUTTER}`)};
     box-sizing: border-box;
     bottom: ${({ $isHomeV2 }) => ($isHomeV2 ? "0" : "20px")};
   }
