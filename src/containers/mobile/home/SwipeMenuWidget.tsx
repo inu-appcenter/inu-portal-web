@@ -20,8 +20,29 @@ export default function SwipeMenuWidget() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const cardWrapperRef = useRef<HTMLDivElement>(null);
+  const paginationRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const hasMovedRef = useRef(false);
+  const fadeTimeoutRef = useRef<any>(null);
+
+  const showPagination = () => {
+    if (fadeTimeoutRef.current) {
+      clearTimeout(fadeTimeoutRef.current);
+    }
+    paginationRef.current?.classList.add("show");
+    fadeTimeoutRef.current = setTimeout(() => {
+      paginationRef.current?.classList.remove("show");
+    }, 1000);
+  };
+
+  useEffect(() => {
+    showPagination();
+    return () => {
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // 날짜 및 시간 구하기
   const today = useMemo(() => new Date().getDay(), []);
@@ -124,20 +145,26 @@ export default function SwipeMenuWidget() {
         spaceBetween={0}
         speed={300}
         onSwiper={(swiper) => setSwiperInstance(swiper)}
-        onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+        onSlideChange={(swiper) => {
+          setActiveIndex(swiper.activeIndex);
+          showPagination();
+        }}
         onTouchStart={() => {
           hasMovedRef.current = false;
           cardWrapperRef.current?.classList.add("swiping");
+          showPagination();
         }}
         onSliderMove={() => {
           hasMovedRef.current = true;
           isDraggingRef.current = true;
+          showPagination();
         }}
         onTransitionStart={() => {
           // 빠른 Flick(휙 넘기기) 시 onSliderMove 누락 감지를 보완하고 스와이프 클래스를 보장합니다.
           hasMovedRef.current = true;
           isDraggingRef.current = true;
           cardWrapperRef.current?.classList.add("swiping");
+          showPagination();
         }}
         onTouchEnd={() => {
           if (!hasMovedRef.current) {
@@ -195,7 +222,7 @@ export default function SwipeMenuWidget() {
         })}
       </SwiperContainer>
 
-      <PaginationDots aria-label="식당 메뉴 위젯 페이지네이션">
+      <PaginationDots ref={paginationRef} aria-label="식당 메뉴 위젯 페이지네이션">
         {cafeterias.map((caf, index) => (
           <PaginationDot
             key={caf.title}
@@ -296,6 +323,15 @@ const PaginationDots = styled.div`
   align-items: center;
   gap: 6px;
   transform: translateX(-50%);
+  
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+
+  &.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
 `;
 
 const PaginationDot = styled.button<{ $active: boolean }>`
