@@ -1,0 +1,492 @@
+import { useEffect, useState, useMemo, useRef } from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import useBusArrival from "@/hooks/useBusArrival";
+import { ROUTES } from "@/constants/routes";
+import Skeleton from "@/components/common/Skeleton";
+import {
+  goSchool_INU2,
+  goSchool_BIT3,
+  goHome_MainOut,
+  goHome_Nature_INU,
+  goHome_Nature_BIT,
+  goHome_Nature_IntercityBuses,
+  goHome_Dorm1,
+  goHome_Dorm2,
+} from "@/components/mobile/bus/data/BusDummy";
+import type { BusData } from "@/types/bus";
+
+// 버스 노선 유형별 테마 컬러 매핑 함수
+function getBusColor(busNumber: string): string {
+  if (["8", "16", "41", "43-1", "순환41", "순환42", "순환43"].includes(busNumber)) {
+    return "#0e4d9d"; // 간선/지선 블루
+  }
+  if (["6", "6-1", "6-2"].includes(busNumber)) {
+    return "#00a82f"; // 지선 그린
+  }
+  if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
+    return "#e60012"; // 광역 레드
+  }
+  if (busNumber.includes("급행")) {
+    return "#6f2a8c"; // 급행 보라
+  }
+  return "#0061ff"; // 기본 브랜드 블루
+}
+
+const BusIcon = ({ color }: { color: string }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 28 28"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ flexShrink: 0 }}
+  >
+    <path
+      d="M20.64 12.627H6.88V6.88744H20.64M18.92 19.5145C18.4638 19.5145 18.0263 19.3331 17.7038 19.0102C17.3812 18.6873 17.2 18.2493 17.2 17.7926C17.2 17.336 17.3812 16.898 17.7038 16.5751C18.0263 16.2522 18.4638 16.0708 18.92 16.0708C19.3762 16.0708 19.8137 16.2522 20.1362 16.5751C20.4588 16.898 20.64 17.336 20.64 17.7926C20.64 18.2493 20.4588 18.6873 20.1362 19.0102C19.8137 19.3331 19.3762 19.5145 18.92 19.5145ZM8.6 19.5145C8.14383 19.5145 7.70634 19.3331 7.38378 19.0102C7.06122 18.6873 6.88 18.2493 6.88 17.7926C6.88 17.336 7.06122 16.898 7.38378 16.5751C7.70634 16.2522 8.14383 16.0708 8.6 16.0708C9.05618 16.0708 9.49366 16.2522 9.81623 16.5751C10.1388 16.898 10.32 17.336 10.32 17.7926C10.32 18.2493 10.1388 18.6873 9.81623 19.0102C9.49366 19.3331 9.05618 19.5145 8.6 19.5145ZM4.58667 18.3666C4.58667 19.3768 5.03387 20.2836 5.73334 20.915V22.9583C5.73334 23.2627 5.85415 23.5547 6.06919 23.77C6.28423 23.9853 6.57589 24.1062 6.88 24.1062H8.02667C8.33078 24.1062 8.62244 23.9853 8.83749 23.77C9.05253 23.5547 9.17334 23.2627 9.17334 22.9583V21.8104H18.3467V22.9583C18.3467 23.2627 18.4675 23.5547 18.6825 23.77C18.8976 23.9853 19.1892 24.1062 19.4933 24.1062H20.64C20.9441 24.1062 21.2358 23.9853 21.4508 23.77C21.6659 23.5547 21.7867 23.2627 21.7867 22.9583V20.915C22.4861 20.2836 22.9333 19.3768 22.9333 18.3666V6.88744C22.9333 2.86973 18.8283 2.29578 13.76 2.29578C8.69174 2.29578 4.58667 2.86973 4.58667 6.88744V18.3666Z"
+      fill={color}
+    />
+  </svg>
+);
+
+interface BusStopCardProps {
+  stopName: string;
+  sectionLabel: string;
+  bstopId: string;
+  busList: BusData[];
+  onClick: () => void;
+}
+
+// 개별 정류장 실시간 도착 표출 카드 컴포넌트
+function BusStopCard({ stopName, sectionLabel, bstopId, busList, onClick }: BusStopCardProps) {
+  const { busArrivalList, isLoading } = useBusArrival(bstopId, busList);
+
+  // 실시간 남은 시간(seconds) 기준 오름차순 정렬 (미배차/정보 없음은 최하위 배치)
+  const sortedBuses = useMemo(() => {
+    return [...busArrivalList].sort((a, b) => {
+      const aSec = a.arrivalInfo?.seconds ?? 999999;
+      const bSec = b.arrivalInfo?.seconds ?? 999999;
+      return aSec - bSec;
+    });
+  }, [busArrivalList]);
+
+  // 상위 3개 노선만 슬라이싱
+  const displayBuses = useMemo(() => {
+    return sortedBuses.slice(0, 3);
+  }, [sortedBuses]);
+
+  return (
+    <SlideContent onClick={onClick}>
+      <WidgetHeader>
+        <WidgetTitle>{stopName}</WidgetTitle>
+        <WidgetSubTitle>{sectionLabel}</WidgetSubTitle>
+      </WidgetHeader>
+
+      <BusInfoList>
+        {isLoading ? (
+          <SkeletonContainer>
+            <Skeleton width="100%" height={16} />
+            <Skeleton width="100%" height={16} />
+            <Skeleton width="100%" height={16} />
+          </SkeletonContainer>
+        ) : displayBuses.length === 0 ? (
+          <EmptyText>운행 중인 버스가 없습니다.</EmptyText>
+        ) : (
+          displayBuses.map((bus) => {
+            const arrivalTime = bus.arrivalInfo?.time ?? "도착 정보 없음";
+            const busColor = getBusColor(bus.number);
+
+            return (
+              <BusInfoRow key={`${bus.routeId ?? bus.id}-${bus.number}`}>
+                <BusLeftSection>
+                  <BusIcon color={busColor} />
+                  <BusNumber>{bus.number}번</BusNumber>
+                </BusLeftSection>
+                <BusTime>{arrivalTime}</BusTime>
+              </BusInfoRow>
+            );
+          })
+        )}
+      </BusInfoList>
+    </SlideContent>
+  );
+}
+
+export default function SwipeBusWidget() {
+  const navigate = useNavigate();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [swiperInstance, setSwiperInstance] = useState<any>(null);
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
+  const paginationRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const hasMovedRef = useRef(false);
+  const fadeTimeoutRef = useRef<any>(null);
+
+  const showPagination = () => {
+    if (fadeTimeoutRef.current) {
+      clearTimeout(fadeTimeoutRef.current);
+    }
+    paginationRef.current?.classList.add("show");
+    fadeTimeoutRef.current = setTimeout(() => {
+      paginationRef.current?.classList.remove("show");
+    }, 1000);
+  };
+
+  useEffect(() => {
+    showPagination();
+    return () => {
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // 등교/하교 기준 시간대 판별 (14:00 이전 등교, 이후 하교)
+  const isMorning = useMemo(() => {
+    const now = new Date();
+    return now.getHours() < 14;
+  }, []);
+
+  // 시간대 기준 정류장 데이터 구성
+  const busStops = useMemo(() => {
+    if (isMorning) {
+      return [
+        {
+          key: "go-school-inu",
+          stopName: "인입런",
+          sectionLabel: "2번 출구",
+          bstopId: "164000395",
+          busList: goSchool_INU2,
+        },
+        {
+          key: "go-school-bit",
+          stopName: "지정단런",
+          sectionLabel: "3번 출구",
+          bstopId: "164000403",
+          busList: goSchool_BIT3,
+        },
+      ];
+    } else {
+      return [
+        {
+          key: "go-home-main",
+          stopName: "인천대 정문",
+          sectionLabel: "정문 앞 (길 건너)",
+          bstopId: "164000385",
+          busList: goHome_MainOut,
+        },
+        {
+          key: "go-home-science",
+          stopName: "공대/자연대",
+          sectionLabel: "자연과학대학",
+          bstopId: "164000378",
+          busList: [
+            ...goHome_Nature_INU,
+            ...goHome_Nature_BIT,
+            ...goHome_Nature_IntercityBuses,
+          ],
+        },
+        {
+          key: "go-home-dorm",
+          stopName: "기숙사 앞",
+          sectionLabel: "송도캠퍼스",
+          bstopId: "164000751",
+          busList: [...goHome_Dorm1, ...goHome_Dorm2],
+        },
+      ];
+    }
+  }, [isMorning]);
+
+  const handleCardClick = () => {
+    if (isDraggingRef.current) return;
+    navigate(ROUTES.BUS.ROOT);
+  };
+
+  return (
+    <WidgetContainer ref={widgetContainerRef}>
+      <CardWrapper>
+        <SwiperContainer
+          slidesPerView={1}
+          spaceBetween={0}
+          speed={300}
+          onSwiper={(swiper) => setSwiperInstance(swiper)}
+          onSlideChange={(swiper) => {
+            setActiveIndex(swiper.activeIndex);
+            showPagination();
+          }}
+          onTouchStart={() => {
+            hasMovedRef.current = false;
+            widgetContainerRef.current?.classList.add("swiping");
+            showPagination();
+          }}
+          onSliderMove={() => {
+            hasMovedRef.current = true;
+            isDraggingRef.current = true;
+            showPagination();
+          }}
+          onTransitionStart={() => {
+            hasMovedRef.current = true;
+            isDraggingRef.current = true;
+            widgetContainerRef.current?.classList.add("swiping");
+            showPagination();
+          }}
+          onTouchEnd={() => {
+            if (!hasMovedRef.current) {
+              widgetContainerRef.current?.classList.remove("swiping");
+            }
+            setTimeout(() => {
+              isDraggingRef.current = false;
+            }, 100);
+          }}
+          onTransitionEnd={() => {
+            widgetContainerRef.current?.classList.remove("swiping");
+            isDraggingRef.current = false;
+          }}
+        >
+          {busStops.map((stop) => (
+            <SwiperSlide key={stop.key}>
+              <BusStopCard
+                stopName={stop.stopName}
+                sectionLabel={stop.sectionLabel}
+                bstopId={stop.bstopId}
+                busList={stop.busList}
+                onClick={handleCardClick}
+              />
+            </SwiperSlide>
+          ))}
+        </SwiperContainer>
+      </CardWrapper>
+
+      <PaginationDots ref={paginationRef} aria-label="버스 위젯 페이지네이션">
+        {busStops.map((stop, index) => (
+          <PaginationDot
+            key={stop.key}
+            type="button"
+            $active={index === activeIndex}
+            onClick={() => {
+              swiperInstance?.slideTo(index);
+            }}
+            aria-label={`${stop.stopName} 버스 보기`}
+            aria-current={index === activeIndex}
+          />
+        ))}
+      </PaginationDots>
+    </WidgetContainer>
+  );
+}
+
+// --- Styled Components ---
+
+const WidgetContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  
+  /* 그림자는 overflow가 없는 WidgetContainer 구역에 단독 상시 적용하여 잘림 차단 */
+  box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
+  
+  will-change: transform;
+  
+  /* 클릭(active) 반응 시 부드러운 스케일 모션 */
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+              
+  transform: scale(1.0);
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.swiping {
+    /* 스와이프 도중 부모 컨테이너(그림자)는 축소하지 않고 scale(1.0) 고정 */
+  }
+`;
+
+const CardWrapper = styled.div`
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 0px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 마스킹용 상시 hidden */
+
+  will-change: background-color, border-color;
+
+  transition: background-color 0.25s ease-in-out,
+              border-color 0.25s ease-in-out;
+
+  /* WidgetContainer가 swiping 클래스를 가지고 있을 때 */
+  .swiping & {
+    background-color: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+`;
+
+const SwiperContainer = styled(Swiper)`
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+`;
+
+const SlideContent = styled.div`
+  background-color: #ffffff;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 24px 16px;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  
+  transform: scale(1.0);
+  transform-origin: center center;
+  
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-radius 0.25s ease-in-out;
+
+  /* CardWrapper가 swiping 클래스를 가지고 있을 때 내부 SlideContent 축소 */
+  .swiping & {
+    border-radius: 16px;
+    transform: scale(0.95);
+  }
+`;
+
+const PaginationDots = styled.div`
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translateX(-50%);
+  
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+
+  &.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+`;
+
+const PaginationDot = styled.button<{ $active: boolean }>`
+  display: block;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: ${(props) =>
+    props.$active
+      ? "var(--text-brand, #0061ff)"
+      : "rgba(0, 0, 0, 0.15)"};
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+  transform: ${(props) => (props.$active ? "scale(1.15)" : "scale(1.0)")};
+  border: none;
+  padding: 0;
+  cursor: pointer;
+`;
+
+const WidgetHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+`;
+
+const WidgetTitle = styled.span`
+  color: var(--text-secondary, #333d4b);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+`;
+
+const WidgetSubTitle = styled.span`
+  color: var(--text-brand, #0061ff);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+`;
+
+const BusInfoList = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  min-height: 72px; /* 3줄 분량 높이 안전 확보 */
+  min-width: 0;
+`;
+
+const BusInfoRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  gap: 12px;
+`;
+
+const BusLeftSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+`;
+
+const BusNumber = styled.span`
+  color: var(--text-secondary, #333d4b);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const BusTime = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+  white-space: nowrap;
+  text-align: right;
+  flex-shrink: 0;
+`;
+
+const SkeletonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+`;
+
+const EmptyText = styled.span`
+  font-size: 14px;
+  color: var(--text-tertiary, #8b95a1);
+  text-align: center;
+  width: 100%;
+`;
