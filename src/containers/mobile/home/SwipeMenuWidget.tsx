@@ -117,8 +117,8 @@ export default function SwipeMenuWidget() {
   return (
     <CardWrapper $isSwiping={isSwiping}>
       <SwiperContainer
-        slidesPerView={1.08}
-        spaceBetween={10}
+        slidesPerView={isSwiping ? 1.08 : 1}
+        spaceBetween={isSwiping ? 10 : 0}
         speed={300}
         onSliderMove={() => {
           setIsDragging(true);
@@ -140,7 +140,7 @@ export default function SwipeMenuWidget() {
 
           return (
             <SwiperSlide key={caf.title}>
-              <SlideContent onClick={() => handleCardClick(caf.title)}>
+              <SlideContent $isSwiping={isSwiping} onClick={() => handleCardClick(caf.title)}>
                 <WidgetHeader>
                   <WidgetTitle>식당 메뉴</WidgetTitle>
                   <WidgetSubTitle>{caf.title}</WidgetSubTitle>
@@ -183,16 +183,19 @@ export default function SwipeMenuWidget() {
 // --- Styled Components ---
 
 const CardWrapper = styled.div<{ $isSwiping: boolean }>`
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: ${({ $isSwiping }) =>
+    $isSwiping ? "rgba(255, 255, 255, 0.45)" : "transparent"};
+  backdrop-filter: ${({ $isSwiping }) =>
+    $isSwiping ? "blur(16px)" : "none"};
+  -webkit-backdrop-filter: ${({ $isSwiping }) =>
+    $isSwiping ? "blur(16px)" : "none"};
+  border: 1px solid
+    ${({ $isSwiping }) => ($isSwiping ? "rgba(255, 255, 255, 0.5)" : "transparent")};
   border-radius: 24px;
-  padding: 10px;
+  padding: ${({ $isSwiping }) => ($isSwiping ? "10px" : "0px")};
+  
   box-shadow: ${({ $isSwiping }) =>
-    $isSwiping
-      ? "0 0 30px 10px rgba(255, 255, 255, 0.85)"
-      : "0 4px 20px 0 rgba(0, 97, 255, 0.06)"};
+    $isSwiping ? "0 0 30px 10px rgba(255, 255, 255, 0.85)" : "none"};
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
@@ -203,7 +206,13 @@ const CardWrapper = styled.div<{ $isSwiping: boolean }>`
   flex-direction: column;
   overflow: hidden;
 
-  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s ease-in-out;
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              background 0.25s ease-in-out,
+              backdrop-filter 0.25s ease-in-out,
+              border 0.25s ease-in-out,
+              padding 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              box-shadow 0.25s ease-in-out;
+              
   transform: ${({ $isSwiping }) => ($isSwiping ? "scale(0.96)" : "scale(1.0)")};
 
   &:active {
@@ -217,10 +226,11 @@ const SwiperContainer = styled(Swiper)`
   height: 100%;
 `;
 
-const SlideContent = styled.div`
+const SlideContent = styled.div<{ $isSwiping: boolean }>`
   background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: ${({ $isSwiping }) => ($isSwiping ? "16px" : "20px")};
+  box-shadow: ${({ $isSwiping }) =>
+    $isSwiping ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "0 4px 20px 0 rgba(0, 97, 255, 0.06)"};
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -228,6 +238,8 @@ const SlideContent = styled.div`
   box-sizing: border-box;
   width: 100%;
   height: 100%;
+  
+  transition: border-radius 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
 `;
 
 const WidgetHeader = styled.div`
