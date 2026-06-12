@@ -112,7 +112,7 @@ interface BusStopCardProps {
   busList: BusData[];
   isMorning: boolean;
   onClick: (type: string, category: string) => void;
-  onBusClick: (bus: BusData, bstopId: string) => void;
+  onBusClick: (bus: BusData) => void;
 }
 
 // 개별 정류장 실시간 도착 표출 카드 컴포넌트
@@ -191,7 +191,7 @@ function BusStopCard({ stopName, sectionLabel, bstopId, busList, isMorning, onCl
                 key={`${bus.routeId ?? bus.id}-${bus.number}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onBusClick(bus, bstopId);
+                  onBusClick(bus);
                 }}
                 style={{ cursor: "pointer" }}
               >
@@ -299,14 +299,14 @@ export default function SwipeBusWidget() {
     navigate(getPreferredBusUiRoute(type, category));
   };
 
-  const handleBusClick = (bus: BusData, bstopId: string) => {
+  const handleBusClick = (bus: BusData, stopName: string) => {
     if (isDraggingRef.current) return;
     if (bus.number === "셔틀") {
       navigate(`${ROUTES.BUS.INFO}?type=shuttle&category=인천대입구 셔틀`);
     } else {
-      navigate(`${ROUTES.BUS.DETAIL}?bstopId=${bstopId}&id=${bus.id}`, {
-        state: { bus },
-      });
+      const type = isMorning ? "go-school" : "go-home";
+      const baseRoute = getPreferredBusUiRoute(type, stopName);
+      navigate(`${baseRoute}&busId=${bus.id}`);
     }
   };
 
@@ -360,7 +360,7 @@ export default function SwipeBusWidget() {
                 busList={stop.busList}
                 isMorning={isMorning}
                 onClick={handleCardClick}
-                onBusClick={handleBusClick}
+                onBusClick={(bus) => handleBusClick(bus, stop.stopName)}
               />
             </SwiperSlide>
           ))}
