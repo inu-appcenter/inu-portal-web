@@ -75,7 +75,7 @@ function parseShuttleTime(timeStr: string, isMorning: boolean): string {
   const currentMin = now.getHours() * 60 + now.getMinutes();
 
   if (isMorning) {
-    // 등교 셔틀 포맷 예: "08:30 ~ 10:30"
+    // 등교 셔틀 포맷 예: "08:30 ~ 10:20"
     const rangeMatch = timeStr.match(/(\d{2}):(\d{2})\s*~\s*(\d{2}):(\d{2})/);
     if (rangeMatch) {
       const startHour = parseInt(rangeMatch[1], 10);
@@ -124,6 +124,14 @@ function parseShuttleTime(timeStr: string, isMorning: boolean): string {
   }
 }
 
+function isShuttleActive(parsedTime: string, isMorning: boolean): boolean {
+  if (isMorning) {
+    return parsedTime === "운영 중";
+  } else {
+    return parsedTime !== "운행종료" && parsedTime !== "정보 없음";
+  }
+}
+
 interface BusStopCardProps {
   stopName: string;
   sectionLabel: string;
@@ -146,43 +154,32 @@ function BusStopCard({
 }: BusStopCardProps) {
   const { busArrivalList, isLoading } = useBusArrival(bstopId, busList);
 
+  const filteredBuses = useMemo(() => {
+    return busArrivalList.filter((bus) => {
+      if (bus.number === "셔틀") {
+        const rawTime = bus.arrivalInfo?.time ?? "";
+        const parsedTime = parseShuttleTime(rawTime, isMorning);
+        return isShuttleActive(parsedTime, isMorning);
+      }
+      return true;
+    });
+  }, [busArrivalList, isMorning]);
+
   // 실시간 남은 시간(seconds) 기준 오름차순 정렬 (미배차/정보 없음은 최하위 배치, 운행 셔틀은 최우선순위)
   const sortedBuses = useMemo(() => {
-    return [...busArrivalList].sort((a, b) => {
+    return [...filteredBuses].sort((a, b) => {
       const getPrioritySeconds = (bus: BusData) => {
         if (bus.number === "셔틀") {
-          const rawTime = bus.arrivalInfo?.time ?? "";
-          const parsedTime = parseShuttleTime(rawTime, isMorning);
-          if (
-            parsedTime === "운행종료" ||
-            (parsedTime.includes("~") && !isMorning)
-          ) {
-            return 999999;
-          }
-          if (parsedTime.includes("~") && isMorning) {
-            const rangeMatch = parsedTime.match(
-              /(\d{2}):(\d{2})\s*~\s*(\d{2}):(\d{2})/,
-            );
-            if (rangeMatch) {
-              const endHour = parseInt(rangeMatch[3], 10);
-              const endMin = parseInt(rangeMatch[4], 10);
-              const now = new Date();
-              const currentMin = now.getHours() * 60 + now.getMinutes();
-              if (currentMin > endHour * 60 + endMin) {
-                return 999999;
-              }
-            }
-          }
-          return -1; // 정상 운행중인 셔틀은 1위로 노출
+          return -1; // 필터링을 거쳤으므로 여기에 오는 셔틀은 무조건 활성화된 셔틀 -> 1위 노출
         }
-        return a.arrivalInfo?.seconds ?? 999998;
+        return bus.arrivalInfo?.seconds ?? 999998;
       };
 
       const aSec = getPrioritySeconds(a);
       const bSec = getPrioritySeconds(b);
       return aSec - bSec;
     });
-  }, [busArrivalList, isMorning]);
+  }, [filteredBuses]);
 
   // 상위 3개 노선만 슬라이싱
   const displayBuses = useMemo(() => {
