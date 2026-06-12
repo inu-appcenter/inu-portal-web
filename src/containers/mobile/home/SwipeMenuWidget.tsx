@@ -93,6 +93,15 @@ export default function SwipeMenuWidget() {
     const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
     const cleanText = match ? match[1].trim() : input.trim();
     
+    // 예외 처리: "오늘은 쉽니다" 또는 "업데이트 전" 등 안내 메시지는 split 하지 않고 그대로 반환
+    if (
+      cleanText === "오늘은 쉽니다" ||
+      cleanText === "업데이트 전" ||
+      cleanText.includes("정보가 없습니다")
+    ) {
+      return cleanText;
+    }
+    
     // 2. MobileMenuPage/CafeteriaItem이 공백(" ")을 기준으로 줄바꿈하는 것을 참고하여
     //    공백(" ")으로 쪼갠 뒤 가장 첫 번째 메뉴(index 0)만 추출
     const firstMenu = cleanText.split(/\s+/)[0];
