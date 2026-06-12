@@ -606,7 +606,6 @@ const WidgetSubTitle = styled.span`
 const BusInfoList = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 8px;
   flex: 1;
   min-height: 72px; /* 3줄 분량 높이 안전 확보 */
