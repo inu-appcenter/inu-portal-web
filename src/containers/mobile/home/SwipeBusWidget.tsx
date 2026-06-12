@@ -211,7 +211,6 @@ function BusStopCard({ stopName, sectionLabel, bstopId, busList, isMorning, onCl
 
 export default function SwipeBusWidget() {
   const navigate = useNavigate();
-  const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
@@ -294,6 +293,25 @@ export default function SwipeBusWidget() {
     }
   }, [isMorning]);
 
+  const storageKey = isMorning ? "swipe_bus_index_morning" : "swipe_bus_index_afternoon";
+
+  const initialActiveIndex = useMemo(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if (parsed >= 0 && parsed < busStops.length) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to read bus swipe index", e);
+    }
+    return 0;
+  }, [busStops.length, storageKey]);
+
+  const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
+
   const handleCardClick = (type: string, category: string) => {
     if (isDraggingRef.current) return;
     navigate(getPreferredBusUiRoute(type, category));
@@ -314,12 +332,18 @@ export default function SwipeBusWidget() {
     <WidgetContainer ref={widgetContainerRef}>
       <CardWrapper>
         <SwiperContainer
+          initialSlide={initialActiveIndex}
           slidesPerView={1}
           spaceBetween={0}
           speed={300}
           onSwiper={(swiper) => setSwiperInstance(swiper)}
           onSlideChange={(swiper) => {
             setActiveIndex(swiper.activeIndex);
+            try {
+              localStorage.setItem(storageKey, swiper.activeIndex.toString());
+            } catch (e) {
+              console.error("Failed to save bus swipe index", e);
+            }
             showPagination();
           }}
           onTouchStart={() => {
