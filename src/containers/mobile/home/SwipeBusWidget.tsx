@@ -23,6 +23,9 @@ import type { BusData } from "@/types/bus";
 function getBusColor(busNumber: string): string {
   if (
     [
+      "6",
+      "6-1",
+      "6-2",
       "8",
       "16",
       "41",
@@ -36,7 +39,7 @@ function getBusColor(busNumber: string): string {
   ) {
     return "#0e4d9d"; // 간선/지선 블루
   }
-  if (["6", "6-1", "6-2", "46"].includes(busNumber)) {
+  if (["46"].includes(busNumber)) {
     return "#00a82f"; // 지선 그린
   }
   if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
