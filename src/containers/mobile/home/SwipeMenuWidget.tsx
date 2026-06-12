@@ -85,12 +85,19 @@ export default function SwipeMenuWidget() {
     return "석식";
   };
 
-  // 메뉴 텍스트 정규식 추출 (엔터 기준 첫 번째 메뉴만 추출 후 가격 제거)
+  // 메뉴 텍스트 추출 (가격/칼로리 정보 제거 후 공백(" ") 기준 첫 번째 메뉴만 추출)
   const extractMenu = (input: string): string => {
     if (!input) return "";
-    const firstLine = input.split(/\r?\n|\\n/)[0].trim();
-    const match = firstLine.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
-    return match ? match[1].trim() : firstLine;
+    
+    // 1. 가격 및 칼로리 제거를 위해 가격 매칭 전까지만 추출
+    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
+    const cleanText = match ? match[1].trim() : input.trim();
+    
+    // 2. MobileMenuPage/CafeteriaItem이 공백(" ")을 기준으로 줄바꿈하는 것을 참고하여
+    //    공백(" ")으로 쪼갠 뒤 가장 첫 번째 메뉴(index 0)만 추출
+    const firstMenu = cleanText.split(/\s+/)[0];
+    
+    return firstMenu ? firstMenu.trim() : cleanText;
   };
 
   // 식단표 데이터 병렬 페칭
