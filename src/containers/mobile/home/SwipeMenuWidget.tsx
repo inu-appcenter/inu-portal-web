@@ -17,6 +17,8 @@ interface MenuData {
 export default function SwipeMenuWidget() {
   const navigate = useNavigate();
   const [menuDataList, setMenuDataList] = useState<Record<string, MenuData>>({});
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const cardWrapperRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const hasMovedRef = useRef(false);
@@ -121,6 +123,8 @@ export default function SwipeMenuWidget() {
         slidesPerView={1}
         spaceBetween={0}
         speed={300}
+        onSwiper={(swiper) => setSwiperInstance(swiper)}
+        onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
         onTouchStart={() => {
           hasMovedRef.current = false;
           cardWrapperRef.current?.classList.add("swiping");
@@ -190,6 +194,21 @@ export default function SwipeMenuWidget() {
           );
         })}
       </SwiperContainer>
+
+      <PaginationDots aria-label="식당 메뉴 위젯 페이지네이션">
+        {cafeterias.map((caf, index) => (
+          <PaginationDot
+            key={caf.title}
+            type="button"
+            $active={index === activeIndex}
+            onClick={() => {
+              swiperInstance?.slideTo(index);
+            }}
+            aria-label={`${caf.title} 식단 보기`}
+            aria-current={index === activeIndex}
+          />
+        ))}
+      </PaginationDots>
     </CardWrapper>
   );
 }
@@ -246,7 +265,7 @@ const SlideContent = styled.div`
   box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 16px 16px 24px 16px;
   gap: 12px;
   box-sizing: border-box;
   width: 100%;
@@ -266,6 +285,36 @@ const SlideContent = styled.div`
     box-shadow: none;
     transform: scale(0.95);
   }
+`;
+
+const PaginationDots = styled.div`
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translateX(-50%);
+`;
+
+const PaginationDot = styled.button<{ $active: boolean }>`
+  display: block;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: ${(props) =>
+    props.$active
+      ? "var(--text-brand, #0061ff)"
+      : "rgba(0, 0, 0, 0.15)"};
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+  transform: ${(props) => (props.$active ? "scale(1.15)" : "scale(1.0)")};
+  border: none;
+  padding: 0;
+  cursor: pointer;
 `;
 
 const WidgetHeader = styled.div`
