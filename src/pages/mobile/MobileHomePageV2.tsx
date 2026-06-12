@@ -12,6 +12,7 @@ import {
 
 import NoticeTabWidget from "@/containers/mobile/home/NoticeTabWidget";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
+import SwipeMenuWidget from "@/containers/mobile/home/SwipeMenuWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
@@ -104,17 +105,7 @@ export default function MobileHomePageV2() {
               </BusInfoList>
             </MiniWidgetCard>
 
-            <MiniWidgetCard onClick={() => navigate(ROUTES.BOARD.MENU)}>
-              <WidgetHeader>
-                <WidgetTitle>식당 메뉴</WidgetTitle>
-                <WidgetSubTitle>학생식당</WidgetSubTitle>
-              </WidgetHeader>
-
-              <MenuInfo>
-                <MenuCorner>1코너 (백반)</MenuCorner>
-                <MenuName>참치김치찌개</MenuName>
-              </MenuInfo>
-            </MiniWidgetCard>
+            <SwipeMenuWidget />
           </GridWidgets>
         </SectionInner>
       </UpperSection>
@@ -344,7 +335,7 @@ const ClassRoom = styled.span`
 
 const GridWidgets = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 `;
 
@@ -357,6 +348,7 @@ const MiniWidgetCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
   transition: transform 0.2s ease-in-out;
 
   &:active {
@@ -412,32 +404,7 @@ const BusTime = styled.span`
   color: var(--text-tertiary, #8b95a1);
 `;
 
-const MenuInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-`;
 
-const MenuCorner = styled.span`
-  color: var(--text-tertiary, #8b95a1);
-
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
-`;
-
-const MenuName = styled.span`
-  overflow: hidden;
-  color: var(--text-secondary, #333d4b);
-  text-overflow: ellipsis;
-
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 24px;
-`;
 
 const LowerSheetSection = styled.div`
   background-color: #ffffff;
