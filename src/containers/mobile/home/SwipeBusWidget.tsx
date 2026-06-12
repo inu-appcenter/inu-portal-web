@@ -51,26 +51,104 @@ const BusIcon = ({ color }: { color: string }) => (
   </svg>
 );
 
+// 셔틀버스 운영 여부 판별 및 표시 시간 파싱 유틸
+function parseShuttleTime(timeStr: string, isMorning: boolean): string {
+  if (!timeStr) return "정보 없음";
+
+  const now = new Date();
+  const currentMin = now.getHours() * 60 + now.getMinutes();
+
+  if (isMorning) {
+    // 등교 셔틀 포맷 예: "08:30 ~ 10:30"
+    const rangeMatch = timeStr.match(/(\d{2}):(\d{2})\s*~\s*(\d{2}):(\d{2})/);
+    if (rangeMatch) {
+      const startHour = parseInt(rangeMatch[1], 10);
+      const startMin = parseInt(rangeMatch[2], 10);
+      const endHour = parseInt(rangeMatch[3], 10);
+      const endMin = parseInt(rangeMatch[4], 10);
+
+      const startTimeMin = startHour * 60 + startMin;
+      const endTimeMin = endHour * 60 + endMin;
+
+      if (currentMin >= startTimeMin && currentMin <= endTimeMin) {
+        return "운영 중";
+      }
+    }
+    return timeStr;
+  } else {
+    // 하교 셔틀 포맷 예: "18:00, 18:15, 18:30"
+    const times = timeStr.split(",").map(t => t.trim());
+    const timeObjects = times.map(t => {
+      const match = t.match(/(\d{2}):(\d{2})/);
+      if (match) {
+        const hour = parseInt(match[1], 10);
+        const min = parseInt(match[2], 10);
+        return {
+          text: t,
+          minutes: hour * 60 + min
+        };
+      }
+      return null;
+    }).filter((item): item is { text: string; minutes: number } => item !== null);
+
+    if (timeObjects.length > 0) {
+      timeObjects.sort((a, b) => a.minutes - b.minutes);
+      const nextShuttle = timeObjects.find(t => t.minutes >= currentMin);
+      if (nextShuttle) {
+        return nextShuttle.text;
+      } else {
+        return "운행종료";
+      }
+    }
+    return timeStr;
+  }
+}
+
 interface BusStopCardProps {
   stopName: string;
   sectionLabel: string;
   bstopId: string;
   busList: BusData[];
+  isMorning: boolean;
   onClick: () => void;
 }
 
 // 개별 정류장 실시간 도착 표출 카드 컴포넌트
-function BusStopCard({ stopName, sectionLabel, bstopId, busList, onClick }: BusStopCardProps) {
+function BusStopCard({ stopName, sectionLabel, bstopId, busList, isMorning, onClick }: BusStopCardProps) {
   const { busArrivalList, isLoading } = useBusArrival(bstopId, busList);
 
-  // 실시간 남은 시간(seconds) 기준 오름차순 정렬 (미배차/정보 없음은 최하위 배치)
+  // 실시간 남은 시간(seconds) 기준 오름차순 정렬 (미배차/정보 없음은 최하위 배치, 운행 셔틀은 최우선순위)
   const sortedBuses = useMemo(() => {
     return [...busArrivalList].sort((a, b) => {
-      const aSec = a.arrivalInfo?.seconds ?? 999999;
-      const bSec = b.arrivalInfo?.seconds ?? 999999;
+      const getPrioritySeconds = (bus: BusData) => {
+        if (bus.number === "셔틀") {
+          const rawTime = bus.arrivalInfo?.time ?? "";
+          const parsedTime = parseShuttleTime(rawTime, isMorning);
+          if (parsedTime === "운행종료" || (parsedTime.includes("~") && !isMorning)) {
+            return 999999;
+          }
+          if (parsedTime.includes("~") && isMorning) {
+            const rangeMatch = parsedTime.match(/(\d{2}):(\d{2})\s*~\s*(\d{2}):(\d{2})/);
+            if (rangeMatch) {
+              const endHour = parseInt(rangeMatch[3], 10);
+              const endMin = parseInt(rangeMatch[4], 10);
+              const now = new Date();
+              const currentMin = now.getHours() * 60 + now.getMinutes();
+              if (currentMin > endHour * 60 + endMin) {
+                return 999999;
+              }
+            }
+          }
+          return -1; // 정상 운행중인 셔틀은 1위로 노출
+        }
+        return a.arrivalInfo?.seconds ?? 999998;
+      };
+
+      const aSec = getPrioritySeconds(a);
+      const bSec = getPrioritySeconds(b);
       return aSec - bSec;
     });
-  }, [busArrivalList]);
+  }, [busArrivalList, isMorning]);
 
   // 상위 3개 노선만 슬라이싱
   const displayBuses = useMemo(() => {
@@ -95,14 +173,22 @@ function BusStopCard({ stopName, sectionLabel, bstopId, busList, onClick }: BusS
           <EmptyText>운행 중인 버스가 없습니다.</EmptyText>
         ) : (
           displayBuses.map((bus) => {
-            const arrivalTime = bus.arrivalInfo?.time ?? "도착 정보 없음";
+            const rawTime = bus.arrivalInfo?.time ?? "정보 없음";
+            let arrivalTime = rawTime;
+
+            if (bus.number === "셔틀") {
+              arrivalTime = parseShuttleTime(rawTime, isMorning);
+            } else if (rawTime.includes("도착 정보 없음") || rawTime.includes("도착정보 없음")) {
+              arrivalTime = "정보 없음";
+            }
+
             const busColor = getBusColor(bus.number);
 
             return (
               <BusInfoRow key={`${bus.routeId ?? bus.id}-${bus.number}`}>
                 <BusLeftSection>
                   <BusIcon color={busColor} />
-                  <BusNumber>{bus.number}번</BusNumber>
+                  <BusNumber>{bus.number}</BusNumber>
                 </BusLeftSection>
                 <BusTime>{arrivalTime}</BusTime>
               </BusInfoRow>
@@ -252,6 +338,7 @@ export default function SwipeBusWidget() {
                 sectionLabel={stop.sectionLabel}
                 bstopId={stop.bstopId}
                 busList={stop.busList}
+                isMorning={isMorning}
                 onClick={handleCardClick}
               />
             </SwiperSlide>
