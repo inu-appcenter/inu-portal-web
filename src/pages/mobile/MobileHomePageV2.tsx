@@ -10,7 +10,7 @@ import {
   DESKTOP_CONTENT_MAX_WIDTH,
 } from "@/styles/responsive";
 
-import NoticeForm from "@/containers/mobile/home/Notice";
+import NoticeTabWidget from "@/containers/mobile/home/NoticeTabWidget";
 import TipsWidget from "@/components/mobile/tips/TipsWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import Calendar from "@/components/mobile/calendar/Calendar";
@@ -25,6 +25,7 @@ export default function MobileHomePageV2() {
   const { userInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
+  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
 
   useHeader({
     showAlarm: true,
@@ -135,9 +136,20 @@ export default function MobileHomePageV2() {
                   />
                   <Banner />
                   <TitleContentArea
-                    title="학교 공지사항"
-                    children={<NoticeForm />}
-                    link={ROUTES.BOARD.NOTICE}
+                    title="공지사항"
+                    children={
+                      <NoticeTabWidget
+                        activeTab={activeNoticeTab}
+                        setActiveTab={setActiveNoticeTab}
+                      />
+                    }
+                    link={
+                      activeNoticeTab === "school"
+                        ? ROUTES.BOARD.NOTICE
+                        : userInfo?.department
+                        ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
+                        : ROUTES.BOARD.DEPT_NOTICE
+                    }
                   />
                 </DesktopWidgetColumn>
                 <DesktopWidgetColumn>
@@ -163,9 +175,20 @@ export default function MobileHomePageV2() {
                 />
                 <Banner />
                 <TitleContentArea
-                  title="학교 공지사항"
-                  children={<NoticeForm />}
-                  link={ROUTES.BOARD.NOTICE}
+                  title="공지사항"
+                  children={
+                    <NoticeTabWidget
+                      activeTab={activeNoticeTab}
+                      setActiveTab={setActiveNoticeTab}
+                    />
+                  }
+                  link={
+                    activeNoticeTab === "school"
+                      ? ROUTES.BOARD.NOTICE
+                      : userInfo?.department
+                      ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
+                      : ROUTES.BOARD.DEPT_NOTICE
+                  }
                 />
                 <TitleContentArea
                   title="학사일정"
