@@ -43,6 +43,9 @@ export default function MobileHomePageV2() {
   }, []);
 
   const nickname = userInfo?.nickname || "유니";
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const today = new Date();
+  const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
 
   return (
     <V2Wrapper>
@@ -56,7 +59,7 @@ export default function MobileHomePageV2() {
 
           <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
             <WidgetHeader>
-              <WidgetTitle>오늘의 시간표</WidgetTitle>
+              <WidgetTitle>{todayDateText}</WidgetTitle>
               <WidgetSubTitle>15분 후 시작</WidgetSubTitle>
             </WidgetHeader>
 
