@@ -19,7 +19,7 @@ export default function SwipeMenuWidget() {
   const [menuDataList, setMenuDataList] = useState<Record<string, MenuData>>({});
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
-  const cardWrapperRef = useRef<HTMLDivElement>(null);
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const hasMovedRef = useRef(false);
@@ -155,45 +155,46 @@ export default function SwipeMenuWidget() {
   };
 
   return (
-    <CardWrapper ref={cardWrapperRef}>
-      <SwiperContainer
-        slidesPerView={1}
-        spaceBetween={0}
-        speed={300}
-        onSwiper={(swiper) => setSwiperInstance(swiper)}
-        onSlideChange={(swiper) => {
-          setActiveIndex(swiper.activeIndex);
-          showPagination();
-        }}
-        onTouchStart={() => {
-          hasMovedRef.current = false;
-          cardWrapperRef.current?.classList.add("swiping");
-          showPagination();
-        }}
-        onSliderMove={() => {
-          hasMovedRef.current = true;
-          isDraggingRef.current = true;
-          showPagination();
-        }}
-        onTransitionStart={() => {
-          // 빠른 Flick(휙 넘기기) 시 onSliderMove 누락 감지를 보완하고 스와이프 클래스를 보장합니다.
-          hasMovedRef.current = true;
-          isDraggingRef.current = true;
-          cardWrapperRef.current?.classList.add("swiping");
-          showPagination();
-        }}
-        onTouchEnd={() => {
-          if (!hasMovedRef.current) {
-            cardWrapperRef.current?.classList.remove("swiping");
-          }
-          setTimeout(() => {
+    <WidgetContainer ref={widgetContainerRef}>
+      <CardWrapper>
+        <SwiperContainer
+          slidesPerView={1}
+          spaceBetween={0}
+          speed={300}
+          onSwiper={(swiper) => setSwiperInstance(swiper)}
+          onSlideChange={(swiper) => {
+            setActiveIndex(swiper.activeIndex);
+            showPagination();
+          }}
+          onTouchStart={() => {
+            hasMovedRef.current = false;
+            widgetContainerRef.current?.classList.add("swiping");
+            showPagination();
+          }}
+          onSliderMove={() => {
+            hasMovedRef.current = true;
+            isDraggingRef.current = true;
+            showPagination();
+          }}
+          onTransitionStart={() => {
+            // 빠른 Flick(휙 넘기기) 시 onSliderMove 누락 감지를 보완하고 스와이프 클래스를 보장합니다.
+            hasMovedRef.current = true;
+            isDraggingRef.current = true;
+            widgetContainerRef.current?.classList.add("swiping");
+            showPagination();
+          }}
+          onTouchEnd={() => {
+            if (!hasMovedRef.current) {
+              widgetContainerRef.current?.classList.remove("swiping");
+            }
+            setTimeout(() => {
+              isDraggingRef.current = false;
+            }, 100);
+          }}
+          onTransitionEnd={() => {
+            widgetContainerRef.current?.classList.remove("swiping");
             isDraggingRef.current = false;
-          }, 100);
-        }}
-        onTransitionEnd={() => {
-          cardWrapperRef.current?.classList.remove("swiping");
-          isDraggingRef.current = false;
-        }}
+          }}
       >
         {cafeterias.map((caf) => {
           const cafData = menuDataList[caf.title];
@@ -237,6 +238,7 @@ export default function SwipeMenuWidget() {
           );
         })}
       </SwiperContainer>
+      </CardWrapper>
 
       <PaginationDots ref={paginationRef} aria-label="식당 메뉴 위젯 페이지네이션">
         {cafeterias.map((caf, index) => (
@@ -252,35 +254,23 @@ export default function SwipeMenuWidget() {
           />
         ))}
       </PaginationDots>
-    </CardWrapper>
+    </WidgetContainer>
   );
 }
 
 // --- Styled Components ---
 
-const CardWrapper = styled.div`
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 24px;
-  padding: 0px;
-  box-shadow: none;
-  
-  cursor: pointer;
+const WidgetContainer = styled.div`
   position: relative;
-  box-sizing: border-box;
   width: 100%;
-  min-width: 0;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-
-  will-change: transform, background-color, border-color, box-shadow;
-
-  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
-              background-color 0.25s ease-in-out,
-              border-color 0.25s ease-in-out,
-              box-shadow 0.25s ease-in-out;
+  border-radius: 20px;
+  
+  box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
+  
+  will-change: transform;
+  
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
               
   transform: scale(1.0);
 
@@ -289,15 +279,34 @@ const CardWrapper = styled.div`
   }
 
   &.swiping {
+  }
+`;
+
+const CardWrapper = styled.div`
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 0px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  will-change: background-color, border-color;
+
+  transition: background-color 0.25s ease-in-out,
+              border-color 0.25s ease-in-out;
+
+  .swiping & {
     background-color: rgba(255, 255, 255, 0.35);
     border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: none;
-    transform: scale(0.98);
   }
 `;
 
 const SwiperContainer = styled(Swiper)`
-  overflow: visible;
+  overflow: hidden;
   width: 100%;
   height: 100%;
 `;
@@ -305,7 +314,6 @@ const SwiperContainer = styled(Swiper)`
 const SlideContent = styled.div`
   background-color: #ffffff;
   border-radius: 20px;
-  box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
   display: flex;
   flex-direction: column;
   padding: 16px 16px 24px 16px;
