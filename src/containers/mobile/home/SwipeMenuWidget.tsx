@@ -117,12 +117,12 @@ export default function SwipeMenuWidget() {
   return (
     <CardWrapper $isSwiping={isSwiping}>
       <SwiperContainer
-        slidesPerView={isSwiping ? 1.08 : 1}
-        spaceBetween={isSwiping ? 10 : 0}
+        slidesPerView={1}
+        spaceBetween={0}
         speed={300}
-        onSliderMove={() => {
-          setIsDragging(true);
+        onTouchStart={() => {
           setIsSwiping(true);
+          setIsDragging(true);
         }}
         onTouchEnd={() => {
           setIsSwiping(false);
@@ -206,6 +206,8 @@ const CardWrapper = styled.div<{ $isSwiping: boolean }>`
   flex-direction: column;
   overflow: hidden;
 
+  will-change: padding, transform, backdrop-filter;
+
   transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
               background 0.25s ease-in-out,
               backdrop-filter 0.25s ease-in-out,
@@ -238,8 +240,14 @@ const SlideContent = styled.div<{ $isSwiping: boolean }>`
   box-sizing: border-box;
   width: 100%;
   height: 100%;
+  min-width: 0;
   
-  transition: border-radius 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+  transform: ${({ $isSwiping }) => ($isSwiping ? "scale(0.92)" : "scale(1.0)")};
+  transform-origin: center center;
+  
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-radius 0.25s ease-in-out,
+              box-shadow 0.25s ease-in-out;
 `;
 
 const WidgetHeader = styled.div`
@@ -247,6 +255,8 @@ const WidgetHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  min-width: 0;
+  gap: 8px;
 `;
 
 const WidgetTitle = styled.span`
@@ -256,6 +266,8 @@ const WidgetTitle = styled.span`
   font-weight: 700;
   line-height: 24px;
   letter-spacing: -0.2px;
+  white-space: nowrap;
+  flex-shrink: 0;
 `;
 
 const WidgetSubTitle = styled.span`
@@ -265,6 +277,11 @@ const WidgetSubTitle = styled.span`
   font-weight: 500;
   line-height: 20px;
   text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 `;
 
 const MenuArea = styled.div`
@@ -274,6 +291,7 @@ const MenuArea = styled.div`
   gap: 8px;
   flex: 1;
   min-height: 52px; /* 2줄 분량 높이 확보 */
+  min-width: 0;
 `;
 
 const MenuInfoRow = styled.div`
@@ -282,6 +300,7 @@ const MenuInfoRow = styled.div`
   align-items: flex-start;
   gap: 4px;
   width: 100%;
+  min-width: 0;
 `;
 
 const MenuCorner = styled.span`
@@ -290,6 +309,10 @@ const MenuCorner = styled.span`
   font-style: normal;
   font-weight: 500;
   line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 `;
 
 const MenuName = styled.span<{ $isEmpty: boolean }>`
@@ -304,6 +327,7 @@ const MenuName = styled.span<{ $isEmpty: boolean }>`
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+  display: block;
 `;
 
 const SkeletonContainer = styled.div`
