@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import useBusArrival from "@/hooks/useBusArrival";
 import { ROUTES } from "@/constants/routes";
+import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 import Skeleton from "@/components/common/Skeleton";
 import {
   goSchool_INU2,
@@ -20,10 +21,24 @@ import type { BusData } from "@/types/bus";
 
 // 버스 노선 유형별 테마 컬러 매핑 함수
 function getBusColor(busNumber: string): string {
-  if (["8", "16", "41", "43-1", "순환41", "순환42", "순환43"].includes(busNumber)) {
+  if (
+    [
+      "6",
+      "6-1",
+      "6-2",
+      "8",
+      "16",
+      "43-1",
+      "58",
+      "셔틀",
+      "순환41",
+      "순환42",
+      "순환43",
+    ].includes(busNumber)
+  ) {
     return "#0e4d9d"; // 간선/지선 블루
   }
-  if (["6", "6-1", "6-2"].includes(busNumber)) {
+  if (["46", "41"].includes(busNumber)) {
     return "#00a82f"; // 지선 그린
   }
   if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
@@ -59,7 +74,7 @@ function parseShuttleTime(timeStr: string, isMorning: boolean): string {
   const currentMin = now.getHours() * 60 + now.getMinutes();
 
   if (isMorning) {
-    // 등교 셔틀 포맷 예: "08:30 ~ 10:30"
+    // 등교 셔틀 포맷 예: "08:30 ~ 10:20"
     const rangeMatch = timeStr.match(/(\d{2}):(\d{2})\s*~\s*(\d{2}):(\d{2})/);
     if (rangeMatch) {
       const startHour = parseInt(rangeMatch[1], 10);
@@ -77,23 +92,27 @@ function parseShuttleTime(timeStr: string, isMorning: boolean): string {
     return timeStr;
   } else {
     // 하교 셔틀 포맷 예: "18:00, 18:15, 18:30"
-    const times = timeStr.split(",").map(t => t.trim());
-    const timeObjects = times.map(t => {
-      const match = t.match(/(\d{2}):(\d{2})/);
-      if (match) {
-        const hour = parseInt(match[1], 10);
-        const min = parseInt(match[2], 10);
-        return {
-          text: t,
-          minutes: hour * 60 + min
-        };
-      }
-      return null;
-    }).filter((item): item is { text: string; minutes: number } => item !== null);
+    const times = timeStr.split(",").map((t) => t.trim());
+    const timeObjects = times
+      .map((t) => {
+        const match = t.match(/(\d{2}):(\d{2})/);
+        if (match) {
+          const hour = parseInt(match[1], 10);
+          const min = parseInt(match[2], 10);
+          return {
+            text: t,
+            minutes: hour * 60 + min,
+          };
+        }
+        return null;
+      })
+      .filter(
+        (item): item is { text: string; minutes: number } => item !== null,
+      );
 
     if (timeObjects.length > 0) {
       timeObjects.sort((a, b) => a.minutes - b.minutes);
-      const nextShuttle = timeObjects.find(t => t.minutes >= currentMin);
+      const nextShuttle = timeObjects.find((t) => t.minutes >= currentMin);
       if (nextShuttle) {
         return nextShuttle.text;
       } else {
@@ -104,51 +123,115 @@ function parseShuttleTime(timeStr: string, isMorning: boolean): string {
   }
 }
 
+function isShuttleActive(parsedTime: string, isMorning: boolean): boolean {
+  if (isMorning) {
+    return parsedTime === "운영 중";
+  } else {
+    return parsedTime !== "운행종료" && parsedTime !== "정보 없음";
+  }
+}
+
+function getBusArrivalPriority(bus: BusData) {
+  if (bus.number === "셔틀") {
+    return {
+      bucket: -1, // 활성화된 셔틀은 최우선순위
+      seconds: 0,
+    };
+  }
+
+  const arrivalInfo = bus.arrivalInfo;
+
+  if (
+    arrivalInfo &&
+    typeof arrivalInfo.seconds === "number" &&
+    typeof arrivalInfo.restCount === "number"
+  ) {
+    return {
+      bucket: 0,
+      seconds: arrivalInfo.seconds,
+    };
+  }
+
+  if (arrivalInfo) {
+    return {
+      bucket: 1,
+      seconds: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
+  return {
+    bucket: 2,
+    seconds: Number.MAX_SAFE_INTEGER,
+  };
+}
+
+function compareBusesByArrival(
+  left: BusData,
+  right: BusData,
+  orderLookup: Map<number | string, number>,
+) {
+  const leftPriority = getBusArrivalPriority(left);
+  const rightPriority = getBusArrivalPriority(right);
+
+  if (leftPriority.bucket !== rightPriority.bucket) {
+    return leftPriority.bucket - rightPriority.bucket;
+  }
+
+  if (leftPriority.seconds !== rightPriority.seconds) {
+    return leftPriority.seconds - rightPriority.seconds;
+  }
+
+  const leftKey = left.routeId ?? left.id;
+  const rightKey = right.routeId ?? right.id;
+
+  return (
+    (orderLookup.get(leftKey) ?? Number.MAX_SAFE_INTEGER) -
+    (orderLookup.get(rightKey) ?? Number.MAX_SAFE_INTEGER)
+  );
+}
+
 interface BusStopCardProps {
   stopName: string;
   sectionLabel: string;
   bstopId: string;
   busList: BusData[];
   isMorning: boolean;
-  onClick: () => void;
+  onClick: (type: string, category: string) => void;
+  onBusClick: (bus: BusData) => void;
 }
 
 // 개별 정류장 실시간 도착 표출 카드 컴포넌트
-function BusStopCard({ stopName, sectionLabel, bstopId, busList, isMorning, onClick }: BusStopCardProps) {
+function BusStopCard({
+  stopName,
+  sectionLabel,
+  bstopId,
+  busList,
+  isMorning,
+  onClick,
+  onBusClick,
+}: BusStopCardProps) {
   const { busArrivalList, isLoading } = useBusArrival(bstopId, busList);
+
+  const filteredBuses = useMemo(() => {
+    return busArrivalList.filter((bus) => {
+      if (bus.number === "셔틀") {
+        const rawTime = bus.arrivalInfo?.time ?? "";
+        const parsedTime = parseShuttleTime(rawTime, isMorning);
+        return isShuttleActive(parsedTime, isMorning);
+      }
+      return true;
+    });
+  }, [busArrivalList, isMorning]);
 
   // 실시간 남은 시간(seconds) 기준 오름차순 정렬 (미배차/정보 없음은 최하위 배치, 운행 셔틀은 최우선순위)
   const sortedBuses = useMemo(() => {
-    return [...busArrivalList].sort((a, b) => {
-      const getPrioritySeconds = (bus: BusData) => {
-        if (bus.number === "셔틀") {
-          const rawTime = bus.arrivalInfo?.time ?? "";
-          const parsedTime = parseShuttleTime(rawTime, isMorning);
-          if (parsedTime === "운행종료" || (parsedTime.includes("~") && !isMorning)) {
-            return 999999;
-          }
-          if (parsedTime.includes("~") && isMorning) {
-            const rangeMatch = parsedTime.match(/(\d{2}):(\d{2})\s*~\s*(\d{2}):(\d{2})/);
-            if (rangeMatch) {
-              const endHour = parseInt(rangeMatch[3], 10);
-              const endMin = parseInt(rangeMatch[4], 10);
-              const now = new Date();
-              const currentMin = now.getHours() * 60 + now.getMinutes();
-              if (currentMin > endHour * 60 + endMin) {
-                return 999999;
-              }
-            }
-          }
-          return -1; // 정상 운행중인 셔틀은 1위로 노출
-        }
-        return a.arrivalInfo?.seconds ?? 999998;
-      };
-
-      const aSec = getPrioritySeconds(a);
-      const bSec = getPrioritySeconds(b);
-      return aSec - bSec;
-    });
-  }, [busArrivalList, isMorning]);
+    const orderLookup = new Map(
+      busList.map((bus, index) => [bus.routeId ?? bus.id, index]),
+    );
+    return [...filteredBuses].sort((left, right) =>
+      compareBusesByArrival(left, right, orderLookup),
+    );
+  }, [filteredBuses, busList]);
 
   // 상위 3개 노선만 슬라이싱
   const displayBuses = useMemo(() => {
@@ -156,7 +239,9 @@ function BusStopCard({ stopName, sectionLabel, bstopId, busList, isMorning, onCl
   }, [sortedBuses]);
 
   return (
-    <SlideContent onClick={onClick}>
+    <SlideContent
+      onClick={() => onClick(isMorning ? "go-school" : "go-home", stopName)}
+    >
       <WidgetHeader>
         <WidgetTitle>{stopName}</WidgetTitle>
         <WidgetSubTitle>{sectionLabel}</WidgetSubTitle>
@@ -178,14 +263,24 @@ function BusStopCard({ stopName, sectionLabel, bstopId, busList, isMorning, onCl
 
             if (bus.number === "셔틀") {
               arrivalTime = parseShuttleTime(rawTime, isMorning);
-            } else if (rawTime.includes("도착 정보 없음") || rawTime.includes("도착정보 없음")) {
+            } else if (
+              rawTime.includes("도착 정보 없음") ||
+              rawTime.includes("도착정보 없음")
+            ) {
               arrivalTime = "정보 없음";
             }
 
             const busColor = getBusColor(bus.number);
 
             return (
-              <BusInfoRow key={`${bus.routeId ?? bus.id}-${bus.number}`}>
+              <BusInfoRow
+                key={`${bus.routeId ?? bus.id}-${bus.number}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBusClick(bus);
+                }}
+                style={{ cursor: "pointer" }}
+              >
                 <BusLeftSection>
                   <BusIcon color={busColor} />
                   <BusNumber>{bus.number}</BusNumber>
@@ -202,7 +297,6 @@ function BusStopCard({ stopName, sectionLabel, bstopId, busList, isMorning, onCl
 
 export default function SwipeBusWidget() {
   const navigate = useNavigate();
-  const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
@@ -259,14 +353,14 @@ export default function SwipeBusWidget() {
         {
           key: "go-home-main",
           stopName: "인천대 정문",
-          sectionLabel: "정문 앞 (길 건너)",
+          sectionLabel: "정문 (길 건너)",
           bstopId: "164000385",
           busList: goHome_MainOut,
         },
         {
           key: "go-home-science",
           stopName: "공대/자연대",
-          sectionLabel: "자연과학대학",
+          sectionLabel: "자연대",
           bstopId: "164000378",
           busList: [
             ...goHome_Nature_INU,
@@ -285,21 +379,59 @@ export default function SwipeBusWidget() {
     }
   }, [isMorning]);
 
-  const handleCardClick = () => {
+  const storageKey = isMorning
+    ? "swipe_bus_index_morning"
+    : "swipe_bus_index_afternoon";
+
+  const initialActiveIndex = useMemo(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if (parsed >= 0 && parsed < busStops.length) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to read bus swipe index", e);
+    }
+    return 0;
+  }, [busStops.length, storageKey]);
+
+  const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
+
+  const handleCardClick = (type: string, category: string) => {
     if (isDraggingRef.current) return;
-    navigate(ROUTES.BUS.ROOT);
+    navigate(getPreferredBusUiRoute(type, category));
+  };
+
+  const handleBusClick = (bus: BusData, stopName: string) => {
+    if (isDraggingRef.current) return;
+    if (bus.number === "셔틀") {
+      navigate(`${ROUTES.BUS.INFO}?type=shuttle&category=인천대입구 셔틀`);
+    } else {
+      const type = isMorning ? "go-school" : "go-home";
+      const baseRoute = getPreferredBusUiRoute(type, stopName);
+      navigate(baseRoute);
+    }
   };
 
   return (
     <WidgetContainer ref={widgetContainerRef}>
       <CardWrapper>
         <SwiperContainer
+          initialSlide={initialActiveIndex}
           slidesPerView={1}
           spaceBetween={0}
           speed={300}
           onSwiper={(swiper) => setSwiperInstance(swiper)}
           onSlideChange={(swiper) => {
             setActiveIndex(swiper.activeIndex);
+            try {
+              localStorage.setItem(storageKey, swiper.activeIndex.toString());
+            } catch (e) {
+              console.error("Failed to save bus swipe index", e);
+            }
             showPagination();
           }}
           onTouchStart={() => {
@@ -340,6 +472,7 @@ export default function SwipeBusWidget() {
                 busList={stop.busList}
                 isMorning={isMorning}
                 onClick={handleCardClick}
+                onBusClick={(bus) => handleBusClick(bus, stop.stopName)}
               />
             </SwiperSlide>
           ))}
@@ -371,16 +504,16 @@ const WidgetContainer = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 20px;
-  
+
   /* 그림자는 overflow가 없는 WidgetContainer 구역에 단독 상시 적용하여 잘림 차단 */
   box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
-  
+
   will-change: transform;
-  
+
   /* 클릭(active) 반응 시 부드러운 스케일 모션 */
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-              
-  transform: scale(1.0);
+
+  transform: scale(1);
 
   &:active {
     transform: scale(0.98);
@@ -405,8 +538,9 @@ const CardWrapper = styled.div`
 
   will-change: background-color, border-color;
 
-  transition: background-color 0.25s ease-in-out,
-              border-color 0.25s ease-in-out;
+  transition:
+    background-color 0.25s ease-in-out,
+    border-color 0.25s ease-in-out;
 
   /* WidgetContainer가 swiping 클래스를 가지고 있을 때 */
   .swiping & {
@@ -432,12 +566,13 @@ const SlideContent = styled.div`
   width: 100%;
   height: 100%;
   min-width: 0;
-  
-  transform: scale(1.0);
+
+  transform: scale(1);
   transform-origin: center center;
-  
-  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
-              border-radius 0.25s ease-in-out;
+
+  transition:
+    transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+    border-radius 0.25s ease-in-out;
 
   /* CardWrapper가 swiping 클래스를 가지고 있을 때 내부 SlideContent 축소 */
   .swiping & {
@@ -455,7 +590,7 @@ const PaginationDots = styled.div`
   align-items: center;
   gap: 6px;
   transform: translateX(-50%);
-  
+
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease-in-out;
@@ -473,9 +608,7 @@ const PaginationDot = styled.button<{ $active: boolean }>`
   height: 6px;
   border-radius: 50%;
   background-color: ${(props) =>
-    props.$active
-      ? "var(--text-brand, #0061ff)"
-      : "rgba(0, 0, 0, 0.15)"};
+    props.$active ? "var(--text-brand, #0061ff)" : "rgba(0, 0, 0, 0.15)"};
   transition:
     transform 0.2s ease,
     background-color 0.2s ease;
@@ -522,7 +655,6 @@ const WidgetSubTitle = styled.span`
 const BusInfoList = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 8px;
   flex: 1;
   min-height: 72px; /* 3줄 분량 높이 안전 확보 */

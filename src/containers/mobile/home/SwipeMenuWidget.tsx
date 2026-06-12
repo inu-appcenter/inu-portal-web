@@ -414,7 +414,6 @@ const WidgetSubTitle = styled.span`
 const MenuArea = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 8px;
   flex: 1;
   min-height: 52px; /* 2줄 분량 높이 확보 */
