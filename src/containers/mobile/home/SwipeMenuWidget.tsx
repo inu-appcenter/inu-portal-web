@@ -222,8 +222,8 @@ const CardWrapper = styled.div`
   &.swiping {
     background-color: rgba(255, 255, 255, 0.35);
     border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 0 25px 8px rgba(255, 255, 255, 0.7);
-    transform: scale(0.96);
+    box-shadow: none;
+    transform: scale(0.98);
   }
 `;
 
@@ -256,8 +256,8 @@ const SlideContent = styled.div`
   /* CardWrapper가 swiping 클래스를 가지고 있을 때 내부 SlideContent 축소 */
   .swiping & {
     border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transform: scale(0.9);
+    box-shadow: none;
+    transform: scale(0.95);
   }
 `;
 
