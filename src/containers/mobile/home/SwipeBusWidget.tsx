@@ -28,7 +28,6 @@ function getBusColor(busNumber: string): string {
       "6-2",
       "8",
       "16",
-      "41",
       "43-1",
       "58",
       "셔틀",
@@ -39,7 +38,7 @@ function getBusColor(busNumber: string): string {
   ) {
     return "#0e4d9d"; // 간선/지선 블루
   }
-  if (["46"].includes(busNumber)) {
+  if (["46", "41"].includes(busNumber)) {
     return "#00a82f"; // 지선 그린
   }
   if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
@@ -132,6 +131,65 @@ function isShuttleActive(parsedTime: string, isMorning: boolean): boolean {
   }
 }
 
+function getBusArrivalPriority(bus: BusData) {
+  if (bus.number === "셔틀") {
+    return {
+      bucket: -1, // 활성화된 셔틀은 최우선순위
+      seconds: 0,
+    };
+  }
+
+  const arrivalInfo = bus.arrivalInfo;
+
+  if (
+    arrivalInfo &&
+    typeof arrivalInfo.seconds === "number" &&
+    typeof arrivalInfo.restCount === "number"
+  ) {
+    return {
+      bucket: 0,
+      seconds: arrivalInfo.seconds,
+    };
+  }
+
+  if (arrivalInfo) {
+    return {
+      bucket: 1,
+      seconds: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
+  return {
+    bucket: 2,
+    seconds: Number.MAX_SAFE_INTEGER,
+  };
+}
+
+function compareBusesByArrival(
+  left: BusData,
+  right: BusData,
+  orderLookup: Map<number | string, number>,
+) {
+  const leftPriority = getBusArrivalPriority(left);
+  const rightPriority = getBusArrivalPriority(right);
+
+  if (leftPriority.bucket !== rightPriority.bucket) {
+    return leftPriority.bucket - rightPriority.bucket;
+  }
+
+  if (leftPriority.seconds !== rightPriority.seconds) {
+    return leftPriority.seconds - rightPriority.seconds;
+  }
+
+  const leftKey = left.routeId ?? left.id;
+  const rightKey = right.routeId ?? right.id;
+
+  return (
+    (orderLookup.get(leftKey) ?? Number.MAX_SAFE_INTEGER) -
+    (orderLookup.get(rightKey) ?? Number.MAX_SAFE_INTEGER)
+  );
+}
+
 interface BusStopCardProps {
   stopName: string;
   sectionLabel: string;
@@ -167,19 +225,13 @@ function BusStopCard({
 
   // 실시간 남은 시간(seconds) 기준 오름차순 정렬 (미배차/정보 없음은 최하위 배치, 운행 셔틀은 최우선순위)
   const sortedBuses = useMemo(() => {
-    return [...filteredBuses].sort((a, b) => {
-      const getPrioritySeconds = (bus: BusData) => {
-        if (bus.number === "셔틀") {
-          return -1; // 필터링을 거쳤으므로 여기에 오는 셔틀은 무조건 활성화된 셔틀 -> 1위 노출
-        }
-        return bus.arrivalInfo?.seconds ?? 999998;
-      };
-
-      const aSec = getPrioritySeconds(a);
-      const bSec = getPrioritySeconds(b);
-      return aSec - bSec;
-    });
-  }, [filteredBuses]);
+    const orderLookup = new Map(
+      busList.map((bus, index) => [bus.routeId ?? bus.id, index]),
+    );
+    return [...filteredBuses].sort((left, right) =>
+      compareBusesByArrival(left, right, orderLookup),
+    );
+  }, [filteredBuses, busList]);
 
   // 상위 3개 노선만 슬라이싱
   const displayBuses = useMemo(() => {
