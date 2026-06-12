@@ -21,10 +21,10 @@ import type { BusData } from "@/types/bus";
 
 // 버스 노선 유형별 테마 컬러 매핑 함수
 function getBusColor(busNumber: string): string {
-  if (["8", "16", "41", "43-1", "순환41", "순환42", "순환43"].includes(busNumber)) {
+  if (["8", "16", "41", "43-1", "58", "셔틀", "순환41", "순환42", "순환43"].includes(busNumber)) {
     return "#0e4d9d"; // 간선/지선 블루
   }
-  if (["6", "6-1", "6-2"].includes(busNumber)) {
+  if (["6", "6-1", "6-2", "46"].includes(busNumber)) {
     return "#00a82f"; // 지선 그린
   }
   if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
