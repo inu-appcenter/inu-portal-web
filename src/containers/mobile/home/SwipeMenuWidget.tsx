@@ -116,9 +116,9 @@ export default function SwipeMenuWidget() {
 
   return (
     <CardWrapper $isSwiping={isSwiping}>
-      <GlowOverlay $active={isSwiping} />
       <SwiperContainer
-        slidesPerView={1}
+        slidesPerView={1.08}
+        spaceBetween={10}
         speed={300}
         onSliderMove={() => {
           setIsDragging(true);
@@ -183,9 +183,16 @@ export default function SwipeMenuWidget() {
 // --- Styled Components ---
 
 const CardWrapper = styled.div<{ $isSwiping: boolean }>`
-  background-color: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  padding: 10px;
+  box-shadow: ${({ $isSwiping }) =>
+    $isSwiping
+      ? "0 0 30px 10px rgba(255, 255, 255, 0.85)"
+      : "0 4px 20px 0 rgba(0, 97, 255, 0.06)"};
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
@@ -194,9 +201,9 @@ const CardWrapper = styled.div<{ $isSwiping: boolean }>`
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
 
-  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s ease-in-out;
   transform: ${({ $isSwiping }) => ($isSwiping ? "scale(0.96)" : "scale(1.0)")};
 
   &:active {
@@ -204,27 +211,16 @@ const CardWrapper = styled.div<{ $isSwiping: boolean }>`
   }
 `;
 
-const GlowOverlay = styled.div<{ $active: boolean }>`
-  position: absolute;
-  inset: -3px;
-  border-radius: 23px;
-  pointer-events: none;
-  z-index: 1;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 14px 4px rgba(255, 255, 255, 0.8);
-  opacity: ${({ $active }) => ($active ? 1 : 0)};
-  filter: blur(1px);
-  transition: opacity 0.25s ease-in-out;
-`;
-
 const SwiperContainer = styled(Swiper)`
-  border-radius: 20px;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
   height: 100%;
 `;
 
 const SlideContent = styled.div`
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   padding: 16px;
