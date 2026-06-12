@@ -129,6 +129,12 @@ export default function SwipeMenuWidget() {
           hasMovedRef.current = true;
           isDraggingRef.current = true;
         }}
+        onTransitionStart={() => {
+          // 빠른 Flick(휙 넘기기) 시 onSliderMove 누락 감지를 보완하고 스와이프 클래스를 보장합니다.
+          hasMovedRef.current = true;
+          isDraggingRef.current = true;
+          cardWrapperRef.current?.classList.add("swiping");
+        }}
         onTouchEnd={() => {
           if (!hasMovedRef.current) {
             cardWrapperRef.current?.classList.remove("swiping");
@@ -139,6 +145,7 @@ export default function SwipeMenuWidget() {
         }}
         onTransitionEnd={() => {
           cardWrapperRef.current?.classList.remove("swiping");
+          isDraggingRef.current = false;
         }}
       >
         {cafeterias.map((caf) => {
