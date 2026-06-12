@@ -32,7 +32,6 @@ export default function BusInfoPage() {
   const query = new URLSearchParams(location.search);
   const type = query.get("type");
   const tab = query.get("category");
-  const requestedBusId = query.get("busId");
 
   const defaultTab =
     type === "go-school"
@@ -44,11 +43,11 @@ export default function BusInfoPage() {
   const shouldUseNewUi =
     isSwitchableBusInfoType(type) && getStoredBusUiVersion() === "new";
   const redirectTarget = shouldUseNewUi
-    ? `${buildBusUiRoute({
+    ? buildBusUiRoute({
         type,
         category: selectedTab,
         version: "new",
-      })}${requestedBusId ? `&busId=${requestedBusId}` : ""}`
+      })
     : null;
 
   const [tabList, setTabList] = useState<string[]>([]);

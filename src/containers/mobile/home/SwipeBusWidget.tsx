@@ -412,7 +412,7 @@ export default function SwipeBusWidget() {
     } else {
       const type = isMorning ? "go-school" : "go-home";
       const baseRoute = getPreferredBusUiRoute(type, stopName);
-      navigate(`${baseRoute}&busId=${bus.id}`);
+      navigate(baseRoute);
     }
   };
 

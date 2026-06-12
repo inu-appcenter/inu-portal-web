@@ -56,7 +56,6 @@ export default function MobileBusMapPage() {
   );
   const type = searchParams.get("type");
   const requestedCategory = searchParams.get("category");
-  const requestedBusId = searchParams.get("busId");
 
   const pageConfig = useMemo(() => getBusMapPageConfig(type), [type]);
   const tabs = useMemo(() => getBusMapTabs(type), [type]);
@@ -92,9 +91,7 @@ export default function MobileBusMapPage() {
   const [selectedStopId, setSelectedStopId] = useState<string | null>(
     defaultStop?.id ?? null,
   );
-  const [selectedBusId, setSelectedBusId] = useState<number | null>(() => {
-    return requestedBusId ? parseInt(requestedBusId, 10) : null;
-  });
+  const [selectedBusId, setSelectedBusId] = useState<number | null>(null);
   const [snap, setSnap] = useState<string | number | null>(
     BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT,
   );
@@ -230,15 +227,9 @@ export default function MobileBusMapPage() {
     if (!isSelectedStopVisible) {
       setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
     }
-    setSelectedBusId(requestedBusId ? parseInt(requestedBusId, 10) : null);
+    setSelectedBusId(null);
     setSnap(BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT);
-  }, [activeStops, defaultStop?.id, selectedCategory, selectedStopId, requestedBusId]);
-
-  useEffect(() => {
-    if (requestedBusId) {
-      setSelectedBusId(parseInt(requestedBusId, 10));
-    }
-  }, [requestedBusId]);
+  }, [activeStops, defaultStop?.id, selectedCategory, selectedStopId]);
 
   useLayoutEffect(() => {
     if (redirectTarget || !pageConfig || typeof window === "undefined") {
