@@ -191,8 +191,6 @@ export default function SwipeMenuWidget() {
 
 const CardWrapper = styled.div`
   background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   border: 1px solid transparent;
   border-radius: 24px;
   padding: 0px;
@@ -208,13 +206,11 @@ const CardWrapper = styled.div`
   flex-direction: column;
   overflow: hidden;
 
-  will-change: padding, transform, backdrop-filter;
+  will-change: transform, background-color, border-color, box-shadow;
 
   transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
-              background 0.25s ease-in-out,
-              backdrop-filter 0.25s ease-in-out,
-              border 0.25s ease-in-out,
-              padding 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+              background-color 0.25s ease-in-out,
+              border-color 0.25s ease-in-out,
               box-shadow 0.25s ease-in-out;
               
   transform: scale(1.0);
@@ -224,12 +220,9 @@ const CardWrapper = styled.div`
   }
 
   &.swiping {
-    background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    padding: 10px;
-    box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.85);
+    background-color: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 25px 8px rgba(255, 255, 255, 0.7);
     transform: scale(0.96);
   }
 `;
@@ -264,7 +257,7 @@ const SlideContent = styled.div`
   .swiping & {
     border-radius: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transform: scale(0.92);
+    transform: scale(0.9);
   }
 `;
 
