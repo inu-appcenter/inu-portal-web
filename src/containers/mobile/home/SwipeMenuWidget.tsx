@@ -64,7 +64,7 @@ export default function SwipeMenuWidget() {
   // 메뉴 텍스트 정규식 추출 (엔터 기준 첫 번째 메뉴만 추출 후 가격 제거)
   const extractMenu = (input: string): string => {
     if (!input) return "";
-    const firstLine = input.split(/\r?\n/)[0].trim();
+    const firstLine = input.split(/\r?\n|\\n/)[0].trim();
     const match = firstLine.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
     return match ? match[1].trim() : firstLine;
   };
@@ -242,7 +242,7 @@ const WidgetHeader = styled.div`
 `;
 
 const WidgetTitle = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-secondary, #333d4b);
   font-size: 14px;
   font-style: normal;
   font-weight: 700;
@@ -254,7 +254,7 @@ const WidgetSubTitle = styled.span`
   color: var(--text-brand, #0061ff);
   font-size: 14px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 20px;
   text-align: right;
 `;
@@ -272,25 +272,25 @@ const MenuInfoRow = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 4px;
   width: 100%;
 `;
 
 const MenuCorner = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 12px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
-  line-height: 16px;
+  line-height: 20px;
 `;
 
 const MenuName = styled.span<{ $isEmpty: boolean }>`
   color: ${({ $isEmpty }) =>
     $isEmpty ? "var(--text-disabled, #b0b8c1)" : "var(--text-secondary, #333d4b)"};
-  font-size: 15px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 600;
-  line-height: 22px;
+  line-height: 24px;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
