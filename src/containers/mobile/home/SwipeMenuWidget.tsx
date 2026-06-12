@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -17,8 +17,9 @@ interface MenuData {
 export default function SwipeMenuWidget() {
   const navigate = useNavigate();
   const [menuDataList, setMenuDataList] = useState<Record<string, MenuData>>({});
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const cardWrapperRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const hasMovedRef = useRef(false);
 
   // 날짜 및 시간 구하기
   const today = useMemo(() => new Date().getDay(), []);
@@ -110,28 +111,34 @@ export default function SwipeMenuWidget() {
   }, [today]);
 
   const handleCardClick = (cafeteriaName: string) => {
-    if (isDragging) return;
+    if (isDraggingRef.current) return;
     navigate(`${ROUTES.BOARD.MENU}?category=${cafeteriaName}`);
   };
 
   return (
-    <CardWrapper $isSwiping={isSwiping}>
+    <CardWrapper ref={cardWrapperRef}>
       <SwiperContainer
         slidesPerView={1}
         spaceBetween={0}
         speed={300}
         onTouchStart={() => {
-          setIsSwiping(true);
-          setIsDragging(true);
+          hasMovedRef.current = false;
+          cardWrapperRef.current?.classList.add("swiping");
+        }}
+        onSliderMove={() => {
+          hasMovedRef.current = true;
+          isDraggingRef.current = true;
         }}
         onTouchEnd={() => {
-          setIsSwiping(false);
-          setTimeout(() => setIsDragging(false), 50);
+          if (!hasMovedRef.current) {
+            cardWrapperRef.current?.classList.remove("swiping");
+          }
+          setTimeout(() => {
+            isDraggingRef.current = false;
+          }, 100);
         }}
-        onTransitionStart={() => setIsSwiping(true)}
         onTransitionEnd={() => {
-          setIsSwiping(false);
-          setTimeout(() => setIsDragging(false), 50);
+          cardWrapperRef.current?.classList.remove("swiping");
         }}
       >
         {cafeterias.map((caf) => {
@@ -140,7 +147,7 @@ export default function SwipeMenuWidget() {
 
           return (
             <SwiperSlide key={caf.title}>
-              <SlideContent $isSwiping={isSwiping} onClick={() => handleCardClick(caf.title)}>
+              <SlideContent onClick={() => handleCardClick(caf.title)}>
                 <WidgetHeader>
                   <WidgetTitle>식당 메뉴</WidgetTitle>
                   <WidgetSubTitle>{caf.title}</WidgetSubTitle>
@@ -182,20 +189,15 @@ export default function SwipeMenuWidget() {
 
 // --- Styled Components ---
 
-const CardWrapper = styled.div<{ $isSwiping: boolean }>`
-  background: ${({ $isSwiping }) =>
-    $isSwiping ? "rgba(255, 255, 255, 0.45)" : "transparent"};
-  backdrop-filter: ${({ $isSwiping }) =>
-    $isSwiping ? "blur(16px)" : "none"};
-  -webkit-backdrop-filter: ${({ $isSwiping }) =>
-    $isSwiping ? "blur(16px)" : "none"};
-  border: 1px solid
-    ${({ $isSwiping }) => ($isSwiping ? "rgba(255, 255, 255, 0.5)" : "transparent")};
+const CardWrapper = styled.div`
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid transparent;
   border-radius: 24px;
-  padding: ${({ $isSwiping }) => ($isSwiping ? "10px" : "0px")};
+  padding: 0px;
+  box-shadow: none;
   
-  box-shadow: ${({ $isSwiping }) =>
-    $isSwiping ? "0 0 30px 10px rgba(255, 255, 255, 0.85)" : "none"};
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
@@ -215,10 +217,20 @@ const CardWrapper = styled.div<{ $isSwiping: boolean }>`
               padding 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
               box-shadow 0.25s ease-in-out;
               
-  transform: ${({ $isSwiping }) => ($isSwiping ? "scale(0.96)" : "scale(1.0)")};
+  transform: scale(1.0);
 
   &:active {
     transform: scale(0.98);
+  }
+
+  &.swiping {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 10px;
+    box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.85);
+    transform: scale(0.96);
   }
 `;
 
@@ -228,11 +240,10 @@ const SwiperContainer = styled(Swiper)`
   height: 100%;
 `;
 
-const SlideContent = styled.div<{ $isSwiping: boolean }>`
+const SlideContent = styled.div`
   background-color: #ffffff;
-  border-radius: ${({ $isSwiping }) => ($isSwiping ? "16px" : "20px")};
-  box-shadow: ${({ $isSwiping }) =>
-    $isSwiping ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "0 4px 20px 0 rgba(0, 97, 255, 0.06)"};
+  border-radius: 20px;
+  box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -242,12 +253,19 @@ const SlideContent = styled.div<{ $isSwiping: boolean }>`
   height: 100%;
   min-width: 0;
   
-  transform: ${({ $isSwiping }) => ($isSwiping ? "scale(0.92)" : "scale(1.0)")};
+  transform: scale(1.0);
   transform-origin: center center;
   
   transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
               border-radius 0.25s ease-in-out,
               box-shadow 0.25s ease-in-out;
+
+  /* CardWrapper가 swiping 클래스를 가지고 있을 때 내부 SlideContent 축소 */
+  .swiping & {
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transform: scale(0.92);
+  }
 `;
 
 const WidgetHeader = styled.div`
