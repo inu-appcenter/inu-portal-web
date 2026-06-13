@@ -323,7 +323,10 @@ if (typeof window !== "undefined") {
 
     // 2. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
     if (supportsMultiWebView() && !isMainTabPath(path) && !isTabNavigation && !opts?.replace) {
-      appBridge.navigateTo(path);
+      const fullPath = typeof to === "string"
+        ? to
+        : `${to.pathname || ""}${to.search || ""}${to.hash || ""}`;
+      appBridge.navigateTo(fullPath);
       return Promise.resolve(); // 현재 웹뷰에서의 SPA 라우팅을 수행하지 않음
     }
 
