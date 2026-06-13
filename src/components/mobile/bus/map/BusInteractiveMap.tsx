@@ -5,6 +5,7 @@ import {
   MapMarker,
   MapTypeControl,
   Polyline,
+  useKakaoLoader,
 } from "react-kakao-maps-sdk";
 import styled from "styled-components";
 import type { BusData, LatLng } from "@/types/bus";
@@ -73,6 +74,11 @@ export default function BusInteractiveMap({
   routeViewportPadding,
   onSelectStop,
 }: BusInteractiveMapProps) {
+  useKakaoLoader({
+    appkey: "2c47e11928ed2d4c2829fa7dfabb59f8",
+    libraries: ["services", "clusterer", "drawing"],
+  });
+
   const [mapInstance, setMapInstance] = useState<kakao.maps.Map | null>(null);
   const [mapCenter, setMapCenter] = useState(center);
   const [routeCenter, setRouteCenter] = useState<LatLng | null>(null);

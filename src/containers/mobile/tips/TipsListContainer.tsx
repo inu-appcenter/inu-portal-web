@@ -246,18 +246,14 @@ export default function TipsListContainer({
               <Box>
                 {posts.map((p, i) => (
                   <Fragment key={p.id}>
-                    <div
+                    <PostItem
+                      title={p.title}
+                      category={p.category}
+                      date={p.createDate}
+                      writer={p.writer}
                       onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(p.id))}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <PostItem
-                        title={p.title}
-                        category={p.category}
-                        date={p.createDate}
-                        writer={p.writer}
-                      />
-                    </div>
-                    {i < posts.length - 1 && <Divider margin={"16px 0"} />}
+                    />
+                    {i < posts.length - 1 && <Divider margin="0" />}
                   </Fragment>
                 ))}
               </Box>

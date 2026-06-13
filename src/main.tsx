@@ -9,6 +9,7 @@ import "@/styles/variables.css";
 
 initMixpanel();
 
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

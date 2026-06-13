@@ -259,7 +259,7 @@ const LineArea = styled.div<{ $embedded: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: ${({ $embedded }) => ($embedded ? "64px 16px 24px" : "64px 0 20px")};
+  padding: ${({ $embedded }) => ($embedded ? "64px 16px 24px" : "64px 20px 20px")};
 `;
 
 const Line = styled.div`

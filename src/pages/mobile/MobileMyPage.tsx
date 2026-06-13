@@ -20,6 +20,7 @@ import {
   DESKTOP_MEDIA,
   DESKTOP_READING_WIDTH,
 } from "@/styles/responsive";
+import Ripple from "@/components/common/Ripple";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -167,6 +168,7 @@ export default function MobileMyPage() {
                 key={index}
                 onClick={() => handleClick(category.title)}
               >
+                <Ripple />
                 <span>
                   {renderMenuIcon(category.image, category.title)}
 
@@ -186,6 +188,7 @@ export default function MobileMyPage() {
               className="item"
               onClick={() => handleClick("관리자 페이지")}
             >
+              <Ripple />
               <span>
                 {renderMenuIcon()}
                 <div>관리자 페이지</div>
@@ -199,6 +202,7 @@ export default function MobileMyPage() {
               key={index}
               onClick={() => handleClick(category.title)}
             >
+              <Ripple />
               <span>
                 {renderMenuIcon(category.image, category.title)}
                 <div>
@@ -210,6 +214,7 @@ export default function MobileMyPage() {
             </div>
           ))}{" "}
           <div className="item" onClick={() => handleClick("알림 설정 확인")}>
+            <Ripple />
             <span>
               {renderMenuIcon()}
               <div>
@@ -431,13 +436,19 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
     padding: 12px 16px;
     border-radius: 12px;
     box-sizing: border-box;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    cursor: pointer;
-    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.2s ease;
 
-    &:active {
+    &.active-touch {
       background-color: #f8f9fa;
-      transform: scale(0.99);
+      > *:not(.ripple-container) {
+        transform: scale(0.97);
+      }
+    }
+
+    > *:not(.ripple-container) {
+      transition: transform 0.12s ease-in-out;
     }
 
     word-break: keep-all;
@@ -510,8 +521,10 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
           0 6px 12px rgba(15, 36, 71, 0.04);
       }
 
-      &:active {
-        transform: scale(0.99);
+      &.active-touch {
+        > *:not(.ripple-container) {
+          transform: scale(0.97);
+        }
       }
 
       span {
