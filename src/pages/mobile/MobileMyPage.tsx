@@ -20,6 +20,7 @@ import {
   DESKTOP_MEDIA,
   DESKTOP_READING_WIDTH,
 } from "@/styles/responsive";
+import Ripple from "@/components/common/Ripple";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -178,6 +179,7 @@ export default function MobileMyPage() {
                   </div>
                 </span>
                 <Arrow src={arrowImg} />
+                <Ripple color="rgba(0, 0, 0, 0.12)" />
               </div>
             ))}
           {/* admin role일 경우 관리자 페이지 추가 */}
@@ -191,6 +193,7 @@ export default function MobileMyPage() {
                 <div>관리자 페이지</div>
               </span>
               <Arrow src={arrowImg} />
+              <Ripple color="rgba(0, 0, 0, 0.12)" />
             </div>
           )}
           {MyPageCategoryCommon.map((category, index) => (
@@ -207,6 +210,7 @@ export default function MobileMyPage() {
                 </div>
               </span>
               <Arrow src={arrowImg} />
+              <Ripple color="rgba(0, 0, 0, 0.12)" />
             </div>
           ))}{" "}
           <div className="item" onClick={() => handleClick("알림 설정 확인")}>
@@ -218,6 +222,7 @@ export default function MobileMyPage() {
               </div>
             </span>
             <Arrow src={arrowImg} />
+            <Ripple color="rgba(0, 0, 0, 0.12)" />
           </div>
         </CategoryWrapper>
       </DesktopContentGrid>
@@ -427,13 +432,13 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
     padding: 12px 16px;
     border-radius: 12px;
     box-sizing: border-box;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    cursor: pointer;
-    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.12s ease-in-out, background-color 0.2s ease;
 
     &:active {
       background-color: #f8f9fa;
-      transform: scale(0.99);
+      transform: scale(0.97);
     }
 
     word-break: keep-all;
@@ -507,7 +512,7 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
       }
 
       &:active {
-        transform: scale(0.99);
+        transform: scale(0.97);
       }
 
       span {

@@ -10,6 +10,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import Skeleton from "@/components/common/Skeleton";
+import Ripple from "@/components/common/Ripple";
 
 interface AppItemProps {
   iconSrc: string | null;
@@ -26,6 +27,7 @@ const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
         <div className="title">{title}</div>
         <div className="description">{description}</div>
       </ContentArea>
+      <Ripple color="rgba(0, 0, 0, 0.12)" />
     </AppItemWrapper>
   );
 };
@@ -143,10 +145,18 @@ const AppItemWrapper = styled.div`
   justify-content: start;
   box-sizing: border-box;
   text-align: start;
-  padding: 8px 0;
+  padding: 12px;
+  border-radius: 12px;
   cursor: pointer;
-
   width: 100%;
+  position: relative;
+  overflow: hidden;
+  
+  transition: transform 0.12s ease-in-out;
+
+  &:active {
+    transform: scale(0.97);
+  }
 `;
 
 const Icon = styled.img`

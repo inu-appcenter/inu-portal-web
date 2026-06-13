@@ -2,6 +2,7 @@ import styled, { css } from "styled-components";
 import Badge from "@/components/common/Badge";
 import Skeleton from "@/components/common/Skeleton";
 import { Eye } from "lucide-react";
+import Ripple from "@/components/common/Ripple";
 
 interface NoticeItemProps {
   category?: string;
@@ -36,7 +37,7 @@ const PostItem = ({
 
   if (isLoading) {
     return (
-      <NoticeItemWrapper>
+      <NoticeItemWrapper $interactive={false}>
         {/* 카테고리 스켈레톤 */}
         <Skeleton width={60} height={18} />
         {/* 제목 스켈레톤 */}
@@ -56,7 +57,7 @@ const PostItem = ({
   }
 
   return (
-    <NoticeItemWrapper onClick={onClick}>
+    <NoticeItemWrapper onClick={onClick} $interactive={!!onClick}>
       {category && <Category>{category}</Category>}
       <Title isEllipsis={isEllipsis}>{title || ""}</Title>
       {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
@@ -74,18 +75,34 @@ const PostItem = ({
           )}
         </InfoLine>
       )}
+      {onClick && <Ripple color="rgba(0, 0, 0, 0.1)" />}
     </NoticeItemWrapper>
   );
 };
 
 export default PostItem;
 
-const NoticeItemWrapper = styled.div`
+const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  cursor: pointer;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+
+  ${({ $interactive }) =>
+    $interactive &&
+    css`
+      cursor: pointer;
+      transition: transform 0.12s ease-in-out;
+
+      &:active {
+        transform: scale(0.97);
+      }
+    `}
 `;
 
 const Category = styled.div`
