@@ -171,7 +171,7 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
     };
 
     parent.addEventListener("pointerdown", pointerDownHandler);
-    parent.addEventListener("pointermove", pointerMoveHandler);
+    parent.addEventListener("pointermove", pointerMoveHandler, { passive: true });
     parent.addEventListener("pointerup", pointerUpHandler);
     parent.addEventListener("pointerleave", pointerCancelHandler);
     parent.addEventListener("pointercancel", pointerCancelHandler);
