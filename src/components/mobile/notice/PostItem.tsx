@@ -38,82 +38,83 @@ const PostItem = ({
   if (isLoading) {
     return (
       <NoticeItemWrapper $interactive={false}>
-        {/* 카테고리 스켈레톤 */}
-        <Skeleton width={60} height={18} />
-        {/* 제목 스켈레톤 */}
-        <Skeleton width="100%" height={20} />
-        {/* 내용 스켈레톤 */}
-        <Skeleton width="100%" height={16} />
-        <InfoLine>
-          <div style={{ display: "flex", gap: "8px" }}>
-            {/* 날짜 스켈레톤 */}
-            <Skeleton width={80} height={14} />
-          </div>
-          {/* 작성자 뱃지 스켈레톤 */}
-          <Skeleton width={50} height={14} />
-        </InfoLine>
+        <InnerContent>
+          {/* 카테고리 스켈레톤 */}
+          <Skeleton width={60} height={18} />
+          {/* 제목 스켈레톤 */}
+          <Skeleton width="100%" height={20} />
+          {/* 내용 스켈레톤 */}
+          <Skeleton width="100%" height={16} />
+          <InfoLine>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {/* 날짜 스켈레톤 */}
+              <Skeleton width={80} height={14} />
+            </div>
+            {/* 작성자 뱃지 스켈레톤 */}
+            <Skeleton width={50} height={14} />
+          </InfoLine>
+        </InnerContent>
       </NoticeItemWrapper>
     );
   }
 
   return (
     <NoticeItemWrapper onClick={onClick} $interactive={!!onClick}>
-      {onClick && <Ripple color="rgba(243, 244, 247, 0.7)" />}
-      {category && <Category>{category}</Category>}
-      <Title isEllipsis={isEllipsis}>{title || ""}</Title>
-      {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
-      {hasInfoLine && (
-        <InfoLine>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            {showDate && date && <div className="date">{date}</div>}
-            {showWriter && writer && <Badge text={writer} />}
-          </div>
-          {views !== undefined && (
-            <ViewCount>
-              <Eye size={14} />
-              {views}
-            </ViewCount>
-          )}
-        </InfoLine>
-      )}
+      {onClick && <Ripple />}
+      <InnerContent>
+        {category && <Category>{category}</Category>}
+        <Title isEllipsis={isEllipsis}>{title || ""}</Title>
+        {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
+        {hasInfoLine && (
+          <InfoLine>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              {showDate && date && <div className="date">{date}</div>}
+              {showWriter && writer && <Badge text={writer} />}
+            </div>
+            {views !== undefined && (
+              <ViewCount>
+                <Eye size={14} />
+                {views}
+              </ViewCount>
+            )}
+          </InfoLine>
+        )}
+      </InnerContent>
     </NoticeItemWrapper>
   );
 };
 
 export default PostItem;
 
-const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
+const InnerContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  transition: transform 0.12s ease-in-out;
+`;
+
+const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
+  padding: 16px 20px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 
   ${({ $interactive }) =>
     $interactive
       ? css`
-          padding: 12px;
-          margin: 2px -12px;
-          width: calc(100% + 24px);
-          border-radius: 12px;
-          position: relative;
-          overflow: hidden;
           cursor: pointer;
 
           &.active-touch {
-            > *:not(.ripple-container) {
+            ${InnerContent} {
               transform: scale(0.97);
             }
           }
-
-          > *:not(.ripple-container) {
-            transition: transform 0.12s ease-in-out;
-          }
         `
       : css`
-          padding: 0;
-          margin: 0;
-          width: 100%;
-          border-radius: 0;
         `}
 `;
 

@@ -52,7 +52,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           onClick={leftButton.onClick}
           disabled={leftButton.disabled}
         >
-          {!leftButton.disabled && <Ripple color="rgba(243, 244, 247, 0.7)" />}
+          {!leftButton.disabled && <Ripple />}
           {leftButton.label}
         </GroupButton>
         <GroupButton

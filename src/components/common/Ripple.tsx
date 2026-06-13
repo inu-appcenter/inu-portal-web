@@ -35,10 +35,8 @@ const RippleSpan = styled.span<{ $isReleased: boolean }>`
   transform-origin: center;
   pointer-events: none;
 
-  /* Scale up animation */
   animation: ${rippleScale} var(--ripple-duration, 350ms) cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 
-  /* Fade out transition when released */
   opacity: ${props => props.$isReleased ? 0 : 1};
   transition: opacity 250ms ease-out;
 `;
@@ -109,7 +107,7 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
       isScrolling = false;
       spawnedLatestRippleId = null;
 
-      // Delay ripple and scale activation to discriminate swipe/scroll (80ms)
+      // 스크롤 판별을 위한 80ms 지연
       activeTimer = window.setTimeout(() => {
         if (!isScrolling) {
           spawnRipple(e.clientX, e.clientY);
@@ -123,7 +121,7 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
       const diffX = Math.abs(e.clientX - startX);
       const diffY = Math.abs(e.clientY - startY);
 
-      // Cancel if pointer moved more than 8px (considered scrolling)
+      // 8px 이상 이동 시 스크롤 판단 및 터치 취소
       if (diffX > 8 || diffY > 8) {
         isScrolling = true;
         if (activeTimer) {
@@ -132,7 +130,6 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
         }
         parent.classList.remove("active-touch");
 
-        // If ripple had already spawned, release it immediately
         if (spawnedLatestRippleId !== null) {
           const targetId = spawnedLatestRippleId;
           setRipples((prev) =>
@@ -149,12 +146,10 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
         activeTimer = null;
       }
 
-      // If finger lifted quickly without scroll, trigger ripple and active state instantly
       if (!isScrolling && spawnedLatestRippleId === null) {
         spawnRipple(e.clientX, e.clientY);
       }
 
-      // Release active ripples
       setRipples((prev) =>
         prev.map((r) => (r.isReleased ? r : { ...r, isReleased: true }))
       );

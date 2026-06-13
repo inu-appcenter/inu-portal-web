@@ -168,7 +168,7 @@ export default function MobileMyPage() {
                 key={index}
                 onClick={() => handleClick(category.title)}
               >
-                <Ripple color="rgba(243, 244, 247, 0.7)" />
+                <Ripple />
                 <span>
                   {renderMenuIcon(category.image, category.title)}
 
@@ -188,7 +188,7 @@ export default function MobileMyPage() {
               className="item"
               onClick={() => handleClick("관리자 페이지")}
             >
-              <Ripple color="rgba(243, 244, 247, 0.7)" />
+              <Ripple />
               <span>
                 {renderMenuIcon()}
                 <div>관리자 페이지</div>
@@ -202,7 +202,7 @@ export default function MobileMyPage() {
               key={index}
               onClick={() => handleClick(category.title)}
             >
-              <Ripple color="rgba(243, 244, 247, 0.7)" />
+              <Ripple />
               <span>
                 {renderMenuIcon(category.image, category.title)}
                 <div>
@@ -214,7 +214,7 @@ export default function MobileMyPage() {
             </div>
           ))}{" "}
           <div className="item" onClick={() => handleClick("알림 설정 확인")}>
-            <Ripple color="rgba(243, 244, 247, 0.7)" />
+            <Ripple />
             <span>
               {renderMenuIcon()}
               <div>

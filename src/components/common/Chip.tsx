@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
 import Ripple from "./Ripple";
 
@@ -28,18 +27,27 @@ const Chip = ({
       }}
       $isAIButton={isAIButton}
     >
-      <Ripple color="#F3F4F7" />
-      {iconSrc && <Icon src={iconSrc} alt="" />}
-      {IconComponent && <IconComponent size={18} color="#4071B9" />}
-      <ContentArea>
-        <div className="title">{title}</div>
-        {isExternalLink && <img src={외부연결버튼} />}
-      </ContentArea>
+      <Ripple />
+      <InnerContent>
+        {iconSrc && <Icon src={iconSrc} alt="" />}
+        {IconComponent && <IconComponent size={18} color="#4071B9" />}
+        <ContentArea>
+          <div className="title">{title}</div>
+          {isExternalLink && <img src={외부연결버튼} />}
+        </ContentArea>
+      </InnerContent>
     </ChipWrapper>
   );
 };
 
 export default Chip;
+
+const InnerContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.12s ease-in-out;
+`;
 
 const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   display: flex;
@@ -55,7 +63,6 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
     $isAIButton
       ? "linear-gradient(270deg, #EFFFF4 0%, #DEEFFF 67.31%, #FEEDFF 100%)"
       : "#fff"};
-  //box-shadow: ${SOFT_CHIP_SHADOW};
   position: relative;
   overflow: hidden;
   border: none;
@@ -63,13 +70,9 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   cursor: pointer;
 
   &.active-touch {
-    > *:not(.ripple-container) {
+    ${InnerContent} {
       transform: scale(0.96);
     }
-  }
-
-  > *:not(.ripple-container) {
-    transition: transform 0.12s ease-in-out;
   }
 `;
 

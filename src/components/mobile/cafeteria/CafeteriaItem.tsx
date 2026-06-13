@@ -118,6 +118,7 @@ const DetailWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 16px 20px;
 
   .info {
     font-size: 13px;

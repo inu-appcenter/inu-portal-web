@@ -8,6 +8,8 @@ import Box from "@/components/common/Box";
 import type { NoticeSort } from "@/apis/notices";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
+import Ripple from "@/components/common/Ripple";
+
 interface VideoData {
   id: string;
   title: string;
@@ -28,7 +30,6 @@ const fetchYoutubeVideos = async (sort: NoticeSort): Promise<VideoData[]> => {
       `https://www.googleapis.com/youtube/v3/playlistItems?key=${API_KEY}&playlistId=${UPLOADS_PLAYLIST_ID}&part=snippet&maxResults=3`,
     );
 
-    // 응답 상태 확인 및 에러 발생
     if (!playlistResponse.ok) throw new Error("유튜브 API 호출 실패");
 
     const playlistData = await playlistResponse.json();
@@ -46,7 +47,6 @@ const fetchYoutubeVideos = async (sort: NoticeSort): Promise<VideoData[]> => {
       `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=id&order=viewCount&maxResults=3&type=video`,
     );
 
-    // 응답 상태 확인 및 에러 발생
     if (!searchResponse.ok) throw new Error("유튜브 API 호출 실패");
 
     const searchData = await searchResponse.json();
@@ -63,7 +63,6 @@ const fetchYoutubeVideos = async (sort: NoticeSort): Promise<VideoData[]> => {
     `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&id=${videoIds}&part=snippet,statistics`,
   );
 
-  // 응답 상태 확인 및 에러 발생
   if (!videosResponse.ok) throw new Error("유튜브 상세 정보 호출 실패");
 
   const videosData = await videosResponse.json();
@@ -95,7 +94,7 @@ const YoutubeListWidget = () => {
     queryKey: ["youtubeVideos", sort],
     queryFn: () => fetchYoutubeVideos(sort),
     staleTime: 1000 * 60 * 60,
-    retry: false, // 테스트를 위해 재시도 비활성화
+    retry: false,
   });
 
   const formatViewCount = (count: string) => {
@@ -111,29 +110,29 @@ const YoutubeListWidget = () => {
 
   return (
     <Box>
-      <SortDropBox sort={sort} setSort={handleSortChange} />
+      <SortHeader>
+        <SortDropBox sort={sort} setSort={handleSortChange} />
+      </SortHeader>
 
-      {/* 로딩 중이거나 에러 발생 시 스켈레톤 유지 */}
       {isLoading || isError ? (
         <ListContainer>
           {[...Array(3)].map((_, i) => (
             <div key={i}>
-              <VideoItem style={{ cursor: "default" }}>
-                {/* 썸네일 영역 스켈레톤 */}
-                <Skeleton width={120} height={68} />
+              <VideoItemWrapper style={{ cursor: "default" }}>
+                <InnerContent>
+                  <Skeleton width={120} height={68} />
 
-                <InfoWrapper>
-                  <TitleSkeletonWrapper>
-                    {/* 제목 영역 스켈레톤 */}
-                    <Skeleton width="100%" height={15} />
-                    <Skeleton width="70%" height={15} />
-                  </TitleSkeletonWrapper>
+                  <InfoWrapper>
+                    <TitleSkeletonWrapper>
+                      <Skeleton width="100%" height={15} />
+                      <Skeleton width="70%" height={15} />
+                    </TitleSkeletonWrapper>
 
-                  {/* 하단 정보 스켈레톤 */}
-                  <Skeleton width="40%" height={12} />
-                </InfoWrapper>
-              </VideoItem>
-              {i < 2 && <Divider margin={"16px 0"} />}
+                    <Skeleton width="40%" height={12} />
+                  </InfoWrapper>
+                </InnerContent>
+              </VideoItemWrapper>
+              {i < 2 && <Divider margin="0" />}
             </div>
           ))}
         </ListContainer>
@@ -141,24 +140,27 @@ const YoutubeListWidget = () => {
         <ListContainer>
           {videos.map((video, i) => (
             <div key={video.id}>
-              <VideoItem onClick={() => handleVideoClick(video.title, video.id)}>
-                <Thumbnail src={video.thumbnailUrl} alt={video.title} />
-                <InfoWrapper>
-                  <VideoTitle
-                    dangerouslySetInnerHTML={{ __html: video.title }}
-                  />
-                  <MetaInfo>
-                    <InfoText>
-                      조회수 {formatViewCount(video.viewCount)}
-                    </InfoText>
-                    <DividerDot>•</DividerDot>
-                    <InfoText className="date">
-                      {new Date(video.publishedAt).toLocaleDateString()}
-                    </InfoText>
-                  </MetaInfo>
-                </InfoWrapper>
-              </VideoItem>
-              {videos.length - 1 > i && <Divider margin={"16px 0"} />}
+              <VideoItemWrapper onClick={() => handleVideoClick(video.title, video.id)}>
+                <Ripple />
+                <InnerContent>
+                  <Thumbnail src={video.thumbnailUrl} alt={video.title} />
+                  <InfoWrapper>
+                    <VideoTitle
+                      dangerouslySetInnerHTML={{ __html: video.title }}
+                    />
+                    <MetaInfo>
+                      <InfoText>
+                        조회수 {formatViewCount(video.viewCount)}
+                      </InfoText>
+                      <DividerDot>•</DividerDot>
+                      <InfoText className="date">
+                        {new Date(video.publishedAt).toLocaleDateString()}
+                      </InfoText>
+                    </MetaInfo>
+                  </InfoWrapper>
+                </InnerContent>
+              </VideoItemWrapper>
+              {videos.length - 1 > i && <Divider margin="0" />}
             </div>
           ))}
         </ListContainer>
@@ -169,20 +171,35 @@ const YoutubeListWidget = () => {
 
 export default YoutubeListWidget;
 
+const SortHeader = styled.div`
+  padding: 16px 20px 0;
+`;
+
 const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
 `;
 
-const VideoItem = styled.div`
+const InnerContent = styled.div`
   display: flex;
   width: 100%;
-  cursor: pointer;
-  transition: opacity 0.2s;
+  transition: transform 0.12s ease-in-out;
+`;
 
-  &:hover {
-    opacity: 0.7;
+const VideoItemWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &.active-touch {
+    ${InnerContent} {
+      transform: scale(0.97);
+    }
   }
 `;
 

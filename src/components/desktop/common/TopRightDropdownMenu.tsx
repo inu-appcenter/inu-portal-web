@@ -2,6 +2,7 @@ import React, { useState, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { MoreVertical } from "lucide-react";
+import Ripple from "@/components/common/Ripple";
 
 type MenuItemType = {
   label: string;
@@ -62,6 +63,7 @@ const TopRightDropdownMenu: React.FC<TopRightDropdownMenuProps> = ({
   return (
     <Container>
       <MenuButton ref={buttonRef} onClick={handleToggle}>
+        <Ripple />
         <MoreVertical size={24} color={color || "black"} />
       </MenuButton>
 
@@ -82,6 +84,7 @@ const TopRightDropdownMenu: React.FC<TopRightDropdownMenuProps> = ({
                     handleClose();
                   }}
                 >
+                  <Ripple />
                   {item.label}
                 </MenuItem>
               ))}
@@ -122,6 +125,10 @@ const MenuButton = styled.button`
   background-color: transparent;
   border: none;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  outline: none;
 `;
 
 const unfurlAnimation = keyframes`
@@ -152,12 +159,11 @@ const Dropdown = styled.div<{ $isOpen: boolean }>`
   background-color: white;
   border-radius: 16px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 16px;
+  padding: 8px 0;
   box-sizing: border-box;
   min-width: 160px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   align-items: stretch;
   transform-origin: top right;
   animation: ${({ $isOpen }) => ($isOpen ? unfurlAnimation : furlAnimation)} 0.12s
@@ -165,20 +171,25 @@ const Dropdown = styled.div<{ $isOpen: boolean }>`
 `;
 
 const MenuItem = styled.button`
-  all: unset;
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 24px;
+  min-height: 40px;
   box-sizing: border-box;
   cursor: pointer;
   color: black;
   font-size: 14px;
   line-height: 1.4;
-  padding: 4px 0;
+  padding: 10px 16px;
   word-break: keep-all;
+  background: transparent;
+  border: none;
+  outline: none;
+  position: relative;
+  overflow: hidden;
 
   &:hover {
     font-weight: 500;
+    background-color: rgba(243, 244, 247, 0.4);
   }
 `;
