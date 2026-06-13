@@ -1,5 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
+
 
 // Layouts
 import RootLayout from "@/layout/RootLayout";
@@ -268,3 +270,66 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+const MAIN_TAB_PATHS = new Set([
+  "/",
+  "/home",
+  "/bus",
+  "/chat/list",
+  "/save",
+  "/mypage",
+  "/timetable",
+  "/m",
+  "/m/home",
+  "/m/bus",
+  "/m/chat/list",
+  "/m/save",
+  "/m/mypage",
+  "/m/timetable"
+]);
+
+function isMainTabPath(path: string): boolean {
+  if (!path) return false;
+  const cleanPath = path.split("?")[0].split("#")[0];
+  return MAIN_TAB_PATHS.has(cleanPath);
+}
+
+function getPathname(to: any): string {
+  if (!to) return "";
+  if (typeof to === "string") {
+    return to.split("?")[0].split("#")[0];
+  }
+  if (typeof to === "object" && to !== null) {
+    return to.pathname || "";
+  }
+  return "";
+}
+
+if (typeof window !== "undefined") {
+  const originalNavigate = router.navigate;
+
+  (router as any).navigate = function (to: any, opts?: any) {
+    // 1. 숫자가 전달된 경우 (뒤로가기)
+    if (typeof to === "number") {
+      if (to === -1 && supportsMultiWebView()) {
+        appBridge.goBack();
+        return Promise.resolve();
+      }
+      return (originalNavigate as any).call(router, to, opts);
+    }
+
+    const path = getPathname(to);
+    const isTabNavigation = opts?.state?.isTabNavigation === true;
+
+    // 2. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
+    if (supportsMultiWebView() && !isMainTabPath(path) && !isTabNavigation && !opts?.replace) {
+      appBridge.navigateTo(path);
+      return Promise.resolve(); // 현재 웹뷰에서의 SPA 라우팅을 수행하지 않음
+    }
+
+    return (originalNavigate as any).call(router, to, opts);
+  };
+
+}
+
+

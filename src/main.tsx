@@ -8,6 +8,7 @@ import { initMixpanel } from "./utils/mixpanel";
 
 initMixpanel();
 
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

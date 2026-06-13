@@ -3,6 +3,7 @@ import styled from "styled-components";
 import intipLogo from "@/resources/assets/intip-logo.webp";
 import { useNavigate } from "react-router-dom";
 import { forwardRef } from "react";
+import { useCustomNavigate } from "@/hooks/useCustomNavigate";
 
 import { Bell } from "lucide-react";
 import BackButton from "@/components/mobile/login/BackButton";
@@ -82,7 +83,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       isScrolled,
     } = useHeaderConfig(targetPath);
 
-    const navigate = useNavigate();
+    const navigate = useCustomNavigate();
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -101,6 +102,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       }
       navigate(-1);
     };
+
 
     if (visible === false) return null;
 

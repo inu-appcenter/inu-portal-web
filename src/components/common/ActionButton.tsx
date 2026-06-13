@@ -23,6 +23,11 @@ const ActionButton = styled.button<ActionButtonProps>`
   transition: all 0.2s ease-in-out;
   cursor: pointer;
 
+  &:active {
+    transform: scale(0.96);
+  }
+
+
   /* button 태그 기본 스타일 초기화 */
   border: none;
   outline: none;

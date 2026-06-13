@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef, useLayoutEffect } from "react";
-import { Map, MapTypeControl, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
+import { Map, MapTypeControl, MapMarker, CustomOverlayMap, useKakaoLoader } from "react-kakao-maps-sdk";
 import styled from "styled-components";
 import { Navigation } from "lucide-react"; // 내 위치 아이콘용
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB";
@@ -107,6 +107,11 @@ const KakaoMap = ({
   isTracking = false,
   setIsTracking,
 }: Props) => {
+  useKakaoLoader({
+    appkey: "2c47e11928ed2d4c2829fa7dfabb59f8",
+    libraries: ["services", "clusterer", "drawing"],
+  });
+
   const [mapInstance, setInternalMap] = useState<kakao.maps.Map | null>(null);
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
