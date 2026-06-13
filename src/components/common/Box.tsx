@@ -27,8 +27,9 @@ const BoxWrapper = styled.div<{ $interactive?: boolean }>`
   align-items: flex-start;
   align-self: stretch;
 
-  border-radius: 20px;
-  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--border-default, #E5E8EB);
+  background: var(--bg-base, #FFF);
   position: relative;
   overflow: hidden;
 
