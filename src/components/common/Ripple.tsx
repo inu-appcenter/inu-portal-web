@@ -6,16 +6,15 @@ interface RippleInstance {
   y: number;
   size: number;
   id: number;
+  isReleased: boolean;
 }
 
-const rippleAnimation = keyframes`
+const rippleScale = keyframes`
   from {
     transform: scale(0);
-    opacity: 1;
   }
   to {
     transform: scale(1);
-    opacity: 0;
   }
 `;
 
@@ -27,18 +26,21 @@ const RippleContainer = styled.div`
   left: 0;
   pointer-events: none;
   z-index: 0;
+`;
 
-  span {
-    border-radius: 100%;
-    position: absolute;
-    background-color: var(--ripple-color, rgba(255, 255, 255, 0.3));
-    animation-name: ${rippleAnimation};
-    animation-duration: var(--ripple-duration, 400ms);
-    animation-fill-mode: forwards;
-    animation-timing-function: cubic-bezier(0.1, 0.8, 0.3, 1);
-    pointer-events: none;
-    transform-origin: center;
-  }
+const RippleSpan = styled.span<{ $isReleased: boolean }>`
+  border-radius: 100%;
+  position: absolute;
+  background-color: var(--ripple-color, rgba(255, 255, 255, 0.45));
+  transform-origin: center;
+  pointer-events: none;
+
+  /* Scale up animation */
+  animation: ${rippleScale} var(--ripple-duration, 350ms) cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+
+  /* Fade out transition when released */
+  opacity: ${props => props.$isReleased ? 0 : 1};
+  transition: opacity 250ms ease-out;
 `;
 
 interface RippleProps {
@@ -46,7 +48,7 @@ interface RippleProps {
   duration?: number;
 }
 
-export default function Ripple({ color = "rgba(255, 255, 255, 0.3)", duration = 400 }: RippleProps) {
+export default function Ripple({ color = "rgba(255, 255, 255, 0.45)", duration = 350 }: RippleProps) {
   const [ripples, setRipples] = useState<RippleInstance[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -84,14 +86,28 @@ export default function Ripple({ color = "rgba(255, 255, 255, 0.3)", duration = 
         y: rippleY,
         size,
         id: Date.now() + Math.random(),
+        isReleased: false,
       };
 
       setRipples((prev) => [...prev, newRipple]);
     };
 
+    const pointerUpHandler = () => {
+      setRipples((prev) =>
+        prev.map((r) => (r.isReleased ? r : { ...r, isReleased: true }))
+      );
+    };
+
     parent.addEventListener("pointerdown", pointerDownHandler);
+    parent.addEventListener("pointerup", pointerUpHandler);
+    parent.addEventListener("pointerleave", pointerUpHandler);
+    parent.addEventListener("pointercancel", pointerUpHandler);
+
     return () => {
       parent.removeEventListener("pointerdown", pointerDownHandler);
+      parent.removeEventListener("pointerup", pointerUpHandler);
+      parent.removeEventListener("pointerleave", pointerUpHandler);
+      parent.removeEventListener("pointercancel", pointerUpHandler);
     };
   }, []);
 
@@ -110,15 +126,20 @@ export default function Ripple({ color = "rgba(255, 255, 255, 0.3)", duration = 
       }
     >
       {ripples.map((ripple) => (
-        <span
+        <RippleSpan
           key={ripple.id}
+          $isReleased={ripple.isReleased}
           style={{
             top: ripple.y,
             left: ripple.x,
             width: ripple.size,
             height: ripple.size,
           }}
-          onAnimationEnd={() => cleanUp(ripple.id)}
+          onTransitionEnd={() => {
+            if (ripple.isReleased) {
+              cleanUp(ripple.id);
+            }
+          }}
         />
       ))}
     </RippleContainer>

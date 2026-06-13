@@ -53,7 +53,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           disabled={leftButton.disabled}
         >
           {leftButton.label}
-          {!leftButton.disabled && <Ripple color="rgba(0, 0, 0, 0.08)" />}
+          {!leftButton.disabled && <Ripple color="rgba(0, 0, 0, 0.15)" />}
         </GroupButton>
         <GroupButton
           $flex={rightButton.flex || 1}
@@ -64,7 +64,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           disabled={rightButton.disabled}
         >
           {rightButton.label}
-          {!rightButton.disabled && <Ripple color="rgba(255, 255, 255, 0.25)" />}
+          {!rightButton.disabled && <Ripple color="rgba(255, 255, 255, 0.45)" />}
         </GroupButton>
       </ButtonGroupContainer>
 

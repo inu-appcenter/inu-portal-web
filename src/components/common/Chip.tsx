@@ -34,7 +34,7 @@ const Chip = ({
         <div className="title">{title}</div>
         {isExternalLink && <img src={외부연결버튼} />}
       </ContentArea>
-      <Ripple color="rgba(0, 0, 0, 0.08)" />
+      <Ripple color="rgba(0, 0, 0, 0.15)" />
     </ChipWrapper>
   );
 };
