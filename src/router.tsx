@@ -11,6 +11,7 @@ import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
 // Pages (Imports 생략 - 기존과 동일)
 import MobileHomePage from "@/pages/mobile/MobileHomePage";
+import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
 import MobileSavePage from "@/pages/mobile/MobileSavePage";
@@ -52,6 +53,11 @@ import MobileTipsCategoryPage from "@/pages/mobile/MobileTipsCategoryPage";
 import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
+import MobileTimeTableCompareSelectPage from "@/pages/mobile/timetable/MobileTimeTableCompareSelectPage";
+import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
+import MobileTimeTableVisibilityPage from "@/pages/mobile/timetable/MobileTimeTableVisibilityPage";
+import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
+import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimulatorPage";
 import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookDetailPage";
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
@@ -81,6 +87,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.HOME, element: <MobileHomePage /> },
+          { path: ROUTES.HOME_V2, element: <MobileHomePageV2 /> },
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
           { path: ROUTES.CHAT.LIST, element: <MobileChatListPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
@@ -121,6 +128,11 @@ export const router = createBrowserRouter([
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
+          { path: ROUTES.TIMETABLE.COMPARE_SELECT, element: <MobileTimeTableCompareSelectPage /> },
+          { path: ROUTES.TIMETABLE.COMPARE, element: <MobileTimeTableComparePage /> },
+          { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
+          { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
+          { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },

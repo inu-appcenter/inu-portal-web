@@ -261,9 +261,13 @@ const MyPageWrapper = styled.div`
   min-height: 100svh;
   box-sizing: border-box;
   background: transparent;
+  padding-top: var(--header-height, 56px);
+  padding-bottom: var(--nav-height, 100px);
 
   @media ${DESKTOP_MEDIA} {
     min-height: auto;
+    padding-top: var(--header-height, 56px);
+    padding-bottom: 0;
   }
 `;
 

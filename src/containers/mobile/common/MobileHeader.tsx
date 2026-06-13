@@ -103,7 +103,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
         return;
       }
       if (backPath) {
-        navigate(backPath);
+        navigate(backPath, { replace: true });
         return;
       }
       navigate(-1);
@@ -197,7 +197,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  padding: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 0 16px;
   pointer-events: none;
 
   .logo {
@@ -206,7 +206,7 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
     width: 100px;
     cursor: pointer;
     padding: 4px 0;
-    margin-left: ${MOBILE_PAGE_GUTTER};
+    margin-left: var(--space-2);
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:
@@ -241,54 +241,6 @@ const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
   }
 `;
 
-const TitleArea = styled.div`
-  display: flex;
-  flex: 1;
-  align-items: center;
-  min-width: 0;
-  margin-left: 0;
-  pointer-events: none;
-  gap: 0;
-  @media ${DESKTOP_MEDIA} {
-    margin-left: ${MOBILE_BACK_ICON_VISUAL_OFFSET};
-  }
-`;
-
-const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
-  flex: 1;
-  width: 100%;
-  min-width: 0;
-  pointer-events: none;
-  
-  opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
-  visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
-  
-  overflow: hidden;
-  white-space: nowrap;
-  margin-left: -4px;
-
-  transition:
-    opacity 0.2s ease-in-out,
-    visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
-
-
-`;
-
-const HeaderTitle = styled.div`
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  padding-left: 8px;
-  overflow: hidden;
-  //text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 22px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
-`;
-
 const IconBackgroundWrapper = styled.div<{
   $isScrolled: boolean;
   $isCircle: boolean;
@@ -300,7 +252,7 @@ const IconBackgroundWrapper = styled.div<{
   justify-content: center;
   gap: 12px;
   border-radius: 50px;
-  margin-right: 0;
+
   padding: ${({ $isCircle }) =>
     $isCircle ? "0" : "0 14px"}; /* 상하 패딩 제거 */
   width: ${({ $isCircle }) => ($isCircle ? "48px" : "auto")};
@@ -338,6 +290,59 @@ const IconBackgroundWrapper = styled.div<{
     width: ${({ $isCircle }) => ($isCircle ? "100%" : "auto")} !important;
     height: 100% !important;
   }
+`;
+
+const TitleArea = styled.div`
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  margin-left: 0;
+  pointer-events: none;
+  gap: 0;
+
+  /* 좌측 백버튼 아이콘이 왼쪽 화면 끝선에 정렬되도록 음수 마진 오프셋 적용 */
+  & > ${IconBackgroundWrapper} {
+    margin-left: -12px;
+    margin-right: 0;
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    margin-left: ${MOBILE_BACK_ICON_VISUAL_OFFSET};
+  }
+`;
+
+const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  pointer-events: none;
+
+  opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
+  visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
+
+  overflow: hidden;
+  white-space: nowrap;
+  margin-left: -4px;
+
+  transition:
+    opacity 0.2s ease-in-out,
+    visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
+`;
+
+const HeaderTitle = styled.div`
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding-left: 8px;
+  overflow: hidden;
+  //text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
 `;
 
 const FloatingWrapper = styled.div`
