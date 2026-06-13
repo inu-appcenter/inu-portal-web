@@ -286,7 +286,7 @@ export default function BusInteractiveMap({
             </CustomOverlayMap>
           ))}
 
-        {window.kakao?.maps ? (
+        {window.kakao?.maps?.ControlPosition ? (
           <MapTypeControl
             position={window.kakao.maps.ControlPosition.TOPRIGHT}
           />
