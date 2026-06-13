@@ -65,10 +65,16 @@ export default function Ripple({ color = "rgba(255, 255, 255, 0.45)", duration =
       parent.style.overflow = "hidden";
     }
 
-    const pointerDownHandler = (e: PointerEvent) => {
+    let startX = 0;
+    let startY = 0;
+    let isScrolling = false;
+    let activeTimer: number | null = null;
+    let spawnedLatestRippleId: number | null = null;
+
+    const spawnRipple = (clientX: number, clientY: number) => {
       const rect = parent.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
       // Calculate distance to all 4 corners and find the maximum distance
       const d1 = x * x + y * y;
@@ -81,33 +87,108 @@ export default function Ripple({ color = "rgba(255, 255, 255, 0.45)", duration =
       const rippleX = x - size / 2;
       const rippleY = y - size / 2;
 
+      const rippleId = Date.now() + Math.random();
       const newRipple: RippleInstance = {
         x: rippleX,
         y: rippleY,
         size,
-        id: Date.now() + Math.random(),
+        id: rippleId,
         isReleased: false,
       };
 
       setRipples((prev) => [...prev, newRipple]);
+      spawnedLatestRippleId = rippleId;
+      parent.classList.add("active-touch");
     };
 
-    const pointerUpHandler = () => {
+    const pointerDownHandler = (e: PointerEvent) => {
+      if (e.button !== 0) return; // Only trigger for main touch/click
+
+      startX = e.clientX;
+      startY = e.clientY;
+      isScrolling = false;
+      spawnedLatestRippleId = null;
+
+      // Delay ripple and scale activation to discriminate swipe/scroll (80ms)
+      activeTimer = window.setTimeout(() => {
+        if (!isScrolling) {
+          spawnRipple(e.clientX, e.clientY);
+        }
+      }, 80);
+    };
+
+    const pointerMoveHandler = (e: PointerEvent) => {
+      if (isScrolling) return;
+
+      const diffX = Math.abs(e.clientX - startX);
+      const diffY = Math.abs(e.clientY - startY);
+
+      // Cancel if pointer moved more than 8px (considered scrolling)
+      if (diffX > 8 || diffY > 8) {
+        isScrolling = true;
+        if (activeTimer) {
+          clearTimeout(activeTimer);
+          activeTimer = null;
+        }
+        parent.classList.remove("active-touch");
+
+        // If ripple had already spawned, release it immediately
+        if (spawnedLatestRippleId !== null) {
+          const targetId = spawnedLatestRippleId;
+          setRipples((prev) =>
+            prev.map((r) => (r.id === targetId ? { ...r, isReleased: true } : r))
+          );
+          spawnedLatestRippleId = null;
+        }
+      }
+    };
+
+    const pointerUpHandler = (e: PointerEvent) => {
+      if (activeTimer) {
+        clearTimeout(activeTimer);
+        activeTimer = null;
+      }
+
+      // If finger lifted quickly without scroll, trigger ripple and active state instantly
+      if (!isScrolling && spawnedLatestRippleId === null) {
+        spawnRipple(e.clientX, e.clientY);
+      }
+
+      // Release active ripples
       setRipples((prev) =>
         prev.map((r) => (r.isReleased ? r : { ...r, isReleased: true }))
       );
+      spawnedLatestRippleId = null;
+
+      parent.classList.remove("active-touch");
+    };
+
+    const pointerCancelHandler = () => {
+      if (activeTimer) {
+        clearTimeout(activeTimer);
+        activeTimer = null;
+      }
+      parent.classList.remove("active-touch");
+      setRipples((prev) =>
+        prev.map((r) => (r.isReleased ? r : { ...r, isReleased: true }))
+      );
+      spawnedLatestRippleId = null;
     };
 
     parent.addEventListener("pointerdown", pointerDownHandler);
+    parent.addEventListener("pointermove", pointerMoveHandler);
     parent.addEventListener("pointerup", pointerUpHandler);
-    parent.addEventListener("pointerleave", pointerUpHandler);
-    parent.addEventListener("pointercancel", pointerUpHandler);
+    parent.addEventListener("pointerleave", pointerCancelHandler);
+    parent.addEventListener("pointercancel", pointerCancelHandler);
 
     return () => {
+      if (activeTimer) clearTimeout(activeTimer);
       parent.removeEventListener("pointerdown", pointerDownHandler);
+      parent.removeEventListener("pointermove", pointerMoveHandler);
       parent.removeEventListener("pointerup", pointerUpHandler);
-      parent.removeEventListener("pointerleave", pointerUpHandler);
-      parent.removeEventListener("pointercancel", pointerUpHandler);
+      parent.removeEventListener("pointerleave", pointerCancelHandler);
+      parent.removeEventListener("pointercancel", pointerCancelHandler);
+      parent.classList.remove("active-touch");
     };
   }, []);
 

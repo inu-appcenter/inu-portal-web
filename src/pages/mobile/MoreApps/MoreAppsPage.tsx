@@ -152,7 +152,7 @@ const AppItemWrapper = styled.div`
   position: relative;
   overflow: hidden;
 
-  &:active {
+  &.active-touch {
     > *:not(.ripple-container) {
       transform: scale(0.97);
     }

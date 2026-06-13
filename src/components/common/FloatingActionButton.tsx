@@ -56,7 +56,7 @@ const Button = styled.button`
   cursor: pointer;
   white-space: nowrap;
 
-  &:active {
+  &.active-touch {
     background-color: #000;
     transform: scale(0.98);
   }

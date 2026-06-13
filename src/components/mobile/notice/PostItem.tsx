@@ -98,7 +98,7 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
           overflow: hidden;
           cursor: pointer;
 
-          &:active {
+          &.active-touch {
             > *:not(.ripple-container) {
               transform: scale(0.97);
             }

@@ -37,7 +37,7 @@ const BoxWrapper = styled.div<{ $interactive?: boolean }>`
     css`
       cursor: pointer;
 
-      &:active {
+      &.active-touch {
         > *:not(.ripple-container) {
           transform: scale(0.97);
         }

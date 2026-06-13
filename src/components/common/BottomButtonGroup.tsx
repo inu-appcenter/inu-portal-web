@@ -134,7 +134,7 @@ const GroupButton = styled.button<ButtonProps>`
   position: relative;
   overflow: hidden;
 
-  &:active {
+  &.active-touch {
     transform: ${props => props.$disabled ? "none" : "scale(0.96)"};
   }
 `;

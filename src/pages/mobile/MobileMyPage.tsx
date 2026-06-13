@@ -436,7 +436,7 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
     overflow: hidden;
     transition: background-color 0.2s ease;
 
-    &:active {
+    &.active-touch {
       background-color: #f8f9fa;
       > *:not(.ripple-container) {
         transform: scale(0.97);
@@ -517,7 +517,7 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
           0 6px 12px rgba(15, 36, 71, 0.04);
       }
 
-      &:active {
+      &.active-touch {
         > *:not(.ripple-container) {
           transform: scale(0.97);
         }

@@ -31,7 +31,7 @@ const StyledButton = styled.button<ActionButtonProps>`
   position: relative;
   overflow: hidden;
 
-  &:active {
+  &.active-touch {
     transform: scale(0.96);
   }
 
