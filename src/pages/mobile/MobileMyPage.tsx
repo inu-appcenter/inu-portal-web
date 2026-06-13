@@ -434,11 +434,17 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
-    transition: transform 0.12s ease-in-out, background-color 0.2s ease;
+    transition: background-color 0.2s ease;
 
     &:active {
       background-color: #f8f9fa;
-      transform: scale(0.97);
+      > *:not(.ripple-container) {
+        transform: scale(0.97);
+      }
+    }
+
+    > *:not(.ripple-container) {
+      transition: transform 0.12s ease-in-out;
     }
 
     word-break: keep-all;
@@ -512,7 +518,9 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
       }
 
       &:active {
-        transform: scale(0.97);
+        > *:not(.ripple-container) {
+          transform: scale(0.97);
+        }
       }
 
       span {

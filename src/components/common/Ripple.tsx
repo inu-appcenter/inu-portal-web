@@ -117,6 +117,7 @@ export default function Ripple({ color = "rgba(255, 255, 255, 0.45)", duration =
 
   return (
     <RippleContainer
+      className="ripple-container"
       ref={containerRef}
       style={
         {

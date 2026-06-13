@@ -88,21 +88,30 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
   gap: 8px;
   width: 100%;
   box-sizing: border-box;
-  padding: 12px;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
 
   ${({ $interactive }) =>
-    $interactive &&
-    css`
-      cursor: pointer;
-      transition: transform 0.12s ease-in-out;
+    $interactive
+      ? css`
+          padding: 12px;
+          border-radius: 12px;
+          position: relative;
+          overflow: hidden;
+          cursor: pointer;
 
-      &:active {
-        transform: scale(0.97);
-      }
-    `}
+          &:active {
+            > *:not(.ripple-container) {
+              transform: scale(0.97);
+            }
+          }
+
+          > *:not(.ripple-container) {
+            transition: transform 0.12s ease-in-out;
+          }
+        `
+      : css`
+          padding: 0;
+          border-radius: 0;
+        `}
 `;
 
 const Category = styled.div`

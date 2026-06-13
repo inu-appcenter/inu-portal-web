@@ -151,11 +151,15 @@ const AppItemWrapper = styled.div`
   width: 100%;
   position: relative;
   overflow: hidden;
-  
-  transition: transform 0.12s ease-in-out;
 
   &:active {
-    transform: scale(0.97);
+    > *:not(.ripple-container) {
+      transform: scale(0.97);
+    }
+  }
+
+  > *:not(.ripple-container) {
+    transition: transform 0.12s ease-in-out;
   }
 `;
 
