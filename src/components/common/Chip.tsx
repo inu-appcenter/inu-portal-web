@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
+import Ripple from "./Ripple";
 
 interface ChipButtonProps {
   iconSrc?: string;
@@ -33,6 +34,7 @@ const Chip = ({
         <div className="title">{title}</div>
         {isExternalLink && <img src={외부연결버튼} />}
       </ContentArea>
+      <Ripple color="rgba(0, 0, 0, 0.08)" />
     </ChipWrapper>
   );
 };
@@ -54,6 +56,8 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
       ? "linear-gradient(270deg, #EFFFF4 0%, #DEEFFF 67.31%, #FEEDFF 100%)"
       : "#fff"};
   //box-shadow: ${SOFT_CHIP_SHADOW};
+  position: relative;
+  overflow: hidden;
 `;
 
 const Icon = styled.img`

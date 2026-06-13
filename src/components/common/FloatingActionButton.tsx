@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { ReactNode } from "react";
+import Ripple from "./Ripple";
 
 interface FloatingActionButtonProps {
   text: string;
@@ -19,6 +20,7 @@ const FloatingActionButton = ({
       <Button onClick={onClick}>
         {icon}
         {text}
+        <Ripple />
       </Button>
     </FixedButtonWrapper>
   );

@@ -26,7 +26,7 @@ const CommonStyles = createGlobalStyle`
   /* 모든 요소에 폰트 상속 강제 */
   * {
     font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
-    -webkit-tap-highlight-color: rgba(128, 128, 128, 0.2);
+    -webkit-tap-highlight-color: transparent;
     box-sizing: border-box;
   }
 

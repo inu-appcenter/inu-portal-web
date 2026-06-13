@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import Ripple from "./Ripple";
 
 // 버튼 설정 인터페이스
 export interface ButtonConfig {
@@ -52,6 +53,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           disabled={leftButton.disabled}
         >
           {leftButton.label}
+          {!leftButton.disabled && <Ripple color="rgba(0, 0, 0, 0.08)" />}
         </GroupButton>
         <GroupButton
           $flex={rightButton.flex || 1}
@@ -62,6 +64,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           disabled={rightButton.disabled}
         >
           {rightButton.label}
+          {!rightButton.disabled && <Ripple color="rgba(255, 255, 255, 0.25)" />}
         </GroupButton>
       </ButtonGroupContainer>
 
@@ -128,6 +131,8 @@ const GroupButton = styled.button<ButtonProps>`
   align-items: center;
   transition: transform 0.1s ease, opacity 0.2s ease;
   outline: none;
+  position: relative;
+  overflow: hidden;
 
   &:active {
     transform: ${props => props.$disabled ? "none" : "scale(0.96)"};
