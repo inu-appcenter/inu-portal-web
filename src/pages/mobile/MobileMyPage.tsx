@@ -179,7 +179,7 @@ export default function MobileMyPage() {
                   </div>
                 </span>
                 <Arrow src={arrowImg} />
-                <Ripple color="rgba(0, 0, 0, 0.12)" />
+                <Ripple color="#F3F4F7" />
               </div>
             ))}
           {/* admin role일 경우 관리자 페이지 추가 */}
@@ -193,7 +193,7 @@ export default function MobileMyPage() {
                 <div>관리자 페이지</div>
               </span>
               <Arrow src={arrowImg} />
-              <Ripple color="rgba(0, 0, 0, 0.12)" />
+              <Ripple color="#F3F4F7" />
             </div>
           )}
           {MyPageCategoryCommon.map((category, index) => (
@@ -210,7 +210,7 @@ export default function MobileMyPage() {
                 </div>
               </span>
               <Arrow src={arrowImg} />
-              <Ripple color="rgba(0, 0, 0, 0.12)" />
+              <Ripple color="#F3F4F7" />
             </div>
           ))}{" "}
           <div className="item" onClick={() => handleClick("알림 설정 확인")}>
@@ -222,7 +222,7 @@ export default function MobileMyPage() {
               </div>
             </span>
             <Arrow src={arrowImg} />
-            <Ripple color="rgba(0, 0, 0, 0.12)" />
+            <Ripple color="#F3F4F7" />
           </div>
         </CategoryWrapper>
       </DesktopContentGrid>

@@ -27,7 +27,7 @@ const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
         <div className="title">{title}</div>
         <div className="description">{description}</div>
       </ContentArea>
-      <Ripple color="rgba(0, 0, 0, 0.12)" />
+      <Ripple color="#F3F4F7" />
     </AppItemWrapper>
   );
 };
@@ -146,9 +146,10 @@ const AppItemWrapper = styled.div`
   box-sizing: border-box;
   text-align: start;
   padding: 12px;
+  margin: 2px -12px;
+  width: calc(100% + 24px);
   border-radius: 12px;
   cursor: pointer;
-  width: 100%;
   position: relative;
   overflow: hidden;
 

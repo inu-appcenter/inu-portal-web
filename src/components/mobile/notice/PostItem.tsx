@@ -75,7 +75,7 @@ const PostItem = ({
           )}
         </InfoLine>
       )}
-      {onClick && <Ripple color="rgba(0, 0, 0, 0.1)" />}
+      {onClick && <Ripple color="#F3F4F7" />}
     </NoticeItemWrapper>
   );
 };
@@ -86,13 +86,14 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
   box-sizing: border-box;
 
   ${({ $interactive }) =>
     $interactive
       ? css`
           padding: 12px;
+          margin: 2px -12px;
+          width: calc(100% + 24px);
           border-radius: 12px;
           position: relative;
           overflow: hidden;
@@ -110,6 +111,8 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
         `
       : css`
           padding: 0;
+          margin: 0;
+          width: 100%;
           border-radius: 0;
         `}
 `;
