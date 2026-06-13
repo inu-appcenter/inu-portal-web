@@ -18,9 +18,9 @@ const FloatingActionButton = ({
   return (
     <FixedButtonWrapper $bottom={bottom}>
       <Button onClick={onClick}>
+        <Ripple color="rgba(255, 255, 255, 0.35)" />
         {icon}
         {text}
-        <Ripple />
       </Button>
     </FixedButtonWrapper>
   );

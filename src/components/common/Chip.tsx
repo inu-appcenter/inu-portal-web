@@ -28,13 +28,13 @@ const Chip = ({
       }}
       $isAIButton={isAIButton}
     >
+      <Ripple color="#F3F4F7" />
       {iconSrc && <Icon src={iconSrc} alt="" />}
       {IconComponent && <IconComponent size={18} color="#4071B9" />}
       <ContentArea>
         <div className="title">{title}</div>
         {isExternalLink && <img src={외부연결버튼} />}
       </ContentArea>
-      <Ripple color="#F3F4F7" />
     </ChipWrapper>
   );
 };
@@ -58,6 +58,19 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   //box-shadow: ${SOFT_CHIP_SHADOW};
   position: relative;
   overflow: hidden;
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  &.active-touch {
+    > *:not(.ripple-container) {
+      transform: scale(0.96);
+    }
+  }
+
+  > *:not(.ripple-container) {
+    transition: transform 0.12s ease-in-out;
+  }
 `;
 
 const Icon = styled.img`

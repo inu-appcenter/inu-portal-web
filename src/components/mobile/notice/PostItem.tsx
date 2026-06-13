@@ -58,6 +58,7 @@ const PostItem = ({
 
   return (
     <NoticeItemWrapper onClick={onClick} $interactive={!!onClick}>
+      {onClick && <Ripple color="rgba(243, 244, 247, 0.7)" />}
       {category && <Category>{category}</Category>}
       <Title isEllipsis={isEllipsis}>{title || ""}</Title>
       {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
@@ -75,7 +76,6 @@ const PostItem = ({
           )}
         </InfoLine>
       )}
-      {onClick && <Ripple color="#F3F4F7" />}
     </NoticeItemWrapper>
   );
 };

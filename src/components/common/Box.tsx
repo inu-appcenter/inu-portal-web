@@ -11,8 +11,8 @@ interface BoxProps {
 const Box = ({ children, onClick, style }: BoxProps) => {
   return (
     <BoxWrapper onClick={onClick} style={style} $interactive={!!onClick}>
+      {onClick && <Ripple color="rgba(243, 244, 247, 0.7)" />}
       {children}
-      {onClick && <Ripple color="rgba(0, 0, 0, 0.12)" />}
     </BoxWrapper>
   );
 };

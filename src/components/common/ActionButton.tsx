@@ -55,8 +55,8 @@ const StyledButton = styled.button<ActionButtonProps>`
 export default function ActionButton({ children, ...props }: ActionButtonProps) {
   return (
     <StyledButton {...props}>
+      {!props.disabled && <Ripple color="rgba(255, 255, 255, 0.35)" />}
       {children}
-      {!props.disabled && <Ripple />}
     </StyledButton>
   );
 }

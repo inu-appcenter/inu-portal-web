@@ -31,7 +31,7 @@ const RippleContainer = styled.div`
 const RippleSpan = styled.span<{ $isReleased: boolean }>`
   border-radius: 100%;
   position: absolute;
-  background-color: var(--ripple-color, #F3F4F7);
+  background-color: var(--ripple-color, rgba(243, 244, 247, 0.7));
   transform-origin: center;
   pointer-events: none;
 
@@ -39,7 +39,7 @@ const RippleSpan = styled.span<{ $isReleased: boolean }>`
   animation: ${rippleScale} var(--ripple-duration, 350ms) cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 
   /* Fade out transition when released */
-  opacity: ${props => props.$isReleased ? 0 : 0.85};
+  opacity: ${props => props.$isReleased ? 0 : 1};
   transition: opacity 250ms ease-out;
 `;
 
@@ -48,7 +48,7 @@ interface RippleProps {
   duration?: number;
 }
 
-export default function Ripple({ color = "#F3F4F7", duration = 350 }: RippleProps) {
+export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 350 }: RippleProps) {
   const [ripples, setRipples] = useState<RippleInstance[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 

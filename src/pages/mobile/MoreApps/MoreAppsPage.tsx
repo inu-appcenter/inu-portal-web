@@ -22,12 +22,12 @@ interface AppItemProps {
 const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
   return (
     <AppItemWrapper onClick={onClick}>
+      <Ripple color="rgba(243, 244, 247, 0.7)" />
       <Icon src={iconSrc || "/default-icon.png"} alt={title} />
       <ContentArea>
         <div className="title">{title}</div>
         <div className="description">{description}</div>
       </ContentArea>
-      <Ripple color="#F3F4F7" />
     </AppItemWrapper>
   );
 };
