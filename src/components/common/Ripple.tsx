@@ -112,7 +112,7 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
         if (!isScrolling) {
           spawnRipple(e.clientX, e.clientY);
         }
-      }, 20);
+      }, 40);
     };
 
     const pointerMoveHandler = (e: PointerEvent) => {
