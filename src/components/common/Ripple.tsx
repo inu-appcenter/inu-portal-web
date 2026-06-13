@@ -9,8 +9,12 @@ interface RippleInstance {
 }
 
 const rippleAnimation = keyframes`
+  from {
+    transform: scale(0);
+    opacity: 1;
+  }
   to {
-    transform: scale(4);
+    transform: scale(1);
     opacity: 0;
   }
 `;
@@ -25,16 +29,15 @@ const RippleContainer = styled.div`
   z-index: 0;
 
   span {
-    transform: scale(0);
     border-radius: 100%;
     position: absolute;
-    opacity: 0.6;
     background-color: var(--ripple-color, rgba(255, 255, 255, 0.3));
     animation-name: ${rippleAnimation};
-    animation-duration: var(--ripple-duration, 550ms);
+    animation-duration: var(--ripple-duration, 400ms);
     animation-fill-mode: forwards;
-    animation-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation-timing-function: cubic-bezier(0.1, 0.8, 0.3, 1);
     pointer-events: none;
+    transform-origin: center;
   }
 `;
 
@@ -43,7 +46,7 @@ interface RippleProps {
   duration?: number;
 }
 
-export default function Ripple({ color = "rgba(255, 255, 255, 0.25)", duration = 550 }: RippleProps) {
+export default function Ripple({ color = "rgba(255, 255, 255, 0.3)", duration = 400 }: RippleProps) {
   const [ripples, setRipples] = useState<RippleInstance[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,16 +63,25 @@ export default function Ripple({ color = "rgba(255, 255, 255, 0.25)", duration =
       parent.style.overflow = "hidden";
     }
 
-    const clickHandler = (e: MouseEvent) => {
+    const pointerDownHandler = (e: PointerEvent) => {
       const rect = parent.getBoundingClientRect();
-      // Calculate ripple size based on diagonal of the parent to cover it fully
-      const size = Math.max(rect.width, rect.height) * 1.5;
-      const x = e.clientX - rect.left - size / 2;
-      const y = e.clientY - rect.top - size / 2;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Calculate distance to all 4 corners and find the maximum distance
+      const d1 = x * x + y * y;
+      const d2 = (rect.width - x) * (rect.width - x) + y * y;
+      const d3 = x * x + (rect.height - y) * (rect.height - y);
+      const d4 = (rect.width - x) * (rect.width - x) + (rect.height - y) * (rect.height - y);
+      const maxDist = Math.sqrt(Math.max(d1, d2, d3, d4));
+
+      const size = maxDist * 2;
+      const rippleX = x - size / 2;
+      const rippleY = y - size / 2;
 
       const newRipple: RippleInstance = {
-        x,
-        y,
+        x: rippleX,
+        y: rippleY,
         size,
         id: Date.now() + Math.random(),
       };
@@ -77,9 +89,9 @@ export default function Ripple({ color = "rgba(255, 255, 255, 0.25)", duration =
       setRipples((prev) => [...prev, newRipple]);
     };
 
-    parent.addEventListener("click", clickHandler);
+    parent.addEventListener("pointerdown", pointerDownHandler);
     return () => {
-      parent.removeEventListener("click", clickHandler);
+      parent.removeEventListener("pointerdown", pointerDownHandler);
     };
   }, []);
 
