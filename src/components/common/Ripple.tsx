@@ -107,12 +107,12 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
       isScrolling = false;
       spawnedLatestRippleId = null;
 
-      // 스크롤 판별을 위한 80ms 지연
+      // 스크롤 판별을 위한 지연
       activeTimer = window.setTimeout(() => {
         if (!isScrolling) {
           spawnRipple(e.clientX, e.clientY);
         }
-      }, 80);
+      }, 20);
     };
 
     const pointerMoveHandler = (e: PointerEvent) => {
