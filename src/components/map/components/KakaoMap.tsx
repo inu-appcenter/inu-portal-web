@@ -86,12 +86,9 @@ interface Props {
   selectedTab: string;
   viewXY: { X: number; Y: number };
   setMap: any;
-  setSelectedCoord?: React.Dispatch<
-    React.SetStateAction<{ X: number; Y: number }>
-  >;
+  setSelectedCoord?: (coord: { X: number; Y: number }, enableOffset?: boolean) => void;
   openedMarkerId: string | null;
   setOpenedMarkerId: (id: string | null, coord?: { X: number; Y: number }) => void;
-  offset?: number;
   isTracking?: boolean;
   setIsTracking?: (isTracking: boolean) => void;
 }
@@ -103,7 +100,6 @@ const KakaoMap = ({
   setSelectedCoord,
   openedMarkerId,
   setOpenedMarkerId,
-  offset = 0,
   isTracking = false,
   setIsTracking,
 }: Props) => {
@@ -117,38 +113,22 @@ const KakaoMap = ({
   const currentTab = selectedTab as TabType;
   const config = MAP_TAB_CONFIG[currentTab];
   
-  // 1. 지도의 중심을 로컬 상태로 관리 (인입런 방식)
-  const [mapCenter, setMapCenter] = useState({ lat: viewXY.X, lng: viewXY.Y });
+  // 지도의 중심을 ref로 관리하여 드래그 중/후 불필요한 동기화 레이스를 방지
+  const lastViewXYRef = useRef(viewXY);
+  const mapCenterRef = useRef({ lat: viewXY.X, lng: viewXY.Y });
+
+  if (
+    lastViewXYRef.current.X !== viewXY.X ||
+    lastViewXYRef.current.Y !== viewXY.Y
+  ) {
+    lastViewXYRef.current = viewXY;
+    mapCenterRef.current = { lat: viewXY.X, lng: viewXY.Y };
+  }
+  const mapLevelRef = useRef(4);
   const lastTargetRef = useRef(viewXY);
   
   const isDraggingRef = useRef(false);
-  const isSyncingCenterRef = useRef(false);
   const isAnimatingRef = useRef(false);
-  const lastOffsetRef = useRef(offset);
-
-  const syncSelectedCoordWithMapCenter = (targetOffset: number) => {
-    if (!mapInstance || !setSelectedCoord) return;
-
-    const center = mapInstance.getCenter();
-    const nextCoord = {
-      X: center.getLat() + targetOffset,
-      Y: center.getLng(),
-    };
-
-    isSyncingCenterRef.current = true;
-    setSelectedCoord((prev) => {
-      const isSame =
-        Math.abs(prev.X - nextCoord.X) < 0.00001 &&
-        Math.abs(prev.Y - nextCoord.Y) < 0.00001;
-
-      if (isSame) {
-        isSyncingCenterRef.current = false;
-        return prev;
-      }
-      
-      return nextCoord;
-    });
-  };
 
 
 
@@ -206,7 +186,7 @@ const KakaoMap = ({
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [isTracking, mapInstance, offset]);
+  }, [isTracking, mapInstance]);
 
   // 2. 기기 방향 감지
   useEffect(() => {
@@ -305,38 +285,42 @@ const KakaoMap = ({
     isDraggingRef.current = false;
     isAnimatingRef.current = false;
     if (isTracking && setIsTracking) setIsTracking(false);
+
+    if (mapInstance) {
+      const center = mapInstance.getCenter();
+      const lat = center.getLat();
+      const lng = center.getLng();
+
+      mapCenterRef.current = { lat, lng };
+      lastTargetRef.current = { X: lat, Y: lng };
+
+      const isSame =
+        Math.abs(viewXY.X - lat) < 0.00001 &&
+        Math.abs(viewXY.Y - lng) < 0.00001;
+
+      if (!isSame && setSelectedCoord) {
+        setSelectedCoord({ X: lat, Y: lng }, false);
+      }
+    }
   };
 
-  // 3. 외부 viewXY 및 offset 변경 감지 (인입런 구조 적용)
+  // 3. 외부 viewXY 변경 감지
   useLayoutEffect(() => {
     if (!mapInstance || isDraggingRef.current) return;
 
-    // 1. 바텀시트 조작(offset 변경) 감지 시 현재 위치 유지하며 부모 상태 동기화
-    if (Math.abs(lastOffsetRef.current - offset) > 0.0001) {
-      syncSelectedCoordWithMapCenter(lastOffsetRef.current);
-      lastOffsetRef.current = offset;
-      return;
-    }
-
-    // 2. 외부에서 좌표가 명시적으로 변경된 경우(장소 클릭 등)에만 이동
+    // 외부에서 좌표가 명시적으로 변경된 경우(장소 클릭 등)에만 이동
     const isExternalMove = 
       Math.abs(lastTargetRef.current.X - viewXY.X) > 0.00001 ||
       Math.abs(lastTargetRef.current.Y - viewXY.Y) > 0.00001;
 
     if (isExternalMove) {
-      if (isSyncingCenterRef.current) {
-        isSyncingCenterRef.current = false;
-        lastTargetRef.current = viewXY;
-        return;
-      }
-
       lastTargetRef.current = viewXY;
-      setMapCenter({ lat: viewXY.X, lng: viewXY.Y });
+      mapCenterRef.current = { lat: viewXY.X, lng: viewXY.Y };
       
       isAnimatingRef.current = true;
       mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
     }
-  }, [viewXY.X, viewXY.Y, offset, mapInstance]);
+  }, [viewXY.X, viewXY.Y, mapInstance]);
 
   const placesToRender = useMemo(() => {
     switch (currentTab) {
@@ -351,8 +335,8 @@ const KakaoMap = ({
   return (
     <Container>
       <Map
-        center={mapCenter}
-        level={4}
+        center={mapCenterRef.current}
+        level={mapLevelRef.current}
         draggable={true}
         zoomable={true}
         style={{ width: "100%", height: "100%" }}
@@ -367,6 +351,13 @@ const KakaoMap = ({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onIdle={handleIdle}
+        onZoomChanged={(map) => {
+          mapLevelRef.current = map.getLevel();
+        }}
+        onCenterChanged={(map) => {
+          const center = map.getCenter();
+          mapCenterRef.current = { lat: center.getLat(), lng: center.getLng() };
+        }}
       >
         {placesToRender.map((place) => {
           const markerId = config.getMarkerId(place);
