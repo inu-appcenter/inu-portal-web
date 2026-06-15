@@ -36,6 +36,12 @@ export default function MobileCampusPage() {
       : false,
   );
   const [selectedCoord, setSelectedCoord] = useState<XY>(SCHOOL_COORD);
+  const [isOffsetEnabled, setIsOffsetEnabled] = useState(true);
+
+  const moveToCoord = (coord: XY, enableOffset = true) => {
+    setIsOffsetEnabled(enableOffset);
+    setSelectedCoord(coord);
+  };
 
   const location = useLocation();
 
@@ -54,7 +60,7 @@ export default function MobileCampusPage() {
     setSnap(BOTTOM_SHEET_HEIGHT.DEFAULT);
 
     if (coord) {
-      setSelectedCoord(coord);
+      moveToCoord(coord, true);
     }
   };
 
@@ -150,24 +156,20 @@ export default function MobileCampusPage() {
     };
   }, [isCampus]);
 
-  const offset = useMemo(() => {
-    if (isDesktop) {
-      return 0;
+  const viewXY = useMemo(() => {
+    if (isDesktop || !isOffsetEnabled) {
+      return {
+        X: selectedCoord.X,
+        Y: selectedCoord.Y,
+      };
     }
 
-    const currentSnap =
-      typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
-
-    return currentSnap * 0.0018;
-  }, [isDesktop, snap]);
-
-  const viewXY = useMemo(
-    () => ({
+    const offset = BOTTOM_SHEET_HEIGHT.DEFAULT * 0.0018;
+    return {
       X: selectedCoord.X - offset,
       Y: selectedCoord.Y,
-    }),
-    [selectedCoord, offset],
-  );
+    };
+  }, [selectedCoord, isDesktop, isOffsetEnabled]);
 
   return (
     <MobileCampusPageWrapper>
@@ -178,7 +180,7 @@ export default function MobileCampusPage() {
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
           map={map}
-          setSelectedCoord={setSelectedCoord}
+          setSelectedCoord={moveToCoord}
           openedMarkerId={openedMarkerId}
           setOpenedMarkerId={setOpenedMarkerId}
           snap={snap}
@@ -192,7 +194,7 @@ export default function MobileCampusPage() {
           selectedTab={selectedTab}
           viewXY={viewXY}
           setMap={setMap}
-          setSelectedCoord={setSelectedCoord}
+          setSelectedCoord={moveToCoord}
           openedMarkerId={openedMarkerId}
           setOpenedMarkerId={handleMarkerClick}
           isTracking={isTracking}
@@ -207,7 +209,7 @@ export default function MobileCampusPage() {
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
           map={map}
-          setSelectedCoord={setSelectedCoord}
+          setSelectedCoord={moveToCoord}
           openedMarkerId={openedMarkerId}
           setOpenedMarkerId={setOpenedMarkerId}
           snap={snap}
