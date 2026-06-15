@@ -355,6 +355,7 @@ const KakaoMap = ({
           mapLevelRef.current = map.getLevel();
         }}
         onCenterChanged={(map) => {
+          if (isAnimatingRef.current) return;
           const center = map.getCenter();
           mapCenterRef.current = { lat: center.getLat(), lng: center.getLng() };
         }}
@@ -382,15 +383,7 @@ const KakaoMap = ({
                       "Marker",
                     );
                   }
-                  setOpenedMarkerId(
-                    isOpen ? null : markerId,
-                    isOpen
-                      ? undefined
-                      : {
-                          X: Number(place.latitude),
-                          Y: Number(place.longitude),
-                        },
-                  );
+                  setOpenedMarkerId(isOpen ? null : markerId);
                   if (setIsTracking) setIsTracking(false);
                 }}
               />
@@ -442,7 +435,7 @@ const KakaoMap = ({
           </CustomOverlayMap>
         )}
 
-        {window.kakao?.maps && (
+        {window.kakao?.maps?.ControlPosition && (
           <MapTypeControl position={window.kakao.maps.ControlPosition.TOPRIGHT} />
         )}
       </Map>
