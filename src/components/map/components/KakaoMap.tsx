@@ -381,7 +381,10 @@ const KakaoMap = ({
                       "Marker",
                     );
                   }
-                  setOpenedMarkerId(isOpen ? null : markerId);
+                  setOpenedMarkerId(isOpen ? null : markerId, {
+                    X: Number(place.latitude),
+                    Y: Number(place.longitude),
+                  });
                   if (setIsTracking) setIsTracking(false);
                 }}
               />
