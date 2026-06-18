@@ -98,12 +98,16 @@ const MobileSavePageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  height: 100%;
+  min-height: 100vh;
   width: 100%;
+  box-sizing: border-box;
+  padding-top: var(--header-height, 56px);
+  padding-bottom: var(--nav-height, 100px);
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_READING_WIDTH});
     margin: 0 auto;
+    padding-top: var(--header-height, 56px);
     padding-bottom: 120px;
   }
 `;

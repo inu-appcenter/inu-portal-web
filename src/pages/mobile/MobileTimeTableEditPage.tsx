@@ -1,14 +1,17 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
 import MobileCourseSearchSheet, {
   CourseResult,
+  COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import LinkCardButton from "@/components/mobile/common/LinkCardButton";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 // --- 목업 데이터 ---
 const MY_TIMETABLE: ClassItem[] = [
@@ -102,6 +105,8 @@ const SEARCH_RESULTS: CourseResult[] = [
 ];
 
 const MobileTimeTableEditPage = () => {
+  const navigate = useNavigate();
+
   useHeader({
     title: "시간표 편집",
     showAlarm: false,
@@ -110,6 +115,8 @@ const MobileTimeTableEditPage = () => {
 
   // 상태 관리
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [snap, setSnap] = useState<string | number | null>(COURSE_SEARCH_SNAP_POINTS[0]);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // 프리뷰 연산
   const previewSchedules = useMemo(
@@ -117,36 +124,222 @@ const MobileTimeTableEditPage = () => {
     [expandedId],
   );
 
+  // 선택된 강의(미리보기)가 바텀시트에 의해 가려지는 경우 스크롤 처리
+  useEffect(() => {
+    if (expandedId === null) return;
+
+    const timer = setTimeout(() => {
+      const element = document.getElementById("timetable-preview-block");
+      if (!element) return;
+
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 130; // 헤더 영역 높이 추정치
+      const bottomSheetHeight = typeof snap === "number" ? snap * viewportHeight : COURSE_SEARCH_SNAP_POINTS[0] * viewportHeight;
+      const visibleAreaHeight =
+        viewportHeight - headerHeight - bottomSheetHeight;
+
+      const elementTop = rect.top + window.scrollY;
+      const elementHeight = rect.height;
+
+      const elementBottomInViewport = rect.bottom;
+      const elementTopInViewport = rect.top;
+      const bottomSheetTopInViewport = viewportHeight - bottomSheetHeight;
+
+      const isCoveredByBottomSheet =
+        elementBottomInViewport > bottomSheetTopInViewport;
+      const isCoveredByHeader = elementTopInViewport < headerHeight;
+
+      if (isCoveredByBottomSheet || isCoveredByHeader) {
+        let targetScrollY = window.scrollY;
+
+        if (elementHeight <= visibleAreaHeight) {
+          // 화면에 충분히 노출 가능한 높이인 경우 중앙 정렬
+          targetScrollY =
+            elementTop +
+            elementHeight / 2 -
+            (headerHeight + visibleAreaHeight / 2);
+        } else {
+          // 너무 길어 안 들어가는 경우 위쪽 기준 정렬 (여백 16px)
+          targetScrollY = elementTop - headerHeight - 16;
+        }
+
+        const maxScrollY =
+          document.documentElement.scrollHeight - window.innerHeight;
+        targetScrollY = Math.max(0, Math.min(targetScrollY, maxScrollY));
+
+        window.scrollTo({ top: targetScrollY, behavior: "smooth" });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [expandedId, snap]);
+
   const toggleExpand = (id: number) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  const handleEdit = (id: number) => {
+    alert(`과목 수정 창을 엽니다. (ID: ${id})`);
+  };
+
+  const handleDelete = (id: number) => {
+    alert(`과목을 삭제합니다. (ID: ${id})`);
+  };
+
+  const snapHeightValue = typeof snap === "number" ? snap : 0.45;
+
   return (
-    <PageWrapper>
-      <TitleContentArea title={"2025년 2학기"}>
-        {/* 시간표 그리드 */}
-        <TimetableGrid events={MY_TIMETABLE} previewEvents={previewSchedules} />
-      </TitleContentArea>
+    <PageWrapper $snapHeight={snapHeightValue} $isSheetOpen={isSheetOpen}>
+      <TimetableGrid
+        events={MY_TIMETABLE}
+        previewEvents={previewSchedules}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+      <SemesterInfoLine>
+        <Semester>2026년 1학기</Semester>
+        <ScoreArea>
+          <div className="type1">
+            <span>전공 9</span>
+            <span>교양 9</span>
+          </div>
+          <div className="type2">총 18학점</div>
+        </ScoreArea>
+      </SemesterInfoLine>
 
       {/* 바텀시트 */}
       <MobileCourseSearchSheet
         courses={SEARCH_RESULTS}
         expandedId={expandedId}
         onToggleExpand={toggleExpand}
+        snap={snap}
+        onSnapChange={setSnap}
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
       />
+
+      {/* 하단 버튼 그룹 */}
+      <ButtonGroup>
+        <ButtonRow>
+          <LinkCardButton
+            label="직접 추가"
+            onClick={() => navigate(ROUTES.TIMETABLE.ADD)}
+          />
+          <LinkCardButton
+            label="편람에서 추가"
+            onClick={() => setIsSheetOpen(true)}
+          />
+        </ButtonRow>
+
+        <LinkCardButton
+          label="시간표 마법사"
+          onClick={() => alert("시간표 마법사 클릭")}
+        />
+      </ButtonGroup>
+
+      <AuxiliaryLinkButton
+        onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}
+      >
+        시간표 공개 설정
+      </AuxiliaryLinkButton>
     </PageWrapper>
   );
 };
 
 export default MobileTimeTableEditPage;
 
-const PageWrapper = styled.div`
+const PageWrapper = styled.div<{ $snapHeight: number; $isSheetOpen: boolean }>`
   display: flex;
   flex-direction: column;
-  padding: 0 ${MOBILE_PAGE_GUTTER} 400px;
+  padding: 0 ${MOBILE_PAGE_GUTTER}
+    ${({ $snapHeight, $isSheetOpen }) =>
+      $isSheetOpen ? `calc(${$snapHeight * 100}dvh + 24px)` : "40px"};
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 400px;
+    padding: 0 0
+      ${({ $snapHeight, $isSheetOpen }) =>
+        $isSheetOpen ? `calc(${$snapHeight * 100}dvh + 24px)` : "40px"};
+  }
+`;
+
+const SemesterInfoLine = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 8px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const Semester = styled.div`
+  color: var(--text-secondary);
+
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+`;
+
+const ScoreArea = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  gap: 12px;
+
+  .type1 {
+    color: #6b7280;
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .type2 {
+    color: var(--text-secondary);
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 36px;
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+`;
+
+const AuxiliaryLinkButton = styled.button`
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 24px;
+  text-decoration: underline;
+  align-self: center;
+
+  &:active {
+    opacity: 0.7;
   }
 `;

@@ -466,7 +466,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         room={room}
                         onClick={() => handleRoomClick(room)}
                       />
-                      {index < personalRooms.length - 1 && <Divider />}
+                      {index < personalRooms.length - 1 && <Divider margin="0" />}
                     </div>
                   ))
                 ) : (
@@ -552,7 +552,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         room={room}
                         onClick={() => handleRoomClick(room)}
                       />
-                      {index < openRooms.length - 1 && <Divider />}
+                      {index < openRooms.length - 1 && <Divider margin="0" />}
                     </div>
                   ))
                 ) : (
@@ -608,7 +608,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         />
                         {index <
                           openRoomsDiscoveryRes.data.content.length - 1 && (
-                          <Divider />
+                          <Divider margin="0" />
                         )}
                       </div>
                     ))
@@ -733,7 +733,7 @@ const Viewport = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
-  padding: 24px 0 60px 0;
+  padding: calc(var(--header-height, 56px) + 24px) 0 calc(var(--nav-height, 100px) + 60px) 0;
 
   .swiper-autoheight {
     transition: height 0ms !important;

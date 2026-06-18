@@ -224,21 +224,15 @@ function PersonDetailContent({
     ),
   ].filter(Boolean);
 
-  // 디버깅 로그: 필드 배열 상태 확인
-  console.log("Person Fields:", fields);
-  console.log("Person Fields Length:", fields.length);
 
   return (
     <>
       {fields.map((field, index) => {
         const isLast = index === fields.length - 1;
-        // 디버깅 로그: 루프 인덱스 및 마지막 여부 확인
-        console.log(`Person Field Index: ${index}, Is Last: ${isLast}`);
-
         return (
           <Fragment key={index}>
             {field}
-            {!isLast && <Divider />}
+            {!isLast && <Divider margin="0" />}
           </Fragment>
         );
       })}
@@ -292,13 +286,10 @@ function OfficeDetailContent({
     <>
       {fields.map((field, index) => {
         const isLast = index === fields.length - 1;
-        // 디버깅 로그: 루프 인덱스 및 마지막 여부 확인
-        console.log(`Office Field Index: ${index}, Is Last: ${isLast}`);
-
         return (
           <Fragment key={index}>
             {field}
-            {!isLast && <Divider />}
+            {!isLast && <Divider margin="0" />}
           </Fragment>
         );
       })}
@@ -451,6 +442,8 @@ const HeroHeader = styled.div`
   justify-content: space-between;
   gap: 12px;
   width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
 `;
 
 const HeroTitleBlock = styled.div`
@@ -496,6 +489,8 @@ const DetailRow = styled.div`
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
+  padding: 14px 20px;
+  box-sizing: border-box;
 `;
 
 const FieldContent = styled.div`

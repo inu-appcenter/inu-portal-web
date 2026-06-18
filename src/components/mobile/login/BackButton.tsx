@@ -2,6 +2,7 @@ import styled from "styled-components";
 import backIcon from "@/resources/assets/mobile-common/backbtn.svg";
 import { useNavigate } from "react-router-dom";
 import { ButtonHTMLAttributes } from "react";
+import Ripple from "@/components/common/Ripple";
 
 interface BackButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   onClick?: () => void;
@@ -27,6 +28,7 @@ export default function BackButton({
       }
       {...props}
     >
+      <Ripple />
       <img src={backIcon} alt="backIcon" />
     </Button>
   );
@@ -43,11 +45,10 @@ const Button = styled.button<{ $isScrolled?: boolean }>`
   height: 100%;
   background: transparent;
   border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  outline: none;
   transition: all 0.2s ease-in-out;
-
-  &:active {
-    background: rgba(0, 0, 0, 0.05);
-  }
 
   img {
     width: 20px;

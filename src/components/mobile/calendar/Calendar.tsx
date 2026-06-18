@@ -287,7 +287,7 @@ export default function Calendar({
               </ArrowButton>
             </CalendarHeader>
           )}
-          <Box>
+          <Box style={{ padding: "16px" }}>
             <Weekdays>
               {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
                 <WeekdayCell key={i} $index={i}>
@@ -358,7 +358,7 @@ export default function Calendar({
                   monthEvents.map((event, idx) => (
                     <Fragment key={event.id}>
                       <EventItem {...event} />
-                      {idx < monthEvents.length - 1 && <Divider />}
+                      {idx < monthEvents.length - 1 && <Divider margin="0" />}
                     </Fragment>
                   ))
                 ) : (
@@ -559,4 +559,5 @@ const EmptyMessage = styled.p`
   color: #8e8e93;
   font-size: 14px;
   margin: 20px 0;
+  padding: 0 20px;
 `;

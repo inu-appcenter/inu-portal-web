@@ -79,19 +79,15 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
                   handleXButtonClick(p.id);
                 }}
               />
-              <div
+              <PostItem
+                title={p.title}
+                category={p.category}
+                date={p.createDate}
+                writer={p.writer}
                 onClick={() => handleDocumentClick(p.id)}
-                style={{ cursor: "pointer" }}
-              >
-                <PostItem
-                  title={p.title}
-                  category={p.category}
-                  date={p.createDate}
-                  writer={p.writer}
-                />
-              </div>
+              />
             </RelativeWrapper>
-            {index < post.length - 1 && <Divider margin={"16px 0"} />}
+            {index < post.length - 1 && <Divider margin="0" />}
           </Fragment>
         ))}
       </Box>

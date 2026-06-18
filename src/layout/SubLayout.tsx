@@ -27,7 +27,7 @@ export default function SubLayout({
 }: SubLayoutProps) {
   const location = useLocation();
   const outlet = useOutlet();
-  const { setIsScrolled } = useHeaderConfig();
+  const { setIsScrolled, pageBgColor, immersive } = useHeaderConfig(location.pathname);
   const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -52,7 +52,11 @@ export default function SubLayout({
     <LayoutContainer
       id="app-scroll-view"
       $fillsViewportOnDesktop={fillsViewportOnDesktop}
-      $backgroundColor={backgroundColor}
+      $backgroundColor={pageBgColor ?? backgroundColor}
+      style={{
+        "--header-height": `${headerHeight}px`,
+        "--nav-height": `${navHeight}px`,
+      } as React.CSSProperties}
     >
       <ContentShell $fillsViewportOnDesktop={fillsViewportOnDesktop}>
         {showHeader && (
@@ -66,8 +70,8 @@ export default function SubLayout({
         )}
 
         <ContentArea
-          $pt={headerHeight}
-          $pb={navHeight}
+          $pt={immersive ? 0 : headerHeight}
+          $pb={immersive ? 0 : navHeight}
           $fillsViewportOnDesktop={fillsViewportOnDesktop}
         >
           {outlet}

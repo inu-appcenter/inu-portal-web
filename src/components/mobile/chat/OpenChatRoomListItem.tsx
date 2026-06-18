@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { Users } from "lucide-react";
 import { OpenChatRoomResponseDto } from "@/types/chat";
+import Ripple from "@/components/common/Ripple";
 
 interface OpenChatRoomListItemProps {
   room: OpenChatRoomResponseDto;
@@ -13,47 +14,65 @@ export default function OpenChatRoomListItem({
 }: OpenChatRoomListItemProps) {
   return (
     <ItemWrapper onClick={() => onClick(room.roomId)}>
-      <ThumbnailArea>
-        {room.thumbnailUrl && (
-          <Thumbnail
-            src={`${import.meta.env.VITE_API_BASE_URL}${room.thumbnailUrl}`.replace(/(?<!:)\/\/+/g, '/')}
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        )}
-        <DefaultIcon className="fallback">
-          <Users size={24} color="#D6D1D5" />
-        </DefaultIcon>
-      </ThumbnailArea>
-      <ContentArea>
-        <TitleArea>
-          <Title>{room.title}</Title>
-          {room.official && <OfficialTag>공식</OfficialTag>}
-        </TitleArea>
-        {room.description && <Description>{room.description}</Description>}
-        <ParticipantInfo>
-          <Users size={14} color="#8E8E93" />
-          <span>
-            {room.currentParticipants} / {room.maxCapacity}
-          </span>
-        </ParticipantInfo>
-      </ContentArea>
-      <JoinButton $joined={room.joined}>
-        {room.joined ? "참여중" : "참여하기"}
-      </JoinButton>
+      <Ripple />
+      <InnerContent>
+        <ThumbnailArea>
+          {room.thumbnailUrl && (
+            <Thumbnail
+              src={`${import.meta.env.VITE_API_BASE_URL}${room.thumbnailUrl}`.replace(/(?<!:)\/\/+/g, '/')}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          )}
+          <DefaultIcon className="fallback">
+            <Users size={24} color="#D6D1D5" />
+          </DefaultIcon>
+        </ThumbnailArea>
+        <ContentArea>
+          <TitleArea>
+            <Title>{room.title}</Title>
+            {room.official && <OfficialTag>공식</OfficialTag>}
+          </TitleArea>
+          {room.description && <Description>{room.description}</Description>}
+          <ParticipantInfo>
+            <Users size={14} color="#8E8E93" />
+            <span>
+              {room.currentParticipants} / {room.maxCapacity}
+            </span>
+          </ParticipantInfo>
+        </ContentArea>
+        <JoinButton $joined={room.joined}>
+          {room.joined ? "참여중" : "참여하기"}
+        </JoinButton>
+      </InnerContent>
     </ItemWrapper>
   );
 }
 
-const ItemWrapper = styled.div`
+const InnerContent = styled.div`
   display: flex;
   flex-direction: row;
   gap: 12px;
   align-items: center;
+  width: 100%;
+  transition: transform 0.12s ease-in-out;
+`;
+
+const ItemWrapper = styled.div`
+  display: flex;
+  box-sizing: border-box;
+  padding: 12px 20px;
   cursor: pointer;
   width: 100%;
-  //padding: 8px 0;
+  position: relative;
+  overflow: hidden;
+
+  &.active-touch {
+    ${InnerContent} {
+      transform: scale(0.97);
+    }
+  }
 `;
 
 const ThumbnailArea = styled.div`
