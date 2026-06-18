@@ -41,6 +41,16 @@ export default function MobileCampusPage() {
   const moveToCoord = (coord: XY, enableOffset = true) => {
     setIsOffsetEnabled(enableOffset);
     setSelectedCoord(coord);
+
+    if (map) {
+      let lat = coord.X;
+      let lng = coord.Y;
+      if (!isDesktop && enableOffset) {
+        const offset = BOTTOM_SHEET_HEIGHT.DEFAULT * 0.0018;
+        lat -= offset;
+      }
+      map.panTo(new window.kakao.maps.LatLng(lat, lng));
+    }
   };
 
   const location = useLocation();

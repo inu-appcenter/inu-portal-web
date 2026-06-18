@@ -293,14 +293,6 @@ const KakaoMap = ({
 
       mapCenterRef.current = { lat, lng };
       lastTargetRef.current = { X: lat, Y: lng };
-
-      const isSame =
-        Math.abs(viewXY.X - lat) < 0.00001 &&
-        Math.abs(viewXY.Y - lng) < 0.00001;
-
-      if (!isSame && setSelectedCoord) {
-        setSelectedCoord({ X: lat, Y: lng }, false);
-      }
     }
   };
 
