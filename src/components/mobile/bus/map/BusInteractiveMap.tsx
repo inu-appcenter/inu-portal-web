@@ -184,12 +184,33 @@ export default function BusInteractiveMap({
 
     const applyBounds = () => {
       if (mapRef.current) {
+        // 1. setBounds 시 하단 패딩은 기본값(32px) 수준으로 주어 줌아웃을 최소화합니다.
         mapRef.current.setBounds(
           bounds,
           routePadding.top,
           routePadding.right,
-          routePadding.bottom,
+          32,
           routePadding.left,
+        );
+
+        // 2. 사용자의 배율 요구(한 단계 더 작게)에 맞게 레벨을 1단계 올려 줌아웃(배율 축소)합니다.
+        const currentLevel = mapRef.current.getLevel();
+        mapRef.current.setLevel(currentLevel + 1);
+
+        // 3. 줌 배율이 조절된 상태에서, 바텀시트 가림막 크기만큼 중심 좌표만 Y축 위로 panTo 보정합니다.
+        const currentCenter = mapRef.current.getCenter();
+        const targetLatLng = {
+          lat: currentCenter.getLat(),
+          lng: currentCenter.getLng()
+        };
+        const adjustedCenter = getAdjustedCenterFromPadding(
+          mapRef.current,
+          targetLatLng,
+          routePadding
+        );
+
+        mapRef.current.panTo(
+          new window.kakao.maps.LatLng(adjustedCenter.lat, adjustedCenter.lng)
         );
       }
     };
