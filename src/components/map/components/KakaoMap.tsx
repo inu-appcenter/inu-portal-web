@@ -166,21 +166,7 @@ const KakaoMap = ({
     });
   }, [loading, error]);
 
-  if (loading) {
-    return (
-      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#6c757d", fontSize: "14px" }}>
-        지도를 불러오는 중입니다...
-      </Container>
-    );
-  }
 
-  if (error) {
-    return (
-      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#dc3545", fontSize: "14px" }}>
-        지도를 불러오는 데 실패했습니다.
-      </Container>
-    );
-  }
 
   // 2. 외부 이동 트리거 감지 시 panTo 이동
   useEffect(() => {
@@ -441,6 +427,22 @@ const KakaoMap = ({
       }
     };
   }, []);
+
+  if (loading) {
+    return (
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#6c757d", fontSize: "14px" }}>
+        지도를 불러오는 중입니다...
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#dc3545", fontSize: "14px" }}>
+        지도를 불러오는 데 실패했습니다.
+      </Container>
+    );
+  }
 
   return (
     <Container>
