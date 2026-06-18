@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { Navigation } from "lucide-react"; // 내 위치 아이콘용
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB";
 import { MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
+import { useKakaoMapLoader } from "@/hooks/useKakaoMapLoader";
 
 import { mixpanelTrack } from "@/utils/mixpanel";
 
@@ -105,6 +106,7 @@ const KakaoMap = ({
   isTracking = false,
   setIsTracking,
 }: Props) => {
+  const { loading, error } = useKakaoMapLoader();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const [mapInstance, setInternalMap] = useState<kakao.maps.Map | null>(null);
@@ -123,7 +125,8 @@ const KakaoMap = ({
 
   // 1. 지도 초기화 및 이벤트 등록
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (loading || error || !containerRef.current || mapRef.current) return;
+    if (!window.kakao?.maps) return;
 
     const options = {
       center: new window.kakao.maps.LatLng(viewXY.X, viewXY.Y),
@@ -161,7 +164,9 @@ const KakaoMap = ({
       isDraggingRef.current = false;
       if (isTracking && setIsTracking) setIsTracking(false);
     });
-  }, []);
+  }, [loading, error]);
+
+
 
   // 2. 외부 이동 트리거 감지 시 panTo 이동
   useEffect(() => {
@@ -422,6 +427,22 @@ const KakaoMap = ({
       }
     };
   }, []);
+
+  if (loading) {
+    return (
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#6c757d", fontSize: "14px" }}>
+        지도를 불러오는 중입니다...
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#dc3545", fontSize: "14px" }}>
+        지도를 불러오는 데 실패했습니다.
+      </Container>
+    );
+  }
 
   return (
     <Container>
