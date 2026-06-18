@@ -48,7 +48,8 @@ export default function MobileCampusPage() {
       let lat = coord.X;
       let lng = coord.Y;
       if (!isDesktop && enableOffset) {
-        const offset = BOTTOM_SHEET_HEIGHT.DEFAULT * 0.0018;
+        const activeSnap = typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
+        const offset = activeSnap * 0.0018;
         lat -= offset;
       }
       map.panTo(new window.kakao.maps.LatLng(lat, lng));
@@ -176,12 +177,25 @@ export default function MobileCampusPage() {
       };
     }
 
-    const offset = BOTTOM_SHEET_HEIGHT.DEFAULT * 0.0018;
+    const activeSnap = typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
+    const offset = activeSnap * 0.0018;
     return {
       X: selectedCoord.X - offset,
       Y: selectedCoord.Y,
     };
-  }, [selectedCoord, isDesktop, isOffsetEnabled]);
+  }, [selectedCoord, isDesktop, isOffsetEnabled, snap]);
+
+  // 바텀시트 snap 높이 변경 시 지도를 부드럽게 위/아래로 연동 패닝
+  useEffect(() => {
+    if (!isDesktop && map && isOffsetEnabled) {
+      let lat = selectedCoord.X;
+      let lng = selectedCoord.Y;
+      const activeSnap = typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
+      const offset = activeSnap * 0.0018;
+      lat -= offset;
+      map.panTo(new window.kakao.maps.LatLng(lat, lng));
+    }
+  }, [snap, map, isDesktop, isOffsetEnabled, selectedCoord]);
 
   return (
     <MobileCampusPageWrapper>

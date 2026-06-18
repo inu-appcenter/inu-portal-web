@@ -53,6 +53,7 @@ interface BusInteractiveMapProps {
     left: number;
   };
   onSelectStop: (stopId: string) => void;
+  mapFocusTrigger?: number;
 }
 
 const DEFAULT_MARKER_IMAGE = "/Bus/marker/횃불이마커.png";
@@ -64,6 +65,7 @@ export default function BusInteractiveMap({
   center,
   routeViewportPadding,
   onSelectStop,
+  mapFocusTrigger,
 }: BusInteractiveMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
@@ -89,15 +91,31 @@ export default function BusInteractiveMap({
     selectedRoutePath.length,
   ]);
 
-  const routePadding = useMemo(
-    () => ({
-      top: routeViewportPadding?.top ?? 32,
-      right: routeViewportPadding?.right ?? 32,
-      bottom: routeViewportPadding?.bottom ?? 32,
-      left: routeViewportPadding?.left ?? 32,
-    }),
-    [routeViewportPadding?.bottom, routeViewportPadding?.left, routeViewportPadding?.right, routeViewportPadding?.top],
-  );
+  const routePadding = useMemo(() => {
+    const defaultTop = routeViewportPadding?.top ?? 32;
+    const defaultRight = routeViewportPadding?.right ?? 32;
+    const defaultLeft = routeViewportPadding?.left ?? 32;
+    let defaultBottom = routeViewportPadding?.bottom ?? 32;
+
+    // 모바일이면서 정류장 단독 뷰일 경우 (selectedBus가 없을 때)
+    // 노선용 15% 마진 패딩 대신 약 6% 마진 패딩 수준이 되도록 bottom 패딩 값을 축소 보정합니다.
+    if (typeof window !== "undefined" && !selectedBus && routeViewportPadding) {
+      const isDesktopView = window.matchMedia("(min-width: 1024px)").matches;
+      if (!isDesktopView) {
+        const mapHeight = Math.max(window.innerHeight, 320);
+        // 마진율 차이 9% 만큼 차감 (15% -> 6%)
+        const diffOffset = Math.round(mapHeight * 0.09);
+        defaultBottom = Math.max(84, defaultBottom - diffOffset);
+      }
+    }
+
+    return {
+      top: defaultTop,
+      right: defaultRight,
+      bottom: defaultBottom,
+      left: defaultLeft,
+    };
+  }, [routeViewportPadding, selectedBus]);
 
   // 1. 지도 초기화 및 스카이뷰 컨트롤 추가
   useEffect(() => {
@@ -134,41 +152,37 @@ export default function BusInteractiveMap({
     }, 100);
   }, []);
 
-  // 2. selectedRouteKey가 없을 때 (노선 선택 해제 시) 중심점 panTo 이동
+  // 2. 정류장 선택(selectedStopId 변경) 또는 포커스 트리거 발생 시 지도를 해당 정류장 위치로 레벨 3(가깝게) 이동
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || selectedRouteKey) {
+    if (!map || !selectedStopId) {
       return;
     }
 
-    previousRouteKeyRef.current = null;
+    // 정류장을 탭하여 세부 조회 시 줌 레벨을 3(가깝게)으로 먼저 맞추어 축척을 바꿉니다.
+    map.setLevel(3);
 
+    // 변경된 레벨 3 축척을 기준으로 바텀시트 크기만큼 중심 Y축 좌표를 정확히 보정합니다.
     const adjustedCenter = getAdjustedCenterFromPadding(
       map,
       center,
       routePadding,
     );
 
-    // 정류장을 선택하여 이동 시 줌 레벨을 3(가깝게)으로 고정하여 자세히 보여줍니다.
-    map.setLevel(3);
-
     map.panTo(
       new window.kakao.maps.LatLng(adjustedCenter.lat, adjustedCenter.lng),
     );
-  }, [
-    center.lat,
-    center.lng,
-    mapInstance,
-    routePadding.bottom,
-    routePadding.left,
-    routePadding.right,
-    routePadding.top,
-    selectedRouteKey,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStopId, mapFocusTrigger, mapInstance]);
 
-  // 3. selectedRouteKey가 있을 때 (노선 선택 시) 경로선 영역 맞춤 (setBounds)
+  // 3. 버스 노선 최초 선택(selectedRouteKey 변경) 시 경로선 영역에 맞춰 가시 영역 조정 (setBounds)
   useEffect(() => {
     const map = mapRef.current;
+
+    if (!selectedRouteKey) {
+      previousRouteKeyRef.current = null;
+    }
+
     if (
       !map ||
       selectedRoutePath.length === 0 ||
@@ -179,8 +193,13 @@ export default function BusInteractiveMap({
 
     const isSameRoute = previousRouteKeyRef.current === selectedRouteKey;
     previousRouteKeyRef.current = selectedRouteKey;
-    const bounds = new window.kakao.maps.LatLngBounds();
 
+    // 이미 같은 버스 노선 화면 내에서 다른 정류장을 선택하거나 리렌더링된 것이라면 setBounds를 반복하지 않습니다.
+    if (isSameRoute) {
+      return;
+    }
+
+    const bounds = new window.kakao.maps.LatLngBounds();
     selectedRoutePath.forEach(({ lat, lng }) => {
       bounds.extend(new window.kakao.maps.LatLng(lat, lng));
     });
@@ -220,26 +239,47 @@ export default function BusInteractiveMap({
       }
     };
 
-    let timeoutId = 0;
+    applyBounds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRouteKey, mapInstance]);
 
-    if (isSameRoute) {
-      timeoutId = window.setTimeout(applyBounds, 220);
-    } else {
-      applyBounds();
+  // 3-2. 바텀시트 높이(routePadding.bottom) 변경 시 지도의 중심점을 부드럽게 위/아래로 이동(panTo)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) {
+      return;
     }
 
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [
-    mapInstance,
-    routePadding.bottom,
-    routePadding.left,
-    routePadding.right,
-    routePadding.top,
-    selectedRoutePath,
-    selectedRouteKey,
-  ]);
+    let anchorLatLng: LatLng;
+
+    if (selectedBus && selectedRoutePath.length > 0) {
+      const bounds = new window.kakao.maps.LatLngBounds();
+      selectedRoutePath.forEach(({ lat, lng }) => {
+        bounds.extend(new window.kakao.maps.LatLng(lat, lng));
+      });
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
+      anchorLatLng = {
+        lat: (sw.getLat() + ne.getLat()) / 2,
+        lng: (sw.getLng() + ne.getLng()) / 2,
+      };
+    } else if (selectedStopId) {
+      anchorLatLng = center;
+    } else {
+      return;
+    }
+
+    const adjustedCenter = getAdjustedCenterFromPadding(
+      map,
+      anchorLatLng,
+      routePadding,
+    );
+
+    map.panTo(
+      new window.kakao.maps.LatLng(adjustedCenter.lat, adjustedCenter.lng),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routePadding.bottom, mapInstance]);
 
   // 4. activeStops 정류장 마커 관리
   const markersRef = useRef<kakao.maps.Marker[]>([]);
@@ -314,7 +354,8 @@ export default function BusInteractiveMap({
       const overlay = new window.kakao.maps.CustomOverlay({
         position,
         content: selectedStopBubbleContainer,
-        yAnchor: 2.3,
+        xAnchor: 0.5,
+        yAnchor: 0,
         zIndex: 15,
       });
       overlay.setMap(map);
@@ -370,11 +411,10 @@ export default function BusInteractiveMap({
     };
   }, []);
 
-  // 7. 노선 정류장 마커 (RouteStopMarker) 커스텀 오버레이 관리
-  const routeStopOverlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
-  const [routeStopContainers, setRouteStopContainers] = useState<HTMLDivElement[]>([]);
+  // 7. 노선 정류장 마커 (RouteStopMarker) 관리
+  const routeStopMarkersRef = useRef<kakao.maps.Marker[]>([]);
 
-  const routeStopMarkers = useMemo(
+  const routeStopMarkersData = useMemo(
     () => selectedBus?.stopMarker ?? [],
     [selectedBus],
   );
@@ -383,30 +423,37 @@ export default function BusInteractiveMap({
     const map = mapRef.current;
     if (!map) return;
 
-    routeStopOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
-    routeStopOverlaysRef.current = [];
+    routeStopMarkersRef.current.forEach((marker) => marker.setMap(null));
+    routeStopMarkersRef.current = [];
 
-    const containers = routeStopMarkers.map(() => document.createElement("div"));
-    setRouteStopContainers(containers);
+    const newMarkers = routeStopMarkersData.map((stop) => {
+      const width = 40;
+      const height = 50;
 
-    const newOverlays = routeStopMarkers.map((stop, index) => {
-      const position = new window.kakao.maps.LatLng(stop.lat, stop.lng);
-      const overlay = new window.kakao.maps.CustomOverlay({
-        position,
-        content: containers[index],
-        yAnchor: 1,
+      const markerImage = new window.kakao.maps.MarkerImage(
+        `/Bus/marker/${stop.name}.png`,
+        new window.kakao.maps.Size(width, height),
+        {
+          offset: new window.kakao.maps.Point(width / 2, height),
+        }
+      );
+
+      const marker = new window.kakao.maps.Marker({
+        position: new window.kakao.maps.LatLng(stop.lat, stop.lng),
+        image: markerImage,
         zIndex: 5,
       });
-      overlay.setMap(map);
-      return overlay;
+
+      marker.setMap(map);
+      return marker;
     });
 
-    routeStopOverlaysRef.current = newOverlays;
-  }, [routeStopMarkers, mapInstance]);
+    routeStopMarkersRef.current = newMarkers;
+  }, [routeStopMarkersData, mapInstance]);
 
   useEffect(() => {
     return () => {
-      routeStopOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+      routeStopMarkersRef.current.forEach((marker) => marker.setMap(null));
     };
   }, []);
 
@@ -420,19 +467,6 @@ export default function BusInteractiveMap({
         <SelectedStopBubble>{currentSelectedStop.stopName}</SelectedStopBubble>,
         selectedStopBubbleContainer
       )}
-
-      {/* 노선 내 개별 정류장 마커 오버레이 Portal 주입 */}
-      {routeStopContainers.map((container, index) => {
-        const stop = routeStopMarkers[index];
-        if (!stop) return null;
-
-        return ReactDOM.createPortal(
-          <RouteStopMarker>
-            <img src={`/Bus/marker/${stop.name}.png`} alt={stop.name} />
-          </RouteStopMarker>,
-          container
-        );
-      })}
     </MapShell>
   );
 }
@@ -445,7 +479,6 @@ const MapShell = styled.div`
 
 const SelectedStopBubble = styled.div`
   padding: 9px 12px;
-  margin-bottom: 8px;
   border-radius: 999px;
   background: rgba(20, 36, 66, 0.92);
   color: #ffffff;
@@ -455,15 +488,8 @@ const SelectedStopBubble = styled.div`
   white-space: nowrap;
   box-shadow: 0 14px 28px rgba(20, 36, 66, 0.16);
   pointer-events: none;
+  
+  transform: translateY(calc(-100% - 64px));
 `;
 
-const RouteStopMarker = styled.div`
-  width: 40px;
-  height: 50px;
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-`;
