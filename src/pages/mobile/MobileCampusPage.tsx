@@ -37,10 +37,23 @@ export default function MobileCampusPage() {
   );
   const [selectedCoord, setSelectedCoord] = useState<XY>(SCHOOL_COORD);
   const [isOffsetEnabled, setIsOffsetEnabled] = useState(true);
+  const [mapMoveTrigger, setMapMoveTrigger] = useState(0);
 
   const moveToCoord = (coord: XY, enableOffset = true) => {
     setIsOffsetEnabled(enableOffset);
     setSelectedCoord(coord);
+    setMapMoveTrigger((prev) => prev + 1);
+
+    if (map) {
+      let lat = coord.X;
+      let lng = coord.Y;
+      if (!isDesktop && enableOffset) {
+        const activeSnap = typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
+        const offset = activeSnap * 0.0018;
+        lat -= offset;
+      }
+      map.panTo(new window.kakao.maps.LatLng(lat, lng));
+    }
   };
 
   const location = useLocation();
@@ -164,12 +177,25 @@ export default function MobileCampusPage() {
       };
     }
 
-    const offset = BOTTOM_SHEET_HEIGHT.DEFAULT * 0.0018;
+    const activeSnap = typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
+    const offset = activeSnap * 0.0018;
     return {
       X: selectedCoord.X - offset,
       Y: selectedCoord.Y,
     };
-  }, [selectedCoord, isDesktop, isOffsetEnabled]);
+  }, [selectedCoord, isDesktop, isOffsetEnabled, snap]);
+
+  // 바텀시트 snap 높이 변경 시 지도를 부드럽게 위/아래로 연동 패닝
+  useEffect(() => {
+    if (!isDesktop && map && isOffsetEnabled) {
+      let lat = selectedCoord.X;
+      let lng = selectedCoord.Y;
+      const activeSnap = typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
+      const offset = activeSnap * 0.0018;
+      lat -= offset;
+      map.panTo(new window.kakao.maps.LatLng(lat, lng));
+    }
+  }, [snap, map, isDesktop, isOffsetEnabled, selectedCoord]);
 
   return (
     <MobileCampusPageWrapper>
@@ -193,6 +219,7 @@ export default function MobileCampusPage() {
         <Map
           selectedTab={selectedTab}
           viewXY={viewXY}
+          mapMoveTrigger={mapMoveTrigger}
           setMap={setMap}
           setSelectedCoord={moveToCoord}
           openedMarkerId={openedMarkerId}
@@ -221,12 +248,16 @@ export default function MobileCampusPage() {
   );
 }
 
+const MOBILE_HEADER_SAFE_TOP = 0;
+const MOBILE_HEADER_OVERLAY_OFFSET = 76;
+
 const MobileCampusPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
   flex: 1;
-  height: calc(100dvh - 100px);
+  height: calc(100dvh - ${MOBILE_HEADER_SAFE_TOP}px);
+  margin-top: -${MOBILE_HEADER_OVERLAY_OFFSET}px;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
@@ -237,6 +268,7 @@ const MobileCampusPageWrapper = styled.div`
     gap: 20px;
     height: 100%;
     min-height: 0;
+    margin-top: 0;
     overflow: hidden;
   }
 `;
