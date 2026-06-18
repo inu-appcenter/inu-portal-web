@@ -275,6 +275,12 @@ const KakaoMap = ({
 
   const handleDragStart = () => {
     isDraggingRef.current = true;
+    isAnimatingRef.current = false;
+    if (mapInstance) {
+      const center = mapInstance.getCenter();
+      mapCenterRef.current = { lat: center.getLat(), lng: center.getLng() };
+      lastTargetRef.current = { X: center.getLat(), Y: center.getLng() };
+    }
   };
 
   const handleDragEnd = () => {
