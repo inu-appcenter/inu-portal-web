@@ -149,6 +149,9 @@ export default function BusInteractiveMap({
       routePadding,
     );
 
+    // 정류장을 선택하여 이동 시 줌 레벨을 3(가깝게)으로 고정하여 자세히 보여줍니다.
+    map.setLevel(3);
+
     map.panTo(
       new window.kakao.maps.LatLng(adjustedCenter.lat, adjustedCenter.lng),
     );
