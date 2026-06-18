@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import styled from "styled-components";
 import type { BusData, LatLng } from "@/types/bus";
 import type { BusMapStop } from "@/components/mobile/bus/data/busMapConfig";
+import { useKakaoMapLoader } from "@/hooks/useKakaoMapLoader";
 
 
 
@@ -67,6 +68,7 @@ export default function BusInteractiveMap({
   onSelectStop,
   mapFocusTrigger,
 }: BusInteractiveMapProps) {
+  const { loading, error } = useKakaoMapLoader();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const [mapInstance, setMapInstance] = useState<kakao.maps.Map | null>(null);
@@ -119,7 +121,8 @@ export default function BusInteractiveMap({
 
   // 1. 지도 초기화 및 스카이뷰 컨트롤 추가
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (loading || error || !containerRef.current || mapRef.current) return;
+    if (!window.kakao?.maps) return;
 
     const initialCenter = selectedRouteKey
       ? center
@@ -150,7 +153,23 @@ export default function BusInteractiveMap({
         );
       }
     }, 100);
-  }, []);
+  }, [loading, error]);
+
+  if (loading) {
+    return (
+      <MapShell style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#6c757d", fontSize: "14px" }}>
+        지도를 불러오는 중입니다...
+      </MapShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <MapShell style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#dc3545", fontSize: "14px" }}>
+        지도를 불러오는 데 실패했습니다.
+      </MapShell>
+    );
+  }
 
   // 2. 정류장 선택(selectedStopId 변경) 또는 포커스 트리거 발생 시 지도를 해당 정류장 위치로 레벨 3(가깝게) 이동
   useEffect(() => {

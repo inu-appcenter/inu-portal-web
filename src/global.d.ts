@@ -1,3 +1,5 @@
+/// <reference types="kakao.maps.d.ts" />
+
 declare global {
   interface IntipFcmBootstrap {
     token: string;
