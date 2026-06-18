@@ -1,18 +1,10 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import {
-  CustomOverlayMap,
-  Map,
-  MapMarker,
-  MapTypeControl,
-  Polyline,
-} from "react-kakao-maps-sdk";
+import { useEffect, useMemo, useRef, useState } from "react";
+import ReactDOM from "react-dom";
 import styled from "styled-components";
 import type { BusData, LatLng } from "@/types/bus";
 import type { BusMapStop } from "@/components/mobile/bus/data/busMapConfig";
 
-function isSameLatLng(a: LatLng, b: LatLng) {
-  return Math.abs(a.lat - b.lat) < 0.000001 && Math.abs(a.lng - b.lng) < 0.000001;
-}
+
 
 function getAdjustedCenterFromPadding(
   map: kakao.maps.Map | null,
@@ -73,14 +65,17 @@ export default function BusInteractiveMap({
   routeViewportPadding,
   onSelectStop,
 }: BusInteractiveMapProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<kakao.maps.Map | null>(null);
   const [mapInstance, setMapInstance] = useState<kakao.maps.Map | null>(null);
-  const [mapCenter, setMapCenter] = useState(center);
-  const [routeCenter, setRouteCenter] = useState<LatLng | null>(null);
+
   const previousRouteKeyRef = useRef<string | null>(null);
+
   const selectedRoutePath = useMemo(
     () => selectedBus?.path ?? [],
     [selectedBus?.path],
   );
+
   const selectedRouteKey = useMemo(() => {
     if (selectedRoutePath.length === 0 || !selectedBus) {
       return null;
@@ -93,6 +88,7 @@ export default function BusInteractiveMap({
     selectedBus?.lastStopId,
     selectedRoutePath.length,
   ]);
+
   const routePadding = useMemo(
     () => ({
       top: routeViewportPadding?.top ?? 32,
@@ -103,24 +99,57 @@ export default function BusInteractiveMap({
     [routeViewportPadding?.bottom, routeViewportPadding?.left, routeViewportPadding?.right, routeViewportPadding?.top],
   );
 
-  useLayoutEffect(() => {
-    if (!mapInstance || !window.kakao?.maps || selectedRouteKey) {
+  // 1. 지도 초기화 및 스카이뷰 컨트롤 추가
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const initialCenter = selectedRouteKey
+      ? center
+      : getAdjustedCenterFromPadding(null, center, routePadding);
+
+    const options = {
+      center: new window.kakao.maps.LatLng(initialCenter.lat, initialCenter.lng),
+      level: 4,
+    };
+
+    const map = new window.kakao.maps.Map(containerRef.current, options);
+    mapRef.current = map;
+    setMapInstance(map);
+
+    // 스카이뷰/지도 타입 전환 컨트롤 추가
+    const mapTypeControl = new window.kakao.maps.MapTypeControl();
+    map.addControl(mapTypeControl, window.kakao.maps.ControlPosition.TOPRIGHT);
+
+    // 레이아웃 지연 보정 및 초기 중심 설정
+    window.setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.relayout();
+        const finalCenter = selectedRouteKey
+          ? center
+          : getAdjustedCenterFromPadding(mapRef.current, center, routePadding);
+        mapRef.current.setCenter(
+          new window.kakao.maps.LatLng(finalCenter.lat, finalCenter.lng),
+        );
+      }
+    }, 100);
+  }, []);
+
+  // 2. selectedRouteKey가 없을 때 (노선 선택 해제 시) 중심점 panTo 이동
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || selectedRouteKey) {
       return;
     }
 
     previousRouteKeyRef.current = null;
-    setRouteCenter(null);
 
     const adjustedCenter = getAdjustedCenterFromPadding(
-      mapInstance,
+      map,
       center,
       routePadding,
     );
 
-    setMapCenter((prev) =>
-      isSameLatLng(prev, adjustedCenter) ? prev : adjustedCenter,
-    );
-    mapInstance.panTo(
+    map.panTo(
       new window.kakao.maps.LatLng(adjustedCenter.lat, adjustedCenter.lng),
     );
   }, [
@@ -134,10 +163,11 @@ export default function BusInteractiveMap({
     selectedRouteKey,
   ]);
 
-  useLayoutEffect(() => {
+  // 3. selectedRouteKey가 있을 때 (노선 선택 시) 경로선 영역 맞춤 (setBounds)
+  useEffect(() => {
+    const map = mapRef.current;
     if (
-      !mapInstance ||
-      !window.kakao?.maps ||
+      !map ||
       selectedRoutePath.length === 0 ||
       !selectedRouteKey
     ) {
@@ -152,27 +182,16 @@ export default function BusInteractiveMap({
       bounds.extend(new window.kakao.maps.LatLng(lat, lng));
     });
 
-    const syncRouteCenter = () => {
-      const currentCenter = mapInstance.getCenter();
-      const nextCenter = {
-        lat: currentCenter.getLat(),
-        lng: currentCenter.getLng(),
-      };
-
-      setRouteCenter((prev) => (prev && isSameLatLng(prev, nextCenter) ? prev : nextCenter));
-      window.kakao.maps.event.removeListener(mapInstance, "idle", syncRouteCenter);
-    };
-
     const applyBounds = () => {
-      window.kakao.maps.event.removeListener(mapInstance, "idle", syncRouteCenter);
-      window.kakao.maps.event.addListener(mapInstance, "idle", syncRouteCenter);
-      mapInstance.setBounds(
-        bounds,
-        routePadding.top,
-        routePadding.right,
-        routePadding.bottom,
-        routePadding.left,
-      );
+      if (mapRef.current) {
+        mapRef.current.setBounds(
+          bounds,
+          routePadding.top,
+          routePadding.right,
+          routePadding.bottom,
+          routePadding.left,
+        );
+      }
     };
 
     let timeoutId = 0;
@@ -184,7 +203,6 @@ export default function BusInteractiveMap({
     }
 
     return () => {
-      window.kakao?.maps.event.removeListener(mapInstance, "idle", syncRouteCenter);
       window.clearTimeout(timeoutId);
     };
   }, [
@@ -197,95 +215,199 @@ export default function BusInteractiveMap({
     selectedRouteKey,
   ]);
 
+  // 4. activeStops 정류장 마커 관리
+  const markersRef = useRef<kakao.maps.Marker[]>([]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // 기존 마커 전체 제거
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
+    // 새 마커 생성 및 지도 부착
+    const newMarkers = activeStops.map((stop) => {
+      const isSelected = stop.id === selectedStopId;
+      const size = isSelected
+        ? new window.kakao.maps.Size(46, 56)
+        : new window.kakao.maps.Size(38, 48);
+
+      const markerImage = new window.kakao.maps.MarkerImage(
+        DEFAULT_MARKER_IMAGE,
+        size,
+        {
+          offset: new window.kakao.maps.Point(size.width / 2, size.height),
+        }
+      );
+
+      const marker = new window.kakao.maps.Marker({
+        position: new window.kakao.maps.LatLng(stop.lat, stop.lng),
+        image: markerImage,
+        clickable: true,
+      });
+
+      marker.setMap(map);
+
+      window.kakao.maps.event.addListener(marker, "click", () => {
+        onSelectStop(stop.id);
+      });
+
+      return marker;
+    });
+
+    markersRef.current = newMarkers;
+  }, [activeStops, selectedStopId, mapInstance]);
+
+  // 5. 선택된 정류장 말풍선 오버레이 관리 (SelectedStopBubble)
+  const selectedStopBubbleOverlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
+  const [selectedStopBubbleContainer] = useState(() => document.createElement("div"));
+
+  const currentSelectedStop = useMemo(
+    () => activeStops.find((stop) => stop.id === selectedStopId),
+    [activeStops, selectedStopId],
+  );
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (!currentSelectedStop) {
+      if (selectedStopBubbleOverlayRef.current) {
+        selectedStopBubbleOverlayRef.current.setMap(null);
+        selectedStopBubbleOverlayRef.current = null;
+      }
+      return;
+    }
+
+    const position = new window.kakao.maps.LatLng(
+      currentSelectedStop.lat,
+      currentSelectedStop.lng,
+    );
+
+    if (!selectedStopBubbleOverlayRef.current) {
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position,
+        content: selectedStopBubbleContainer,
+        yAnchor: 2.3,
+        zIndex: 15,
+      });
+      overlay.setMap(map);
+      selectedStopBubbleOverlayRef.current = overlay;
+    } else {
+      selectedStopBubbleOverlayRef.current.setPosition(position);
+    }
+  }, [currentSelectedStop, mapInstance]);
+
+  useEffect(() => {
+    return () => {
+      if (selectedStopBubbleOverlayRef.current) {
+        selectedStopBubbleOverlayRef.current.setMap(null);
+      }
+    };
+  }, []);
+
+  // 6. 버스 경로선 (Polyline) 관리
+  const polylineRef = useRef<kakao.maps.Polyline | null>(null);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (polylineRef.current) {
+      polylineRef.current.setMap(null);
+      polylineRef.current = null;
+    }
+
+    if (selectedRoutePath.length > 0) {
+      const path = selectedRoutePath.map(
+        (pt) => new window.kakao.maps.LatLng(pt.lat, pt.lng),
+      );
+
+      const polyline = new window.kakao.maps.Polyline({
+        path,
+        strokeWeight: 5,
+        strokeColor: "#2f6fe4",
+        strokeOpacity: 0.92,
+        strokeStyle: "solid",
+      });
+
+      polyline.setMap(map);
+      polylineRef.current = polyline;
+    }
+  }, [selectedRoutePath, mapInstance]);
+
+  useEffect(() => {
+    return () => {
+      if (polylineRef.current) {
+        polylineRef.current.setMap(null);
+      }
+    };
+  }, []);
+
+  // 7. 노선 정류장 마커 (RouteStopMarker) 커스텀 오버레이 관리
+  const routeStopOverlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
+  const [routeStopContainers, setRouteStopContainers] = useState<HTMLDivElement[]>([]);
+
+  const routeStopMarkers = useMemo(
+    () => selectedBus?.stopMarker ?? [],
+    [selectedBus],
+  );
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    routeStopOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+    routeStopOverlaysRef.current = [];
+
+    const containers = routeStopMarkers.map(() => document.createElement("div"));
+    setRouteStopContainers(containers);
+
+    const newOverlays = routeStopMarkers.map((stop, index) => {
+      const position = new window.kakao.maps.LatLng(stop.lat, stop.lng);
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position,
+        content: containers[index],
+        yAnchor: 1,
+        zIndex: 5,
+      });
+      overlay.setMap(map);
+      return overlay;
+    });
+
+    routeStopOverlaysRef.current = newOverlays;
+  }, [routeStopMarkers, mapInstance]);
+
+  useEffect(() => {
+    return () => {
+      routeStopOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+    };
+  }, []);
+
   return (
     <MapShell>
-      <Map
-        center={selectedRouteKey ? routeCenter ?? mapCenter : mapCenter}
-        draggable
-        zoomable
-        style={{ width: "100%", height: "100%" }}
-        onCreate={(map) => {
-          setMapInstance(map);
-          window.setTimeout(() => {
-            map.relayout();
-            const initialCenter = selectedRouteKey
-              ? routeCenter ?? mapCenter
-              : getAdjustedCenterFromPadding(map, center, routePadding);
+      {/* 바닐라 카카오 지도가 렌더링될 컨테이너 */}
+      <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
 
-            setMapCenter((prev) =>
-              isSameLatLng(prev, initialCenter) ? prev : initialCenter,
-            );
-            map.setCenter(
-              new window.kakao.maps.LatLng(
-                initialCenter.lat,
-                initialCenter.lng,
-              ),
-            );
-          }, 100);
-        }}
-      >
-        {selectedBus?.path?.length ? (
-          <Polyline
-            path={selectedBus.path}
-            strokeWeight={5}
-            strokeColor="#2f6fe4"
-            strokeOpacity={0.92}
-            strokeStyle="solid"
-          />
-        ) : null}
+      {/* 선택된 정류장 말풍선 오버레이 Portal 주입 */}
+      {currentSelectedStop && ReactDOM.createPortal(
+        <SelectedStopBubble>{currentSelectedStop.stopName}</SelectedStopBubble>,
+        selectedStopBubbleContainer
+      )}
 
-        {selectedBus?.stopMarker?.map((stop) => (
-          <CustomOverlayMap
-            key={`${stop.name}-${stop.lat}-${stop.lng}`}
-            position={{ lat: stop.lat, lng: stop.lng }}
-            yAnchor={1}
-          >
-            <RouteStopMarker>
-              <img src={`/Bus/marker/${stop.name}.png`} alt={stop.name} />
-            </RouteStopMarker>
-          </CustomOverlayMap>
-        ))}
+      {/* 노선 내 개별 정류장 마커 오버레이 Portal 주입 */}
+      {routeStopContainers.map((container, index) => {
+        const stop = routeStopMarkers[index];
+        if (!stop) return null;
 
-        {activeStops.map((stop) => {
-          const isSelected = stop.id === selectedStopId;
-          const size = isSelected
-            ? { width: 46, height: 56 }
-            : { width: 38, height: 48 };
-
-          return (
-            <MapMarker
-              key={stop.id}
-              position={{ lat: stop.lat, lng: stop.lng }}
-              image={{
-                src: DEFAULT_MARKER_IMAGE,
-                size,
-                options: {
-                  offset: { x: size.width / 2, y: size.height },
-                },
-              }}
-              onClick={() => onSelectStop(stop.id)}
-            />
-          );
-        })}
-
-        {activeStops
-          .filter((stop) => stop.id === selectedStopId)
-          .map((stop) => (
-            <CustomOverlayMap
-              key={`${stop.id}-label`}
-              position={{ lat: stop.lat, lng: stop.lng }}
-              yAnchor={2.3}
-            >
-              <SelectedStopBubble>{stop.stopName}</SelectedStopBubble>
-            </CustomOverlayMap>
-          ))}
-
-        {window.kakao?.maps ? (
-          <MapTypeControl
-            position={window.kakao.maps.ControlPosition.TOPRIGHT}
-          />
-        ) : null}
-      </Map>
+        return ReactDOM.createPortal(
+          <RouteStopMarker>
+            <img src={`/Bus/marker/${stop.name}.png`} alt={stop.name} />
+          </RouteStopMarker>,
+          container
+        );
+      })}
     </MapShell>
   );
 }
