@@ -144,7 +144,7 @@ export default function ScheduleModal({
         {events.map((event, idx) => (
           <Fragment key={event.id}>
             <EventItem {...event} isOpenMode={events.length <= 1} />
-            {idx < events.length - 1 && <Divider />}
+            {idx < events.length - 1 && <Divider margin="0" />}
           </Fragment>
         ))}
       </EventListContainer>
@@ -194,7 +194,7 @@ const StyledContent = styled(Dialog.Content)`
   max-width: 450px;
   min-height: 200px;
   max-height: 70vh;
-  padding: 24px;
+  padding: 24px 0 16px;
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -214,6 +214,7 @@ const StyledContent = styled(Dialog.Content)`
 
 const HeaderContainer = styled.div`
   flex-shrink: 0;
+  padding: 0 20px;
 `;
 
 const StyledTitle = styled(Dialog.Title)`
@@ -268,4 +269,5 @@ const EmptyMessage = styled.p`
   color: #8e8e93;
   font-size: 14px;
   margin: auto 0;
+  padding: 0 20px;
 `;

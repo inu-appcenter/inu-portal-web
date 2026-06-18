@@ -7,8 +7,47 @@ export type MobilePlatform =
 
 type WindowWithOpera = Window & typeof globalThis & { opera?: string };
 
+export type AppEnvironmentStatus = "NEW_APP" | "OLD_APP" | "BROWSER";
+
 /**
- * 현재 접속한 환경이 iOS/Android WebView 또는 일반 브라우저인지 판별합니다.
+ * 현재 접속한 환경이 신버전 공식 앱, 구버전 공식 앱, 또는 일반 브라우저(인앱 포함)인지 판별합니다.
+ */
+export function getAppEnvironmentStatus(): AppEnvironmentStatus {
+  const userAgent = navigator.userAgent || "";
+  
+  // 1. 안드로이드 공식 앱 판정
+  const isAndroidUA = userAgent.includes("INTIPApp");
+  const isAndroidBridgeExists = typeof window.AndroidBridge !== "undefined";
+  
+  if (isAndroidUA || isAndroidBridgeExists) {
+    // 신버전 안드로이드 앱은 navigateTo 함수가 존재함
+    if (typeof window.AndroidBridge?.navigateTo === "function") {
+      return "NEW_APP";
+    } else {
+      return "OLD_APP";
+    }
+  }
+
+  // 2. iOS 공식 앱 판정
+  // 구버전 iOS 앱도 window.webkit.messageHandlers.requestAppUpdate는 가지고 있음
+  const isIOSBridgeExists = typeof window.webkit?.messageHandlers?.requestAppUpdate !== "undefined";
+  
+  if (isIOSBridgeExists) {
+    // 신버전 iOS 앱은 User-Agent에 INTIPApp을 달고 들어옴
+    if (userAgent.includes("INTIPApp")) {
+      return "NEW_APP";
+    } else {
+      return "OLD_APP";
+    }
+  }
+
+  // 3. 일반 웹 브라우저 및 카카오톡/인스타 등 타사 인앱 브라우저
+  return "BROWSER";
+}
+
+/**
+ * 현재 접속한 환경이 iOS/Android 공식 WebView 또는 일반 브라우저인지 판별합니다.
+ * (Mixpanel 로깅 등 기존 로직 호환용)
  */
 export function getMobilePlatform(): MobilePlatform {
   const userAgent =
@@ -18,28 +57,24 @@ export function getMobilePlatform(): MobilePlatform {
     "";
 
   const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-  const isSafari = /Safari/i.test(userAgent);
-  const isWKWebView =
-    /(Version\/[\d.]+).*Mobile.*Safari/.test(userAgent) === false;
+  const isAndroid = /Android/i.test(userAgent);
+  const status = getAppEnvironmentStatus();
 
   if (isIOS) {
-    if (!isSafari || isWKWebView) {
+    // 공식 앱 환경 상태가 NEW_APP 또는 OLD_APP이면 ios_webview로 판정
+    if (status === "NEW_APP" || status === "OLD_APP") {
       return "ios_webview";
     }
-
     return "ios_browser";
   }
 
-  const isAndroid = /Android/i.test(userAgent);
-  const isWebView = /wv/i.test(userAgent) || /Version\/[\d.]+/i.test(userAgent);
-
   if (isAndroid) {
-    if (isWebView) {
+    if (status === "NEW_APP" || status === "OLD_APP") {
       return "android_webview";
     }
-
     return "android_browser";
   }
 
   return "other";
 }
+

@@ -2,6 +2,7 @@ import styled, { css } from "styled-components";
 import Badge from "@/components/common/Badge";
 import Skeleton from "@/components/common/Skeleton";
 import { Eye } from "lucide-react";
+import Ripple from "@/components/common/Ripple";
 
 interface NoticeItemProps {
   category?: string;
@@ -36,56 +37,85 @@ const PostItem = ({
 
   if (isLoading) {
     return (
-      <NoticeItemWrapper>
-        {/* 카테고리 스켈레톤 */}
-        <Skeleton width={60} height={18} />
-        {/* 제목 스켈레톤 */}
-        <Skeleton width="100%" height={20} />
-        {/* 내용 스켈레톤 */}
-        <Skeleton width="100%" height={16} />
-        <InfoLine>
-          <div style={{ display: "flex", gap: "8px" }}>
-            {/* 날짜 스켈레톤 */}
-            <Skeleton width={80} height={14} />
-          </div>
-          {/* 작성자 뱃지 스켈레톤 */}
-          <Skeleton width={50} height={14} />
-        </InfoLine>
+      <NoticeItemWrapper $interactive={false}>
+        <InnerContent>
+          {/* 카테고리 스켈레톤 */}
+          <Skeleton width={60} height={18} />
+          {/* 제목 스켈레톤 */}
+          <Skeleton width="100%" height={20} />
+          {/* 내용 스켈레톤 */}
+          <Skeleton width="100%" height={16} />
+          <InfoLine>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {/* 날짜 스켈레톤 */}
+              <Skeleton width={80} height={14} />
+            </div>
+            {/* 작성자 뱃지 스켈레톤 */}
+            <Skeleton width={50} height={14} />
+          </InfoLine>
+        </InnerContent>
       </NoticeItemWrapper>
     );
   }
 
   return (
-    <NoticeItemWrapper onClick={onClick}>
-      {category && <Category>{category}</Category>}
-      <Title isEllipsis={isEllipsis}>{title || ""}</Title>
-      {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
-      {hasInfoLine && (
-        <InfoLine>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            {showDate && date && <div className="date">{date}</div>}
-            {showWriter && writer && <Badge text={writer} />}
-          </div>
-          {views !== undefined && (
-            <ViewCount>
-              <Eye size={14} />
-              {views}
-            </ViewCount>
-          )}
-        </InfoLine>
-      )}
+    <NoticeItemWrapper onClick={onClick} $interactive={!!onClick}>
+      {onClick && <Ripple />}
+      <InnerContent>
+        {category && <Category>{category}</Category>}
+        <Title isEllipsis={isEllipsis}>{title || ""}</Title>
+        {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
+        {hasInfoLine && (
+          <InfoLine>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              {showDate && date && <div className="date">{date}</div>}
+              {showWriter && writer && <Badge text={writer} />}
+            </div>
+            {views !== undefined && (
+              <ViewCount>
+                <Eye size={14} />
+                {views}
+              </ViewCount>
+            )}
+          </InfoLine>
+        )}
+      </InnerContent>
     </NoticeItemWrapper>
   );
 };
 
 export default PostItem;
 
-const NoticeItemWrapper = styled.div`
+const InnerContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  cursor: pointer;
+  transition: transform 0.12s ease-in-out;
+`;
+
+const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 16px 20px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  ${({ $interactive }) =>
+    $interactive
+      ? css`
+          cursor: pointer;
+
+          &.active-touch {
+            ${InnerContent} {
+              transform: scale(0.97);
+            }
+          }
+        `
+      : css`
+        `}
 `;
 
 const Category = styled.div`

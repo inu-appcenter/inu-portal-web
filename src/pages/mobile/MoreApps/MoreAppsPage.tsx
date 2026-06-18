@@ -10,6 +10,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import Skeleton from "@/components/common/Skeleton";
+import Ripple from "@/components/common/Ripple";
 
 interface AppItemProps {
   iconSrc: string | null;
@@ -21,11 +22,14 @@ interface AppItemProps {
 const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
   return (
     <AppItemWrapper onClick={onClick}>
-      <Icon src={iconSrc || "/default-icon.png"} alt={title} />
-      <ContentArea>
-        <div className="title">{title}</div>
-        <div className="description">{description}</div>
-      </ContentArea>
+      <Ripple />
+      <InnerContent>
+        <Icon src={iconSrc || "/default-icon.png"} alt={title} />
+        <ContentArea>
+          <div className="title">{title}</div>
+          <div className="description">{description}</div>
+        </ContentArea>
+      </InnerContent>
     </AppItemWrapper>
   );
 };
@@ -33,14 +37,16 @@ const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
 const AppItemSkeleton = () => {
   return (
     <AppItemWrapper>
-      {/* 아이콘 위치 */}
-      <Skeleton width="48px" height="48px" style={{ borderRadius: "8px" }} />
-      <ContentArea>
-        {/* 타이틀 위치 */}
-        <Skeleton width="120px" height="18px" />
-        {/* 설명 위치 */}
-        <Skeleton width="200px" height="14px" />
-      </ContentArea>
+      <InnerContent>
+        {/* 아이콘 위치 */}
+        <Skeleton width="48px" height="48px" style={{ borderRadius: "8px" }} />
+        <ContentArea>
+          {/* 타이틀 위치 */}
+          <Skeleton width="120px" height="18px" />
+          {/* 설명 위치 */}
+          <Skeleton width="200px" height="14px" />
+        </ContentArea>
+      </InnerContent>
     </AppItemWrapper>
   );
 };
@@ -97,7 +103,7 @@ const MoreAppsPage = () => {
                 Array.from({ length: 5 }).map((_, index) => (
                   <div key={`skeleton-${index}`} style={{ width: "100%" }}>
                     <AppItemSkeleton />
-                    {index !== 4 && <Divider />}
+                    {index !== 4 && <Divider margin="0" />}
                   </div>
                 ))
               : // 데이터 로드 완료 후 실제 리스트 표시
@@ -114,7 +120,7 @@ const MoreAppsPage = () => {
                         );
                       }}
                     />
-                    {index !== boards.length - 1 && <Divider />}
+                    {index !== boards.length - 1 && <Divider margin="0" />}
                   </div>
                 ))}
           </Box>
@@ -126,27 +132,39 @@ const MoreAppsPage = () => {
 
 export default MoreAppsPage;
 
+const InnerContent = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: start;
+  width: 100%;
+  transition: transform 0.12s ease-in-out;
+`;
+
 const MoreAppsPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-
   gap: 24px;
-
   padding: 0 16px;
 `;
 
 const AppItemWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  gap: 12px;
-  align-items: center;
-  justify-content: start;
   box-sizing: border-box;
-  text-align: start;
-  padding: 8px 0;
-  cursor: pointer;
-
+  padding: 16px 20px;
   width: 100%;
+  border-radius: 12px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &.active-touch {
+    ${InnerContent} {
+      transform: scale(0.97);
+    }
+  }
 `;
 
 const Icon = styled.img`

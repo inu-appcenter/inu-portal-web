@@ -62,7 +62,7 @@ export default function SentRequestsModal({
             {isLoading ? (
               <EmptyState>불러오는 중...</EmptyState>
             ) : sentRequests.length > 0 ? (
-              <div style={{ padding: "0 20px" }}>
+              <div>
                 {sentRequests.map((req, index) => (
                   <div key={req.friendId} style={{ width: "100%" }}>
                     <SocialUserCard

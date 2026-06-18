@@ -38,7 +38,7 @@ export const BusStopDummy: BusStopData[] = [
     id: "go-home-main-out",
     stopName: "인천대 정문(길 건너)",
     stopNotice: "※ 인문대 학생들이 이용하기 좋아요.",
-    busList: ["셔틀", "8", "16", "58"],
+    busList: ["셔틀", "8", "16", "46"],
     lat: 37.37838746332504,
     lng: 126.63458920609504,
   },

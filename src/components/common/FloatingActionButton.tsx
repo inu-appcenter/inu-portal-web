@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { ReactNode } from "react";
+import Ripple from "./Ripple";
 
 interface FloatingActionButtonProps {
   text: string;
@@ -17,6 +18,7 @@ const FloatingActionButton = ({
   return (
     <FixedButtonWrapper $bottom={bottom}>
       <Button onClick={onClick}>
+        <Ripple color="rgba(255, 255, 255, 0.35)" />
         {icon}
         {text}
       </Button>
@@ -54,7 +56,7 @@ const Button = styled.button`
   cursor: pointer;
   white-space: nowrap;
 
-  &:active {
+  &.active-touch {
     background-color: #000;
     transform: scale(0.98);
   }

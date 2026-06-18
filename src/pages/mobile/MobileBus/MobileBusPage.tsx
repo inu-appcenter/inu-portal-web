@@ -1,11 +1,8 @@
 import styled from "styled-components";
 import BusCardSection from "@/components/mobile/bus/goHomeSchool/BusCardSection.tsx";
 import { useHeader } from "@/context/HeaderContext";
-import busActiveIcon from "@/resources/assets/mobile-common/bus-blue.svg";
-import {
-  DESKTOP_MEDIA,
-  MOBILE_PAGE_GUTTER,
-} from "@/styles/responsive";
+import busActiveIcon from "@/resources/assets/mobile-nav/bus-blue.svg";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const BUS_PAGE_TABLET_MEDIA = "(min-width: 760px)";
 const BUS_PAGE_DESKTOP_MAX_WIDTH = "1180px";
@@ -48,14 +45,15 @@ const MobileBusPageWrapper = styled.div`
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  padding: 10px ${MOBILE_PAGE_GUTTER} 32px;
+  padding: calc(var(--header-height, 56px) + 10px) ${MOBILE_PAGE_GUTTER}
+    calc(var(--nav-height, 100px) + 32px);
   box-sizing: border-box;
 
   @media ${BUS_PAGE_TABLET_MEDIA} {
     gap: 20px;
     width: min(100%, 980px);
     margin: 0 auto;
-    padding-bottom: 36px;
+    padding-bottom: calc(var(--nav-height, 100px) + 36px);
   }
 
   @media ${DESKTOP_MEDIA} {
@@ -66,7 +64,7 @@ const MobileBusPageWrapper = styled.div`
     align-items: start;
     width: min(100%, ${BUS_PAGE_DESKTOP_MAX_WIDTH});
     margin: 0 auto;
-    padding: 12px 0 40px;
+    padding: calc(var(--header-height, 56px) + 12px) 0 40px;
   }
 `;
 
