@@ -44,7 +44,7 @@ export default function MobileCampusPage() {
     setSelectedCoord(coord);
     setMapMoveTrigger((prev) => prev + 1);
 
-    if (map) {
+    if (map && window.kakao?.maps) {
       let lat = coord.X;
       let lng = coord.Y;
       if (!isDesktop && enableOffset) {
@@ -187,7 +187,7 @@ export default function MobileCampusPage() {
 
   // 바텀시트 snap 높이 변경 시 지도를 부드럽게 위/아래로 연동 패닝
   useEffect(() => {
-    if (!isDesktop && map && isOffsetEnabled) {
+    if (!isDesktop && map && isOffsetEnabled && window.kakao?.maps) {
       let lat = selectedCoord.X;
       let lng = selectedCoord.Y;
       const activeSnap = typeof snap === "number" ? snap : BOTTOM_SHEET_HEIGHT.DEFAULT;
