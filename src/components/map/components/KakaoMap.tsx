@@ -85,6 +85,7 @@ const getGpsHeading = (coords: GeolocationCoordinates) => {
 interface Props {
   selectedTab: string;
   viewXY: { X: number; Y: number };
+  mapMoveTrigger: number;
   setMap: any;
   setSelectedCoord?: (coord: { X: number; Y: number }, enableOffset?: boolean) => void;
   openedMarkerId: string | null;
@@ -96,6 +97,7 @@ interface Props {
 const KakaoMap = ({
   selectedTab,
   viewXY,
+  mapMoveTrigger,
   setMap,
   setSelectedCoord,
   openedMarkerId,
@@ -302,23 +304,16 @@ const KakaoMap = ({
     }
   };
 
-  // 3. 외부 viewXY 변경 감지
+  // 3. 외부 이동 트리거 감지
   useLayoutEffect(() => {
-    if (!mapInstance || isDraggingRef.current) return;
+    if (!mapInstance || mapMoveTrigger === 0) return;
 
-    // 외부에서 좌표가 명시적으로 변경된 경우(장소 클릭 등)에만 이동
-    const isExternalMove = 
-      Math.abs(lastTargetRef.current.X - viewXY.X) > 0.00001 ||
-      Math.abs(lastTargetRef.current.Y - viewXY.Y) > 0.00001;
-
-    if (isExternalMove) {
-      lastTargetRef.current = viewXY;
-      mapCenterRef.current = { lat: viewXY.X, lng: viewXY.Y };
-      
-      isAnimatingRef.current = true;
-      mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
-    }
-  }, [viewXY.X, viewXY.Y, mapInstance]);
+    lastTargetRef.current = viewXY;
+    mapCenterRef.current = { lat: viewXY.X, lng: viewXY.Y };
+    
+    isAnimatingRef.current = true;
+    mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
+  }, [mapMoveTrigger, mapInstance]);
 
   const placesToRender = useMemo(() => {
     switch (currentTab) {

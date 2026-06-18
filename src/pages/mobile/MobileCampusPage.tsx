@@ -37,10 +37,12 @@ export default function MobileCampusPage() {
   );
   const [selectedCoord, setSelectedCoord] = useState<XY>(SCHOOL_COORD);
   const [isOffsetEnabled, setIsOffsetEnabled] = useState(true);
+  const [mapMoveTrigger, setMapMoveTrigger] = useState(0);
 
   const moveToCoord = (coord: XY, enableOffset = true) => {
     setIsOffsetEnabled(enableOffset);
     setSelectedCoord(coord);
+    setMapMoveTrigger((prev) => prev + 1);
 
     if (map) {
       let lat = coord.X;
@@ -203,6 +205,7 @@ export default function MobileCampusPage() {
         <Map
           selectedTab={selectedTab}
           viewXY={viewXY}
+          mapMoveTrigger={mapMoveTrigger}
           setMap={setMap}
           setSelectedCoord={moveToCoord}
           openedMarkerId={openedMarkerId}
@@ -231,12 +234,16 @@ export default function MobileCampusPage() {
   );
 }
 
+const MOBILE_HEADER_SAFE_TOP = 0;
+const MOBILE_HEADER_OVERLAY_OFFSET = 76;
+
 const MobileCampusPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
   flex: 1;
-  height: calc(100dvh - 100px);
+  height: calc(100dvh - ${MOBILE_HEADER_SAFE_TOP}px);
+  margin-top: -${MOBILE_HEADER_OVERLAY_OFFSET}px;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
@@ -247,6 +254,7 @@ const MobileCampusPageWrapper = styled.div`
     gap: 20px;
     height: 100%;
     min-height: 0;
+    margin-top: 0;
     overflow: hidden;
   }
 `;
