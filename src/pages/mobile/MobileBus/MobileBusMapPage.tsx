@@ -317,10 +317,12 @@ export default function MobileBusMapPage() {
     const activeSnap =
       typeof snap === "number" ? snap : BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT;
     const mapHeight = Math.max(window.innerHeight, 320);
+    // 바텀시트 실제 높이(activeSnap)보다 약 8% 정도 여백을 더 주어
+    // 노선 하단부 핀이 바텀시트 상단선 위로 온전히 드러나도록 보정합니다.
     const bottomPadding = Math.round(
       Math.min(
-        mapHeight * 0.62,
-        Math.max(84, mapHeight * (0.16 + activeSnap * 0.46)),
+        mapHeight * 0.85,
+        Math.max(84, mapHeight * (activeSnap + 0.08)),
       ),
     );
 

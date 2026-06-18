@@ -197,7 +197,9 @@ export default function BusInteractiveMap({
         const currentLevel = mapRef.current.getLevel();
         mapRef.current.setLevel(currentLevel + 1);
 
-        // 3. 줌 배율이 조절된 상태에서, 바텀시트 가림막 크기만큼 중심 좌표만 Y축 위로 panTo 보정합니다.
+        // 3. 줌 배율이 조절된 상태에서, 바텀시트 가림막 크기만큼 중심 좌표만 Y축 위로 즉시 이동(setCenter)시킵니다.
+        // panTo 애니메이션을 사용하면 순간적인 스냅 후 부드러운 패닝이 이어지며 화면이 두 번 끊기거나 깜빡이는 느낌이 들므로,
+        // 동기적인 setCenter를 사용해 한 프레임에 최종 보정된 지도가 깜빡임 없이 즉시 나타나게 합니다.
         const currentCenter = mapRef.current.getCenter();
         const targetLatLng = {
           lat: currentCenter.getLat(),
@@ -209,7 +211,7 @@ export default function BusInteractiveMap({
           routePadding
         );
 
-        mapRef.current.panTo(
+        mapRef.current.setCenter(
           new window.kakao.maps.LatLng(adjustedCenter.lat, adjustedCenter.lng)
         );
       }
@@ -250,15 +252,14 @@ export default function BusInteractiveMap({
     // 새 마커 생성 및 지도 부착
     const newMarkers = activeStops.map((stop) => {
       const isSelected = stop.id === selectedStopId;
-      const size = isSelected
-        ? new window.kakao.maps.Size(46, 56)
-        : new window.kakao.maps.Size(38, 48);
+      const width = isSelected ? 46 : 38;
+      const height = isSelected ? 56 : 48;
 
       const markerImage = new window.kakao.maps.MarkerImage(
         DEFAULT_MARKER_IMAGE,
-        size,
+        new window.kakao.maps.Size(width, height),
         {
-          offset: new window.kakao.maps.Point(size.width / 2, size.height),
+          offset: new window.kakao.maps.Point(width / 2, height),
         }
       );
 
