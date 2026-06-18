@@ -34,7 +34,7 @@ const MOBILE_FULL_HEADER_OFFSET =
 const MOBILE_HEADER_SAFE_TOP = 16;
 const MOBILE_HEADER_OVERLAY_OFFSET =
   MOBILE_FULL_HEADER_OFFSET - MOBILE_HEADER_SAFE_TOP;
-const MOBILE_ROUTE_TOP_PADDING = 130;
+const MOBILE_ROUTE_TOP_PADDING = 190;
 
 const STOP_SWITCHER_LABELS: Record<string, string> = {
   "go-school-INU2": "2번 출구",
@@ -95,6 +95,7 @@ export default function MobileBusMapPage() {
   const [snap, setSnap] = useState<string | number | null>(
     BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT,
   );
+  const [mapFocusTrigger, setMapFocusTrigger] = useState(0);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== "undefined"
       ? window.matchMedia(DESKTOP_MEDIA).matches
@@ -229,6 +230,7 @@ export default function MobileBusMapPage() {
     }
     setSelectedBusId(null);
     setSnap(BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT);
+    setMapFocusTrigger((prev) => prev + 1);
   }, [activeStops, defaultStop?.id, selectedCategory, selectedStopId]);
 
   useLayoutEffect(() => {
@@ -317,12 +319,12 @@ export default function MobileBusMapPage() {
     const activeSnap =
       typeof snap === "number" ? snap : BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT;
     const mapHeight = Math.max(window.innerHeight, 320);
-    // 바텀시트 실제 높이(activeSnap)보다 약 8% 정도 여백을 더 주어
+    // 바텀시트 실제 높이(activeSnap)보다 약 15% 정도 여백을 더 주어
     // 노선 하단부 핀이 바텀시트 상단선 위로 온전히 드러나도록 보정합니다.
     const bottomPadding = Math.round(
       Math.min(
         mapHeight * 0.85,
-        Math.max(84, mapHeight * (activeSnap + 0.08)),
+        Math.max(84, mapHeight * (activeSnap + 0.15)),
       ),
     );
 
@@ -345,6 +347,7 @@ export default function MobileBusMapPage() {
 
     setSelectedStopId(stopId);
     setSelectedBusId(null);
+    setMapFocusTrigger((prev) => prev + 1);
   };
 
   const handleSelectBus = (busId: number) => {
@@ -399,6 +402,7 @@ export default function MobileBusMapPage() {
             center={center}
             routeViewportPadding={routeViewportPadding}
             onSelectStop={handleSelectStop}
+            mapFocusTrigger={mapFocusTrigger}
           />
         </MapArea>
 
