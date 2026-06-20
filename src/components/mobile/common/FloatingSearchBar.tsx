@@ -1,4 +1,4 @@
-import { useState, useRef, useImperativeHandle, forwardRef } from "react";
+import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import styled from "styled-components";
 import { Search } from "lucide-react";
 
@@ -21,6 +21,7 @@ const FloatingSearchBar = forwardRef<
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleActiveChange = (active: boolean) => {
     setIsSearchActive(active);
@@ -29,8 +30,19 @@ const FloatingSearchBar = forwardRef<
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
+
   useImperativeHandle(ref, () => ({
     blur: () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
       inputRef.current?.blur();
       handleActiveChange(false);
     },
@@ -46,6 +58,9 @@ const FloatingSearchBar = forwardRef<
   }));
 
   const executeSearch = (query: string) => {
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+    }
     if (onSearch) {
       onSearch(query);
     }
@@ -62,7 +77,10 @@ const FloatingSearchBar = forwardRef<
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         onBlur={() => {
-          handleActiveChange(false);
+          // 인풋 외부 클릭 시 검색창이 축소되도록 하되, 돋보기 버튼 클릭 시의 onClick 이벤트를 먼저 실행할 수 있게 약간의 딜레이를 줌
+          blurTimeoutRef.current = setTimeout(() => {
+            handleActiveChange(false);
+          }, 150);
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -74,6 +92,9 @@ const FloatingSearchBar = forwardRef<
         $isActive={isSearchActive}
         onClick={(e) => {
           e.stopPropagation();
+          if (blurTimeoutRef.current) {
+            clearTimeout(blurTimeoutRef.current);
+          }
           if (!isSearchActive) {
             handleActiveChange(true);
             setTimeout(() => {

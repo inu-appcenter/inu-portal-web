@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { SlidersHorizontal } from "lucide-react";
 import BottomSheet from "@/components/common/BottomSheet";
@@ -49,6 +49,19 @@ const MobileCourseSearchSheet = ({
   const [activeFilterCount] = useState<number>(3);
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
+
+  // 스마트폰 뷰포트에서 키보드가 닫혔을 때 바텀시트가 아래로 처져서 빼꼼히 남는 현상 방지
+  useEffect(() => {
+    if (!isSearchActive) {
+      const timer = setTimeout(() => {
+        // 키보드가 완전히 내려간 뷰포트 크기를 기준으로 Vaul이 바텀시트 위치를 재계산하도록 강제 트리거
+        window.dispatchEvent(new Event("resize"));
+        // iOS Safari 등 모바일 기기의 스크롤 밀림 복원 트릭
+        window.scrollTo(0, window.scrollY);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchActive]);
 
   const handleScroll = () => {
     searchBarRef.current?.blur();
@@ -316,7 +329,6 @@ const FilterButton = styled.button<{ $isHidden: boolean }>`
 
   cursor: pointer;
   pointer-events: auto;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
@@ -327,19 +339,28 @@ const FilterButton = styled.button<{ $isHidden: boolean }>`
   font-weight: 500;
   line-height: 24px;
 
+  /* 수치 변화 추적 */
+  transition:
+    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   ${(props) =>
     props.$isHidden
       ? `
-    width: 0px;
+    max-width: 0px;
     padding: 0;
     margin-right: 0px;
     opacity: 0;
     pointer-events: none;
     transform: scale(0.8);
+    border: 0px solid transparent; /* 접힐 때 테두리 잔상 제거 */
   `
       : `
-    width: 115px;
-    padding: 0 20px;
+    max-width: 200px; /* 콘텐츠가 충분히 들어갈 수 있는 넉넉한 크기 */
+    padding: 12px 16px;
     margin-right: 16px;
     opacity: 1;
     pointer-events: auto;
