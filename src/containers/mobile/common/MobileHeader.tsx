@@ -3,6 +3,7 @@ import styled from "styled-components";
 import intipLogo from "@/resources/assets/intip-logo.webp";
 import { useNavigate } from "react-router-dom";
 import { forwardRef } from "react";
+import { useCustomNavigate } from "@/hooks/useCustomNavigate";
 
 import { Bell } from "lucide-react";
 import BackButton from "@/components/mobile/login/BackButton";
@@ -10,6 +11,7 @@ import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMe
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import Ripple from "@/components/common/Ripple";
 import {
   DESKTOP_MEDIA,
   MOBILE_BACK_ICON_VISUAL_OFFSET,
@@ -33,6 +35,7 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
 
   return (
     <BellWrapper onClick={handleNotiBtnClick}>
+      <Ripple />
       <Bell size={24} />
       {hasNew && <Badge />}
     </BellWrapper>
@@ -41,9 +44,15 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
 
 const BellWrapper = styled.div`
   position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   pointer-events: auto;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
 `;
 
 const Badge = styled.div`
@@ -56,7 +65,6 @@ const Badge = styled.div`
   border-radius: 50%;
 `;
 
-// [변경] targetPath를 필수 props로 받음
 interface MobileHeaderProps {
   targetPath?: string;
   contained?: boolean;
@@ -67,7 +75,6 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
     { targetPath, contained = false }: MobileHeaderProps,
     ref,
   ) {
-    // [변경] 현재 URL이 아닌, 전달받은 targetPath의 설정을 가져옴
     const {
       title,
       hasback,
@@ -75,14 +82,14 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       onBack,
       showAlarm,
       menuItems,
-      rightArea, // 추가
+      rightArea,
       visible,
       subHeader,
       floatingSubHeader,
       isScrolled,
     } = useHeaderConfig(targetPath);
 
-    const navigate = useNavigate();
+    const navigate = useCustomNavigate();
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -101,6 +108,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       }
       navigate(-1);
     };
+
 
     if (visible === false) return null;
 

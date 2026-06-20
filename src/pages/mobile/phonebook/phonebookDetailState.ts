@@ -59,7 +59,7 @@ export function savePhonebookDetailState(state: PhonebookDetailState) {
     return;
   }
 
-  window.sessionStorage.setItem(
+  window.localStorage.setItem(
     PHONEBOOK_DETAIL_STORAGE_KEY,
     JSON.stringify(state),
   );
@@ -73,7 +73,7 @@ export function loadPhonebookDetailState(
     return null;
   }
 
-  const storedValue = window.sessionStorage.getItem(
+  const storedValue = window.localStorage.getItem(
     PHONEBOOK_DETAIL_STORAGE_KEY,
   );
 

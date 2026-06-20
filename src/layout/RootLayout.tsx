@@ -18,6 +18,9 @@ import {
   subscribeToFcmToken,
 } from "@/utils/fcm";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
+import AppUpdateModal from "@/components/common/AppUpdateModal";
+
 
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 
@@ -153,6 +156,13 @@ export default function RootLayout() {
     trackPageView(location.pathname);
   }, [location.pathname]);
 
+  const appStatus = getAppEnvironmentStatus();
+  const forceUpdateEnabled = import.meta.env.VITE_FORCE_UPDATE_ENABLED === "true";
+
+  if (appStatus === "OLD_APP" && forceUpdateEnabled) {
+    return <AppUpdateModal />;
+  }
+
   return (
     <HeaderProvider>
       <ScrollBarStyles />
@@ -162,6 +172,7 @@ export default function RootLayout() {
 }
 
 const ScreenContainer = styled.div`
+
   width: 100%;
   margin: 0 auto;
   min-height: 100vh;

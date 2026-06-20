@@ -145,7 +145,7 @@ const MobileTipsPage = () => {
                             }}
                           />
                           {index < categoryItem.posts.length - 1 && (
-                            <Divider margin={"16px 0"} />
+                            <Divider margin="0" />
                           )}
                         </Fragment>
                       ))
@@ -205,4 +205,6 @@ const EmptyState = styled.div`
   font-size: 14px;
   color: #bbb;
   text-align: center;
+  padding: 40px 20px;
+
 `;

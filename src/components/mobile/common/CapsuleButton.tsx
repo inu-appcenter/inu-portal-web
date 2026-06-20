@@ -1,5 +1,7 @@
 import styled from "styled-components";
 import { SOFT_PILL_SHADOW } from "@/styles/shadows";
+import Ripple from "@/components/common/Ripple";
+
 interface CapsuleButtonProps {
   iconSrc: string;
   title: string;
@@ -17,23 +19,32 @@ const CapsuleButton = ({
 }: CapsuleButtonProps) => {
   return (
     <CapsuleButtonWrapper onClick={onClick} $compact={compact}>
-      <Icon src={iconSrc} alt="" />
-      <ContentArea>
-        <div className="title">{title}</div>
-        <div className="description">{description}</div>
-      </ContentArea>
+      <Ripple />
+      <InnerContent>
+        <Icon src={iconSrc} alt="" />
+        <ContentArea>
+          <div className="title">{title}</div>
+          <div className="description">{description}</div>
+        </ContentArea>
+      </InnerContent>
     </CapsuleButtonWrapper>
   );
 };
 
 export default CapsuleButton;
 
-const CapsuleButtonWrapper = styled.button<{ $compact: boolean }>`
+const InnerContent = styled.div`
   display: flex;
   flex-direction: row;
   gap: 8px;
   align-items: center;
   justify-content: start;
+  width: 100%;
+  transition: transform 0.12s ease-in-out;
+`;
+
+const CapsuleButtonWrapper = styled.button<{ $compact: boolean }>`
+  display: flex;
   padding: ${({ $compact }) => ($compact ? "12px 12px" : "16px 12px")};
   box-sizing: border-box;
 
@@ -42,6 +53,18 @@ const CapsuleButtonWrapper = styled.button<{ $compact: boolean }>`
   box-shadow: ${SOFT_PILL_SHADOW};
 
   text-align: start;
+  
+  position: relative;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  &.active-touch {
+    ${InnerContent} {
+      transform: scale(0.96);
+    }
+  }
 `;
 
 const Icon = styled.img``;

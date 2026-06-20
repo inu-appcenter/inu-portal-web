@@ -1,9 +1,10 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { User, ChevronRight } from "lucide-react";
 import {
   normalizeProfileImageId,
   DEFAULT_PROFILE_IMAGE_ID,
 } from "@/utils/userInfo";
+import Ripple from "@/components/common/Ripple";
 
 interface SocialUserCardProps {
   name: string;
@@ -27,52 +28,81 @@ export default function SocialUserCard({
   onClick,
 }: SocialUserCardProps) {
   const safeFireId = normalizeProfileImageId(fireId, DEFAULT_PROFILE_IMAGE_ID);
+  const isInteractive = !!onClick;
 
   return (
-    <CardWrapper onClick={onClick} style={{ cursor: onClick ? "pointer" : "default" }}>
-      <ProfileArea>
-        <ProfileImage
-          src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
-          alt="Profile"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
-          }}
-        />
-        <DefaultIconArea>
-          <User size={24} color="#D6D1D5" />
-        </DefaultIconArea>
-      </ProfileArea>
+    <CardWrapper onClick={onClick} $interactive={isInteractive} style={{ cursor: isInteractive ? "pointer" : "default" }}>
+      {isInteractive && <Ripple />}
+      <InnerContent>
+        <ProfileArea>
+          <ProfileImage
+            src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+            alt="Profile"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+          <DefaultIconArea>
+            <User size={24} color="#D6D1D5" />
+          </DefaultIconArea>
+        </ProfileArea>
 
-      <InfoArea>
-        <Name>{name}</Name>
-        {subtitle && <Subtitle>{subtitle}</Subtitle>}
-      </InfoArea>
+        <InfoArea>
+          <Name>{name}</Name>
+          {subtitle && <Subtitle>{subtitle}</Subtitle>}
+        </InfoArea>
 
-      <ActionArea>
-        {onSecondaryActionClick && (
-          <ActionButton onClick={onSecondaryActionClick} $variant="secondary">
-            {secondaryActionLabel || "거절"}
-          </ActionButton>
-        )}
-        {onActionClick && (
-          <ActionButton onClick={onActionClick} $variant="primary">
-            {actionLabel || "수락"}
-          </ActionButton>
-        )}
-        {!onActionClick && !onSecondaryActionClick && (
-          <ChevronRight size={20} color="#D1D1D6" />
-        )}
-      </ActionArea>
+        <ActionArea>
+          {onSecondaryActionClick && (
+            <ActionButton onClick={(e) => {
+              e.stopPropagation();
+              onSecondaryActionClick();
+            }} $variant="secondary">
+              {secondaryActionLabel || "거절"}
+            </ActionButton>
+          )}
+          {onActionClick && (
+            <ActionButton onClick={(e) => {
+              e.stopPropagation();
+              onActionClick();
+            }} $variant="primary">
+              {actionLabel || "수락"}
+            </ActionButton>
+          )}
+          {!onActionClick && !onSecondaryActionClick && (
+            <ChevronRight size={20} color="#D1D1D6" />
+          )}
+        </ActionArea>
+      </InnerContent>
     </CardWrapper>
   );
 }
 
-const CardWrapper = styled.div`
+const InnerContent = styled.div`
   display: flex;
   align-items: center;
-  //padding: 14px 0;
   gap: 12px;
   width: 100%;
+  transition: transform 0.12s ease-in-out;
+`;
+
+const CardWrapper = styled.div<{ $interactive?: boolean }>`
+  display: flex;
+  box-sizing: border-box;
+  padding: 14px 20px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  ${({ $interactive }) =>
+    $interactive &&
+    css`
+      &.active-touch {
+        ${InnerContent} {
+          transform: scale(0.97);
+        }
+      }
+    `}
 `;
 
 const ProfileArea = styled.div`
