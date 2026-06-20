@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
 import { X } from "lucide-react";
@@ -15,6 +15,7 @@ export interface BottomSheetProps {
   disablePreventScroll?: boolean;
   snapToSequentialPoint?: boolean;
   showCloseButton?: boolean;
+  repositionInputs?: boolean;
 }
 
 export default function BottomSheet({
@@ -29,7 +30,22 @@ export default function BottomSheet({
   disablePreventScroll = true,
   snapToSequentialPoint = true,
   showCloseButton = false,
+  repositionInputs = false,
 }: BottomSheetProps) {
+  // modal={false}일 때 외부 포탈 요소(예: 검색바 인풋)로의 포커스 이동을 차단하는 Radix FocusScope의 포커스 트랩 버그 완벽 차단
+  useEffect(() => {
+    if (!open || modal) return;
+
+    const handleFocusIn = (e: FocusEvent) => {
+      e.stopImmediatePropagation();
+    };
+
+    document.addEventListener("focusin", handleFocusIn, true);
+    return () => {
+      document.removeEventListener("focusin", handleFocusIn, true);
+    };
+  }, [open, modal]);
+
   return (
     <Drawer.Root
       open={open}
@@ -41,10 +57,27 @@ export default function BottomSheet({
       setActiveSnapPoint={setActiveSnapPoint}
       disablePreventScroll={disablePreventScroll}
       snapToSequentialPoint={snapToSequentialPoint}
+      repositionInputs={repositionInputs}
     >
       <Drawer.Portal>
         {modal && <StyledOverlay />}
-        <StyledContent>
+        <StyledContent
+          onOpenAutoFocus={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onCloseAutoFocus={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onPointerDownOutside={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onFocusOutside={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+        >
           <SheetInner>
             <DragHeader>
               <HandleBar />
