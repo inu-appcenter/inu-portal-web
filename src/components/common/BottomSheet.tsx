@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
+import { X } from "lucide-react";
 
 export interface BottomSheetProps {
   open: boolean;
@@ -13,6 +14,7 @@ export interface BottomSheetProps {
   dismissible?: boolean;
   disablePreventScroll?: boolean;
   snapToSequentialPoint?: boolean;
+  showCloseButton?: boolean;
 }
 
 export default function BottomSheet({
@@ -26,6 +28,7 @@ export default function BottomSheet({
   dismissible = true,
   disablePreventScroll = true,
   snapToSequentialPoint = true,
+  showCloseButton = false,
 }: BottomSheetProps) {
   return (
     <Drawer.Root
@@ -46,9 +49,12 @@ export default function BottomSheet({
             <DragHeader>
               <HandleBar />
             </DragHeader>
-            <ContentAreaBottomSheet>
-              {children}
-            </ContentAreaBottomSheet>
+            {showCloseButton && (
+              <CloseButton onClick={() => onOpenChange?.(false)}>
+                <X size={18} />
+              </CloseButton>
+            )}
+            <ContentAreaBottomSheet>{children}</ContentAreaBottomSheet>
           </SheetInner>
         </StyledContent>
       </Drawer.Portal>
@@ -83,6 +89,7 @@ const StyledContent = styled(Drawer.Content)`
 `;
 
 const SheetInner = styled.div`
+  position: relative;
   border-radius: 32px 32px 0 0;
   background: var(--bg-base, #ffffff);
   box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
@@ -106,6 +113,7 @@ const DragHeader = styled.div`
   justify-content: center;
   flex-shrink: 0;
   touch-action: none;
+  position: relative;
 `;
 
 const HandleBar = styled.div`
@@ -113,6 +121,33 @@ const HandleBar = styled.div`
   height: 5px;
   border-radius: 999px;
   background: var(--border-default, #e5e8eb);
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bg-subtle, #f2f4f6);
+  color: var(--text-secondary, #4e5968);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background: var(--border-default, #e5e8eb);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
 `;
 
 const ContentAreaBottomSheet = styled.div`

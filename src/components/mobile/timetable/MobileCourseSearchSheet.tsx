@@ -2,8 +2,12 @@ import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { useState, useRef } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { createPortal } from "react-dom";
+import { SlidersHorizontal } from "lucide-react";
 import BottomSheet from "@/components/common/BottomSheet";
+import FloatingSearchBar, {
+  FloatingSearchBarRef,
+} from "@/components/mobile/common/FloatingSearchBar";
 
 export interface CourseResult {
   id: number;
@@ -33,20 +37,6 @@ interface MobileCourseSearchSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface SearchFilterChipsProps {
-  categories: string[];
-}
-
-const SearchFilterChips = ({ categories }: SearchFilterChipsProps) => {
-  return (
-    <FilterChipsScroll data-vaul-no-drag="">
-      {categories.map((category, index) => (
-        <FilterChipItem key={index}>{category}</FilterChipItem>
-      ))}
-    </FilterChipsScroll>
-  );
-};
-
 const MobileCourseSearchSheet = ({
   courses,
   expandedId,
@@ -56,11 +46,13 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
 }: MobileCourseSearchSheetProps) => {
-  const [categoryList] = useState<string[]>([
-    "#컴퓨터공학부",
-    "# 2학점",
-    "# 3학년",
-  ]);
+  const [activeFilterCount] = useState<number>(3);
+  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
+  const searchBarRef = useRef<FloatingSearchBarRef>(null);
+
+  const handleScroll = () => {
+    searchBarRef.current?.blur();
+  };
 
   const touchGestureRef = useRef({
     startY: 0,
@@ -143,109 +135,131 @@ const MobileCourseSearchSheet = ({
   };
 
   return (
-    <BottomSheet
-      open={open}
-      onOpenChange={onOpenChange}
-      modal={false}
-      dismissible={
-        snap === COURSE_SEARCH_SNAP_POINTS[0] ||
-        snap === null ||
-        snap === undefined
-      }
-      snapPoints={COURSE_SEARCH_SNAP_POINTS}
-      activeSnapPoint={open ? snap : null}
-      setActiveSnapPoint={onSnapChange}
-      disablePreventScroll={true}
-      snapToSequentialPoint={true}
-    >
-      <FilterRow>
-        <SearchCircleButton onClick={() => console.log("검색 버튼 클릭됨")}>
-          <Search size={20} />
-        </SearchCircleButton>
-        <CategoryWrapper>
-          <SearchFilterChips categories={categoryList} />
-        </CategoryWrapper>
-        <FilterCircleButton onClick={() => console.log("필터 버튼 클릭됨")}>
-          <SlidersHorizontal size={20} strokeWidth={2} />
-        </FilterCircleButton>
-      </FilterRow>
-      <ScrollableBody
-        $snapHeight={
-          typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0]
+    <>
+      <BottomSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        modal={false}
+        dismissible={
+          snap === COURSE_SEARCH_SNAP_POINTS[0] ||
+          snap === null ||
+          snap === undefined
         }
-        data-vaul-no-drag=""
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
+        snapPoints={COURSE_SEARCH_SNAP_POINTS}
+        activeSnapPoint={open ? snap : null}
+        setActiveSnapPoint={onSnapChange}
+        disablePreventScroll={true}
+        snapToSequentialPoint={true}
+        showCloseButton={true}
       >
-        <CourseList>
-          {courses.map((course) => {
-            const isExpanded = expandedId === course.id;
+        <SheetContentWrapper
+          $snapHeight={
+            typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0]
+          }
+        >
+          <ScrollableBody
+            $snapHeight={
+              typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0]
+            }
+            data-vaul-no-drag=""
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+            onScroll={handleScroll}
+          >
+            <CourseList>
+              {courses.map((course) => {
+                const isExpanded = expandedId === course.id;
 
-            return (
-              <CourseItem
-                key={course.id}
-                onClick={() => onToggleExpand(course.id)}
-              >
-                {/* 기본 정보 */}
-                <InfoRow>
-                  <MainInfo>
-                    <CourseName>{course.name}</CourseName>
-                  </MainInfo>
-                  <RightInfo>
-                    <EnrolledBadge>{course.enrolledCount}명 담음</EnrolledBadge>
-                    <StyledArrowIcon $isExpanded={isExpanded} />
-                  </RightInfo>
-                </InfoRow>
+                return (
+                  <CourseItem
+                    key={course.id}
+                    onClick={() => onToggleExpand(course.id)}
+                  >
+                    {/* 기본 정보 */}
+                    <InfoRow>
+                      <MainInfo>
+                        <CourseName>{course.name}</CourseName>
+                      </MainInfo>
+                      <RightInfo>
+                        <EnrolledBadge>
+                          {course.enrolledCount}명 담음
+                        </EnrolledBadge>
+                        <StyledArrowIcon $isExpanded={isExpanded} />
+                      </RightInfo>
+                    </InfoRow>
 
-                <ProfName>{course.professor}</ProfName>
-                <DetailText>
-                  {course.timeStr} {course.room}
-                  <br />
-                  {`${course.grade}학년 ${course.isMajor ? "전공심화" : "교양"} ${course.credits}학점 ${course.courseId}`}
-                </DetailText>
+                    <ProfName>{course.professor}</ProfName>
+                    <DetailText>
+                      {course.timeStr} {course.room}
+                      <br />
+                      {`${course.grade}학년 ${course.isMajor ? "전공심화" : "교양"} ${course.credits}학점 ${course.courseId}`}
+                    </DetailText>
 
-                {/* 확장 영역 */}
-                {isExpanded && (
-                  <ExpandedArea>
-                    {course.remarks && (
-                      <RemarkText>비고 : {course.remarks}</RemarkText>
+                    {/* 확장 영역 */}
+                    {isExpanded && (
+                      <ExpandedArea>
+                        {course.remarks && (
+                          <RemarkText>비고 : {course.remarks}</RemarkText>
+                        )}
+                        <ButtonRow>
+                          <PrimaryActionButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("시간표에 추가 클릭됨");
+                            }}
+                          >
+                            시간표에 추가
+                          </PrimaryActionButton>
+                          <SecondaryActionButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("강의평 보기 클릭됨");
+                            }}
+                          >
+                            강의평 보기
+                          </SecondaryActionButton>
+                          <SecondaryActionButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("강의계획서 클릭됨");
+                            }}
+                          >
+                            강의계획서
+                          </SecondaryActionButton>
+                        </ButtonRow>
+                      </ExpandedArea>
                     )}
-                    <ButtonRow>
-                      <PrimaryActionButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("시간표에 추가 클릭됨");
-                        }}
-                      >
-                        시간표에 추가
-                      </PrimaryActionButton>
-                      <SecondaryActionButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("강의평 보기 클릭됨");
-                        }}
-                      >
-                        강의평 보기
-                      </SecondaryActionButton>
-                      <SecondaryActionButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("강의계획서 클릭됨");
-                        }}
-                      >
-                        강의계획서
-                      </SecondaryActionButton>
-                    </ButtonRow>
-                  </ExpandedArea>
-                )}
-              </CourseItem>
-            );
-          })}
-        </CourseList>
-      </ScrollableBody>
-    </BottomSheet>
+                  </CourseItem>
+                );
+              })}
+            </CourseList>
+          </ScrollableBody>
+        </SheetContentWrapper>
+      </BottomSheet>
+
+      {open &&
+        createPortal(
+          <FloatingActionsContainer>
+            <FilterButton
+              $isHidden={isSearchActive}
+              onClick={() => console.log("필터 버튼 클릭됨")}
+            >
+              <SlidersHorizontal size={20} />
+              <span>필터 {activeFilterCount}</span>
+            </FilterButton>
+
+            <FloatingSearchBar
+              ref={searchBarRef}
+              placeholder="교과목명, 교수명 검색"
+              onSearch={(query) => console.log("검색 실행:", query)}
+              onActiveChange={setIsSearchActive}
+            />
+          </FloatingActionsContainer>,
+          document.body,
+        )}
+    </>
   );
 };
 
@@ -253,90 +267,87 @@ export default MobileCourseSearchSheet;
 
 // --- 스타일 ---
 
-const FilterRow = styled.div`
+const SheetContentWrapper = styled.div<{ $snapHeight?: number }>`
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding-bottom: 16px;
-  background-color: var(--bg-base, #ffffff);
-  z-index: 10;
-  flex-shrink: 0;
-`;
-
-const CategoryWrapper = styled.div`
+  flex-direction: column;
   flex: 1;
-  min-width: 0;
-`;
-
-const FilterChipsScroll = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
+  min-height: 0;
   width: 100%;
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  height: ${({ $snapHeight }) =>
+    typeof $snapHeight === "number"
+      ? `calc(${$snapHeight * 100}dvh - 52px - env(safe-area-inset-bottom, 0px))`
+      : "auto"};
+  max-height: ${({ $snapHeight }) =>
+    typeof $snapHeight === "number"
+      ? `calc(${$snapHeight * 100}dvh - 52px - env(safe-area-inset-bottom, 0px))`
+      : "none"};
+
+  transition:
+    height 0.35s cubic-bezier(0.32, 0.94, 0.6, 1),
+    max-height 0.35s cubic-bezier(0.32, 0.94, 0.6, 1);
 `;
 
-const FilterChipItem = styled.div`
+const FloatingActionsContainer = styled.div`
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: calc(768px - 40px);
+  z-index: 10005;
   display: flex;
-  padding: 8px 12px;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #333d4b);
-  flex-shrink: 0;
-  white-space: nowrap;
+  pointer-events: none;
+  box-sizing: border-box;
+`;
 
-  font-size: 14px;
+const FilterButton = styled.button<{ $isHidden: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid var(--border-brand, #0061ff);
+  background: var(--interactive-primary, #3b82f6);
+
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+  color: var(--text-inverse, #fff);
+  font-size: 16px;
   font-style: normal;
   font-weight: 500;
-  line-height: 20px;
-`;
+  line-height: 24px;
 
-const SearchCircleButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-brand);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease-in-out;
-
-  &:active {
-    transform: scale(0.92);
-  }
-`;
-
-const FilterCircleButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  background: var(--interactive-primary, #3b82f6);
-  color: var(--text-inverse);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease-in-out;
+  ${(props) =>
+    props.$isHidden
+      ? `
+    width: 0px;
+    padding: 0;
+    margin-right: 0px;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+  `
+      : `
+    width: 115px;
+    padding: 0 20px;
+    margin-right: 16px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  `}
 
   &:active {
-    transform: scale(0.92);
+    transform: scale(0.95);
   }
 `;
 
@@ -354,11 +365,6 @@ const ScrollableBody = styled.div<{
   min-height: 0;
   padding-bottom: 24px;
 
-  max-height: ${({ $snapHeight }) =>
-    typeof $snapHeight === "number"
-      ? `calc(${$snapHeight * 100}dvh - 120px)`
-      : "none"};
-
   &::-webkit-scrollbar {
     display: none;
   }
@@ -367,7 +373,7 @@ const ScrollableBody = styled.div<{
 `;
 
 const CourseList = styled.div`
-  padding: 0 0 24px 0;
+  padding: 0 0 100px 0;
 `;
 
 const CourseItem = styled.div`
