@@ -1,3 +1,9 @@
+import {
+  hasReactNativeWebView,
+  isAndroidOfficial,
+  isIOSOfficial,
+} from "./appBridgeAdapter";
+
 export type MobilePlatform =
   | "ios_webview"
   | "ios_browser"
@@ -13,14 +19,10 @@ export type AppEnvironmentStatus = "NEW_APP" | "OLD_APP" | "BROWSER";
  * 현재 접속한 환경이 신버전 공식 앱, 구버전 공식 앱, 또는 일반 브라우저(인앱 포함)인지 판별합니다.
  */
 export function getAppEnvironmentStatus(): AppEnvironmentStatus {
-  const userAgent = navigator.userAgent || "";
-  
-  // 1. 안드로이드 공식 앱 판정
-  const isAndroidUA = userAgent.includes("INTIPApp");
-  const isAndroidBridgeExists = typeof window.AndroidBridge !== "undefined";
-  
-  if (isAndroidUA || isAndroidBridgeExists) {
-    // 신버전 안드로이드 앱은 navigateTo 함수가 존재함
+  // 0. 신 Expo 셸: 단일 ReactNativeWebView 채널 = 항상 멀티 웹뷰 지원 신버전 앱
+  if (hasReactNativeWebView()) return "NEW_APP";
+
+  if (isAndroidOfficial()) {
     if (typeof window.AndroidBridge?.navigateTo === "function") {
       return "NEW_APP";
     } else {
@@ -30,16 +32,7 @@ export function getAppEnvironmentStatus(): AppEnvironmentStatus {
 
   // 2. iOS 공식 앱 판정
   // 구버전 iOS 앱도 window.webkit.messageHandlers.requestAppUpdate는 가지고 있음
-  const isIOSBridgeExists = typeof window.webkit?.messageHandlers?.requestAppUpdate !== "undefined";
-  
-  if (isIOSBridgeExists) {
-    // 신버전 iOS 앱은 User-Agent에 INTIPApp을 달고 들어옴
-    if (userAgent.includes("INTIPApp")) {
-      return "NEW_APP";
-    } else {
-      return "OLD_APP";
-    }
-  }
+  if (isIOSOfficial()) return 'NEW_APP'
 
   // 3. 일반 웹 브라우저 및 카카오톡/인스타 등 타사 인앱 브라우저
   return "BROWSER";
@@ -77,4 +70,3 @@ export function getMobilePlatform(): MobilePlatform {
 
   return "other";
 }
-
