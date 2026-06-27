@@ -223,14 +223,18 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
   };
 
   useEffect(() => {
-    const handleGlobalMouseUp = () => {
+    const commit = () => {
       if (isDrawingRef.current) {
         isDrawingRef.current = false;
         commitSelection();
       }
     };
-    window.addEventListener("mouseup", handleGlobalMouseUp);
-    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+    window.addEventListener("mouseup", commit);
+    window.addEventListener("touchend", commit);
+    return () => {
+      window.removeEventListener("mouseup", commit);
+      window.removeEventListener("touchend", commit);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
