@@ -219,18 +219,16 @@ export default function MobileCourseFilterSheet({
         </HeaderRow>
 
         {/* 선택된 필터 요약 뱃지 행 */}
-        {activeBadgeList.length > 0 && (
-          <BadgeRowScroll>
-            {activeBadgeList.map((badge, idx) => (
-              <BadgeItem key={`badge-${badge.key}-${idx}`}>
-                <BadgeText>{badge.label}</BadgeText>
-                <BadgeDeleteBtn onClick={() => removeBadge(badge.key, badge.val)}>
-                  <X size={12} />
-                </BadgeDeleteBtn>
-              </BadgeItem>
-            ))}
-          </BadgeRowScroll>
-        )}
+        <BadgeRowScroll $visible={activeBadgeList.length > 0}>
+          {activeBadgeList.map((badge, idx) => (
+            <BadgeItem key={`badge-${badge.key}-${idx}`}>
+              <BadgeText>{badge.label}</BadgeText>
+              <BadgeDeleteBtn onClick={() => removeBadge(badge.key, badge.val)}>
+                <X size={12} />
+              </BadgeDeleteBtn>
+            </BadgeItem>
+          ))}
+        </BadgeRowScroll>
 
         {/* 주 내용 영역 (2단 컬럼 구조) */}
         <ContentColumns>
@@ -435,13 +433,23 @@ const CloseIconButton = styled.button`
   padding: 4px;
 `;
 
-const BadgeRowScroll = styled.div`
+const BadgeRowScroll = styled.div<{ $visible: boolean }>`
   display: flex;
   gap: 8px;
-  overflow-x: auto;
-  padding: 4px 0 12px;
+  overflow-x: ${({ $visible }) => ($visible ? "auto" : "hidden")};
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid ${({ $visible }) => ($visible ? "var(--border-default, #e5e8eb)" : "transparent")};
+  
+  height: ${({ $visible }) => ($visible ? "40px" : "0px")};
+  opacity: ${({ $visible }) => ($visible ? "1" : "0")};
+  padding: ${({ $visible }) => ($visible ? "4px 0 12px" : "0")};
+  overflow-y: hidden;
+  box-sizing: border-box;
+  
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   &::-webkit-scrollbar {
     display: none;
