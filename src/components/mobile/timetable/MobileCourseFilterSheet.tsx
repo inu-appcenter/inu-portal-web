@@ -131,9 +131,9 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
   const drawingModeRef = useRef<"select" | "deselect">("select");
   const selectedRef = useRef<string[]>(selectedSlots);
   const [localSelected, setLocalSelected] = useState<string[]>(selectedSlots);
-  // selectedSlots는 마운트 초기값으로만 사용 (useEffect 제거 — 이후 내부 상태 독립 관리)
+  // useEffect 없음 — selectedSlots는 마운트 초기값으로만 사용, 이후 내부 독립 관리
+  // onChange를 즉시 호출해도 덮어쓰기 위험 없음
 
-  // 내부 상태만 업데이트 — onChange 즉시 호출 금지 (부모 리렌더 → useEffect 덮어쓰기 Race 방지)
   const updateSelection = (slot: string, mode: "select" | "deselect") => {
     const current = selectedRef.current;
     const isSelected = current.includes(slot);
@@ -149,11 +149,7 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
 
     selectedRef.current = next;
     setLocalSelected([...next]);
-  };
-
-  // mouseup / touchend 시점에만 부모로 최신값 전달
-  const commitSelection = () => {
-    onChange(selectedRef.current);
+    onChange(next); // 드래그와 동일하게 즉시 부모에 반영
   };
 
   const handleCellTouchStart = (day: number, hour: number, e: React.TouchEvent) => {
@@ -161,10 +157,8 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
     const slot = `${day}-${hour}`;
     const isSelected = selectedRef.current.includes(slot);
     const mode = isSelected ? "deselect" : "select";
-    
     isDrawingRef.current = true;
     drawingModeRef.current = mode;
-    
     updateSelection(slot, mode);
   };
 
@@ -182,56 +176,42 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
     if (dayAttr !== null && hourAttr !== null) {
       const day = parseInt(dayAttr, 10);
       const hour = parseInt(hourAttr, 10);
-      const slot = `${day}-${hour}`;
-      updateSelection(slot, drawingModeRef.current);
+      updateSelection(`${day}-${hour}`, drawingModeRef.current);
     }
   };
 
   const handleTouchEnd = () => {
-    if (isDrawingRef.current) {
-      isDrawingRef.current = false;
-      commitSelection();
-    }
+    isDrawingRef.current = false;
   };
 
   const handleMouseDown = (day: number, hour: number) => {
     const slot = `${day}-${hour}`;
     const isSelected = selectedRef.current.includes(slot);
     const mode = isSelected ? "deselect" : "select";
-
     isDrawingRef.current = true;
     drawingModeRef.current = mode;
-
     updateSelection(slot, mode);
   };
 
   const handleMouseEnter = (day: number, hour: number) => {
     if (!isDrawingRef.current) return;
-    const slot = `${day}-${hour}`;
-    updateSelection(slot, drawingModeRef.current);
+    updateSelection(`${day}-${hour}`, drawingModeRef.current);
   };
 
   const handleMouseUp = () => {
-    if (isDrawingRef.current) {
-      isDrawingRef.current = false;
-      commitSelection();
-    }
+    isDrawingRef.current = false;
   };
 
   useEffect(() => {
-    const commit = () => {
-      if (isDrawingRef.current) {
-        isDrawingRef.current = false;
-        commitSelection();
-      }
+    const handleGlobalUp = () => {
+      isDrawingRef.current = false;
     };
-    window.addEventListener("mouseup", commit);
-    window.addEventListener("touchend", commit);
+    window.addEventListener("mouseup", handleGlobalUp);
+    window.addEventListener("touchend", handleGlobalUp);
     return () => {
-      window.removeEventListener("mouseup", commit);
-      window.removeEventListener("touchend", commit);
+      window.removeEventListener("mouseup", handleGlobalUp);
+      window.removeEventListener("touchend", handleGlobalUp);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
