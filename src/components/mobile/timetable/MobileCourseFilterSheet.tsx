@@ -87,7 +87,7 @@ export default function MobileCourseFilterSheet({
   const [pinnedCategories, setPinnedCategories] = useState<string[]>(["전공"]);
   
   // 바텀시트 스냅 높이 상태 (캠퍼스맵 페이지와 동일한 뷰포트 크기 연동 스크롤 메커니즘)
-  const [snap, setSnap] = useState<string | number | null>(0.5);
+  const [snap, setSnap] = useState<string | number | null>(0.95);
 
   // 탭 변경 시 서브 레벨 초기화
   useEffect(() => {
@@ -207,7 +207,7 @@ export default function MobileCourseFilterSheet({
       open={open}
       onOpenChange={onOpenChange}
       modal={true}
-      snapPoints={[0.5]}
+      snapPoints={[0.95]}
       activeSnapPoint={snap}
       setActiveSnapPoint={setSnap}
       zIndex={10010}
