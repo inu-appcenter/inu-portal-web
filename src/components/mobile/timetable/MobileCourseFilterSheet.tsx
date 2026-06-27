@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight, ChevronLeft } from "lucide-react";
 import BottomSheet from "@/components/common/BottomSheet";
@@ -7,13 +7,11 @@ import { navItems } from "@/resources/strings/navItems";
 export interface FilterState {
   major: string | null;
   sort: string; // "기본순", "별점높은순", "담은인원많은순"
-  time: string; // "전체 시간", "공강 시간만 보기" 또는 직접 선택한 포맷 (예: "월,수 09:00~13:00")
+  time: string; // "전체 시간", "공강 시간만 보기" 또는 직접 선택한 포맷 (예: "월(09:00~13:00)")
   grades: number[]; // [1, 2, 3, 4]
   types: string[]; // ["전공", "교양", "교직", "일반선택", "군사학", "기타"]
   credits: number[]; // [1, 2, 3, 4] (4는 4학점 이상)
-  selectedDays?: string[]; // 필터용 선택 요일 리스트
-  startTime?: string;      // 시작 시간 (HH:MM)
-  endTime?: string;        // 종료 시간 (HH:MM)
+  selectedSlots?: string[]; // When2meet 선택 셀 리스트 (예: ["0-9", "2-14"])
 }
 
 interface MobileCourseFilterSheetProps {
@@ -30,9 +28,7 @@ export const DEFAULT_FILTERS: FilterState = {
   grades: [],
   types: [],
   credits: [],
-  selectedDays: [],
-  startTime: "09:00",
-  endTime: "18:00",
+  selectedSlots: [],
 };
 
 const CATEGORIES = [
@@ -77,6 +73,208 @@ const SUB_MAJORS: Record<string, string[]> = {
   "전공": getMajorsList(),
   "교양": ["기초교양", "균형교양", "일반교양"],
   "기타": ["기타 영역 1", "기타 영역 2"],
+};
+
+const DAYS_SHORT = ["월", "화", "수", "목", "금"];
+const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17]; // 9:00 to 18:00
+
+export function formatSlotsToTimeStr(slots: string[]): string {
+  if (!slots || slots.length === 0) return "전체 시간";
+  
+  // Group hours by day
+  const dayGroups: Record<number, number[]> = {};
+  slots.forEach((slot) => {
+    const [dStr, hStr] = slot.split("-");
+    const d = parseInt(dStr, 10);
+    const h = parseInt(hStr, 10);
+    if (!dayGroups[d]) dayGroups[d] = [];
+    dayGroups[d].push(h);
+  });
+  
+  const dayStrings: string[] = [];
+  const sortedDays = Object.keys(dayGroups).map(Number).sort((a, b) => a - b);
+  
+  sortedDays.forEach((d) => {
+    const hours = dayGroups[d].sort((a, b) => a - b);
+    const ranges: string[] = [];
+    
+    let start = hours[0];
+    let prev = hours[0];
+    
+    for (let i = 1; i <= hours.length; i++) {
+      const current = hours[i];
+      if (current === prev + 1) {
+        prev = current;
+      } else {
+        const end = prev + 1;
+        const startPad = String(start).padStart(2, "0");
+        const endPad = String(end).padStart(2, "0");
+        ranges.push(`${startPad}:00~${endPad}:00`);
+        start = current;
+        prev = current;
+      }
+    }
+    
+    dayStrings.push(`${DAYS_SHORT[d] || "요일"}(${ranges.join(",")})`);
+  });
+  
+  return dayStrings.join(" ");
+}
+
+interface When2MeetGridProps {
+  selectedSlots: string[];
+  onChange: (slots: string[]) => void;
+}
+
+const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
+  const isDrawingRef = useRef(false);
+  const drawingModeRef = useRef<"select" | "deselect">("select");
+  const [localSelected, setLocalSelected] = useState<string[]>(selectedSlots);
+
+  useEffect(() => {
+    setLocalSelected(selectedSlots);
+  }, [selectedSlots]);
+
+  const handleCellTouchStart = (day: number, hour: number, e: React.TouchEvent) => {
+    e.preventDefault();
+    const slot = `${day}-${hour}`;
+    const isSelected = localSelected.includes(slot);
+    const mode = isSelected ? "deselect" : "select";
+    
+    isDrawingRef.current = true;
+    drawingModeRef.current = mode;
+    
+    let updated = [...localSelected];
+    if (mode === "select") {
+      if (!updated.includes(slot)) updated.push(slot);
+    } else {
+      updated = updated.filter((s) => s !== slot);
+    }
+    setLocalSelected(updated);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDrawingRef.current) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!element) return;
+
+    const dayAttr = element.getAttribute("data-day");
+    const hourAttr = element.getAttribute("data-hour");
+
+    if (dayAttr !== null && hourAttr !== null) {
+      const day = parseInt(dayAttr, 10);
+      const hour = parseInt(hourAttr, 10);
+      const slot = `${day}-${hour}`;
+      const mode = drawingModeRef.current;
+
+      setLocalSelected((prev) => {
+        let updated = [...prev];
+        if (mode === "select") {
+          if (!updated.includes(slot)) updated.push(slot);
+        } else {
+          updated = updated.filter((s) => s !== slot);
+        }
+        return updated;
+      });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (isDrawingRef.current) {
+      isDrawingRef.current = false;
+      onChange(localSelected);
+    }
+  };
+
+  const handleMouseDown = (day: number, hour: number) => {
+    const slot = `${day}-${hour}`;
+    const isSelected = localSelected.includes(slot);
+    const mode = isSelected ? "deselect" : "select";
+
+    isDrawingRef.current = true;
+    drawingModeRef.current = mode;
+
+    let updated = [...localSelected];
+    if (mode === "select") {
+      if (!updated.includes(slot)) updated.push(slot);
+    } else {
+      updated = updated.filter((s) => s !== slot);
+    }
+    setLocalSelected(updated);
+  };
+
+  const handleMouseEnter = (day: number, hour: number) => {
+    if (!isDrawingRef.current) return;
+    const slot = `${day}-${hour}`;
+    const mode = drawingModeRef.current;
+
+    setLocalSelected((prev) => {
+      let updated = [...prev];
+      if (mode === "select") {
+        if (!updated.includes(slot)) updated.push(slot);
+      } else {
+        updated = updated.filter((s) => s !== slot);
+      }
+      return updated;
+    });
+  };
+
+  const handleMouseUp = () => {
+    if (isDrawingRef.current) {
+      isDrawingRef.current = false;
+      onChange(localSelected);
+    }
+  };
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isDrawingRef.current) {
+        isDrawingRef.current = false;
+        onChange(localSelected);
+      }
+    };
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+  }, [localSelected, onChange]);
+
+  return (
+    <GridContainer
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <CornerCell />
+      {DAYS_SHORT.map((day) => (
+        <DayHeaderCell key={day}>{day}</DayHeaderCell>
+      ))}
+
+      {HOURS.map((hour) => (
+        <React.Fragment key={hour}>
+          <HourLabelCell>
+            {String(hour).padStart(2, "0")}:00
+          </HourLabelCell>
+          {DAYS_SHORT.map((_, dayIdx) => {
+            const slot = `${dayIdx}-${hour}`;
+            const isSelected = localSelected.includes(slot);
+            return (
+              <TimeGridCell
+                key={slot}
+                data-day={dayIdx}
+                data-hour={hour}
+                $selected={isSelected}
+                onTouchStart={(e) => handleCellTouchStart(dayIdx, hour, e)}
+                onMouseDown={() => handleMouseDown(dayIdx, hour)}
+                onMouseEnter={() => handleMouseEnter(dayIdx, hour)}
+                onMouseUp={handleMouseUp}
+              />
+            );
+          })}
+        </React.Fragment>
+      ))}
+    </GridContainer>
+  );
 };
 
 export default function MobileCourseFilterSheet({
@@ -126,65 +324,22 @@ export default function MobileCourseFilterSheet({
       setFilters((prev) => ({
         ...prev,
         time: "전체 시간",
-        selectedDays: [],
-        startTime: "09:00",
-        endTime: "18:00",
+        selectedSlots: [],
       }));
     } else if (mode === "공강 시간만 보기") {
       setFilters((prev) => ({
         ...prev,
         time: "공강 시간만 보기",
-        selectedDays: [],
-        startTime: "09:00",
-        endTime: "18:00",
+        selectedSlots: [],
       }));
     } else {
-      const days = filters.selectedDays && filters.selectedDays.length > 0 ? filters.selectedDays : ["월"];
-      const start = filters.startTime || "09:00";
-      const end = filters.endTime || "18:00";
+      const slots = filters.selectedSlots && filters.selectedSlots.length > 0 ? filters.selectedSlots : [];
       setFilters((prev) => ({
         ...prev,
-        time: `${days.join(",")} ${start}~${end}`,
-        selectedDays: days,
-        startTime: start,
-        endTime: end,
+        time: formatSlotsToTimeStr(slots),
+        selectedSlots: slots,
       }));
     }
-  };
-
-  const handleToggleDay = (dayName: string) => {
-    setFilters((prev) => {
-      const days = prev.selectedDays || [];
-      const updatedDays = days.includes(dayName)
-        ? days.filter((d) => d !== dayName)
-        : [...days, dayName];
-      
-      const start = prev.startTime || "09:00";
-      const end = prev.endTime || "18:00";
-      const timeStr = updatedDays.length > 0 ? `${updatedDays.join(",")} ${start}~${end}` : "요일 선택 없음";
-      
-      return {
-        ...prev,
-        time: timeStr,
-        selectedDays: updatedDays,
-      };
-    });
-  };
-
-  const handleTimeValueChange = (type: "start" | "end", val: string) => {
-    setFilters((prev) => {
-      const days = prev.selectedDays || [];
-      const start = type === "start" ? val : (prev.startTime || "09:00");
-      const end = type === "end" ? val : (prev.endTime || "18:00");
-      const timeStr = days.length > 0 ? `${days.join(",")} ${start}~${end}` : "요일 선택 없음";
-
-      return {
-        ...prev,
-        time: timeStr,
-        startTime: start,
-        endTime: end,
-      };
-    });
   };
 
   const handleToggleGrade = (grade: number) => {
@@ -234,9 +389,7 @@ export default function MobileCourseFilterSheet({
         return {
           ...prev,
           time: "전체 시간",
-          selectedDays: [],
-          startTime: "09:00",
-          endTime: "18:00",
+          selectedSlots: [],
         };
       } else if (type === "grades") {
         return { ...prev, grades: prev.grades.filter((g) => g !== value) };
@@ -404,67 +557,42 @@ export default function MobileCourseFilterSheet({
             {activeTab === "time" && (
               <TimeFilterContainer>
                 {/* 1. 시간 필터링 모드 목록 */}
-                <OptionsList>
-                  {["전체 시간", "공강 시간만 보기", "요일/시간 직접 선택"].map((t) => {
+                <TimeModeSelector>
+                  {["전체 시간", "공강 시간만 보기", "직접 시간 선택"].map((t) => {
                     const isSelected =
-                      t === "요일/시간 직접 선택"
+                      t === "직접 시간 선택"
                         ? filters.time !== "전체 시간" && filters.time !== "공강 시간만 보기"
                         : filters.time === t;
 
                     return (
-                      <OptionItemRow key={t} onClick={() => handleSelectTimeMode(t)}>
-                        <OptionLabel style={{ paddingLeft: "44px" }}>{t}</OptionLabel>
-                        {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
-                      </OptionItemRow>
+                      <TimeModeTab
+                        type="button"
+                        key={t}
+                        $selected={isSelected}
+                        onClick={() => handleSelectTimeMode(t)}
+                      >
+                        {t}
+                      </TimeModeTab>
                     );
                   })}
-                </OptionsList>
+                </TimeModeSelector>
 
-                {/* 2. 요일/시간 직접 선택 상세 패널 */}
+                {/* 2. When2meet 스타일 드래그 그리드 */}
                 {filters.time !== "전체 시간" && filters.time !== "공강 시간만 보기" && (
-                  <CustomTimeSettings data-vaul-no-drag="">
-                    <SectionLabel>선택 요일 (다중 선택 가능)</SectionLabel>
-                    <DayChipsGrid>
-                      {["월", "화", "수", "목", "금", "토", "일"].map((dayName) => {
-                        const isDaySelected = (filters.selectedDays || []).includes(dayName);
-                        return (
-                          <DayFilterChip
-                            type="button"
-                            key={dayName}
-                            $selected={isDaySelected}
-                            onClick={() => handleToggleDay(dayName)}
-                          >
-                            {dayName}
-                          </DayFilterChip>
-                        );
-                      })}
-                    </DayChipsGrid>
-
-                    <SectionLabel style={{ marginTop: "16px" }}>시간 범위 지정</SectionLabel>
-                    <TimePickerRow>
-                      <TimePickerField>
-                        <TimePickerLabel>시작</TimePickerLabel>
-                        <TimePickerDisplay>{filters.startTime || "09:00"}</TimePickerDisplay>
-                        <HiddenTimeInput
-                          type="time"
-                          value={filters.startTime || "09:00"}
-                          onChange={(e) => handleTimeValueChange("start", e.target.value)}
-                        />
-                      </TimePickerField>
-
-                      <TimeSeparator>~</TimeSeparator>
-
-                      <TimePickerField>
-                        <TimePickerLabel>종료</TimePickerLabel>
-                        <TimePickerDisplay>{filters.endTime || "18:00"}</TimePickerDisplay>
-                        <HiddenTimeInput
-                          type="time"
-                          value={filters.endTime || "18:00"}
-                          onChange={(e) => handleTimeValueChange("end", e.target.value)}
-                        />
-                      </TimePickerField>
-                    </TimePickerRow>
-                  </CustomTimeSettings>
+                  <DragGridWrapper data-vaul-no-drag="">
+                    <GridGuideText>드래그하여 필터링할 요일/시간대를 선택하세요.</GridGuideText>
+                    <When2MeetGrid
+                      selectedSlots={filters.selectedSlots || []}
+                      onChange={(newSlots) => {
+                        const timeStr = formatSlotsToTimeStr(newSlots);
+                        setFilters((prev) => ({
+                          ...prev,
+                          time: timeStr,
+                          selectedSlots: newSlots,
+                        }));
+                      }}
+                    />
+                  </DragGridWrapper>
                 )}
               </TimeFilterContainer>
             )}
@@ -789,114 +917,107 @@ const TimeFilterContainer = styled.div`
   width: 100%;
 `;
 
-const CustomTimeSettings = styled.div`
-  padding: 16px;
+const TimeModeSelector = styled.div`
   display: flex;
-  flex-direction: column;
-  background: var(--bg-subtle, #f8f9fb);
-  border-radius: 16px;
-  margin: 0 16px 16px;
+  padding: 8px 16px 0;
+  gap: 6px;
+  width: 100%;
   box-sizing: border-box;
 `;
 
-const SectionLabel = styled.span`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary, #4e5968);
-  margin-bottom: 8px;
-  text-align: left;
-`;
-
-const DayChipsGrid = styled.div`
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  width: 100%;
-  margin-bottom: 12px;
-`;
-
-const DayFilterChip = styled.button<{ $selected?: boolean }>`
+const TimeModeTab = styled.button<{ $selected: boolean }>`
   flex: 1;
-  min-width: 36px;
   height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: ${({ $selected }) => ($selected ? "600" : "500")};
   cursor: pointer;
   border: 1px solid ${({ $selected }) => ($selected ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
   background: ${({ $selected }) => ($selected ? "var(--bg-brand-subtle, #eff6ff)" : "#ffffff")};
   color: ${({ $selected }) => ($selected ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
+  transition: all 0.2s ease;
   box-sizing: border-box;
   padding: 0;
-  transition: all 0.2s ease;
 
   &:hover {
     background: ${({ $selected }) => ($selected ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-subtle, #f8f9fb)")};
   }
 `;
 
-const TimePickerRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-`;
-
-const TimeSeparator = styled.span`
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-tertiary, #8b95a1);
-`;
-
-const TimePickerField = styled.div`
-  position: relative;
+const DragGridWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
-  background-color: #ffffff;
+  padding: 0 16px 16px;
+  box-sizing: border-box;
+  min-height: 0;
+`;
+
+const GridGuideText = styled.span`
+  font-size: 11px;
+  color: var(--text-secondary, #4e5968);
+  margin-bottom: 8px;
+  text-align: left;
+`;
+
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: 45px repeat(5, minmax(0, 1fr));
+  grid-template-rows: 24px repeat(9, 30px);
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 12px;
-  padding: 6px 12px;
-  height: 48px;
-  box-sizing: border-box;
-  justify-content: center;
-  cursor: pointer;
-`;
-
-const TimePickerLabel = styled.span`
-  font-size: 10px;
-  color: var(--text-tertiary, #8b95a1);
-  margin-bottom: 2px;
-  text-align: left;
-`;
-
-const TimePickerDisplay = styled.span`
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary, #111827);
-  text-align: left;
-`;
-
-const HiddenTimeInput = styled.input`
-  position: absolute;
-  inset: 0;
+  background-color: #ffffff;
+  overflow: hidden;
+  position: relative;
   width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+  box-sizing: border-box;
+`;
 
-  &::-webkit-calendar-picker-indicator {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    cursor: pointer;
-    opacity: 0;
+const CornerCell = styled.div`
+  background: var(--bg-subtle, #f8f9fb);
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-right: 1px solid var(--border-default, #e5e8eb);
+`;
+
+const DayHeaderCell = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, #4e5968);
+  background: var(--bg-subtle, #f8f9fb);
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-right: 1px solid var(--border-default, #e5e8eb);
+  
+  &:last-child {
+    border-right: none;
+  }
+`;
+
+const HourLabelCell = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+  background: var(--bg-subtle, #f8f9fb);
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-right: 1px solid var(--border-default, #e5e8eb);
+`;
+
+const TimeGridCell = styled.div<{ $selected: boolean }>`
+  border-bottom: 1px solid var(--border-light, #f2f4f6);
+  border-right: 1px solid var(--border-light, #f2f4f6);
+  background-color: ${({ $selected }) => ($selected ? "rgba(0, 97, 255, 0.22)" : "#ffffff")};
+  box-shadow: ${({ $selected }) => ($selected ? "inset 0 0 0 1px var(--interactive-primary, #0061ff)" : "none")};
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  touch-action: none;
+
+  &:nth-child(6n) {
+    border-right: none;
   }
 `;
