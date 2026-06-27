@@ -17,6 +17,7 @@ export interface BottomSheetProps {
   showCloseButton?: boolean;
   repositionInputs?: boolean;
   zIndex?: number;
+  height?: string | number;
 }
 
 export default function BottomSheet({
@@ -33,6 +34,7 @@ export default function BottomSheet({
   showCloseButton = false,
   repositionInputs = false,
   zIndex,
+  height,
 }: BottomSheetProps) {
   // snapPoints가 존재하지만 외부에서 활성 스냅 포인트 상태가 주어지지 않은 경우 내부에서 상태 관리
   const [internalActiveSnapPoint, setInternalActiveSnapPoint] = useState<string | number | null>(
@@ -62,8 +64,6 @@ export default function BottomSheet({
     };
   }, [open, modal]);
 
-  const singleSnapHeight = snapPoints && snapPoints.length === 1 ? snapPoints[0] : undefined;
-
   return (
     <Drawer.Root
       open={open}
@@ -81,7 +81,7 @@ export default function BottomSheet({
         {modal && <StyledOverlay $zIndex={zIndex ? zIndex - 1 : undefined} />}
         <StyledContent
           $zIndex={zIndex}
-          $height={singleSnapHeight}
+          $height={height}
           onOpenAutoFocus={(e) => {
             if (!modal) e.preventDefault();
           }}
@@ -97,7 +97,11 @@ export default function BottomSheet({
           onInteractOutside={(e) => {
             if (!modal) e.preventDefault();
           }}
+          aria-describedby={undefined}
         >
+          <Drawer.Title style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
+            바텀시트
+          </Drawer.Title>
           <SheetInner>
             <DragHeader>
               <HandleBar />
