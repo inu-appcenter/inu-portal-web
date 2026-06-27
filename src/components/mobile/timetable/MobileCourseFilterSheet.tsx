@@ -183,7 +183,6 @@ export default function MobileCourseFilterSheet({
       open={open}
       onOpenChange={onOpenChange}
       modal={true}
-      snapPoints={["460px"]}
       zIndex={10010}
     >
       <SheetWrapper>
@@ -379,7 +378,6 @@ export default function MobileCourseFilterSheet({
 const SheetWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
   box-sizing: border-box;
 `;
