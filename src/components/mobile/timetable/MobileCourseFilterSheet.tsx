@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
-import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
+import { X, Star, Check, RotateCcw, ChevronRight, ChevronLeft } from "lucide-react";
 import BottomSheet from "@/components/common/BottomSheet";
 
 export interface FilterState {
@@ -37,17 +37,20 @@ const CATEGORIES = [
   { id: "credit", label: "학점" },
 ];
 
-const MAJORS = [
-  { id: "comp", name: "컴퓨터공학부", type: "전공" },
-  { id: "comm", name: "정보통신공학과", type: "전공" },
-  { id: "embed", name: "임베디드시스템공학과", type: "전공" },
-  { id: "elec", name: "전자공학과", type: "전공" },
-  { id: "mech", name: "기계공학과", type: "전공" },
-  { id: "biz", name: "경영학부", type: "전공" },
-  { id: "lib1", name: "기초교양", type: "교양" },
-  { id: "lib2", name: "균형교양", type: "교양" },
-  { id: "lib3", name: "일반교양", type: "교양" },
+const MAJOR_CATEGORIES = [
+  { id: "major_1", name: "전공", hasChevron: true },
+  { id: "major_2", name: "교양", hasChevron: true },
+  { id: "major_3", name: "교직", hasChevron: false },
+  { id: "major_4", name: "일반선택", hasChevron: false },
+  { id: "major_5", name: "군사학", hasChevron: false },
+  { id: "major_6", name: "기타", hasChevron: true },
 ];
+
+const SUB_MAJORS: Record<string, string[]> = {
+  "전공": ["컴퓨터공학부", "정보통신공학과", "임베디드시스템공학과", "전자공학과", "기계공학과", "경영학부"],
+  "교양": ["기초교양", "균형교양", "일반교양"],
+  "기타": ["기타 영역 1", "기타 영역 2"],
+};
 
 export default function MobileCourseFilterSheet({
   open,
@@ -57,16 +60,22 @@ export default function MobileCourseFilterSheet({
 }: MobileCourseFilterSheetProps) {
   const [activeTab, setActiveTab] = useState<string>("major");
   const [filters, setFilters] = useState<FilterState>({ ...initialFilters });
+  const [subLevel, setSubLevel] = useState<string | null>(null);
   
-  // 즐겨찾는 전공/영역 Pinned 상태 관리 (Figma 시안 별표 토글 재현)
-  const [pinnedMajors, setPinnedMajors] = useState<string[]>(["comp"]);
+  // 즐겨찾는 전공/영역 Pinned 상태 관리 (Figma 시안 별표 토글 재현, "전공" 디폴트 핀 처리)
+  const [pinnedCategories, setPinnedCategories] = useState<string[]>(["전공"]);
 
-  const togglePin = (majorName: string, e: React.MouseEvent) => {
+  // 탭 변경 시 서브 레벨 초기화
+  useEffect(() => {
+    setSubLevel(null);
+  }, [activeTab]);
+
+  const togglePin = (catName: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setPinnedMajors((prev) =>
-      prev.includes(majorName)
-        ? prev.filter((m) => m !== majorName)
-        : [...prev, majorName]
+    setPinnedCategories((prev) =>
+      prev.includes(catName)
+        ? prev.filter((c) => c !== catName)
+        : [...prev, catName]
     );
   };
 
@@ -114,6 +123,7 @@ export default function MobileCourseFilterSheet({
 
   const handleReset = () => {
     setFilters({ ...DEFAULT_FILTERS });
+    setSubLevel(null);
   };
 
   const handleApply = () => {
@@ -221,32 +231,63 @@ export default function MobileCourseFilterSheet({
           {/* 우측 옵션 선택 영역 */}
           <OptionsArea>
             {activeTab === "major" && (
-              <OptionsList>
-                {MAJORS.map((m) => {
-                  const isSelected = filters.major === m.name;
-                  const isPinned = pinnedMajors.includes(m.name);
-                  return (
-                    <OptionItemRow
-                      key={m.id}
-                      onClick={() => handleSelectMajor(m.name)}
-                    >
-                      <PinButton onClick={(e) => togglePin(m.name, e)}>
-                        <Star
-                          size={18}
-                          color={isPinned ? "var(--interactive-primary, #0061FF)" : "#D1D6DB"}
-                          fill={isPinned ? "var(--interactive-primary, #0061FF)" : "transparent"}
-                        />
-                      </PinButton>
-                      <OptionLabel $selected={isSelected}>{m.name}</OptionLabel>
-                      {isSelected ? (
-                        <Check size={16} color="var(--interactive-primary, #0061FF)" />
-                      ) : (
-                        <ChevronRight size={16} color="#D1D6DB" />
-                      )}
-                    </OptionItemRow>
-                  );
-                })}
-              </OptionsList>
+              <>
+                {subLevel === null ? (
+                  <OptionsList>
+                    {MAJOR_CATEGORIES.map((m) => {
+                      const isPinned = pinnedCategories.includes(m.name);
+                      // 대분류가 직접 선택되었거나 세부 전공이 선택된 대분류 하위 항목에 있는 경우 활성 상태 처리
+                      const isSelected = filters.major === m.name || (filters.major && SUB_MAJORS[m.name]?.includes(filters.major));
+                      return (
+                        <OptionItemRow
+                          key={m.id}
+                          onClick={() => {
+                            if (m.hasChevron) {
+                              setSubLevel(m.name);
+                            } else {
+                              handleSelectMajor(m.name);
+                            }
+                          }}
+                        >
+                          <PinButton onClick={(e) => togglePin(m.name, e)}>
+                            <Star
+                              size={28}
+                              color={isPinned ? "var(--interactive-primary, #0061FF)" : "#D1D6DB"}
+                              fill={isPinned ? "var(--interactive-primary, #0061FF)" : "transparent"}
+                            />
+                          </PinButton>
+                          <OptionLabel>{m.name}</OptionLabel>
+                          {m.hasChevron && <ChevronRight size={24} color="#D1D6DB" />}
+                          {!m.hasChevron && isSelected && (
+                            <Check size={20} color="var(--interactive-primary, #0061FF)" />
+                          )}
+                        </OptionItemRow>
+                      );
+                    })}
+                  </OptionsList>
+                ) : (
+                  <OptionsList>
+                    <SubHeaderRow>
+                      <BackButton onClick={() => setSubLevel(null)}>
+                        <ChevronLeft size={20} color="var(--text-primary, #111827)" />
+                        <span>{subLevel}</span>
+                      </BackButton>
+                    </SubHeaderRow>
+                    {(SUB_MAJORS[subLevel] || []).map((subName) => {
+                      const isSelected = filters.major === subName;
+                      return (
+                        <OptionItemRow
+                          key={subName}
+                          onClick={() => handleSelectMajor(subName)}
+                        >
+                          <OptionLabel style={{ paddingLeft: "44px" }}>{subName}</OptionLabel>
+                          {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
+                        </OptionItemRow>
+                      );
+                    })}
+                  </OptionsList>
+                )}
+              </>
             )}
 
             {activeTab === "sort" && (
@@ -255,8 +296,8 @@ export default function MobileCourseFilterSheet({
                   const isSelected = filters.sort === s;
                   return (
                     <OptionItemRow key={s} onClick={() => handleSelectSort(s)}>
-                      <OptionLabel $selected={isSelected}>{s}</OptionLabel>
-                      {isSelected && <Check size={18} color="var(--interactive-primary, #0061FF)" />}
+                      <OptionLabel style={{ paddingLeft: "44px" }}>{s}</OptionLabel>
+                      {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
                     </OptionItemRow>
                   );
                 })}
@@ -269,8 +310,8 @@ export default function MobileCourseFilterSheet({
                   const isSelected = filters.time === t;
                   return (
                     <OptionItemRow key={t} onClick={() => handleSelectTime(t)}>
-                      <OptionLabel $selected={isSelected}>{t}</OptionLabel>
-                      {isSelected && <Check size={18} color="var(--interactive-primary, #0061FF)" />}
+                      <OptionLabel style={{ paddingLeft: "44px" }}>{t}</OptionLabel>
+                      {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
                     </OptionItemRow>
                   );
                 })}
@@ -283,8 +324,8 @@ export default function MobileCourseFilterSheet({
                   const isSelected = filters.grades.includes(g);
                   return (
                     <OptionItemRow key={g} onClick={() => handleToggleGrade(g)}>
-                      <OptionLabel $selected={isSelected}>{g}학년</OptionLabel>
-                      {isSelected && <Check size={18} color="var(--interactive-primary, #0061FF)" />}
+                      <OptionLabel style={{ paddingLeft: "44px" }}>{g}학년</OptionLabel>
+                      {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
                     </OptionItemRow>
                   );
                 })}
@@ -297,8 +338,8 @@ export default function MobileCourseFilterSheet({
                   const isSelected = filters.types.includes(t);
                   return (
                     <OptionItemRow key={t} onClick={() => handleToggleType(t)}>
-                      <OptionLabel $selected={isSelected}>{t}</OptionLabel>
-                      {isSelected && <Check size={18} color="var(--interactive-primary, #0061FF)" />}
+                      <OptionLabel style={{ paddingLeft: "44px" }}>{t}</OptionLabel>
+                      {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
                     </OptionItemRow>
                   );
                 })}
@@ -312,8 +353,8 @@ export default function MobileCourseFilterSheet({
                   const label = c === 4 ? "4학점 이상" : `${c}학점`;
                   return (
                     <OptionItemRow key={c} onClick={() => handleToggleCredit(c)}>
-                      <OptionLabel $selected={isSelected}>{label}</OptionLabel>
-                      {isSelected && <Check size={18} color="var(--interactive-primary, #0061FF)" />}
+                      <OptionLabel style={{ paddingLeft: "44px" }}>{label}</OptionLabel>
+                      {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
                     </OptionItemRow>
                   );
                 })}
@@ -420,8 +461,7 @@ const ContentColumns = styled.div`
 `;
 
 const CategorySidebar = styled.div`
-  width: 112px;
-  border-right: 1px solid var(--border-default, #e5e8eb);
+  width: 104px;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -435,12 +475,13 @@ const CategorySidebar = styled.div`
 
 const CategoryTab = styled.button<{ $active: boolean }>`
   width: 100%;
-  padding: 10px 8px 10px 12px;
+  padding: 10px 4px 10px 8px;
   background: transparent;
   border: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 4px;
+  justify-content: flex-start;
   text-align: left;
   font-size: 16px;
   font-weight: 600;
@@ -469,14 +510,15 @@ const OptionsList = styled.div`
 const OptionItemRow = styled.div`
   display: flex;
   align-items: center;
-  padding: 10px 16px;
+  gap: 16px;
+  padding: 4px 16px;
   cursor: pointer;
-  border-bottom: 1px solid var(--border-light, #f2f4f6);
-  min-height: 44px;
+  height: 40px;
+  min-height: 40px;
   box-sizing: border-box;
 
   &:hover {
-    background: var(--bg-subtle, #f8f9fb);
+    background: rgba(0, 0, 0, 0.02);
   }
 `;
 
@@ -487,15 +529,40 @@ const PinButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  margin-right: 12px;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
 `;
 
-const OptionLabel = styled.span<{ $selected: boolean }>`
+const OptionLabel = styled.span`
   flex: 1;
+  text-align: left;
   font-size: 16px;
-  font-weight: ${({ $selected }) => ($selected ? "600" : "400")};
-  color: ${({ $selected }) => ($selected ? "var(--text-brand, #0061ff)" : "var(--text-primary, #333d4b)")};
+  font-weight: 400;
+  color: var(--text-primary, #111827);
+  display: flex;
+  align-items: center;
+`;
+
+const SubHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 0 16px 8px;
+  border-bottom: 1px solid var(--border-light, #f2f4f6);
+  margin-bottom: 8px;
+`;
+
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  cursor: pointer;
+  padding: 0;
 `;
 
 const BottomActions = styled.div`
