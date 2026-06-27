@@ -205,16 +205,14 @@ export default function MobileCourseFilterSheet({
           <CategorySidebar>
             {CATEGORIES.map((cat) => {
               const isActive = activeTab === cat.id;
-              // 이수구분 비활성화/일반 체크
-              const isDisabled = cat.id === "disabled_placeholder"; 
               return (
                 <CategoryTab
                   key={cat.id}
                   $active={isActive}
-                  $disabled={isDisabled}
-                  onClick={() => !isDisabled && setActiveTab(cat.id)}
+                  onClick={() => setActiveTab(cat.id)}
                 >
-                  {cat.label}
+                  <span>{cat.label}</span>
+                  {isActive && <ChevronRight size={18} color="var(--text-secondary, #333d4b)" />}
                 </CategoryTab>
               );
             })}
@@ -422,8 +420,7 @@ const ContentColumns = styled.div`
 `;
 
 const CategorySidebar = styled.div`
-  width: 100px;
-  background: var(--bg-subtle, #f8f9fb);
+  width: 112px;
   border-right: 1px solid var(--border-default, #e5e8eb);
   display: flex;
   flex-direction: column;
@@ -436,22 +433,24 @@ const CategorySidebar = styled.div`
   scrollbar-width: none;
 `;
 
-const CategoryTab = styled.button<{ $active: boolean; $disabled?: boolean }>`
+const CategoryTab = styled.button<{ $active: boolean }>`
   width: 100%;
-  padding: 14px 12px;
-  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
+  padding: 10px 8px 10px 12px;
+  background: transparent;
   border: none;
-  border-left: 3px solid ${({ $active }) => ($active ? "var(--interactive-primary, #3b82f6)" : "transparent")};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   text-align: left;
-  font-size: 15px;
-  font-weight: ${({ $active }) => ($active ? "600" : "500")};
-  color: ${({ $active, $disabled }) =>
-    $disabled ? "var(--text-disabled, #b0b8c1)" : $active ? "var(--text-primary, #333d4b)" : "var(--text-secondary, #4e5968)"};
-  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+  font-size: 16px;
+  font-weight: 600;
+  color: ${({ $active }) => ($active ? "var(--text-secondary, #333d4b)" : "var(--text-disabled, #b0b8c1)")};
+  cursor: pointer;
   box-sizing: border-box;
+  min-height: 40px;
 
   &:hover {
-    background: ${({ $active, $disabled }) => ($disabled ? "transparent" : $active ? "#ffffff" : "rgba(0, 0, 0, 0.02)")};
+    background: rgba(0, 0, 0, 0.02);
   }
 `;
 
