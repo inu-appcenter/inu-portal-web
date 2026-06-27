@@ -79,7 +79,7 @@ const DAYS_SHORT = ["월", "화", "수", "목", "금"];
 const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17]; // 9:00 to 18:00
 
 export function formatSlotsToTimeStr(slots: string[]): string {
-  if (!slots || slots.length === 0) return "전체 시간";
+  if (!slots || slots.length === 0) return "직접 시간 선택";
   
   // Group hours by day
   const dayGroups: Record<number, number[]> = {};
