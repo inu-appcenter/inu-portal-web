@@ -174,6 +174,7 @@ export default function MobileCourseFilterSheet({
       onOpenChange={onOpenChange}
       modal={true}
       snapPoints={["424px"]}
+      zIndex={10010}
     >
       <SheetWrapper>
         {/* 헤더 영역 */}

@@ -16,6 +16,7 @@ export interface BottomSheetProps {
   snapToSequentialPoint?: boolean;
   showCloseButton?: boolean;
   repositionInputs?: boolean;
+  zIndex?: number;
 }
 
 export default function BottomSheet({
@@ -31,6 +32,7 @@ export default function BottomSheet({
   snapToSequentialPoint = true,
   showCloseButton = false,
   repositionInputs = false,
+  zIndex,
 }: BottomSheetProps) {
   // modal={false}일 때 외부 포탈 요소(예: 검색바 인풋)로의 포커스 이동을 차단하는 Radix FocusScope의 포커스 트랩 버그 완벽 차단
   useEffect(() => {
@@ -60,8 +62,9 @@ export default function BottomSheet({
       repositionInputs={repositionInputs}
     >
       <Drawer.Portal>
-        {modal && <StyledOverlay />}
+        {modal && <StyledOverlay $zIndex={zIndex ? zIndex - 1 : undefined} />}
         <StyledContent
+          $zIndex={zIndex}
           onOpenAutoFocus={(e) => {
             if (!modal) e.preventDefault();
           }}
@@ -95,20 +98,20 @@ export default function BottomSheet({
   );
 }
 
-const StyledOverlay = styled(Drawer.Overlay)`
+const StyledOverlay = styled(Drawer.Overlay)<{ $zIndex?: number }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
-  z-index: 10009;
+  z-index: ${({ $zIndex }) => $zIndex ?? 999};
 `;
 
-const StyledContent = styled(Drawer.Content)`
+const StyledContent = styled(Drawer.Content)<{ $zIndex?: number }>`
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10010;
+  z-index: ${({ $zIndex }) => $zIndex ?? 10000};
   outline: none;
 
   height: 100%;
