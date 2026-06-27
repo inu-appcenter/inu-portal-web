@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
 import { X } from "lucide-react";
@@ -24,8 +24,8 @@ export default function BottomSheet({
   onOpenChange,
   children,
   snapPoints,
-  activeSnapPoint,
-  setActiveSnapPoint,
+  activeSnapPoint: externalActiveSnapPoint,
+  setActiveSnapPoint: externalSetActiveSnapPoint,
   modal = true,
   dismissible = true,
   disablePreventScroll = true,
@@ -34,6 +34,20 @@ export default function BottomSheet({
   repositionInputs = false,
   zIndex,
 }: BottomSheetProps) {
+  // snapPoints가 존재하지만 외부에서 활성 스냅 포인트 상태가 주어지지 않은 경우 내부에서 상태 관리
+  const [internalActiveSnapPoint, setInternalActiveSnapPoint] = useState<string | number | null>(
+    snapPoints && snapPoints.length > 0 ? snapPoints[snapPoints.length - 1] : null
+  );
+
+  const activeSnapPoint = externalActiveSnapPoint !== undefined ? externalActiveSnapPoint : internalActiveSnapPoint;
+  const setActiveSnapPoint = externalSetActiveSnapPoint || setInternalActiveSnapPoint;
+
+  useEffect(() => {
+    if (open && snapPoints && snapPoints.length > 0 && externalActiveSnapPoint === undefined) {
+      setInternalActiveSnapPoint(snapPoints[snapPoints.length - 1]);
+    }
+  }, [open, snapPoints, externalActiveSnapPoint]);
+
   // modal={false}일 때 외부 포탈 요소(예: 검색바 인풋)로의 포커스 이동을 차단하는 Radix FocusScope의 포커스 트랩 버그 완벽 차단
   useEffect(() => {
     if (!open || modal) return;
