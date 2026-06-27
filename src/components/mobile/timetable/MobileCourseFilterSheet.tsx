@@ -7,10 +7,13 @@ import { navItems } from "@/resources/strings/navItems";
 export interface FilterState {
   major: string | null;
   sort: string; // "기본순", "별점높은순", "담은인원많은순"
-  time: string; // "전체 시간", "공강 시간만 보기"
+  time: string; // "전체 시간", "공강 시간만 보기" 또는 직접 선택한 포맷 (예: "월,수 09:00~13:00")
   grades: number[]; // [1, 2, 3, 4]
   types: string[]; // ["전공", "교양", "교직", "일반선택", "군사학", "기타"]
   credits: number[]; // [1, 2, 3, 4] (4는 4학점 이상)
+  selectedDays?: string[]; // 필터용 선택 요일 리스트
+  startTime?: string;      // 시작 시간 (HH:MM)
+  endTime?: string;        // 종료 시간 (HH:MM)
 }
 
 interface MobileCourseFilterSheetProps {
@@ -27,6 +30,9 @@ export const DEFAULT_FILTERS: FilterState = {
   grades: [],
   types: [],
   credits: [],
+  selectedDays: [],
+  startTime: "09:00",
+  endTime: "18:00",
 };
 
 const CATEGORIES = [
@@ -113,8 +119,72 @@ export default function MobileCourseFilterSheet({
     setFilters((prev) => ({ ...prev, sort: sortName }));
   };
 
-  const handleSelectTime = (timeName: string) => {
-    setFilters((prev) => ({ ...prev, time: timeName }));
+
+
+  const handleSelectTimeMode = (mode: string) => {
+    if (mode === "전체 시간") {
+      setFilters((prev) => ({
+        ...prev,
+        time: "전체 시간",
+        selectedDays: [],
+        startTime: "09:00",
+        endTime: "18:00",
+      }));
+    } else if (mode === "공강 시간만 보기") {
+      setFilters((prev) => ({
+        ...prev,
+        time: "공강 시간만 보기",
+        selectedDays: [],
+        startTime: "09:00",
+        endTime: "18:00",
+      }));
+    } else {
+      const days = filters.selectedDays && filters.selectedDays.length > 0 ? filters.selectedDays : ["월"];
+      const start = filters.startTime || "09:00";
+      const end = filters.endTime || "18:00";
+      setFilters((prev) => ({
+        ...prev,
+        time: `${days.join(",")} ${start}~${end}`,
+        selectedDays: days,
+        startTime: start,
+        endTime: end,
+      }));
+    }
+  };
+
+  const handleToggleDay = (dayName: string) => {
+    setFilters((prev) => {
+      const days = prev.selectedDays || [];
+      const updatedDays = days.includes(dayName)
+        ? days.filter((d) => d !== dayName)
+        : [...days, dayName];
+      
+      const start = prev.startTime || "09:00";
+      const end = prev.endTime || "18:00";
+      const timeStr = updatedDays.length > 0 ? `${updatedDays.join(",")} ${start}~${end}` : "요일 선택 없음";
+      
+      return {
+        ...prev,
+        time: timeStr,
+        selectedDays: updatedDays,
+      };
+    });
+  };
+
+  const handleTimeValueChange = (type: "start" | "end", val: string) => {
+    setFilters((prev) => {
+      const days = prev.selectedDays || [];
+      const start = type === "start" ? val : (prev.startTime || "09:00");
+      const end = type === "end" ? val : (prev.endTime || "18:00");
+      const timeStr = days.length > 0 ? `${days.join(",")} ${start}~${end}` : "요일 선택 없음";
+
+      return {
+        ...prev,
+        time: timeStr,
+        startTime: start,
+        endTime: end,
+      };
+    });
   };
 
   const handleToggleGrade = (grade: number) => {
@@ -161,7 +231,13 @@ export default function MobileCourseFilterSheet({
       } else if (type === "sort") {
         return { ...prev, sort: "기본순" };
       } else if (type === "time") {
-        return { ...prev, time: "전체 시간" };
+        return {
+          ...prev,
+          time: "전체 시간",
+          selectedDays: [],
+          startTime: "09:00",
+          endTime: "18:00",
+        };
       } else if (type === "grades") {
         return { ...prev, grades: prev.grades.filter((g) => g !== value) };
       } else if (type === "types") {
@@ -326,17 +402,71 @@ export default function MobileCourseFilterSheet({
             )}
 
             {activeTab === "time" && (
-              <OptionsList>
-                {["전체 시간", "공강 시간만 보기"].map((t) => {
-                  const isSelected = filters.time === t;
-                  return (
-                    <OptionItemRow key={t} onClick={() => handleSelectTime(t)}>
-                      <OptionLabel style={{ paddingLeft: "44px" }}>{t}</OptionLabel>
-                      {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
-                    </OptionItemRow>
-                  );
-                })}
-              </OptionsList>
+              <TimeFilterContainer>
+                {/* 1. 시간 필터링 모드 목록 */}
+                <OptionsList>
+                  {["전체 시간", "공강 시간만 보기", "요일/시간 직접 선택"].map((t) => {
+                    const isSelected =
+                      t === "요일/시간 직접 선택"
+                        ? filters.time !== "전체 시간" && filters.time !== "공강 시간만 보기"
+                        : filters.time === t;
+
+                    return (
+                      <OptionItemRow key={t} onClick={() => handleSelectTimeMode(t)}>
+                        <OptionLabel style={{ paddingLeft: "44px" }}>{t}</OptionLabel>
+                        {isSelected && <Check size={20} color="var(--interactive-primary, #0061FF)" />}
+                      </OptionItemRow>
+                    );
+                  })}
+                </OptionsList>
+
+                {/* 2. 요일/시간 직접 선택 상세 패널 */}
+                {filters.time !== "전체 시간" && filters.time !== "공강 시간만 보기" && (
+                  <CustomTimeSettings data-vaul-no-drag="">
+                    <SectionLabel>선택 요일 (다중 선택 가능)</SectionLabel>
+                    <DayChipsGrid>
+                      {["월", "화", "수", "목", "금", "토", "일"].map((dayName) => {
+                        const isDaySelected = (filters.selectedDays || []).includes(dayName);
+                        return (
+                          <DayFilterChip
+                            type="button"
+                            key={dayName}
+                            $selected={isDaySelected}
+                            onClick={() => handleToggleDay(dayName)}
+                          >
+                            {dayName}
+                          </DayFilterChip>
+                        );
+                      })}
+                    </DayChipsGrid>
+
+                    <SectionLabel style={{ marginTop: "16px" }}>시간 범위 지정</SectionLabel>
+                    <TimePickerRow>
+                      <TimePickerField>
+                        <TimePickerLabel>시작</TimePickerLabel>
+                        <TimePickerDisplay>{filters.startTime || "09:00"}</TimePickerDisplay>
+                        <HiddenTimeInput
+                          type="time"
+                          value={filters.startTime || "09:00"}
+                          onChange={(e) => handleTimeValueChange("start", e.target.value)}
+                        />
+                      </TimePickerField>
+
+                      <TimeSeparator>~</TimeSeparator>
+
+                      <TimePickerField>
+                        <TimePickerLabel>종료</TimePickerLabel>
+                        <TimePickerDisplay>{filters.endTime || "18:00"}</TimePickerDisplay>
+                        <HiddenTimeInput
+                          type="time"
+                          value={filters.endTime || "18:00"}
+                          onChange={(e) => handleTimeValueChange("end", e.target.value)}
+                        />
+                      </TimePickerField>
+                    </TimePickerRow>
+                  </CustomTimeSettings>
+                )}
+              </TimeFilterContainer>
             )}
 
             {activeTab === "grade" && (
@@ -649,5 +779,124 @@ const ApplyButton = styled.button`
 
   &:active {
     transform: scale(0.98);
+  }
+`;
+
+const TimeFilterContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+`;
+
+const CustomTimeSettings = styled.div`
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-subtle, #f8f9fb);
+  border-radius: 16px;
+  margin: 0 16px 16px;
+  box-sizing: border-box;
+`;
+
+const SectionLabel = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #4e5968);
+  margin-bottom: 8px;
+  text-align: left;
+`;
+
+const DayChipsGrid = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 12px;
+`;
+
+const DayFilterChip = styled.button<{ $selected?: boolean }>`
+  flex: 1;
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: ${({ $selected }) => ($selected ? "600" : "500")};
+  cursor: pointer;
+  border: 1px solid ${({ $selected }) => ($selected ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-brand-subtle, #eff6ff)" : "#ffffff")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
+  box-sizing: border-box;
+  padding: 0;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ $selected }) => ($selected ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-subtle, #f8f9fb)")};
+  }
+`;
+
+const TimePickerRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+`;
+
+const TimeSeparator = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+`;
+
+const TimePickerField = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: #ffffff;
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  padding: 6px 12px;
+  height: 48px;
+  box-sizing: border-box;
+  justify-content: center;
+  cursor: pointer;
+`;
+
+const TimePickerLabel = styled.span`
+  font-size: 10px;
+  color: var(--text-tertiary, #8b95a1);
+  margin-bottom: 2px;
+  text-align: left;
+`;
+
+const TimePickerDisplay = styled.span`
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  text-align: left;
+`;
+
+const HiddenTimeInput = styled.input`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
   }
 `;
