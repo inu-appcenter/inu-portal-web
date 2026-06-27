@@ -100,7 +100,7 @@ const StyledOverlay = styled(Drawer.Overlay)`
   inset: 0;
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
-  z-index: 999;
+  z-index: 10009;
 `;
 
 const StyledContent = styled(Drawer.Content)`
@@ -108,7 +108,7 @@ const StyledContent = styled(Drawer.Content)`
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10000;
+  z-index: 10010;
   outline: none;
 
   height: 100%;

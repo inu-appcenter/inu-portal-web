@@ -169,7 +169,12 @@ export default function MobileCourseFilterSheet({
   }, [filters]);
 
   return (
-    <BottomSheet open={open} onOpenChange={onOpenChange} modal={true}>
+    <BottomSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      modal={true}
+      snapPoints={["424px"]}
+    >
       <SheetWrapper>
         {/* 헤더 영역 */}
         <HeaderRow>
@@ -334,8 +339,7 @@ export default function MobileCourseFilterSheet({
 const SheetWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: 380px;
-  max-height: 380px;
+  height: 100%;
   width: 100%;
   box-sizing: border-box;
 `;
