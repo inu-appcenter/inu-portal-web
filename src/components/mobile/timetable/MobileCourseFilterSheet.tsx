@@ -129,28 +129,42 @@ interface When2MeetGridProps {
 const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
   const isDrawingRef = useRef(false);
   const drawingModeRef = useRef<"select" | "deselect">("select");
+  const selectedRef = useRef<string[]>(selectedSlots);
   const [localSelected, setLocalSelected] = useState<string[]>(selectedSlots);
 
   useEffect(() => {
+    selectedRef.current = selectedSlots;
     setLocalSelected(selectedSlots);
   }, [selectedSlots]);
+
+  const updateSelection = (slot: string, mode: "select" | "deselect") => {
+    const current = selectedRef.current;
+    const isSelected = current.includes(slot);
+    
+    let next: string[];
+    if (mode === "select" && !isSelected) {
+      next = [...current, slot];
+    } else if (mode === "deselect" && isSelected) {
+      next = current.filter((s) => s !== slot);
+    } else {
+      return;
+    }
+
+    selectedRef.current = next;
+    setLocalSelected(next);
+    onChange(next);
+  };
 
   const handleCellTouchStart = (day: number, hour: number, e: React.TouchEvent) => {
     e.preventDefault();
     const slot = `${day}-${hour}`;
-    const isSelected = localSelected.includes(slot);
+    const isSelected = selectedRef.current.includes(slot);
     const mode = isSelected ? "deselect" : "select";
     
     isDrawingRef.current = true;
     drawingModeRef.current = mode;
     
-    let updated = [...localSelected];
-    if (mode === "select") {
-      if (!updated.includes(slot)) updated.push(slot);
-    } else {
-      updated = updated.filter((s) => s !== slot);
-    }
-    setLocalSelected(updated);
+    updateSelection(slot, mode);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -168,77 +182,42 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
       const day = parseInt(dayAttr, 10);
       const hour = parseInt(hourAttr, 10);
       const slot = `${day}-${hour}`;
-      const mode = drawingModeRef.current;
-
-      setLocalSelected((prev) => {
-        let updated = [...prev];
-        if (mode === "select") {
-          if (!updated.includes(slot)) updated.push(slot);
-        } else {
-          updated = updated.filter((s) => s !== slot);
-        }
-        return updated;
-      });
+      updateSelection(slot, drawingModeRef.current);
     }
   };
 
   const handleTouchEnd = () => {
-    if (isDrawingRef.current) {
-      isDrawingRef.current = false;
-      onChange(localSelected);
-    }
+    isDrawingRef.current = false;
   };
 
   const handleMouseDown = (day: number, hour: number) => {
     const slot = `${day}-${hour}`;
-    const isSelected = localSelected.includes(slot);
+    const isSelected = selectedRef.current.includes(slot);
     const mode = isSelected ? "deselect" : "select";
 
     isDrawingRef.current = true;
     drawingModeRef.current = mode;
 
-    let updated = [...localSelected];
-    if (mode === "select") {
-      if (!updated.includes(slot)) updated.push(slot);
-    } else {
-      updated = updated.filter((s) => s !== slot);
-    }
-    setLocalSelected(updated);
+    updateSelection(slot, mode);
   };
 
   const handleMouseEnter = (day: number, hour: number) => {
     if (!isDrawingRef.current) return;
     const slot = `${day}-${hour}`;
-    const mode = drawingModeRef.current;
-
-    setLocalSelected((prev) => {
-      let updated = [...prev];
-      if (mode === "select") {
-        if (!updated.includes(slot)) updated.push(slot);
-      } else {
-        updated = updated.filter((s) => s !== slot);
-      }
-      return updated;
-    });
+    updateSelection(slot, drawingModeRef.current);
   };
 
   const handleMouseUp = () => {
-    if (isDrawingRef.current) {
-      isDrawingRef.current = false;
-      onChange(localSelected);
-    }
+    isDrawingRef.current = false;
   };
 
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      if (isDrawingRef.current) {
-        isDrawingRef.current = false;
-        onChange(localSelected);
-      }
+      isDrawingRef.current = false;
     };
     window.addEventListener("mouseup", handleGlobalMouseUp);
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
-  }, [localSelected, onChange]);
+  }, []);
 
   return (
     <GridContainer
