@@ -87,6 +87,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       subHeader,
       floatingSubHeader,
       isScrolled,
+      rightAreaNotCircle,
     } = useHeaderConfig(targetPath);
 
     const navigate = useCustomNavigate();
@@ -140,7 +141,9 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
               $isCircle={
-                [showAlarm, menuItems, rightArea].filter(Boolean).length === 1
+                rightAreaNotCircle
+                  ? false
+                  : [showAlarm, menuItems, rightArea].filter(Boolean).length === 1
               }
               $marginRight={MOBILE_PAGE_GUTTER}
             >

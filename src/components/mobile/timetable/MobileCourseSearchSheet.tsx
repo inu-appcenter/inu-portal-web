@@ -25,7 +25,7 @@ export interface CourseResult {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const COURSE_SEARCH_SNAP_POINTS = [0.6, 0.95];
+export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.6, 0.95];
 
 interface MobileCourseSearchSheetProps {
   courses: CourseResult[];
@@ -77,11 +77,11 @@ const MobileCourseSearchSheet = ({
 
   const getSnapIndex = () => {
     const currentSnap =
-      typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0];
+      typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[1];
     const currentIndex = COURSE_SEARCH_SNAP_POINTS.findIndex(
       (point) => point === currentSnap,
     );
-    return currentIndex === -1 ? 0 : currentIndex;
+    return currentIndex === -1 ? 1 : currentIndex;
   };
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -153,26 +153,22 @@ const MobileCourseSearchSheet = ({
         open={open}
         onOpenChange={onOpenChange}
         modal={false}
-        dismissible={
-          snap === COURSE_SEARCH_SNAP_POINTS[0] ||
-          snap === null ||
-          snap === undefined
-        }
+        dismissible={false}
         snapPoints={COURSE_SEARCH_SNAP_POINTS}
         activeSnapPoint={open ? snap : null}
         setActiveSnapPoint={onSnapChange}
         disablePreventScroll={true}
         snapToSequentialPoint={true}
-        showCloseButton={true}
+        showCloseButton={false}
       >
         <SheetContentWrapper
           $snapHeight={
-            typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0]
+            typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[1]
           }
         >
           <ScrollableBody
             $snapHeight={
-              typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0]
+              typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[1]
             }
             data-vaul-no-drag=""
             onTouchStart={handleTouchStart}
