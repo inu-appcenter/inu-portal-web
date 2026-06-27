@@ -523,7 +523,7 @@ const CategoryTab = styled.button<{ $active: boolean }>`
 
 const OptionsArea = styled.div`
   flex: 1;
-  padding: 8px 0;
+  padding: 0;
   overflow-y: auto;
   min-height: 0;
   -webkit-overflow-scrolling: touch;
@@ -574,7 +574,7 @@ const OptionLabel = styled.span`
 const SubHeaderRow = styled.div`
   display: flex;
   align-items: center;
-  padding: 0 16px 8px;
+  padding: 8px 16px 8px;
   border-bottom: 1px solid var(--border-light, #f2f4f6);
   margin-bottom: 8px;
   position: sticky;
