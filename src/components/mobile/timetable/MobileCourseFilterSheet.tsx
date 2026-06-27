@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight, ChevronLeft } from "lucide-react";
 import BottomSheet from "@/components/common/BottomSheet";
+import { navItems } from "@/resources/strings/navItems";
 
 export interface FilterState {
   major: string | null;
@@ -37,6 +38,26 @@ const CATEGORIES = [
   { id: "credit", label: "학점" },
 ];
 
+// navItems에서 학과 목록 추출하여 전공 리스트 동적 구성
+const getMajorsList = () => {
+  const deptGroup = navItems.find((item) => item.title === "학과 홈페이지");
+  if (!deptGroup || !deptGroup.child) {
+    return ["컴퓨터공학부", "정보통신공학과", "임베디드시스템공학과", "전자공학과", "기계공학과", "경영학부"];
+  }
+
+  const list: string[] = [];
+  deptGroup.child.forEach((item: any) => {
+    if (item.subItems) {
+      item.subItems.forEach((sub: any) => {
+        list.push(sub.title);
+      });
+    } else if (item.title && item.url) {
+      list.push(item.title);
+    }
+  });
+  return list;
+};
+
 const MAJOR_CATEGORIES = [
   { id: "major_1", name: "전공", hasChevron: true },
   { id: "major_2", name: "교양", hasChevron: true },
@@ -47,7 +68,7 @@ const MAJOR_CATEGORIES = [
 ];
 
 const SUB_MAJORS: Record<string, string[]> = {
-  "전공": ["컴퓨터공학부", "정보통신공학과", "임베디드시스템공학과", "전자공학과", "기계공학과", "경영학부"],
+  "전공": getMajorsList(),
   "교양": ["기초교양", "균형교양", "일반교양"],
   "기타": ["기타 영역 1", "기타 영역 2"],
 };
@@ -211,7 +232,7 @@ export default function MobileCourseFilterSheet({
         {/* 주 내용 영역 (2단 컬럼 구조) */}
         <ContentColumns>
           {/* 좌측 카테고리 탭 사이드바 */}
-          <CategorySidebar>
+          <CategorySidebar data-vaul-no-drag="">
             {CATEGORIES.map((cat) => {
               const isActive = activeTab === cat.id;
               return (
@@ -228,7 +249,7 @@ export default function MobileCourseFilterSheet({
           </CategorySidebar>
 
           {/* 우측 옵션 선택 영역 */}
-          <OptionsArea>
+          <OptionsArea data-vaul-no-drag="">
             {activeTab === "major" && (
               <>
                 {subLevel === null ? (
@@ -453,8 +474,7 @@ const BadgeDeleteBtn = styled.button`
 
 const ContentColumns = styled.div`
   display: flex;
-  flex: 1;
-  min-height: 0;
+  height: 240px;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
 `;
 
