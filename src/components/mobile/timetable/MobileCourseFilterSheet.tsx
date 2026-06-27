@@ -85,6 +85,9 @@ export default function MobileCourseFilterSheet({
   
   // 즐겨찾는 전공/영역 Pinned 상태 관리 (Figma 시안 별표 토글 재현, "전공" 디폴트 핀 처리)
   const [pinnedCategories, setPinnedCategories] = useState<string[]>(["전공"]);
+  
+  // 바텀시트 스냅 높이 상태 (캠퍼스맵 페이지와 동일한 뷰포트 크기 연동 스크롤 메커니즘)
+  const [snap, setSnap] = useState<string | number | null>(0.5);
 
   // 탭 변경 시 서브 레벨 초기화
   useEffect(() => {
@@ -205,6 +208,8 @@ export default function MobileCourseFilterSheet({
       onOpenChange={onOpenChange}
       modal={true}
       snapPoints={[0.5]}
+      activeSnapPoint={snap}
+      setActiveSnapPoint={setSnap}
       zIndex={10010}
     >
       <SheetWrapper>
@@ -231,7 +236,7 @@ export default function MobileCourseFilterSheet({
         )}
 
         {/* 주 내용 영역 (2단 컬럼 구조) */}
-        <ContentColumns>
+        <ContentColumns $snap={snap}>
           {/* 좌측 카테고리 탭 사이드바 */}
           <CategorySidebar data-vaul-no-drag="">
             {CATEGORIES.map((cat) => {
@@ -474,11 +479,15 @@ const BadgeDeleteBtn = styled.button`
   padding: 2px;
 `;
 
-const ContentColumns = styled.div`
+const ContentColumns = styled.div<{ $snap: string | number | null }>`
   display: flex;
   flex: 1;
   min-height: 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
+  max-height: ${({ $snap }) =>
+    typeof $snap === "number"
+      ? `calc(${$snap * 100}dvh - 200px)`
+      : "none"};
 `;
 
 const CategorySidebar = styled.div`
