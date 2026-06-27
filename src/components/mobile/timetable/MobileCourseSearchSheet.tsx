@@ -1,13 +1,14 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { SlidersHorizontal } from "lucide-react";
 import BottomSheet from "@/components/common/BottomSheet";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
+import MobileCourseFilterSheet, { FilterState, DEFAULT_FILTERS } from "./MobileCourseFilterSheet";
 
 export interface CourseResult {
   id: number;
@@ -46,7 +47,74 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
 }: MobileCourseSearchSheetProps) => {
-  const [activeFilterCount] = useState<number>(3);
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTERS);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (activeFilters.major) count++;
+    if (activeFilters.sort !== "기본순") count++;
+    if (activeFilters.time !== "전체 시간") count++;
+    count += activeFilters.grades.length;
+    count += activeFilters.types.length;
+    count += activeFilters.credits.length;
+    return count;
+  }, [activeFilters]);
+
+  const filteredCourses = useMemo(() => {
+    let list: CourseResult[] = [...courses];
+
+    // 1. 전공/영역 필터 (학과 분류 시뮬레이션)
+    if (activeFilters.major) {
+      list = list.filter((course) => {
+        if (activeFilters.major === "컴퓨터공학부") {
+          return course.name === "웹프로그래밍" || course.name === "운영체제";
+        }
+        if (activeFilters.major?.includes("교양")) {
+          return course.name === "창의적사고와문제해결";
+        }
+        return true;
+      });
+    }
+
+    // 2. 학년 필터
+    if (activeFilters.grades.length > 0) {
+      list = list.filter((course) => activeFilters.grades.includes(course.grade));
+    }
+
+    // 3. 이수구분 필터
+    if (activeFilters.types.length > 0) {
+      list = list.filter((course) => {
+        const courseType = course.isMajor ? "전공" : "교양";
+        return activeFilters.types.includes(courseType);
+      });
+    }
+
+    // 4. 학점 필터
+    if (activeFilters.credits.length > 0) {
+      list = list.filter((course) => {
+        if (activeFilters.credits.includes(4)) {
+          return course.credits >= 4 || activeFilters.credits.includes(course.credits);
+        }
+        return activeFilters.credits.includes(course.credits);
+      });
+    }
+
+    // 5. 정렬 필터
+    if (activeFilters.sort === "별점높은순") {
+      const ratings: Record<string, number> = {
+        "웹프로그래밍": 4.8,
+        "운영체제": 4.5,
+        "창의적사고와문제해결": 4.2,
+      };
+      list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
+    } else if (activeFilters.sort === "담은인원많은순") {
+      list.sort((a, b) => b.enrolledCount - a.enrolledCount);
+    }
+
+    return list;
+  }, [courses, activeFilters]);
+
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
 
@@ -178,7 +246,7 @@ const MobileCourseSearchSheet = ({
             onScroll={handleScroll}
           >
             <CourseList>
-              {courses.map((course) => {
+              {filteredCourses.map((course) => {
                 const isExpanded = expandedId === course.id;
 
                 return (
@@ -253,7 +321,7 @@ const MobileCourseSearchSheet = ({
           <FloatingActionsContainer>
             <FilterButton
               $isHidden={isSearchActive}
-              onClick={() => console.log("필터 버튼 클릭됨")}
+              onClick={() => setIsFilterOpen(true)}
             >
               <SlidersHorizontal size={20} />
               <span>필터 {activeFilterCount}</span>
@@ -268,6 +336,13 @@ const MobileCourseSearchSheet = ({
           </FloatingActionsContainer>,
           document.body,
         )}
+
+      <MobileCourseFilterSheet
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        initialFilters={activeFilters}
+        onApply={setActiveFilters}
+      />
     </>
   );
 };
