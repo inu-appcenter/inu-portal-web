@@ -236,7 +236,7 @@ export default function MobileCourseFilterSheet({
         )}
 
         {/* 주 내용 영역 (2단 컬럼 구조) */}
-        <ContentColumns $snap={snap} $hasBadges={activeBadgeList.length > 0}>
+        <ContentColumns>
           {/* 좌측 카테고리 탭 사이드바 */}
           <CategorySidebar data-vaul-no-drag="">
             {CATEGORIES.map((cat) => {
@@ -405,7 +405,8 @@ export default function MobileCourseFilterSheet({
 const SheetWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   width: 100%;
   box-sizing: border-box;
 `;
@@ -479,16 +480,11 @@ const BadgeDeleteBtn = styled.button`
   padding: 2px;
 `;
 
-const ContentColumns = styled.div<{ $snap: string | number | null; $hasBadges: boolean }>`
+const ContentColumns = styled.div`
   display: flex;
   flex: 1;
   min-height: 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
-  max-height: ${({ $snap, $hasBadges }) => {
-    if (typeof $snap !== "number") return "none";
-    const baseOffset = $hasBadges ? 240 : 200;
-    return `calc(${$snap * 100}dvh - ${baseOffset}px)`;
-  }};
 `;
 
 const CategorySidebar = styled.div`
