@@ -131,11 +131,7 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
   const drawingModeRef = useRef<"select" | "deselect">("select");
   const selectedRef = useRef<string[]>(selectedSlots);
   const [localSelected, setLocalSelected] = useState<string[]>(selectedSlots);
-
-  useEffect(() => {
-    selectedRef.current = selectedSlots;
-    setLocalSelected(selectedSlots);
-  }, [selectedSlots]);
+  // selectedSlots는 마운트 초기값으로만 사용 (useEffect 제거 — 이후 내부 상태 독립 관리)
 
   // 내부 상태만 업데이트 — onChange 즉시 호출 금지 (부모 리렌더 → useEffect 덮어쓰기 Race 방지)
   const updateSelection = (slot: string, mode: "select" | "deselect") => {
@@ -291,6 +287,8 @@ export default function MobileCourseFilterSheet({
   
 
 
+  const [gridResetKey, setGridResetKey] = useState(0);
+
   // 탭 변경 시 서브 레벨 초기화
   useEffect(() => {
     setSubLevel(null);
@@ -371,6 +369,7 @@ export default function MobileCourseFilterSheet({
   const handleReset = () => {
     setFilters({ ...DEFAULT_FILTERS });
     setSubLevel(null);
+    setGridResetKey((k) => k + 1); // When2MeetGrid 강제 리마운트로 그리드 초기화
   };
 
   const handleApply = () => {
@@ -581,6 +580,7 @@ export default function MobileCourseFilterSheet({
                   <DragGridWrapper data-vaul-no-drag="">
                     <GridGuideText>드래그하여 필터링할 요일/시간대를 선택하세요.</GridGuideText>
                     <When2MeetGrid
+                      key={gridResetKey}
                       selectedSlots={filters.selectedSlots || []}
                       onChange={(newSlots) => {
                         const timeStr = formatSlotsToTimeStr(newSlots);
