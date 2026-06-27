@@ -204,6 +204,7 @@ export default function MobileCourseFilterSheet({
       open={open}
       onOpenChange={onOpenChange}
       modal={true}
+      snapPoints={[0.5]}
       zIndex={10010}
     >
       <SheetWrapper>
@@ -399,6 +400,7 @@ export default function MobileCourseFilterSheet({
 const SheetWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  height: 100%;
   width: 100%;
   box-sizing: border-box;
 `;
@@ -474,7 +476,8 @@ const BadgeDeleteBtn = styled.button`
 
 const ContentColumns = styled.div`
   display: flex;
-  height: 240px;
+  flex: 1;
+  min-height: 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
 `;
 

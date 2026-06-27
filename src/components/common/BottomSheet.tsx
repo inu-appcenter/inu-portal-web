@@ -48,7 +48,7 @@ export default function BottomSheet({
     };
   }, [open, modal]);
 
-  const hasSnapPoints = snapPoints && snapPoints.length > 0;
+  const singleSnapHeight = snapPoints && snapPoints.length === 1 ? snapPoints[0] : undefined;
 
   return (
     <Drawer.Root
@@ -67,7 +67,7 @@ export default function BottomSheet({
         {modal && <StyledOverlay $zIndex={zIndex ? zIndex - 1 : undefined} />}
         <StyledContent
           $zIndex={zIndex}
-          $hasSnapPoints={hasSnapPoints}
+          $height={singleSnapHeight}
           onOpenAutoFocus={(e) => {
             if (!modal) e.preventDefault();
           }}
@@ -109,7 +109,7 @@ const StyledOverlay = styled(Drawer.Overlay)<{ $zIndex?: number }>`
   z-index: ${({ $zIndex }) => $zIndex ?? 999};
 `;
 
-const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $hasSnapPoints?: boolean }>`
+const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $height?: string | number }>`
   position: fixed;
   left: 0;
   right: 0;
@@ -117,7 +117,7 @@ const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $hasSnapPoints?
   z-index: ${({ $zIndex }) => $zIndex ?? 10000};
   outline: none;
 
-  height: ${({ $hasSnapPoints }) => ($hasSnapPoints ? "100%" : "auto")};
+  height: ${({ $height }) => (typeof $height === "number" ? `${$height * 100}%` : $height ?? "100%")};
   max-height: 96%;
   display: flex;
   flex-direction: column;
