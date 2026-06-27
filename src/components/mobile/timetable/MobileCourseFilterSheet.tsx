@@ -221,6 +221,7 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
 
   return (
     <GridContainer
+      data-vaul-no-drag=""
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
