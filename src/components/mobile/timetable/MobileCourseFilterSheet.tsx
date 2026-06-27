@@ -464,6 +464,7 @@ const CategorySidebar = styled.div`
   flex-direction: column;
   overflow-y: auto;
   flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
   
   &::-webkit-scrollbar {
     display: none;
@@ -499,6 +500,7 @@ const OptionsArea = styled.div`
   padding: 8px 0;
   overflow-y: auto;
   min-height: 0;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const OptionsList = styled.div`
@@ -549,6 +551,10 @@ const SubHeaderRow = styled.div`
   padding: 0 16px 8px;
   border-bottom: 1px solid var(--border-light, #f2f4f6);
   margin-bottom: 8px;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  z-index: 1;
 `;
 
 const BackButton = styled.button`
