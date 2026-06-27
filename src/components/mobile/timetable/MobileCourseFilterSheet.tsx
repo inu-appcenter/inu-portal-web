@@ -137,10 +137,11 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
     setLocalSelected(selectedSlots);
   }, [selectedSlots]);
 
+  // 내부 상태만 업데이트 — onChange 즉시 호출 금지 (부모 리렌더 → useEffect 덮어쓰기 Race 방지)
   const updateSelection = (slot: string, mode: "select" | "deselect") => {
     const current = selectedRef.current;
     const isSelected = current.includes(slot);
-    
+
     let next: string[];
     if (mode === "select" && !isSelected) {
       next = [...current, slot];
@@ -151,8 +152,12 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
     }
 
     selectedRef.current = next;
-    setLocalSelected(next);
-    onChange(next);
+    setLocalSelected([...next]);
+  };
+
+  // mouseup / touchend 시점에만 부모로 최신값 전달
+  const commitSelection = () => {
+    onChange(selectedRef.current);
   };
 
   const handleCellTouchStart = (day: number, hour: number, e: React.TouchEvent) => {
@@ -187,7 +192,10 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
   };
 
   const handleTouchEnd = () => {
-    isDrawingRef.current = false;
+    if (isDrawingRef.current) {
+      isDrawingRef.current = false;
+      commitSelection();
+    }
   };
 
   const handleMouseDown = (day: number, hour: number) => {
@@ -208,15 +216,22 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
   };
 
   const handleMouseUp = () => {
-    isDrawingRef.current = false;
+    if (isDrawingRef.current) {
+      isDrawingRef.current = false;
+      commitSelection();
+    }
   };
 
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      isDrawingRef.current = false;
+      if (isDrawingRef.current) {
+        isDrawingRef.current = false;
+        commitSelection();
+      }
     };
     window.addEventListener("mouseup", handleGlobalMouseUp);
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
