@@ -183,7 +183,7 @@ export default function MobileCourseFilterSheet({
       open={open}
       onOpenChange={onOpenChange}
       modal={true}
-      snapPoints={["424px"]}
+      snapPoints={["460px"]}
       zIndex={10010}
     >
       <SheetWrapper>
