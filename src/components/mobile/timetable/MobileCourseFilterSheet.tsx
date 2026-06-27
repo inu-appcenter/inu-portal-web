@@ -461,7 +461,7 @@ const ContentColumns = styled.div`
 `;
 
 const CategorySidebar = styled.div`
-  width: 104px;
+  width: 120px;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -489,6 +489,7 @@ const CategoryTab = styled.button<{ $active: boolean }>`
   cursor: pointer;
   box-sizing: border-box;
   min-height: 40px;
+  white-space: nowrap;
 
   &:hover {
     background: rgba(0, 0, 0, 0.02);
