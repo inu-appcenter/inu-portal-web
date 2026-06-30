@@ -18,6 +18,7 @@ import {
   subscribeToFcmToken,
 } from "@/utils/fcm";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
 
@@ -166,7 +167,10 @@ export default function RootLayout() {
   return (
     <HeaderProvider>
       <ScrollBarStyles />
-      <ScreenContainer>{outlet}</ScreenContainer>
+      <ScreenContainer>
+        {outlet}
+        <AIChatFloatingButton />
+      </ScreenContainer>
     </HeaderProvider>
   );
 }
