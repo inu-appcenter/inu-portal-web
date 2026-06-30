@@ -5,8 +5,10 @@ import GlobalErrorBoundary from "@/components/common/GlobalErrorBoundary";
 import CommonStyles from "@/styles/CommonStyles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initMixpanel } from "./utils/mixpanel";
+import "@/styles/variables.css";
 
 initMixpanel();
+
 
 const queryClient = new QueryClient({
   defaultOptions: {

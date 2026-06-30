@@ -60,7 +60,7 @@ export default function BlockedUsersModal({
             {isLoading ? (
               <EmptyState>불러오는 중...</EmptyState>
             ) : blockedUsers.length > 0 ? (
-              <div style={{ padding: "0 20px" }}>
+              <div>
                 {blockedUsers.map((user, index) => (
                   <div key={user.blockId}>
                     <SocialUserCard

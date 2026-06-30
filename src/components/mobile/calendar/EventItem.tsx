@@ -141,6 +141,8 @@ const EventItemWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+  padding: 16px 20px;
+  box-sizing: border-box;
 
   &:last-child {
     border-bottom: none;

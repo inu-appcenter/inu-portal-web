@@ -7,6 +7,7 @@ export default function MobileLoginPage() {
   useHeader({
     title: "로그인",
     hasback: true,
+    pageBgColor: "#ffffff",
   });
 
   return (

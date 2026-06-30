@@ -1,15 +1,15 @@
 import styled from "styled-components";
-import { MenuItemType, useHeader } from "@/context/HeaderContext";
-import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import GradeCalculatorWidget from "@/components/mobile/timetable/GradeCalculatorWidget";
+import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
+import LinkCardButton from "@/components/mobile/common/LinkCardButton";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { Pencil } from "lucide-react";
 
 // 목업 데이터
 const MOCK_TIMETABLE: ClassItem[] = [
@@ -73,24 +73,33 @@ const MOCK_TIMETABLE: ClassItem[] = [
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
-  const [isModalOpen] = useState(true);
+  const [isModalOpen] = useState(false);
+  const gradeCalculatorRef = useRef<HTMLDivElement>(null);
 
-  const menuItems = useMemo<MenuItemType[]>(
-    () => [
-      {
-        label: "시간표 편집",
-        onClick: () => navigate(ROUTES.TIMETABLE.EDIT),
-      },
-    ],
-    [navigate], // navigate 함수 의존성 추가
+  const headerRight = useMemo(
+    () => (
+      <HeaderRightArea>
+        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.EDIT)}>
+          <Pencil size={22} color="#1C1C1E" />
+        </IconButton>
+      </HeaderRightArea>
+    ),
+    [navigate],
   );
 
   useHeader({
     title: "시간표",
     showAlarm: true,
     hasback: false,
-    menuItems,
+    rightArea: headerRight,
   });
+
+  const handleGradeCalculatorClick = () => {
+    gradeCalculatorRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  };
 
   return (
     <MobileTimeTablePageWrapper>
@@ -98,13 +107,34 @@ const MobileTimeTablePage = () => {
         isOpen={isModalOpen}
         onClose={() => navigate(ROUTES.HOME, { replace: true })}
       />
-      <TitleContentArea title={"2025년 2학기"}>
-        <TimetableGrid events={MOCK_TIMETABLE} />
-      </TitleContentArea>
+      <TimetableGrid events={MOCK_TIMETABLE} />
+      <SemesterInfoLine>
+        <Semester>2026년 1학기</Semester>
+        <ScoreArea>
+          <div className="type1">
+            <span>전공 9</span>
+            <span>교양 9</span>
+          </div>
+          <div className="type2">총 18학점</div>
+        </ScoreArea>
+      </SemesterInfoLine>
 
-      <TitleContentArea title={"학점 계산기"}>
-        <GradeCalculatorWidget />
-      </TitleContentArea>
+      <ButtonGroup>
+        <ButtonRow>
+          <LinkCardButton
+            label="친구"
+            onClick={() => navigate(ROUTES.TIMETABLE.COMPARE_SELECT)}
+          />
+          <LinkCardButton
+            label="학점 계산기"
+            onClick={handleGradeCalculatorClick}
+          />
+        </ButtonRow>
+        <LinkCardButton
+          label="모의 수강 신청(수강 신청 시뮬레이터)"
+          onClick={() => navigate(ROUTES.TIMETABLE.SIMULATOR)}
+        />
+      </ButtonGroup>
     </MobileTimeTablePageWrapper>
   );
 };
@@ -114,10 +144,91 @@ export default MobileTimeTablePage;
 const MobileTimeTablePageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 0 ${MOBILE_PAGE_GUTTER} 40px;
+  //gap: 24px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  padding: var(--header-height, 56px) ${MOBILE_PAGE_GUTTER}
+    calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 40px;
+    padding: var(--header-height, 56px) 0 40px;
   }
+`;
+
+const SemesterInfoLine = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 8px;
+`;
+const Semester = styled.div`
+  color: var(--text-secondary);
+
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
+`;
+const ScoreArea = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  gap: 12px;
+
+  .type1 {
+    color: #6b7280;
+
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .type2 {
+    color: var(--text-secondary);
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 36px;
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+`;
+
+const HeaderRightArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 4px;
 `;
