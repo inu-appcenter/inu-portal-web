@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { X, Sparkles } from "lucide-react";
+import { X } from "lucide-react";
 import useUserStore from "@/stores/useUserStore";
+import ChatBulButtonImg from "@/resources/assets/ai/챗불이버튼.webp";
+import TooltipMessage from "@/components/common/TooltipMessage";
 
 const AIChatFloatingButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,8 +31,7 @@ const AIChatFloatingButton = () => {
     };
   }, [isOpen, showTooltip]);
 
-  const handleCloseTooltip = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCloseTooltip = () => {
     setShowTooltip(false);
     localStorage.setItem("showPortalAIChatTooltip", "false");
   };
@@ -40,22 +41,37 @@ const AIChatFloatingButton = () => {
   };
 
   const modalVariants: Variants = {
-    hidden: { scale: 0.9, opacity: 0 },
+    hidden: { scale: 0, opacity: 0 },
     visible: {
       scale: 1,
       opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 400,
-        damping: 30,
+        stiffness: 450,
+        damping: 35,
+        mass: 1,
+        staggerChildren: 0.1,
+        delayChildren: 0.05,
       },
     },
     exit: {
-      scale: 0.9,
+      scale: 0,
       opacity: 0,
       transition: {
-        duration: 0.2,
+        type: "spring",
+        stiffness: 500,
+        damping: 45,
+        opacity: { duration: 0.15 },
       },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
     },
   };
 
@@ -80,18 +96,17 @@ const AIChatFloatingButton = () => {
               animate="visible"
               exit="exit"
             >
-              <FloatingCloseButton onClick={() => setIsOpen(false)}>
+              <FloatingCloseButton onClick={() => setIsOpen(false)} variants={itemVariants}>
                 <X size={20} />
               </FloatingCloseButton>
 
-              <IframeContainer>
+              <IframeContainer variants={itemVariants}>
                 <iframe
                   src={iframeSrc}
                   title="AI Chat"
                   width="100%"
                   height="100%"
                   allow="clipboard-write"
-                  style={{ border: "none" }}
                 />
               </IframeContainer>
             </ModalContainer>
@@ -99,184 +114,173 @@ const AIChatFloatingButton = () => {
         )}
       </AnimatePresence>
 
-      <FloatingButtonContainer>
-        {showTooltip && (
-          <TooltipContainer
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <TooltipBubble>
-              <span>학사 질문은 저에게 해보세요!</span>
-              <CloseTooltipButton onClick={handleCloseTooltip}>&times;</CloseTooltipButton>
-            </TooltipBubble>
-            <TooltipArrow />
-          </TooltipContainer>
-        )}
-        <FloatingButton
-          onClick={handleToggleChat}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          animate={{ y: [0, -6, 0] }}
-          transition={{
-            y: {
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }
-          }}
-          aria-label="학사 AI 챗봇 열기"
-        >
-          <Sparkles size={24} color="#ffffff" />
-        </FloatingButton>
-      </FloatingButtonContainer>
+      <FloatingButton
+        animate={{ y: [0, -8, 0] }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        onClick={handleToggleChat}
+        aria-label="학사 AI 챗봇 열기"
+      >
+        <AnimatePresence>
+          {showTooltip && (
+            <TooltipWrapper
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <TooltipMessage
+                message="베타 오픈!\n학사에 대해\n무엇이든 물어보세요!"
+                onClose={handleCloseTooltip}
+                position="top"
+                align="right"
+                width="max-content"
+              />
+            </TooltipWrapper>
+          )}
+        </AnimatePresence>
+        <img src={ChatBulButtonImg} alt="AI 챗봇" />
+      </FloatingButton>
     </>
   );
 };
 
-export default AIChatFloatingButton;
+const TooltipWrapper = styled(motion.div)`
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  width: max-content;
+  pointer-events: auto;
+  margin-bottom: -10px;
+`;
 
 const Backdrop = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 9998;
-  backdrop-filter: blur(4px);
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.25);
+  z-index: 1001;
+`;
+
+const FloatingButton = styled(motion.button)`
+  position: fixed;
+  bottom: 85px;
+  right: 15px;
+  width: 75px;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1002;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  @media (min-width: 1024px) {
+    right: calc(50% - 600px + 15px);
+  }
 `;
 
 const ModalContainer = styled(motion.div)`
   position: fixed;
-  top: 50dvh;
-  left: 50dvw;
-  transform: translate(-50%, -50%) !important;
-  width: 90vw;
-  height: 80dvh;
-  max-width: 440px;
-  max-height: 720px;
-  background-color: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  background: white;
+  display: flex;
+  flex-direction: column;
+  z-index: 1003;
+  border-radius: 32px;
   overflow: hidden;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
 
-  @media (max-width: 480px) {
-    width: 100dvw;
-    height: 100dvh;
-    max-width: none;
-    max-height: none;
-    border-radius: 0;
-    top: 0;
-    left: 0;
-    transform: none !important;
-  }
-`;
+  /* 강력하고 명확한 다층 그림자 */
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.35),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
-const FloatingCloseButton = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
+  /* 더욱 선명한 테두리 */
   border: 1px solid rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  color: #333333;
-  transition: all 0.2s ease;
 
-  &:hover {
-    background-color: #ffffff;
-    transform: scale(1.05);
+  /* 하드웨어 가속 및 레이어 최적화 */
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  isolation: isolate;
+
+  /* Mobile (Default): Origin centered on the floating button */
+  top: 20px;
+  bottom: 20px;
+  left: 12px;
+  right: 12px;
+  transform-origin: calc(100% - 42px) calc(100% - 104px);
+
+  /* Tablet & Desktop: Origin centered on the floating button */
+  @media (min-width: 451px) {
+    top: auto;
+    left: auto;
+    width: 380px;
+    height: 600px;
+    bottom: 90px;
+    right: 20px;
+    max-height: calc(100dvh - 170px);
+    transform-origin: calc(100% - 30px) calc(100% - 30px);
+  }
+
+  /* PC (Large Screens): Origin at button (button is to the right of modal) */
+  @media (min-width: 1024px) {
+    right: calc(50% - 600px + 20px + 75px);
+    bottom: 90px;
+    height: 600px;
+    transform-origin: calc(100% + 45px) calc(100% - 30px);
   }
 `;
 
-const IframeContainer = styled.div`
-  width: 100%;
-  height: 100%;
+const FloatingCloseButton = styled(motion.button)`
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  transition: background 0.2s;
+  z-index: 10;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.12);
+  }
+`;
+
+const IframeContainer = styled(motion.div)`
   flex: 1;
-  background-color: #ffffff;
-`;
+  width: 100%;
+  background: #f8f9fa;
+  position: relative;
 
-const FloatingButtonContainer = styled.div`
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  z-index: 9997;
-`;
+  /* 내부 애니메이션 성능 확보를 위한 독립 레이어 분리 */
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 
-const FloatingButton = styled(motion.button)`
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
-  outline: none;
-  
-  &:focus {
-    outline: none;
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
   }
 `;
 
-const TooltipContainer = styled(motion.div)`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-bottom: 4px;
-`;
-
-const TooltipBubble = styled.div`
-  background-color: #333333;
-  color: #ffffff;
-  padding: 8px 14px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: -apple-system, sans-serif;
-`;
-
-const CloseTooltipButton = styled.button`
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  
-  &:hover {
-    color: #ffffff;
-  }
-`;
-
-const TooltipArrow = styled.div`
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid #333333;
-  margin-right: 22px;
-`;
+export default AIChatFloatingButton;
