@@ -75,7 +75,7 @@ const AIChatFloatingButton = () => {
     },
   };
 
-  const isProd = import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr");
+  const isProd = import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr") && !import.meta.env.VITE_API_BASE_URL?.includes("portal-dev");
   const mode = isProd ? "prod" : "dev";
   const iframeSrc = `https://inu-chat.inuappcenter.kr/?token=${accessToken || ""}&mode=${mode}&service=intip`;
 
