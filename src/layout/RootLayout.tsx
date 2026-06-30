@@ -3,8 +3,8 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { getMembers, postApiLogs, postFcmToken } from "@/apis/members";
-import { HeaderProvider } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
+import { HeaderProvider } from "@/context/HeaderContext";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import useAppStateStore from "@/stores/useAppStateStore";
 import useUserStore from "@/stores/useUserStore";
@@ -169,7 +169,12 @@ export default function RootLayout() {
       <ScrollBarStyles />
       <ScreenContainer>
         {outlet}
-        <AIChatFloatingButton />
+        {(location.pathname === ROUTES.HOME ||
+          location.pathname === ROUTES.MOBILE_HOME ||
+          location.pathname === ROUTES.HOME_V2 ||
+          location.pathname === ROUTES.ROOT) && (
+          <AIChatFloatingButton />
+        )}
       </ScreenContainer>
     </HeaderProvider>
   );
