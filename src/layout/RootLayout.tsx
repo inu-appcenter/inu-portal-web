@@ -18,7 +18,6 @@ import {
   subscribeToFcmToken,
 } from "@/utils/fcm";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
-import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
 
@@ -157,10 +156,7 @@ export default function RootLayout() {
   return (
     <HeaderProvider>
       <ScrollBarStyles />
-      <ScreenContainer>
-        {outlet}
-        <AIChatFloatingButton />
-      </ScreenContainer>
+      <ScreenContainer>{outlet}</ScreenContainer>
     </HeaderProvider>
   );
 }
