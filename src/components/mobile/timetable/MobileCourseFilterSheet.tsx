@@ -152,8 +152,14 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
     onChange(next); // 드래그와 동일하게 즉시 부모에 반영
   };
 
-  const handleCellTouchStart = (day: number, hour: number, e: React.TouchEvent) => {
-    e.preventDefault();
+  // 부모가 전달한 selectedSlots prop이 바뀔 때 내부 상태와 ref를 동기화
+  useEffect(() => {
+    selectedRef.current = selectedSlots;
+    setLocalSelected(selectedSlots);
+  }, [selectedSlots]);
+
+  const handleCellTouchStart = (day: number, hour: number, _e?: React.TouchEvent) => {
+    // PreventDefault removed to allow click simulation on mobile
     const slot = `${day}-${hour}`;
     const isSelected = selectedRef.current.includes(slot);
     const mode = isSelected ? "deselect" : "select";
@@ -240,9 +246,11 @@ const When2MeetGrid = ({ selectedSlots, onChange }: When2MeetGridProps) => {
                 data-hour={hour}
                 $selected={isSelected}
                 onTouchStart={(e) => handleCellTouchStart(dayIdx, hour, e)}
+                onTouchEnd={handleTouchEnd}
                 onMouseDown={() => handleMouseDown(dayIdx, hour)}
                 onMouseEnter={() => handleMouseEnter(dayIdx, hour)}
                 onMouseUp={handleMouseUp}
+                onClick={() => handleMouseDown(dayIdx, hour)}
               />
             );
           })}
