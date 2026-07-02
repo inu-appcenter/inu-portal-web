@@ -105,7 +105,7 @@ const FloatingSearchBar = forwardRef<
           }
         }}
       >
-        <Search size={20} />
+        <Search size={24} />
       </SearchButtonCircle>
     </SearchBarWrapper>
   );
@@ -121,19 +121,21 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 52px;
-  background: #ffffff;
-  border-radius: 26px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  height: 56px;
+  border-radius: 999px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
   overflow: hidden;
   position: relative;
   box-sizing: border-box;
 
-  width: ${(props) => (props.$isActive ? "100%" : "52px")};
-  flex: ${(props) => (props.$isActive ? "1" : "0 0 52px")};
+  border: 1px solid var(--border-default, #E5E8EB);
+  background: ${(props) => (props.$isActive ? "#ffffff" : "rgba(255, 255, 255, 0.50)")};
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  backdrop-filter: ${(props) => (props.$isActive ? "none" : "blur(8px)")};
+
+  width: ${(props) => (props.$isActive ? "100%" : "56px")};
+  flex: ${(props) => (props.$isActive ? "1" : "0 0 56px")};
 `;
 
 const SearchInput = styled.input<{ $isActive: boolean }>`
@@ -147,7 +149,7 @@ const SearchInput = styled.input<{ $isActive: boolean }>`
 
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
   padding-left: ${(props) => (props.$isActive ? "20px" : "0px")};
-  padding-right: ${(props) => (props.$isActive ? "52px" : "0px")};
+  padding-right: ${(props) => (props.$isActive ? "56px" : "0px")};
   pointer-events: ${(props) => (props.$isActive ? "auto" : "none")};
 
   border-radius: 999px;
@@ -183,8 +185,8 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean }>`
       ? `
     top: 3px;
     right: 3px;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     background: var(--interactive-primary, #3b82f6);
     color: #ffffff;
     border: 1px solid var(--border-brand, #0061FF);
@@ -192,8 +194,8 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean }>`
       : `
     top: 0px;
     right: 0px;
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     background: transparent;
     color: var(--text-secondary, #333d4b);
   `}

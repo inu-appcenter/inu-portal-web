@@ -356,10 +356,15 @@ const MobileCourseSearchSheet = ({
           <FloatingActionsContainer>
             <FilterButton
               $isHidden={isSearchActive}
-              onClick={() => navigate(ROUTES.TIMETABLE.FILTER, { state: { filters: activeFilters } })}
+              $isZeroCount={activeFilterCount === 0}
+              onClick={() =>
+                navigate(ROUTES.TIMETABLE.FILTER, {
+                  state: { filters: activeFilters },
+                })
+              }
             >
-              <SlidersHorizontal size={20} />
-              <span>필터 {activeFilterCount}</span>
+              <SlidersHorizontal size={24} />
+              {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
             </FilterButton>
 
             <FloatingSearchBar
@@ -371,7 +376,6 @@ const MobileCourseSearchSheet = ({
           </FloatingActionsContainer>,
           document.body,
         )}
-
     </>
   );
 };
@@ -417,23 +421,40 @@ const FloatingActionsContainer = styled.div`
   box-sizing: border-box;
 `;
 
-const FilterButton = styled.button<{ $isHidden: boolean }>`
+const FilterButton = styled.button<{
+  $isHidden: boolean;
+  $isZeroCount?: boolean;
+}>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 52px;
+  height: 56px;
   border-radius: 999px;
-  border: 1px solid var(--border-brand, #0061ff);
-  background: var(--interactive-primary, #3b82f6);
-
   cursor: pointer;
   pointer-events: auto;
   box-sizing: border-box;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 
-  color: var(--text-inverse, #fff);
+  border: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "1px solid var(--border-default, #E5E8EB)"
+      : "1px solid var(--border-brand, #0061ff)"};
+  background: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "rgba(255, 255, 255, 0.50)"
+      : "var(--interactive-primary, #3b82f6)"};
+  box-shadow: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "0 4px 12px 0 rgba(0, 0, 0, 0.08)"
+      : "0 4px 12px rgba(59, 130, 246, 0.3)"};
+  backdrop-filter: ${({ $isZeroCount }) =>
+    $isZeroCount ? "blur(8px)" : "none"};
+
+  color: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "var(--text-secondary, #333d4b)"
+      : "var(--text-inverse, #fff)"};
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -450,17 +471,28 @@ const FilterButton = styled.button<{ $isHidden: boolean }>`
   ${(props) =>
     props.$isHidden
       ? `
+    width: 0px;
     max-width: 0px;
     padding: 0;
     margin-right: 0px;
     opacity: 0;
     pointer-events: none;
     transform: scale(0.8);
-    border: 0px solid transparent; /* 접힐 때 테두리 잔상 제거 */
+    border: 0px solid transparent; 
   `
-      : `
-    max-width: 200px; /* 콘텐츠가 충분히 들어갈 수 있는 넉넉한 크기 */
-    padding: 12px 16px;
+      : props.$isZeroCount
+        ? `
+    width: 56px;
+    padding: 16px;
+    margin-right: 16px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  `
+        : `
+    width: auto;
+    max-width: 240px; 
+    padding: 16px 20px;
     margin-right: 16px;
     opacity: 1;
     pointer-events: auto;
