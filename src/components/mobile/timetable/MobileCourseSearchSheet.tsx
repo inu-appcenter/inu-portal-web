@@ -1,14 +1,23 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-import { MdKeyboardArrowDown } from "react-icons/md";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { SlidersHorizontal } from "lucide-react";
+import {
+  SlidersHorizontal,
+  Plus,
+  MessagesSquare,
+  FileText,
+} from "lucide-react";
 import BottomSheet from "@/components/common/BottomSheet";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
-import MobileCourseFilterSheet, { FilterState, DEFAULT_FILTERS } from "./MobileCourseFilterSheet";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import {
+  FilterState,
+  DEFAULT_FILTERS,
+} from "@/pages/mobile/timetable/MobileCourseFilterPage";
 
 export interface CourseResult {
   id: number;
@@ -47,8 +56,18 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
 }: MobileCourseSearchSheetProps) => {
-  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
-  const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [activeFilters, setActiveFilters] =
+    useState<FilterState>(DEFAULT_FILTERS);
+
+  // listen to returned filters from filter page
+  useEffect(() => {
+    if (location.state && (location.state as any).filters) {
+      setActiveFilters((location.state as any).filters);
+    }
+  }, [location.state]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -79,7 +98,9 @@ const MobileCourseSearchSheet = ({
 
     // 2. 학년 필터
     if (activeFilters.grades.length > 0) {
-      list = list.filter((course) => activeFilters.grades.includes(course.grade));
+      list = list.filter((course) =>
+        activeFilters.grades.includes(course.grade),
+      );
     }
 
     // 3. 이수구분 필터
@@ -94,7 +115,10 @@ const MobileCourseSearchSheet = ({
     if (activeFilters.credits.length > 0) {
       list = list.filter((course) => {
         if (activeFilters.credits.includes(4)) {
-          return course.credits >= 4 || activeFilters.credits.includes(course.credits);
+          return (
+            course.credits >= 4 ||
+            activeFilters.credits.includes(course.credits)
+          );
         }
         return activeFilters.credits.includes(course.credits);
       });
@@ -103,9 +127,9 @@ const MobileCourseSearchSheet = ({
     // 5. 정렬 필터
     if (activeFilters.sort === "별점높은순") {
       const ratings: Record<string, number> = {
-        "웹프로그래밍": 4.8,
-        "운영체제": 4.5,
-        "창의적사고와문제해결": 4.2,
+        웹프로그래밍: 4.8,
+        운영체제: 4.5,
+        창의적사고와문제해결: 4.2,
       };
       list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
     } else if (activeFilters.sort === "담은인원많은순") {
@@ -261,18 +285,26 @@ const MobileCourseSearchSheet = ({
                       </MainInfo>
                       <RightInfo>
                         <EnrolledBadge>
-                          {course.enrolledCount}명 담음
+                          {course.enrolledCount}명 / n명
                         </EnrolledBadge>
-                        <StyledArrowIcon $isExpanded={isExpanded} />
                       </RightInfo>
                     </InfoRow>
 
-                    <ProfName>{course.professor}</ProfName>
-                    <DetailText>
-                      {course.timeStr} {course.room}
-                      <br />
-                      {`${course.grade}학년 ${course.isMajor ? "전공심화" : "교양"} ${course.credits}학점 ${course.courseId}`}
-                    </DetailText>
+                    <CourseAttributes>
+                      <AttributeItem $primary>{course.professor}</AttributeItem>
+                      <AttributeItem>{course.credits}학점</AttributeItem>
+                      <AttributeItem>상대평가</AttributeItem>
+                    </CourseAttributes>
+
+                    <CourseAdditionalInfo>
+                      <InfoLine>
+                        <span>{course.grade}학년</span>
+                        <span>{course.isMajor ? "전공심화" : "교양"}</span>
+                        <span>{course.courseId}</span>
+                      </InfoLine>
+                      <div>{course.timeStr}</div>
+                      <div>{course.room}</div>
+                    </CourseAdditionalInfo>
 
                     {/* 확장 영역 */}
                     {isExpanded && (
@@ -287,6 +319,7 @@ const MobileCourseSearchSheet = ({
                               console.log("시간표에 추가 클릭됨");
                             }}
                           >
+                            <Plus size={20} />
                             시간표에 추가
                           </PrimaryActionButton>
                           <SecondaryActionButton
@@ -295,7 +328,8 @@ const MobileCourseSearchSheet = ({
                               console.log("강의평 보기 클릭됨");
                             }}
                           >
-                            강의평 보기
+                            <MessagesSquare size={20} />
+                            강의평
                           </SecondaryActionButton>
                           <SecondaryActionButton
                             onClick={(e) => {
@@ -303,6 +337,7 @@ const MobileCourseSearchSheet = ({
                               console.log("강의계획서 클릭됨");
                             }}
                           >
+                            <FileText size={20} />
                             강의계획서
                           </SecondaryActionButton>
                         </ButtonRow>
@@ -321,7 +356,7 @@ const MobileCourseSearchSheet = ({
           <FloatingActionsContainer>
             <FilterButton
               $isHidden={isSearchActive}
-              onClick={() => setIsFilterOpen(true)}
+              onClick={() => navigate(ROUTES.TIMETABLE.FILTER, { state: { filters: activeFilters } })}
             >
               <SlidersHorizontal size={20} />
               <span>필터 {activeFilterCount}</span>
@@ -337,12 +372,6 @@ const MobileCourseSearchSheet = ({
           document.body,
         )}
 
-      <MobileCourseFilterSheet
-        open={isFilterOpen}
-        onOpenChange={setIsFilterOpen}
-        initialFilters={activeFilters}
-        onApply={setActiveFilters}
-      />
     </>
   );
 };
@@ -469,11 +498,11 @@ const CourseList = styled.div`
 `;
 
 const CourseItem = styled.div`
-  padding: 16px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  //gap: 8px;
   background-color: #ffffff;
   transition: background-color 0.2s;
   //cursor: pointer;
@@ -491,22 +520,13 @@ const MainInfo = styled.div`
 `;
 
 const CourseName = styled.h3`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-secondary, #333d4b);
 
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
   line-height: 24px;
   margin: 0;
-`;
-
-const ProfName = styled.span`
-  color: var(--text-secondary, #333d4b);
-
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
 `;
 
 const RightInfo = styled.div`
@@ -521,7 +541,7 @@ const EnrolledBadge = styled.span`
   justify-content: center;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid var(--bg-brand, #d3e5ff);
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
   background: var(--bg-brand-subtle, #eff6ff);
   color: var(--text-brand, #0061ff);
 
@@ -531,28 +551,46 @@ const EnrolledBadge = styled.span`
   line-height: 16px;
 `;
 
-const StyledArrowIcon = styled(MdKeyboardArrowDown)<{ $isExpanded: boolean }>`
-  font-size: 24px;
-  color: var(--text-secondary);
-  transition: transform 0.3s;
-  transform: ${({ $isExpanded }) =>
-    $isExpanded ? "rotate(180deg)" : "rotate(0deg)"};
+const CourseAttributes = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
 `;
 
-const DetailText = styled.div`
-  color: var(--text-tertiary, #8b95a1);
+const AttributeItem = styled.span<{ $primary?: boolean }>`
+  color: ${({ $primary }) =>
+    $primary
+      ? "var(--text-secondary, #333d4b)"
+      : "var(--text-tertiary, #8b95a1)"};
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+`;
 
+const CourseAdditionalInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  color: var(--text-tertiary, #8b95a1);
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
+
+  margin-top: 4px;
+`;
+
+const InfoLine = styled.div`
+  display: flex;
+  gap: 12px;
 `;
 
 const ExpandedArea = styled.div`
   margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   animation: fadeIn 0.2s ease-in-out;
 
   @keyframes fadeIn {
@@ -586,6 +624,7 @@ const ActionButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   padding: 8px 12px;
   border-radius: 999px;
   cursor: pointer;
@@ -594,7 +633,7 @@ const ActionButton = styled.button`
   transition: all 0.2s ease-in-out;
   box-sizing: border-box;
 
-  font-size: 14px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 500;
   line-height: 20px;

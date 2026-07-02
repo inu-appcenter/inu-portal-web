@@ -58,6 +58,7 @@ import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTable
 import MobileTimeTableVisibilityPage from "@/pages/mobile/timetable/MobileTimeTableVisibilityPage";
 import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
 import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimulatorPage";
+import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookDetailPage";
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
@@ -133,6 +134,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
           { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
+          { path: ROUTES.TIMETABLE.FILTER, element: <MobileCourseFilterPage /> },
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },

@@ -102,6 +102,15 @@ export default function Ripple({ color = "rgba(243, 244, 247, 0.7)", duration = 
     const pointerDownHandler = (e: PointerEvent) => {
       if (e.button !== 0) return; // Only trigger for main touch/click
 
+      // If the target or any parent of the target up to this parent has data-no-ripple="true", do not trigger ripple.
+      let target = e.target as HTMLElement | null;
+      while (target && target !== parent) {
+        if (target.getAttribute?.("data-no-ripple") === "true") {
+          return;
+        }
+        target = target.parentElement;
+      }
+
       startX = e.clientX;
       startY = e.clientY;
       isScrolling = false;
