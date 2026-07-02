@@ -27,6 +27,7 @@ export interface HeaderConfig {
   floatingSubHeader?: boolean;
   pageBgColor?: string; // 전역 페이지 배경색 지정 속성
   immersive?: boolean; // 상하단 물리 패딩을 제거하고 풀-스크린을 쓸지 여부
+  rightAreaNotCircle?: boolean; // 우측 버튼 영역을 단일 원이 아닌 알약 형태(auto)로 렌더링할지 여부
 }
 
 type HeaderConfigMap = Record<string, HeaderConfig>;
@@ -50,6 +51,7 @@ const defaultHeaderConfig: HeaderConfig = {
   floatingSubHeader: false,
   pageBgColor: undefined,
   immersive: false,
+  rightAreaNotCircle: undefined,
 };
 
 const HeaderStateContext = createContext<HeaderStateContextType | undefined>(
@@ -148,6 +150,7 @@ export const useHeader = (config?: HeaderConfig) => {
     floatingSubHeader: config?.floatingSubHeader,
     pageBgColor: config?.pageBgColor,
     immersive: config?.immersive,
+    rightAreaNotCircle: config?.rightAreaNotCircle,
   });
 
   useLayoutEffect(() => {

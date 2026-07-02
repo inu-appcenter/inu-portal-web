@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
 import { X } from "lucide-react";
@@ -16,6 +16,8 @@ export interface BottomSheetProps {
   snapToSequentialPoint?: boolean;
   showCloseButton?: boolean;
   repositionInputs?: boolean;
+  zIndex?: number;
+  height?: string | number;
 }
 
 export default function BottomSheet({
@@ -23,15 +25,31 @@ export default function BottomSheet({
   onOpenChange,
   children,
   snapPoints,
-  activeSnapPoint,
-  setActiveSnapPoint,
+  activeSnapPoint: externalActiveSnapPoint,
+  setActiveSnapPoint: externalSetActiveSnapPoint,
   modal = true,
   dismissible = true,
   disablePreventScroll = true,
   snapToSequentialPoint = true,
   showCloseButton = false,
   repositionInputs = false,
+  zIndex,
+  height,
 }: BottomSheetProps) {
+  // snapPoints가 존재하지만 외부에서 활성 스냅 포인트 상태가 주어지지 않은 경우 내부에서 상태 관리
+  const [internalActiveSnapPoint, setInternalActiveSnapPoint] = useState<string | number | null>(
+    snapPoints && snapPoints.length > 0 ? snapPoints[snapPoints.length - 1] : null
+  );
+
+  const activeSnapPoint = externalActiveSnapPoint !== undefined ? externalActiveSnapPoint : internalActiveSnapPoint;
+  const setActiveSnapPoint = externalSetActiveSnapPoint || setInternalActiveSnapPoint;
+
+  useEffect(() => {
+    if (open && snapPoints && snapPoints.length > 0 && externalActiveSnapPoint === undefined) {
+      setInternalActiveSnapPoint(snapPoints[snapPoints.length - 1]);
+    }
+  }, [open, snapPoints, externalActiveSnapPoint]);
+
   // modal={false}일 때 외부 포탈 요소(예: 검색바 인풋)로의 포커스 이동을 차단하는 Radix FocusScope의 포커스 트랩 버그 완벽 차단
   useEffect(() => {
     if (!open || modal) return;
@@ -60,8 +78,10 @@ export default function BottomSheet({
       repositionInputs={repositionInputs}
     >
       <Drawer.Portal>
-        {modal && <StyledOverlay />}
+        {modal && <StyledOverlay $zIndex={zIndex ? zIndex - 1 : undefined} />}
         <StyledContent
+          $zIndex={zIndex}
+          $height={height}
           onOpenAutoFocus={(e) => {
             if (!modal) e.preventDefault();
           }}
@@ -77,7 +97,11 @@ export default function BottomSheet({
           onInteractOutside={(e) => {
             if (!modal) e.preventDefault();
           }}
+          aria-describedby={undefined}
         >
+          <Drawer.Title style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
+            바텀시트
+          </Drawer.Title>
           <SheetInner>
             <DragHeader>
               <HandleBar />
@@ -95,23 +119,23 @@ export default function BottomSheet({
   );
 }
 
-const StyledOverlay = styled(Drawer.Overlay)`
+const StyledOverlay = styled(Drawer.Overlay)<{ $zIndex?: number }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
-  z-index: 999;
+  z-index: ${({ $zIndex }) => $zIndex ?? 999};
 `;
 
-const StyledContent = styled(Drawer.Content)`
+const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $height?: string | number }>`
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10000;
+  z-index: ${({ $zIndex }) => $zIndex ?? 10000};
   outline: none;
 
-  height: 100%;
+  height: ${({ $height }) => (typeof $height === "number" ? `${$height * 100}%` : $height ?? "100%")};
   max-height: 96%;
   display: flex;
   flex-direction: column;

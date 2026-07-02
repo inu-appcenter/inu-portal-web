@@ -23,6 +23,7 @@ export const ROUTES = {
     VISIBILITY: "/timetable/visibility",
     ADD: "/timetable/add",
     SIMULATOR: "/timetable/simulator",
+    FILTER: "/timetable/filter",
   },
 
   //전화번호부

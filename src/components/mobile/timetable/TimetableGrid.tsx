@@ -31,6 +31,12 @@ interface TimetableGridProps {
   isFreeMode?: boolean; // 추가
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
+  
+  // Selection Mode additions
+  isSelectionMode?: boolean;
+  selectedSlots?: string[];
+  onSelectedSlotsChange?: (slots: string[]) => void;
+  showClasses?: boolean;
 }
 
 // --- 상수 데이터 ---
@@ -60,10 +66,195 @@ const TimetableGrid = ({
   isFreeMode = false,
   onEdit,
   onDelete,
+  isSelectionMode = false,
+  selectedSlots = [],
+  onSelectedSlotsChange,
+  showClasses = true,
 }: TimetableGridProps) => {
   // 바텀시트 상태 정의
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+
+  // --- 드래그/클릭 시간대 선택 로직 ---
+  const isDrawingRef = React.useRef(false);
+  const drawingModeRef = React.useRef<"select" | "deselect">("select");
+  const selectedRef = React.useRef<string[]>(selectedSlots);
+  const [localSelected, setLocalSelected] = useState<string[]>(selectedSlots);
+
+  // 모바일 롱프레스 및 터치 스크롤 제어용 refs
+  const longPressTimerRef = React.useRef<number | null>(null);
+  const touchStartPosRef = React.useRef<{ x: number; y: number } | null>(null);
+  const isLongPressedRef = React.useRef<boolean>(false);
+  const touchStartCellRef = React.useRef<{ day: number; hour: number } | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    selectedRef.current = selectedSlots;
+    setLocalSelected(selectedSlots);
+  }, [selectedSlots]);
+
+  React.useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        window.clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
+
+  const updateSelection = (slot: string, mode: "select" | "deselect") => {
+    const current = selectedRef.current;
+    const isSelected = current.includes(slot);
+
+    let next: string[];
+    if (mode === "select" && !isSelected) {
+      next = [...current, slot];
+    } else if (mode === "deselect" && isSelected) {
+      next = current.filter((s) => s !== slot);
+    } else {
+      return;
+    }
+
+    selectedRef.current = next;
+    setLocalSelected([...next]);
+    onSelectedSlotsChange?.(next);
+  };
+
+  const handleCellTouchStart = (day: number, hour: number, e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
+    touchStartCellRef.current = { day, hour };
+    isLongPressedRef.current = false;
+    isDrawingRef.current = false;
+
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+    }
+
+    longPressTimerRef.current = window.setTimeout(() => {
+      isLongPressedRef.current = true;
+      isDrawingRef.current = true;
+
+      const slot = `${day}-${hour}`;
+      const isSelected = selectedRef.current.includes(slot);
+      const mode = isSelected ? "deselect" : "select";
+      drawingModeRef.current = mode;
+
+      updateSelection(slot, mode);
+
+      if (navigator.vibrate) {
+        navigator.vibrate(40);
+      }
+    }, 400); // 400ms 롱프레스 판정
+  };
+
+  React.useEffect(() => {
+    if (!isSelectionMode) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleTouchMoveNative = (e: TouchEvent) => {
+      if (!touchStartPosRef.current) return;
+
+      const touch = e.touches[0];
+      const diffX = touch.clientX - touchStartPosRef.current.x;
+      const diffY = touch.clientY - touchStartPosRef.current.y;
+      const dist = Math.sqrt(diffX * diffX + diffY * diffY);
+
+      if (isLongPressedRef.current) {
+        // 롱프레스 선택 활성화 상태: 화면 스크롤 금지 및 드래그 슬롯 누적 선택
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (!element) return;
+
+        const dayAttr = element.getAttribute("data-day");
+        const hourAttr = element.getAttribute("data-hour");
+
+        if (dayAttr !== null && hourAttr !== null) {
+          const day = parseInt(dayAttr, 10);
+          const hour = parseInt(hourAttr, 10);
+          updateSelection(`${day}-${hour}`, drawingModeRef.current);
+        }
+      } else {
+        // 롱프레스 판정 전 8px 넘게 움직이면 일반 스크롤로 간주하고 타이머 취소
+        if (dist > 8) {
+          if (longPressTimerRef.current) {
+            window.clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+          }
+        }
+      }
+    };
+
+    container.addEventListener("touchmove", handleTouchMoveNative, { passive: false });
+    return () => {
+      container.removeEventListener("touchmove", handleTouchMoveNative);
+    };
+  }, [isSelectionMode]);
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+
+    if (!isLongPressedRef.current && touchStartPosRef.current && touchStartCellRef.current) {
+      // 단순 짧은 탭(클릭): 롱프레스는 작동하지 않았고, 손가락 떼는 시점에 터치 이동이 거의 없었을 때 토글
+      const touch = e.changedTouches[0];
+      const diffX = touch.clientX - touchStartPosRef.current.x;
+      const diffY = touch.clientY - touchStartPosRef.current.y;
+      const dist = Math.sqrt(diffX * diffX + diffY * diffY);
+
+      if (dist <= 8) {
+        const { day, hour } = touchStartCellRef.current;
+        const slot = `${day}-${hour}`;
+        const isSelected = selectedRef.current.includes(slot);
+        updateSelection(slot, isSelected ? "deselect" : "select");
+      }
+    }
+
+    isDrawingRef.current = false;
+    isLongPressedRef.current = false;
+    touchStartPosRef.current = null;
+    touchStartCellRef.current = null;
+  };
+
+  const handleMouseDown = (day: number, hour: number) => {
+    const slot = `${day}-${hour}`;
+    const isSelected = selectedRef.current.includes(slot);
+    const mode = isSelected ? "deselect" : "select";
+    isDrawingRef.current = true;
+    drawingModeRef.current = mode;
+    updateSelection(slot, mode);
+  };
+
+  const handleMouseEnter = (day: number, hour: number) => {
+    if (!isDrawingRef.current) return;
+    updateSelection(`${day}-${hour}`, drawingModeRef.current);
+  };
+
+  const handleMouseUp = () => {
+    isDrawingRef.current = false;
+  };
+
+  React.useEffect(() => {
+    if (!isSelectionMode) return;
+    const handleGlobalUp = () => {
+      isDrawingRef.current = false;
+      if (longPressTimerRef.current) {
+        window.clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+    window.addEventListener("mouseup", handleGlobalUp);
+    window.addEventListener("touchend", handleGlobalUp);
+    return () => {
+      window.removeEventListener("mouseup", handleGlobalUp);
+      window.removeEventListener("touchend", handleGlobalUp);
+    };
+  }, [isSelectionMode]);
 
   // 1. 동적 시간 범위 계산 (기존 이벤트 + 미리보기 이벤트 포함)
   const timeSlots = useMemo(() => {
@@ -120,6 +311,7 @@ const TimetableGrid = ({
         $isPreview={isPreview}
         $isCompareMode={isCompareMode} // 추가
         $isFreeMode={isFreeMode} // 추가
+        $isSelectionMode={isSelectionMode} // 추가
         onClick={handleClassClick}
         style={{
           gridColumnStart: colStart,
@@ -138,7 +330,11 @@ const TimetableGrid = ({
 
   return (
     <>
-      <GridContainer $rowCount={rowCount}>
+      <GridContainer
+        ref={containerRef}
+        $rowCount={rowCount}
+        onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
+      >
         {/* (1) 요일 헤더 */}
         <HeaderCell style={{ gridColumn: 1, gridRow: 1 }} />
         {DAYS.map((day, index) => (
@@ -164,25 +360,38 @@ const TimetableGrid = ({
               >
                 <span>{time}</span>
               </TimeCell>
-              {DAYS.map((_, dayIndex) => (
-                <GridBackgroundCell
-                  key={`bg-${time}-${dayIndex}`}
-                  style={{
-                    gridColumn: dayIndex + 2,
-                    gridRowStart: rowIndex,
-                    gridRowEnd: "span 2",
-                  }}
-                />
-              ))}
+              {DAYS.map((_, dayIndex) => {
+                const slot = `${dayIndex}-${time}`;
+                const isSelected = localSelected.includes(slot);
+                return (
+                  <GridBackgroundCell
+                    key={`bg-${time}-${dayIndex}`}
+                    $isSelectionMode={isSelectionMode}
+                    $isSelected={isSelected}
+                    data-day={dayIndex}
+                    data-hour={time}
+                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, time, e) : undefined}
+                    onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
+                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, time) : undefined}
+                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, time) : undefined}
+                    onMouseUp={isSelectionMode ? handleMouseUp : undefined}
+                    style={{
+                      gridColumn: dayIndex + 2,
+                      gridRowStart: rowIndex,
+                      gridRowEnd: "span 2",
+                    }}
+                  />
+                );
+              })}
             </React.Fragment>
           );
         })}
 
         {/* (3) 기존 수업 아이템 */}
-        {events.map((item, index) => renderEventBlock(item, index, false))}
+        {showClasses && events.map((item, index) => renderEventBlock(item, index, false))}
 
         {/* (4) 미리보기 아이템 (오버레이) */}
-        {previewEvents.map((item, index) =>
+        {showClasses && previewEvents.map((item, index) =>
           renderEventBlock(item, index, true),
         )}
 
@@ -272,12 +481,22 @@ const TimeCell = styled(CellBase)`
   line-height: 16px;
 `;
 
-const GridBackgroundCell = styled.div`
+const GridBackgroundCell = styled.div<{ $isSelectionMode?: boolean; $isSelected?: boolean }>`
   border-bottom: 1px solid #f0f0f0;
   border-right: 1px solid #f0f0f0;
   &:nth-child(6n) {
     border-right: none;
   }
+
+  ${({ $isSelectionMode, $isSelected }) =>
+    $isSelectionMode &&
+    `
+    cursor: pointer;
+    background-color: ${$isSelected ? "rgba(0, 97, 255, 0.4)" : "#ffffff"};
+    transition: background-color 0.1s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+  `}
 `;
 
 const ClassItemBlock = styled.div<{
@@ -285,6 +504,7 @@ const ClassItemBlock = styled.div<{
   $isPreview?: boolean;
   $isCompareMode?: boolean; // 추가
   $isFreeMode?: boolean; // 추가
+  $isSelectionMode?: boolean; // 추가
 }>`
   background-color: ${({ $bgColor }) => $bgColor};
   margin: 1px;
@@ -296,18 +516,21 @@ const ClassItemBlock = styled.div<{
     $isPreview ? 20 : 10}; /* 미리보기가 더 위로 */
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  pointer-events: ${({ $isPreview, $isFreeMode }) =>
-    $isPreview || $isFreeMode
+  pointer-events: ${({ $isPreview, $isFreeMode, $isSelectionMode }) =>
+    $isPreview || $isFreeMode || $isSelectionMode
       ? "none"
       : "auto"}; /* 미리보기와 공강 모드는 클릭 통과 */
-  cursor: ${({ $isPreview, $isFreeMode }) =>
-    $isPreview || $isFreeMode ? "default" : "pointer"};
+  cursor: ${({ $isPreview, $isFreeMode, $isSelectionMode }) =>
+    $isPreview || $isFreeMode || $isSelectionMode ? "default" : "pointer"};
 
   ${({ $isPreview }) =>
     $isPreview &&
     `
     animation: previewPulse 1.5s infinite ease-in-out;
   `}
+  
+  user-select: none;
+  -webkit-user-drag: none;
 
   @keyframes previewPulse {
     0% {
