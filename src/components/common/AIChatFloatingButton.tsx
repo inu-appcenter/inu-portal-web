@@ -75,9 +75,15 @@ const AIChatFloatingButton = () => {
     },
   };
 
-  const isProd = import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr") && !import.meta.env.VITE_API_BASE_URL?.includes("portal-dev");
+  const isProd =
+    import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr") &&
+    !import.meta.env.VITE_API_BASE_URL?.includes("portal-dev");
   const mode = isProd ? "prod" : "dev";
-  const iframeSrc = `https://inu-chat.inuappcenter.kr/?token=${accessToken || ""}&mode=${mode}&service=intip`;
+  const iframeSrc = `${
+    isProd
+      ? import.meta.env.VITE_INUCHAT_URL // 운영용 URL
+      : import.meta.env.VITE_INUCHAT_DEV_URL // 개발용 URL
+  }/?token=${accessToken || ""}&mode=${mode}&service=intip`;
 
   return (
     <>
