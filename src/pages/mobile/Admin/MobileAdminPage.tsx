@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Users, Activity, Bell, Flag, ArrowRight, MessageSquare } from "lucide-react";
+import {
+  Users,
+  Activity,
+  Bell,
+  Flag,
+  ArrowRight,
+  MessageSquare,
+  Bot,
+} from "lucide-react";
 
 import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -12,48 +20,74 @@ import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
 import { getMemberLogs, getApiLogs } from "@/apis/admin";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
-const adminPages = [
-  {
-    label: "접속 유저 통계",
-    path: ROUTES.ADMIN.USER_STAT,
-    description: "전체 활성 유저 및 유형별 유입 통계",
-    icon: Users,
-    color: "#3b82f6",
-  },
-  {
-    label: "API 사용 통계",
-    path: ROUTES.ADMIN.API_STAT,
-    description: "엔드포인트별 호출 빈도 및 트래픽 분석",
-    icon: Activity,
-    color: "#10b981",
-  },
-  {
-    label: "푸시 알림 전송",
-    path: ROUTES.ADMIN.USER_NOTIFICATIION,
-    description: "전체 또는 타겟별 맞춤형 푸시 자동화",
-    icon: Bell,
-    color: "#f59e0b",
-  },
-  {
-    label: "Feature Flag 관리",
-    path: ROUTES.ADMIN.FEATURE_FLAGS,
-    description: "배포 없이 즉각적인 신규 기능 제어",
-    icon: Flag,
-    color: "#8b5cf6",
-  },
-  {
-    label: "채팅방 관리",
-    path: ROUTES.ADMIN.CHAT,
-    description: "축제 및 상시 채팅방 생성 및 제어",
-    icon: MessageSquare,
-    color: "#5844e4",
-  },
-];
-
 const MobileAdminPage = () => {
   const navigate = useNavigate();
   const { tokenInfo, userInfo } = useUserStore();
   const { data: featureFlags } = useFeatureFlags();
+
+  // 환경 변수 기반 운영 환경 여부 판별
+  const isProd =
+    import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr") &&
+    !import.meta.env.VITE_API_BASE_URL?.includes("portal-dev");
+  const mode = isProd ? "prod" : "dev";
+
+  // 운영 여부에 따른 챗불이 관리자 URL 선택
+  const chatBotUrl = `${
+    isProd
+      ? import.meta.env.VITE_INUCHAT_CONSOLE_URL
+      : import.meta.env.VITE_INUCHAT_DEV_CONSOLE_URL
+  }/?token=${tokenInfo.accessToken || ""}&mode=${mode}&service=intip`;
+
+  const adminPages = [
+    {
+      label: "접속 유저 통계",
+      path: ROUTES.ADMIN.USER_STAT,
+      description: "전체 활성 유저 및 유형별 유입 통계",
+      icon: Users,
+      color: "#3b82f6",
+      isExternal: false,
+    },
+    {
+      label: "API 사용 통계",
+      path: ROUTES.ADMIN.API_STAT,
+      description: "엔드포인트별 호출 빈도 및 트래픽 분석",
+      icon: Activity,
+      color: "#10b981",
+      isExternal: false,
+    },
+    {
+      label: "푸시 알림 전송",
+      path: ROUTES.ADMIN.USER_NOTIFICATIION,
+      description: "전체 또는 타겟별 맞춤형 푸시 자동화",
+      icon: Bell,
+      color: "#f59e0b",
+      isExternal: false,
+    },
+    {
+      label: "Feature Flag 관리",
+      path: ROUTES.ADMIN.FEATURE_FLAGS,
+      description: "배포 없이 즉각적인 신규 기능 제어",
+      icon: Flag,
+      color: "#8b5cf6",
+      isExternal: false,
+    },
+    {
+      label: "채팅방 관리",
+      path: ROUTES.ADMIN.CHAT,
+      description: "축제 및 상시 채팅방 생성 및 제어",
+      icon: MessageSquare,
+      color: "#5844e4",
+      isExternal: false,
+    },
+    {
+      label: "AI 챗불이 관리",
+      path: chatBotUrl,
+      description: "AI 챗불이 설정 및 모니터링",
+      icon: Bot,
+      color: "#ec4899",
+      isExternal: true,
+    },
+  ];
 
   const [stats, setStats] = useState({
     todayUsers: 0,
@@ -110,11 +144,18 @@ const MobileAdminPage = () => {
     title: "관리자 페이지",
   });
 
+  // 카드 클릭 핸들러 매개변수 타입 추가
+  const handleCardClick = (page: { path: string; isExternal: boolean }) => {
+    if (page.isExternal) {
+      window.open(page.path, "_blank");
+      return;
+    }
+    navigate(page.path);
+  };
+
   return (
     <AdminLayout>
       <Wrapper>
-
-
         <StatsGrid>
           <StatsDashboardCard
             title="오늘의 방문자"
@@ -146,7 +187,7 @@ const MobileAdminPage = () => {
         <SectionTitle>관리 도구</SectionTitle>
         <MenuGrid>
           {adminPages.map((page) => (
-            <MenuCard key={page.path} onClick={() => navigate(page.path)}>
+            <MenuCard key={page.path} onClick={() => handleCardClick(page)}>
               <CardIcon $bg={page.color}>
                 <page.icon size={28} color="#fff" />
               </CardIcon>
@@ -181,7 +222,6 @@ const Wrapper = styled.div`
     gap: 32px;
   }
 `;
-
 
 const StatsGrid = styled.div`
   display: grid;
