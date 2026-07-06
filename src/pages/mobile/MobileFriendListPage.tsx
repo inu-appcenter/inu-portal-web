@@ -407,8 +407,24 @@ export default function MobileFriendListPage() {
       </FriendListContainer>
 
       {/* Floating Area (always rendered for animation) */}
-      <FloatingActionsWrapper $isSelectionMode={isSelectionMode}>
-        {/* Compare button - slides up when in selection mode */}
+      <FloatingActionsWrapper>
+        {/* Plus button - scale out when selection mode is active */}
+        <PlusButtonWrapper $visible={!isSelectionMode && !isSearchActive}>
+          <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
+            <PlusIcon />
+          </FloatingButton>
+        </PlusButtonWrapper>
+
+        {/* Search bar */}
+        <SearchBarContainer $isSearchActive={isSearchActive}>
+          <FloatingSearchBar
+            placeholder="친구 이름 또는 학번 검색"
+            onSearch={setSearchTerm}
+            onActiveChange={handleSearchActiveChange}
+          />
+        </SearchBarContainer>
+
+        {/* Compare button - slides up from bottom when in selection mode */}
         <CompareButtonArea $visible={isSelectionMode}>
           <CompareFloatingButton
             onClick={handleCompareClick}
@@ -418,23 +434,6 @@ export default function MobileFriendListPage() {
             시간표 비교하기
           </CompareFloatingButton>
         </CompareButtonArea>
-
-        {/* Search + Plus row */}
-        <FloatingButtonRow>
-          {/* Plus button - scale out when selection mode is active */}
-          <PlusButtonWrapper $visible={!isSelectionMode && !isSearchActive}>
-            <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
-              <PlusIcon />
-            </FloatingButton>
-          </PlusButtonWrapper>
-          <SearchBarContainer $isSearchActive={isSearchActive}>
-            <FloatingSearchBar
-              placeholder="친구 이름 또는 학번 검색"
-              onSearch={setSearchTerm}
-              onActiveChange={handleSearchActiveChange}
-            />
-          </SearchBarContainer>
-        </FloatingButtonRow>
       </FloatingActionsWrapper>
     </PageWrapper>
   );
@@ -676,7 +675,7 @@ const EmptyDescription = styled.p`
   text-align: center;
 `;
 
-const FloatingActionsWrapper = styled.div<{ $isSelectionMode: boolean }>`
+const FloatingActionsWrapper = styled.div`
   position: fixed;
   bottom: calc(var(--nav-height, 100px) + 0px);
   right: 0;
@@ -684,7 +683,7 @@ const FloatingActionsWrapper = styled.div<{ $isSelectionMode: boolean }>`
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: flex-end;
   z-index: 99;
   max-width: 768px;
   pointer-events: none;
@@ -697,42 +696,37 @@ const FloatingActionsWrapper = styled.div<{ $isSelectionMode: boolean }>`
   }
 `;
 
+const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
+  height: ${({ $visible }) => ($visible ? "56px" : "0px")};
+  width: 56px;
+  margin-bottom: ${({ $visible }) => ($visible ? "12px" : "0px")};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  transition:
+    height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  & > button {
+    transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
+    opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+    transition:
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      opacity 0.25s ease;
+  }
+`;
+
 const CompareButtonArea = styled.div<{ $visible: boolean }>`
   width: 100%;
   overflow: hidden;
   max-height: ${({ $visible }) => ($visible ? "80px" : "0px")};
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
-  transform: ${({ $visible }) => ($visible ? "translateY(0)" : "translateY(16px)")};
-  margin-bottom: ${({ $visible }) => ($visible ? "12px" : "0px")};
+  transform: ${({ $visible }) => ($visible ? "translateY(0)" : "translateY(12px)")};
+  margin-top: ${({ $visible }) => ($visible ? "12px" : "0px")};
   pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
   transition:
     max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    margin-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-`;
-
-const FloatingButtonRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  width: 100%;
-`;
-
-const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
-  flex-shrink: 0;
-  transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
-  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
-  width: ${({ $visible }) => ($visible ? "56px" : "0px")};
-  height: 56px;
-  overflow: hidden;
-  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
-  transition:
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.25s ease,
-    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
