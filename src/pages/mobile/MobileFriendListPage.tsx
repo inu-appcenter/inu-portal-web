@@ -165,10 +165,14 @@ export default function MobileFriendListPage() {
   }, [searchParams]);
 
   // Exit selection mode if no items are selected
+  const prevSelectedCountRef = useRef(0);
   useEffect(() => {
-    if (isSelectionMode && selectedIds.length === 0) {
-      setIsSelectionMode(false);
+    if (isSelectionMode) {
+      if (prevSelectedCountRef.current > 0 && selectedIds.length === 0) {
+        setIsSelectionMode(false);
+      }
     }
+    prevSelectedCountRef.current = selectedIds.length;
   }, [selectedIds, isSelectionMode]);
 
   // Header handlers
