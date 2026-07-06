@@ -237,21 +237,25 @@ export default function MobileFriendListPage() {
         setIsSelectionMode(true);
         setExpandedId(null);
         setSelectedIds([friendId]);
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
       }
     }, 600); // 600ms long press threshold
   };
 
-  const handlePressEnd = (friendId: number, e: React.MouseEvent | React.TouchEvent) => {
+  const handlePressCancel = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
     }
+  };
+
+  const handleRowClick = (friendId: number) => {
     if (preventClick.current) {
-      e.preventDefault();
-      e.stopPropagation();
-    } else {
-      // Trigger simple click
-      handleFriendClick(friendId);
+      preventClick.current = false;
+      return;
     }
+    handleFriendClick(friendId);
   };
 
   const handleCompareClick = () => {
@@ -320,14 +324,18 @@ export default function MobileFriendListPage() {
             const year = getFriendStudentYear(friend.studentId);
             const safeFireId = normalizeProfileImageId(friend.fireId, DEFAULT_PROFILE_IMAGE_ID);
 
+            const showDetail = !isSelectionMode && isExpanded;
+
             return (
               <FriendRowWrapper key={friend.friendId} $expanded={isExpanded}>
                 <FriendMainRow
                   onMouseDown={() => handlePressStart(friend.friendId)}
-                  onMouseUp={(e) => handlePressEnd(friend.friendId, e)}
+                  onMouseUp={handlePressCancel}
+                  onMouseLeave={handlePressCancel}
                   onTouchStart={() => handlePressStart(friend.friendId)}
-                  onTouchEnd={(e) => handlePressEnd(friend.friendId, e)}
-                  onClick={(e) => e.preventDefault()} // Block normal clicks, handled via press end
+                  onTouchEnd={handlePressCancel}
+                  onTouchMove={handlePressCancel}
+                  onClick={() => handleRowClick(friend.friendId)}
                 >
                   <ProfileArea>
                     {isSelectionMode ? (
@@ -348,8 +356,8 @@ export default function MobileFriendListPage() {
                   <NameArea>{friend.friendAlias || friend.nickname}</NameArea>
                 </FriendMainRow>
 
-                {!isSelectionMode && isExpanded && (
-                  <ExpandedDetailArea>
+                <ExpandedDetailWrapper $expanded={showDetail}>
+                  <ExpandedDetailInner>
                     <StudentInfoRow>
                       {year} · {dept}
                     </StudentInfoRow>
@@ -371,8 +379,8 @@ export default function MobileFriendListPage() {
                         <UserIcon />
                       </CircleActionButton>
                     </ActionButtonRow>
-                  </ExpandedDetailArea>
-                )}
+                  </ExpandedDetailInner>
+                </ExpandedDetailWrapper>
               </FriendRowWrapper>
             );
           })
@@ -539,7 +547,16 @@ const NameArea = styled.span`
   color: var(--text-primary, #333d4b);
 `;
 
-const ExpandedDetailArea = styled.div`
+const ExpandedDetailWrapper = styled.div<{ $expanded: boolean }>`
+  display: grid;
+  grid-template-rows: ${({ $expanded }) => ($expanded ? "1fr" : "0fr")};
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  overflow: hidden;
+`;
+
+const ExpandedDetailInner = styled.div`
+  min-height: 0;
   display: flex;
   flex-direction: column;
   padding: 0 16px 16px 68px; /* Offset profile column */
