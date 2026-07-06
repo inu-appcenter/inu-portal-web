@@ -330,69 +330,65 @@ export default function MobileFriendListPage() {
               <FriendRowWrapper
                 key={friend.friendId}
                 $expanded={isExpanded}
-                onMouseDown={() => handlePressStart(friend.friendId)}
-                onMouseUp={handlePressCancel}
-                onMouseLeave={handlePressCancel}
-                onTouchStart={() => handlePressStart(friend.friendId)}
-                onTouchEnd={handlePressCancel}
-                onTouchMove={handlePressCancel}
-                onClick={() => handleRowClick(friend.friendId)}
               >
-                <Ripple />
                 <RowInner>
-                  <ProfileArea>
-                    <ProfileImage
-                      src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
-                      alt="Profile"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "https://portal.inuappcenter.kr/images/profile/default.png";
-                      }}
-                    />
-                    {isSelectionMode && (
-                      <SelectionOverlay $selected={isSelected}>
-                        {isSelected && <CheckIcon />}
-                      </SelectionOverlay>
-                    )}
-                  </ProfileArea>
-                  <RightContentSection>
+                  <RowHeader
+                    onMouseDown={() => handlePressStart(friend.friendId)}
+                    onMouseUp={handlePressCancel}
+                    onMouseLeave={handlePressCancel}
+                    onTouchStart={() => handlePressStart(friend.friendId)}
+                    onTouchEnd={handlePressCancel}
+                    onTouchMove={handlePressCancel}
+                    onClick={() => handleRowClick(friend.friendId)}
+                  >
+                    <Ripple />
+                    <ProfileArea>
+                      <ProfileImage
+                        src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+                        alt="Profile"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "https://portal.inuappcenter.kr/images/profile/default.png";
+                        }}
+                      />
+                      {isSelectionMode && (
+                        <SelectionOverlay $selected={isSelected}>
+                          {isSelected && <CheckIcon />}
+                        </SelectionOverlay>
+                      )}
+                    </ProfileArea>
                     <NameRow>
                       {friend.friendAlias || friend.nickname}
                     </NameRow>
+                  </RowHeader>
 
-                    <ExpandedDetailWrapper
-                      $expanded={showDetail}
-                      onClick={(e) => e.stopPropagation()}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onTouchStart={(e) => e.stopPropagation()}
-                    >
-                      <ExpandedDetailInner>
-                        <DetailContent>
-                          <StudentInfoRow>
-                            {year} · {dept}
-                          </StudentInfoRow>
-                          <ActionButtonRow>
-                            <CircleActionButton
-                              className="warn"
-                              onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
-                            >
-                              <AlarmIcon />
-                            </CircleActionButton>
-                            <CircleActionButton
-                              onClick={(e) => handleSingleChatClick(e, friend.friendId)}
-                            >
-                              <ChatBubbleIcon />
-                            </CircleActionButton>
-                            <CircleActionButton
-                              onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
-                            >
-                              <UserIcon />
-                            </CircleActionButton>
-                          </ActionButtonRow>
-                        </DetailContent>
-                      </ExpandedDetailInner>
-                    </ExpandedDetailWrapper>
-                  </RightContentSection>
+                  <ExpandedDetailWrapper $expanded={showDetail}>
+                    <ExpandedDetailInner>
+                      <DetailContent>
+                        <StudentInfoRow>
+                          {year} · {dept}
+                        </StudentInfoRow>
+                        <ActionButtonRow>
+                          <CircleActionButton
+                            className="warn"
+                            onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
+                          >
+                            <AlarmIcon />
+                          </CircleActionButton>
+                          <CircleActionButton
+                            onClick={(e) => handleSingleChatClick(e, friend.friendId)}
+                          >
+                            <ChatBubbleIcon />
+                          </CircleActionButton>
+                          <CircleActionButton
+                            onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
+                          >
+                            <UserIcon />
+                          </CircleActionButton>
+                        </ActionButtonRow>
+                      </DetailContent>
+                    </ExpandedDetailInner>
+                  </ExpandedDetailWrapper>
                 </RowInner>
               </FriendRowWrapper>
             );
@@ -506,7 +502,6 @@ const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
   background-color: transparent;
-  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
 
@@ -519,11 +514,21 @@ const RowInner = styled.div`
   position: relative;
   z-index: 1;
   display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const RowHeader = styled.div`
+  position: relative;
+  overflow: hidden;
+  display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   padding: 10px 16px;
   width: 100%;
   box-sizing: border-box;
+  cursor: pointer;
 `;
 
 const ProfileArea = styled.div`
@@ -560,14 +565,6 @@ const SelectionOverlay = styled.div<{ $selected: boolean }>`
   transition: all 0.2s ease-in-out;
 `;
 
-const RightContentSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  margin-left: 12px;
-  box-sizing: border-box;
-`;
-
 const NameRow = styled.div`
   font-family: Pretendard;
   font-weight: 600;
@@ -577,6 +574,7 @@ const NameRow = styled.div`
   display: flex;
   align-items: center;
   min-height: 40px; /* Vertically centers name next to profile */
+  margin-left: 12px;
   box-sizing: border-box;
 `;
 
@@ -596,7 +594,7 @@ const ExpandedDetailInner = styled.div`
 `;
 
 const DetailContent = styled.div`
-  padding: 4px 0 6px 0;
+  padding: 4px 16px 10px 68px; /* 16px gutter + 40px profile + 12px gap = 68px left padding */
   display: flex;
   flex-direction: column;
   width: 100%;
