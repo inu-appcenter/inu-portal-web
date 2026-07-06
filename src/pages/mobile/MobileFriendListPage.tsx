@@ -11,6 +11,7 @@ import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import Ripple from "@/components/common/Ripple";
 
 // --- SVG Icons ---
 const CaretDownIcon = () => (
@@ -169,6 +170,13 @@ export default function MobileFriendListPage() {
       }
     }
   }, [searchParams]);
+
+  // Exit selection mode if no items are selected
+  useEffect(() => {
+    if (isSelectionMode && selectedIds.length === 0) {
+      setIsSelectionMode(false);
+    }
+  }, [selectedIds, isSelectionMode]);
 
   // Header handlers
   const handleSelectToggle = useCallback(() => {
@@ -339,21 +347,21 @@ export default function MobileFriendListPage() {
                 onTouchMove={handlePressCancel}
                 onClick={() => handleRowClick(friend.friendId)}
               >
+                <Ripple />
                 <RowInner>
                   <ProfileArea onClick={(e) => e.stopPropagation()}>
-                    {isSelectionMode ? (
-                      <CheckCircle $selected={isSelected}>
+                    <ProfileImage
+                      src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+                      alt="Profile"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          "https://portal.inuappcenter.kr/images/profile/default.png";
+                      }}
+                    />
+                    {isSelectionMode && (
+                      <SelectionOverlay $selected={isSelected}>
                         {isSelected && <CheckIcon />}
-                      </CheckCircle>
-                    ) : (
-                      <ProfileImage
-                        src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
-                        alt="Profile"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "https://portal.inuappcenter.kr/images/profile/default.png";
-                        }}
-                      />
+                      </SelectionOverlay>
                     )}
                   </ProfileArea>
                   <RightContentSection>
@@ -361,7 +369,12 @@ export default function MobileFriendListPage() {
                       {friend.friendAlias || friend.nickname}
                     </NameRow>
 
-                    <ExpandedDetailWrapper $expanded={showDetail} onClick={(e) => e.stopPropagation()}>
+                    <ExpandedDetailWrapper
+                      $expanded={showDetail}
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                    >
                       <ExpandedDetailInner>
                         <DetailContent>
                           <StudentInfoRow>
@@ -487,20 +500,17 @@ const FriendListContainer = styled.div`
 `;
 
 const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
-  background-color: ${({ $expanded }) => ($expanded ? "var(--bg-muted, #f8f9fb)" : "transparent")};
-  transition: background-color 0.2s ease-in-out;
+  background-color: transparent;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-
-  &:active {
-    background-color: var(--bg-muted, #f1f3f5);
-  }
 
   &:last-child {
     border-bottom: none;
@@ -508,6 +518,8 @@ const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
 `;
 
 const RowInner = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -523,6 +535,7 @@ const ProfileArea = styled.div`
   width: 40px;
   height: 40px;
   flex-shrink: 0;
+  position: relative;
 `;
 
 const ProfileImage = styled.img`
@@ -533,16 +546,19 @@ const ProfileImage = styled.img`
   background-color: var(--border-brand-subtle, #d3e5ff);
 `;
 
-const CheckCircle = styled.div<{ $selected: boolean }>`
-  width: 40px;
-  height: 40px;
+const SelectionOverlay = styled.div<{ $selected: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border-radius: 999px;
   box-sizing: border-box;
+  border: 2px solid ${({ $selected }) => ($selected ? "#0061ff" : "rgba(0, 0, 0, 0.15)")};
+  background-color: ${({ $selected }) => ($selected ? "rgba(0, 97, 255, 0.4)" : "transparent")};
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${({ $selected }) => ($selected ? "#eff6ff" : "var(--bg-muted, #f1f3f5)")};
-  border: 2px solid ${({ $selected }) => ($selected ? "#0061ff" : "var(--border-default, #e5e8eb)")};
   transition: all 0.2s ease-in-out;
 `;
 
