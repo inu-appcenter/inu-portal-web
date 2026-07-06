@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { getFriends } from "@/apis/friends";
 import { createPersonalChatRoom } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
@@ -93,6 +93,7 @@ const getFriendStudentYear = (studentId: string) => {
 
 export default function MobileFriendListPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -100,7 +101,7 @@ export default function MobileFriendListPage() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const isSelectionMode = location.hash === "#select";
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
 
@@ -159,32 +160,29 @@ export default function MobileFriendListPage() {
       const ids = idsParam.split(",").map(Number).filter(Boolean);
       if (ids.length > 0) {
         setSelectedIds(ids);
-        setIsSelectionMode(true);
+        if (location.hash !== "#select") {
+          navigate(location.pathname + location.search + "#select", { replace: true });
+        }
       }
     }
-  }, [searchParams]);
+  }, [searchParams, location.hash, location.pathname, location.search, navigate]);
 
-  // Exit selection mode if no items are selected
-  const prevSelectedCountRef = useRef(0);
+  // Clear selectedIds when exiting selection mode
   useEffect(() => {
-    if (isSelectionMode) {
-      if (prevSelectedCountRef.current > 0 && selectedIds.length === 0) {
-        setIsSelectionMode(false);
-      }
+    if (!isSelectionMode) {
+      setSelectedIds([]);
     }
-    prevSelectedCountRef.current = selectedIds.length;
-  }, [selectedIds, isSelectionMode]);
+  }, [isSelectionMode]);
 
   // Header handlers
   const handleSelectToggle = useCallback(() => {
     if (isSelectionMode) {
-      setIsSelectionMode(false);
-      setSelectedIds([]);
+      navigate(-1);
     } else {
-      setIsSelectionMode(true);
+      navigate(location.pathname + location.search + "#select");
       setExpandedId(null); // Collapse all accordion items
     }
-  }, [isSelectionMode]);
+  }, [isSelectionMode, location.pathname, location.search, navigate]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.length === filteredFriends.length) {
@@ -240,7 +238,7 @@ export default function MobileFriendListPage() {
     longPressTimer.current = setTimeout(() => {
       preventClick.current = true;
       if (!isSelectionMode) {
-        setIsSelectionMode(true);
+        navigate(location.pathname + location.search + "#select");
         setExpandedId(null);
         setSelectedIds([friendId]);
         if (navigator.vibrate) {
@@ -431,9 +429,13 @@ export default function MobileFriendListPage() {
       )}
 
       {/* Bottom Floating Bar */}
-      {isSelectionMode && selectedIds.length > 0 && (
+      {isSelectionMode && (
         <BottomBarWrapper>
-          <CompareFloatingButton onClick={handleCompareClick}>
+          <CompareFloatingButton
+            onClick={handleCompareClick}
+            disabled={selectedIds.length === 0}
+            className={selectedIds.length === 0 ? "disabled" : ""}
+          >
             시간표 비교하기
           </CompareFloatingButton>
         </BottomBarWrapper>
@@ -758,6 +760,14 @@ const CompareFloatingButton = styled.button`
   cursor: pointer;
   outline: none;
   
+  &:disabled, &.disabled {
+    background-color: var(--bg-disabled, #d1d6db);
+    color: var(--text-disabled, #8b95a1);
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+  }
+
   &:active {
     background-color: var(--interactive-primary-pressed, #2563eb);
     transform: scale(0.98);
