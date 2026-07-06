@@ -416,11 +416,13 @@ export default function MobileFriendListPage() {
               <PlusIcon />
             </FloatingButton>
           )}
-          <FloatingSearchBar
-            placeholder="친구 이름 또는 학번 검색"
-            onSearch={setSearchTerm}
-            onActiveChange={handleSearchActiveChange}
-          />
+          <SearchBarContainer $isSearchActive={isSearchActive}>
+            <FloatingSearchBar
+              placeholder="친구 이름 또는 학번 검색"
+              onSearch={setSearchTerm}
+              onActiveChange={handleSearchActiveChange}
+            />
+          </SearchBarContainer>
         </FloatingActionsWrapper>
       )}
 
@@ -678,7 +680,7 @@ const FloatingActionsWrapper = styled.div<{ $isSearchActive: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: flex-end;
+  align-items: ${({ $isSearchActive }) => ($isSearchActive ? "stretch" : "flex-end")};
   z-index: 99;
   width: ${({ $isSearchActive }) => ($isSearchActive ? "calc(100% - 48px)" : "auto")};
   max-width: ${({ $isSearchActive }) => ($isSearchActive ? "calc(768px - 48px)" : "none")};
@@ -689,6 +691,16 @@ const FloatingActionsWrapper = styled.div<{ $isSearchActive: boolean }>`
     pointer-events: auto;
   }
 `;
+
+const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
+  width: ${({ $isSearchActive }) => ($isSearchActive ? "100%" : "56px")};
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+`;
+
 
 const FloatingButton = styled.button`
   display: flex;
