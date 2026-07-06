@@ -410,7 +410,7 @@ export default function MobileFriendListPage() {
 
       {/* Floating Action Buttons */}
       {!isSelectionMode && (
-        <FloatingActionsWrapper $isSearchActive={isSearchActive}>
+        <FloatingActionsWrapper>
           {!isSearchActive && (
             <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
               <PlusIcon />
@@ -672,18 +672,18 @@ const EmptyDescription = styled.p`
   text-align: center;
 `;
 
-const FloatingActionsWrapper = styled.div<{ $isSearchActive: boolean }>`
+const FloatingActionsWrapper = styled.div`
   position: fixed;
   bottom: calc(var(--nav-height, 100px) + 24px);
   right: 24px;
-  left: ${({ $isSearchActive }) => ($isSearchActive ? "24px" : "auto")};
+  left: 24px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: ${({ $isSearchActive }) => ($isSearchActive ? "stretch" : "flex-end")};
+  align-items: flex-end;
   z-index: 99;
-  width: ${({ $isSearchActive }) => ($isSearchActive ? "calc(100% - 48px)" : "auto")};
-  max-width: ${({ $isSearchActive }) => ($isSearchActive ? "calc(768px - 48px)" : "none")};
+  max-width: calc(768px - 48px);
   pointer-events: none;
   box-sizing: border-box;
 
@@ -706,8 +706,8 @@ const FloatingButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid var(--border-default, #e5e8eb);
