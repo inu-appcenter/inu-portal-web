@@ -467,4 +467,5 @@ const MenuCardDescription = styled.p`
   color: var(--text-secondary, #6b7684);
   margin: 0;
   width: 100%;
+  word-break: keep-all;
 `;
