@@ -53,12 +53,13 @@ import MobileTipsCategoryPage from "@/pages/mobile/MobileTipsCategoryPage";
 import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
-import MobileTimeTableCompareSelectPage from "@/pages/mobile/timetable/MobileTimeTableCompareSelectPage";
+import MobileFriendListPage from "@/pages/mobile/MobileFriendListPage";
 import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
 import MobileTimeTableVisibilityPage from "@/pages/mobile/timetable/MobileTimeTableVisibilityPage";
 import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
 import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimulatorPage";
 import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import MobileTimeTableListPage from "@/pages/mobile/timetable/MobileTimeTableListPage";
 import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookDetailPage";
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
@@ -129,12 +130,13 @@ export const router = createBrowserRouter([
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
-          { path: ROUTES.TIMETABLE.COMPARE_SELECT, element: <MobileTimeTableCompareSelectPage /> },
+          { path: ROUTES.FRIEND.LIST, element: <MobileFriendListPage /> },
           { path: ROUTES.TIMETABLE.COMPARE, element: <MobileTimeTableComparePage /> },
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
           { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
           { path: ROUTES.TIMETABLE.FILTER, element: <MobileCourseFilterPage /> },
+          { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },

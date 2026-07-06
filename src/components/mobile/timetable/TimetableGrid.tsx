@@ -58,16 +58,19 @@ const COLORS = [
   "var(--color-chips-gray)",
 ];
 
+const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
+const EMPTY_SELECTED_SLOTS: string[] = [];
+
 const TimetableGrid = ({
   events,
-  previewEvents = [],
+  previewEvents = EMPTY_PREVIEW_EVENTS,
   highlightedSlot = null,
   isCompareMode = false,
   isFreeMode = false,
   onEdit,
   onDelete,
   isSelectionMode = false,
-  selectedSlots = [],
+  selectedSlots = EMPTY_SELECTED_SLOTS,
   onSelectedSlotsChange,
   showClasses = true,
 }: TimetableGridProps) => {
@@ -89,8 +92,14 @@ const TimetableGrid = ({
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    selectedRef.current = selectedSlots;
-    setLocalSelected(selectedSlots);
+    const isSame =
+      selectedSlots.length === selectedRef.current.length &&
+      selectedSlots.every((val, index) => val === selectedRef.current[index]);
+
+    if (!isSame) {
+      selectedRef.current = selectedSlots;
+      setLocalSelected(selectedSlots);
+    }
   }, [selectedSlots]);
 
   React.useEffect(() => {
