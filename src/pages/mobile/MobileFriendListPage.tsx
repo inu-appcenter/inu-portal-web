@@ -357,7 +357,7 @@ export default function MobileFriendListPage() {
                     )}
                   </ProfileArea>
                   <RightContentSection>
-                    <NameRow $expanded={showDetail}>
+                    <NameRow>
                       {friend.friendAlias || friend.nickname}
                     </NameRow>
 
@@ -551,12 +551,10 @@ const RightContentSection = styled.div`
   flex-direction: column;
   flex: 1;
   margin-left: 12px;
-  justify-content: center;
-  min-height: 40px; /* Aligns with 40px profile picture */
   box-sizing: border-box;
 `;
 
-const NameRow = styled.div<{ $expanded: boolean }>`
+const NameRow = styled.div`
   font-family: Pretendard;
   font-weight: 600;
   font-size: 16px;
@@ -564,15 +562,8 @@ const NameRow = styled.div<{ $expanded: boolean }>`
   color: var(--text-primary, #333d4b);
   display: flex;
   align-items: center;
-  min-height: 40px; /* Vertically centers name when collapsed */
-  transition: min-height 0.2s ease-in-out;
-  
-  ${({ $expanded }) =>
-    $expanded &&
-    `
-      min-height: 24px;
-      margin-bottom: 4px;
-    `}
+  min-height: 40px; /* Vertically centers name next to profile */
+  box-sizing: border-box;
 `;
 
 const ExpandedDetailWrapper = styled.div<{ $expanded: boolean }>`
