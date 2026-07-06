@@ -212,6 +212,8 @@ export default function MobileFriendListPage() {
   useHeader({
     title: "친구",
     hasback: true,
+    immersive: true,
+    pageBgColor: "#f8f9fb",
     rightArea: headerRight,
   });
 
