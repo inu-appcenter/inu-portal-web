@@ -4,6 +4,7 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
+import { useMemo, useCallback } from "react";
 
 // Icons
 const PlusIcon = () => (
@@ -23,24 +24,26 @@ export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
   const { timetables, setSemester, setActiveTimetable, setRepresentative, addTimetable } = useTimetableStore();
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     const semester = prompt("학기를 입력해주세요. (예: 2026년 2학기)", "2026년 2학기");
     if (!semester) return;
     const name = prompt("시간표 이름을 입력해주세요. (예: 시간표 1)", "시간표 1");
     if (!name) return;
     addTimetable(semester, name);
-  };
+  }, [addTimetable]);
+
+  const headerRight = useMemo(() => (
+    <IconButton onClick={handleAddClick}>
+      <PlusIcon />
+    </IconButton>
+  ), [handleAddClick]);
 
   useHeader({
     title: "시간표 목록",
     hasback: true,
     immersive: true,
     pageBgColor: "#f8f9fb",
-    rightArea: (
-      <IconButton onClick={handleAddClick}>
-        <PlusIcon />
-      </IconButton>
-    )
+    rightArea: headerRight
   });
 
   // Group timetables by semester
