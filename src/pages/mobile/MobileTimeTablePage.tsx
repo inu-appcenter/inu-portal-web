@@ -192,7 +192,7 @@ const MobileTimeTablePage = () => {
 
       <ButtonGroup>
         <ButtonRow>
-          <MenuCard onClick={() => navigate(ROUTES.TIMETABLE.COMPARE_SELECT)}>
+          <MenuCard onClick={() => navigate(ROUTES.FRIEND.LIST)}>
             <MenuCardTitleRow>
               <MenuCardTitle>친구</MenuCardTitle>
               <IconSlot>

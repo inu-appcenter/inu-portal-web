@@ -797,8 +797,8 @@ export default function MobileTimeTableComparePage() {
                   const allFriendIds = searchParams.get("ids") || "";
                   navigate(
                     allFriendIds
-                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                      : ROUTES.TIMETABLE.COMPARE_SELECT,
+                      ? `${ROUTES.FRIEND.LIST}?ids=${allFriendIds}`
+                      : ROUTES.FRIEND.LIST,
                   );
                 }}
                 onTouchEnd={(e) => {
@@ -807,8 +807,8 @@ export default function MobileTimeTableComparePage() {
                   const allFriendIds = searchParams.get("ids") || "";
                   navigate(
                     allFriendIds
-                      ? `${ROUTES.TIMETABLE.COMPARE_SELECT}?ids=${allFriendIds}`
-                      : ROUTES.TIMETABLE.COMPARE_SELECT,
+                      ? `${ROUTES.FRIEND.LIST}?ids=${allFriendIds}`
+                      : ROUTES.FRIEND.LIST,
                   );
                 }}
               >

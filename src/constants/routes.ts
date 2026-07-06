@@ -17,13 +17,17 @@ export const ROUTES = {
   TIMETABLE: {
     ROOT: "/timetable",
     EDIT: "/timetable/edit",
-    COMPARE_SELECT: "/timetable/compare/select",
     COMPARE: "/timetable/compare",
     VISIBILITY: "/timetable/visibility",
     ADD: "/timetable/add",
     SIMULATOR: "/timetable/simulator",
     FILTER: "/timetable/filter",
     LIST: "/timetable/list",
+  },
+
+  // 친구
+  FRIEND: {
+    LIST: "/friend/list",
   },
 
   //전화번호부
