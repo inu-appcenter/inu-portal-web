@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { getFriends } from "@/apis/friends";
 import { createPersonalChatRoom } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
@@ -93,6 +93,7 @@ const getFriendStudentYear = (studentId: string) => {
 
 export default function MobileFriendListPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -100,7 +101,7 @@ export default function MobileFriendListPage() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const isSelectionMode = location.hash === "#select";
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
 
@@ -159,28 +160,29 @@ export default function MobileFriendListPage() {
       const ids = idsParam.split(",").map(Number).filter(Boolean);
       if (ids.length > 0) {
         setSelectedIds(ids);
-        setIsSelectionMode(true);
+        if (location.hash !== "#select") {
+          navigate(location.pathname + location.search + "#select", { replace: true });
+        }
       }
     }
-  }, [searchParams]);
+  }, [searchParams, location.hash, location.pathname, location.search, navigate]);
 
-  // Exit selection mode if no items are selected
+  // Clear selectedIds when exiting selection mode
   useEffect(() => {
-    if (isSelectionMode && selectedIds.length === 0) {
-      setIsSelectionMode(false);
+    if (!isSelectionMode) {
+      setSelectedIds([]);
     }
-  }, [selectedIds, isSelectionMode]);
+  }, [isSelectionMode]);
 
   // Header handlers
   const handleSelectToggle = useCallback(() => {
     if (isSelectionMode) {
-      setIsSelectionMode(false);
-      setSelectedIds([]);
+      navigate(-1);
     } else {
-      setIsSelectionMode(true);
+      navigate(location.pathname + location.search + "#select");
       setExpandedId(null); // Collapse all accordion items
     }
-  }, [isSelectionMode]);
+  }, [isSelectionMode, location.pathname, location.search, navigate]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.length === filteredFriends.length) {
@@ -236,7 +238,7 @@ export default function MobileFriendListPage() {
     longPressTimer.current = setTimeout(() => {
       preventClick.current = true;
       if (!isSelectionMode) {
-        setIsSelectionMode(true);
+        navigate(location.pathname + location.search + "#select");
         setExpandedId(null);
         setSelectedIds([friendId]);
         if (navigator.vibrate) {
@@ -328,69 +330,65 @@ export default function MobileFriendListPage() {
               <FriendRowWrapper
                 key={friend.friendId}
                 $expanded={isExpanded}
-                onMouseDown={() => handlePressStart(friend.friendId)}
-                onMouseUp={handlePressCancel}
-                onMouseLeave={handlePressCancel}
-                onTouchStart={() => handlePressStart(friend.friendId)}
-                onTouchEnd={handlePressCancel}
-                onTouchMove={handlePressCancel}
-                onClick={() => handleRowClick(friend.friendId)}
               >
-                <Ripple />
                 <RowInner>
-                  <ProfileArea>
-                    <ProfileImage
-                      src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
-                      alt="Profile"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "https://portal.inuappcenter.kr/images/profile/default.png";
-                      }}
-                    />
-                    {isSelectionMode && (
-                      <SelectionOverlay $selected={isSelected}>
-                        {isSelected && <CheckIcon />}
-                      </SelectionOverlay>
-                    )}
-                  </ProfileArea>
-                  <RightContentSection>
+                  <RowHeader
+                    onMouseDown={() => handlePressStart(friend.friendId)}
+                    onMouseUp={handlePressCancel}
+                    onMouseLeave={handlePressCancel}
+                    onTouchStart={() => handlePressStart(friend.friendId)}
+                    onTouchEnd={handlePressCancel}
+                    onTouchMove={handlePressCancel}
+                    onClick={() => handleRowClick(friend.friendId)}
+                  >
+                    <Ripple />
+                    <ProfileArea>
+                      <ProfileImage
+                        src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+                        alt="Profile"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "https://portal.inuappcenter.kr/images/profile/default.png";
+                        }}
+                      />
+                      {isSelectionMode && (
+                        <SelectionOverlay $selected={isSelected}>
+                          {isSelected && <CheckIcon />}
+                        </SelectionOverlay>
+                      )}
+                    </ProfileArea>
                     <NameRow>
                       {friend.friendAlias || friend.nickname}
                     </NameRow>
+                  </RowHeader>
 
-                    <ExpandedDetailWrapper
-                      $expanded={showDetail}
-                      onClick={(e) => e.stopPropagation()}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onTouchStart={(e) => e.stopPropagation()}
-                    >
-                      <ExpandedDetailInner>
-                        <DetailContent>
-                          <StudentInfoRow>
-                            {year} · {dept}
-                          </StudentInfoRow>
-                          <ActionButtonRow>
-                            <CircleActionButton
-                              className="warn"
-                              onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
-                            >
-                              <AlarmIcon />
-                            </CircleActionButton>
-                            <CircleActionButton
-                              onClick={(e) => handleSingleChatClick(e, friend.friendId)}
-                            >
-                              <ChatBubbleIcon />
-                            </CircleActionButton>
-                            <CircleActionButton
-                              onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
-                            >
-                              <UserIcon />
-                            </CircleActionButton>
-                          </ActionButtonRow>
-                        </DetailContent>
-                      </ExpandedDetailInner>
-                    </ExpandedDetailWrapper>
-                  </RightContentSection>
+                  <ExpandedDetailWrapper $expanded={showDetail}>
+                    <ExpandedDetailInner>
+                      <DetailContent>
+                        <StudentInfoRow>
+                          {year} · {dept}
+                        </StudentInfoRow>
+                        <ActionButtonRow>
+                          <CircleActionButton
+                            className="warn"
+                            onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
+                          >
+                            <AlarmIcon />
+                          </CircleActionButton>
+                          <CircleActionButton
+                            onClick={(e) => handleSingleChatClick(e, friend.friendId)}
+                          >
+                            <ChatBubbleIcon />
+                          </CircleActionButton>
+                          <CircleActionButton
+                            onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
+                          >
+                            <UserIcon />
+                          </CircleActionButton>
+                        </ActionButtonRow>
+                      </DetailContent>
+                    </ExpandedDetailInner>
+                  </ExpandedDetailWrapper>
                 </RowInner>
               </FriendRowWrapper>
             );
@@ -408,32 +406,35 @@ export default function MobileFriendListPage() {
         )}
       </FriendListContainer>
 
-      {/* Floating Action Buttons */}
-      {!isSelectionMode && (
-        <FloatingActionsWrapper>
-          {!isSearchActive && (
-            <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
-              <PlusIcon />
-            </FloatingButton>
-          )}
-          <SearchBarContainer $isSearchActive={isSearchActive}>
-            <FloatingSearchBar
-              placeholder="친구 이름 또는 학번 검색"
-              onSearch={setSearchTerm}
-              onActiveChange={handleSearchActiveChange}
-            />
-          </SearchBarContainer>
-        </FloatingActionsWrapper>
-      )}
+      {/* Floating Area (always rendered for animation) */}
+      <FloatingActionsWrapper>
+        {/* Plus button - scale out when selection mode is active */}
+        <PlusButtonWrapper $visible={!isSelectionMode && !isSearchActive}>
+          <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
+            <PlusIcon />
+          </FloatingButton>
+        </PlusButtonWrapper>
 
-      {/* Bottom Floating Bar */}
-      {isSelectionMode && selectedIds.length > 0 && (
-        <BottomBarWrapper>
-          <CompareFloatingButton onClick={handleCompareClick}>
+        {/* Search bar */}
+        <SearchBarContainer $isSearchActive={isSearchActive}>
+          <FloatingSearchBar
+            placeholder="친구 이름 또는 학번 검색"
+            onSearch={setSearchTerm}
+            onActiveChange={handleSearchActiveChange}
+          />
+        </SearchBarContainer>
+
+        {/* Compare button - slides up from bottom when in selection mode */}
+        <CompareButtonArea $visible={isSelectionMode}>
+          <CompareFloatingButton
+            onClick={handleCompareClick}
+            disabled={selectedIds.length === 0}
+            className={selectedIds.length === 0 ? "disabled" : ""}
+          >
             시간표 비교하기
           </CompareFloatingButton>
-        </BottomBarWrapper>
-      )}
+        </CompareButtonArea>
+      </FloatingActionsWrapper>
     </PageWrapper>
   );
 }
@@ -500,7 +501,6 @@ const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
   background-color: transparent;
-  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
 
@@ -513,11 +513,21 @@ const RowInner = styled.div`
   position: relative;
   z-index: 1;
   display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const RowHeader = styled.div`
+  position: relative;
+  overflow: hidden;
+  display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   padding: 10px 16px;
   width: 100%;
   box-sizing: border-box;
+  cursor: pointer;
 `;
 
 const ProfileArea = styled.div`
@@ -554,14 +564,6 @@ const SelectionOverlay = styled.div<{ $selected: boolean }>`
   transition: all 0.2s ease-in-out;
 `;
 
-const RightContentSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  margin-left: 12px;
-  box-sizing: border-box;
-`;
-
 const NameRow = styled.div`
   font-family: Pretendard;
   font-weight: 600;
@@ -571,6 +573,7 @@ const NameRow = styled.div`
   display: flex;
   align-items: center;
   min-height: 40px; /* Vertically centers name next to profile */
+  margin-left: 12px;
   box-sizing: border-box;
 `;
 
@@ -590,7 +593,7 @@ const ExpandedDetailInner = styled.div`
 `;
 
 const DetailContent = styled.div`
-  padding: 4px 0 6px 0;
+  padding: 4px 16px 10px 68px; /* 16px gutter + 40px profile + 12px gap = 68px left padding */
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -674,22 +677,56 @@ const EmptyDescription = styled.p`
 
 const FloatingActionsWrapper = styled.div`
   position: fixed;
-  bottom: calc(var(--nav-height, 100px) + 24px);
-  right: 24px;
-  left: 24px;
+  bottom: calc(var(--nav-height, 100px) + 0px);
+  right: 0;
+  left: 0;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   align-items: flex-end;
   z-index: 99;
-  max-width: calc(768px - 48px);
+  max-width: 768px;
   pointer-events: none;
   box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.00) 16.02%, #FFF 100%);
+  padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
 
   & > * {
     pointer-events: auto;
   }
+`;
+
+const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
+  height: ${({ $visible }) => ($visible ? "56px" : "0px")};
+  width: 56px;
+  margin-bottom: ${({ $visible }) => ($visible ? "12px" : "0px")};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  transition:
+    height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  & > button {
+    transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
+    opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+    transition:
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      opacity 0.25s ease;
+  }
+`;
+
+const CompareButtonArea = styled.div<{ $visible: boolean }>`
+  width: 100%;
+  overflow: hidden;
+  max-height: ${({ $visible }) => ($visible ? "80px" : "0px")};
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) => ($visible ? "translateY(0)" : "translateY(12px)")};
+  margin-top: ${({ $visible }) => ($visible ? "12px" : "0px")};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  transition:
+    max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
@@ -700,7 +737,6 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
   justify-content: flex-end;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
-
 
 const FloatingButton = styled.button`
   display: flex;
@@ -723,19 +759,6 @@ const FloatingButton = styled.button`
   }
 `;
 
-const BottomBarWrapper = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px ${MOBILE_PAGE_GUTTER} calc(24px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(to top, var(--bg-base, white) 85%, transparent);
-  z-index: 100;
-  max-width: 768px;
-  margin: 0 auto;
-  box-sizing: border-box;
-`;
-
 const CompareFloatingButton = styled.button`
   display: flex;
   align-items: center;
@@ -754,6 +777,14 @@ const CompareFloatingButton = styled.button`
   cursor: pointer;
   outline: none;
   
+  &:disabled, &.disabled {
+    background-color: var(--bg-disabled, #d1d6db);
+    color: var(--text-disabled, #8b95a1);
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+  }
+
   &:active {
     background-color: var(--interactive-primary-pressed, #2563eb);
     transform: scale(0.98);
