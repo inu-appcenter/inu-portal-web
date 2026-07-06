@@ -10,7 +10,7 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
 
 // --- SVG Icons ---
@@ -24,13 +24,6 @@ const PlusIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 5V19" stroke="#333D4B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M5 12H19" stroke="#333D4B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="11" cy="11" r="7" stroke="#333D4B" strokeWidth="2.5"/>
-    <path d="M20 20L16 16" stroke="#333D4B" strokeWidth="2.5" strokeLinecap="round"/>
   </svg>
 );
 
@@ -104,7 +97,7 @@ export default function MobileFriendListPage() {
   const queryClient = useQueryClient();
 
   // States
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -288,6 +281,13 @@ export default function MobileFriendListPage() {
     setIsProfileModalOpen(true);
   };
 
+  const handleSearchActiveChange = useCallback((active: boolean) => {
+    setIsSearchActive(active);
+    if (!active) {
+      setSearchTerm("");
+    }
+  }, []);
+
   return (
     <PageWrapper>
       <UserProfileModal
@@ -304,17 +304,6 @@ export default function MobileFriendListPage() {
           }
         }}
       />
-
-      {searchOpen && (
-        <SearchSection>
-          <MobilePillSearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            onSubmit={() => {}}
-            placeholder="친구 이름 또는 학번 검색"
-          />
-        </SearchSection>
-      )}
 
       <StatusSection>
         <TotalCountText>내 친구 ({filteredFriends.length})</TotalCountText>
@@ -420,14 +409,20 @@ export default function MobileFriendListPage() {
       </FriendListContainer>
 
       {/* Floating Action Buttons */}
-      <FloatingButtonContainer>
-        <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
-          <PlusIcon />
-        </FloatingButton>
-        <FloatingButton onClick={() => setSearchOpen(!searchOpen)} className="search">
-          <SearchIcon />
-        </FloatingButton>
-      </FloatingButtonContainer>
+      {!isSelectionMode && (
+        <FloatingActionsWrapper $isSearchActive={isSearchActive}>
+          {!isSearchActive && (
+            <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
+              <PlusIcon />
+            </FloatingButton>
+          )}
+          <FloatingSearchBar
+            placeholder="친구 이름 또는 학번 검색"
+            onSearch={setSearchTerm}
+            onActiveChange={handleSearchActiveChange}
+          />
+        </FloatingActionsWrapper>
+      )}
 
       {/* Bottom Floating Bar */}
       {isSelectionMode && selectedIds.length > 0 && (
@@ -449,11 +444,6 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   padding: calc(var(--header-height, 56px) + 16px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 80px);
   background-color: var(--bg-subtle, #f8f9fb);
-`;
-
-const SearchSection = styled.div`
-  width: 100%;
-  margin-bottom: 16px;
 `;
 
 const StatusSection = styled.div`
@@ -680,15 +670,24 @@ const EmptyDescription = styled.p`
   text-align: center;
 `;
 
-const FloatingButtonContainer = styled.div`
+const FloatingActionsWrapper = styled.div<{ $isSearchActive: boolean }>`
   position: fixed;
   bottom: calc(var(--nav-height, 100px) + 24px);
   right: 24px;
+  left: ${({ $isSearchActive }) => ($isSearchActive ? "24px" : "auto")};
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: center;
+  align-items: flex-end;
   z-index: 99;
+  width: ${({ $isSearchActive }) => ($isSearchActive ? "calc(100% - 48px)" : "auto")};
+  max-width: ${({ $isSearchActive }) => ($isSearchActive ? "calc(768px - 48px)" : "none")};
+  pointer-events: none;
+  box-sizing: border-box;
+
+  & > * {
+    pointer-events: auto;
+  }
 `;
 
 const FloatingButton = styled.button`
