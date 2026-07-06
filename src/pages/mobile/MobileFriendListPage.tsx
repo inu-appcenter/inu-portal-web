@@ -214,6 +214,7 @@ export default function MobileFriendListPage() {
     hasback: true,
     immersive: true,
     pageBgColor: "#f8f9fb",
+    rightAreaNotCircle: true,
     rightArea: headerRight,
   });
 
@@ -327,17 +328,19 @@ export default function MobileFriendListPage() {
             const showDetail = !isSelectionMode && isExpanded;
 
             return (
-              <FriendRowWrapper key={friend.friendId} $expanded={isExpanded}>
-                <FriendMainRow
-                  onMouseDown={() => handlePressStart(friend.friendId)}
-                  onMouseUp={handlePressCancel}
-                  onMouseLeave={handlePressCancel}
-                  onTouchStart={() => handlePressStart(friend.friendId)}
-                  onTouchEnd={handlePressCancel}
-                  onTouchMove={handlePressCancel}
-                  onClick={() => handleRowClick(friend.friendId)}
-                >
-                  <ProfileArea>
+              <FriendRowWrapper
+                key={friend.friendId}
+                $expanded={isExpanded}
+                onMouseDown={() => handlePressStart(friend.friendId)}
+                onMouseUp={handlePressCancel}
+                onMouseLeave={handlePressCancel}
+                onTouchStart={() => handlePressStart(friend.friendId)}
+                onTouchEnd={handlePressCancel}
+                onTouchMove={handlePressCancel}
+                onClick={() => handleRowClick(friend.friendId)}
+              >
+                <RowInner>
+                  <ProfileArea onClick={(e) => e.stopPropagation()}>
                     {isSelectionMode ? (
                       <CheckCircle $selected={isSelected}>
                         {isSelected && <CheckIcon />}
@@ -353,34 +356,40 @@ export default function MobileFriendListPage() {
                       />
                     )}
                   </ProfileArea>
-                  <NameArea>{friend.friendAlias || friend.nickname}</NameArea>
-                </FriendMainRow>
+                  <RightContentSection>
+                    <NameRow $expanded={showDetail}>
+                      {friend.friendAlias || friend.nickname}
+                    </NameRow>
 
-                <ExpandedDetailWrapper $expanded={showDetail}>
-                  <ExpandedDetailInner>
-                    <StudentInfoRow>
-                      {year} · {dept}
-                    </StudentInfoRow>
-                    <ActionButtonRow>
-                      <CircleActionButton
-                        className="warn"
-                        onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
-                      >
-                        <AlarmIcon />
-                      </CircleActionButton>
-                      <CircleActionButton
-                        onClick={(e) => handleSingleChatClick(e, friend.friendId)}
-                      >
-                        <ChatBubbleIcon />
-                      </CircleActionButton>
-                      <CircleActionButton
-                        onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
-                      >
-                        <UserIcon />
-                      </CircleActionButton>
-                    </ActionButtonRow>
-                  </ExpandedDetailInner>
-                </ExpandedDetailWrapper>
+                    <ExpandedDetailWrapper $expanded={showDetail} onClick={(e) => e.stopPropagation()}>
+                      <ExpandedDetailInner>
+                        <DetailContent>
+                          <StudentInfoRow>
+                            {year} · {dept}
+                          </StudentInfoRow>
+                          <ActionButtonRow>
+                            <CircleActionButton
+                              className="warn"
+                              onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
+                            >
+                              <AlarmIcon />
+                            </CircleActionButton>
+                            <CircleActionButton
+                              onClick={(e) => handleSingleChatClick(e, friend.friendId)}
+                            >
+                              <ChatBubbleIcon />
+                            </CircleActionButton>
+                            <CircleActionButton
+                              onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
+                            >
+                              <UserIcon />
+                            </CircleActionButton>
+                          </ActionButtonRow>
+                        </DetailContent>
+                      </ExpandedDetailInner>
+                    </ExpandedDetailWrapper>
+                  </RightContentSection>
+                </RowInner>
               </FriendRowWrapper>
             );
           })
@@ -485,20 +494,6 @@ const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
   border-bottom: 1px solid var(--border-default, #e5e8eb);
   background-color: ${({ $expanded }) => ($expanded ? "var(--bg-muted, #f8f9fb)" : "transparent")};
   transition: background-color 0.2s ease-in-out;
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const FriendMainRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 60px;
-  width: 100%;
-  padding: 0 16px;
-  box-sizing: border-box;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -506,6 +501,19 @@ const FriendMainRow = styled.div`
   &:active {
     background-color: var(--bg-muted, #f1f3f5);
   }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const RowInner = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 10px 16px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const ProfileArea = styled.div`
@@ -515,7 +523,6 @@ const ProfileArea = styled.div`
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  margin-right: 12px;
 `;
 
 const ProfileImage = styled.img`
@@ -539,29 +546,56 @@ const CheckCircle = styled.div<{ $selected: boolean }>`
   transition: all 0.2s ease-in-out;
 `;
 
-const NameArea = styled.span`
+const RightContentSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 12px;
+  justify-content: center;
+  min-height: 40px; /* Aligns with 40px profile picture */
+  box-sizing: border-box;
+`;
+
+const NameRow = styled.div<{ $expanded: boolean }>`
   font-family: Pretendard;
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
   color: var(--text-primary, #333d4b);
+  display: flex;
+  align-items: center;
+  min-height: 40px; /* Vertically centers name when collapsed */
+  transition: min-height 0.2s ease-in-out;
+  
+  ${({ $expanded }) =>
+    $expanded &&
+    `
+      min-height: 24px;
+      margin-bottom: 4px;
+    `}
 `;
 
 const ExpandedDetailWrapper = styled.div<{ $expanded: boolean }>`
   display: grid;
   grid-template-rows: ${({ $expanded }) => ($expanded ? "1fr" : "0fr")};
-  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   overflow: hidden;
+  visibility: ${({ $expanded }) => ($expanded ? "visible" : "hidden")};
 `;
 
 const ExpandedDetailInner = styled.div`
   min-height: 0;
+  width: 100%;
+`;
+
+const DetailContent = styled.div`
+  padding: 4px 0 6px 0;
   display: flex;
   flex-direction: column;
-  padding: 0 16px 16px 68px; /* Offset profile column */
-  box-sizing: border-box;
   width: 100%;
+  box-sizing: border-box;
 `;
 
 const StudentInfoRow = styled.div`
