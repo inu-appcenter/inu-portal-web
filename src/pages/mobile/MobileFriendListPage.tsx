@@ -349,7 +349,7 @@ export default function MobileFriendListPage() {
               >
                 <Ripple />
                 <RowInner>
-                  <ProfileArea onClick={(e) => e.stopPropagation()}>
+                  <ProfileArea>
                     <ProfileImage
                       src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
                       alt="Profile"
