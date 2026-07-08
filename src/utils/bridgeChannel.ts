@@ -1,4 +1,5 @@
 import { createWebChannel, type WebChannel } from "@inu-appcenter/intip-bridge/web";
+import { resumeApp, suspendApp } from "./suspendable";
 
 /**
  * 신 Expo 셸(intip-mobile-app)과의 단일 PlatformChannel.
@@ -27,4 +28,38 @@ if (bridgeChannel) {
     window.history.pushState({}, "", path);
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
+
+  // Tier 3 웜 웹뷰 풀: parked 인스턴스 suspend(false)/resume(true).
+  bridgeChannel.on("setActive", (active) => {
+    if (active) resumeApp();
+    else suspendApp();
+  });
+
+  // Tier 3 웜 웹뷰 풀: 링크 touchstart 시점에 목표 path 를 미리 알려 네이티브가
+  // warm 슬롯을 그 path 로 SPA 프리내비할 수 있게 한다. 현재 이 SPA 는
+  // <a href> 대신 프로그래매틱 navigate(router.tsx 의 patched router.navigate)를
+  // 쓰기 때문에 실제 커버리지는 낮지만, 스펙대로 앵커 기반으로 구현해 두면
+  // 앵커가 늘어날 때 그대로 확장된다.
+  document.addEventListener(
+    "touchstart",
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const anchor = target.closest("a[href]");
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href") ?? "";
+      let url: URL;
+      try {
+        url = new URL(href, window.location.origin);
+      } catch {
+        return;
+      }
+      if (url.origin !== window.location.origin) return;
+
+      const path = `${url.pathname}${url.search}${url.hash}`;
+      bridgeChannel.send("prewarm", { path, url: url.href });
+    },
+    { passive: true },
+  );
 }
