@@ -243,7 +243,10 @@ const HandleBar = styled.div`
 
 const PlaceListPanelWrapper = styled.div<{ $isDesktop: boolean }>`
   width: 100%;
-  padding: ${({ $isDesktop }) => ($isDesktop ? "24px 24px 20px" : "0 16px")};
+  padding: ${({ $isDesktop }) =>
+    $isDesktop
+      ? "24px 24px 20px"
+      : "0 16px calc(16px + env(safe-area-inset-bottom, 0px))"};
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

@@ -320,7 +320,8 @@ const FixedFooter = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px ${MOBILE_PAGE_GUTTER} 32px;
+  padding: 16px ${MOBILE_PAGE_GUTTER}
+    calc(32px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(to top, white 80%, transparent);
   z-index: 100;
 `;
