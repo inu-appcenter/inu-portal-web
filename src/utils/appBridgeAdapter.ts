@@ -112,4 +112,18 @@ export const appBridge = {
 
     console.warn("goBack called in browser environment.");
   },
+
+  /**
+   * 홈 탭 경로로 이동합니다. 서브페이지(pushed 웹뷰) 안에서 호출되면 그
+   * 서브페이지 자신의 웹뷰 안에서 렌더링되는 대신, 네이티브 스택 전체를
+   * root 로 collapse 하고 root 를 이 path 로 SPA 이동시킵니다.
+   *
+   * 구버전 앱은 이 메시지를 모른다 — 폴백 없이 그냥 무시(호출부가
+   * appBridge.goHome 을 못 쓰면 기존처럼 일반 SPA navigate 로 대체해야 함).
+   */
+  goHome(path: string): void {
+    if (bridgeChannel) {
+      bridgeChannel.send("goHome", { path });
+    }
+  },
 };

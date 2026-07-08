@@ -332,8 +332,20 @@ if (typeof window !== "undefined") {
 
     const path = getPathname(to);
     const isTabNavigation = opts?.state?.isTabNavigation === true;
+    const isHomePath = path === ROUTES.HOME || path === ROUTES.MOBILE_HOME;
 
-    // 2. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
+    // 2. 홈 탭 경로 이동: 탭바 클릭(isTabNavigation)이 아니라면 항상 네이티브로
+    // 위임한다 — 서브페이지(pushed 웹뷰) 안에서 호출된 경우 그 서브페이지
+    // 자신의 웹뷰 안에서 렌더링되는 걸 막고, 네이티브 스택을 root 로
+    // collapse 한 뒤 root 를 이 path 로 SPA 이동시킨다. 이미 root 위에서
+    // 탭바로 홈을 누른 경우는 isTabNavigation 이 걸러줘 기존처럼 로컬에서
+    // 즉시 처리된다(불필요한 브릿지 왕복 없음).
+    if (supportsMultiWebView() && isHomePath && !isTabNavigation) {
+      appBridge.goHome(path);
+      return Promise.resolve();
+    }
+
+    // 3. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
     if (supportsMultiWebView() && !isMainTabPath(path) && !isTabNavigation && !opts?.replace) {
       const fullPath = typeof to === "string"
         ? to
