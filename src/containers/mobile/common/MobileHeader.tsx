@@ -176,7 +176,11 @@ const MobileHeaderWrapper = styled.header<{
   position: ${({ $contained }) => ($contained ? "relative" : "fixed")};
   top: ${({ $contained }) => ($contained ? "auto" : "0")};
   width: 100%;
-  padding-top: 20px;
+  /* Root's WebView is now edge-to-edge (native SafeAreaView removed for
+     root), so this must cover the notch/status bar itself. env() resolves
+     to 0 on sub-pages, where native still reserves the top inset, and on
+     desktop, which has no notch — so this is safe to apply unconditionally. */
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
   z-index: 1000;
   display: flex;
   flex-direction: column;
