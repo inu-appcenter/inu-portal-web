@@ -25,18 +25,10 @@ const MobileAdminPage = () => {
   const { tokenInfo, userInfo } = useUserStore();
   const { data: featureFlags } = useFeatureFlags();
 
-  // 환경 변수 기반 운영 환경 여부 판별
-  const isProd =
-    import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr") &&
-    !import.meta.env.VITE_API_BASE_URL?.includes("portal-dev");
-  const mode = isProd ? "prod" : "dev";
-
-  // 운영 여부에 따른 챗불이 관리자 URL 선택
-  const chatBotUrl = `${
-    isProd
-      ? import.meta.env.VITE_INUCHAT_CONSOLE_URL
-      : import.meta.env.VITE_INUCHAT_DEV_CONSOLE_URL
-  }/?token=${tokenInfo.accessToken || ""}&mode=${mode}&service=intip`;
+  // 챗불이 관리자 URL
+  const chatBotConsoleUrl = `${
+    import.meta.env.VITE_INUCHAT_CONSOLE_URL
+  }/&service=intip`;
 
   const adminPages = [
     {
@@ -81,7 +73,7 @@ const MobileAdminPage = () => {
     },
     {
       label: "AI 챗불이 관리",
-      path: chatBotUrl,
+      path: chatBotConsoleUrl,
       description: "AI 챗불이 설정 및 모니터링",
       icon: Bot,
       color: "#ec4899",

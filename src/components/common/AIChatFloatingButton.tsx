@@ -71,14 +71,7 @@ const AIChatFloatingButton = () => {
     },
   };
 
-  const isProd =
-    import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr") &&
-    !import.meta.env.VITE_API_BASE_URL?.includes("portal-dev");
-  const iframeSrc = `${
-    isProd
-      ? import.meta.env.VITE_INUCHAT_URL // 운영용 URL
-      : import.meta.env.VITE_INUCHAT_DEV_URL // 개발용 URL
-  }/?service=intip`;
+  const iframeSrc = `${import.meta.env.VITE_INUCHAT_URL}/?service=intip`;
 
   return (
     <>
