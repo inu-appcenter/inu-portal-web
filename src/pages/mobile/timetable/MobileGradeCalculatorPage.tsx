@@ -389,8 +389,10 @@ export default function MobileGradeCalculatorPage() {
                   margin={{ top: 20, right: 16, left: 8, bottom: 30 }}
                 >
                   <ReferenceLine y={4.5} stroke="#e5e8eb" strokeWidth={1} />
+                  <ReferenceLine y={4.0} stroke="#e5e8eb" strokeWidth={1} />
+                  <ReferenceLine y={3.5} stroke="#e5e8eb" strokeWidth={1} />
                   <ReferenceLine y={3.0} stroke="#e5e8eb" strokeWidth={1} />
-                  <ReferenceLine y={1.5} stroke="#e5e8eb" strokeWidth={1} />
+                  <ReferenceLine y={2.0} stroke="#e5e8eb" strokeWidth={1} />
 
                   <XAxis
                     dataKey="name"
@@ -402,7 +404,7 @@ export default function MobileGradeCalculatorPage() {
                   />
                   <YAxis
                     domain={[1.2, 4.8]}
-                    ticks={[2.0, 3.0, 4.0, 4.5]}
+                    ticks={[2.0, 3.0, 3.5, 4.0, 4.5]}
                     axisLine={false}
                     tickLine={false}
                     width={32}
