@@ -386,7 +386,7 @@ export default function MobileGradeCalculatorPage() {
                       };
                     });
                   })()}
-                  margin={{ top: 20, right: 16, left: -24, bottom: 10 }}
+                  margin={{ top: 20, right: 16, left: 8, bottom: 30 }}
                 >
                   <ReferenceLine y={4.5} stroke="#e5e8eb" strokeWidth={1} />
                   <ReferenceLine y={3.0} stroke="#e5e8eb" strokeWidth={1} />
@@ -397,12 +397,16 @@ export default function MobileGradeCalculatorPage() {
                     tick={<CustomXAxisTick />}
                     axisLine={false}
                     tickLine={false}
+                    interval={0}
+                    padding={{ left: 24, right: 24 }}
                   />
                   <YAxis
                     domain={[1.2, 4.8]}
                     ticks={[2.0, 3.0, 4.0, 4.5]}
                     axisLine={false}
                     tickLine={false}
+                    width={32}
+                    tickFormatter={(val) => val.toFixed(1)}
                     tick={{ fill: "#8b95a1", fontSize: 12, fontWeight: 500 }}
                   />
                   <Line
@@ -412,7 +416,7 @@ export default function MobileGradeCalculatorPage() {
                     strokeWidth={2.5}
                     dot={{ stroke: "#0061ff", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
                     label={{ position: "top", fill: "#333d4b", fontSize: 10, fontWeight: "bold", offset: 8 }}
-                    isAnimationActive={true}
+                    isAnimationActive={false}
                   />
                   <Line
                     type="monotone"
@@ -421,7 +425,7 @@ export default function MobileGradeCalculatorPage() {
                     strokeWidth={2.5}
                     dot={{ stroke: "#b0b8c1", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
                     label={{ position: "top", fill: "#8b95a1", fontSize: 10, fontWeight: "bold", offset: 8 }}
-                    isAnimationActive={true}
+                    isAnimationActive={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
