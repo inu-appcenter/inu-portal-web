@@ -410,7 +410,7 @@ export default function MobileGradeCalculatorPage() {
                     tick={{ fill: "#8b95a1", fontSize: 12, fontWeight: 500 }}
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="overall"
                     stroke="#0061ff"
                     strokeWidth={2.5}
@@ -419,7 +419,7 @@ export default function MobileGradeCalculatorPage() {
                     isAnimationActive={false}
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="major"
                     stroke="#b0b8c1"
                     strokeWidth={2.5}
