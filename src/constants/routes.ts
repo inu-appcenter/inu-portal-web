@@ -23,6 +23,7 @@ export const ROUTES = {
     SIMULATOR: "/timetable/simulator",
     FILTER: "/timetable/filter",
     LIST: "/timetable/list",
+    CALCULATOR: "/timetable/calculator",
   },
 
   // 친구
