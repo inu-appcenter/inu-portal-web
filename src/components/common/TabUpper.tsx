@@ -21,7 +21,7 @@ const TabContainer = styled.div`
   pointer-events: auto;
   align-items: center;
   justify-content: center;
-  padding: 0 20px;
+  padding: 0;
   box-sizing: border-box;
 `;
 
