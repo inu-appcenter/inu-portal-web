@@ -351,15 +351,15 @@ export default function MobileGradeCalculatorPage() {
             <GraphLegendRow>
               <LegendItem>
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                  <line x1="0" y1="4" x2="12" y2="4" stroke="#0061ff" strokeWidth="2"/>
-                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="#0061ff" strokeWidth="2"/>
+                  <line x1="0" y1="4" x2="12" y2="4" stroke="var(--border-brand, #0061FF)" strokeWidth="2"/>
+                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="var(--border-brand, #0061FF)" strokeWidth="2"/>
                 </svg>
                 <span>전체 평점</span>
               </LegendItem>
               <LegendItem>
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                  <line x1="0" y1="4" x2="12" y2="4" stroke="#b0b8c1" strokeWidth="2"/>
-                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="#b0b8c1" strokeWidth="2"/>
+                  <line x1="0" y1="4" x2="12" y2="4" stroke="var(--border-warn, #FEE588)" strokeWidth="2"/>
+                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="var(--border-warn, #FEE588)" strokeWidth="2"/>
                 </svg>
                 <span>전공 평점</span>
               </LegendItem>
@@ -415,18 +415,18 @@ export default function MobileGradeCalculatorPage() {
                   <Line
                     type="linear"
                     dataKey="overall"
-                    stroke="#0061ff"
+                    stroke="var(--border-brand, #0061FF)"
                     strokeWidth={2.5}
-                    dot={{ stroke: "#0061ff", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
+                    dot={{ stroke: "var(--border-brand, #0061FF)", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
                     label={{ position: "top", fill: "#333d4b", fontSize: 10, fontWeight: "bold", offset: 8 }}
                     isAnimationActive={false}
                   />
                   <Line
                     type="linear"
                     dataKey="major"
-                    stroke="#b0b8c1"
+                    stroke="var(--border-warn, #FEE588)"
                     strokeWidth={2.5}
-                    dot={{ stroke: "#b0b8c1", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
+                    dot={{ stroke: "var(--border-warn, #FEE588)", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
                     label={{ position: "top", fill: "#8b95a1", fontSize: 10, fontWeight: "bold", offset: 8 }}
                     isAnimationActive={false}
                   />
