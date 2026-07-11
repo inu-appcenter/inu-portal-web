@@ -372,7 +372,7 @@ export default function MobileGradeCalculatorPage() {
           {graphData.length < 2 ? (
             <EmptyGraphText>다음 학기부터 성적 추이를 볼 수 있어요.</EmptyGraphText>
           ) : (
-            <GraphCardBody style={{ height: "180px", marginTop: "12px", width: "100%" }}>
+            <GraphCardBody style={{ height: "220px", marginTop: "12px", width: "100%" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={(() => {
@@ -408,6 +408,7 @@ export default function MobileGradeCalculatorPage() {
                     axisLine={false}
                     tickLine={false}
                     width={32}
+                    interval={0}
                     tickFormatter={(val) => val.toFixed(1)}
                     tick={{ fill: "#8b95a1", fontSize: 12, fontWeight: 500 }}
                   />
@@ -718,7 +719,7 @@ const GraphSection = styled.div<{ $expanded: boolean }>`
   border-top: 1px solid ${(props) => (props.$expanded ? "var(--border-default, #e5e8eb)" : "transparent")};
   padding: ${(props) => (props.$expanded ? "16px 0 8px" : "0px")};
   width: 100%;
-  max-height: ${(props) => (props.$expanded ? "280px" : "0px")};
+  max-height: ${(props) => (props.$expanded ? "320px" : "0px")};
   opacity: ${(props) => (props.$expanded ? "1" : "0")};
   transform: ${(props) => (props.$expanded ? "translateY(0)" : "translateY(-10px)")};
   overflow: hidden;
