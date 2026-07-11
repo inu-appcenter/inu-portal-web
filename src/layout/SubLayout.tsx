@@ -28,7 +28,7 @@ const getInitialHeaderHeight = (path: string): number => {
     "/home/deptnotice/setting",
   ];
   if (pagesWithSubHeader.some((p) => path.startsWith(p))) {
-    return 120;
+    return 126;
   }
   return 76;
 };
@@ -59,7 +59,7 @@ export default function SubLayout({
   }, [setIsScrolled]);
 
   const initialHeaderHeight = getInitialHeaderHeight(location.pathname);
-  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader, initialHeaderHeight);
+  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader, initialHeaderHeight, location.pathname);
   const headerHeight = showHeader ? (measuredHeaderHeight || initialHeaderHeight) : 20;
   const navHeight = showNav ? 100 : 0;
 
