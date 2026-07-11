@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
@@ -93,7 +93,6 @@ const EmptyTimetableIllust = () => (
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
   const [isModalOpen] = useState(false);
-  const gradeCalculatorRef = useRef<HTMLDivElement>(null);
 
   const { selectedSemester, activeTimetableId, timetables, addTimetable } = useTimetableStore();
 
@@ -137,10 +136,7 @@ const MobileTimeTablePage = () => {
   });
 
   const handleGradeCalculatorClick = () => {
-    gradeCalculatorRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
+    navigate(ROUTES.TIMETABLE.CALCULATOR);
   };
 
   const handleCreateTimetable = () => {

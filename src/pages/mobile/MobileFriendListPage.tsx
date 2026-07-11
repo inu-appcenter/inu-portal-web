@@ -35,8 +35,12 @@ const CheckIcon = () => (
 
 const AlarmIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18 8A6 6 0 0 0 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="12" cy="13" r="7.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 9V13L14 15" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 3L8 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M19 3L16 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6 20L4.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M18 20L19.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
