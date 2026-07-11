@@ -299,6 +299,10 @@ export default function MobileTimeTableComparePage() {
   const activeTabUpper =
     (searchParams.get("tab") as "compare" | "free") || "compare";
 
+  const isSingleFriendMode = useMemo(() => {
+    return selectedFriendIds.length === 1;
+  }, [selectedFriendIds]);
+
   // subHeader 정의 (대분류 탭을 고정 헤더 영역으로 이동)
   const subHeader = useMemo(
     () => (
@@ -316,7 +320,11 @@ export default function MobileTimeTableComparePage() {
           if (id === "free") {
             setSelectedFriendIdsState([99999, ...selectedFriendIds]);
           } else if (id === "compare") {
-            setSelectedFriendIdsState([99999]);
+            if (selectedFriendIds.length === 1) {
+              setSelectedFriendIdsState([selectedFriendIds[0]]);
+            } else {
+              setSelectedFriendIdsState([99999]);
+            }
           }
         }}
       />
@@ -326,7 +334,7 @@ export default function MobileTimeTableComparePage() {
 
   // 1. 헤더 설정
   useHeader({
-    title: "친구와 시간표 비교",
+    title: isSingleFriendMode ? "친구 시간표" : "친구와 시간표 비교",
     hasback: true,
     subHeader,
     floatingSubHeader: false,
@@ -340,6 +348,9 @@ export default function MobileTimeTableComparePage() {
     if (currentTab === "free") {
       return [99999, ...selectedFriendIds];
     }
+    if (isSingleFriendMode) {
+      return [selectedFriendIds[0]];
+    }
     return [99999];
   });
 
@@ -348,9 +359,13 @@ export default function MobileTimeTableComparePage() {
     if (activeTabUpper === "free") {
       setSelectedFriendIdsState([99999, ...selectedFriendIds]);
     } else {
-      setSelectedFriendIdsState([99999]); // 비교 탭에서는 "나"만 선택된 상태로 리셋
+      if (selectedFriendIds.length === 1) {
+        setSelectedFriendIdsState([selectedFriendIds[0]]);
+      } else {
+        setSelectedFriendIdsState([99999]); // 비교 탭에서는 "나"만 선택된 상태로 리셋
+      }
     }
-  }, [selectedFriendIds]);
+  }, [selectedFriendIds, activeTabUpper, isSingleFriendMode]);
 
   const handleFriendChipClick = (friendId: number) => {
     if (friendId === -1) {
@@ -358,14 +373,18 @@ export default function MobileTimeTableComparePage() {
       const isAllSelected =
         selectedFriendIdsState.length === activeFriends.length;
       if (isAllSelected) {
-        setSelectedFriendIdsState([99999]); // 나만 선택
+        if (isSingleFriendMode) {
+          setSelectedFriendIdsState([selectedFriendIds[0]]);
+        } else {
+          setSelectedFriendIdsState([99999]); // 나만 선택
+        }
       } else {
         setSelectedFriendIdsState(activeFriends.map((f) => f.friendId)); // 모두 선택
       }
       return;
     }
 
-    if (activeTabUpper === "compare" && friendId === 99999) return; // 비교 탭에서만 "나" 고정 (선택 해제 불가)
+    if (!isSingleFriendMode && activeTabUpper === "compare" && friendId === 99999) return; // 비교 탭에서만 "나" 고정 (선택 해제 불가)
     setSelectedFriendIdsState((prev) => {
       if (prev.includes(friendId)) {
         return prev.filter((id) => id !== friendId);
@@ -724,10 +743,15 @@ export default function MobileTimeTableComparePage() {
       return freeViewClasses;
     }
     // activeTabUpper === "compare" 일 때: 내 시간표 + 선택된 친구들의 시간표를 겹쳐서 노출
-    const result: ClassItem[] = MY_CLASSES.map((c) => ({
-      ...c,
-      ownerName: "내 시간표",
-    }));
+    const result: ClassItem[] = [];
+    if (selectedFriendIdsState.includes(99999)) {
+      result.push(
+        ...MY_CLASSES.map((c) => ({
+          ...c,
+          ownerName: "내 시간표",
+        }))
+      );
+    }
     selectedFriendIdsState.forEach((friendId) => {
       const friend = friendsMap.find((f) => f.friendId === friendId);
       if (friend) {
@@ -768,7 +792,7 @@ export default function MobileTimeTableComparePage() {
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
                 const isSelected =
-                  activeTabUpper === "compare" && friend.friendId === 99999
+                  !isSingleFriendMode && activeTabUpper === "compare" && friend.friendId === 99999
                     ? true
                     : selectedFriendIdsState.includes(friend.friendId);
                 return (
