@@ -3,6 +3,14 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { Pencil, Plus, X, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ReferenceLine,
+} from "recharts";
 
 // --- Types ---
 interface Subject {
@@ -51,6 +59,24 @@ const DEFAULT_SUBJECTS_2_1: Subject[] = [
 ];
 
 const LOCAL_STORAGE_KEY = "intip_grade_calculator_data";
+
+const CustomXAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  if (!payload || !payload.value) return null;
+  const parts = payload.value.split(" ");
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={12} textAnchor="middle" fill="#8b95a1" fontSize={11} fontWeight={500}>
+        {parts[0]}
+      </text>
+      {parts[1] && (
+        <text x={0} y={26} textAnchor="middle" fill="#8b95a1" fontSize={11} fontWeight={500}>
+          {parts[1]}
+        </text>
+      )}
+    </g>
+  );
+};
 
 export default function MobileGradeCalculatorPage() {
   // --- State ---
@@ -341,120 +367,64 @@ export default function MobileGradeCalculatorPage() {
           )}
         </GraphHeaderRow>
 
-        {/* 그래프 영역 */}
         <GraphSection $expanded={showGraph}>
           {/* 그래프 카드 본문 */}
           {graphData.length < 2 ? (
             <EmptyGraphText>다음 학기부터 성적 추이를 볼 수 있어요.</EmptyGraphText>
           ) : (
-            <GraphCardBody>
-              {/* Y축 라벨 */}
-              <YAxisCol>
-                <YLabelBox>
-                  <p>4.5</p>
-                  <p>4.0</p>
-                </YLabelBox>
-                <YLabelBox>
-                  <p>3.0</p>
-                </YLabelBox>
-                <YLabelBox>
-                  <p>2.0</p>
-                </YLabelBox>
-                <YLabelSpacer />
-              </YAxisCol>
+            <GraphCardBody style={{ height: "180px", marginTop: "12px", width: "100%" }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={(() => {
+                    return graphData.map((d) => {
+                      const subjects = semestersData[d.semester] || [];
+                      const stats = calculateSemesterStats(subjects);
+                      return {
+                        name: d.semester,
+                        overall: parseFloat(d.gpa.toFixed(2)),
+                        major: parseFloat(stats.majorGpa.toFixed(2)),
+                      };
+                    });
+                  })()}
+                  margin={{ top: 20, right: 16, left: -24, bottom: 10 }}
+                >
+                  <ReferenceLine y={4.5} stroke="#e5e8eb" strokeWidth={1} />
+                  <ReferenceLine y={3.0} stroke="#e5e8eb" strokeWidth={1} />
+                  <ReferenceLine y={1.5} stroke="#e5e8eb" strokeWidth={1} />
 
-              {/* 그래프 & X축 */}
-              <GraphPlotArea>
-                <GridAndLinesContainer>
-                  {/* Grid Lines */}
-                  <GridBackground>
-                    <div className="grid-row-1" />
-                    <div className="grid-row-2" />
-                    <div className="grid-row-3" />
-                  </GridBackground>
-
-                  {/* SVG Chart */}
-                  <SvgChartContainer>
-                    <svg width="100%" height="120" viewBox="0 0 280 120" preserveAspectRatio="none">
-                      {(() => {
-                        const paddingX = 12;
-                        const width = 280 - paddingX * 2;
-                        const step = graphData.length > 1 ? width / (graphData.length - 1) : 0;
-                        
-                        // Map GPA to Y: 4.5 is at y=0, 0.0 is at y=120
-                        const getGpaY = (gpa: number) => {
-                          return 120 * (1 - gpa / 4.5);
-                        };
-
-                        const overallPoints = graphData.map((d, index) => {
-                          const x = paddingX + index * step;
-                          const y = getGpaY(d.gpa);
-                          return { x, y, gpa: d.gpa };
-                        });
-
-                        const majorPoints = graphData.map((d, index) => {
-                          const subjects = semestersData[d.semester] || [];
-                          const stats = calculateSemesterStats(subjects);
-                          const x = paddingX + index * step;
-                          const y = getGpaY(stats.majorGpa);
-                          return { x, y, gpa: stats.majorGpa };
-                        });
-
-                        const overallPath = overallPoints.reduce((acc, p, index) => {
-                          return acc + `${index === 0 ? "M" : "L"} ${p.x} ${p.y}`;
-                        }, "");
-
-                        const majorPath = majorPoints.reduce((acc, p, index) => {
-                          return acc + `${index === 0 ? "M" : "L"} ${p.x} ${p.y}`;
-                        }, "");
-
-                        return (
-                          <>
-                            {/* Lines */}
-                            {graphData.length > 1 && (
-                              <>
-                                <path d={overallPath} stroke="#0061ff" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d={majorPath} stroke="#b0b8c1" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                              </>
-                            )}
-                            {/* Overall GPA Dots & Texts */}
-                            {overallPoints.map((p, i) => (
-                              <g key={`overall-${i}`}>
-                                <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke="#0061ff" strokeWidth="2.5" />
-                                <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#333d4b">
-                                  {p.gpa.toFixed(2)}
-                                </text>
-                              </g>
-                            ))}
-                            {/* Major GPA Dots & Texts */}
-                            {majorPoints.map((p, i) => (
-                              <g key={`major-${i}`}>
-                                <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke="#b0b8c1" strokeWidth="2.5" />
-                                <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#8b95a1">
-                                  {p.gpa.toFixed(2)}
-                                </text>
-                              </g>
-                            ))}
-                          </>
-                        );
-                      })()}
-                    </svg>
-                  </SvgChartContainer>
-                </GridAndLinesContainer>
-
-                {/* X축 학기 라벨 */}
-                <XAxisRow>
-                  {graphData.map((d, index) => {
-                    const parts = d.semester.split(" ");
-                    return (
-                      <XAxisCell key={index}>
-                        <p className="cell-top">{parts[0]}</p>
-                        <p className="cell-bottom">{parts[1]}</p>
-                      </XAxisCell>
-                    );
-                  })}
-                </XAxisRow>
-              </GraphPlotArea>
+                  <XAxis
+                    dataKey="name"
+                    tick={<CustomXAxisTick />}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[1.2, 4.8]}
+                    ticks={[2.0, 3.0, 4.0, 4.5]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#8b95a1", fontSize: 12, fontWeight: 500 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="overall"
+                    stroke="#0061ff"
+                    strokeWidth={2.5}
+                    dot={{ stroke: "#0061ff", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
+                    label={{ position: "top", fill: "#333d4b", fontSize: 10, fontWeight: "bold", offset: 8 }}
+                    isAnimationActive={true}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="major"
+                    stroke="#b0b8c1"
+                    strokeWidth={2.5}
+                    dot={{ stroke: "#b0b8c1", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
+                    label={{ position: "top", fill: "#8b95a1", fontSize: 10, fontWeight: "bold", offset: 8 }}
+                    isAnimationActive={true}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </GraphCardBody>
           )}
         </GraphSection>
@@ -805,110 +775,7 @@ const GraphCardBody = styled.div`
   margin-top: 8px;
 `;
 
-const YAxisCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding-right: 8px;
-  height: 156px;
-  flex-shrink: 0;
-  width: 24px;
-  box-sizing: border-box;
-`;
 
-const YLabelBox = styled.div`
-  font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
-  height: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  line-height: 16px;
-  text-align: right;
-  width: 100%;
-  box-sizing: border-box;
-  
-  &:first-child {
-    justify-content: space-between;
-  }
-`;
-
-const YLabelSpacer = styled.div`
-  height: 36px;
-  width: 100%;
-`;
-
-const GraphPlotArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-`;
-
-const GridAndLinesContainer = styled.div`
-  position: relative;
-  height: 120px;
-  width: 100%;
-`;
-
-const GridBackground = styled.div`
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 1;
-
-  .grid-row-1 {
-    height: 40px;
-    border-bottom: 1px solid var(--border-default, #e5e8eb);
-    box-sizing: border-box;
-  }
-  .grid-row-2 {
-    height: 40px;
-    border-bottom: 1px solid var(--border-default, #e5e8eb);
-    box-sizing: border-box;
-  }
-  .grid-row-3 {
-    height: 40px;
-    border-bottom: 1px solid var(--border-default, #e5e8eb);
-    box-sizing: border-box;
-  }
-`;
-
-const SvgChartContainer = styled.div`
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 120px;
-  z-index: 2;
-`;
-
-const XAxisRow = styled.div`
-  display: flex;
-  align-items: center;
-  padding-top: 4px;
-  width: 100%;
-  height: 32px;
-  box-sizing: border-box;
-`;
-
-const XAxisCell = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-width: 0;
-
-  p {
-    font-size: 12px;
-    color: var(--text-tertiary, #8b95a1);
-    line-height: 16px;
-    margin: 0;
-  }
-`;
 
 const EmptyGraphText = styled.div`
   text-align: center;
