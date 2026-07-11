@@ -317,77 +317,153 @@ export default function MobileGradeCalculatorPage() {
 
         {/* 그래프 영역 */}
         <GraphSection $expanded={showGraph}>
-          {graphData.length === 0 ? (
-            <EmptyGraphText>학기별 과목을 등록하면 평점 그래프가 표시됩니다.</EmptyGraphText>
+          {/* 그래프 헤더 (접기 버튼 및 범례) */}
+          <GraphHeaderRow>
+            <GraphFoldButton onClick={() => setShowGraph(false)}>
+              <span>그래프 접기</span>
+              <ChevronUp size={16} className="caret-icon" />
+            </GraphFoldButton>
+            <GraphLegendRow>
+              <LegendItem>
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                  <line x1="0" y1="4" x2="12" y2="4" stroke="#0061ff" strokeWidth="2"/>
+                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="#0061ff" strokeWidth="2"/>
+                </svg>
+                <span>전체 평점</span>
+              </LegendItem>
+              <LegendItem>
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                  <line x1="0" y1="4" x2="12" y2="4" stroke="#b0b8c1" strokeWidth="2"/>
+                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="#b0b8c1" strokeWidth="2"/>
+                </svg>
+                <span>전공 평점</span>
+              </LegendItem>
+            </GraphLegendRow>
+          </GraphHeaderRow>
+
+          {/* 그래프 카드 본문 */}
+          {graphData.length < 2 ? (
+            <EmptyGraphText>다음 학기부터 성적 추이를 볼 수 있어요.</EmptyGraphText>
           ) : (
-            <SvgWrapper>
-              <svg width="100%" height="110" viewBox="0 0 321 110" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0061ff" stopOpacity="0.15" />
-                    <stop offset="100%" stopColor="#0061ff" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                {/* Grid Lines */}
-                <line x1="0" y1="15" x2="321" y2="15" stroke="#e5e8eb" strokeDasharray="3 3" />
-                <line x1="0" y1="48" x2="321" y2="48" stroke="#e5e8eb" strokeDasharray="3 3" />
-                <line x1="0" y1="80" x2="321" y2="80" stroke="#e5e8eb" strokeDasharray="3 3" />
+            <GraphCardBody>
+              {/* Y축 라벨 */}
+              <YAxisCol>
+                <YLabelBox>
+                  <p>4.5</p>
+                  <p>4.0</p>
+                </YLabelBox>
+                <YLabelBox>
+                  <p>3.0</p>
+                </YLabelBox>
+                <YLabelBox>
+                  <p>2.0</p>
+                </YLabelBox>
+                <YLabelSpacer />
+              </YAxisCol>
 
-                {/* Draw Chart Line */}
-                {(() => {
-                  const paddingX = 30;
-                  const width = 321 - paddingX * 2;
-                  const step = graphData.length > 1 ? width / (graphData.length - 1) : 0;
-                  
-                  const points = graphData.map((d, index) => {
-                    const x = paddingX + index * step;
-                    // gpa: 4.5 is at y=15, 0.0 is at y=80
-                    const y = 80 - (d.gpa / 4.5) * 65;
-                    return { x, y, gpa: d.gpa, name: d.semester };
-                  });
+              {/* 그래프 & X축 */}
+              <GraphPlotArea>
+                <GridAndLinesContainer>
+                  {/* Grid Lines */}
+                  <GridBackground>
+                    <div className="grid-row-1" />
+                    <div className="grid-row-2" />
+                    <div className="grid-row-3" />
+                  </GridBackground>
 
-                  const pathD = points.reduce((acc, p, index) => {
-                    return acc + `${index === 0 ? "M" : "L"} ${p.x} ${p.y}`;
-                  }, "");
+                  {/* SVG Chart */}
+                  <SvgChartContainer>
+                    <svg width="100%" height="120" viewBox="0 0 280 120" preserveAspectRatio="none">
+                      {(() => {
+                        const paddingX = 12;
+                        const width = 280 - paddingX * 2;
+                        const step = graphData.length > 1 ? width / (graphData.length - 1) : 0;
+                        
+                        // Map GPA to Y: 4.5 is at y=0, 0.0 is at y=120
+                        const getGpaY = (gpa: number) => {
+                          return 120 * (1 - gpa / 4.5);
+                        };
 
-                  const areaD = points.length > 0 
-                    ? `${pathD} L ${points[points.length - 1].x} 80 L ${points[0].x} 80 Z` 
-                    : "";
+                        const overallPoints = graphData.map((d, index) => {
+                          const x = paddingX + index * step;
+                          const y = getGpaY(d.gpa);
+                          return { x, y, gpa: d.gpa };
+                        });
 
-                  return (
-                    <>
-                      {points.length > 1 && (
-                        <>
-                          <path d={areaD} fill="url(#chartGradient)" />
-                          <path d={pathD} stroke="#0061ff" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                        </>
-                      )}
-                      {points.map((p, i) => {
-                        const label = p.name.replace("학년 ", "-").replace("학기", "");
+                        const majorPoints = graphData.map((d, index) => {
+                          const subjects = semestersData[d.semester] || [];
+                          const stats = calculateSemesterStats(subjects);
+                          const x = paddingX + index * step;
+                          const y = getGpaY(stats.majorGpa);
+                          return { x, y, gpa: stats.majorGpa };
+                        });
+
+                        const overallPath = overallPoints.reduce((acc, p, index) => {
+                          return acc + `${index === 0 ? "M" : "L"} ${p.x} ${p.y}`;
+                        }, "");
+
+                        const majorPath = majorPoints.reduce((acc, p, index) => {
+                          return acc + `${index === 0 ? "M" : "L"} ${p.x} ${p.y}`;
+                        }, "");
+
                         return (
-                          <g key={i}>
-                            <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke="#0061ff" strokeWidth="2" />
-                            <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#333d4b">
-                              {p.gpa.toFixed(2)}
-                            </text>
-                            <text x={p.x} y="95" textAnchor="middle" fontSize="10" fill="#8b95a1">
-                              {label}
-                            </text>
-                          </g>
+                          <>
+                            {/* Lines */}
+                            {graphData.length > 1 && (
+                              <>
+                                <path d={overallPath} stroke="#0061ff" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d={majorPath} stroke="#b0b8c1" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                              </>
+                            )}
+                            {/* Overall GPA Dots & Texts */}
+                            {overallPoints.map((p, i) => (
+                              <g key={`overall-${i}`}>
+                                <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke="#0061ff" strokeWidth="2.5" />
+                                <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#333d4b">
+                                  {p.gpa.toFixed(2)}
+                                </text>
+                              </g>
+                            ))}
+                            {/* Major GPA Dots & Texts */}
+                            {majorPoints.map((p, i) => (
+                              <g key={`major-${i}`}>
+                                <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke="#b0b8c1" strokeWidth="2.5" />
+                                <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#8b95a1">
+                                  {p.gpa.toFixed(2)}
+                                </text>
+                              </g>
+                            ))}
+                          </>
                         );
-                      })}
-                    </>
-                  );
-                })()}
-              </svg>
-            </SvgWrapper>
+                      })()}
+                    </svg>
+                  </SvgChartContainer>
+                </GridAndLinesContainer>
+
+                {/* X축 학기 라벨 */}
+                <XAxisRow>
+                  {graphData.map((d, index) => {
+                    const parts = d.semester.split(" ");
+                    return (
+                      <XAxisCell key={index}>
+                        <p className="cell-top">{parts[0]}</p>
+                        <p className="cell-bottom">{parts[1]}</p>
+                      </XAxisCell>
+                    );
+                  })}
+                </XAxisRow>
+              </GraphPlotArea>
+            </GraphCardBody>
           )}
         </GraphSection>
 
-        <GraphToggleButton onClick={() => setShowGraph(!showGraph)}>
-          <span className="toggle-text">{showGraph ? "그래프 접기" : "그래프 보기"}</span>
-          {showGraph ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </GraphToggleButton>
+        {/* 하단 그래프 보기 버튼 (Collapsed 일때만 노출) */}
+        {!showGraph && (
+          <GraphToggleButton onClick={() => setShowGraph(true)}>
+            <span className="toggle-text">그래프 보기</span>
+            <ChevronDown size={16} />
+          </GraphToggleButton>
+        )}
       </StickyStatsCard>
 
       {/* 2. 학기별 학점계산기 메인 카드 */}
@@ -672,7 +748,7 @@ const GraphSection = styled.div<{ $expanded: boolean }>`
   border-top: 1px solid ${(props) => (props.$expanded ? "var(--border-default, #e5e8eb)" : "transparent")};
   padding: ${(props) => (props.$expanded ? "16px 0 8px" : "0px")};
   width: 100%;
-  max-height: ${(props) => (props.$expanded ? "200px" : "0px")};
+  max-height: ${(props) => (props.$expanded ? "280px" : "0px")};
   opacity: ${(props) => (props.$expanded ? "1" : "0")};
   transform: ${(props) => (props.$expanded ? "translateY(0)" : "translateY(-10px)")};
   overflow: hidden;
@@ -683,16 +759,170 @@ const GraphSection = styled.div<{ $expanded: boolean }>`
               border-color 0.3s ease;
 `;
 
-const EmptyGraphText = styled.div`
-  text-align: center;
-  font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
-  padding: 24px 0;
+const GraphHeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 44px;
 `;
 
-const SvgWrapper = styled.div`
+const GraphFoldButton = styled.button`
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+
+  span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary, #8b95a1);
+  }
+
+  .caret-icon {
+    color: var(--text-tertiary, #8b95a1);
+  }
+`;
+
+const GraphLegendRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  span {
+    font-size: 12px;
+    color: var(--text-tertiary, #8b95a1);
+  }
+`;
+
+const GraphCardBody = styled.div`
+  display: flex;
   width: 100%;
-  height: 110px;
+  margin-top: 8px;
+`;
+
+const YAxisCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 8px;
+  height: 156px;
+  flex-shrink: 0;
+  width: 24px;
+  box-sizing: border-box;
+`;
+
+const YLabelBox = styled.div`
+  font-size: 12px;
+  color: var(--text-tertiary, #8b95a1);
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  line-height: 16px;
+  text-align: right;
+  width: 100%;
+  box-sizing: border-box;
+  
+  &:first-child {
+    justify-content: space-between;
+  }
+`;
+
+const YLabelSpacer = styled.div`
+  height: 36px;
+  width: 100%;
+`;
+
+const GraphPlotArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+`;
+
+const GridAndLinesContainer = styled.div`
+  position: relative;
+  height: 120px;
+  width: 100%;
+`;
+
+const GridBackground = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+
+  .grid-row-1 {
+    height: 40px;
+    border-top: 1px solid var(--border-default, #e5e8eb);
+    border-bottom: 1px solid var(--border-default, #e5e8eb);
+    box-sizing: border-box;
+  }
+  .grid-row-2 {
+    height: 40px;
+    border-bottom: 1px solid var(--border-default, #e5e8eb);
+    box-sizing: border-box;
+  }
+  .grid-row-3 {
+    height: 40px;
+    border-bottom: 1px solid var(--border-default, #e5e8eb);
+    box-sizing: border-box;
+  }
+`;
+
+const SvgChartContainer = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 120px;
+  z-index: 2;
+`;
+
+const XAxisRow = styled.div`
+  display: flex;
+  align-items: center;
+  padding-top: 4px;
+  width: 100%;
+  height: 32px;
+  box-sizing: border-box;
+`;
+
+const XAxisCell = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 0;
+
+  p {
+    font-size: 12px;
+    color: var(--text-tertiary, #8b95a1);
+    line-height: 16px;
+    margin: 0;
+  }
+`;
+
+const EmptyGraphText = styled.div`
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-disabled, #b0b8c1);
+  padding: 40px 16px;
+  width: 100%;
 `;
 
 const GraphToggleButton = styled.button`
