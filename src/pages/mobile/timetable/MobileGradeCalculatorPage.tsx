@@ -315,14 +315,13 @@ export default function MobileGradeCalculatorPage() {
           </StatBox>
         </StatsRow>
 
-        {/* 그래프 영역 */}
-        <GraphSection $expanded={showGraph}>
-          {/* 그래프 헤더 (접기 버튼 및 범례) */}
-          <GraphHeaderRow>
-            <GraphFoldButton onClick={() => setShowGraph(false)}>
-              <span>그래프 접기</span>
-              <ChevronUp size={16} className="caret-icon" />
-            </GraphFoldButton>
+        {/* 그래프 토글 헤더 (항상 노출, 좌측 상단 버튼 배치) */}
+        <GraphHeaderRow>
+          <GraphFoldButton onClick={() => setShowGraph(!showGraph)}>
+            <span>{showGraph ? "그래프 접기" : "그래프 보기"}</span>
+            {showGraph ? <ChevronUp size={16} className="caret-icon" /> : <ChevronDown size={16} className="caret-icon" />}
+          </GraphFoldButton>
+          {showGraph && (
             <GraphLegendRow>
               <LegendItem>
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
@@ -339,8 +338,11 @@ export default function MobileGradeCalculatorPage() {
                 <span>전공 평점</span>
               </LegendItem>
             </GraphLegendRow>
-          </GraphHeaderRow>
+          )}
+        </GraphHeaderRow>
 
+        {/* 그래프 영역 */}
+        <GraphSection $expanded={showGraph}>
           {/* 그래프 카드 본문 */}
           {graphData.length < 2 ? (
             <EmptyGraphText>다음 학기부터 성적 추이를 볼 수 있어요.</EmptyGraphText>
@@ -456,14 +458,6 @@ export default function MobileGradeCalculatorPage() {
             </GraphCardBody>
           )}
         </GraphSection>
-
-        {/* 하단 그래프 보기 버튼 (Collapsed 일때만 노출) */}
-        {!showGraph && (
-          <GraphToggleButton onClick={() => setShowGraph(true)}>
-            <span className="toggle-text">그래프 보기</span>
-            <ChevronDown size={16} />
-          </GraphToggleButton>
-        )}
       </StickyStatsCard>
 
       {/* 2. 학기별 학점계산기 메인 카드 */}
@@ -866,7 +860,6 @@ const GridBackground = styled.div`
 
   .grid-row-1 {
     height: 40px;
-    border-top: 1px solid var(--border-default, #e5e8eb);
     border-bottom: 1px solid var(--border-default, #e5e8eb);
     box-sizing: border-box;
   }
@@ -925,29 +918,7 @@ const EmptyGraphText = styled.div`
   width: 100%;
 `;
 
-const GraphToggleButton = styled.button`
-  background: none;
-  border: none;
-  border-top: 1px solid var(--border-default, #e5e8eb);
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  cursor: pointer;
-  width: 100%;
-  outline: none;
 
-  .toggle-text {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-tertiary, #8b95a1);
-  }
-
-  svg {
-    color: var(--text-tertiary, #8b95a1);
-  }
-`;
 
 // 2. 메인 컨테이너 스타일
 const MainContainer = styled.div`
