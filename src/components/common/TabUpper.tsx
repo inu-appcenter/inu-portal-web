@@ -19,6 +19,28 @@ const TabContainer = styled.div`
   position: relative;
   width: 100%;
   pointer-events: auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+`;
+
+const TabTrack = styled.div`
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  align-items: center;
+  min-width: 0;
+  overflow: clip;
+  padding: 4px;
+  background: var(--bg-blur, rgba(255, 255, 255, 0.6));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 999px;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
+  position: relative;
+  box-sizing: border-box;
 `;
 
 const TabButton = styled.button<{ $isActive: boolean }>`
@@ -28,35 +50,40 @@ const TabButton = styled.button<{ $isActive: boolean }>`
   justify-content: center;
   align-items: center;
   padding: 8px 12px;
-  color: ${({ $isActive }) =>
-    $isActive ? "var(--text-secondary)" : "var(--text-tertiary)"};
   background: none;
   border: none;
   cursor: pointer;
   outline: none;
   -webkit-tap-highlight-color: transparent;
   transition: color 0.2s ease-in-out;
+  box-sizing: border-box;
 
+  /* Font styling from Figma */
+  font-family: "Pretendard", -apple-system, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: 24px;
+  color: ${({ $isActive }) =>
+    $isActive ? "var(--text-primary, #333d4b)" : "var(--text-tertiary, #8b95a1)"};
 
   &:focus {
     outline: none;
   }
 `;
 
-const ActiveUnderline = styled(motion.div)`
+const ActivePill = styled(motion.div)`
   position: absolute;
-  bottom: -1px; /* 컨테이너 보더 위에 겹치도록 설정 */
+  top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background-color: var(--text-secondary);
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
-
-  z-index: 1;
+  bottom: 0;
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 999px;
+  z-index: -1;
+  box-sizing: border-box;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.04);
 `;
 
 export const TabUpper: React.FC<TabUpperProps> = ({
@@ -67,30 +94,32 @@ export const TabUpper: React.FC<TabUpperProps> = ({
 }) => {
   return (
     <TabContainer className={className}>
-      {tabs.map((tab) => {
-        const isActive = tab.id === activeTabId;
-        return (
-          <TabButton
-            key={tab.id}
-            $isActive={isActive}
-            onClick={() => onChange(tab.id)}
-            type="button"
-          >
-            {tab.label}
-            {isActive && (
-              <ActiveUnderline
-                layoutId="activeTabUnderline"
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 24,
-                  mass: 0.8,
-                }}
-              />
-            )}
-          </TabButton>
-        );
-      })}
+      <TabTrack>
+        {tabs.map((tab) => {
+          const isActive = tab.id === activeTabId;
+          return (
+            <TabButton
+              key={tab.id}
+              $isActive={isActive}
+              onClick={() => onChange(tab.id)}
+              type="button"
+            >
+              {tab.label}
+              {isActive && (
+                <ActivePill
+                  layoutId="activeTabPill"
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 24,
+                    mass: 0.8,
+                  }}
+                />
+              )}
+            </TabButton>
+          );
+        })}
+      </TabTrack>
     </TabContainer>
   );
 };

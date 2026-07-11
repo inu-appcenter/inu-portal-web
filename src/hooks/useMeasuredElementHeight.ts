@@ -3,8 +3,9 @@ import { RefObject, useLayoutEffect, useState } from "react";
 export default function useMeasuredElementHeight<T extends HTMLElement>(
   ref: RefObject<T | null>,
   enabled = true,
+  initialHeight = 0,
 ) {
-  const [height, setHeight] = useState(0);
+  const [height, setHeight] = useState(initialHeight);
 
   useLayoutEffect(() => {
     if (!enabled) {
