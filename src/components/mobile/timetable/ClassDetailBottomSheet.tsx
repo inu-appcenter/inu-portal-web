@@ -2,6 +2,8 @@ import { Drawer } from "vaul";
 import styled from "styled-components";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { ClassItem } from "./TimetableGrid";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 interface ClassDetailBottomSheetProps {
   open: boolean;
@@ -38,6 +40,8 @@ export default function ClassDetailBottomSheet({
   onEdit,
   onDelete,
 }: ClassDetailBottomSheetProps) {
+  const navigate = useNavigate();
+
   if (!selectedClass) return null;
 
   const matchingClasses = allEvents
@@ -105,8 +109,12 @@ export default function ClassDetailBottomSheet({
                 <CapsuleButton
                   variant="brand"
                   onClick={() => {
-                    // TODO: 강의계획서 페이지로 이동 로직 추가
-                    console.log("강의계획서 버튼 클릭됨");
+                    navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                      state: {
+                        courseName: selectedClass.name,
+                        professor: selectedClass.professor,
+                      },
+                    });
                     onOpenChange(false);
                   }}
                 >
