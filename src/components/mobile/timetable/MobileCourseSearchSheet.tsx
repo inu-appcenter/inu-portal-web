@@ -334,7 +334,12 @@ const MobileCourseSearchSheet = ({
                           <SecondaryActionButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              console.log("강의계획서 클릭됨");
+                              navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                                state: {
+                                  courseName: course.name,
+                                  professor: course.professor,
+                                },
+                              });
                             }}
                           >
                             <FileText size={20} />
