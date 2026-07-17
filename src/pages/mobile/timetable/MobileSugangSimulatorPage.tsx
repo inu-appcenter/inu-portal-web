@@ -1,17 +1,24 @@
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { useHeader } from "@/context/HeaderContext";
+import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes.ts";
 
 export default function MobileSugangSimulatorPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  useHeader({
-    title: "모의 수강 신청",
-    hasback: true,
-    pageBgColor: "#ffffff",
-    backPath: ROUTES.TIMETABLE.ROOT,
-  });
+  useEffect(() => {
+    // 앱 웹뷰의 뒤로가기 동작이 페이지를 닫아버리지 않도록
+    // 이 화면 진입 시 더미 히스토리 상태를 한 번 쌓아둡니다.
+    window.history.pushState({ sugangSimulator: true }, "", window.location.href);
+
+    const handlePopState = () => {
+      navigate(ROUTES.TIMETABLE.ROOT, { replace: true });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate]);
 
   useLayoutEffect(() => {
     const html = document.documentElement;
@@ -56,7 +63,7 @@ export default function MobileSugangSimulatorPage() {
 
 const PageWrapper = styled.div`
   width: 100%;
-  height: calc(100dvh - var(--header-height, 56px));
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
