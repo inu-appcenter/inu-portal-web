@@ -44,6 +44,18 @@ export default function ClassDetailBottomSheet({
 
   if (!selectedClass) return null;
 
+  const professorName = selectedClass.professor?.trim() || "";
+  const lectureReviewUrl = professorName
+    ? `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`
+    : "";
+  const handleLectureReviewClick = () => {
+    if (!lectureReviewUrl) {
+      alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
+      return;
+    }
+    window.open(lectureReviewUrl, "_blank", "noopener,noreferrer");
+  };
+
   const matchingClasses = allEvents
     .filter((e) => e.name === selectedClass.name)
     .sort((a, b) => a.day - b.day || a.startTime - b.startTime);
@@ -106,20 +118,28 @@ export default function ClassDetailBottomSheet({
               </ScrollableBody>
 
               <FooterSection>
-                <CapsuleButton
-                  variant="brand"
-                  onClick={() => {
-                    navigate(ROUTES.TIMETABLE.SYLLABUS, {
-                      state: {
-                        courseName: selectedClass.name,
-                        professor: selectedClass.professor,
-                      },
-                    });
-                    onOpenChange(false);
-                  }}
-                >
-                  강의계획서
-                </CapsuleButton>
+                <CapsuleButton.Group gap={12}>
+                  <LectureReviewButton
+                    type="button"
+                    onClick={handleLectureReviewClick}
+                  >
+                    강의평
+                  </LectureReviewButton>
+                  <SyllabusButton
+                    type="button"
+                    onClick={() => {
+                      navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                        state: {
+                          courseName: selectedClass.name,
+                          professor: selectedClass.professor,
+                        },
+                      });
+                      onOpenChange(false);
+                    }}
+                  >
+                    강의계획서
+                  </SyllabusButton>
+                </CapsuleButton.Group>
                 {onEdit && onDelete && (
                   <CapsuleButton.Group gap={12}>
                     <CapsuleButton
@@ -330,4 +350,45 @@ const FooterSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+`;
+
+const BaseFooterButton = styled.button`
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: Pretendard, sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const LectureReviewButton = styled(BaseFooterButton)`
+  border: 1px solid var(--border-warn-subtle, #fef3c7);
+  background: var(--bg-warn, #fffaeb);
+  color: var(--text-warn, #b58000);
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+    background: #fff4d1;
+  }
+`;
+
+const SyllabusButton = styled(BaseFooterButton)`
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand, #eff6ff);
+  color: var(--text-brand, #0061ff);
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+    background: #dfeeff;
+  }
 `;

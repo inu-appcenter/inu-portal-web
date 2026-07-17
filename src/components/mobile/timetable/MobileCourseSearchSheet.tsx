@@ -185,6 +185,17 @@ const MobileCourseSearchSheet = ({
     searchBarRef.current?.blur();
   };
 
+  const openLectureReview = (professor: string) => {
+    const professorName = professor?.trim() || "";
+    if (!professorName) {
+      alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
+      return;
+    }
+
+    const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   const activeSnap =
     typeof snap === "number" && COURSE_SEARCH_SNAP_POINTS.includes(snap)
       ? snap
@@ -266,7 +277,7 @@ const MobileCourseSearchSheet = ({
                             <SecondaryActionButton
                               onClick={(e) => {
                                 e.stopPropagation();
-                                console.log("강의평 보기 클릭됨");
+                                openLectureReview(course.professor);
                               }}
                             >
                               <MessagesSquare size={20} />
