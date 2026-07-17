@@ -27,12 +27,20 @@ const MOCK_TIMETABLE_2024_2: ClassItem[] = [
   { id: 32, name: "선형대수학", room: "102호", day: 3, startTime: 9, endTime: 11 },
 ];
 
+export interface TimetableTheme {
+  colorTheme: "default" | "pastelWarm" | "pastelCool" | "monotone";
+  fontSize: "small" | "medium" | "large";
+  showRoom: boolean;
+  showProfessor: boolean;
+}
+
 export interface Timetable {
   id: number;
   name: string;
   semester: string;
   isRepresentative: boolean;
   events: ClassItem[];
+  theme?: TimetableTheme;
 }
 
 interface TimetableStore {
@@ -45,6 +53,7 @@ interface TimetableStore {
   addTimetable: (semester: string, name: string) => void;
   renameTimetable: (id: number, name: string) => void;
   deleteTimetable: (id: number) => void;
+  updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
 }
 
 export const useTimetableStore = create<TimetableStore>((set) => ({
@@ -151,4 +160,10 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
         activeTimetableId: newActiveId,
       };
     }),
+  updateTimetableTheme: (id, theme) =>
+    set((state) => ({
+      timetables: state.timetables.map((t) =>
+        t.id === id ? { ...t, theme } : t
+      ),
+    })),
 }));

@@ -11,6 +11,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
+import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
 
 // --- SVG Icons ---
 const CaretDownIcon = () => (
@@ -98,6 +99,7 @@ const MobileTimeTablePage = () => {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputVal, setRenameInputVal] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
 
   const {
     selectedSemester,
@@ -170,7 +172,7 @@ const MobileTimeTablePage = () => {
         label: "시간표 테마 설정",
         icon: <Palette size={20} />,
         onClick: () => {
-          alert("시간표 테마 설정 기능은 준비 중입니다.");
+          setIsThemeSheetOpen(true);
         },
       },
       {
@@ -199,6 +201,7 @@ const MobileTimeTablePage = () => {
     setIsRenameModalOpen,
     setRenameInputVal,
     setIsDeleteModalOpen,
+    setIsThemeSheetOpen,
   ]);
 
   useHeader({
@@ -275,11 +278,17 @@ const MobileTimeTablePage = () => {
               onClick: () => setIsDeleteModalOpen(false),
             }}
           />
+
+          <TimetableThemeBottomSheet
+            open={isThemeSheetOpen}
+            onOpenChange={setIsThemeSheetOpen}
+            timetableId={activeTimetable.id}
+          />
         </>
       )}
 
       {activeTimetable ? (
-        <TimetableGrid events={activeTimetable.events} />
+        <TimetableGrid events={activeTimetable.events} theme={activeTimetable.theme} />
       ) : (
         <NoTimetableContainer>
           <NoTimetableContent>
