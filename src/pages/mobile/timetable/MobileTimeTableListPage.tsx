@@ -4,7 +4,9 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
+import Modal from "@/components/common/Modal";
+import InputField from "@/components/common/InputField";
 
 // Icons
 const PlusIcon = () => (
@@ -20,17 +22,44 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
   </svg>
 );
 
+const SEMESTERS = ["2026년 2학기", "2026년 1학기", "2025년 2학기", "2025년 1학기", "2024년 2학기"];
+
+const getDefaultTimetableName = (semester: string, timetables: Timetable[]) => {
+  const existingNames = timetables
+    .filter((t) => t.semester === semester)
+    .map((t) => t.name);
+
+  let index = 1;
+  while (true) {
+    const candidate = `시간표 ${index}`;
+    if (!existingNames.includes(candidate)) {
+      return candidate;
+    }
+    index++;
+  }
+};
+
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
   const { timetables, setSemester, setActiveTimetable, setRepresentative, addTimetable } = useTimetableStore();
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [modalSemester, setModalSemester] = useState("2026년 2학기");
+  const [modalName, setModalName] = useState("");
+
+  const semesters = SEMESTERS;
+
   const handleAddClick = useCallback(() => {
-    const semester = prompt("학기를 입력해주세요. (예: 2026년 2학기)", "2026년 2학기");
-    if (!semester) return;
-    const name = prompt("시간표 이름을 입력해주세요. (예: 시간표 1)", "시간표 1");
-    if (!name) return;
-    addTimetable(semester, name);
-  }, [addTimetable]);
+    const defaultSem = semesters[0];
+    setModalSemester(defaultSem);
+    setModalName(getDefaultTimetableName(defaultSem, timetables));
+    setIsAddModalOpen(true);
+  }, [timetables, semesters]);
+
+  const handleSemesterChange = (newSem: string) => {
+    setModalSemester(newSem);
+    setModalName(getDefaultTimetableName(newSem, timetables));
+  };
 
   const headerRight = useMemo(() => (
     <IconButton onClick={handleAddClick}>
@@ -45,10 +74,6 @@ export default function MobileTimeTableListPage() {
     pageBgColor: "#f8f9fb",
     rightArea: headerRight
   });
-
-  // Group timetables by semester
-  // Semesters list in chronological order
-  const semesters = ["2026년 2학기", "2026년 1학기", "2025년 2학기", "2025년 1학기", "2024년 2학기"];
 
   const handleSelectTimetable = (t: Timetable) => {
     setSemester(t.semester);
@@ -87,6 +112,48 @@ export default function MobileTimeTableListPage() {
           );
         })}
       </ListContainer>
+
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="시간표 추가"
+        primaryButton={{
+          text: "저장",
+          variant: "brand",
+          onClick: () => {
+            if (modalName.trim()) {
+              addTimetable(modalSemester, modalName.trim());
+              setIsAddModalOpen(false);
+            }
+          },
+          disabled: !modalName.trim(),
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsAddModalOpen(false),
+        }}
+      >
+        <SelectContainer>
+          <SelectLabel>학기</SelectLabel>
+          <StyledSelect
+            value={modalSemester}
+            onChange={(e) => handleSemesterChange(e.target.value)}
+          >
+            {semesters.map((sem) => (
+              <option key={sem} value={sem}>
+                {sem}
+              </option>
+            ))}
+          </StyledSelect>
+        </SelectContainer>
+
+        <InputField
+          label="시간표 이름"
+          value={modalName}
+          onChange={setModalName}
+          placeholder="시간표 이름을 입력하세요"
+        />
+      </Modal>
     </PageWrapper>
   );
 }
@@ -191,4 +258,53 @@ const IconButton = styled.button`
   &:active {
     background-color: var(--bg-muted, #f1f3f5);
   }
+`;
+
+const SelectContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-base, #ffffff);
+  padding: 8px 12px;
+  min-height: 56px;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:focus-within {
+    border-color: var(--border-brand, #0061ff);
+  }
+`;
+
+const SelectLabel = styled.span`
+  color: var(--text-tertiary, #8b95a1);
+  margin-bottom: 4px;
+  pointer-events: none;
+  text-align: left;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+`;
+
+const StyledSelect = styled.select`
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--text-primary, #333d4b);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%238B95A1' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0px center;
 `;

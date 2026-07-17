@@ -200,6 +200,12 @@ const ModalSlot = styled.div`
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  gap: 12px;
+
+  /* 모달 내부 InputField/SelectContainer 등의 배경색을 피그마 사양인 흰색(var(--bg-base))으로 덮어씀 */
+  & > div {
+    background-color: var(--bg-base, #ffffff) !important;
+  }
 `;
 
 const ButtonContainer = styled.div`
