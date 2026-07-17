@@ -181,6 +181,15 @@ const MobileTimeTableEditPage = () => {
   const [snap, setSnap] = useState<string | number | null>(COURSE_SEARCH_SNAP_POINTS[1]);
   const [isSheetOpen, setIsSheetOpen] = useState(true);
 
+  useEffect(() => {
+    if (
+      typeof snap !== "number" ||
+      !COURSE_SEARCH_SNAP_POINTS.includes(snap)
+    ) {
+      setSnap(COURSE_SEARCH_SNAP_POINTS[1]);
+    }
+  }, [snap]);
+
   // 프리뷰 연산
   const previewSchedules = useMemo(
     () => SEARCH_RESULTS.find((c) => c.id === expandedId)?.schedules || [],
@@ -350,5 +359,4 @@ const ScoreArea = styled.div`
     line-height: 24px;
   }
 `;
-
 

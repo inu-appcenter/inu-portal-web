@@ -35,7 +35,7 @@ export interface CourseResult {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.6, 0.95];
+export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
 
 interface MobileCourseSearchSheetProps {
   courses: CourseResult[];
@@ -252,16 +252,11 @@ const MobileCourseSearchSheet = ({
         disablePreventScroll={true}
         snapToSequentialPoint={true}
         showCloseButton={false}
+        height="100dvh"
+        maxHeight="100dvh"
       >
-        <SheetContentWrapper
-          $snapHeight={
-            typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[1]
-          }
-        >
+        <SheetContentWrapper>
           <ScrollableBody
-            $snapHeight={
-              typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[1]
-            }
             data-vaul-no-drag=""
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -389,26 +384,13 @@ export default MobileCourseSearchSheet;
 
 // --- 스타일 ---
 
-const SheetContentWrapper = styled.div<{ $snapHeight?: number }>`
+const SheetContentWrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
   width: 100%;
-
-  height: ${({ $snapHeight }) =>
-    typeof $snapHeight === "number"
-      ? `calc(${$snapHeight * 100}dvh - 52px - env(safe-area-inset-bottom, 0px))`
-      : "auto"};
-  max-height: ${({ $snapHeight }) =>
-    typeof $snapHeight === "number"
-      ? `calc(${$snapHeight * 100}dvh - 52px - env(safe-area-inset-bottom, 0px))`
-      : "none"};
-
-  transition:
-    height 0.35s cubic-bezier(0.32, 0.94, 0.6, 1),
-    max-height 0.35s cubic-bezier(0.32, 0.94, 0.6, 1);
 `;
 
 const FloatingActionsContainer = styled.div`
@@ -509,9 +491,7 @@ const FilterButton = styled.button<{
   }
 `;
 
-const ScrollableBody = styled.div<{
-  $snapHeight?: number;
-}>`
+const ScrollableBody = styled.div`
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
