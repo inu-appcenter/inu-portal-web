@@ -2,6 +2,7 @@ import { Drawer } from "vaul";
 import styled from "styled-components";
 import { useState } from "react";
 import EditFriendAliasModal from "./EditFriendAliasModal";
+import Modal from "@/components/common/Modal";
 import {
   UserPlus,
   UserCheck,
@@ -261,12 +262,15 @@ export default function UserProfileModal({
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const [isAliasModalOpen, setIsAliasModalOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false);
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
 
   const isChatContext = !!roomContext && !!chatRoomMemberId;
   const isFriendContext = !isChatContext && !!friendId;
   // memberId만 있고 chat/friend context가 없을 때 = 내 프로필
   const isSelfProfile = !!memberId && !isChatContext && !isFriendContext;
+  const isConfirmModalOpen = deleteConfirmOpen || blockConfirmOpen;
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
@@ -385,9 +389,7 @@ export default function UserProfileModal({
         }
         break;
       case "ACCEPTED":
-        if (confirm("친구를 삭제할까요?")) {
-          if (profile.friendId) deleteMutation.mutate(profile.friendId);
-        }
+        setDeleteConfirmOpen(true);
         break;
     }
   };
@@ -468,18 +470,24 @@ export default function UserProfileModal({
 
   const handleBlock = () => {
     if (!profile) return;
-    if (
-      confirm(
-        `${profile.nickname}님을 차단할까요?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`,
-      )
-    ) {
-      const blockTargetId = profile.memberId || friendId || chatRoomMemberId;
-      if (!blockTargetId) {
-        alert("차단 대상 식별자를 찾을 수 없습니다.");
-        return;
-      }
-      blockMutation.mutate(blockTargetId);
+    setBlockConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!profile?.friendId) return;
+    deleteMutation.mutate(profile.friendId);
+    setDeleteConfirmOpen(false);
+  };
+
+  const handleConfirmBlock = () => {
+    if (!profile) return;
+    const blockTargetId = profile.memberId || friendId || chatRoomMemberId;
+    if (!blockTargetId) {
+      alert("차단 대상 식별자를 찾을 수 없습니다.");
+      return;
     }
+    blockMutation.mutate(blockTargetId);
+    setBlockConfirmOpen(false);
   };
 
   const handleKick = () => {
@@ -511,7 +519,15 @@ export default function UserProfileModal({
 
   return (
     <>
-      <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
+      <Drawer.Root
+        open={isOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && isConfirmModalOpen) return;
+          onOpenChange(nextOpen);
+        }}
+        dismissible={!isConfirmModalOpen}
+        modal={true}
+      >
         <Drawer.Portal>
           <StyledOverlay />
           <StyledContent>
@@ -522,14 +538,22 @@ export default function UserProfileModal({
                   <>
                     {profile.friendStatus === "ACCEPTED" && (
                       <IconButton
-                        onClick={handleAction}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction();
+                        }}
                         title="친구 삭제"
                       >
                         <UserMinus size={22} color="#8E8E93" />
                       </IconButton>
                     )}
                     <IconButton
-                      onClick={handleBlock}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBlock();
+                      }}
                       title="차단"
                     >
                       <ShieldAlert size={22} color="#FF3B30" />
@@ -669,6 +693,38 @@ export default function UserProfileModal({
         onOpenChange={setIsAliasModalOpen}
         currentAlias={profile?.friendAlias || ""}
         onConfirm={handleConfirmAliasUpdate}
+      />
+      <Modal
+        isOpen={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        title="친구 삭제"
+        description="친구를 삭제하면 서로의 시간표를 볼 수 없어요"
+        primaryButton={{
+          text: "삭제",
+          onClick: handleConfirmDelete,
+          variant: "danger",
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setDeleteConfirmOpen(false),
+          variant: "secondary",
+        }}
+      />
+      <Modal
+        isOpen={blockConfirmOpen}
+        onClose={() => setBlockConfirmOpen(false)}
+        title="친구 차단"
+        description={"차단하면 서로의 시간표를 볼 수 없고,\n친구 요청도 주고받을 수 없어요"}
+        primaryButton={{
+          text: "차단",
+          onClick: handleConfirmBlock,
+          variant: "danger",
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setBlockConfirmOpen(false),
+          variant: "secondary",
+        }}
       />
     </>
   );

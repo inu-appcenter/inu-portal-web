@@ -12,6 +12,7 @@ export interface ClassItem {
   day: number; // 0:월 ~ 4:금
   startTime: number; // 9 ~ 21
   endTime: number;
+  credits?: number;
   // 미리보기 구분용
   isPreview?: boolean;
   professor?: string; //교수명

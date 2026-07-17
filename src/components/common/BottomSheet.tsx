@@ -18,6 +18,7 @@ export interface BottomSheetProps {
   repositionInputs?: boolean;
   zIndex?: number;
   height?: string | number;
+  maxHeight?: string | number;
   closeOnBack?: boolean;
 }
 
@@ -36,6 +37,7 @@ export default function BottomSheet({
   repositionInputs = false,
   zIndex,
   height,
+  maxHeight,
   closeOnBack,
 }: BottomSheetProps) {
   // snapPoints가 존재하지만 외부에서 활성 스냅 포인트 상태가 주어지지 않은 경우 내부에서 상태 관리
@@ -115,6 +117,7 @@ export default function BottomSheet({
         <StyledContent
           $zIndex={zIndex}
           $height={height}
+          $maxHeight={maxHeight}
           onOpenAutoFocus={(e) => {
             if (!modal) e.preventDefault();
           }}
@@ -160,7 +163,11 @@ const StyledOverlay = styled(Drawer.Overlay)<{ $zIndex?: number }>`
   z-index: ${({ $zIndex }) => $zIndex ?? 999};
 `;
 
-const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $height?: string | number }>`
+const StyledContent = styled(Drawer.Content)<{
+  $zIndex?: number;
+  $height?: string | number;
+  $maxHeight?: string | number;
+}>`
   position: fixed;
   left: 0;
   right: 0;
@@ -169,7 +176,10 @@ const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $height?: strin
   outline: none;
 
   height: ${({ $height }) => (typeof $height === "number" ? `${$height * 100}%` : $height ?? "auto")};
-  max-height: 96%;
+  max-height: ${({ $maxHeight }) =>
+    typeof $maxHeight === "number"
+      ? `${$maxHeight * 100}%`
+      : ($maxHeight ?? "96%")};
   display: flex;
   flex-direction: column;
 

@@ -15,79 +15,329 @@ import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableTh
 
 // --- SVG Icons ---
 const CaretDownIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-    <path d="M6 9L12 15L18 9" stroke="#333D4B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ flexShrink: 0 }}
+  >
+    <path
+      d="M6 9L12 15L18 9"
+      stroke="#333D4B"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const UsersIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const CalculatorIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4" y="2" width="16" height="20" rx="2" ry="2" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="8" y1="6" x2="16" y2="6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="16" y1="14" x2="16" y2="18" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="8" y1="10" x2="8" y2="10.01" stroke="#0061FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="12" y1="10" x2="12" y2="10.01" stroke="#0061FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="16" y1="10" x2="16" y2="10.01" stroke="#0061FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="8" y1="14" x2="8" y2="14.01" stroke="#0061FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="12" y1="14" x2="12" y2="14.01" stroke="#0061FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="8" y1="18" x2="8" y2="18.01" stroke="#0061FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="12" y1="18" x2="12" y2="18.01" stroke="#0061FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect
+      x="4"
+      y="2"
+      width="16"
+      height="20"
+      rx="2"
+      ry="2"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="8"
+      y1="6"
+      x2="16"
+      y2="6"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="16"
+      y1="14"
+      x2="16"
+      y2="18"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="8"
+      y1="10"
+      x2="8"
+      y2="10.01"
+      stroke="#0061FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="12"
+      y1="10"
+      x2="12"
+      y2="10.01"
+      stroke="#0061FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="16"
+      y1="10"
+      x2="16"
+      y2="10.01"
+      stroke="#0061FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="8"
+      y1="14"
+      x2="8"
+      y2="14.01"
+      stroke="#0061FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="12"
+      y1="14"
+      x2="12"
+      y2="14.01"
+      stroke="#0061FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="8"
+      y1="18"
+      x2="8"
+      y2="18.01"
+      stroke="#0061FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="12"
+      y1="18"
+      x2="12"
+      y2="18.01"
+      stroke="#0061FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const CalendarPlusIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="16" y1="2" x2="16" y2="6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="8" y1="2" x2="8" y2="6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="3" y1="10" x2="21" y2="10" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="12" y1="14" x2="12" y2="18" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="10" y1="16" x2="14" y2="16" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect
+      x="3"
+      y="4"
+      width="18"
+      height="18"
+      rx="2"
+      ry="2"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="16"
+      y1="2"
+      x2="16"
+      y2="6"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="8"
+      y1="2"
+      x2="8"
+      y2="6"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="3"
+      y1="10"
+      x2="21"
+      y2="10"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="12"
+      y1="14"
+      x2="12"
+      y2="18"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="10"
+      y1="16"
+      x2="14"
+      y2="16"
+      stroke="#0061FF"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const EmptyTimetableIllust = () => (
-  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="60" cy="60" r="52" fill="#F8F9FB"/>
-    <circle cx="60" cy="60" r="44" fill="#F2F4F6"/>
-    
+  <svg
+    width="120"
+    height="120"
+    viewBox="0 0 120 120"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="60" cy="60" r="52" fill="#F8F9FB" />
+    <circle cx="60" cy="60" r="44" fill="#F2F4F6" />
+
     <circle cx="30" cy="35" r="4" fill="#E5E8EB" />
     <circle cx="92" cy="45" r="5" fill="#E5E8EB" />
     <circle cx="85" cy="85" r="3" fill="#E5E8EB" />
 
     <g filter="url(#shadow)">
-      <rect x="38" y="38" width="44" height="44" rx="8" fill="#FFFFFF"/>
-      <rect x="38" y="38" width="44" height="44" rx="8" stroke="#E5E8EB" strokeWidth="1.5"/>
-      <path d="M38.75 50H81.25" stroke="#E5E8EB" strokeWidth="1.5"/>
-      <circle cx="48" cy="58" r="2" fill="#E5E8EB"/>
-      <circle cx="60" cy="58" r="2" fill="#E5E8EB"/>
-      <circle cx="72" cy="58" r="2" fill="#E5E8EB"/>
-      
-      <circle cx="48" cy="68" r="2" fill="#E5E8EB"/>
-      <circle cx="60" cy="68" r="2" fill="url(#blueGrad)"/>
-      <circle cx="72" cy="68" r="2" fill="#E5E8EB"/>
+      <rect x="38" y="38" width="44" height="44" rx="8" fill="#FFFFFF" />
+      <rect
+        x="38"
+        y="38"
+        width="44"
+        height="44"
+        rx="8"
+        stroke="#E5E8EB"
+        strokeWidth="1.5"
+      />
+      <path d="M38.75 50H81.25" stroke="#E5E8EB" strokeWidth="1.5" />
+      <circle cx="48" cy="58" r="2" fill="#E5E8EB" />
+      <circle cx="60" cy="58" r="2" fill="#E5E8EB" />
+      <circle cx="72" cy="58" r="2" fill="#E5E8EB" />
+
+      <circle cx="48" cy="68" r="2" fill="#E5E8EB" />
+      <circle cx="60" cy="68" r="2" fill="url(#blueGrad)" />
+      <circle cx="72" cy="68" r="2" fill="#E5E8EB" />
     </g>
-    
-    <circle cx="76" cy="76" r="14" fill="#3B82F6" stroke="#FFFFFF" strokeWidth="2.5"/>
-    <path d="M76 71V77" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="76" cy="81" r="1" fill="#FFFFFF"/>
+
+    <circle
+      cx="76"
+      cy="76"
+      r="14"
+      fill="#3B82F6"
+      stroke="#FFFFFF"
+      strokeWidth="2.5"
+    />
+    <path
+      d="M76 71V77"
+      stroke="#FFFFFF"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <circle cx="76" cy="81" r="1" fill="#FFFFFF" />
 
     <defs>
-      <filter id="shadow" x="32" y="34" width="56" height="56" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000000" floodOpacity="0.06"/>
+      <filter
+        id="shadow"
+        x="32"
+        y="34"
+        width="56"
+        height="56"
+        filterUnits="userSpaceOnUse"
+        colorInterpolationFilters="sRGB"
+      >
+        <feDropShadow
+          dx="0"
+          dy="2"
+          stdDeviation="3"
+          floodColor="#000000"
+          floodOpacity="0.06"
+        />
       </filter>
-      <linearGradient id="blueGrad" x1="58" y1="66" x2="62" y2="70" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#3B82F6"/>
-        <stop offset="1" stopColor="#0061FF"/>
+      <linearGradient
+        id="blueGrad"
+        x1="58"
+        y1="66"
+        x2="62"
+        y2="70"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#3B82F6" />
+        <stop offset="1" stopColor="#0061FF" />
       </linearGradient>
     </defs>
   </svg>
@@ -114,7 +364,11 @@ const MobileTimeTablePage = () => {
   const activeTimetable = useMemo(() => {
     const list = timetables.filter((t) => t.semester === selectedSemester);
     if (list.length === 0) return null;
-    return list.find((t) => t.id === activeTimetableId) || list.find((t) => t.isRepresentative) || list[0];
+    return (
+      list.find((t) => t.id === activeTimetableId) ||
+      list.find((t) => t.isRepresentative) ||
+      list[0]
+    );
   }, [timetables, selectedSemester, activeTimetableId]);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
@@ -180,7 +434,9 @@ const MobileTimeTablePage = () => {
         icon: <Link2 size={20} />,
         onClick: () => {
           navigator.clipboard.writeText(
-            window.location.origin + ROUTES.TIMETABLE.ROOT + `?id=${activeTimetable.id}`
+            window.location.origin +
+              ROUTES.TIMETABLE.ROOT +
+              `?id=${activeTimetable.id}`,
           );
           alert("시간표 링크가 클립보드에 복사되었습니다.");
         },
@@ -288,7 +544,10 @@ const MobileTimeTablePage = () => {
       )}
 
       {activeTimetable ? (
-        <TimetableGrid events={activeTimetable.events} theme={activeTimetable.theme} />
+        <TimetableGrid
+          events={activeTimetable.events}
+          theme={activeTimetable.theme}
+        />
       ) : (
         <NoTimetableContainer>
           <NoTimetableContent>
@@ -344,7 +603,10 @@ const MobileTimeTablePage = () => {
           </MenuCard>
         </ButtonRow>
 
-        <MenuCard onClick={() => navigate(ROUTES.TIMETABLE.SIMULATOR)} $fullWidth>
+        <MenuCard
+          onClick={() => navigate(ROUTES.TIMETABLE.SIMULATOR)}
+          $fullWidth
+        >
           <MenuCardTitleRow>
             <MenuCardTitle>모의 수강신청 (수강신청 시뮬레이터)</MenuCardTitle>
             <IconSlot>
@@ -368,7 +630,8 @@ const MobileTimeTablePageWrapper = styled.div`
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  padding: var(--header-height, 56px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 40px);
+  padding: var(--header-height, 56px) ${MOBILE_PAGE_GUTTER}
+    calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
     padding: var(--header-height, 56px) 0 40px;
@@ -484,7 +747,7 @@ const NoTimetableContainer = styled.div`
   background: var(--bg-base, #ffffff);
   box-sizing: border-box;
   padding: 40px 20px;
-  margin-bottom: 24px;
+  //margin-bottom: 24px;
 `;
 
 const NoTimetableContent = styled.div`

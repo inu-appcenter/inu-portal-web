@@ -7,6 +7,7 @@ import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
+import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 
 // Icons
 const PlusIcon = () => (
@@ -39,6 +40,12 @@ const getDefaultTimetableName = (semester: string, timetables: Timetable[]) => {
   }
 };
 
+const getTimetableCredits = (events: ClassItem[]) =>
+  events.reduce((total, item) => {
+    const fallbackCredits = Math.max(1, item.endTime - item.startTime);
+    return total + (item.credits ?? fallbackCredits);
+  }, 0);
+
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
   const { timetables, setSemester, setActiveTimetable, setRepresentative, addTimetable } = useTimetableStore();
@@ -49,12 +56,15 @@ export default function MobileTimeTableListPage() {
 
   const semesters = SEMESTERS;
 
-  const handleAddClick = useCallback(() => {
-    const defaultSem = semesters[0];
-    setModalSemester(defaultSem);
-    setModalName(getDefaultTimetableName(defaultSem, timetables));
+  const openAddModal = useCallback((semester: string) => {
+    setModalSemester(semester);
+    setModalName(getDefaultTimetableName(semester, timetables));
     setIsAddModalOpen(true);
-  }, [timetables, semesters]);
+  }, [timetables]);
+
+  const handleAddClick = useCallback(() => {
+    openAddModal(semesters[0]);
+  }, [openAddModal, semesters]);
 
   const handleSemesterChange = (newSem: string) => {
     setModalSemester(newSem);
@@ -86,20 +96,44 @@ export default function MobileTimeTableListPage() {
       <ListContainer>
         {semesters.map((sem) => {
           const list = timetables.filter((t) => t.semester === sem);
+          const hasTimetable = list.length > 0;
           return (
-            <TimeTableListCard key={sem}>
+            <TimeTableListCard
+              key={sem}
+              $isClickable={!hasTimetable}
+              onClick={
+                hasTimetable
+                  ? undefined
+                  : () => openAddModal(sem)
+              }
+              role={!hasTimetable ? "button" : undefined}
+              tabIndex={!hasTimetable ? 0 : undefined}
+              onKeyDown={
+                !hasTimetable
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openAddModal(sem);
+                      }
+                    }
+                  : undefined
+              }
+            >
               <SemesterHeader>{sem}</SemesterHeader>
-              {list.length > 0 ? (
+              {hasTimetable ? (
                 <ScheduleListWrapper>
                   {list.map((t) => (
                     <ScheduleRow key={t.id} onClick={() => handleSelectTimetable(t)}>
                       <ScheduleName>{t.name}</ScheduleName>
-                      <StarButton onClick={(e) => {
-                        e.stopPropagation();
-                        setRepresentative(t.id);
-                      }}>
-                        <StarIcon filled={t.isRepresentative} />
-                      </StarButton>
+                      <TimetableMeta>
+                        <CreditBadge>{getTimetableCredits(t.events)}학점</CreditBadge>
+                        <StarButton onClick={(e) => {
+                          e.stopPropagation();
+                          setRepresentative(t.id);
+                        }}>
+                          <StarIcon filled={t.isRepresentative} />
+                        </StarButton>
+                      </TimetableMeta>
                     </ScheduleRow>
                   ))}
                 </ScheduleListWrapper>
@@ -174,7 +208,7 @@ const ListContainer = styled.div`
   width: 100%;
 `;
 
-const TimeTableListCard = styled.div`
+const TimeTableListCard = styled.div<{ $isClickable?: boolean }>`
   background: var(--bg-base, #ffffff);
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 20px;
@@ -183,6 +217,21 @@ const TimeTableListCard = styled.div`
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  ${({ $isClickable }) =>
+    $isClickable &&
+    `
+    &:hover {
+      border-color: var(--border-brand, #0061ff);
+      box-shadow: 0 4px 16px rgba(0, 97, 255, 0.08);
+      transform: translateY(-1px);
+    }
+  `}
 `;
 
 const SemesterHeader = styled.div`
@@ -220,6 +269,29 @@ const ScheduleName = styled.span`
   font-size: 16px;
   line-height: 24px;
   color: var(--text-secondary, #333d4b);
+`;
+
+const TimetableMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CreditBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted, #f1f3f5);
+  color: var(--text-primary, #333d4b);
+  font-family: Pretendard;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
 `;
 
 const StarButton = styled.button`
