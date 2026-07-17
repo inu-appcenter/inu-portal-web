@@ -206,7 +206,7 @@ const V2Wrapper = styled.div`
 const UpperSection = styled.div`
   display: flex;
   flex-direction: column;
-  padding-top: calc(var(--header-height, 56px) + 24px);
+  padding-top: calc(var(--header-height, 56px) + 8px);
   padding-bottom: 24px;
   background: #eff5fc;
 `;

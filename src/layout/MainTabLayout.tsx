@@ -30,7 +30,8 @@ export default function MainTabLayout({
   const isHome =
     location.pathname === ROUTES.HOME ||
     location.pathname === ROUTES.MOBILE_HOME ||
-    location.pathname === "/";
+    location.pathname === "/" ||
+    location.pathname === ROUTES.HOME_V2;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -75,7 +76,7 @@ export default function MainTabLayout({
       $isHome={isHome}
       $pageBgColor={pageBgColor}
       style={{
-        "--header-height": `${headerHeight}px`,
+        "--header-height": `${headerHeight + (isHome ? 0 : 12)}px`,
         "--nav-height": navHeight,
       } as React.CSSProperties}
     >
