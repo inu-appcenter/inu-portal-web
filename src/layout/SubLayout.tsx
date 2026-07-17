@@ -69,7 +69,7 @@ export default function SubLayout({
       $fillsViewportOnDesktop={fillsViewportOnDesktop}
       $backgroundColor={pageBgColor ?? backgroundColor}
       style={{
-        "--header-height": `${headerHeight}px`,
+        "--header-height": `${headerHeight + 12}px`,
         "--nav-height": `${navHeight}px`,
       } as React.CSSProperties}
     >
@@ -85,7 +85,7 @@ export default function SubLayout({
         )}
 
         <ContentArea
-          $pt={immersive ? 0 : headerHeight}
+          $pt={immersive ? 0 : headerHeight + 12}
           $pb={immersive ? 0 : navHeight}
           $fillsViewportOnDesktop={fillsViewportOnDesktop}
         >

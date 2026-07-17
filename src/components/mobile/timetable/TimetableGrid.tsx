@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import ClassDetailBottomSheet from "./ClassDetailBottomSheet";
+import { TimetableTheme } from "@/stores/useTimetableStore";
+import { THEME_PALETTES } from "./TimetableThemeBottomSheet";
 
 // --- 타입 정의 ---
 export interface ClassItem {
@@ -37,26 +39,13 @@ interface TimetableGridProps {
   selectedSlots?: string[];
   onSelectedSlotsChange?: (slots: string[]) => void;
   showClasses?: boolean;
+  theme?: TimetableTheme;
 }
 
 // --- 상수 데이터 ---
 const DAYS = ["월", "화", "수", "목", "금"];
 const START_HOUR = 9;
 const DEFAULT_MAX_HOUR = 18;
-
-// 팔레트
-const COLORS = [
-  "var(--color-chips-red)",
-  "var(--color-chips-orange)",
-  "var(--color-chips-yellow)",
-  "var(--color-chips-teal)",
-  "var(--color-chips-skyblue)",
-  "var(--color-chips-lilac)",
-  "var(--color-chips-violet)",
-  "var(--color-chips-purple)",
-  "var(--color-chips-pink)",
-  "var(--color-chips-gray)",
-];
 
 const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
 const EMPTY_SELECTED_SLOTS: string[] = [];
@@ -73,6 +62,7 @@ const TimetableGrid = ({
   selectedSlots = EMPTY_SELECTED_SLOTS,
   onSelectedSlotsChange,
   showClasses = true,
+  theme,
 }: TimetableGridProps) => {
   // 바텀시트 상태 정의
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
@@ -281,14 +271,19 @@ const TimetableGrid = ({
   const rowCount = (timeSlots.length - 1) * 2;
 
   // 2. 색상 매핑
+  const themeColors = useMemo(() => {
+    if (!theme || !theme.colorTheme) return THEME_PALETTES.default;
+    return THEME_PALETTES[theme.colorTheme] || THEME_PALETTES.default;
+  }, [theme]);
+
   const colorMap = useMemo(() => {
     const map = new Map<string, string>();
     const uniqueSubjects = Array.from(new Set(events.map((e) => e.name)));
     uniqueSubjects.forEach((subject, index) => {
-      map.set(subject, COLORS[index % COLORS.length]);
+      map.set(subject, themeColors[index % themeColors.length]);
     });
     return map;
-  }, [events]);
+  }, [events, themeColors]);
 
   // 렌더링 헬퍼 함수
   const renderEventBlock = (
@@ -330,8 +325,13 @@ const TimetableGrid = ({
         }}
       >
         <ItemContent>
-          <ClassName>{item.name}</ClassName>
-          <ClassRoom>{item.room}</ClassRoom>
+          <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
+          {(theme?.showRoom ?? true) && item.room && (
+            <ClassRoom $fontSize={theme?.fontSize}>{item.room}</ClassRoom>
+          )}
+          {theme?.showProfessor && item.professor && (
+            <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
+          )}
         </ItemContent>
       </ClassItemBlock>
     );
@@ -560,13 +560,15 @@ const ItemContent = styled.div`
   flex-direction: column;
 `;
 
-const ClassName = styled.span`
+const ClassName = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
   color: var(--text-secondary, #333d4b);
-  font-size: 12px;
+  font-size: ${({ $fontSize }) => 
+    $fontSize === "small" ? "10px" : $fontSize === "large" ? "14px" : "12px"};
   font-style: normal;
   font-weight: 700;
-  line-height: 14px;
-  margin-bottom: 8px;
+  line-height: ${({ $fontSize }) => 
+    $fontSize === "small" ? "12px" : $fontSize === "large" ? "16px" : "14px"};
+  margin-bottom: ${({ $fontSize }) => ($fontSize === "small" ? "4px" : "8px")};
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -575,13 +577,25 @@ const ClassName = styled.span`
   word-break: break-all;
 `;
 
-const ClassRoom = styled.span`
+const ClassRoom = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
   color: var(--text-secondary, #333d4b);
-  font-size: 10px;
+  font-size: ${({ $fontSize }) => 
+    $fontSize === "small" ? "9px" : $fontSize === "large" ? "11px" : "10px"};
   font-style: normal;
   font-weight: 500;
   line-height: 100%;
   white-space: nowrap;
+`;
+
+const ClassProfessor = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
+  color: var(--text-tertiary, #8b95a1);
+  font-size: ${({ $fontSize }) => 
+    $fontSize === "small" ? "9px" : $fontSize === "large" ? "11px" : "10px"};
+  font-style: normal;
+  font-weight: 500;
+  line-height: 100%;
+  white-space: nowrap;
+  margin-top: 4px;
 `;
 
 const HighlightedBlock = styled.div`
