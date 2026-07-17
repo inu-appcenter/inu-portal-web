@@ -6,6 +6,7 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 // Layouts
 import RootLayout from "@/layout/RootLayout";
 import MainTabLayout from "@/layout/MainTabLayout";
+import FullscreenSubLayout from "@/layout/FullscreenSubLayout";
 import SubLayout from "@/layout/SubLayout";
 import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
@@ -136,7 +137,6 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.COMPARE, element: <MobileTimeTableComparePage /> },
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
-          { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
           { path: ROUTES.TIMETABLE.FILTER, element: <MobileCourseFilterPage /> },
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
@@ -285,6 +285,12 @@ export const router = createBrowserRouter([
           { path: ROUTES.BOARD.CAMPUS, element: <MobileCampusPage /> },
           { path: ROUTES.BUS.INFO, element: <MobileBusInfoPage /> },
           { path: ROUTES.BUS.INFO_MAP, element: <MobileBusMapPage /> },
+        ],
+      },
+      {
+        element: <FullscreenSubLayout backgroundColor="#ffffff" />,
+        children: [
+          { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
         ],
       },
     ],
