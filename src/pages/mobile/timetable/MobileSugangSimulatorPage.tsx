@@ -1,24 +1,24 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes.ts";
+import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
+import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
+
+const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
 
 export default function MobileSugangSimulatorPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const appEnvironment = getAppEnvironmentStatus();
+  const shouldOpenInNewWebView = supportsMultiWebView() && appEnvironment === "NEW_APP";
 
   useEffect(() => {
-    // 앱 웹뷰의 뒤로가기 동작이 페이지를 닫아버리지 않도록
-    // 이 화면 진입 시 더미 히스토리 상태를 한 번 쌓아둡니다.
-    window.history.pushState({ sugangSimulator: true }, "", window.location.href);
+    if (!shouldOpenInNewWebView) {
+      return;
+    }
 
-    const handlePopState = () => {
-      navigate(ROUTES.TIMETABLE.ROOT, { replace: true });
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [navigate]);
+    // 신버전 앱에서는 시뮬레이터를 별도 웹뷰로 엽니다.
+    // 브라우저와 구버전 앱은 아래 iframe을 그대로 사용합니다.
+    appBridge.navigateTo(SIMULATOR_URL);
+  }, [shouldOpenInNewWebView]);
 
   useLayoutEffect(() => {
     const html = document.documentElement;
@@ -45,18 +45,27 @@ export default function MobileSugangSimulatorPage() {
 
   return (
     <PageWrapper>
-      {isLoading && (
+      {shouldOpenInNewWebView ? (
         <LoadingOverlay>
           <Spinner />
-          <LoadingText>시뮬레이터를 불러오는 중입니다...</LoadingText>
+          <LoadingText>시뮬레이터를 여는 중입니다...</LoadingText>
         </LoadingOverlay>
+      ) : (
+        <>
+          {isLoading && (
+            <LoadingOverlay>
+              <Spinner />
+              <LoadingText>시뮬레이터를 불러오는 중입니다...</LoadingText>
+            </LoadingOverlay>
+          )}
+          <StyledIframe
+            src={SIMULATOR_URL}
+            title="모의 수강 신청 시뮬레이터"
+            allow="fullscreen"
+            onLoad={() => setIsLoading(false)}
+          />
+        </>
       )}
-      <StyledIframe
-        src="https://inu-sugang-simulator.pages.dev"
-        title="모의 수강 신청 시뮬레이터"
-        allow="fullscreen"
-        onLoad={() => setIsLoading(false)}
-      />
     </PageWrapper>
   );
 }
