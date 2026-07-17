@@ -12,6 +12,7 @@ import { useLocation } from "react-router-dom";
 export interface MenuItemType {
   label: string;
   onClick: () => void;
+  icon?: React.ReactNode;
 }
 
 export interface HeaderConfig {

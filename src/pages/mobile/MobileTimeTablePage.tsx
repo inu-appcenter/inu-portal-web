@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { Pencil } from "lucide-react";
+import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
 
@@ -94,7 +94,14 @@ const MobileTimeTablePage = () => {
   const navigate = useNavigate();
   const [isModalOpen] = useState(false);
 
-  const { selectedSemester, activeTimetableId, timetables, addTimetable } = useTimetableStore();
+  const {
+    selectedSemester,
+    activeTimetableId,
+    timetables,
+    addTimetable,
+    renameTimetable,
+    deleteTimetable,
+  } = useTimetableStore();
 
   // Find active timetable for the selected semester
   const activeTimetable = useMemo(() => {
@@ -128,11 +135,69 @@ const MobileTimeTablePage = () => {
     );
   }, [selectedSemester, activeTitle, navigate]);
 
+  const timetableMenuItems = useMemo(() => {
+    if (!activeTimetable) return [];
+
+    return [
+      {
+        label: "시간표 이름 변경",
+        icon: <Pencil size={20} />,
+        onClick: () => {
+          const name = prompt("변경할 시간표 이름을 입력해주세요.", activeTimetable.name);
+          if (name && name.trim()) {
+            renameTimetable(activeTimetable.id, name.trim());
+          }
+        },
+      },
+      {
+        label: "시간표 공개 범위 선택",
+        icon: <Lock size={20} />,
+        onClick: () => {
+          navigate(ROUTES.TIMETABLE.VISIBILITY);
+        },
+      },
+      {
+        label: "강의 알림 설정",
+        icon: <Bell size={20} />,
+        onClick: () => {
+          navigate(ROUTES.MYPAGE.NOTIFICATION);
+        },
+      },
+      {
+        label: "시간표 테마 설정",
+        icon: <Palette size={20} />,
+        onClick: () => {
+          alert("시간표 테마 설정 기능은 준비 중입니다.");
+        },
+      },
+      {
+        label: "내 시간표 공유",
+        icon: <Link2 size={20} />,
+        onClick: () => {
+          navigator.clipboard.writeText(
+            window.location.origin + ROUTES.TIMETABLE.ROOT + `?id=${activeTimetable.id}`
+          );
+          alert("시간표 링크가 클립보드에 복사되었습니다.");
+        },
+      },
+      {
+        label: "시간표 삭제",
+        icon: <Trash2 size={20} color="#FF3B30" />,
+        onClick: () => {
+          if (confirm(`정말 "${activeTimetable.name}" 시간표를 삭제하시겠습니까?`)) {
+            deleteTimetable(activeTimetable.id);
+          }
+        },
+      },
+    ];
+  }, [activeTimetable, renameTimetable, deleteTimetable, navigate]);
+
   useHeader({
     title: headerTitle,
-    showAlarm: true,
+    showAlarm: false,
     hasback: false,
     rightArea: headerRight,
+    menuItems: timetableMenuItems,
   });
 
   const handleGradeCalculatorClick = () => {

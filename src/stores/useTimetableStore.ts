@@ -43,6 +43,8 @@ interface TimetableStore {
   setActiveTimetable: (id: number) => void;
   setRepresentative: (id: number) => void;
   addTimetable: (semester: string, name: string) => void;
+  renameTimetable: (id: number, name: string) => void;
+  deleteTimetable: (id: number) => void;
 }
 
 export const useTimetableStore = create<TimetableStore>((set) => ({
@@ -121,6 +123,32 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
         timetables: [...state.timetables, newTimetable],
         activeTimetableId: newId,
         selectedSemester: semester,
+      };
+    }),
+  renameTimetable: (id, name) =>
+    set((state) => ({
+      timetables: state.timetables.map((t) =>
+        t.id === id ? { ...t, name } : t
+      ),
+    })),
+  deleteTimetable: (id) =>
+    set((state) => {
+      const remaining = state.timetables.filter((t) => t.id !== id);
+      
+      // If we deleted the active timetable, find a new active one
+      let newActiveId = state.activeTimetableId;
+      if (state.activeTimetableId === id) {
+        const sameSemester = remaining.filter((t) => t.semester === state.selectedSemester);
+        if (sameSemester.length > 0) {
+          newActiveId = sameSemester[0].id;
+        } else {
+          newActiveId = remaining.length > 0 ? remaining[0].id : null;
+        }
+      }
+      
+      return {
+        timetables: remaining,
+        activeTimetableId: newActiveId,
       };
     }),
 }));
