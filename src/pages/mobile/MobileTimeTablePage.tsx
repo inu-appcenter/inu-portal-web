@@ -9,6 +9,8 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import Modal from "@/components/common/Modal";
+import InputField from "@/components/common/InputField";
 
 // --- SVG Icons ---
 const CaretDownIcon = () => (
@@ -93,6 +95,9 @@ const EmptyTimetableIllust = () => (
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
   const [isModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [renameInputVal, setRenameInputVal] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const {
     selectedSemester,
@@ -143,10 +148,8 @@ const MobileTimeTablePage = () => {
         label: "시간표 이름 변경",
         icon: <Pencil size={20} />,
         onClick: () => {
-          const name = prompt("변경할 시간표 이름을 입력해주세요.", activeTimetable.name);
-          if (name && name.trim()) {
-            renameTimetable(activeTimetable.id, name.trim());
-          }
+          setRenameInputVal(activeTimetable.name);
+          setIsRenameModalOpen(true);
         },
       },
       {
@@ -184,13 +187,19 @@ const MobileTimeTablePage = () => {
         label: "시간표 삭제",
         icon: <Trash2 size={20} color="#FF3B30" />,
         onClick: () => {
-          if (confirm(`정말 "${activeTimetable.name}" 시간표를 삭제하시겠습니까?`)) {
-            deleteTimetable(activeTimetable.id);
-          }
+          setIsDeleteModalOpen(true);
         },
       },
     ];
-  }, [activeTimetable, renameTimetable, deleteTimetable, navigate]);
+  }, [
+    activeTimetable,
+    renameTimetable,
+    deleteTimetable,
+    navigate,
+    setIsRenameModalOpen,
+    setRenameInputVal,
+    setIsDeleteModalOpen,
+  ]);
 
   useHeader({
     title: headerTitle,
@@ -217,6 +226,58 @@ const MobileTimeTablePage = () => {
         isOpen={isModalOpen}
         onClose={() => navigate(ROUTES.HOME, { replace: true })}
       />
+
+      {activeTimetable && (
+        <>
+          <Modal
+            isOpen={isRenameModalOpen}
+            onClose={() => setIsRenameModalOpen(false)}
+            title="시간표 이름 변경"
+            primaryButton={{
+              text: "변경",
+              variant: "brand",
+              onClick: () => {
+                if (renameInputVal.trim()) {
+                  renameTimetable(activeTimetable.id, renameInputVal.trim());
+                  setIsRenameModalOpen(false);
+                }
+              },
+              disabled: !renameInputVal.trim(),
+            }}
+            secondaryButton={{
+              text: "취소",
+              onClick: () => setIsRenameModalOpen(false),
+            }}
+          >
+            <InputField
+              label="시간표 이름"
+              value={renameInputVal}
+              onChange={setRenameInputVal}
+              placeholder="시간표 이름을 입력하세요"
+            />
+          </Modal>
+
+          <Modal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            title="시간표 삭제"
+            description={`"${activeTimetable.name}" 시간표를 삭제하면\n복구할 수 없습니다. 삭제하시겠습니까?`}
+            primaryButton={{
+              text: "삭제",
+              variant: "danger",
+              onClick: () => {
+                deleteTimetable(activeTimetable.id);
+                setIsDeleteModalOpen(false);
+              },
+            }}
+            secondaryButton={{
+              text: "취소",
+              onClick: () => setIsDeleteModalOpen(false),
+            }}
+          />
+        </>
+      )}
+
       {activeTimetable ? (
         <TimetableGrid events={activeTimetable.events} />
       ) : (
