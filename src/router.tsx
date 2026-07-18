@@ -347,8 +347,9 @@ if (typeof window !== "undefined") {
     const path = getPathname(to);
     const isTabNavigation = opts?.state?.isTabNavigation === true;
     
-    // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅인지 확인
+    // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅이거나 빈 이동인지 확인
     const isHashOrSearchOnly =
+      to === "" ||
       (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
       (typeof to === "object" && to !== null && !to.pathname);
 
