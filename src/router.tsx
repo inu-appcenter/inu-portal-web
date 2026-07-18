@@ -346,9 +346,20 @@ if (typeof window !== "undefined") {
 
     const path = getPathname(to);
     const isTabNavigation = opts?.state?.isTabNavigation === true;
+    
+    // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅인지 확인
+    const isHashOrSearchOnly =
+      (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
+      (typeof to === "object" && to !== null && !to.pathname);
 
     // 2. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
-    if (supportsMultiWebView() && !isMainTabPath(path) && !isTabNavigation && !opts?.replace) {
+    if (
+      supportsMultiWebView() &&
+      !isMainTabPath(path) &&
+      !isTabNavigation &&
+      !opts?.replace &&
+      !isHashOrSearchOnly
+    ) {
       const fullPath = typeof to === "string"
         ? to
         : `${to.pathname || ""}${to.search || ""}${to.hash || ""}`;
