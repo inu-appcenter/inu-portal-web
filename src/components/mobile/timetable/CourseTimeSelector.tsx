@@ -66,11 +66,11 @@ const CourseTimeSelector = ({
         <ActionButtons>
           {totalSlots > 1 && (
             <IconButton onClick={onRemove} type="button">
-              <Minus size={16} color="#8b95a1" strokeWidth={2.5} />
+              <Minus size={20} color="#8b95a1" strokeWidth={2.5} />
             </IconButton>
           )}
           <IconButton onClick={onAdd} type="button">
-            <Plus size={16} color="#8b95a1" strokeWidth={2.5} />
+            <Plus size={20} color="#8b95a1" strokeWidth={2.5} />
           </IconButton>
         </ActionButtons>
       </SelectorHeader>
