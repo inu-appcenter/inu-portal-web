@@ -438,6 +438,7 @@ export default function MobileCourseFilterPage() {
   // 저장하기 핸들러 (편집 페이지로 복귀)
   const handleSave = () => {
     hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
+    backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
     setIsSaving(true); // blocker 비활성화 후 navigate
     localStorage.setItem("applied_filters", JSON.stringify(filters));
     navigate(-1);
