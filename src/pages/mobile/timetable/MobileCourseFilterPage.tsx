@@ -261,6 +261,8 @@ export default function MobileCourseFilterPage() {
       return;
     }
     
+    // navigate(-1) 호출 전 blocker를 비활성화하여 이중 모달 방지
+    setIsSaving(true);
     if (window.AndroidBridge && typeof window.AndroidBridge.goBack === "function") {
       window.AndroidBridge.goBack();
     } else {
