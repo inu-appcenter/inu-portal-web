@@ -11,30 +11,80 @@ import MobileCourseSearchSheet, {
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import Modal from "@/components/common/Modal";
+import { useTimetableStore } from "@/stores/useTimetableStore";
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g transform="translate(3, 3)">
-      <path d="M1 9H9M9 9H17M9 9V17M9 9V1" stroke="#1C1C1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path
+        d="M1 9H9M9 9H17M9 9V17M9 9V1"
+        stroke="#1C1C1E"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </g>
   </svg>
 );
 
 const IconsMagicWand = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g transform="translate(1.5, 1.5)">
-      <path d="M13 3V1M13 15V13M6 8H8M18 8H20M15.8 10.8L17 12M15.8 5.2L17 4M1 20L9 12M12 9L13 8M10.2 5.2L9 4" stroke="#1C1C1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path
+        d="M13 3V1M13 15V13M6 8H8M18 8H20M15.8 10.8L17 12M15.8 5.2L17 4M1 20L9 12M12 9L13 8M10.2 5.2L9 4"
+        stroke="#1C1C1E"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </g>
   </svg>
 );
 
 const IconsLock = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <g transform="translate(3, 2)">
-      <rect x="1" y="7" width="16" height="12" rx="4" stroke="#1C1C1E" strokeWidth="2"/>
-      <path d="M9 14L9 12" stroke="#1C1C1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M13 7V5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5L5 7" stroke="#1C1C1E" strokeWidth="2"/>
+      <rect
+        x="1"
+        y="7"
+        width="16"
+        height="12"
+        rx="4"
+        stroke="#1C1C1E"
+        strokeWidth="2"
+      />
+      <path
+        d="M9 14L9 12"
+        stroke="#1C1C1E"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M13 7V5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5L5 7"
+        stroke="#1C1C1E"
+        strokeWidth="2"
+      />
     </g>
   </svg>
 );
@@ -56,26 +106,6 @@ const IconButton = styled.button`
   flex-shrink: 0;
   padding: 4px;
 `;
-
-// --- 목업 데이터 ---
-const MY_TIMETABLE: ClassItem[] = [
-  {
-    id: 1,
-    name: "데이터구조",
-    room: "302호",
-    day: 0,
-    startTime: 9,
-    endTime: 11,
-  },
-  {
-    id: 2,
-    name: "운영체제",
-    room: "404호",
-    day: 0,
-    startTime: 13,
-    endTime: 15,
-  },
-];
 
 const SEARCH_RESULTS: CourseResult[] = [
   {
@@ -176,16 +206,72 @@ const MobileTimeTableEditPage = () => {
     rightAreaNotCircle: true,
   });
 
-  // 상태 관리
+  // 상태 및 스토어 관리
+  const { timetables, activeTimetableId, updateTimetableEvents } =
+    useTimetableStore();
+  const activeTimetable = useMemo(() => {
+    return timetables.find((t) => t.id === activeTimetableId) || null;
+  }, [timetables, activeTimetableId]);
+  const timetable = activeTimetable?.events || [];
+
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [snap, setSnap] = useState<string | number | null>(COURSE_SEARCH_SNAP_POINTS[1]);
+  const [snap, setSnap] = useState<string | number | null>(
+    COURSE_SEARCH_SNAP_POINTS[1],
+  );
   const [isSheetOpen, setIsSheetOpen] = useState(true);
 
+  // 모달 및 과목 교체 상태 관리
+  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
+  const [overlappingCourse, setOverlappingCourse] = useState<ClassItem | null>(
+    null,
+  );
+  const [pendingCourse, setPendingCourse] = useState<CourseResult | null>(null);
+
+  const handleAddCourse = (newCourse: CourseResult) => {
+    const isOverlapping = (a: ClassItem, b: ClassItem) => {
+      if (a.day !== b.day) return false;
+      return a.startTime < b.endTime && b.startTime < a.endTime;
+    };
+
+    let conflictItem: ClassItem | null = null;
+    for (const newSlot of newCourse.schedules) {
+      for (const existingSlot of timetable) {
+        if (isOverlapping(newSlot, existingSlot)) {
+          conflictItem = existingSlot;
+          break;
+        }
+      }
+      if (conflictItem) break;
+    }
+
+    if (conflictItem) {
+      setOverlappingCourse(conflictItem);
+      setPendingCourse(newCourse);
+      setIsConflictModalOpen(true);
+    } else {
+      if (activeTimetableId !== null) {
+        updateTimetableEvents(activeTimetableId, [
+          ...timetable,
+          ...newCourse.schedules,
+        ]);
+      }
+    }
+  };
+
+  const handleReplaceCourse = () => {
+    if (!overlappingCourse || !pendingCourse || activeTimetableId === null)
+      return;
+    updateTimetableEvents(activeTimetableId, [
+      ...timetable.filter((item) => item.id !== overlappingCourse.id),
+      ...pendingCourse.schedules,
+    ]);
+    setIsConflictModalOpen(false);
+    setOverlappingCourse(null);
+    setPendingCourse(null);
+  };
+
   useEffect(() => {
-    if (
-      typeof snap !== "number" ||
-      !COURSE_SEARCH_SNAP_POINTS.includes(snap)
-    ) {
+    if (typeof snap !== "number" || !COURSE_SEARCH_SNAP_POINTS.includes(snap)) {
       setSnap(COURSE_SEARCH_SNAP_POINTS[1]);
     }
   }, [snap]);
@@ -207,7 +293,10 @@ const MobileTimeTableEditPage = () => {
       const rect = element.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const headerHeight = 130; // 헤더 영역 높이 추정치
-      const bottomSheetHeight = typeof snap === "number" ? snap * viewportHeight : COURSE_SEARCH_SNAP_POINTS[1] * viewportHeight;
+      const bottomSheetHeight =
+        typeof snap === "number"
+          ? snap * viewportHeight
+          : COURSE_SEARCH_SNAP_POINTS[1] * viewportHeight;
       const visibleAreaHeight =
         viewportHeight - headerHeight - bottomSheetHeight;
 
@@ -256,7 +345,12 @@ const MobileTimeTableEditPage = () => {
   };
 
   const handleDelete = (id: number) => {
-    alert(`과목을 삭제합니다. (ID: ${id})`);
+    if (activeTimetableId !== null) {
+      updateTimetableEvents(
+        activeTimetableId,
+        timetable.filter((item) => item.id !== id),
+      );
+    }
   };
 
   const snapHeightValue = typeof snap === "number" ? snap : 0.6;
@@ -264,7 +358,7 @@ const MobileTimeTableEditPage = () => {
   return (
     <PageWrapper $snapHeight={snapHeightValue} $isSheetOpen={isSheetOpen}>
       <TimetableGrid
-        events={MY_TIMETABLE}
+        events={timetable}
         previewEvents={previewSchedules}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -289,6 +383,23 @@ const MobileTimeTableEditPage = () => {
         onSnapChange={setSnap}
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
+        onAddCourse={handleAddCourse}
+      />
+
+      {/* 시간표 충돌 모달 */}
+      <Modal
+        isOpen={isConflictModalOpen}
+        onClose={() => setIsConflictModalOpen(false)}
+        title="시간이 겹쳐요"
+        description={`${overlappingCourse?.name}과(와) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`}
+        primaryButton={{
+          text: "교체하기",
+          onClick: handleReplaceCourse,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsConflictModalOpen(false),
+        }}
       />
     </PageWrapper>
   );
@@ -359,4 +470,3 @@ const ScoreArea = styled.div`
     line-height: 24px;
   }
 `;
-

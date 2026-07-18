@@ -9,6 +9,7 @@ import CourseTimeSelector, {
 } from "@/components/mobile/timetable/CourseTimeSelector";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import { Check, Plus } from "lucide-react";
+import { useTimetableStore } from "@/stores/useTimetableStore";
 
 const DEFAULT_COLORS = [
   "var(--color-chips-red)",
@@ -25,6 +26,8 @@ const DEFAULT_COLORS = [
 
 const MobileCourseAddPage = () => {
   const navigate = useNavigate();
+  const { timetables, activeTimetableId, updateTimetableEvents } = useTimetableStore();
+  const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
 
   // 헤더 설정
   useHeader({
@@ -100,17 +103,62 @@ const MobileCourseAddPage = () => {
     }
     setNameError("");
 
-    // 목업으로 임시 데이터 구성 후 반환
-    const newCourseData = {
-      name: courseName,
-      professor,
-      room,
-      memo,
-      schedules: timeSlots,
-      color: selectedColor,
+    if (!activeTimetable || activeTimetableId === null) {
+      alert("활성화된 시간표가 없습니다.");
+      return;
+    }
+
+    const parseTimeToNumber = (timeStr: string): number => {
+      const [hours, minutes] = timeStr.split(":").map(Number);
+      return hours + minutes / 60;
     };
 
-    console.log("Saving new course:", newCourseData);
+    const newCourseId = Math.max(0, ...activeTimetable.events.map((e) => e.id)) + 1;
+
+    const newSchedules = timeSlots.map((slot) => ({
+      id: newCourseId,
+      name: courseName,
+      room: room || "강의실 미정",
+      day: slot.day,
+      startTime: parseTimeToNumber(slot.startTime),
+      endTime: parseTimeToNumber(slot.endTime),
+      professor: professor || "",
+      memo: memo || "",
+      color: selectedColor,
+    }));
+
+    const isOverlapping = (a: any, b: any) => {
+      if (a.day !== b.day) return false;
+      return a.startTime < b.endTime && b.startTime < a.endTime;
+    };
+
+    let conflictItem: any = null;
+    for (const newSlot of newSchedules) {
+      for (const existingSlot of activeTimetable.events) {
+        if (isOverlapping(newSlot, existingSlot)) {
+          conflictItem = existingSlot;
+          break;
+        }
+      }
+      if (conflictItem) break;
+    }
+
+    if (conflictItem) {
+      const proceed = window.confirm(
+        `시간이 겹쳐요 - ${conflictItem.name}과(와) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`
+      );
+      if (!proceed) return;
+
+      const updatedEvents = [
+        ...activeTimetable.events.filter((e) => e.id !== conflictItem.id),
+        ...newSchedules,
+      ];
+      updateTimetableEvents(activeTimetableId, updatedEvents);
+    } else {
+      const updatedEvents = [...activeTimetable.events, ...newSchedules];
+      updateTimetableEvents(activeTimetableId, updatedEvents);
+    }
+
     alert(`"${courseName}" 과목이 시간표에 추가되었습니다.`);
     navigate(ROUTES.TIMETABLE.EDIT);
   };

@@ -77,6 +77,7 @@ interface MobileCourseSearchSheetProps {
   onSnapChange: (snap: string | number | null) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAddCourse?: (course: CourseResult) => void;
 }
 
 const MobileCourseSearchSheet = ({
@@ -87,6 +88,7 @@ const MobileCourseSearchSheet = ({
   onSnapChange,
   open,
   onOpenChange,
+  onAddCourse,
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -322,7 +324,9 @@ const MobileCourseSearchSheet = ({
                             <PrimaryActionButton
                               onClick={(e) => {
                                 e.stopPropagation();
-                                console.log("시간표에 추가 클릭됨");
+                                if (onAddCourse) {
+                                  onAddCourse(course);
+                                }
                               }}
                             >
                               <Plus size={20} />
