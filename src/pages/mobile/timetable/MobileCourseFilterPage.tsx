@@ -256,6 +256,9 @@ export default function MobileCourseFilterPage() {
     setShowUnsavedModal(false);
     backHandler.setPageUnsavedChanges(false);
 
+    // 변경 전 원본 필터를 localStorage에 복원하여 시트가 올바른 상태를 읽도록 함
+    localStorage.setItem("applied_filters", JSON.stringify(initialFilters));
+
     if (blocker.state === "blocked") {
       blocker.proceed();
       return;
