@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
 import { useNavigate, useLocation, useBlocker, useBeforeUnload } from "react-router-dom";
@@ -219,6 +219,23 @@ export default function MobileCourseFilterPage() {
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // localStorage 파열 언마운트 클린업용 제어 ref
+  const hasWrittenLocalStorageRef = useRef(false);
+  const initialFiltersRef = useRef(initialFilters);
+  useEffect(() => {
+    initialFiltersRef.current = initialFilters;
+  }, [initialFilters]);
+
+  // 컴포넌트가 언마운트될 때, 저장하지 않고 나가는 맰 경우 initialFilters를 localStorage에 복원
+  // (헤더 뿯로가기, 브라우저 뿯로가기, OS 백키 등 모든 이탈 경로에서 필터 상태를 보장)
+  useEffect(() => {
+    return () => {
+      if (!hasWrittenLocalStorageRef.current) {
+        localStorage.setItem("applied_filters", JSON.stringify(initialFiltersRef.current));
+      }
+    };
+  }, []);
+
   // 초기 상태 대비 변경 사항이 존재하는지 깊은 비교
   const hasChanges = useMemo(() => {
     return JSON.stringify(filters) !== JSON.stringify(initialFilters);
@@ -257,6 +274,7 @@ export default function MobileCourseFilterPage() {
     backHandler.setPageUnsavedChanges(false);
 
     // 변경 전 원본 필터를 localStorage에 복원하여 시트가 올바른 상태를 읽도록 함
+    hasWrittenLocalStorageRef.current = true;
     localStorage.setItem("applied_filters", JSON.stringify(initialFilters));
 
     if (blocker.state === "blocked") {
@@ -419,6 +437,7 @@ export default function MobileCourseFilterPage() {
 
   // 저장하기 핸들러 (편집 페이지로 복귀)
   const handleSave = () => {
+    hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
     setIsSaving(true); // blocker 비활성화 후 navigate
     localStorage.setItem("applied_filters", JSON.stringify(filters));
     navigate(-1);
