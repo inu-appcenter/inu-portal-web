@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useBlocker, useBeforeUnload } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
@@ -215,6 +215,47 @@ export default function MobileCourseFilterPage() {
     return JSON.stringify(filters) !== JSON.stringify(initialFilters);
   }, [filters, initialFilters]);
 
+  // 라우터 이탈 방지용 blocker
+  const blocker = useBlocker(view === "main" && hasChanges);
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setShowUnsavedModal(true);
+    }
+  }, [blocker.state]);
+
+  useBeforeUnload(
+    (event) => {
+      if (view !== "main" || !hasChanges) return;
+      event.preventDefault();
+      event.returnValue = "";
+    },
+    { capture: true }
+  );
+
+  const handleStayOnPage = () => {
+    setShowUnsavedModal(false);
+    if (blocker.state === "blocked") {
+      blocker.reset();
+    }
+  };
+
+  const handleLeaveWithoutSaving = () => {
+    setShowUnsavedModal(false);
+    backHandler.setPageUnsavedChanges(false);
+
+    if (blocker.state === "blocked") {
+      blocker.proceed();
+      return;
+    }
+    
+    if (window.AndroidBridge && typeof window.AndroidBridge.goBack === "function") {
+      window.AndroidBridge.goBack();
+    } else {
+      navigate(-1);
+    }
+  };
+
   const isOverlayOpen = view !== "main";
   const hasPushStateRef = useRef(false);
 
@@ -275,17 +316,6 @@ export default function MobileCourseFilterPage() {
       backHandler.setPageUnsavedChanges(false);
     };
   }, [view, hasChanges]);
-
-  const handleLeaveWithoutSaving = () => {
-    setShowUnsavedModal(false);
-    backHandler.setPageUnsavedChanges(false);
-    
-    if (window.AndroidBridge && typeof window.AndroidBridge.goBack === "function") {
-      window.AndroidBridge.goBack();
-    } else {
-      navigate(-1);
-    }
-  };
 
   const [pinnedMajors, setPinnedMajors] = useState<string[]>(["정보기술대학"]); // 즐겨찾기 단과대/학과 핀
 
@@ -894,7 +924,7 @@ export default function MobileCourseFilterPage() {
       {/* 이탈 방지 모달 */}
       <Modal
         isOpen={showUnsavedModal}
-        onClose={() => setShowUnsavedModal(false)}
+        onClose={handleStayOnPage}
         title="변경사항 적용 안 함"
         description="필터 변경사항이 있습니다. 적용하지 않고 시간표 편집 화면으로 돌아갈까요?"
         primaryButton={{
@@ -904,7 +934,7 @@ export default function MobileCourseFilterPage() {
         }}
         secondaryButton={{
           text: "취소",
-          onClick: () => setShowUnsavedModal(false),
+          onClick: handleStayOnPage,
         }}
       />
     </PageWrapper>
