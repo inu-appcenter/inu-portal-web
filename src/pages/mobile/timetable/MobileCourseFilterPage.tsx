@@ -217,6 +217,7 @@ export default function MobileCourseFilterPage() {
     }
   };
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // 초기 상태 대비 변경 사항이 존재하는지 깊은 비교
   const hasChanges = useMemo(() => {
@@ -226,8 +227,8 @@ export default function MobileCourseFilterPage() {
   const [hasPushState, setHasPushState] = useState(false);
   const isOverlayOpen = view !== "main";
 
-  // 라우터 이탈 방지용 blocker (상세 오버레이 스택 정리 중인 back() 동작과 충돌하지 않도록 처리)
-  const blocker = useBlocker(!hasPushState && view === "main" && hasChanges);
+  // 라우터 이탈 방지용 blocker (상세 오버레이 스택 정리 중인 back() 동작과 충돌하지 않도록 처리, 저장 중이면 비활성)
+  const blocker = useBlocker(!hasPushState && !isSaving && view === "main" && hasChanges);
 
   useEffect(() => {
     if (blocker.state === "blocked") {
@@ -413,6 +414,7 @@ export default function MobileCourseFilterPage() {
 
   // 저장하기 핸들러 (편집 페이지로 복귀)
   const handleSave = () => {
+    setIsSaving(true); // blocker 비활성화 후 navigate
     localStorage.setItem("applied_filters", JSON.stringify(filters));
     navigate(-1);
   };
