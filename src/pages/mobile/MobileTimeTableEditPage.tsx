@@ -391,7 +391,7 @@ const MobileTimeTableEditPage = () => {
         isOpen={isConflictModalOpen}
         onClose={() => setIsConflictModalOpen(false)}
         title="시간이 겹쳐요"
-        description={`${overlappingCourse?.name}과(와) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`}
+        description={`${overlappingCourse?.name}와(과) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`}
         primaryButton={{
           text: "교체하기",
           onClick: handleReplaceCourse,

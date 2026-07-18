@@ -44,11 +44,13 @@ const SEARCH_HISTORY_STATE_KEY = "__intipCourseSearchOpen";
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
   onScrollCapture: UIEventHandler<HTMLDivElement>;
+  isAnimating: boolean;
 }
 
 const CourseSheetScrollableContent = ({
   children,
   onScrollCapture,
+  isAnimating,
 }: CourseSheetScrollableContentProps) => {
   const { y } = Sheet.useContext();
   const scrollPaddingBottom = useTransform(y, (currentY) => currentY + 124);
@@ -61,7 +63,7 @@ const CourseSheetScrollableContent = ({
         scrollPosition !== undefined && scrollPosition !== "top"
       }
       disableScroll={({ currentSnap }) =>
-        currentSnap === 1
+        isAnimating || currentSnap === 1
       }
     >
       {children}
@@ -92,6 +94,7 @@ const MobileCourseSearchSheet = ({
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const [activeFilters, setActiveFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
@@ -271,9 +274,15 @@ const MobileCourseSearchSheet = ({
           if (nextSnap !== undefined) onSnapChange(nextSnap);
         }}
       >
-        <CourseSheetContainer>
+        <CourseSheetContainer
+          onAnimationStart={() => setIsAnimating(true)}
+          onAnimationComplete={() => setIsAnimating(false)}
+        >
           <CourseSheetHeader />
-          <CourseSheetScrollableContent onScrollCapture={handleScroll}>
+          <CourseSheetScrollableContent
+            onScrollCapture={handleScroll}
+            isAnimating={isAnimating}
+          >
             <SheetContentWrapper>
               <CourseList>
                 {filteredCourses.map((course) => {
