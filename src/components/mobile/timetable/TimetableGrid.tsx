@@ -19,6 +19,9 @@ export interface ClassItem {
   memo?: string; //메모
   color?: string; // 개별 배경 색상
   ownerName?: string; // 추가: 소유자 이름 (시간표 구분용)
+  grade?: string;
+  courseType?: string;
+  evaluation?: string;
 }
 
 interface TimetableGridProps {
