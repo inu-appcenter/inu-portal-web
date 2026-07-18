@@ -135,7 +135,7 @@ const SelectorHeader = styled.div`
 `;
 
 const Title = styled.h3`
-  color: var(--text-secondary, #6b7684);
+  color: var(--gray-600, #6b7684);
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 16px;
   font-style: normal;

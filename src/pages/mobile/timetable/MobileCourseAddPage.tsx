@@ -268,7 +268,7 @@ const FormSection = styled.section`
 `;
 
 const SectionTitle = styled.h2`
-  color: var(--text-secondary, #6b7684);
+  color: var(--gray-600, #6b7684);
   font-family:
     "Pretendard",
     -apple-system,
