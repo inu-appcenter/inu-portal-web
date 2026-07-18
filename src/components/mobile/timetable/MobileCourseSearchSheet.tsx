@@ -210,6 +210,7 @@ const MobileCourseSearchSheet = ({
         snapPoints={SHEET_SNAP_POINTS}
         initialSnap={initialSnap}
         disableDismiss
+        disableScrollLocking
         onSnap={(snapIndex) => {
           const nextSnap = COURSE_SEARCH_SNAP_POINTS[snapIndex - 1];
           if (nextSnap !== undefined) onSnapChange(nextSnap);
