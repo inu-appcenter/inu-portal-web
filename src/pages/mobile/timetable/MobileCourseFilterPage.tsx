@@ -385,8 +385,6 @@ export default function MobileCourseFilterPage() {
     }));
     // 전공/학과 최종 선택 완료 시 필터 메인화면으로 복귀
     setView("main");
-    setMajorLevel1(null);
-    setMajorLevel2(null);
   };
 
   // 정렬 단일 선택
