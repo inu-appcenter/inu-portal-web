@@ -155,7 +155,7 @@ const ActionButtons = styled.div`
 `;
 
 const IconButton = styled.button`
-  background: var(--bg-base, #ffffff);
+  background: transparent;
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 999px;
   width: 40px;
