@@ -43,6 +43,7 @@ declare const tokens: {
   };
   red: {
     "50": DesignToken;
+    "80": DesignToken;
     "500": DesignToken;
   };
   orange: {
@@ -62,31 +63,35 @@ declare const tokens: {
     "700": DesignToken;
     "800": DesignToken;
   };
+  bg: {
+    base: DesignToken;
+    subtle: DesignToken;
+    muted: DesignToken;
+    disabled: DesignToken;
+    brand: DesignToken;
+    warn: DesignToken;
+    error: DesignToken;
+    blur: DesignToken;
+    dim: DesignToken;
+  };
+  border: {
+    default: DesignToken;
+    strong: DesignToken;
+    brand: DesignToken;
+    "brand-subtle": DesignToken;
+    error: DesignToken;
+    "error-subtle": DesignToken;
+    warn: DesignToken;
+    "warn-subtle": DesignToken;
+    "warn-strong": DesignToken;
+    success: DesignToken;
+  };
   text: {
     primary: DesignToken;
     secondary: DesignToken;
     tertiary: DesignToken;
     disabled: DesignToken;
     inverse: DesignToken;
-    brand: DesignToken;
-    error: DesignToken;
-    success: DesignToken;
-    warn: DesignToken;
-  };
-  bg: {
-    base: DesignToken;
-    subtle: DesignToken;
-    muted: DesignToken;
-    disabled: DesignToken;
-    "brand-subtle": DesignToken;
-    brand: DesignToken;
-    "warn-subtle": DesignToken;
-    warn: DesignToken;
-    error: DesignToken;
-  };
-  border: {
-    default: DesignToken;
-    strong: DesignToken;
     brand: DesignToken;
     error: DesignToken;
     warn: DesignToken;
@@ -97,31 +102,26 @@ declare const tokens: {
     "primary-pressed": DesignToken;
     "primary-disabled": DesignToken;
   };
-  "color-chips": {
+  branding: {
+    "appcenter-brand": DesignToken;
+    "brand-blue": DesignToken;
+    "brand-yellow": DesignToken;
+  };
+  "timeTable-color": {
     red: DesignToken;
-    "red-transp": DesignToken;
     orange: DesignToken;
-    "orange-transp": DesignToken;
     yellow: DesignToken;
-    "yellow-transp": DesignToken;
+    lightgreen: DesignToken;
     teal: DesignToken;
-    "teal-transp": DesignToken;
     skyblue: DesignToken;
-    "skyblue-transp": DesignToken;
     lilac: DesignToken;
-    "lilac-transp": DesignToken;
     violet: DesignToken;
-    "violet-transp": DesignToken;
     purple: DesignToken;
-    "purple-transp": DesignToken;
     pink: DesignToken;
-    "pink-transp": DesignToken;
     gray: DesignToken;
-    "gray-transp": DesignToken;
     "available-time": DesignToken;
   };
   space: {
-    "0": DesignToken;
     "1": DesignToken;
     "2": DesignToken;
     "3": DesignToken;
@@ -129,26 +129,74 @@ declare const tokens: {
     "5": DesignToken;
     "6": DesignToken;
     "8": DesignToken;
-    "10": DesignToken;
-    "12": DesignToken;
-    "16": DesignToken;
   };
   radius: {
-    none: DesignToken;
     sm: DesignToken;
     md: DesignToken;
     lg: DesignToken;
     xl: DesignToken;
     "2xl": DesignToken;
-    "3xl": DesignToken;
-    "4xl": DesignToken;
     full: DesignToken;
   };
-  padding: {
-    "screen-x": DesignToken;
-    "screen-y-top": DesignToken;
-    "screen-y-bottom": DesignToken;
-    card: DesignToken;
-    "section-gap": DesignToken;
+  tt: {
+    "color-0": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-1": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-2": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-3": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-4": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-5": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-6": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-7": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-8": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-9": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+  };
+  display: DesignToken;
+  "title-1": DesignToken;
+  "title-2": DesignToken;
+  "title-3": DesignToken;
+  "title-4": DesignToken;
+  "heading-1": DesignToken;
+  "heading-2": DesignToken;
+  "body-1": DesignToken;
+  "body-2": DesignToken;
+  "label-1": DesignToken;
+  "label-2": DesignToken;
+  "label-3": DesignToken;
+  "caption-1": DesignToken;
+  Bottom_Sheet: DesignToken;
+  Floating_Button: DesignToken;
+  Dim: DesignToken;
+  elevation: {
+    "1": DesignToken;
   };
 };

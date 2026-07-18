@@ -6,6 +6,7 @@ import { ROUTES } from "@/constants/routes";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
 // --- 타입 정의 ---
 interface TimeSlot {
@@ -520,12 +521,16 @@ const MobileSyllabusPage = () => {
 
       {/* 5. 하단 플로팅 버튼 그룹 (Gradient 백그라운드 포함) */}
       <BottomCTAContainer>
-        <GrayCTAButton onClick={() => alert("강의평 페이지 준비 중입니다.")}>
-          <span>강의평</span>
-        </GrayCTAButton>
-        <BlueCTAButton onClick={handleAddToTimetable}>
-          <span>시간표에 추가</span>
-        </BlueCTAButton>
+        <CapsuleButton
+          variant="secondary"
+          onClick={() => alert("강의평 페이지 준비 중입니다.")}
+          style={{ width: "116px", flexShrink: 0 }}
+        >
+          강의평
+        </CapsuleButton>
+        <CapsuleButton variant="primary" fullWidth onClick={handleAddToTimetable}>
+          시간표에 추가
+        </CapsuleButton>
       </BottomCTAContainer>
     </PageWrapper>
   );
@@ -1094,64 +1099,12 @@ const BottomCTAContainer = styled.div`
   display: flex;
   gap: 12px;
   align-items: center;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.0) 16.02%, #FFF 100%);
+  background: transparent;
   pointer-events: auto;
 
   @media ${DESKTOP_MEDIA} {
     max-width: 768px;
     left: 50%;
     transform: translateX(-50%);
-  }
-`;
-
-const GrayCTAButton = styled.button`
-  width: 116px;
-  height: 48px;
-  border-radius: var(--radius-full, 999px);
-  background-color: var(--bg-muted, #f1f3f5);
-  border: 1px solid var(--border-default, #e5e8eb);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  padding: 0;
-
-  span {
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 24px;
-    color: var(--text-secondary, #333d4b);
-  }
-
-  &:active {
-    background-color: var(--border-default, #e5e8eb);
-    transform: scale(0.96);
-  }
-`;
-
-const BlueCTAButton = styled.button`
-  flex: 1;
-  height: 48px;
-  border-radius: var(--radius-full, 999px);
-  background-color: var(--interactive-primary, #3b82f6);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  padding: 0;
-
-  span {
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 24px;
-    color: #ffffff;
-  }
-
-  &:active {
-    background-color: var(--interactive-primary-pressed, #0061ff);
-    transform: scale(0.96);
   }
 `;

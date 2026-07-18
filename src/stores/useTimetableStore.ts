@@ -54,6 +54,7 @@ interface TimetableStore {
   renameTimetable: (id: number, name: string) => void;
   deleteTimetable: (id: number) => void;
   updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
+  updateTimetableEvents: (id: number, events: ClassItem[]) => void;
 }
 
 export const useTimetableStore = create<TimetableStore>((set) => ({
@@ -164,6 +165,12 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
     set((state) => ({
       timetables: state.timetables.map((t) =>
         t.id === id ? { ...t, theme } : t
+      ),
+    })),
+  updateTimetableEvents: (id, events) =>
+    set((state) => ({
+      timetables: state.timetables.map((t) =>
+        t.id === id ? { ...t, events } : t
       ),
     })),
 }));

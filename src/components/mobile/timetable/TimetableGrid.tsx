@@ -19,6 +19,9 @@ export interface ClassItem {
   memo?: string; //메모
   color?: string; // 개별 배경 색상
   ownerName?: string; // 추가: 소유자 이름 (시간표 구분용)
+  grade?: string;
+  courseType?: string;
+  evaluation?: string;
 }
 
 interface TimetableGridProps {
@@ -78,7 +81,6 @@ const TimetableGrid = ({
   // 모바일 롱프레스 및 터치 스크롤 제어용 refs
   const longPressTimerRef = React.useRef<number | null>(null);
   const touchStartPosRef = React.useRef<{ x: number; y: number } | null>(null);
-  const isLongPressedRef = React.useRef<boolean>(false);
   const touchStartCellRef = React.useRef<{ day: number; hour: number } | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -123,28 +125,18 @@ const TimetableGrid = ({
     const touch = e.touches[0];
     touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
     touchStartCellRef.current = { day, hour };
-    isLongPressedRef.current = false;
-    isDrawingRef.current = false;
+    isDrawingRef.current = true;
 
-    if (longPressTimerRef.current) {
-      window.clearTimeout(longPressTimerRef.current);
+    const slot = `${day}-${hour}`;
+    const isSelected = selectedRef.current.includes(slot);
+    const mode = isSelected ? "deselect" : "select";
+    drawingModeRef.current = mode;
+
+    updateSelection(slot, mode);
+
+    if (navigator.vibrate) {
+      navigator.vibrate(20);
     }
-
-    longPressTimerRef.current = window.setTimeout(() => {
-      isLongPressedRef.current = true;
-      isDrawingRef.current = true;
-
-      const slot = `${day}-${hour}`;
-      const isSelected = selectedRef.current.includes(slot);
-      const mode = isSelected ? "deselect" : "select";
-      drawingModeRef.current = mode;
-
-      updateSelection(slot, mode);
-
-      if (navigator.vibrate) {
-        navigator.vibrate(40);
-      }
-    }, 400); // 400ms 롱프레스 판정
   };
 
   React.useEffect(() => {
@@ -153,38 +145,23 @@ const TimetableGrid = ({
     if (!container) return;
 
     const handleTouchMoveNative = (e: TouchEvent) => {
-      if (!touchStartPosRef.current) return;
+      if (!isDrawingRef.current) return;
 
       const touch = e.touches[0];
-      const diffX = touch.clientX - touchStartPosRef.current.x;
-      const diffY = touch.clientY - touchStartPosRef.current.y;
-      const dist = Math.sqrt(diffX * diffX + diffY * diffY);
+      if (e.cancelable) {
+        e.preventDefault();
+      }
 
-      if (isLongPressedRef.current) {
-        // 롱프레스 선택 활성화 상태: 화면 스크롤 금지 및 드래그 슬롯 누적 선택
-        if (e.cancelable) {
-          e.preventDefault();
-        }
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (!element) return;
 
-        const element = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (!element) return;
+      const dayAttr = element.getAttribute("data-day");
+      const hourAttr = element.getAttribute("data-hour");
 
-        const dayAttr = element.getAttribute("data-day");
-        const hourAttr = element.getAttribute("data-hour");
-
-        if (dayAttr !== null && hourAttr !== null) {
-          const day = parseInt(dayAttr, 10);
-          const hour = parseInt(hourAttr, 10);
-          updateSelection(`${day}-${hour}`, drawingModeRef.current);
-        }
-      } else {
-        // 롱프레스 판정 전 8px 넘게 움직이면 일반 스크롤로 간주하고 타이머 취소
-        if (dist > 8) {
-          if (longPressTimerRef.current) {
-            window.clearTimeout(longPressTimerRef.current);
-            longPressTimerRef.current = null;
-          }
-        }
+      if (dayAttr !== null && hourAttr !== null) {
+        const day = parseInt(dayAttr, 10);
+        const hour = parseFloat(hourAttr);
+        updateSelection(`${day}-${hour}`, drawingModeRef.current);
       }
     };
 
@@ -194,29 +171,8 @@ const TimetableGrid = ({
     };
   }, [isSelectionMode]);
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (longPressTimerRef.current) {
-      window.clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-
-    if (!isLongPressedRef.current && touchStartPosRef.current && touchStartCellRef.current) {
-      // 단순 짧은 탭(클릭): 롱프레스는 작동하지 않았고, 손가락 떼는 시점에 터치 이동이 거의 없었을 때 토글
-      const touch = e.changedTouches[0];
-      const diffX = touch.clientX - touchStartPosRef.current.x;
-      const diffY = touch.clientY - touchStartPosRef.current.y;
-      const dist = Math.sqrt(diffX * diffX + diffY * diffY);
-
-      if (dist <= 8) {
-        const { day, hour } = touchStartCellRef.current;
-        const slot = `${day}-${hour}`;
-        const isSelected = selectedRef.current.includes(slot);
-        updateSelection(slot, isSelected ? "deselect" : "select");
-      }
-    }
-
+  const handleTouchEnd = () => {
     isDrawingRef.current = false;
-    isLongPressedRef.current = false;
     touchStartPosRef.current = null;
     touchStartCellRef.current = null;
   };
@@ -370,25 +326,54 @@ const TimetableGrid = ({
               >
                 <span>{time}</span>
               </TimeCell>
+              {/* First 30 minutes */}
               {DAYS.map((_, dayIndex) => {
-                const slot = `${dayIndex}-${time}`;
+                const timeVal = time;
+                const slot = `${dayIndex}-${timeVal}`;
                 const isSelected = localSelected.includes(slot);
                 return (
                   <GridBackgroundCell
-                    key={`bg-${time}-${dayIndex}`}
+                    key={`bg-${timeVal}-${dayIndex}`}
                     $isSelectionMode={isSelectionMode}
                     $isSelected={isSelected}
+                    $isLastDay={dayIndex === 4}
                     data-day={dayIndex}
-                    data-hour={time}
-                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, time, e) : undefined}
+                    data-hour={timeVal}
+                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
                     onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
-                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, time) : undefined}
-                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, time) : undefined}
+                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
+                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
                     onMouseUp={isSelectionMode ? handleMouseUp : undefined}
                     style={{
                       gridColumn: dayIndex + 2,
                       gridRowStart: rowIndex,
-                      gridRowEnd: "span 2",
+                      gridRowEnd: "span 1",
+                    }}
+                  />
+                );
+              })}
+              {/* Second 30 minutes */}
+              {DAYS.map((_, dayIndex) => {
+                const timeVal = time + 0.5;
+                const slot = `${dayIndex}-${timeVal}`;
+                const isSelected = localSelected.includes(slot);
+                return (
+                  <GridBackgroundCell
+                    key={`bg-${timeVal}-${dayIndex}`}
+                    $isSelectionMode={isSelectionMode}
+                    $isSelected={isSelected}
+                    $isLastDay={dayIndex === 4}
+                    data-day={dayIndex}
+                    data-hour={timeVal}
+                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
+                    onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
+                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
+                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
+                    onMouseUp={isSelectionMode ? handleMouseUp : undefined}
+                    style={{
+                      gridColumn: dayIndex + 2,
+                      gridRowStart: rowIndex + 1,
+                      gridRowEnd: "span 1",
                     }}
                   />
                 );
@@ -491,12 +476,9 @@ const TimeCell = styled(CellBase)`
   line-height: 16px;
 `;
 
-const GridBackgroundCell = styled.div<{ $isSelectionMode?: boolean; $isSelected?: boolean }>`
+const GridBackgroundCell = styled.div<{ $isSelectionMode?: boolean; $isSelected?: boolean; $isLastDay?: boolean }>`
   border-bottom: 1px solid #f0f0f0;
-  border-right: 1px solid #f0f0f0;
-  &:nth-child(6n) {
-    border-right: none;
-  }
+  border-right: ${({ $isLastDay }) => $isLastDay ? "none" : "1px solid #f0f0f0"};
 
   ${({ $isSelectionMode, $isSelected }) =>
     $isSelectionMode &&

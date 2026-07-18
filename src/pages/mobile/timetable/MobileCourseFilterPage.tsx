@@ -8,6 +8,7 @@ import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
 import Ripple from "@/components/common/Ripple";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
 // --- Types & Constants ---
 export interface FilterState {
@@ -143,7 +144,7 @@ export function formatSlotsToTimeStr(slots: string[]): string {
   slots.forEach((slot) => {
     const [dStr, hStr] = slot.split("-");
     const d = parseInt(dStr, 10);
-    const h = parseInt(hStr, 10);
+    const h = parseFloat(hStr);
     if (!dayGroups[d]) dayGroups[d] = [];
     dayGroups[d].push(h);
   });
@@ -162,13 +163,16 @@ export function formatSlotsToTimeStr(slots: string[]): string {
 
     for (let i = 1; i <= hours.length; i++) {
       const current = hours[i];
-      if (current === prev + 1) {
+      if (current === prev + 0.5) {
         prev = current;
       } else {
-        const end = prev + 1;
-        const startPad = String(start).padStart(2, "0");
-        const endPad = String(end).padStart(2, "0");
-        ranges.push(`${startPad}:00~${endPad}:00`);
+        const end = prev + 0.5;
+        const formatHour = (val: number): string => {
+          const h = Math.floor(val);
+          const m = Math.round((val - h) * 60);
+          return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        };
+        ranges.push(`${formatHour(start)}~${formatHour(end)}`);
         start = current;
         prev = current;
       }
@@ -307,8 +311,8 @@ export default function MobileCourseFilterPage() {
   }, [filters.sort]);
 
   const timeChips = useMemo(() => {
-    if (filters.time === "전체 시간") return [];
-    return [filters.time];
+    if (filters.time === "전체 시간" || filters.time === "직접 시간 선택") return [];
+    return filters.time.split(" ");
   }, [filters.time]);
 
   const gradeChips = useMemo(() => {
@@ -393,8 +397,20 @@ export default function MobileCourseFilterPage() {
           return { ...prev, major: null };
         case "sort":
           return { ...prev, sort: "기본순" };
-        case "time":
-          return { ...prev, time: "전체 시간", selectedSlots: [] };
+        case "time": {
+          const dayChar = chip.charAt(0);
+          const DAYS_SHORT = ["월", "화", "수", "목", "금"];
+          const dayIdx = DAYS_SHORT.indexOf(dayChar);
+          const nextSlots = (prev.selectedSlots || []).filter(
+            (slot) => !slot.startsWith(`${dayIdx}-`)
+          );
+          const nextTimeStr = nextSlots.length > 0 ? formatSlotsToTimeStr(nextSlots) : "전체 시간";
+          return {
+            ...prev,
+            time: nextTimeStr,
+            selectedSlots: nextSlots,
+          };
+        }
         case "grade": {
           const val = parseInt(chip.replace("학년", ""), 10);
           return { ...prev, grades: prev.grades.filter((g) => g !== val) };
@@ -439,7 +455,9 @@ export default function MobileCourseFilterPage() {
                       ))}
                     </ChipsScrollWrapper>
                   </CategoryTextWrapper>
-                  <ChevronRight size={20} color="var(--gray-400, #b0b8c1)" />
+                  <ChevronWrapper>
+                    <ChevronRight size={20} color="var(--gray-400, #b0b8c1)" />
+                  </ChevronWrapper>
                   <Ripple />
                 </CategoryItemRow>
               );
@@ -628,8 +646,7 @@ export default function MobileCourseFilterPage() {
         <>
           <ScrollContent>
             <TimetableSelectorContainer style={{ marginTop: 0 }}>
-              <TimetableToggleHeader>
-                <ToggleTitle>시간표 블록 오버레이</ToggleTitle>
+              <TimetableToggleHeader style={{ justifyContent: "flex-end" }}>
                 <ToggleSwitchWrapper>
                   <ToggleLabel>내 시간표 표시</ToggleLabel>
                   <SwitchInput
@@ -661,17 +678,14 @@ export default function MobileCourseFilterPage() {
           </ScrollContent>
 
           {/* 하단 플로팅 액션 버튼 */}
-          <BottomGradient />
-          <FixedBottomContainer>
-            <ResetButton onClick={handleResetTime}>
-              <RotateCcw size={16} />
-              <span>초기화</span>
-              <Ripple color="var(--border-default, #e5e8eb)" />
-            </ResetButton>
-            <SaveButton onClick={() => setView("main")}>
-              저장하기
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </SaveButton>
+          <FixedBottomContainer style={{ justifyContent: "center" }}>
+            <ResetBottomButton
+              variant="secondary"
+              onClick={handleResetTime}
+              leftIcon={<RotateCcw size={16} />}
+            >
+              초기화
+            </ResetBottomButton>
           </FixedBottomContainer>
         </>
       )}
@@ -700,12 +714,10 @@ export default function MobileCourseFilterPage() {
             </OptionsCard>
             <BottomActionsSpacer />
           </ScrollContent>
-          <BottomGradient />
           <FixedBottomContainer>
-            <ConfirmSubScreenButton onClick={() => setView("main")}>
+            <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </ConfirmSubScreenButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -736,12 +748,10 @@ export default function MobileCourseFilterPage() {
             </OptionsCard>
             <BottomActionsSpacer />
           </ScrollContent>
-          <BottomGradient />
           <FixedBottomContainer>
-            <ConfirmSubScreenButton onClick={() => setView("main")}>
+            <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </ConfirmSubScreenButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -771,12 +781,10 @@ export default function MobileCourseFilterPage() {
             </OptionsCard>
             <BottomActionsSpacer />
           </ScrollContent>
-          <BottomGradient />
           <FixedBottomContainer>
-            <ConfirmSubScreenButton onClick={() => setView("main")}>
+            <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </ConfirmSubScreenButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -784,17 +792,17 @@ export default function MobileCourseFilterPage() {
       {/* 하단 고정 액션바 (메인화면에서만 노출) */}
       {view === "main" && (
         <>
-          <BottomGradient />
           <FixedBottomContainer>
-            <ResetButton onClick={handleReset}>
-              <RotateCcw size={16} />
-              <span>초기화</span>
-              <Ripple color="var(--border-default, #e5e8eb)" />
-            </ResetButton>
-            <SaveButton onClick={handleSave}>
+            <ResetBottomButton
+              variant="secondary"
+              onClick={handleReset}
+              leftIcon={<RotateCcw size={16} />}
+            >
+              초기화
+            </ResetBottomButton>
+            <BottomActionButton variant="primary" onClick={handleSave}>
               적용하기
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </SaveButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -842,7 +850,7 @@ const CategoryItemRow = styled.button`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 8px 16px 16px;
+  padding: 0 0 0 16px;
   height: 64px;
   cursor: pointer;
   width: 100%;
@@ -856,6 +864,16 @@ const CategoryItemRow = styled.button`
   }
 `;
 
+const ChevronWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  align-self: stretch;
+  flex-shrink: 0;
+  cursor: pointer;
+`;
+
 const CategoryTextWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -863,6 +881,19 @@ const CategoryTextWrapper = styled.div`
   gap: 12px;
   flex: 1;
   min-width: 0;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, var(--bg-base, #ffffff) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
 `;
 
 const CategoryLabel = styled.span`
@@ -1076,11 +1107,7 @@ const TimetableToggleHeader = styled.div`
   padding: 0 4px;
 `;
 
-const ToggleTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 14px;
-  font-weight: 500;
-`;
+
 
 const ToggleSwitchWrapper = styled.label`
   display: flex;
@@ -1135,48 +1162,6 @@ const TimetableGridContainer = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 `;
 
-const ConfirmSubScreenButton = styled.button`
-  width: 100%;
-  height: 56px;
-  border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 32px;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-
-  & > *:not(.ripple-container) {
-    position: relative;
-    z-index: 1;
-  }
-`;
-
-const BottomGradient = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 768px;
-  height: 120px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 16.02%, #fff 100%);
-  pointer-events: none;
-  z-index: 90;
-`;
-
 const FixedBottomContainer = styled.div`
   position: fixed;
   bottom: 32px;
@@ -1193,64 +1178,23 @@ const FixedBottomContainer = styled.div`
   z-index: 100;
 `;
 
-const ResetButton = styled.button`
-  width: 100px;
+const BottomActionButton = styled(CapsuleButton)`
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
   height: 56px;
-  border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background-color: var(--bg-muted, #f1f3f5);
-  color: var(--text-secondary, #333d4b);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 32px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-
-  & > *:not(.ripple-container) {
-    position: relative;
-    z-index: 1;
-  }
+  min-height: 56px;
+  padding: 12px 24px;
 `;
 
-const SaveButton = styled.button`
-  flex: 1;
-  height: 56px;
-  border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 32px;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+const ResetBottomButton = styled(BottomActionButton)`
+  flex: 0 0 auto;
+  width: auto;
+  padding: 12px 16px;
 
-  & > *:not(.ripple-container) {
-    position: relative;
-    z-index: 1;
+  span {
+    gap: 6px;
+    white-space: nowrap;
   }
 `;
 

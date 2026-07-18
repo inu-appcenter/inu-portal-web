@@ -7,28 +7,21 @@ import InputField from "@/components/common/InputField";
 import CourseTimeSelector, {
   CourseTimeSlot,
 } from "@/components/mobile/timetable/CourseTimeSelector";
-import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
-import { Check, Plus } from "lucide-react";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
-const DEFAULT_COLORS = [
-  "var(--color-chips-red)",
-  "var(--color-chips-orange)",
-  "var(--color-chips-yellow)",
-  "var(--color-chips-teal)",
-  "var(--color-chips-skyblue)",
-  "var(--color-chips-lilac)",
-  "var(--color-chips-violet)",
-  "var(--color-chips-purple)",
-  "var(--color-chips-pink)",
-  "var(--color-chips-gray)",
-];
+const DEFAULT_COLOR = "var(--color-chips-red)";
 
 const MobileCourseAddPage = () => {
   const navigate = useNavigate();
+  const { timetables, activeTimetableId, updateTimetableEvents } =
+    useTimetableStore();
+  const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
 
   // 헤더 설정
   useHeader({
-    title: "과목 추가",
+    title: "과목 직접 추가",
     showAlarm: false,
     hasback: true,
   });
@@ -37,23 +30,22 @@ const MobileCourseAddPage = () => {
   const [courseName, setCourseName] = useState("");
   const [professor, setProfessor] = useState("");
   const [room, setRoom] = useState("");
-  const [memo, setMemo] = useState("");
+  const [grade, setGrade] = useState("");
+  const [courseType, setCourseType] = useState("");
+  const [evaluation, setEvaluation] = useState("");
 
   // 에러 상태
   const [nameError, setNameError] = useState("");
+  const [professorError, setProfessorError] = useState("");
 
   // 상태 관리 - 시간 정보 (기본적으로 1개 슬롯 탑재)
   const [timeSlots, setTimeSlots] = useState<CourseTimeSlot[]>([
     { id: "slot-1", day: 0, startTime: "15:00", endTime: "16:30" },
   ]);
 
-  // 상태 관리 - 색상 정보
-  const [customColors, setCustomColors] = useState<string[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string>(DEFAULT_COLORS[0]);
-
   // Ref 관리
-  const colorPickerRef = useRef<HTMLInputElement>(null);
   const courseNameRef = useRef<HTMLInputElement>(null);
+  const professorRef = useRef<HTMLInputElement>(null);
 
   // 시간 슬롯 제어 함수들
   const handleTimeSlotChange = (updatedSlot: CourseTimeSlot) => {
@@ -77,45 +69,92 @@ const MobileCourseAddPage = () => {
     setTimeSlots((prev) => prev.filter((s) => s.id !== id));
   };
 
-  // 커스텀 색상 추가
-  const handleCustomColorClick = () => {
-    return;
-    colorPickerRef.current?.click();
-  };
-
-  const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const hexColor = e.target.value;
-    if (hexColor) {
-      setCustomColors((prev) => [...prev, hexColor]);
-      setSelectedColor(hexColor);
-    }
-  };
-
   // 저장 로직
   const handleSave = () => {
+    let hasError = false;
     if (!courseName.trim()) {
       setNameError("과목명을 입력해 주세요.");
       courseNameRef.current?.focus();
+      hasError = true;
+    } else {
+      setNameError("");
+    }
+
+    if (!professor.trim()) {
+      setProfessorError("교수명을 입력해 주세요.");
+      if (!hasError) {
+        professorRef.current?.focus();
+      }
+      hasError = true;
+    } else {
+      setProfessorError("");
+    }
+
+    if (hasError) return;
+
+    if (!activeTimetable || activeTimetableId === null) {
+      alert("활성화된 시간표가 없습니다.");
       return;
     }
-    setNameError("");
 
-    // 목업으로 임시 데이터 구성 후 반환
-    const newCourseData = {
-      name: courseName,
-      professor,
-      room,
-      memo,
-      schedules: timeSlots,
-      color: selectedColor,
+    const parseTimeToNumber = (timeStr: string): number => {
+      const [hours, minutes] = timeStr.split(":").map(Number);
+      return hours + minutes / 60;
     };
 
-    console.log("Saving new course:", newCourseData);
+    const newCourseId =
+      Math.max(0, ...activeTimetable.events.map((e) => e.id)) + 1;
+
+    const newSchedules = timeSlots.map((slot) => ({
+      id: newCourseId,
+      name: courseName,
+      room: room || "강의실 미정",
+      day: slot.day,
+      startTime: parseTimeToNumber(slot.startTime),
+      endTime: parseTimeToNumber(slot.endTime),
+      professor: professor || "",
+      memo: "",
+      color: DEFAULT_COLOR,
+      grade: grade || "",
+      courseType: courseType || "",
+      evaluation: evaluation || "",
+    }));
+
+    const isOverlapping = (a: any, b: any) => {
+      if (a.day !== b.day) return false;
+      return a.startTime < b.endTime && b.startTime < a.endTime;
+    };
+
+    let conflictItem: any = null;
+    for (const newSlot of newSchedules) {
+      for (const existingSlot of activeTimetable.events) {
+        if (isOverlapping(newSlot, existingSlot)) {
+          conflictItem = existingSlot;
+          break;
+        }
+      }
+      if (conflictItem) break;
+    }
+
+    if (conflictItem) {
+      const proceed = window.confirm(
+        `시간이 겹쳐요 - ${conflictItem.name}과(와) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`,
+      );
+      if (!proceed) return;
+
+      const updatedEvents = [
+        ...activeTimetable.events.filter((e) => e.id !== conflictItem.id),
+        ...newSchedules,
+      ];
+      updateTimetableEvents(activeTimetableId, updatedEvents);
+    } else {
+      const updatedEvents = [...activeTimetable.events, ...newSchedules];
+      updateTimetableEvents(activeTimetableId, updatedEvents);
+    }
+
     alert(`"${courseName}" 과목이 시간표에 추가되었습니다.`);
     navigate(ROUTES.TIMETABLE.EDIT);
   };
-
-  const allColors = [...DEFAULT_COLORS, ...customColors];
 
   return (
     <PageWrapper>
@@ -123,44 +162,63 @@ const MobileCourseAddPage = () => {
       <FormSection>
         <SectionTitle>강의 정보</SectionTitle>
         <FormFields>
-          <InputField
-            ref={courseNameRef as any}
-            label="과목명"
-            placeholder="과목명을 입력하세요"
-            value={courseName}
-            onChange={(val) => {
-              setCourseName(val);
-              if (val.trim()) setNameError("");
-            }}
-            error={nameError}
-          />
-          <InputField
-            label="교수명"
-            placeholder="교수명을 입력하세요"
-            value={professor}
-            onChange={setProfessor}
-          />
-          <InputField
-            label="강의실"
-            placeholder="예: 07-504"
-            value={room}
-            onChange={setRoom}
-          />
-          <InputField
-            label="메모"
-            placeholder="비고나 메모를 입력하세요"
-            isTextArea={true}
-            rows={3}
-            value={memo}
-            onChange={setMemo}
-          />
+          <Row>
+            <StyledInputField
+              ref={courseNameRef as any}
+              label="과목명 *"
+              placeholder="과목명 입력"
+              value={courseName}
+              onChange={(val) => {
+                setCourseName(val);
+                if (val.trim()) setNameError("");
+              }}
+              error={nameError}
+            />
+            <StyledInputField
+              ref={professorRef as any}
+              label="교수명 *"
+              placeholder="교수명 입력"
+              value={professor}
+              onChange={(val) => {
+                setProfessor(val);
+                if (val.trim()) setProfessorError("");
+              }}
+              error={professorError}
+            />
+          </Row>
+          <Row>
+            <StyledInputField
+              label="강의실"
+              placeholder="강의실 입력"
+              value={room}
+              onChange={setRoom}
+            />
+            <StyledInputField
+              label="학년"
+              placeholder="학년 입력"
+              value={grade}
+              onChange={setGrade}
+            />
+          </Row>
+          <Row>
+            <StyledInputField
+              label="이수구분"
+              placeholder="이수구분 입력"
+              value={courseType}
+              onChange={setCourseType}
+            />
+            <StyledInputField
+              label="평가방식"
+              placeholder="평가방식 입력"
+              value={evaluation}
+              onChange={setEvaluation}
+            />
+          </Row>
         </FormFields>
       </FormSection>
 
-      <Divider />
-
       {/* 시간 설정 */}
-      <FormSection>
+      <FormSection style={{ gap: "12px" }}>
         {timeSlots.map((slot, index) => (
           <CourseTimeSelector
             key={slot.id}
@@ -174,51 +232,11 @@ const MobileCourseAddPage = () => {
         ))}
       </FormSection>
 
-      <Divider />
-
-      {/* 색상 설정 */}
-      <FormSection>
-        <SectionTitle>색상</SectionTitle>
-        <ColorPaletteGrid>
-          {allColors.map((colorVal) => {
-            const isSelected = selectedColor === colorVal;
-            return (
-              <ColorChipButton
-                key={colorVal}
-                $chipColor={colorVal}
-                $isSelected={isSelected}
-                onClick={() => setSelectedColor(colorVal)}
-                type="button"
-              >
-                {isSelected && (
-                  <Check size={16} color="#ffffff" strokeWidth={3} />
-                )}
-              </ColorChipButton>
-            );
-          })}
-
-          {/* 커스텀 색상 추가 버튼 */}
-          <CustomColorButton onClick={handleCustomColorClick} type="button">
-            <Plus
-              size={18}
-              color="var(--gray-500, #8b95a1)"
-              strokeWidth={2.5}
-            />
-          </CustomColorButton>
-
-          <HiddenColorInput
-            ref={colorPickerRef}
-            type="color"
-            onChange={handleCustomColorChange}
-          />
-        </ColorPaletteGrid>
-      </FormSection>
-
-      {/* 4. 저장하기 버튼 */}
+      {/* 저장하기 버튼 */}
       <SubmitButtonContainer>
-        <SubmitButton onClick={handleSave} type="button">
+        <CapsuleButton variant="primary" fullWidth onClick={handleSave}>
           저장하기
-        </SubmitButton>
+        </CapsuleButton>
       </SubmitButtonContainer>
     </PageWrapper>
   );
@@ -232,138 +250,79 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 0 ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 80px) + 50px);
-  padding-bottom: 100px;
+  background-color: var(--bg-subtle, #f8f9fb);
+  min-height: calc(100vh - var(--header-height, 56px));
+  padding: 16px;
+  padding-bottom: 120px;
+  gap: 24px;
 
   @media ${DESKTOP_MEDIA} {
-    padding: var(--header-height, 56px) 0 100px;
+    padding: calc(var(--header-height, 56px) + 16px) 16px 120px;
   }
 `;
 
 const FormSection = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 12px;
   width: 100%;
-  //margin-top: 16px;
 `;
 
 const SectionTitle = styled.h2`
-  color: var(--text-secondary, #6b7684);
-
+  color: var(--gray-600, #6b7684);
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
   line-height: 24px;
   margin: 0;
   margin-left: 4px;
+  height: 40px;
+  display: flex;
+  align-items: center;
 `;
 
 const FormFields = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
 `;
 
-const Divider = styled.hr`
-  border: none;
-  border-top: 1px solid var(--border-default, #e5e8eb);
-  margin: 16px 0;
-  width: 100%;
-`;
-
-const ColorPaletteGrid = styled.div`
+const Row = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
-  margin-top: 8px;
-  justify-content: center;
 `;
 
-const ColorChipButton = styled.button<{
-  $chipColor: string;
-  $isSelected: boolean;
-}>`
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full, 999px);
-  background-color: ${({ $chipColor }) => $chipColor};
-  border: 2px solid
-    ${({ $isSelected }) => ($isSelected ? "#3b82f6" : "transparent")};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-  &:active {
-    transform: scale(0.9);
+const StyledInputField = styled(InputField)`
+  && {
+    background-color: ${({ error }) => (error ? "var(--bg-error, #fff0f0)" : "var(--bg-base, #ffffff)")};
   }
-`;
-
-const CustomColorButton = styled.button`
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full, 999px);
-  background-color: var(--gray-50, #f8f9fb);
-  border: 1px dashed var(--gray-400, #b0b8c1);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: all 0.2s ease;
-
-  &:active {
-    background-color: var(--gray-100, #f1f3f5);
-  }
-`;
-
-const HiddenColorInput = styled.input`
-  display: none;
 `;
 
 const SubmitButtonContainer = styled.div`
   position: fixed;
-  bottom: 0;
+  bottom: 32px;
   left: 0;
   right: 0;
-  padding: 16px ${MOBILE_PAGE_GUTTER};
-
+  padding: 8px 24px;
   z-index: 100;
   max-width: 768px;
   margin: 0 auto;
   box-sizing: border-box;
+  background: transparent;
+  filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.08));
 
   @media ${DESKTOP_MEDIA} {
     position: relative;
     padding: 24px 0 0;
     background-color: transparent;
-    backdrop-filter: none;
+    filter: none;
     width: 100%;
-  }
-`;
-
-const SubmitButton = styled.button`
-  width: 100%;
-  height: 52px;
-  border-radius: var(--radius-2xl, 24px);
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:active {
-    background-color: var(--interactive-primary-pressed, #0061ff);
   }
 `;

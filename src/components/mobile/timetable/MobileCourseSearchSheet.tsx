@@ -39,15 +39,18 @@ export interface CourseResult {
 // eslint-disable-next-line react-refresh/only-export-components
 export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
 const SHEET_SNAP_POINTS = [0, 0.2, 0.5, 1];
+const SEARCH_HISTORY_STATE_KEY = "__intipCourseSearchOpen";
 
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
   onScrollCapture: UIEventHandler<HTMLDivElement>;
+  isAnimating: boolean;
 }
 
 const CourseSheetScrollableContent = ({
   children,
   onScrollCapture,
+  isAnimating,
 }: CourseSheetScrollableContentProps) => {
   const { y } = Sheet.useContext();
   const scrollPaddingBottom = useTransform(y, (currentY) => currentY + 124);
@@ -58,6 +61,9 @@ const CourseSheetScrollableContent = ({
       scrollStyle={{ paddingBottom: scrollPaddingBottom }}
       disableDrag={({ scrollPosition }) =>
         scrollPosition !== undefined && scrollPosition !== "top"
+      }
+      disableScroll={({ currentSnap }) =>
+        isAnimating || currentSnap === 1
       }
     >
       {children}
@@ -73,6 +79,7 @@ interface MobileCourseSearchSheetProps {
   onSnapChange: (snap: string | number | null) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAddCourse?: (course: CourseResult) => void;
 }
 
 const MobileCourseSearchSheet = ({
@@ -83,9 +90,11 @@ const MobileCourseSearchSheet = ({
   onSnapChange,
   open,
   onOpenChange,
+  onAddCourse,
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const [activeFilters, setActiveFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
@@ -169,6 +178,55 @@ const MobileCourseSearchSheet = ({
 
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
+  const isSearchActiveRef = useRef(false);
+  const hasSearchHistoryEntryRef = useRef(false);
+  const isSyncingSearchHistoryRef = useRef(false);
+
+  useEffect(() => {
+    isSearchActiveRef.current = isSearchActive;
+  }, [isSearchActive]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isSyncingSearchHistoryRef.current) {
+        isSyncingSearchHistoryRef.current = false;
+        hasSearchHistoryEntryRef.current = false;
+        return;
+      }
+
+      if (!isSearchActiveRef.current) return;
+
+      hasSearchHistoryEntryRef.current = false;
+      searchBarRef.current?.blur();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (isSearchActive) {
+      if (!hasSearchHistoryEntryRef.current) {
+        window.history.pushState(
+          {
+            ...(window.history.state ?? {}),
+            [SEARCH_HISTORY_STATE_KEY]: true,
+          },
+          "",
+        );
+        hasSearchHistoryEntryRef.current = true;
+      }
+      return;
+    }
+
+    if (
+      hasSearchHistoryEntryRef.current &&
+      window.history.state?.[SEARCH_HISTORY_STATE_KEY]
+    ) {
+      isSyncingSearchHistoryRef.current = true;
+      window.history.back();
+    }
+  }, [isSearchActive]);
 
   // 키보드가 닫힌 뒤 변경된 모바일 뷰포트를 기준으로 높이를 다시 계산합니다.
   useEffect(() => {
@@ -210,14 +268,21 @@ const MobileCourseSearchSheet = ({
         snapPoints={SHEET_SNAP_POINTS}
         initialSnap={initialSnap}
         disableDismiss
+        disableScrollLocking
         onSnap={(snapIndex) => {
           const nextSnap = COURSE_SEARCH_SNAP_POINTS[snapIndex - 1];
           if (nextSnap !== undefined) onSnapChange(nextSnap);
         }}
       >
-        <CourseSheetContainer>
+        <CourseSheetContainer
+          onAnimationStart={() => setIsAnimating(true)}
+          onAnimationComplete={() => setIsAnimating(false)}
+        >
           <CourseSheetHeader />
-          <CourseSheetScrollableContent onScrollCapture={handleScroll}>
+          <CourseSheetScrollableContent
+            onScrollCapture={handleScroll}
+            isAnimating={isAnimating}
+          >
             <SheetContentWrapper>
               <CourseList>
                 {filteredCourses.map((course) => {
@@ -268,7 +333,9 @@ const MobileCourseSearchSheet = ({
                             <PrimaryActionButton
                               onClick={(e) => {
                                 e.stopPropagation();
-                                console.log("시간표에 추가 클릭됨");
+                                if (onAddCourse) {
+                                  onAddCourse(course);
+                                }
                               }}
                             >
                               <Plus size={20} />
