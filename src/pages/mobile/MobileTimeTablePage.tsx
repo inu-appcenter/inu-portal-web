@@ -12,6 +12,7 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
+import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 
@@ -354,12 +355,12 @@ const MobileTimeTablePage = () => {
   const [renameInputVal, setRenameInputVal] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const {
     selectedSemester,
     activeTimetableId,
     timetables,
-    addTimetable,
     renameTimetable,
     deleteTimetable,
   } = useTimetableStore();
@@ -479,18 +480,17 @@ const MobileTimeTablePage = () => {
     navigate(ROUTES.TIMETABLE.CALCULATOR);
   };
 
-  const handleCreateTimetable = () => {
-    const name = prompt("새 시간표 이름을 입력해주세요.", "시간표 1");
-    if (name) {
-      addTimetable(selectedSemester, name);
-    }
-  };
-
   return (
     <MobileTimeTablePageWrapper>
       <ComingSoonModal
         isOpen={isModalOpen}
         onClose={() => navigate(ROUTES.HOME, { replace: true })}
+      />
+
+      <TimeTableCreateModal
+        isOpen={isCreateModalOpen}
+        initialSemester={selectedSemester}
+        onClose={() => setIsCreateModalOpen(false)}
       />
 
       {activeTimetable && (
@@ -568,8 +568,8 @@ const MobileTimeTablePage = () => {
           </NoTimetableContent>
           <CapsuleButton
             variant="primary"
-            onClick={handleCreateTimetable}
-            style={{ width: "100%", maxWidth: "353px" }}
+            onClick={() => setIsCreateModalOpen(true)}
+            // style={{ width: "100%", maxWidth: "353px" }}
           >
             시간표 생성하기
           </CapsuleButton>
@@ -577,7 +577,6 @@ const MobileTimeTablePage = () => {
       )}
 
       <SemesterInfoLine>
-        <Semester>{selectedSemester}</Semester>
         <ScoreArea>
           <div className="type1">
             <span>전공 9</span>
@@ -652,17 +651,9 @@ const MobileTimeTablePageWrapper = styled.div`
 const SemesterInfoLine = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: end;
   margin-top: 8px;
   padding: 0 8px;
-`;
-
-const Semester = styled.div`
-  color: var(--text-secondary);
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 24px;
 `;
 
 const ScoreArea = styled.div`
