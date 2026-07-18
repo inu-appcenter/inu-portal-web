@@ -15,6 +15,71 @@ declare interface DesignToken {
 }
 
 declare const tokens: {
+  Bottom_Sheet: DesignToken;
+  elevation: {
+    "1": DesignToken;
+  };
+  fontFamilies: {
+    pretendard: DesignToken;
+  };
+  lineHeights: {
+    "0": DesignToken;
+    "1": DesignToken;
+    "2": DesignToken;
+    "3": DesignToken;
+    "4": DesignToken;
+    "5": DesignToken;
+    "6": DesignToken;
+    "7": DesignToken;
+    "8": DesignToken;
+    "9": DesignToken;
+    "10": DesignToken;
+    "11": DesignToken;
+    "12": DesignToken;
+  };
+  fontWeights: {
+    "pretendard-0": DesignToken;
+    "pretendard-1": DesignToken;
+    "pretendard-2": DesignToken;
+    "pretendard-3": DesignToken;
+  };
+  fontSize: {
+    "0": DesignToken;
+    "1": DesignToken;
+    "2": DesignToken;
+    "3": DesignToken;
+    "4": DesignToken;
+    "5": DesignToken;
+  };
+  letterSpacing: {
+    "0": DesignToken;
+    "1": DesignToken;
+  };
+  paragraphSpacing: {
+    "0": DesignToken;
+  };
+  display: DesignToken;
+  "title-1": DesignToken;
+  "title-2": DesignToken;
+  "title-3": DesignToken;
+  "title-4": DesignToken;
+  "heading-1": DesignToken;
+  "heading-2": DesignToken;
+  "body-1": DesignToken;
+  "body-2": DesignToken;
+  "label-1": DesignToken;
+  "label-2": DesignToken;
+  "label-3": DesignToken;
+  "caption-1": DesignToken;
+  textCase: {
+    none: DesignToken;
+  };
+  textDecoration: {
+    none: DesignToken;
+  };
+  paragraphIndent: {
+    "0": DesignToken;
+  };
   blue: {
     "50": DesignToken;
     "100": DesignToken;
@@ -43,6 +108,7 @@ declare const tokens: {
   };
   red: {
     "50": DesignToken;
+    "80": DesignToken;
     "500": DesignToken;
   };
   orange: {
@@ -63,33 +129,37 @@ declare const tokens: {
     "800": DesignToken;
   };
   text: {
-    primary: DesignToken;
     secondary: DesignToken;
     tertiary: DesignToken;
     disabled: DesignToken;
     inverse: DesignToken;
     brand: DesignToken;
     error: DesignToken;
-    success: DesignToken;
     warn: DesignToken;
-  };
-  bg: {
-    base: DesignToken;
-    subtle: DesignToken;
-    muted: DesignToken;
-    disabled: DesignToken;
-    "brand-subtle": DesignToken;
-    brand: DesignToken;
-    "warn-subtle": DesignToken;
-    warn: DesignToken;
-    error: DesignToken;
+    primary: DesignToken;
   };
   border: {
+    success: DesignToken;
     default: DesignToken;
     strong: DesignToken;
     brand: DesignToken;
     error: DesignToken;
     warn: DesignToken;
+    "warn-subtle": DesignToken;
+    "brand-subtle": DesignToken;
+    "error-subtle": DesignToken;
+    "warn-strong": DesignToken;
+  };
+  bg: {
+    base: DesignToken;
+    subtle: DesignToken;
+    muted: DesignToken;
+    brand: DesignToken;
+    warn: DesignToken;
+    error: DesignToken;
+    disabled: DesignToken;
+    dim: DesignToken;
+    blur: DesignToken;
   };
   interactive: {
     primary: DesignToken;
@@ -97,31 +167,68 @@ declare const tokens: {
     "primary-pressed": DesignToken;
     "primary-disabled": DesignToken;
   };
-  "color-chips": {
-    red: DesignToken;
-    "red-transp": DesignToken;
-    orange: DesignToken;
-    "orange-transp": DesignToken;
+  "timeTable-color": {
     yellow: DesignToken;
-    "yellow-transp": DesignToken;
-    teal: DesignToken;
-    "teal-transp": DesignToken;
-    skyblue: DesignToken;
-    "skyblue-transp": DesignToken;
-    lilac: DesignToken;
-    "lilac-transp": DesignToken;
-    violet: DesignToken;
-    "violet-transp": DesignToken;
-    purple: DesignToken;
-    "purple-transp": DesignToken;
-    pink: DesignToken;
-    "pink-transp": DesignToken;
-    gray: DesignToken;
-    "gray-transp": DesignToken;
     "available-time": DesignToken;
+    teal: DesignToken;
+    red: DesignToken;
+    orange: DesignToken;
+    skyblue: DesignToken;
+    lilac: DesignToken;
+    pink: DesignToken;
+    violet: DesignToken;
+    purple: DesignToken;
+    gray: DesignToken;
+    lightgreen: DesignToken;
+  };
+  branding: {
+    "appcenter-brand": DesignToken;
+    "brand-blue": DesignToken;
+    "brand-yellow": DesignToken;
+  };
+  tt: {
+    "color-0": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-1": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-2": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-3": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-4": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-5": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-6": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-7": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-8": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
+    "color-9": {
+      bg: DesignToken;
+      text: DesignToken;
+    };
   };
   space: {
-    "0": DesignToken;
     "1": DesignToken;
     "2": DesignToken;
     "3": DesignToken;
@@ -129,26 +236,13 @@ declare const tokens: {
     "5": DesignToken;
     "6": DesignToken;
     "8": DesignToken;
-    "10": DesignToken;
-    "12": DesignToken;
-    "16": DesignToken;
   };
   radius: {
-    none: DesignToken;
     sm: DesignToken;
     md: DesignToken;
     lg: DesignToken;
     xl: DesignToken;
-    "2xl": DesignToken;
-    "3xl": DesignToken;
-    "4xl": DesignToken;
     full: DesignToken;
-  };
-  padding: {
-    "screen-x": DesignToken;
-    "screen-y-top": DesignToken;
-    "screen-y-bottom": DesignToken;
-    card: DesignToken;
-    "section-gap": DesignToken;
+    "2xl": DesignToken;
   };
 };
