@@ -12,6 +12,10 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
+import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
+import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
+
+const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
 
 // --- SVG Icons ---
 const CaretDownIcon = () => (
@@ -372,6 +376,9 @@ const MobileTimeTablePage = () => {
   }, [timetables, selectedSemester, activeTimetableId]);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
+  const appEnvironment = getAppEnvironmentStatus();
+  const shouldOpenSimulatorInNewWebView =
+    supportsMultiWebView() && appEnvironment === "NEW_APP";
 
   const headerRight = useMemo(
     () => (
@@ -604,7 +611,11 @@ const MobileTimeTablePage = () => {
         </ButtonRow>
 
         <MenuCard
-          onClick={() => navigate(ROUTES.TIMETABLE.SIMULATOR)}
+          onClick={() =>
+            shouldOpenSimulatorInNewWebView
+              ? appBridge.navigateTo(SIMULATOR_URL)
+              : navigate(ROUTES.TIMETABLE.SIMULATOR)
+          }
           $fullWidth
         >
           <MenuCardTitleRow>
