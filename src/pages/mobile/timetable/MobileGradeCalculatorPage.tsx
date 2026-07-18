@@ -25,6 +25,7 @@ import {
   YAxis,
   ReferenceLine,
 } from "recharts";
+import { backHandler } from "@/utils/backHandler";
 
 // --- Types ---
 interface Subject {
@@ -227,19 +228,14 @@ export default function MobileGradeCalculatorPage() {
   };
 
   useEffect(() => {
-    window.__intipHasUnsavedChanges = hasChanges;
-    window.__intipHandleNativeBackRequest = () => {
-      if (!window.__intipHasUnsavedChanges) {
-        return false;
-      }
-
+    const handlePageBack = () => {
       setShowUnsavedChangesModal(true);
-      return true;
+      return true; // 뒤로가기 가로채기
     };
 
+    backHandler.setPageUnsavedChanges(hasChanges, handlePageBack);
     return () => {
-      delete window.__intipHasUnsavedChanges;
-      delete window.__intipHandleNativeBackRequest;
+      backHandler.setPageUnsavedChanges(false);
     };
   }, [hasChanges]);
 

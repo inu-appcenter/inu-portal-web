@@ -99,12 +99,37 @@ const MobileCourseSearchSheet = ({
   const [activeFilters, setActiveFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
 
-  // listen to returned filters from filter page
+  // listen to returned filters from filter page (LocalStorage & window focus & location fallback)
   useEffect(() => {
-    if (location.state && (location.state as any).filters) {
+    const restoreFilters = () => {
+      const savedFilters = localStorage.getItem("applied_filters");
+      if (savedFilters) {
+        try {
+          const parsed = JSON.parse(savedFilters);
+          setActiveFilters(parsed);
+        } catch (e) {
+          console.error("필터 복원 오류:", e);
+        }
+        localStorage.removeItem("applied_filters");
+        return true;
+      }
+      return false;
+    };
+
+    // 1. 컴포넌트 마운트 시도 또는 location 변경 시 확인
+    const restored = restoreFilters();
+
+    // location.state 폴백 (앱이 아닌 일반 브라우저 환경에서 데이터가 올 때를 대비)
+    if (!restored && location.state && (location.state as any).filters) {
       setActiveFilters((location.state as any).filters);
     }
-  }, [location.state]);
+
+    // 2. 멀티 웹뷰 덮인 화면이 닫히며 포커스가 복귀할 때 확인 (window.focus)
+    window.addEventListener("focus", restoreFilters);
+    return () => {
+      window.removeEventListener("focus", restoreFilters);
+    };
+  }, [location.state, location.key]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
