@@ -662,7 +662,6 @@ export default function MobileCourseFilterPage() {
           </ScrollContent>
 
           {/* 하단 플로팅 액션 버튼 */}
-          <BottomGradient />
           <FixedBottomContainer>
             <ResetBottomButton
               variant="secondary"
@@ -702,7 +701,6 @@ export default function MobileCourseFilterPage() {
             </OptionsCard>
             <BottomActionsSpacer />
           </ScrollContent>
-          <BottomGradient />
           <FixedBottomContainer>
             <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
@@ -737,7 +735,6 @@ export default function MobileCourseFilterPage() {
             </OptionsCard>
             <BottomActionsSpacer />
           </ScrollContent>
-          <BottomGradient />
           <FixedBottomContainer>
             <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
@@ -771,7 +768,6 @@ export default function MobileCourseFilterPage() {
             </OptionsCard>
             <BottomActionsSpacer />
           </ScrollContent>
-          <BottomGradient />
           <FixedBottomContainer>
             <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
@@ -783,7 +779,6 @@ export default function MobileCourseFilterPage() {
       {/* 하단 고정 액션바 (메인화면에서만 노출) */}
       {view === "main" && (
         <>
-          <BottomGradient />
           <FixedBottomContainer>
             <ResetBottomButton
               variant="secondary"
@@ -1133,19 +1128,6 @@ const TimetableGridContainer = styled.div`
   overflow: hidden;
   background: var(--bg-base, #ffffff);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-`;
-
-const BottomGradient = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 768px;
-  height: 120px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.00) 16.02%, #FFF 80.42%);
-  pointer-events: none;
-  z-index: 90;
 `;
 
 const FixedBottomContainer = styled.div`

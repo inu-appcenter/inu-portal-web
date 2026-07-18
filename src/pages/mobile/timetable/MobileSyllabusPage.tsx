@@ -1099,7 +1099,7 @@ const BottomCTAContainer = styled.div`
   display: flex;
   gap: 12px;
   align-items: center;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.00) 16.02%, #FFF 80.42%);
+  background: transparent;
   pointer-events: auto;
 
   @media ${DESKTOP_MEDIA} {
