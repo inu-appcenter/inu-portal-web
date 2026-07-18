@@ -60,6 +60,9 @@ const CourseSheetScrollableContent = ({
       disableDrag={({ scrollPosition }) =>
         scrollPosition !== undefined && scrollPosition !== "top"
       }
+      disableScroll={({ currentSnap }) =>
+        currentSnap === 1
+      }
     >
       {children}
     </CourseSheetContent>
