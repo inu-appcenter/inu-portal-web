@@ -65,11 +65,10 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
     case "primary":
       return css`
         background: var(--interactive-primary, #3b82f6);
-        color: var(--text-inverse, #fff);
+        color: #fff;
 
         &:hover:not(:disabled) {
           background: var(--interactive-primary-hover, #60a5fa);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
         &:active:not(:disabled) {
           background: var(--interactive-primary-pressed, #0061ff);
@@ -79,6 +78,7 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
     case "secondary":
     default:
       return css`
+        border: 1px solid var(--border-default, #e5e8eb);
         background: var(--bg-muted, #f1f3f5);
         color: var(--text-secondary, #333d4b);
 
@@ -117,14 +117,15 @@ const StyledButton = styled.button<{
   justify-content: center;
   align-items: center;
   border-radius: 999px;
-  border: none;
+  border: 1px solid transparent;
   outline: none;
   cursor: pointer;
   box-sizing: border-box;
   width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  color: #fff;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   text-align: center;
   font-size: 20px;
   font-style: normal;
@@ -134,6 +135,7 @@ const StyledButton = styled.button<{
   ${({ $variant }) => getVariantStyles($variant)}
 
   &:disabled {
+    border-color: var(--border-default, #e5e8eb);
     background: var(--bg-disabled, #e5e8eb);
     color: var(--text-disabled, #b0b8c1);
     cursor: not-allowed;

@@ -8,6 +8,7 @@ import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
 import Ripple from "@/components/common/Ripple";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
 // --- Types & Constants ---
 export interface FilterState {
@@ -663,15 +664,16 @@ export default function MobileCourseFilterPage() {
           {/* 하단 플로팅 액션 버튼 */}
           <BottomGradient />
           <FixedBottomContainer>
-            <ResetButton onClick={handleResetTime}>
-              <RotateCcw size={16} />
-              <span>초기화</span>
-              <Ripple color="var(--border-default, #e5e8eb)" />
-            </ResetButton>
-            <SaveButton onClick={() => setView("main")}>
+            <ResetBottomButton
+              variant="secondary"
+              onClick={handleResetTime}
+              leftIcon={<RotateCcw size={16} />}
+            >
+              초기화
+            </ResetBottomButton>
+            <BottomActionButton variant="primary" onClick={() => setView("main")}>
               저장하기
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </SaveButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -702,10 +704,9 @@ export default function MobileCourseFilterPage() {
           </ScrollContent>
           <BottomGradient />
           <FixedBottomContainer>
-            <ConfirmSubScreenButton onClick={() => setView("main")}>
+            <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </ConfirmSubScreenButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -738,10 +739,9 @@ export default function MobileCourseFilterPage() {
           </ScrollContent>
           <BottomGradient />
           <FixedBottomContainer>
-            <ConfirmSubScreenButton onClick={() => setView("main")}>
+            <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </ConfirmSubScreenButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -773,10 +773,9 @@ export default function MobileCourseFilterPage() {
           </ScrollContent>
           <BottomGradient />
           <FixedBottomContainer>
-            <ConfirmSubScreenButton onClick={() => setView("main")}>
+            <BottomActionButton variant="primary" onClick={() => setView("main")}>
               선택 완료
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </ConfirmSubScreenButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -786,15 +785,16 @@ export default function MobileCourseFilterPage() {
         <>
           <BottomGradient />
           <FixedBottomContainer>
-            <ResetButton onClick={handleReset}>
-              <RotateCcw size={16} />
-              <span>초기화</span>
-              <Ripple color="var(--border-default, #e5e8eb)" />
-            </ResetButton>
-            <SaveButton onClick={handleSave}>
+            <ResetBottomButton
+              variant="secondary"
+              onClick={handleReset}
+              leftIcon={<RotateCcw size={16} />}
+            >
+              초기화
+            </ResetBottomButton>
+            <BottomActionButton variant="primary" onClick={handleSave}>
               적용하기
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-            </SaveButton>
+            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -1135,35 +1135,6 @@ const TimetableGridContainer = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 `;
 
-const ConfirmSubScreenButton = styled.button`
-  width: 100%;
-  height: 56px;
-  border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 32px;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-
-  & > *:not(.ripple-container) {
-    position: relative;
-    z-index: 1;
-  }
-`;
-
 const BottomGradient = styled.div`
   position: fixed;
   bottom: 0;
@@ -1172,7 +1143,7 @@ const BottomGradient = styled.div`
   width: 100%;
   max-width: 768px;
   height: 120px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 16.02%, #fff 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.00) 16.02%, #FFF 80.42%);
   pointer-events: none;
   z-index: 90;
 `;
@@ -1193,64 +1164,23 @@ const FixedBottomContainer = styled.div`
   z-index: 100;
 `;
 
-const ResetButton = styled.button`
-  width: 100px;
+const BottomActionButton = styled(CapsuleButton)`
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
   height: 56px;
-  border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background-color: var(--bg-muted, #f1f3f5);
-  color: var(--text-secondary, #333d4b);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 32px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-
-  & > *:not(.ripple-container) {
-    position: relative;
-    z-index: 1;
-  }
+  min-height: 56px;
+  padding: 12px 24px;
 `;
 
-const SaveButton = styled.button`
-  flex: 1;
-  height: 56px;
-  border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 32px;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+const ResetBottomButton = styled(BottomActionButton)`
+  flex: 0 0 auto;
+  width: auto;
+  padding: 12px 16px;
 
-  & > *:not(.ripple-container) {
-    position: relative;
-    z-index: 1;
+  span {
+    gap: 6px;
+    white-space: nowrap;
   }
 `;
 
