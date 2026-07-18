@@ -270,6 +270,7 @@ const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
   box-sizing: border-box;
   pointer-events: none;
   overflow: visible;
+  margin-top: 12px;
 
   @media ${DESKTOP_MEDIA} {
     padding: 0;
