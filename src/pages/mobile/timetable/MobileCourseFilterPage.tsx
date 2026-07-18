@@ -302,7 +302,11 @@ export default function MobileCourseFilterPage() {
     } else {
       if (hasPushState) {
         window.history.back();
-        setHasPushState(false);
+        // window.history.back() 비동기 동작이 완료되고 react-router-dom의
+        // popstate 수신 전파가 끝날 때까지 useBlocker 활성화를 150ms 지연하여 타이밍 충돌을 방지합니다.
+        setTimeout(() => {
+          setHasPushState(false);
+        }, 150);
       }
     }
   }, [isOverlayOpen, view, majorLevel1, majorLevel2, hasPushState]);
