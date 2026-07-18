@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
+import { backHandler } from "@/utils/backHandler";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -204,11 +205,58 @@ export default function MobileCourseFilterPage() {
   }, [location.state]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
-  const [view, setView] = useState<SubScreenType>("main");
+  const hash = location.hash;
 
-  // 전공 계층 이동 상태
-  const [majorLevel1, setMajorLevel1] = useState<string | null>(null); // "전공" | "교양" | ...
-  const [majorLevel2, setMajorLevel2] = useState<string | null>(null); // "정보기술대학" | ...
+  // URL Hash 기반으로 현재 뷰 및 전공 계층 정보를 useMemo로 추출
+  const { view, majorLevel1, majorLevel2 } = useMemo(() => {
+    if (!hash || hash === "#main") {
+      return { view: "main" as SubScreenType, majorLevel1: null, majorLevel2: null };
+    }
+    if (hash.startsWith("#major")) {
+      const parts = hash.split("/");
+      return {
+        view: "major" as SubScreenType,
+        majorLevel1: parts[1] ? decodeURIComponent(parts[1]) : null,
+        majorLevel2: parts[2] ? decodeURIComponent(parts[2]) : null,
+      };
+    }
+    return {
+      view: hash.replace("#", "") as SubScreenType,
+      majorLevel1: null,
+      majorLevel2: null,
+    };
+  }, [hash]);
+
+  // 하위 컴포넌트들의 코드 호환성을 위해 setView/setMajorLevel 함수들을 Hash navigate 래퍼로 제공
+  const setView = (newView: SubScreenType) => {
+    if (newView === "main") {
+      navigate(""); // hash 제거 -> 메인으로 이동
+    } else {
+      navigate(`#${newView}`);
+    }
+  };
+
+  const setMajorLevel1 = (level1: string | null) => {
+    if (!location.hash.startsWith("#major")) return;
+    if (!level1) {
+      navigate("#major");
+    } else {
+      navigate(`#major/${encodeURIComponent(level1)}`);
+    }
+  };
+
+  const setMajorLevel2 = (level2: string | null) => {
+    if (!location.hash.startsWith("#major")) return;
+    if (!level2) {
+      if (majorLevel1) {
+        navigate(`#major/${encodeURIComponent(majorLevel1)}`);
+      } else {
+        navigate("#major");
+      }
+    } else {
+      navigate(`#major/${encodeURIComponent(majorLevel1 || "")}/${encodeURIComponent(level2)}`);
+    }
+  };
   const [pinnedMajors, setPinnedMajors] = useState<string[]>(["정보기술대학"]); // 즐겨찾기 단과대/학과 핀
 
   // 시간표 관련 내부 임시 설정
@@ -226,40 +274,32 @@ export default function MobileCourseFilterPage() {
       },
       major: {
         title: "전공/영역",
-        onBack: () => {
-          if (majorLevel2) {
-            setMajorLevel2(null);
-          } else if (majorLevel1) {
-            setMajorLevel1(null);
-          } else {
-            setView("main");
-          }
-        },
+        onBack: () => navigate(-1),
       },
       sort: {
         title: "정렬",
-        onBack: () => setView("main"),
+        onBack: () => navigate(-1),
       },
       time: {
         title: "시간",
-        onBack: () => setView("main"),
+        onBack: () => navigate(-1),
       },
       grade: {
         title: "학년",
-        onBack: () => setView("main"),
+        onBack: () => navigate(-1),
       },
       type: {
         title: "이수구분",
-        onBack: () => setView("main"),
+        onBack: () => navigate(-1),
       },
       credit: {
         title: "학점",
-        onBack: () => setView("main"),
+        onBack: () => navigate(-1),
       },
     };
 
     return configMap[view];
-  }, [view, majorLevel1, majorLevel2, navigate]);
+  }, [view, navigate]);
 
   useHeader({
     title: headerConfig.title,
@@ -268,6 +308,7 @@ export default function MobileCourseFilterPage() {
     onBack: headerConfig.onBack,
     pageBgColor: "var(--bg-subtle, #f8f9fb)",
   });
+
 
   // 초기화 핸들러
   const handleReset = () => {
@@ -284,9 +325,10 @@ export default function MobileCourseFilterPage() {
     }));
   };
 
-  // 저장하기 핸들러 (편집 페이지로 교체 이동)
+  // 저장하기 핸들러 (편집 페이지로 복귀)
   const handleSave = () => {
-    navigate(ROUTES.TIMETABLE.EDIT, { state: { filters }, replace: true });
+    localStorage.setItem("applied_filters", JSON.stringify(filters));
+    navigate(-1);
   };
 
   // 즐겨찾기 별표 토글

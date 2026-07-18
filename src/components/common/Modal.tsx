@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import CapsuleButton, { CapsuleButtonVariant } from "./CapsuleButton";
+import { backHandler } from "@/utils/backHandler";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ export default function Modal({
 }: ModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // ESC 키 클릭 시 닫기 및 스크롤 차단 효과
+  // ESC 키 클릭 시 닫기, 스크롤 차단 및 뒤로가기 가로채기 효과
   useEffect(() => {
     if (!isOpen) return;
 
@@ -53,9 +54,16 @@ export default function Modal({
 
     window.addEventListener("keydown", handleKeyDown);
 
+    const handleBack = () => {
+      onClose();
+      return true; // 뒤로가기 가로채서 모달만 닫음
+    };
+    backHandler.pushHandler(handleBack);
+
     return () => {
       document.body.style.overflow = originalStyle;
       window.removeEventListener("keydown", handleKeyDown);
+      backHandler.popHandler(handleBack);
     };
   }, [isOpen, onClose]);
 
