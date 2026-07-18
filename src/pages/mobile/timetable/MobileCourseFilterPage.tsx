@@ -144,7 +144,7 @@ export function formatSlotsToTimeStr(slots: string[]): string {
   slots.forEach((slot) => {
     const [dStr, hStr] = slot.split("-");
     const d = parseInt(dStr, 10);
-    const h = parseInt(hStr, 10);
+    const h = parseFloat(hStr);
     if (!dayGroups[d]) dayGroups[d] = [];
     dayGroups[d].push(h);
   });
@@ -163,13 +163,16 @@ export function formatSlotsToTimeStr(slots: string[]): string {
 
     for (let i = 1; i <= hours.length; i++) {
       const current = hours[i];
-      if (current === prev + 1) {
+      if (current === prev + 0.5) {
         prev = current;
       } else {
-        const end = prev + 1;
-        const startPad = String(start).padStart(2, "0");
-        const endPad = String(end).padStart(2, "0");
-        ranges.push(`${startPad}:00~${endPad}:00`);
+        const end = prev + 0.5;
+        const formatHour = (val: number): string => {
+          const h = Math.floor(val);
+          const m = Math.round((val - h) * 60);
+          return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        };
+        ranges.push(`${formatHour(start)}~${formatHour(end)}`);
         start = current;
         prev = current;
       }
@@ -308,8 +311,8 @@ export default function MobileCourseFilterPage() {
   }, [filters.sort]);
 
   const timeChips = useMemo(() => {
-    if (filters.time === "전체 시간") return [];
-    return [filters.time];
+    if (filters.time === "전체 시간" || filters.time === "직접 시간 선택") return [];
+    return filters.time.split(" ");
   }, [filters.time]);
 
   const gradeChips = useMemo(() => {
@@ -394,8 +397,20 @@ export default function MobileCourseFilterPage() {
           return { ...prev, major: null };
         case "sort":
           return { ...prev, sort: "기본순" };
-        case "time":
-          return { ...prev, time: "전체 시간", selectedSlots: [] };
+        case "time": {
+          const dayChar = chip.charAt(0);
+          const DAYS_SHORT = ["월", "화", "수", "목", "금"];
+          const dayIdx = DAYS_SHORT.indexOf(dayChar);
+          const nextSlots = (prev.selectedSlots || []).filter(
+            (slot) => !slot.startsWith(`${dayIdx}-`)
+          );
+          const nextTimeStr = nextSlots.length > 0 ? formatSlotsToTimeStr(nextSlots) : "전체 시간";
+          return {
+            ...prev,
+            time: nextTimeStr,
+            selectedSlots: nextSlots,
+          };
+        }
         case "grade": {
           const val = parseInt(chip.replace("학년", ""), 10);
           return { ...prev, grades: prev.grades.filter((g) => g !== val) };
@@ -440,7 +455,9 @@ export default function MobileCourseFilterPage() {
                       ))}
                     </ChipsScrollWrapper>
                   </CategoryTextWrapper>
-                  <ChevronRight size={20} color="var(--gray-400, #b0b8c1)" />
+                  <ChevronWrapper>
+                    <ChevronRight size={20} color="var(--gray-400, #b0b8c1)" />
+                  </ChevronWrapper>
                   <Ripple />
                 </CategoryItemRow>
               );
@@ -629,8 +646,7 @@ export default function MobileCourseFilterPage() {
         <>
           <ScrollContent>
             <TimetableSelectorContainer style={{ marginTop: 0 }}>
-              <TimetableToggleHeader>
-                <ToggleTitle>시간표 블록 오버레이</ToggleTitle>
+              <TimetableToggleHeader style={{ justifyContent: "flex-end" }}>
                 <ToggleSwitchWrapper>
                   <ToggleLabel>내 시간표 표시</ToggleLabel>
                   <SwitchInput
@@ -662,7 +678,7 @@ export default function MobileCourseFilterPage() {
           </ScrollContent>
 
           {/* 하단 플로팅 액션 버튼 */}
-          <FixedBottomContainer>
+          <FixedBottomContainer style={{ justifyContent: "center" }}>
             <ResetBottomButton
               variant="secondary"
               onClick={handleResetTime}
@@ -670,9 +686,6 @@ export default function MobileCourseFilterPage() {
             >
               초기화
             </ResetBottomButton>
-            <BottomActionButton variant="primary" onClick={() => setView("main")}>
-              저장하기
-            </BottomActionButton>
           </FixedBottomContainer>
         </>
       )}
@@ -837,7 +850,7 @@ const CategoryItemRow = styled.button`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 8px 16px 16px;
+  padding: 0 0 0 16px;
   height: 64px;
   cursor: pointer;
   width: 100%;
@@ -851,6 +864,16 @@ const CategoryItemRow = styled.button`
   }
 `;
 
+const ChevronWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  align-self: stretch;
+  flex-shrink: 0;
+  cursor: pointer;
+`;
+
 const CategoryTextWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -858,6 +881,19 @@ const CategoryTextWrapper = styled.div`
   gap: 12px;
   flex: 1;
   min-width: 0;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, var(--bg-base, #ffffff) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
 `;
 
 const CategoryLabel = styled.span`
@@ -1071,11 +1107,7 @@ const TimetableToggleHeader = styled.div`
   padding: 0 4px;
 `;
 
-const ToggleTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 14px;
-  font-weight: 500;
-`;
+
 
 const ToggleSwitchWrapper = styled.label`
   display: flex;
