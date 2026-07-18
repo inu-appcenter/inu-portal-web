@@ -1,10 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
-import { backHandler } from "@/utils/backHandler";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
