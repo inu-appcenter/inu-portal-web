@@ -3,6 +3,10 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import {
+  useBlocker,
+  useBeforeUnload,
+} from "react-router-dom";
+import {
   Pencil,
   Plus,
   X,
@@ -130,6 +134,8 @@ export default function MobileGradeCalculatorPage() {
   const [targetCreditsInput, setTargetCreditsInput] = useState<string>("130");
   const [showTargetCreditsModal, setShowTargetCreditsModal] =
     useState<boolean>(false);
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] =
+    useState<boolean>(false);
   const [showGraph, setShowGraph] = useState<boolean>(false);
   const [showSemesterSheet, setShowSemesterSheet] = useState<boolean>(false);
   const [showTimetableSheet, setShowTimetableSheet] = useState<boolean>(false);
@@ -185,6 +191,57 @@ export default function MobileGradeCalculatorPage() {
     setSavedSemestersData(semestersData);
     setSavedTargetCredits(targetCredits);
   };
+
+  const blocker = useBlocker(hasChanges);
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setShowUnsavedChangesModal(true);
+    }
+  }, [blocker.state]);
+
+  useBeforeUnload(
+    (event) => {
+      if (!hasChanges) return;
+
+      event.preventDefault();
+      event.returnValue = "";
+    },
+    { capture: true },
+  );
+
+  const handleStayOnPage = () => {
+    setShowUnsavedChangesModal(false);
+    if (blocker.state === "blocked") {
+      blocker.reset();
+    }
+  };
+
+  const handleLeaveWithoutSaving = () => {
+    setShowUnsavedChangesModal(false);
+    if (blocker.state === "blocked") {
+      blocker.proceed();
+      return;
+    }
+    window.AndroidBridge?.confirmBack?.();
+  };
+
+  useEffect(() => {
+    window.__intipHasUnsavedChanges = hasChanges;
+    window.__intipHandleNativeBackRequest = () => {
+      if (!window.__intipHasUnsavedChanges) {
+        return false;
+      }
+
+      setShowUnsavedChangesModal(true);
+      return true;
+    };
+
+    return () => {
+      delete window.__intipHasUnsavedChanges;
+      delete window.__intipHandleNativeBackRequest;
+    };
+  }, [hasChanges]);
 
   // --- Subject Operations ---
   const currentSubjects = useMemo(() => {
@@ -410,6 +467,23 @@ export default function MobileGradeCalculatorPage() {
           pattern="[0-9]*"
         />
       </Modal>
+
+      <Modal
+        isOpen={showUnsavedChangesModal}
+        onClose={handleStayOnPage}
+        title="저장하지 않은 변경사항이 있어요"
+        description={"페이지를 나가면 변경한 내용이 저장되지 않을 수 있어요.\n그래도 나가시겠어요?"}
+        primaryButton={{
+          text: "나가기",
+          variant: "danger",
+          onClick: handleLeaveWithoutSaving,
+        }}
+        secondaryButton={{
+          text: "머무르기",
+          onClick: handleStayOnPage,
+        }}
+        closeOnOverlayClick={false}
+      />
 
       {/* 1. 전체 학기 요약 카드 */}
       <StickyStatsCard>
