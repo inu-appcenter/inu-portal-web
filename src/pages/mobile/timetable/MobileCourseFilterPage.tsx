@@ -205,9 +205,17 @@ export default function MobileCourseFilterPage() {
   }, [location.state]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
-  const [view, setView] = useState<SubScreenType>("main");
+  const [view, setSubView] = useState<SubScreenType>("main");
   const [majorLevel1, setMajorLevel1] = useState<string | null>(null);
   const [majorLevel2, setMajorLevel2] = useState<string | null>(null);
+
+  const setView = (newView: SubScreenType) => {
+    setSubView(newView);
+    if (newView === "major") {
+      setMajorLevel1(null);
+      setMajorLevel2(null);
+    }
+  };
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
   // 초기 상태 대비 변경 사항이 존재하는지 깊은 비교
