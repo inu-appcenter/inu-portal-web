@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
+import { backHandler } from "@/utils/backHandler";
+import Modal from "@/components/common/Modal";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -203,58 +205,88 @@ export default function MobileCourseFilterPage() {
   }, [location.state]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
-  const hash = location.hash;
+  const [view, setView] = useState<SubScreenType>("main");
+  const [majorLevel1, setMajorLevel1] = useState<string | null>(null);
+  const [majorLevel2, setMajorLevel2] = useState<string | null>(null);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
-  // URL Hash 기반으로 현재 뷰 및 전공 계층 정보를 useMemo로 추출
-  const { view, majorLevel1, majorLevel2 } = useMemo(() => {
-    if (!hash || hash === "#main") {
-      return { view: "main" as SubScreenType, majorLevel1: null, majorLevel2: null };
-    }
-    if (hash.startsWith("#major")) {
-      const parts = hash.split("/");
-      return {
-        view: "major" as SubScreenType,
-        majorLevel1: parts[1] ? decodeURIComponent(parts[1]) : null,
-        majorLevel2: parts[2] ? decodeURIComponent(parts[2]) : null,
-      };
-    }
-    return {
-      view: hash.replace("#", "") as SubScreenType,
-      majorLevel1: null,
-      majorLevel2: null,
-    };
-  }, [hash]);
+  // 초기 상태 대비 변경 사항이 존재하는지 깊은 비교
+  const hasChanges = useMemo(() => {
+    return JSON.stringify(filters) !== JSON.stringify(initialFilters);
+  }, [filters, initialFilters]);
 
-  // 하위 컴포넌트들의 코드 호환성을 위해 setView/setMajorLevel 함수들을 Hash navigate 래퍼로 제공
-  const setView = (newView: SubScreenType) => {
-    if (newView === "main") {
-      navigate(""); // hash 제거 -> 메인으로 이동
-    } else {
-      navigate(`#${newView}`);
-    }
-  };
+  const isOverlayOpen = view !== "main";
+  const hasPushStateRef = useRef(false);
 
-  const setMajorLevel1 = (level1: string | null) => {
-    if (!location.hash.startsWith("#major")) return;
-    if (!level1) {
-      navigate("#major");
-    } else {
-      navigate(`#major/${encodeURIComponent(level1)}`);
-    }
-  };
-
-  const setMajorLevel2 = (level2: string | null) => {
-    if (!location.hash.startsWith("#major")) return;
-    if (!level2) {
-      if (majorLevel1) {
-        navigate(`#major/${encodeURIComponent(majorLevel1)}`);
-      } else {
-        navigate("#major");
+  // 1회성 pushState 스택 관리 및 뒤로가기 popstate 연동
+  useEffect(() => {
+    if (isOverlayOpen) {
+      if (!hasPushStateRef.current) {
+        window.history.pushState({ filterOverlayOpen: true }, "");
+        hasPushStateRef.current = true;
       }
+
+      const handlePopState = () => {
+        hasPushStateRef.current = false;
+        
+        if (view === "major") {
+          if (majorLevel2) {
+            setMajorLevel2(null);
+            window.history.pushState({ filterOverlayOpen: true }, "");
+            hasPushStateRef.current = true;
+          } else if (majorLevel1) {
+            setMajorLevel1(null);
+            window.history.pushState({ filterOverlayOpen: true }, "");
+            hasPushStateRef.current = true;
+          } else {
+            setView("main");
+          }
+        } else {
+          setView("main");
+        }
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
     } else {
-      navigate(`#major/${encodeURIComponent(majorLevel1 || "")}/${encodeURIComponent(level2)}`);
+      if (hasPushStateRef.current) {
+        window.history.back();
+        hasPushStateRef.current = false;
+      }
+    }
+  }, [isOverlayOpen, view, majorLevel1, majorLevel2]);
+
+  // 페이지 단위 미저장이탈 방지 등록 (필터 메인이고 변경사항이 있을 때)
+  useEffect(() => {
+    const handlePageBack = () => {
+      setShowUnsavedModal(true);
+      return true;
+    };
+
+    if (view === "main" && hasChanges) {
+      backHandler.setPageUnsavedChanges(true, handlePageBack);
+    } else {
+      backHandler.setPageUnsavedChanges(false);
+    }
+
+    return () => {
+      backHandler.setPageUnsavedChanges(false);
+    };
+  }, [view, hasChanges]);
+
+  const handleLeaveWithoutSaving = () => {
+    setShowUnsavedModal(false);
+    backHandler.setPageUnsavedChanges(false);
+    
+    if (window.AndroidBridge && typeof window.AndroidBridge.goBack === "function") {
+      window.AndroidBridge.goBack();
+    } else {
+      navigate(-1);
     }
   };
+
   const [pinnedMajors, setPinnedMajors] = useState<string[]>(["정보기술대학"]); // 즐겨찾기 단과대/학과 핀
 
   // 시간표 관련 내부 임시 설정
@@ -268,36 +300,50 @@ export default function MobileCourseFilterPage() {
     > = {
       main: {
         title: "필터",
-        onBack: () => navigate(-1),
+        onBack: () => {
+          if (hasChanges) {
+            setShowUnsavedModal(true);
+          } else {
+            navigate(-1);
+          }
+        },
       },
       major: {
         title: "전공/영역",
-        onBack: () => navigate(-1),
+        onBack: () => {
+          if (majorLevel2) {
+            setMajorLevel2(null);
+          } else if (majorLevel1) {
+            setMajorLevel1(null);
+          } else {
+            setView("main");
+          }
+        },
       },
       sort: {
         title: "정렬",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       time: {
         title: "시간",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       grade: {
         title: "학년",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       type: {
         title: "이수구분",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       credit: {
         title: "학점",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
     };
 
     return configMap[view];
-  }, [view, navigate]);
+  }, [view, majorLevel1, majorLevel2, hasChanges, navigate]);
 
   useHeader({
     title: headerConfig.title,
@@ -844,6 +890,23 @@ export default function MobileCourseFilterPage() {
           </FixedBottomContainer>
         </>
       )}
+
+      {/* 이탈 방지 모달 */}
+      <Modal
+        isOpen={showUnsavedModal}
+        onClose={() => setShowUnsavedModal(false)}
+        title="변경사항 적용 안 함"
+        description="필터 변경사항이 있습니다. 적용하지 않고 시간표 편집 화면으로 돌아갈까요?"
+        primaryButton={{
+          text: "적용 안 함",
+          onClick: handleLeaveWithoutSaving,
+          variant: "danger",
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setShowUnsavedModal(false),
+        }}
+      />
     </PageWrapper>
   );
 }
