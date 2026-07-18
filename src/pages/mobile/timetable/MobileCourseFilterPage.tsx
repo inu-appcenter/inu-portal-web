@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
 import { useNavigate, useLocation, useBlocker, useBeforeUnload } from "react-router-dom";
@@ -215,8 +215,11 @@ export default function MobileCourseFilterPage() {
     return JSON.stringify(filters) !== JSON.stringify(initialFilters);
   }, [filters, initialFilters]);
 
-  // 라우터 이탈 방지용 blocker
-  const blocker = useBlocker(view === "main" && hasChanges);
+  const [hasPushState, setHasPushState] = useState(false);
+  const isOverlayOpen = view !== "main";
+
+  // 라우터 이탈 방지용 blocker (상세 오버레이 스택 정리 중인 back() 동작과 충돌하지 않도록 처리)
+  const blocker = useBlocker(!hasPushState && view === "main" && hasChanges);
 
   useEffect(() => {
     if (blocker.state === "blocked") {
@@ -256,29 +259,26 @@ export default function MobileCourseFilterPage() {
     }
   };
 
-  const isOverlayOpen = view !== "main";
-  const hasPushStateRef = useRef(false);
-
   // 1회성 pushState 스택 관리 및 뒤로가기 popstate 연동
   useEffect(() => {
     if (isOverlayOpen) {
-      if (!hasPushStateRef.current) {
+      if (!hasPushState) {
         window.history.pushState({ filterOverlayOpen: true }, "");
-        hasPushStateRef.current = true;
+        setHasPushState(true);
       }
 
       const handlePopState = () => {
-        hasPushStateRef.current = false;
+        setHasPushState(false);
         
         if (view === "major") {
           if (majorLevel2) {
             setMajorLevel2(null);
             window.history.pushState({ filterOverlayOpen: true }, "");
-            hasPushStateRef.current = true;
+            setHasPushState(true);
           } else if (majorLevel1) {
             setMajorLevel1(null);
             window.history.pushState({ filterOverlayOpen: true }, "");
-            hasPushStateRef.current = true;
+            setHasPushState(true);
           } else {
             setView("main");
           }
@@ -292,12 +292,12 @@ export default function MobileCourseFilterPage() {
         window.removeEventListener("popstate", handlePopState);
       };
     } else {
-      if (hasPushStateRef.current) {
+      if (hasPushState) {
         window.history.back();
-        hasPushStateRef.current = false;
+        setHasPushState(false);
       }
     }
-  }, [isOverlayOpen, view, majorLevel1, majorLevel2]);
+  }, [isOverlayOpen, view, majorLevel1, majorLevel2, hasPushState]);
 
   // 페이지 단위 미저장이탈 방지 등록 (필터 메인이고 변경사항이 있을 때)
   useEffect(() => {
