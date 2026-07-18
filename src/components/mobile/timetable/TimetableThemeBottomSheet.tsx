@@ -299,11 +299,13 @@ const Section = styled.div`
 `;
 
 const SectionTitle = styled.h3`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
   color: var(--text-primary, #191f28);
+
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
   margin: 0;
   text-align: left;
 `;
@@ -378,13 +380,17 @@ const SwatchBlock = styled.div`
 `;
 
 const ThemeLabel = styled.span<{ $isSelected: boolean }>`
+  text-align: center;
+
+  /* label-2 */
   font-family: Pretendard;
-  font-weight: 600;
   font-size: 14px;
-  line-height: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px; /* 142.857% */
   color: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--interactive-primary-pressed, #0061ff)"
+      ? "var(--text-brand, #0061FF)"
       : "var(--text-secondary, #333d4b)"};
   transition: color 0.2s ease;
 `;
@@ -418,8 +424,8 @@ const SegmentButton = styled.button<{ $isSelected: boolean }>`
     $isSelected ? "#ffffff" : "transparent"};
   color: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--interactive-primary-pressed, #0061ff)"
-      : "var(--text-secondary, #333d4b)"};
+      ? "var(--text-brand, #0061FF)"
+      : "var(--text-secondary, #333D4B)"};
   border-radius: 6px;
   cursor: pointer;
   outline: none;
@@ -462,11 +468,12 @@ const SelectionControl = styled.div<{ $selected: boolean }>`
 `;
 
 const CheckboxText = styled.span`
-  font-family: Pretendard;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
   color: var(--text-primary, #191f28);
+  font-family: "Noto Sans KR";
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 `;
 
 const BottomCta = styled.div`

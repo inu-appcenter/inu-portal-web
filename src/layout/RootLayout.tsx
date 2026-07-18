@@ -172,9 +172,7 @@ export default function RootLayout() {
         {(location.pathname === ROUTES.HOME ||
           location.pathname === ROUTES.MOBILE_HOME ||
           location.pathname === ROUTES.HOME_V2 ||
-          location.pathname === ROUTES.ROOT) && (
-          <AIChatFloatingButton />
-        )}
+          location.pathname === ROUTES.ROOT) && <AIChatFloatingButton />}
       </ScreenContainer>
     </HeaderProvider>
   );
@@ -186,7 +184,8 @@ const ScreenContainer = styled.div`
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
-  background-color: #f1f1f3;
+  background: var(--bg-subtle, #F8F9FB);
+
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 
   @media ${DESKTOP_MEDIA} {

@@ -124,16 +124,18 @@ const StyledButton = styled.button<{
   width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
+  color: #fff;
+  text-align: center;
   font-size: 20px;
   font-style: normal;
-  font-weight: 700;
-  line-height: 28px;
-  letter-spacing: -0.2px;
+  font-weight: 600;
+  line-height: 32px; /* 160% */
 
   ${({ $variant }) => getVariantStyles($variant)}
 
   &:disabled {
-    opacity: 0.5;
+    background: var(--bg-disabled, #e5e8eb);
+    color: var(--text-disabled, #b0b8c1);
     cursor: not-allowed;
     box-shadow: none;
   }
