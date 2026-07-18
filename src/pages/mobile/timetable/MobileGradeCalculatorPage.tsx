@@ -2,7 +2,17 @@ import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import { Pencil, Plus, X, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import {
+  Pencil,
+  Plus,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+} from "lucide-react";
+import Modal from "@/components/common/Modal";
+import InputField from "@/components/common/InputField";
+import CapsuleButton from "@/components/common/CapsuleButton";
 import {
   ResponsiveContainer,
   LineChart,
@@ -40,25 +50,40 @@ const GRADES = ["A+", "A0", "B+", "B0", "C+", "C0", "D+", "D0", "F", "P", "NP"];
 
 const GRADE_POINTS: Record<string, number> = {
   "A+": 4.5,
-  "A0": 4.0,
+  A0: 4.0,
   "B+": 3.5,
-  "B0": 3.0,
+  B0: 3.0,
   "C+": 2.5,
-  "C0": 2.0,
+  C0: 2.0,
   "D+": 1.5,
-  "D0": 1.0,
-  "F": 0.0,
+  D0: 1.0,
+  F: 0.0,
 };
 
 const DEFAULT_SUBJECTS_2_1: Subject[] = [
-  { id: "1", name: "디지털엔터테인먼트콘텐츠", credits: 2, grade: "A+", isMajor: true },
+  {
+    id: "1",
+    name: "디지털엔터테인먼트콘텐츠",
+    credits: 2,
+    grade: "A+",
+    isMajor: true,
+  },
   { id: "2", name: "문학과테마기행", credits: 3, grade: "B+", isMajor: false },
   { id: "3", name: "대학영어회화", credits: 1, grade: "C+", isMajor: false },
-  { id: "4", name: "멀티미디어프로그래밍", credits: 2, grade: "D+", isMajor: true },
+  {
+    id: "4",
+    name: "멀티미디어프로그래밍",
+    credits: 2,
+    grade: "D+",
+    isMajor: true,
+  },
   { id: "5", name: "캐릭터디자인", credits: 2, grade: "F", isMajor: true },
 ];
 
 const LOCAL_STORAGE_KEY = "intip_grade_calculator_data";
+
+const serializeGradeData = (data: SemestersData, targetCredits: number) =>
+  JSON.stringify({ semestersData: data, targetCredits });
 
 const CustomXAxisTick = (props: any) => {
   const { x, y, payload } = props;
@@ -66,11 +91,25 @@ const CustomXAxisTick = (props: any) => {
   const parts = payload.value.split(" ");
   return (
     <g transform={`translate(${x},${y})`}>
-      <text x={0} y={12} textAnchor="middle" fill="#8b95a1" fontSize={11} fontWeight={500}>
+      <text
+        x={0}
+        y={12}
+        textAnchor="middle"
+        fill="#8b95a1"
+        fontSize={11}
+        fontWeight={500}
+      >
         {parts[0]}
       </text>
       {parts[1] && (
-        <text x={0} y={26} textAnchor="middle" fill="#8b95a1" fontSize={11} fontWeight={500}>
+        <text
+          x={0}
+          y={26}
+          textAnchor="middle"
+          fill="#8b95a1"
+          fontSize={11}
+          fontWeight={500}
+        >
           {parts[1]}
         </text>
       )}
@@ -80,9 +119,17 @@ const CustomXAxisTick = (props: any) => {
 
 export default function MobileGradeCalculatorPage() {
   // --- State ---
-  const [selectedSemester, setSelectedSemester] = useState<string>("2학년 1학기");
+  const [selectedSemester, setSelectedSemester] =
+    useState<string>("2학년 1학기");
   const [semestersData, setSemestersData] = useState<SemestersData>({});
+  const [savedSemestersData, setSavedSemestersData] = useState<SemestersData>(
+    {},
+  );
   const [targetCredits, setTargetCredits] = useState<number>(130);
+  const [savedTargetCredits, setSavedTargetCredits] = useState<number>(130);
+  const [targetCreditsInput, setTargetCreditsInput] = useState<string>("130");
+  const [showTargetCreditsModal, setShowTargetCreditsModal] =
+    useState<boolean>(false);
   const [showGraph, setShowGraph] = useState<boolean>(false);
   const [showSemesterSheet, setShowSemesterSheet] = useState<boolean>(false);
   const [showTimetableSheet, setShowTimetableSheet] = useState<boolean>(false);
@@ -102,8 +149,12 @@ export default function MobileGradeCalculatorPage() {
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        if (parsed.semestersData) setSemestersData(parsed.semestersData);
-        if (parsed.targetCredits) setTargetCredits(parsed.targetCredits);
+        const loadedSemestersData = parsed.semestersData || {};
+        const loadedTargetCredits = parsed.targetCredits || 130;
+        setSemestersData(loadedSemestersData);
+        setSavedSemestersData(loadedSemestersData);
+        setTargetCredits(loadedTargetCredits);
+        setSavedTargetCredits(loadedTargetCredits);
       } catch (e) {
         console.error("Failed to parse cached grades", e);
       }
@@ -113,16 +164,26 @@ export default function MobileGradeCalculatorPage() {
         "2학년 1학기": DEFAULT_SUBJECTS_2_1,
       };
       setSemestersData(initial);
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ semestersData: initial, targetCredits: 130 }));
+      setSavedSemestersData(initial);
+      localStorage.setItem(LOCAL_STORAGE_KEY, serializeGradeData(initial, 130));
     }
   }, []);
 
   // --- Save Data Helper ---
-  const saveToLocalStorage = (newData: SemestersData, targetC: number = targetCredits) => {
+  const hasChanges = useMemo(() => {
+    return (
+      serializeGradeData(semestersData, targetCredits) !==
+      serializeGradeData(savedSemestersData, savedTargetCredits)
+    );
+  }, [savedSemestersData, savedTargetCredits, semestersData, targetCredits]);
+
+  const saveToLocalStorage = () => {
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      JSON.stringify({ semestersData: newData, targetCredits: targetC })
+      serializeGradeData(semestersData, targetCredits),
     );
+    setSavedSemestersData(semestersData);
+    setSavedTargetCredits(targetCredits);
   };
 
   // --- Subject Operations ---
@@ -136,7 +197,6 @@ export default function MobileGradeCalculatorPage() {
       [selectedSemester]: newSubjects,
     };
     setSemestersData(updated);
-    saveToLocalStorage(updated);
   };
 
   const handleAddSubject = () => {
@@ -150,7 +210,11 @@ export default function MobileGradeCalculatorPage() {
     updateSubjects([...currentSubjects, newSub]);
   };
 
-  const handleUpdateSubject = (id: string, field: keyof Subject, value: any) => {
+  const handleUpdateSubject = (
+    id: string,
+    field: keyof Subject,
+    value: any,
+  ) => {
     const updated = currentSubjects.map((sub) => {
       if (sub.id === id) {
         return { ...sub, [field]: value };
@@ -173,16 +237,20 @@ export default function MobileGradeCalculatorPage() {
 
   // --- Target Credits Change ---
   const handleEditTargetCredits = () => {
-    const val = window.prompt("목표 취득 학점을 입력해주세요. (예: 130)", String(targetCredits));
-    if (val !== null) {
-      const parsed = parseInt(val, 10);
-      if (!isNaN(parsed) && parsed > 0) {
-        setTargetCredits(parsed);
-        saveToLocalStorage(semestersData, parsed);
-      } else {
-        alert("올바른 숫자를 입력해주세요.");
-      }
-    }
+    setTargetCreditsInput(String(targetCredits));
+    setShowTargetCreditsModal(true);
+  };
+
+  const handleTargetCreditsInputChange = (value: string) => {
+    setTargetCreditsInput(value.replace(/\D/g, ""));
+  };
+
+  const handleSaveTargetCredits = () => {
+    const parsed = parseInt(targetCreditsInput, 10);
+    if (Number.isNaN(parsed) || parsed <= 0) return;
+
+    setTargetCredits(parsed);
+    setShowTargetCreditsModal(false);
   };
 
   // --- Calculations ---
@@ -216,7 +284,8 @@ export default function MobileGradeCalculatorPage() {
     });
 
     const gpa = totalGpaCredits > 0 ? totalGpaPoints / totalGpaCredits : 0.0;
-    const majorGpa = majorGpaCredits > 0 ? majorGpaPoints / majorGpaCredits : 0.0;
+    const majorGpa =
+      majorGpaCredits > 0 ? majorGpaPoints / majorGpaCredits : 0.0;
 
     return { gpa, majorGpa, acquiredCredits };
   };
@@ -253,7 +322,8 @@ export default function MobileGradeCalculatorPage() {
     });
 
     const gpa = totalGpaCredits > 0 ? totalGpaPoints / totalGpaCredits : 0.0;
-    const majorGpa = majorGpaCredits > 0 ? majorGpaPoints / majorGpaCredits : 0.0;
+    const majorGpa =
+      majorGpaCredits > 0 ? majorGpaPoints / majorGpaCredits : 0.0;
 
     return {
       gpa,
@@ -274,7 +344,9 @@ export default function MobileGradeCalculatorPage() {
       if (subjects.length === 0) return null;
       const stats = calculateSemesterStats(subjects);
       return { semester: sem, gpa: stats.gpa };
-    }).filter((item): item is { semester: string; gpa: number } => item !== null);
+    }).filter(
+      (item): item is { semester: string; gpa: number } => item !== null,
+    );
 
     return semestersWithData;
   }, [semestersData]);
@@ -286,7 +358,7 @@ export default function MobileGradeCalculatorPage() {
 
     if (
       window.confirm(
-        `"${tb.semester} (${tb.name})" 시간표의 과목들을 불러올까요?\n현재 학기(${selectedSemester})에 작성 중인 과목 목록은 덮어씌워집니다.`
+        `"${tb.semester} (${tb.name})" 시간표의 과목들을 불러올까요?\n현재 학기(${selectedSemester})에 작성 중인 과목 목록은 덮어씌워집니다.`,
       )
     ) {
       const imported: Subject[] = tb.events.map((event) => {
@@ -309,6 +381,36 @@ export default function MobileGradeCalculatorPage() {
 
   return (
     <PageWrapper>
+      <Modal
+        isOpen={showTargetCreditsModal}
+        onClose={() => setShowTargetCreditsModal(false)}
+        title="취득 학점 입력"
+        description={
+          "학과별로 취득학점 기준이 다를 수 있어요.\n정확한 학점은 챗불이에게 확인해보세요."
+        }
+        primaryButton={{
+          text: "저장",
+          variant: "brand",
+          onClick: handleSaveTargetCredits,
+          disabled:
+            !targetCreditsInput || parseInt(targetCreditsInput, 10) <= 0,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setShowTargetCreditsModal(false),
+        }}
+      >
+        <InputField
+          label="취득 학점"
+          value={targetCreditsInput}
+          onChange={handleTargetCreditsInputChange}
+          placeholder="취득 학점을 입력하세요"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+        />
+      </Modal>
+
       {/* 1. 전체 학기 요약 카드 */}
       <StickyStatsCard>
         <StatsHeader>
@@ -345,21 +447,67 @@ export default function MobileGradeCalculatorPage() {
         <GraphHeaderRow>
           <GraphFoldButton onClick={() => setShowGraph(!showGraph)}>
             <span>{showGraph ? "그래프 접기" : "그래프 보기"}</span>
-            {showGraph ? <ChevronUp size={16} className="caret-icon" /> : <ChevronDown size={16} className="caret-icon" />}
+            {showGraph ? (
+              <ChevronUp size={16} className="caret-icon" />
+            ) : (
+              <ChevronDown size={16} className="caret-icon" />
+            )}
           </GraphFoldButton>
           {showGraph && (
             <GraphLegendRow>
               <LegendItem>
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                  <line x1="0" y1="4" x2="12" y2="4" stroke="var(--border-brand, #0061FF)" strokeWidth="2"/>
-                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="var(--border-brand, #0061FF)" strokeWidth="2"/>
+                <svg
+                  width="12"
+                  height="8"
+                  viewBox="0 0 12 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ flexShrink: 0 }}
+                >
+                  <line
+                    x1="0"
+                    y1="4"
+                    x2="12"
+                    y2="4"
+                    stroke="var(--border-brand, #0061FF)"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx="6"
+                    cy="4"
+                    r="2.5"
+                    fill="#ffffff"
+                    stroke="var(--border-brand, #0061FF)"
+                    strokeWidth="2"
+                  />
                 </svg>
                 <span>전체 평점</span>
               </LegendItem>
               <LegendItem>
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                  <line x1="0" y1="4" x2="12" y2="4" stroke="var(--border-warn, #FEE588)" strokeWidth="2"/>
-                  <circle cx="6" cy="4" r="2.5" fill="#ffffff" stroke="var(--border-warn, #FEE588)" strokeWidth="2"/>
+                <svg
+                  width="12"
+                  height="8"
+                  viewBox="0 0 12 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ flexShrink: 0 }}
+                >
+                  <line
+                    x1="0"
+                    y1="4"
+                    x2="12"
+                    y2="4"
+                    stroke="var(--border-warn, #FEE588)"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx="6"
+                    cy="4"
+                    r="2.5"
+                    fill="#ffffff"
+                    stroke="var(--border-warn, #FEE588)"
+                    strokeWidth="2"
+                  />
                 </svg>
                 <span>전공 평점</span>
               </LegendItem>
@@ -370,9 +518,13 @@ export default function MobileGradeCalculatorPage() {
         <GraphSection $expanded={showGraph}>
           {/* 그래프 카드 본문 */}
           {graphData.length < 2 ? (
-            <EmptyGraphText>다음 학기부터 성적 추이를 볼 수 있어요.</EmptyGraphText>
+            <EmptyGraphText>
+              다음 학기부터 성적 추이를 볼 수 있어요.
+            </EmptyGraphText>
           ) : (
-            <GraphCardBody style={{ height: "220px", marginTop: "12px", width: "100%" }}>
+            <GraphCardBody
+              style={{ height: "220px", marginTop: "12px", width: "100%" }}
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={(() => {
@@ -417,8 +569,20 @@ export default function MobileGradeCalculatorPage() {
                     dataKey="overall"
                     stroke="var(--border-brand, #0061FF)"
                     strokeWidth={2.5}
-                    dot={{ stroke: "var(--border-brand, #0061FF)", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
-                    label={{ position: "top", fill: "#333d4b", fontSize: 10, fontWeight: "bold", offset: 8 }}
+                    dot={{
+                      stroke: "var(--border-brand, #0061FF)",
+                      strokeWidth: 2,
+                      r: 4,
+                      fill: "#ffffff",
+                      fillOpacity: 1,
+                    }}
+                    label={{
+                      position: "top",
+                      fill: "#333d4b",
+                      fontSize: 10,
+                      fontWeight: "bold",
+                      offset: 8,
+                    }}
                     isAnimationActive={false}
                   />
                   <Line
@@ -426,8 +590,20 @@ export default function MobileGradeCalculatorPage() {
                     dataKey="major"
                     stroke="var(--border-warn, #FEE588)"
                     strokeWidth={2.5}
-                    dot={{ stroke: "var(--border-warn, #FEE588)", strokeWidth: 2, r: 4, fill: "#ffffff", fillOpacity: 1 }}
-                    label={{ position: "top", fill: "#8b95a1", fontSize: 10, fontWeight: "bold", offset: 8 }}
+                    dot={{
+                      stroke: "var(--border-warn, #FEE588)",
+                      strokeWidth: 2,
+                      r: 4,
+                      fill: "#ffffff",
+                      fillOpacity: 1,
+                    }}
+                    label={{
+                      position: "top",
+                      fill: "#8b95a1",
+                      fontSize: 10,
+                      fontWeight: "bold",
+                      offset: 8,
+                    }}
                     isAnimationActive={false}
                   />
                 </LineChart>
@@ -447,15 +623,21 @@ export default function MobileGradeCalculatorPage() {
 
           <SemesterStatsRow>
             <SemStatBox>
-              <span className="stat-val bold">{currentSemesterStats.gpa.toFixed(2)}</span>
+              <span className="stat-val bold">
+                {currentSemesterStats.gpa.toFixed(2)}
+              </span>
               <span className="stat-label">평점</span>
             </SemStatBox>
             <SemStatBox>
-              <span className="stat-val">{currentSemesterStats.majorGpa.toFixed(2)}</span>
+              <span className="stat-val">
+                {currentSemesterStats.majorGpa.toFixed(2)}
+              </span>
               <span className="stat-label">전공</span>
             </SemStatBox>
             <SemStatBox>
-              <span className="stat-val">{currentSemesterStats.acquiredCredits}</span>
+              <span className="stat-val">
+                {currentSemesterStats.acquiredCredits}
+              </span>
               <span className="stat-label">취득</span>
             </SemStatBox>
           </SemesterStatsRow>
@@ -478,7 +660,9 @@ export default function MobileGradeCalculatorPage() {
 
           <TableBody>
             {currentSubjects.length === 0 ? (
-              <EmptyRowText>등록된 과목이 없습니다. 아래 과목 추가를 눌러보세요.</EmptyRowText>
+              <EmptyRowText>
+                등록된 과목이 없습니다. 아래 과목 추가를 눌러보세요.
+              </EmptyRowText>
             ) : (
               currentSubjects.map((subject) => (
                 <TableRow key={subject.id}>
@@ -487,7 +671,9 @@ export default function MobileGradeCalculatorPage() {
                       type="text"
                       value={subject.name}
                       placeholder="과목명 입력"
-                      onChange={(e) => handleUpdateSubject(subject.id, "name", e.target.value)}
+                      onChange={(e) =>
+                        handleUpdateSubject(subject.id, "name", e.target.value)
+                      }
                     />
                   </ColSubject>
                   <ColCredits>
@@ -495,7 +681,13 @@ export default function MobileGradeCalculatorPage() {
                       <span className="credits-val">{subject.credits}</span>
                       <HiddenSelect
                         value={subject.credits}
-                        onChange={(e) => handleUpdateSubject(subject.id, "credits", parseInt(e.target.value, 10))}
+                        onChange={(e) =>
+                          handleUpdateSubject(
+                            subject.id,
+                            "credits",
+                            parseInt(e.target.value, 10),
+                          )
+                        }
                       >
                         <option value={1}>1</option>
                         <option value={2}>2</option>
@@ -510,7 +702,13 @@ export default function MobileGradeCalculatorPage() {
                       <ChevronDown size={14} className="grade-caret" />
                       <HiddenSelect
                         value={subject.grade}
-                        onChange={(e) => handleUpdateSubject(subject.id, "grade", e.target.value)}
+                        onChange={(e) =>
+                          handleUpdateSubject(
+                            subject.id,
+                            "grade",
+                            e.target.value,
+                          )
+                        }
                       >
                         {GRADES.map((g) => (
                           <option key={g} value={g}>
@@ -521,11 +719,31 @@ export default function MobileGradeCalculatorPage() {
                     </GradeSelectorButton>
                   </ColGrade>
                   <ColMajor>
-                    <CheckboxWrapper onClick={() => handleUpdateSubject(subject.id, "isMajor", !subject.isMajor)}>
+                    <CheckboxWrapper
+                      onClick={() =>
+                        handleUpdateSubject(
+                          subject.id,
+                          "isMajor",
+                          !subject.isMajor,
+                        )
+                      }
+                    >
                       {subject.isMajor ? (
                         <CheckedIcon>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 6L9 17L4 12" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M20 6L9 17L4 12"
+                              stroke="#FFFFFF"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </CheckedIcon>
                       ) : (
@@ -534,7 +752,9 @@ export default function MobileGradeCalculatorPage() {
                     </CheckboxWrapper>
                   </ColMajor>
                   <ColDelete>
-                    <DeleteButton onClick={() => handleDeleteSubject(subject.id)}>
+                    <DeleteButton
+                      onClick={() => handleDeleteSubject(subject.id)}
+                    >
                       <X size={16} />
                     </DeleteButton>
                   </ColDelete>
@@ -595,7 +815,10 @@ export default function MobileGradeCalculatorPage() {
                 <EmptySheetText>등록된 시간표가 없습니다.</EmptySheetText>
               ) : (
                 timetables.map((tb) => (
-                  <SheetItem key={tb.id} onClick={() => handleImportTimetable(tb.id)}>
+                  <SheetItem
+                    key={tb.id}
+                    onClick={() => handleImportTimetable(tb.id)}
+                  >
                     <div className="timetable-info">
                       <span className="semester">{tb.semester}</span>
                       <span className="name">{tb.name}</span>
@@ -608,6 +831,18 @@ export default function MobileGradeCalculatorPage() {
           </BottomSheet>
         </>
       )}
+
+      <FloatingSaveArea>
+        <CapsuleButton
+          variant="primary"
+          fullWidth
+          disabled={!hasChanges}
+          onClick={saveToLocalStorage}
+          style={{ width: "fit-content" }}
+        >
+          저장
+        </CapsuleButton>
+      </FloatingSaveArea>
     </PageWrapper>
   );
 }
@@ -619,8 +854,26 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 24px 16px 24px;
+  padding: 24px 16px calc(112px + env(safe-area-inset-bottom, 0px));
   gap: 16px;
+`;
+
+const FloatingSaveArea = styled.div`
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    var(--bg-subtle, #f8f9fb) 90%,
+    var(--bg-subtle, #f8f9fb) 100%
+  );
 `;
 
 // 1. 요약 카드 스타일
@@ -716,18 +969,20 @@ const TargetCreditsButton = styled.button`
 `;
 
 const GraphSection = styled.div<{ $expanded: boolean }>`
-  border-top: 1px solid ${(props) => (props.$expanded ? "var(--border-default, #e5e8eb)" : "transparent")};
+  border-top: 1px solid
+    ${(props) => (props.$expanded ? "var(--border-default, #e5e8eb)" : "transparent")};
   padding: ${(props) => (props.$expanded ? "16px 0 8px" : "0px")};
   width: 100%;
   max-height: ${(props) => (props.$expanded ? "320px" : "0px")};
   opacity: ${(props) => (props.$expanded ? "1" : "0")};
   transform: ${(props) => (props.$expanded ? "translateY(0)" : "translateY(-10px)")};
   overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.3s ease,
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.3s ease;
+  transition:
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s ease;
 `;
 
 const GraphHeaderRow = styled.div`
@@ -782,8 +1037,6 @@ const GraphCardBody = styled.div`
   margin-top: 8px;
 `;
 
-
-
 const EmptyGraphText = styled.div`
   text-align: center;
   font-size: 14px;
@@ -791,8 +1044,6 @@ const EmptyGraphText = styled.div`
   padding: 40px 16px;
   width: 100%;
 `;
-
-
 
 // 2. 메인 컨테이너 스타일
 const MainContainer = styled.div`
@@ -1217,7 +1468,7 @@ const SheetItem = styled.div<{ $active?: boolean }>`
       font-size: 12px;
       color: var(--text-tertiary, #8b95a1);
     }
-    
+
     .name {
       font-size: 14px;
       color: var(--text-secondary, #333d4b);

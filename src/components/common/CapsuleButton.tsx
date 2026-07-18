@@ -134,7 +134,8 @@ const StyledButton = styled.button<{
   ${({ $variant }) => getVariantStyles($variant)}
 
   &:disabled {
-    opacity: 0.5;
+    background: var(--bg-disabled, #e5e8eb);
+    color: var(--text-disabled, #b0b8c1);
     cursor: not-allowed;
     box-shadow: none;
   }
