@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useBlocker, useBeforeUnload } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
+import { backHandler } from "@/utils/backHandler";
+import Modal from "@/components/common/Modal";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -203,58 +205,154 @@ export default function MobileCourseFilterPage() {
   }, [location.state]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
-  const hash = location.hash;
+  const [view, setSubView] = useState<SubScreenType>("main");
+  const [majorLevel1, setMajorLevel1] = useState<string | null>(null);
+  const [majorLevel2, setMajorLevel2] = useState<string | null>(null);
 
-  // URL Hash 기반으로 현재 뷰 및 전공 계층 정보를 useMemo로 추출
-  const { view, majorLevel1, majorLevel2 } = useMemo(() => {
-    if (!hash || hash === "#main") {
-      return { view: "main" as SubScreenType, majorLevel1: null, majorLevel2: null };
-    }
-    if (hash.startsWith("#major")) {
-      const parts = hash.split("/");
-      return {
-        view: "major" as SubScreenType,
-        majorLevel1: parts[1] ? decodeURIComponent(parts[1]) : null,
-        majorLevel2: parts[2] ? decodeURIComponent(parts[2]) : null,
-      };
-    }
-    return {
-      view: hash.replace("#", "") as SubScreenType,
-      majorLevel1: null,
-      majorLevel2: null,
-    };
-  }, [hash]);
-
-  // 하위 컴포넌트들의 코드 호환성을 위해 setView/setMajorLevel 함수들을 Hash navigate 래퍼로 제공
   const setView = (newView: SubScreenType) => {
-    if (newView === "main") {
-      navigate(""); // hash 제거 -> 메인으로 이동
-    } else {
-      navigate(`#${newView}`);
+    setSubView(newView);
+    if (newView === "major") {
+      setMajorLevel1(null);
+      setMajorLevel2(null);
     }
   };
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const setMajorLevel1 = (level1: string | null) => {
-    if (!location.hash.startsWith("#major")) return;
-    if (!level1) {
-      navigate("#major");
-    } else {
-      navigate(`#major/${encodeURIComponent(level1)}`);
-    }
-  };
+  // localStorage 파열 언마운트 클린업용 제어 ref
+  const hasWrittenLocalStorageRef = useRef(false);
+  const initialFiltersRef = useRef(initialFilters);
+  useEffect(() => {
+    initialFiltersRef.current = initialFilters;
+  }, [initialFilters]);
 
-  const setMajorLevel2 = (level2: string | null) => {
-    if (!location.hash.startsWith("#major")) return;
-    if (!level2) {
-      if (majorLevel1) {
-        navigate(`#major/${encodeURIComponent(majorLevel1)}`);
-      } else {
-        navigate("#major");
+  // 컴포넌트가 언마운트될 때, 저장하지 않고 나가는 맰 경우 initialFilters를 localStorage에 복원
+  // (헤더 뿯로가기, 브라우저 뿯로가기, OS 백키 등 모든 이탈 경로에서 필터 상태를 보장)
+  useEffect(() => {
+    return () => {
+      if (!hasWrittenLocalStorageRef.current) {
+        localStorage.setItem("applied_filters", JSON.stringify(initialFiltersRef.current));
       }
-    } else {
-      navigate(`#major/${encodeURIComponent(majorLevel1 || "")}/${encodeURIComponent(level2)}`);
+    };
+  }, []);
+
+  // 초기 상태 대비 변경 사항이 존재하는지 깊은 비교
+  const hasChanges = useMemo(() => {
+    return JSON.stringify(filters) !== JSON.stringify(initialFilters);
+  }, [filters, initialFilters]);
+
+  const [hasPushState, setHasPushState] = useState(false);
+  const isOverlayOpen = view !== "main";
+
+  // 라우터 이탈 방지용 blocker (상세 오버레이 스택 정리 중인 back() 동작과 충돌하지 않도록 처리, 저장 중이면 비활성)
+  const blocker = useBlocker(!hasPushState && !isSaving && view === "main" && hasChanges);
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setShowUnsavedModal(true);
+    }
+  }, [blocker.state]);
+
+  useBeforeUnload(
+    (event) => {
+      if (view !== "main" || !hasChanges) return;
+      event.preventDefault();
+      event.returnValue = "";
+    },
+    { capture: true }
+  );
+
+  const handleStayOnPage = () => {
+    setShowUnsavedModal(false);
+    if (blocker.state === "blocked") {
+      blocker.reset();
     }
   };
+
+  const handleLeaveWithoutSaving = () => {
+    setShowUnsavedModal(false);
+    backHandler.setPageUnsavedChanges(false);
+
+    // 변경 전 원본 필터를 localStorage에 복원하여 시트가 올바른 상태를 읽도록 함
+    hasWrittenLocalStorageRef.current = true;
+    localStorage.setItem("applied_filters", JSON.stringify(initialFilters));
+
+    if (blocker.state === "blocked") {
+      blocker.proceed();
+      return;
+    }
+    
+    // navigate(-1) 호출 전 blocker를 비활성화하여 이중 모달 방지
+    setIsSaving(true);
+    if (window.AndroidBridge && typeof window.AndroidBridge.goBack === "function") {
+      window.AndroidBridge.goBack();
+    } else {
+      navigate(-1);
+    }
+  };
+
+  // 1회성 pushState 스택 관리 및 뒤로가기 popstate 연동
+  useEffect(() => {
+    if (isOverlayOpen) {
+      if (!hasPushState) {
+        window.history.pushState({ filterOverlayOpen: true }, "");
+        setHasPushState(true);
+      }
+
+      const handlePopState = () => {
+        setHasPushState(false);
+        
+        if (view === "major") {
+          if (majorLevel2) {
+            setMajorLevel2(null);
+            window.history.pushState({ filterOverlayOpen: true }, "");
+            setHasPushState(true);
+          } else if (majorLevel1) {
+            setMajorLevel1(null);
+            window.history.pushState({ filterOverlayOpen: true }, "");
+            setHasPushState(true);
+          } else {
+            setView("main");
+          }
+        } else {
+          setView("main");
+        }
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    } else {
+      if (hasPushState) {
+        window.history.back();
+        // window.history.back() 비동기 동작이 완료되고 react-router-dom의
+        // popstate 수신 전파가 끝날 때까지 useBlocker 활성화를 150ms 지연하여 타이밍 충돌을 방지합니다.
+        setTimeout(() => {
+          setHasPushState(false);
+        }, 150);
+      }
+    }
+  }, [isOverlayOpen, view, majorLevel1, majorLevel2, hasPushState]);
+
+  // 페이지 단위 미저장이탈 방지 등록 (필터 메인이고 변경사항이 있을 때)
+  useEffect(() => {
+    const handlePageBack = () => {
+      setShowUnsavedModal(true);
+      return true;
+    };
+
+    if (view === "main" && hasChanges) {
+      backHandler.setPageUnsavedChanges(true, handlePageBack);
+    } else {
+      backHandler.setPageUnsavedChanges(false);
+    }
+
+    return () => {
+      backHandler.setPageUnsavedChanges(false);
+    };
+  }, [view, hasChanges]);
+
   const [pinnedMajors, setPinnedMajors] = useState<string[]>(["정보기술대학"]); // 즐겨찾기 단과대/학과 핀
 
   // 시간표 관련 내부 임시 설정
@@ -268,36 +366,50 @@ export default function MobileCourseFilterPage() {
     > = {
       main: {
         title: "필터",
-        onBack: () => navigate(-1),
+        onBack: () => {
+          if (hasChanges) {
+            setShowUnsavedModal(true);
+          } else {
+            navigate(-1);
+          }
+        },
       },
       major: {
         title: "전공/영역",
-        onBack: () => navigate(-1),
+        onBack: () => {
+          if (majorLevel2) {
+            setMajorLevel2(null);
+          } else if (majorLevel1) {
+            setMajorLevel1(null);
+          } else {
+            setView("main");
+          }
+        },
       },
       sort: {
         title: "정렬",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       time: {
         title: "시간",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       grade: {
         title: "학년",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       type: {
         title: "이수구분",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
       credit: {
         title: "학점",
-        onBack: () => navigate(-1),
+        onBack: () => setView("main"),
       },
     };
 
     return configMap[view];
-  }, [view, navigate]);
+  }, [view, majorLevel1, majorLevel2, hasChanges, navigate]);
 
   useHeader({
     title: headerConfig.title,
@@ -325,6 +437,8 @@ export default function MobileCourseFilterPage() {
 
   // 저장하기 핸들러 (편집 페이지로 복귀)
   const handleSave = () => {
+    hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
+    setIsSaving(true); // blocker 비활성화 후 navigate
     localStorage.setItem("applied_filters", JSON.stringify(filters));
     navigate(-1);
   };
@@ -385,8 +499,6 @@ export default function MobileCourseFilterPage() {
     }));
     // 전공/학과 최종 선택 완료 시 필터 메인화면으로 복귀
     setView("main");
-    setMajorLevel1(null);
-    setMajorLevel2(null);
   };
 
   // 정렬 단일 선택
@@ -846,6 +958,23 @@ export default function MobileCourseFilterPage() {
           </FixedBottomContainer>
         </>
       )}
+
+      {/* 이탈 방지 모달 */}
+      <Modal
+        isOpen={showUnsavedModal}
+        onClose={handleStayOnPage}
+        title="변경사항 적용 안 함"
+        description="필터 변경사항이 있습니다. 적용하지 않고 시간표 편집 화면으로 돌아갈까요?"
+        primaryButton={{
+          text: "적용 안 함",
+          onClick: handleLeaveWithoutSaving,
+          variant: "danger",
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: handleStayOnPage,
+        }}
+      />
     </PageWrapper>
   );
 }
