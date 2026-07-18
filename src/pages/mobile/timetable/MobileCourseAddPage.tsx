@@ -15,12 +15,13 @@ const DEFAULT_COLOR = "var(--color-chips-red)";
 
 const MobileCourseAddPage = () => {
   const navigate = useNavigate();
-  const { timetables, activeTimetableId, updateTimetableEvents } = useTimetableStore();
+  const { timetables, activeTimetableId, updateTimetableEvents } =
+    useTimetableStore();
   const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
 
   // 헤더 설정
   useHeader({
-    title: "과목 추가",
+    title: "과목 직접 추가",
     showAlarm: false,
     hasback: true,
   });
@@ -101,7 +102,8 @@ const MobileCourseAddPage = () => {
       return hours + minutes / 60;
     };
 
-    const newCourseId = Math.max(0, ...activeTimetable.events.map((e) => e.id)) + 1;
+    const newCourseId =
+      Math.max(0, ...activeTimetable.events.map((e) => e.id)) + 1;
 
     const newSchedules = timeSlots.map((slot) => ({
       id: newCourseId,
@@ -136,7 +138,7 @@ const MobileCourseAddPage = () => {
 
     if (conflictItem) {
       const proceed = window.confirm(
-        `시간이 겹쳐요 - ${conflictItem.name}과(와) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`
+        `시간이 겹쳐요 - ${conflictItem.name}과(와) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`,
       );
       if (!proceed) return;
 
@@ -153,8 +155,6 @@ const MobileCourseAddPage = () => {
     alert(`"${courseName}" 과목이 시간표에 추가되었습니다.`);
     navigate(ROUTES.TIMETABLE.EDIT);
   };
-
-
 
   return (
     <PageWrapper>
@@ -269,7 +269,12 @@ const FormSection = styled.section`
 
 const SectionTitle = styled.h2`
   color: var(--text-secondary, #6b7684);
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -296,7 +301,7 @@ const Row = styled.div`
 
 const StyledInputField = styled(InputField)`
   && {
-    background-color: ${({ error }) => error ? "var(--bg-error, #fff0f0)" : "var(--bg-base, #ffffff)"};
+    background-color: ${({ error }) => (error ? "var(--bg-error, #fff0f0)" : "var(--bg-base, #ffffff)")};
   }
 `;
 
