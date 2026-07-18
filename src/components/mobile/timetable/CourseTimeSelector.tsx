@@ -135,11 +135,17 @@ const SelectorHeader = styled.div`
 `;
 
 const Title = styled.h3`
-  font-family: 'Pretendard', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
   color: var(--text-secondary, #6b7684);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
   margin: 0;
+  margin-left: 4px;
+  height: 40px;
+  display: flex;
+  align-items: center;
 `;
 
 const ActionButtons = styled.div`

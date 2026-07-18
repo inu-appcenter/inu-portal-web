@@ -163,7 +163,7 @@ const MobileCourseAddPage = () => {
         <SectionTitle>강의 정보</SectionTitle>
         <FormFields>
           <Row>
-            <InputField
+            <StyledInputField
               ref={courseNameRef as any}
               label="과목명 *"
               placeholder="과목명 입력"
@@ -174,7 +174,7 @@ const MobileCourseAddPage = () => {
               }}
               error={nameError}
             />
-            <InputField
+            <StyledInputField
               ref={professorRef as any}
               label="교수명 *"
               placeholder="교수명 입력"
@@ -187,13 +187,13 @@ const MobileCourseAddPage = () => {
             />
           </Row>
           <Row>
-            <InputField
+            <StyledInputField
               label="강의실"
               placeholder="강의실 입력"
               value={room}
               onChange={setRoom}
             />
-            <InputField
+            <StyledInputField
               label="학년"
               placeholder="학년 입력"
               value={grade}
@@ -201,13 +201,13 @@ const MobileCourseAddPage = () => {
             />
           </Row>
           <Row>
-            <InputField
+            <StyledInputField
               label="이수구분"
               placeholder="이수구분 입력"
               value={courseType}
               onChange={setCourseType}
             />
-            <InputField
+            <StyledInputField
               label="평가방식"
               placeholder="평가방식 입력"
               value={evaluation}
@@ -292,6 +292,12 @@ const Row = styled.div`
   display: flex;
   gap: 8px;
   width: 100%;
+`;
+
+const StyledInputField = styled(InputField)`
+  && {
+    background-color: ${({ error }) => error ? "var(--bg-error, #fff0f0)" : "var(--bg-base, #ffffff)"};
+  }
 `;
 
 const SubmitButtonContainer = styled.div`
