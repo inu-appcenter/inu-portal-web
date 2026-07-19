@@ -358,7 +358,7 @@ export default function UserProfileModal({
   const isFriendContext = !isChatContext && !!friendId;
   // memberId만 있고 chat/friend context가 없을 때 = 내 프로필
   const isSelfProfile = !!memberId && !isChatContext && !isFriendContext;
-  const isConfirmModalOpen = deleteConfirmOpen || blockConfirmOpen;
+  const isConfirmModalOpen = deleteConfirmOpen || blockConfirmOpen || isAliasModalOpen;
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
@@ -498,7 +498,6 @@ export default function UserProfileModal({
     },
     onSuccess: (res) => {
       const roomId = res.data.id;
-      onOpenChange(false);
       navigate(`/chat/${roomId}`);
     },
     onError: (error: any) => {
@@ -717,7 +716,6 @@ export default function UserProfileModal({
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${profile.friendId || friendId}`);
-                            onOpenChange(false);
                           }}
                           title="친구 시간표 보기"
                         >
