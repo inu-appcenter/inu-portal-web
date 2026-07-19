@@ -105,7 +105,58 @@ export default function MobileFriendListPage() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const isSelectionMode = location.hash === "#select";
+  
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const isSelectionModeRef = useRef(false);
+  const hasSelectionHistoryEntryRef = useRef(false);
+  const isSyncingSelectionHistoryRef = useRef(false);
+
+  useEffect(() => {
+    isSelectionModeRef.current = isSelectionMode;
+  }, [isSelectionMode]);
+
+  useEffect(() => {
+    const handlePopStateForSelection = () => {
+      if (isSyncingSelectionHistoryRef.current) {
+        isSyncingSelectionHistoryRef.current = false;
+        hasSelectionHistoryEntryRef.current = false;
+        return;
+      }
+
+      if (!isSelectionModeRef.current) return;
+
+      hasSelectionHistoryEntryRef.current = false;
+      setIsSelectionMode(false);
+    };
+
+    window.addEventListener("popstate", handlePopStateForSelection);
+    return () => window.removeEventListener("popstate", handlePopStateForSelection);
+  }, []);
+
+  useEffect(() => {
+    if (isSelectionMode) {
+      if (!hasSelectionHistoryEntryRef.current) {
+        window.history.pushState(
+          {
+            ...(window.history.state ?? {}),
+            __intipFriendSelectionOpen: true,
+          },
+          "",
+        );
+        hasSelectionHistoryEntryRef.current = true;
+      }
+      return;
+    }
+
+    if (
+      hasSelectionHistoryEntryRef.current &&
+      window.history.state?.__intipFriendSelectionOpen
+    ) {
+      isSyncingSelectionHistoryRef.current = true;
+      window.history.back();
+    }
+  }, [isSelectionMode]);
+
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
 
@@ -164,12 +215,10 @@ export default function MobileFriendListPage() {
       const ids = idsParam.split(",").map(Number).filter(Boolean);
       if (ids.length > 0) {
         setSelectedIds(ids);
-        if (location.hash !== "#select") {
-          navigate(location.pathname + location.search + "#select", { replace: true });
-        }
+        setIsSelectionMode(true);
       }
     }
-  }, [searchParams, location.hash, location.pathname, location.search, navigate]);
+  }, [searchParams]);
 
   // Clear selectedIds when exiting selection mode
   useEffect(() => {
@@ -181,12 +230,12 @@ export default function MobileFriendListPage() {
   // Header handlers
   const handleSelectToggle = useCallback(() => {
     if (isSelectionMode) {
-      navigate(-1);
+      setIsSelectionMode(false);
     } else {
-      navigate(location.pathname + location.search + "#select");
+      setIsSelectionMode(true);
       setExpandedId(null); // Collapse all accordion items
     }
-  }, [isSelectionMode, location.pathname, location.search, navigate]);
+  }, [isSelectionMode]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.length === filteredFriends.length) {
@@ -242,7 +291,7 @@ export default function MobileFriendListPage() {
     longPressTimer.current = setTimeout(() => {
       preventClick.current = true;
       if (!isSelectionMode) {
-        navigate(location.pathname + location.search + "#select");
+        setIsSelectionMode(true);
         setExpandedId(null);
         setSelectedIds([friendId]);
         if (navigator.vibrate) {
