@@ -505,7 +505,7 @@ const FilterButton = styled.button<{
   font-weight: 500;
   line-height: 24px;
 
-  width: 100%;
+  width: fit-content;
   
   /* 수치 변화 추적 */
   transition:
