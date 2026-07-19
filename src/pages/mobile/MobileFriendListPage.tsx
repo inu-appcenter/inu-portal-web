@@ -154,7 +154,13 @@ export default function MobileFriendListPage() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    () => (localStorage.getItem("__intipFriendSortOrder") as "asc" | "desc") || "asc"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("__intipFriendSortOrder", sortOrder);
+  }, [sortOrder]);
 
   // Profile modal states
   const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
