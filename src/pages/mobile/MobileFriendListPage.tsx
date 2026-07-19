@@ -99,7 +99,7 @@ export default function MobileFriendListPage() {
   // States
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const isSelectionModeRef = useRef(false);
@@ -175,8 +175,7 @@ export default function MobileFriendListPage() {
     localStorage.setItem("__intipFriendFavorites", JSON.stringify(favoriteIds));
   }, [favoriteIds]);
 
-  const handleToggleFavorite = useCallback((e: React.MouseEvent, friendId: number) => {
-    e.stopPropagation();
+  const handleToggleFavorite = useCallback((friendId: number) => {
     setFavoriteIds((prev) =>
       prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId]
     );
@@ -307,13 +306,13 @@ export default function MobileFriendListPage() {
   });
 
   // Expand / selection click handler
-  const handleFriendClick = (friendId: number) => {
+  const handleFriendClick = (friendId: number, rowId: string) => {
     if (isSelectionMode) {
       setSelectedIds((prev) =>
         prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId]
       );
     } else {
-      setExpandedId((prev) => (prev === friendId ? null : friendId));
+      setExpandedId((prev) => (prev === rowId ? null : rowId));
     }
   };
 
@@ -339,12 +338,12 @@ export default function MobileFriendListPage() {
     }
   };
 
-  const handleRowClick = (friendId: number) => {
+  const handleRowClick = (friendId: number, rowId: string) => {
     if (preventClick.current) {
       preventClick.current = false;
       return;
     }
-    handleFriendClick(friendId);
+    handleFriendClick(friendId, rowId);
   };
 
   const handleCompareClick = () => {
@@ -375,10 +374,11 @@ export default function MobileFriendListPage() {
     }
   }, []);
 
-  const renderFriendRows = (list: typeof filteredFriends) => {
+  const renderFriendRows = (list: typeof filteredFriends, prefix: string) => {
     return list.map((friend) => {
+      const rowId = `${prefix}-${friend.friendId}`;
       const isSelected = selectedIds.includes(friend.friendId);
-      const isExpanded = expandedId === friend.friendId;
+      const isExpanded = expandedId === rowId;
       const dept = getFriendDept(friend.nickname);
       const year = getFriendStudentYear(friend.studentId);
       const safeFireId = normalizeProfileImageId(friend.fireId, DEFAULT_PROFILE_IMAGE_ID);
@@ -399,7 +399,7 @@ export default function MobileFriendListPage() {
               onTouchStart={() => handlePressStart(friend.friendId)}
               onTouchEnd={handlePressCancel}
               onTouchMove={handlePressCancel}
-              onClick={() => handleRowClick(friend.friendId)}
+              onClick={() => handleRowClick(friend.friendId, rowId)}
             >
               <Ripple />
               <ProfileArea>
@@ -419,9 +419,6 @@ export default function MobileFriendListPage() {
               </ProfileArea>
               <NameRow>
                 {friend.friendAlias || friend.nickname}
-                {isFavorite && (
-                  <Star size={16} fill="#FFC107" color="#FFC107" style={{ marginLeft: "6px", flexShrink: 0 }} />
-                )}
               </NameRow>
             </RowHeader>
 
@@ -465,11 +462,7 @@ export default function MobileFriendListPage() {
         isOpen={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
         isFavorite={selectedFriendId !== null && favoriteIds.includes(selectedFriendId)}
-        onToggleFavorite={(id) => {
-          setFavoriteIds((prev) =>
-            prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
-          );
-        }}
+        onToggleFavorite={handleToggleFavorite}
       />
       <AddFriendModal
         isOpen={isAddFriendOpen}
@@ -499,7 +492,7 @@ export default function MobileFriendListPage() {
             <>
               <SectionHeader>즐겨찾기 ({favoriteFriends.length})</SectionHeader>
               <FriendListContainer style={{ marginBottom: "20px" }}>
-                {renderFriendRows(favoriteFriends)}
+                {renderFriendRows(favoriteFriends, "fav")}
               </FriendListContainer>
             </>
           )}
@@ -510,7 +503,7 @@ export default function MobileFriendListPage() {
                 <SectionHeader>친구 ({regularFriends.length})</SectionHeader>
               )}
               <FriendListContainer>
-                {renderFriendRows(regularFriends)}
+                {renderFriendRows(regularFriends, "reg")}
               </FriendListContainer>
             </>
           )}
