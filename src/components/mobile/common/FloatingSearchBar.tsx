@@ -193,7 +193,11 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
   justify-content: space-between;
   height: 56px;
   border-radius: 999px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+  will-change: width;
   pointer-events: auto;
   overflow: hidden;
   position: relative;
@@ -227,7 +231,10 @@ const SearchInput = styled.input<{ $isActive: boolean }>`
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(8px);
 
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 
+    opacity 0.25s ease,
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, padding;
 
   &::placeholder {
     color: var(--text-tertiary, #8b95a1);

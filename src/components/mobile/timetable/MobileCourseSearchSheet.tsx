@@ -512,6 +512,7 @@ const FilterButton = styled.button<{
     margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: max-width, padding, margin-right, opacity, transform;
 
   ${(props) =>
     props.$isHidden
