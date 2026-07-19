@@ -11,7 +11,6 @@ import SubLayout from "@/layout/SubLayout";
 import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
 // Pages (Imports 생략 - 기존과 동일)
-import MobileHomePage from "@/pages/mobile/MobileHomePage";
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
@@ -90,9 +89,9 @@ export const router = createBrowserRouter([
       {
         element: <MainTabLayout showNav={true} showHeader={true} />,
         children: [
-          { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
-          { path: ROUTES.HOME, element: <MobileHomePage /> },
-          { path: ROUTES.HOME_V2, element: <MobileHomePageV2 /> },
+          { path: "", element: <MobileHomePageV2 /> },
+          { path: ROUTES.HOME, element: <MobileHomePageV2 /> },
+          { path: ROUTES.HOME_V2, element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
           { path: ROUTES.CHAT.LIST, element: <MobileChatListPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
@@ -108,8 +107,8 @@ export const router = createBrowserRouter([
         path: ROUTES.MOBILE_ROOT, // "/m"
         element: <MainTabLayout showNav={true} showHeader={true} />,
         children: [
-          { path: "", element: <Navigate to={ROUTES.MOBILE_HOME} replace /> },
-          { path: "home", element: <MobileHomePage /> },
+          { path: "", element: <MobileHomePageV2 /> },
+          { path: "home", element: <MobileHomePageV2 /> },
           { path: "bus", element: <MobileBusPage /> },
           { path: "chat/list", element: <MobileChatListPage /> },
           { path: "save", element: <MobileSavePage /> },

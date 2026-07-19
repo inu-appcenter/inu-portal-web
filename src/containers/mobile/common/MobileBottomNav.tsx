@@ -17,7 +17,7 @@ import useUserStore from "@/stores/useUserStore";
 
 const NAV_ITEMS = [
   {
-    to: ROUTES.HOME_V2,
+    to: ROUTES.HOME,
     icon: HomeIcon,
     label: "홈",
   },
@@ -105,7 +105,9 @@ export default function MobileBottomNav() {
 
   const getIndexByPath = (path: string) => {
     const index = NAV_ITEMS.findIndex((item) => {
-      if (item.to === ROUTES.HOME_V2) return path === ROUTES.HOME_V2;
+      if (item.to === ROUTES.HOME) {
+        return path === ROUTES.HOME || path === ROUTES.MOBILE_HOME || path === ROUTES.ROOT || path === ROUTES.HOME_V2;
+      }
       return path === item.to || path.startsWith(item.to);
     });
     return index === -1 ? 0 : index;
