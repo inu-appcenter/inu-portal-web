@@ -425,6 +425,7 @@ export default function MobileFriendListPage() {
             placeholder="친구 이름 또는 학번 검색"
             onSearch={setSearchTerm}
             onActiveChange={handleSearchActiveChange}
+            searchParamKey="q"
           />
         </SearchBarContainer>
 

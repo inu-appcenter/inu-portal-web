@@ -39,7 +39,6 @@ export interface CourseResult {
 // eslint-disable-next-line react-refresh/only-export-components
 export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
 const SHEET_SNAP_POINTS = [0, 0.2, 0.5, 1];
-const SEARCH_HISTORY_STATE_KEY = "__intipCourseSearchOpen";
 
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
@@ -203,55 +202,6 @@ const MobileCourseSearchSheet = ({
 
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
-  const isSearchActiveRef = useRef(false);
-  const hasSearchHistoryEntryRef = useRef(false);
-  const isSyncingSearchHistoryRef = useRef(false);
-
-  useEffect(() => {
-    isSearchActiveRef.current = isSearchActive;
-  }, [isSearchActive]);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      if (isSyncingSearchHistoryRef.current) {
-        isSyncingSearchHistoryRef.current = false;
-        hasSearchHistoryEntryRef.current = false;
-        return;
-      }
-
-      if (!isSearchActiveRef.current) return;
-
-      hasSearchHistoryEntryRef.current = false;
-      searchBarRef.current?.blur();
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  useEffect(() => {
-    if (isSearchActive) {
-      if (!hasSearchHistoryEntryRef.current) {
-        window.history.pushState(
-          {
-            ...(window.history.state ?? {}),
-            [SEARCH_HISTORY_STATE_KEY]: true,
-          },
-          "",
-        );
-        hasSearchHistoryEntryRef.current = true;
-      }
-      return;
-    }
-
-    if (
-      hasSearchHistoryEntryRef.current &&
-      window.history.state?.[SEARCH_HISTORY_STATE_KEY]
-    ) {
-      isSyncingSearchHistoryRef.current = true;
-      window.history.back();
-    }
-  }, [isSearchActive]);
 
   // 키보드가 닫힌 뒤 변경된 모바일 뷰포트를 기준으로 높이를 다시 계산합니다.
   useEffect(() => {
@@ -422,6 +372,7 @@ const MobileCourseSearchSheet = ({
               placeholder="교과목명, 교수명 검색"
               onSearch={(query) => console.log("검색 실행:", query)}
               onActiveChange={setIsSearchActive}
+              searchParamKey="courseQuery"
             />
           </FloatingActionsContainer>,
           document.body,

@@ -1,6 +1,7 @@
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import styled from "styled-components";
 import { Search } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 export interface FloatingSearchBarRef {
   blur: () => void;
@@ -12,16 +13,24 @@ interface FloatingSearchBarProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
   onActiveChange?: (isActive: boolean) => void;
+  searchParamKey?: string;
 }
+
+const SEARCH_HISTORY_STATE_KEY = "__intipFloatingSearchBarOpen";
 
 const FloatingSearchBar = forwardRef<
   FloatingSearchBarRef,
   FloatingSearchBarProps
->(({ placeholder = "검색어를 입력하세요", onSearch, onActiveChange }, ref) => {
+>(({ placeholder = "검색어를 입력하세요", onSearch, onActiveChange, searchParamKey }, ref) => {
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isSearchActiveRef = useRef(false);
+  const hasSearchHistoryEntryRef = useRef(false);
+  const isSyncingSearchHistoryRef = useRef(false);
 
   const handleActiveChange = (active: boolean) => {
     setIsSearchActive(active);
@@ -31,20 +40,75 @@ const FloatingSearchBar = forwardRef<
   };
 
   useEffect(() => {
-    return () => {
-      if (blurTimeoutRef.current) {
-        clearTimeout(blurTimeoutRef.current);
+    if (searchParamKey) {
+      const paramVal = searchParams.get(searchParamKey) || "";
+      if (paramVal !== searchQuery) {
+        setSearchQuery(paramVal);
+        if (paramVal) {
+          handleActiveChange(true);
+          if (onSearch) {
+            onSearch(paramVal);
+          }
+        }
       }
+    }
+  }, [searchParams, searchParamKey]);
+
+  useEffect(() => {
+    isSearchActiveRef.current = isSearchActive;
+  }, [isSearchActive]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isSyncingSearchHistoryRef.current) {
+        isSyncingSearchHistoryRef.current = false;
+        hasSearchHistoryEntryRef.current = false;
+        return;
+      }
+
+      if (!isSearchActiveRef.current) return;
+
+      hasSearchHistoryEntryRef.current = false;
+      inputRef.current?.blur();
+      handleActiveChange(false);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
     };
   }, []);
 
+  useEffect(() => {
+    if (isSearchActive) {
+      if (!hasSearchHistoryEntryRef.current) {
+        window.history.pushState(
+          {
+            ...(window.history.state ?? {}),
+            [SEARCH_HISTORY_STATE_KEY]: true,
+          },
+          "",
+        );
+        hasSearchHistoryEntryRef.current = true;
+      }
+      return;
+    }
+
+    if (
+      hasSearchHistoryEntryRef.current &&
+      window.history.state?.[SEARCH_HISTORY_STATE_KEY]
+    ) {
+      isSyncingSearchHistoryRef.current = true;
+      window.history.back();
+    }
+  }, [isSearchActive]);
+
   useImperativeHandle(ref, () => ({
     blur: () => {
-      if (blurTimeoutRef.current) {
-        clearTimeout(blurTimeoutRef.current);
-      }
       inputRef.current?.blur();
-      handleActiveChange(false);
+      if (!searchQuery.trim()) {
+        handleActiveChange(false);
+      }
     },
     focus: () => {
       handleActiveChange(true);
@@ -54,18 +118,31 @@ const FloatingSearchBar = forwardRef<
     },
     clear: () => {
       setSearchQuery("");
+      if (searchParamKey) {
+        const nextParams = new URLSearchParams(window.location.search);
+        nextParams.delete(searchParamKey);
+        setSearchParams(nextParams, { replace: true });
+      }
+      if (onSearch) {
+        onSearch("");
+      }
     },
   }));
 
   const executeSearch = (query: string) => {
-    if (blurTimeoutRef.current) {
-      clearTimeout(blurTimeoutRef.current);
-    }
     if (onSearch) {
       onSearch(query);
     }
+    if (searchParamKey) {
+      const nextParams = new URLSearchParams(window.location.search);
+      if (query.trim()) {
+        nextParams.set(searchParamKey, query);
+      } else {
+        nextParams.delete(searchParamKey);
+      }
+      setSearchParams(nextParams, { replace: true });
+    }
     inputRef.current?.blur();
-    handleActiveChange(false);
   };
 
   return (
@@ -75,12 +152,8 @@ const FloatingSearchBar = forwardRef<
         $isActive={isSearchActive}
         placeholder={placeholder}
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onBlur={() => {
-          // 인풋 외부 클릭 시 검색창이 축소되도록 하되, 돋보기 버튼 클릭 시의 onClick 이벤트를 먼저 실행할 수 있게 약간의 딜레이를 줌
-          blurTimeoutRef.current = setTimeout(() => {
-            handleActiveChange(false);
-          }, 150);
+        onChange={(e) => {
+          setSearchQuery(e.target.value);
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -92,9 +165,6 @@ const FloatingSearchBar = forwardRef<
         $isActive={isSearchActive}
         onClick={(e) => {
           e.stopPropagation();
-          if (blurTimeoutRef.current) {
-            clearTimeout(blurTimeoutRef.current);
-          }
           if (!isSearchActive) {
             handleActiveChange(true);
             setTimeout(() => {
