@@ -12,7 +12,7 @@ import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
-import { ArrowDownAZ, ArrowUpZA } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA, Star } from "lucide-react";
 
 // --- SVG Icons ---
 
@@ -162,6 +162,26 @@ export default function MobileFriendListPage() {
     localStorage.setItem("__intipFriendSortOrder", sortOrder);
   }, [sortOrder]);
 
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem("__intipFriendFavorites");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("__intipFriendFavorites", JSON.stringify(favoriteIds));
+  }, [favoriteIds]);
+
+  const handleToggleFavorite = useCallback((e: React.MouseEvent, friendId: number) => {
+    e.stopPropagation();
+    setFavoriteIds((prev) =>
+      prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId]
+    );
+  }, []);
+
   // Profile modal states
   const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -211,6 +231,14 @@ export default function MobileFriendListPage() {
         : nameB.localeCompare(nameA);
     });
   }, [friends, searchTerm, sortOrder]);
+
+  const favoriteFriends = useMemo(() => {
+    return filteredFriends.filter((f) => favoriteIds.includes(f.friendId));
+  }, [filteredFriends, favoriteIds]);
+
+  const regularFriends = useMemo(() => {
+    return filteredFriends.filter((f) => !favoriteIds.includes(f.friendId));
+  }, [filteredFriends, favoriteIds]);
 
   // Init selections from query param 'ids' if any
   useEffect(() => {
@@ -347,6 +375,95 @@ export default function MobileFriendListPage() {
     }
   }, []);
 
+  const renderFriendRows = (list: typeof filteredFriends) => {
+    return list.map((friend) => {
+      const isSelected = selectedIds.includes(friend.friendId);
+      const isExpanded = expandedId === friend.friendId;
+      const dept = getFriendDept(friend.nickname);
+      const year = getFriendStudentYear(friend.studentId);
+      const safeFireId = normalizeProfileImageId(friend.fireId, DEFAULT_PROFILE_IMAGE_ID);
+      const isFavorite = favoriteIds.includes(friend.friendId);
+
+      const showDetail = !isSelectionMode && isExpanded;
+
+      return (
+        <FriendRowWrapper
+          key={friend.friendId}
+          $expanded={isExpanded}
+        >
+          <RowInner>
+            <RowHeader
+              onMouseDown={() => handlePressStart(friend.friendId)}
+              onMouseUp={handlePressCancel}
+              onMouseLeave={handlePressCancel}
+              onTouchStart={() => handlePressStart(friend.friendId)}
+              onTouchEnd={handlePressCancel}
+              onTouchMove={handlePressCancel}
+              onClick={() => handleRowClick(friend.friendId)}
+            >
+              <Ripple />
+              <ProfileArea>
+                <ProfileImage
+                  src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
+                  alt="Profile"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://portal.inuappcenter.kr/images/profile/default.png";
+                  }}
+                />
+                {isSelectionMode && (
+                  <SelectionOverlay $selected={isSelected}>
+                    {isSelected && <CheckIcon />}
+                  </SelectionOverlay>
+                )}
+              </ProfileArea>
+              <NameRow>
+                {friend.friendAlias || friend.nickname}
+                {isFavorite && (
+                  <Star size={16} fill="#FFC107" color="#FFC107" style={{ marginLeft: "6px", flexShrink: 0 }} />
+                )}
+              </NameRow>
+            </RowHeader>
+
+            <ExpandedDetailWrapper $expanded={showDetail}>
+              <ExpandedDetailInner>
+                <DetailContent>
+                  <StudentInfoRow>
+                    {year} · {dept}
+                  </StudentInfoRow>
+                  <ActionButtonRow>
+                    <CircleActionButton
+                      className="warn"
+                      onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
+                    >
+                      <AlarmIcon />
+                    </CircleActionButton>
+                    <CircleActionButton
+                      onClick={(e) => handleSingleChatClick(e, friend.friendId)}
+                    >
+                      <ChatBubbleIcon />
+                    </CircleActionButton>
+                    <CircleActionButton
+                      onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
+                    >
+                      <UserIcon />
+                    </CircleActionButton>
+                    <CircleActionButton
+                      className={isFavorite ? "fav" : ""}
+                      onClick={(e) => handleToggleFavorite(e, friend.friendId)}
+                    >
+                      <Star size={24} fill={isFavorite ? "#FFC107" : "none"} color={isFavorite ? "#FFC107" : "#0061FF"} />
+                    </CircleActionButton>
+                  </ActionButtonRow>
+                </DetailContent>
+              </ExpandedDetailInner>
+            </ExpandedDetailWrapper>
+          </RowInner>
+        </FriendRowWrapper>
+      );
+    });
+  };
+
   return (
     <PageWrapper>
       <UserProfileModal
@@ -376,85 +493,30 @@ export default function MobileFriendListPage() {
         </SortIndicator>
       </StatusSection>
 
-      <FriendListContainer>
-        {filteredFriends.length > 0 ? (
-          filteredFriends.map((friend) => {
-            const isSelected = selectedIds.includes(friend.friendId);
-            const isExpanded = expandedId === friend.friendId;
-            const dept = getFriendDept(friend.nickname);
-            const year = getFriendStudentYear(friend.studentId);
-            const safeFireId = normalizeProfileImageId(friend.fireId, DEFAULT_PROFILE_IMAGE_ID);
+      {filteredFriends.length > 0 ? (
+        <>
+          {favoriteFriends.length > 0 && (
+            <>
+              <SectionHeader>즐겨찾기 ({favoriteFriends.length})</SectionHeader>
+              <FriendListContainer style={{ marginBottom: "20px" }}>
+                {renderFriendRows(favoriteFriends)}
+              </FriendListContainer>
+            </>
+          )}
 
-            const showDetail = !isSelectionMode && isExpanded;
-
-            return (
-              <FriendRowWrapper
-                key={friend.friendId}
-                $expanded={isExpanded}
-              >
-                <RowInner>
-                  <RowHeader
-                    onMouseDown={() => handlePressStart(friend.friendId)}
-                    onMouseUp={handlePressCancel}
-                    onMouseLeave={handlePressCancel}
-                    onTouchStart={() => handlePressStart(friend.friendId)}
-                    onTouchEnd={handlePressCancel}
-                    onTouchMove={handlePressCancel}
-                    onClick={() => handleRowClick(friend.friendId)}
-                  >
-                    <Ripple />
-                    <ProfileArea>
-                      <ProfileImage
-                        src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
-                        alt="Profile"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "https://portal.inuappcenter.kr/images/profile/default.png";
-                        }}
-                      />
-                      {isSelectionMode && (
-                        <SelectionOverlay $selected={isSelected}>
-                          {isSelected && <CheckIcon />}
-                        </SelectionOverlay>
-                      )}
-                    </ProfileArea>
-                    <NameRow>
-                      {friend.friendAlias || friend.nickname}
-                    </NameRow>
-                  </RowHeader>
-
-                  <ExpandedDetailWrapper $expanded={showDetail}>
-                    <ExpandedDetailInner>
-                      <DetailContent>
-                        <StudentInfoRow>
-                          {year} · {dept}
-                        </StudentInfoRow>
-                        <ActionButtonRow>
-                          <CircleActionButton
-                            className="warn"
-                            onClick={(e) => handleSingleTimetableCompare(e, friend.friendId)}
-                          >
-                            <AlarmIcon />
-                          </CircleActionButton>
-                          <CircleActionButton
-                            onClick={(e) => handleSingleChatClick(e, friend.friendId)}
-                          >
-                            <ChatBubbleIcon />
-                          </CircleActionButton>
-                          <CircleActionButton
-                            onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
-                          >
-                            <UserIcon />
-                          </CircleActionButton>
-                        </ActionButtonRow>
-                      </DetailContent>
-                    </ExpandedDetailInner>
-                  </ExpandedDetailWrapper>
-                </RowInner>
-              </FriendRowWrapper>
-            );
-          })
-        ) : (
+          {regularFriends.length > 0 && (
+            <>
+              {favoriteFriends.length > 0 && (
+                <SectionHeader>친구 ({regularFriends.length})</SectionHeader>
+              )}
+              <FriendListContainer>
+                {renderFriendRows(regularFriends)}
+              </FriendListContainer>
+            </>
+          )}
+        </>
+      ) : (
+        <FriendListContainer>
           <EmptyContainer>
             <EmptyFriendsIllust />
             <EmptyTitle>친구가 없어요</EmptyTitle>
@@ -464,8 +526,8 @@ export default function MobileFriendListPage() {
               친구와 시간표를 비교해보세요.
             </EmptyDescription>
           </EmptyContainer>
-        )}
-      </FriendListContainer>
+        </FriendListContainer>
+      )}
 
       {/* Floating Area (always rendered for animation) */}
       <FloatingActionsWrapper>
@@ -697,7 +759,7 @@ const CircleActionButton = styled.button`
     background-color: var(--border-brand-subtle, #d3e5ff);
   }
 
-  &.warn {
+  &.warn, &.fav {
     border: 1px solid var(--border-warn, #fee588);
     background-color: var(--bg-warn, #fffaeb);
     
@@ -884,4 +946,13 @@ const HeaderActionButton = styled.button`
 const HeaderRightSingle = styled.div`
   display: flex;
   align-items: center;
+`;
+
+const SectionHeader = styled.div`
+  font-family: Pretendard;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary, #6b7684);
+  margin: 16px 0 8px 12px;
 `;
