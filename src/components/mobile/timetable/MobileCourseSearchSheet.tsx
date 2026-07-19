@@ -98,7 +98,7 @@ const MobileCourseSearchSheet = ({
   const [activeFilters, setActiveFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
 
-  // listen to returned filters from filter page (LocalStorage & window focus & location fallback)
+  // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
   useEffect(() => {
     const restoreFilters = () => {
       const savedFilters = localStorage.getItem("applied_filters");
@@ -123,10 +123,33 @@ const MobileCourseSearchSheet = ({
       setActiveFilters((location.state as any).filters);
     }
 
-    // 2. 멀티 웹뷰 덮인 화면이 닫히며 포커스가 복귀할 때 확인 (window.focus)
+    // 2. 멀티 웹뷰 덮인 화면이 닫히며 복귀할 때를 위한 이벤트 리스너 등록
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        restoreFilters();
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "applied_filters" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          setActiveFilters(parsed);
+          localStorage.removeItem("applied_filters");
+        } catch (err) {
+          console.error("필터 복원 오류:", err);
+        }
+      }
+    };
+
     window.addEventListener("focus", restoreFilters);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("storage", handleStorageChange);
+
     return () => {
       window.removeEventListener("focus", restoreFilters);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [location.state, location.key]);
 
