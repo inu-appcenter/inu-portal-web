@@ -233,8 +233,18 @@ const MobileTimeTableEditPage = () => {
       return a.startTime < b.endTime && b.startTime < a.endTime;
     };
 
+    const enrichedSchedules = newCourse.schedules.map((schedule) => ({
+      ...schedule,
+      professor: newCourse.professor,
+      credits: newCourse.credits,
+      grade: String(newCourse.grade),
+      courseType: newCourse.isMajor ? "전공심화" : "교양",
+      evaluation: newCourse.remarks?.includes("상대평가") ? "상대평가" : "절대평가",
+      courseId: newCourse.courseId,
+    }));
+
     let conflictItem: ClassItem | null = null;
-    for (const newSlot of newCourse.schedules) {
+    for (const newSlot of enrichedSchedules) {
       for (const existingSlot of timetable) {
         if (isOverlapping(newSlot, existingSlot)) {
           conflictItem = existingSlot;
@@ -246,13 +256,13 @@ const MobileTimeTableEditPage = () => {
 
     if (conflictItem) {
       setOverlappingCourse(conflictItem);
-      setPendingCourse(newCourse);
+      setPendingCourse({ ...newCourse, schedules: enrichedSchedules });
       setIsConflictModalOpen(true);
     } else {
       if (activeTimetableId !== null) {
         updateTimetableEvents(activeTimetableId, [
           ...timetable,
-          ...newCourse.schedules,
+          ...enrichedSchedules,
         ]);
       }
     }
