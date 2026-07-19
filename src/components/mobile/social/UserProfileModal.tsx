@@ -644,7 +644,7 @@ export default function UserProfileModal({
                         }}
                         title="친구 삭제"
                       >
-                        <UserMinus size={22} color="#8E8E93" />
+                        <UserMinus size={22} color="var(--text-tertiary, #8b95a1)" />
                       </IconButton>
                     )}
                     <IconButton
@@ -655,7 +655,7 @@ export default function UserProfileModal({
                       }}
                       title="차단"
                     >
-                      <Ban size={22} color="#FF3B30" />
+                      <Ban size={22} color="var(--text-tertiary, #8b95a1)" />
                     </IconButton>
                   </>
                 )}
@@ -666,7 +666,7 @@ export default function UserProfileModal({
                   onClick={() => onOpenChange(false)}
                   title="닫기"
                 >
-                  <X size={22} color="#8E8E93" />
+                  <X size={22} color="var(--text-tertiary, #8b95a1)" />
                 </IconButton>
               </HeaderRight>
             </Header>
