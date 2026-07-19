@@ -237,8 +237,8 @@ export default function MobileFriendListPage() {
   }, [filteredFriends, favoriteIds]);
 
   const regularFriends = useMemo(() => {
-    return filteredFriends.filter((f) => !favoriteIds.includes(f.friendId));
-  }, [filteredFriends, favoriteIds]);
+    return filteredFriends;
+  }, [filteredFriends]);
 
   // Init selections from query param 'ids' if any
   useEffect(() => {
@@ -448,12 +448,6 @@ export default function MobileFriendListPage() {
                     >
                       <UserIcon />
                     </CircleActionButton>
-                    <CircleActionButton
-                      className={isFavorite ? "fav" : ""}
-                      onClick={(e) => handleToggleFavorite(e, friend.friendId)}
-                    >
-                      <Star size={24} fill={isFavorite ? "#FFC107" : "none"} color={isFavorite ? "#FFC107" : "#0061FF"} />
-                    </CircleActionButton>
                   </ActionButtonRow>
                 </DetailContent>
               </ExpandedDetailInner>
@@ -470,6 +464,12 @@ export default function MobileFriendListPage() {
         friendId={selectedFriendId}
         isOpen={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
+        isFavorite={selectedFriendId !== null && favoriteIds.includes(selectedFriendId)}
+        onToggleFavorite={(id) => {
+          setFavoriteIds((prev) =>
+            prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
+          );
+        }}
       />
       <AddFriendModal
         isOpen={isAddFriendOpen}

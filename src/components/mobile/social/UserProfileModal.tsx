@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   LogOut,
   MessageSquare,
+  Star,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -248,6 +249,8 @@ interface UserProfileModalProps {
     participantCount: number;
     isOwner: boolean;
   };
+  isFavorite?: boolean;
+  onToggleFavorite?: (friendId: number) => void;
 }
 
 export default function UserProfileModal({
@@ -257,6 +260,8 @@ export default function UserProfileModal({
   isOpen,
   onOpenChange,
   roomContext,
+  isFavorite,
+  onToggleFavorite,
 }: UserProfileModalProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -536,6 +541,24 @@ export default function UserProfileModal({
               <HeaderActions>
                 {!isMe && profile && (
                   <>
+                    {profile.friendStatus === "ACCEPTED" && onToggleFavorite && (
+                      <IconButton
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (profile.friendId) {
+                            onToggleFavorite(profile.friendId);
+                          }
+                        }}
+                        title={isFavorite ? "즐겨찾기 해제" : "즐겨찾기 등록"}
+                      >
+                        <Star
+                          size={22}
+                          fill={isFavorite ? "#FFC107" : "none"}
+                          color={isFavorite ? "#FFC107" : "#8E8E93"}
+                        />
+                      </IconButton>
+                    )}
                     {profile.friendStatus === "ACCEPTED" && (
                       <IconButton
                         onPointerDown={(e) => e.stopPropagation()}
