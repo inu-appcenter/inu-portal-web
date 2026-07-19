@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getFriends } from "@/apis/friends";
 import { createPersonalChatRoom } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
@@ -97,7 +97,6 @@ const getFriendStudentYear = (studentId: string) => {
 
 export default function MobileFriendListPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
