@@ -14,8 +14,8 @@ import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
 
 // --- SVG Icons ---
-const CaretDownIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+const CaretDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <path d="M5 7.5L10 12.5L15 7.5" stroke="#8B95A1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
@@ -158,6 +158,7 @@ export default function MobileFriendListPage() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Profile modal states
   const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
@@ -199,13 +200,15 @@ export default function MobileFriendListPage() {
           (f.studentId && f.studentId.includes(term))
       );
     }
-    // Chronological name sorting
+    // Chronological name sorting based on sortOrder
     return [...result].sort((a, b) => {
       const nameA = a.friendAlias || a.nickname;
       const nameB = b.friendAlias || b.nickname;
-      return nameA.localeCompare(nameB);
+      return sortOrder === "asc"
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
     });
-  }, [friends, searchTerm]);
+  }, [friends, searchTerm, sortOrder]);
 
   // Init selections from query param 'ids' if any
   useEffect(() => {
@@ -361,9 +364,9 @@ export default function MobileFriendListPage() {
 
       <StatusSection>
         <TotalCountText>내 친구 ({filteredFriends.length})</TotalCountText>
-        <SortIndicator>
-          <span>이름순</span>
-          <CaretDownIcon />
+        <SortIndicator onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}>
+          <span>{sortOrder === "asc" ? "오름차순" : "내림차순"}</span>
+          <CaretDownIcon style={{ transform: sortOrder === "desc" ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
         </SortIndicator>
       </StatusSection>
 
