@@ -22,6 +22,8 @@ export interface ClassItem {
   grade?: string;
   courseType?: string;
   evaluation?: string;
+  courseId?: string;
+  isCustom?: boolean;
 }
 
 interface TimetableGridProps {

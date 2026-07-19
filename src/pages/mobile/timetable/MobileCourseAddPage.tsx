@@ -118,6 +118,7 @@ const MobileCourseAddPage = () => {
       grade: grade || "",
       courseType: courseType || "",
       evaluation: evaluation || "",
+      isCustom: true,
     }));
 
     const isOverlapping = (a: any, b: any) => {
