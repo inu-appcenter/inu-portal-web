@@ -39,7 +39,6 @@ export interface CourseResult {
 // eslint-disable-next-line react-refresh/only-export-components
 export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
 const SHEET_SNAP_POINTS = [0, 0.2, 0.5, 1];
-const SEARCH_HISTORY_STATE_KEY = "__intipCourseSearchOpen";
 
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
@@ -99,7 +98,7 @@ const MobileCourseSearchSheet = ({
   const [activeFilters, setActiveFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
 
-  // listen to returned filters from filter page (LocalStorage & window focus & location fallback)
+  // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
   useEffect(() => {
     const restoreFilters = () => {
       const savedFilters = localStorage.getItem("applied_filters");
@@ -124,10 +123,33 @@ const MobileCourseSearchSheet = ({
       setActiveFilters((location.state as any).filters);
     }
 
-    // 2. 멀티 웹뷰 덮인 화면이 닫히며 포커스가 복귀할 때 확인 (window.focus)
+    // 2. 멀티 웹뷰 덮인 화면이 닫히며 복귀할 때를 위한 이벤트 리스너 등록
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        restoreFilters();
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "applied_filters" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          setActiveFilters(parsed);
+          localStorage.removeItem("applied_filters");
+        } catch (err) {
+          console.error("필터 복원 오류:", err);
+        }
+      }
+    };
+
     window.addEventListener("focus", restoreFilters);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("storage", handleStorageChange);
+
     return () => {
       window.removeEventListener("focus", restoreFilters);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [location.state, location.key]);
 
@@ -203,55 +225,6 @@ const MobileCourseSearchSheet = ({
 
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
-  const isSearchActiveRef = useRef(false);
-  const hasSearchHistoryEntryRef = useRef(false);
-  const isSyncingSearchHistoryRef = useRef(false);
-
-  useEffect(() => {
-    isSearchActiveRef.current = isSearchActive;
-  }, [isSearchActive]);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      if (isSyncingSearchHistoryRef.current) {
-        isSyncingSearchHistoryRef.current = false;
-        hasSearchHistoryEntryRef.current = false;
-        return;
-      }
-
-      if (!isSearchActiveRef.current) return;
-
-      hasSearchHistoryEntryRef.current = false;
-      searchBarRef.current?.blur();
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  useEffect(() => {
-    if (isSearchActive) {
-      if (!hasSearchHistoryEntryRef.current) {
-        window.history.pushState(
-          {
-            ...(window.history.state ?? {}),
-            [SEARCH_HISTORY_STATE_KEY]: true,
-          },
-          "",
-        );
-        hasSearchHistoryEntryRef.current = true;
-      }
-      return;
-    }
-
-    if (
-      hasSearchHistoryEntryRef.current &&
-      window.history.state?.[SEARCH_HISTORY_STATE_KEY]
-    ) {
-      isSyncingSearchHistoryRef.current = true;
-      window.history.back();
-    }
-  }, [isSearchActive]);
 
   // 키보드가 닫힌 뒤 변경된 모바일 뷰포트를 기준으로 높이를 다시 계산합니다.
   useEffect(() => {
@@ -422,6 +395,7 @@ const MobileCourseSearchSheet = ({
               placeholder="교과목명, 교수명 검색"
               onSearch={(query) => console.log("검색 실행:", query)}
               onActiveChange={setIsSearchActive}
+              searchParamKey="courseQuery"
             />
           </FloatingActionsContainer>,
           document.body,
@@ -554,6 +528,8 @@ const FilterButton = styled.button<{
   font-weight: 500;
   line-height: 24px;
 
+  width: fit-content;
+  
   /* 수치 변화 추적 */
   transition:
     max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -561,11 +537,11 @@ const FilterButton = styled.button<{
     margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: max-width, padding, margin-right, opacity, transform;
 
   ${(props) =>
     props.$isHidden
       ? `
-    width: 0px;
     max-width: 0px;
     padding: 0;
     margin-right: 0px;
@@ -576,7 +552,7 @@ const FilterButton = styled.button<{
   `
       : props.$isZeroCount
         ? `
-    width: 56px;
+    max-width: 56px;
     padding: 16px;
     margin-right: 16px;
     opacity: 1;
@@ -584,7 +560,6 @@ const FilterButton = styled.button<{
     transform: scale(1);
   `
         : `
-    width: auto;
     max-width: 240px; 
     padding: 16px 20px;
     margin-right: 16px;

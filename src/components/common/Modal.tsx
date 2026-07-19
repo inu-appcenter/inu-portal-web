@@ -70,14 +70,30 @@ export default function Modal({
   if (!isOpen) return null;
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (closeOnOverlayClick && containerRef.current && !containerRef.current.contains(e.target as Node)) {
       onClose();
     }
   };
 
+  const handleStopPropagation = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+  };
+
   return createPortal(
-    <ModalOverlay onClick={handleOverlayClick}>
-      <ModalContainer ref={containerRef}>
+    <ModalOverlay
+      onClick={handleOverlayClick}
+      onPointerDown={handleStopPropagation}
+      onMouseDown={handleStopPropagation}
+      onTouchStart={handleStopPropagation}
+    >
+      <ModalContainer
+        ref={containerRef}
+        onClick={handleStopPropagation}
+        onPointerDown={handleStopPropagation}
+        onMouseDown={handleStopPropagation}
+        onTouchStart={handleStopPropagation}
+      >
         <HeaderContainer>
           <ModalTitle>{title}</ModalTitle>
           {description && (
