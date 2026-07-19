@@ -723,7 +723,10 @@ export default function UserProfileModal({
                         </CircleActionButton>
                         
                         <CircleActionButton
-                          onClick={handleStartChat}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartChat();
+                          }}
                           disabled={chatMutation.isPending}
                           title="채팅하기"
                         >
@@ -731,7 +734,10 @@ export default function UserProfileModal({
                         </CircleActionButton>
 
                         <CircleActionButton
-                          onClick={handleShareProfile}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleShareProfile();
+                          }}
                           title="이 프로필 공유하기"
                         >
                           <ShareIcon />
@@ -740,7 +746,8 @@ export default function UserProfileModal({
                         {onToggleFavorite && (
                           <CircleActionButton
                             className={isFavorite ? "fav" : ""}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               if (profile.friendId) {
                                 onToggleFavorite(profile.friendId);
                               }
