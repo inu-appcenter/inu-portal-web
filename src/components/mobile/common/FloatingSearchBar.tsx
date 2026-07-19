@@ -195,9 +195,10 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
   border-radius: 999px;
   transition: 
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    flex 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s ease,
     box-shadow 0.3s ease;
-  will-change: width;
+  will-change: width, flex;
   pointer-events: auto;
   overflow: hidden;
   position: relative;
