@@ -12,6 +12,7 @@ import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
+import { ArrowDownAZ, ArrowUpZA } from "lucide-react";
 
 // --- SVG Icons ---
 const CaretDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -366,7 +367,11 @@ export default function MobileFriendListPage() {
         <TotalCountText>내 친구 ({filteredFriends.length})</TotalCountText>
         <SortIndicator onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}>
           <span>{sortOrder === "asc" ? "오름차순" : "내림차순"}</span>
-          <CaretDownIcon style={{ transform: sortOrder === "desc" ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+          {sortOrder === "asc" ? (
+            <ArrowDownAZ size={18} color="#8B95A1" />
+          ) : (
+            <ArrowUpZA size={18} color="#8B95A1" />
+          )}
         </SortIndicator>
       </StatusSection>
 
