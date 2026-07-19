@@ -9,7 +9,7 @@ import {
   UserMinus,
   UserX,
   Edit3,
-  ShieldAlert,
+  Ban,
   LogOut,
   MessageSquare,
   Star,
@@ -655,7 +655,7 @@ export default function UserProfileModal({
                       }}
                       title="차단"
                     >
-                      <ShieldAlert size={22} color="#FF3B30" />
+                      <Ban size={22} color="#FF3B30" />
                     </IconButton>
                   </>
                 )}
