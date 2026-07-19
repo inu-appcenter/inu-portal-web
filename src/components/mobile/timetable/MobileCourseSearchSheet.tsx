@@ -505,6 +505,8 @@ const FilterButton = styled.button<{
   font-weight: 500;
   line-height: 24px;
 
+  width: 100%;
+  
   /* 수치 변화 추적 */
   transition:
     max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -517,7 +519,6 @@ const FilterButton = styled.button<{
   ${(props) =>
     props.$isHidden
       ? `
-    width: 0px;
     max-width: 0px;
     padding: 0;
     margin-right: 0px;
@@ -528,7 +529,7 @@ const FilterButton = styled.button<{
   `
       : props.$isZeroCount
         ? `
-    width: 56px;
+    max-width: 56px;
     padding: 16px;
     margin-right: 16px;
     opacity: 1;
@@ -536,7 +537,6 @@ const FilterButton = styled.button<{
     transform: scale(1);
   `
         : `
-    width: auto;
     max-width: 240px; 
     padding: 16px 20px;
     margin-right: 16px;
