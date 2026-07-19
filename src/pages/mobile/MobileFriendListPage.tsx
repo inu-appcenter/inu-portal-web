@@ -12,7 +12,7 @@ import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import { normalizeProfileImageId, DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
-import { ArrowDownAZ, ArrowUpZA, Star } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA } from "lucide-react";
 
 // --- SVG Icons ---
 
@@ -382,7 +382,6 @@ export default function MobileFriendListPage() {
       const dept = getFriendDept(friend.nickname);
       const year = getFriendStudentYear(friend.studentId);
       const safeFireId = normalizeProfileImageId(friend.fireId, DEFAULT_PROFILE_IMAGE_ID);
-      const isFavorite = favoriteIds.includes(friend.friendId);
 
       const showDetail = !isSelectionMode && isExpanded;
 
