@@ -11,6 +11,25 @@ import MobileCourseSearchSheet, {
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { useCourses } from "@/hooks/useCourses";
+import { Course } from "@/types/courses";
+
+// 서버 강의 데이터에는 아직 room/day/startTime/endTime/professor 등 시간표 배치 정보가 없어
+// 검색 시트가 요구하는 CourseResult 형태로 임시 매핑한다.
+const mapCourseToCourseResult = (course: Course): CourseResult => ({
+  id: course.id,
+  name: course.title,
+  professor: "-",
+  timeStr: "-",
+  room: "-",
+  grade: parseInt(course.targetGradeName, 10) || 0,
+  isMajor: course.completionDivisionName.includes("전공"),
+  credits: parseInt(course.credit, 10) || 0,
+  courseId: String(course.id),
+  remarks: course.content,
+  enrolledCount: 0,
+  schedules: [],
+});
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -77,79 +96,15 @@ const MY_TIMETABLE: ClassItem[] = [
   },
 ];
 
-const SEARCH_RESULTS: CourseResult[] = [
-  {
-    id: 101,
-    name: "웹프로그래밍",
-    professor: "박기석",
-    timeStr: "화 8 9 (17:00~18:45)",
-    room: "07-304",
-    grade: 3,
-    isMajor: true,
-    credits: 2,
-    courseId: "0008868001",
-    remarks: "상대평가 / 노트북 지참 필수",
-    enrolledCount: 72,
-    schedules: [
-      {
-        id: 101,
-        name: "웹프로그래밍",
-        room: "07-304",
-        day: 1,
-        startTime: 17,
-        endTime: 19,
-      },
-    ],
-  },
-  {
-    id: 102,
-    name: "운영체제",
-    professor: "문주팍",
-    timeStr: "화 8 9 (17:00~18:45)",
-    room: "07-304",
-    grade: 3,
-    isMajor: true,
-    credits: 1,
-    courseId: "0008868001",
-    enrolledCount: 151,
-    schedules: [
-      {
-        id: 102,
-        name: "운영체제",
-        room: "07-304",
-        day: 1,
-        startTime: 17,
-        endTime: 19,
-      },
-    ],
-  },
-  {
-    id: 103,
-    name: "창의적사고와문제해결",
-    professor: "김창의",
-    timeStr: "목 5 6 (13:00~15:00)",
-    room: "05-202",
-    grade: 1,
-    isMajor: false,
-    credits: 2,
-    courseId: "0001234001",
-    remarks: "팀프로젝트 있음",
-    enrolledCount: 45,
-    schedules: [
-      {
-        id: 103,
-        name: "창의적사고와문제해결",
-        room: "05-202",
-        day: 3,
-        startTime: 13,
-        endTime: 15,
-      },
-    ],
-  },
-];
-
 const MobileTimeTableEditPage = () => {
   const navigate = useNavigate();
+
+  // 서버 강의 목록 조회 (react query) + zustand 상태 동기화
+  const { courses } = useCourses();
+  const searchResults = useMemo(
+    () => courses.map(mapCourseToCourseResult),
+    [courses],
+  );
 
   const headerRight = useMemo(
     () => (
@@ -183,8 +138,8 @@ const MobileTimeTableEditPage = () => {
 
   // 프리뷰 연산
   const previewSchedules = useMemo(
-    () => SEARCH_RESULTS.find((c) => c.id === expandedId)?.schedules || [],
-    [expandedId],
+    () => searchResults.find((c) => c.id === expandedId)?.schedules || [],
+    [searchResults, expandedId],
   );
 
   // 선택된 강의(미리보기)가 바텀시트에 의해 가려지는 경우 스크롤 처리
@@ -273,7 +228,7 @@ const MobileTimeTableEditPage = () => {
 
       {/* 바텀시트 */}
       <MobileCourseSearchSheet
-        courses={SEARCH_RESULTS}
+        courses={searchResults}
         expandedId={expandedId}
         onToggleExpand={toggleExpand}
         snap={snap}

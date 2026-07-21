@@ -23,6 +23,7 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
   const { timetables, setSemester, setActiveTimetable, setRepresentative, addTimetable } = useTimetableStore();
+  
 
   const handleAddClick = useCallback(() => {
     const semester = prompt("학기를 입력해주세요. (예: 2026년 2학기)", "2026년 2학기");
