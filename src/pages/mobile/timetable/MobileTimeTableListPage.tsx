@@ -4,7 +4,11 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
+import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import TimeTableCreateModal, {
+  TIMETABLE_SEMESTERS,
+} from "@/components/mobile/timetable/TimeTableCreateModal";
 
 // Icons
 const PlusIcon = () => (
@@ -20,18 +24,29 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
   </svg>
 );
 
+const getTimetableCredits = (events: ClassItem[]) =>
+  events.reduce((total, item) => {
+    const fallbackCredits = Math.max(1, item.endTime - item.startTime);
+    return total + (item.credits ?? fallbackCredits);
+  }, 0);
+
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
-  const { timetables, setSemester, setActiveTimetable, setRepresentative, addTimetable } = useTimetableStore();
-  
+  const { timetables, setSemester, setActiveTimetable, setRepresentative } = useTimetableStore();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addModalSemester, setAddModalSemester] = useState(TIMETABLE_SEMESTERS[0]);
+
+  const semesters = TIMETABLE_SEMESTERS;
+
+  const openAddModal = useCallback((semester: string) => {
+    setAddModalSemester(semester);
+    setIsAddModalOpen(true);
+  }, []);
 
   const handleAddClick = useCallback(() => {
-    const semester = prompt("학기를 입력해주세요. (예: 2026년 2학기)", "2026년 2학기");
-    if (!semester) return;
-    const name = prompt("시간표 이름을 입력해주세요. (예: 시간표 1)", "시간표 1");
-    if (!name) return;
-    addTimetable(semester, name);
-  }, [addTimetable]);
+    openAddModal(semesters[0]);
+  }, [openAddModal, semesters]);
 
   const headerRight = useMemo(() => (
     <IconButton onClick={handleAddClick}>
@@ -47,10 +62,6 @@ export default function MobileTimeTableListPage() {
     rightArea: headerRight
   });
 
-  // Group timetables by semester
-  // Semesters list in chronological order
-  const semesters = ["2026년 2학기", "2026년 1학기", "2025년 2학기", "2025년 1학기", "2024년 2학기"];
-
   const handleSelectTimetable = (t: Timetable) => {
     setSemester(t.semester);
     setActiveTimetable(t.id);
@@ -62,20 +73,44 @@ export default function MobileTimeTableListPage() {
       <ListContainer>
         {semesters.map((sem) => {
           const list = timetables.filter((t) => t.semester === sem);
+          const hasTimetable = list.length > 0;
           return (
-            <TimeTableListCard key={sem}>
+            <TimeTableListCard
+              key={sem}
+              $isClickable={!hasTimetable}
+              onClick={
+                hasTimetable
+                  ? undefined
+                  : () => openAddModal(sem)
+              }
+              role={!hasTimetable ? "button" : undefined}
+              tabIndex={!hasTimetable ? 0 : undefined}
+              onKeyDown={
+                !hasTimetable
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openAddModal(sem);
+                      }
+                    }
+                  : undefined
+              }
+            >
               <SemesterHeader>{sem}</SemesterHeader>
-              {list.length > 0 ? (
+              {hasTimetable ? (
                 <ScheduleListWrapper>
                   {list.map((t) => (
                     <ScheduleRow key={t.id} onClick={() => handleSelectTimetable(t)}>
                       <ScheduleName>{t.name}</ScheduleName>
-                      <StarButton onClick={(e) => {
-                        e.stopPropagation();
-                        setRepresentative(t.id);
-                      }}>
-                        <StarIcon filled={t.isRepresentative} />
-                      </StarButton>
+                      <TimetableMeta>
+                        <CreditBadge>{getTimetableCredits(t.events)}학점</CreditBadge>
+                        <StarButton onClick={(e) => {
+                          e.stopPropagation();
+                          setRepresentative(t.id);
+                        }}>
+                          <StarIcon filled={t.isRepresentative} />
+                        </StarButton>
+                      </TimetableMeta>
                     </ScheduleRow>
                   ))}
                 </ScheduleListWrapper>
@@ -88,6 +123,12 @@ export default function MobileTimeTableListPage() {
           );
         })}
       </ListContainer>
+
+      <TimeTableCreateModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        initialSemester={addModalSemester}
+      />
     </PageWrapper>
   );
 }
@@ -108,7 +149,7 @@ const ListContainer = styled.div`
   width: 100%;
 `;
 
-const TimeTableListCard = styled.div`
+const TimeTableListCard = styled.div<{ $isClickable?: boolean }>`
   background: var(--bg-base, #ffffff);
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 20px;
@@ -117,6 +158,21 @@ const TimeTableListCard = styled.div`
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  ${({ $isClickable }) =>
+    $isClickable &&
+    `
+    &:hover {
+      border-color: var(--border-brand, #0061ff);
+      box-shadow: 0 4px 16px rgba(0, 97, 255, 0.08);
+      transform: translateY(-1px);
+    }
+  `}
 `;
 
 const SemesterHeader = styled.div`
@@ -156,6 +212,29 @@ const ScheduleName = styled.span`
   color: var(--text-secondary, #333d4b);
 `;
 
+const TimetableMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CreditBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted, #f1f3f5);
+  color: var(--text-primary, #333d4b);
+  font-family: Pretendard;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+`;
+
 const StarButton = styled.button`
   display: flex;
   align-items: center;
@@ -193,3 +272,4 @@ const IconButton = styled.button`
     background-color: var(--bg-muted, #f1f3f5);
   }
 `;
+

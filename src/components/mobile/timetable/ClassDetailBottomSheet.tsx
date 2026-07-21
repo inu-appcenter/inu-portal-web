@@ -1,9 +1,11 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
-import CapsuleButton from "@/components/common/CapsuleButton";
 import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { Trash2, Image as ImageIcon, Pencil } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useTimetableStore } from "@/stores/useTimetableStore";
 
 interface ClassDetailBottomSheetProps {
   open: boolean;
@@ -15,21 +17,13 @@ interface ClassDetailBottomSheetProps {
   onDelete?: (id: number) => void;
 }
 
-const DAYS_KOREAN = [
-  "월요일",
-  "화요일",
-  "수요일",
-  "목요일",
-  "금요일",
-  "토요일",
-  "일요일",
-];
-
 const formatHour = (hour: number) => {
   const h = Math.floor(hour);
   const m = Math.round((hour - h) * 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 };
+
+const DEFAULT_MEMO = "중간고사 4/22, 기말고사 6/17";
 
 export default function ClassDetailBottomSheet({
   open,
@@ -41,15 +35,100 @@ export default function ClassDetailBottomSheet({
   onDelete,
 }: ClassDetailBottomSheetProps) {
   const navigate = useNavigate();
+  const { activeTimetableId, timetables, updateTimetableEvents } =
+    useTimetableStore();
 
-  if (!selectedClass) return null;
+  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  const [memoInput, setMemoInput] = useState("");
+  const memoInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const liveClass = selectedClass
+    ? allEvents.find((e) => e.id === selectedClass.id) || selectedClass
+    : null;
+
+  const adjustHeight = (element: HTMLTextAreaElement) => {
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = `${element.scrollHeight}px`;
+  };
+
+  useEffect(() => {
+    if (liveClass) {
+      setMemoInput(liveClass.memo || DEFAULT_MEMO);
+      setIsEditingMemo(false);
+    }
+  }, [selectedClass, allEvents]);
+
+  useEffect(() => {
+    if (isEditingMemo && memoInputRef.current) {
+      memoInputRef.current.focus();
+      adjustHeight(memoInputRef.current);
+      const len = memoInputRef.current.value.length;
+      memoInputRef.current.setSelectionRange(len, len);
+    }
+  }, [isEditingMemo]);
+
+  if (!liveClass) return null;
+
+  const professorName = liveClass.professor?.trim() || "박기석";
+  const creditsVal = liveClass.credits || 3;
+  const evaluationVal = liveClass.evaluation || "상대평가";
+
+  const lectureReviewUrl = professorName
+    ? `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`
+    : "";
+  const handleLectureReviewClick = () => {
+    if (!lectureReviewUrl) {
+      alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
+      return;
+    }
+    window.open(lectureReviewUrl, "_blank", "noopener,noreferrer");
+  };
 
   const matchingClasses = allEvents
-    .filter((e) => e.name === selectedClass.name)
+    .filter((e) => e.name === liveClass.name)
     .sort((a, b) => a.day - b.day || a.startTime - b.startTime);
 
-  const dotColor =
-    colorMap.get(selectedClass.name) || "var(--text-brand, #0061FF)";
+  const dotColor = colorMap.get(liveClass.name) || "var(--text-brand, #0061FF)";
+
+  const gradeStr = liveClass.grade
+    ? typeof liveClass.grade === "number" || !isNaN(Number(liveClass.grade))
+      ? `${liveClass.grade}학년`
+      : liveClass.grade
+    : "3학년";
+
+  const courseTypeStr = liveClass.courseType || "전공심화";
+  const courseIdStr = liveClass.courseId || "0001421001";
+
+  const detailsList = [gradeStr, courseTypeStr, courseIdStr].filter(Boolean);
+  const detailsText = detailsList.join("  ");
+
+  const scheduleText = matchingClasses
+    .map((item) => {
+      const dayChar =
+        ["월", "화", "수", "목", "금", "토", "일"][item.day] || "";
+      return `${dayChar} (${formatHour(item.startTime)}~${formatHour(item.endTime)})`;
+    })
+    .join(", ");
+
+  const roomVal = liveClass.room || "07-415";
+  const isCustomCourse = liveClass.isCustom || !liveClass.courseId;
+
+  const handleSaveMemo = () => {
+    if (activeTimetableId === null) return;
+    const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
+    if (!activeTimetable) return;
+
+    const updatedEvents = activeTimetable.events.map((e) => {
+      if (e.id === liveClass.id || e.name === liveClass.name) {
+        return { ...e, memo: memoInput };
+      }
+      return e;
+    });
+
+    updateTimetableEvents(activeTimetableId, updatedEvents);
+    setIsEditingMemo(false);
+  };
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} modal={true}>
@@ -63,85 +142,135 @@ export default function ClassDetailBottomSheet({
 
             <ContentArea>
               <ScrollableBody>
-                <HeaderSection>
-                  <TitleLine>
-                    <ColorDot $color={dotColor} />
-                    <ClassTitle>{selectedClass.name}</ClassTitle>
-                    {selectedClass.ownerName && (
-                      <OwnerBadge>{selectedClass.ownerName}</OwnerBadge>
+                <ClassInfoContainer>
+                  <CourseHeaderRow>
+                    <HeaderMain>
+                      <TitleLine>
+                        <ColorDot $color={dotColor} />
+                        <ClassTitle>{liveClass.name}</ClassTitle>
+                        {liveClass.ownerName && (
+                          <OwnerBadge>{liveClass.ownerName}</OwnerBadge>
+                        )}
+                      </TitleLine>
+                      <SubtitleLine>
+                        <ProfessorName>{professorName}</ProfessorName>
+                        <CreditText>{creditsVal}학점</CreditText>
+                        <EvaluationText>{evaluationVal}</EvaluationText>
+                      </SubtitleLine>
+                    </HeaderMain>
+
+                    <HeaderActions>
+                      {isCustomCourse && onEdit && (
+                        <EditButton
+                          type="button"
+                          onClick={() => {
+                            onEdit(liveClass.id);
+                            onOpenChange(false);
+                          }}
+                        >
+                          <Pencil size={18} />
+                        </EditButton>
+                      )}
+                      {onDelete && (
+                        <DeleteButton
+                          type="button"
+                          onClick={() => {
+                            onDelete(liveClass.id);
+                            onOpenChange(false);
+                          }}
+                        >
+                          <Trash2 size={18} />
+                        </DeleteButton>
+                      )}
+                    </HeaderActions>
+                  </CourseHeaderRow>
+
+                  <DetailsSection>
+                    {detailsText && (
+                      <DetailsTextRow>{detailsText}</DetailsTextRow>
                     )}
-                  </TitleLine>
+                    {scheduleText && (
+                      <DetailsTextRow>{scheduleText}</DetailsTextRow>
+                    )}
+                    <RoomRow>
+                      <RoomText>{roomVal}</RoomText>
+                      <RoomMapButton
+                        type="button"
+                        onClick={() => {
+                          navigate(ROUTES.BOARD.CAMPUS, {
+                            state: { search: roomVal },
+                          });
+                          onOpenChange(false);
+                        }}
+                      >
+                        <ImageIcon size={16} />
+                      </RoomMapButton>
+                    </RoomRow>
+                  </DetailsSection>
+                </ClassInfoContainer>
 
-                  <ScheduleList>
-                    {matchingClasses.map((item, idx) => {
-                      const dayStr = DAYS_KOREAN[item.day] || "요일";
-                      const timeStr = `${formatHour(
-                        item.startTime,
-                      )} ~ ${formatHour(item.endTime)}`;
-                      return (
-                        <ScheduleItem key={`schedule-${item.id}-${idx}`}>
-                          {dayStr} · {timeStr}
-                        </ScheduleItem>
-                      );
-                    })}
-                  </ScheduleList>
-                </HeaderSection>
-
-                <InfoField>
-                  <FieldLabel>교수명</FieldLabel>
-                  <FieldValue>{selectedClass.professor || "김인천"}</FieldValue>
-                </InfoField>
-
-                <InfoField>
-                  <FieldLabel>강의실</FieldLabel>
-                  <FieldValue>{selectedClass.room || "07-407"}</FieldValue>
-                </InfoField>
-
-                <InfoField>
-                  <FieldLabel>메모</FieldLabel>
-                  <FieldValue>
-                    {selectedClass.memo || "중간고사 4/22, 기말고사 6/17"}
-                  </FieldValue>
+                <InfoField
+                  onClick={() => !isEditingMemo && setIsEditingMemo(true)}
+                >
+                  <MemoHeaderRow>
+                    <FieldLabel style={{ cursor: "pointer" }}>메모</FieldLabel>
+                    {isEditingMemo &&
+                      memoInput !== (liveClass.memo || DEFAULT_MEMO) && (
+                        <MemoSaveLink
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveMemo();
+                          }}
+                        >
+                          저장
+                        </MemoSaveLink>
+                      )}
+                  </MemoHeaderRow>
+                  {isEditingMemo ? (
+                    <MemoEditContainer onClick={(e) => e.stopPropagation()}>
+                      <SeamlessTextarea
+                        ref={memoInputRef}
+                        value={memoInput}
+                        onChange={(e) => {
+                          setMemoInput(e.target.value);
+                          adjustHeight(e.target);
+                        }}
+                        placeholder="메모를 입력하세요."
+                        rows={1}
+                      />
+                    </MemoEditContainer>
+                  ) : (
+                    <FieldValue style={{ cursor: "pointer" }}>
+                      {liveClass.memo || DEFAULT_MEMO}
+                    </FieldValue>
+                  )}
                 </InfoField>
               </ScrollableBody>
 
               <FooterSection>
-                <CapsuleButton
-                  variant="brand"
-                  onClick={() => {
-                    navigate(ROUTES.TIMETABLE.SYLLABUS, {
-                      state: {
-                        courseName: selectedClass.name,
-                        professor: selectedClass.professor,
-                      },
-                    });
-                    onOpenChange(false);
-                  }}
-                >
-                  강의계획서
-                </CapsuleButton>
-                {onEdit && onDelete && (
-                  <CapsuleButton.Group gap={12}>
-                    <CapsuleButton
-                      variant="brand"
-                      onClick={() => {
-                        if (onEdit) onEdit(selectedClass.id);
-                        onOpenChange(false);
-                      }}
-                    >
-                      수정
-                    </CapsuleButton>
-                    <CapsuleButton
-                      variant="danger"
-                      onClick={() => {
-                        if (onDelete) onDelete(selectedClass.id);
-                        onOpenChange(false);
-                      }}
-                    >
-                      삭제
-                    </CapsuleButton>
-                  </CapsuleButton.Group>
-                )}
+                <FooterButtonGroup>
+                  <LectureReviewButton
+                    type="button"
+                    onClick={handleLectureReviewClick}
+                  >
+                    강의평
+                  </LectureReviewButton>
+                  <SyllabusButton
+                    type="button"
+                    onClick={() => {
+                      navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                        state: {
+                          courseName: liveClass.name,
+                          professor: liveClass.professor,
+                        },
+                      });
+                      onOpenChange(false);
+                    }}
+                  >
+                    과목 상세
+                  </SyllabusButton>
+                </FooterButtonGroup>
               </FooterSection>
             </ContentArea>
           </SheetInner>
@@ -168,7 +297,7 @@ const StyledContent = styled(Drawer.Content)`
   outline: none;
 
   height: auto;
-  min-height: 55dvh;
+  min-height: 35dvh;
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
@@ -180,10 +309,10 @@ const StyledContent = styled(Drawer.Content)`
 const SheetInner = styled.div`
   background: var(--bg-base);
   width: 100%;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
   overflow: hidden;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 
   display: flex;
   flex-direction: column;
@@ -192,22 +321,24 @@ const SheetInner = styled.div`
 `;
 
 const DragHeader = styled.div`
-  height: 24px;
+  height: 20px;
+  padding: 16px 0;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-sizing: border-box;
 `;
 
 const HandleBar = styled.div`
-  width: 36px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--border-default);
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-default, #e5e8eb);
 `;
 
 const ContentArea = styled.div`
-  padding: 8px 20px 16px;
+  padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -220,7 +351,7 @@ const ScrollableBody = styled.div`
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   min-height: 0; /* flex item 높이 제한 해제 */
 
   /* 스크롤바 숨김 */
@@ -229,15 +360,6 @@ const ScrollableBody = styled.div`
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
-`;
-
-const HeaderSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 12px;
-
-  border-bottom: 2px solid var(--border-default);
 `;
 
 const TitleLine = styled.div`
@@ -256,14 +378,14 @@ const ColorDot = styled.div<{ $color: string }>`
 
 const ClassTitle = styled.h2`
   overflow: hidden;
-  color: var(--text-primary);
+  color: var(--text-secondary, #333d4b);
   text-overflow: ellipsis;
   margin: 0;
-
+  font-family: Pretendard, sans-serif;
   font-size: 20px;
   font-style: normal;
-  font-weight: 700;
-  line-height: 28px;
+  font-weight: 600;
+  line-height: 32px;
 `;
 
 const OwnerBadge = styled.span`
@@ -280,33 +402,17 @@ const OwnerBadge = styled.span`
   margin-left: 4px;
 `;
 
-const ScheduleList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-left: 20px;
-`;
-
-const ScheduleItem = styled.div`
-  color: var(--text-secondary);
-
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 16px;
-`;
-
 const InfoField = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border-bottom: 1px solid var(--border-default);
-  padding: 8px 12px;
+  gap: 2px;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  padding: 8px 20px;
 `;
 
 const FieldLabel = styled.span`
   overflow: hidden;
-  color: var(--text-tertiary);
+  color: var(--text-tertiary, #8b95a1);
   text-overflow: ellipsis;
   font-size: 12px;
   font-style: normal;
@@ -315,19 +421,243 @@ const FieldLabel = styled.span`
 `;
 
 const FieldValue = styled.span`
+  display: block;
   overflow: hidden;
-  color: var(--text-primary);
+  color: var(--text-secondary, #333d4b);
   text-overflow: ellipsis;
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
-  line-height: 24px;
+  line-height: 1.6;
 `;
 
 const FooterSection = styled.div`
-  padding-top: 16px;
+  padding-top: 48px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+`;
+
+const BaseFooterButton = styled.button`
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: Pretendard, sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const LectureReviewButton = styled(BaseFooterButton)`
+  border: 1px solid var(--border-warn-subtle, #fef3c7);
+  background: var(--bg-warn, #fffaeb);
+  color: var(--text-warn, #b58000);
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+    background: #fff4d1;
+  }
+`;
+
+const SyllabusButton = styled(BaseFooterButton)`
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand, #eff6ff);
+  color: var(--text-brand, #0061ff);
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+    background: #dfeeff;
+  }
+`;
+
+const ClassInfoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+`;
+
+const CourseHeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  padding-right: 8px;
+`;
+
+const HeaderMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const SubtitleLine = styled.div`
+  display: flex;
+  gap: 12px;
+  padding-left: 20px;
+  align-items: center;
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+`;
+
+const ProfessorName = styled.span`
+  color: var(--text-secondary, #333d4b);
+`;
+
+const CreditText = styled.span`
+  color: var(--text-tertiary, #8b95a1);
+`;
+
+const EvaluationText = styled.span`
+  color: var(--text-tertiary, #8b95a1);
+`;
+
+const DeleteButton = styled.button`
+  background: var(--bg-error, #fff0f0);
+  border: 1px solid var(--border-error-subtle, #ffd8d8);
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-error, #ff4d4f);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  margin-top: 4px;
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const EditButton = styled(DeleteButton)`
+  background: var(--bg-brand, #eff6ff);
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  color: var(--text-brand, #0061ff);
+  margin-right: 8px;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const DetailsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+  width: 100%;
+`;
+
+const DetailsTextRow = styled.div`
+  color: var(--text-tertiary, #8b95a1);
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+  white-space: pre-wrap;
+  word-break: break-word;
+`;
+
+const RoomRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+`;
+
+const RoomText = styled.span`
+  color: var(--text-tertiary, #8b95a1);
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+`;
+
+const RoomMapButton = styled.button`
+  background: var(--bg-muted, #f1f3f5);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 999px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #333d4b);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const FooterButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  width: 100%;
+`;
+
+const MemoEditContainer = styled.div`
+  width: 100%;
+  position: relative;
+`;
+
+const MemoHeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const MemoSaveLink = styled.button`
+  background: none;
+  border: none;
+  font-family: Pretendard, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-brand, #0061ff);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+
+  &:active {
+    opacity: 0.7;
+  }
+`;
+
+const SeamlessTextarea = styled.textarea`
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  resize: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary, #333d4b);
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
 `;

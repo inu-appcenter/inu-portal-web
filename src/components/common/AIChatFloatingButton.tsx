@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X } from "lucide-react";
-import useUserStore from "@/stores/useUserStore";
 import ChatBulButtonImg from "@/resources/assets/ai/챗불이버튼.webp";
 import TooltipMessage from "@/components/common/TooltipMessage";
 
@@ -12,9 +11,6 @@ const AIChatFloatingButton = () => {
     const stored = localStorage.getItem("showPortalAIChatTooltip");
     return stored !== "false";
   });
-
-  const { tokenInfo } = useUserStore();
-  const accessToken = tokenInfo.accessToken;
 
   useEffect(() => {
     if (isOpen) {
@@ -75,9 +71,7 @@ const AIChatFloatingButton = () => {
     },
   };
 
-  const isProd = import.meta.env.VITE_API_BASE_URL?.includes("portal.inuappcenter.kr") && !import.meta.env.VITE_API_BASE_URL?.includes("portal-dev");
-  const mode = isProd ? "prod" : "dev";
-  const iframeSrc = `https://inu-chat.inuappcenter.kr/?token=${accessToken || ""}&mode=${mode}&service=intip`;
+  const iframeSrc = `${import.meta.env.VITE_INUCHAT_URL}/?service=intip`;
 
   return (
     <>
@@ -96,7 +90,10 @@ const AIChatFloatingButton = () => {
               animate="visible"
               exit="exit"
             >
-              <FloatingCloseButton onClick={() => setIsOpen(false)} variants={itemVariants}>
+              <FloatingCloseButton
+                onClick={() => setIsOpen(false)}
+                variants={itemVariants}
+              >
                 <X size={20} />
               </FloatingCloseButton>
 

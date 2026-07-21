@@ -27,12 +27,20 @@ const MOCK_TIMETABLE_2024_2: ClassItem[] = [
   { id: 32, name: "선형대수학", room: "102호", day: 3, startTime: 9, endTime: 11 },
 ];
 
+export interface TimetableTheme {
+  colorTheme: "default" | "pastelWarm" | "pastelCool" | "monotone";
+  fontSize: "small" | "medium" | "large";
+  showRoom: boolean;
+  showProfessor: boolean;
+}
+
 export interface Timetable {
   id: number;
   name: string;
   semester: string;
   isRepresentative: boolean;
   events: ClassItem[];
+  theme?: TimetableTheme;
 }
 
 interface TimetableStore {
@@ -43,6 +51,10 @@ interface TimetableStore {
   setActiveTimetable: (id: number) => void;
   setRepresentative: (id: number) => void;
   addTimetable: (semester: string, name: string) => void;
+  renameTimetable: (id: number, name: string) => void;
+  deleteTimetable: (id: number) => void;
+  updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
+  updateTimetableEvents: (id: number, events: ClassItem[]) => void;
 }
 
 export const useTimetableStore = create<TimetableStore>((set) => ({
@@ -123,4 +135,42 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
         selectedSemester: semester,
       };
     }),
+  renameTimetable: (id, name) =>
+    set((state) => ({
+      timetables: state.timetables.map((t) =>
+        t.id === id ? { ...t, name } : t
+      ),
+    })),
+  deleteTimetable: (id) =>
+    set((state) => {
+      const remaining = state.timetables.filter((t) => t.id !== id);
+      
+      // If we deleted the active timetable, find a new active one
+      let newActiveId = state.activeTimetableId;
+      if (state.activeTimetableId === id) {
+        const sameSemester = remaining.filter((t) => t.semester === state.selectedSemester);
+        if (sameSemester.length > 0) {
+          newActiveId = sameSemester[0].id;
+        } else {
+          newActiveId = remaining.length > 0 ? remaining[0].id : null;
+        }
+      }
+      
+      return {
+        timetables: remaining,
+        activeTimetableId: newActiveId,
+      };
+    }),
+  updateTimetableTheme: (id, theme) =>
+    set((state) => ({
+      timetables: state.timetables.map((t) =>
+        t.id === id ? { ...t, theme } : t
+      ),
+    })),
+  updateTimetableEvents: (id, events) =>
+    set((state) => ({
+      timetables: state.timetables.map((t) =>
+        t.id === id ? { ...t, events } : t
+      ),
+    })),
 }));

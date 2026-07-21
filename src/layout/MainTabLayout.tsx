@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
-import MobileNav from "@/containers/mobile/common/MobileNav";
 import MobileBottomNav, { BOTTOM_NAV_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { useHeaderConfig } from "@/context/HeaderContext";
@@ -30,7 +29,8 @@ export default function MainTabLayout({
   const isHome =
     location.pathname === ROUTES.HOME ||
     location.pathname === ROUTES.MOBILE_HOME ||
-    location.pathname === "/";
+    location.pathname === "/" ||
+    location.pathname === ROUTES.HOME_V2;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,24 +49,8 @@ export default function MainTabLayout({
   const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader);
   const headerHeight = showHeader ? measuredHeaderHeight : 20;
 
-  const [isV2Mode, setIsV2Mode] = useState(false);
-
-  useEffect(() => {
-    if (location.pathname === ROUTES.HOME_V2) {
-      setIsV2Mode(true);
-    } else if (
-      location.pathname === ROUTES.HOME ||
-      location.pathname === ROUTES.MOBILE_HOME ||
-      location.pathname === "/"
-    ) {
-      setIsV2Mode(false);
-    }
-  }, [location.pathname]);
-
   const navHeight = showNav
-    ? isV2Mode
-      ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`
-      : "100px"
+    ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`
     : "40px";
 
   return (
@@ -75,7 +59,7 @@ export default function MainTabLayout({
       $isHome={isHome}
       $pageBgColor={pageBgColor}
       style={{
-        "--header-height": `${headerHeight}px`,
+        "--header-height": `${headerHeight + (isHome ? 0 : 12)}px`,
         "--nav-height": navHeight,
       } as React.CSSProperties}
     >
@@ -93,13 +77,13 @@ export default function MainTabLayout({
           />
         </HeaderFloating>
       )}
-      <ContentArea $isV2Home={location.pathname === ROUTES.HOME_V2}>
+      <ContentArea $isV2Home={isHome}>
         {outlet}
       </ContentArea>
 
       {showNav && (
-        <NavFloating $isHomeV2={isV2Mode}>
-          {isV2Mode ? <MobileBottomNav /> : <MobileNav />}
+        <NavFloating $isHomeV2={isHome}>
+          <MobileBottomNav />
         </NavFloating>
       )}
     </LayoutContainer>

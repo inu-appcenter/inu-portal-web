@@ -14,7 +14,6 @@ export default function MobileTimeTableVisibilityPage() {
     title: "시간표 공개 설정",
     hasback: true,
     immersive: true,
-    pageBgColor: "#ffffff",
   });
 
   const handleSave = () => {
@@ -63,7 +62,8 @@ export default function MobileTimeTableVisibilityPage() {
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: calc(var(--header-height, 56px) + 20px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 0px) + 120px);
+  padding: calc(var(--header-height, 56px) + 20px) ${MOBILE_PAGE_GUTTER}
+    calc(var(--nav-height, 0px) + 120px);
   box-sizing: border-box;
 `;
 

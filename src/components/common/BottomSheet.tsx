@@ -18,6 +18,8 @@ export interface BottomSheetProps {
   repositionInputs?: boolean;
   zIndex?: number;
   height?: string | number;
+  maxHeight?: string | number;
+  closeOnBack?: boolean;
 }
 
 export default function BottomSheet({
@@ -35,6 +37,8 @@ export default function BottomSheet({
   repositionInputs = false,
   zIndex,
   height,
+  maxHeight,
+  closeOnBack,
 }: BottomSheetProps) {
   // snapPoints가 존재하지만 외부에서 활성 스냅 포인트 상태가 주어지지 않은 경우 내부에서 상태 관리
   const [internalActiveSnapPoint, setInternalActiveSnapPoint] = useState<string | number | null>(
@@ -43,6 +47,37 @@ export default function BottomSheet({
 
   const activeSnapPoint = externalActiveSnapPoint !== undefined ? externalActiveSnapPoint : internalActiveSnapPoint;
   const setActiveSnapPoint = externalSetActiveSnapPoint || setInternalActiveSnapPoint;
+
+  const shouldCloseOnBack = closeOnBack !== undefined ? closeOnBack : (dismissible && modal);
+
+  // Hybrid-app friendly back button support
+  const hasPushStateRef = React.useRef(false);
+
+  useEffect(() => {
+    if (!onOpenChange || !shouldCloseOnBack) return;
+
+    if (open) {
+      window.history.pushState({ bottomSheetOpen: true }, "");
+      hasPushStateRef.current = true;
+    } else if (hasPushStateRef.current) {
+      window.history.back();
+      hasPushStateRef.current = false;
+    }
+  }, [open, onOpenChange, shouldCloseOnBack]);
+
+  useEffect(() => {
+    if (!open || !onOpenChange || !shouldCloseOnBack) return;
+
+    const handlePopState = () => {
+      hasPushStateRef.current = false;
+      onOpenChange(false);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [open, onOpenChange, shouldCloseOnBack]);
 
   useEffect(() => {
     if (open && snapPoints && snapPoints.length > 0 && externalActiveSnapPoint === undefined) {
@@ -82,6 +117,7 @@ export default function BottomSheet({
         <StyledContent
           $zIndex={zIndex}
           $height={height}
+          $maxHeight={maxHeight}
           onOpenAutoFocus={(e) => {
             if (!modal) e.preventDefault();
           }}
@@ -127,7 +163,11 @@ const StyledOverlay = styled(Drawer.Overlay)<{ $zIndex?: number }>`
   z-index: ${({ $zIndex }) => $zIndex ?? 999};
 `;
 
-const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $height?: string | number }>`
+const StyledContent = styled(Drawer.Content)<{
+  $zIndex?: number;
+  $height?: string | number;
+  $maxHeight?: string | number;
+}>`
   position: fixed;
   left: 0;
   right: 0;
@@ -135,8 +175,11 @@ const StyledContent = styled(Drawer.Content)<{ $zIndex?: number; $height?: strin
   z-index: ${({ $zIndex }) => $zIndex ?? 10000};
   outline: none;
 
-  height: ${({ $height }) => (typeof $height === "number" ? `${$height * 100}%` : $height ?? "100%")};
-  max-height: 96%;
+  height: ${({ $height }) => (typeof $height === "number" ? `${$height * 100}%` : $height ?? "auto")};
+  max-height: ${({ $maxHeight }) =>
+    typeof $maxHeight === "number"
+      ? `${$maxHeight * 100}%`
+      : ($maxHeight ?? "96%")};
   display: flex;
   flex-direction: column;
 
@@ -213,5 +256,11 @@ const ContentAreaBottomSheet = styled.div`
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 `;

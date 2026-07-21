@@ -48,12 +48,11 @@ const CardWrapper = styled.div<{ $selected: boolean }>`
     $selected
       ? css`
           border: 2px solid var(--border-brand, #0061ff);
-          background: var(--bg-brand-subtle, #eff6ff);
-          box-shadow: 0 4px 16px 0 rgba(59, 130, 246, 0.08);
+          background: var(--bg-brand, #eff6ff);
         `
       : css`
           border: 1px solid var(--border-default, #e5e8eb);
-          background: var(--bg-subtle, #f8f9fb);
+          background: var(--bg-base, #fff);
         `}
 
   &:active {

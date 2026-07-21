@@ -17,7 +17,7 @@ import useUserStore from "@/stores/useUserStore";
 
 const NAV_ITEMS = [
   {
-    to: ROUTES.HOME_V2,
+    to: ROUTES.HOME,
     icon: HomeIcon,
     label: "홈",
   },
@@ -105,19 +105,15 @@ export default function MobileBottomNav() {
 
   const getIndexByPath = (path: string) => {
     const index = NAV_ITEMS.findIndex((item) => {
-      if (item.to === ROUTES.HOME_V2) return path === ROUTES.HOME_V2;
+      if (item.to === ROUTES.HOME) {
+        return path === ROUTES.HOME || path === ROUTES.MOBILE_HOME || path === ROUTES.ROOT || path === ROUTES.HOME_V2;
+      }
       return path === item.to || path.startsWith(item.to);
     });
     return index === -1 ? 0 : index;
   };
 
-  const [activeIndex, setActiveIndex] = useState(() =>
-    getIndexByPath(location.pathname),
-  );
-
-  useEffect(() => {
-    setActiveIndex(getIndexByPath(location.pathname));
-  }, [location.pathname]);
+  const activeIndex = getIndexByPath(location.pathname);
 
   // 컨테이너 크기 동적 감지
   useEffect(() => {
@@ -224,13 +220,23 @@ export default function MobileBottomNav() {
         </svg>
       </NavShadowWrapper>
 
-      <NavBackground
-        style={{
-          clipPath: `path("${pathD}")`,
-        }}
-        animate={{ clipPath: `path("${pathD}")` }}
-        transition={{ type: "spring", stiffness: 260, damping: 28 }}
-      />
+      <NavBackground aria-hidden="true">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <motion.path
+            initial={false}
+            d={pathD}
+            fill="rgba(255, 255, 255, 0.82)"
+            animate={{ d: pathD }}
+            transition={{ type: "spring", stiffness: 260, damping: 28 }}
+          />
+        </svg>
+      </NavBackground>
 
       {/* 글래스모피즘 테두리 하이라이트 효과 */}
       <GlassBorderWrapper>
@@ -322,14 +328,15 @@ const NavShadowWrapper = styled.div`
   pointer-events: none;
 `;
 
-const NavBackground = styled(motion.div)`
+const NavBackground = styled.div`
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.5);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
   pointer-events: none;
+
+  svg {
+    display: block;
+  }
 `;
 
 const GlassBorderWrapper = styled.div`

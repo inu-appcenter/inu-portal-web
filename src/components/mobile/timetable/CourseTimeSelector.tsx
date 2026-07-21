@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Plus, Minus } from "lucide-react";
-import DayChip from "@/components/common/DayChip";
+import DayChip, { DayChipProps } from "@/components/common/DayChip";
 
 export interface CourseTimeSlot {
   id: string;
@@ -66,11 +66,11 @@ const CourseTimeSelector = ({
         <ActionButtons>
           {totalSlots > 1 && (
             <IconButton onClick={onRemove} type="button">
-              <Minus size={16} color="#8b95a1" strokeWidth={2.5} />
+              <Minus size={20} color="#8b95a1" strokeWidth={2.5} />
             </IconButton>
           )}
           <IconButton onClick={onAdd} type="button">
-            <Plus size={16} color="#8b95a1" strokeWidth={2.5} />
+            <Plus size={20} color="#8b95a1" strokeWidth={2.5} />
           </IconButton>
         </ActionButtons>
       </SelectorHeader>
@@ -79,7 +79,7 @@ const CourseTimeSelector = ({
         {DAYS.map((dayName, dayIndex) => {
           const isSelected = slot.day === dayIndex;
           return (
-            <DayChip
+            <StyledDayChip
               key={dayName}
               label={dayName}
               isSelected={isSelected}
@@ -135,10 +135,17 @@ const SelectorHeader = styled.div`
 `;
 
 const Title = styled.h3`
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--gray-800, #333d4b);
+  color: var(--gray-600, #6b7684);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
   margin: 0;
+  margin-left: 4px;
+  height: 40px;
+  display: flex;
+  align-items: center;
 `;
 
 const ActionButtons = styled.div`
@@ -149,10 +156,10 @@ const ActionButtons = styled.div`
 
 const IconButton = styled.button`
   background: transparent;
-  border: 1px solid var(--gray-300, #d1d6db);
-  border-radius: 6px;
-  width: 24px;
-  height: 24px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,9 +168,32 @@ const IconButton = styled.button`
   transition: all 0.2s ease;
 
   &:active {
-    background-color: var(--gray-100, #f1f3f5);
-    border-color: var(--gray-400, #b0b8c1);
+    background-color: var(--bg-muted, #f8f9fb);
   }
+`;
+
+const StyledDayChip = styled(({ isSelected, ...props }: DayChipProps) => <DayChip isSelected={isSelected} {...props} />)<{ isSelected: boolean }>`
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 12px 16px;
+  height: auto;
+  border-radius: 999px;
+
+  /* 비선택 상태 */
+  background-color: var(--bg-base, white) !important;
+  color: var(--text-primary, #333d4b) !important;
+  border: 1px solid var(--border-default, #e5e8eb) !important;
+
+  /* 선택 상태 */
+  ${({ isSelected }) =>
+    isSelected &&
+    `
+      background-color: var(--interactive-primary, #3b82f6) !important;
+      border: 1px solid var(--interactive-primary, #3b82f6) !important;
+      color: white !important;
+    `}
 `;
 
 const DayChipContainer = styled.div`
@@ -189,27 +219,30 @@ const TimePickerField = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--gray-50, #f8f9fb);
-  border: 1px solid var(--gray-200, #e5e8eb);
+  background-color: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
   border-radius: var(--radius-lg, 12px);
-  padding: 8px 16px;
-  height: 56px;
+  padding: 8px 12px;
+  height: 58px;
   box-sizing: border-box;
   justify-content: center;
   cursor: pointer;
 `;
 
 const TimePickerLabel = styled.span`
-  font-size: 11px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--text-tertiary, #8b95a1);
   margin-bottom: 2px;
   text-align: left;
 `;
 
 const TimePickerDisplay = styled.span`
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--gray-800, #333d4b);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #333d4b);
   text-align: left;
 `;
 

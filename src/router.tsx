@@ -6,11 +6,11 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 // Layouts
 import RootLayout from "@/layout/RootLayout";
 import MainTabLayout from "@/layout/MainTabLayout";
+import FullscreenSubLayout from "@/layout/FullscreenSubLayout";
 import SubLayout from "@/layout/SubLayout";
 import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
 // Pages (Imports 생략 - 기존과 동일)
-import MobileHomePage from "@/pages/mobile/MobileHomePage";
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
@@ -89,9 +89,9 @@ export const router = createBrowserRouter([
       {
         element: <MainTabLayout showNav={true} showHeader={true} />,
         children: [
-          { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
-          { path: ROUTES.HOME, element: <MobileHomePage /> },
-          { path: ROUTES.HOME_V2, element: <MobileHomePageV2 /> },
+          { path: "", element: <MobileHomePageV2 /> },
+          { path: ROUTES.HOME, element: <MobileHomePageV2 /> },
+          { path: ROUTES.HOME_V2, element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
           { path: ROUTES.CHAT.LIST, element: <MobileChatListPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
@@ -107,8 +107,8 @@ export const router = createBrowserRouter([
         path: ROUTES.MOBILE_ROOT, // "/m"
         element: <MainTabLayout showNav={true} showHeader={true} />,
         children: [
-          { path: "", element: <Navigate to={ROUTES.MOBILE_HOME} replace /> },
-          { path: "home", element: <MobileHomePage /> },
+          { path: "", element: <MobileHomePageV2 /> },
+          { path: "home", element: <MobileHomePageV2 /> },
           { path: "bus", element: <MobileBusPage /> },
           { path: "chat/list", element: <MobileChatListPage /> },
           { path: "save", element: <MobileSavePage /> },
@@ -136,7 +136,6 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.COMPARE, element: <MobileTimeTableComparePage /> },
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
-          { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
           { path: ROUTES.TIMETABLE.FILTER, element: <MobileCourseFilterPage /> },
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
@@ -287,6 +286,12 @@ export const router = createBrowserRouter([
           { path: ROUTES.BUS.INFO_MAP, element: <MobileBusMapPage /> },
         ],
       },
+      {
+        element: <FullscreenSubLayout backgroundColor="#ffffff" />,
+        children: [
+          { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
+        ],
+      },
     ],
   },
 ]);
@@ -340,9 +345,21 @@ if (typeof window !== "undefined") {
 
     const path = getPathname(to);
     const isTabNavigation = opts?.state?.isTabNavigation === true;
+    
+    // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅이거나 빈 이동인지 확인
+    const isHashOrSearchOnly =
+      to === "" ||
+      (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
+      (typeof to === "object" && to !== null && !to.pathname);
 
     // 2. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
-    if (supportsMultiWebView() && !isMainTabPath(path) && !isTabNavigation && !opts?.replace) {
+    if (
+      supportsMultiWebView() &&
+      !isMainTabPath(path) &&
+      !isTabNavigation &&
+      !opts?.replace &&
+      !isHashOrSearchOnly
+    ) {
       const fullPath = typeof to === "string"
         ? to
         : `${to.pathname || ""}${to.search || ""}${to.hash || ""}`;
