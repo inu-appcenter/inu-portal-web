@@ -9,6 +9,7 @@ import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import TimeTableCreateModal, {
   TIMETABLE_SEMESTERS,
 } from "@/components/mobile/timetable/TimeTableCreateModal";
+import { useTimeTables } from "@/hooks/useTimeTables";
 
 // Icons
 const PlusIcon = () => (
@@ -33,6 +34,9 @@ const getTimetableCredits = (events: ClassItem[]) =>
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
   const { timetables, setSemester, setActiveTimetable, setRepresentative } = useTimetableStore();
+
+  // 서버 시간표 목록 조회 및 스토어 동기화
+  useTimeTables();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalSemester, setAddModalSemester] = useState(TIMETABLE_SEMESTERS[0]);
