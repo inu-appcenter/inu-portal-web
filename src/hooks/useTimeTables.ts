@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  createTimeTable,
   getTimeTables,
   getTimeTablesBySemester,
   getTimeTableDetail,
@@ -61,6 +62,23 @@ export const useTimeTableDetail = (timeTableId?: number | null) => {
     ...query,
     detail: query.data ?? null,
   };
+};
+
+export const useCreateTimeTable = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      semesterId,
+      timeTableName,
+    }: {
+      semesterId: number;
+      timeTableName: string;
+    }) => createTimeTable(semesterId, timeTableName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    },
+  });
 };
 
 export const useSemesterTimeTables = (semesterId?: number) => {

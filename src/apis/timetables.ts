@@ -32,6 +32,20 @@ export const getTimeTablesBySemester = async (
 };
 
 /**
+ * 시간표 생성 (해당 학기의 첫 시간표이면 대표 시간표로 생성됨)
+ */
+export const createTimeTable = async (
+  semesterId: number,
+  timeTableName: string,
+): Promise<TimeTable> => {
+  const response = await tokenInstance.post<ApiResponse<TimeTable>>(
+    `/api/timetables/semesters/${semesterId}`,
+    { timeTableName },
+  );
+  return response.data.data;
+};
+
+/**
  * 시간표 상세 조회 (시간표 기본 정보 + 포함된 모든 요소)
  */
 export const getTimeTableDetail = async (
