@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getTimeTables } from "@/apis/timetables";
+import { getTimeTables, getTimeTablesBySemester } from "@/apis/timetables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import type { Term } from "@/types/timetables";
 
@@ -22,6 +22,21 @@ export const useTimeTables = (year?: number, term?: Term) => {
       setTimetables(query.data);
     }
   }, [query.data, setTimetables]);
+
+  return {
+    ...query,
+    timeTables: query.data ?? [],
+  };
+};
+
+export const useSemesterTimeTables = (semesterId?: number) => {
+  const query = useQuery({
+    queryKey: [...TIMETABLES_QUERY_KEY, "semester", semesterId],
+    queryFn: () => getTimeTablesBySemester(semesterId!),
+    enabled: semesterId !== undefined,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+  });
 
   return {
     ...query,

@@ -18,3 +18,15 @@ export const getTimeTables = async (
   );
   return response.data.data ?? [];
 };
+
+/**
+ * 학기별 시간표 조회
+ */
+export const getTimeTablesBySemester = async (
+  semesterId: number,
+): Promise<TimeTable[]> => {
+  const response = await tokenInstance.get<ApiResponse<TimeTable[]>>(
+    `/api/timetables/semesters/${semesterId}`,
+  );
+  return response.data.data ?? [];
+};
