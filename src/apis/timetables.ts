@@ -1,6 +1,11 @@
 import tokenInstance from "@/apis/tokenInstance";
 import type { ApiResponse } from "@/types/common";
-import type { Term, TimeTable, TimeTableDetail } from "@/types/timetables";
+import type {
+  Term,
+  TimeTable,
+  TimeTableDetail,
+  TimeTableVisibility,
+} from "@/types/timetables";
 
 /**
  * 시간표 조회 (year, term을 함께 보내면 해당 년도/학기만, 생략하면 전체 조회)
@@ -55,6 +60,20 @@ export const updateTimeTableName = async (
   const response = await tokenInstance.patch<ApiResponse<TimeTable>>(
     `/api/timetables/${timeTableId}/timeTableName`,
     { timeTableName },
+  );
+  return response.data.data;
+};
+
+/**
+ * 시간표 공개범위 수정
+ */
+export const updateTimeTableVisibility = async (
+  timeTableId: number,
+  visibility: TimeTableVisibility,
+): Promise<TimeTable> => {
+  const response = await tokenInstance.patch<ApiResponse<TimeTable>>(
+    `/api/timetables/${timeTableId}/visibility`,
+    { visibility },
   );
   return response.data.data;
 };

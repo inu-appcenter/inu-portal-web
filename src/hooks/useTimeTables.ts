@@ -6,10 +6,11 @@ import {
   getTimeTablesBySemester,
   getTimeTableDetail,
   updateTimeTableName,
+  updateTimeTableVisibility,
 } from "@/apis/timetables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
-import type { Term } from "@/types/timetables";
+import type { Term, TimeTableVisibility } from "@/types/timetables";
 
 export const TIMETABLES_QUERY_KEY = ["timetables"] as const;
 
@@ -93,6 +94,23 @@ export const useUpdateTimeTableName = () => {
       timeTableId: number;
       timeTableName: string;
     }) => updateTimeTableName(timeTableId, timeTableName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    },
+  });
+};
+
+export const useUpdateTimeTableVisibility = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      timeTableId,
+      visibility,
+    }: {
+      timeTableId: number;
+      visibility: TimeTableVisibility;
+    }) => updateTimeTableVisibility(timeTableId, visibility),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
     },

@@ -1,14 +1,44 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import OptionCard from "@/components/mobile/common/OptionCard";
 import CapsuleButton from "@/components/common/CapsuleButton";
-
-type VisibilityType = "PUBLIC" | "FRIENDS" | "PRIVATE";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import {
+  useTimeTables,
+  useUpdateTimeTableVisibility,
+} from "@/hooks/useTimeTables";
+import type { TimeTableVisibility } from "@/types/timetables";
 
 export default function MobileTimeTableVisibilityPage() {
-  const [visibility, setVisibility] = useState<VisibilityType>("FRIENDS");
+  const navigate = useNavigate();
+  const [visibility, setVisibility] = useState<TimeTableVisibility>("PROTECTED");
+
+  const { selectedSemester, activeTimetableId, timetables } =
+    useTimetableStore();
+
+  // 새로고침 등 직접 진입 시에도 시간표 목록을 확보
+  useTimeTables();
+  const updateVisibilityMutation = useUpdateTimeTableVisibility();
+
+  const activeTimetable = useMemo(() => {
+    const list = timetables.filter((t) => t.semester === selectedSemester);
+    if (list.length === 0) return null;
+    return (
+      list.find((t) => t.id === activeTimetableId) ||
+      list.find((t) => t.isRepresentative) ||
+      list[0]
+    );
+  }, [timetables, selectedSemester, activeTimetableId]);
+
+  // 현재 시간표의 공개범위로 초기화
+  useEffect(() => {
+    if (activeTimetable) {
+      setVisibility(activeTimetable.visibility);
+    }
+  }, [activeTimetable]);
 
   useHeader({
     title: "시간표 공개 설정",
@@ -17,7 +47,21 @@ export default function MobileTimeTableVisibilityPage() {
   });
 
   const handleSave = () => {
-    alert(`공개 범위가 [${visibility}] 상태로 저장되었습니다.`);
+    if (!activeTimetable) return;
+
+    updateVisibilityMutation.mutate(
+      { timeTableId: activeTimetable.id, visibility },
+      {
+        onSuccess: () => {
+          navigate(-1);
+        },
+        onError: (error: any) => {
+          alert(
+            error.response?.data?.msg || "공개 범위 변경에 실패했습니다.",
+          );
+        },
+      },
+    );
   };
 
   return (
@@ -32,10 +76,10 @@ export default function MobileTimeTableVisibilityPage() {
           onClick={() => setVisibility("PUBLIC")}
         />
         <OptionCard
-          selected={visibility === "FRIENDS"}
+          selected={visibility === "PROTECTED"}
           title="친구에게 공개"
           description="내 친구들이 내 시간표를 볼 수 있어요."
-          onClick={() => setVisibility("FRIENDS")}
+          onClick={() => setVisibility("PROTECTED")}
         />
         <OptionCard
           selected={visibility === "PRIVATE"}
@@ -50,6 +94,7 @@ export default function MobileTimeTableVisibilityPage() {
           variant="primary"
           fullWidth
           onClick={handleSave}
+          disabled={!activeTimetable || updateVisibilityMutation.isPending}
           style={{ boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.16)" }}
         >
           저장하기
