@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSemesters } from "@/apis/semesters";
 import { sortSemestersDesc } from "@/utils/semester";
@@ -12,8 +13,11 @@ export const useSemesters = () => {
     gcTime: 1000 * 60 * 60 * 24,
   });
 
-  // 최신 학기가 먼저 오도록 정렬
-  const semesters = sortSemestersDesc(query.data ?? []);
+  // 최신 학기가 먼저 오도록 정렬 (참조 안정성을 위해 메모이즈)
+  const semesters = useMemo(
+    () => sortSemestersDesc(query.data ?? []),
+    [query.data],
+  );
 
   return {
     ...query,
