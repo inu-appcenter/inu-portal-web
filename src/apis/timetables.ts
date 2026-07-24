@@ -79,6 +79,18 @@ export const updateTimeTableVisibility = async (
 };
 
 /**
+ * 대표 시간표 변경 (해당 학기의 대표 시간표로 설정)
+ */
+export const updateTimeTablePrimary = async (
+  timeTableId: number,
+): Promise<TimeTable> => {
+  const response = await tokenInstance.patch<ApiResponse<TimeTable>>(
+    `/api/timetables/${timeTableId}/isPrimary`,
+  );
+  return response.data.data;
+};
+
+/**
  * 시간표 상세 조회 (시간표 기본 정보 + 포함된 모든 요소)
  */
 export const getTimeTableDetail = async (

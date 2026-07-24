@@ -6,6 +6,7 @@ import {
   getTimeTablesBySemester,
   getTimeTableDetail,
   updateTimeTableName,
+  updateTimeTablePrimary,
   updateTimeTableVisibility,
 } from "@/apis/timetables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
@@ -111,6 +112,17 @@ export const useUpdateTimeTableVisibility = () => {
       timeTableId: number;
       visibility: TimeTableVisibility;
     }) => updateTimeTableVisibility(timeTableId, visibility),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    },
+  });
+};
+
+export const useUpdateTimeTablePrimary = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (timeTableId: number) => updateTimeTablePrimary(timeTableId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
     },
