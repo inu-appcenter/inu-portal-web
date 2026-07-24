@@ -6,10 +6,10 @@ import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-import TimeTableCreateModal, {
-  TIMETABLE_SEMESTERS,
-} from "@/components/mobile/timetable/TimeTableCreateModal";
+import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 import { useTimeTables } from "@/hooks/useTimeTables";
+import { useSemesters } from "@/hooks/useSemesters";
+import { formatSemester } from "@/utils/semester";
 
 // Icons
 const PlusIcon = () => (
@@ -37,11 +37,15 @@ export default function MobileTimeTableListPage() {
 
   // 서버 시간표 목록 조회 및 스토어 동기화
   useTimeTables();
+  const { semesters: serverSemesters } = useSemesters();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addModalSemester, setAddModalSemester] = useState(TIMETABLE_SEMESTERS[0]);
+  const [addModalSemester, setAddModalSemester] = useState("");
 
-  const semesters = TIMETABLE_SEMESTERS;
+  const semesters = useMemo(
+    () => serverSemesters.map((s) => formatSemester(s.year, s.term)),
+    [serverSemesters],
+  );
 
   const openAddModal = useCallback((semester: string) => {
     setAddModalSemester(semester);
@@ -49,6 +53,7 @@ export default function MobileTimeTableListPage() {
   }, []);
 
   const handleAddClick = useCallback(() => {
+    if (semesters.length === 0) return;
     openAddModal(semesters[0]);
   }, [openAddModal, semesters]);
 
