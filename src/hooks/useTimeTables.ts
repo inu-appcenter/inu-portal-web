@@ -5,6 +5,7 @@ import {
   getTimeTables,
   getTimeTablesBySemester,
   getTimeTableDetail,
+  updateTimeTableName,
 } from "@/apis/timetables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
@@ -75,6 +76,23 @@ export const useCreateTimeTable = () => {
       semesterId: number;
       timeTableName: string;
     }) => createTimeTable(semesterId, timeTableName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    },
+  });
+};
+
+export const useUpdateTimeTableName = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      timeTableId,
+      timeTableName,
+    }: {
+      timeTableId: number;
+      timeTableName: string;
+    }) => updateTimeTableName(timeTableId, timeTableName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
     },

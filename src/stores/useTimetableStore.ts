@@ -32,7 +32,6 @@ interface TimetableStore {
   setTimetables: (serverTimetables: TimeTable[]) => void;
   // TODO(#202): 아래 로컬 뮤테이터는 각 API 연동 완료 시 제거
   setRepresentative: (id: number) => void;
-  renameTimetable: (id: number, name: string) => void;
   deleteTimetable: (id: number) => void;
   updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
   updateTimetableEvents: (id: number, events: ClassItem[]) => void;
@@ -96,12 +95,6 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
       });
       return { timetables: updated };
     }),
-  renameTimetable: (id, name) =>
-    set((state) => ({
-      timetables: state.timetables.map((t) =>
-        t.id === id ? { ...t, name } : t
-      ),
-    })),
   deleteTimetable: (id) =>
     set((state) => {
       const remaining = state.timetables.filter((t) => t.id !== id);

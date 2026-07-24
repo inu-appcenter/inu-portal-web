@@ -8,7 +8,11 @@ import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import { useTimeTables, useTimeTableDetail } from "@/hooks/useTimeTables";
+import {
+  useTimeTables,
+  useTimeTableDetail,
+  useUpdateTimeTableName,
+} from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
@@ -362,12 +366,12 @@ const MobileTimeTablePage = () => {
     selectedSemester,
     activeTimetableId,
     timetables,
-    renameTimetable,
     deleteTimetable,
   } = useTimetableStore();
 
   // 서버 시간표 목록 조회 및 스토어 동기화
   useTimeTables();
+  const updateNameMutation = useUpdateTimeTableName();
 
   // Find active timetable for the selected semester
   const activeTimetable = useMemo(() => {
@@ -466,7 +470,6 @@ const MobileTimeTablePage = () => {
     ];
   }, [
     activeTimetable,
-    renameTimetable,
     deleteTimetable,
     navigate,
     setIsRenameModalOpen,
@@ -510,12 +513,26 @@ const MobileTimeTablePage = () => {
               text: "변경",
               variant: "brand",
               onClick: () => {
-                if (renameInputVal.trim()) {
-                  renameTimetable(activeTimetable.id, renameInputVal.trim());
-                  setIsRenameModalOpen(false);
-                }
+                if (!renameInputVal.trim()) return;
+                updateNameMutation.mutate(
+                  {
+                    timeTableId: activeTimetable.id,
+                    timeTableName: renameInputVal.trim(),
+                  },
+                  {
+                    onSuccess: () => {
+                      setIsRenameModalOpen(false);
+                    },
+                    onError: (error: any) => {
+                      alert(
+                        error.response?.data?.msg ||
+                          "시간표 이름 변경에 실패했습니다.",
+                      );
+                    },
+                  },
+                );
               },
-              disabled: !renameInputVal.trim(),
+              disabled: !renameInputVal.trim() || updateNameMutation.isPending,
             }}
             secondaryButton={{
               text: "취소",
