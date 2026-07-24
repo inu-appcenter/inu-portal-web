@@ -12,6 +12,7 @@ import {
   useTimeTables,
   useTimeTableDetail,
   useUpdateTimeTableName,
+  useDeleteTimeTable,
 } from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
@@ -362,16 +363,13 @@ const MobileTimeTablePage = () => {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const {
-    selectedSemester,
-    activeTimetableId,
-    timetables,
-    deleteTimetable,
-  } = useTimetableStore();
+  const { selectedSemester, activeTimetableId, timetables } =
+    useTimetableStore();
 
   // 서버 시간표 목록 조회 및 스토어 동기화
   useTimeTables();
   const updateNameMutation = useUpdateTimeTableName();
+  const deleteMutation = useDeleteTimeTable();
 
   // Find active timetable for the selected semester
   const activeTimetable = useMemo(() => {
@@ -470,7 +468,6 @@ const MobileTimeTablePage = () => {
     ];
   }, [
     activeTimetable,
-    deleteTimetable,
     navigate,
     setIsRenameModalOpen,
     setRenameInputVal,
@@ -556,8 +553,18 @@ const MobileTimeTablePage = () => {
               text: "삭제",
               variant: "danger",
               onClick: () => {
-                deleteTimetable(activeTimetable.id);
-                setIsDeleteModalOpen(false);
+                if (deleteMutation.isPending) return;
+                deleteMutation.mutate(activeTimetable.id, {
+                  onSuccess: () => {
+                    setIsDeleteModalOpen(false);
+                  },
+                  onError: (error: any) => {
+                    alert(
+                      error.response?.data?.msg ||
+                        "시간표 삭제에 실패했습니다.",
+                    );
+                  },
+                });
               },
             }}
             secondaryButton={{

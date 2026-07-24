@@ -30,8 +30,6 @@ interface TimetableStore {
   setSemester: (semester: string) => void;
   setActiveTimetable: (id: number) => void;
   setTimetables: (serverTimetables: TimeTable[]) => void;
-  // TODO(#202): 아래 로컬 뮤테이터는 각 API 연동 완료 시 제거
-  deleteTimetable: (id: number) => void;
   updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
   updateTimetableEvents: (id: number, events: ClassItem[]) => void;
 }
@@ -81,28 +79,6 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
       }
 
       return { timetables, selectedSemester, activeTimetableId };
-    }),
-  deleteTimetable: (id) =>
-    set((state) => {
-      const remaining = state.timetables.filter((t) => t.id !== id);
-
-      // If we deleted the active timetable, find a new active one
-      let newActiveId = state.activeTimetableId;
-      if (state.activeTimetableId === id) {
-        const sameSemester = remaining.filter(
-          (t) => t.semester === state.selectedSemester,
-        );
-        if (sameSemester.length > 0) {
-          newActiveId = sameSemester[0].id;
-        } else {
-          newActiveId = remaining.length > 0 ? remaining[0].id : null;
-        }
-      }
-
-      return {
-        timetables: remaining,
-        activeTimetableId: newActiveId,
-      };
     }),
   updateTimetableTheme: (id, theme) =>
     set((state) => ({

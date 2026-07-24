@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createTimeTable,
+  deleteTimeTable,
   getTimeTables,
   getTimeTablesBySemester,
   getTimeTableDetail,
@@ -123,6 +124,17 @@ export const useUpdateTimeTablePrimary = () => {
 
   return useMutation({
     mutationFn: (timeTableId: number) => updateTimeTablePrimary(timeTableId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    },
+  });
+};
+
+export const useDeleteTimeTable = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (timeTableId: number) => deleteTimeTable(timeTableId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
     },

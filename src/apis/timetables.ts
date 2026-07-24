@@ -91,6 +91,16 @@ export const updateTimeTablePrimary = async (
 };
 
 /**
+ * 시간표 삭제
+ */
+export const deleteTimeTable = async (timeTableId: number): Promise<number> => {
+  const response = await tokenInstance.delete<ApiResponse<number>>(
+    `/api/timetables/${timeTableId}`,
+  );
+  return response.data.data;
+};
+
+/**
  * 시간표 상세 조회 (시간표 기본 정보 + 포함된 모든 요소)
  */
 export const getTimeTableDetail = async (
