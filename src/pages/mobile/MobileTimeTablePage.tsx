@@ -8,7 +8,7 @@ import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import { useTimeTables } from "@/hooks/useTimeTables";
+import { useTimeTables, useTimeTableDetail } from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
@@ -379,6 +379,9 @@ const MobileTimeTablePage = () => {
       list[0]
     );
   }, [timetables, selectedSemester, activeTimetableId]);
+
+  // 활성 시간표의 상세(요소 포함) 조회 및 그리드 이벤트 동기화
+  useTimeTableDetail(activeTimetable?.id);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
   const appEnvironment = getAppEnvironmentStatus();

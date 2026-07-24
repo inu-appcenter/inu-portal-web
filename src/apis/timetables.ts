@@ -1,6 +1,6 @@
 import tokenInstance from "@/apis/tokenInstance";
 import type { ApiResponse } from "@/types/common";
-import type { Term, TimeTable } from "@/types/timetables";
+import type { Term, TimeTable, TimeTableDetail } from "@/types/timetables";
 
 /**
  * 시간표 조회 (year, term을 함께 보내면 해당 년도/학기만, 생략하면 전체 조회)
@@ -29,4 +29,16 @@ export const getTimeTablesBySemester = async (
     `/api/timetables/semesters/${semesterId}`,
   );
   return response.data.data ?? [];
+};
+
+/**
+ * 시간표 상세 조회 (시간표 기본 정보 + 포함된 모든 요소)
+ */
+export const getTimeTableDetail = async (
+  timeTableId: number,
+): Promise<TimeTableDetail> => {
+  const response = await tokenInstance.get<ApiResponse<TimeTableDetail>>(
+    `/api/timetables/${timeTableId}`,
+  );
+  return response.data.data;
 };
