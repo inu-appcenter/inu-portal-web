@@ -1,9 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import TimetableGrid, {
-  ClassItem,
-} from "@/components/mobile/timetable/TimetableGrid";
+import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
 import MobileCourseSearchSheet, {
   CourseResult,
   COURSE_SEARCH_SNAP_POINTS,
@@ -13,6 +11,10 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { Course } from "@/types/courses";
+import {
+  useCreateTimeTableCourseItem,
+  useTimeTableDetail,
+} from "@/hooks/useTimeTables";
 
 // 서버 강의 데이터에는 아직 room/day/startTime/endTime/professor 등 시간표 배치 정보가 없어
 // 검색 시트가 요구하는 CourseResult 형태로 임시 매핑한다.
@@ -30,7 +32,6 @@ const mapCourseToCourseResult = (course: Course): CourseResult => ({
   enrolledCount: 0,
   schedules: [],
 });
-import Modal from "@/components/common/Modal";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 
 // --- SVG Icons from Figma ---
@@ -170,70 +171,35 @@ const MobileTimeTableEditPage = () => {
   }, [timetables, activeTimetableId]);
   const timetable = activeTimetable?.events || [];
 
+  // 상세 조회로 서버 요소를 스토어에 동기화 (뮤테이션 성공 시 invalidate로 재조회됨)
+  useTimeTableDetail(activeTimetableId);
+
+  const createCourseItemMutation = useCreateTimeTableCourseItem();
+
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [snap, setSnap] = useState<string | number | null>(
     COURSE_SEARCH_SNAP_POINTS[1],
   );
   const [isSheetOpen, setIsSheetOpen] = useState(true);
 
-  // 모달 및 과목 교체 상태 관리
-  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
-  const [overlappingCourse, setOverlappingCourse] = useState<ClassItem | null>(
-    null,
-  );
-  const [pendingCourse, setPendingCourse] = useState<CourseResult | null>(null);
-
   const handleAddCourse = (newCourse: CourseResult) => {
-    const isOverlapping = (a: ClassItem, b: ClassItem) => {
-      if (a.day !== b.day) return false;
-      return a.startTime < b.endTime && b.startTime < a.endTime;
-    };
-
-    const enrichedSchedules = newCourse.schedules.map((schedule) => ({
-      ...schedule,
-      professor: newCourse.professor,
-      credits: newCourse.credits,
-      grade: String(newCourse.grade),
-      courseType: newCourse.isMajor ? "전공심화" : "교양",
-      evaluation: newCourse.remarks?.includes("상대평가") ? "상대평가" : "절대평가",
-      courseId: newCourse.courseId,
-    }));
-
-    let conflictItem: ClassItem | null = null;
-    for (const newSlot of enrichedSchedules) {
-      for (const existingSlot of timetable) {
-        if (isOverlapping(newSlot, existingSlot)) {
-          conflictItem = existingSlot;
-          break;
-        }
-      }
-      if (conflictItem) break;
-    }
-
-    if (conflictItem) {
-      setOverlappingCourse(conflictItem);
-      setPendingCourse({ ...newCourse, schedules: enrichedSchedules });
-      setIsConflictModalOpen(true);
-    } else {
-      if (activeTimetableId !== null) {
-        updateTimetableEvents(activeTimetableId, [
-          ...timetable,
-          ...enrichedSchedules,
-        ]);
-      }
-    }
-  };
-
-  const handleReplaceCourse = () => {
-    if (!overlappingCourse || !pendingCourse || activeTimetableId === null)
+    if (activeTimetableId === null) {
+      alert("활성화된 시간표가 없습니다.");
       return;
-    updateTimetableEvents(activeTimetableId, [
-      ...timetable.filter((item) => item.id !== overlappingCourse.id),
-      ...pendingCourse.schedules,
-    ]);
-    setIsConflictModalOpen(false);
-    setOverlappingCourse(null);
-    setPendingCourse(null);
+    }
+    if (createCourseItemMutation.isPending) return;
+
+    createCourseItemMutation.mutate(
+      {
+        timeTableId: activeTimetableId,
+        body: { courseOfferingId: newCourse.id },
+      },
+      {
+        onError: (error: any) => {
+          alert(error.response?.data?.msg || "강의 추가에 실패했습니다.");
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -350,22 +316,6 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
-      />
-
-      {/* 시간표 충돌 모달 */}
-      <Modal
-        isOpen={isConflictModalOpen}
-        onClose={() => setIsConflictModalOpen(false)}
-        title="시간이 겹쳐요"
-        description={`${overlappingCourse?.name}와(과) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`}
-        primaryButton={{
-          text: "교체하기",
-          onClick: handleReplaceCourse,
-        }}
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setIsConflictModalOpen(false),
-        }}
       />
     </PageWrapper>
   );

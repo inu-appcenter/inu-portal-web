@@ -3,7 +3,9 @@ import type { ApiResponse } from "@/types/common";
 import type {
   Term,
   TimeTable,
+  TimeTableCourseItemRequest,
   TimeTableDetail,
+  TimeTableItemSummary,
   TimeTableVisibility,
 } from "@/types/timetables";
 
@@ -96,6 +98,20 @@ export const updateTimeTablePrimary = async (
 export const deleteTimeTable = async (timeTableId: number): Promise<number> => {
   const response = await tokenInstance.delete<ApiResponse<number>>(
     `/api/timetables/${timeTableId}`,
+  );
+  return response.data.data;
+};
+
+/**
+ * 강의 시간표 요소 생성
+ */
+export const createTimeTableCourseItem = async (
+  timeTableId: number,
+  body: TimeTableCourseItemRequest,
+): Promise<TimeTableItemSummary> => {
+  const response = await tokenInstance.post<ApiResponse<TimeTableItemSummary>>(
+    `/api/timetables/${timeTableId}`,
+    body,
   );
   return response.data.data;
 };

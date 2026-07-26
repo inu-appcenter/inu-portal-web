@@ -64,3 +64,18 @@ export interface TimeTableDetail {
   term: Term;
   items: TimeTableDetailItem[];
 }
+
+// --- 시간표 요소(TimeTableItem) 요청/응답 DTO ---
+
+export interface TimeTableCourseItemRequest {
+  courseOfferingId: number;
+  memo?: string;
+}
+
+// 요소 생성/수정 응답 (meetings가 없으므로 상세 재조회로 그리드를 갱신해야 함)
+export interface TimeTableItemSummary {
+  id: number;
+  type: TimeTableItemType;
+  title?: string;
+  memo?: string | null;
+}

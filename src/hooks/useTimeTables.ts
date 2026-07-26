@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createTimeTable,
+  createTimeTableCourseItem,
   deleteTimeTable,
   getTimeTables,
   getTimeTablesBySemester,
@@ -12,7 +13,11 @@ import {
 } from "@/apis/timetables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
-import type { Term, TimeTableVisibility } from "@/types/timetables";
+import type {
+  Term,
+  TimeTableCourseItemRequest,
+  TimeTableVisibility,
+} from "@/types/timetables";
 
 export const TIMETABLES_QUERY_KEY = ["timetables"] as const;
 
@@ -137,6 +142,25 @@ export const useDeleteTimeTable = () => {
     mutationFn: (timeTableId: number) => deleteTimeTable(timeTableId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    },
+  });
+};
+
+export const useCreateTimeTableCourseItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      timeTableId,
+      body,
+    }: {
+      timeTableId: number;
+      body: TimeTableCourseItemRequest;
+    }) => createTimeTableCourseItem(timeTableId, body),
+    onSuccess: (_data, { timeTableId }) => {
+      queryClient.invalidateQueries({
+        queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
+      });
     },
   });
 };
