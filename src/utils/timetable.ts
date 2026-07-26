@@ -28,6 +28,13 @@ const parseTimeToHours = (time: string) => {
   return hour + minute / 60;
 };
 
+// 시간 단위 숫자 -> "HH:mm" (예: 10.25 -> "10:15")
+export const formatHoursToTime = (hours: number) => {
+  const hour = Math.floor(hours);
+  const minute = Math.round((hours - hour) * 60);
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+};
+
 // 시간표 상세 응답의 요소 목록을 시간표 그리드용 이벤트로 변환
 export const mapDetailItemsToClassItems = (
   items: TimeTableDetailItem[],
@@ -42,6 +49,7 @@ export const mapDetailItemsToClassItems = (
 
     return source.meetings.map<ClassItem>((meeting, index) => ({
       id: meeting.id,
+      customScheduleId: item.customSchedule?.customScheduleId,
       name: source.title,
       room: meeting.location ?? "",
       day: DAY_INDEX[meeting.day],
@@ -51,5 +59,7 @@ export const mapDetailItemsToClassItems = (
       credits: index === 0 ? credits : 0,
       professor: item.course?.professor,
       memo: item.memo ?? undefined,
+      courseId: item.course?.subjectNumber,
+      isCustom: item.type === "CUSTOM",
     }));
   });

@@ -15,6 +15,8 @@ import {
   useCreateTimeTableCourseItem,
   useTimeTableDetail,
 } from "@/hooks/useTimeTables";
+import { formatHoursToTime } from "@/utils/timetable";
+import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
 
 // 서버 강의 데이터에는 아직 room/day/startTime/endTime/professor 등 시간표 배치 정보가 없어
 // 검색 시트가 요구하는 CourseResult 형태로 임시 매핑한다.
@@ -272,8 +274,26 @@ const MobileTimeTableEditPage = () => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  // 커스텀 일정 수정 (과목 직접 추가 페이지를 수정 모드로 재사용)
   const handleEdit = (id: number) => {
-    alert(`과목 수정 창을 엽니다. (ID: ${id})`);
+    const target = timetable.find((item) => item.id === id);
+    if (!target?.isCustom || target.customScheduleId === undefined) return;
+
+    const editItem: CustomScheduleEditState = {
+      customScheduleId: target.customScheduleId,
+      title: target.name,
+      memo: target.memo ?? "",
+      // 같은 커스텀 일정의 모든 시간대를 함께 넘겨야 수정 시 누락되지 않음
+      meetings: timetable
+        .filter((item) => item.customScheduleId === target.customScheduleId)
+        .map((item) => ({
+          day: item.day,
+          startTime: formatHoursToTime(item.startTime),
+          endTime: formatHoursToTime(item.endTime),
+          location: item.room,
+        })),
+    };
+    navigate(ROUTES.TIMETABLE.ADD, { state: { editItem } });
   };
 
   const handleDelete = (id: number) => {

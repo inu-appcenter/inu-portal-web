@@ -132,6 +132,21 @@ export const createTimeTableCustomItem = async (
 };
 
 /**
+ * 커스텀 일정 시간표 요소 수정
+ */
+export const updateTimeTableCustomItem = async (
+  timeTableId: number,
+  customScheduleId: number,
+  body: TimeTableCustomItemRequest,
+): Promise<TimeTableItemSummary> => {
+  const response = await tokenInstance.patch<ApiResponse<TimeTableItemSummary>>(
+    `/api/timetables/${timeTableId}/customSchedule/${customScheduleId}`,
+    body,
+  );
+  return response.data.data;
+};
+
+/**
  * 시간표 상세 조회 (시간표 기본 정보 + 포함된 모든 요소)
  */
 export const getTimeTableDetail = async (

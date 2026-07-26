@@ -8,6 +8,7 @@ import {
   getTimeTables,
   getTimeTablesBySemester,
   getTimeTableDetail,
+  updateTimeTableCustomItem,
   updateTimeTableName,
   updateTimeTablePrimary,
   updateTimeTableVisibility,
@@ -178,6 +179,27 @@ export const useCreateTimeTableCustomItem = () => {
       timeTableId: number;
       body: TimeTableCustomItemRequest;
     }) => createTimeTableCustomItem(timeTableId, body),
+    onSuccess: (_data, { timeTableId }) => {
+      queryClient.invalidateQueries({
+        queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
+      });
+    },
+  });
+};
+
+export const useUpdateTimeTableCustomItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      timeTableId,
+      customScheduleId,
+      body,
+    }: {
+      timeTableId: number;
+      customScheduleId: number;
+      body: TimeTableCustomItemRequest;
+    }) => updateTimeTableCustomItem(timeTableId, customScheduleId, body),
     onSuccess: (_data, { timeTableId }) => {
       queryClient.invalidateQueries({
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],

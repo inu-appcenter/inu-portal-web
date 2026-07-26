@@ -7,6 +7,8 @@ import { THEME_PALETTES } from "./TimetableThemeBottomSheet";
 // --- 타입 정의 ---
 export interface ClassItem {
   id: number;
+  // 커스텀 일정 수정 API용 id (id는 meeting 단위라 요소 식별에 쓸 수 없음)
+  customScheduleId?: number;
   name: string;
   room: string;
   day: number; // 0:월 ~ 4:금

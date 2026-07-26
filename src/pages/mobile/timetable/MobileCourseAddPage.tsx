@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import InputField from "@/components/common/InputField";
 import CourseTimeSelector, {
@@ -10,28 +10,51 @@ import CourseTimeSelector, {
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import { useCreateTimeTableCustomItem } from "@/hooks/useTimeTables";
+import {
+  useCreateTimeTableCustomItem,
+  useUpdateTimeTableCustomItem,
+} from "@/hooks/useTimeTables";
 import { DAY_BY_INDEX } from "@/utils/timetable";
 import type { TimeTableCustomMeetingRequest } from "@/types/timetables";
 
+// 편집 페이지에서 커스텀 일정 수정으로 진입할 때 넘겨주는 라우터 state
+export interface CustomScheduleEditState {
+  customScheduleId: number;
+  title: string;
+  memo: string;
+  meetings: {
+    day: number; // 그리드 요일 인덱스 (0: 월)
+    startTime: string; // HH:mm
+    endTime: string; // HH:mm
+    location: string;
+  }[];
+}
+
 const MobileCourseAddPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editItem = (location.state as { editItem?: CustomScheduleEditState })
+    ?.editItem;
+
   const { timetables, activeTimetableId } = useTimetableStore();
   const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
 
   const createCustomItemMutation = useCreateTimeTableCustomItem();
+  const updateCustomItemMutation = useUpdateTimeTableCustomItem();
+  const isPending =
+    createCustomItemMutation.isPending || updateCustomItemMutation.isPending;
 
   // 헤더 설정
   useHeader({
-    title: "과목 직접 추가",
+    title: editItem ? "과목 수정" : "과목 직접 추가",
     showAlarm: false,
     hasback: true,
   });
 
-  // 상태 관리 - 강의 정보
-  const [courseName, setCourseName] = useState("");
+  // 상태 관리 - 강의 정보 (수정 모드면 기존 값으로 프리필)
+  const [courseName, setCourseName] = useState(editItem?.title ?? "");
   const [professor, setProfessor] = useState("");
-  const [room, setRoom] = useState("");
+  const [room, setRoom] = useState(editItem?.meetings[0]?.location ?? "");
   const [grade, setGrade] = useState("");
   const [courseType, setCourseType] = useState("");
   const [evaluation, setEvaluation] = useState("");
@@ -40,9 +63,16 @@ const MobileCourseAddPage = () => {
   const [nameError, setNameError] = useState("");
 
   // 상태 관리 - 시간 정보 (기본적으로 1개 슬롯 탑재)
-  const [timeSlots, setTimeSlots] = useState<CourseTimeSlot[]>([
-    { id: "slot-1", day: 0, startTime: "15:00", endTime: "16:30" },
-  ]);
+  const [timeSlots, setTimeSlots] = useState<CourseTimeSlot[]>(
+    editItem && editItem.meetings.length > 0
+      ? editItem.meetings.map((meeting, index) => ({
+          id: `slot-${index + 1}`,
+          day: meeting.day,
+          startTime: meeting.startTime,
+          endTime: meeting.endTime,
+        }))
+      : [{ id: "slot-1", day: 0, startTime: "15:00", endTime: "16:30" }],
+  );
 
   // Ref 관리
   const courseNameRef = useRef<HTMLInputElement>(null);
@@ -70,7 +100,7 @@ const MobileCourseAddPage = () => {
     setTimeSlots((prev) => prev.filter((s) => s.id !== id));
   };
 
-  // 저장 로직 (커스텀 일정 요소 생성 API 연동)
+  // 저장 로직 (커스텀 일정 요소 생성/수정 API 연동)
   const handleSave = () => {
     if (!courseName.trim()) {
       setNameError("과목명을 입력해 주세요.");
@@ -83,7 +113,7 @@ const MobileCourseAddPage = () => {
       alert("활성화된 시간표가 없습니다.");
       return;
     }
-    if (createCustomItemMutation.isPending) return;
+    if (isPending) return;
 
     const meetings: TimeTableCustomMeetingRequest[] = timeSlots.map((slot) => ({
       location: room.trim() || undefined,
@@ -91,15 +121,36 @@ const MobileCourseAddPage = () => {
       startTime: slot.startTime,
       endTime: slot.endTime,
     }));
+    const title = courseName.trim();
+
+    if (editItem) {
+      updateCustomItemMutation.mutate(
+        {
+          timeTableId: activeTimetableId,
+          customScheduleId: editItem.customScheduleId,
+          // 수정 요청은 전체 교체이므로 기존 메모를 함께 보내야 유지된다
+          body: { title, memo: editItem.memo || undefined, meetings },
+        },
+        {
+          onSuccess: () => {
+            alert(`"${title}" 과목이 수정되었습니다.`);
+            navigate(ROUTES.TIMETABLE.EDIT);
+          },
+          onError: (error: any) => {
+            alert(
+              error.response?.data?.msg || "커스텀 일정 수정에 실패했습니다.",
+            );
+          },
+        },
+      );
+      return;
+    }
 
     createCustomItemMutation.mutate(
-      {
-        timeTableId: activeTimetableId,
-        body: { title: courseName.trim(), meetings },
-      },
+      { timeTableId: activeTimetableId, body: { title, meetings } },
       {
         onSuccess: () => {
-          alert(`"${courseName.trim()}" 과목이 시간표에 추가되었습니다.`);
+          alert(`"${title}" 과목이 시간표에 추가되었습니다.`);
           navigate(ROUTES.TIMETABLE.EDIT);
         },
         onError: (error: any) => {
@@ -187,7 +238,7 @@ const MobileCourseAddPage = () => {
           variant="primary"
           fullWidth
           onClick={handleSave}
-          disabled={createCustomItemMutation.isPending}
+          disabled={isPending}
         >
           저장하기
         </CapsuleButton>
