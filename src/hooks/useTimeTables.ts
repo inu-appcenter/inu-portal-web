@@ -5,6 +5,7 @@ import {
   createTimeTableCourseItem,
   createTimeTableCustomItem,
   deleteTimeTable,
+  deleteTimeTableItem,
   getTimeTables,
   getTimeTablesBySemester,
   getTimeTableDetail,
@@ -200,6 +201,25 @@ export const useUpdateTimeTableCustomItem = () => {
       customScheduleId: number;
       body: TimeTableCustomItemRequest;
     }) => updateTimeTableCustomItem(timeTableId, customScheduleId, body),
+    onSuccess: (_data, { timeTableId }) => {
+      queryClient.invalidateQueries({
+        queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
+      });
+    },
+  });
+};
+
+export const useDeleteTimeTableItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      timeTableId,
+      timeTableItemId,
+    }: {
+      timeTableId: number;
+      timeTableItemId: number;
+    }) => deleteTimeTableItem(timeTableId, timeTableItemId),
     onSuccess: (_data, { timeTableId }) => {
       queryClient.invalidateQueries({
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],

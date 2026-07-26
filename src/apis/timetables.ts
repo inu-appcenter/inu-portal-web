@@ -147,6 +147,19 @@ export const updateTimeTableCustomItem = async (
 };
 
 /**
+ * 시간표 요소 삭제 (강의/커스텀 일정 공통)
+ */
+export const deleteTimeTableItem = async (
+  timeTableId: number,
+  timeTableItemId: number,
+): Promise<number> => {
+  const response = await tokenInstance.delete<ApiResponse<number>>(
+    `/api/timetables/${timeTableId}/timeTableItem/${timeTableItemId}`,
+  );
+  return response.data.data;
+};
+
+/**
  * 시간표 상세 조회 (시간표 기본 정보 + 포함된 모든 요소)
  */
 export const getTimeTableDetail = async (

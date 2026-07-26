@@ -7,6 +7,8 @@ import { THEME_PALETTES } from "./TimetableThemeBottomSheet";
 // --- 타입 정의 ---
 export interface ClassItem {
   id: number;
+  // 서버 시간표 요소 id (삭제 API용). id는 meeting 단위, itemId는 요소 단위
+  itemId?: number;
   // 커스텀 일정 수정 API용 id (id는 meeting 단위라 요소 식별에 쓸 수 없음)
   customScheduleId?: number;
   name: string;

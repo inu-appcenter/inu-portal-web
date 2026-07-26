@@ -13,6 +13,7 @@ import { useCourses } from "@/hooks/useCourses";
 import { Course } from "@/types/courses";
 import {
   useCreateTimeTableCourseItem,
+  useDeleteTimeTableItem,
   useTimeTableDetail,
 } from "@/hooks/useTimeTables";
 import { formatHoursToTime } from "@/utils/timetable";
@@ -166,8 +167,7 @@ const MobileTimeTableEditPage = () => {
   });
 
   // 상태 및 스토어 관리
-  const { timetables, activeTimetableId, updateTimetableEvents } =
-    useTimetableStore();
+  const { timetables, activeTimetableId } = useTimetableStore();
   const activeTimetable = useMemo(() => {
     return timetables.find((t) => t.id === activeTimetableId) || null;
   }, [timetables, activeTimetableId]);
@@ -177,6 +177,7 @@ const MobileTimeTableEditPage = () => {
   useTimeTableDetail(activeTimetableId);
 
   const createCourseItemMutation = useCreateTimeTableCourseItem();
+  const deleteItemMutation = useDeleteTimeTableItem();
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [snap, setSnap] = useState<string | number | null>(
@@ -297,12 +298,20 @@ const MobileTimeTableEditPage = () => {
   };
 
   const handleDelete = (id: number) => {
-    if (activeTimetableId !== null) {
-      updateTimetableEvents(
-        activeTimetableId,
-        timetable.filter((item) => item.id !== id),
-      );
-    }
+    if (activeTimetableId === null || deleteItemMutation.isPending) return;
+    const target = timetable.find((item) => item.id === id);
+    if (target?.itemId === undefined) return;
+
+    deleteItemMutation.mutate(
+      { timeTableId: activeTimetableId, timeTableItemId: target.itemId },
+      {
+        onError: (error: any) => {
+          alert(
+            error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",
+          );
+        },
+      },
+    );
   };
 
   const snapHeightValue = typeof snap === "number" ? snap : 0.6;
