@@ -15,6 +15,7 @@ import {
   useCreateTimeTableCourseItem,
   useDeleteTimeTableItem,
   useTimeTableDetail,
+  useTimeTables,
 } from "@/hooks/useTimeTables";
 import { formatHoursToTime } from "@/utils/timetable";
 import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
@@ -173,6 +174,8 @@ const MobileTimeTableEditPage = () => {
   }, [timetables, activeTimetableId]);
   const timetable = activeTimetable?.events || [];
 
+  // 새로고침으로 이 페이지에 바로 진입해도 활성 시간표를 복구할 수 있도록 목록을 조회
+  useTimeTables();
   // 상세 조회로 서버 요소를 스토어에 동기화 (뮤테이션 성공 시 invalidate로 재조회됨)
   useTimeTableDetail(activeTimetableId);
 

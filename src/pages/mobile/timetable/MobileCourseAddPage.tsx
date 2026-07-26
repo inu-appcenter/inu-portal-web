@@ -12,6 +12,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import {
   useCreateTimeTableCustomItem,
+  useTimeTables,
   useUpdateTimeTableCustomItem,
 } from "@/hooks/useTimeTables";
 import { DAY_BY_INDEX } from "@/utils/timetable";
@@ -36,6 +37,8 @@ const MobileCourseAddPage = () => {
   const editItem = (location.state as { editItem?: CustomScheduleEditState })
     ?.editItem;
 
+  // 새로고침으로 이 페이지에 바로 진입해도 활성 시간표를 복구할 수 있도록 목록을 조회
+  useTimeTables();
   const { timetables, activeTimetableId } = useTimetableStore();
   const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
 
