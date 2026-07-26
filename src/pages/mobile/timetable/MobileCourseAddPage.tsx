@@ -10,14 +10,16 @@ import CourseTimeSelector, {
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
-
-const DEFAULT_COLOR = "var(--color-chips-red)";
+import { useCreateTimeTableCustomItem } from "@/hooks/useTimeTables";
+import { DAY_BY_INDEX } from "@/utils/timetable";
+import type { TimeTableCustomMeetingRequest } from "@/types/timetables";
 
 const MobileCourseAddPage = () => {
   const navigate = useNavigate();
-  const { timetables, activeTimetableId, updateTimetableEvents } =
-    useTimetableStore();
+  const { timetables, activeTimetableId } = useTimetableStore();
   const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
+
+  const createCustomItemMutation = useCreateTimeTableCustomItem();
 
   // 헤더 설정
   useHeader({
@@ -36,7 +38,6 @@ const MobileCourseAddPage = () => {
 
   // 에러 상태
   const [nameError, setNameError] = useState("");
-  const [professorError, setProfessorError] = useState("");
 
   // 상태 관리 - 시간 정보 (기본적으로 1개 슬롯 탑재)
   const [timeSlots, setTimeSlots] = useState<CourseTimeSlot[]>([
@@ -69,92 +70,43 @@ const MobileCourseAddPage = () => {
     setTimeSlots((prev) => prev.filter((s) => s.id !== id));
   };
 
-  // 저장 로직
+  // 저장 로직 (커스텀 일정 요소 생성 API 연동)
   const handleSave = () => {
-    let hasError = false;
     if (!courseName.trim()) {
       setNameError("과목명을 입력해 주세요.");
       courseNameRef.current?.focus();
-      hasError = true;
-    } else {
-      setNameError("");
+      return;
     }
-
-    if (!professor.trim()) {
-      setProfessorError("교수명을 입력해 주세요.");
-      if (!hasError) {
-        professorRef.current?.focus();
-      }
-      hasError = true;
-    } else {
-      setProfessorError("");
-    }
-
-    if (hasError) return;
+    setNameError("");
 
     if (!activeTimetable || activeTimetableId === null) {
       alert("활성화된 시간표가 없습니다.");
       return;
     }
+    if (createCustomItemMutation.isPending) return;
 
-    const parseTimeToNumber = (timeStr: string): number => {
-      const [hours, minutes] = timeStr.split(":").map(Number);
-      return hours + minutes / 60;
-    };
-
-    const newCourseId =
-      Math.max(0, ...activeTimetable.events.map((e) => e.id)) + 1;
-
-    const newSchedules = timeSlots.map((slot) => ({
-      id: newCourseId,
-      name: courseName,
-      room: room || "강의실 미정",
-      day: slot.day,
-      startTime: parseTimeToNumber(slot.startTime),
-      endTime: parseTimeToNumber(slot.endTime),
-      professor: professor || "",
-      memo: "",
-      color: DEFAULT_COLOR,
-      grade: grade || "",
-      courseType: courseType || "",
-      evaluation: evaluation || "",
-      isCustom: true,
+    const meetings: TimeTableCustomMeetingRequest[] = timeSlots.map((slot) => ({
+      location: room.trim() || undefined,
+      day: DAY_BY_INDEX[slot.day],
+      startTime: slot.startTime,
+      endTime: slot.endTime,
     }));
 
-    const isOverlapping = (a: any, b: any) => {
-      if (a.day !== b.day) return false;
-      return a.startTime < b.endTime && b.startTime < a.endTime;
-    };
-
-    let conflictItem: any = null;
-    for (const newSlot of newSchedules) {
-      for (const existingSlot of activeTimetable.events) {
-        if (isOverlapping(newSlot, existingSlot)) {
-          conflictItem = existingSlot;
-          break;
-        }
-      }
-      if (conflictItem) break;
-    }
-
-    if (conflictItem) {
-      const proceed = window.confirm(
-        `시간이 겹쳐요 - ${conflictItem.name}과(와) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`,
-      );
-      if (!proceed) return;
-
-      const updatedEvents = [
-        ...activeTimetable.events.filter((e) => e.id !== conflictItem.id),
-        ...newSchedules,
-      ];
-      updateTimetableEvents(activeTimetableId, updatedEvents);
-    } else {
-      const updatedEvents = [...activeTimetable.events, ...newSchedules];
-      updateTimetableEvents(activeTimetableId, updatedEvents);
-    }
-
-    alert(`"${courseName}" 과목이 시간표에 추가되었습니다.`);
-    navigate(ROUTES.TIMETABLE.EDIT);
+    createCustomItemMutation.mutate(
+      {
+        timeTableId: activeTimetableId,
+        body: { title: courseName.trim(), meetings },
+      },
+      {
+        onSuccess: () => {
+          alert(`"${courseName.trim()}" 과목이 시간표에 추가되었습니다.`);
+          navigate(ROUTES.TIMETABLE.EDIT);
+        },
+        onError: (error: any) => {
+          alert(error.response?.data?.msg || "커스텀 일정 추가에 실패했습니다.");
+        },
+      },
+    );
   };
 
   return (
@@ -177,14 +129,10 @@ const MobileCourseAddPage = () => {
             />
             <StyledInputField
               ref={professorRef as any}
-              label="교수명 *"
+              label="교수명"
               placeholder="교수명 입력"
               value={professor}
-              onChange={(val) => {
-                setProfessor(val);
-                if (val.trim()) setProfessorError("");
-              }}
-              error={professorError}
+              onChange={setProfessor}
             />
           </Row>
           <Row>
@@ -235,7 +183,12 @@ const MobileCourseAddPage = () => {
 
       {/* 저장하기 버튼 */}
       <SubmitButtonContainer>
-        <CapsuleButton variant="primary" fullWidth onClick={handleSave}>
+        <CapsuleButton
+          variant="primary"
+          fullWidth
+          onClick={handleSave}
+          disabled={createCustomItemMutation.isPending}
+        >
           저장하기
         </CapsuleButton>
       </SubmitButtonContainer>

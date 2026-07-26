@@ -4,6 +4,7 @@ import type {
   Term,
   TimeTable,
   TimeTableCourseItemRequest,
+  TimeTableCustomItemRequest,
   TimeTableDetail,
   TimeTableItemSummary,
   TimeTableVisibility,
@@ -111,6 +112,20 @@ export const createTimeTableCourseItem = async (
 ): Promise<TimeTableItemSummary> => {
   const response = await tokenInstance.post<ApiResponse<TimeTableItemSummary>>(
     `/api/timetables/${timeTableId}`,
+    body,
+  );
+  return response.data.data;
+};
+
+/**
+ * 커스텀 일정 시간표 요소 생성
+ */
+export const createTimeTableCustomItem = async (
+  timeTableId: number,
+  body: TimeTableCustomItemRequest,
+): Promise<TimeTableItemSummary> => {
+  const response = await tokenInstance.post<ApiResponse<TimeTableItemSummary>>(
+    `/api/timetables/${timeTableId}/customSchedule`,
     body,
   );
   return response.data.data;

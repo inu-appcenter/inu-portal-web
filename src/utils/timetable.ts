@@ -11,6 +11,17 @@ const DAY_INDEX: Record<TimeTableDay, number> = {
   SUNDAY: 6,
 };
 
+// 그리드 요일 인덱스 -> 서버 요일 enum (커스텀 일정 요청 DTO용)
+export const DAY_BY_INDEX: TimeTableDay[] = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+];
+
 // "HH:mm" -> 시간 단위 숫자 (예: "10:15" -> 10.25)
 const parseTimeToHours = (time: string) => {
   const [hour, minute] = time.split(":").map(Number);

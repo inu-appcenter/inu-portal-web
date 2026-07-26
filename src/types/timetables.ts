@@ -72,6 +72,19 @@ export interface TimeTableCourseItemRequest {
   memo?: string;
 }
 
+export interface TimeTableCustomMeetingRequest {
+  location?: string;
+  day: TimeTableDay;
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+}
+
+export interface TimeTableCustomItemRequest {
+  title: string;
+  memo?: string;
+  meetings: TimeTableCustomMeetingRequest[];
+}
+
 // 요소 생성/수정 응답 (meetings가 없으므로 상세 재조회로 그리드를 갱신해야 함)
 export interface TimeTableItemSummary {
   id: number;
