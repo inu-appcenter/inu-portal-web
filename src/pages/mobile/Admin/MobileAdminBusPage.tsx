@@ -25,18 +25,17 @@ export default function MobileAdminBusPage() {
   });
 
   const GO_SCHOOL_STOPS = [
-
-    { name: "인천대입구역 2번출구", id: "164000395" },
-    { name: "인천대입구역 1번출구", id: "164000396" },
-    { name: "지식정보단지역 3번출구", id: "164000403" },
-    { name: "인천대입구역.롯데몰", id: "164000648" },
+    { name: "인천대입구역 2번출구", id: "164000395", alias: "인입" },
+    { name: "인천대입구역 1번출구", id: "164000396", alias: "인입" },
+    { name: "지식정보단지역 3번출구", id: "164000403", alias: "지정단" },
+    { name: "인천대입구역.롯데몰", id: "164000648", alias: "인입" },
   ];
 
   const GO_HOME_STOPS = [
-    { name: "인천대 정문(길 건너)", id: "164000385" },
-    { name: "인천대 공과대학", id: "164000377" },
-    { name: "인천대 자연과학대학", id: "164000378" },
-    { name: "인천대 송도캠퍼스(기숙사)", id: "164000751" },
+    { name: "인천대 정문(길 건너)", id: "164000385", alias: "정문" },
+    { name: "인천대 공과대학", id: "164000377", alias: "공대" },
+    { name: "인천대 자연과학대학", id: "164000378", alias: "자연대" },
+    { name: "인천대 송도캠퍼스(기숙사)", id: "164000751", alias: "기숙사" },
   ];
 
   // 자동 탐색 룰 폼 상태
@@ -45,6 +44,7 @@ export default function MobileAdminBusPage() {
     tabName: "인입런",
     startBstopId: "164000395",
     startStopName: "인천대입구역 2번출구",
+    startStopAlias: "인입",
     targetKeywords: "정문,자연,공과,공대,송도캠",
   });
 
@@ -55,6 +55,7 @@ export default function MobileAdminBusPage() {
         tabName: "인입런",
         startBstopId: "164000395",
         startStopName: "인천대입구역 2번출구",
+        startStopAlias: "인입",
         targetKeywords: "정문,자연,공과,공대,송도캠",
       });
     } else {
@@ -63,10 +64,12 @@ export default function MobileAdminBusPage() {
         tabName: "인천대 정문",
         startBstopId: "164000385",
         startStopName: "인천대 정문(길 건너)",
+        startStopAlias: "정문",
         targetKeywords: "인천대입구역,지식정보단지역,홍대입구",
       });
     }
   };
+
 
   const [routeSections, setRouteSections] = useState<any[]>([]);
   const [targetRules, setTargetRules] = useState<any[]>([]);
@@ -281,13 +284,14 @@ export default function MobileAdminBusPage() {
                       ...ruleForm,
                       startBstopId: matched.id,
                       startStopName: matched.name,
+                      startStopAlias: matched.alias,
                     });
                   }
                 }}
               >
                 {currentPresetStops.map((s) => (
                   <option key={`rule-stop-${s.id}`} value={`${s.name} (${s.id})`}>
-                    {s.name} ({s.id})
+                    {s.name} ({s.id}) [별칭: {s.alias}]
                   </option>
                 ))}
               </Select>
@@ -307,7 +311,7 @@ export default function MobileAdminBusPage() {
               </FormGroup>
 
               <FormGroup>
-                <Label>정류장 명칭</Label>
+                <Label>정류장 명칭 (풀네임)</Label>
                 <Input
                   type="text"
                   placeholder="예: 인천대입구역 2번출구"
@@ -318,6 +322,18 @@ export default function MobileAdminBusPage() {
                 />
               </FormGroup>
             </FormRow>
+
+            <FormGroup>
+              <Label>정류장 축약명/별칭 (앱 바텀시트/탭 표시용)</Label>
+              <Input
+                type="text"
+                placeholder="예: 인입, 지정단, 정문, 공대, 자연대"
+                value={ruleForm.startStopAlias}
+                onChange={(e) =>
+                  setRuleForm({ ...ruleForm, startStopAlias: e.target.value })
+                }
+              />
+            </FormGroup>
 
             <FormGroup>
               <Label>목적지 키워드 목록 (콤마 구분)</Label>
@@ -354,7 +370,7 @@ export default function MobileAdminBusPage() {
                 <ItemInfo>
                   <strong>[{rule.category}] {rule.tabName}</strong>
                   <Badge style={{ background: "#f3e8ff", color: "#6b21a8" }}>
-                    시작: {rule.startStopName} ({rule.startBstopId})
+                    시작: {rule.startStopName} ({rule.startBstopId}) {rule.startStopAlias && `[별칭: ${rule.startStopAlias}]`}
                   </Badge>
                   <SubText>
                     목적지 키워드: {rule.targetKeywords}
@@ -365,6 +381,7 @@ export default function MobileAdminBusPage() {
                 </DeleteButton>
               </RouteItem>
             ))}
+
             {targetRules.length === 0 && (
               <EmptyText>현재 등록된 자동 탐색 규칙이 없습니다.</EmptyText>
             )}
