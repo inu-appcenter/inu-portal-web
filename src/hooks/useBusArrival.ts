@@ -56,6 +56,24 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
       const match = data.find((item) => item.ROUTEID === bus.routeId);
 
       if (!match) {
+        const estimatedItem = data.find(
+          (item) => item.estimatedArrivalSeconds || item.estimationNotice,
+        );
+        if (estimatedItem && estimatedItem.estimatedArrivalSeconds) {
+          const sec = estimatedItem.estimatedArrivalSeconds;
+          return {
+            ...bus,
+            arrivalInfo: {
+              time: toTime(sec),
+              seconds: sec,
+              station: "통계 추정",
+              status: "여유" as const,
+              isLastBus: false,
+            },
+
+          };
+        }
+
         return {
           ...bus,
           arrivalInfo: {
@@ -65,6 +83,7 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
           },
         };
       }
+
 
       const rawSeconds = Number(match.ARRIVALESTIMATETIME);
       const elapsedSeconds = dataUpdatedAt

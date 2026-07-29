@@ -27,7 +27,10 @@ import {
 } from "@/utils/busUiPreference";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
+import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
+
 const MOBILE_MAP_HEADER_HEIGHT = 100;
+
 const MOBILE_SUBHEADER_OFFSET = 50;
 const MOBILE_FULL_HEADER_OFFSET =
   MOBILE_MAP_HEADER_HEIGHT + MOBILE_SUBHEADER_OFFSET;
@@ -78,15 +81,37 @@ export default function MobileBusMapPage() {
     () => Array.from(new Set(tabs.flatMap((tab) => tab.stopIds))),
     [tabs],
   );
-  const visibleStops = useMemo(() => getBusMapStops(allStopIds), [allStopIds]);
-  const activeStops = useMemo(
-    () => getBusMapStops(activeTab?.stopIds ?? []),
-    [activeTab],
-  );
+  const { applyDynamicRoutesToBuses } = useDynamicBusRoutes(type);
+
+  const visibleStops = useMemo(() => {
+    const rawStops = getBusMapStops(allStopIds);
+    return rawStops.map((stop) => ({
+      ...stop,
+      buses: applyDynamicRoutesToBuses(stop.buses),
+      busSections: stop.busSections.map((sec) => ({
+        ...sec,
+        buses: applyDynamicRoutesToBuses(sec.buses),
+      })),
+    }));
+  }, [allStopIds, applyDynamicRoutesToBuses]);
+
+  const activeStops = useMemo(() => {
+    const rawStops = getBusMapStops(activeTab?.stopIds ?? []);
+    return rawStops.map((stop) => ({
+      ...stop,
+      buses: applyDynamicRoutesToBuses(stop.buses),
+      busSections: stop.busSections.map((sec) => ({
+        ...sec,
+        buses: applyDynamicRoutesToBuses(sec.buses),
+      })),
+    }));
+  }, [activeTab, applyDynamicRoutesToBuses]);
+
   const defaultStop = useMemo(
     () => getBusMapStopById(activeTab?.defaultStopId ?? null),
     [activeTab],
   );
+
 
   const [selectedStopId, setSelectedStopId] = useState<string | null>(
     defaultStop?.id ?? null,

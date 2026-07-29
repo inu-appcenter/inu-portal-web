@@ -121,5 +121,7 @@ export const ROUTES = {
     USER_NOTIFICATIION: "/admin/usernotification",
     FEATURE_FLAGS: "/admin/feature-flags",
     CHAT: "/admin/chat",
+    BUS: "/admin/bus",
   },
+
 } as const;

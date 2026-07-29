@@ -9,7 +9,9 @@ import {
   ArrowRight,
   MessageSquare,
   Bot,
+  Bus,
 } from "lucide-react";
+
 
 import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -79,6 +81,15 @@ const MobileAdminPage = () => {
       color: "#ec4899",
       isExternal: true,
     },
+    {
+      label: "버스 노선 및 수집 관리",
+      path: ROUTES.ADMIN.BUS,
+      description: "동적 노선 구간 슬라이싱 및 30초 수집 정류장 설정",
+      icon: Bus,
+      color: "#2563eb",
+      isExternal: false,
+    },
+
   ];
 
   const [stats, setStats] = useState({

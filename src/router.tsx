@@ -46,6 +46,8 @@ import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
+import MobileAdminBusPage from "@/pages/mobile/Admin/MobileAdminBusPage";
+
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
@@ -273,6 +275,11 @@ export const router = createBrowserRouter([
             path: ROUTES.ADMIN.CHAT,
             element: <MobileAdminChatPage />,
           },
+          {
+            path: ROUTES.ADMIN.BUS,
+            element: <MobileAdminBusPage />,
+          },
+
         ],
       },
       // ----------------------------------------------------------------
