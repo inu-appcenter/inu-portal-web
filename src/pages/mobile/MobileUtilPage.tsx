@@ -111,7 +111,7 @@ const MobileUtilPageWrapper = styled.div`
   .upload-button {
     position: fixed;
     right: 20px;
-    bottom: 100px;
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     z-index: 999999;
     color: white;
     background-color: rgba(64, 113, 185, 1);

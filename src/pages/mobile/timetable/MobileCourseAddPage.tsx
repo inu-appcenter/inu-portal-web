@@ -332,7 +332,8 @@ const SubmitButtonContainer = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px ${MOBILE_PAGE_GUTTER};
+  padding: 16px ${MOBILE_PAGE_GUTTER}
+    calc(16px + env(safe-area-inset-bottom, 0px));
 
   z-index: 100;
   max-width: 768px;
