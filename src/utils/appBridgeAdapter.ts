@@ -4,7 +4,7 @@ import { bridgeChannel } from "./bridgeChannel";
 /**
  * 단일 브릿지 채널.
  *
- * 신버전 공식 앱(Expo 셸)은 iOS/Android 구분 없이 `@inu-appcenter/intip-bridge`
+ * 신버전 공식 앱(Expo 셸)은 iOS/Android 구분 없이 `packages/intip-bridge`
  * 의 PlatformChannel(react-native-webview 단일 채널) 로 통신합니다. 따라서 가능한
  * 한 이 채널을 우선 사용하고, 이것이 없는 구버전 네이티브 앱에서만 기존
  * `window.AndroidBridge.*` / `window.webkit.messageHandlers.*` 프로토콜로
