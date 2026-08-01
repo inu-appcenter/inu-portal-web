@@ -218,6 +218,7 @@ const Sidebar = styled.div<{ isVisible: boolean }>`
     display: flex;
     flex-direction: column;
     margin: 0 16px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 
     .sf-wrapper {
       margin: 12px 0;

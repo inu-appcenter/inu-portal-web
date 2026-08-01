@@ -30,7 +30,7 @@ export default FloatingActionButton;
 
 const FixedButtonWrapper = styled.div<{ $bottom: string }>`
   position: fixed;
-  bottom: ${({ $bottom }) => $bottom};
+  bottom: ${({ $bottom }) => `calc(${$bottom} + env(safe-area-inset-bottom, 0px))`};
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
