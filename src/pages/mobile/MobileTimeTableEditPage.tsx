@@ -148,7 +148,7 @@ const MobileTimeTableEditPage = () => {
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.ADD)}>
           <IconsAddPlus />
         </IconButton>
-        <IconButton onClick={() => alert("시간표 마법사 클릭")}>
+        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.WIZARD)}>
           <IconsMagicWand />
         </IconButton>
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}>

@@ -9,6 +9,21 @@ import type {
   TimeTableItemSummary,
   TimeTableVisibility,
 } from "@/types/timetables";
+import { isMockApiEnabled, mockDelay } from "@/mocks/mockFlag";
+import {
+  mockCreateTimeTable,
+  mockCreateTimeTableCourseItem,
+  mockCreateTimeTableCustomItem,
+  mockDeleteTimeTable,
+  mockDeleteTimeTableItem,
+  mockGetTimeTableDetail,
+  mockGetTimeTables,
+  mockGetTimeTablesBySemester,
+  mockUpdateTimeTableCustomItem,
+  mockUpdateTimeTableName,
+  mockUpdateTimeTablePrimary,
+  mockUpdateTimeTableVisibility,
+} from "@/mocks/mockTimetableStore";
 
 /**
  * 시간표 조회 (year, term을 함께 보내면 해당 년도/학기만, 생략하면 전체 조회)
@@ -17,6 +32,11 @@ export const getTimeTables = async (
   year?: number,
   term?: Term,
 ): Promise<TimeTable[]> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockGetTimeTables(year, term);
+  }
+
   const response = await tokenInstance.get<ApiResponse<TimeTable[]>>(
     "/api/timetables",
     {
@@ -33,6 +53,11 @@ export const getTimeTables = async (
 export const getTimeTablesBySemester = async (
   semesterId: number,
 ): Promise<TimeTable[]> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockGetTimeTablesBySemester(semesterId);
+  }
+
   const response = await tokenInstance.get<ApiResponse<TimeTable[]>>(
     `/api/timetables/semesters/${semesterId}`,
   );
@@ -46,6 +71,11 @@ export const createTimeTable = async (
   semesterId: number,
   timeTableName: string,
 ): Promise<TimeTable> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockCreateTimeTable(semesterId, timeTableName);
+  }
+
   const response = await tokenInstance.post<ApiResponse<TimeTable>>(
     `/api/timetables/semesters/${semesterId}`,
     { timeTableName },
@@ -60,6 +90,11 @@ export const updateTimeTableName = async (
   timeTableId: number,
   timeTableName: string,
 ): Promise<TimeTable> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockUpdateTimeTableName(timeTableId, timeTableName);
+  }
+
   const response = await tokenInstance.patch<ApiResponse<TimeTable>>(
     `/api/timetables/${timeTableId}/timeTableName`,
     { timeTableName },
@@ -74,6 +109,11 @@ export const updateTimeTableVisibility = async (
   timeTableId: number,
   visibility: TimeTableVisibility,
 ): Promise<TimeTable> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockUpdateTimeTableVisibility(timeTableId, visibility);
+  }
+
   const response = await tokenInstance.patch<ApiResponse<TimeTable>>(
     `/api/timetables/${timeTableId}/visibility`,
     { visibility },
@@ -87,6 +127,11 @@ export const updateTimeTableVisibility = async (
 export const updateTimeTablePrimary = async (
   timeTableId: number,
 ): Promise<TimeTable> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockUpdateTimeTablePrimary(timeTableId);
+  }
+
   const response = await tokenInstance.patch<ApiResponse<TimeTable>>(
     `/api/timetables/${timeTableId}/isPrimary`,
   );
@@ -97,6 +142,11 @@ export const updateTimeTablePrimary = async (
  * 시간표 삭제
  */
 export const deleteTimeTable = async (timeTableId: number): Promise<number> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockDeleteTimeTable(timeTableId);
+  }
+
   const response = await tokenInstance.delete<ApiResponse<number>>(
     `/api/timetables/${timeTableId}`,
   );
@@ -110,6 +160,11 @@ export const createTimeTableCourseItem = async (
   timeTableId: number,
   body: TimeTableCourseItemRequest,
 ): Promise<TimeTableItemSummary> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockCreateTimeTableCourseItem(timeTableId, body);
+  }
+
   const response = await tokenInstance.post<ApiResponse<TimeTableItemSummary>>(
     `/api/timetables/${timeTableId}`,
     body,
@@ -124,6 +179,11 @@ export const createTimeTableCustomItem = async (
   timeTableId: number,
   body: TimeTableCustomItemRequest,
 ): Promise<TimeTableItemSummary> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockCreateTimeTableCustomItem(timeTableId, body);
+  }
+
   const response = await tokenInstance.post<ApiResponse<TimeTableItemSummary>>(
     `/api/timetables/${timeTableId}/customSchedule`,
     body,
@@ -139,6 +199,11 @@ export const updateTimeTableCustomItem = async (
   customScheduleId: number,
   body: TimeTableCustomItemRequest,
 ): Promise<TimeTableItemSummary> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockUpdateTimeTableCustomItem(timeTableId, customScheduleId, body);
+  }
+
   const response = await tokenInstance.patch<ApiResponse<TimeTableItemSummary>>(
     `/api/timetables/${timeTableId}/customSchedule/${customScheduleId}`,
     body,
@@ -153,6 +218,11 @@ export const deleteTimeTableItem = async (
   timeTableId: number,
   timeTableItemId: number,
 ): Promise<number> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockDeleteTimeTableItem(timeTableId, timeTableItemId);
+  }
+
   const response = await tokenInstance.delete<ApiResponse<number>>(
     `/api/timetables/${timeTableId}/timeTableItem/${timeTableItemId}`,
   );
@@ -165,6 +235,11 @@ export const deleteTimeTableItem = async (
 export const getTimeTableDetail = async (
   timeTableId: number,
 ): Promise<TimeTableDetail> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockGetTimeTableDetail(timeTableId);
+  }
+
   const response = await tokenInstance.get<ApiResponse<TimeTableDetail>>(
     `/api/timetables/${timeTableId}`,
   );
