@@ -180,13 +180,15 @@ export default function MobileBottomNav() {
     navigate(to, { replace: true });
   };
 
+  const validWidth = dimensions.width > 0 ? dimensions.width : (typeof window !== "undefined" && window.innerWidth > 0 ? window.innerWidth : 390);
+  const validHeight = dimensions.height > 0 ? dimensions.height : 88;
   const maxContentWidth = parseInt(DESKTOP_CONTENT_MAX_WIDTH, 10) || 1600;
-  const contentWidth = Math.min(dimensions.width, maxContentWidth);
-  const leftOffset = (dimensions.width - contentWidth) / 2;
+  const contentWidth = Math.min(validWidth, maxContentWidth);
+  const leftOffset = (validWidth - contentWidth) / 2;
 
   const activeX = leftOffset + ((activeIndex + 0.5) / 5) * contentWidth;
-  const pathD = getPath(dimensions.width, dimensions.height, activeX);
-  const lineD = getLinePath(dimensions.width, activeX);
+  const pathD = getPath(validWidth, validHeight, activeX);
+  const lineD = getLinePath(validWidth, activeX);
 
   return (
     <NavContainer ref={containerRef}>
@@ -195,7 +197,7 @@ export default function MobileBottomNav() {
         <svg
           width="100%"
           height="100%"
-          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+          viewBox={`0 0 ${validWidth} ${validHeight}`}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{ overflow: "visible" }}
@@ -224,7 +226,7 @@ export default function MobileBottomNav() {
         <svg
           width="100%"
           height="100%"
-          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+          viewBox={`0 0 ${validWidth} ${validHeight}`}
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -243,7 +245,7 @@ export default function MobileBottomNav() {
         <svg
           width="100%"
           height="100%"
-          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+          viewBox={`0 0 ${validWidth} ${validHeight}`}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           style={{ overflow: "visible" }}
