@@ -1,9 +1,25 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-import { MdKeyboardArrowDown } from "react-icons/md";
-import { useState, useRef } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
-import BottomSheet from "@/components/common/BottomSheet";
+import { useState, useRef, useEffect, useMemo } from "react";
+import type { ReactNode, UIEventHandler } from "react";
+import { createPortal } from "react-dom";
+import { Sheet } from "react-modal-sheet";
+import { useTransform } from "motion/react";
+import {
+  SlidersHorizontal,
+  Plus,
+  MessagesSquare,
+  FileText,
+} from "lucide-react";
+import FloatingSearchBar, {
+  FloatingSearchBarRef,
+} from "@/components/mobile/common/FloatingSearchBar";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import {
+  FilterState,
+  DEFAULT_FILTERS,
+} from "@/pages/mobile/timetable/MobileCourseFilterPage";
 
 export interface CourseResult {
   id: number;
@@ -21,7 +37,38 @@ export interface CourseResult {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const COURSE_SEARCH_SNAP_POINTS = [0.6, 0.95];
+export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
+const SHEET_SNAP_POINTS = [0, 0.2, 0.5, 1];
+
+interface CourseSheetScrollableContentProps {
+  children: ReactNode;
+  onScrollCapture: UIEventHandler<HTMLDivElement>;
+  isAnimating: boolean;
+}
+
+const CourseSheetScrollableContent = ({
+  children,
+  onScrollCapture,
+  isAnimating,
+}: CourseSheetScrollableContentProps) => {
+  const { y } = Sheet.useContext();
+  const scrollPaddingBottom = useTransform(y, (currentY) => currentY + 124);
+
+  return (
+    <CourseSheetContent
+      onScrollCapture={onScrollCapture}
+      scrollStyle={{ paddingBottom: scrollPaddingBottom }}
+      disableDrag={({ scrollPosition }) =>
+        scrollPosition !== undefined && scrollPosition !== "top"
+      }
+      disableScroll={({ currentSnap }) =>
+        isAnimating || currentSnap === 1
+      }
+    >
+      {children}
+    </CourseSheetContent>
+  );
+};
 
 interface MobileCourseSearchSheetProps {
   courses: CourseResult[];
@@ -31,21 +78,8 @@ interface MobileCourseSearchSheetProps {
   onSnapChange: (snap: string | number | null) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAddCourse?: (course: CourseResult) => void;
 }
-
-interface SearchFilterChipsProps {
-  categories: string[];
-}
-
-const SearchFilterChips = ({ categories }: SearchFilterChipsProps) => {
-  return (
-    <FilterChipsScroll data-vaul-no-drag="">
-      {categories.map((category, index) => (
-        <FilterChipItem key={index}>{category}</FilterChipItem>
-      ))}
-    </FilterChipsScroll>
-  );
-};
 
 const MobileCourseSearchSheet = ({
   courses,
@@ -55,197 +89,318 @@ const MobileCourseSearchSheet = ({
   onSnapChange,
   open,
   onOpenChange,
+  onAddCourse,
 }: MobileCourseSearchSheetProps) => {
-  const [categoryList] = useState<string[]>([
-    "#컴퓨터공학부",
-    "# 2학점",
-    "# 3학년",
-  ]);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  const touchGestureRef = useRef({
-    startY: 0,
-    lastY: 0,
-    startAtTop: false,
-    startAtBottom: false,
-    isEdgeSwipe: false,
-  });
+  const [activeFilters, setActiveFilters] =
+    useState<FilterState>(DEFAULT_FILTERS);
 
-  const getSnapIndex = () => {
-    const currentSnap =
-      typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0];
-    const currentIndex = COURSE_SEARCH_SNAP_POINTS.findIndex(
-      (point) => point === currentSnap,
-    );
-    return currentIndex === -1 ? 0 : currentIndex;
-  };
-
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    const listElement = event.currentTarget;
-    const touchY = event.touches[0]?.clientY ?? 0;
-    const maxScrollTop = Math.max(
-      listElement.scrollHeight - listElement.clientHeight,
-      0,
-    );
-
-    touchGestureRef.current = {
-      startY: touchY,
-      lastY: touchY,
-      startAtTop: listElement.scrollTop <= 1,
-      startAtBottom: listElement.scrollTop >= maxScrollTop - 1,
-      isEdgeSwipe: false,
+  // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
+  useEffect(() => {
+    const restoreFilters = () => {
+      const savedFilters = localStorage.getItem("applied_filters");
+      if (savedFilters) {
+        try {
+          const parsed = JSON.parse(savedFilters);
+          setActiveFilters(parsed);
+        } catch (e) {
+          console.error("필터 복원 오류:", e);
+        }
+        localStorage.removeItem("applied_filters");
+        return true;
+      }
+      return false;
     };
+
+    // 1. 컴포넌트 마운트 시도 또는 location 변경 시 확인
+    const restored = restoreFilters();
+
+    // location.state 폴백 (앱이 아닌 일반 브라우저 환경에서 데이터가 올 때를 대비)
+    if (!restored && location.state && (location.state as any).filters) {
+      setActiveFilters((location.state as any).filters);
+    }
+
+    // 2. 멀티 웹뷰 덮인 화면이 닫히며 복귀할 때를 위한 이벤트 리스너 등록
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        restoreFilters();
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "applied_filters" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          setActiveFilters(parsed);
+          localStorage.removeItem("applied_filters");
+        } catch (err) {
+          console.error("필터 복원 오류:", err);
+        }
+      }
+    };
+
+    window.addEventListener("focus", restoreFilters);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("focus", restoreFilters);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [location.state, location.key]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (activeFilters.major) count++;
+    if (activeFilters.sort !== "기본순") count++;
+    if (activeFilters.time !== "전체 시간") count++;
+    count += activeFilters.grades.length;
+    count += activeFilters.types.length;
+    count += activeFilters.credits.length;
+    return count;
+  }, [activeFilters]);
+
+  const filteredCourses = useMemo(() => {
+    let list: CourseResult[] = [...courses];
+
+    // 1. 전공/영역 필터 (학과 분류 시뮬레이션)
+    if (activeFilters.major) {
+      list = list.filter((course) => {
+        if (activeFilters.major === "컴퓨터공학부") {
+          return course.name === "웹프로그래밍" || course.name === "운영체제";
+        }
+        if (activeFilters.major?.includes("교양")) {
+          return course.name === "창의적사고와문제해결";
+        }
+        return true;
+      });
+    }
+
+    // 2. 학년 필터
+    if (activeFilters.grades.length > 0) {
+      list = list.filter((course) =>
+        activeFilters.grades.includes(course.grade),
+      );
+    }
+
+    // 3. 이수구분 필터
+    if (activeFilters.types.length > 0) {
+      list = list.filter((course) => {
+        const courseType = course.isMajor ? "전공" : "교양";
+        return activeFilters.types.includes(courseType);
+      });
+    }
+
+    // 4. 학점 필터
+    if (activeFilters.credits.length > 0) {
+      list = list.filter((course) => {
+        if (activeFilters.credits.includes(4)) {
+          return (
+            course.credits >= 4 ||
+            activeFilters.credits.includes(course.credits)
+          );
+        }
+        return activeFilters.credits.includes(course.credits);
+      });
+    }
+
+    // 5. 정렬 필터
+    if (activeFilters.sort === "별점높은순") {
+      const ratings: Record<string, number> = {
+        웹프로그래밍: 4.8,
+        운영체제: 4.5,
+        창의적사고와문제해결: 4.2,
+      };
+      list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
+    } else if (activeFilters.sort === "담은인원많은순") {
+      list.sort((a, b) => b.enrolledCount - a.enrolledCount);
+    }
+
+    return list;
+  }, [courses, activeFilters]);
+
+  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
+  const searchBarRef = useRef<FloatingSearchBarRef>(null);
+
+  // 키보드가 닫힌 뒤 변경된 모바일 뷰포트를 기준으로 높이를 다시 계산합니다.
+  useEffect(() => {
+    if (!isSearchActive) {
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+        window.scrollTo(0, window.scrollY);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchActive]);
+
+  const handleScroll = () => {
+    searchBarRef.current?.blur();
   };
 
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    const touchY = event.touches[0]?.clientY ?? touchGestureRef.current.lastY;
-    const deltaY = touchY - touchGestureRef.current.startY;
-
-    touchGestureRef.current.lastY = touchY;
-
-    const isDraggingDown = deltaY > 0;
-    const canResizeDrawer =
-      (isDraggingDown && touchGestureRef.current.startAtTop) ||
-      (!isDraggingDown && touchGestureRef.current.startAtBottom);
-
-    if (!canResizeDrawer || deltaY === 0) {
-      touchGestureRef.current.isEdgeSwipe = false;
+  const openLectureReview = (professor: string) => {
+    const professorName = professor?.trim() || "";
+    if (!professorName) {
+      alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
       return;
     }
 
-    if (event.cancelable) {
-      event.preventDefault();
-    }
-    touchGestureRef.current.isEdgeSwipe = true;
+    const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const handleTouchEnd = () => {
-    const { isEdgeSwipe, startY, lastY } = touchGestureRef.current;
-
-    if (!isEdgeSwipe) {
-      return;
-    }
-
-    const deltaY = lastY - startY;
-
-    if (Math.abs(deltaY) < 48) {
-      return;
-    }
-
-    const currentIndex = getSnapIndex();
-    const nextIndex =
-      deltaY < 0
-        ? Math.min(currentIndex + 1, COURSE_SEARCH_SNAP_POINTS.length - 1)
-        : Math.max(currentIndex - 1, 0);
-
-    if (nextIndex !== currentIndex && onSnapChange) {
-      onSnapChange(COURSE_SEARCH_SNAP_POINTS[nextIndex]);
-    }
-  };
+  const activeSnap =
+    typeof snap === "number" && COURSE_SEARCH_SNAP_POINTS.includes(snap)
+      ? snap
+      : COURSE_SEARCH_SNAP_POINTS[1];
+  const initialSnap = COURSE_SEARCH_SNAP_POINTS.indexOf(activeSnap) + 1;
 
   return (
-    <BottomSheet
-      open={open}
-      onOpenChange={onOpenChange}
-      modal={false}
-      dismissible={
-        snap === COURSE_SEARCH_SNAP_POINTS[0] ||
-        snap === null ||
-        snap === undefined
-      }
-      snapPoints={COURSE_SEARCH_SNAP_POINTS}
-      activeSnapPoint={open ? snap : null}
-      setActiveSnapPoint={onSnapChange}
-      disablePreventScroll={true}
-      snapToSequentialPoint={true}
-    >
-      <FilterRow>
-        <SearchCircleButton onClick={() => console.log("검색 버튼 클릭됨")}>
-          <Search size={20} />
-        </SearchCircleButton>
-        <CategoryWrapper>
-          <SearchFilterChips categories={categoryList} />
-        </CategoryWrapper>
-        <FilterCircleButton onClick={() => console.log("필터 버튼 클릭됨")}>
-          <SlidersHorizontal size={20} strokeWidth={2} />
-        </FilterCircleButton>
-      </FilterRow>
-      <ScrollableBody
-        $snapHeight={
-          typeof snap === "number" ? snap : COURSE_SEARCH_SNAP_POINTS[0]
-        }
-        data-vaul-no-drag=""
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
+    <>
+      <CourseSheet
+        isOpen={open}
+        onClose={() => onOpenChange(false)}
+        snapPoints={SHEET_SNAP_POINTS}
+        initialSnap={initialSnap}
+        disableDismiss
+        disableScrollLocking
+        onSnap={(snapIndex) => {
+          const nextSnap = COURSE_SEARCH_SNAP_POINTS[snapIndex - 1];
+          if (nextSnap !== undefined) onSnapChange(nextSnap);
+        }}
       >
-        <CourseList>
-          {courses.map((course) => {
-            const isExpanded = expandedId === course.id;
+        <CourseSheetContainer
+          onAnimationStart={() => setIsAnimating(true)}
+          onAnimationComplete={() => setIsAnimating(false)}
+        >
+          <CourseSheetHeader />
+          <CourseSheetScrollableContent
+            onScrollCapture={handleScroll}
+            isAnimating={isAnimating}
+          >
+            <SheetContentWrapper>
+              <CourseList>
+                {filteredCourses.map((course) => {
+                  const isExpanded = expandedId === course.id;
 
-            return (
-              <CourseItem
-                key={course.id}
-                onClick={() => onToggleExpand(course.id)}
-              >
-                {/* 기본 정보 */}
-                <InfoRow>
-                  <MainInfo>
-                    <CourseName>{course.name}</CourseName>
-                  </MainInfo>
-                  <RightInfo>
-                    <EnrolledBadge>{course.enrolledCount}명 담음</EnrolledBadge>
-                    <StyledArrowIcon $isExpanded={isExpanded} />
-                  </RightInfo>
-                </InfoRow>
+                  return (
+                    <CourseItem
+                      key={course.id}
+                      onClick={() => onToggleExpand(course.id)}
+                    >
+                      {/* 기본 정보 */}
+                      <InfoRow>
+                        <MainInfo>
+                          <CourseName>{course.name}</CourseName>
+                        </MainInfo>
+                        <RightInfo>
+                          <EnrolledBadge>
+                            {course.enrolledCount}명 / n명
+                          </EnrolledBadge>
+                        </RightInfo>
+                      </InfoRow>
 
-                <ProfName>{course.professor}</ProfName>
-                <DetailText>
-                  {course.timeStr} {course.room}
-                  <br />
-                  {`${course.grade}학년 ${course.isMajor ? "전공심화" : "교양"} ${course.credits}학점 ${course.courseId}`}
-                </DetailText>
+                      <CourseAttributes>
+                        <AttributeItem $primary>
+                          {course.professor}
+                        </AttributeItem>
+                        <AttributeItem>{course.credits}학점</AttributeItem>
+                        <AttributeItem>상대평가</AttributeItem>
+                      </CourseAttributes>
 
-                {/* 확장 영역 */}
-                {isExpanded && (
-                  <ExpandedArea>
-                    {course.remarks && (
-                      <RemarkText>비고 : {course.remarks}</RemarkText>
-                    )}
-                    <ButtonRow>
-                      <PrimaryActionButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("시간표에 추가 클릭됨");
-                        }}
-                      >
-                        시간표에 추가
-                      </PrimaryActionButton>
-                      <SecondaryActionButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("강의평 보기 클릭됨");
-                        }}
-                      >
-                        강의평 보기
-                      </SecondaryActionButton>
-                      <SecondaryActionButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("강의계획서 클릭됨");
-                        }}
-                      >
-                        강의계획서
-                      </SecondaryActionButton>
-                    </ButtonRow>
-                  </ExpandedArea>
-                )}
-              </CourseItem>
-            );
-          })}
-        </CourseList>
-      </ScrollableBody>
-    </BottomSheet>
+                      <CourseAdditionalInfo>
+                        <InfoLine>
+                          <span>{course.grade}학년</span>
+                          <span>{course.isMajor ? "전공심화" : "교양"}</span>
+                          <span>{course.courseId}</span>
+                        </InfoLine>
+                        <div>{course.timeStr}</div>
+                        <div>{course.room}</div>
+                      </CourseAdditionalInfo>
+
+                      {/* 확장 영역 */}
+                      {isExpanded && (
+                        <ExpandedArea>
+                          {course.remarks && (
+                            <RemarkText>비고 : {course.remarks}</RemarkText>
+                          )}
+                          <ButtonRow>
+                            <PrimaryActionButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onAddCourse) {
+                                  onAddCourse(course);
+                                }
+                              }}
+                            >
+                              <Plus size={20} />
+                              시간표에 추가
+                            </PrimaryActionButton>
+                            <SecondaryActionButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openLectureReview(course.professor);
+                              }}
+                            >
+                              <MessagesSquare size={20} />
+                              강의평
+                            </SecondaryActionButton>
+                            <SecondaryActionButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                                  state: {
+                                    courseName: course.name,
+                                    professor: course.professor,
+                                  },
+                                });
+                              }}
+                            >
+                              <FileText size={20} />
+                              강의계획서
+                            </SecondaryActionButton>
+                          </ButtonRow>
+                        </ExpandedArea>
+                      )}
+                    </CourseItem>
+                  );
+                })}
+              </CourseList>
+            </SheetContentWrapper>
+          </CourseSheetScrollableContent>
+        </CourseSheetContainer>
+      </CourseSheet>
+
+      {open &&
+        createPortal(
+          <FloatingActionsContainer>
+            <FilterButton
+              $isHidden={isSearchActive}
+              $isZeroCount={activeFilterCount === 0}
+              onClick={() =>
+                navigate(ROUTES.TIMETABLE.FILTER, {
+                  state: { filters: activeFilters },
+                })
+              }
+            >
+              <SlidersHorizontal size={24} />
+              {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
+            </FilterButton>
+
+            <FloatingSearchBar
+              ref={searchBarRef}
+              placeholder="교과목명, 교수명 검색"
+              onSearch={(query) => console.log("검색 실행:", query)}
+              onActiveChange={setIsSearchActive}
+              searchParamKey="courseQuery"
+            />
+          </FloatingActionsContainer>,
+          document.body,
+        )}
+    </>
   );
 };
 
@@ -253,129 +408,181 @@ export default MobileCourseSearchSheet;
 
 // --- 스타일 ---
 
-const FilterRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding-bottom: 16px;
-  background-color: var(--bg-base, #ffffff);
-  z-index: 10;
-  flex-shrink: 0;
+const CourseSheet = styled(Sheet)`
+  z-index: 10000;
 `;
 
-const CategoryWrapper = styled.div`
-  flex: 1;
-  min-width: 0;
+const CourseSheetContainer = styled(Sheet.Container)`
+  left: 0;
+  right: 0;
+  width: min(100%, 768px);
+  height: 90dvh !important;
+  max-height: 90dvh !important;
+  margin: 0 auto;
+  overflow: hidden;
+  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top-left-radius: 32px !important;
+  border-top-right-radius: 32px !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  background: var(--bg-base, #ffffff);
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25) !important;
 `;
 
-const FilterChipsScroll = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  width: 100%;
+const CourseSheetHeader = styled(Sheet.Header)`
+  flex: 0 0 20px;
 
-  &::-webkit-scrollbar {
-    display: none;
+  .react-modal-sheet-header {
+    height: 20px !important;
+    padding: 16px 0;
+    box-sizing: border-box;
   }
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-`;
 
-const FilterChipItem = styled.div`
-  display: flex;
-  padding: 8px 12px;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #333d4b);
-  flex-shrink: 0;
-  white-space: nowrap;
+  .react-modal-sheet-drag-indicator-container {
+    width: 40px !important;
+    height: 4px !important;
+    border-radius: 2px !important;
+    background: var(--border-default, #e5e8eb) !important;
+  }
 
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
-`;
-
-const SearchCircleButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-brand);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease-in-out;
-
-  &:active {
-    transform: scale(0.92);
+  .react-modal-sheet-drag-indicator {
+    display: none !important;
   }
 `;
 
-const FilterCircleButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  background: var(--interactive-primary, #3b82f6);
-  color: var(--text-inverse);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease-in-out;
+const CourseSheetContent = styled(Sheet.Content)`
+  min-height: 0;
 
-  &:active {
-    transform: scale(0.92);
+  .react-modal-sheet-content-scroller {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 `;
 
-const ScrollableBody = styled.div<{
-  $snapHeight?: number;
-}>`
-  flex: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+const SheetContentWrapper = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   min-height: 0;
-  padding-bottom: 24px;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+`;
 
-  max-height: ${({ $snapHeight }) =>
-    typeof $snapHeight === "number"
-      ? `calc(${$snapHeight * 100}dvh - 120px)`
-      : "none"};
+const FloatingActionsContainer = styled.div`
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: calc(768px - 40px);
+  z-index: 10005;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  box-sizing: border-box;
+`;
 
-  &::-webkit-scrollbar {
-    display: none;
+const FilterButton = styled.button<{
+  $isHidden: boolean;
+  $isZeroCount?: boolean;
+}>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 56px;
+  border-radius: 999px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-sizing: border-box;
+  white-space: nowrap;
+
+  border: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "1px solid var(--border-default, #E5E8EB)"
+      : "1px solid var(--border-brand, #0061ff)"};
+  background: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "rgba(255, 255, 255, 0.50)"
+      : "var(--interactive-primary, #3b82f6)"};
+  box-shadow: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "0 4px 12px 0 rgba(0, 0, 0, 0.08)"
+      : "0 4px 12px rgba(59, 130, 246, 0.3)"};
+  backdrop-filter: ${({ $isZeroCount }) =>
+    $isZeroCount ? "blur(8px)" : "none"};
+
+  color: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "var(--text-secondary, #333d4b)"
+      : "var(--text-inverse, #fff)"};
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+
+  width: fit-content;
+  
+  /* 수치 변화 추적 */
+  transition:
+    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: max-width, padding, margin-right, opacity, transform;
+
+  ${(props) =>
+    props.$isHidden
+      ? `
+    max-width: 0px;
+    padding: 0;
+    margin-right: 0px;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+    border: 0px solid transparent; 
+  `
+      : props.$isZeroCount
+        ? `
+    max-width: 56px;
+    padding: 16px;
+    margin-right: 16px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  `
+        : `
+    max-width: 240px; 
+    padding: 16px 20px;
+    margin-right: 16px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  `}
+
+  &:active {
+    transform: scale(0.95);
   }
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 `;
 
 const CourseList = styled.div`
-  padding: 0 0 24px 0;
+  padding: 0;
 `;
 
 const CourseItem = styled.div`
-  padding: 16px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  //gap: 8px;
   background-color: #ffffff;
   transition: background-color 0.2s;
   //cursor: pointer;
@@ -393,22 +600,13 @@ const MainInfo = styled.div`
 `;
 
 const CourseName = styled.h3`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-secondary, #333d4b);
 
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
   line-height: 24px;
   margin: 0;
-`;
-
-const ProfName = styled.span`
-  color: var(--text-secondary, #333d4b);
-
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
 `;
 
 const RightInfo = styled.div`
@@ -423,7 +621,7 @@ const EnrolledBadge = styled.span`
   justify-content: center;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid var(--bg-brand, #d3e5ff);
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
   background: var(--bg-brand-subtle, #eff6ff);
   color: var(--text-brand, #0061ff);
 
@@ -433,28 +631,46 @@ const EnrolledBadge = styled.span`
   line-height: 16px;
 `;
 
-const StyledArrowIcon = styled(MdKeyboardArrowDown)<{ $isExpanded: boolean }>`
-  font-size: 24px;
-  color: var(--text-secondary);
-  transition: transform 0.3s;
-  transform: ${({ $isExpanded }) =>
-    $isExpanded ? "rotate(180deg)" : "rotate(0deg)"};
+const CourseAttributes = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
 `;
 
-const DetailText = styled.div`
-  color: var(--text-tertiary, #8b95a1);
+const AttributeItem = styled.span<{ $primary?: boolean }>`
+  color: ${({ $primary }) =>
+    $primary
+      ? "var(--text-secondary, #333d4b)"
+      : "var(--text-tertiary, #8b95a1)"};
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+`;
 
+const CourseAdditionalInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  color: var(--text-tertiary, #8b95a1);
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
+
+  margin-top: 4px;
+`;
+
+const InfoLine = styled.div`
+  display: flex;
+  gap: 12px;
 `;
 
 const ExpandedArea = styled.div`
   margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   animation: fadeIn 0.2s ease-in-out;
 
   @keyframes fadeIn {
@@ -488,6 +704,7 @@ const ActionButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   padding: 8px 12px;
   border-radius: 999px;
   cursor: pointer;
@@ -496,7 +713,7 @@ const ActionButton = styled.button`
   transition: all 0.2s ease-in-out;
   box-sizing: border-box;
 
-  font-size: 14px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 500;
   line-height: 20px;

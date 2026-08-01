@@ -16,7 +16,7 @@ export default {
     },
   },
   // tokens 폴더 안의 모든 .tokens.json 파일을 대상으로 지정
-  source: ["tokens/**/*.tokens.json"],
+  source: ["tokens/tokens.json"],
   platforms: {
     css: {
       // 2. 기본 'css' 그룹 대신 개별 트랜스폼을 적용하여 px 변환을 수행합니다.

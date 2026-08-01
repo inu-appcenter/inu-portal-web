@@ -348,6 +348,7 @@ const BannerSection = styled.div`
   width: 100%;
   height: ${BANNER_SECTION_HEIGHT};
   overflow: hidden;
+  padding: 16px;
 `;
 
 const BannerStage = styled.div<{ $isExpanded: boolean }>`

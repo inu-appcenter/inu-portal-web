@@ -1,17 +1,10 @@
 import { useLayoutEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { useHeader } from "@/context/HeaderContext";
-import { ROUTES } from "@/constants/routes.ts";
+
+const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
 
 export default function MobileSugangSimulatorPage() {
   const [isLoading, setIsLoading] = useState(true);
-
-  useHeader({
-    title: "모의 수강 신청",
-    hasback: true,
-    pageBgColor: "#ffffff",
-    backPath: ROUTES.TIMETABLE.ROOT,
-  });
 
   useLayoutEffect(() => {
     const html = document.documentElement;
@@ -45,7 +38,7 @@ export default function MobileSugangSimulatorPage() {
         </LoadingOverlay>
       )}
       <StyledIframe
-        src="https://inu-sugang-simulator.pages.dev"
+        src={SIMULATOR_URL}
         title="모의 수강 신청 시뮬레이터"
         allow="fullscreen"
         onLoad={() => setIsLoading(false)}
@@ -56,7 +49,7 @@ export default function MobileSugangSimulatorPage() {
 
 const PageWrapper = styled.div`
   width: 100%;
-  height: calc(100dvh - var(--header-height, 56px));
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;

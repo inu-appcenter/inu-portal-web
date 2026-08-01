@@ -57,12 +57,10 @@ export function supportsMultiWebView(): boolean {
  * 앱 또는 브라우저 환경에 맞는 웹뷰 스택 이동 처리를 정의하는 어댑터 객체입니다.
  */
 export const appBridge = {
-  /**
-   * 새로운 웹뷰 액티비티/뷰컨트롤러를 위에 쌓습니다.
-   * @param path 라우팅 경로 (예: "/board/tips/12")
-   */
-  navigateTo(path: string): void {
-    const fullUrl = `${window.location.origin}${path}`;
+  navigateTo(pathOrUrl: string): void {
+    const isAbsoluteUrl = /^https?:\/\//i.test(pathOrUrl);
+    const fullUrl = isAbsoluteUrl ? pathOrUrl : `${window.location.origin}${pathOrUrl}`;
+    const path = isAbsoluteUrl ? new URL(pathOrUrl).pathname + new URL(pathOrUrl).search + new URL(pathOrUrl).hash : pathOrUrl;
 
     // 신버전 앱: PlatformChannel 우선
     if (bridgeChannel) {

@@ -1,0 +1,275 @@
+import styled from "styled-components";
+import { useHeader } from "@/context/HeaderContext";
+import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { useNavigate } from "react-router-dom";
+import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
+import { ROUTES } from "@/constants/routes";
+import { useMemo, useCallback, useState } from "react";
+import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import TimeTableCreateModal, {
+  TIMETABLE_SEMESTERS,
+} from "@/components/mobile/timetable/TimeTableCreateModal";
+
+// Icons
+const PlusIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 5V19" stroke="#333D4B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 12H19" stroke="#333D4B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const StarIcon = ({ filled }: { filled: boolean }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill={filled ? "#FFD60A" : "none"} xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke={filled ? "#FFD60A" : "#B0B8C1"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const getTimetableCredits = (events: ClassItem[]) =>
+  events.reduce((total, item) => {
+    const fallbackCredits = Math.max(1, item.endTime - item.startTime);
+    return total + (item.credits ?? fallbackCredits);
+  }, 0);
+
+export default function MobileTimeTableListPage() {
+  const navigate = useNavigate();
+  const { timetables, setSemester, setActiveTimetable, setRepresentative } = useTimetableStore();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addModalSemester, setAddModalSemester] = useState(TIMETABLE_SEMESTERS[0]);
+
+  const semesters = TIMETABLE_SEMESTERS;
+
+  const openAddModal = useCallback((semester: string) => {
+    setAddModalSemester(semester);
+    setIsAddModalOpen(true);
+  }, []);
+
+  const handleAddClick = useCallback(() => {
+    openAddModal(semesters[0]);
+  }, [openAddModal, semesters]);
+
+  const headerRight = useMemo(() => (
+    <IconButton onClick={handleAddClick}>
+      <PlusIcon />
+    </IconButton>
+  ), [handleAddClick]);
+
+  useHeader({
+    title: "시간표 목록",
+    hasback: true,
+    immersive: true,
+    pageBgColor: "#f8f9fb",
+    rightArea: headerRight
+  });
+
+  const handleSelectTimetable = (t: Timetable) => {
+    setSemester(t.semester);
+    setActiveTimetable(t.id);
+    navigate(ROUTES.TIMETABLE.ROOT);
+  };
+
+  return (
+    <PageWrapper>
+      <ListContainer>
+        {semesters.map((sem) => {
+          const list = timetables.filter((t) => t.semester === sem);
+          const hasTimetable = list.length > 0;
+          return (
+            <TimeTableListCard
+              key={sem}
+              $isClickable={!hasTimetable}
+              onClick={
+                hasTimetable
+                  ? undefined
+                  : () => openAddModal(sem)
+              }
+              role={!hasTimetable ? "button" : undefined}
+              tabIndex={!hasTimetable ? 0 : undefined}
+              onKeyDown={
+                !hasTimetable
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openAddModal(sem);
+                      }
+                    }
+                  : undefined
+              }
+            >
+              <SemesterHeader>{sem}</SemesterHeader>
+              {hasTimetable ? (
+                <ScheduleListWrapper>
+                  {list.map((t) => (
+                    <ScheduleRow key={t.id} onClick={() => handleSelectTimetable(t)}>
+                      <ScheduleName>{t.name}</ScheduleName>
+                      <TimetableMeta>
+                        <CreditBadge>{getTimetableCredits(t.events)}학점</CreditBadge>
+                        <StarButton onClick={(e) => {
+                          e.stopPropagation();
+                          setRepresentative(t.id);
+                        }}>
+                          <StarIcon filled={t.isRepresentative} />
+                        </StarButton>
+                      </TimetableMeta>
+                    </ScheduleRow>
+                  ))}
+                </ScheduleListWrapper>
+              ) : (
+                <EmptySemesterWrapper>
+                  등록된 시간표가 없습니다.
+                </EmptySemesterWrapper>
+              )}
+            </TimeTableListCard>
+          );
+        })}
+      </ListContainer>
+
+      <TimeTableCreateModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        initialSemester={addModalSemester}
+      />
+    </PageWrapper>
+  );
+}
+
+const PageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--header-height, 56px) + 20px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 0px) + 40px);
+  box-sizing: border-box;
+  background-color: var(--bg-subtle, #f8f9fb);
+  min-height: 100vh;
+`;
+
+const ListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+`;
+
+const TimeTableListCard = styled.div<{ $isClickable?: boolean }>`
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  ${({ $isClickable }) =>
+    $isClickable &&
+    `
+    &:hover {
+      border-color: var(--border-brand, #0061ff);
+      box-shadow: 0 4px 16px rgba(0, 97, 255, 0.08);
+      transform: translateY(-1px);
+    }
+  `}
+`;
+
+const SemesterHeader = styled.div`
+  padding: 16px 16px 8px 16px;
+  font-family: Pretendard;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-secondary, #333d4b);
+`;
+
+const ScheduleListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 8px 16px;
+`;
+
+const ScheduleRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 48px;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  cursor: pointer;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ScheduleName = styled.span`
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-secondary, #333d4b);
+`;
+
+const TimetableMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CreditBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted, #f1f3f5);
+  color: var(--text-primary, #333d4b);
+  font-family: Pretendard;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+`;
+
+const StarButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+`;
+
+const EmptySemesterWrapper = styled.div`
+  padding: 16px 16px 20px 16px;
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--text-secondary, #8b95a1);
+  text-align: center;
+`;
+
+const IconButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+  
+  &:active {
+    background-color: var(--bg-muted, #f1f3f5);
+  }
+`;
+

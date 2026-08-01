@@ -7,6 +7,7 @@ import Ripple from "@/components/common/Ripple";
 type MenuItemType = {
   label: string;
   onClick: () => void;
+  icon?: React.ReactNode;
 };
 
 interface TopRightDropdownMenuProps {
@@ -85,7 +86,8 @@ const TopRightDropdownMenu: React.FC<TopRightDropdownMenuProps> = ({
                   }}
                 >
                   <Ripple />
-                  {item.label}
+                  {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+                  <span>{item.label}</span>
                 </MenuItem>
               ))}
             </Dropdown>
@@ -173,12 +175,13 @@ const Dropdown = styled.div<{ $isOpen: boolean }>`
 const MenuItem = styled.button`
   display: flex;
   align-items: center;
+  gap: 8px;
   width: 100%;
-  min-height: 40px;
+  min-height: 48px;
   box-sizing: border-box;
   cursor: pointer;
-  color: black;
-  font-size: 14px;
+  color: #333D4B;
+  font-size: 15px;
   line-height: 1.4;
   padding: 10px 16px;
   word-break: keep-all;
@@ -187,9 +190,26 @@ const MenuItem = styled.button`
   outline: none;
   position: relative;
   overflow: hidden;
+  text-align: left;
 
   &:hover {
     font-weight: 500;
     background-color: rgba(243, 244, 247, 0.4);
+  }
+`;
+
+const IconWrapper = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: #4E5968;
+
+  & > svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2px;
   }
 `;

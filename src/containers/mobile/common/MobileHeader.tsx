@@ -12,11 +12,7 @@ import { useHeaderConfig } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import Ripple from "@/components/common/Ripple";
-import {
-  DESKTOP_MEDIA,
-  MOBILE_BACK_ICON_VISUAL_OFFSET,
-  MOBILE_PAGE_GUTTER,
-} from "@/styles/responsive";
+import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   const navigate = useNavigate();
@@ -87,6 +83,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       subHeader,
       floatingSubHeader,
       isScrolled,
+      rightAreaNotCircle,
     } = useHeaderConfig(targetPath);
 
     const navigate = useCustomNavigate();
@@ -109,12 +106,15 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       navigate(-1);
     };
 
-
     if (visible === false) return null;
 
     return (
       <MobileHeaderWrapper ref={ref} $contained={contained} $visible={true}>
-        <MainHeaderWrapper $isScrolled={isScrolled}>
+        <MainHeaderWrapper
+          $isScrolled={isScrolled}
+          $hasBack={(hasback && !!title) ?? false}
+          $hasTitle={!!title}
+        >
           {title ? (
             <TitleArea>
               {hasback && (
@@ -129,18 +129,29 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
                 $isScrolled={isScrolled}
                 $hasBack={hasback ?? false}
               >
-                <HeaderTitle>{title}</HeaderTitle>
+                <HeaderTitle $hasBack={hasback ?? false}>{title}</HeaderTitle>
               </TitleWrapper>
             </TitleArea>
           ) : (
-            <img className="logo" onClick={handleLogoClick} src={intipLogo} />
+            <TitleArea>
+              <TitleWrapper $isScrolled={isScrolled} $hasBack={false}>
+                <img
+                  className="logo"
+                  onClick={handleLogoClick}
+                  src={intipLogo}
+                />
+              </TitleWrapper>
+            </TitleArea>
           )}
 
           {(showAlarm || menuItems || rightArea) && (
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
               $isCircle={
-                [showAlarm, menuItems, rightArea].filter(Boolean).length === 1
+                rightAreaNotCircle
+                  ? false
+                  : [showAlarm, menuItems, rightArea].filter(Boolean).length ===
+                    1
               }
               $marginRight={MOBILE_PAGE_GUTTER}
             >
@@ -185,32 +196,56 @@ const MobileHeaderWrapper = styled.header<{
   display: flex;
   flex-direction: column;
   pointer-events: none;
-
-  @media ${DESKTOP_MEDIA} {
-    max-width: none;
-    padding-top: 20px;
-  }
 `;
 
-const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
+const MainHeaderWrapper = styled.div<{
+  $isScrolled: boolean;
+  $hasBack: boolean;
+  $hasTitle: boolean;
+}>`
   position: relative;
   z-index: 2;
   width: 100%;
-  height: 56px;
+  height: calc(72px + env(safe-area-inset-top, 20px));
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  padding: 0 16px;
   pointer-events: none;
+
+  padding-top: calc(16px + env(safe-area-inset-top, 20px));
+  padding-left: ${({ $hasBack }) => ($hasBack ? "12px" : "20px")};
+  padding-right: ${({ $hasBack }) => ($hasBack ? "16px" : "20px")};
+
+  background: ${({ $isScrolled, $hasTitle }) =>
+    $isScrolled || !$hasTitle
+      ? "transparent"
+      : "var(--bg-blur, rgba(255, 255, 255, 0.6))"};
+  backdrop-filter: ${({ $isScrolled, $hasTitle }) =>
+    $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
+  -webkit-backdrop-filter: ${({ $isScrolled, $hasTitle }) =>
+    $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
+  box-shadow: ${({ $isScrolled, $hasTitle }) =>
+    $isScrolled || !$hasTitle
+      ? "none"
+      : "0px 4px 12px 0px rgba(0, 0, 0, 0.08)"};
+  border-bottom-left-radius: ${({ $isScrolled, $hasTitle }) =>
+    $isScrolled || !$hasTitle ? "0px" : "32px"};
+  border-bottom-right-radius: ${({ $isScrolled, $hasTitle }) =>
+    $isScrolled || !$hasTitle ? "0px" : "32px"};
+
+  transition:
+    background 0.25s ease,
+    backdrop-filter 0.25s ease,
+    box-shadow 0.25s ease,
+    border-radius 0.25s ease;
 
   .logo {
     pointer-events: auto;
     height: auto;
     width: 100px;
     cursor: pointer;
-    padding: 4px 0;
-    margin-left: var(--space-2);
+    margin-left: 0;
     opacity: ${({ $isScrolled }) => ($isScrolled ? 0 : 1)};
     visibility: ${({ $isScrolled }) => ($isScrolled ? "hidden" : "visible")};
     transition:
@@ -220,11 +255,12 @@ const MainHeaderWrapper = styled.div<{ $isScrolled: boolean }>`
   }
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0;
+    padding-left: ${({ $hasBack }) => ($hasBack ? "12px" : "20px")};
+    padding-right: ${({ $hasBack }) => ($hasBack ? "16px" : "20px")};
 
     .logo {
       width: 124px;
-      margin-left: 12px;
+      margin-left: 0;
     }
   }
 `;
@@ -239,6 +275,7 @@ const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
   box-sizing: border-box;
   pointer-events: none;
   overflow: visible;
+  margin-top: 12px;
 
   @media ${DESKTOP_MEDIA} {
     padding: 0;
@@ -255,24 +292,31 @@ const IconBackgroundWrapper = styled.div<{
   align-items: center;
   justify-content: center;
   gap: 12px;
-  border-radius: 50px;
-
-  padding: ${({ $isCircle }) =>
-    $isCircle ? "0" : "0 14px"}; /* 상하 패딩 제거 */
-  width: ${({ $isCircle }) => ($isCircle ? "48px" : "auto")};
-  height: 48px;
-  pointer-events: auto;
+  border-radius: 999px;
   box-sizing: border-box;
 
-  /* 스크롤 시에만 배경과 그림자 적용 (기존 BackButton 수치 복구) */
-  background: ${({ $isScrolled }) =>
-    $isScrolled ? "rgba(255, 255, 255, 0.7)" : "transparent"};
-  box-shadow: ${({ $isScrolled }) =>
-    $isScrolled ? "0 2px 4px 0 rgba(0, 0, 0, 0.15)" : "none"};
-  backdrop-filter: blur(${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")});
-  -webkit-backdrop-filter: blur(
-    ${({ $isScrolled }) => ($isScrolled ? "5px" : "0px")}
-  );
+  padding: ${({ $isCircle }) => ($isCircle ? "0" : "0 12px")};
+  width: ${({ $isCircle }) => ($isCircle ? "40px" : "auto")};
+  height: 40px;
+  pointer-events: auto;
+
+  /* 스크롤 시에만 배경, 그림자, 테두리, 블러 적용 */
+  ${({ $isScrolled }) =>
+    $isScrolled
+      ? `
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid var(--border-default, #e5e8eb);
+        box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      `
+      : `
+        background: transparent;
+        border: 1px solid transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      `}
 
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -303,17 +347,7 @@ const TitleArea = styled.div`
   min-width: 0;
   margin-left: 0;
   pointer-events: none;
-  gap: 0;
-
-  /* 좌측 백버튼 아이콘이 왼쪽 화면 끝선에 정렬되도록 음수 마진 오프셋 적용 */
-  & > ${IconBackgroundWrapper} {
-    margin-left: -12px;
-    margin-right: 0;
-  }
-
-  @media ${DESKTOP_MEDIA} {
-    margin-left: ${MOBILE_BACK_ICON_VISUAL_OFFSET};
-  }
+  gap: 4px;
 `;
 
 const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
@@ -327,26 +361,25 @@ const TitleWrapper = styled.div<{ $isScrolled: boolean; $hasBack: boolean }>`
 
   overflow: hidden;
   white-space: nowrap;
-  margin-left: -4px;
 
   transition:
     opacity 0.2s ease-in-out,
     visibility 0s linear ${({ $isScrolled }) => ($isScrolled ? "0.2s" : "0s")};
 `;
 
-const HeaderTitle = styled.div`
+const HeaderTitle = styled.div<{ $hasBack?: boolean }>`
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding-left: 8px;
   overflow: hidden;
-  //text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 22px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
+
+  font-size: ${({ $hasBack }) => ($hasBack ? "20px" : "24px")};
+  font-weight: ${({ $hasBack }) => ($hasBack ? "600" : "700")};
+  line-height: 32px;
+  letter-spacing: ${({ $hasBack }) => ($hasBack ? "0px" : "-0.2px")};
+  color: var(--text-secondary, #333d4b);
 `;
 
 const FloatingWrapper = styled.div`

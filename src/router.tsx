@@ -6,11 +6,11 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 // Layouts
 import RootLayout from "@/layout/RootLayout";
 import MainTabLayout from "@/layout/MainTabLayout";
+import FullscreenSubLayout from "@/layout/FullscreenSubLayout";
 import SubLayout from "@/layout/SubLayout";
 import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
 // Pages (Imports 생략 - 기존과 동일)
-import MobileHomePage from "@/pages/mobile/MobileHomePage";
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
@@ -53,11 +53,15 @@ import MobileTipsCategoryPage from "@/pages/mobile/MobileTipsCategoryPage";
 import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
-import MobileTimeTableCompareSelectPage from "@/pages/mobile/timetable/MobileTimeTableCompareSelectPage";
+import MobileFriendListPage from "@/pages/mobile/MobileFriendListPage";
 import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
 import MobileTimeTableVisibilityPage from "@/pages/mobile/timetable/MobileTimeTableVisibilityPage";
 import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
 import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimulatorPage";
+import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import MobileTimeTableListPage from "@/pages/mobile/timetable/MobileTimeTableListPage";
+import MobileGradeCalculatorPage from "@/pages/mobile/timetable/MobileGradeCalculatorPage";
+import MobileSyllabusPage from "@/pages/mobile/timetable/MobileSyllabusPage";
 import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookDetailPage";
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
@@ -85,9 +89,9 @@ export const router = createBrowserRouter([
       {
         element: <MainTabLayout showNav={true} showHeader={true} />,
         children: [
-          { path: "", element: <Navigate to={ROUTES.HOME} replace /> },
-          { path: ROUTES.HOME, element: <MobileHomePage /> },
-          { path: ROUTES.HOME_V2, element: <MobileHomePageV2 /> },
+          { path: "", element: <MobileHomePageV2 /> },
+          { path: ROUTES.HOME, element: <MobileHomePageV2 /> },
+          { path: ROUTES.HOME_V2, element: <Navigate to={ROUTES.HOME} replace /> },
           { path: ROUTES.BUS.ROOT, element: <MobileBusPage /> },
           { path: ROUTES.CHAT.LIST, element: <MobileChatListPage /> },
           { path: ROUTES.SAVE, element: <MobileSavePage /> },
@@ -103,8 +107,8 @@ export const router = createBrowserRouter([
         path: ROUTES.MOBILE_ROOT, // "/m"
         element: <MainTabLayout showNav={true} showHeader={true} />,
         children: [
-          { path: "", element: <Navigate to={ROUTES.MOBILE_HOME} replace /> },
-          { path: "home", element: <MobileHomePage /> },
+          { path: "", element: <MobileHomePageV2 /> },
+          { path: "home", element: <MobileHomePageV2 /> },
           { path: "bus", element: <MobileBusPage /> },
           { path: "chat/list", element: <MobileChatListPage /> },
           { path: "save", element: <MobileSavePage /> },
@@ -128,11 +132,14 @@ export const router = createBrowserRouter([
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
-          { path: ROUTES.TIMETABLE.COMPARE_SELECT, element: <MobileTimeTableCompareSelectPage /> },
+          { path: ROUTES.FRIEND.LIST, element: <MobileFriendListPage /> },
           { path: ROUTES.TIMETABLE.COMPARE, element: <MobileTimeTableComparePage /> },
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
-          { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
+          { path: ROUTES.TIMETABLE.FILTER, element: <MobileCourseFilterPage /> },
+          { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
+          { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
+          { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },
@@ -279,6 +286,12 @@ export const router = createBrowserRouter([
           { path: ROUTES.BUS.INFO_MAP, element: <MobileBusMapPage /> },
         ],
       },
+      {
+        element: <FullscreenSubLayout backgroundColor="#ffffff" />,
+        children: [
+          { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
+        ],
+      },
     ],
   },
 ]);
@@ -335,29 +348,29 @@ if (typeof window !== "undefined") {
     const isHomePath = path === ROUTES.HOME || path === ROUTES.MOBILE_HOME;
     // 이 웹뷰 자신의 최초 부트스트랩 리다이렉트(루트 인덱스 라우트의
     // <Navigate to={ROUTES.HOME} replace />, router.tsx 라우트 테이블 참고).
-    // 모든 웹뷰 인스턴스(root, sub, warm 슬롯 전부)가 SPA 부팅 시 한 번씩
-    // 거치므로 goHome 위임 대상에서 제외해야 한다 — 안 그러면 예를 들어
-    // "+1 재워밍"으로 새로 뜬 warm 슬롯이 자기 부팅 리다이렉트만으로
-    // appBridge.goHome 을 보내 popToRoot 를 트리거해, 방금 승격된 서브
-    // 페이지를 지워버린다. "/" 에서 홈으로 가는 경우는 이 부트스트랩
-    // 리다이렉트 외에는 발생하지 않는다(사용자가 "/"에 실제로 머무는 화면은
-    // 없음 — 항상 즉시 /home 으로 넘어감).
     const isBootstrapRedirect = window.location.pathname === "/" && isHomePath;
 
     // 2. 홈 탭 경로 이동: 탭바 클릭(isTabNavigation)이나 이 웹뷰 자신의 부팅
-    // 리다이렉트가 아니라면 항상 네이티브로 위임한다 — 서브페이지(pushed
-    // 웹뷰) 안에서 호출된 경우 그 서브페이지 자신의 웹뷰 안에서 렌더링되는
-    // 걸 막고, 네이티브 스택을 root 로 collapse 한 뒤 root 를 이 path 로
-    // SPA 이동시킨다. 이미 root 위에서 탭바로 홈을 누른 경우는
-    // isTabNavigation 이 걸러줘 기존처럼 로컬에서 즉시 처리된다(불필요한
-    // 브릿지 왕복 없음).
+    // 리다이렉트가 아니라면 항상 네이티브로 위임한다
     if (supportsMultiWebView() && isHomePath && !isTabNavigation && !isBootstrapRedirect) {
       appBridge.goHome(path);
       return Promise.resolve();
     }
 
+    // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅이거나 빈 이동인지 확인
+    const isHashOrSearchOnly =
+      to === "" ||
+      (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
+      (typeof to === "object" && to !== null && !to.pathname);
+
     // 3. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
-    if (supportsMultiWebView() && !isMainTabPath(path) && !isTabNavigation && !opts?.replace) {
+    if (
+      supportsMultiWebView() &&
+      !isMainTabPath(path) &&
+      !isTabNavigation &&
+      !opts?.replace &&
+      !isHashOrSearchOnly
+    ) {
       const fullPath = typeof to === "string"
         ? to
         : `${to.pathname || ""}${to.search || ""}${to.hash || ""}`;

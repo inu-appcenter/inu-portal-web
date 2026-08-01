@@ -19,6 +19,20 @@ interface SubLayoutProps {
   backgroundColor?: string;
 }
 
+const getInitialHeaderHeight = (path: string): number => {
+  const pagesWithSubHeader = [
+    "/timetable/compare",
+    "/home/notice",
+    "/home/tips",
+    "/home/club",
+    "/home/deptnotice/setting",
+  ];
+  if (pagesWithSubHeader.some((p) => path.startsWith(p))) {
+    return 126;
+  }
+  return 76;
+};
+
 export default function SubLayout({
   showHeader = true,
   showNav = false,
@@ -44,8 +58,9 @@ export default function SubLayout({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [setIsScrolled]);
 
-  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader);
-  const headerHeight = showHeader ? measuredHeaderHeight : 20;
+  const initialHeaderHeight = getInitialHeaderHeight(location.pathname);
+  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader, initialHeaderHeight, location.pathname);
+  const headerHeight = showHeader ? (measuredHeaderHeight || initialHeaderHeight) : 20;
   const navHeight = showNav ? 100 : 0;
 
   return (
@@ -54,7 +69,7 @@ export default function SubLayout({
       $fillsViewportOnDesktop={fillsViewportOnDesktop}
       $backgroundColor={pageBgColor ?? backgroundColor}
       style={{
-        "--header-height": `${headerHeight}px`,
+        "--header-height": `${headerHeight + 12}px`,
         "--nav-height": `${navHeight}px`,
       } as React.CSSProperties}
     >
@@ -70,7 +85,7 @@ export default function SubLayout({
         )}
 
         <ContentArea
-          $pt={immersive ? 0 : headerHeight}
+          $pt={immersive ? 0 : headerHeight + 12}
           $pb={immersive ? 0 : navHeight}
           $fillsViewportOnDesktop={fillsViewportOnDesktop}
         >

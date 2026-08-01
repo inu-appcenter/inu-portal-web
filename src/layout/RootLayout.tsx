@@ -3,8 +3,8 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { getMembers, postApiLogs, postFcmToken } from "@/apis/members";
-import { HeaderProvider } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
+import { HeaderProvider } from "@/context/HeaderContext";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import useAppStateStore from "@/stores/useAppStateStore";
 import useUserStore from "@/stores/useUserStore";
@@ -18,6 +18,7 @@ import {
   subscribeToFcmToken,
 } from "@/utils/fcm";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
 
@@ -166,7 +167,13 @@ export default function RootLayout() {
   return (
     <HeaderProvider>
       <ScrollBarStyles />
-      <ScreenContainer>{outlet}</ScreenContainer>
+      <ScreenContainer>
+        {outlet}
+        {(location.pathname === ROUTES.HOME ||
+          location.pathname === ROUTES.MOBILE_HOME ||
+          location.pathname === ROUTES.HOME_V2 ||
+          location.pathname === ROUTES.ROOT) && <AIChatFloatingButton />}
+      </ScreenContainer>
     </HeaderProvider>
   );
 }
@@ -177,7 +184,8 @@ const ScreenContainer = styled.div`
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
-  background-color: #f1f1f3;
+  background: var(--bg-subtle, #F8F9FB);
+
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 
   @media ${DESKTOP_MEDIA} {

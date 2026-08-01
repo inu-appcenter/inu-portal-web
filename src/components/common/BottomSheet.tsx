@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
+import { X } from "lucide-react";
 
 export interface BottomSheetProps {
   open: boolean;
@@ -13,6 +14,12 @@ export interface BottomSheetProps {
   dismissible?: boolean;
   disablePreventScroll?: boolean;
   snapToSequentialPoint?: boolean;
+  showCloseButton?: boolean;
+  repositionInputs?: boolean;
+  zIndex?: number;
+  height?: string | number;
+  maxHeight?: string | number;
+  closeOnBack?: boolean;
 }
 
 export default function BottomSheet({
@@ -20,13 +27,78 @@ export default function BottomSheet({
   onOpenChange,
   children,
   snapPoints,
-  activeSnapPoint,
-  setActiveSnapPoint,
+  activeSnapPoint: externalActiveSnapPoint,
+  setActiveSnapPoint: externalSetActiveSnapPoint,
   modal = true,
   dismissible = true,
   disablePreventScroll = true,
   snapToSequentialPoint = true,
+  showCloseButton = false,
+  repositionInputs = false,
+  zIndex,
+  height,
+  maxHeight,
+  closeOnBack,
 }: BottomSheetProps) {
+  // snapPoints가 존재하지만 외부에서 활성 스냅 포인트 상태가 주어지지 않은 경우 내부에서 상태 관리
+  const [internalActiveSnapPoint, setInternalActiveSnapPoint] = useState<string | number | null>(
+    snapPoints && snapPoints.length > 0 ? snapPoints[snapPoints.length - 1] : null
+  );
+
+  const activeSnapPoint = externalActiveSnapPoint !== undefined ? externalActiveSnapPoint : internalActiveSnapPoint;
+  const setActiveSnapPoint = externalSetActiveSnapPoint || setInternalActiveSnapPoint;
+
+  const shouldCloseOnBack = closeOnBack !== undefined ? closeOnBack : (dismissible && modal);
+
+  // Hybrid-app friendly back button support
+  const hasPushStateRef = React.useRef(false);
+
+  useEffect(() => {
+    if (!onOpenChange || !shouldCloseOnBack) return;
+
+    if (open) {
+      window.history.pushState({ bottomSheetOpen: true }, "");
+      hasPushStateRef.current = true;
+    } else if (hasPushStateRef.current) {
+      window.history.back();
+      hasPushStateRef.current = false;
+    }
+  }, [open, onOpenChange, shouldCloseOnBack]);
+
+  useEffect(() => {
+    if (!open || !onOpenChange || !shouldCloseOnBack) return;
+
+    const handlePopState = () => {
+      hasPushStateRef.current = false;
+      onOpenChange(false);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [open, onOpenChange, shouldCloseOnBack]);
+
+  useEffect(() => {
+    if (open && snapPoints && snapPoints.length > 0 && externalActiveSnapPoint === undefined) {
+      setInternalActiveSnapPoint(snapPoints[snapPoints.length - 1]);
+    }
+  }, [open, snapPoints, externalActiveSnapPoint]);
+
+  // modal={false}일 때 외부 포탈 요소(예: 검색바 인풋)로의 포커스 이동을 차단하는 Radix FocusScope의 포커스 트랩 버그 완벽 차단
+  useEffect(() => {
+    if (!open || modal) return;
+
+    const handleFocusIn = (e: FocusEvent) => {
+      e.stopImmediatePropagation();
+    };
+
+    document.addEventListener("focusin", handleFocusIn, true);
+    return () => {
+      document.removeEventListener("focusin", handleFocusIn, true);
+    };
+  }, [open, modal]);
+
   return (
     <Drawer.Root
       open={open}
@@ -38,17 +110,44 @@ export default function BottomSheet({
       setActiveSnapPoint={setActiveSnapPoint}
       disablePreventScroll={disablePreventScroll}
       snapToSequentialPoint={snapToSequentialPoint}
+      repositionInputs={repositionInputs}
     >
       <Drawer.Portal>
-        {modal && <StyledOverlay />}
-        <StyledContent>
+        {modal && <StyledOverlay $zIndex={zIndex ? zIndex - 1 : undefined} />}
+        <StyledContent
+          $zIndex={zIndex}
+          $height={height}
+          $maxHeight={maxHeight}
+          onOpenAutoFocus={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onCloseAutoFocus={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onPointerDownOutside={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onFocusOutside={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (!modal) e.preventDefault();
+          }}
+          aria-describedby={undefined}
+        >
+          <Drawer.Title style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
+            바텀시트
+          </Drawer.Title>
           <SheetInner>
             <DragHeader>
               <HandleBar />
             </DragHeader>
-            <ContentAreaBottomSheet>
-              {children}
-            </ContentAreaBottomSheet>
+            {showCloseButton && (
+              <CloseButton onClick={() => onOpenChange?.(false)}>
+                <X size={18} />
+              </CloseButton>
+            )}
+            <ContentAreaBottomSheet>{children}</ContentAreaBottomSheet>
           </SheetInner>
         </StyledContent>
       </Drawer.Portal>
@@ -56,24 +155,31 @@ export default function BottomSheet({
   );
 }
 
-const StyledOverlay = styled(Drawer.Overlay)`
+const StyledOverlay = styled(Drawer.Overlay)<{ $zIndex?: number }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
-  z-index: 999;
+  z-index: ${({ $zIndex }) => $zIndex ?? 999};
 `;
 
-const StyledContent = styled(Drawer.Content)`
+const StyledContent = styled(Drawer.Content)<{
+  $zIndex?: number;
+  $height?: string | number;
+  $maxHeight?: string | number;
+}>`
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10000;
+  z-index: ${({ $zIndex }) => $zIndex ?? 10000};
   outline: none;
 
-  height: 100%;
-  max-height: 96%;
+  height: ${({ $height }) => (typeof $height === "number" ? `${$height * 100}%` : $height ?? "auto")};
+  max-height: ${({ $maxHeight }) =>
+    typeof $maxHeight === "number"
+      ? `${$maxHeight * 100}%`
+      : ($maxHeight ?? "96%")};
   display: flex;
   flex-direction: column;
 
@@ -83,6 +189,7 @@ const StyledContent = styled(Drawer.Content)`
 `;
 
 const SheetInner = styled.div`
+  position: relative;
   border-radius: 32px 32px 0 0;
   background: var(--bg-base, #ffffff);
   box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
@@ -106,6 +213,7 @@ const DragHeader = styled.div`
   justify-content: center;
   flex-shrink: 0;
   touch-action: none;
+  position: relative;
 `;
 
 const HandleBar = styled.div`
@@ -115,11 +223,44 @@ const HandleBar = styled.div`
   background: var(--border-default, #e5e8eb);
 `;
 
+const CloseButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bg-subtle, #f2f4f6);
+  color: var(--text-secondary, #4e5968);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background: var(--border-default, #e5e8eb);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+`;
+
 const ContentAreaBottomSheet = styled.div`
   padding: 0 20px 0;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 `;

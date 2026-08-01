@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useEffect, useRef, useLayoutEffect } from "react";
-import { Map, MapTypeControl, MapMarker, CustomOverlayMap, useKakaoLoader } from "react-kakao-maps-sdk";
+import { useMemo, useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import styled from "styled-components";
 import { Navigation } from "lucide-react"; // 내 위치 아이콘용
 import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB";
 import { MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
+import { useKakaoMapLoader } from "@/hooks/useKakaoMapLoader";
 
 import { mixpanelTrack } from "@/utils/mixpanel";
 
@@ -85,13 +86,11 @@ const getGpsHeading = (coords: GeolocationCoordinates) => {
 interface Props {
   selectedTab: string;
   viewXY: { X: number; Y: number };
+  mapMoveTrigger: number;
   setMap: any;
-  setSelectedCoord?: React.Dispatch<
-    React.SetStateAction<{ X: number; Y: number }>
-  >;
+  setSelectedCoord?: (coord: { X: number; Y: number }, enableOffset?: boolean) => void;
   openedMarkerId: string | null;
   setOpenedMarkerId: (id: string | null, coord?: { X: number; Y: number }) => void;
-  offset?: number;
   isTracking?: boolean;
   setIsTracking?: (isTracking: boolean) => void;
 }
@@ -99,65 +98,86 @@ interface Props {
 const KakaoMap = ({
   selectedTab,
   viewXY,
+  mapMoveTrigger,
   setMap,
   setSelectedCoord,
   openedMarkerId,
   setOpenedMarkerId,
-  offset = 0,
   isTracking = false,
   setIsTracking,
 }: Props) => {
-  useKakaoLoader({
-    appkey: "2c47e11928ed2d4c2829fa7dfabb59f8",
-    libraries: ["services", "clusterer", "drawing"],
-  });
-
+  const { loading, error } = useKakaoMapLoader();
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<kakao.maps.Map | null>(null);
   const [mapInstance, setInternalMap] = useState<kakao.maps.Map | null>(null);
+
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
   const [headingSource, setHeadingSource] = useState<HeadingSource>(null);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
+  
   const lastGpsHeadingAtRef = useRef(0);
   const hasShownHeadingHintRef = useRef(false);
+  const isDraggingRef = useRef(false);
+
   const currentTab = selectedTab as TabType;
   const config = MAP_TAB_CONFIG[currentTab];
-  
-  // 1. 지도의 중심을 로컬 상태로 관리 (인입런 방식)
-  const [mapCenter, setMapCenter] = useState({ lat: viewXY.X, lng: viewXY.Y });
-  const lastTargetRef = useRef(viewXY);
-  
-  const isDraggingRef = useRef(false);
-  const isSyncingCenterRef = useRef(false);
-  const isAnimatingRef = useRef(false);
-  const lastOffsetRef = useRef(offset);
 
-  const syncSelectedCoordWithMapCenter = (targetOffset: number) => {
-    if (!mapInstance || !setSelectedCoord) return;
+  // 1. 지도 초기화 및 이벤트 등록
+  useEffect(() => {
+    if (loading || error || !containerRef.current || mapRef.current) return;
+    if (!window.kakao?.maps) return;
 
-    const center = mapInstance.getCenter();
-    const nextCoord = {
-      X: center.getLat() + targetOffset,
-      Y: center.getLng(),
+    const options = {
+      center: new window.kakao.maps.LatLng(viewXY.X, viewXY.Y),
+      level: 4,
     };
 
-    isSyncingCenterRef.current = true;
-    setSelectedCoord((prev) => {
-      const isSame =
-        Math.abs(prev.X - nextCoord.X) < 0.00001 &&
-        Math.abs(prev.Y - nextCoord.Y) < 0.00001;
+    const map = new window.kakao.maps.Map(containerRef.current, options);
+    mapRef.current = map;
+    setInternalMap(map);
+    setMap(map);
 
-      if (isSame) {
-        isSyncingCenterRef.current = false;
-        return prev;
+    // 스카이뷰/지도 타입 전환 컨트롤 추가
+    const mapTypeControl = new window.kakao.maps.MapTypeControl();
+    map.addControl(mapTypeControl, window.kakao.maps.ControlPosition.TOPRIGHT);
+
+    // 레이아웃 지연 보정 및 중심점 복원
+    setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.relayout();
+        mapRef.current.setCenter(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
       }
-      
-      return nextCoord;
+    }, 100);
+
+    // 드래그/움직임 관련 트래킹 해제 리스너 등록
+    window.kakao.maps.event.addListener(map, "dragstart", () => {
+      isDraggingRef.current = true;
+      if (setIsTracking) setIsTracking(false);
     });
-  };
+
+    window.kakao.maps.event.addListener(map, "dragend", () => {
+      isDraggingRef.current = false;
+    });
+
+    window.kakao.maps.event.addListener(map, "idle", () => {
+      isDraggingRef.current = false;
+      if (isTracking && setIsTracking) setIsTracking(false);
+    });
+  }, [loading, error]);
 
 
 
-  // 1. 실시간 위치 추적
+  // 2. 외부 이동 트리거 감지 시 panTo 이동
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || mapMoveTrigger === 0) return;
+
+    const targetLatLng = new window.kakao.maps.LatLng(viewXY.X, viewXY.Y);
+    map.panTo(targetLatLng);
+  }, [mapMoveTrigger]);
+
+  // 3. 실시간 위치 추적
   useEffect(() => {
     if (!navigator.geolocation) return;
 
@@ -201,19 +221,15 @@ const KakaoMap = ({
         } else if (typeof speed === "number" && speed < GPS_HEADING_MIN_SPEED) {
           lastGpsHeadingAtRef.current = 0;
         }
-
-        // 사용자의 의도에 따라:
-        // 바텀시트 장소 클릭과 동일하게 처음 1회(버튼 클릭 시)만 지도가 이동하도록 하고,
-        // GPS 업데이트 시에는 파란색 내 위치 마커(myLocation)만 갱신하며 지도는 자동으로 따라가지 않습니다.
       },
       (err) => console.error(err),
       options
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [isTracking, mapInstance, offset]);
+  }, [isTracking]);
 
-  // 2. 기기 방향 감지
+  // 4. 기기 방향 감지
   useEffect(() => {
     if (!isTracking) {
       return;
@@ -277,6 +293,7 @@ const KakaoMap = ({
     return () => window.clearTimeout(timeoutId);
   }, [headingSource, isTracking]);
 
+  // 5. 내 위치 버튼 클릭
   const handleMyLocationClick = async () => {
     if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
       try { await (DeviceOrientationEvent as any).requestPermission(); } catch (e) {}
@@ -285,8 +302,9 @@ const KakaoMap = ({
 
     mixpanelTrack.campusMapTrackingToggled(!isTracking);
 
-    if (mapInstance) {
-      mapInstance.setLevel(3);
+    if (mapRef.current) {
+      mapRef.current.setLevel(3);
+      mapRef.current.panTo(new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng));
     }
     
     if (setSelectedCoord) {
@@ -298,51 +316,6 @@ const KakaoMap = ({
     if (setIsTracking) setIsTracking(true);
   };
 
-  const handleDragStart = () => {
-    isDraggingRef.current = true;
-  };
-
-  const handleDragEnd = () => {
-    // 아무런 React 상태 변경 없음 (드래그 중 렌더링 원천 차단)
-  };
-
-  const handleIdle = () => {
-    isDraggingRef.current = false;
-    isAnimatingRef.current = false;
-    if (isTracking && setIsTracking) setIsTracking(false);
-  };
-
-  // 3. 외부 viewXY 및 offset 변경 감지 (인입런 구조 적용)
-  useLayoutEffect(() => {
-    if (!mapInstance || isDraggingRef.current) return;
-
-    // 1. 바텀시트 조작(offset 변경) 감지 시 현재 위치 유지하며 부모 상태 동기화
-    if (Math.abs(lastOffsetRef.current - offset) > 0.0001) {
-      syncSelectedCoordWithMapCenter(lastOffsetRef.current);
-      lastOffsetRef.current = offset;
-      return;
-    }
-
-    // 2. 외부에서 좌표가 명시적으로 변경된 경우(장소 클릭 등)에만 이동
-    const isExternalMove = 
-      Math.abs(lastTargetRef.current.X - viewXY.X) > 0.00001 ||
-      Math.abs(lastTargetRef.current.Y - viewXY.Y) > 0.00001;
-
-    if (isExternalMove) {
-      if (isSyncingCenterRef.current) {
-        isSyncingCenterRef.current = false;
-        lastTargetRef.current = viewXY;
-        return;
-      }
-
-      lastTargetRef.current = viewXY;
-      setMapCenter({ lat: viewXY.X, lng: viewXY.Y });
-      
-      isAnimatingRef.current = true;
-      mapInstance.panTo(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
-    }
-  }, [viewXY.X, viewXY.Y, offset, mapInstance]);
-
   const placesToRender = useMemo(() => {
     switch (currentTab) {
       case "학교": return places;
@@ -353,113 +326,145 @@ const KakaoMap = ({
     }
   }, [currentTab]);
 
+  // 6. selectedTab 또는 지도 설정 완료 시 마커 동기화
+  const markersRef = useRef<kakao.maps.Marker[]>([]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // 기존 마커 전체 제거
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
+    // 새 마커 생성 및 지도 등록
+    const newMarkers = placesToRender.map((place) => {
+      const markerPosition = new window.kakao.maps.LatLng(
+        Number(place.latitude),
+        Number(place.longitude),
+      );
+
+      const markerImage = new window.kakao.maps.MarkerImage(
+        config.getIcon(place),
+        new window.kakao.maps.Size(24, 35),
+        {
+          offset: new window.kakao.maps.Point(12, 35),
+        }
+      );
+
+      const marker = new window.kakao.maps.Marker({
+        position: markerPosition,
+        image: markerImage,
+        clickable: true,
+      });
+
+      marker.setMap(map);
+
+      const markerId = config.getMarkerId(place);
+      const isOpen = openedMarkerId === markerId;
+
+      // 마커 클릭 이벤트 리스너
+      window.kakao.maps.event.addListener(marker, "click", () => {
+        if (!isOpen) {
+          mixpanelTrack.campusMapPlaceSelected(
+            config.getPlaceTitle(place),
+            place.category ?? "",
+            "Marker",
+          );
+        }
+        
+        // 핀을 클릭했을 때 지도를 해당 위치로 panTo하고 openedMarkerId를 갱신
+        // 정보창(말풍선)을 그리는 CustomOverlayMap은 기획 간소화 요구사항에 따라 렌더링하지 않음
+        setOpenedMarkerId(isOpen ? null : markerId, {
+          X: Number(place.latitude),
+          Y: Number(place.longitude),
+        });
+
+        if (setIsTracking) setIsTracking(false);
+      });
+
+      return marker;
+    });
+
+    markersRef.current = newMarkers;
+  }, [selectedTab, mapInstance]);
+
+  // 7. 내 위치 오버레이 관리 (Portal 렌더링용)
+  const myLocationOverlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
+  const [myLocationContainer] = useState(() => document.createElement("div"));
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (!myLocation) {
+      if (myLocationOverlayRef.current) {
+        myLocationOverlayRef.current.setMap(null);
+        myLocationOverlayRef.current = null;
+      }
+      return;
+    }
+
+    const position = new window.kakao.maps.LatLng(myLocation.lat, myLocation.lng);
+
+    if (!myLocationOverlayRef.current) {
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position,
+        content: myLocationContainer,
+        zIndex: 10,
+      });
+      overlay.setMap(map);
+      myLocationOverlayRef.current = overlay;
+    } else {
+      myLocationOverlayRef.current.setPosition(position);
+    }
+  }, [myLocation, mapInstance]);
+
+  useEffect(() => {
+    return () => {
+      if (myLocationOverlayRef.current) {
+        myLocationOverlayRef.current.setMap(null);
+      }
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#6c757d", fontSize: "14px" }}>
+        지도를 불러오는 중입니다...
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#dc3545", fontSize: "14px" }}>
+        지도를 불러오는 데 실패했습니다.
+      </Container>
+    );
+  }
+
   return (
     <Container>
-      <Map
-        center={mapCenter}
-        level={4}
-        draggable={true}
-        zoomable={true}
-        style={{ width: "100%", height: "100%" }}
-        onCreate={(map) => {
-          setMap(map);
-          setInternalMap(map);
-          setTimeout(() => {
-            map.relayout();
-            map.setCenter(new window.kakao.maps.LatLng(viewXY.X, viewXY.Y));
-          }, 100);
-        }}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onIdle={handleIdle}
-      >
-        {placesToRender.map((place) => {
-          const markerId = config.getMarkerId(place);
-          const isOpen = openedMarkerId === markerId;
+      {/* 바닐라 카카오 지도가 마운트될 컨테이너 */}
+      <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
 
-          return (
-            <React.Fragment key={markerId}>
-              <MapMarker
-                position={{ lat: Number(place.latitude), lng: Number(place.longitude) }}
-                image={{
-                  src: config.getIcon(place),
-                  size: { width: 24, height: 35 },
-                  options: {
-                    offset: { x: 12, y: 35 },
-                  },
-                }}
-                onClick={() => {
-                  if (!isOpen) {
-                    mixpanelTrack.campusMapPlaceSelected(
-                      config.getPlaceTitle(place),
-                      place.category ?? "",
-                      "Marker",
-                    );
-                  }
-                  setOpenedMarkerId(
-                    isOpen ? null : markerId,
-                    isOpen
-                      ? undefined
-                      : {
-                          X: Number(place.latitude),
-                          Y: Number(place.longitude),
-                        },
-                  );
-                  if (setIsTracking) setIsTracking(false);
-                }}
-              />
-
-              {isOpen && (
-                <CustomOverlayMap
-                  position={{
-                    lat: Number(place.latitude),
-                    lng: Number(place.longitude),
-                  }}
-                  xAnchor={0.5}
-                  yAnchor={1}
-                  zIndex={20}
-                >
-                  <OverlayBubble onClick={(e) => e.stopPropagation()}>
-                    <OverlayCloseButton
-                      type="button"
-                      aria-label="인포윈도우 닫기"
-                      onClick={() => setOpenedMarkerId(null)}
-                    >
-                      ×
-                    </OverlayCloseButton>
-                    <OverlayBody
-                      dangerouslySetInnerHTML={{
-                        __html: config.getInfoWindowHtml(place),
-                      }}
-                    />
-                  </OverlayBubble>
-                </CustomOverlayMap>
-              )}
-            </React.Fragment>
-          );
-        })}
-
-        {myLocation && (
-          <CustomOverlayMap position={myLocation} zIndex={10}>
-            <MyLocationMarker>
-              <DirectionShadow 
-                style={{ 
-                  transform: `rotate(${heading || 0}deg)`,
-                  opacity: isTracking && heading !== null ? 1 : 0,
-                  visibility: isTracking && heading !== null ? "visible" : "hidden",
-                  transition: "opacity 0.2s"
-                }} 
-              />
-              <PulseDot />
-              <MainDot />
-            </MyLocationMarker>
-          </CustomOverlayMap>
-        )}
-
-        {window.kakao?.maps && (
-          <MapTypeControl position={window.kakao.maps.ControlPosition.TOPRIGHT} />
-        )}
-      </Map>
+      {/* 내 위치 마커는 ReactDOM.createPortal을 이용해 CustomOverlay 엘리먼트에 동적으로 주입 */}
+      {myLocation && ReactDOM.createPortal(
+        <MyLocationMarker>
+          <DirectionShadow 
+            style={{ 
+              transform: `rotate(${heading || 0}deg)`,
+              opacity: isTracking && heading !== null ? 1 : 0,
+              visibility: isTracking && heading !== null ? "visible" : "hidden",
+              transition: "opacity 0.2s"
+            }} 
+          />
+          <PulseDot />
+          <MainDot />
+        </MyLocationMarker>,
+        myLocationContainer
+      )}
 
       <MyLocationButton onClick={handleMyLocationClick} $active={isTracking}>
         <Navigation size={20} fill={isTracking ? "#3E69D1" : "none"} />
@@ -567,60 +572,4 @@ const DirectionShadow = styled.div`
   transform-origin: 50% 100%;
   margin-left: -50px;
   pointer-events: none;
-`;
-
-const OverlayBubble = styled.div`
-  position: relative;
-  transform: translateY(-46px);
-  background: #ffffff;
-  border: 1px solid rgba(64, 113, 185, 0.16);
-  border-radius: 16px;
-  box-shadow:
-    0 18px 36px rgba(25, 45, 85, 0.16),
-    0 4px 12px rgba(25, 45, 85, 0.1);
-  overflow: visible;
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -9px;
-    width: 18px;
-    height: 18px;
-    background: #ffffff;
-    border-right: 1px solid rgba(64, 113, 185, 0.16);
-    border-bottom: 1px solid rgba(64, 113, 185, 0.16);
-    transform: translateX(-50%) rotate(45deg);
-  }
-`;
-
-const OverlayBody = styled.div`
-  position: relative;
-  z-index: 1;
-  background: #ffffff;
-  border-radius: 16px;
-  overflow: hidden;
-`;
-
-const OverlayCloseButton = styled.button`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  width: 24px;
-  height: 24px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(32, 53, 93, 0.08);
-  color: #20355d;
-  font-size: 16px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  &:active {
-    background: rgba(32, 53, 93, 0.14);
-  }
 `;
