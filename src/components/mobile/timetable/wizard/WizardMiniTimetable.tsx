@@ -61,10 +61,7 @@ const MiniWrapper = styled.div`
   position: relative;
   width: 100%;
   height: 140px;
-  border-radius: 8px;
   overflow: hidden;
-  background: var(--bg-subtle, #f8f9fb);
-  border: 1px solid var(--border-default, #e5e8eb);
 `;
 
 const GridLine = styled.div`

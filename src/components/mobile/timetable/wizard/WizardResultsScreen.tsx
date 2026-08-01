@@ -12,7 +12,7 @@ const WizardResultsScreen = ({ candidates, onSelectCandidate }: WizardResultsScr
     <Heading>조건에 맞는 시간표 {candidates.length}개를 찾았어요</Heading>
 
     {candidates.map((candidate) => (
-      <ResultCard key={candidate.id}>
+      <ResultCard key={candidate.id} $recommended={!!candidate.recommended}>
         <CardHeader>
           <CandidateLabel>{candidate.label}</CandidateLabel>
           {candidate.recommended && <RecommendedBadge>추천</RecommendedBadge>}
@@ -64,9 +64,11 @@ const Heading = styled.h1`
   line-height: 23px;
 `;
 
-const ResultCard = styled.div`
+const ResultCard = styled.div<{ $recommended: boolean }>`
   background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid
+    ${({ $recommended }) =>
+      $recommended ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
   border-radius: 20px;
   padding: 16px;
   display: flex;
@@ -125,7 +127,7 @@ const ReasonItem = styled.div`
 `;
 
 const ReasonIcon = styled.span<{ $met: boolean }>`
-  color: ${({ $met }) => ($met ? "var(--text-brand, #0061ff)" : "var(--text-warning, #f59e0b)")};
+  color: ${({ $met }) => ($met ? "var(--green-500, #10b981)" : "var(--orange-500, #f59e0b)")};
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;

@@ -100,10 +100,9 @@ const CancelButton = styled.button`
   min-width: 120px;
   height: 44px;
   padding: 0 24px;
-  border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #333d4b);
+  border: none;
+  background: none;
+  color: var(--text-brand, #0061ff);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;

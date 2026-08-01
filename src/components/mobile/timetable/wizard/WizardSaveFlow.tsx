@@ -111,10 +111,11 @@ const WizardSaveFlow = ({
 
   return (
     <>
-      <BottomSheet open={open} onOpenChange={onOpenChange} showCloseButton>
+      {/* 덮어쓰기 확인 Modal(z-index 9999)이 항상 이 시트보다 위에 오도록 기본값(10000)보다 낮게 지정 */}
+      <BottomSheet open={open} onOpenChange={onOpenChange} zIndex={9000}>
         <SheetTitle>어떻게 저장할까요?</SheetTitle>
 
-        <OptionRow onClick={() => setMode("new")}>
+        <OptionRow $active={mode === "new"} onClick={() => setMode("new")}>
           <RadioCircle $active={mode === "new"} />
           <OptionText>
             <OptionTitle>새 시간표로 저장</OptionTitle>
@@ -122,7 +123,7 @@ const WizardSaveFlow = ({
           </OptionText>
         </OptionRow>
 
-        <OptionRow onClick={() => setMode("overwrite")}>
+        <OptionRow $active={mode === "overwrite"} onClick={() => setMode("overwrite")}>
           <RadioCircle $active={mode === "overwrite"} />
           <OptionText>
             <OptionTitle>기존 시간표 덮어쓰기</OptionTitle>
@@ -191,12 +192,16 @@ const SheetTitle = styled.h2`
   line-height: 26px;
 `;
 
-const OptionRow = styled.div`
+const OptionRow = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 4px;
+  padding: 14px 12px;
+  border-radius: 14px;
   cursor: pointer;
+  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "transparent")};
+  border: 1px solid
+    ${({ $active }) => ($active ? "var(--border-brand-subtle, #d3e5ff)" : "transparent")};
 `;
 
 const RadioCircle = styled.span<{ $active: boolean }>`

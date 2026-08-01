@@ -111,7 +111,7 @@ const ReasonItem = styled.div`
 `;
 
 const ReasonIcon = styled.span<{ $met: boolean }>`
-  color: ${({ $met }) => ($met ? "var(--text-brand, #0061ff)" : "var(--text-warning, #f59e0b)")};
+  color: ${({ $met }) => ($met ? "var(--green-500, #10b981)" : "var(--orange-500, #f59e0b)")};
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;

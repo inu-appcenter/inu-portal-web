@@ -8,10 +8,10 @@ import Badge from "@/components/common/Badge";
 import { useSemesters } from "@/hooks/useSemesters";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
-import { formatSemester } from "@/utils/semester";
 import { buildWizardCourseOptions } from "@/utils/timetableWizardPool";
 import { generateWizardCandidates } from "@/utils/timetableWizardGenerator";
 import CreditRangeSlider from "@/components/mobile/timetable/wizard/CreditRangeSlider";
+import WizardStepIndicator from "@/components/mobile/timetable/wizard/WizardStepIndicator";
 import WizardCourseSearchSheet from "@/components/mobile/timetable/wizard/WizardCourseSearchSheet";
 import WizardStep3Exclusion from "@/components/mobile/timetable/wizard/WizardStep3Exclusion";
 import WizardGeneratingScreen from "@/components/mobile/timetable/wizard/WizardGeneratingScreen";
@@ -51,6 +51,16 @@ const GENERATING_MIN_VISIBLE_MS = 1600;
 const GENERATING_MAX_WAIT_MS = 10000;
 
 const DAY_LABELS = ["월", "화", "수", "목", "금"];
+
+// Figma 시안의 "2026-2학기" 표기를 위한 축약 포맷 (앱 전역 formatSemester와는 별개, 드롭다운 전용)
+const COMPACT_TERM_LABELS: Record<string, string> = {
+  FIRST: "1학기",
+  SECOND: "2학기",
+  SUMMER: "여름학기",
+  WINTER: "겨울학기",
+};
+const formatSemesterCompact = (year: number, term: string) =>
+  `${year}-${COMPACT_TERM_LABELS[term] ?? term}`;
 
 export default function MobileTimetableWizardPage() {
   const navigate = useNavigate();
@@ -198,19 +208,19 @@ export default function MobileTimetableWizardPage() {
     switch (step) {
       case "step1":
         return {
-          title: "시간표마법사",
+          title: "기본 조건",
           rightArea: <StepBadge>1/3</StepBadge>,
           onBack: () => navigate(-1),
         };
       case "step2":
         return {
-          title: "시간표마법사",
+          title: "선호 조건",
           rightArea: <StepBadge>2/3</StepBadge>,
           onBack: () => setStep("step1"),
         };
       case "step3":
         return {
-          title: "시간표마법사",
+          title: "제외 조건",
           rightArea: <StepBadge>3/3</StepBadge>,
           onBack: () => setStep("step2"),
         };
@@ -243,6 +253,9 @@ export default function MobileTimetableWizardPage() {
     hasback: true,
     showAlarm: false,
     pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    // 헤더 우측 영역이 기본 원형(아이콘 전용) 폭으로 제한되어 "1/3"보다 긴 텍스트/배지가
+    // 줄바꿈되는 문제 방지 (MobileHeader의 $isCircle 로직 참고)
+    rightAreaNotCircle: true,
     ...headerConfig,
   });
 
@@ -256,11 +269,14 @@ export default function MobileTimetableWizardPage() {
 
   const semesterLabel = useMemo(() => {
     if (basic.year === null || basic.term === null) return "학기를 선택하세요";
-    return formatSemester(basic.year, basic.term);
+    return formatSemesterCompact(basic.year, basic.term);
   }, [basic.year, basic.term]);
 
   return (
     <PageWrapper>
+      {(step === "step1" || step === "step2" || step === "step3") && (
+        <WizardStepIndicator step={step === "step1" ? 1 : step === "step2" ? 2 : 3} />
+      )}
       {step === "step1" && (
         <ScrollContent>
           <Card>
@@ -283,7 +299,7 @@ export default function MobileTimetableWizardPage() {
               {semesters.length === 0 && <option value="">{semesterLabel}</option>}
               {semesters.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {formatSemester(s.year, s.term)}
+                  {formatSemesterCompact(s.year, s.term)}
                 </option>
               ))}
             </SelectBox>
@@ -386,7 +402,7 @@ export default function MobileTimetableWizardPage() {
             disabled={step === "step1" && !canProceedStep1}
             onClick={handlePrimaryNext}
           >
-            {step === "step3" ? "생성하기" : "다음"}
+            {step === "step1" ? "시작하기" : step === "step3" ? "시간표 만들기" : "다음"}
           </BottomActionButton>
         </FixedBottomContainer>
       )}
@@ -504,6 +520,9 @@ function Step2PreferenceConditions({ preference, onChange }: Step2Props) {
             <option value={12}>12:00 이후 시작</option>
           </SelectBox>
         )}
+        {preference.noMorningClasses.enabled && (
+          <WarningInline>⚠ 선택한 조건으로는 시간표가 안 나올 수 있어요</WarningInline>
+        )}
       </PreferenceCard>
 
       <PreferenceCard
@@ -542,7 +561,7 @@ interface PreferenceCardProps {
 
 function PreferenceCard({ checked, onToggle, title, code, children }: PreferenceCardProps) {
   return (
-    <Card>
+    <PreferenceCardBox $checked={checked}>
       <PreferenceHead onClick={onToggle}>
         <CheckboxInput type="checkbox" checked={checked} readOnly />
         <PreferenceTextWrap>
@@ -551,7 +570,7 @@ function PreferenceCard({ checked, onToggle, title, code, children }: Preference
         </PreferenceTextWrap>
       </PreferenceHead>
       {checked && children}
-    </Card>
+    </PreferenceCardBox>
   );
 }
 
@@ -597,6 +616,7 @@ const HeaderTextButton = styled.button`
   font-size: 15px;
   font-weight: 600;
   padding: 8px 4px;
+  white-space: nowrap;
 `;
 
 const Card = styled.div`
@@ -610,6 +630,24 @@ const Card = styled.div`
   width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
+`;
+
+const PreferenceCardBox = styled(Card)<{ $checked: boolean }>`
+  border-color: ${({ $checked }) =>
+    $checked ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+`;
+
+const WarningInline = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-warning, #fff7ed);
+  border: 1px solid var(--border-warning, #fde68a);
+  color: var(--orange-500, #f59e0b);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
 `;
 
 const CardLabelRow = styled.div`

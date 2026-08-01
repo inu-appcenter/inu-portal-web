@@ -88,8 +88,8 @@ const ErrorIllustration = styled.div`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: var(--bg-error, #fff0f0);
-  color: var(--text-error, #ef4444);
+  background: var(--bg-subtle, #f2f4f6);
+  color: var(--text-tertiary, #8b95a1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,8 +117,8 @@ const Subtitle = styled.p`
 
 const ConflictCard = styled.div`
   width: 100%;
-  background: var(--bg-error, #fff0f0);
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  background: var(--bg-warning, #fff7ed);
+  border: 1px solid var(--border-warning, #fde68a);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -128,7 +128,7 @@ const ConflictCard = styled.div`
 `;
 
 const ConflictHead = styled.span`
-  color: var(--text-error, #ef4444);
+  color: var(--orange-500, #f59e0b);
   font-size: 15px;
   font-weight: 700;
 `;
