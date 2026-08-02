@@ -1,4 +1,3 @@
-import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
@@ -44,55 +43,11 @@ const NAV_ITEMS = [
   },
 ];
 
-const getPath = (width: number, height: number, activeX: number) => {
-  const topY = 24; // 본체 상단 높이
-  const humpWidth = 96; // 돔 너비
-
-  const x0 = activeX - humpWidth / 2;
-  const x1 = activeX + humpWidth / 2;
-
-  const cp1x = x0 + 16;
-  const cp1y = topY;
-  const cp2x = activeX - 22;
-  const cp2y = 2;
-
-  const cp3x = activeX + 22;
-  const cp3y = 2;
-  const cp4x = x1 - 16;
-  const cp4y = topY;
-
-  return `M 0 ${topY} L ${x0} ${topY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${activeX} 2 C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${x1} ${topY} L ${width} ${topY} L ${width} ${height} L 0 ${height} Z`;
-};
-
-// 그림자용 라인 패스 생성
-const getLinePath = (width: number, activeX: number) => {
-  const topY = 24;
-  const humpWidth = 96;
-
-  const x0 = activeX - humpWidth / 2;
-  const x1 = activeX + humpWidth / 2;
-
-  const cp1x = x0 + 16;
-  const cp1y = topY;
-  const cp2x = activeX - 22;
-  const cp2y = 2;
-
-  const cp3x = activeX + 22;
-  const cp3y = 2;
-  const cp4x = x1 - 16;
-  const cp4y = topY;
-
-  return `M -20 ${topY} L ${x0} ${topY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${activeX} 2 C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${x1} ${topY} L ${width + 20} ${topY}`;
-};
-
 export default function MobileBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { tokenInfo } = useUserStore();
   const isLoggedIn = !!tokenInfo.accessToken;
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 390, height: 88 });
 
   const { data: unreadResponse } = useQuery({
     queryKey: ["unreadTotalCount"],
@@ -106,7 +61,12 @@ export default function MobileBottomNav() {
   const getIndexByPath = (path: string) => {
     const index = NAV_ITEMS.findIndex((item) => {
       if (item.to === ROUTES.HOME) {
-        return path === ROUTES.HOME || path === ROUTES.MOBILE_HOME || path === ROUTES.ROOT || path === ROUTES.HOME_V2;
+        return (
+          path === ROUTES.HOME ||
+          path === ROUTES.MOBILE_HOME ||
+          path === ROUTES.ROOT ||
+          path === ROUTES.HOME_V2
+        );
       }
       return path === item.to || path.startsWith(item.to);
     });
@@ -114,40 +74,6 @@ export default function MobileBottomNav() {
   };
 
   const activeIndex = getIndexByPath(location.pathname);
-
-  // 컨테이너 크기 동적 감지
-  useEffect(() => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    const updateDimensions = () => {
-      const rect = element.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        setDimensions({ width: rect.width, height: rect.height });
-      }
-    };
-
-    updateDimensions();
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-          setDimensions({
-            width: entry.contentRect.width,
-            height: entry.contentRect.height,
-          });
-        }
-      }
-    });
-
-    observer.observe(element);
-    window.addEventListener("resize", updateDimensions);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateDimensions);
-    };
-  }, []);
 
   const handleNavClick = (to: string, label: string) => {
     const isChat = to === ROUTES.CHAT.LIST;
@@ -180,86 +106,8 @@ export default function MobileBottomNav() {
     navigate(to, { replace: true });
   };
 
-  const validWidth = dimensions.width > 0 ? dimensions.width : (typeof window !== "undefined" && window.innerWidth > 0 ? window.innerWidth : 390);
-  const validHeight = dimensions.height > 0 ? dimensions.height : 88;
-  const maxContentWidth = parseInt(DESKTOP_CONTENT_MAX_WIDTH, 10) || 1600;
-  const contentWidth = Math.min(validWidth, maxContentWidth);
-  const leftOffset = (validWidth - contentWidth) / 2;
-
-  const activeX = leftOffset + ((activeIndex + 0.5) / 5) * contentWidth;
-  const pathD = getPath(validWidth, validHeight, activeX);
-  const lineD = getLinePath(validWidth, activeX);
-
   return (
-    <NavContainer ref={containerRef}>
-      {/* 크롬 블러 버그 방지용 형제 그림자 레이어 */}
-      <NavShadowWrapper>
-        <svg
-          width="100%"
-          height="100%"
-          viewBox={`0 0 ${validWidth} ${validHeight}`}
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ overflow: "visible" }}
-        >
-          <defs>
-            {/* 원래 그래픽(선)은 숨기고 그림자만 출력하는 필터 */}
-            <filter id="shadow-only" x="-20%" y="-300%" width="140%" height="600%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="8" />
-              <feOffset dx="0" dy="-4" result="offsetblur" />
-              <feFlood flood-color="black" flood-opacity="0.16" />
-              <feComposite in2="offsetblur" operator="in" />
-            </filter>
-          </defs>
-          <motion.path
-            d={lineD}
-            stroke="black"
-            strokeWidth="6"
-            filter="url(#shadow-only)"
-            animate={{ d: lineD }}
-            transition={{ type: "spring", stiffness: 260, damping: 28 }}
-          />
-        </svg>
-      </NavShadowWrapper>
-
-      <NavBackground aria-hidden="true">
-        <svg
-          width="100%"
-          height="100%"
-          viewBox={`0 0 ${validWidth} ${validHeight}`}
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <motion.path
-            initial={false}
-            d={pathD}
-            fill="rgba(255, 255, 255, 0.82)"
-            animate={{ d: pathD }}
-            transition={{ type: "spring", stiffness: 260, damping: 28 }}
-          />
-        </svg>
-      </NavBackground>
-
-      {/* 글래스모피즘 테두리 하이라이트 효과 */}
-      <GlassBorderWrapper>
-        <svg
-          width="100%"
-          height="100%"
-          viewBox={`0 0 ${validWidth} ${validHeight}`}
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ overflow: "visible" }}
-        >
-          <motion.path
-            d={lineD}
-            stroke="rgba(255, 255, 255, 0.45)"
-            strokeWidth="1.2"
-            animate={{ d: lineD }}
-            transition={{ type: "spring", stiffness: 260, damping: 28 }}
-          />
-        </svg>
-      </GlassBorderWrapper>
-
+    <NavContainer>
       <NavItemsContainer>
         {NAV_ITEMS.map((item, idx) => {
           const isActive = activeIndex === idx;
@@ -272,32 +120,21 @@ export default function MobileBottomNav() {
               onClick={() => handleNavClick(item.to, item.label)}
               type="button"
             >
-              <IconWrapper>
-                <IconAnimationContainer
-                  animate={{ y: isActive ? -14 : 0 }}
+              {isActive && (
+                <ActivePillIndicator
+                  layoutId="active-pill-bg"
                   transition={{
                     type: "spring",
-                    stiffness: 260,
-                    damping: 28,
+                    stiffness: 320,
+                    damping: 30,
                   }}
-                  $isActive={isActive}
-                >
-                  {isActive && (
-                    <ActiveCircleIndicator
-                      layoutId="active-circle-bg"
-                      transition={{
-                        type: "spring",
-                        stiffness: 260,
-                        damping: 28,
-                      }}
-                    />
-                  )}
-
-                  <item.icon />
-                  {badge !== undefined && badge > 0 && (
-                    <Badge>{badge > 99 ? "99+" : badge}</Badge>
-                  )}
-                </IconAnimationContainer>
+                />
+              )}
+              <IconWrapper $isActive={isActive}>
+                <item.icon />
+                {badge !== undefined && badge > 0 && (
+                  <Badge>{badge > 99 ? "99+" : badge}</Badge>
+                )}
               </IconWrapper>
               <LabelText $isActive={isActive}>{item.label}</LabelText>
             </NavItemButton>
@@ -308,8 +145,8 @@ export default function MobileBottomNav() {
   );
 }
 
-export const BOTTOM_PADDING = 8; // 바텀바 하단 기본 패딩 (더 늘리거나 줄이려면 이 값만 조절)
-export const BOTTOM_NAV_HEIGHT = 80 + BOTTOM_PADDING;
+export const BOTTOM_PADDING = 8;
+export const BOTTOM_NAV_HEIGHT = 76 + BOTTOM_PADDING;
 
 const NavContainer = styled.div`
   position: relative;
@@ -317,35 +154,15 @@ const NavContainer = styled.div`
   height: calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px));
   z-index: 1000;
   pointer-events: auto;
+  background: var(--bg-blur, rgba(255, 255, 255, 0.60));
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 36px 36px 0 0;
 
   @media ${DESKTOP_MEDIA} {
     max-width: none;
   }
-`;
-
-const NavShadowWrapper = styled.div`
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-`;
-
-const NavBackground = styled.div`
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-
-  svg {
-    display: block;
-  }
-`;
-
-const GlassBorderWrapper = styled.div`
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
 `;
 
 const NavItemsContainer = styled.nav`
@@ -357,16 +174,18 @@ const NavItemsContainer = styled.nav`
   height: 100%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  align-items: flex-end;
+  align-items: center;
+  padding-top: 0px;
   padding-bottom: calc(${BOTTOM_PADDING}px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 `;
 
 const NavItemButton = styled.button`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   width: 100%;
   height: 100%;
   background: transparent;
@@ -377,47 +196,33 @@ const NavItemButton = styled.button`
   -webkit-tap-highlight-color: transparent;
 `;
 
-const IconWrapper = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 24px;
-`;
-
-const ActiveCircleIndicator = styled(motion.div)`
+const ActivePillIndicator = styled(motion.div)`
   position: absolute;
-  top: -8px;
-  left: -8px;
-  width: 44px;
-  height: 44px;
+  width: 74px;
+  height: 64px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  z-index: -1;
+  background: var(--bg-blur, rgba(255, 255, 255, 0.60));
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1;
   pointer-events: none;
 `;
 
-const IconAnimationContainer = styled(motion.div)<{ $isActive: boolean }>`
+const IconWrapper = styled.div<{ $isActive: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${({ $isActive }) => ($isActive ? "28px" : "24px")};
-  height: ${({ $isActive }) => ($isActive ? "28px" : "24px")};
+  width: 32px;
+  height: 32px;
   z-index: 2;
   color: ${({ $isActive }) => ($isActive ? "#3B82F6" : "#B0B8C1")};
-  transition:
-    color 0.2s ease,
-    width 0.2s ease,
-    height 0.2s ease;
+  transition: color 0.2s ease;
 
   svg {
     width: 100%;
     height: 100%;
-    transition: transform 0.2s ease;
-    ${({ $isActive }) => $isActive && `transform: scale(1.05);`}
 
     path {
       fill: currentColor;
@@ -446,13 +251,17 @@ const Badge = styled.div`
 `;
 
 const LabelText = styled.span<{ $isActive: boolean }>`
+  position: relative;
+  z-index: 2;
   color: ${({ $isActive }) =>
     $isActive ? "#3B82F6" : "var(--text-disabled, #B0B8C1)"};
   text-align: center;
+  font-family: "Pretendard", sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;
   line-height: 16px;
-  margin-top: 4px;
+  letter-spacing: 0px;
+  margin-top: 2px;
   transition: color 0.2s ease;
 `;
