@@ -201,14 +201,15 @@ const MainHeaderWrapper = styled.div<{
   position: relative;
   z-index: 2;
   width: 100%;
-  height: calc(56px + env(safe-area-inset-top, 0px));
+  height: calc(64px + env(safe-area-inset-top, 0px));
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
   pointer-events: none;
 
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-bottom: 8px;
   padding-left: ${({ $hasBack }) => ($hasBack ? "12px" : "20px")};
   padding-right: ${({ $hasBack }) => ($hasBack ? "16px" : "20px")};
 
@@ -370,9 +371,9 @@ const HeaderTitle = styled.div<{ $hasBack?: boolean }>`
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  font-size: ${({ $hasBack }) => ($hasBack ? "20px" : "24px")};
+  font-size: ${({ $hasBack }) => ($hasBack ? "18px" : "20px")};
   font-weight: ${({ $hasBack }) => ($hasBack ? "600" : "700")};
-  line-height: 32px;
+  line-height: 28px;
   letter-spacing: ${({ $hasBack }) => ($hasBack ? "0px" : "-0.2px")};
   color: var(--text-secondary, #333d4b);
 `;
