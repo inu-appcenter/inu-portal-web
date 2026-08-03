@@ -16,9 +16,6 @@ export const createStompClient = () => {
     reconnectDelay: 5000, // 재연결 시도
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
-    debug: (str) => {
-      console.log(new Date(), str);
-    },
   });
 
   return client;
