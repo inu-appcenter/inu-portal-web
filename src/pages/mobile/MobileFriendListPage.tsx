@@ -17,7 +17,8 @@ import {
 } from "@/utils/userInfo";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
-import { ArrowDownAZ, ArrowUpZA, MessageSquare } from "lucide-react";
+import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
+import { ArrowDownAZ, ArrowUpZA, Check } from "lucide-react";
 
 // --- SVG Icons ---
 
@@ -679,7 +680,7 @@ export default function MobileFriendListPage() {
   };
 
   return (
-    <PageWrapper>
+    <PageWrapper $isShareMode={isShareMode}>
       <UserProfileModal
         friendId={selectedFriendId}
         isOpen={isProfileModalOpen}
@@ -700,34 +701,26 @@ export default function MobileFriendListPage() {
       />
 
       {isShareMode && shareTab === "rooms" ? (
-        <FriendListContainer style={{ marginTop: "12px" }}>
+        <FriendListContainer style={{ marginTop: "12px", marginBottom: "32px" }}>
           {myChatRooms.length > 0 ? (
             myChatRooms.map((room: MyChatRoomResponseDto) => {
               const isSelected = selectedRoomId === room.roomId;
               return (
-                <FriendRowWrapper key={room.roomId} $expanded={false}>
-                  <RowInner>
-                    <RowHeader onClick={() => setSelectedRoomId(room.roomId)}>
-                      <Ripple />
-                      <ProfileArea>
-                        <RoomIconWrapper $isSelected={isSelected}>
-                          <MessageSquare size={20} />
-                        </RoomIconWrapper>
-                        <SelectionOverlay $selected={isSelected}>
-                          {isSelected && <CheckIcon />}
-                        </SelectionOverlay>
-                      </ProfileArea>
-                      <RoomTextGroup>
-                        <NameRow style={{ marginLeft: 0, minHeight: "auto" }}>
-                          {room.friendAlias || room.title}
-                        </NameRow>
-                        <RoomSubInfo>
-                          참여자 {room.currentParticipants}명 · {room.lastMessage || "최근 메시지 없음"}
-                        </RoomSubInfo>
-                      </RoomTextGroup>
-                    </RowHeader>
-                  </RowInner>
-                </FriendRowWrapper>
+                <SelectableRoomItemWrapper
+                  key={room.roomId}
+                  $isSelected={isSelected}
+                  onClick={() => setSelectedRoomId(room.roomId)}
+                >
+                  <RoomItemCheckOverlay $isSelected={isSelected}>
+                    {isSelected && <Check size={14} color="#ffffff" strokeWidth={3} />}
+                  </RoomItemCheckOverlay>
+                  <ChatRoomListItemWrapper>
+                    <ChatRoomListItem
+                      room={room}
+                      onClick={() => setSelectedRoomId(room.roomId)}
+                    />
+                  </ChatRoomListItemWrapper>
+                </SelectableRoomItemWrapper>
               );
             })
           ) : (
@@ -852,14 +845,16 @@ export default function MobileFriendListPage() {
   );
 }
 
-const PageWrapper = styled.div`
+const PageWrapper = styled.div<{ $isShareMode?: boolean }>`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  padding: calc(var(--header-height, 56px) + 16px) ${MOBILE_PAGE_GUTTER}
-    calc(var(--nav-height, 100px) + 80px);
+  padding: ${({ $isShareMode }) =>
+    $isShareMode
+      ? `calc(var(--header-height, 56px) + 12px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 90px)`
+      : `calc(var(--header-height, 56px) + 16px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 80px)`};
   background-color: var(--bg-subtle, #f8f9fb);
 `;
 
@@ -1253,34 +1248,47 @@ const SectionHeader = styled.div`
   margin: 16px 0 8px 12px;
 `;
 
-const RoomIconWrapper = styled.div<{ $isSelected?: boolean }>`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+const SelectableRoomItemWrapper = styled.div<{ $isSelected: boolean }>`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 16px 4px 16px;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "#dbeafe" : "#eff6ff"};
-  color: #0061ff;
+    $isSelected ? "var(--bg-brand-subtle, #eff6ff)" : "transparent"};
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const RoomItemCheckOverlay = styled.div<{ $isSelected: boolean }>`
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid
+    ${({ $isSelected }) => ($isSelected ? "#0061ff" : "#c2c8d0")};
+  background-color: ${({ $isSelected }) =>
+    $isSelected ? "#0061ff" : "transparent"};
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-right: 4px;
+  transition: all 0.15s ease-in-out;
 `;
 
-const RoomTextGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 12px;
-  min-width: 0;
+const ChatRoomListItemWrapper = styled.div`
   flex: 1;
-`;
+  min-width: 0;
 
-const RoomSubInfo = styled.span`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  & > div {
+    padding-left: 0;
+    padding-right: 0;
+  }
 `;
