@@ -8,6 +8,7 @@ import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import {
   useTimeTables,
   useTimeTableDetail,
@@ -368,6 +369,8 @@ const MobileTimeTablePage = () => {
 
   // 서버 시간표 목록 조회 및 스토어 동기화
   useTimeTables();
+  // URL의 ?id= 쿼리파라미터와 활성 시간표를 양방향 동기화 (새로고침해도 보던 시간표 유지)
+  useTimetableUrlSync();
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
 

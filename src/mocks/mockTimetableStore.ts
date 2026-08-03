@@ -73,6 +73,16 @@ const timeTables: TimeTable[] = [
     isPrimary: true,
     visibility: "PRIVATE",
   },
+  {
+    id: 4002,
+    semesterId: MOCK_SEMESTER.id,
+    year: MOCK_SEMESTER.year,
+    term: MOCK_SEMESTER.term,
+    // ?id= URL 복원 테스트용 - 대표(primary)가 아닌 두 번째 시간표
+    timeTableName: "비대표 시간표 (목)",
+    isPrimary: false,
+    visibility: "PRIVATE",
+  },
 ];
 
 const itemsByTimeTableId = new Map<number, TimeTableDetailItem[]>([
@@ -83,6 +93,7 @@ const itemsByTimeTableId = new Map<number, TimeTableDetailItem[]>([
       buildCourseDetailItem(itemIdCounter++, "2600011001"),
     ],
   ],
+  [4002, [buildCourseDetailItem(itemIdCounter++, "2600003001")]],
 ]);
 
 export const mockGetTimeTables = (year?: number, term?: Term): TimeTable[] =>
