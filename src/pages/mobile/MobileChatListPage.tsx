@@ -772,7 +772,7 @@ const ListWrapper = styled.div`
 
 const FloatingActionButton = styled.button<{ $isTop: boolean }>`
   position: fixed;
-  bottom: 100px;
+  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   right: 24px;
 
   height: 48px;
@@ -838,7 +838,7 @@ const IconButton = styled.button`
 
 const FloatingSearchContainer = styled.div`
   position: fixed;
-  bottom: 100px;
+  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   display: flex;

@@ -42,7 +42,7 @@ export default function FloatingWriteButton() {
 // 스타일은 그대로 유지
 const WriteButtonWrapper = styled.button`
   position: fixed;
-  bottom: 30px;
+  bottom: calc(30px + env(safe-area-inset-bottom, 0px));
   right: 15px;
   width: 55px;
   height: 55px;

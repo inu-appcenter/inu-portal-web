@@ -191,7 +191,7 @@ const ConfirmButton = styled.button`
   position: fixed;
   background-color: #9cafe2;
   left: 50%;
-  bottom: 10%;
+  bottom: calc(10% + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   width: 102px;
   height: 40px;
