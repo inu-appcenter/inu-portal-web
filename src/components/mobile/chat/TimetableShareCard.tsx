@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Calendar, ChevronRight, Sparkles } from "lucide-react";
 import { TimetableShareExtraData } from "@/types/chat";
+import { ROUTES } from "@/constants/routes";
 
 interface TimetableShareCardProps {
   extraData?: string | null;
@@ -55,21 +56,11 @@ export default function TimetableShareCard({
       queryParams.set("ids", friendIds.join(","));
     }
     queryParams.set("tab", "free");
-    navigate(`/mobile/timetable/compare?${queryParams.toString()}`);
+    navigate(`${ROUTES.TIMETABLE.COMPARE}?${queryParams.toString()}`);
   };
 
   return (
     <CardContainer $isMe={isMe} onClick={handleNavigate}>
-      <CardHeader>
-        <HeaderIconWrapper>
-          <Calendar size={18} color="#0061FF" strokeWidth={2.2} />
-        </HeaderIconWrapper>
-        <HeaderTextGroup>
-          <CardSubTitle>시간표 겹쳐보기</CardSubTitle>
-          <CardTitle>{title}</CardTitle>
-        </HeaderTextGroup>
-      </CardHeader>
-
       <CardBody>
         <SectionHeader>
           <Sparkles size={14} color="#D97706" />
@@ -162,7 +153,7 @@ const CardTitle = styled.h4`
 `;
 
 const CardBody = styled.div`
-  padding: 12px 16px;
+  padding: 14px 16px 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
