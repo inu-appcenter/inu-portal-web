@@ -22,7 +22,11 @@ export const useChat = (roomId: string) => {
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
 
+  const isFetchingRef = useRef(false);
+
   const fetchMessages = useCallback(async () => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       const roomResponse: any = await getChatMessages(roomId);
       const actualRoomData = roomResponse.data || roomResponse;
@@ -32,7 +36,6 @@ export const useChat = (roomId: string) => {
 
       // 메시지 저장 (unreadCount 등이 갱신됨)
       if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
-        console.log("초기 메시지 데이터 확인:", actualRoomData.messages[0]);
         setMessages([...actualRoomData.messages]);
       } else if (Array.isArray(actualRoomData)) {
         setMessages([...actualRoomData]);
@@ -46,6 +49,8 @@ export const useChat = (roomId: string) => {
       }
     } catch (err) {
       console.error("메시지 동기화 실패:", err);
+    } finally {
+      isFetchingRef.current = false;
     }
   }, [roomId]);
 
@@ -95,10 +100,6 @@ export const useChat = (roomId: string) => {
         // 새 메시지 구독
         client.subscribe(`/sub/room/${roomId}`, (message) => {
           if (!message.body) return;
-          if (message.body === "updated") {
-            fetchMessages();
-            return;
-          }
           try {
             const receivedMessage: ChatMessage = JSON.parse(message.body);
             setMessages((prev) => {
@@ -110,20 +111,16 @@ export const useChat = (roomId: string) => {
               return [...prev, receivedMessage];
             });
           } catch (err) {
-            console.warn("웹소켓 메시지 파싱 건너뜀 (non-JSON):", message.body);
+            // non-JSON 메시지는 안전하게 건너뜀
           }
         });
 
         // 읽음 상태 업데이트 구독
         client.subscribe(`/sub/room/${roomId}/read`, (message) => {
           if (message.body === "updated") {
-            console.log("읽음 상태 업데이트 감지 - 메시지 동기화");
             fetchMessages();
           }
         });
-
-        // 입장 시 데이터 동기화 (읽음 처리 반영 포함)
-        fetchMessages();
       };
 
       client.onStompError = (frame) => {
