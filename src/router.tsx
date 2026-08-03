@@ -347,14 +347,25 @@ if (typeof window !== "undefined") {
 
     const path = getPathname(to);
     const isTabNavigation = opts?.state?.isTabNavigation === true;
-    
+    const isHomePath = path === ROUTES.HOME || path === ROUTES.MOBILE_HOME;
+    // 이 웹뷰 자신의 최초 부트스트랩 리다이렉트(루트 인덱스 라우트의
+    // <Navigate to={ROUTES.HOME} replace />, router.tsx 라우트 테이블 참고).
+    const isBootstrapRedirect = window.location.pathname === "/" && isHomePath;
+
+    // 2. 홈 탭 경로 이동: 탭바 클릭(isTabNavigation)이나 이 웹뷰 자신의 부팅
+    // 리다이렉트가 아니라면 항상 네이티브로 위임한다
+    if (supportsMultiWebView() && isHomePath && !isTabNavigation && !isBootstrapRedirect) {
+      appBridge.goHome(path);
+      return Promise.resolve();
+    }
+
     // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅이거나 빈 이동인지 확인
     const isHashOrSearchOnly =
       to === "" ||
       (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
       (typeof to === "object" && to !== null && !to.pathname);
 
-    // 2. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
+    // 3. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
     if (
       supportsMultiWebView() &&
       !isMainTabPath(path) &&
