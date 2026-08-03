@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import styled from "styled-components";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
+import { createPersonalChatRoom } from "@/apis/chat";
 import BottomSheet from "@/components/common/BottomSheet";
 import { TimetableShareExtraData } from "@/types/chat";
 
@@ -775,19 +776,51 @@ export default function MobileTimeTableComparePage() {
   ]);
 
   const isFreeTab = activeTabUpper === "free";
+
+  const shareMutation = useMutation({
+    mutationFn: async (targetFriendIds: number[]) =>
+      createPersonalChatRoom(targetFriendIds),
+    onSuccess: (res: any, variables: number[]) => {
+      const roomData = res.data || res;
+      const roomId = roomData.id || roomData.roomId;
+      if (roomId) {
+        const payload: TimetableShareExtraData = {
+          title: "시간표 겹쳐보기 & 공강 공유",
+          friendIds: variables,
+          topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
+            day: slot.day,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            duration: slot.duration,
+          })),
+        };
+        const payloadStr = encodeURIComponent(JSON.stringify(payload));
+        navigate(`${ROUTES.CHAT.ROOT}/${roomId}?sharePayload=${payloadStr}`);
+      }
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "채팅방 생성/이동에 실패했습니다.");
+    },
+  });
+
   const handleShareTargetClick = () => {
-    const payload: TimetableShareExtraData = {
-      title: "시간표 겹쳐보기 & 공강 공유",
-      friendIds: selectedFriendIdsState.filter((id) => id !== 99999),
-      topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
-        day: slot.day,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        duration: slot.duration,
-      })),
-    };
-    const payloadStr = encodeURIComponent(JSON.stringify(payload));
-    navigate(`${ROUTES.FRIEND.LIST}?mode=share&sharePayload=${payloadStr}`);
+    let targetIds = selectedFriendIdsState.filter((id) => id !== 99999);
+    if (targetIds.length === 0) {
+      const idsParam = searchParams.get("ids");
+      if (idsParam) {
+        targetIds = idsParam
+          .split(",")
+          .map(Number)
+          .filter((id) => Boolean(id) && id !== 99999);
+      }
+    }
+
+    if (targetIds.length === 0) {
+      alert("공유할 친구가 선택되지 않았습니다.");
+      return;
+    }
+
+    shareMutation.mutate(targetIds);
   };
 
   return (

@@ -14,6 +14,9 @@ interface ShareTargetModalProps {
   onConfirmShare: (roomId: number) => void;
 }
 
+/**
+ * @deprecated Preserved target selection bottom sheet modal for potential future reuse.
+ */
 export default function ShareTargetModal({
   isOpen,
   onClose,
