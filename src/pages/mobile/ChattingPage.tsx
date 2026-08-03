@@ -193,18 +193,24 @@ export default function ChattingPage() {
     [roomId],
   );
 
-  const headerTitle = React.useMemo(
-    () =>
-      roomInfo ? (
-        <TitleWrapper>
-          <span className="text">{roomInfo.friendAlias || roomInfo.title}</span>
-          {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
-        </TitleWrapper>
-      ) : (
-        "채팅방"
-      ),
-    [roomInfo],
-  );
+  const isGroupChat = roomInfo
+    ? roomInfo.type === "OPEN" || roomInfo.currentParticipants > 2 || roomInfo.maxCapacity > 2
+    : false;
+
+  const headerTitle = React.useMemo(() => {
+    if (!roomInfo) return "채팅방";
+    const titleText = roomInfo.friendAlias || roomInfo.title;
+    const countText = isGroupChat ? ` (${roomInfo.currentParticipants})` : "";
+    return (
+      <TitleWrapper>
+        <span className="text">
+          {titleText}
+          {countText}
+        </span>
+        {roomInfo.isOfficial && <OfficialTag>공식</OfficialTag>}
+      </TitleWrapper>
+    );
+  }, [roomInfo, isGroupChat]);
 
   const menuItems = React.useMemo(() => {
     const items = [];
@@ -548,16 +554,6 @@ export default function ChattingPage() {
 
   return (
     <ChatPageWrapper>
-      {roomInfo && (
-        <RoomInfoBanner>
-          <Users size={16} color="#767676" />
-          <span>
-            참여 인원 {roomInfo.currentParticipants}명 / 최대{" "}
-            {roomInfo.maxCapacity}명
-          </span>
-        </RoomInfoBanner>
-      )}
-
       <ChattingWrapper ref={scrollRef}>
         {/* [우아한 프리뷰 우선 배치] column-reverse 특성 상 맨 위에 선언해야 시각적 최하단(최신)에 배치됩니다. */}
         {uploadingImages.map((upload) => (
@@ -785,7 +781,6 @@ const ChatPageWrapper = styled.div`
   top: calc(76px + var(--visual-viewport-offset-top, 0px));
   left: 0;
   right: 0;
-  background-color: #ffffff;
   overscroll-behavior: none;
 `;
 
@@ -793,20 +788,6 @@ const HeaderRightArea = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-`;
-
-const RoomInfoBanner = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  padding: 12px;
-  //background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 13px;
-  font-weight: 500;
-  color: #767676;
-  flex-shrink: 0;
 `;
 
 const ChattingWrapper = styled.div`

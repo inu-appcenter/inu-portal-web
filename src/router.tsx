@@ -122,14 +122,18 @@ export const router = createBrowserRouter([
       // 2. 서브 페이지 (SubLayout) - RootLayout에 의해 슬라이드, 하단 탭바 숨김
       // ----------------------------------------------------------------
       {
+        element: <SubLayout showNav={false} backgroundColor="#fff" />,
+        children: [
+          // 채팅
+          { path: "/chat/:roomId", element: <ChattingPage /> },
+          { path: ROUTES.CHAT.CREATE_PERSONAL, element: <CreatePersonalChatPage /> },
+        ],
+      },
+      {
         element: <SubLayout showNav={false} backgroundColor="transparent" />,
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
-
-          // 채팅
-          { path: "/chat/:roomId", element: <ChattingPage /> },
-          { path: ROUTES.CHAT.CREATE_PERSONAL, element: <CreatePersonalChatPage /> },
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
