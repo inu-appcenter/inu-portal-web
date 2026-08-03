@@ -1,12 +1,15 @@
 import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import styled from "styled-components";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
+import { createPersonalChatRoom } from "@/apis/chat";
 import BottomSheet from "@/components/common/BottomSheet";
+import Modal from "@/components/common/Modal";
+import { TimetableShareExtraData } from "@/types/chat";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -16,7 +19,7 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 
 // 아이콘
-import { Plus } from "lucide-react";
+import { Plus, Send } from "lucide-react";
 
 // ==========================================
 // 1. 목업 데이터 정의
@@ -774,6 +777,101 @@ export default function MobileTimeTableComparePage() {
   ]);
 
   const isFreeTab = activeTabUpper === "free";
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  const confirmModalDescription = useMemo(() => {
+    let targetIds = selectedFriendIdsState.filter((id) => id !== 99999);
+    if (targetIds.length === 0) {
+      const idsParam = searchParams.get("ids");
+      if (idsParam) {
+        targetIds = idsParam
+          .split(",")
+          .map(Number)
+          .filter((id) => Boolean(id) && id !== 99999);
+      }
+    }
+
+    const names = targetIds
+      .map((id) => {
+        const friend = friendsMap.find((f: any) => f.friendId === id);
+        return friend ? friend.friendAlias || friend.nickname : "";
+      })
+      .filter(Boolean);
+
+    if (names.length === 0) {
+      return "선택한 인원의 단체톡방에 공유할까요?";
+    }
+    if (names.length === 1) {
+      return `선택한 ${names[0]} 님과의 채팅방에 공유할까요?`;
+    }
+    if (names.length <= 3) {
+      return `선택한 ${names.join(", ")} 님 단체톡방에 공유할까요?`;
+    }
+    const topNames = names.slice(0, 3).join(", ");
+    const extraCount = names.length - 3;
+    return `선택한 ${topNames} 님 외 ${extraCount}명 단체톡방에 공유할까요?`;
+  }, [selectedFriendIdsState, searchParams, friendsMap]);
+
+  const shareMutation = useMutation({
+    mutationFn: async (targetFriendIds: number[]) =>
+      createPersonalChatRoom(targetFriendIds),
+    onSuccess: (res: any, variables: number[]) => {
+      setIsConfirmModalOpen(false);
+      const roomData = res.data || res;
+      const roomId = roomData.id || roomData.roomId;
+      if (roomId) {
+        const payload: TimetableShareExtraData = {
+          title: "시간표 겹쳐보기 & 공강 공유",
+          friendIds: variables,
+          topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
+            day: slot.day,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            duration: slot.duration,
+          })),
+        };
+        const payloadStr = encodeURIComponent(JSON.stringify(payload));
+        navigate(`${ROUTES.CHAT.ROOT}/${roomId}?sharePayload=${payloadStr}`);
+      }
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "채팅방 생성/이동에 실패했습니다.");
+    },
+  });
+
+  const handleShareButtonClick = () => {
+    let targetIds = selectedFriendIdsState.filter((id) => id !== 99999);
+    if (targetIds.length === 0) {
+      const idsParam = searchParams.get("ids");
+      if (idsParam) {
+        targetIds = idsParam
+          .split(",")
+          .map(Number)
+          .filter((id) => Boolean(id) && id !== 99999);
+      }
+    }
+
+    if (targetIds.length === 0) {
+      alert("공유할 친구가 선택되지 않았습니다.");
+      return;
+    }
+
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleExecuteShare = () => {
+    let targetIds = selectedFriendIdsState.filter((id) => id !== 99999);
+    if (targetIds.length === 0) {
+      const idsParam = searchParams.get("ids");
+      if (idsParam) {
+        targetIds = idsParam
+          .split(",")
+          .map(Number)
+          .filter((id) => Boolean(id) && id !== 99999);
+      }
+    }
+    shareMutation.mutate(targetIds);
+  };
 
   return (
     <PageWrapper
@@ -782,13 +880,21 @@ export default function MobileTimeTableComparePage() {
     >
       <ContentArea>
         {/* 2. 친구 필터 칩 목록 노출 */}
-        {activeTabUpper === "compare" && (
+        {(activeTabUpper === "compare" || activeTabUpper === "free") && (
           <ChipSection data-vaul-no-drag="">
             <ChipScrollArea
               ref={chipScrollRef}
               $hasHorizontalOverflow={hasHorizontalOverflow}
               data-vaul-no-drag=""
             >
+              <DayChip
+                key="all"
+                label="모두"
+                isSelected={
+                  selectedFriendIdsState.length === activeFriends.length
+                }
+                onClick={() => handleFriendChipClick(-1)}
+              />
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
                 const isSelected =
@@ -806,14 +912,6 @@ export default function MobileTimeTableComparePage() {
               })}
             </ChipScrollArea>
             <RightActionGroup data-vaul-no-drag="">
-              <DayChip
-                key="all"
-                label="모두"
-                isSelected={
-                  selectedFriendIdsState.length === activeFriends.length
-                }
-                onClick={() => handleFriendChipClick(-1)}
-              />
               <AddFriendButton
                 onClick={(e) => {
                   e.preventDefault();
@@ -862,6 +960,8 @@ export default function MobileTimeTableComparePage() {
         activeSnapPoint={snap}
         setActiveSnapPoint={setSnap}
         disablePreventScroll={true}
+        height="100%"
+        zIndex={200}
       >
         <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
         <ScrollableBody
@@ -953,6 +1053,44 @@ export default function MobileTimeTableComparePage() {
           )}
         </ScrollableBody>
       </BottomSheet>
+
+      {/* 6. 결과 공유 플로팅 버튼 */}
+      <FloatingShareButton
+        aria-label="결과 공유"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleShareButtonClick();
+        }}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+        }}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleShareButtonClick();
+        }}
+        data-vaul-no-drag=""
+      >
+        <Send size={24} color="#ffffff" />
+      </FloatingShareButton>
+
+      {/* 7. 공유 확인 모달 */}
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        title="공강 정보 공유"
+        description={confirmModalDescription}
+        primaryButton={{
+          text: "공유하기",
+          onClick: handleExecuteShare,
+          loading: shareMutation.isPending,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsConfirmModalOpen(false),
+        }}
+      />
     </PageWrapper>
   );
 }
@@ -1129,7 +1267,7 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
     background: ${({ $isSelected }) =>
       $isSelected
         ? "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))"
-        : "var(--bg-warn-subtle)"};
+        : "var(--bg-warn, #FFFAEB)"};
   }
 `;
 
@@ -1177,25 +1315,21 @@ const Badge = styled.div<{ $isSelected?: boolean }>`
     $isSelected
       ? "var(--text-secondary, #333D4B)"
       : "var(--text-tertiary, #8b95a1)"};
-  font-size: 14px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 16px;
 
   &.good {
     background: ${({ $isSelected }) =>
       $isSelected
         ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
-        : "var(--color-chips-yellow, #ffe589)"};
-    color: ${({ $isSelected }) =>
-      $isSelected
-        ? "var(--text-secondary, #333D4B)"
-        : "var(--text-warn, #7a5400)"};
-
-    font-size: 14px;
+        : "var(--timeTable-color-yellow, #FFE589)"};
+    color: var(--text-secondary, #333D4B);
+    font-size: 12px;
     font-style: normal;
     font-weight: 500;
-    line-height: 20px;
+    line-height: 16px;
   }
 `;
 
@@ -1226,7 +1360,7 @@ const ScrollableBody = styled.div<{ $snapHeight?: number }>`
   flex-direction: column;
   gap: 8px;
   min-height: 0;
-  padding-bottom: 24px;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 
   /* 스크롤 영역의 높이를 snap 높이에 따라 동적으로 묶어줌 */
   max-height: ${({ $snapHeight }) =>
@@ -1240,4 +1374,30 @@ const ScrollableBody = styled.div<{ $snapHeight?: number }>`
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
+`;
+
+const FloatingShareButton = styled.button`
+  position: fixed;
+  right: 20px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 10001;
+  pointer-events: auto !important;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--interactive-primary, #3b82f6);
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    transform: scale(0.92);
+  }
 `;

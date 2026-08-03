@@ -124,14 +124,14 @@ export default function BottomSheet({
           onCloseAutoFocus={(e) => {
             if (!modal) e.preventDefault();
           }}
-          onPointerDownOutside={(e) => {
-            if (!modal) e.preventDefault();
+          onPointerDownOutside={() => {
+            // non-modal 바텀시트일 때는 외부 요소(플로팅 버튼, 탭 등) 클릭이 정상 동작하도록 preventDefault를 하지 않음
           }}
           onFocusOutside={(e) => {
             if (!modal) e.preventDefault();
           }}
-          onInteractOutside={(e) => {
-            if (!modal) e.preventDefault();
+          onInteractOutside={() => {
+            // non-modal 바텀시트일 때는 외부 인터랙션을 차단하지 않음
           }}
           aria-describedby={undefined}
         >
