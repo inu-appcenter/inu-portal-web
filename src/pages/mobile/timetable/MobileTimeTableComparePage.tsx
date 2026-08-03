@@ -7,7 +7,6 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
 import BottomSheet from "@/components/common/BottomSheet";
-import ShareTargetModal from "@/components/mobile/timetable/ShareTargetModal";
 import { TimetableShareExtraData } from "@/types/chat";
 
 // 공용 컴포넌트 임포트
@@ -776,10 +775,7 @@ export default function MobileTimeTableComparePage() {
   ]);
 
   const isFreeTab = activeTabUpper === "free";
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-
-  const handleConfirmShareTarget = (roomId: number) => {
-    setIsShareModalOpen(false);
+  const handleShareTargetClick = () => {
     const payload: TimetableShareExtraData = {
       title: "시간표 겹쳐보기 & 공강 공유",
       friendIds: selectedFriendIdsState.filter((id) => id !== 99999),
@@ -791,7 +787,7 @@ export default function MobileTimeTableComparePage() {
       })),
     };
     const payloadStr = encodeURIComponent(JSON.stringify(payload));
-    navigate(`/mobile/chat/${roomId}?sharePayload=${payloadStr}`);
+    navigate(`${ROUTES.FRIEND.LIST}?mode=share&sharePayload=${payloadStr}`);
   };
 
   return (
@@ -981,7 +977,7 @@ export default function MobileTimeTableComparePage() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setIsShareModalOpen(true);
+          handleShareTargetClick();
         }}
         onPointerDown={(e) => {
           e.stopPropagation();
@@ -989,19 +985,12 @@ export default function MobileTimeTableComparePage() {
         onTouchEnd={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setIsShareModalOpen(true);
+          handleShareTargetClick();
         }}
         data-vaul-no-drag=""
       >
         <Send size={24} color="#ffffff" />
       </FloatingShareButton>
-
-      {/* 7. 공유 대상 선택 모달 */}
-      <ShareTargetModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        onConfirmShare={handleConfirmShareTarget}
-      />
     </PageWrapper>
   );
 }

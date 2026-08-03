@@ -3,19 +3,21 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getFriends } from "@/apis/friends";
-import { createPersonalChatRoom } from "@/apis/chat";
+import { createPersonalChatRoom, getMyChatRooms } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
+import TabUpper from "@/components/common/TabUpper";
+import { MyChatRoomResponseDto } from "@/types/chat";
 import {
   normalizeProfileImageId,
   DEFAULT_PROFILE_IMAGE_ID,
 } from "@/utils/userInfo";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
-import { ArrowDownAZ, ArrowUpZA } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA, MessageSquare } from "lucide-react";
 
 // --- SVG Icons ---
 
@@ -224,6 +226,13 @@ export default function MobileFriendListPage() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
+  const modeParam = searchParams.get("mode");
+  const isShareMode = modeParam === "share";
+  const sharePayloadParam = searchParams.get("sharePayload");
+
+  const [shareTab, setShareTab] = useState<"friends" | "rooms">("friends");
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+
   // States
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -233,6 +242,12 @@ export default function MobileFriendListPage() {
   const isSelectionModeRef = useRef(false);
   const hasSelectionHistoryEntryRef = useRef(false);
   const isSyncingSelectionHistoryRef = useRef(false);
+
+  useEffect(() => {
+    if (isShareMode && shareTab === "friends") {
+      setIsSelectionMode(true);
+    }
+  }, [isShareMode, shareTab]);
 
   useEffect(() => {
     isSelectionModeRef.current = isSelectionMode;
@@ -330,15 +345,33 @@ export default function MobileFriendListPage() {
 
   const friends = useMemo(() => friendsRes?.data || [], [friendsRes]);
 
-  // Handle friend 1:1 chat room creation
+  // Query my chat rooms when in share mode and rooms tab
+  const { data: myChatRoomsRes } = useQuery({
+    queryKey: ["myChatRooms"],
+    queryFn: getMyChatRooms,
+    enabled: isShareMode && shareTab === "rooms",
+  });
+  const myChatRooms = useMemo(() => myChatRoomsRes?.data || [], [myChatRoomsRes]);
+
+  // Handle friend 1:1 or group chat room creation
   const chatMutation = useMutation({
-    mutationFn: async (friendId: number) => createPersonalChatRoom([friendId]),
-    onSuccess: (res) => {
-      const roomId = res.data.id;
-      navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
+    mutationFn: async (targetFriendIds: number[]) =>
+      createPersonalChatRoom(targetFriendIds),
+    onSuccess: (res: any) => {
+      const roomData = res.data || res;
+      const roomId = roomData.id || roomData.roomId;
+      if (roomId) {
+        if (isShareMode && sharePayloadParam) {
+          navigate(
+            `${ROUTES.CHAT.ROOT}/${roomId}?sharePayload=${sharePayloadParam}`,
+          );
+        } else {
+          navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
+        }
+      }
     },
     onError: (error: any) => {
-      alert(error.response?.data?.msg || "1대1 채팅방 생성에 실패했습니다.");
+      alert(error.response?.data?.msg || "채팅방 생성에 실패했습니다.");
     },
   });
 
@@ -410,6 +443,20 @@ export default function MobileFriendListPage() {
   }, [selectedIds, filteredFriends]);
 
   const headerRight = useMemo(() => {
+    if (isShareMode) {
+      if (shareTab === "friends") {
+        return (
+          <HeaderActionsContainer>
+            <HeaderActionButton onClick={handleSelectAll}>
+              {selectedIds.length === filteredFriends.length
+                ? "전체 해제"
+                : "전체 선택"}
+            </HeaderActionButton>
+          </HeaderActionsContainer>
+        );
+      }
+      return undefined;
+    }
     if (isSelectionMode) {
       return (
         <HeaderActionsContainer>
@@ -432,20 +479,37 @@ export default function MobileFriendListPage() {
       </HeaderRightSingle>
     );
   }, [
+    isShareMode,
+    shareTab,
     isSelectionMode,
-    selectedIds,
-    filteredFriends,
+    selectedIds.length,
+    filteredFriends.length,
     handleSelectAll,
     handleSelectToggle,
   ]);
 
+  const subHeader = useMemo(() => {
+    if (!isShareMode) return undefined;
+    return (
+      <TabUpper
+        tabs={[
+          { id: "friends", label: "친구 목록" },
+          { id: "rooms", label: "채팅방 목록" },
+        ]}
+        activeTabId={shareTab}
+        onChange={(id) => setShareTab(id as "friends" | "rooms")}
+      />
+    );
+  }, [isShareMode, shareTab]);
+
   useHeader({
-    title: "친구",
+    title: isShareMode ? "시간표 공유 대상 선택" : "친구",
     hasback: true,
     immersive: true,
     pageBgColor: "#f8f9fb",
     rightAreaNotCircle: true,
     rightArea: headerRight,
+    subHeader: subHeader,
   });
 
   // Expand / selection click handler
@@ -492,8 +556,20 @@ export default function MobileFriendListPage() {
   };
 
   const handleCompareClick = () => {
-    if (selectedIds.length === 0) return;
-    navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`);
+    if (isShareMode) {
+      if (shareTab === "friends") {
+        if (selectedIds.length === 0) return;
+        chatMutation.mutate(selectedIds);
+      } else if (shareTab === "rooms") {
+        if (!selectedRoomId) return;
+        navigate(
+          `${ROUTES.CHAT.ROOT}/${selectedRoomId}?sharePayload=${sharePayloadParam}`,
+        );
+      }
+    } else {
+      if (selectedIds.length === 0) return;
+      navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`);
+    }
   };
 
   const handleSingleTimetableCompare = (
@@ -506,7 +582,7 @@ export default function MobileFriendListPage() {
 
   const handleSingleChatClick = (e: React.MouseEvent, friendId: number) => {
     e.stopPropagation();
-    chatMutation.mutate(friendId);
+    chatMutation.mutate([friendId]);
   };
 
   const handleSingleInfoClick = (e: React.MouseEvent, friendId: number) => {
@@ -623,85 +699,152 @@ export default function MobileFriendListPage() {
         }}
       />
 
-      <StatusSection>
-        <TotalCountText>내 친구 ({filteredFriends.length})</TotalCountText>
-        <SortIndicator
-          onClick={() =>
-            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-          }
-        >
-          <span>{sortOrder === "asc" ? "오름차순" : "내림차순"}</span>
-          {sortOrder === "asc" ? (
-            <ArrowDownAZ size={18} color="#8B95A1" />
+      {isShareMode && shareTab === "rooms" ? (
+        <FriendListContainer style={{ marginTop: "12px" }}>
+          {myChatRooms.length > 0 ? (
+            myChatRooms.map((room: MyChatRoomResponseDto) => {
+              const isSelected = selectedRoomId === room.roomId;
+              return (
+                <FriendRowWrapper key={room.roomId} $expanded={false}>
+                  <RowInner>
+                    <RowHeader onClick={() => setSelectedRoomId(room.roomId)}>
+                      <Ripple />
+                      <ProfileArea>
+                        <RoomIconWrapper $isSelected={isSelected}>
+                          <MessageSquare size={20} />
+                        </RoomIconWrapper>
+                        <SelectionOverlay $selected={isSelected}>
+                          {isSelected && <CheckIcon />}
+                        </SelectionOverlay>
+                      </ProfileArea>
+                      <RoomTextGroup>
+                        <NameRow style={{ marginLeft: 0, minHeight: "auto" }}>
+                          {room.friendAlias || room.title}
+                        </NameRow>
+                        <RoomSubInfo>
+                          참여자 {room.currentParticipants}명 · {room.lastMessage || "최근 메시지 없음"}
+                        </RoomSubInfo>
+                      </RoomTextGroup>
+                    </RowHeader>
+                  </RowInner>
+                </FriendRowWrapper>
+              );
+            })
           ) : (
-            <ArrowUpZA size={18} color="#8B95A1" />
+            <EmptyContainer>
+              <EmptyTitle>참여 중인 채팅방이 없어요</EmptyTitle>
+            </EmptyContainer>
           )}
-        </SortIndicator>
-      </StatusSection>
-
-      {filteredFriends.length > 0 ? (
+        </FriendListContainer>
+      ) : (
         <>
-          {favoriteFriends.length > 0 && (
-            <>
-              <SectionHeader>즐겨찾기 ({favoriteFriends.length})</SectionHeader>
-              <FriendListContainer style={{ marginBottom: "20px" }}>
-                {renderFriendRows(favoriteFriends, "fav")}
-              </FriendListContainer>
-            </>
-          )}
+          <StatusSection>
+            <TotalCountText>내 친구 ({filteredFriends.length})</TotalCountText>
+            <SortIndicator
+              onClick={() =>
+                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+              }
+            >
+              <span>{sortOrder === "asc" ? "오름차순" : "내림차순"}</span>
+              {sortOrder === "asc" ? (
+                <ArrowDownAZ size={18} color="#8B95A1" />
+              ) : (
+                <ArrowUpZA size={18} color="#8B95A1" />
+              )}
+            </SortIndicator>
+          </StatusSection>
 
-          {regularFriends.length > 0 && (
+          {filteredFriends.length > 0 ? (
             <>
               {favoriteFriends.length > 0 && (
-                <SectionHeader>친구 ({regularFriends.length})</SectionHeader>
+                <>
+                  <SectionHeader>즐겨찾기 ({favoriteFriends.length})</SectionHeader>
+                  <FriendListContainer style={{ marginBottom: "20px" }}>
+                    {renderFriendRows(favoriteFriends, "fav")}
+                  </FriendListContainer>
+                </>
               )}
-              <FriendListContainer>
-                {renderFriendRows(regularFriends, "reg")}
-              </FriendListContainer>
+
+              {regularFriends.length > 0 && (
+                <>
+                  {favoriteFriends.length > 0 && (
+                    <SectionHeader>친구 ({regularFriends.length})</SectionHeader>
+                  )}
+                  <FriendListContainer>
+                    {renderFriendRows(regularFriends, "reg")}
+                  </FriendListContainer>
+                </>
+              )}
             </>
+          ) : (
+            <FriendListContainer>
+              <EmptyContainer>
+                <EmptyFriendsIllust />
+                <EmptyTitle>친구가 없어요</EmptyTitle>
+                <EmptyDescription>
+                  아래 +버튼을 눌러 친구를 추가하고
+                  <br />
+                  친구와 시간표를 비교해보세요.
+                </EmptyDescription>
+              </EmptyContainer>
+            </FriendListContainer>
           )}
         </>
-      ) : (
-        <FriendListContainer>
-          <EmptyContainer>
-            <EmptyFriendsIllust />
-            <EmptyTitle>친구가 없어요</EmptyTitle>
-            <EmptyDescription>
-              아래 +버튼을 눌러 친구를 추가하고
-              <br />
-              친구와 시간표를 비교해보세요.
-            </EmptyDescription>
-          </EmptyContainer>
-        </FriendListContainer>
       )}
 
       {/* Floating Area (always rendered for animation) */}
       <FloatingActionsWrapper>
         {/* Plus button - scale out when selection mode is active */}
-        <PlusButtonWrapper $visible={!isSelectionMode && !isSearchActive}>
+        <PlusButtonWrapper $visible={!isSelectionMode && !isSearchActive && !isShareMode}>
           <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
             <PlusIcon />
           </FloatingButton>
         </PlusButtonWrapper>
 
         {/* Search bar */}
-        <SearchBarContainer $isSearchActive={isSearchActive}>
-          <FloatingSearchBar
-            placeholder="친구 이름 또는 학번 검색"
-            onSearch={setSearchTerm}
-            onActiveChange={handleSearchActiveChange}
-            searchParamKey="q"
-          />
-        </SearchBarContainer>
+        {(!isShareMode || shareTab === "friends") && (
+          <SearchBarContainer $isSearchActive={isSearchActive}>
+            <FloatingSearchBar
+              placeholder="친구 이름 또는 학번 검색"
+              onSearch={setSearchTerm}
+              onActiveChange={handleSearchActiveChange}
+              searchParamKey="q"
+            />
+          </SearchBarContainer>
+        )}
 
-        {/* Compare button - slides up from bottom when in selection mode */}
-        <CompareButtonArea $visible={isSelectionMode}>
+        {/* Compare / Share button - slides up from bottom */}
+        <CompareButtonArea $visible={isShareMode || isSelectionMode}>
           <CompareFloatingButton
             onClick={handleCompareClick}
-            disabled={selectedIds.length === 0}
-            className={selectedIds.length === 0 ? "disabled" : ""}
+            disabled={
+              isShareMode
+                ? shareTab === "friends"
+                  ? selectedIds.length === 0 || chatMutation.isPending
+                  : !selectedRoomId
+                : selectedIds.length === 0
+            }
+            className={
+              (
+                isShareMode
+                  ? shareTab === "friends"
+                    ? selectedIds.length === 0
+                    : !selectedRoomId
+                  : selectedIds.length === 0
+              )
+                ? "disabled"
+                : ""
+            }
           >
-            시간표 비교하기
+            {isShareMode
+              ? shareTab === "friends"
+                ? selectedIds.length > 0
+                  ? `선택한 ${selectedIds.length}명과 채팅방 생성 및 공유`
+                  : "시간표 공유할 친구 선택"
+                : selectedRoomId
+                ? "이 채팅방에 공유하기"
+                : "공유할 채팅방 선택"
+              : "시간표 비교하기"}
           </CompareFloatingButton>
         </CompareButtonArea>
       </FloatingActionsWrapper>
@@ -1108,4 +1251,36 @@ const SectionHeader = styled.div`
   line-height: 20px;
   color: var(--text-secondary, #6b7684);
   margin: 16px 0 8px 12px;
+`;
+
+const RoomIconWrapper = styled.div<{ $isSelected?: boolean }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: ${({ $isSelected }) =>
+    $isSelected ? "#dbeafe" : "#eff6ff"};
+  color: #0061ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const RoomTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+  min-width: 0;
+  flex: 1;
+`;
+
+const RoomSubInfo = styled.span`
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--text-tertiary, #8b95a1);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
