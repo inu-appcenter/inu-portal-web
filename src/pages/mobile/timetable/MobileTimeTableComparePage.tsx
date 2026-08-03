@@ -882,6 +882,7 @@ export default function MobileTimeTableComparePage() {
         setActiveSnapPoint={setSnap}
         disablePreventScroll={true}
         height="100%"
+        zIndex={200}
       >
         <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
         <ScrollableBody
@@ -977,7 +978,19 @@ export default function MobileTimeTableComparePage() {
       {/* 6. 결과 공유 플로팅 버튼 */}
       <FloatingShareButton
         aria-label="결과 공유"
-        onClick={() => setIsShareModalOpen(true)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsShareModalOpen(true);
+        }}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+        }}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsShareModalOpen(true);
+        }}
         data-vaul-no-drag=""
       >
         <Send size={24} color="#ffffff" />
@@ -1279,6 +1292,7 @@ const FloatingShareButton = styled.button`
   right: 20px;
   bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   z-index: 10001;
+  pointer-events: auto !important;
   width: 56px;
   height: 56px;
   border-radius: 50%;
