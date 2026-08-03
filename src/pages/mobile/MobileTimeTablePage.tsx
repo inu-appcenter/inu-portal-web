@@ -8,6 +8,12 @@ import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import {
+  useTimeTables,
+  useTimeTableDetail,
+  useUpdateTimeTableName,
+  useDeleteTimeTable,
+} from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
@@ -357,13 +363,13 @@ const MobileTimeTablePage = () => {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const {
-    selectedSemester,
-    activeTimetableId,
-    timetables,
-    renameTimetable,
-    deleteTimetable,
-  } = useTimetableStore();
+  const { selectedSemester, activeTimetableId, timetables } =
+    useTimetableStore();
+
+  // 서버 시간표 목록 조회 및 스토어 동기화
+  useTimeTables();
+  const updateNameMutation = useUpdateTimeTableName();
+  const deleteMutation = useDeleteTimeTable();
 
   // Find active timetable for the selected semester
   const activeTimetable = useMemo(() => {
@@ -375,6 +381,9 @@ const MobileTimeTablePage = () => {
       list[0]
     );
   }, [timetables, selectedSemester, activeTimetableId]);
+
+  // 활성 시간표의 상세(요소 포함) 조회 및 그리드 이벤트 동기화
+  useTimeTableDetail(activeTimetable?.id);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
   const appEnvironment = getAppEnvironmentStatus();
@@ -459,8 +468,6 @@ const MobileTimeTablePage = () => {
     ];
   }, [
     activeTimetable,
-    renameTimetable,
-    deleteTimetable,
     navigate,
     setIsRenameModalOpen,
     setRenameInputVal,
@@ -503,12 +510,26 @@ const MobileTimeTablePage = () => {
               text: "변경",
               variant: "brand",
               onClick: () => {
-                if (renameInputVal.trim()) {
-                  renameTimetable(activeTimetable.id, renameInputVal.trim());
-                  setIsRenameModalOpen(false);
-                }
+                if (!renameInputVal.trim()) return;
+                updateNameMutation.mutate(
+                  {
+                    timeTableId: activeTimetable.id,
+                    timeTableName: renameInputVal.trim(),
+                  },
+                  {
+                    onSuccess: () => {
+                      setIsRenameModalOpen(false);
+                    },
+                    onError: (error: any) => {
+                      alert(
+                        error.response?.data?.msg ||
+                          "시간표 이름 변경에 실패했습니다.",
+                      );
+                    },
+                  },
+                );
               },
-              disabled: !renameInputVal.trim(),
+              disabled: !renameInputVal.trim() || updateNameMutation.isPending,
             }}
             secondaryButton={{
               text: "취소",
@@ -532,8 +553,18 @@ const MobileTimeTablePage = () => {
               text: "삭제",
               variant: "danger",
               onClick: () => {
-                deleteTimetable(activeTimetable.id);
-                setIsDeleteModalOpen(false);
+                if (deleteMutation.isPending) return;
+                deleteMutation.mutate(activeTimetable.id, {
+                  onSuccess: () => {
+                    setIsDeleteModalOpen(false);
+                  },
+                  onError: (error: any) => {
+                    alert(
+                      error.response?.data?.msg ||
+                        "시간표 삭제에 실패했습니다.",
+                    );
+                  },
+                });
               },
             }}
             secondaryButton={{

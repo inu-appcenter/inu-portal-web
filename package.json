@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:mock": "vite --mode mock",
     "submodule:init": "git submodule update --init --recursive || test -d packages/intip-bridge/src || git clone https://github.com/inu-appcenter/intip-bridge.git packages/intip-bridge",
     "postinstall": "npm run submodule:init",
     "prebuild": "npm run submodule:init",

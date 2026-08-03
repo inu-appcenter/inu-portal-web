@@ -1,9 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import TimetableGrid, {
-  ClassItem,
-} from "@/components/mobile/timetable/TimetableGrid";
+import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
 import MobileCourseSearchSheet, {
   CourseResult,
   COURSE_SEARCH_SNAP_POINTS,
@@ -11,7 +9,33 @@ import MobileCourseSearchSheet, {
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import Modal from "@/components/common/Modal";
+import { useCourses } from "@/hooks/useCourses";
+import { Course } from "@/types/courses";
+import {
+  useCreateTimeTableCourseItem,
+  useDeleteTimeTableItem,
+  useTimeTableDetail,
+  useTimeTables,
+} from "@/hooks/useTimeTables";
+import { formatHoursToTime } from "@/utils/timetable";
+import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
+
+// 서버 강의 데이터에는 아직 room/day/startTime/endTime/professor 등 시간표 배치 정보가 없어
+// 검색 시트가 요구하는 CourseResult 형태로 임시 매핑한다.
+const mapCourseToCourseResult = (course: Course): CourseResult => ({
+  id: course.id,
+  name: course.title,
+  professor: "-",
+  timeStr: "-",
+  room: "-",
+  grade: parseInt(course.targetGradeName, 10) || 0,
+  isMajor: course.completionDivisionName.includes("전공"),
+  credits: parseInt(course.credit, 10) || 0,
+  courseId: String(course.id),
+  remarks: course.content,
+  enrolledCount: 0,
+  schedules: [],
+});
 import { useTimetableStore } from "@/stores/useTimetableStore";
 
 // --- SVG Icons from Figma ---
@@ -107,79 +131,16 @@ const IconButton = styled.button`
   padding: 4px;
 `;
 
-const SEARCH_RESULTS: CourseResult[] = [
-  {
-    id: 101,
-    name: "웹프로그래밍",
-    professor: "박기석",
-    timeStr: "화 8 9 (17:00~18:45)",
-    room: "07-304",
-    grade: 3,
-    isMajor: true,
-    credits: 2,
-    courseId: "0008868001",
-    remarks: "상대평가 / 노트북 지참 필수",
-    enrolledCount: 72,
-    schedules: [
-      {
-        id: 101,
-        name: "웹프로그래밍",
-        room: "07-304",
-        day: 1,
-        startTime: 17,
-        endTime: 19,
-      },
-    ],
-  },
-  {
-    id: 102,
-    name: "운영체제",
-    professor: "문주팍",
-    timeStr: "화 8 9 (17:00~18:45)",
-    room: "07-304",
-    grade: 3,
-    isMajor: true,
-    credits: 1,
-    courseId: "0008868001",
-    enrolledCount: 151,
-    schedules: [
-      {
-        id: 102,
-        name: "운영체제",
-        room: "07-304",
-        day: 1,
-        startTime: 17,
-        endTime: 19,
-      },
-    ],
-  },
-  {
-    id: 103,
-    name: "창의적사고와문제해결",
-    professor: "김창의",
-    timeStr: "목 5 6 (13:00~15:00)",
-    room: "05-202",
-    grade: 1,
-    isMajor: false,
-    credits: 2,
-    courseId: "0001234001",
-    remarks: "팀프로젝트 있음",
-    enrolledCount: 45,
-    schedules: [
-      {
-        id: 103,
-        name: "창의적사고와문제해결",
-        room: "05-202",
-        day: 3,
-        startTime: 13,
-        endTime: 15,
-      },
-    ],
-  },
-];
 
 const MobileTimeTableEditPage = () => {
   const navigate = useNavigate();
+
+  // 서버 강의 목록 조회 (react query) + zustand 상태 동기화
+  const { courses } = useCourses();
+  const searchResults = useMemo(
+    () => courses.map(mapCourseToCourseResult),
+    [courses],
+  );
 
   const headerRight = useMemo(
     () => (
@@ -187,7 +148,7 @@ const MobileTimeTableEditPage = () => {
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.ADD)}>
           <IconsAddPlus />
         </IconButton>
-        <IconButton onClick={() => alert("시간표 마법사 클릭")}>
+        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.WIZARD)}>
           <IconsMagicWand />
         </IconButton>
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}>
@@ -207,12 +168,19 @@ const MobileTimeTableEditPage = () => {
   });
 
   // 상태 및 스토어 관리
-  const { timetables, activeTimetableId, updateTimetableEvents } =
-    useTimetableStore();
+  const { timetables, activeTimetableId } = useTimetableStore();
   const activeTimetable = useMemo(() => {
     return timetables.find((t) => t.id === activeTimetableId) || null;
   }, [timetables, activeTimetableId]);
   const timetable = activeTimetable?.events || [];
+
+  // 새로고침으로 이 페이지에 바로 진입해도 활성 시간표를 복구할 수 있도록 목록을 조회
+  useTimeTables();
+  // 상세 조회로 서버 요소를 스토어에 동기화 (뮤테이션 성공 시 invalidate로 재조회됨)
+  useTimeTableDetail(activeTimetableId);
+
+  const createCourseItemMutation = useCreateTimeTableCourseItem();
+  const deleteItemMutation = useDeleteTimeTableItem();
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [snap, setSnap] = useState<string | number | null>(
@@ -220,64 +188,24 @@ const MobileTimeTableEditPage = () => {
   );
   const [isSheetOpen, setIsSheetOpen] = useState(true);
 
-  // 모달 및 과목 교체 상태 관리
-  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
-  const [overlappingCourse, setOverlappingCourse] = useState<ClassItem | null>(
-    null,
-  );
-  const [pendingCourse, setPendingCourse] = useState<CourseResult | null>(null);
-
   const handleAddCourse = (newCourse: CourseResult) => {
-    const isOverlapping = (a: ClassItem, b: ClassItem) => {
-      if (a.day !== b.day) return false;
-      return a.startTime < b.endTime && b.startTime < a.endTime;
-    };
-
-    const enrichedSchedules = newCourse.schedules.map((schedule) => ({
-      ...schedule,
-      professor: newCourse.professor,
-      credits: newCourse.credits,
-      grade: String(newCourse.grade),
-      courseType: newCourse.isMajor ? "전공심화" : "교양",
-      evaluation: newCourse.remarks?.includes("상대평가") ? "상대평가" : "절대평가",
-      courseId: newCourse.courseId,
-    }));
-
-    let conflictItem: ClassItem | null = null;
-    for (const newSlot of enrichedSchedules) {
-      for (const existingSlot of timetable) {
-        if (isOverlapping(newSlot, existingSlot)) {
-          conflictItem = existingSlot;
-          break;
-        }
-      }
-      if (conflictItem) break;
-    }
-
-    if (conflictItem) {
-      setOverlappingCourse(conflictItem);
-      setPendingCourse({ ...newCourse, schedules: enrichedSchedules });
-      setIsConflictModalOpen(true);
-    } else {
-      if (activeTimetableId !== null) {
-        updateTimetableEvents(activeTimetableId, [
-          ...timetable,
-          ...enrichedSchedules,
-        ]);
-      }
-    }
-  };
-
-  const handleReplaceCourse = () => {
-    if (!overlappingCourse || !pendingCourse || activeTimetableId === null)
+    if (activeTimetableId === null) {
+      alert("활성화된 시간표가 없습니다.");
       return;
-    updateTimetableEvents(activeTimetableId, [
-      ...timetable.filter((item) => item.id !== overlappingCourse.id),
-      ...pendingCourse.schedules,
-    ]);
-    setIsConflictModalOpen(false);
-    setOverlappingCourse(null);
-    setPendingCourse(null);
+    }
+    if (createCourseItemMutation.isPending) return;
+
+    createCourseItemMutation.mutate(
+      {
+        timeTableId: activeTimetableId,
+        body: { courseOfferingId: newCourse.id },
+      },
+      {
+        onError: (error: any) => {
+          alert(error.response?.data?.msg || "강의 추가에 실패했습니다.");
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -288,8 +216,8 @@ const MobileTimeTableEditPage = () => {
 
   // 프리뷰 연산
   const previewSchedules = useMemo(
-    () => SEARCH_RESULTS.find((c) => c.id === expandedId)?.schedules || [],
-    [expandedId],
+    () => searchResults.find((c) => c.id === expandedId)?.schedules || [],
+    [searchResults, expandedId],
   );
 
   // 선택된 강의(미리보기)가 바텀시트에 의해 가려지는 경우 스크롤 처리
@@ -350,17 +278,43 @@ const MobileTimeTableEditPage = () => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  // 커스텀 일정 수정 (과목 직접 추가 페이지를 수정 모드로 재사용)
   const handleEdit = (id: number) => {
-    alert(`과목 수정 창을 엽니다. (ID: ${id})`);
+    const target = timetable.find((item) => item.id === id);
+    if (!target?.isCustom || target.customScheduleId === undefined) return;
+
+    const editItem: CustomScheduleEditState = {
+      customScheduleId: target.customScheduleId,
+      title: target.name,
+      memo: target.memo ?? "",
+      // 같은 커스텀 일정의 모든 시간대를 함께 넘겨야 수정 시 누락되지 않음
+      meetings: timetable
+        .filter((item) => item.customScheduleId === target.customScheduleId)
+        .map((item) => ({
+          day: item.day,
+          startTime: formatHoursToTime(item.startTime),
+          endTime: formatHoursToTime(item.endTime),
+          location: item.room,
+        })),
+    };
+    navigate(ROUTES.TIMETABLE.ADD, { state: { editItem } });
   };
 
   const handleDelete = (id: number) => {
-    if (activeTimetableId !== null) {
-      updateTimetableEvents(
-        activeTimetableId,
-        timetable.filter((item) => item.id !== id),
-      );
-    }
+    if (activeTimetableId === null || deleteItemMutation.isPending) return;
+    const target = timetable.find((item) => item.id === id);
+    if (target?.itemId === undefined) return;
+
+    deleteItemMutation.mutate(
+      { timeTableId: activeTimetableId, timeTableItemId: target.itemId },
+      {
+        onError: (error: any) => {
+          alert(
+            error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",
+          );
+        },
+      },
+    );
   };
 
   const snapHeightValue = typeof snap === "number" ? snap : 0.6;
@@ -386,7 +340,7 @@ const MobileTimeTableEditPage = () => {
 
       {/* 바텀시트 */}
       <MobileCourseSearchSheet
-        courses={SEARCH_RESULTS}
+        courses={searchResults}
         expandedId={expandedId}
         onToggleExpand={toggleExpand}
         snap={snap}
@@ -394,22 +348,6 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
-      />
-
-      {/* 시간표 충돌 모달 */}
-      <Modal
-        isOpen={isConflictModalOpen}
-        onClose={() => setIsConflictModalOpen(false)}
-        title="시간이 겹쳐요"
-        description={`${overlappingCourse?.name}와(과) 시간이 겹쳐요.\n이 과목으로 교체하시겠어요?`}
-        primaryButton={{
-          text: "교체하기",
-          onClick: handleReplaceCourse,
-        }}
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setIsConflictModalOpen(false),
-        }}
       />
     </PageWrapper>
   );

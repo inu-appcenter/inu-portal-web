@@ -6,9 +6,13 @@ import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-import TimeTableCreateModal, {
-  TIMETABLE_SEMESTERS,
-} from "@/components/mobile/timetable/TimeTableCreateModal";
+import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
+import {
+  useTimeTables,
+  useUpdateTimeTablePrimary,
+} from "@/hooks/useTimeTables";
+import { useSemesters } from "@/hooks/useSemesters";
+import { formatSemester } from "@/utils/semester";
 
 // Icons
 const PlusIcon = () => (
@@ -32,12 +36,29 @@ const getTimetableCredits = (events: ClassItem[]) =>
 
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
-  const { timetables, setSemester, setActiveTimetable, setRepresentative } = useTimetableStore();
+  const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
+
+  // 서버 시간표 목록 조회 및 스토어 동기화
+  useTimeTables();
+  const { semesters: serverSemesters } = useSemesters();
+  const updatePrimaryMutation = useUpdateTimeTablePrimary();
+
+  const handleSetPrimary = (t: Timetable) => {
+    if (t.isRepresentative || updatePrimaryMutation.isPending) return;
+    updatePrimaryMutation.mutate(t.id, {
+      onError: (error: any) => {
+        alert(error.response?.data?.msg || "대표 시간표 변경에 실패했습니다.");
+      },
+    });
+  };
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addModalSemester, setAddModalSemester] = useState(TIMETABLE_SEMESTERS[0]);
+  const [addModalSemester, setAddModalSemester] = useState("");
 
-  const semesters = TIMETABLE_SEMESTERS;
+  const semesters = useMemo(
+    () => serverSemesters.map((s) => formatSemester(s.year, s.term)),
+    [serverSemesters],
+  );
 
   const openAddModal = useCallback((semester: string) => {
     setAddModalSemester(semester);
@@ -45,6 +66,7 @@ export default function MobileTimeTableListPage() {
   }, []);
 
   const handleAddClick = useCallback(() => {
+    if (semesters.length === 0) return;
     openAddModal(semesters[0]);
   }, [openAddModal, semesters]);
 
@@ -106,7 +128,7 @@ export default function MobileTimeTableListPage() {
                         <CreditBadge>{getTimetableCredits(t.events)}학점</CreditBadge>
                         <StarButton onClick={(e) => {
                           e.stopPropagation();
-                          setRepresentative(t.id);
+                          handleSetPrimary(t);
                         }}>
                           <StarIcon filled={t.isRepresentative} />
                         </StarButton>

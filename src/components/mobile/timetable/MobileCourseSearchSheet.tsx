@@ -313,7 +313,9 @@ const MobileCourseSearchSheet = ({
 
                       <CourseAdditionalInfo>
                         <InfoLine>
-                          <span>{course.grade}학년</span>
+                          <span>
+                          {course.grade > 0 ? `${course.grade}학년` : "전학년"}
+                        </span>
                           <span>{course.isMajor ? "전공심화" : "교양"}</span>
                           <span>{course.courseId}</span>
                         </InfoLine>
