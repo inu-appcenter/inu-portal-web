@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
 import { TimetableShareExtraData } from "@/types/chat";
 import { ROUTES } from "@/constants/routes";
 
@@ -31,7 +31,6 @@ const formatDuration = (hours: number) => {
 
 export default function TimetableShareCard({
   extraData,
-  content,
   isMe,
 }: TimetableShareCardProps) {
   const navigate = useNavigate();
@@ -47,7 +46,6 @@ export default function TimetableShareCard({
 
   const friendIds = parsedData?.friendIds || [];
   const topTimes = parsedData?.topFreeTimes || [];
-  const title = parsedData?.title || content || "시간표 겹쳐보기 & 공강 공유";
 
   const handleNavigate = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -107,49 +105,6 @@ const CardContainer = styled.div<{ $isMe?: boolean }>`
   &:active {
     transform: scale(0.98);
   }
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px 10px 16px;
-  border-bottom: 1px solid #f2f4f6;
-  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
-`;
-
-const HeaderIconWrapper = styled.div`
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: #dbeafe;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
-
-const HeaderTextGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-`;
-
-const CardSubTitle = styled.span`
-  font-size: 11px;
-  font-weight: 600;
-  color: #2563eb;
-  letter-spacing: -0.2px;
-`;
-
-const CardTitle = styled.h4`
-  font-size: 14px;
-  font-weight: 700;
-  color: #191f28;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const CardBody = styled.div`
