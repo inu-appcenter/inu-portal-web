@@ -61,12 +61,20 @@ export default function ChattingPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMemberListOpen, setIsMemberListOpen] = useState(false);
   const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
-  const [activeImageMeta, setActiveImageMeta] = useState<{ senderName: string; createDate: string; senderChatRoomMemberId?: number | null } | null>(null);
-  const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<number | null>(null);
+  const [activeImageMeta, setActiveImageMeta] = useState<{
+    senderName: string;
+    createDate: string;
+    senderChatRoomMemberId?: number | null;
+  } | null>(null);
+  const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<
+    number | null
+  >(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showNewMessageBanner, setShowNewMessageBanner] = useState(false);
   const lastMessageCountRef = useRef<number>(0);
-  const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>([]);
+  const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>(
+    [],
+  );
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -91,7 +99,12 @@ export default function ChattingPage() {
   const hasAutoSentShare = useRef(false);
 
   useEffect(() => {
-    if (sharePayloadParam && roomInfo && isStompConnected && !hasAutoSentShare.current) {
+    if (
+      sharePayloadParam &&
+      roomInfo &&
+      isStompConnected &&
+      !hasAutoSentShare.current
+    ) {
       try {
         const decodedPayload = decodeURIComponent(sharePayloadParam);
         const isSent = sendMessage(
@@ -100,7 +113,7 @@ export default function ChattingPage() {
           [],
           undefined,
           "TIMETABLE_SHARE",
-          decodedPayload
+          decodedPayload,
         );
         if (isSent) {
           hasAutoSentShare.current = true;
@@ -112,7 +125,14 @@ export default function ChattingPage() {
         console.error("공유 메시지 자동 발송 실패:", e);
       }
     }
-  }, [sharePayloadParam, roomInfo, isStompConnected, sendMessage, searchParams, setSearchParams]);
+  }, [
+    sharePayloadParam,
+    roomInfo,
+    isStompConnected,
+    sendMessage,
+    searchParams,
+    setSearchParams,
+  ]);
 
   // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수
   useEffect(() => {
@@ -163,7 +183,8 @@ export default function ChattingPage() {
       await updateChatRoomTitle(Number(roomId), newTitle);
       refreshRoom();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.msg || "방 이름 변경에 실패했습니다.";
+      const errorMsg =
+        err.response?.data?.msg || "방 이름 변경에 실패했습니다.";
       alert(errorMsg);
       throw err;
     }
@@ -270,12 +291,7 @@ export default function ChattingPage() {
       setShowNewMessageBanner(false);
     }
 
-    if (
-      isLoading ||
-      isFetchingPrevious ||
-      !hasMore ||
-      messages.length === 0
-    )
+    if (isLoading || isFetchingPrevious || !hasMore || messages.length === 0)
       return;
 
     const { scrollTop, scrollHeight, clientHeight } = el;
@@ -324,7 +340,10 @@ export default function ChattingPage() {
 
     // 신규 실시간 메시지 발신/수신 타임라인 감지
     const currentCount = messages.length;
-    if (currentCount > lastMessageCountRef.current && lastMessageCountRef.current > 0) {
+    if (
+      currentCount > lastMessageCountRef.current &&
+      lastMessageCountRef.current > 0
+    ) {
       const isNearBottom = Math.abs(scrollEl.scrollTop) < 50;
       if (isNearBottom) {
         scrollEl.scrollTop = 0;
@@ -382,7 +401,7 @@ export default function ChattingPage() {
     url: string,
     senderName: string,
     createDate: string,
-    senderChatRoomMemberId?: number | null
+    senderChatRoomMemberId?: number | null,
   ) => {
     mixpanelTrack.chatRoomMenuClicked("이미지 크게 보기", roomId ?? "");
     setSelectedImageUrl(url);
@@ -391,17 +410,25 @@ export default function ChattingPage() {
     let resolvedId = senderChatRoomMemberId;
     if (!resolvedId && senderName) {
       const matched = members.find(
-        (m: ChatRoomMemberResponseDto) => m.nickname === senderName || m.friendAlias === senderName
+        (m: ChatRoomMemberResponseDto) =>
+          m.nickname === senderName || m.friendAlias === senderName,
       );
       resolvedId = matched?.chatRoomMemberId ?? null;
     }
 
     // 본인 발송 메시지의 경우, 글로벌 UserStore의 userInfo.id를 최종 폴백으로 삼아 100% 매칭 보장
-    if (!resolvedId && (senderName === "나" || senderName === userInfo?.nickname)) {
+    if (
+      !resolvedId &&
+      (senderName === "나" || senderName === userInfo?.nickname)
+    ) {
       resolvedId = userInfo?.id ?? null;
     }
 
-    setActiveImageMeta({ senderName, createDate, senderChatRoomMemberId: resolvedId });
+    setActiveImageMeta({
+      senderName,
+      createDate,
+      senderChatRoomMemberId: resolvedId,
+    });
     setIsImageModalOpen(true);
     window.history.pushState({ modal: "image" }, "");
   };
@@ -457,24 +484,24 @@ export default function ChattingPage() {
       const previewUrl = URL.createObjectURL(pendingFiles[0]);
 
       // 2. 프리뷰 상태 리스트에 등록
-      setUploadingImages((prev) => [...prev, { tempId, previewUrl, progress: 0 }]);
+      setUploadingImages((prev) => [
+        ...prev,
+        { tempId, previewUrl, progress: 0 },
+      ]);
 
       // 3. 업로드 프로그레스 콜백 연동하여 전송 시작
-      sendMessage(
-        "",
-        roomInfo.anonymous,
-        pendingFiles,
-        (progressEvent) => {
-          if (progressEvent.total) {
-            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadingImages((prev) =>
-              prev.map((item) =>
-                item.tempId === tempId ? { ...item, progress: percent } : item
-              )
-            );
-          }
+      sendMessage("", roomInfo.anonymous, pendingFiles, (progressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
+          setUploadingImages((prev) =>
+            prev.map((item) =>
+              item.tempId === tempId ? { ...item, progress: percent } : item,
+            ),
+          );
         }
-      );
+      });
 
       setPendingFiles([]);
       setIsUploadModalOpen(false);
@@ -534,10 +561,13 @@ export default function ChattingPage() {
               >
                 {i % 2 !== 0 && <Skeleton width="60px" height="14px" />}
                 <Skeleton
-                  width={i % 3 === 0 ? "180px" : i % 2 === 0 ? "140px" : "100px"}
+                  width={
+                    i % 3 === 0 ? "180px" : i % 2 === 0 ? "140px" : "100px"
+                  }
                   height="36px"
                   style={{
-                    borderRadius: i % 2 === 0 ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
+                    borderRadius:
+                      i % 2 === 0 ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
                   }}
                 />
               </div>
@@ -734,11 +764,11 @@ export default function ChattingPage() {
         roomContext={
           roomInfo
             ? {
-              roomId: roomId ?? "",
-              chatType: roomInfo.type,
-              isOwner: roomInfo.owner,
-              participantCount: roomInfo.currentParticipants,
-            }
+                roomId: roomId ?? "",
+                chatType: roomInfo.type,
+                isOwner: roomInfo.owner,
+                participantCount: roomInfo.currentParticipants,
+              }
             : undefined
         }
       />
@@ -774,11 +804,11 @@ const ChatPageWrapper = styled.div`
   flex-direction: column;
   width: 100%;
   /* 헤더 높이(약 76px)를 제외한 나머지 영역이 Visual Viewport 내에 들어오도록 설정 */
-  height: calc(var(--visual-viewport-height, 100dvh) - 76px);
+  height: calc(var(--visual-viewport-height, 100dvh));
   overflow: hidden;
   position: fixed;
   /* iOS에서 뷰포트가 밀릴 경우 offset-top만큼 보정하여 헤더 위치 사수 */
-  top: calc(76px + var(--visual-viewport-offset-top, 0px));
+  top: calc(var(--visual-viewport-offset-top, 0px));
   left: 0;
   right: 0;
   overscroll-behavior: none;
@@ -795,6 +825,7 @@ const ChattingWrapper = styled.div`
   display: flex;
   flex-direction: column-reverse;
   overflow-y: auto;
+  padding-top: 76px;
   //padding-bottom: 64px;
   box-sizing: border-box;
 
@@ -903,8 +934,8 @@ const SystemMessage = styled.div`
   margin: 12px 16px;
 
   .bubble {
-    background-color: #F2F2F7;
-    color: #8E8E93;
+    background-color: #f2f2f7;
+    color: #8e8e93;
     font-size: 12px;
     font-weight: 500;
     padding: 6px 14px;
@@ -995,7 +1026,7 @@ const ChatItemOtherPerson = ({
     url: string,
     senderName: string,
     createDate: string,
-    senderId?: number | null
+    senderId?: number | null,
   ) => void;
   userImageUrl: string | null;
   showName: boolean;
@@ -1003,8 +1034,12 @@ const ChatItemOtherPerson = ({
   members: ChatRoomMemberResponseDto[];
 }) => {
   const getDisplayName = () => {
-    const matched = members.find((m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname);
-    return matched?.friendAlias || message.senderAlias || message.senderNickname;
+    const matched = members.find(
+      (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
+    );
+    return (
+      matched?.friendAlias || message.senderAlias || message.senderNickname
+    );
   };
   const thumbnailUrl =
     message.imageCount > 0
@@ -1030,11 +1065,7 @@ const ChatItemOtherPerson = ({
     <MessageContainer>
       {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
       <MessageContent>
-        {showName && (
-          <SenderName>
-            {getDisplayName()}
-          </SenderName>
-        )}
+        {showName && <SenderName>{getDisplayName()}</SenderName>}
         <MessageBubble>
           <div
             style={{
@@ -1061,7 +1092,7 @@ const ChatItemOtherPerson = ({
                         originalImageUrl,
                         getDisplayName() || "알 수 없음",
                         message.createDate,
-                        message.senderChatRoomMemberId
+                        message.senderChatRoomMemberId,
                       )
                     }
                   />
@@ -1097,14 +1128,18 @@ const ChatItemMy = ({
     url: string,
     senderName: string,
     createDate: string,
-    senderId?: number | null
+    senderId?: number | null,
   ) => void;
   showTime: boolean;
   members: ChatRoomMemberResponseDto[];
 }) => {
   const getDisplayName = () => {
-    const matched = members.find((m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname);
-    return matched?.friendAlias || message.senderAlias || message.senderNickname;
+    const matched = members.find(
+      (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
+    );
+    return (
+      matched?.friendAlias || message.senderAlias || message.senderNickname
+    );
   };
   const thumbnailUrl =
     message.imageCount > 0
@@ -1162,7 +1197,7 @@ const ChatItemMy = ({
                         originalImageUrl,
                         getDisplayName() || "나",
                         message.createDate,
-                        message.senderChatRoomMemberId
+                        message.senderChatRoomMemberId,
                       )
                     }
                   />
@@ -1227,8 +1262,14 @@ const OfficialTag = styled.span`
 
 const NewMessageBanner = styled.div`
   @keyframes fadeIn {
-    from { opacity: 0; transform: translate(-50%, 8px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
   }
 
   position: absolute;
@@ -1248,7 +1289,7 @@ const NewMessageBanner = styled.div`
   box-shadow: 0 4px 12px rgba(94, 146, 240, 0.3);
   cursor: pointer;
   animation: fadeIn 200ms ease-out forwards;
-  
+
   &:active {
     background-color: #4b81e0;
   }
@@ -1256,8 +1297,14 @@ const NewMessageBanner = styled.div`
 
 const UploadingPreviewItem = styled.div`
   @keyframes previewFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   display: flex;
@@ -1281,7 +1328,9 @@ const PreviewImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.7); /* 전송 중 느낌을 주기 위한 차분한 어두움만 적용 (블러 제거) */
+  filter: brightness(
+    0.7
+  ); /* 전송 중 느낌을 주기 위한 차분한 어두움만 적용 (블러 제거) */
   transition: filter 300ms ease;
 `;
 
@@ -1305,7 +1354,7 @@ const ProgressGlassRing = styled.div`
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  
+
   svg {
     position: absolute;
     top: 0;
