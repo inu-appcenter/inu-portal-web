@@ -92,10 +92,9 @@ export default function ChattingPage() {
 
   useEffect(() => {
     if (sharePayloadParam && roomInfo && isStompConnected && !hasAutoSentShare.current) {
-      hasAutoSentShare.current = true;
       try {
         const decodedPayload = decodeURIComponent(sharePayloadParam);
-        sendMessage(
+        const isSent = sendMessage(
           "시간표 겹쳐보기 & 공강 공유",
           roomInfo.anonymous,
           [],
@@ -103,9 +102,12 @@ export default function ChattingPage() {
           "TIMETABLE_SHARE",
           decodedPayload
         );
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete("sharePayload");
-        setSearchParams(newParams, { replace: true });
+        if (isSent) {
+          hasAutoSentShare.current = true;
+          const newParams = new URLSearchParams(searchParams);
+          newParams.delete("sharePayload");
+          setSearchParams(newParams, { replace: true });
+        }
       } catch (e) {
         console.error("공유 메시지 자동 발송 실패:", e);
       }

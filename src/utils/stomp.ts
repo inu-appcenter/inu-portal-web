@@ -31,10 +31,10 @@ export const publishMessage = (
   isAnonymous: boolean,
   messageType?: string,
   extraData?: string,
-) => {
+): boolean => {
   if (!client || !client.connected) {
     console.error("STOMP 클라이언트가 연결되지 않았습니다.");
-    return;
+    return false;
   }
 
   client.publish({
@@ -47,4 +47,5 @@ export const publishMessage = (
       extraData,
     }),
   });
+  return true;
 };

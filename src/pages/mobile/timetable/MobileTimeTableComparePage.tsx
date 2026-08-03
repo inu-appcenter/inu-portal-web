@@ -792,7 +792,10 @@ export default function MobileTimeTableComparePage() {
     }
 
     const names = targetIds
-      .map((id) => friendsMap[id]?.friendAlias || friendsMap[id]?.nickname)
+      .map((id) => {
+        const friend = friendsMap.find((f: any) => f.friendId === id);
+        return friend ? friend.friendAlias || friend.nickname : "";
+      })
       .filter(Boolean);
 
     if (names.length === 0) {
