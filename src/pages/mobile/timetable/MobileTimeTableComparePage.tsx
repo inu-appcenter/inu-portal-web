@@ -796,17 +796,17 @@ export default function MobileTimeTableComparePage() {
       .filter(Boolean);
 
     if (names.length === 0) {
-      return "선택한 인원의 채팅방에 시간표를 공유할까요?";
+      return "선택한 인원의 단체톡방에 공유할까요?";
     }
     if (names.length === 1) {
-      return `${names[0]} 님과의 채팅방에 시간표를 공유할까요?`;
+      return `선택한 ${names[0]} 님과의 채팅방에 공유할까요?`;
     }
     if (names.length <= 3) {
-      return `${names.join(", ")} 님 단체방에 시간표를 공유할까요?`;
+      return `선택한 ${names.join(", ")} 님 단체톡방에 공유할까요?`;
     }
     const topNames = names.slice(0, 3).join(", ");
     const extraCount = names.length - 3;
-    return `${topNames} 님 외 ${extraCount}명 단체방에 시간표를 공유할까요?`;
+    return `선택한 ${topNames} 님 외 ${extraCount}명 단체톡방에 공유할까요?`;
   }, [selectedFriendIdsState, searchParams, friendsMap]);
 
   const shareMutation = useMutation({
@@ -1076,7 +1076,7 @@ export default function MobileTimeTableComparePage() {
       <Modal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        title="시간표 공유"
+        title="공강 정보 공유"
         description={confirmModalDescription}
         primaryButton={{
           text: "공유하기",

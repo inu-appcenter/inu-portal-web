@@ -81,6 +81,7 @@ export default function ChattingPage() {
     error,
     myHash,
     roomInfo,
+    isStompConnected,
     fetchPreviousMessages,
     refreshRoom,
   } = useChat(roomId ?? "");
@@ -90,7 +91,7 @@ export default function ChattingPage() {
   const hasAutoSentShare = useRef(false);
 
   useEffect(() => {
-    if (sharePayloadParam && roomInfo && !hasAutoSentShare.current) {
+    if (sharePayloadParam && roomInfo && isStompConnected && !hasAutoSentShare.current) {
       hasAutoSentShare.current = true;
       try {
         const decodedPayload = decodeURIComponent(sharePayloadParam);
@@ -109,7 +110,7 @@ export default function ChattingPage() {
         console.error("공유 메시지 자동 발송 실패:", e);
       }
     }
-  }, [sharePayloadParam, roomInfo, sendMessage, searchParams, setSearchParams]);
+  }, [sharePayloadParam, roomInfo, isStompConnected, sendMessage, searchParams, setSearchParams]);
 
   // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수
   useEffect(() => {

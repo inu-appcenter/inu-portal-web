@@ -18,6 +18,7 @@ export const useChat = (roomId: string) => {
   const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isStompConnected, setIsStompConnected] = useState(false);
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
 
@@ -90,6 +91,7 @@ export const useChat = (roomId: string) => {
       client.connectHeaders = { Auth: `${jwtToken}` };
 
       client.onConnect = () => {
+        setIsStompConnected(true);
         // 새 메시지 구독
         client.subscribe(`/sub/room/${roomId}`, (message) => {
           if (!message.body) return;
@@ -125,6 +127,7 @@ export const useChat = (roomId: string) => {
       };
 
       client.onStompError = (frame) => {
+        setIsStompConnected(false);
         console.error("STOMP 브로커 연결 오류:", frame.headers["message"]);
         console.error("STOMP 상세 오류 정보:", frame.body);
         setError("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
@@ -230,6 +233,7 @@ export const useChat = (roomId: string) => {
     error,
     myHash,
     roomInfo,
+    isStompConnected,
     fetchPreviousMessages,
     refreshRoom: fetchMessages,
   };
