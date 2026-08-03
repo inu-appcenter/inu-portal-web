@@ -8,6 +8,7 @@ import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
 import { createPersonalChatRoom } from "@/apis/chat";
 import BottomSheet from "@/components/common/BottomSheet";
+import Modal from "@/components/common/Modal";
 import { TimetableShareExtraData } from "@/types/chat";
 
 // 공용 컴포넌트 임포트
@@ -776,11 +777,43 @@ export default function MobileTimeTableComparePage() {
   ]);
 
   const isFreeTab = activeTabUpper === "free";
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  const confirmModalDescription = useMemo(() => {
+    let targetIds = selectedFriendIdsState.filter((id) => id !== 99999);
+    if (targetIds.length === 0) {
+      const idsParam = searchParams.get("ids");
+      if (idsParam) {
+        targetIds = idsParam
+          .split(",")
+          .map(Number)
+          .filter((id) => Boolean(id) && id !== 99999);
+      }
+    }
+
+    const names = targetIds
+      .map((id) => friendsMap[id]?.friendAlias || friendsMap[id]?.nickname)
+      .filter(Boolean);
+
+    if (names.length === 0) {
+      return "선택한 인원의 채팅방에 시간표를 공유할까요?";
+    }
+    if (names.length === 1) {
+      return `${names[0]} 님과의 채팅방에 시간표를 공유할까요?`;
+    }
+    if (names.length <= 3) {
+      return `${names.join(", ")} 님 단체방에 시간표를 공유할까요?`;
+    }
+    const topNames = names.slice(0, 3).join(", ");
+    const extraCount = names.length - 3;
+    return `${topNames} 님 외 ${extraCount}명 단체방에 시간표를 공유할까요?`;
+  }, [selectedFriendIdsState, searchParams, friendsMap]);
 
   const shareMutation = useMutation({
     mutationFn: async (targetFriendIds: number[]) =>
       createPersonalChatRoom(targetFriendIds),
     onSuccess: (res: any, variables: number[]) => {
+      setIsConfirmModalOpen(false);
       const roomData = res.data || res;
       const roomId = roomData.id || roomData.roomId;
       if (roomId) {
@@ -803,7 +836,7 @@ export default function MobileTimeTableComparePage() {
     },
   });
 
-  const handleShareTargetClick = () => {
+  const handleShareButtonClick = () => {
     let targetIds = selectedFriendIdsState.filter((id) => id !== 99999);
     if (targetIds.length === 0) {
       const idsParam = searchParams.get("ids");
@@ -820,6 +853,20 @@ export default function MobileTimeTableComparePage() {
       return;
     }
 
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleExecuteShare = () => {
+    let targetIds = selectedFriendIdsState.filter((id) => id !== 99999);
+    if (targetIds.length === 0) {
+      const idsParam = searchParams.get("ids");
+      if (idsParam) {
+        targetIds = idsParam
+          .split(",")
+          .map(Number)
+          .filter((id) => Boolean(id) && id !== 99999);
+      }
+    }
     shareMutation.mutate(targetIds);
   };
 
@@ -1010,7 +1057,7 @@ export default function MobileTimeTableComparePage() {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          handleShareTargetClick();
+          handleShareButtonClick();
         }}
         onPointerDown={(e) => {
           e.stopPropagation();
@@ -1018,12 +1065,29 @@ export default function MobileTimeTableComparePage() {
         onTouchEnd={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          handleShareTargetClick();
+          handleShareButtonClick();
         }}
         data-vaul-no-drag=""
       >
         <Send size={24} color="#ffffff" />
       </FloatingShareButton>
+
+      {/* 7. 공유 확인 모달 */}
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        title="시간표 공유"
+        description={confirmModalDescription}
+        primaryButton={{
+          text: "공유하기",
+          onClick: handleExecuteShare,
+          loading: shareMutation.isPending,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsConfirmModalOpen(false),
+        }}
+      />
     </PageWrapper>
   );
 }
