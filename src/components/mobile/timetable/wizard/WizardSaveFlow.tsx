@@ -174,6 +174,9 @@ const WizardSaveFlow = ({
           variant: "danger",
           loading: isSaving,
           onClick: handleConfirmOverwrite,
+          // Figma는 파괴적 확정 버튼을 진한 빨강 채움으로 표현 — 공용 danger variant(파스텔)는
+          // 다른 화면(필터 미저장 이탈 등)과 공유하므로 그대로 두고 이 버튼만 override
+          style: { background: "#dc322f", color: "#ffffff" },
         }}
       />
     </>

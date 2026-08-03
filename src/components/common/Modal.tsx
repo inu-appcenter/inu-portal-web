@@ -16,12 +16,15 @@ export interface ModalProps {
     variant?: CapsuleButtonVariant; // "brand" | "danger" | "primary" | "secondary"
     disabled?: boolean;
     loading?: boolean;
+    // variant 팔레트로 표현 안 되는 화면별 강조색이 필요할 때만 사용 (예: 진한 빨강 파괴적 확정 버튼)
+    style?: React.CSSProperties;
   };
   secondaryButton?: {
     text: string;
     onClick: () => void;
     variant?: CapsuleButtonVariant;
     disabled?: boolean;
+    style?: React.CSSProperties;
   };
   closeOnOverlayClick?: boolean;
 }
@@ -113,6 +116,7 @@ export default function Modal({
                 onClick={secondaryButton.onClick}
                 disabled={secondaryButton.disabled}
                 fullWidth={!primaryButton}
+                style={secondaryButton.style}
               >
                 {secondaryButton.text}
               </ModalButton>
@@ -124,6 +128,7 @@ export default function Modal({
                 disabled={primaryButton.disabled}
                 loading={primaryButton.loading}
                 fullWidth={!secondaryButton}
+                style={primaryButton.style}
               >
                 {primaryButton.text}
               </ModalButton>
