@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useParams, useNavigate } from "react-router-dom"; // useNavigate import 추가
+import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { Send, Users, Loader2, Image, ArrowDown } from "lucide-react";
@@ -8,6 +8,7 @@ import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
+import TimetableShareCard from "@/components/mobile/chat/TimetableShareCard";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import Skeleton from "@/components/common/Skeleton";
@@ -83,6 +84,32 @@ export default function ChattingPage() {
     fetchPreviousMessages,
     refreshRoom,
   } = useChat(roomId ?? "");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sharePayloadParam = searchParams.get("sharePayload");
+  const hasAutoSentShare = useRef(false);
+
+  useEffect(() => {
+    if (sharePayloadParam && roomInfo && !hasAutoSentShare.current) {
+      hasAutoSentShare.current = true;
+      try {
+        const decodedPayload = decodeURIComponent(sharePayloadParam);
+        sendMessage(
+          "시간표 겹쳐보기 & 공강 공유",
+          roomInfo.anonymous,
+          [],
+          undefined,
+          "TIMETABLE_SHARE",
+          decodedPayload
+        );
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete("sharePayload");
+        setSearchParams(newParams, { replace: true });
+      } catch (e) {
+        console.error("공유 메시지 자동 발송 실패:", e);
+      }
+    }
+  }, [sharePayloadParam, roomInfo, sendMessage, searchParams, setSearchParams]);
 
   // 실시간 메시지 연동으로 이미지 업로드 완료 시 프리뷰 클린업 및 Blob URL 자원 회수
   useEffect(() => {
@@ -1011,6 +1038,10 @@ const ChatItemOtherPerson = ({
 
   const bgColor = getMessageColor(message.senderHash);
 
+  const isTimetableShare =
+    message.messageType === "TIMETABLE_SHARE" ||
+    (message.extraData && message.extraData.includes("topFreeTimes"));
+
   return (
     <MessageContainer>
       {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
@@ -1028,23 +1059,33 @@ const ChatItemOtherPerson = ({
               alignItems: "flex-start",
             }}
           >
-            {thumbnailUrl && (
-              <ImageThumbnail
-                src={thumbnailUrl}
-                alt="이미지"
-                onClick={() =>
-                  originalImageUrl &&
-                  onImageClick(
-                    originalImageUrl,
-                    getDisplayName() || "알 수 없음",
-                    message.createDate,
-                    message.senderChatRoomMemberId
-                  )
-                }
+            {isTimetableShare ? (
+              <TimetableShareCard
+                extraData={message.extraData}
+                content={message.content}
+                isMe={false}
               />
-            )}
-            {message.content && (
-              <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+            ) : (
+              <>
+                {thumbnailUrl && (
+                  <ImageThumbnail
+                    src={thumbnailUrl}
+                    alt="이미지"
+                    onClick={() =>
+                      originalImageUrl &&
+                      onImageClick(
+                        originalImageUrl,
+                        getDisplayName() || "알 수 없음",
+                        message.createDate,
+                        message.senderChatRoomMemberId
+                      )
+                    }
+                  />
+                )}
+                {message.content && (
+                  <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+                )}
+              </>
             )}
           </div>
           {(message.unreadCount > 0 || showTime) && (
@@ -1096,6 +1137,9 @@ const ChatItemMy = ({
   });
 
   const bgColor = getMessageColor(message.senderHash);
+  const isTimetableShare =
+    message.messageType === "TIMETABLE_SHARE" ||
+    (message.extraData && message.extraData.includes("topFreeTimes"));
 
   return (
     <MyMessageContainer>
@@ -1116,23 +1160,33 @@ const ChatItemMy = ({
               alignItems: "flex-end",
             }}
           >
-            {thumbnailUrl && (
-              <ImageThumbnail
-                src={thumbnailUrl}
-                alt="이미지"
-                onClick={() =>
-                  originalImageUrl &&
-                  onImageClick(
-                    originalImageUrl,
-                    getDisplayName() || "나",
-                    message.createDate,
-                    message.senderChatRoomMemberId
-                  )
-                }
+            {isTimetableShare ? (
+              <TimetableShareCard
+                extraData={message.extraData}
+                content={message.content}
+                isMe={true}
               />
-            )}
-            {message.content && (
-              <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+            ) : (
+              <>
+                {thumbnailUrl && (
+                  <ImageThumbnail
+                    src={thumbnailUrl}
+                    alt="이미지"
+                    onClick={() =>
+                      originalImageUrl &&
+                      onImageClick(
+                        originalImageUrl,
+                        getDisplayName() || "나",
+                        message.createDate,
+                        message.senderChatRoomMemberId
+                      )
+                    }
+                  />
+                )}
+                {message.content && (
+                  <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+                )}
+              </>
             )}
           </div>
         </MessageBubble>

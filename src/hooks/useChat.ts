@@ -156,6 +156,8 @@ export const useChat = (roomId: string) => {
     isAnonymous: boolean,
     imageFiles: File[] = [],
     onProgress?: (progressEvent: any) => void,
+    messageType?: string,
+    extraData?: string,
   ) => {
     if (imageFiles.length > 0 && roomInfo?.id) {
       sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles, onProgress) // 변경: 파일 배열 및 프로그레스 전달
@@ -167,7 +169,7 @@ export const useChat = (roomId: string) => {
           window.alert("이미지 메시지 전송에 실패했습니다.");
         });
     } else {
-      publish(clientRef.current, roomId, content, isAnonymous);
+      publish(clientRef.current, roomId, content, isAnonymous, messageType, extraData);
     }
   };
 

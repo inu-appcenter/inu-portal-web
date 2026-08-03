@@ -7,6 +7,8 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
 import BottomSheet from "@/components/common/BottomSheet";
+import ShareTargetModal from "@/components/mobile/timetable/ShareTargetModal";
+import { TimetableShareExtraData } from "@/types/chat";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -16,7 +18,7 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 
 // 아이콘
-import { Plus } from "lucide-react";
+import { Plus, Send } from "lucide-react";
 
 // ==========================================
 // 1. 목업 데이터 정의
@@ -774,6 +776,23 @@ export default function MobileTimeTableComparePage() {
   ]);
 
   const isFreeTab = activeTabUpper === "free";
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const handleConfirmShareTarget = (roomId: number) => {
+    setIsShareModalOpen(false);
+    const payload: TimetableShareExtraData = {
+      title: "시간표 겹쳐보기 & 공강 공유",
+      friendIds: selectedFriendIdsState.filter((id) => id !== 99999),
+      topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
+        day: slot.day,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        duration: slot.duration,
+      })),
+    };
+    const payloadStr = encodeURIComponent(JSON.stringify(payload));
+    navigate(`/mobile/chat/${roomId}?sharePayload=${payloadStr}`);
+  };
 
   return (
     <PageWrapper
@@ -789,6 +808,14 @@ export default function MobileTimeTableComparePage() {
               $hasHorizontalOverflow={hasHorizontalOverflow}
               data-vaul-no-drag=""
             >
+              <DayChip
+                key="all"
+                label="모두"
+                isSelected={
+                  selectedFriendIdsState.length === activeFriends.length
+                }
+                onClick={() => handleFriendChipClick(-1)}
+              />
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
                 const isSelected =
@@ -806,14 +833,6 @@ export default function MobileTimeTableComparePage() {
               })}
             </ChipScrollArea>
             <RightActionGroup data-vaul-no-drag="">
-              <DayChip
-                key="all"
-                label="모두"
-                isSelected={
-                  selectedFriendIdsState.length === activeFriends.length
-                }
-                onClick={() => handleFriendChipClick(-1)}
-              />
               <AddFriendButton
                 onClick={(e) => {
                   e.preventDefault();
@@ -954,6 +973,22 @@ export default function MobileTimeTableComparePage() {
           )}
         </ScrollableBody>
       </BottomSheet>
+
+      {/* 6. 결과 공유 플로팅 버튼 */}
+      <FloatingShareButton
+        aria-label="결과 공유"
+        onClick={() => setIsShareModalOpen(true)}
+        data-vaul-no-drag=""
+      >
+        <Send size={24} color="#ffffff" />
+      </FloatingShareButton>
+
+      {/* 7. 공유 대상 선택 모달 */}
+      <ShareTargetModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        onConfirmShare={handleConfirmShareTarget}
+      />
     </PageWrapper>
   );
 }
@@ -1223,7 +1258,7 @@ const ScrollableBody = styled.div<{ $snapHeight?: number }>`
   flex-direction: column;
   gap: 8px;
   min-height: 0;
-  padding-bottom: 24px;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 
   /* 스크롤 영역의 높이를 snap 높이에 따라 동적으로 묶어줌 */
   max-height: ${({ $snapHeight }) =>
@@ -1237,4 +1272,29 @@ const ScrollableBody = styled.div<{ $snapHeight?: number }>`
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
+`;
+
+const FloatingShareButton = styled.button`
+  position: fixed;
+  right: 20px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 10001;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--interactive-primary, #3b82f6);
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    transform: scale(0.92);
+  }
 `;
