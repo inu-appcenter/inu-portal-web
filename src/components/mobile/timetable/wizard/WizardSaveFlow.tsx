@@ -50,11 +50,9 @@ const WizardSaveFlow = ({
 
   const addCandidateCourses = async (timeTableId: number) => {
     for (const course of candidate.courses) {
-      // 서버에 courseOfferingId 조회 API가 없어(inu-portal-server#279) 임시로 courseId를
-      // courseOfferingId 자리에 전달한다. 기존 강의 추가 플로우(MobileTimeTableEditPage)와 동일한 우회.
       await createCourseItemMutation.mutateAsync({
         timeTableId,
-        body: { courseOfferingId: course.courseId },
+        body: { courseOfferingId: course.courseOfferingId },
       });
     }
   };

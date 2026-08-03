@@ -51,8 +51,7 @@ const buildCourseDetailItem = (id: number, subjectNumber: string, memo?: string 
     type: "COURSE",
     memo: memo ?? null,
     course: {
-      // 실 서버와 동일한 우회: courseOfferingId 자리에 courseId가 들어온다는 전제
-      courseOfferingId: offering.courseId,
+      courseOfferingId: offering.id,
       courseId: offering.courseId,
       title: offering.courseTitle,
       professor: offering.professor ?? "",
@@ -150,7 +149,7 @@ export const mockCreateTimeTableCourseItem = (
   timeTableId: number,
   body: TimeTableCourseItemRequest,
 ): TimeTableItemSummary => {
-  const offering = MOCK_COURSE_OFFERINGS.find((o) => o.courseId === body.courseOfferingId);
+  const offering = MOCK_COURSE_OFFERINGS.find((o) => o.id === body.courseOfferingId);
   if (!offering) throw new MockApiError("존재하지 않는 개설 강의입니다.");
 
   const items = itemsByTimeTableId.get(timeTableId) ?? [];

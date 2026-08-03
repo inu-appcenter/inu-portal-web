@@ -10,7 +10,8 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
-import { Course } from "@/types/courses";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import type { CourseOfferingFilters } from "@/types/courseOfferings";
 import {
   useCreateTimeTableCourseItem,
   useDeleteTimeTableItem,
@@ -19,24 +20,10 @@ import {
 } from "@/hooks/useTimeTables";
 import { formatHoursToTime } from "@/utils/timetable";
 import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
-
-// 서버 강의 데이터에는 아직 room/day/startTime/endTime/professor 등 시간표 배치 정보가 없어
-// 검색 시트가 요구하는 CourseResult 형태로 임시 매핑한다.
-const mapCourseToCourseResult = (course: Course): CourseResult => ({
-  id: course.id,
-  name: course.title,
-  professor: "-",
-  timeStr: "-",
-  room: "-",
-  grade: parseInt(course.targetGradeName, 10) || 0,
-  isMajor: course.completionDivisionName.includes("전공"),
-  credits: parseInt(course.credit, 10) || 0,
-  courseId: String(course.id),
-  remarks: course.content,
-  enrolledCount: 0,
-  schedules: [],
-});
+import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
+import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -135,11 +122,42 @@ const IconButton = styled.button`
 const MobileTimeTableEditPage = () => {
   const navigate = useNavigate();
 
-  // 서버 강의 목록 조회 (react query) + zustand 상태 동기화
+  // 상태 및 스토어 관리
+  const { timetables, activeTimetableId } = useTimetableStore();
+  const activeTimetable = useMemo(() => {
+    return timetables.find((t) => t.id === activeTimetableId) || null;
+  }, [timetables, activeTimetableId]);
+  const timetable = activeTimetable?.events || [];
+
+  // 전공/영역·학년·이수구분·학점 필터 (검색 시트에서 선택 시 onFiltersChange로 전달받아
+  // querystring 재조회 - inu-appcenter/inu-portal-server#297 서버 지원 전까지는 무시됨)
+  const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>({});
+  const handleFiltersChange = (filters: FilterState) => {
+    setOfferingFilters({
+      department: filters.major ?? undefined,
+      grades: filters.grades.length > 0 ? filters.grades : undefined,
+      types: filters.types.length > 0 ? filters.types : undefined,
+      credits: filters.credits.length > 0 ? filters.credits : undefined,
+    });
+  };
+
+  // 개설강의(학기별 시간/강의실) + 강의 목록(학점/학과 등) 조회 후 courseId로 조인
   const { courses } = useCourses();
-  const searchResults = useMemo(
-    () => courses.map(mapCourseToCourseResult),
+  const { courseOfferings } = useCourseOfferings(
+    activeTimetable?.year,
+    activeTimetable?.term,
+    offeringFilters,
+  );
+  const courseById = useMemo(
+    () => new Map(courses.map((c) => [c.id, c])),
     [courses],
+  );
+  const searchResults = useMemo(
+    () =>
+      courseOfferings.map((offering) =>
+        mapCourseOfferingToCourseResult(offering, courseById.get(offering.courseId)),
+      ),
+    [courseOfferings, courseById],
   );
 
   const headerRight = useMemo(
@@ -167,15 +185,10 @@ const MobileTimeTableEditPage = () => {
     rightAreaNotCircle: true,
   });
 
-  // 상태 및 스토어 관리
-  const { timetables, activeTimetableId } = useTimetableStore();
-  const activeTimetable = useMemo(() => {
-    return timetables.find((t) => t.id === activeTimetableId) || null;
-  }, [timetables, activeTimetableId]);
-  const timetable = activeTimetable?.events || [];
-
   // 새로고침으로 이 페이지에 바로 진입해도 활성 시간표를 복구할 수 있도록 목록을 조회
   useTimeTables();
+  // URL의 ?id= 쿼리파라미터와 활성 시간표를 양방향 동기화 (새로고침해도 보던 시간표 유지)
+  useTimetableUrlSync();
   // 상세 조회로 서버 요소를 스토어에 동기화 (뮤테이션 성공 시 invalidate로 재조회됨)
   useTimeTableDetail(activeTimetableId);
 
@@ -348,6 +361,7 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
+        onFiltersChange={handleFiltersChange}
       />
     </PageWrapper>
   );

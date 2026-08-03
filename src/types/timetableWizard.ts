@@ -12,6 +12,7 @@ export interface WizardCourseMeeting {
 // 마법사 생성 알고리즘과 검색/선택 UI가 공통으로 쓰는 단위.
 export interface WizardCourseOption {
   courseId: number;
+  courseOfferingId: number;
   subjectNumber: string;
   title: string;
   professor: string | null;

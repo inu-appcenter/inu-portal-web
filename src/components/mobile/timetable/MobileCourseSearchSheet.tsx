@@ -32,7 +32,9 @@ export interface CourseResult {
   credits: number;
   courseId: string;
   remarks?: string;
-  enrolledCount: number;
+  // 서버 수강인원/정원 데이터가 아직 동기화되지 않아 null일 수 있음 - null이면 배지 자체를 숨김
+  enrolledCount: number | null;
+  capacity: number | null;
   schedules: ClassItem[];
 }
 
@@ -79,6 +81,8 @@ interface MobileCourseSearchSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddCourse?: (course: CourseResult) => void;
+  // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
+  onFiltersChange?: (filters: FilterState) => void;
 }
 
 const MobileCourseSearchSheet = ({
@@ -90,13 +94,19 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
   onAddCourse,
+  onFiltersChange,
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const [activeFilters, setActiveFilters] =
+  const [activeFilters, setActiveFiltersState] =
     useState<FilterState>(DEFAULT_FILTERS);
+
+  const setActiveFilters = (filters: FilterState) => {
+    setActiveFiltersState(filters);
+    onFiltersChange?.(filters);
+  };
 
   // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
   useEffect(() => {
@@ -167,46 +177,9 @@ const MobileCourseSearchSheet = ({
   const filteredCourses = useMemo(() => {
     let list: CourseResult[] = [...courses];
 
-    // 1. 전공/영역 필터 (학과 분류 시뮬레이션)
-    if (activeFilters.major) {
-      list = list.filter((course) => {
-        if (activeFilters.major === "컴퓨터공학부") {
-          return course.name === "웹프로그래밍" || course.name === "운영체제";
-        }
-        if (activeFilters.major?.includes("교양")) {
-          return course.name === "창의적사고와문제해결";
-        }
-        return true;
-      });
-    }
-
-    // 2. 학년 필터
-    if (activeFilters.grades.length > 0) {
-      list = list.filter((course) =>
-        activeFilters.grades.includes(course.grade),
-      );
-    }
-
-    // 3. 이수구분 필터
-    if (activeFilters.types.length > 0) {
-      list = list.filter((course) => {
-        const courseType = course.isMajor ? "전공" : "교양";
-        return activeFilters.types.includes(courseType);
-      });
-    }
-
-    // 4. 학점 필터
-    if (activeFilters.credits.length > 0) {
-      list = list.filter((course) => {
-        if (activeFilters.credits.includes(4)) {
-          return (
-            course.credits >= 4 ||
-            activeFilters.credits.includes(course.credits)
-          );
-        }
-        return activeFilters.credits.includes(course.credits);
-      });
-    }
+    // 1~4. 전공/영역·학년·이수구분·학점 필터는 상위(MobileTimeTableEditPage)에서
+    // onFiltersChange로 전달받아 querystring으로 서버에 재조회하므로 여기서는 거르지 않는다
+    // (inu-appcenter/inu-portal-server#297 - 서버가 지원하기 전까지는 필터링되지 않음).
 
     // 5. 정렬 필터
     if (activeFilters.sort === "별점높은순") {
@@ -217,7 +190,7 @@ const MobileCourseSearchSheet = ({
       };
       list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
     } else if (activeFilters.sort === "담은인원많은순") {
-      list.sort((a, b) => b.enrolledCount - a.enrolledCount);
+      list.sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
     }
 
     return list;
@@ -297,9 +270,12 @@ const MobileCourseSearchSheet = ({
                           <CourseName>{course.name}</CourseName>
                         </MainInfo>
                         <RightInfo>
-                          <EnrolledBadge>
-                            {course.enrolledCount}명 / n명
-                          </EnrolledBadge>
+                          {course.enrolledCount != null &&
+                            course.capacity != null && (
+                              <EnrolledBadge>
+                                {course.enrolledCount}명 / {course.capacity}명
+                              </EnrolledBadge>
+                            )}
                         </RightInfo>
                       </InfoRow>
 
