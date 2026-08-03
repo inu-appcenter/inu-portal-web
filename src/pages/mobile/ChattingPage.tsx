@@ -194,7 +194,7 @@ export default function ChattingPage() {
   );
 
   const isGroupChat = roomInfo
-    ? roomInfo.type === "OPEN" || roomInfo.currentParticipants > 2 || roomInfo.maxCapacity > 2
+    ? roomInfo.type === "OPEN" || roomInfo.currentParticipants > 2
     : false;
 
   const headerTitle = React.useMemo(() => {
