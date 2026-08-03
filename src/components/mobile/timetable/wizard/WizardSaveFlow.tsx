@@ -116,7 +116,7 @@ const WizardSaveFlow = ({
         <OptionRow $active={mode === "new"} onClick={() => setMode("new")}>
           <RadioCircle $active={mode === "new"} />
           <OptionText>
-            <OptionTitle>새 시간표로 저장</OptionTitle>
+            <OptionTitle $active={mode === "new"}>새 시간표로 저장</OptionTitle>
             <OptionSubtitle>{candidate.label}가 새 시간표로 추가돼요</OptionSubtitle>
           </OptionText>
         </OptionRow>
@@ -124,7 +124,7 @@ const WizardSaveFlow = ({
         <OptionRow $active={mode === "overwrite"} onClick={() => setMode("overwrite")}>
           <RadioCircle $active={mode === "overwrite"} />
           <OptionText>
-            <OptionTitle>기존 시간표 덮어쓰기</OptionTitle>
+            <OptionTitle $active={mode === "overwrite"}>기존 시간표 덮어쓰기</OptionTitle>
             <OptionSubtitle>선택한 시간표의 강의가 전부 바뀌어요</OptionSubtitle>
           </OptionText>
         </OptionRow>
@@ -184,62 +184,57 @@ export default WizardSaveFlow;
 
 const SheetTitle = styled.h2`
   margin: 4px 0 16px;
-  color: var(--gray-900, #191f28);
+  color: var(--text-primary, #191f28);
   font-size: 18px;
   font-weight: 700;
-  line-height: 26px;
+  line-height: 27px;
 `;
 
 const OptionRow = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 12px;
+  padding: 14px 16px;
   border-radius: 14px;
   cursor: pointer;
-  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "transparent")};
-  border: 1px solid
-    ${({ $active }) => ($active ? "var(--border-brand-subtle, #d3e5ff)" : "transparent")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)")};
+  border-width: ${({ $active }) => ($active ? "1.5px" : "1px")};
+  border-style: solid;
+  border-color: ${({ $active }) =>
+    $active ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
 `;
 
 const RadioCircle = styled.span<{ $active: boolean }>`
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 24px;
   height: 24px;
   flex-shrink: 0;
   border-radius: 50%;
-  border: 2px solid
-    ${({ $active }) => ($active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)")};
-
-  &::after {
-    content: "";
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--border-brand, #0061ff);
-    transform: scale(${({ $active }) => ($active ? 1 : 0)});
-    transition: transform 0.15s ease;
-  }
+  background: var(--bg-base, #ffffff);
+  border: ${({ $active }) =>
+    $active
+      ? "6px solid var(--interactive-primary, #3b82f6)"
+      : "1.5px solid var(--border-default, #e5e8eb)"};
+  box-sizing: border-box;
+  transition: border-width 0.15s ease;
 `;
 
 const OptionText = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 `;
 
-const OptionTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 16px;
-  font-weight: 600;
+const OptionTitle = styled.span<{ $active: boolean }>`
+  color: var(--text-primary, #191f28);
+  font-size: 15px;
+  font-weight: ${({ $active }) => ($active ? 700 : 500)};
   line-height: 23px;
 `;
 
 const OptionSubtitle = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
 `;
 
@@ -251,7 +246,7 @@ const TargetDropdownWrap = styled.div`
 `;
 
 const TargetLabel = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-secondary, #333d4b);
   font-size: 13px;
   font-weight: 500;
 `;
@@ -266,6 +261,7 @@ const SelectBox = styled.select`
   color: var(--text-primary, #333d4b);
   font-size: 15px;
   font-weight: 500;
+  line-height: 52px;
   box-sizing: border-box;
 `;
 

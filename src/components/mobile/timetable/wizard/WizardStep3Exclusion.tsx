@@ -136,15 +136,15 @@ const CardHead = styled.div`
 `;
 
 const CardTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 16px;
-  font-weight: 600;
+  color: var(--text-primary, #191f28);
+  font-size: 15px;
+  font-weight: 700;
   line-height: 23px;
 `;
 
 const CardSubtitle = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
 `;
 
@@ -177,8 +177,8 @@ const SearchFieldButton = styled.button`
   text-align: left;
 
   span {
-    color: var(--text-disabled, #b0b8c1);
-    font-size: 15px;
+    color: var(--text-tertiary, #8b95a1);
+    font-size: 14px;
   }
 `;
 

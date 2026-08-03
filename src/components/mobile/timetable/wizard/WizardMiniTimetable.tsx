@@ -54,13 +54,19 @@ const WizardMiniTimetable = ({ courses }: WizardMiniTimetableProps) => {
 
 export default WizardMiniTimetable;
 
+// 앱 전역 시간표 색상 팔레트(--time-table-color-*)와 동일한 순서/값을 사용해
+// 상세 화면(TimetableGrid)과 결과 카드 미리보기의 색감을 통일한다.
 const BLOCK_COLORS = [
-  "#B4D5FF",
-  "#C6E7CE",
-  "#FFE1B8",
-  "#F6C6D6",
-  "#D9CBFB",
-  "#BEE8E8",
+  "var(--time-table-color-pink, #fab5cd)",
+  "var(--time-table-color-skyblue, #94cdfa)",
+  "var(--time-table-color-teal, #79dddf)",
+  "var(--time-table-color-orange, #ffcb94)",
+  "var(--time-table-color-violet, #c1acfc)",
+  "var(--time-table-color-yellow, #ffe589)",
+  "var(--time-table-color-lightgreen, #8ce99a)",
+  "var(--time-table-color-lilac, #acbcfd)",
+  "var(--time-table-color-purple, #e9adf7)",
+  "var(--time-table-color-red, #ffa6a6)",
 ];
 
 const MiniWrapper = styled.div`
@@ -68,6 +74,8 @@ const MiniWrapper = styled.div`
   width: 100%;
   height: 140px;
   overflow: hidden;
+  border-radius: 8px;
+  background: var(--bg-subtle, #f8f9fb);
 `;
 
 const GridLine = styled.div`
@@ -75,7 +83,7 @@ const GridLine = styled.div`
   top: 0;
   bottom: 0;
   width: 1px;
-  background: var(--border-default, #e5e8eb);
+  background: var(--gray-100, #f1f3f5);
 `;
 
 const Block = styled.div<{ $colorIndex: number }>`

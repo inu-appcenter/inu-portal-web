@@ -65,9 +65,9 @@ const Center = styled.div`
 `;
 
 const Spinner = styled.div`
-  width: 56px;
-  height: 56px;
-  border: 4px solid var(--border-default, #e5e8eb);
+  width: 72px;
+  height: 72px;
+  border: 6px solid var(--bg-brand, #eff6ff);
   border-top-color: var(--interactive-primary, #3b82f6);
   border-radius: 50%;
   animation: ${spin} 0.8s linear infinite;
@@ -75,7 +75,7 @@ const Spinner = styled.div`
 
 const Title = styled.h1`
   margin: 0;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-primary, #191f28);
   font-size: 18px;
   font-weight: 700;
   line-height: 27px;
@@ -83,7 +83,7 @@ const Title = styled.h1`
 
 const Subtitle = styled.p`
   margin: 0;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-secondary, #333d4b);
   font-size: 14px;
   line-height: 21px;
   text-align: center;

@@ -30,7 +30,7 @@ const WizardResultsScreen = ({ candidates, onSelectCandidate }: WizardResultsScr
           {candidate.reasons.map((reason, index) => (
             <ReasonItem key={index}>
               <ReasonIcon $met={reason.met}>{reason.met ? "✓" : "!"}</ReasonIcon>
-              <ReasonHeadline>{reason.headline}</ReasonHeadline>
+              <ReasonHeadline $met={reason.met}>{reason.headline}</ReasonHeadline>
             </ReasonItem>
           ))}
         </ReasonList>
@@ -58,22 +58,23 @@ const ScrollContent = styled.div`
 
 const Heading = styled.h1`
   margin: 0;
-  color: var(--text-secondary, #333d4b);
-  font-size: 18px;
+  color: var(--text-primary, #191f28);
+  font-size: 15px;
   font-weight: 700;
   line-height: 23px;
 `;
 
 const ResultCard = styled.div<{ $recommended: boolean }>`
   background: var(--bg-base, #ffffff);
-  border: 1px solid
-    ${({ $recommended }) =>
-      $recommended ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
-  border-radius: 20px;
+  border-width: ${({ $recommended }) => ($recommended ? "1.5px" : "1px")};
+  border-style: solid;
+  border-color: ${({ $recommended }) =>
+    $recommended ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
+  border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 `;
 
 const CardHeader = styled.div`
@@ -83,19 +84,19 @@ const CardHeader = styled.div`
 `;
 
 const CandidateLabel = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 17px;
+  color: var(--text-primary, #191f28);
+  font-size: 16px;
   font-weight: 700;
 `;
 
 const RecommendedBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
-  font-size: 12px;
+  background: var(--bg-brand, #eff6ff);
+  color: var(--interactive-primary, #3b82f6);
+  font-size: 11px;
   font-weight: 700;
 `;
 
@@ -105,8 +106,8 @@ const Spacer = styled.div`
 
 const SummaryText = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 400;
 `;
 
 const Divider = styled.div`
@@ -117,7 +118,7 @@ const Divider = styled.div`
 const ReasonList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 `;
 
 const ReasonItem = styled.div`
@@ -127,28 +128,28 @@ const ReasonItem = styled.div`
 `;
 
 const ReasonIcon = styled.span<{ $met: boolean }>`
-  color: ${({ $met }) => ($met ? "var(--green-500, #10b981)" : "var(--orange-500, #f59e0b)")};
-  font-size: 14px;
+  color: ${({ $met }) => ($met ? "#16a34a" : "#d97706")};
+  font-size: 13px;
   font-weight: 700;
   line-height: 20px;
   width: 12px;
   flex-shrink: 0;
 `;
 
-const ReasonHeadline = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 14px;
+const ReasonHeadline = styled.span<{ $met: boolean }>`
+  color: ${({ $met }) => ($met ? "var(--text-secondary, #333d4b)" : "#d97706")};
+  font-size: 13px;
   line-height: 20px;
 `;
 
 const FooterButton = styled.button`
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  height: 41px;
+  border-radius: 10px;
+  border: none;
   background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-secondary, #333d4b);
-  font-size: 15px;
-  font-weight: 600;
+  color: var(--interactive-primary, #3b82f6);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
 `;
 
