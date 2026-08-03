@@ -782,7 +782,7 @@ export default function MobileTimeTableComparePage() {
     >
       <ContentArea>
         {/* 2. 친구 필터 칩 목록 노출 */}
-        {activeTabUpper === "compare" && (
+        {(activeTabUpper === "compare" || activeTabUpper === "free") && (
           <ChipSection data-vaul-no-drag="">
             <ChipScrollArea
               ref={chipScrollRef}
@@ -862,6 +862,7 @@ export default function MobileTimeTableComparePage() {
         activeSnapPoint={snap}
         setActiveSnapPoint={setSnap}
         disablePreventScroll={true}
+        height="100%"
       >
         <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
         <ScrollableBody
@@ -1129,7 +1130,7 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
     background: ${({ $isSelected }) =>
       $isSelected
         ? "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))"
-        : "var(--bg-warn-subtle)"};
+        : "var(--bg-warn, #FFFAEB)"};
   }
 `;
 
@@ -1177,25 +1178,21 @@ const Badge = styled.div<{ $isSelected?: boolean }>`
     $isSelected
       ? "var(--text-secondary, #333D4B)"
       : "var(--text-tertiary, #8b95a1)"};
-  font-size: 14px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 16px;
 
   &.good {
     background: ${({ $isSelected }) =>
       $isSelected
         ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
-        : "var(--color-chips-yellow, #ffe589)"};
-    color: ${({ $isSelected }) =>
-      $isSelected
-        ? "var(--text-secondary, #333D4B)"
-        : "var(--text-warn, #7a5400)"};
-
-    font-size: 14px;
+        : "var(--timeTable-color-yellow, #FFE589)"};
+    color: var(--text-secondary, #333D4B);
+    font-size: 12px;
     font-style: normal;
     font-weight: 500;
-    line-height: 20px;
+    line-height: 16px;
   }
 `;
 
