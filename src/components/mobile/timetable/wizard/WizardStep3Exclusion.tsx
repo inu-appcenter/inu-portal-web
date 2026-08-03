@@ -58,6 +58,7 @@ const WizardStep3Exclusion = ({
         <TimetableGrid
           events={EMPTY_EVENTS}
           isSelectionMode
+          minDayCount={7}
           selectedSlots={exclusion.excludedSlots}
           onSelectedSlotsChange={(slots) =>
             onChangeExclusion((prev) => ({ ...prev, excludedSlots: slots }))

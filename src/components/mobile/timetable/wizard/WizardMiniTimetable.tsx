@@ -6,35 +6,41 @@ interface WizardMiniTimetableProps {
   courses: WizardCourseOption[];
 }
 
-const DAY_COUNT = 5;
+const MIN_DAY_COUNT = 5;
+const MAX_DAY_COUNT = 7;
 const START_HOUR = 9;
 const DEFAULT_END_HOUR = 18;
 
 // 결과 카드용 미니 시간표 미리보기. TimetableGrid는 시간/요일 라벨 포함 전체 그리드용이라
 // 그대로 축소하면 가독성이 떨어져, 요일 구분선 + 블록만 그리는 경량 버전을 별도로 둔다.
+// TimetableGrid와 마찬가지로 토/일 수업이 있으면 컬럼 수를 자동으로 넓힌다.
 const WizardMiniTimetable = ({ courses }: WizardMiniTimetableProps) => {
-  const endHour = useMemo(() => {
-    const maxEnd = Math.max(
-      DEFAULT_END_HOUR,
-      ...courses.flatMap((c) => c.meetings.map((m) => m.endTime)),
-    );
-    return maxEnd;
-  }, [courses]);
+  const meetings = useMemo(() => courses.flatMap((c) => c.meetings), [courses]);
+
+  const dayCount = useMemo(() => {
+    const maxDay = Math.max(MIN_DAY_COUNT - 1, 0, ...meetings.map((m) => m.day));
+    return Math.min(MAX_DAY_COUNT, maxDay + 1);
+  }, [meetings]);
+
+  const endHour = useMemo(
+    () => Math.max(DEFAULT_END_HOUR, ...meetings.map((m) => m.endTime)),
+    [meetings],
+  );
 
   const totalHours = endHour - START_HOUR;
 
   return (
     <MiniWrapper>
-      {Array.from({ length: DAY_COUNT - 1 }, (_, i) => (
-        <GridLine key={i} style={{ left: `${((i + 1) / DAY_COUNT) * 100}%` }} />
+      {Array.from({ length: dayCount - 1 }, (_, i) => (
+        <GridLine key={i} style={{ left: `${((i + 1) / dayCount) * 100}%` }} />
       ))}
       {courses.flatMap((course, courseIndex) =>
         course.meetings.map((meeting, meetingIndex) => (
           <Block
             key={`${course.subjectNumber}-${meetingIndex}`}
             style={{
-              left: `${(meeting.day / DAY_COUNT) * 100}%`,
-              width: `${(1 / DAY_COUNT) * 100}%`,
+              left: `${(meeting.day / dayCount) * 100}%`,
+              width: `${(1 / dayCount) * 100}%`,
               top: `${((meeting.startTime - START_HOUR) / totalHours) * 100}%`,
               height: `${((meeting.endTime - meeting.startTime) / totalHours) * 100}%`,
             }}
