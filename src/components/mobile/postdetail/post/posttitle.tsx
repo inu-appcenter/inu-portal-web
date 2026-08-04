@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import eyeImg from "@/resources/assets/posts/eye.svg";
 import PostUtilContainer from "../../../../containers/mobile/postdetail/PostUtilContainer.tsx";
+import { formatTimeAgo } from "@/utils/date";
 
 interface PostTitleProps {
   id: number;
@@ -52,7 +53,7 @@ export default function PostTitle({
       <div className="m-PostInfo" key={id}>
         <PostInfo>
           <div className="postinfo1">
-            <span className="infoText">{createDate}</span>
+            <span className="infoText">{formatTimeAgo(createDate)}</span>
           </div>
           <div className="postinfo2">
             <img src={eyeImg} />

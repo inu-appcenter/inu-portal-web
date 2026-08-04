@@ -6,7 +6,6 @@ import { CategoryPosts } from "@/types/posts";
 import Box from "@/components/common/Box";
 import Skeleton from "@/components/common/Skeleton";
 import { ROUTES } from "@/constants/routes";
-import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function CommunityWidget() {
   const navigate = useNavigate();
@@ -53,12 +52,7 @@ export default function CommunityWidget() {
               item.posts && item.posts.length > 0 ? item.posts[0] : null;
 
             const handleClick = () => {
-              if (latestPost) {
-                mixpanelTrack.tipViewed(item.category, latestPost.title);
-                navigate(ROUTES.BOARD.TIPS_DETAIL(latestPost.id));
-              } else {
-                navigate(ROUTES.BOARD.TIPS_CATEGORY(item.category));
-              }
+              navigate(`${ROUTES.BOARD.TIPS}?category=${encodeURIComponent(item.category)}`);
             };
 
             return (
