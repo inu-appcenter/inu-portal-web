@@ -44,6 +44,11 @@ export interface CourseResult {
 // eslint-disable-next-line react-refresh/only-export-components
 export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
 const SHEET_SNAP_POINTS = [0, 0.2, 0.5, 1];
+const SYLLABUS_UNAVAILABLE_MESSAGE =
+  "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
+const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
+const LECTURE_REVIEW_NOTICE_MESSAGE =
+  "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
@@ -268,6 +273,11 @@ const MobileCourseSearchSheet = ({
       return;
     }
 
+    if (!localStorage.getItem(LECTURE_REVIEW_NOTICE_KEY)) {
+      alert(LECTURE_REVIEW_NOTICE_MESSAGE);
+      localStorage.setItem(LECTURE_REVIEW_NOTICE_KEY, "true");
+    }
+
     const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
@@ -415,12 +425,7 @@ const MobileCourseSearchSheet = ({
                             <SecondaryActionButton
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(ROUTES.TIMETABLE.SYLLABUS, {
-                                  state: {
-                                    courseName: course.name,
-                                    professor: course.professor,
-                                  },
-                                });
+                                alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                               }}
                             >
                               <FileText size={20} />
