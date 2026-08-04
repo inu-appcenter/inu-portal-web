@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import type { ReactNode, UIEventHandler } from "react";
+import type { ReactNode, RefObject, UIEventHandler } from "react";
 import { createPortal } from "react-dom";
 import { Sheet } from "react-modal-sheet";
 import { useTransform } from "motion/react";
@@ -49,18 +49,23 @@ interface CourseSheetScrollableContentProps {
   children: ReactNode;
   onScrollCapture: UIEventHandler<HTMLDivElement>;
   isAnimating: boolean;
+  scrollRef: (node: HTMLDivElement | null) => void;
 }
 
 const CourseSheetScrollableContent = ({
   children,
   onScrollCapture,
   isAnimating,
+  scrollRef,
 }: CourseSheetScrollableContentProps) => {
   const { y } = Sheet.useContext();
   const scrollPaddingBottom = useTransform(y, (currentY) => currentY + 124);
 
   return (
     <CourseSheetContent
+      // react-modal-sheet의 타입 선언은 scrollRef를 RefObject로만 허용하지만,
+      // 내부 mergeRefs는 함수형 콜백 ref도 그대로 호출해 준다 (dist/index.js 참고).
+      scrollRef={scrollRef as unknown as RefObject<HTMLDivElement | null>}
       onScrollCapture={onScrollCapture}
       scrollStyle={{ paddingBottom: scrollPaddingBottom }}
       disableDrag={({ scrollPosition }) =>
@@ -211,6 +216,104 @@ const MobileCourseSearchSheet = ({
     return list;
   }, [courses, activeFilters]);
 
+  // 바텀시트를 닫으면 react-modal-sheet가 스크롤 컨테이너 DOM을 통째로 언마운트하므로,
+  // 재오픈 시 맨 위로 스크롤이 튀지 않도록 마지막으로 보고 있던 강의(id)와 그 화면상 위치를
+  // 기억해 뒀다가 스크롤 컨테이너가 다시 마운트될 때 동일한 위치로 복원한다.
+  const scrollerElRef = useRef<HTMLDivElement | null>(null);
+  const scrollAnchorRef = useRef<{ id: number; offset: number } | null>(null);
+  const restoreAttemptsRef = useRef(0);
+  const pendingRestoreRef = useRef(false);
+  const scrollCleanupRef = useRef<(() => void) | null>(null);
+
+  const captureScrollAnchor = useCallback((scroller: HTMLDivElement) => {
+    const scrollerTop = scroller.getBoundingClientRect().top;
+    const items = scroller.querySelectorAll<HTMLElement>("[data-course-id]");
+    for (const item of items) {
+      const rect = item.getBoundingClientRect();
+      if (rect.bottom > scrollerTop) {
+        const id = Number(item.dataset.courseId);
+        if (Number.isFinite(id)) {
+          scrollAnchorRef.current = { id, offset: rect.top - scrollerTop };
+        }
+        return;
+      }
+    }
+  }, []);
+
+  // 기억해 둔 강의를 화면에서 찾아 그 위치로 스크롤을 복원한다.
+  // 아직 로드되지 않은 뒷 페이지에 있을 수 있으므로, 다음 페이지를 더 불러오며 재시도하되
+  // 필터 변경 등으로 영영 찾을 수 없는 경우를 대비해 재시도 횟수에 상한을 둔다.
+  const restoreScrollAnchor = useCallback(
+    (scroller: HTMLDivElement) => {
+      const anchor = scrollAnchorRef.current;
+      if (!anchor) return;
+
+      const target = scroller.querySelector<HTMLElement>(
+        `[data-course-id="${anchor.id}"]`,
+      );
+
+      if (target) {
+        const scrollerTop = scroller.getBoundingClientRect().top;
+        const targetTop = target.getBoundingClientRect().top;
+        scroller.scrollTop += targetTop - scrollerTop - anchor.offset;
+        pendingRestoreRef.current = false;
+        return;
+      }
+
+      if (
+        hasNextPage &&
+        fetchNextPage &&
+        !isFetchingNextPage &&
+        restoreAttemptsRef.current < 30
+      ) {
+        pendingRestoreRef.current = true;
+        restoreAttemptsRef.current += 1;
+        fetchNextPage();
+      } else {
+        pendingRestoreRef.current = false;
+      }
+    },
+    [hasNextPage, fetchNextPage, isFetchingNextPage],
+  );
+
+  // 스크롤 컨테이너가 새로 마운트될 때(바텀시트 재오픈 시) 위치를 복원하고,
+  // 스크롤할 때마다 현재 보고 있는 강의를 기준점으로 갱신한다.
+  const attachScroller = useCallback(
+    (node: HTMLDivElement | null) => {
+      scrollCleanupRef.current?.();
+      scrollCleanupRef.current = null;
+      scrollerElRef.current = node;
+      if (!node) return;
+
+      restoreAttemptsRef.current = 0;
+      restoreScrollAnchor(node);
+
+      let rafId: number | null = null;
+      const handleScroll = () => {
+        if (rafId != null) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          captureScrollAnchor(node);
+        });
+      };
+
+      node.addEventListener("scroll", handleScroll, { passive: true });
+      scrollCleanupRef.current = () => {
+        node.removeEventListener("scroll", handleScroll);
+        if (rafId != null) cancelAnimationFrame(rafId);
+      };
+    },
+    [restoreScrollAnchor, captureScrollAnchor],
+  );
+
+  // 페이지네이션으로 새 강의가 로드되거나 로딩이 끝나면, 이전에 찾지 못했던 기준 강의를 재탐색한다.
+  useEffect(() => {
+    if (!pendingRestoreRef.current) return;
+    const scroller = scrollerElRef.current;
+    if (!scroller) return;
+    restoreScrollAnchor(scroller);
+  }, [filteredCourses, isFetchingNextPage, restoreScrollAnchor]);
+
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
 
@@ -295,6 +398,7 @@ const MobileCourseSearchSheet = ({
           <CourseSheetScrollableContent
             onScrollCapture={handleScroll}
             isAnimating={isAnimating}
+            scrollRef={attachScroller}
           >
             <SheetContentWrapper>
               <CourseList>
@@ -341,6 +445,7 @@ const MobileCourseSearchSheet = ({
                   return (
                     <CourseItem
                       key={course.id}
+                      data-course-id={course.id}
                       onClick={() => onToggleExpand(course.id)}
                     >
                       {/* 기본 정보 */}

@@ -1,7 +1,15 @@
 import tokenInstance from "./tokenInstance";
-import { FriendRequestDto, FriendResponseDto } from "@/types/friends";
+import {
+  FriendRequestDto,
+  FriendResponseDto,
+  MemberLocationRequestDto,
+  NearbyMemberResponseDto,
+  NearbyVisibilityRequestDto,
+} from "@/types/friends";
 import { ApiResponse } from "@/types/common";
 import { MemberProfileResponseDto } from "@/types/members";
+import { isMockApiEnabled, mockDelay } from "@/mocks/mockFlag";
+import { getMockNearbyFriends } from "@/mocks/mockNearbyFriends";
 
 /**
  * 친구 요청 보내기
@@ -112,6 +120,67 @@ export const getFriendProfile = async (
 ): Promise<ApiResponse<MemberProfileResponseDto>> => {
   const response = await tokenInstance.get<ApiResponse<MemberProfileResponseDto>>(
     `/api/friends/${friendId}/profile`,
+  );
+  return response.data;
+};
+
+/**
+ * 주변 친구 찾기 - 위치 노출 on/off (opt-in)
+ * 서버 API 없음, 요청 필요: inu-appcenter/inu-portal-server#302
+ */
+export const updateNearbyVisibility = async (
+  enabled: boolean,
+): Promise<ApiResponse<void>> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return { result: [], data: undefined, msg: "주변 친구 찾기 노출 설정이 변경되었습니다." };
+  }
+  const response = await tokenInstance.patch<ApiResponse<void>>(
+    "/api/members/nearby-visibility",
+    { enabled } as NearbyVisibilityRequestDto,
+  );
+  return response.data;
+};
+
+/**
+ * 주변 친구 찾기 - 내 위치 갱신
+ * 서버 API 없음, 요청 필요: inu-appcenter/inu-portal-server#302
+ */
+export const updateMyLocation = async (
+  latitude: number,
+  longitude: number,
+): Promise<ApiResponse<void>> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return { result: [], data: undefined, msg: "위치 정보가 갱신되었습니다." };
+  }
+  const response = await tokenInstance.put<ApiResponse<void>>(
+    "/api/members/location",
+    { latitude, longitude } as MemberLocationRequestDto,
+  );
+  return response.data;
+};
+
+/**
+ * 주변 친구 찾기 - 반경 내 위치 노출 중인 유저 조회
+ * 서버 API 없음, 요청 필요: inu-appcenter/inu-portal-server#302
+ */
+export const getNearbyFriends = async (
+  latitude: number,
+  longitude: number,
+  radiusMeters: number = 200,
+): Promise<ApiResponse<NearbyMemberResponseDto[]>> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return {
+      result: [],
+      data: getMockNearbyFriends(latitude, longitude, radiusMeters),
+      msg: "주변 친구 후보 조회 성공",
+    };
+  }
+  const response = await tokenInstance.get<ApiResponse<NearbyMemberResponseDto[]>>(
+    "/api/friends/nearby",
+    { params: { latitude, longitude, radiusMeters } },
   );
   return response.data;
 };
