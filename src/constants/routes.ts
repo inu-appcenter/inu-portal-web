@@ -6,6 +6,7 @@ export const ROUTES = {
 
   HOME: "/home",
   MOBILE_HOME: "/m/home",
+  HOME_V2: "/home/v2",
 
   // 횃불이 AI
   AI: {
@@ -17,10 +18,23 @@ export const ROUTES = {
   FESTIVAL2026: "/festival2026",
   FESTIVAL2026_DETAIL: "/festival2026/detail",
 
-  //시간표
   TIMETABLE: {
     ROOT: "/timetable",
     EDIT: "/timetable/edit",
+    COMPARE: "/timetable/compare",
+    VISIBILITY: "/timetable/visibility",
+    ADD: "/timetable/add",
+    SIMULATOR: "/timetable/simulator",
+    FILTER: "/timetable/filter",
+    LIST: "/timetable/list",
+    CALCULATOR: "/timetable/calculator",
+    SYLLABUS: "/timetable/syllabus",
+    WIZARD: "/timetable/wizard",
+  },
+
+  // 친구
+  FRIEND: {
+    LIST: "/friend/list",
   },
 
   //전화번호부

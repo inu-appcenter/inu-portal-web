@@ -1,0 +1,3 @@
+[submodule "packages/intip-bridge"]
+	path = packages/intip-bridge
+	url = https://github.com/inu-appcenter/intip-bridge.git

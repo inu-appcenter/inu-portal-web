@@ -30,11 +30,11 @@ interface FloatingCoordinates {
 function getFloatingLeft(rect: DOMRect, align: TooltipAlign) {
   switch (align) {
     case "left":
-      return rect.left + window.scrollX;
+      return rect.left;
     case "right":
-      return rect.right + window.scrollX;
+      return rect.right;
     case "center":
-      return rect.left + rect.width / 2 + window.scrollX;
+      return rect.left + rect.width / 2;
   }
 }
 
@@ -96,7 +96,7 @@ export default function TooltipMessage({
     }
 
     setFloatingCoordinates({
-      top: (position === "top" ? rect.top : rect.bottom) + window.scrollY,
+      top: position === "top" ? rect.top : rect.bottom,
       left: getFloatingLeft(rect, align),
     });
   }, [align, anchorRef, position]);
@@ -213,7 +213,7 @@ const TooltipContainer = styled.div<{
   $floating: boolean;
   $floatingCoordinates: FloatingCoordinates | null;
 }>`
-  position: absolute;
+  position: ${({ $floating }) => ($floating ? "fixed" : "absolute")};
   z-index: 2000;
   width: ${({ $width }) => $width};
   ${({ $minWidth }) => $minWidth && `min-width: ${$minWidth};`}

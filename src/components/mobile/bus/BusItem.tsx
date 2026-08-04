@@ -66,6 +66,8 @@ const BusItemWrapper = styled.div`
   flex-direction: column;
   gap: 4px;
   width: 100%;
+  padding: 16px 20px;
+  box-sizing: border-box;
 `;
 
 const TopSection = styled.div``;

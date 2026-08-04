@@ -94,7 +94,7 @@ const MobileTipsCategoryPage = () => {
                         navigate(ROUTES.BOARD.TIPS_DETAIL(post.id));
                       }}
                     />
-                    {index < posts.length - 1 && <Divider margin={"16px 0"} />}
+                    {index < posts.length - 1 && <Divider margin="0" />}
                   </Fragment>
                 ))
               : !isLoading && (
@@ -128,7 +128,7 @@ const EmptyState = styled.div`
   font-size: 14px;
   color: #bbb;
   text-align: center;
-  padding: 20px 0;
+  padding: 40px 20px;
 `;
 
 const LoadingText = styled.h4`

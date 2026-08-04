@@ -10,6 +10,21 @@ export type ChatRoomType = "PERSONAL" | "OPEN";
  */
 export type ChatRoomStatus = "ACTIVE" | "CLOSED";
 
+export type MessageType = "TEXT" | "IMAGE" | "TIMETABLE_SHARE";
+
+export interface TimetableShareTimeSlot {
+  day: number;
+  startTime: number;
+  endTime: number;
+  duration: number;
+}
+
+export interface TimetableShareExtraData {
+  title?: string;
+  friendIds: number[];
+  topFreeTimes: TimetableShareTimeSlot[];
+}
+
 /**
  * 채팅 메시지
  */
@@ -23,6 +38,8 @@ export interface ChatMessage {
   content: string;
   imageCount: number;
   unreadCount: number;
+  messageType?: MessageType;
+  extraData?: string | null;
   createDate: string; // ISO 8601 날짜 문자열
 }
 

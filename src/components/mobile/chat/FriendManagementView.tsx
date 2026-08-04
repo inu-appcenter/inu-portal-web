@@ -113,7 +113,7 @@ export default function FriendManagementView({ searchTerm }: FriendManagementVie
                     setIsProfileModalOpen(true);
                   }}
                 />
-                {index < pendingRequests.length - 1 && <Divider />}
+                {index < pendingRequests.length - 1 && <Divider margin="0" />}
               </div>
             ))}
           </Box>
@@ -169,7 +169,7 @@ export default function FriendManagementView({ searchTerm }: FriendManagementVie
                     setIsProfileModalOpen(true);
                   }}
                 />
-                {index < filteredFriends.length - 1 && <Divider />}
+                {index < filteredFriends.length - 1 && <Divider margin="0" />}
               </div>
             ))
           ) : (

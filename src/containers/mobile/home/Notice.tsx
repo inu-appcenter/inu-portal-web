@@ -55,12 +55,11 @@ export default function NoticeForm() {
       <NoticeFormWrapper>
         {/*<SortDropBox sort={sort} setSort={setSort} />*/}
 
-        {isLoading //스켈레톤 로딩
+        {isLoading
           ? Array.from({ length: 3 }).map((_, index) => (
             <div key={`skeleton-${index}`}>
               <NoticeSkeletonItem />
-              {/* 마지막 아이템이 아니면 Divider 표시 */}
-              {index !== 2 && <Divider />}
+              {index !== 2 && <Divider margin="0" />}
             </div>
           ))
           : notices.slice(0, 3).map((notice, index) => (
@@ -81,7 +80,7 @@ export default function NoticeForm() {
                     window.open(notice.url, "_blank");
                 }}
               />
-              {index !== 2 && <Divider />}
+              {index !== 2 && <Divider margin="0" />}
             </div>
           ))}
       </NoticeFormWrapper>

@@ -2,11 +2,17 @@ import styled, { css } from "styled-components";
 import { SOFT_PILL_SHADOW } from "@/styles/shadows";
 import { ButtonHTMLAttributes } from "react";
 
+import Ripple from "./Ripple";
+
 interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   disabled?: boolean;
+  as?: any;
+  href?: string;
+  target?: string;
+  rel?: string;
 }
 
-const ActionButton = styled.button<ActionButtonProps>`
+const StyledButton = styled.button<ActionButtonProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -22,6 +28,13 @@ const ActionButton = styled.button<ActionButtonProps>`
   box-shadow: ${SOFT_PILL_SHADOW};
   transition: all 0.2s ease-in-out;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &.active-touch {
+    transform: scale(0.96);
+  }
+
 
   /* button 태그 기본 스타일 초기화 */
   border: none;
@@ -39,4 +52,11 @@ const ActionButton = styled.button<ActionButtonProps>`
     `}
 `;
 
-export default ActionButton;
+export default function ActionButton({ children, ...props }: ActionButtonProps) {
+  return (
+    <StyledButton {...props}>
+      {!props.disabled && <Ripple color="rgba(255, 255, 255, 0.35)" />}
+      {children}
+    </StyledButton>
+  );
+}
