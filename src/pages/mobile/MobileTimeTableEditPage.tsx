@@ -23,7 +23,10 @@ import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCou
 import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
-import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
+import {
+  mapCourseOfferingToCourseResult,
+  mapFilterToOfferingFilters,
+} from "@/utils/courseSearchResult";
 
 const COLLEGES = new Set([
   "경영대학",
@@ -228,18 +231,7 @@ const MobileTimeTableEditPage = () => {
   // 전공/영역·학년·이수구분·학점 필터
   const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>({});
   const handleFiltersChange = (filters: FilterState) => {
-    const isCollege = filters.major ? COLLEGES.has(filters.major) : false;
-    const meetings = filters.selectedSlots ? formatSlotsToMeetings(filters.selectedSlots) : [];
-
-    setOfferingFilters({
-      collegeName: isCollege ? (filters.major ?? undefined) : undefined,
-      deptName: !isCollege ? (filters.major ?? undefined) : undefined,
-      hyNames: filters.grades.length > 0 ? filters.grades.map(String) : undefined,
-      isuNames: filters.types.length > 0 ? filters.types : undefined,
-      credits: filters.credits.length > 0 ? filters.credits : undefined,
-      meetingFilterMode: meetings.length > 0 ? "HAS_CLASS" : undefined,
-      meetings: meetings.length > 0 ? meetings : undefined,
-    });
+    setOfferingFilters(mapFilterToOfferingFilters(filters));
   };
 
   const combinedFilters: CourseOfferingFilters = useMemo(

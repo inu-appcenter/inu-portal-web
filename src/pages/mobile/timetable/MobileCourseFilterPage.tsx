@@ -15,6 +15,7 @@ import { getAllCourseOfferings } from "@/apis/courseOfferings";
 import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import type { CourseOfferingFilters } from "@/types/courseOfferings";
+import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 
 // --- Types & Constants ---
 export interface FilterState {
@@ -504,41 +505,7 @@ export default function MobileCourseFilterPage() {
     setIsApplying(true);
 
     try {
-      const COLLEGES = new Set([
-        ...Object.keys(COLLEGE_DEPARTMENTS),
-        "경영대학",
-        "공과대학",
-        "교양",
-        "교직",
-        "군사학",
-        "글로벌정경대학",
-        "기타",
-        "단과대구분없음",
-        "단과대구분없음(법학)",
-        "도시과학대학",
-        "사범대학",
-        "사회과학대학",
-        "생명과학기술대학",
-        "예술체육대학",
-        "융합자유전공대학",
-        "인문대학",
-        "일선",
-        "자연과학대학",
-        "정보기술대학",
-      ]);
-
-      const isCollege = filters.major ? COLLEGES.has(filters.major) : false;
-      const meetings = filters.selectedSlots ? formatSlotsToMeetings(filters.selectedSlots) : [];
-
-      const offeringFilters: CourseOfferingFilters = {
-        collegeName: isCollege ? (filters.major ?? undefined) : undefined,
-        deptName: !isCollege ? (filters.major ?? undefined) : undefined,
-        hyNames: filters.grades.length > 0 ? filters.grades.map(String) : undefined,
-        isuNames: filters.types.length > 0 ? filters.types : undefined,
-        credits: filters.credits.length > 0 ? filters.credits : undefined,
-        meetingFilterMode: meetings.length > 0 ? "HAS_CLASS" : undefined,
-        meetings: meetings.length > 0 ? meetings : undefined,
-      };
+      const offeringFilters = mapFilterToOfferingFilters(filters);
 
       if (activeTimetable?.year && activeTimetable?.term) {
         await queryClient.fetchQuery({
