@@ -508,7 +508,7 @@ export default function MobileCourseFilterPage() {
       const offeringFilters = mapFilterToOfferingFilters(filters);
 
       if (activeTimetable?.year && activeTimetable?.term) {
-        await queryClient.fetchQuery({
+        await queryClient.fetchInfiniteQuery({
           queryKey: [
             ...COURSE_OFFERINGS_QUERY_KEY,
             activeTimetable.year,
@@ -524,14 +524,15 @@ export default function MobileCourseFilterPage() {
             offeringFilters.meetingFilterMode ?? "",
             offeringFilters.meetings?.join(",") ?? "",
           ],
-          queryFn: () =>
+          queryFn: ({ pageParam = 0 }) =>
             getCourseOfferingsPage(
               activeTimetable.year,
               activeTimetable.term,
-              0,
+              pageParam as number,
               50,
               offeringFilters,
             ),
+          initialPageParam: 0,
         });
       }
     } catch (error) {
