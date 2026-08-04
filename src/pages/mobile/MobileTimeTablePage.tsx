@@ -375,7 +375,7 @@ const MobileTimeTablePage = () => {
     useTimetableStore();
 
   useTimeTables(undefined, undefined, { enabled: isLoggedIn });
-  useTimetableUrlSync();
+  useTimetableUrlSync({ preferPrimaryOnEntry: true });
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
 

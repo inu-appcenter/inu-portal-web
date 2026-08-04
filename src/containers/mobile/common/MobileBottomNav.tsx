@@ -132,7 +132,7 @@ export default function MobileBottomNav() {
             ? "친구"
             : "개인";
       params.set("category", nextCategory);
-      navigate(`${to}?${params.toString()}`, { replace: true });
+      navigate(`${to}?${params.toString()}`, { replace: true, state: { isTabNavigation: true } });
       return;
     }
 
@@ -141,11 +141,11 @@ export default function MobileBottomNav() {
     if (isChat) {
       const savedCategory = localStorage.getItem("lastChatCategory");
       const target = savedCategory ? `${to}?category=${savedCategory}` : to;
-      navigate(target, { replace: true });
+      navigate(target, { replace: true, state: { isTabNavigation: true } });
       return;
     }
 
-    navigate(to, { replace: true });
+    navigate(to, { replace: true, state: { isTabNavigation: true } });
   };
 
   return (
