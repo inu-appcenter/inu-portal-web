@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode, UIEventHandler } from "react";
 import { createPortal } from "react-dom";
 import { Sheet } from "react-modal-sheet";
