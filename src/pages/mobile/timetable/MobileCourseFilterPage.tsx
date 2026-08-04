@@ -37,6 +37,18 @@ export const DEFAULT_FILTERS: FilterState = {
   selectedSlots: [],
 };
 
+const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
+
+const readStoredFilters = (): FilterState | null => {
+  try {
+    const saved = localStorage.getItem(TIMETABLE_COURSE_FILTERS_KEY);
+    if (saved) return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
+  } catch (e) {
+    console.error("시간표 강의 필터 복원 오류:", e);
+  }
+  return null;
+};
+
 const CATEGORIES = [
   { id: "major", label: "전공/영역" },
   { id: "sort", label: "정렬" },
@@ -299,7 +311,8 @@ export default function MobileCourseFilterPage() {
   // 상위 편집 화면에서 전달한 필터 상태가 있다면 수신, 없으면 디폴트
   const initialFilters = useMemo(() => {
     const stateFilters = location.state?.filters as FilterState | undefined;
-    return stateFilters ? { ...stateFilters } : { ...DEFAULT_FILTERS };
+    if (stateFilters) return { ...DEFAULT_FILTERS, ...stateFilters };
+    return readStoredFilters() ?? { ...DEFAULT_FILTERS };
   }, [location.state]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
@@ -635,6 +648,10 @@ export default function MobileCourseFilterPage() {
       isSavingRef.current = true;
       setShowUnsavedModal(false);
       localStorage.setItem("applied_filters", JSON.stringify(filters));
+      localStorage.setItem(
+        TIMETABLE_COURSE_FILTERS_KEY,
+        JSON.stringify(filters),
+      );
       flushSync(() => {
         setIsSaving(true); // blocker 비활성화 후 navigate
       });

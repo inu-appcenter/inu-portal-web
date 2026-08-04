@@ -21,13 +21,28 @@ import {
 } from "@/hooks/useTimeTables";
 import { formatHoursToTime } from "@/utils/timetable";
 import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
-import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import {
+  DEFAULT_FILTERS,
+  type FilterState,
+} from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import {
   mapCourseOfferingToCourseResult,
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
+
+const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
+
+const readStoredFilters = (): FilterState => {
+  try {
+    const saved = localStorage.getItem(TIMETABLE_COURSE_FILTERS_KEY);
+    if (saved) return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
+  } catch (error) {
+    console.error("시간표 강의 필터 복원 오류:", error);
+  }
+  return DEFAULT_FILTERS;
+};
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -157,11 +172,18 @@ const MobileTimeTableEditPage = () => {
   }, [timetable]);
 
   // 전공/영역·학년·이수구분·학점 필터
+  const [activeFilters, setActiveFilters] =
+    useState<FilterState>(readStoredFilters);
   const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>(
-    {},
+    () => mapFilterToOfferingFilters(readStoredFilters()),
   );
   const handleFiltersChange = (filters: FilterState) => {
+    setActiveFilters(filters);
     setOfferingFilters(mapFilterToOfferingFilters(filters));
+    localStorage.setItem(
+      TIMETABLE_COURSE_FILTERS_KEY,
+      JSON.stringify(filters),
+    );
   };
 
   const combinedFilters: CourseOfferingFilters = useMemo(
@@ -491,6 +513,7 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
+        initialFilters={activeFilters}
         onFiltersChange={handleFiltersChange}
         addedCourseOfferingIds={addedCourseOfferingIds}
         addedCourseIds={addedCourseIds}
