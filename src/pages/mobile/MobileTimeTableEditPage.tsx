@@ -8,7 +8,7 @@ import MobileCourseSearchSheet, {
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import TooltipMessage from "@/components/common/TooltipMessage";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -172,14 +172,23 @@ const MobileTimeTableEditPage = () => {
   }, [timetable]);
 
   // 전공/영역·학년·이수구분·학점 필터
+  const location = useLocation();
   const [activeFilters, setActiveFilters] =
     useState<FilterState>(readStoredFilters);
-  const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>(
-    () => mapFilterToOfferingFilters(readStoredFilters()),
+
+  // 복귀 시 localStorage의 저장된 필터와 즉시 동기화
+  useEffect(() => {
+    const stored = readStoredFilters();
+    setActiveFilters(stored);
+  }, [location.key]);
+
+  const offeringFilters = useMemo(
+    () => mapFilterToOfferingFilters(activeFilters),
+    [activeFilters],
   );
+
   const handleFiltersChange = (filters: FilterState) => {
     setActiveFilters(filters);
-    setOfferingFilters(mapFilterToOfferingFilters(filters));
     localStorage.setItem(
       TIMETABLE_COURSE_FILTERS_KEY,
       JSON.stringify(filters),

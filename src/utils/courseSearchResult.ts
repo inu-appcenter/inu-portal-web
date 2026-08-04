@@ -53,6 +53,10 @@ export const mapCourseOfferingToCourseResult = (
       credits: index === 0 ? credits : 0,
       professor: offering.professor ?? undefined,
     })),
+    deptName: offering.deptName ?? course?.departmentName,
+    collegeName: offering.collegeName ?? course?.collegeName,
+    isuName: offering.isuName ?? course?.completionDivisionName,
+    hyName: offering.hyName ?? course?.targetGradeName,
   };
 };
 

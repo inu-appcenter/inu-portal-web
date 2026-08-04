@@ -22,6 +22,7 @@ import {
   FilterState,
   DEFAULT_FILTERS,
 } from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
 
 export interface CourseResult {
@@ -39,6 +40,10 @@ export interface CourseResult {
   enrolledCount: number | null;
   capacity: number | null;
   schedules: ClassItem[];
+  deptName?: string;
+  collegeName?: string;
+  isuName?: string;
+  hyName?: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -249,9 +254,29 @@ const MobileCourseSearchSheet = ({
   const filteredCourses = useMemo(() => {
     let list: CourseResult[] = [...courses];
 
-    // 1~4. 전공/영역·학년·이수구분·학점 필터는 상위(MobileTimeTableEditPage)에서
-    // onFiltersChange로 전달받아 querystring으로 서버에 재조회하므로 여기서는 거르지 않는다
-    // (inu-appcenter/inu-portal-server#297 - 서버가 지원하기 전까지는 필터링되지 않음).
+    const offeringFilters = mapFilterToOfferingFilters(activeFilters);
+
+    if (offeringFilters.deptName) {
+      list = list.filter((c) => c.deptName === offeringFilters.deptName);
+    }
+    if (offeringFilters.collegeName) {
+      list = list.filter((c) => c.collegeName === offeringFilters.collegeName);
+    }
+    if (offeringFilters.hyNames?.length) {
+      list = list.filter((c) =>
+        offeringFilters.hyNames?.some((h) =>
+          (c.hyName ?? String(c.grade))?.startsWith(h),
+        ),
+      );
+    }
+    if (offeringFilters.isuNames?.length) {
+      list = list.filter((c) =>
+        offeringFilters.isuNames?.some((isu) => c.isuName?.includes(isu)),
+      );
+    }
+    if (offeringFilters.credits?.length) {
+      list = list.filter((c) => offeringFilters.credits?.includes(c.credits));
+    }
 
     // 5. 정렬 필터
     if (activeFilters.sort === "별점높은순") {
@@ -283,35 +308,41 @@ const MobileCourseSearchSheet = ({
   }, [isSearchActive]);
 
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isLoading || isFetchingNextPage) return;
-      if (observerRef.current) observerRef.current.disconnect();
 
-      observerRef.current = new IntersectionObserver((entries) => {
+  const fetchNextPageRef = useRef(fetchNextPage);
+  fetchNextPageRef.current = fetchNextPage;
+
+  const hasNextPageRef = useRef(hasNextPage);
+  hasNextPageRef.current = hasNextPage;
+
+  const isFetchingRef = useRef(false);
+  isFetchingRef.current = Boolean(isLoading || isFetchingNextPage);
+
+  const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) observerRef.current.disconnect();
+    if (!node) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
         if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          !isFetchingNextPage &&
-          fetchNextPage
+          entry?.isIntersecting &&
+          hasNextPageRef.current &&
+          !isFetchingRef.current &&
+          fetchNextPageRef.current
         ) {
-          fetchNextPage();
+          isFetchingRef.current = true;
+          fetchNextPageRef.current();
         }
-      });
+      },
+      { threshold: 0.1 },
+    );
 
-      if (node) observerRef.current.observe(node);
-    },
-    [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage],
-  );
+    observerRef.current.observe(node);
+  }, []);
 
-  const handleScroll: UIEventHandler<HTMLDivElement> = (e) => {
+  const handleScroll: UIEventHandler<HTMLDivElement> = () => {
     searchBarRef.current?.blur();
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollTop > 0 && scrollHeight - scrollTop - clientHeight < 150) {
-      if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
-        fetchNextPage();
-      }
-    }
   };
 
   const openLectureReview = (professor: string) => {
