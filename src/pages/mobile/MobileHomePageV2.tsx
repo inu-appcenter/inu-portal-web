@@ -66,7 +66,6 @@ export default function MobileHomePageV2() {
   const { userInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
-<<<<<<< HEAD
   const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
   const { timetables, selectedSemester } = useTimetableStore();
 
