@@ -30,11 +30,22 @@ export const useCourseOfferings = (
     queryFn: ({ pageParam = 0 }) =>
       getCourseOfferingsPage(year!, term!, pageParam as number, 50, filters),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.last || lastPage.page >= lastPage.totalPages - 1) {
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      const currentPage =
+        typeof lastPage.number === "number"
+          ? lastPage.number
+          : (lastPageParam as number) ?? 0;
+      const totalPages = lastPage.totalPages ?? 1;
+
+      if (
+        lastPage.last ||
+        currentPage >= totalPages - 1 ||
+        !lastPage.content ||
+        lastPage.content.length === 0
+      ) {
         return undefined;
       }
-      return lastPage.page + 1;
+      return currentPage + 1;
     },
     enabled: year !== undefined && term !== undefined,
     staleTime: 1000 * 60 * 5,

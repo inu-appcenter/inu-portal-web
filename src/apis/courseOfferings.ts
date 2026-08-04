@@ -68,12 +68,14 @@ export const getCourseOfferingsPage = async (
 
     return {
       content,
-      page,
+      number: page,
       size,
       totalElements: filtered.length,
       totalPages,
+      numberOfElements: content.length,
       first: page === 0,
       last: page >= totalPages - 1,
+      empty: content.length === 0,
     };
   }
 
