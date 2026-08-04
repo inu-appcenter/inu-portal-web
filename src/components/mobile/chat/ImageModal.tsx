@@ -35,7 +35,7 @@ export default function ImageModal({
   imageUrl,
   isOpen,
   onOpenChange,
-  senderName = "알 수 없음",
+  senderName,
   createDate,
   senderId,
   onSenderClick,
@@ -46,6 +46,8 @@ export default function ImageModal({
   const swiperRef = useRef<SwiperClass | null>(null);
   const tapTimer = useRef<NodeJS.Timeout | null>(null);
   const lastTapTime = useRef<number>(0);
+
+  const hasSenderInfo = Boolean(senderName && senderName !== "알 수 없음");
 
   useEffect(() => {
     if (isOpen) {
@@ -112,7 +114,6 @@ export default function ImageModal({
     const DOUBLE_TAP_DELAY = 250;
 
     if (now - lastTapTime.current < DOUBLE_TAP_DELAY) {
-      // 1. [더블 탭 판정 시점] - 보류 중인 싱글 탭 타이머 취소하여 툴바 토글 차단
       if (tapTimer.current) {
         clearTimeout(tapTimer.current);
         tapTimer.current = null;
@@ -122,12 +123,8 @@ export default function ImageModal({
         const swiperZoom = swiperRef.current.zoom;
 
         if (swiperZoom.scale > 1) {
-          // 이미 확대된 상태라면 축소
           swiperZoom.out();
         } else {
-          // [핵심 변경] 강제 CSS 수동 변조 조항을 전면 제거하고 오직 공식 API 매개변수 조합만 활용
-          // Swiper Zoom 내장 메서드의 정석 명세: zoom.in(e) 구조로 탑승
-          // 이렇게 원본 이벤트(event)를 그대로 넘겨주어야 Swiper 내부 가속 트래커 좌표와 동기화가 깨지지 않습니다.
           if (event) {
             swiperZoom.in(event);
           } else {
@@ -138,7 +135,6 @@ export default function ImageModal({
 
       lastTapTime.current = 0;
     } else {
-      // 2. [싱글 탭 대기 시점]
       lastTapTime.current = now;
 
       if (tapTimer.current) clearTimeout(tapTimer.current);
@@ -158,8 +154,6 @@ export default function ImageModal({
           <ImageContainer>
             <StyledSwiper
               modules={[Zoom]}
-              // 더블클릭 확대율 스케일을 선언식으로 설정 (maxRatio를 의도하신 1.8배 수준으로 매핑)
-              // 이렇게 주입해야 zoom.in(event) 호출 시 내부 상태 머신이 완벽히 1.8배 타겟으로 자동 가속 연산합니다.
               zoom={{
                 maxRatio: 1.8,
                 minRatio: 1,
@@ -169,7 +163,6 @@ export default function ImageModal({
                 swiperRef.current = swiper;
               }}
               onTap={handleTap}
-              // 위치 이동(패닝 드래그)이 내부 좌표 충돌 없이 부드럽게 작동하도록 전면 개방
               allowTouchMove={true}
               style={{ width: "100%", height: "100%" }}
             >
@@ -186,23 +179,30 @@ export default function ImageModal({
               <ArrowLeft size={24} color="#FFFFFF" />
             </BackButton>
 
-            <SenderInfo
-              onClick={(e) => {
-                e.stopPropagation();
-                if (senderId && onSenderClick) {
-                  onSenderClick(senderId);
-                }
-              }}
-              $isClickable={!!senderId}
-            >
-              <SenderName>{senderName}</SenderName>
-              <SenderTime>{formatHeaderDate(createDate)}</SenderTime>
-            </SenderInfo>
+            {hasSenderInfo && (
+              <SenderInfo
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (senderId && onSenderClick) {
+                    onSenderClick(senderId);
+                  }
+                }}
+                $isClickable={!!senderId}
+              >
+                <SenderName>{senderName}</SenderName>
+                {createDate && (
+                  <SenderTime>{formatHeaderDate(createDate)}</SenderTime>
+                )}
+              </SenderInfo>
+            )}
           </HeaderBar>
 
           <FooterBar $show={showControls}>
             <DownloadButton onClick={handleDownload} disabled={isDownloading}>
-              <Download size={24} color={isDownloading ? "#767676" : "#FFFFFF"} />
+              <Download
+                size={24}
+                color={isDownloading ? "#767676" : "#FFFFFF"}
+              />
             </DownloadButton>
           </FooterBar>
         </StyledContent>
@@ -214,7 +214,7 @@ export default function ImageModal({
 const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
-  z-index: 5000;
+  z-index: 20000;
   background-color: #000000;
   animation: ${fadeIn} 200ms ease-out;
 `;
@@ -224,7 +224,7 @@ const StyledContent = styled(Dialog.Content)`
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 5001;
+  z-index: 20001;
   outline: none;
   background-color: #000000;
   box-sizing: border-box;
@@ -237,7 +237,7 @@ const ImageContainer = styled.div`
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 5002;
+  z-index: 20002;
   overflow: hidden;
 `;
 
@@ -273,7 +273,7 @@ const HeaderBar = styled.div<{ $show: boolean }>`
   align-items: center;
   padding: 0 16px;
   padding-top: env(safe-area-inset-top, 0px);
-  z-index: 5005;
+  z-index: 20005;
   box-sizing: border-box;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
   
@@ -333,7 +333,7 @@ const FooterBar = styled.div<{ $show: boolean }>`
   align-items: center;
   padding: 24px 0;
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  z-index: 5005;
+  z-index: 20005;
   box-sizing: border-box;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
   

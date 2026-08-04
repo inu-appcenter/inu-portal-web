@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { getTipsCategories } from "@/apis/categories";
-import dropdownIcon from "@/resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
+import { ChevronDown } from "lucide-react";
 
 interface CategorySelectProps {
   category: string;
@@ -14,27 +14,29 @@ export default function CategorySelector({
 }: CategorySelectProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null); // ref 추가
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await getTipsCategories();
         setCategories(response.data);
+        if (!category && response.data.length > 0) {
+          setCategory(response.data[0]);
+        }
       } catch (error) {
-        console.error("모든 카테고리 가져오기 실패", error);
+        console.error("카테고리 가져오기 실패", error);
       }
     };
 
     fetchCategories();
   }, []);
 
-  const handleCategoryClick = (category: string) => {
-    setCategory(category);
+  const handleCategoryClick = (cat: string) => {
+    setCategory(cat);
     setIsOpen(false);
   };
 
-  // 바깥 클릭 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -53,96 +55,79 @@ export default function CategorySelector({
 
   return (
     <CategorySelectorWrapper ref={dropdownRef}>
-      <Dropdown
-        onClick={() => {
-          setIsOpen(!isOpen);
-        }}
-      >
-        <div>{category || "카테고리 선택"}</div>
-        <DropdownImg src={dropdownIcon} alt="" />
-      </Dropdown>
+      <DropdownButton onClick={() => setIsOpen(!isOpen)} type="button">
+        <span>{category || "카테고리"}</span>
+        <ChevronDown size={18} color="#333D4B" />
+      </DropdownButton>
 
       {isOpen && (
-        <DropdownOptions>
-          {categories.map((category, index) => (
-            <React.Fragment key={category}>
-              <DropdownOption onClick={() => handleCategoryClick(category)}>
-                <div>{category}</div>
-                {index < categories.length - 1 && <DropdownOptionLine />}
-              </DropdownOption>
-            </React.Fragment>
+        <DropdownMenu>
+          {categories.map((cat) => (
+            <DropdownItem
+              key={cat}
+              $selected={cat === category}
+              onClick={() => handleCategoryClick(cat)}
+            >
+              {cat}
+            </DropdownItem>
           ))}
-        </DropdownOptions>
+        </DropdownMenu>
       )}
     </CategorySelectorWrapper>
   );
 }
 
 const CategorySelectorWrapper = styled.div`
-  font-size: 11px;
-  font-weight: 300;
-  width: 112px;
-  height: 32px;
   position: relative;
-`;
-
-const Dropdown = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  height: 32px;
-  border-radius: 100px;
-  background: linear-gradient(
-    180deg,
-    #ffffff -21.86%,
-    #d5e4f7 100%,
-    #aac9ee 100%
-  );
 `;
 
-const DropdownImg = styled.img`
-  width: 4px;
-  height: 8px;
-`;
-
-const DropdownOptions = styled.div`
+const DropdownButton = styled.button`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding-top: 15px;
-  padding-bottom: 15px;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #333d4b);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background-color 0.15s ease-in-out;
 
+  &:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const DropdownMenu = styled.div`
   position: absolute;
-  top: 40px; /* Dropdown과 같은 위치로 설정 */
-  left: 0;
+  top: calc(100% + 4px);
   right: 0;
-  border-radius: 16px;
-  background: linear-gradient(
-    180deg,
-    #ffffff -21.86%,
-    #d5e4f7 100%,
-    #aac9ee 100%
-  );
-  z-index: 10;
-  overflow-y: scroll;
-
-  max-height: 250px;
-  gap: 10px;
+  background: #ffffff;
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 130px;
+  overflow: hidden;
+  padding: 6px 0;
 `;
 
-const DropdownOption = styled.div`
-  width: 100%;
-  text-align: center;
+const DropdownItem = styled.div<{ $selected: boolean }>`
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: ${(props) => (props.$selected ? "600" : "400")};
+  color: ${(props) =>
+    props.$selected ? "var(--text-brand, #0061ff)" : "#333d4b"};
+  background-color: ${(props) => (props.$selected ? "#f0f6ff" : "transparent")};
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease-in-out;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-`;
-
-const DropdownOptionLine = styled.div`
-  height: 1px;
-  width: 80%;
-  background-color: #969696;
+  &:active {
+    background-color: #f8f9fb;
+  }
 `;

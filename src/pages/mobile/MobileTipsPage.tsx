@@ -18,6 +18,7 @@ import {
   DESKTOP_MEDIA,
   MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
+import MobileWriteButton from "@/components/mobile/tips/MobileWriteButton";
 
 interface CategoryPosts {
   category: string;
@@ -94,7 +95,7 @@ const MobileTipsPage = () => {
   );
 
   useHeader({
-    title: "TIPS",
+    title: "커뮤니티",
     hasback: true,
     subHeader: subHeader,
     floatingSubHeader: true,
@@ -159,6 +160,7 @@ const MobileTipsPage = () => {
               </CategorySection>
             ))}
       </TipsListContainerWrapper>
+      <MobileWriteButton />
     </MobileTipsPageWrapper>
   );
 };

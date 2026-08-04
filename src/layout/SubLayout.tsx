@@ -23,11 +23,14 @@ const getInitialHeaderHeight = (path: string): number => {
   const pagesWithSubHeader = [
     "/timetable/compare",
     "/home/notice",
-    "/home/tips",
     "/home/club",
     "/home/deptnotice/setting",
   ];
-  if (pagesWithSubHeader.some((p) => path.startsWith(p))) {
+  if (
+    path === "/home/tips" ||
+    path.startsWith("/home/tips?") ||
+    pagesWithSubHeader.some((p) => path.startsWith(p))
+  ) {
     return 126;
   }
   return 76;

@@ -15,7 +15,7 @@ import {
 } from "@/styles/responsive";
 
 import NoticeTabWidget from "@/containers/mobile/home/NoticeTabWidget";
-import TipsWidget from "@/components/mobile/tips/TipsWidget";
+import CommunityWidget from "@/components/mobile/community/CommunityWidget";
 import SwipeMenuWidget from "@/containers/mobile/home/SwipeMenuWidget";
 import SwipeBusWidget from "@/containers/mobile/home/SwipeBusWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
@@ -200,8 +200,8 @@ export default function MobileHomePageV2() {
               <DesktopWidgetColumns>
                 <DesktopWidgetColumn>
                   <TitleContentArea
-                    title="TIPS 알아보기"
-                    children={<TipsWidget />}
+                    title="커뮤니티"
+                    children={<CommunityWidget />}
                     link={ROUTES.BOARD.TIPS}
                   />
                   <Banner />
@@ -239,8 +239,8 @@ export default function MobileHomePageV2() {
             ) : (
               <>
                 <TitleContentArea
-                  title="TIPS 알아보기"
-                  children={<TipsWidget />}
+                  title="커뮤니티"
+                  children={<CommunityWidget />}
                   link={ROUTES.BOARD.TIPS}
                 />
                 <Banner />

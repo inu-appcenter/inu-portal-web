@@ -11,6 +11,7 @@ import { ROUTES } from "@/constants/routes";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import MobileWriteButton from "@/components/mobile/tips/MobileWriteButton";
 
 const MobileTipsCategoryPage = () => {
   const { category } = useParams<{ category: string }>();
@@ -103,6 +104,7 @@ const MobileTipsCategoryPage = () => {
           </Box>
         </ListContainer>
       </InfiniteScroll>
+      <MobileWriteButton category={selectedCategory} />
     </Wrapper>
   );
 };

@@ -7,14 +7,23 @@ import { useState } from "react";
 import useUserStore from "@/stores/useUserStore";
 import { createPortal } from "react-dom"; // 1. createPortal 불러오기
 
-export default function FloatingWriteButton() {
+interface FloatingWriteButtonProps {
+  category?: string;
+}
+
+export default function FloatingWriteButton({
+  category,
+}: FloatingWriteButtonProps) {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const { tokenInfo } = useUserStore();
   const navigate = useNavigate();
 
   const handleClick = () => {
     if (tokenInfo.accessToken) {
-      navigate(ROUTES.BOARD.TIPS_WRITE);
+      const targetUrl = category
+        ? `${ROUTES.BOARD.TIPS_WRITE}?category=${encodeURIComponent(category)}`
+        : ROUTES.BOARD.TIPS_WRITE;
+      navigate(targetUrl);
     } else {
       setIsOpenModal(true);
     }
