@@ -369,14 +369,11 @@ const MobileTimeTablePage = () => {
   const { selectedSemester, activeTimetableId, timetables } =
     useTimetableStore();
 
-  // 서버 시간표 목록 조회 및 스토어 동기화
   useTimeTables();
-  // URL의 ?id= 쿼리파라미터와 활성 시간표를 양방향 동기화 (새로고침해도 보던 시간표 유지)
   useTimetableUrlSync();
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
 
-  // Find active timetable for the selected semester
   const activeTimetable = useMemo(() => {
     const list = timetables.filter((t) => t.semester === selectedSemester);
     if (list.length === 0) return null;
@@ -387,7 +384,6 @@ const MobileTimeTablePage = () => {
     );
   }, [timetables, selectedSemester, activeTimetableId]);
 
-  // 활성 시간표의 상세(요소 포함) 조회 및 그리드 이벤트 동기화
   useTimeTableDetail(activeTimetable?.id);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
@@ -488,8 +484,23 @@ const MobileTimeTablePage = () => {
     menuItems: timetableMenuItems,
   });
 
+  // 학점계산기 버튼 클릭 처리 핸들러
   const handleGradeCalculatorClick = () => {
-    navigate(ROUTES.TIMETABLE.CALCULATOR);
+    alert(
+      "곧 이전 성적 가져오기 기능을 포함하여 오픈될 예정이에요. 조금만 기다려주세요!",
+    );
+  };
+
+  // 모의 수강신청 버튼 클릭 처리 핸들러
+  const handleSimulatorClick = () => {
+    alert(
+      "실제와 다를 수 있으며, PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다. 앱 내 강의 정보는 현시점에는 최신 정보가 아니니 주의하세요.",
+    );
+    if (shouldOpenSimulatorInNewWebView) {
+      appBridge.navigateTo(SIMULATOR_URL);
+    } else {
+      navigate(ROUTES.TIMETABLE.SIMULATOR);
+    }
   };
 
   const { courses } = useCourses();
@@ -672,7 +683,6 @@ const MobileTimeTablePage = () => {
           <CapsuleButton
             variant="primary"
             onClick={() => setIsCreateModalOpen(true)}
-            // style={{ width: "100%", maxWidth: "353px" }}
           >
             시간표 생성하기
           </CapsuleButton>
@@ -713,14 +723,7 @@ const MobileTimeTablePage = () => {
           </MenuCard>
         </ButtonRow>
 
-        <MenuCard
-          onClick={() =>
-            shouldOpenSimulatorInNewWebView
-              ? appBridge.navigateTo(SIMULATOR_URL)
-              : navigate(ROUTES.TIMETABLE.SIMULATOR)
-          }
-          $fullWidth
-        >
+        <MenuCard onClick={handleSimulatorClick} $fullWidth>
           <MenuCardTitleRow>
             <MenuCardTitle>모의 수강신청 (수강신청 시뮬레이터)</MenuCardTitle>
             <IconSlot>
@@ -728,7 +731,7 @@ const MobileTimeTablePage = () => {
             </IconSlot>
           </MenuCardTitleRow>
           <MenuCardDescription>
-            수강신청 전 시간표를 미리 짜 보세요
+            미리 수강신청 앱/웹을 사용해보세요.
           </MenuCardDescription>
         </MenuCard>
       </ButtonGroup>
@@ -853,7 +856,6 @@ const NoTimetableContainer = styled.div`
   background: var(--bg-base, #ffffff);
   box-sizing: border-box;
   padding: 40px 20px;
-  //margin-bottom: 24px;
 `;
 
 const NoTimetableContent = styled.div`

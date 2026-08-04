@@ -32,7 +32,15 @@ const AIChatFloatingButton = () => {
     localStorage.setItem("showPortalAIChatTooltip", "false");
   };
 
+  // VITE_API_BASE_URL 확인 및 토글 처리
   const handleToggleChat = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+    if (apiBaseUrl === "https://portal.inuappcenter.kr/") {
+      alert('인천대학교 학사 AI 챗봇 "챗불이"가 곧 오픈 예정이에요!');
+      return;
+    }
+
     setIsOpen(!isOpen);
   };
 
