@@ -751,7 +751,8 @@ const MobileTimeTablePageWrapper = styled.div`
     calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
-    padding: var(--header-height, 56px) 0 40px;
+    /* PC 환경 하단 패딩 증가 (바텀바/네비게이션 요소 가림 방지) */
+    padding: var(--header-height, 56px) 0 calc(var(--nav-height, 100px) + 60px);
   }
 `;
 
