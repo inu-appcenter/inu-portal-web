@@ -1,5 +1,6 @@
 // 공유 브릿지는 packages/intip-bridge git 서브모듈로 두고 소스를 직접 컴파일한다
 // (npm 패키지/레지스트리 없음). CLAUDE.md 참고.
+import useUserStore from "@/stores/useUserStore";
 import { createWebChannel, type WebChannel } from "../../packages/intip-bridge/src/adapters/web";
 
 /**
