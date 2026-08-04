@@ -3,7 +3,7 @@ import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode, UIEventHandler } from "react";
 import { createPortal } from "react-dom";
-import { Sheet } from "react-modal-sheet";
+import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import {
   SlidersHorizontal,
@@ -138,6 +138,29 @@ const MobileCourseSearchSheet = ({
     onFiltersChange?.(filters);
   };
 
+  const sheetRef = useRef<SheetRef | null>(null);
+
+  const activeSnap =
+    typeof snap === "number" && COURSE_SEARCH_SNAP_POINTS.includes(snap)
+      ? snap
+      : COURSE_SEARCH_SNAP_POINTS[1];
+  const initialSnap = COURSE_SEARCH_SNAP_POINTS.indexOf(activeSnap) + 1;
+
+  const initialSnapRef = useRef(initialSnap);
+  useEffect(() => {
+    initialSnapRef.current = initialSnap;
+  }, [initialSnap]);
+
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  const onOpenChangeRef = useRef(onOpenChange);
+  useEffect(() => {
+    onOpenChangeRef.current = onOpenChange;
+  }, [onOpenChange]);
+
   // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
   useEffect(() => {
     const restoreFilters = () => {
@@ -146,6 +169,13 @@ const MobileCourseSearchSheet = ({
         try {
           const parsed = JSON.parse(savedFilters);
           setActiveFilters(parsed);
+          if (!openRef.current) {
+            onOpenChangeRef.current(true);
+          }
+          // 필터 적용 후 시트 위치가 바닥(0 또는 1)으로 내려가는 것을 방지하고 지정된 snap으로 복구
+          setTimeout(() => {
+            sheetRef.current?.snapTo(initialSnapRef.current);
+          }, 50);
         } catch (e) {
           console.error("필터 복원 오류:", e);
         }
@@ -161,6 +191,12 @@ const MobileCourseSearchSheet = ({
     // location.state 폴백 (앱이 아닌 일반 브라우저 환경에서 데이터가 올 때를 대비)
     if (!restored && location.state && (location.state as any).filters) {
       setActiveFilters((location.state as any).filters);
+      if (!openRef.current) {
+        onOpenChangeRef.current(true);
+      }
+      setTimeout(() => {
+        sheetRef.current?.snapTo(initialSnapRef.current);
+      }, 50);
     }
 
     // 2. 멀티 웹뷰 덮인 화면이 닫히며 복귀할 때를 위한 이벤트 리스너 등록
@@ -175,6 +211,12 @@ const MobileCourseSearchSheet = ({
         try {
           const parsed = JSON.parse(e.newValue);
           setActiveFilters(parsed);
+          if (!openRef.current) {
+            onOpenChangeRef.current(true);
+          }
+          setTimeout(() => {
+            sheetRef.current?.snapTo(initialSnapRef.current);
+          }, 50);
           localStorage.removeItem("applied_filters");
         } catch (err) {
           console.error("필터 복원 오류:", err);
@@ -288,15 +330,10 @@ const MobileCourseSearchSheet = ({
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const activeSnap =
-    typeof snap === "number" && COURSE_SEARCH_SNAP_POINTS.includes(snap)
-      ? snap
-      : COURSE_SEARCH_SNAP_POINTS[1];
-  const initialSnap = COURSE_SEARCH_SNAP_POINTS.indexOf(activeSnap) + 1;
-
   return (
     <>
       <CourseSheet
+        ref={sheetRef}
         isOpen={open}
         onClose={() => onOpenChange(false)}
         snapPoints={SHEET_SNAP_POINTS}
