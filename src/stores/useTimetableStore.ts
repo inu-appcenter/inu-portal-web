@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { TimeTable, TimeTableVisibility } from "@/types/timetables";
 import { formatSemester } from "@/utils/semester";
+import { broadcastSync } from "@/stores/middleware/broadcastSync";
 
 export interface TimetableTheme {
   colorTheme: "default" | "pastelWarm" | "pastelCool" | "monotone";
@@ -34,7 +35,18 @@ interface TimetableStore {
   updateTimetableEvents: (id: number, events: ClassItem[]) => void;
 }
 
-export const useTimetableStore = create<TimetableStore>((set) => ({
+export const useTimetableStore = create<TimetableStore>()(
+  broadcastSync<TimetableStore>({
+    // 시간표 상세 화면 등이 별도 웹뷰로 뜬 RN 멀티 웹뷰 환경에서, 거기서 편집한
+    // 시간표(요소 추가/테마 변경 등)가 이전 화면(다른 웹뷰)의 목록에도 즉시
+    // 반영되도록 동기화한다.
+    name: "timetable-store-sync",
+    partialize: (state) => ({
+      selectedSemester: state.selectedSemester,
+      activeTimetableId: state.activeTimetableId,
+      timetables: state.timetables,
+    }),
+  })((set) => ({
   selectedSemester: "",
   activeTimetableId: null,
   timetables: [],
@@ -92,4 +104,5 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
         t.id === id ? { ...t, events } : t
       ),
     })),
-}));
+  })),
+);
