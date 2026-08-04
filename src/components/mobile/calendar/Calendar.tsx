@@ -29,6 +29,7 @@ import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
 import Divider from "@/components/common/Divider";
 
 import { mixpanelTrack } from "@/utils/mixpanel";
+import useUserStore from "@/stores/useUserStore";
 
 // 아이콘 컴포넌트
 const ChevronLeft = () => (
@@ -158,76 +159,87 @@ export default function Calendar({
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
 
-      // 학교 및 학과 일정 동시 호출
-      const [resSchool, resDept] = await Promise.all([
-        getSchedules(year, month),
-        getMyDeptSchedules(year, month),
-      ]);
+      const { tokenInfo, userInfo } = useUserStore.getState();
+      const hasAuth = Boolean(tokenInfo?.accessToken && userInfo?.department);
 
-      // 타입 부여 및 데이터 통합
-      const schoolEvents = resSchool.data.map((schedule) =>
-        toScheduleEvent(schedule, "school"),
-      );
-      const deptEvents = resDept.data.map((schedule) =>
-        toScheduleEvent(schedule, "dept"),
-      );
-      const combinedEvents = [...schoolEvents, ...deptEvents];
+      try {
+        const [resSchool, resDept] = await Promise.all([
+          getSchedules(year, month),
+          hasAuth
+            ? getMyDeptSchedules(year, month).catch((err) => {
+                console.error("학과 일정 가져오기 실패", err);
+                return { data: [] };
+              })
+            : Promise.resolve({ data: [] }),
+        ]);
 
-      setMonthEvents(combinedEvents);
+        // 타입 부여 및 데이터 통합
+        const schoolEvents = (resSchool?.data ?? []).map((schedule) =>
+          toScheduleEvent(schedule, "school"),
+        );
+        const deptEvents = (resDept?.data ?? []).map((schedule) =>
+          toScheduleEvent(schedule, "dept"),
+        );
+        const combinedEvents = [...schoolEvents, ...deptEvents];
 
-      const parsedEvents: typeof eventsByWeek = [];
+        setMonthEvents(combinedEvents);
 
-      weeks.forEach((week, weekIndex) => {
-        const weekStart = week[0];
-        const weekEnd = week[6];
+        const parsedEvents: typeof eventsByWeek = [];
 
-        const eventsInWeek = combinedEvents
-          .map((event) => {
-            const start = parseISO(String(event.start));
-            const end = parseISO(String(event.end));
-            if (
-              (isBefore(start, addDays(weekEnd, 1)) ||
-                isSameDay(start, weekEnd)) &&
-              (isAfter(end, addDays(weekStart, -1)) ||
-                isSameDay(end, weekStart))
+        weeks.forEach((week, weekIndex) => {
+          const weekStart = week[0];
+          const weekEnd = week[6];
+
+          const eventsInWeek = combinedEvents
+            .map((event) => {
+              const start = parseISO(String(event.start));
+              const end = parseISO(String(event.end));
+              if (
+                (isBefore(start, addDays(weekEnd, 1)) ||
+                  isSameDay(start, weekEnd)) &&
+                (isAfter(end, addDays(weekStart, -1)) ||
+                  isSameDay(end, weekStart))
+              ) {
+                const startIdx = week.findIndex((d) =>
+                  isSameDay(d, isBefore(start, weekStart) ? weekStart : start),
+                );
+                const endIdx = week.findIndex((d) =>
+                  isSameDay(d, isAfter(end, weekEnd) ? weekEnd : end),
+                );
+                return {
+                  start: startIdx,
+                  end: endIdx,
+                  title: String(event.title),
+                  type: event.type,
+                };
+              }
+              return null;
+            })
+            .filter(Boolean) as {
+            start: number;
+            end: number;
+            title: string;
+            type: ScheduleType;
+          }[];
+
+          const placed: typeof parsedEvents = [];
+          eventsInWeek.forEach((ev) => {
+            let row = 0;
+            while (
+              placed.some(
+                (p) => p.row === row && ev.start <= p.end && ev.end >= p.start,
+              )
             ) {
-              const startIdx = week.findIndex((d) =>
-                isSameDay(d, isBefore(start, weekStart) ? weekStart : start),
-              );
-              const endIdx = week.findIndex((d) =>
-                isSameDay(d, isAfter(end, weekEnd) ? weekEnd : end),
-              );
-              return {
-                start: startIdx,
-                end: endIdx,
-                title: String(event.title),
-                type: event.type,
-              };
+              row++;
             }
-            return null;
-          })
-          .filter(Boolean) as {
-          start: number;
-          end: number;
-          title: string;
-          type: ScheduleType;
-        }[];
-
-        const placed: typeof parsedEvents = [];
-        eventsInWeek.forEach((ev) => {
-          let row = 0;
-          while (
-            placed.some(
-              (p) => p.row === row && ev.start <= p.end && ev.end >= p.start,
-            )
-          ) {
-            row++;
-          }
-          placed.push({ ...ev, weekIndex, row });
+            placed.push({ ...ev, weekIndex, row });
+          });
+          parsedEvents.push(...placed);
         });
-        parsedEvents.push(...placed);
-      });
-      setEventsByWeek(parsedEvents);
+        setEventsByWeek(parsedEvents);
+      } catch (error) {
+        console.error("학사일정 데이터 로드 실패", error);
+      }
     };
 
     fetchEvents();

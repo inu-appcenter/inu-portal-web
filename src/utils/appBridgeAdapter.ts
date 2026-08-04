@@ -122,6 +122,9 @@ export const appBridge = {
   goHome(path: string): void {
     if (bridgeChannel) {
       bridgeChannel.send("goHome", { path });
+      return;
     }
+
+    this.goBack();
   },
 };

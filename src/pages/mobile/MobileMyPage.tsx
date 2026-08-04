@@ -56,7 +56,7 @@ export default function MobileMyPage() {
     });
     localStorage.removeItem("tokenInfo");
 
-    navigate(`/home`);
+    navigate(ROUTES.HOME, { replace: true, state: { isTabNavigation: true } });
   };
 
   const handleLogoutModalClick = () => {
