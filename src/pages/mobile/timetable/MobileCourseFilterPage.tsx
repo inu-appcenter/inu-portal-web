@@ -190,6 +190,58 @@ export function formatSlotsToTimeStr(slots: string[]): string {
   return dayStrings.join(" ");
 }
 
+const DAY_ENUMS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+];
+
+export function formatSlotsToMeetings(slots: string[]): string[] {
+  if (!slots || slots.length === 0) return [];
+  const dayGroups: Record<number, number[]> = {};
+  slots.forEach((slot) => {
+    const [dStr, hStr] = slot.split("-");
+    const d = parseInt(dStr, 10);
+    const h = parseFloat(hStr);
+    if (!dayGroups[d]) dayGroups[d] = [];
+    dayGroups[d].push(h);
+  });
+
+  const result: string[] = [];
+  Object.keys(dayGroups).forEach((dKey) => {
+    const d = parseInt(dKey, 10);
+    const dayEnum = DAY_ENUMS[d];
+    if (!dayEnum) return;
+
+    const hours = dayGroups[d].sort((a, b) => a - b);
+    let start = hours[0];
+    let prev = hours[0];
+
+    for (let i = 1; i <= hours.length; i++) {
+      const current = hours[i];
+      if (current === prev + 0.5) {
+        prev = current;
+      } else {
+        const end = prev + 0.5;
+        const formatHour = (val: number): string => {
+          const h = Math.floor(val);
+          const m = Math.round((val - h) * 60);
+          return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        };
+        result.push(`${dayEnum}|${formatHour(start)}|${formatHour(end)}`);
+        start = current;
+        prev = current;
+      }
+    }
+  });
+
+  return result;
+}
+
 type SubScreenType =
   | "main"
   | "major"
