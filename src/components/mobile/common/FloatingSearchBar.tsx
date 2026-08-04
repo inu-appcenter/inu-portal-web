@@ -1,6 +1,6 @@
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import styled from "styled-components";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 export interface FloatingSearchBarRef {
@@ -103,6 +103,22 @@ const FloatingSearchBar = forwardRef<
     }
   }, [isSearchActive]);
 
+  const handleClear = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setSearchQuery("");
+    if (searchParamKey) {
+      const nextParams = new URLSearchParams(window.location.search);
+      nextParams.delete(searchParamKey);
+      setSearchParams(nextParams, { replace: true });
+    }
+    if (onSearch) {
+      onSearch("");
+    }
+    inputRef.current?.focus();
+  };
+
   useImperativeHandle(ref, () => ({
     blur: () => {
       inputRef.current?.blur();
@@ -117,15 +133,7 @@ const FloatingSearchBar = forwardRef<
       }, 100);
     },
     clear: () => {
-      setSearchQuery("");
-      if (searchParamKey) {
-        const nextParams = new URLSearchParams(window.location.search);
-        nextParams.delete(searchParamKey);
-        setSearchParams(nextParams, { replace: true });
-      }
-      if (onSearch) {
-        onSearch("");
-      }
+      handleClear();
     },
   }));
 
@@ -150,6 +158,7 @@ const FloatingSearchBar = forwardRef<
       <SearchInput
         ref={inputRef}
         $isActive={isSearchActive}
+        $hasValue={searchQuery.length > 0}
         placeholder={placeholder}
         value={searchQuery}
         onChange={(e) => {
@@ -161,6 +170,15 @@ const FloatingSearchBar = forwardRef<
           }
         }}
       />
+      {isSearchActive && searchQuery.length > 0 && (
+        <ClearButton
+          type="button"
+          onClick={handleClear}
+          aria-label="검색어 지우기"
+        >
+          <X size={14} strokeWidth={2.5} />
+        </ClearButton>
+      )}
       <SearchButtonCircle
         $isActive={isSearchActive}
         onClick={(e) => {
@@ -213,7 +231,7 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
   flex: ${(props) => (props.$isActive ? "1" : "0 0 56px")};
 `;
 
-const SearchInput = styled.input<{ $isActive: boolean }>`
+const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
   width: 100%;
   height: 100%;
   outline: none;
@@ -224,7 +242,8 @@ const SearchInput = styled.input<{ $isActive: boolean }>`
 
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
   padding-left: ${(props) => (props.$isActive ? "20px" : "0px")};
-  padding-right: ${(props) => (props.$isActive ? "56px" : "0px")};
+  padding-right: ${(props) =>
+    props.$isActive ? (props.$hasValue ? "88px" : "56px") : "0px"};
   pointer-events: ${(props) => (props.$isActive ? "auto" : "none")};
 
   border-radius: 999px;
@@ -239,6 +258,36 @@ const SearchInput = styled.input<{ $isActive: boolean }>`
 
   &::placeholder {
     color: var(--text-tertiary, #8b95a1);
+  }
+`;
+
+const ClearButton = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 56px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-neutral, #e5e8eb);
+  color: var(--text-tertiary, #8b95a1);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  z-index: 3;
+  padding: 0;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--border-strong, #d1d6db);
+    color: var(--text-secondary, #4e5968);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.9);
   }
 `;
 
