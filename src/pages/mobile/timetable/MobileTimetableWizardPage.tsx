@@ -462,7 +462,7 @@ export default function MobileTimetableWizardPage() {
 
           <Card>
             <CardLabelRow>
-              <CardLabel>꼭 넣고 싶은 강의</CardLabel>
+              <CardLabel>듣고 싶은 강의 선택</CardLabel>
               <CardLabelCount>{wishlistCourses.length}개</CardLabelCount>
             </CardLabelRow>
             <CardHint>강의 후보를 선택할 수 있어요. 필수로 포함돼야 할 강의는 "필수" 체크해주세요.</CardHint>
@@ -573,6 +573,7 @@ export default function MobileTimetableWizardPage() {
         hasNextPage={hasMoreOfferings}
         fetchNextPage={fetchMoreOfferings}
         isFetchingNextPage={isFetchingMoreOfferings}
+        filterStorageKey="timetable_wizard_course_filters"
       />
 
       {selectedCandidate && (

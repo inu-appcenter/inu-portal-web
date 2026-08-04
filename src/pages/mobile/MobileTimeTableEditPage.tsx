@@ -530,6 +530,7 @@ const MobileTimeTableEditPage = () => {
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        filterStorageKey={TIMETABLE_COURSE_FILTERS_KEY}
       />
     </PageWrapper>
   );

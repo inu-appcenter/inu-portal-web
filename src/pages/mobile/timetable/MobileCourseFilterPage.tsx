@@ -37,11 +37,11 @@ export const DEFAULT_FILTERS: FilterState = {
   selectedSlots: [],
 };
 
-const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
+export const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
 
-const readStoredFilters = (): FilterState | null => {
+const readStoredFilters = (key: string = TIMETABLE_COURSE_FILTERS_KEY): FilterState | null => {
   try {
-    const saved = localStorage.getItem(TIMETABLE_COURSE_FILTERS_KEY);
+    const saved = localStorage.getItem(key);
     if (saved) return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
   } catch (e) {
     console.error("시간표 강의 필터 복원 오류:", e);
@@ -307,13 +307,15 @@ export default function MobileCourseFilterPage() {
   }, [timetables, activeTimetableId]);
   const activeTimetableEvents = activeTimetable?.events ?? [];
   const [isApplying, setIsApplying] = useState(false);
+  const storageKey =
+    (location.state?.storageKey as string) || TIMETABLE_COURSE_FILTERS_KEY;
 
-  // 상위 편집 화면에서 전달한 필터 상태가 있다면 수신, 없으면 디폴트
+  // 상위 편집/마법사 화면에서 전달한 필터 상태가 있다면 수신, 없으면 해당 storageKey에서 복원
   const initialFilters = useMemo(() => {
     const stateFilters = location.state?.filters as FilterState | undefined;
     if (stateFilters) return { ...DEFAULT_FILTERS, ...stateFilters };
-    return readStoredFilters() ?? { ...DEFAULT_FILTERS };
-  }, [location.state]);
+    return readStoredFilters(storageKey) ?? { ...DEFAULT_FILTERS };
+  }, [location.state, storageKey]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [view, setSubView] = useState<SubScreenType>("main");
@@ -648,10 +650,7 @@ export default function MobileCourseFilterPage() {
       isSavingRef.current = true;
       setShowUnsavedModal(false);
       localStorage.setItem("applied_filters", JSON.stringify(filters));
-      localStorage.setItem(
-        TIMETABLE_COURSE_FILTERS_KEY,
-        JSON.stringify(filters),
-      );
+      localStorage.setItem(storageKey, JSON.stringify(filters));
       flushSync(() => {
         setIsSaving(true); // blocker 비활성화 후 navigate
       });
