@@ -202,7 +202,7 @@ export function MobileSchoolAlarmSetting({
               : "원하는 카테고리의 모든 새 글 알림을 설정해보세요."
           }
         >
-          <Box>
+          <Box style={{ padding: "16px 20px" }}>
             <ChipContainer>
               {isLoading
                 ? Array.from({ length: 6 }).map((_, i) => (
@@ -231,7 +231,7 @@ export function MobileSchoolAlarmSetting({
           title={"키워드로 알림 받기"}
           description={"원하는 카테고리에 키워드 알림을 설정해보세요."}
         >
-          <Box>
+          <Box style={{ padding: "16px 20px" }}>
             <Wrapper>
               <HorizontalScrollWrapper>
                 {isLoading ? (
@@ -286,7 +286,7 @@ export function MobileSchoolAlarmSetting({
           <TitleContentArea
             description={`${keywords.length}개 키워드로 알림을 받고 있어요.`}
           >
-            <Box>
+            <Box style={{ padding: "16px 20px" }}>
               <ListWrapper>
                 {isLoading
                   ? Array.from({ length: 3 }).map((_, i) => (
@@ -468,6 +468,7 @@ function MobileDeptAlarmSetting({
           border: allAlarm
             ? "1px solid rgba(255, 255, 255, 0.5)"
             : "1px solid #e0e0e0",
+          padding: "16px 20px",
         }}
       >
         <AllAlarmCheckBoxWrapper
@@ -500,7 +501,7 @@ function MobileDeptAlarmSetting({
 
       <KeyWordSettingWrapper>
         <TitleContentArea title={"키워드로 알림 받기"}>
-          <Box>
+          <Box style={{ padding: "16px 20px" }}>
             <Wrapper>
               <InputWrapper>
                 <StyledInput
@@ -524,7 +525,7 @@ function MobileDeptAlarmSetting({
             // title={"등록된 키워드 목록"}
             description={`${registeredKeywords.length}개 키워드로 알림을 받고 있어요.`}
           >
-            <Box>
+            <Box style={{ padding: "16px 20px" }}>
               <ListWrapper>
                 {isLoading
                   ? Array.from({ length: 2 }).map((_, i) => (

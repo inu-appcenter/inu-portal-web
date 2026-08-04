@@ -8,13 +8,24 @@ declare global {
 
   interface Window {
     kakao: any;
+    /**
+     * react-native-webview's single message channel. Present in the new Expo
+     * shell on BOTH platforms; absent in legacy native apps and browsers. This
+     * is the preferred bridge — see `appBridgeAdapter.ts`.
+     */
+    ReactNativeWebView?: {
+      postMessage: (message: string) => void;
+    };
     AndroidBridge?: {
       navigateTo?: (destination: string, url: string) => void;
       goBack?: () => void;
+      confirmBack?: () => void;
       handleLogout?: () => void;
     };
     onReceiveFcmToken?: ((token: string) => void) | null;
     __INTIP_FCM_BOOTSTRAP__?: IntipFcmBootstrap;
+    __intipHasUnsavedChanges?: boolean;
+    __intipHandleNativeBackRequest?: () => boolean;
     webkit?: {
       messageHandlers?: Record<string, { postMessage: (message: unknown) => void }>;
     };

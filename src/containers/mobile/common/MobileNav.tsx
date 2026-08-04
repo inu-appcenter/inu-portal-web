@@ -6,16 +6,16 @@ import { useQuery } from "@tanstack/react-query";
 import NavItem from "@/components/mobile/common/NavItem";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import homeIcon from "@/resources/assets/mobile-common/home-gray.svg";
-import homeIconActive from "@/resources/assets/mobile-common/home-blue.svg";
-import busIcon from "@/resources/assets/mobile-common/bus-gray.svg";
-import busIconActive from "@/resources/assets/mobile-common/bus-blue.svg";
-import saveIcon from "@/resources/assets/mobile-common/save-gray.svg";
-import saveIconActive from "@/resources/assets/mobile-common/save-blue.svg";
-import mypageIcon from "@/resources/assets/mobile-common/mypage-gray.svg";
-import mypageIconActive from "@/resources/assets/mobile-common/mypage-blue.svg";
-import chatIcon from "@/resources/assets/mobile-common/chat-gray.svg";
-import chatIconActive from "@/resources/assets/mobile-common/chat-blue.svg";
+import homeIcon from "@/resources/assets/mobile-nav/home-gray.svg";
+import homeIconActive from "@/resources/assets/mobile-nav/home-blue.svg";
+import busIcon from "@/resources/assets/mobile-nav/bus-gray.svg";
+import busIconActive from "@/resources/assets/mobile-nav/bus-blue.svg";
+import saveIcon from "@/resources/assets/mobile-nav/save-gray.svg";
+import saveIconActive from "@/resources/assets/mobile-nav/save-blue.svg";
+import mypageIcon from "@/resources/assets/mobile-nav/mypage-gray.svg";
+import mypageIconActive from "@/resources/assets/mobile-nav/mypage-blue.svg";
+import chatIcon from "@/resources/assets/mobile-nav/chat-gray.svg";
+import chatIconActive from "@/resources/assets/mobile-nav/chat-blue.svg";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
@@ -101,7 +101,7 @@ export default function MobileNav() {
             ? "친구"
             : "개인";
       params.set("category", nextCategory);
-      navigate(`${to}?${params.toString()}`, { replace: true });
+      navigate(`${to}?${params.toString()}`, { replace: true, state: { isTabNavigation: true } });
       return;
     }
 
@@ -111,12 +111,13 @@ export default function MobileNav() {
     if (isChat) {
       const savedCategory = localStorage.getItem("lastChatCategory");
       const target = savedCategory ? `${to}?category=${savedCategory}` : to;
-      navigate(target, { replace: true });
+      navigate(target, { replace: true, state: { isTabNavigation: true } });
       return;
     }
 
-    navigate(to, { replace: true });
+    navigate(to, { replace: true, state: { isTabNavigation: true } });
   };
+
 
   return (
     <AreaWrapper>
@@ -156,7 +157,7 @@ const AreaWrapper = styled.div`
 const MobileNavWrapper = styled.nav`
   position: relative;
   z-index: 1001;
-  margin-bottom: 24px;
+  margin-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   width: 90vw;
   max-width: 400px;
   min-width: 250px;
@@ -171,7 +172,6 @@ const MobileNavWrapper = styled.nav`
   backdrop-filter: blur(5px);
   overflow: hidden;
   pointer-events: auto;
-  //margin-bottom: calc(18px + env(safe-area-inset-bottom));
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, 520px);

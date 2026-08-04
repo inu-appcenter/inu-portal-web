@@ -308,6 +308,10 @@ export default function MobileHomePage() {
       <Section>
         <Banner />
         <CategoryFormSection>
+          <V2EntryCard onClick={() => navigate(ROUTES.HOME_V2)}>
+            <span>새로운 홈 화면 (V2) 체험하기 🔥</span>
+            <span className="arrow">→</span>
+          </V2EntryCard>
           <CategoryForm />
           <HomeChipGroup />
           {isFestivalEnabled && (
@@ -403,10 +407,13 @@ const MobileHomePageWrapper = styled.div`
   width: 100%;
   position: relative;
   box-sizing: border-box;
+  padding-top: var(--header-height, 56px);
+  padding-bottom: var(--nav-height, 100px);
 
   @media ${DESKTOP_MEDIA} {
     max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
     margin: 0 auto;
+    padding-top: var(--header-height, 56px);
     padding-bottom: 120px;
   }
 `;
@@ -478,5 +485,39 @@ const AppcenterLogoWrapper = styled.div`
       width: 220px;
       max-width: 220px;
     }
+  }
+`;
+
+const V2EntryCard = styled.div`
+  width: 100%;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--bg-brand-subtle, #eff6ff) 0%, #e2eeff 100%);
+  border: 1px solid rgba(0, 97, 255, 0.12);
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px 0 rgba(0, 97, 255, 0.04);
+
+  span {
+    color: var(--text-brand, #0061ff);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .arrow {
+    font-size: 16px;
+    color: var(--text-brand, #0061ff);
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #e2eeff 0%, #d2e4ff 100%);
+  }
+
+  &:active {
+    transform: scale(0.99);
   }
 `;

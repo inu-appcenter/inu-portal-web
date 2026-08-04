@@ -51,7 +51,7 @@ const TitleContentAreaWrapper = styled.div`
   justify-content: center;
   width: 100%;
   height: fit-content;
-  gap: 8px;
+  gap: var(--space-3);
 `;
 
 const HeaderWrapper = styled.div`
@@ -68,7 +68,7 @@ const DescriptionText = styled.p`
   text-align: start;
   width: 100%;
   line-height: normal;
-  padding: 0 20px;
+  padding: 0 8px;
 
   strong {
     font-weight: 600;

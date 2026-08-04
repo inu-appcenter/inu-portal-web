@@ -32,6 +32,7 @@ import {
 } from "@/styles/responsive";
 import Divider from "@/components/common/Divider";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import Ripple from "@/components/common/Ripple";
 
 type PhonebookSectionKey = "people" | "office";
 
@@ -280,7 +281,7 @@ const MobilePhoneBookSearchPage = () => {
                       />
                       {index < peopleEntries.length - 1 && (
                         <DividerWrapper>
-                          <Divider />
+                          <Divider margin="0" />
                         </DividerWrapper>
                       )}
                     </>
@@ -341,7 +342,7 @@ const MobilePhoneBookSearchPage = () => {
                       />
                       {index < officeEntries.length - 1 && (
                         <DividerWrapper>
-                          <Divider />
+                          <Divider margin="0" />
                         </DividerWrapper>
                       )}
                     </>
@@ -403,19 +404,22 @@ const PersonResultCard = ({
 
   return (
     <SearchResultButton type="button" onClick={onClick}>
-      <ResultIconCircle aria-hidden="true">
-        <Phone size={16} strokeWidth={2.4} />
-      </ResultIconCircle>
+      <Ripple color="rgba(0,0,0,0.05)" />
+      <InnerContent>
+        <ResultIconCircle aria-hidden="true">
+          <Phone size={16} strokeWidth={2.4} />
+        </ResultIconCircle>
 
-      <ResultBody>
-        <ResultTitle>{title}</ResultTitle>
-        {subtitle && <ResultSubtitle>{subtitle}</ResultSubtitle>}
-        <ResultPhone>{phone}</ResultPhone>
-      </ResultBody>
+        <ResultBody>
+          <ResultTitle>{title}</ResultTitle>
+          {subtitle && <ResultSubtitle>{subtitle}</ResultSubtitle>}
+          <ResultPhone>{phone}</ResultPhone>
+        </ResultBody>
 
-      <ResultArrow aria-hidden="true">
-        <ChevronRight size={18} strokeWidth={2.4} />
-      </ResultArrow>
+        <ResultArrow aria-hidden="true">
+          <ChevronRight size={18} strokeWidth={2.4} />
+        </ResultArrow>
+      </InnerContent>
     </SearchResultButton>
   );
 };
@@ -435,19 +439,22 @@ const OfficeResultCard = ({
 
   return (
     <SearchResultButton type="button" onClick={onClick}>
-      <ResultIconCircle aria-hidden="true">
-        <Phone size={22} strokeWidth={2.4} />
-      </ResultIconCircle>
+      <Ripple color="rgba(0,0,0,0.05)" />
+      <InnerContent>
+        <ResultIconCircle aria-hidden="true">
+          <Phone size={22} strokeWidth={2.4} />
+        </ResultIconCircle>
 
-      <ResultBody>
-        <ResultTitle>{entry.departmentName}</ResultTitle>
-        {subtitle && <ResultSubtitle>{subtitle}</ResultSubtitle>}
-        <ResultPhone>{phone}</ResultPhone>
-      </ResultBody>
+        <ResultBody>
+          <ResultTitle>{entry.departmentName}</ResultTitle>
+          {subtitle && <ResultSubtitle>{subtitle}</ResultSubtitle>}
+          <ResultPhone>{phone}</ResultPhone>
+        </ResultBody>
 
-      <ResultArrow aria-hidden="true">
-        <ChevronRight size={18} strokeWidth={2.4} />
-      </ResultArrow>
+        <ResultArrow aria-hidden="true">
+          <ChevronRight size={18} strokeWidth={2.4} />
+        </ResultArrow>
+      </InnerContent>
     </SearchResultButton>
   );
 };
@@ -480,7 +487,6 @@ const SectionInner = styled.div`
 
 const CategorySelectorPadding = styled.div`
   width: 100%;
-  padding: 0 20px;
   box-sizing: border-box;
 `;
 
@@ -506,26 +512,30 @@ const DividerWrapper = styled.div`
   }
 `;
 
-const SearchResultButton = styled.button`
-  //width: calc(100% + 40px);
-  //margin: -20px;
-  width: 100%;
-  //padding: 0 20px;
-  box-sizing: border-box;
+const InnerContent = styled.div`
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
-  //gap: 8px;
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: transform 0.12s ease-in-out;
+`;
+
+const SearchResultButton = styled.button`
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
   border: none;
-  border-radius: 20px;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.18s ease;
+  position: relative;
+  overflow: hidden;
 
-  @media (hover: hover) {
-    &:hover {
-      background: #f8fbff;
+  &.active-touch {
+    ${InnerContent} {
+      transform: scale(0.97);
     }
   }
 `;
@@ -668,7 +678,7 @@ const SearchSpacer = styled.div`
 const FloatingSearchBar = styled.div`
   position: fixed;
   left: 50%;
-  bottom: 28px;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   width: calc(100% - 32px);
   z-index: 120;

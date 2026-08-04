@@ -2,15 +2,18 @@ import { Drawer } from "vaul";
 import styled from "styled-components";
 import { useState } from "react";
 import EditFriendAliasModal from "./EditFriendAliasModal";
+import Modal from "@/components/common/Modal";
 import {
   UserPlus,
   UserCheck,
   UserMinus,
   UserX,
   Edit3,
-  ShieldAlert,
+  Ban,
   LogOut,
   MessageSquare,
+  Star,
+  X,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -66,8 +69,22 @@ const StyledContent = styled(Drawer.Content)`
 const Header = styled.div`
   position: relative;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
 `;
 
 const SheetHandle = styled.div`
@@ -85,11 +102,7 @@ const SheetHandle = styled.div`
   }
 `;
 
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
+
 
 const IconButton = styled.button`
   background: none;
@@ -120,9 +133,9 @@ const LoadingArea = styled.div`
 `;
 
 const ProfileImageWrapper = styled.div`
-  width: 100px;
-  height: 100px;
-  border-radius: 40px;
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
   overflow: hidden;
   margin-bottom: 16px;
   background-color: #f2f2f7;
@@ -235,6 +248,78 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" | "danger
   }
 `;
 
+const HorizontalButtonGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+`;
+
+const CircleActionButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--bg-brand, #eff6ff);
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease-in-out;
+
+  &:active {
+    transform: scale(0.95);
+    background-color: var(--border-brand-subtle, #d3e5ff);
+  }
+
+  &.warn {
+    border: 1px solid var(--border-warn, #fee588);
+    background-color: var(--bg-warn, #fffaeb);
+    
+    &:active {
+      background-color: var(--border-warn, #fee588);
+    }
+  }
+
+  &.fav {
+    border: 1px solid var(--border-warn, #fee588);
+    background-color: var(--bg-warn, #fffaeb);
+    
+    &:active {
+      background-color: var(--border-warn, #fee588);
+    }
+  }
+`;
+
+const AlarmIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="13" r="7.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 9V13L14 15" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 3L8 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M19 3L16 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6 20L4.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M18 20L19.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const ChatBubbleIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <polyline points="16 6 12 2 8 6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="12" y1="2" x2="12" y2="15" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 interface UserProfileModalProps {
   memberId?: number | null;
   chatRoomMemberId?: number | null;
@@ -247,6 +332,8 @@ interface UserProfileModalProps {
     participantCount: number;
     isOwner: boolean;
   };
+  isFavorite?: boolean;
+  onToggleFavorite?: (friendId: number) => void;
 }
 
 export default function UserProfileModal({
@@ -256,17 +343,22 @@ export default function UserProfileModal({
   isOpen,
   onOpenChange,
   roomContext,
+  isFavorite,
+  onToggleFavorite,
 }: UserProfileModalProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const [isAliasModalOpen, setIsAliasModalOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false);
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
 
   const isChatContext = !!roomContext && !!chatRoomMemberId;
   const isFriendContext = !isChatContext && !!friendId;
   // memberId만 있고 chat/friend context가 없을 때 = 내 프로필
   const isSelfProfile = !!memberId && !isChatContext && !isFriendContext;
+  const isConfirmModalOpen = deleteConfirmOpen || blockConfirmOpen || isAliasModalOpen;
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
@@ -385,9 +477,7 @@ export default function UserProfileModal({
         }
         break;
       case "ACCEPTED":
-        if (confirm("친구를 삭제할까요?")) {
-          if (profile.friendId) deleteMutation.mutate(profile.friendId);
-        }
+        setDeleteConfirmOpen(true);
         break;
     }
   };
@@ -408,7 +498,6 @@ export default function UserProfileModal({
     },
     onSuccess: (res) => {
       const roomId = res.data.id;
-      onOpenChange(false);
       navigate(`/chat/${roomId}`);
     },
     onError: (error: any) => {
@@ -468,18 +557,24 @@ export default function UserProfileModal({
 
   const handleBlock = () => {
     if (!profile) return;
-    if (
-      confirm(
-        `${profile.nickname}님을 차단할까요?\n차단 시 해당 유저의 메시지가 더 이상 보이지 않으며 친구 관계가 해제됩니다.`,
-      )
-    ) {
-      const blockTargetId = profile.memberId || friendId || chatRoomMemberId;
-      if (!blockTargetId) {
-        alert("차단 대상 식별자를 찾을 수 없습니다.");
-        return;
-      }
-      blockMutation.mutate(blockTargetId);
+    setBlockConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!profile?.friendId) return;
+    deleteMutation.mutate(profile.friendId);
+    setDeleteConfirmOpen(false);
+  };
+
+  const handleConfirmBlock = () => {
+    if (!profile) return;
+    const blockTargetId = profile.memberId || friendId || chatRoomMemberId;
+    if (!blockTargetId) {
+      alert("차단 대상 식별자를 찾을 수 없습니다.");
+      return;
     }
+    blockMutation.mutate(blockTargetId);
+    setBlockConfirmOpen(false);
   };
 
   const handleKick = () => {
@@ -500,6 +595,17 @@ export default function UserProfileModal({
     }
   };
 
+  const handleShareProfile = () => {
+    if (!profile) return;
+    const targetFriendId = profile.friendId || friendId;
+    const shareUrl = `${window.location.origin}/mobile/friends?ids=${targetFriendId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert("프로필 링크가 클립보드에 복사되었습니다.");
+    }).catch(() => {
+      alert("링크 복사에 실패했습니다.");
+    });
+  };
+
   const isMe = isSelfProfile || userInfo?.nickname === profile?.nickname;
 
   const canManage =
@@ -511,32 +617,57 @@ export default function UserProfileModal({
 
   return (
     <>
-      <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
+      <Drawer.Root
+        open={isOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && isConfirmModalOpen) return;
+          onOpenChange(nextOpen);
+        }}
+        dismissible={!isConfirmModalOpen}
+        modal={true}
+      >
         <Drawer.Portal>
           <StyledOverlay />
           <StyledContent>
             <Header>
               <SheetHandle />
-              <HeaderActions>
+              <HeaderLeft>
                 {!isMe && profile && (
                   <>
                     {profile.friendStatus === "ACCEPTED" && (
                       <IconButton
-                        onClick={handleAction}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction();
+                        }}
                         title="친구 삭제"
                       >
-                        <UserMinus size={22} color="#8E8E93" />
+                        <UserMinus size={22} color="var(--text-tertiary, #8b95a1)" />
                       </IconButton>
                     )}
                     <IconButton
-                      onClick={handleBlock}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBlock();
+                      }}
                       title="차단"
                     >
-                      <ShieldAlert size={22} color="#FF3B30" />
+                      <Ban size={22} color="var(--text-tertiary, #8b95a1)" />
                     </IconButton>
                   </>
                 )}
-              </HeaderActions>
+              </HeaderLeft>
+              <HeaderRight>
+                <IconButton
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => onOpenChange(false)}
+                  title="닫기"
+                >
+                  <X size={22} color="var(--text-tertiary, #8b95a1)" />
+                </IconButton>
+              </HeaderRight>
             </Header>
 
             <Body>
@@ -564,8 +695,8 @@ export default function UserProfileModal({
                       )}
                     </NicknameArea>
                     <SubInfo>
+                      {profile.maskedStudentId && profile.maskedStudentId.length >= 2 ? `${profile.maskedStudentId.substring(0, 2)}학번 · ` : ""}
                       {isMe ? profile.department : findTitleOrCode(profile.department)}
-                      {profile.maskedStudentId ? ` · ${profile.maskedStudentId}` : ""}
                     </SubInfo>
                   </UserInfoArea>
 
@@ -578,6 +709,59 @@ export default function UserProfileModal({
                         <Edit3 size={20} />
                         프로필 수정
                       </ActionButton>
+                    ) : profile.friendStatus === "ACCEPTED" ? (
+                      <HorizontalButtonGroup>
+                        <CircleActionButton
+                          className="warn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${profile.friendId || friendId}`);
+                          }}
+                          title="친구 시간표 보기"
+                        >
+                          <AlarmIcon />
+                        </CircleActionButton>
+                        
+                        <CircleActionButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartChat();
+                          }}
+                          disabled={chatMutation.isPending}
+                          title="채팅하기"
+                        >
+                          <ChatBubbleIcon />
+                        </CircleActionButton>
+
+                        <CircleActionButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleShareProfile();
+                          }}
+                          title="이 프로필 공유하기"
+                        >
+                          <ShareIcon />
+                        </CircleActionButton>
+
+                        {onToggleFavorite && (
+                          <CircleActionButton
+                            className={isFavorite ? "fav" : ""}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (profile.friendId) {
+                                onToggleFavorite(profile.friendId);
+                              }
+                            }}
+                            title="즐겨찾기"
+                          >
+                            <Star
+                              size={24}
+                              fill={isFavorite ? "#FFC107" : "none"}
+                              color={isFavorite ? "#FFC107" : "#0061FF"}
+                            />
+                          </CircleActionButton>
+                        )}
+                      </HorizontalButtonGroup>
                     ) : (
                       <VerticalButtonGroup>
                         {/* 1층: 친구 수락/거절 또는 친구 요청/대기중 버튼 */}
@@ -669,6 +853,38 @@ export default function UserProfileModal({
         onOpenChange={setIsAliasModalOpen}
         currentAlias={profile?.friendAlias || ""}
         onConfirm={handleConfirmAliasUpdate}
+      />
+      <Modal
+        isOpen={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        title="친구 삭제"
+        description="친구를 삭제하면 서로의 시간표를 볼 수 없어요"
+        primaryButton={{
+          text: "삭제",
+          onClick: handleConfirmDelete,
+          variant: "danger",
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setDeleteConfirmOpen(false),
+          variant: "secondary",
+        }}
+      />
+      <Modal
+        isOpen={blockConfirmOpen}
+        onClose={() => setBlockConfirmOpen(false)}
+        title="친구 차단"
+        description={"차단하면 서로의 시간표를 볼 수 없고,\n친구 요청도 주고받을 수 없어요"}
+        primaryButton={{
+          text: "차단",
+          onClick: handleConfirmBlock,
+          variant: "danger",
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setBlockConfirmOpen(false),
+          variant: "secondary",
+        }}
       />
     </>
   );

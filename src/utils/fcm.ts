@@ -56,6 +56,13 @@ export const subscribeToFcmToken = (
 };
 
 export const getFcmDeviceType = (): string => {
+  // 신 Expo 셸: 단일 ReactNativeWebView 채널은 플랫폼을 노출하지 않으므로 UA로 판별
+  if (typeof window.ReactNativeWebView?.postMessage === "function") {
+    const ua = navigator.userAgent || "";
+    if (/Android/i.test(ua)) return "ANDROID";
+    if (/iPhone|iPad|iPod/i.test(ua)) return "IOS";
+  }
+
   if (window.AndroidBridge) {
     return "ANDROID";
   }

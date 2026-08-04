@@ -59,7 +59,7 @@ const TitleLineWrapper = styled.div<{ $clickable: boolean }>`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 8px;
   box-sizing: border-box;
   gap: 8px;
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};

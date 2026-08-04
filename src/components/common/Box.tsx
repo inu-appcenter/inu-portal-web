@@ -1,6 +1,6 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { ReactNode, CSSProperties } from "react";
-import { SOFT_CARD_SHADOW } from "@/styles/shadows";
+import Ripple from "./Ripple";
 
 interface BoxProps {
   children: ReactNode;
@@ -10,7 +10,8 @@ interface BoxProps {
 
 const Box = ({ children, onClick, style }: BoxProps) => {
   return (
-    <BoxWrapper onClick={onClick} style={style}>
+    <BoxWrapper onClick={onClick} style={style} $interactive={!!onClick}>
+      {onClick && <Ripple />}
       {children}
     </BoxWrapper>
   );
@@ -18,16 +19,33 @@ const Box = ({ children, onClick, style }: BoxProps) => {
 
 export default Box;
 
-const BoxWrapper = styled.div`
+const BoxWrapper = styled.div<{ $interactive?: boolean }>`
   display: flex;
-  padding: 20px;
+  //padding: 20px;
   box-sizing: border-box;
   flex-direction: column;
   align-items: flex-start;
-  //gap: 16px;
   align-self: stretch;
 
-  border-radius: 20px;
-  background: #fff;
-  //box-shadow: ${SOFT_CARD_SHADOW};
+  border-radius: 16px;
+  border: 1px solid var(--border-default, #E5E8EB);
+  background: var(--bg-base, #FFF);
+  position: relative;
+  overflow: hidden;
+
+  ${({ $interactive }) =>
+    $interactive &&
+    css`
+      cursor: pointer;
+
+      &.active-touch {
+        > *:not(.ripple-container) {
+          transform: scale(0.97);
+        }
+      }
+
+      > *:not(.ripple-container) {
+        transition: transform 0.12s ease-in-out;
+      }
+    `}
 `;
