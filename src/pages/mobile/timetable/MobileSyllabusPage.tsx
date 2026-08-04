@@ -266,7 +266,7 @@ const MobileSyllabusPage = () => {
 
   const handleAddToTimetable = () => {
     alert(`"${data.courseName}" 과목이 시간표에 추가되었습니다.`);
-    navigate(ROUTES.TIMETABLE.EDIT);
+    navigate(ROUTES.TIMETABLE.EDIT, { replace: true });
   };
 
   return (
