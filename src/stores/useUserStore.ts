@@ -49,7 +49,8 @@ const useUserStore = create<UserState>((set) => ({
     // echo-back으로 적용하는 경우)면 재전송을 생략해 무한 루프 없이 최대 1회
     // echo에서 자연 종료된다.
     if (bridgeChannel && !options?.fromNative) {
-      bridgeChannel.send("syncTokenInfo", tokenInfo);
+      // @ts-ignore
+      (bridgeChannel as any).send("syncTokenInfo", tokenInfo);
     }
   },
   setUserInfo: (userInfo) => {

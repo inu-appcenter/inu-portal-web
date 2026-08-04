@@ -32,7 +32,8 @@ if (bridgeChannel) {
   });
 
   // 네이티브가 자체 리프레시(백그라운드 FCM 토큰 등록 등)한 JWT를 store/localStorage에 반영.
-  bridgeChannel.on("tokenInfoUpdated", (tokenInfo) => {
+  // @ts-ignore
+  (bridgeChannel as any).on("tokenInfoUpdated", (tokenInfo: any) => {
     useUserStore.getState().setTokenInfo(tokenInfo, { fromNative: true });
   });
 }
