@@ -10,6 +10,7 @@ export const useCourseOfferings = (
   year?: number,
   term?: Term,
   filters?: CourseOfferingFilters,
+  options?: { enabled?: boolean },
 ) => {
   const queryKey = [
     ...COURSE_OFFERINGS_QUERY_KEY,
@@ -50,7 +51,8 @@ export const useCourseOfferings = (
       }
       return currentPage + 1;
     },
-    enabled: year !== undefined && term !== undefined,
+    enabled:
+      year !== undefined && term !== undefined && (options?.enabled ?? true),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });

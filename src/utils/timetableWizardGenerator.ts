@@ -11,8 +11,10 @@ import type {
   WizardWishlistItem,
 } from "@/types/timetableWizard";
 
-// 이 파일의 핵심 원칙: 생성기는 학기 전체 개설강의를 뒤지지 않는다. 사용자가 "꼭 넣고
+// 이 파일의 핵심 원칙: 생성기는 학기 전체 개설강의를 뒤지지 않는다. 사용자가 "듣고
 // 싶은 강의"에 직접 담은 위시리스트 안에서만 조합을 탐색한다(장바구니 기반 백트래킹).
+// 위시리스트가 강의 스냅샷을 직접 들고 있어 서버 조회 상태에 전혀 의존하지 않는다 -
+// 조건만 있으면 언제든 같은 결과가 나오는 순수 함수다.
 // 위시리스트가 6개 이하로 작아 전수 탐색이 충분히 빠르므로 랜덤 샘플링이 필요 없다.
 // 같은 과목(courseId)의 여러 분반을 담으면 "그중 하나만 선택"하는 대안 그룹이 되고,
 // required=false(선택)로 표시한 그룹은 통째로 건너뛰는 분기도 함께 탐색한다.
@@ -45,17 +47,15 @@ interface WishlistGroup {
 
 // 위시리스트를 courseId 기준으로 묶는다. 같은 과목을 여러 분반 담았다면 그 분반들이
 // 하나의 그룹 안에서 서로 대안이 되고, 하나라도 required면 그룹 전체를 필수로 취급한다.
-const buildGroups = (
-  wishlist: WizardWishlistItem[],
-  pool: WizardCourseOption[],
-): WishlistGroup[] => {
-  const bySubjectNumber = new Map(pool.map((c) => [c.subjectNumber, c]));
+//
+// 위시리스트 항목이 강의 스냅샷을 직접 들고 있으므로 후보 풀에서 되찾는 단계가 없다.
+// 예전에는 여기서 pool 조회에 실패한 항목을 `continue`로 조용히 버렸는데, 그게 곧
+// "담아둔 강의가 추천에서 아무 말 없이 사라지는" 버그였다.
+const buildGroups = (wishlist: WizardWishlistItem[]): WishlistGroup[] => {
   const groups = new Map<number, WishlistGroup>();
 
   for (const item of wishlist) {
-    const course = bySubjectNumber.get(item.subjectNumber);
-    if (!course) continue;
-
+    const course = item.course;
     const existing = groups.get(course.courseId);
     if (existing) {
       existing.options.push(course);
@@ -314,22 +314,23 @@ const makeContext = (
   flags: HardConstraintFlags = {},
 ): HardCheckContext => ({
   excludedSlotSet: new Set(conditions.exclusion.excludedSlots),
-  excludedSubjectNumberSet: new Set(conditions.exclusion.excludedSubjectNumbers),
+  excludedSubjectNumberSet: new Set(
+    conditions.exclusion.excludedCourses.map((c) => c.subjectNumber),
+  ),
   preference: conditions.preference,
   flags,
 });
 
 export const generateWizardCandidates = (
-  pool: WizardCourseOption[],
   conditions: WizardConditions,
 ): WizardGenerationResult => {
   const { basic } = conditions;
-  const groups = buildGroups(basic.wishlist, pool);
+  const groups = buildGroups(basic.wishlist);
 
   if (groups.length === 0) {
     return {
       candidates: [],
-      conflicts: [{ label: "꼭 넣고 싶은 강의를 먼저 담아주세요" }],
+      conflicts: [{ label: "듣고 싶은 강의를 먼저 담아주세요" }],
     };
   }
 
@@ -355,9 +356,9 @@ export const generateWizardCandidates = (
           flags: { ignoreExcludedSlots: true },
         });
       }
-      if (exclusion.excludedSubjectNumbers.length > 0) {
+      if (exclusion.excludedCourses.length > 0) {
         relaxationChecks.push({
-          label: `제외한 강의 (${exclusion.excludedSubjectNumbers.length}개)`,
+          label: `제외한 강의 (${exclusion.excludedCourses.length}개)`,
           flags: { ignoreExcludedCourses: true },
         });
       }
@@ -377,7 +378,7 @@ export const generateWizardCandidates = (
       }
 
       if (conflicts.length === 0) {
-        conflicts.push({ label: "꼭 넣고 싶은 강의끼리 시간이 겹쳐요" });
+        conflicts.push({ label: "담은 강의끼리 시간이 겹쳐요" });
       }
     } else {
       // 하드 조건은 통과하지만 담은 강의만으로는 목표 학점 범위를 못 채움

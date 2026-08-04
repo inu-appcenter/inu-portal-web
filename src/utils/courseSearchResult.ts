@@ -60,7 +60,7 @@ export const mapCourseOfferingToCourseResult = (
   };
 };
 
-import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import type { FilterState } from "@/components/mobile/timetable/filter/courseFilterModel";
 import type { CourseOfferingFilters } from "@/types/courseOfferings";
 
 const COLLEGES = new Set([
