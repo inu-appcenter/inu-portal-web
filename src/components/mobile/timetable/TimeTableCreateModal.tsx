@@ -29,12 +29,14 @@ interface TimeTableCreateModalProps {
   isOpen: boolean;
   initialSemester?: string;
   onClose: () => void;
+  onSuccess?: (created: TimeTable) => void;
 }
 
 export default function TimeTableCreateModal({
   isOpen,
   initialSemester,
   onClose,
+  onSuccess,
 }: TimeTableCreateModalProps) {
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
   const { semesters } = useSemesters();
@@ -87,6 +89,7 @@ export default function TimeTableCreateModal({
           setSemester(formatSemester(created.year, created.term));
           setActiveTimetable(created.id);
           onClose();
+          onSuccess?.(created);
         },
         onError: (error: any) => {
           alert(error.response?.data?.msg || "시간표 생성에 실패했습니다.");

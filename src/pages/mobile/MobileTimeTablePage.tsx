@@ -567,6 +567,9 @@ const MobileTimeTablePage = () => {
         isOpen={isCreateModalOpen}
         initialSemester={selectedSemester}
         onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(created) => {
+          navigate(`${ROUTES.TIMETABLE.EDIT}?id=${created.id}`);
+        }}
       />
 
       {activeTimetable && (
