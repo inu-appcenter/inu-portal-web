@@ -62,7 +62,13 @@ import type { CourseOfferingFilters } from "@/types/courseOfferings";
 const COLLEGES = new Set([
   "경영대학",
   "공과대학",
+  "교양",
+  "교직",
+  "군사학",
   "글로벌정경대학",
+  "기타",
+  "단과대구분없음",
+  "단과대구분없음(법학)",
   "도시과학대학",
   "사범대학",
   "사회과학대학",
@@ -70,6 +76,7 @@ const COLLEGES = new Set([
   "예술체육대학",
   "융합자유전공대학",
   "인문대학",
+  "일선",
   "자연과학대학",
   "정보기술대학",
 ]);
@@ -153,7 +160,7 @@ export function mapFilterToOfferingFilters(filters: FilterState): CourseOffering
     } else if (ISU_NAMES.has(major)) {
       if (!isuNames) isuNames = [];
       if (!isuNames.includes(major)) isuNames.push(major);
-    } else if (major !== "기타" && major !== "전체 학과/영역") {
+    } else if (major !== "전체 학과/영역") {
       deptName = major;
     }
   }
