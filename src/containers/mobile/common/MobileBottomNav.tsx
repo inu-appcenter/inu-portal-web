@@ -1,3 +1,4 @@
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +14,18 @@ import MyIcon from "@/resources/assets/mobile-nav-v2/Icon_My.svg?react";
 import { DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
+import TooltipMessage from "@/components/common/TooltipMessage";
+import {
+  dismissTooltip,
+  isTooltipDismissed,
+} from "@/utils/dismissibleTooltipStorage";
+
+const TIMETABLE_UPDATE_TOOLTIP_ID = "timetable-update-2026-08";
+const TIMETABLE_UPDATE_ANNOUNCED_AT = new Date("2026-08-04T16:00:00+09:00");
+
+function isAfterTimetableUpdateAnnouncement() {
+  return new Date() >= TIMETABLE_UPDATE_ANNOUNCED_AT;
+}
 
 const NAV_ITEMS = [
   {
@@ -49,6 +62,30 @@ export default function MobileBottomNav() {
   const { tokenInfo } = useUserStore();
   const isLoggedIn = !!tokenInfo.accessToken;
 
+  const timetableIconRef = useRef<HTMLDivElement | null>(null);
+  const [showTimetableTooltip, setShowTimetableTooltip] = useState(
+    () =>
+      isLoggedIn &&
+      isAfterTimetableUpdateAnnouncement() &&
+      !isTooltipDismissed(TIMETABLE_UPDATE_TOOLTIP_ID),
+  );
+
+  useEffect(() => {
+    if (showTimetableTooltip) {
+      mixpanelTrack.promotionImpression(TIMETABLE_UPDATE_TOOLTIP_ID, "Bottom Nav");
+    }
+  }, []);
+
+  const handleCloseTimetableTooltip = () => {
+    mixpanelTrack.promotionClicked(
+      TIMETABLE_UPDATE_TOOLTIP_ID,
+      "Close Button",
+      "Bottom Nav",
+    );
+    dismissTooltip(TIMETABLE_UPDATE_TOOLTIP_ID);
+    setShowTimetableTooltip(false);
+  };
+
   const { data: unreadResponse } = useQuery({
     queryKey: ["unreadTotalCount"],
     queryFn: getUnreadTotalCount,
@@ -76,6 +113,11 @@ export default function MobileBottomNav() {
   const activeIndex = getIndexByPath(location.pathname);
 
   const handleNavClick = (to: string, label: string) => {
+    if (to === ROUTES.TIMETABLE.ROOT && showTimetableTooltip) {
+      dismissTooltip(TIMETABLE_UPDATE_TOOLTIP_ID);
+      setShowTimetableTooltip(false);
+    }
+
     const isChat = to === ROUTES.CHAT.LIST;
     const isCurrentlyActive =
       location.pathname === to || location.pathname.startsWith(to);
@@ -113,31 +155,47 @@ export default function MobileBottomNav() {
           const isActive = activeIndex === idx;
           const badge =
             item.key === "chat" ? Number(totalUnreadCount) : undefined;
+          const isTimetableItem = item.to === ROUTES.TIMETABLE.ROOT;
 
           return (
-            <NavItemButton
-              key={item.to}
-              onClick={() => handleNavClick(item.to, item.label)}
-              type="button"
-            >
-              {isActive && (
-                <ActivePillIndicator
-                  layoutId="active-pill-bg"
-                  transition={{
-                    type: "spring",
-                    stiffness: 320,
-                    damping: 30,
-                  }}
+            <Fragment key={item.to}>
+              <NavItemButton
+                onClick={() => handleNavClick(item.to, item.label)}
+                type="button"
+              >
+                {isActive && (
+                  <ActivePillIndicator
+                    layoutId="active-pill-bg"
+                    transition={{
+                      type: "spring",
+                      stiffness: 320,
+                      damping: 30,
+                    }}
+                  />
+                )}
+                <IconWrapper
+                  $isActive={isActive}
+                  ref={isTimetableItem ? timetableIconRef : undefined}
+                >
+                  <item.icon />
+                  {badge !== undefined && badge > 0 && (
+                    <Badge>{badge > 99 ? "99+" : badge}</Badge>
+                  )}
+                </IconWrapper>
+                <LabelText $isActive={isActive}>{item.label}</LabelText>
+              </NavItemButton>
+
+              {isTimetableItem && showTimetableTooltip && (
+                <TooltipMessage
+                  message={"편람 업데이트 완료!\n시간표 기능을 이용해보세요."}
+                  onClose={handleCloseTimetableTooltip}
+                  position="top"
+                  align="center"
+                  width="max-content"
+                  anchorRef={timetableIconRef}
                 />
               )}
-              <IconWrapper $isActive={isActive}>
-                <item.icon />
-                {badge !== undefined && badge > 0 && (
-                  <Badge>{badge > 99 ? "99+" : badge}</Badge>
-                )}
-              </IconWrapper>
-              <LabelText $isActive={isActive}>{item.label}</LabelText>
-            </NavItemButton>
+            </Fragment>
           );
         })}
       </NavItemsContainer>
