@@ -565,12 +565,20 @@ const CourseItem = styled.div`
   transition: background-color 0.2s;
   //cursor: pointer;
 
-  /* Scopes layout/paint invalidation to this row so the sheet's per-frame
-     drag-driven scrollPaddingBottom (see CourseSheetScrollableContent) doesn't
-     force Chromium to recompute every row's layout on every animation tick —
-     that cost scales with list length and is the main source of Android-only
-     jank in this sheet (WKWebView doesn't show the same behavior). */
-  contain: layout paint style;
+  /* The sheet's per-frame drag-driven scrollPaddingBottom (see
+     CourseSheetScrollableContent) forces a layout recalculation on every
+     animation tick, and with an unvirtualized course list that cost scales
+     with row count — the main source of Android-only jank here (WKWebView
+     doesn't show the same behavior). content-visibility skips layout/paint
+     for rows currently off-screen entirely, instead of just scoping
+     invalidation (plain contain doesn't stop the browser from still doing
+     the work for every row). "auto <length>" remembers each row's real
+     rendered height after it's first been on-screen, so the placeholder only
+     matters before that — safe here since the sheet's snap points are
+     viewport-ratio based (COURSE_SEARCH_SNAP_POINTS), not derived from this
+     list's scrollHeight. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 140px;
 `;
 
 const InfoRow = styled.div`
