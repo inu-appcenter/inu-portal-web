@@ -50,6 +50,7 @@ export const mapDetailItemsToClassItems = (
     return source.meetings.map<ClassItem>((meeting, index) => ({
       id: meeting.id,
       itemId: item.id,
+      courseOfferingId: item.course?.courseOfferingId,
       customScheduleId: item.customSchedule?.customScheduleId,
       name: source.title,
       room: meeting.location ?? "",

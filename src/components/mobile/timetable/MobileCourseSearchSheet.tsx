@@ -10,6 +10,7 @@ import {
   Plus,
   MessagesSquare,
   FileText,
+  Check,
 } from "lucide-react";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
@@ -20,6 +21,7 @@ import {
   FilterState,
   DEFAULT_FILTERS,
 } from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import Skeleton from "@/components/common/Skeleton";
 
 export interface CourseResult {
   id: number;
@@ -83,6 +85,9 @@ interface MobileCourseSearchSheetProps {
   onAddCourse?: (course: CourseResult) => void;
   // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
   onFiltersChange?: (filters: FilterState) => void;
+  addedCourseOfferingIds?: Set<number>;
+  addedCourseIds?: Set<string>;
+  isLoading?: boolean;
 }
 
 const MobileCourseSearchSheet = ({
@@ -95,6 +100,9 @@ const MobileCourseSearchSheet = ({
   onOpenChange,
   onAddCourse,
   onFiltersChange,
+  addedCourseOfferingIds,
+  addedCourseIds,
+  isLoading = false,
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -256,8 +264,35 @@ const MobileCourseSearchSheet = ({
           >
             <SheetContentWrapper>
               <CourseList>
-                {filteredCourses.map((course) => {
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <SkeletonCard key={`course-skeleton-${index}`}>
+                      <div className="skeleton-row-top">
+                        <Skeleton width="45%" height="20px" />
+                        <Skeleton
+                          width="70px"
+                          height="20px"
+                          style={{ borderRadius: "999px" }}
+                        />
+                      </div>
+                      <div className="skeleton-row-mid">
+                        <Skeleton width="50px" height="16px" />
+                        <Skeleton width="40px" height="16px" />
+                        <Skeleton width="50px" height="16px" />
+                      </div>
+                      <div className="skeleton-row-bottom">
+                        <Skeleton width="30%" height="14px" />
+                        <Skeleton width="50%" height="14px" />
+                      </div>
+                    </SkeletonCard>
+                  ))
+                ) : (
+                  filteredCourses.map((course) => {
                   const isExpanded = expandedId === course.id;
+                  const isAdded = Boolean(
+                    (addedCourseOfferingIds && addedCourseOfferingIds.has(course.id)) ||
+                    (course.courseId && addedCourseIds && addedCourseIds.has(course.courseId)),
+                  );
 
                   return (
                     <CourseItem
@@ -307,15 +342,17 @@ const MobileCourseSearchSheet = ({
                           )}
                           <ButtonRow>
                             <PrimaryActionButton
+                              disabled={isAdded}
+                              $isAdded={isAdded}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (onAddCourse) {
+                                if (!isAdded && onAddCourse) {
                                   onAddCourse(course);
                                 }
                               }}
                             >
-                              <Plus size={20} />
-                              시간표에 추가
+                              {isAdded ? <Check size={20} /> : <Plus size={20} />}
+                              {isAdded ? "추가됨" : "시간표에 추가"}
                             </PrimaryActionButton>
                             <SecondaryActionButton
                               onClick={(e) => {
@@ -345,7 +382,7 @@ const MobileCourseSearchSheet = ({
                       )}
                     </CourseItem>
                   );
-                })}
+                }))}
               </CourseList>
             </SheetContentWrapper>
           </CourseSheetScrollableContent>
@@ -555,6 +592,32 @@ const CourseList = styled.div`
   padding: 0;
 `;
 
+const SkeletonCard = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .skeleton-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .skeleton-row-mid {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .skeleton-row-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+`;
+
 const CourseItem = styled.div`
   padding: 12px 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
@@ -701,11 +764,25 @@ const ActionButton = styled.button`
   }
 `;
 
-const PrimaryActionButton = styled(ActionButton)`
+const PrimaryActionButton = styled(ActionButton)<{ $isAdded?: boolean }>`
   border-radius: 999px;
-  background: var(--interactive-primary, #3b82f6);
+  background: ${({ $isAdded }) =>
+    $isAdded
+      ? "var(--bg-subtle-dark, #e5e8eb)"
+      : "var(--interactive-primary, #3b82f6)"};
 
-  color: #fff;
+  color: ${({ $isAdded }) =>
+    $isAdded ? "var(--text-tertiary, #8b95a1)" : "#fff"};
+
+  ${({ $isAdded }) =>
+    $isAdded &&
+    `
+    background-color: var(--bg-neutral-subtle, #f2f4f6) !important;
+    color: var(--text-tertiary, #8b95a1) !important;
+    border: 1px solid var(--border-default, #e5e8eb);
+    cursor: not-allowed;
+    opacity: 0.8;
+  `}
 `;
 
 const SecondaryActionButton = styled(ActionButton)`

@@ -7,7 +7,7 @@ import MobileCourseSearchSheet, {
   COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -24,6 +24,80 @@ import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPag
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
+
+const COLLEGES = new Set([
+  "경영대학",
+  "공과대학",
+  "교양",
+  "교직",
+  "군사학",
+  "글로벌정경대학",
+  "기타",
+  "단과대구분없음",
+  "단과대구분없음(법학)",
+  "도시과학대학",
+  "사범대학",
+  "사회과학대학",
+  "생명과학기술대학",
+  "예술체육대학",
+  "융합자유전공대학",
+  "인문대학",
+  "일선",
+  "자연과학대학",
+  "정보기술대학",
+]);
+
+const DAY_ENUMS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+];
+
+function formatSlotsToMeetings(slots: string[]): string[] {
+  if (!slots || slots.length === 0) return [];
+  const dayGroups: Record<number, number[]> = {};
+  slots.forEach((slot) => {
+    const [dStr, hStr] = slot.split("-");
+    const d = parseInt(dStr, 10);
+    const h = parseFloat(hStr);
+    if (!dayGroups[d]) dayGroups[d] = [];
+    dayGroups[d].push(h);
+  });
+
+  const result: string[] = [];
+  Object.keys(dayGroups).forEach((dKey) => {
+    const d = parseInt(dKey, 10);
+    const dayEnum = DAY_ENUMS[d];
+    if (!dayEnum) return;
+
+    const hours = dayGroups[d].sort((a, b) => a - b);
+    let start = hours[0];
+    let prev = hours[0];
+
+    for (let i = 1; i <= hours.length; i++) {
+      const current = hours[i];
+      if (current === prev + 0.5) {
+        prev = current;
+      } else {
+        const end = prev + 0.5;
+        const formatHour = (val: number): string => {
+          const h = Math.floor(val);
+          const m = Math.round((val - h) * 60);
+          return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        };
+        result.push(`${dayEnum}|${formatHour(start)}|${formatHour(end)}`);
+        start = current;
+        prev = current;
+      }
+    }
+  });
+
+  return result;
+}
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -121,6 +195,8 @@ const IconButton = styled.button`
 
 const MobileTimeTableEditPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const keyword = searchParams.get("courseQuery") || undefined;
 
   // 상태 및 스토어 관리
   const { timetables, activeTimetableId } = useTimetableStore();
@@ -129,25 +205,63 @@ const MobileTimeTableEditPage = () => {
   }, [timetables, activeTimetableId]);
   const timetable = activeTimetable?.events || [];
 
-  // 전공/영역·학년·이수구분·학점 필터 (검색 시트에서 선택 시 onFiltersChange로 전달받아
-  // querystring 재조회 - inu-appcenter/inu-portal-server#297 서버 지원 전까지는 무시됨)
+  const addedCourseOfferingIds = useMemo(() => {
+    const set = new Set<number>();
+    timetable.forEach((item) => {
+      if (item.courseOfferingId) {
+        set.add(item.courseOfferingId);
+      }
+    });
+    return set;
+  }, [timetable]);
+
+  const addedCourseIds = useMemo(() => {
+    const set = new Set<string>();
+    timetable.forEach((item) => {
+      if (item.courseId) {
+        set.add(item.courseId);
+      }
+    });
+    return set;
+  }, [timetable]);
+
+  // 전공/영역·학년·이수구분·학점 필터
   const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>({});
   const handleFiltersChange = (filters: FilterState) => {
+    const isCollege = filters.major ? COLLEGES.has(filters.major) : false;
+    const meetings = filters.selectedSlots ? formatSlotsToMeetings(filters.selectedSlots) : [];
+
     setOfferingFilters({
-      department: filters.major ?? undefined,
-      grades: filters.grades.length > 0 ? filters.grades : undefined,
-      types: filters.types.length > 0 ? filters.types : undefined,
+      collegeName: isCollege ? (filters.major ?? undefined) : undefined,
+      deptName: !isCollege ? (filters.major ?? undefined) : undefined,
+      hyNames: filters.grades.length > 0 ? filters.grades.map(String) : undefined,
+      isuNames: filters.types.length > 0 ? filters.types : undefined,
       credits: filters.credits.length > 0 ? filters.credits : undefined,
+      meetingFilterMode: meetings.length > 0 ? "HAS_CLASS" : undefined,
+      meetings: meetings.length > 0 ? meetings : undefined,
     });
   };
 
+  const combinedFilters: CourseOfferingFilters = useMemo(
+    () => ({
+      ...offeringFilters,
+      keyword,
+    }),
+    [offeringFilters, keyword],
+  );
+
   // 개설강의(학기별 시간/강의실) + 강의 목록(학점/학과 등) 조회 후 courseId로 조인
   const { courses } = useCourses();
-  const { courseOfferings } = useCourseOfferings(
+  const {
+    courseOfferings,
+    isLoading: isOfferingsLoading,
+    isFetching: isOfferingsFetching,
+  } = useCourseOfferings(
     activeTimetable?.year,
     activeTimetable?.term,
-    offeringFilters,
+    combinedFilters,
   );
+  const isSheetLoading = isOfferingsLoading || isOfferingsFetching;
   const courseById = useMemo(
     () => new Map(courses.map((c) => [c.id, c])),
     [courses],
@@ -155,10 +269,14 @@ const MobileTimeTableEditPage = () => {
   const searchResults = useMemo(
     () =>
       courseOfferings.map((offering) =>
-        mapCourseOfferingToCourseResult(offering, courseById.get(offering.courseId)),
+        mapCourseOfferingToCourseResult(
+          offering,
+          courseById.get(offering.courseId),
+        ),
       ),
     [courseOfferings, courseById],
   );
+
 
   const headerRight = useMemo(
     () => (
@@ -227,11 +345,22 @@ const MobileTimeTableEditPage = () => {
     }
   }, [snap]);
 
-  // 프리뷰 연산
-  const previewSchedules = useMemo(
-    () => searchResults.find((c) => c.id === expandedId)?.schedules || [],
-    [searchResults, expandedId],
-  );
+  // 프리뷰 연산 (이미 시간표에 추가된 강의인 경우 미리보기 레이어를 생성하지 않음)
+  const previewSchedules = useMemo(() => {
+    if (expandedId === null) return [];
+    const targetCourse = searchResults.find((c) => c.id === expandedId);
+    if (!targetCourse) return [];
+
+    const isAdded =
+      addedCourseOfferingIds.has(targetCourse.id) ||
+      Boolean(
+        targetCourse.courseId && addedCourseIds.has(targetCourse.courseId),
+      );
+
+    if (isAdded) return [];
+
+    return targetCourse.schedules || [];
+  }, [searchResults, expandedId, addedCourseOfferingIds, addedCourseIds]);
 
   // 선택된 강의(미리보기)가 바텀시트에 의해 가려지는 경우 스크롤 처리
   useEffect(() => {
@@ -330,6 +459,70 @@ const MobileTimeTableEditPage = () => {
     );
   };
 
+  const TERM_LABELS: Record<string, string> = {
+    FIRST: "1학기",
+    SECOND: "2학기",
+    SUMMER: "여름학기",
+    WINTER: "겨울학기",
+  };
+
+  const semesterText = useMemo(() => {
+    if (!activeTimetable) return "2026년 1학기";
+    const termStr = TERM_LABELS[activeTimetable.term] || "1학기";
+    return `${activeTimetable.year}년 ${termStr}`;
+  }, [activeTimetable]);
+
+  const offeringById = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.id, o])),
+    [courseOfferings],
+  );
+
+  const offeringBySubNum = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
+    [courseOfferings],
+  );
+
+  const { majorCredits, generalCredits, otherCredits, totalCredits } =
+    useMemo(() => {
+      let major = 0;
+      let general = 0;
+      let other = 0;
+
+      timetable.forEach((item) => {
+        const credits = item.credits || 0;
+        if (credits <= 0) return;
+
+        const offering =
+          (item.courseOfferingId
+            ? offeringById.get(item.courseOfferingId)
+            : null) ||
+          (item.courseId ? offeringBySubNum.get(item.courseId) : null);
+        const course = offering ? courseById.get(offering.courseId) : null;
+
+        const divisionName =
+          offering?.isuName ||
+          offering?.isuFldName ||
+          course?.completionDivisionName ||
+          "";
+
+        if (divisionName.includes("전공")) {
+          major += credits;
+        } else if (divisionName.includes("교양")) {
+          general += credits;
+        } else {
+          other += credits;
+        }
+      });
+
+      const total = major + general + other;
+      return {
+        majorCredits: major,
+        generalCredits: general,
+        otherCredits: other,
+        totalCredits: total,
+      };
+    }, [timetable, offeringById, offeringBySubNum, courseById]);
+
   const snapHeightValue = typeof snap === "number" ? snap : 0.6;
 
   return (
@@ -341,13 +534,14 @@ const MobileTimeTableEditPage = () => {
         onDelete={handleDelete}
       />
       <SemesterInfoLine>
-        <Semester>2026년 1학기</Semester>
+        <Semester>{semesterText}</Semester>
         <ScoreArea>
           <div className="type1">
-            <span>전공 9</span>
-            <span>교양 9</span>
+            <span>전공 {majorCredits}</span>
+            <span>교양 {generalCredits}</span>
+            {otherCredits > 0 && <span>기타 {otherCredits}</span>}
           </div>
-          <div className="type2">총 18학점</div>
+          <div className="type2">총 {totalCredits}학점</div>
         </ScoreArea>
       </SemesterInfoLine>
 
@@ -362,6 +556,9 @@ const MobileTimeTableEditPage = () => {
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
         onFiltersChange={handleFiltersChange}
+        addedCourseOfferingIds={addedCourseOfferingIds}
+        addedCourseIds={addedCourseIds}
+        isLoading={isSheetLoading}
       />
     </PageWrapper>
   );

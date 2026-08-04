@@ -5,17 +5,13 @@ import type { CourseOffering, CourseOfferingFilters } from "@/types/courseOfferi
 import { isMockApiEnabled, mockDelay } from "@/mocks/mockFlag";
 import { MOCK_COURSES, MOCK_COURSE_OFFERINGS } from "@/mocks/mockTimetableWizardData";
 
-const PAGE_SIZE = 200;
-// 무한 루프 방지용 안전장치 (한 학기 개설 강의가 이보다 많을 일은 없다고 가정)
+// 서버 명세: 페이지당 크기는 50으로 고정됩니다.
+const PAGE_SIZE = 50;
+// 무한 루프 방지용 안전장치
 const MAX_PAGES = 50;
 
 /**
  * 학기별 개설 강의 목록 조회 (페이지 단위)
- *
- * `filters`(department/grades/types/credits)는 아직 서버(GET /api/course-offerings)가
- * 지원하지 않는 querystring이다(inu-appcenter/inu-portal-server#297 요청). 서버가
- * 지원하기 전까지는 보내도 무시되어 필터링되지 않는다 - API가 추가되는 즉시 동작하도록
- * 미리 연결해둔 것.
  */
 export const getCourseOfferingsPage = async (
   year: number,
@@ -24,20 +20,33 @@ export const getCourseOfferingsPage = async (
   size: number = PAGE_SIZE,
   filters?: CourseOfferingFilters,
 ): Promise<PageResponse<CourseOffering>> => {
+  const params = new URLSearchParams();
+  params.append("year", String(year));
+  params.append("term", term);
+  params.append("page", String(page));
+  if (size) {
+    params.append("size", String(size));
+  }
+
+  if (filters?.deptName) params.append("deptName", filters.deptName);
+  if (filters?.collegeName) params.append("collegeName", filters.collegeName);
+  if (filters?.keyword) params.append("keyword", filters.keyword);
+  if (filters?.meetingFilterMode) {
+    params.append("meetingFilterMode", filters.meetingFilterMode);
+  }
+
+  // 다중 선택 필터는 쉼표 CSV 방식이 아닌 동일 query parameter를 반복 생성
+  filters?.hyNames?.forEach((val) => params.append("hyNames", val));
+  filters?.isuNames?.forEach((val) => params.append("isuNames", val));
+  filters?.isuFldNames?.forEach((val) => params.append("isuFldNames", val));
+  filters?.ssupTypeNames?.forEach((val) => params.append("ssupTypeNames", val));
+  filters?.credits?.forEach((val) => params.append("credits", String(val)));
+  filters?.meetings?.forEach((val) => params.append("meetings", val));
+
   const response = await tokenInstance.get<
     ApiResponse<PageResponse<CourseOffering>>
-  >("/api/course-offerings", {
-    params: {
-      year,
-      term,
-      page,
-      size,
-      department: filters?.department,
-      grades: filters?.grades?.join(","),
-      types: filters?.types?.join(","),
-      credits: filters?.credits?.join(","),
-    },
-  });
+  >("/api/course-offerings", { params });
+
   return response.data.data;
 };
 
@@ -55,23 +64,39 @@ export const getAllCourseOfferings = async (
     return MOCK_COURSE_OFFERINGS.filter((o) => {
       if (o.year !== year || o.term !== term) return false;
       const course = courseById.get(o.courseId);
-      if (filters?.department && course?.departmentName !== filters.department)
+      if (filters?.deptName && o.deptName !== filters.deptName && course?.departmentName !== filters.deptName) {
         return false;
+      }
+      if (filters?.collegeName && o.collegeName !== filters.collegeName) {
+        return false;
+      }
       if (
-        filters?.grades?.length &&
-        !filters.grades.some((g) => course?.targetGradeName?.startsWith(String(g)))
-      )
+        filters?.hyNames?.length &&
+        !filters.hyNames.some((g) => (o.hyName ?? course?.targetGradeName)?.startsWith(g))
+      ) {
         return false;
+      }
       if (
-        filters?.types?.length &&
-        !filters.types.some((t) => course?.completionDivisionName?.includes(t))
-      )
+        filters?.isuNames?.length &&
+        !filters.isuNames.some((t) => (o.isuName ?? course?.completionDivisionName)?.includes(t))
+      ) {
         return false;
+      }
       if (
         filters?.credits?.length &&
-        !filters.credits.includes(parseInt(course?.credit ?? "", 10))
-      )
+        !filters.credits.includes(o.credit ?? parseInt(course?.credit ?? "", 10))
+      ) {
         return false;
+      }
+      if (filters?.keyword) {
+        const kw = filters.keyword.toLowerCase();
+        const title = (o.courseTitle || course?.title || "").toLowerCase();
+        const prof = (o.professor || "").toLowerCase();
+        const subNum = (o.subjectNumber || "").toLowerCase();
+        if (!title.includes(kw) && !prof.includes(kw) && !subNum.includes(kw)) {
+          return false;
+        }
+      }
       return true;
     });
   }
@@ -89,3 +114,4 @@ export const getAllCourseOfferings = async (
 
   return all;
 };
+

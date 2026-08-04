@@ -15,10 +15,16 @@ export const useCourseOfferings = (
       ...COURSE_OFFERINGS_QUERY_KEY,
       year ?? "none",
       term ?? "none",
-      filters?.department ?? "all",
-      filters?.grades?.join(",") ?? "",
-      filters?.types?.join(",") ?? "",
+      filters?.deptName ?? "",
+      filters?.collegeName ?? "",
+      filters?.hyNames?.join(",") ?? "",
+      filters?.isuNames?.join(",") ?? "",
+      filters?.isuFldNames?.join(",") ?? "",
+      filters?.ssupTypeNames?.join(",") ?? "",
       filters?.credits?.join(",") ?? "",
+      filters?.keyword ?? "",
+      filters?.meetingFilterMode ?? "",
+      filters?.meetings?.join(",") ?? "",
     ],
     queryFn: () => getAllCourseOfferings(year!, term!, filters),
     enabled: year !== undefined && term !== undefined,
@@ -31,3 +37,4 @@ export const useCourseOfferings = (
     courseOfferings: query.data ?? [],
   };
 };
+

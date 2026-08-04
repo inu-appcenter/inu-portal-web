@@ -13,7 +13,16 @@ export const mapCourseOfferingToCourseResult = (
   offering: CourseOffering,
   course: Course | undefined,
 ): CourseResult => {
-  const credits = parseInt(course?.credit ?? "", 10) || 0;
+  const credits =
+    offering.credit ?? (parseInt(course?.credit ?? "", 10) || 0);
+
+  const grade = offering.hyName
+    ? parseInt(offering.hyName, 10) || 0
+    : parseInt(course?.targetGradeName ?? "", 10) || 0;
+
+  const isMajor = offering.isuName
+    ? offering.isuName.includes("전공")
+    : course?.completionDivisionName.includes("전공") ?? false;
 
   return {
     id: offering.id,
@@ -27,11 +36,11 @@ export const mapCourseOfferingToCourseResult = (
           .join(", ")
       : "-",
     room: offering.meetings[0]?.location ?? "-",
-    grade: parseInt(course?.targetGradeName ?? "", 10) || 0,
-    isMajor: course?.completionDivisionName.includes("전공") ?? false,
+    grade,
+    isMajor,
     credits,
     courseId: offering.subjectNumber,
-    remarks: course?.content,
+    remarks: offering.note || course?.content,
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,
     schedules: offering.meetings.map((m, index) => ({
@@ -46,3 +55,4 @@ export const mapCourseOfferingToCourseResult = (
     })),
   };
 };
+

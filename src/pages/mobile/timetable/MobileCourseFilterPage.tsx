@@ -10,6 +10,11 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 import Ripple from "@/components/common/Ripple";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import { useQueryClient } from "@tanstack/react-query";
+import { getAllCourseOfferings } from "@/apis/courseOfferings";
+import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import type { CourseOfferingFilters } from "@/types/courseOfferings";
 
 // --- Types & Constants ---
 export interface FilterState {
@@ -197,6 +202,12 @@ type SubScreenType =
 export default function MobileCourseFilterPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
+  const { timetables, activeTimetableId } = useTimetableStore();
+  const activeTimetable = useMemo(() => {
+    return timetables.find((t) => t.id === activeTimetableId) || null;
+  }, [timetables, activeTimetableId]);
+  const [isApplying, setIsApplying] = useState(false);
 
   // 상위 편집 화면에서 전달한 필터 상태가 있다면 수신, 없으면 디폴트
   const initialFilters = useMemo(() => {
@@ -435,13 +446,77 @@ export default function MobileCourseFilterPage() {
     }));
   };
 
-  // 저장하기 핸들러 (편집 페이지로 복귀)
-  const handleSave = () => {
-    hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
-    backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
-    setIsSaving(true); // blocker 비활성화 후 navigate
-    localStorage.setItem("applied_filters", JSON.stringify(filters));
-    navigate(-1);
+  // 저장하기 핸들러 (서버 재조회 후 렌더링 준비 완료 시 편집 페이지로 복귀)
+  const handleSave = async () => {
+    if (isApplying) return;
+    setIsApplying(true);
+
+    try {
+      const COLLEGES = new Set([
+        ...Object.keys(COLLEGE_DEPARTMENTS),
+        "경영대학",
+        "공과대학",
+        "교양",
+        "교직",
+        "군사학",
+        "글로벌정경대학",
+        "기타",
+        "단과대구분없음",
+        "단과대구분없음(법학)",
+        "도시과학대학",
+        "사범대학",
+        "사회과학대학",
+        "생명과학기술대학",
+        "예술체육대학",
+        "융합자유전공대학",
+        "인문대학",
+        "일선",
+        "자연과학대학",
+        "정보기술대학",
+      ]);
+
+      const isCollege = filters.major ? COLLEGES.has(filters.major) : false;
+      const meetings = filters.selectedSlots ? formatSlotsToMeetings(filters.selectedSlots) : [];
+
+      const offeringFilters: CourseOfferingFilters = {
+        collegeName: isCollege ? (filters.major ?? undefined) : undefined,
+        deptName: !isCollege ? (filters.major ?? undefined) : undefined,
+        hyNames: filters.grades.length > 0 ? filters.grades.map(String) : undefined,
+        isuNames: filters.types.length > 0 ? filters.types : undefined,
+        credits: filters.credits.length > 0 ? filters.credits : undefined,
+        meetingFilterMode: meetings.length > 0 ? "HAS_CLASS" : undefined,
+        meetings: meetings.length > 0 ? meetings : undefined,
+      };
+
+      if (activeTimetable?.year && activeTimetable?.term) {
+        await queryClient.fetchQuery({
+          queryKey: [
+            ...COURSE_OFFERINGS_QUERY_KEY,
+            activeTimetable.year,
+            activeTimetable.term,
+            offeringFilters.deptName ?? "",
+            offeringFilters.collegeName ?? "",
+            offeringFilters.hyNames?.join(",") ?? "",
+            offeringFilters.isuNames?.join(",") ?? "",
+            offeringFilters.isuFldNames?.join(",") ?? "",
+            offeringFilters.ssupTypeNames?.join(",") ?? "",
+            offeringFilters.credits?.join(",") ?? "",
+            offeringFilters.keyword ?? "",
+            offeringFilters.meetingFilterMode ?? "",
+            offeringFilters.meetings?.join(",") ?? "",
+          ],
+          queryFn: () => getAllCourseOfferings(activeTimetable.year, activeTimetable.term, offeringFilters),
+        });
+      }
+    } catch (error) {
+      console.error("필터 데이터 사전 조회 오류:", error);
+    } finally {
+      hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
+      backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
+      setIsSaving(true); // blocker 비활성화 후 navigate
+      localStorage.setItem("applied_filters", JSON.stringify(filters));
+      navigate(-1);
+    }
   };
 
   // 즐겨찾기 별표 토글
@@ -953,8 +1028,13 @@ export default function MobileCourseFilterPage() {
             >
               초기화
             </ResetBottomButton>
-            <BottomActionButton variant="primary" onClick={handleSave}>
-              적용하기
+            <BottomActionButton
+              variant="primary"
+              onClick={handleSave}
+              loading={isApplying}
+              disabled={isApplying}
+            >
+              {isApplying ? "적용 중..." : "적용하기"}
             </BottomActionButton>
           </FixedBottomContainer>
         </>

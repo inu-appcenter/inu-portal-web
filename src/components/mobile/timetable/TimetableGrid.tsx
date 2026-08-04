@@ -9,6 +9,8 @@ export interface ClassItem {
   id: number;
   // 서버 시간표 요소 id (삭제 API용). id는 meeting 단위, itemId는 요소 단위
   itemId?: number;
+  // 개설강의 id (강의 수강 추가 여부 판단용)
+  courseOfferingId?: number;
   // 커스텀 일정 수정 API용 id (id는 meeting 단위라 요소 식별에 쓸 수 없음)
   customScheduleId?: number;
   name: string;
@@ -544,7 +546,7 @@ const ClassItemBlock = styled.div<{
     `
     animation: previewPulse 1.5s infinite ease-in-out;
   `}
-  
+
   user-select: none;
   -webkit-user-drag: none;
 
