@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, X } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -148,7 +148,20 @@ export default function MobileTimetableWizardPage() {
     courseOfferings,
     isLoading: isOfferingsLoading,
     isError: isOfferingsError,
+    hasNextPage: hasMoreOfferings,
+    isFetchingNextPage: isFetchingMoreOfferings,
+    fetchNextPage: fetchMoreOfferings,
   } = useCourseOfferings(basic.year ?? undefined, basic.term ?? undefined);
+
+  // 마법사는 "꼭 넣고 싶은 강의" 검색·필터를 학기 전체 개설강의 위에서 로컬로 돌리므로,
+  // 편집 화면(스크롤 시 페이지 추가 로드)과 달리 여기서는 전 페이지를 미리 다 받아둬야
+  // 한다 - 그렇지 않으면 첫 페이지(50개) 밖의 학과/과목은 필터를 걸든 안 걸든 원천적으로
+  // 검색 결과에 나타날 수 없다.
+  useEffect(() => {
+    if (hasMoreOfferings && !isFetchingMoreOfferings) {
+      fetchMoreOfferings();
+    }
+  }, [hasMoreOfferings, isFetchingMoreOfferings, fetchMoreOfferings]);
 
   const coursePool = useMemo(
     () => buildWizardCourseOptions(courses, courseOfferings),
@@ -191,6 +204,17 @@ export default function MobileTimetableWizardPage() {
     setWishlistOfferingFilters(mapFilterToOfferingFilters(filters));
   };
 
+  // FloatingSearchBar(MobileCourseSearchSheet 내부)는 검색어를 콜백이 아니라
+  // ?courseQuery= URL 파라미터로 남긴다(시간표 편집 화면과 동일한 방식) - 편집
+  // 화면은 이 값을 읽어 서버 재조회하지만, 마법사는 로컬 필터라 여기서 직접 읽어야 한다.
+  const [searchParams] = useSearchParams();
+  const wishlistKeyword = searchParams.get("courseQuery") || undefined;
+
+  const combinedWishlistFilters = useMemo<CourseOfferingFilters>(
+    () => ({ ...wishlistOfferingFilters, keyword: wishlistKeyword }),
+    [wishlistOfferingFilters, wishlistKeyword],
+  );
+
   const wishlistSearchResults = useMemo(() => {
     const pickedSet = new Set(basic.wishlist.map((item) => item.subjectNumber));
     return courseOfferings
@@ -199,11 +223,11 @@ export default function MobileTimetableWizardPage() {
         matchesCourseOfferingFilters(
           offering,
           courseById.get(offering.courseId),
-          wishlistOfferingFilters,
+          combinedWishlistFilters,
         ),
       )
       .map((offering) => mapCourseOfferingToCourseResult(offering, courseById.get(offering.courseId)));
-  }, [courseOfferings, courseById, basic.wishlist, wishlistOfferingFilters]);
+  }, [courseOfferings, courseById, basic.wishlist, combinedWishlistFilters]);
 
   const [wishlistExpandedId, setWishlistExpandedId] = useState<number | null>(null);
   const [wishlistSheetSnap, setWishlistSheetSnap] = useState<string | number | null>(
@@ -525,6 +549,7 @@ export default function MobileTimetableWizardPage() {
         onOpenChange={setMustHaveSheetOpen}
         onAddCourse={addMustHave}
         onFiltersChange={handleWishlistFiltersChange}
+        isLoading={isOfferingsLoading || hasMoreOfferings}
       />
 
       {selectedCandidate && (
