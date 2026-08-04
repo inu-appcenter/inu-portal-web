@@ -16,7 +16,7 @@ import {
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import {
   FilterState,
@@ -251,31 +251,57 @@ const MobileCourseSearchSheet = ({
     return count;
   }, [activeFilters]);
 
+  const [searchParams] = useSearchParams();
+  const keyword = searchParams.get("courseQuery");
+
   const filteredCourses = useMemo(() => {
     let list: CourseResult[] = [...courses];
 
-    const offeringFilters = mapFilterToOfferingFilters(activeFilters);
+    // 키워드 검색(courseQuery)이 작동 중이 아닌 경우에만 2차 유연 필터링 적용 (검색어 결과는 API 응답 그대로 렌더링)
+    if (!keyword) {
+      const offeringFilters = mapFilterToOfferingFilters(activeFilters);
 
-    if (offeringFilters.deptName) {
-      list = list.filter((c) => c.deptName === offeringFilters.deptName);
-    }
-    if (offeringFilters.collegeName) {
-      list = list.filter((c) => c.collegeName === offeringFilters.collegeName);
-    }
-    if (offeringFilters.hyNames?.length) {
-      list = list.filter((c) =>
-        offeringFilters.hyNames?.some((h) =>
-          (c.hyName ?? String(c.grade))?.startsWith(h),
-        ),
-      );
-    }
-    if (offeringFilters.isuNames?.length) {
-      list = list.filter((c) =>
-        offeringFilters.isuNames?.some((isu) => c.isuName?.includes(isu)),
-      );
-    }
-    if (offeringFilters.credits?.length) {
-      list = list.filter((c) => offeringFilters.credits?.includes(c.credits));
+      const targetDept = offeringFilters.deptName;
+      if (targetDept) {
+        list = list.filter(
+          (c) =>
+            !c.deptName ||
+            c.deptName === targetDept ||
+            c.deptName.includes(targetDept) ||
+            targetDept.includes(c.deptName),
+        );
+      }
+
+      const targetCollege = offeringFilters.collegeName;
+      if (targetCollege) {
+        list = list.filter(
+          (c) =>
+            !c.collegeName ||
+            c.collegeName === targetCollege ||
+            c.collegeName.includes(targetCollege) ||
+            targetCollege.includes(c.collegeName),
+        );
+      }
+
+      if (offeringFilters.hyNames?.length) {
+        list = list.filter(
+          (c) =>
+            !c.hyName ||
+            offeringFilters.hyNames?.some((h) =>
+              (c.hyName ?? String(c.grade))?.startsWith(h),
+            ),
+        );
+      }
+      if (offeringFilters.isuNames?.length) {
+        list = list.filter(
+          (c) =>
+            !c.isuName ||
+            offeringFilters.isuNames?.some((isu) => c.isuName?.includes(isu)),
+        );
+      }
+      if (offeringFilters.credits?.length) {
+        list = list.filter((c) => offeringFilters.credits?.includes(c.credits));
+      }
     }
 
     // 5. 정렬 필터
@@ -291,7 +317,7 @@ const MobileCourseSearchSheet = ({
     }
 
     return list;
-  }, [courses, activeFilters]);
+  }, [courses, activeFilters, keyword]);
 
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
