@@ -99,10 +99,16 @@ export const useTimetableStore = create<TimetableStore>()(
       ),
     })),
   updateTimetableEvents: (id, events) =>
-    set((state) => ({
-      timetables: state.timetables.map((t) =>
-        t.id === id ? { ...t, events } : t
-      ),
-    })),
+    set((state) => {
+      const target = state.timetables.find((t) => t.id === id);
+      if (target && JSON.stringify(target.events) === JSON.stringify(events)) {
+        return state;
+      }
+      return {
+        timetables: state.timetables.map((t) =>
+          t.id === id ? { ...t, events } : t
+        ),
+      };
+    }),
   })),
 );

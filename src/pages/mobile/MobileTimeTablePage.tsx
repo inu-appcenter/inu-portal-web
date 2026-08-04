@@ -541,10 +541,15 @@ const MobileTimeTablePage = () => {
     alert(LOGIN_REQUIRED_MESSAGE);
   };
 
-  const { courses } = useCourses(undefined, { enabled: isLoggedIn });
+  const timetableEvents = activeTimetable?.events || [];
+  const isCreditCalcNeeded = isLoggedIn && timetableEvents.length > 0;
+
+  const { courses } = useCourses(undefined, { enabled: isCreditCalcNeeded });
   const { courseOfferings } = useCourseOfferings(
-    isLoggedIn ? activeTimetable?.year : undefined,
-    isLoggedIn ? activeTimetable?.term : undefined,
+    isCreditCalcNeeded ? activeTimetable?.year : undefined,
+    isCreditCalcNeeded ? activeTimetable?.term : undefined,
+    undefined,
+    { enabled: isCreditCalcNeeded },
   );
 
   const courseById = useMemo(
@@ -561,8 +566,6 @@ const MobileTimeTablePage = () => {
     () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
     [courseOfferings],
   );
-
-  const timetableEvents = activeTimetable?.events || [];
 
   useEffect(() => {
     mixpanelTrack.timetableViewed("시간표 홈", {

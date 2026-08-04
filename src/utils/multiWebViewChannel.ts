@@ -6,6 +6,18 @@ export interface MultiWebViewChannel {
   close: () => void;
 }
 
+/** 윈도우(JS 런타임/웹뷰) 고유 식별자 — 셀프 에코 및 브릿지 순환 차단용 */
+const WINDOW_CONTEXT_ID =
+  typeof window !== "undefined"
+    ? `${Math.random().toString(36).substring(2, 9)}-${Date.now().toString(36)}`
+    : "ssr";
+
+export interface SyncMessageEnvelope {
+  senderId: string;
+  updatedAt: number;
+  payload: unknown;
+}
+
 /**
  * 같은 오리진의 다른 웹뷰/탭에 상태 스냅샷을 전달하는 통합 채널.
  *
@@ -17,28 +29,57 @@ export interface MultiWebViewChannel {
  *     알려진 대로 불안정한 경우를 위한 폴백. RN 셸 밖(일반 브라우저)에서는
  *     `bridgeChannel`이 null이라 이 경로는 자동으로 빠진다.
  *
- * 페이로드는 매번 전체 스냅샷이라 두 경로로 중복 도착해도 멱등하게 반영되므로
- * (수신측이 최신 값으로 그대로 덮어씀) 별도 dedup 없이 안전하다. 두 경로 모두
- * 발신 채널 자기 자신에게는 되돌아오지 않는다(BroadcastChannel 스펙, 네이티브
- * 릴레이는 발신 웹뷰를 제외하고 중계).
+ * 상용 분산 하이브리드 어플리케이션 방법론 적용:
+ *  - Self-Echo Guard: 발신 웹뷰 식별자(senderId) 검증으로 자가 릴레이 원천 차단
+ *  - Stale State Drop: 단조 증가 타임스탬프(updatedAt) 비교로 네트워크/메시지 순서 역전 덮어쓰기 차단
  */
 export function openMultiWebViewChannel(
   name: string,
   onMessage: (data: unknown) => void,
 ): MultiWebViewChannel {
+  let lastUpdatedAt = 0;
+
+  const handleIncomingMessage = (raw: unknown) => {
+    if (!raw || typeof raw !== "object") return;
+    const env = raw as Partial<SyncMessageEnvelope>;
+
+    // 1. Self-Echo Guard: 자기 자신에게 반사된 메시지 무시
+    if (env.senderId && env.senderId === WINDOW_CONTEXT_ID) {
+      return;
+    }
+
+    // 2. Stale State Drop: 타임스탬프 순서 역전 메시지 무시
+    if (typeof env.updatedAt === "number") {
+      if (env.updatedAt < lastUpdatedAt) return;
+      lastUpdatedAt = env.updatedAt;
+    }
+
+    const payload = "payload" in env ? env.payload : raw;
+    onMessage(payload);
+  };
+
   const broadcastChannel = createSafeBroadcastChannel(name);
   if (broadcastChannel) {
-    broadcastChannel.onmessage = (event: MessageEvent) => onMessage(event.data);
+    broadcastChannel.onmessage = (event: MessageEvent) =>
+      handleIncomingMessage(event.data);
   }
 
   const offBridge = bridgeChannel?.on("broadcastSyncMessage", (message) => {
-    if (message.channel === name) onMessage(message.payload);
+    if (message.channel === name) handleIncomingMessage(message.payload);
   });
 
   return {
     postMessage: (data) => {
-      broadcastChannel?.postMessage(data);
-      bridgeChannel?.send("relayBroadcastSync", { channel: name, payload: data });
+      const envelope: SyncMessageEnvelope = {
+        senderId: WINDOW_CONTEXT_ID,
+        updatedAt: Date.now(),
+        payload: data,
+      };
+      broadcastChannel?.postMessage(envelope);
+      bridgeChannel?.send("relayBroadcastSync", {
+        channel: name,
+        payload: envelope,
+      });
     },
     close: () => {
       broadcastChannel?.close();

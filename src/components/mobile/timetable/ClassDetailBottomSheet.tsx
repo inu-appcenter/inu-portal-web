@@ -44,8 +44,14 @@ export default function ClassDetailBottomSheet({
   const { activeTimetableId, timetables, updateTimetableEvents } =
     useTimetableStore();
 
-  const { courses } = useCourses();
-  const { courseOfferings } = useCourseOfferings();
+  const isQueryEnabled = open && Boolean(selectedClass) && !selectedClass?.isCustom;
+  const { courses } = useCourses(undefined, { enabled: isQueryEnabled });
+  const { courseOfferings } = useCourseOfferings(
+    undefined,
+    undefined,
+    undefined,
+    { enabled: isQueryEnabled },
+  );
 
   const courseById = useMemo(
     () => new Map(courses.map((c) => [c.id, c])),
