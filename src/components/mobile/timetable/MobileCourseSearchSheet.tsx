@@ -106,6 +106,7 @@ interface MobileCourseSearchSheetProps {
   hasNextPage?: boolean;
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
+  filterStorageKey?: string;
 }
 
 const MobileCourseSearchSheet = ({
@@ -126,6 +127,7 @@ const MobileCourseSearchSheet = ({
   hasNextPage,
   fetchNextPage,
   isFetchingNextPage,
+  filterStorageKey = "timetable_course_filters",
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -575,7 +577,10 @@ const MobileCourseSearchSheet = ({
               $isZeroCount={activeFilterCount === 0}
               onClick={() =>
                 navigate(ROUTES.TIMETABLE.FILTER, {
-                  state: { filters: activeFilters },
+                  state: {
+                    filters: activeFilters,
+                    storageKey: filterStorageKey,
+                  },
                 })
               }
             >
