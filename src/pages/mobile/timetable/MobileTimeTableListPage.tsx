@@ -87,6 +87,7 @@ export default function MobileTimeTableListPage() {
   useHeader({
     title: "시간표 목록",
     hasback: true,
+    onBack: () => navigate(ROUTES.TIMETABLE.ROOT, { replace: true }),
     immersive: true,
     pageBgColor: "#f8f9fb",
     rightArea: headerRight
@@ -101,7 +102,7 @@ export default function MobileTimeTableListPage() {
     setSemester(t.semester);
     setActiveTimetable(t.id);
     // id를 함께 넘겨 URL이 바로 이 시간표를 가리키게 함 (새로고침 시 복원용)
-    navigate(`${ROUTES.TIMETABLE.ROOT}?id=${t.id}`);
+    navigate(`${ROUTES.TIMETABLE.ROOT}?id=${t.id}`, { replace: true });
   };
 
   return (

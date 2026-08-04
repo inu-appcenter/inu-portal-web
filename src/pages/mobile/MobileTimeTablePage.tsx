@@ -414,7 +414,7 @@ const MobileTimeTablePage = () => {
         alert(LOGIN_REQUIRED_MESSAGE);
         return;
       }
-      navigate(ROUTES.TIMETABLE.LIST);
+      navigate(ROUTES.TIMETABLE.LIST, { replace: true });
     };
 
     return (
