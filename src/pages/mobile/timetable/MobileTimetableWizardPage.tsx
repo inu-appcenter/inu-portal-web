@@ -8,6 +8,7 @@ import Badge from "@/components/common/Badge";
 import { useSemesters } from "@/hooks/useSemesters";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import useUserStore from "@/stores/useUserStore";
 import { buildWizardCourseOptions } from "@/utils/timetableWizardPool";
 import { generateWizardCandidates } from "@/utils/timetableWizardGenerator";
 import {
@@ -144,8 +145,13 @@ export default function MobileTimetableWizardPage() {
     }));
   }, [semesters, basic.semesterId]);
 
+  const userDepartment = useUserStore((state) => state.userInfo.department);
+  const defaultMajor = userDepartment || "컴퓨터공학부";
+
   const [wishlistOfferingFilters, setWishlistOfferingFilters] =
-    useState<CourseOfferingFilters>({});
+    useState<CourseOfferingFilters>(() => ({
+      deptName: defaultMajor,
+    }));
   const handleWishlistFiltersChange = (filters: FilterState) => {
     setWishlistOfferingFilters(mapFilterToOfferingFilters(filters));
   };

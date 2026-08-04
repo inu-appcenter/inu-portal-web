@@ -26,6 +26,7 @@ import {
   type FilterState,
 } from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import useUserStore from "@/stores/useUserStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import {
   mapCourseOfferingToCourseResult,
@@ -173,14 +174,24 @@ const MobileTimeTableEditPage = () => {
 
   // 전공/영역·학년·이수구분·학점 필터
   const location = useLocation();
+  const userDepartment = useUserStore((state) => state.userInfo.department);
+  const defaultMajor = userDepartment || "컴퓨터공학부";
+
+  const getEffectiveFilters = (): FilterState => {
+    const stored = readStoredFilters();
+    return {
+      ...stored,
+      major: stored.major ?? defaultMajor,
+    };
+  };
+
   const [activeFilters, setActiveFilters] =
-    useState<FilterState>(readStoredFilters);
+    useState<FilterState>(getEffectiveFilters);
 
   // 복귀 시 localStorage의 저장된 필터와 즉시 동기화
   useEffect(() => {
-    const stored = readStoredFilters();
-    setActiveFilters(stored);
-  }, [location.key]);
+    setActiveFilters(getEffectiveFilters());
+  }, [location.key, defaultMajor]);
 
   const offeringFilters = useMemo(
     () => mapFilterToOfferingFilters(activeFilters),

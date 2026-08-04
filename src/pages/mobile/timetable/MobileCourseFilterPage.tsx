@@ -310,12 +310,25 @@ export default function MobileCourseFilterPage() {
   const storageKey =
     (location.state?.storageKey as string) || TIMETABLE_COURSE_FILTERS_KEY;
 
+  const defaultMajor = userDepartment || "컴퓨터공학부";
+
   // 상위 편집/마법사 화면에서 전달한 필터 상태가 있다면 수신, 없으면 해당 storageKey에서 복원
   const initialFilters = useMemo(() => {
     const stateFilters = location.state?.filters as FilterState | undefined;
-    if (stateFilters) return { ...DEFAULT_FILTERS, ...stateFilters };
-    return readStoredFilters(storageKey) ?? { ...DEFAULT_FILTERS };
-  }, [location.state, storageKey]);
+    if (stateFilters) {
+      return {
+        ...DEFAULT_FILTERS,
+        ...stateFilters,
+        major: stateFilters.major ?? defaultMajor,
+      };
+    }
+    const stored = readStoredFilters(storageKey);
+    return {
+      ...DEFAULT_FILTERS,
+      ...stored,
+      major: stored?.major ?? defaultMajor,
+    };
+  }, [location.state, storageKey, defaultMajor]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [view, setSubView] = useState<SubScreenType>("main");
