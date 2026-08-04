@@ -96,11 +96,28 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
           ...newRest
         } = config;
 
+        const isMenuSame =
+          prevMenu === newMenu ||
+          (Array.isArray(prevMenu) &&
+            Array.isArray(newMenu) &&
+            prevMenu.length === newMenu.length &&
+            prevMenu.every(
+              (item, i) =>
+                item.label === newMenu[i].label &&
+                item.onClick?.toString() === newMenu[i].onClick?.toString(),
+            ));
+
+        const isOnBackSame =
+          prevOnBack === newOnBack ||
+          (typeof prevOnBack === "function" &&
+            typeof newOnBack === "function" &&
+            prevOnBack.toString() === newOnBack.toString());
+
         // 3. 나머지 단순 값(문자열, 불리언)만 JSON 문자열로 비교
         if (
           prevSub === newSub &&
-          prevMenu === newMenu &&
-          prevOnBack === newOnBack &&
+          isMenuSame &&
+          isOnBackSame &&
           prevRightArea === newRightArea &&
           prevTitle === newTitle &&
           JSON.stringify(prevRest) === JSON.stringify(newRest)
@@ -154,14 +171,19 @@ export const useHeader = (config?: HeaderConfig) => {
     rightAreaNotCircle: config?.rightAreaNotCircle,
   });
 
+  const menuString = config?.menuItems
+    ? config.menuItems.map((m) => `${m.label}:${m.onClick?.toString()}`).join("|")
+    : "";
+  const onBackString = config?.onBack?.toString() ?? "";
+
   useLayoutEffect(() => {
     if (!config) return;
     updateHeaderConfig(currentPath, { ...defaultHeaderConfig, ...config });
   }, [
     currentPath,
     configString,
-    config?.menuItems,
-    config?.onBack,
+    menuString,
+    onBackString,
     config?.subHeader,
     config?.rightArea,
     config?.title,

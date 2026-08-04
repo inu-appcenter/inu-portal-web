@@ -15,6 +15,7 @@ export interface Post {
   scrap: number;
   replyCount: number;
   imageCount: number;
+  imageUrl?: string | null;
   createDate: string;
   modifiedDate: string;
 }

@@ -1,11 +1,10 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import { useEffect, useState, Fragment, useMemo } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import Box from "@/components/common/Box";
 import { getTipsCategories } from "@/apis/categories";
-import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import { getPostsByCategories } from "@/apis/posts";
+import { getPostsMobile } from "@/apis/posts";
 import { Post } from "@/types/posts";
 import Divider from "@/components/common/Divider";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -16,39 +15,137 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
-  MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import MobileWriteButton from "@/components/mobile/tips/MobileWriteButton";
+import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper as SwiperClass } from "swiper";
+import "swiper/css";
+import { resetScrollToTop } from "@/utils/scroll";
 
-interface CategoryPosts {
+interface CategoryPostListProps {
   category: string;
-  posts: Post[];
 }
+
+const CategoryPostList = ({ category }: CategoryPostListProps) => {
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [lastPostId, setLastPostId] = useState<number | undefined>(undefined);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchData = useCallback(
+    async (isFirst: boolean = false) => {
+      if (isLoading && !isFirst) return;
+
+      setIsLoading(true);
+      try {
+        const response = await getPostsMobile(isFirst ? undefined : lastPostId, category);
+        const newPosts: Post[] = response.data;
+
+        if (newPosts && newPosts.length > 0) {
+          setPosts((prev) => (isFirst ? newPosts : [...prev, ...newPosts]));
+          setLastPostId(newPosts[newPosts.length - 1]?.id);
+          setHasMore(newPosts.length >= 10);
+        } else {
+          if (isFirst) setPosts([]);
+          setHasMore(false);
+        }
+      } catch (error) {
+        console.error("게시글 목록 로드 실패", error);
+        setHasMore(false);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [category, isLoading, lastPostId],
+  );
+
+  useEffect(() => {
+    setPosts([]);
+    setLastPostId(undefined);
+    setHasMore(true);
+    fetchData(true);
+  }, [category]);
+
+  if (isLoading && posts.length === 0) {
+    return (
+      <ListContainer>
+        <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Fragment key={`post-skeleton-${category}-${index}`}>
+              <PostItem isLoading />
+              {index < 5 && <Divider margin="0" />}
+            </Fragment>
+          ))}
+        </Box>
+      </ListContainer>
+    );
+  }
+
+  return (
+    <ListContainer>
+      <InfiniteScroll
+        dataLength={posts.length}
+        next={() => fetchData()}
+        hasMore={hasMore}
+        scrollableTarget="app-scroll-view"
+        loader={<LoadingText>Loading...</LoadingText>}
+        endMessage={posts.length > 0 ? <LoadingText>더 이상 게시물이 없습니다.</LoadingText> : null}
+      >
+        <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
+          {posts.length > 0 ? (
+            posts.map((post, index) => (
+              <Fragment key={post.id}>
+                <PostItem
+                  id={post.id}
+                  title={post.title}
+                  date={post.createDate}
+                  writer={post.writer}
+                  like={post.like}
+                  scrap={post.scrap}
+                  replyCount={post.replyCount}
+                  imageCount={post.imageCount}
+                  imageUrl={post.imageUrl}
+                  onClick={() => {
+                    mixpanelTrack.tipViewed(category, post.title);
+                    navigate(ROUTES.BOARD.TIPS_DETAIL(post.id));
+                  }}
+                />
+                {index < posts.length - 1 && <Divider margin="0" />}
+              </Fragment>
+            ))
+          ) : (
+            <EmptyState>해당 카테고리의 게시글이 없습니다.</EmptyState>
+          )}
+        </Box>
+      </InfiniteScroll>
+    </ListContainer>
+  );
+};
 
 const MobileTipsPage = () => {
   const navigate = useNavigate();
-  const [categoryPosts, setCategoryPosts] = useState<CategoryPosts[]>([]);
-  const [categoryList, setCategoryList] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   const location = useLocation();
   const params = new URLSearchParams(location.search);
+  const requestedCategory = params.get("category");
 
-  const selectedCategory = params.get("category") || "자유게시판";
+  const [categoryList, setCategoryList] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
+  const [hasSwiped, setHasSwiped] = useState(() => {
+    return localStorage.getItem("has_swiped_tips") === "true";
+  });
 
-  // 데이터 초기 로드
   useEffect(() => {
     const initData = async () => {
       setIsLoading(true);
       try {
         const categoryRes = await getTipsCategories();
-        setCategoryList([...categoryRes.data]);
-
-        // 카테고리별 최신 게시글 가져오기 (기본 5개)
-        const postRes = await getPostsByCategories(3);
-        setCategoryPosts(postRes.data);
+        setCategoryList(categoryRes.data);
       } catch (error) {
-        console.error("데이터 로드 실패", error);
+        console.error("카테고리 로드 실패", error);
       } finally {
         setIsLoading(false);
       }
@@ -57,32 +154,62 @@ const MobileTipsPage = () => {
     initData();
   }, []);
 
-  // 카테고리 변경 시 스크롤 이동
+  const selectedCategory = useMemo(() => {
+    if (requestedCategory && categoryList.includes(requestedCategory)) {
+      return requestedCategory;
+    }
+    return categoryList[0] ?? requestedCategory ?? "자유게시판";
+  }, [categoryList, requestedCategory]);
+
+  const currentIndex = useMemo(() => {
+    const idx = categoryList.indexOf(selectedCategory);
+    return idx === -1 ? 0 : idx;
+  }, [categoryList, selectedCategory]);
+
   useEffect(() => {
-    if (isLoading || categoryPosts.length === 0) return;
+    if (categoryList.length === 0) return;
+    if (requestedCategory === selectedCategory) return;
 
-    const scrollContainer = document.getElementById("app-scroll-view");
-    if (!scrollContainer) return;
+    const nextParams = new URLSearchParams(location.search);
+    nextParams.set("category", selectedCategory);
+    navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+  }, [categoryList.length, location.pathname, location.search, navigate, requestedCategory, selectedCategory]);
 
-    if (selectedCategory === "전체") {
-      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-      return;
+  useEffect(() => {
+    if (swiperRef && swiperRef.activeIndex !== currentIndex) {
+      swiperRef.slideTo(currentIndex);
+    }
+  }, [currentIndex, swiperRef]);
+
+  useEffect(() => {
+    if (!swiperRef) return;
+
+    setTimeout(() => {
+      swiperRef.update();
+      swiperRef.updateAutoHeight();
+    }, 100);
+    setTimeout(() => {
+      swiperRef.update();
+      swiperRef.updateAutoHeight();
+    }, 350);
+  }, [selectedCategory, swiperRef]);
+
+  const handleSlideChange = (s: SwiperClass) => {
+    const nextCategory = categoryList[s.activeIndex];
+
+    if (!hasSwiped) {
+      setHasSwiped(true);
+      localStorage.setItem("has_swiped_tips", "true");
     }
 
-    const scrollTimer = setTimeout(() => {
-      const targetElement = document.getElementById(
-        `category-${selectedCategory}`,
-      );
-      if (targetElement) {
-        targetElement.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
-    }, 100);
+    resetScrollToTop();
 
-    return () => clearTimeout(scrollTimer);
-  }, [selectedCategory, categoryPosts, isLoading]);
+    if (nextCategory && nextCategory !== selectedCategory) {
+      const nextParams = new URLSearchParams(location.search);
+      nextParams.set("category", nextCategory);
+      navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+    }
+  };
 
   const subHeader = useMemo(
     () => (
@@ -97,79 +224,62 @@ const MobileTipsPage = () => {
   useHeader({
     title: "커뮤니티",
     hasback: true,
-    subHeader: subHeader,
+    subHeader,
     floatingSubHeader: true,
   });
 
   return (
     <MobileTipsPageWrapper>
-      <TipsListContainerWrapper>
-        {isLoading
-          ? Array.from({ length: 3 }).map((_, groupIdx) => (
-              <div key={`group-skeleton-${groupIdx}`}>
-                <TitleContentArea title={<Skeleton width={100} height={20} />}>
-                  <Box>
-                    {Array.from({ length: 3 }).map((_, itemIdx) => (
-                      <Fragment key={`item-skeleton-${itemIdx}`}>
-                        <Skeleton width="70%" height={22} />
-                        {itemIdx < 2 && <Divider margin={"16px 0"} />}
-                      </Fragment>
-                    ))}
-                  </Box>
-                </TitleContentArea>
-              </div>
-            ))
-          : categoryPosts.map((categoryItem) => (
-              <CategorySection
-                id={`category-${categoryItem.category}`}
-                key={categoryItem.category}
-              >
-                <TitleContentArea
-                  title={categoryItem.category}
-                  link={ROUTES.BOARD.TIPS_CATEGORY(categoryItem.category)}
-                >
-                  <Box>
-                    {categoryItem.posts.length > 0 ? (
-                      categoryItem.posts.map((tip, index) => (
-                        <Fragment key={tip.id}>
-                          <PostItem
-                            title={tip.title}
-                            // category={tip.category}
-                            showDate={false}
-                            showWriter={false}
-                            onClick={() => {
-                              mixpanelTrack.tipViewed(
-                                categoryItem.category,
-                                tip.title,
-                              );
-                              navigate(ROUTES.BOARD.TIPS_DETAIL(tip.id));
-                            }}
-                          />
-                          {index < categoryItem.posts.length - 1 && (
-                            <Divider margin="0" />
-                          )}
-                        </Fragment>
-                      ))
-                    ) : (
-                      <EmptyState>
-                        해당 카테고리의 게시글이 없습니다.
-                      </EmptyState>
-                    )}
-                  </Box>
-                </TitleContentArea>
-              </CategorySection>
+      {isLoading ? (
+        <ListContainer>
+          <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Fragment key={`tips-page-skeleton-${index}`}>
+                <Skeleton width="70%" height={22} />
+                {index < 5 && <Divider margin="16px 0" />}
+              </Fragment>
             ))}
-      </TipsListContainerWrapper>
-      <MobileWriteButton />
+          </Box>
+        </ListContainer>
+      ) : (
+        categoryList.length > 0 && (
+          <Swiper
+            onSwiper={setSwiperRef}
+            initialSlide={currentIndex}
+            onSlideChange={handleSlideChange}
+            speed={320}
+            autoHeight={true}
+            observer={true}
+            observeParents={true}
+            style={{ width: "100%" }}
+          >
+            {categoryList.map((category) => (
+              <SwiperSlide key={category} style={{ height: "auto" }}>
+                <CategoryPostList category={category} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )
+      )}
+      <SwipeChevronGuides
+        hasSwiped={hasSwiped}
+        currentIndex={currentIndex}
+        totalSlides={categoryList.length}
+      />
+      <MobileWriteButton category={selectedCategory} />
     </MobileTipsPageWrapper>
   );
 };
 
 export default MobileTipsPage;
 
-/* 스타일 정의 */
 const MobileTipsPageWrapper = styled.div`
   width: 100%;
+  position: relative;
+
+  .swiper-autoheight {
+    transition: height 0ms !important;
+  }
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_CONTENT_MAX_WIDTH});
@@ -177,29 +287,13 @@ const MobileTipsPageWrapper = styled.div`
   }
 `;
 
-const CategorySection = styled.div`
-  scroll-margin-top: 150px;
-
-  @media ${DESKTOP_MEDIA} {
-    height: 100%;
-  }
-`;
-
-const TipsListContainerWrapper = styled.div`
+const ListContainer = styled.div`
   width: 100%;
-  padding: 12px ${MOBILE_PAGE_GUTTER} 40px;
+  padding: 12px 0 40px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
 
   @media ${DESKTOP_MEDIA} {
-    margin: 0;
     padding: 16px 0 120px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-    align-items: stretch;
   }
 `;
 
@@ -208,5 +302,11 @@ const EmptyState = styled.div`
   color: #bbb;
   text-align: center;
   padding: 40px 20px;
+`;
 
+const LoadingText = styled.h4`
+  text-align: center;
+  padding: 20px 0;
+  color: #888;
+  font-size: 14px;
 `;
