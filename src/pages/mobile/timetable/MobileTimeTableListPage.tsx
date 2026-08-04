@@ -84,10 +84,14 @@ export default function MobileTimeTableListPage() {
     </IconButton>
   ), [handleAddClick]);
 
+  const handleBack = useCallback(() => {
+    navigate(ROUTES.TIMETABLE.ROOT, { replace: true });
+  }, [navigate]);
+
   useHeader({
     title: "시간표 목록",
     hasback: true,
-    onBack: () => navigate(ROUTES.TIMETABLE.ROOT, { replace: true }),
+    onBack: handleBack,
     immersive: true,
     pageBgColor: "#f8f9fb",
     rightArea: headerRight
