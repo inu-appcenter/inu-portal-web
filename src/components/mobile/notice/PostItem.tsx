@@ -3,7 +3,6 @@ import Skeleton from "@/components/common/Skeleton";
 import { Eye, MessageSquare, Heart, Bookmark } from "lucide-react";
 import Ripple from "@/components/common/Ripple";
 import { formatTimeAgo } from "@/utils/date";
-import { useState } from "react";
 
 interface NoticeItemProps {
   id?: number;
@@ -27,7 +26,6 @@ interface NoticeItemProps {
 }
 
 const PostItem = ({
-  id,
   category,
   title,
   content,
@@ -37,7 +35,6 @@ const PostItem = ({
   like,
   scrap,
   replyCount,
-  imageCount,
   imageUrl,
   isLoading,
   onClick,
@@ -45,8 +42,6 @@ const PostItem = ({
   showDate = true,
   showWriter = true,
 }: NoticeItemProps) => {
-  const [imageError, setImageError] = useState(false);
-
   const hasInfoLine =
     (showDate && !!date) ||
     (showWriter && !!writer) ||
@@ -57,15 +52,12 @@ const PostItem = ({
 
   const formattedDate = date ? formatTimeAgo(date) : "";
 
-  // 이미지 URL 결정 (API imageUrl 또는 인덱스 기반 썸네일 URL)
-  let resolvedImageUrl: string | null = null;
-  if (imageUrl) {
-    resolvedImageUrl = imageUrl.startsWith("http")
-      ? imageUrl
-      : `${import.meta.env.VITE_API_BASE_URL || ""}${imageUrl}`;
-  } else if (id && imageCount && imageCount > 0) {
-    resolvedImageUrl = `https://portal.inuappcenter.kr/images/post/thumbnail/${id}`;
-  }
+  const resolvedImageUrl = imageUrl
+    ? new URL(
+        imageUrl,
+        import.meta.env.VITE_API_BASE_URL || window.location.origin,
+      ).toString()
+    : null;
 
   if (isLoading) {
     return (
@@ -136,12 +128,11 @@ const PostItem = ({
             )}
           </TextContainer>
 
-          {resolvedImageUrl && !imageError && (
+          {resolvedImageUrl && (
             <ThumbnailWrapper>
               <ThumbnailImage
                 src={resolvedImageUrl}
                 alt={title || "썸네일"}
-                onError={() => setImageError(true)}
               />
             </ThumbnailWrapper>
           )}

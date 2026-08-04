@@ -16,6 +16,7 @@ import { getSearch } from "@/apis/search";
 import { getPosts } from "@/apis/posts";
 import { Post } from "@/types/posts";
 import heart from "@/resources/assets/posts/posts-heart.svg";
+import { formatTimeAgo } from "@/utils/date";
 
 export default function PostsList() {
   const location = useLocation();
@@ -105,7 +106,7 @@ export default function PostsList() {
               </div>
               <div className="title">{post.title}</div>
               <div className="content flex-1">{post.content}</div>
-              <div className="createDate">{post.createDate}</div>
+              <div className="createDate">{formatTimeAgo(post.createDate)}</div>
             </PostCard>
           ))}
 
@@ -124,7 +125,7 @@ export default function PostsList() {
               </div>
               <div className="content">{notice.writer}</div>
               <div className="title flex-1">{notice.title}</div>
-              <div className="createDate">{notice.createDate}</div>
+              <div className="createDate">{formatTimeAgo(notice.createDate)}</div>
             </PostCard>
           ))}
       </CardsWrapper>
