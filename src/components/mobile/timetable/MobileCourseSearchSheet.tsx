@@ -225,10 +225,32 @@ const MobileCourseSearchSheet = ({
     }
   }, [isSearchActive]);
 
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isLoading || isFetchingNextPage) return;
+      if (observerRef.current) observerRef.current.disconnect();
+
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          fetchNextPage
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observerRef.current.observe(node);
+    },
+    [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage],
+  );
+
   const handleScroll: UIEventHandler<HTMLDivElement> = (e) => {
     searchBarRef.current?.blur();
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop - clientHeight < 200) {
+    if (scrollTop > 0 && scrollHeight - scrollTop - clientHeight < 150) {
       if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
         fetchNextPage();
       }
@@ -422,6 +444,12 @@ const MobileCourseSearchSheet = ({
                       <Skeleton width="50px" height="16px" />
                     </div>
                   </SkeletonCard>
+                )}
+                {hasNextPage && (
+                  <div
+                    ref={loadMoreRef}
+                    style={{ height: "20px", width: "100%" }}
+                  />
                 )}
               </CourseList>
             </SheetContentWrapper>
