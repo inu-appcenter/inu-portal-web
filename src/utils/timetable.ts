@@ -44,7 +44,7 @@ export const mapDetailItemsToClassItems = (
     if (!source) return [];
 
     const credits = item.course
-      ? parseFloat(item.course.credit) || undefined
+      ? parseFloat(String(item.course.credit)) || undefined
       : undefined;
 
     if (source.meetings.length === 0) {
@@ -63,13 +63,14 @@ export const mapDetailItemsToClassItems = (
           professor: item.course?.professor,
           memo: item.memo ?? undefined,
           courseId: item.course?.subjectNumber,
+          numericCourseId: item.course?.courseId,
           isCustom: item.type === "CUSTOM",
           isUntimed: true,
         },
       ];
     }
 
-    return source.meetings.map<ClassItem>((meeting, index) => ({
+    return source.meetings.map<ClassItem>((meeting) => ({
       id: meeting.id,
       itemId: item.id,
       courseOfferingId: item.course?.courseOfferingId,
@@ -79,11 +80,12 @@ export const mapDetailItemsToClassItems = (
       day: DAY_INDEX[meeting.day],
       startTime: parseTimeToHours(meeting.startTime),
       endTime: parseTimeToHours(meeting.endTime),
-      // 학점 합산이 중복되지 않도록 첫 미팅에만 학점을 부여
-      credits: index === 0 ? credits : 0,
+      // 모든 미팅에 credits를 유지 (바텀시트용)
+      credits,
       professor: item.course?.professor,
       memo: item.memo ?? undefined,
       courseId: item.course?.subjectNumber,
+      numericCourseId: item.course?.courseId,
       isCustom: item.type === "CUSTOM",
     }));
   });
