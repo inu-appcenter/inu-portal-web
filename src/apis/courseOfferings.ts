@@ -101,15 +101,21 @@ export const getAllCourseOfferings = async (
     });
   }
 
-  const all: CourseOffering[] = [];
-  let page = 0;
-  let totalPages = 1;
+  // 0페이지를 먼저 조회하여 전체 페이지 수(totalPages) 확인
+  const firstPage = await getCourseOfferingsPage(year, term, 0, PAGE_SIZE, filters);
+  const all: CourseOffering[] = [...(firstPage.content ?? [])];
+  const totalPages = Math.min(firstPage.totalPages ?? 1, MAX_PAGES);
 
-  while (page < totalPages && page < MAX_PAGES) {
-    const result = await getCourseOfferingsPage(year, term, page, PAGE_SIZE, filters);
-    all.push(...(result.content ?? []));
-    totalPages = result.totalPages ?? 1;
-    page += 1;
+  // 나머지 페이지가 존재하는 경우 Promise.all로 병렬 요청 수행
+  if (totalPages > 1) {
+    const pagePromises = [];
+    for (let p = 1; p < totalPages; p++) {
+      pagePromises.push(getCourseOfferingsPage(year, term, p, PAGE_SIZE, filters));
+    }
+    const pageResults = await Promise.all(pagePromises);
+    pageResults.forEach((res) => {
+      all.push(...(res.content ?? []));
+    });
   }
 
   return all;
