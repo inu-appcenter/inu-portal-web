@@ -564,6 +564,13 @@ const CourseItem = styled.div`
   background-color: #ffffff;
   transition: background-color 0.2s;
   //cursor: pointer;
+
+  /* Scopes layout/paint invalidation to this row so the sheet's per-frame
+     drag-driven scrollPaddingBottom (see CourseSheetScrollableContent) doesn't
+     force Chromium to recompute every row's layout on every animation tick —
+     that cost scales with list length and is the main source of Android-only
+     jank in this sheet (WKWebView doesn't show the same behavior). */
+  contain: layout paint style;
 `;
 
 const InfoRow = styled.div`
