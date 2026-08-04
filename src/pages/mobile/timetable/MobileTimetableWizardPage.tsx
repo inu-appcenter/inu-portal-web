@@ -153,15 +153,10 @@ export default function MobileTimetableWizardPage() {
     fetchNextPage: fetchMoreOfferings,
   } = useCourseOfferings(basic.year ?? undefined, basic.term ?? undefined);
 
-  // 마법사는 "꼭 넣고 싶은 강의" 검색·필터를 학기 전체 개설강의 위에서 로컬로 돌리므로,
-  // 편집 화면(스크롤 시 페이지 추가 로드)과 달리 여기서는 전 페이지를 미리 다 받아둬야
-  // 한다 - 그렇지 않으면 첫 페이지(50개) 밖의 학과/과목은 필터를 걸든 안 걸든 원천적으로
-  // 검색 결과에 나타날 수 없다.
-  useEffect(() => {
-    if (hasMoreOfferings && !isFetchingMoreOfferings) {
-      fetchMoreOfferings();
-    }
-  }, [hasMoreOfferings, isFetchingMoreOfferings, fetchMoreOfferings]);
+  // "꼭 넣고 싶은 강의" 검색시트는 편집 화면과 동일하게 스크롤 시 페이지를 추가
+  // 로드한다(MobileCourseSearchSheet에 hasNextPage/fetchNextPage 전달, 아래 참고).
+  // 전체 페이지 선(先)로딩은 추천 생성(step === "generating")에 들어갈 때만
+  // 필요하므로 그 아래 useEffect에서 별도로 트리거한다.
 
   const coursePool = useMemo(
     () => buildWizardCourseOptions(courses, courseOfferings),
@@ -218,6 +213,11 @@ export default function MobileTimetableWizardPage() {
   const wishlistSearchResults = useMemo(() => {
     const pickedSet = new Set(basic.wishlist.map((item) => item.subjectNumber));
     return courseOfferings
+      // 이러닝/현장실습 등 meetings가 없는 학점인정강의는 coursePool(마법사 조합 탐색 대상)에
+      // 애초에 포함되지 않으므로(buildWizardCourseOptions 참고), 여기서도 검색 결과에서
+      // 제외한다 - 그렇지 않으면 "꼭 넣고 싶은 강의"로 담아도 조합 생성에 전혀 반영되지
+      // 않는 채로 wishlist에 유령처럼 남는다.
+      .filter((offering) => offering.meetings.length > 0)
       .filter((offering) => !pickedSet.has(offering.subjectNumber))
       .filter((offering) =>
         matchesCourseOfferingFilters(
@@ -243,7 +243,16 @@ export default function MobileTimetableWizardPage() {
   const [isSaveSheetOpen, setSaveSheetOpen] = useState(false);
 
   // generating 단계 진입 시 실제 조합 계산을 수행. 서버 추천 API가 없어 이미 받아온
-  // course-offerings 데이터를 바탕으로 클라이언트에서 직접 조합을 탐색한다.
+  // course-offerings 데이터를 바탕으로 클라이언트에서 직접 조합을 탐색하므로, 이 단계에
+  // 진입한 뒤에야 비로소 학기 전체 개설강의를 다 받아둔다(첫 페이지 밖의 학과/과목도
+  // 추천 후보에 포함시켜야 하기 때문) - 검색시트 스크롤 로딩과는 별개의 트리거다.
+  useEffect(() => {
+    if (step !== "generating") return;
+    if (hasMoreOfferings && !isFetchingMoreOfferings) {
+      fetchMoreOfferings();
+    }
+  }, [step, hasMoreOfferings, isFetchingMoreOfferings, fetchMoreOfferings]);
+
   useEffect(() => {
     if (step !== "generating") return;
 
@@ -252,7 +261,7 @@ export default function MobileTimetableWizardPage() {
       return;
     }
 
-    if (isOfferingsLoading) {
+    if (isOfferingsLoading || hasMoreOfferings) {
       const timer = window.setTimeout(() => {
         setStep((s) => (s === "generating" ? "error" : s));
       }, GENERATING_MAX_WAIT_MS);
@@ -281,7 +290,16 @@ export default function MobileTimetableWizardPage() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [step, isOfferingsLoading, isOfferingsError, coursePool, basic, preference, exclusion]);
+  }, [
+    step,
+    isOfferingsLoading,
+    isOfferingsError,
+    hasMoreOfferings,
+    coursePool,
+    basic,
+    preference,
+    exclusion,
+  ]);
 
   const runGeneration = useCallback(() => setStep("generating"), []);
 
@@ -550,7 +568,10 @@ export default function MobileTimetableWizardPage() {
         onAddCourse={addMustHave}
         onFiltersChange={handleWishlistFiltersChange}
         dismissible
-        isLoading={isOfferingsLoading || hasMoreOfferings}
+        isLoading={isOfferingsLoading && courseOfferings.length === 0}
+        hasNextPage={hasMoreOfferings}
+        fetchNextPage={fetchMoreOfferings}
+        isFetchingNextPage={isFetchingMoreOfferings}
       />
 
       {selectedCandidate && (
