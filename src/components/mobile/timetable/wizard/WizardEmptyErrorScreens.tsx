@@ -88,20 +88,22 @@ const ErrorIllustration = styled.div`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: var(--bg-subtle, #f2f4f6);
+  background: var(--bg-subtle, #f8f9fb);
+  border: 1px solid var(--border-default, #e5e8eb);
   color: var(--text-tertiary, #8b95a1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 56px;
+  font-size: 40px;
   font-weight: 700;
   margin-bottom: 16px;
+  box-sizing: border-box;
 `;
 
 const Title = styled.h1`
   margin: 0;
-  color: var(--text-secondary, #333d4b);
-  font-size: 19px;
+  color: var(--text-primary, #191f28);
+  font-size: 18px;
   font-weight: 700;
   line-height: 27px;
   text-align: center;
@@ -109,7 +111,7 @@ const Title = styled.h1`
 
 const Subtitle = styled.p`
   margin: 0 0 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-secondary, #333d4b);
   font-size: 14px;
   line-height: 21px;
   text-align: center;
@@ -117,37 +119,35 @@ const Subtitle = styled.p`
 
 const ConflictCard = styled.div`
   width: 100%;
-  background: var(--bg-warning, #fff7ed);
-  border: 1px solid var(--border-warning, #fde68a);
+  background: #fff8e9;
+  border: 1px solid #fdd9aa;
   border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   box-sizing: border-box;
+  color: #d97706;
 `;
 
 const ConflictHead = styled.span`
-  color: var(--orange-500, #f59e0b);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 `;
 
 const ConflictList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 const ConflictItem = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 20px;
 `;
 
 const ConflictFootnote = styled.span`
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
 `;
 

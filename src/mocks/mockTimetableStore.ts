@@ -51,8 +51,7 @@ const buildCourseDetailItem = (id: number, subjectNumber: string, memo?: string 
     type: "COURSE",
     memo: memo ?? null,
     course: {
-      // 실 서버와 동일한 우회: courseOfferingId 자리에 courseId가 들어온다는 전제
-      courseOfferingId: offering.courseId,
+      courseOfferingId: offering.id,
       courseId: offering.courseId,
       title: offering.courseTitle,
       professor: offering.professor ?? "",
@@ -74,6 +73,16 @@ const timeTables: TimeTable[] = [
     isPrimary: true,
     visibility: "PRIVATE",
   },
+  {
+    id: 4002,
+    semesterId: MOCK_SEMESTER.id,
+    year: MOCK_SEMESTER.year,
+    term: MOCK_SEMESTER.term,
+    // ?id= URL 복원 테스트용 - 대표(primary)가 아닌 두 번째 시간표
+    timeTableName: "비대표 시간표 (목)",
+    isPrimary: false,
+    visibility: "PRIVATE",
+  },
 ];
 
 const itemsByTimeTableId = new Map<number, TimeTableDetailItem[]>([
@@ -84,6 +93,7 @@ const itemsByTimeTableId = new Map<number, TimeTableDetailItem[]>([
       buildCourseDetailItem(itemIdCounter++, "2600011001"),
     ],
   ],
+  [4002, [buildCourseDetailItem(itemIdCounter++, "2600003001")]],
 ]);
 
 export const mockGetTimeTables = (year?: number, term?: Term): TimeTable[] =>
@@ -150,7 +160,7 @@ export const mockCreateTimeTableCourseItem = (
   timeTableId: number,
   body: TimeTableCourseItemRequest,
 ): TimeTableItemSummary => {
-  const offering = MOCK_COURSE_OFFERINGS.find((o) => o.courseId === body.courseOfferingId);
+  const offering = MOCK_COURSE_OFFERINGS.find((o) => o.id === body.courseOfferingId);
   if (!offering) throw new MockApiError("존재하지 않는 개설 강의입니다.");
 
   const items = itemsByTimeTableId.get(timeTableId) ?? [];

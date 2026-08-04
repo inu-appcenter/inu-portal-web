@@ -87,7 +87,8 @@ export default function MobileTimeTableListPage() {
   const handleSelectTimetable = (t: Timetable) => {
     setSemester(t.semester);
     setActiveTimetable(t.id);
-    navigate(ROUTES.TIMETABLE.ROOT);
+    // id를 함께 넘겨 URL이 바로 이 시간표를 가리키게 함 (새로고침 시 복원용)
+    navigate(`${ROUTES.TIMETABLE.ROOT}?id=${t.id}`);
   };
 
   return (

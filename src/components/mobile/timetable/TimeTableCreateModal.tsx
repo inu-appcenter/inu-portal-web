@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import { Timetable, useTimetableStore } from "@/stores/useTimetableStore";
+import type { TimeTable } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { useCreateTimeTable } from "@/hooks/useTimeTables";
 import { formatSemester } from "@/utils/semester";
@@ -29,12 +30,14 @@ interface TimeTableCreateModalProps {
   isOpen: boolean;
   initialSemester?: string;
   onClose: () => void;
+  onSuccess?: (created: TimeTable) => void;
 }
 
 export default function TimeTableCreateModal({
   isOpen,
   initialSemester,
   onClose,
+  onSuccess,
 }: TimeTableCreateModalProps) {
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
   const { semesters } = useSemesters();
@@ -87,6 +90,7 @@ export default function TimeTableCreateModal({
           setSemester(formatSemester(created.year, created.term));
           setActiveTimetable(created.id);
           onClose();
+          onSuccess?.(created);
         },
         onError: (error: any) => {
           alert(error.response?.data?.msg || "시간표 생성에 실패했습니다.");

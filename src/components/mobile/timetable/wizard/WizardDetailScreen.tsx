@@ -28,7 +28,7 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
             <ReasonItem key={index}>
               <ReasonIcon $met={reason.met}>{reason.met ? "✓" : "!"}</ReasonIcon>
               <ReasonText>
-                <ReasonHeadline>{reason.headline}</ReasonHeadline>
+                <ReasonHeadline $met={reason.met}>{reason.headline}</ReasonHeadline>
                 {reason.detail && <ReasonDetail>{reason.detail}</ReasonDetail>}
               </ReasonText>
             </ReasonItem>
@@ -48,7 +48,7 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
                   {formatCourseMeetings(course)} · {course.credit}학점
                 </CourseMeta>
               </CourseTextWrap>
-              <ChevronRight size={18} color="var(--gray-400, #b0b8c1)" />
+              <ChevronRight size={18} color="#8a96a5" />
             </CourseRow>
           ))}
         </CourseList>
@@ -61,13 +61,18 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
 
 export default WizardDetailScreen;
 
+// WizardMiniTimetable과 동일한 --time-table-color-* 팔레트 (앱 전역 시간표 색감 통일)
 const BLOCK_COLORS = [
-  "#0061FF",
-  "#22C55E",
-  "#F59E0B",
-  "#EC4899",
-  "#8B5CF6",
-  "#14B8A6",
+  "var(--time-table-color-pink, #fab5cd)",
+  "var(--time-table-color-skyblue, #94cdfa)",
+  "var(--time-table-color-teal, #79dddf)",
+  "var(--time-table-color-orange, #ffcb94)",
+  "var(--time-table-color-violet, #c1acfc)",
+  "var(--time-table-color-yellow, #ffe589)",
+  "var(--time-table-color-lightgreen, #8ce99a)",
+  "var(--time-table-color-lilac, #acbcfd)",
+  "var(--time-table-color-purple, #e9adf7)",
+  "var(--time-table-color-red, #ffa6a6)",
 ];
 
 const ScrollContent = styled.div`
@@ -92,8 +97,8 @@ const Card = styled.div`
 
 const CardTitle = styled.h2`
   margin: 0;
-  color: var(--text-secondary, #333d4b);
-  font-size: 16px;
+  color: var(--text-primary, #191f28);
+  font-size: 15px;
   font-weight: 700;
   line-height: 23px;
 `;
@@ -101,7 +106,7 @@ const CardTitle = styled.h2`
 const ReasonList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 `;
 
 const ReasonItem = styled.div`
@@ -111,8 +116,8 @@ const ReasonItem = styled.div`
 `;
 
 const ReasonIcon = styled.span<{ $met: boolean }>`
-  color: ${({ $met }) => ($met ? "var(--green-500, #10b981)" : "var(--orange-500, #f59e0b)")};
-  font-size: 14px;
+  color: ${({ $met }) => ($met ? "#16a34a" : "#d97706")};
+  font-size: 13px;
   font-weight: 700;
   line-height: 20px;
   width: 12px;
@@ -122,19 +127,19 @@ const ReasonIcon = styled.span<{ $met: boolean }>`
 const ReasonText = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 `;
 
-const ReasonHeadline = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 14px;
-  font-weight: 600;
+const ReasonHeadline = styled.span<{ $met: boolean }>`
+  color: ${({ $met }) => ($met ? "var(--text-primary, #191f28)" : "#d97706")};
+  font-size: 13px;
+  font-weight: 500;
   line-height: 19px;
 `;
 
 const ReasonDetail = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
 `;
 
@@ -172,15 +177,15 @@ const CourseTextWrap = styled.div`
 `;
 
 const CourseName = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 15px;
-  font-weight: 600;
+  color: var(--text-primary, #191f28);
+  font-size: 14px;
+  font-weight: 500;
   line-height: 20px;
 `;
 
 const CourseMeta = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
 `;
 

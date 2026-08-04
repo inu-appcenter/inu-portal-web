@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode, UIEventHandler } from "react";
 import { createPortal } from "react-dom";
 import { Sheet } from "react-modal-sheet";
@@ -10,6 +10,8 @@ import {
   Plus,
   MessagesSquare,
   FileText,
+  Check,
+  SearchX,
 } from "lucide-react";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
@@ -20,6 +22,7 @@ import {
   FilterState,
   DEFAULT_FILTERS,
 } from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import Skeleton from "@/components/common/Skeleton";
 
 export interface CourseResult {
   id: number;
@@ -32,7 +35,9 @@ export interface CourseResult {
   credits: number;
   courseId: string;
   remarks?: string;
-  enrolledCount: number;
+  // 서버 수강인원/정원 데이터가 아직 동기화되지 않아 null일 수 있음 - null이면 배지 자체를 숨김
+  enrolledCount: number | null;
+  capacity: number | null;
   schedules: ClassItem[];
 }
 
@@ -79,6 +84,14 @@ interface MobileCourseSearchSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddCourse?: (course: CourseResult) => void;
+  // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
+  onFiltersChange?: (filters: FilterState) => void;
+  addedCourseOfferingIds?: Set<number>;
+  addedCourseIds?: Set<string>;
+  isLoading?: boolean;
+  hasNextPage?: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
 }
 
 const MobileCourseSearchSheet = ({
@@ -90,13 +103,25 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
   onAddCourse,
+  onFiltersChange,
+  addedCourseOfferingIds,
+  addedCourseIds,
+  isLoading = false,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const [activeFilters, setActiveFilters] =
+  const [activeFilters, setActiveFiltersState] =
     useState<FilterState>(DEFAULT_FILTERS);
+
+  const setActiveFilters = (filters: FilterState) => {
+    setActiveFiltersState(filters);
+    onFiltersChange?.(filters);
+  };
 
   // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
   useEffect(() => {
@@ -167,46 +192,9 @@ const MobileCourseSearchSheet = ({
   const filteredCourses = useMemo(() => {
     let list: CourseResult[] = [...courses];
 
-    // 1. 전공/영역 필터 (학과 분류 시뮬레이션)
-    if (activeFilters.major) {
-      list = list.filter((course) => {
-        if (activeFilters.major === "컴퓨터공학부") {
-          return course.name === "웹프로그래밍" || course.name === "운영체제";
-        }
-        if (activeFilters.major?.includes("교양")) {
-          return course.name === "창의적사고와문제해결";
-        }
-        return true;
-      });
-    }
-
-    // 2. 학년 필터
-    if (activeFilters.grades.length > 0) {
-      list = list.filter((course) =>
-        activeFilters.grades.includes(course.grade),
-      );
-    }
-
-    // 3. 이수구분 필터
-    if (activeFilters.types.length > 0) {
-      list = list.filter((course) => {
-        const courseType = course.isMajor ? "전공" : "교양";
-        return activeFilters.types.includes(courseType);
-      });
-    }
-
-    // 4. 학점 필터
-    if (activeFilters.credits.length > 0) {
-      list = list.filter((course) => {
-        if (activeFilters.credits.includes(4)) {
-          return (
-            course.credits >= 4 ||
-            activeFilters.credits.includes(course.credits)
-          );
-        }
-        return activeFilters.credits.includes(course.credits);
-      });
-    }
+    // 1~4. 전공/영역·학년·이수구분·학점 필터는 상위(MobileTimeTableEditPage)에서
+    // onFiltersChange로 전달받아 querystring으로 서버에 재조회하므로 여기서는 거르지 않는다
+    // (inu-appcenter/inu-portal-server#297 - 서버가 지원하기 전까지는 필터링되지 않음).
 
     // 5. 정렬 필터
     if (activeFilters.sort === "별점높은순") {
@@ -217,7 +205,7 @@ const MobileCourseSearchSheet = ({
       };
       list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
     } else if (activeFilters.sort === "담은인원많은순") {
-      list.sort((a, b) => b.enrolledCount - a.enrolledCount);
+      list.sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
     }
 
     return list;
@@ -237,8 +225,36 @@ const MobileCourseSearchSheet = ({
     }
   }, [isSearchActive]);
 
-  const handleScroll = () => {
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isLoading || isFetchingNextPage) return;
+      if (observerRef.current) observerRef.current.disconnect();
+
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          fetchNextPage
+        ) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) observerRef.current.observe(node);
+    },
+    [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage],
+  );
+
+  const handleScroll: UIEventHandler<HTMLDivElement> = (e) => {
     searchBarRef.current?.blur();
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollTop > 0 && scrollHeight - scrollTop - clientHeight < 150) {
+      if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
+        fetchNextPage();
+      }
+    }
   };
 
   const openLectureReview = (professor: string) => {
@@ -283,8 +299,45 @@ const MobileCourseSearchSheet = ({
           >
             <SheetContentWrapper>
               <CourseList>
-                {filteredCourses.map((course) => {
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <SkeletonCard key={`course-skeleton-${index}`}>
+                      <div className="skeleton-row-top">
+                        <Skeleton width="45%" height="20px" />
+                        <Skeleton
+                          width="70px"
+                          height="20px"
+                          style={{ borderRadius: "999px" }}
+                        />
+                      </div>
+                      <div className="skeleton-row-mid">
+                        <Skeleton width="50px" height="16px" />
+                        <Skeleton width="40px" height="16px" />
+                        <Skeleton width="50px" height="16px" />
+                      </div>
+                      <div className="skeleton-row-bottom">
+                        <Skeleton width="30%" height="14px" />
+                        <Skeleton width="50%" height="14px" />
+                      </div>
+                    </SkeletonCard>
+                  ))
+                ) : filteredCourses.length === 0 ? (
+                  <EmptyContainer>
+                    <SearchIconBox>
+                      <SearchX size={32} color="var(--gray-400, #b0b8c1)" />
+                    </SearchIconBox>
+                    <EmptyTitle>조회된 강의가 없습니다</EmptyTitle>
+                    <EmptyDescription>
+                      검색어나 필터 조건을 변경해 보세요
+                    </EmptyDescription>
+                  </EmptyContainer>
+                ) : (
+                  filteredCourses.map((course) => {
                   const isExpanded = expandedId === course.id;
+                  const isAdded = Boolean(
+                    (addedCourseOfferingIds && addedCourseOfferingIds.has(course.id)) ||
+                    (course.courseId && addedCourseIds && addedCourseIds.has(course.courseId)),
+                  );
 
                   return (
                     <CourseItem
@@ -297,9 +350,12 @@ const MobileCourseSearchSheet = ({
                           <CourseName>{course.name}</CourseName>
                         </MainInfo>
                         <RightInfo>
-                          <EnrolledBadge>
-                            {course.enrolledCount}명 / n명
-                          </EnrolledBadge>
+                          {course.enrolledCount != null &&
+                            course.capacity != null && (
+                              <EnrolledBadge>
+                                {course.enrolledCount}명 / {course.capacity}명
+                              </EnrolledBadge>
+                            )}
                         </RightInfo>
                       </InfoRow>
 
@@ -331,15 +387,17 @@ const MobileCourseSearchSheet = ({
                           )}
                           <ButtonRow>
                             <PrimaryActionButton
+                              disabled={isAdded}
+                              $isAdded={isAdded}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (onAddCourse) {
+                                if (!isAdded && onAddCourse) {
                                   onAddCourse(course);
                                 }
                               }}
                             >
-                              <Plus size={20} />
-                              시간표에 추가
+                              {isAdded ? <Check size={20} /> : <Plus size={20} />}
+                              {isAdded ? "추가됨" : "시간표에 추가"}
                             </PrimaryActionButton>
                             <SecondaryActionButton
                               onClick={(e) => {
@@ -369,7 +427,30 @@ const MobileCourseSearchSheet = ({
                       )}
                     </CourseItem>
                   );
-                })}
+                }))}
+                {isFetchingNextPage && (
+                  <SkeletonCard key="next-page-skeleton">
+                    <div className="skeleton-row-top">
+                      <Skeleton width="45%" height="20px" />
+                      <Skeleton
+                        width="70px"
+                        height="20px"
+                        style={{ borderRadius: "999px" }}
+                      />
+                    </div>
+                    <div className="skeleton-row-mid">
+                      <Skeleton width="50px" height="16px" />
+                      <Skeleton width="40px" height="16px" />
+                      <Skeleton width="50px" height="16px" />
+                    </div>
+                  </SkeletonCard>
+                )}
+                {hasNextPage && (
+                  <div
+                    ref={loadMoreRef}
+                    style={{ height: "20px", width: "100%" }}
+                  />
+                )}
               </CourseList>
             </SheetContentWrapper>
           </CourseSheetScrollableContent>
@@ -388,7 +469,7 @@ const MobileCourseSearchSheet = ({
                 })
               }
             >
-              <SlidersHorizontal size={24} />
+              <SlidersHorizontal size={20} />
               {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
             </FilterButton>
 
@@ -498,8 +579,8 @@ const FilterButton = styled.button<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 56px;
+  gap: 6px;
+  height: 48px;
   border-radius: 999px;
   cursor: pointer;
   pointer-events: auto;
@@ -525,10 +606,10 @@ const FilterButton = styled.button<{
     $isZeroCount
       ? "var(--text-secondary, #333d4b)"
       : "var(--text-inverse, #fff)"};
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 20px;
 
   width: fit-content;
   
@@ -554,17 +635,17 @@ const FilterButton = styled.button<{
   `
       : props.$isZeroCount
         ? `
-    max-width: 56px;
-    padding: 16px;
-    margin-right: 16px;
+    max-width: 48px;
+    padding: 12px;
+    margin-right: 12px;
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
   `
         : `
-    max-width: 240px; 
-    padding: 16px 20px;
-    margin-right: 16px;
+    max-width: 200px; 
+    padding: 12px 16px;
+    margin-right: 12px;
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
@@ -579,6 +660,68 @@ const CourseList = styled.div`
   padding: 0;
 `;
 
+const EmptyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  text-align: center;
+`;
+
+const SearchIconBox = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--bg-muted, #f1f3f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+`;
+
+const EmptyTitle = styled.h3`
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary, #333d4b);
+  margin: 0 0 6px 0;
+`;
+
+const EmptyDescription = styled.p`
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-tertiary, #8b95a1);
+  margin: 0;
+`;
+
+const SkeletonCard = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .skeleton-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .skeleton-row-mid {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .skeleton-row-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+`;
+
 const CourseItem = styled.div`
   padding: 12px 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
@@ -588,6 +731,21 @@ const CourseItem = styled.div`
   background-color: #ffffff;
   transition: background-color 0.2s;
   //cursor: pointer;
+
+  /* The sheet's per-frame drag-driven scrollPaddingBottom (see
+     CourseSheetScrollableContent) forces a layout recalculation on every
+     animation tick, and with an unvirtualized course list that cost scales
+     with row count — the main source of Android-only jank here (WKWebView
+     doesn't show the same behavior). content-visibility skips layout/paint
+     for rows currently off-screen entirely, instead of just scoping
+     invalidation (plain contain doesn't stop the browser from still doing
+     the work for every row). "auto <length>" remembers each row's real
+     rendered height after it's first been on-screen, so the placeholder only
+     matters before that — safe here since the sheet's snap points are
+     viewport-ratio based (COURSE_SEARCH_SNAP_POINTS), not derived from this
+     list's scrollHeight. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 140px;
 `;
 
 const InfoRow = styled.div`
@@ -725,11 +883,25 @@ const ActionButton = styled.button`
   }
 `;
 
-const PrimaryActionButton = styled(ActionButton)`
+const PrimaryActionButton = styled(ActionButton)<{ $isAdded?: boolean }>`
   border-radius: 999px;
-  background: var(--interactive-primary, #3b82f6);
+  background: ${({ $isAdded }) =>
+    $isAdded
+      ? "var(--bg-subtle-dark, #e5e8eb)"
+      : "var(--interactive-primary, #3b82f6)"};
 
-  color: #fff;
+  color: ${({ $isAdded }) =>
+    $isAdded ? "var(--text-tertiary, #8b95a1)" : "#fff"};
+
+  ${({ $isAdded }) =>
+    $isAdded &&
+    `
+    background-color: var(--bg-neutral-subtle, #f2f4f6) !important;
+    color: var(--text-tertiary, #8b95a1) !important;
+    border: 1px solid var(--border-default, #e5e8eb);
+    cursor: not-allowed;
+    opacity: 0.8;
+  `}
 `;
 
 const SecondaryActionButton = styled(ActionButton)`

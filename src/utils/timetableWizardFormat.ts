@@ -2,7 +2,7 @@ import { formatHoursToTime } from "@/utils/timetable";
 import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { WizardCourseOption } from "@/types/timetableWizard";
 
-export const WIZARD_DAY_NAMES = ["월", "화", "수", "목", "금"];
+export const WIZARD_DAY_NAMES = ["월", "화", "수", "목", "금", "토", "일"];
 
 export const formatCourseMeetings = (course: WizardCourseOption): string =>
   course.meetings

@@ -7,10 +7,11 @@ import MobileCourseSearchSheet, {
   COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
-import { Course } from "@/types/courses";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import type { CourseOfferingFilters } from "@/types/courseOfferings";
 import {
   useCreateTimeTableCourseItem,
   useDeleteTimeTableItem,
@@ -19,24 +20,15 @@ import {
 } from "@/hooks/useTimeTables";
 import { formatHoursToTime } from "@/utils/timetable";
 import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
-
-// 서버 강의 데이터에는 아직 room/day/startTime/endTime/professor 등 시간표 배치 정보가 없어
-// 검색 시트가 요구하는 CourseResult 형태로 임시 매핑한다.
-const mapCourseToCourseResult = (course: Course): CourseResult => ({
-  id: course.id,
-  name: course.title,
-  professor: "-",
-  timeStr: "-",
-  room: "-",
-  grade: parseInt(course.targetGradeName, 10) || 0,
-  isMajor: course.completionDivisionName.includes("전공"),
-  credits: parseInt(course.credit, 10) || 0,
-  courseId: String(course.id),
-  remarks: course.content,
-  enrolledCount: 0,
-  schedules: [],
-});
+import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
+import {
+  mapCourseOfferingToCourseResult,
+  mapFilterToOfferingFilters,
+} from "@/utils/courseSearchResult";
+
+
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -134,13 +126,79 @@ const IconButton = styled.button`
 
 const MobileTimeTableEditPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const keyword = searchParams.get("courseQuery") || undefined;
 
-  // 서버 강의 목록 조회 (react query) + zustand 상태 동기화
+  // 상태 및 스토어 관리
+  const { timetables, activeTimetableId } = useTimetableStore();
+  const activeTimetable = useMemo(() => {
+    return timetables.find((t) => t.id === activeTimetableId) || null;
+  }, [timetables, activeTimetableId]);
+  const timetable = activeTimetable?.events || [];
+
+  const addedCourseOfferingIds = useMemo(() => {
+    const set = new Set<number>();
+    timetable.forEach((item) => {
+      if (item.courseOfferingId) {
+        set.add(item.courseOfferingId);
+      }
+    });
+    return set;
+  }, [timetable]);
+
+  const addedCourseIds = useMemo(() => {
+    const set = new Set<string>();
+    timetable.forEach((item) => {
+      if (item.courseId) {
+        set.add(item.courseId);
+      }
+    });
+    return set;
+  }, [timetable]);
+
+  // 전공/영역·학년·이수구분·학점 필터
+  const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>({});
+  const handleFiltersChange = (filters: FilterState) => {
+    setOfferingFilters(mapFilterToOfferingFilters(filters));
+  };
+
+  const combinedFilters: CourseOfferingFilters = useMemo(
+    () => ({
+      ...offeringFilters,
+      keyword,
+    }),
+    [offeringFilters, keyword],
+  );
+
+  // 개설강의(학기별 시간/강의실) + 강의 목록(학점/학과 등) 조회 후 courseId로 조인
   const { courses } = useCourses();
-  const searchResults = useMemo(
-    () => courses.map(mapCourseToCourseResult),
+  const {
+    courseOfferings,
+    isLoading: isOfferingsLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCourseOfferings(
+    activeTimetable?.year,
+    activeTimetable?.term,
+    combinedFilters,
+  );
+  const isSheetLoading = isOfferingsLoading && courseOfferings.length === 0;
+  const courseById = useMemo(
+    () => new Map(courses.map((c) => [c.id, c])),
     [courses],
   );
+  const searchResults = useMemo(
+    () =>
+      courseOfferings.map((offering) =>
+        mapCourseOfferingToCourseResult(
+          offering,
+          courseById.get(offering.courseId),
+        ),
+      ),
+    [courseOfferings, courseById],
+  );
+
 
   const headerRight = useMemo(
     () => (
@@ -167,15 +225,10 @@ const MobileTimeTableEditPage = () => {
     rightAreaNotCircle: true,
   });
 
-  // 상태 및 스토어 관리
-  const { timetables, activeTimetableId } = useTimetableStore();
-  const activeTimetable = useMemo(() => {
-    return timetables.find((t) => t.id === activeTimetableId) || null;
-  }, [timetables, activeTimetableId]);
-  const timetable = activeTimetable?.events || [];
-
   // 새로고침으로 이 페이지에 바로 진입해도 활성 시간표를 복구할 수 있도록 목록을 조회
   useTimeTables();
+  // URL의 ?id= 쿼리파라미터와 활성 시간표를 양방향 동기화 (새로고침해도 보던 시간표 유지)
+  useTimetableUrlSync();
   // 상세 조회로 서버 요소를 스토어에 동기화 (뮤테이션 성공 시 invalidate로 재조회됨)
   useTimeTableDetail(activeTimetableId);
 
@@ -214,11 +267,22 @@ const MobileTimeTableEditPage = () => {
     }
   }, [snap]);
 
-  // 프리뷰 연산
-  const previewSchedules = useMemo(
-    () => searchResults.find((c) => c.id === expandedId)?.schedules || [],
-    [searchResults, expandedId],
-  );
+  // 프리뷰 연산 (이미 시간표에 추가된 강의인 경우 미리보기 레이어를 생성하지 않음)
+  const previewSchedules = useMemo(() => {
+    if (expandedId === null) return [];
+    const targetCourse = searchResults.find((c) => c.id === expandedId);
+    if (!targetCourse) return [];
+
+    const isAdded =
+      addedCourseOfferingIds.has(targetCourse.id) ||
+      Boolean(
+        targetCourse.courseId && addedCourseIds.has(targetCourse.courseId),
+      );
+
+    if (isAdded) return [];
+
+    return targetCourse.schedules || [];
+  }, [searchResults, expandedId, addedCourseOfferingIds, addedCourseIds]);
 
   // 선택된 강의(미리보기)가 바텀시트에 의해 가려지는 경우 스크롤 처리
   useEffect(() => {
@@ -317,6 +381,70 @@ const MobileTimeTableEditPage = () => {
     );
   };
 
+  const TERM_LABELS: Record<string, string> = {
+    FIRST: "1학기",
+    SECOND: "2학기",
+    SUMMER: "여름학기",
+    WINTER: "겨울학기",
+  };
+
+  const semesterText = useMemo(() => {
+    if (!activeTimetable) return "2026년 1학기";
+    const termStr = TERM_LABELS[activeTimetable.term] || "1학기";
+    return `${activeTimetable.year}년 ${termStr}`;
+  }, [activeTimetable]);
+
+  const offeringById = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.id, o])),
+    [courseOfferings],
+  );
+
+  const offeringBySubNum = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
+    [courseOfferings],
+  );
+
+  const { majorCredits, generalCredits, otherCredits, totalCredits } =
+    useMemo(() => {
+      let major = 0;
+      let general = 0;
+      let other = 0;
+
+      timetable.forEach((item) => {
+        const credits = item.credits || 0;
+        if (credits <= 0) return;
+
+        const offering =
+          (item.courseOfferingId
+            ? offeringById.get(item.courseOfferingId)
+            : null) ||
+          (item.courseId ? offeringBySubNum.get(item.courseId) : null);
+        const course = offering ? courseById.get(offering.courseId) : null;
+
+        const divisionName =
+          offering?.isuName ||
+          offering?.isuFldName ||
+          course?.completionDivisionName ||
+          "";
+
+        if (divisionName.includes("전공")) {
+          major += credits;
+        } else if (divisionName.includes("교양")) {
+          general += credits;
+        } else {
+          other += credits;
+        }
+      });
+
+      const total = major + general + other;
+      return {
+        majorCredits: major,
+        generalCredits: general,
+        otherCredits: other,
+        totalCredits: total,
+      };
+    }, [timetable, offeringById, offeringBySubNum, courseById]);
+
   const snapHeightValue = typeof snap === "number" ? snap : 0.6;
 
   return (
@@ -328,13 +456,14 @@ const MobileTimeTableEditPage = () => {
         onDelete={handleDelete}
       />
       <SemesterInfoLine>
-        <Semester>2026년 1학기</Semester>
+        <Semester>{semesterText}</Semester>
         <ScoreArea>
           <div className="type1">
-            <span>전공 9</span>
-            <span>교양 9</span>
+            <span>전공 {majorCredits}</span>
+            <span>교양 {generalCredits}</span>
+            {otherCredits > 0 && <span>기타 {otherCredits}</span>}
           </div>
-          <div className="type2">총 18학점</div>
+          <div className="type2">총 {totalCredits}학점</div>
         </ScoreArea>
       </SemesterInfoLine>
 
@@ -348,6 +477,13 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
+        onFiltersChange={handleFiltersChange}
+        addedCourseOfferingIds={addedCourseOfferingIds}
+        addedCourseIds={addedCourseIds}
+        isLoading={isSheetLoading}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
       />
     </PageWrapper>
   );

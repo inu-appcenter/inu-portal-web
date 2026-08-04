@@ -12,6 +12,7 @@ export interface WizardCourseMeeting {
 // 마법사 생성 알고리즘과 검색/선택 UI가 공통으로 쓰는 단위.
 export interface WizardCourseOption {
   courseId: number;
+  courseOfferingId: number;
   subjectNumber: string;
   title: string;
   professor: string | null;
@@ -20,15 +21,21 @@ export interface WizardCourseOption {
   meetings: WizardCourseMeeting[];
 }
 
+// "꼭 넣고 싶은 강의" 목록의 항목 하나. required=true(필수)면 반드시 포함하고, false(선택)면
+// 다른 조건과 시간이 안 맞을 때 이 과목만 조합에서 자동으로 빠질 수 있다(생성기가 후보 풀
+// 전체를 뒤지는 게 아니라 이 위시리스트 안에서만 조합을 탐색하기 때문에 가능한 동작).
+export interface WizardWishlistItem {
+  subjectNumber: string;
+  required: boolean;
+}
+
 export interface WizardBasicConditions {
   semesterId: number | null;
   year: number | null;
   term: Term | null;
   minCredit: number;
   maxCredit: number;
-  // subjectNumber(과목번호)로 특정 분반(개설강의)을 식별. courseId만으로는 같은 과목의
-  // 여러 분반을 구분할 수 없어 선택/생성 알고리즘 모두 subjectNumber를 키로 사용한다.
-  mustHaveSubjectNumbers: string[];
+  wishlist: WizardWishlistItem[];
 }
 
 export interface WizardPreferenceConditions {

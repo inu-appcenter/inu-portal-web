@@ -8,6 +8,9 @@ import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
+import { useCourses } from "@/hooks/useCourses";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import {
   useTimeTables,
   useTimeTableDetail,
@@ -368,6 +371,8 @@ const MobileTimeTablePage = () => {
 
   // 서버 시간표 목록 조회 및 스토어 동기화
   useTimeTables();
+  // URL의 ?id= 쿼리파라미터와 활성 시간표를 양방향 동기화 (새로고침해도 보던 시간표 유지)
+  useTimetableUrlSync();
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
 
@@ -487,6 +492,70 @@ const MobileTimeTablePage = () => {
     navigate(ROUTES.TIMETABLE.CALCULATOR);
   };
 
+  const { courses } = useCourses();
+  const { courseOfferings } = useCourseOfferings(
+    activeTimetable?.year,
+    activeTimetable?.term,
+  );
+
+  const courseById = useMemo(
+    () => new Map(courses.map((c) => [c.id, c])),
+    [courses],
+  );
+
+  const offeringById = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.id, o])),
+    [courseOfferings],
+  );
+
+  const offeringBySubNum = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
+    [courseOfferings],
+  );
+
+  const timetableEvents = activeTimetable?.events || [];
+
+  const { majorCredits, generalCredits, otherCredits, totalCredits } =
+    useMemo(() => {
+      let major = 0;
+      let general = 0;
+      let other = 0;
+
+      timetableEvents.forEach((item) => {
+        const credits = item.credits || 0;
+        if (credits <= 0) return;
+
+        const offering =
+          (item.courseOfferingId
+            ? offeringById.get(item.courseOfferingId)
+            : null) ||
+          (item.courseId ? offeringBySubNum.get(item.courseId) : null);
+        const course = offering ? courseById.get(offering.courseId) : null;
+
+        const divisionName =
+          offering?.isuName ||
+          offering?.isuFldName ||
+          course?.completionDivisionName ||
+          "";
+
+        if (divisionName.includes("전공")) {
+          major += credits;
+        } else if (divisionName.includes("교양")) {
+          general += credits;
+        } else {
+          other += credits;
+        }
+      });
+
+      const total = major + general + other;
+      return {
+        majorCredits: major,
+        generalCredits: general,
+        otherCredits: other,
+        totalCredits: total,
+      };
+    }, [timetableEvents, offeringById, offeringBySubNum, courseById]);
+
   return (
     <MobileTimeTablePageWrapper>
       <ComingSoonModal
@@ -498,6 +567,9 @@ const MobileTimeTablePage = () => {
         isOpen={isCreateModalOpen}
         initialSemester={selectedSemester}
         onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(created) => {
+          navigate(`${ROUTES.TIMETABLE.EDIT}?id=${created.id}`);
+        }}
       />
 
       {activeTimetable && (
@@ -610,10 +682,11 @@ const MobileTimeTablePage = () => {
       <SemesterInfoLine>
         <ScoreArea>
           <div className="type1">
-            <span>전공 9</span>
-            <span>교양 9</span>
+            <span>전공 {majorCredits}</span>
+            <span>교양 {generalCredits}</span>
+            {otherCredits > 0 && <span>기타 {otherCredits}</span>}
           </div>
-          <div className="type2">총 18학점</div>
+          <div className="type2">총 {totalCredits}학점</div>
         </ScoreArea>
       </SemesterInfoLine>
 

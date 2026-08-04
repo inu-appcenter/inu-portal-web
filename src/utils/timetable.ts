@@ -1,7 +1,7 @@
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { TimeTableDay, TimeTableDetailItem } from "@/types/timetables";
 
-const DAY_INDEX: Record<TimeTableDay, number> = {
+export const DAY_INDEX: Record<TimeTableDay, number> = {
   MONDAY: 0,
   TUESDAY: 1,
   WEDNESDAY: 2,
@@ -23,7 +23,7 @@ export const DAY_BY_INDEX: TimeTableDay[] = [
 ];
 
 // "HH:mm" -> 시간 단위 숫자 (예: "10:15" -> 10.25)
-const parseTimeToHours = (time: string) => {
+export const parseTimeToHours = (time: string) => {
   const [hour, minute] = time.split(":").map(Number);
   return hour + minute / 60;
 };
@@ -50,6 +50,7 @@ export const mapDetailItemsToClassItems = (
     return source.meetings.map<ClassItem>((meeting, index) => ({
       id: meeting.id,
       itemId: item.id,
+      courseOfferingId: item.course?.courseOfferingId,
       customScheduleId: item.customSchedule?.customScheduleId,
       name: source.title,
       room: meeting.location ?? "",

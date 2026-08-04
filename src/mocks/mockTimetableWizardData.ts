@@ -59,6 +59,8 @@ const SEEDS: MockCourseSeed[] = [
   { id: 20, title: "스포츠와건강", departmentName: "교양", credit: "1", targetGradeName: "공통" },
   { id: 21, title: "야간세미나", departmentName: "교양", credit: "2", targetGradeName: "공통" },
   { id: 22, title: "저녁교양", departmentName: "교양", credit: "1", targetGradeName: "공통" },
+  // 토요일 개설강의 - 그리드 요일 자동 확장 검증용 (inu-appcenter/inu-portal-server#297)
+  { id: 23, title: "토요특강", departmentName: "교양", credit: "1", targetGradeName: "공통" },
 ];
 
 export const MOCK_COURSES: Course[] = SEEDS.map((s) => ({
@@ -80,7 +82,7 @@ export const MOCK_COURSES: Course[] = SEEDS.map((s) => ({
 }));
 
 interface MockMeetingSeed {
-  day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
+  day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY";
   startTime: string;
   endTime: string;
   location: string;
@@ -120,13 +122,15 @@ const OFFERING_SEEDS: MockOfferingSeed[] = [
   // 야간 수업 (야간 수업 제외 조건 테스트용)
   { courseId: 21, subjectNumber: "2600021001", professor: "야간강사A", meetings: [{ day: "THURSDAY", startTime: "18:00", endTime: "19:30", location: "12-306" }] },
   { courseId: 22, subjectNumber: "2600022001", professor: "야간강사B", meetings: [{ day: "TUESDAY", startTime: "18:00", endTime: "18:50", location: "12-405" }] },
+  { courseId: 23, subjectNumber: "2600023001", professor: "특강강사", meetings: [{ day: "SATURDAY", startTime: "10:00", endTime: "12:00", location: "15-501" }] },
 ];
 
 let meetingIdCounter = 90000;
 
-export const MOCK_COURSE_OFFERINGS: CourseOffering[] = OFFERING_SEEDS.map((seed) => {
+export const MOCK_COURSE_OFFERINGS: CourseOffering[] = OFFERING_SEEDS.map((seed, index) => {
   const course = MOCK_COURSES.find((c) => c.id === seed.courseId)!;
   return {
+    id: index + 1,
     syllabus: null,
     subjectNumber: seed.subjectNumber,
     method: "OFFLINE",

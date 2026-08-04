@@ -4,8 +4,10 @@ import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { Trash2, Image as ImageIcon, Pencil } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useCourses } from "@/hooks/useCourses";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 
 interface ClassDetailBottomSheetProps {
   open: boolean;
@@ -23,8 +25,6 @@ const formatHour = (hour: number) => {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 };
 
-const DEFAULT_MEMO = "중간고사 4/22, 기말고사 6/17";
-
 export default function ClassDetailBottomSheet({
   open,
   onOpenChange,
@@ -38,6 +38,24 @@ export default function ClassDetailBottomSheet({
   const { activeTimetableId, timetables, updateTimetableEvents } =
     useTimetableStore();
 
+  const { courses } = useCourses();
+  const { courseOfferings } = useCourseOfferings();
+
+  const courseById = useMemo(
+    () => new Map(courses.map((c) => [c.id, c])),
+    [courses],
+  );
+
+  const offeringById = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.id, o])),
+    [courseOfferings],
+  );
+
+  const offeringBySubNum = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
+    [courseOfferings],
+  );
+
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState("");
   const memoInputRef = useRef<HTMLTextAreaElement>(null);
@@ -45,6 +63,15 @@ export default function ClassDetailBottomSheet({
   const liveClass = selectedClass
     ? allEvents.find((e) => e.id === selectedClass.id) || selectedClass
     : null;
+
+  const offering = liveClass
+    ? (liveClass.courseOfferingId
+        ? offeringById.get(liveClass.courseOfferingId)
+        : null) ||
+      (liveClass.courseId ? offeringBySubNum.get(liveClass.courseId) : null)
+    : null;
+
+  const course = offering ? courseById.get(offering.courseId) : null;
 
   const adjustHeight = (element: HTMLTextAreaElement) => {
     if (!element) return;
@@ -54,7 +81,7 @@ export default function ClassDetailBottomSheet({
 
   useEffect(() => {
     if (liveClass) {
-      setMemoInput(liveClass.memo || DEFAULT_MEMO);
+      setMemoInput(liveClass.memo || "");
       setIsEditingMemo(false);
     }
   }, [selectedClass, allEvents]);
@@ -70,13 +97,16 @@ export default function ClassDetailBottomSheet({
 
   if (!liveClass) return null;
 
-  const professorName = liveClass.professor?.trim() || "박기석";
-  const creditsVal = liveClass.credits || 3;
+  const professorName =
+    liveClass.professor?.trim() || offering?.professor?.trim() || "-";
+  const creditsVal =
+    liveClass.credits ?? offering?.credit ?? (parseInt(course?.credit ?? "", 10) || 0);
   const evaluationVal = liveClass.evaluation || "상대평가";
 
-  const lectureReviewUrl = professorName
-    ? `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`
-    : "";
+  const lectureReviewUrl =
+    professorName && professorName !== "-"
+      ? `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`
+      : "";
   const handleLectureReviewClick = () => {
     if (!lectureReviewUrl) {
       alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
@@ -91,14 +121,26 @@ export default function ClassDetailBottomSheet({
 
   const dotColor = colorMap.get(liveClass.name) || "var(--text-brand, #0061FF)";
 
-  const gradeStr = liveClass.grade
+  const gradeStr = offering?.hyName
+    ? offering.hyName === "0"
+      ? "전학년"
+      : `${offering.hyName}학년`
+    : course?.targetGradeName
+    ? `${course.targetGradeName}학년`
+    : liveClass.grade
     ? typeof liveClass.grade === "number" || !isNaN(Number(liveClass.grade))
       ? `${liveClass.grade}학년`
       : liveClass.grade
-    : "3학년";
+    : "";
 
-  const courseTypeStr = liveClass.courseType || "전공심화";
-  const courseIdStr = liveClass.courseId || "0001421001";
+  const courseTypeStr =
+    offering?.isuName ||
+    offering?.isuFldName ||
+    course?.completionDivisionName ||
+    liveClass.courseType ||
+    "";
+
+  const courseIdStr = offering?.subjectNumber || liveClass.courseId || "";
 
   const detailsList = [gradeStr, courseTypeStr, courseIdStr].filter(Boolean);
   const detailsText = detailsList.join("  ");
@@ -111,8 +153,8 @@ export default function ClassDetailBottomSheet({
     })
     .join(", ");
 
-  const roomVal = liveClass.room || "07-415";
-  const isCustomCourse = liveClass.isCustom || !liveClass.courseId;
+  const roomVal = liveClass.room || offering?.meetings[0]?.location || "-";
+  const isCustomCourse = liveClass.isCustom || (!liveClass.courseId && !liveClass.courseOfferingId);
 
   const handleSaveMemo = () => {
     if (activeTimetableId === null) return;
@@ -214,18 +256,17 @@ export default function ClassDetailBottomSheet({
                 >
                   <MemoHeaderRow>
                     <FieldLabel style={{ cursor: "pointer" }}>메모</FieldLabel>
-                    {isEditingMemo &&
-                      memoInput !== (liveClass.memo || DEFAULT_MEMO) && (
-                        <MemoSaveLink
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveMemo();
-                          }}
-                        >
-                          저장
-                        </MemoSaveLink>
-                      )}
+                    {isEditingMemo && memoInput !== (liveClass.memo || "") && (
+                      <MemoSaveLink
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveMemo();
+                        }}
+                      >
+                        저장
+                      </MemoSaveLink>
+                    )}
                   </MemoHeaderRow>
                   {isEditingMemo ? (
                     <MemoEditContainer onClick={(e) => e.stopPropagation()}>
@@ -241,8 +282,15 @@ export default function ClassDetailBottomSheet({
                       />
                     </MemoEditContainer>
                   ) : (
-                    <FieldValue style={{ cursor: "pointer" }}>
-                      {liveClass.memo || DEFAULT_MEMO}
+                    <FieldValue
+                      style={{
+                        cursor: "pointer",
+                        color: liveClass.memo
+                          ? "var(--text-secondary, #333d4b)"
+                          : "var(--text-tertiary, #8b95a1)",
+                      }}
+                    >
+                      {liveClass.memo || "메모가 없습니다."}
                     </FieldValue>
                   )}
                 </InfoField>

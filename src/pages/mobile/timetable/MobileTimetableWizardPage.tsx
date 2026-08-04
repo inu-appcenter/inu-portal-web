@@ -10,9 +10,13 @@ import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { buildWizardCourseOptions } from "@/utils/timetableWizardPool";
 import { generateWizardCandidates } from "@/utils/timetableWizardGenerator";
+import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
 import CreditRangeSlider from "@/components/mobile/timetable/wizard/CreditRangeSlider";
 import WizardStepIndicator from "@/components/mobile/timetable/wizard/WizardStepIndicator";
-import WizardCourseSearchSheet from "@/components/mobile/timetable/wizard/WizardCourseSearchSheet";
+import MobileCourseSearchSheet, {
+  CourseResult,
+  COURSE_SEARCH_SNAP_POINTS,
+} from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import WizardStep3Exclusion from "@/components/mobile/timetable/wizard/WizardStep3Exclusion";
 import WizardGeneratingScreen from "@/components/mobile/timetable/wizard/WizardGeneratingScreen";
 import WizardResultsScreen from "@/components/mobile/timetable/wizard/WizardResultsScreen";
@@ -62,23 +66,66 @@ const COMPACT_TERM_LABELS: Record<string, string> = {
 const formatSemesterCompact = (year: number, term: string) =>
   `${year}-${COMPACT_TERM_LABELS[term] ?? term}`;
 
+// 위시리스트 검색 시트의 "필터" 버튼이 별도 라우트(ROUTES.TIMETABLE.FILTER)로 실제
+// 네비게이션하는데, 이 페이지의 스텝 상태는 전부 로컬 useState라 그 경로로 갔다 오면
+// 언마운트→리마운트되어 입력값이 통째로 날아간다. applied_filters 복원(MobileCourseSearchSheet)과
+// 같은 방식으로 스텝1~3 입력값을 localStorage에 저장해두고 마운트 시 복원한다.
+// 결과/생성중 단계는 후보 데이터 자체가 저장돼있지 않아 복원 대상에서 제외(스텝3으로 되돌림).
+const WIZARD_DRAFT_STORAGE_KEY = "timetableWizardDraft";
+const RESTORABLE_STEPS: WizardStep[] = ["step1", "step2", "step3"];
+
+interface WizardDraft {
+  step: WizardStep;
+  basic: WizardBasicConditions;
+  preference: typeof DEFAULT_PREFERENCE_CONDITIONS;
+  exclusion: typeof DEFAULT_EXCLUSION_CONDITIONS;
+}
+
+const loadWizardDraft = (): WizardDraft | null => {
+  try {
+    const raw = localStorage.getItem(WIZARD_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as WizardDraft;
+    return {
+      ...parsed,
+      step: RESTORABLE_STEPS.includes(parsed.step) ? parsed.step : "step3",
+    };
+  } catch {
+    return null;
+  }
+};
+
 export default function MobileTimetableWizardPage() {
   const navigate = useNavigate();
   const { semesters } = useSemesters();
   const { courses } = useCourses();
 
-  const [step, setStep] = useState<WizardStep>("step1");
+  const [step, setStep] = useState<WizardStep>(() => loadWizardDraft()?.step ?? "step1");
 
-  const [basic, setBasic] = useState<WizardBasicConditions>({
-    semesterId: null,
-    year: null,
-    term: null,
-    minCredit: DEFAULT_MIN_CREDIT,
-    maxCredit: DEFAULT_MAX_CREDIT,
-    mustHaveSubjectNumbers: [],
-  });
-  const [preference, setPreference] = useState(DEFAULT_PREFERENCE_CONDITIONS);
-  const [exclusion, setExclusion] = useState(DEFAULT_EXCLUSION_CONDITIONS);
+  const [basic, setBasic] = useState<WizardBasicConditions>(
+    () =>
+      loadWizardDraft()?.basic ?? {
+        semesterId: null,
+        year: null,
+        term: null,
+        minCredit: DEFAULT_MIN_CREDIT,
+        maxCredit: DEFAULT_MAX_CREDIT,
+        wishlist: [],
+      },
+  );
+  const [preference, setPreference] = useState(
+    () => loadWizardDraft()?.preference ?? DEFAULT_PREFERENCE_CONDITIONS,
+  );
+  const [exclusion, setExclusion] = useState(
+    () => loadWizardDraft()?.exclusion ?? DEFAULT_EXCLUSION_CONDITIONS,
+  );
+
+  // 스텝1~3 입력값이 바뀔 때마다 draft로 저장 (생성중/결과 단계는 재생성하면 되므로 저장 안 함)
+  useEffect(() => {
+    if (!RESTORABLE_STEPS.includes(step)) return;
+    const draft: WizardDraft = { step, basic, preference, exclusion };
+    localStorage.setItem(WIZARD_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  }, [step, basic, preference, exclusion]);
 
   // 학기 목록이 로드되면 1회에 한해 기본 학기를 자동 선택 (진행중 학기 우선, 없으면 최신 학기)
   useEffect(() => {
@@ -108,12 +155,19 @@ export default function MobileTimetableWizardPage() {
     [coursePool],
   );
 
-  const mustHaveCourses = useMemo(
+  // "꼭 넣고 싶은 강의" 검색은 시간표 편집(강의 추가)과 동일한 MobileCourseSearchSheet를
+  // 그대로 재사용한다 - 이미 담은 과목은 목록에서 제외해 중복 담기를 막는다.
+  const courseById = useMemo(() => new Map(courses.map((c) => [c.id, c])), [courses]);
+
+  const wishlistCourses = useMemo(
     () =>
-      basic.mustHaveSubjectNumbers
-        .map(findBySubjectNumber)
-        .filter((c): c is WizardCourseOption => !!c),
-    [basic.mustHaveSubjectNumbers, findBySubjectNumber],
+      basic.wishlist
+        .map((item) => {
+          const course = findBySubjectNumber(item.subjectNumber);
+          return course ? { ...course, required: item.required } : null;
+        })
+        .filter((c): c is WizardCourseOption & { required: boolean } => !!c),
+    [basic.wishlist, findBySubjectNumber],
   );
 
   const excludedCourses = useMemo(
@@ -124,9 +178,16 @@ export default function MobileTimetableWizardPage() {
     [exclusion.excludedSubjectNumbers, findBySubjectNumber],
   );
 
-  const pickedSubjectNumbers = useMemo(
-    () => [...basic.mustHaveSubjectNumbers, ...exclusion.excludedSubjectNumbers],
-    [basic.mustHaveSubjectNumbers, exclusion.excludedSubjectNumbers],
+  const wishlistSearchResults = useMemo(() => {
+    const pickedSet = new Set(basic.wishlist.map((item) => item.subjectNumber));
+    return courseOfferings
+      .filter((offering) => !pickedSet.has(offering.subjectNumber))
+      .map((offering) => mapCourseOfferingToCourseResult(offering, courseById.get(offering.courseId)));
+  }, [courseOfferings, courseById, basic.wishlist]);
+
+  const [wishlistExpandedId, setWishlistExpandedId] = useState<number | null>(null);
+  const [wishlistSheetSnap, setWishlistSheetSnap] = useState<string | number | null>(
+    COURSE_SEARCH_SNAP_POINTS[1],
   );
 
   const [generationResult, setGenerationResult] =
@@ -180,13 +241,17 @@ export default function MobileTimetableWizardPage() {
 
   const runGeneration = useCallback(() => setStep("generating"), []);
 
-  const addMustHave = (course: WizardCourseOption) => {
+  const addMustHave = (course: CourseResult) => {
+    // MobileCourseSearchSheet의 CourseResult.courseId는 subjectNumber다
+    // (mapCourseOfferingToCourseResult 참고, offering.id가 아님).
+    const subjectNumber = course.courseId;
     setBasic((prev) =>
-      prev.mustHaveSubjectNumbers.includes(course.subjectNumber)
+      prev.wishlist.some((item) => item.subjectNumber === subjectNumber)
         ? prev
         : {
             ...prev,
-            mustHaveSubjectNumbers: [...prev.mustHaveSubjectNumbers, course.subjectNumber],
+            // 새로 담을 때는 필수로 시작 - 이후 칩에서 "선택"으로 바꿀 수 있음
+            wishlist: [...prev.wishlist, { subjectNumber, required: true }],
           },
     );
     setMustHaveSheetOpen(false);
@@ -195,7 +260,16 @@ export default function MobileTimetableWizardPage() {
   const removeMustHave = (subjectNumber: string) => {
     setBasic((prev) => ({
       ...prev,
-      mustHaveSubjectNumbers: prev.mustHaveSubjectNumbers.filter((sn) => sn !== subjectNumber),
+      wishlist: prev.wishlist.filter((item) => item.subjectNumber !== subjectNumber),
+    }));
+  };
+
+  const toggleWishlistRequired = (subjectNumber: string) => {
+    setBasic((prev) => ({
+      ...prev,
+      wishlist: prev.wishlist.map((item) =>
+        item.subjectNumber === subjectNumber ? { ...item, required: !item.required } : item,
+      ),
     }));
   };
 
@@ -326,14 +400,22 @@ export default function MobileTimetableWizardPage() {
           <Card>
             <CardLabelRow>
               <CardLabel>꼭 넣고 싶은 강의</CardLabel>
-              <CardLabelValue>
-                {mustHaveCourses.length} / {MAX_MUST_HAVE}
-              </CardLabelValue>
+              <CardLabelCount>
+                {wishlistCourses.length} / {MAX_MUST_HAVE}
+              </CardLabelCount>
             </CardLabelRow>
-            {mustHaveCourses.length > 0 && (
+            <CardHint>칩을 눌러 필수/선택을 바꿀 수 있어요. 선택은 안 맞으면 자동으로 빠져요.</CardHint>
+            {wishlistCourses.length > 0 && (
               <ChipRow>
-                {mustHaveCourses.map((c) => (
-                  <Chip key={c.subjectNumber}>
+                {wishlistCourses.map((c) => (
+                  <Chip key={c.subjectNumber} $required={c.required}>
+                    <ChipRequiredToggle
+                      type="button"
+                      $required={c.required}
+                      onClick={() => toggleWishlistRequired(c.subjectNumber)}
+                    >
+                      {c.required ? "필수" : "선택"}
+                    </ChipRequiredToggle>
                     <span>{c.title}</span>
                     <ChipRemove onClick={() => removeMustHave(c.subjectNumber)}>
                       <X size={12} />
@@ -344,7 +426,7 @@ export default function MobileTimetableWizardPage() {
             )}
             <AddCourseButton
               type="button"
-              disabled={mustHaveCourses.length >= MAX_MUST_HAVE || coursePool.length === 0}
+              disabled={wishlistCourses.length >= MAX_MUST_HAVE || coursePool.length === 0}
               onClick={() => setMustHaveSheetOpen(true)}
             >
               <Plus size={18} />
@@ -415,13 +497,15 @@ export default function MobileTimetableWizardPage() {
         </FixedBottomContainer>
       )}
 
-      <WizardCourseSearchSheet
+      <MobileCourseSearchSheet
+        courses={wishlistSearchResults}
+        expandedId={wishlistExpandedId}
+        onToggleExpand={(id) => setWishlistExpandedId((prev) => (prev === id ? null : id))}
+        snap={wishlistSheetSnap}
+        onSnapChange={setWishlistSheetSnap}
         open={isMustHaveSheetOpen}
         onOpenChange={setMustHaveSheetOpen}
-        title="꼭 넣고 싶은 강의 검색"
-        pool={coursePool}
-        disabledSubjectNumbers={pickedSubjectNumbers}
-        onSelect={addMustHave}
+        onAddCourse={addMustHave}
       />
 
       {selectedCandidate && (
@@ -430,7 +514,10 @@ export default function MobileTimetableWizardPage() {
           onOpenChange={setSaveSheetOpen}
           candidate={selectedCandidate}
           semesterId={basic.semesterId}
-          onSaved={() => navigate(-1)}
+          onSaved={() => {
+            localStorage.removeItem(WIZARD_DRAFT_STORAGE_KEY);
+            navigate(-1);
+          }}
         />
       )}
     </PageWrapper>
@@ -565,7 +652,7 @@ function PreferenceCard({ checked, onToggle, title, code, children }: Preference
       <PreferenceHead onClick={onToggle}>
         <CheckboxInput type="checkbox" checked={checked} readOnly />
         <PreferenceTextWrap>
-          <PreferenceTitle>{title}</PreferenceTitle>
+          <PreferenceTitle $checked={checked}>{title}</PreferenceTitle>
           <PreferenceCode>{code}</PreferenceCode>
         </PreferenceTextWrap>
       </PreferenceHead>
@@ -633,20 +720,22 @@ const Card = styled.div`
 `;
 
 const PreferenceCardBox = styled(Card)<{ $checked: boolean }>`
+  border-width: ${({ $checked }) => ($checked ? "1.5px" : "1px")};
   border-color: ${({ $checked }) =>
-    $checked ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+    $checked ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
 `;
 
 const WarningInline = styled.div`
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: var(--bg-warning, #fff7ed);
-  border: 1px solid var(--border-warning, #fde68a);
-  color: var(--orange-500, #f59e0b);
-  font-size: 13px;
-  font-weight: 500;
+  background: #fff8e9;
+  border: 1px solid #fdd9aa;
+  color: #d97706;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 18px;
 `;
 
@@ -664,13 +753,19 @@ const CardLabel = styled.span`
 `;
 
 const CardLabelValue = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--interactive-primary, #3b82f6);
   font-size: 15px;
   font-weight: 600;
 `;
 
+const CardLabelCount = styled.span`
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 13px;
+  font-weight: 400;
+`;
+
 const Required = styled.span`
-  color: var(--text-error, #ef4444);
+  color: var(--interactive-primary, #3b82f6);
   margin-left: 2px;
 `;
 
@@ -681,11 +776,13 @@ const SelectBox = styled.select`
   border-radius: 14px;
   border: 1px solid var(--border-default, #e5e8eb);
   background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary, #191f28);
   font-size: 16px;
   font-weight: 500;
+  line-height: 52px;
   box-sizing: border-box;
   appearance: none;
+  -webkit-appearance: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%238B95A1' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>");
   background-repeat: no-repeat;
   background-position: right 16px center;
@@ -697,23 +794,35 @@ const ChipRow = styled.div`
   gap: 8px;
 `;
 
-const Chip = styled.div`
+const Chip = styled.div<{ $required: boolean }>`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 8px 8px 14px;
+  gap: 6px;
+  padding: 6px 8px 6px 8px;
   border-radius: 999px;
-  background: var(--bg-brand-subtle, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: ${({ $required }) => ($required ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)")};
+  border: ${({ $required }) => ($required ? "1px solid transparent" : "1px dashed var(--border-default, #e5e8eb)")};
 
   span {
-    color: var(--text-brand, #0061ff);
+    color: ${({ $required }) => ($required ? "var(--interactive-primary, #3b82f6)" : "var(--text-secondary, #333d4b)")};
     font-size: 14px;
     font-weight: 500;
   }
 `;
 
-const ChipRemove = styled.button`
+const ChipRequiredToggle = styled.button<{ $required: boolean }>`
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  background: ${({ $required }) => ($required ? "var(--interactive-primary, #3b82f6)" : "var(--bg-disabled, #e5e8eb)")};
+  color: ${({ $required }) => ($required ? "#ffffff" : "var(--text-tertiary, #8b95a1)")};
+`;
+
+const ChipRemove = styled.button<{ $required?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -721,8 +830,15 @@ const ChipRemove = styled.button`
   border-radius: 999px;
   border: none;
   background: transparent;
-  color: var(--text-brand, #0061ff);
+  color: var(--interactive-primary, #3b82f6);
   cursor: pointer;
+`;
+
+const CardHint = styled.p`
+  margin: -8px 0 0;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 12px;
+  line-height: 18px;
 `;
 
 const AddCourseButton = styled.button`
@@ -732,9 +848,9 @@ const AddCourseButton = styled.button`
   gap: 6px;
   height: 48px;
   border-radius: 14px;
-  border: 1px dashed var(--border-default, #e5e8eb);
+  border: 1px dashed var(--interactive-primary, #3b82f6);
   background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-secondary, #333d4b);
+  color: var(--interactive-primary, #3b82f6);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -747,10 +863,10 @@ const AddCourseButton = styled.button`
 
 const SectionHeading = styled.h2`
   margin: 0 0 4px;
-  color: var(--text-secondary, #333d4b);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
 `;
 
 const PreferenceHead = styled.div`
@@ -766,16 +882,16 @@ const PreferenceTextWrap = styled.div`
   gap: 4px;
 `;
 
-const PreferenceTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 16px;
-  font-weight: 600;
+const PreferenceTitle = styled.span<{ $checked: boolean }>`
+  color: var(--text-primary, #191f28);
+  font-size: 15px;
+  font-weight: ${({ $checked }) => ($checked ? 700 : 500)};
   line-height: 23px;
 `;
 
 const PreferenceCode = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 17px;
 `;
 
@@ -794,8 +910,8 @@ const CheckboxInput = styled.input`
   transition: all 0.2s;
 
   &:checked {
-    border-color: var(--border-brand, #0061ff);
-    background-color: var(--border-brand, #0061ff);
+    border-color: var(--interactive-primary, #3b82f6);
+    background-color: var(--interactive-primary, #3b82f6);
   }
 
   &:checked::after {
@@ -819,13 +935,13 @@ const DayRow = styled.div`
 const DayButton = styled.button<{ $active: boolean }>`
   flex: 1;
   height: 44px;
-  border-radius: 12px;
+  border-radius: 999px;
   border: 1px solid
-    ${({ $active }) => ($active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)")};
-  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-base, #ffffff)")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)")};
-  font-size: 15px;
-  font-weight: 600;
+    ${({ $active }) => ($active ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)")};
+  background: ${({ $active }) => ($active ? "var(--interactive-primary, #3b82f6)" : "var(--bg-subtle, #f8f9fb)")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "var(--text-secondary, #333d4b)")};
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
 `;
 
