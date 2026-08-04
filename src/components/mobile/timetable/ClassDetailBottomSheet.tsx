@@ -156,6 +156,7 @@ export default function ClassDetailBottomSheet({
   const detailsText = detailsList.join("  ");
 
   const scheduleText = matchingClasses
+    .filter((item) => !item.isUntimed)
     .map((item) => {
       const dayChar =
         ["월", "화", "수", "목", "금", "토", "일"][item.day] || "";

@@ -30,6 +30,7 @@ export interface ClassItem {
   evaluation?: string;
   courseId?: string;
   isCustom?: boolean;
+  isUntimed?: boolean;
 }
 
 interface TimetableGridProps {
@@ -228,18 +229,31 @@ const TimetableGrid = ({
     };
   }, [isSelectionMode]);
 
+  const timedEvents = useMemo(
+    () => events.filter((event) => !event.isUntimed),
+    [events],
+  );
+  const untimedEvents = useMemo(
+    () => events.filter((event) => event.isUntimed),
+    [events],
+  );
+  const timedPreviewEvents = useMemo(
+    () => previewEvents.filter((event) => !event.isUntimed),
+    [previewEvents],
+  );
+
   // 0. 동적 요일 범위 계산 (이벤트/선택 슬롯에 토·일 데이터가 있으면 자동으로 확장)
   const DAYS = useMemo(() => {
     const slotDays = selectedSlots.map((slot) => parseInt(slot.split("-")[0], 10));
-    const eventDays = [...events, ...previewEvents].map((e) => e.day);
+    const eventDays = [...timedEvents, ...timedPreviewEvents].map((e) => e.day);
     const maxDay = Math.max(minDayCount - 1, 0, ...eventDays, ...slotDays);
     const dayCount = Math.min(MAX_DAY_COUNT, maxDay + 1);
     return ALL_DAY_LABELS.slice(0, dayCount);
-  }, [events, previewEvents, selectedSlots, minDayCount]);
+  }, [timedEvents, timedPreviewEvents, selectedSlots, minDayCount]);
 
   // 1. 동적 시간 범위 계산 (기존 이벤트 + 미리보기 이벤트 포함)
   const timeSlots = useMemo(() => {
-    const allEvents = [...events, ...previewEvents];
+    const allEvents = [...timedEvents, ...timedPreviewEvents];
     const maxEventTime = Math.max(0, ...allEvents.map((e) => e.endTime));
     const endHour = Math.max(DEFAULT_MAX_HOUR, maxEventTime);
 
@@ -248,7 +262,7 @@ const TimetableGrid = ({
       slots.push(i);
     }
     return slots;
-  }, [events, previewEvents]);
+  }, [timedEvents, timedPreviewEvents]);
 
   const rowCount = (timeSlots.length - 1) * 2;
 
@@ -317,6 +331,12 @@ const TimetableGrid = ({
         </ItemContent>
       </ClassItemBlock>
     );
+  };
+
+  const handleUntimedClick = (item: ClassItem) => {
+    if (isFreeMode || isSelectionMode) return;
+    setSelectedClass(item);
+    setIsBottomSheetOpen(true);
   };
 
   return (
@@ -409,10 +429,10 @@ const TimetableGrid = ({
         })}
 
         {/* (3) 기존 수업 아이템 */}
-        {showClasses && events.map((item, index) => renderEventBlock(item, index, false))}
+        {showClasses && timedEvents.map((item, index) => renderEventBlock(item, index, false))}
 
         {/* (4) 미리보기 아이템 (오버레이) */}
-        {showClasses && previewEvents.map((item, index) =>
+        {showClasses && timedPreviewEvents.map((item, index) =>
           renderEventBlock(item, index, true),
         )}
 
@@ -428,6 +448,21 @@ const TimetableGrid = ({
                 Math.round((highlightedSlot.endTime - START_HOUR) * 2) + 2,
             }}
           />
+        )}
+
+        {showClasses && untimedEvents.length > 0 && (
+          <UntimedCourseList>
+            {untimedEvents.map((item) => (
+              <UntimedCourseItem
+                key={`untimed-${item.id}`}
+                type="button"
+                onClick={() => handleUntimedClick(item)}
+                disabled={isFreeMode || isSelectionMode}
+              >
+                <UntimedCourseName>{item.name}</UntimedCourseName>
+              </UntimedCourseItem>
+            ))}
+          </UntimedCourseList>
         )}
       </GridContainer>
 
@@ -633,4 +668,44 @@ const HighlightedBlock = styled.div`
       box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
     }
   }
+`;
+
+const UntimedCourseList = styled.div`
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+  border-top: 1px solid var(--border-default, #e5e8eb);
+`;
+
+const UntimedCourseItem = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+`;
+
+const UntimedCourseName = styled.span`
+  color: var(--text-tertiary, #6b7280);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;

@@ -47,6 +47,28 @@ export const mapDetailItemsToClassItems = (
       ? parseFloat(item.course.credit) || undefined
       : undefined;
 
+    if (source.meetings.length === 0) {
+      return [
+        {
+          id: -item.id,
+          itemId: item.id,
+          courseOfferingId: item.course?.courseOfferingId,
+          customScheduleId: item.customSchedule?.customScheduleId,
+          name: source.title,
+          room: "",
+          day: 0,
+          startTime: 0,
+          endTime: 0,
+          credits,
+          professor: item.course?.professor,
+          memo: item.memo ?? undefined,
+          courseId: item.course?.subjectNumber,
+          isCustom: item.type === "CUSTOM",
+          isUntimed: true,
+        },
+      ];
+    }
+
     return source.meetings.map<ClassItem>((meeting, index) => ({
       id: meeting.id,
       itemId: item.id,

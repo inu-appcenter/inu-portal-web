@@ -91,6 +91,7 @@ interface MobileCourseSearchSheetProps {
   // 시간표 편집 화면은 강의 추가 도중 실수로 닫히지 않도록 스와이프/배경탭 dismiss를
   // 막아야 하고(기본값), 마법사의 위시리스트 검색은 반대로 자유롭게 닫을 수 있어야 한다.
   dismissible?: boolean;
+  initialFilters?: FilterState;
   onAddCourse?: (course: CourseResult) => void;
   // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
   onFiltersChange?: (filters: FilterState) => void;
@@ -111,6 +112,7 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
   dismissible = false,
+  initialFilters = DEFAULT_FILTERS,
   onAddCourse,
   onFiltersChange,
   addedCourseOfferingIds,
@@ -125,7 +127,11 @@ const MobileCourseSearchSheet = ({
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [activeFilters, setActiveFiltersState] =
-    useState<FilterState>(DEFAULT_FILTERS);
+    useState<FilterState>(initialFilters);
+
+  useEffect(() => {
+    setActiveFiltersState(initialFilters);
+  }, [initialFilters]);
 
   const setActiveFilters = (filters: FilterState) => {
     setActiveFiltersState(filters);
