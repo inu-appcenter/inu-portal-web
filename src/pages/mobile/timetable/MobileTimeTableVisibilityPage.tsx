@@ -71,14 +71,14 @@ export default function MobileTimeTableVisibilityPage() {
       <CardGroup>
         <OptionCard
           selected={visibility === "PUBLIC"}
-          title="전체 공개"
-          description="누구나 내 시간표를 볼 수 있어요."
+          title="공개"
+          description="친구들이 내 시간표를 볼 수 있어요."
           onClick={() => setVisibility("PUBLIC")}
         />
         <OptionCard
           selected={visibility === "PROTECTED"}
-          title="친구에게 공개"
-          description="내 친구들이 내 시간표를 볼 수 있어요."
+          title="강의 시간만 공개"
+          description="친구들이 내 시간표의 강의 정보는 볼 수 없어요."
           onClick={() => setVisibility("PROTECTED")}
         />
         <OptionCard
