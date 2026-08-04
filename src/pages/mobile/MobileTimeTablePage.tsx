@@ -391,16 +391,17 @@ const MobileTimeTablePage = () => {
   const shouldOpenSimulatorInNewWebView =
     supportsMultiWebView() && appEnvironment === "NEW_APP";
 
-  const headerRight = useMemo(
-    () => (
+  const headerRight = useMemo(() => {
+    if (!activeTimetable) return null;
+
+    return (
       <HeaderRightArea>
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.EDIT)}>
           <Pencil size={22} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
-    ),
-    [navigate],
-  );
+    );
+  }, [activeTimetable, navigate]);
 
   const headerTitle = useMemo(() => {
     return (
@@ -751,7 +752,6 @@ const MobileTimeTablePageWrapper = styled.div`
     calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
-    /* PC 환경 하단 패딩 증가 (바텀바/네비게이션 요소 가림 방지) */
     padding: var(--header-height, 56px) 0 calc(var(--nav-height, 100px) + 60px);
   }
 `;
