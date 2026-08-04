@@ -1,6 +1,5 @@
 // 공유 브릿지는 packages/intip-bridge git 서브모듈로 두고 소스를 직접 컴파일한다
 // (npm 패키지/레지스트리 없음). CLAUDE.md 참고.
-import useUserStore from "@/stores/useUserStore";
 import { createWebChannel, type WebChannel } from "../../packages/intip-bridge/src/adapters/web";
 
 /**
@@ -31,9 +30,9 @@ if (bridgeChannel) {
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
 
-  // 네이티브가 자체 리프레시(백그라운드 FCM 토큰 등록 등)한 JWT를 store/localStorage에 반영.
-  // @ts-ignore
-  (bridgeChannel as any).on("tokenInfoUpdated", (tokenInfo: any) => {
-    useUserStore.getState().setTokenInfo(tokenInfo, { fromNative: true });
-  });
+  // "tokenInfoUpdated"(네이티브가 자체 리프레시한 JWT 반영)는 여기서 결선하지 않는다.
+  // useUserStore.ts가 담당한다 - 여기서 useUserStore를 import하면
+  // bridgeChannel.ts → useUserStore.ts → broadcastSync.ts → multiWebViewChannel.ts
+  // → bridgeChannel.ts 순환참조가 생겨 TDZ 에러("Cannot access 'bridgeChannel'
+  // before initialization")가 재발한다. useUserStore.ts 하단 주석 참고.
 }

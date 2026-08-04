@@ -464,7 +464,7 @@ const MobileCourseSearchSheet = ({
             </SheetContentWrapper>
           </CourseSheetScrollableContent>
         </CourseSheetContainer>
-        <Sheet.Backdrop onTap={() => onOpenChange(false)} />
+        {/* <Sheet.Backdrop onTap={() => onOpenChange(false)} /> */}
       </CourseSheet>
 
       {open &&
