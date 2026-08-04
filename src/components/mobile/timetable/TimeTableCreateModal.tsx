@@ -7,7 +7,7 @@ import type { TimeTable } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { useCreateTimeTable } from "@/hooks/useTimeTables";
 import { formatSemester } from "@/utils/semester";
-import type { TimeTable } from "@/types/timetables";
+
 
 export const getDefaultTimetableName = (
   semester: string,
