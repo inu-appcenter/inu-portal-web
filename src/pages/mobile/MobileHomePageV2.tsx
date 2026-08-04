@@ -66,10 +66,8 @@ export default function MobileHomePageV2() {
   const { userInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
-  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">(
-    "school",
-  );
-  const { timetables, activeTimetableId } = useTimetableStore();
+  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
+  const { timetables, selectedSemester } = useTimetableStore();
 
   const isLoggedIn = Boolean(tokenInfo?.accessToken);
 
@@ -98,16 +96,27 @@ export default function MobileHomePageV2() {
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
   const today = new Date();
   const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
-  const representativeTimetableId = useMemo(
-    () =>
-      isLoggedIn
-        ? (activeTimetableId ??
-          timetables.find((timetable) => timetable.isRepresentative)?.id ??
-          timetables[0]?.id ??
-          null)
-        : null,
-    [isLoggedIn, activeTimetableId, timetables],
-  );
+
+  const representativeTimetableId = useMemo(() => {
+    if (!isLoggedIn) return null;
+
+    const targetSemester =
+      selectedSemester ||
+      (timetables.find((timetable) => timetable.isRepresentative)?.semester ??
+        timetables[0]?.semester);
+
+    const inSemester = targetSemester
+      ? timetables.filter((timetable) => timetable.semester === targetSemester)
+      : timetables;
+
+    return (
+      inSemester.find((timetable) => timetable.isRepresentative)?.id ??
+      inSemester[0]?.id ??
+      timetables.find((timetable) => timetable.isRepresentative)?.id ??
+      timetables[0]?.id ??
+      null
+    );
+  }, [isLoggedIn, selectedSemester, timetables]);
   const { isLoading: isDetailLoading } = useTimeTableDetail(
     representativeTimetableId,
     { enabled: isLoggedIn && representativeTimetableId != null },

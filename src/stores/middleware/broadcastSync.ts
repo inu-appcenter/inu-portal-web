@@ -22,15 +22,40 @@ interface BroadcastSyncOptions<T> {
 export function broadcastSync<T extends object>(options: BroadcastSyncOptions<T>) {
   return (creator: StateCreator<T, [], []>): StateCreator<T, [], []> =>
     (set, get, api: StoreApi<T>) => {
-      const channel = openMultiWebViewChannel(options.name, (data) => {
-        const partial = data as Partial<T>;
+      const channel = openMultiWebViewChannel(options.name, (incomingData) => {
+        const partial = incomingData as Partial<T>;
+        const currentPartial = options.partialize(get());
+
+        // Inbound Reconciliation Guard: 수신한 상태가 현재 상태와 이미 일치하면
+        // api.setState 및 하위 컴포넌트 불필요한 리렌더링 스킵
+        if (JSON.stringify(currentPartial) === JSON.stringify(partial)) {
+          return;
+        }
+
         api.setState(partial);
         options.onReceive?.(partial, get());
       });
 
+      let pendingBroadcastTimer: Promise<void> | null = null;
+      let lastBroadcastSerialized: string | null = null;
+
       const broadcastingSet: typeof set = (...args) => {
         set(...args);
-        channel.postMessage(options.partialize(get()));
+
+        // Microtask Event Loop Coalescing (Debounce/Batching)
+        // 단일 이벤트 루프 틱 안에서 연속 호출된 set()을 하나로 병합하여 1회만 전송
+        if (!pendingBroadcastTimer) {
+          pendingBroadcastTimer = Promise.resolve().then(() => {
+            pendingBroadcastTimer = null;
+            const nextPartial = options.partialize(get());
+            const serialized = JSON.stringify(nextPartial);
+
+            if (serialized !== lastBroadcastSerialized) {
+              lastBroadcastSerialized = serialized;
+              channel.postMessage(nextPartial);
+            }
+          });
+        }
       };
 
       return creator(broadcastingSet, get, api);
