@@ -245,3 +245,18 @@ export const getTimeTableDetail = async (
   );
   return response.data.data;
 };
+
+/**
+ * 친구의 특정 년도/학기 대표 시간표 상세 조회
+ */
+export const getFriendPrimaryTimeTableDetail = async (
+  friendMemberId: number,
+  year: number,
+  term: Term,
+): Promise<TimeTableDetail> => {
+  const response = await tokenInstance.get<ApiResponse<TimeTableDetail>>(
+    `/api/timetables/friends/${friendMemberId}/primary`,
+    { params: { year, term } },
+  );
+  return response.data.data;
+};

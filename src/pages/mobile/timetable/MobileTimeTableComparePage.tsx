@@ -1,17 +1,19 @@
 import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import styled from "styled-components";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueries } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
+import { getFriendPrimaryTimeTableDetail } from "@/apis/timetables";
 import { createPersonalChatRoom } from "@/apis/chat";
 import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
 import { TimetableShareExtraData } from "@/types/chat";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
+import { mapDetailItemsToClassItems } from "@/utils/timetable";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -84,6 +86,44 @@ export default function MobileTimeTableComparePage() {
       })),
     [activeTimetable?.events],
   );
+
+  const friendTimetableQueries = useQueries({
+    queries: friendsMap.map((friend) => {
+      const friendMemberId = friend.friendMemberId ?? friend.friendId;
+      return {
+        queryKey: [
+          "timetables",
+          "friend-primary",
+          friendMemberId,
+          activeTimetable?.year,
+          activeTimetable?.term,
+        ],
+        queryFn: () =>
+          getFriendPrimaryTimeTableDetail(
+            friendMemberId,
+            activeTimetable!.year,
+            activeTimetable!.term,
+          ),
+        enabled:
+          Boolean(friendMemberId) &&
+          activeTimetable?.year != null &&
+          activeTimetable?.term != null,
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 30,
+        retry: false,
+      };
+    }),
+  });
+
+  const friendTimetablesByFriendId = useMemo(() => {
+    const entries = friendsMap.map((friend, index) => {
+      const detail = friendTimetableQueries[index]?.data;
+      const classes = detail ? mapDetailItemsToClassItems(detail.items) : [];
+      return [friend.friendId, classes] as const;
+    });
+
+    return new Map(entries);
+  }, [friendsMap, friendTimetableQueries]);
 
   // 쿼리 파라미터 기반 선택된 친구들
   const selectedFriendIds = useMemo(() => {
@@ -229,14 +269,14 @@ export default function MobileTimeTableComparePage() {
 
   // 친구의 시간표를 조회/할당하는 헬퍼 함수
   const getFriendTimetable = useMemo(() => {
-    return (_friend: {
+    return (friend: {
       friendId: number;
       nickname: string;
       friendAlias?: string;
     }): ClassItem[] => {
-      return [];
+      return friendTimetablesByFriendId.get(friend.friendId) ?? [];
     };
-  }, []);
+  }, [friendTimetablesByFriendId]);
 
   // 공강 시간 선택 상태 (시간표에 하이라이트 표시용)
   const [highlightedSlot, setHighlightedSlot] = useState<{
