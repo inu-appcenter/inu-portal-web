@@ -20,54 +20,16 @@ export const getCourseOfferingsPage = async (
   size: number = PAGE_SIZE,
   filters?: CourseOfferingFilters,
 ): Promise<PageResponse<CourseOffering>> => {
-  const params = new URLSearchParams();
-  params.append("year", String(year));
-  params.append("term", term);
-  params.append("page", String(page));
-  if (size) {
-    params.append("size", String(size));
-  }
-
-  if (filters?.deptName) params.append("deptName", filters.deptName);
-  if (filters?.collegeName) params.append("collegeName", filters.collegeName);
-  if (filters?.keyword) params.append("keyword", filters.keyword);
-  if (filters?.meetingFilterMode) {
-    params.append("meetingFilterMode", filters.meetingFilterMode);
-  }
-
-  // 다중 선택 필터는 쉼표 CSV 방식이 아닌 동일 query parameter를 반복 생성
-  filters?.hyNames?.forEach((val) => params.append("hyNames", val));
-  filters?.isuNames?.forEach((val) => params.append("isuNames", val));
-  filters?.isuFldNames?.forEach((val) => params.append("isuFldNames", val));
-  filters?.ssupTypeNames?.forEach((val) => params.append("ssupTypeNames", val));
-  filters?.credits?.forEach((val) => params.append("credits", String(val)));
-  filters?.meetings?.forEach((val) => params.append("meetings", val));
-
-  const response = await tokenInstance.get<
-    ApiResponse<PageResponse<CourseOffering>>
-  >("/api/course-offerings", { params });
-
-  return response.data.data;
-};
-
-/**
- * 학기별 개설 강의 전체 목록 조회 (페이지네이션을 순회하며 모두 취합)
- */
-export const getAllCourseOfferings = async (
-  year: number,
-  term: Term,
-  filters?: CourseOfferingFilters,
-): Promise<CourseOffering[]> => {
   if (isMockApiEnabled()) {
     await mockDelay();
     const courseById = new Map(MOCK_COURSES.map((c) => [c.id, c]));
-    return MOCK_COURSE_OFFERINGS.filter((o) => {
+    const filtered = MOCK_COURSE_OFFERINGS.filter((o) => {
       if (o.year !== year || o.term !== term) return false;
       const course = courseById.get(o.courseId);
-      if (filters?.deptName && o.deptName !== filters.deptName && course?.departmentName !== filters.deptName) {
+      if (filters?.deptName && (o.deptName ?? course?.departmentName) !== filters.deptName) {
         return false;
       }
-      if (filters?.collegeName && o.collegeName !== filters.collegeName) {
+      if (filters?.collegeName && (o.collegeName ?? course?.collegeName) !== filters.collegeName) {
         return false;
       }
       if (
@@ -99,25 +61,49 @@ export const getAllCourseOfferings = async (
       }
       return true;
     });
+
+    const start = page * size;
+    const content = filtered.slice(start, start + size);
+    const totalPages = Math.ceil(filtered.length / size) || 1;
+
+    return {
+      content,
+      page,
+      size,
+      totalElements: filtered.length,
+      totalPages,
+      first: page === 0,
+      last: page >= totalPages - 1,
+    };
   }
 
-  // 0페이지를 먼저 조회하여 전체 페이지 수(totalPages) 확인
-  const firstPage = await getCourseOfferingsPage(year, term, 0, PAGE_SIZE, filters);
-  const all: CourseOffering[] = [...(firstPage.content ?? [])];
-  const totalPages = Math.min(firstPage.totalPages ?? 1, MAX_PAGES);
-
-  // 나머지 페이지가 존재하는 경우 Promise.all로 병렬 요청 수행
-  if (totalPages > 1) {
-    const pagePromises = [];
-    for (let p = 1; p < totalPages; p++) {
-      pagePromises.push(getCourseOfferingsPage(year, term, p, PAGE_SIZE, filters));
-    }
-    const pageResults = await Promise.all(pagePromises);
-    pageResults.forEach((res) => {
-      all.push(...(res.content ?? []));
-    });
+  const params = new URLSearchParams();
+  params.append("year", String(year));
+  params.append("term", term);
+  params.append("page", String(page));
+  if (size) {
+    params.append("size", String(size));
   }
 
-  return all;
+  if (filters?.deptName) params.append("deptName", filters.deptName);
+  if (filters?.collegeName) params.append("collegeName", filters.collegeName);
+  if (filters?.keyword) params.append("keyword", filters.keyword);
+  if (filters?.meetingFilterMode) {
+    params.append("meetingFilterMode", filters.meetingFilterMode);
+  }
+
+  // 다중 선택 필터는 쉼표 CSV 방식이 아닌 동일 query parameter를 반복 생성
+  filters?.hyNames?.forEach((val) => params.append("hyNames", val));
+  filters?.isuNames?.forEach((val) => params.append("isuNames", val));
+  filters?.isuFldNames?.forEach((val) => params.append("isuFldNames", val));
+  filters?.ssupTypeNames?.forEach((val) => params.append("ssupTypeNames", val));
+  filters?.credits?.forEach((val) => params.append("credits", String(val)));
+  filters?.meetings?.forEach((val) => params.append("meetings", val));
+
+  const response = await tokenInstance.get<
+    ApiResponse<PageResponse<CourseOffering>>
+  >("/api/course-offerings", { params });
+
+  return response.data.data;
 };
 

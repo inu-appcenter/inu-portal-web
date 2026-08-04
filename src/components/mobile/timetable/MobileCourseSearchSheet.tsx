@@ -89,6 +89,9 @@ interface MobileCourseSearchSheetProps {
   addedCourseOfferingIds?: Set<number>;
   addedCourseIds?: Set<string>;
   isLoading?: boolean;
+  hasNextPage?: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
 }
 
 const MobileCourseSearchSheet = ({
@@ -104,6 +107,9 @@ const MobileCourseSearchSheet = ({
   addedCourseOfferingIds,
   addedCourseIds,
   isLoading = false,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -219,8 +225,14 @@ const MobileCourseSearchSheet = ({
     }
   }, [isSearchActive]);
 
-  const handleScroll = () => {
+  const handleScroll: UIEventHandler<HTMLDivElement> = (e) => {
     searchBarRef.current?.blur();
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop - clientHeight < 200) {
+      if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
+        fetchNextPage();
+      }
+    }
   };
 
   const openLectureReview = (professor: string) => {
@@ -394,6 +406,23 @@ const MobileCourseSearchSheet = ({
                     </CourseItem>
                   );
                 }))}
+                {isFetchingNextPage && (
+                  <SkeletonCard key="next-page-skeleton">
+                    <div className="skeleton-row-top">
+                      <Skeleton width="45%" height="20px" />
+                      <Skeleton
+                        width="70px"
+                        height="20px"
+                        style={{ borderRadius: "999px" }}
+                      />
+                    </div>
+                    <div className="skeleton-row-mid">
+                      <Skeleton width="50px" height="16px" />
+                      <Skeleton width="40px" height="16px" />
+                      <Skeleton width="50px" height="16px" />
+                    </div>
+                  </SkeletonCard>
+                )}
               </CourseList>
             </SheetContentWrapper>
           </CourseSheetScrollableContent>

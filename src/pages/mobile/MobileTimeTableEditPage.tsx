@@ -248,12 +248,15 @@ const MobileTimeTableEditPage = () => {
     courseOfferings,
     isLoading: isOfferingsLoading,
     isFetching: isOfferingsFetching,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
   } = useCourseOfferings(
     activeTimetable?.year,
     activeTimetable?.term,
     combinedFilters,
   );
-  const isSheetLoading = isOfferingsLoading || isOfferingsFetching;
+  const isSheetLoading = isOfferingsLoading && courseOfferings.length === 0;
   const courseById = useMemo(
     () => new Map(courses.map((c) => [c.id, c])),
     [courses],
@@ -551,6 +554,9 @@ const MobileTimeTableEditPage = () => {
         addedCourseOfferingIds={addedCourseOfferingIds}
         addedCourseIds={addedCourseIds}
         isLoading={isSheetLoading}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
       />
     </PageWrapper>
   );

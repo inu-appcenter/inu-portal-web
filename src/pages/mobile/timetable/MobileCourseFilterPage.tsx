@@ -11,7 +11,7 @@ import TimetableGrid, {
 import Ripple from "@/components/common/Ripple";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useQueryClient } from "@tanstack/react-query";
-import { getAllCourseOfferings } from "@/apis/courseOfferings";
+import { getCourseOfferingsPage } from "@/apis/courseOfferings";
 import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import type { CourseOfferingFilters } from "@/types/courseOfferings";
@@ -524,7 +524,14 @@ export default function MobileCourseFilterPage() {
             offeringFilters.meetingFilterMode ?? "",
             offeringFilters.meetings?.join(",") ?? "",
           ],
-          queryFn: () => getAllCourseOfferings(activeTimetable.year, activeTimetable.term, offeringFilters),
+          queryFn: () =>
+            getCourseOfferingsPage(
+              activeTimetable.year,
+              activeTimetable.term,
+              0,
+              50,
+              offeringFilters,
+            ),
         });
       }
     } catch (error) {
