@@ -25,12 +25,18 @@ import type {
 
 export const TIMETABLES_QUERY_KEY = ["timetables"] as const;
 
-export const useTimeTables = (year?: number, term?: Term) => {
+export const useTimeTables = (
+  year?: number,
+  term?: Term,
+  options?: { enabled?: boolean },
+) => {
   const setTimetables = useTimetableStore((state) => state.setTimetables);
+  const enabled = options?.enabled ?? true;
 
   const query = useQuery({
     queryKey: [...TIMETABLES_QUERY_KEY, year ?? "all", term ?? "all"],
     queryFn: () => getTimeTables(year, term),
+    enabled,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });
@@ -48,15 +54,19 @@ export const useTimeTables = (year?: number, term?: Term) => {
   };
 };
 
-export const useTimeTableDetail = (timeTableId?: number | null) => {
+export const useTimeTableDetail = (
+  timeTableId?: number | null,
+  options?: { enabled?: boolean },
+) => {
   const updateTimetableEvents = useTimetableStore(
     (state) => state.updateTimetableEvents,
   );
+  const enabled = options?.enabled ?? true;
 
   const query = useQuery({
     queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
     queryFn: () => getTimeTableDetail(timeTableId!),
-    enabled: timeTableId != null,
+    enabled: enabled && timeTableId != null,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });

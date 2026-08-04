@@ -11,6 +11,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import useUserStore from "@/stores/useUserStore";
 import {
   useTimeTables,
   useTimeTableDetail,
@@ -26,6 +27,7 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 
 const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
+const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 
 // --- SVG Icons ---
 const CaretDownIcon = () => (
@@ -359,6 +361,8 @@ const EmptyTimetableIllust = () => (
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
   const [isModalOpen] = useState(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputVal, setRenameInputVal] = useState("");
@@ -369,7 +373,7 @@ const MobileTimeTablePage = () => {
   const { selectedSemester, activeTimetableId, timetables } =
     useTimetableStore();
 
-  useTimeTables();
+  useTimeTables(undefined, undefined, { enabled: isLoggedIn });
   useTimetableUrlSync();
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
@@ -384,7 +388,7 @@ const MobileTimeTablePage = () => {
     );
   }, [timetables, selectedSemester, activeTimetableId]);
 
-  useTimeTableDetail(activeTimetable?.id);
+  useTimeTableDetail(activeTimetable?.id, { enabled: isLoggedIn });
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
   const appEnvironment = getAppEnvironmentStatus();
@@ -392,7 +396,7 @@ const MobileTimeTablePage = () => {
     supportsMultiWebView() && appEnvironment === "NEW_APP";
 
   const headerRight = useMemo(() => {
-    if (!activeTimetable) return null;
+    if (!isLoggedIn || !activeTimetable) return null;
 
     return (
       <HeaderRightArea>
@@ -401,22 +405,32 @@ const MobileTimeTablePage = () => {
         </IconButton>
       </HeaderRightArea>
     );
-  }, [activeTimetable, navigate]);
+  }, [activeTimetable, isLoggedIn, navigate]);
 
   const headerTitle = useMemo(() => {
+    const handleHeaderTitleClick = () => {
+      if (!isLoggedIn) {
+        alert(LOGIN_REQUIRED_MESSAGE);
+        return;
+      }
+      navigate(ROUTES.TIMETABLE.LIST);
+    };
+
     return (
-      <HeaderTitleContainer onClick={() => navigate(ROUTES.TIMETABLE.LIST)}>
+      <HeaderTitleContainer onClick={handleHeaderTitleClick}>
         <HeaderMainTitle>{activeTitle}</HeaderMainTitle>
-        <HeaderTermWrapper>
-          <HeaderTermText>{selectedSemester}</HeaderTermText>
-          <CaretDownIcon />
-        </HeaderTermWrapper>
+        {isLoggedIn && (
+          <HeaderTermWrapper>
+            <HeaderTermText>{selectedSemester}</HeaderTermText>
+            <CaretDownIcon />
+          </HeaderTermWrapper>
+        )}
       </HeaderTitleContainer>
     );
-  }, [selectedSemester, activeTitle, navigate]);
+  }, [selectedSemester, activeTitle, isLoggedIn, navigate]);
 
   const timetableMenuItems = useMemo(() => {
-    if (!activeTimetable) return [];
+    if (!isLoggedIn || !activeTimetable) return [];
 
     return [
       {
@@ -470,6 +484,7 @@ const MobileTimeTablePage = () => {
     ];
   }, [
     activeTimetable,
+    isLoggedIn,
     navigate,
     setIsRenameModalOpen,
     setRenameInputVal,
@@ -487,9 +502,12 @@ const MobileTimeTablePage = () => {
 
   // 학점계산기 버튼 클릭 처리 핸들러
   const handleGradeCalculatorClick = () => {
-    alert(
-      "곧 이전 성적 가져오기 기능을 포함하여 오픈될 예정이에요. 조금만 기다려주세요!",
-    );
+    if (!isLoggedIn) {
+      alert(LOGIN_REQUIRED_MESSAGE);
+      return;
+    }
+
+    alert("곧 이전 성적 가져오기 기능을 포함하여 오픈될 예정이에요. 조금만 기다려주세요!");
   };
 
   // 모의 수강신청 버튼 클릭 처리 핸들러
@@ -504,10 +522,14 @@ const MobileTimeTablePage = () => {
     }
   };
 
-  const { courses } = useCourses();
+  const handleLoginRequiredClick = () => {
+    alert(LOGIN_REQUIRED_MESSAGE);
+  };
+
+  const { courses } = useCourses(undefined, { enabled: isLoggedIn });
   const { courseOfferings } = useCourseOfferings(
-    activeTimetable?.year,
-    activeTimetable?.term,
+    isLoggedIn ? activeTimetable?.year : undefined,
+    isLoggedIn ? activeTimetable?.term : undefined,
   );
 
   const courseById = useMemo(
@@ -584,7 +606,7 @@ const MobileTimeTablePage = () => {
         }}
       />
 
-      {activeTimetable && (
+      {isLoggedIn && activeTimetable && (
         <>
           <Modal
             isOpen={isRenameModalOpen}
@@ -665,7 +687,25 @@ const MobileTimeTablePage = () => {
         </>
       )}
 
-      {activeTimetable ? (
+      {!isLoggedIn ? (
+        <NoTimetableContainer>
+          <NoTimetableContent>
+            <EmptyTimetableIllust />
+            <NoTimetableTextGroup>
+              <NoTimetableTitle>로그인 후 시간표를 사용할 수 있어요</NoTimetableTitle>
+              <NoTimetableDescription>
+                내 시간표 생성, 친구와 비교, 학점계산기는 로그인 후 이용할 수 있어요.
+              </NoTimetableDescription>
+            </NoTimetableTextGroup>
+          </NoTimetableContent>
+          <CapsuleButton
+            variant="primary"
+            onClick={() => navigate(ROUTES.LOGIN)}
+          >
+            로그인하기
+          </CapsuleButton>
+        </NoTimetableContainer>
+      ) : activeTimetable ? (
         <TimetableGrid
           events={activeTimetable.events}
           theme={activeTimetable.theme}
@@ -683,7 +723,13 @@ const MobileTimeTablePage = () => {
           </NoTimetableContent>
           <CapsuleButton
             variant="primary"
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => {
+              if (!isLoggedIn) {
+                alert(LOGIN_REQUIRED_MESSAGE);
+                return;
+              }
+              setIsCreateModalOpen(true);
+            }}
           >
             시간표 생성하기
           </CapsuleButton>
@@ -703,7 +749,15 @@ const MobileTimeTablePage = () => {
 
       <ButtonGroup>
         <ButtonRow>
-          <MenuCard onClick={() => navigate(ROUTES.FRIEND.LIST)}>
+          <MenuCard
+            onClick={() => {
+              if (!isLoggedIn) {
+                handleLoginRequiredClick();
+                return;
+              }
+              navigate(ROUTES.FRIEND.LIST);
+            }}
+          >
             <MenuCardTitleRow>
               <MenuCardTitle>친구</MenuCardTitle>
               <IconSlot>

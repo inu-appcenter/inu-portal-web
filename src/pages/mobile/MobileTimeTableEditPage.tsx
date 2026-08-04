@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
@@ -6,6 +6,7 @@ import MobileCourseSearchSheet, {
   CourseResult,
   COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
+import TooltipMessage from "@/components/common/TooltipMessage";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -27,8 +28,6 @@ import {
   mapCourseOfferingToCourseResult,
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
-
-
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -123,11 +122,12 @@ const IconButton = styled.button`
   padding: 4px;
 `;
 
-
 const MobileTimeTableEditPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("courseQuery") || undefined;
+  const wizardButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [showWizardTooltip, setShowWizardTooltip] = useState(true);
 
   // 상태 및 스토어 관리
   const { timetables, activeTimetableId } = useTimetableStore();
@@ -157,7 +157,9 @@ const MobileTimeTableEditPage = () => {
   }, [timetable]);
 
   // 전공/영역·학년·이수구분·학점 필터
-  const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>({});
+  const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>(
+    {},
+  );
   const handleFiltersChange = (filters: FilterState) => {
     setOfferingFilters(mapFilterToOfferingFilters(filters));
   };
@@ -199,22 +201,34 @@ const MobileTimeTableEditPage = () => {
     [courseOfferings, courseById],
   );
 
-
   const headerRight = useMemo(
     () => (
       <HeaderRightArea>
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.ADD)}>
           <IconsAddPlus />
         </IconButton>
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.WIZARD)}>
+        <IconButton
+          ref={wizardButtonRef}
+          onClick={() => navigate(ROUTES.TIMETABLE.WIZARD)}
+        >
           <IconsMagicWand />
         </IconButton>
+        {showWizardTooltip && (
+          <TooltipMessage
+            message="시간표 마법사를\n사용해보세요!"
+            onClose={() => setShowWizardTooltip(false)}
+            position="bottom"
+            align="center"
+            width="max-content"
+            anchorRef={wizardButtonRef}
+          />
+        )}
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}>
           <IconsLock />
         </IconButton>
       </HeaderRightArea>
     ),
-    [navigate],
+    [navigate, showWizardTooltip],
   );
 
   useHeader({
