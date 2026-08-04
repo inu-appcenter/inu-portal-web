@@ -417,7 +417,48 @@ export default function MobileCourseFilterPage() {
     };
   }, [view, hasChanges]);
 
-  const [pinnedMajors, setPinnedMajors] = useState<string[]>(["정보기술대학"]); // 즐겨찾기 단과대/학과 핀
+  const [pinnedMajors, setPinnedMajors] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("pinned_majors");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("즐겨찾기 전공 복원 오류:", e);
+    }
+    return ["정보기술대학"];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("pinned_majors", JSON.stringify(pinnedMajors));
+    } catch (e) {
+      console.error("즐겨찾기 전공 저장 오류:", e);
+    }
+  }, [pinnedMajors]);
+
+  const collegeList = useMemo(() => {
+    const list = SUB_MAJORS["전공"] || [];
+    return [...list].sort((a, b) => {
+      const aPinned = pinnedMajors.includes(a);
+      const bPinned = pinnedMajors.includes(b);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return 0;
+    });
+  }, [pinnedMajors]);
+
+  const deptList = useMemo(() => {
+    if (!majorLevel2) return [];
+    const list = COLLEGE_DEPARTMENTS[majorLevel2] || [];
+    return [...list].sort((a, b) => {
+      const aPinned = pinnedMajors.includes(a);
+      const bPinned = pinnedMajors.includes(b);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return 0;
+    });
+  }, [majorLevel2, pinnedMajors]);
 
   // 시간표 관련 내부 임시 설정
   const [showClasses, setShowClasses] = useState(true);
@@ -780,7 +821,7 @@ export default function MobileCourseFilterPage() {
           {/* 전공 하위 - 단과대학 목록 */}
           {majorLevel1 === "전공" && !majorLevel2 && (
             <OptionsCard>
-              {SUB_MAJORS["전공"].map((college) => {
+              {collegeList.map((college) => {
                 const isPinned = pinnedMajors.includes(college);
                 return (
                   <OptionItemRow
@@ -836,7 +877,7 @@ export default function MobileCourseFilterPage() {
           {/* 단과대학 하위 - 학과 목록 */}
           {majorLevel1 === "전공" && majorLevel2 && (
             <OptionsCard>
-              {(COLLEGE_DEPARTMENTS[majorLevel2] || []).map((dept) => {
+              {deptList.map((dept) => {
                 const isSelected = filters.major === dept;
                 const isPinned = pinnedMajors.includes(dept);
                 return (
