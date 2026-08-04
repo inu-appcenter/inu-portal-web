@@ -11,22 +11,24 @@ export const useCourseOfferings = (
   term?: Term,
   filters?: CourseOfferingFilters,
 ) => {
+  const queryKey = [
+    ...COURSE_OFFERINGS_QUERY_KEY,
+    year ?? "none",
+    term ?? "none",
+    filters?.deptName ?? "",
+    filters?.collegeName ?? "",
+    filters?.hyNames?.join(",") ?? "",
+    filters?.isuNames?.join(",") ?? "",
+    filters?.isuFldNames?.join(",") ?? "",
+    filters?.ssupTypeNames?.join(",") ?? "",
+    filters?.credits?.join(",") ?? "",
+    filters?.keyword ?? "",
+    filters?.meetingFilterMode ?? "",
+    filters?.meetings?.join(",") ?? "",
+  ];
+
   const query = useInfiniteQuery({
-    queryKey: [
-      ...COURSE_OFFERINGS_QUERY_KEY,
-      year ?? "none",
-      term ?? "none",
-      filters?.deptName ?? "",
-      filters?.collegeName ?? "",
-      filters?.hyNames?.join(",") ?? "",
-      filters?.isuNames?.join(",") ?? "",
-      filters?.isuFldNames?.join(",") ?? "",
-      filters?.ssupTypeNames?.join(",") ?? "",
-      filters?.credits?.join(",") ?? "",
-      filters?.keyword ?? "",
-      filters?.meetingFilterMode ?? "",
-      filters?.meetings?.join(",") ?? "",
-    ],
+    queryKey,
     queryFn: ({ pageParam = 0 }) =>
       getCourseOfferingsPage(year!, term!, pageParam as number, 50, filters),
     initialPageParam: 0,

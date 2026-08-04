@@ -144,6 +144,20 @@ export default function MobileTimetableWizardPage() {
     }));
   }, [semesters, basic.semesterId]);
 
+  const [wishlistOfferingFilters, setWishlistOfferingFilters] =
+    useState<CourseOfferingFilters>({});
+  const handleWishlistFiltersChange = (filters: FilterState) => {
+    setWishlistOfferingFilters(mapFilterToOfferingFilters(filters));
+  };
+
+  const [searchParams] = useSearchParams();
+  const wishlistKeyword = searchParams.get("courseQuery") || undefined;
+
+  const combinedWishlistFilters = useMemo<CourseOfferingFilters>(
+    () => ({ ...wishlistOfferingFilters, keyword: wishlistKeyword }),
+    [wishlistOfferingFilters, wishlistKeyword],
+  );
+
   const {
     courseOfferings,
     isLoading: isOfferingsLoading,
@@ -151,7 +165,11 @@ export default function MobileTimetableWizardPage() {
     hasNextPage: hasMoreOfferings,
     isFetchingNextPage: isFetchingMoreOfferings,
     fetchNextPage: fetchMoreOfferings,
-  } = useCourseOfferings(basic.year ?? undefined, basic.term ?? undefined);
+  } = useCourseOfferings(
+    basic.year ?? undefined,
+    basic.term ?? undefined,
+    combinedWishlistFilters,
+  );
 
   // "꼭 넣고 싶은 강의" 검색시트는 편집 화면과 동일하게 스크롤 시 페이지를 추가
   // 로드한다(MobileCourseSearchSheet에 hasNextPage/fetchNextPage 전달, 아래 참고).
@@ -191,24 +209,7 @@ export default function MobileTimetableWizardPage() {
     [exclusion.excludedSubjectNumbers, findBySubjectNumber],
   );
 
-  // 학기 전체 개설강의를 이미 메모리에 들고 있으므로(서버 재조회 없이) 필터를
-  // 로컬에서 그대로 적용한다 - matchesCourseOfferingFilters가 mock API와 동일한 규칙을 씀.
-  const [wishlistOfferingFilters, setWishlistOfferingFilters] =
-    useState<CourseOfferingFilters>({});
-  const handleWishlistFiltersChange = (filters: FilterState) => {
-    setWishlistOfferingFilters(mapFilterToOfferingFilters(filters));
-  };
 
-  // FloatingSearchBar(MobileCourseSearchSheet 내부)는 검색어를 콜백이 아니라
-  // ?courseQuery= URL 파라미터로 남긴다(시간표 편집 화면과 동일한 방식) - 편집
-  // 화면은 이 값을 읽어 서버 재조회하지만, 마법사는 로컬 필터라 여기서 직접 읽어야 한다.
-  const [searchParams] = useSearchParams();
-  const wishlistKeyword = searchParams.get("courseQuery") || undefined;
-
-  const combinedWishlistFilters = useMemo<CourseOfferingFilters>(
-    () => ({ ...wishlistOfferingFilters, keyword: wishlistKeyword }),
-    [wishlistOfferingFilters, wishlistKeyword],
-  );
 
   const wishlistSearchResults = useMemo(() => {
     const pickedSet = new Set(basic.wishlist.map((item) => item.subjectNumber));
