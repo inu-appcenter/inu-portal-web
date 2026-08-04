@@ -6,7 +6,7 @@ import CommentListMobile from "@/containers/mobile/postdetail/CommentListContain
 import ReplyInput from "@/containers/mobile/postdetail/ReplyInput";
 import { PostDetail, Reply } from "@/types/posts";
 import axios, { AxiosError } from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import ReplyPortal from "@/components/common/ReplyPortal";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -15,7 +15,7 @@ import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
   const [commentUpdated, setCommentUpdated] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const [replyContent, setReplyContent] = useState("");
   const [replyToEdit, setReplyToEdit] = useState<Reply | null>(null);
   const [replyToReply, setReplyToReply] = useState<Reply | null>(null);
@@ -108,13 +108,16 @@ export default function PostDetailPage() {
     setIsProfileModalOpen(true);
   };
 
-  const { id } = useParams<{ id: string }>(); // 경로 파라미터 추출
+  const { id: paramId } = useParams<{ id: string }>();
+  const location = useLocation();
+  const queryId = new URLSearchParams(location.search).get("id");
+  const targetId = paramId || queryId;
 
   useEffect(() => {
-    if (id) {
-      fetchPost(Number(id)); // 게시글 조회 함수 호출
+    if (targetId) {
+      fetchPost(Number(targetId));
     }
-  }, [id, commentUpdated]); // id 또는 댓글 갱신 시 실행
+  }, [targetId, commentUpdated]);
 
   // 메뉴 아이템 메모이제이션
   const menuItems = useMemo(() => {

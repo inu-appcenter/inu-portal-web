@@ -1,4 +1,6 @@
+import { useState } from "react";
 import styled from "styled-components";
+import ImageModal from "@/components/mobile/chat/ImageModal";
 
 interface PostContentProps {
   id: number;
@@ -15,47 +17,131 @@ export default function PostContent({
   type,
   modifiedDate,
 }: PostContentProps) {
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(
+    null,
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const imageUrls = Array.from({ length: imageCount }, (_, index) => {
+    return type === "TIPS"
+      ? `https://portal.inuappcenter.kr/images/post/${id}-${
+          index + 1
+        }?v=${modifiedDate}`
+      : type === "COUNCILNOTICE"
+        ? `https://portal.inuappcenter.kr/images/councilNotice/${id}-${
+            index + 1
+          }?v=${modifiedDate}`
+        : type === "PETITION"
+          ? `https://portal.inuappcenter.kr/images/petition/${id}-${
+              index + 1
+            }?v=${modifiedDate}`
+          : "";
+  }).filter(Boolean);
+
+  const handleImageClick = (url: string) => {
+    setSelectedImageUrl(url);
+    setIsModalOpen(true);
+  };
+
   return (
     <>
-      <div className="post-contents">
-        <div className="contents-img-container">
-          {Array.from({ length: imageCount }, (_, index) => {
-            const imageUrl =
-              type === "TIPS"
-                ? `https://portal.inuappcenter.kr/images/post/${id}-${
-                    index + 1
-                  }?v=${modifiedDate}`
-                : type === "COUNCILNOTICE"
-                  ? `https://portal.inuappcenter.kr/images/councilNotice/${id}-${
-                      index + 1
-                    }?v=${modifiedDate}`
-                  : type === "PETITION"
-                    ? `https://portal.inuappcenter.kr/images/petition/${id}-${
-                        index + 1
-                      }?v=${modifiedDate}`
-                    : "";
-
-            return (
-              <ContentImg
-                key={index}
-                src={imageUrl}
-                alt={`이미지 ${index + 1}`}
-                onClick={() => window.open(imageUrl)}
-              />
-            );
-          })}
-        </div>
+      <PostContentWrapper className="post-contents">
         <ContentText>{content}</ContentText>
-      </div>
+
+        {imageCount === 1 && imageUrls.length > 0 && (
+          <SingleImageWrapper>
+            <SingleImage
+              src={imageUrls[0]}
+              alt="게시글 이미지 1"
+              onClick={() => handleImageClick(imageUrls[0])}
+            />
+          </SingleImageWrapper>
+        )}
+
+        {imageCount >= 2 && imageUrls.length > 0 && (
+          <MultiImageScrollContainer>
+            {imageUrls.map((url, index) => (
+              <ThumbnailImage
+                key={index}
+                src={url}
+                alt={`게시글 이미지 ${index + 1}`}
+                onClick={() => handleImageClick(url)}
+              />
+            ))}
+          </MultiImageScrollContainer>
+        )}
+      </PostContentWrapper>
+
+      <ImageModal
+        imageUrl={selectedImageUrl}
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </>
   );
 }
 
-const ContentImg = styled.img`
-  max-width: 100%;
+const PostContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const ContentText = styled.div`
   white-space: pre-wrap;
   word-break: break-word;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-primary, #333d4b);
+`;
+
+const SingleImageWrapper = styled.div`
+  margin-top: 16px;
+  width: 100%;
+`;
+
+const SingleImage = styled.img`
+  max-width: 100%;
+  border-radius: 12px;
+  cursor: pointer;
+  object-fit: cover;
+  transition: opacity 0.15s ease-in-out;
+
+  &:active {
+    opacity: 0.85;
+  }
+`;
+
+const MultiImageScrollContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin-top: 16px;
+  padding-bottom: 6px;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+  }
+`;
+
+const ThumbnailImage = styled.img`
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid var(--border-default, #e5e8eb);
+  transition: transform 0.12s ease-in-out, opacity 0.12s ease-in-out;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+  }
 `;

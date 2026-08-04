@@ -6,7 +6,7 @@ import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
 import { useEffect, useRef, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";
-import TipsWidget from "@/components/mobile/tips/TipsWidget";
+import CommunityWidget from "@/components/mobile/community/CommunityWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import ChatPreviewWidget from "@/components/common/ChatPreviewWidget";
 import { useHeader } from "@/context/HeaderContext";
@@ -263,8 +263,8 @@ export default function MobileHomePage() {
   const tipsSection = (
     <Section>
       <TitleContentArea
-        title={"TIPS 알아보기"}
-        children={<TipsWidget />}
+        title={"커뮤니티"}
+        children={<CommunityWidget />}
         link={ROUTES.BOARD.TIPS}
       />
     </Section>
