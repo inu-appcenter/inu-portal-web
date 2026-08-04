@@ -1,13 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
 import styled from "styled-components";
 import { X, Star, Check, RotateCcw, ChevronRight } from "lucide-react";
 import { useNavigate, useLocation, useBlocker, useBeforeUnload } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
-import TimetableGrid, {
-  ClassItem,
-} from "@/components/mobile/timetable/TimetableGrid";
+import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
 import Ripple from "@/components/common/Ripple";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useQueryClient } from "@tanstack/react-query";
@@ -176,26 +175,6 @@ const getDefaultPinnedMajors = (userDepartment: string): string[] => {
   return college ? [college, department] : [DEFAULT_PINNED_MAJOR];
 };
 
-// 목업 내 시간표 (시간 선택 시 가이드 오버레이용)
-const MOCK_MY_TIMETABLE: ClassItem[] = [
-  {
-    id: 1,
-    name: "데이터구조",
-    room: "302호",
-    day: 0,
-    startTime: 9,
-    endTime: 11,
-  },
-  {
-    id: 2,
-    name: "운영체제",
-    room: "404호",
-    day: 0,
-    startTime: 13,
-    endTime: 15,
-  },
-];
-
 export function formatSlotsToTimeStr(slots: string[]): string {
   if (!slots || slots.length === 0) return "직접 시간 선택";
   const DAYS_SHORT = ["월", "화", "수", "목", "금"];
@@ -314,6 +293,7 @@ export default function MobileCourseFilterPage() {
   const activeTimetable = useMemo(() => {
     return timetables.find((t) => t.id === activeTimetableId) || null;
   }, [timetables, activeTimetableId]);
+  const activeTimetableEvents = activeTimetable?.events ?? [];
   const [isApplying, setIsApplying] = useState(false);
 
   // 상위 편집 화면에서 전달한 필터 상태가 있다면 수신, 없으면 디폴트
@@ -336,6 +316,7 @@ export default function MobileCourseFilterPage() {
   };
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
 
   // localStorage 파열 언마운트 클린업용 제어 ref
   const hasWrittenLocalStorageRef = useRef(false);
@@ -363,17 +344,19 @@ export default function MobileCourseFilterPage() {
   const isOverlayOpen = view !== "main";
 
   // 라우터 이탈 방지용 blocker (상세 오버레이 스택 정리 중인 back() 동작과 충돌하지 않도록 처리, 저장 중이면 비활성)
-  const blocker = useBlocker(!hasPushState && !isSaving && view === "main" && hasChanges);
+  const shouldBlockNavigation =
+    !hasPushState && !isSaving && !isApplying && view === "main" && hasChanges;
+  const blocker = useBlocker(shouldBlockNavigation);
 
   useEffect(() => {
-    if (blocker.state === "blocked") {
+    if (blocker.state === "blocked" && !isSavingRef.current && !isApplying) {
       setShowUnsavedModal(true);
     }
-  }, [blocker.state]);
+  }, [blocker.state, isApplying]);
 
   useBeforeUnload(
     (event) => {
-      if (view !== "main" || !hasChanges) return;
+      if (view !== "main" || !hasChanges || isSaving || isApplying) return;
       event.preventDefault();
       event.returnValue = "";
     },
@@ -401,6 +384,7 @@ export default function MobileCourseFilterPage() {
     }
     
     // navigate(-1) 호출 전 blocker를 비활성화하여 이중 모달 방지
+    isSavingRef.current = true;
     setIsSaving(true);
     if (window.AndroidBridge && typeof window.AndroidBridge.goBack === "function") {
       window.AndroidBridge.goBack();
@@ -456,11 +440,12 @@ export default function MobileCourseFilterPage() {
   // 페이지 단위 미저장이탈 방지 등록 (필터 메인이고 변경사항이 있을 때)
   useEffect(() => {
     const handlePageBack = () => {
+      if (isSavingRef.current || isApplying) return false;
       setShowUnsavedModal(true);
       return true;
     };
 
-    if (view === "main" && hasChanges) {
+    if (view === "main" && hasChanges && !isSaving && !isApplying) {
       backHandler.setPageUnsavedChanges(true, handlePageBack);
     } else {
       backHandler.setPageUnsavedChanges(false);
@@ -469,7 +454,7 @@ export default function MobileCourseFilterPage() {
     return () => {
       backHandler.setPageUnsavedChanges(false);
     };
-  }, [view, hasChanges]);
+  }, [view, hasChanges, isSaving, isApplying]);
 
   const hasStoredPinnedMajorsRef = useRef(false);
   const [pinnedMajors, setPinnedMajors] = useState<string[]>(() => {
@@ -647,8 +632,12 @@ export default function MobileCourseFilterPage() {
     } finally {
       hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
       backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
-      setIsSaving(true); // blocker 비활성화 후 navigate
+      isSavingRef.current = true;
+      setShowUnsavedModal(false);
       localStorage.setItem("applied_filters", JSON.stringify(filters));
+      flushSync(() => {
+        setIsSaving(true); // blocker 비활성화 후 navigate
+      });
       navigate(-1);
     }
   };
@@ -1021,7 +1010,7 @@ export default function MobileCourseFilterPage() {
 
               <TimetableGridContainer>
                 <TimetableGrid
-                  events={MOCK_MY_TIMETABLE}
+                  events={activeTimetableEvents}
                   showClasses={showClasses}
                   isSelectionMode={true}
                   selectedSlots={filters.selectedSlots || []}

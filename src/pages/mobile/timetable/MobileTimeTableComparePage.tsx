@@ -10,6 +10,8 @@ import { createPersonalChatRoom } from "@/apis/chat";
 import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
 import { TimetableShareExtraData } from "@/types/chat";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -20,202 +22,6 @@ import TimetableGrid, {
 
 // 아이콘
 import { Plus, Send } from "lucide-react";
-
-// ==========================================
-// 1. 목업 데이터 정의
-// ==========================================
-
-const MY_CLASSES: ClassItem[] = [
-  {
-    id: 100,
-    name: "Academic English",
-    room: "12-402",
-    day: 0, // 월
-    startTime: 11,
-    endTime: 13,
-    color: "#FEF3C7", // 연한 노란색
-  },
-  {
-    id: 101,
-    name: "자기설계세미나",
-    room: "06-102",
-    day: 0,
-    startTime: 14,
-    endTime: 15,
-    color: "#FEF3C7",
-  },
-  {
-    id: 102,
-    name: "프로그래밍입문",
-    room: "07-407",
-    day: 0,
-    startTime: 15,
-    endTime: 17,
-    color: "#FEF3C7",
-  },
-  {
-    id: 103,
-    name: "소셜커뮤니케이션",
-    room: "12-404",
-    day: 1, // 화
-    startTime: 10,
-    endTime: 12,
-    color: "#FEF3C7",
-  },
-  {
-    id: 104,
-    name: "대학수학 (1)",
-    room: "07-407",
-    day: 1,
-    startTime: 15,
-    endTime: 18,
-    color: "#FEF3C7",
-  },
-  {
-    id: 105,
-    name: "프로그래밍입문",
-    room: "07-408",
-    day: 2, // 수
-    startTime: 10,
-    endTime: 12,
-    color: "#FEF3C7",
-  },
-  {
-    id: 106,
-    name: "컴퓨터공학개론",
-    room: "07-407",
-    day: 2,
-    startTime: 13,
-    endTime: 15,
-    color: "#FEF3C7",
-  },
-  {
-    id: 107,
-    name: "소셜커뮤니케이션",
-    room: "12-404",
-    day: 3, // 목
-    startTime: 10,
-    endTime: 12,
-    color: "#FEF3C7",
-  },
-  {
-    id: 108,
-    name: "창의적사고와문제해결",
-    room: "12-304",
-    day: 4, // 금
-    startTime: 13,
-    endTime: 17,
-    color: "#FEF3C7",
-  },
-];
-
-const FRIEND_CLASSES: Record<string, ClassItem[]> = {
-  김유니: [
-    {
-      id: 200,
-      name: "모바일소프트웨어",
-      room: "12-402",
-      day: 0, // 월
-      startTime: 12,
-      endTime: 15,
-      color: "#FFE5EE", // 연한 분홍색
-    },
-    {
-      id: 201,
-      name: "컴퓨터구조",
-      room: "07-505",
-      day: 0,
-      startTime: 16,
-      endTime: 18,
-      color: "#FFE5EE",
-    },
-    {
-      id: 202,
-      name: "인공지능개론",
-      room: "07-304",
-      day: 1, // 화
-      startTime: 16,
-      endTime: 18,
-      color: "#FFE5EE",
-    },
-    {
-      id: 203,
-      name: "UXUI디자인",
-      room: "28-206",
-      day: 2, // 수
-      startTime: 10,
-      endTime: 12,
-      color: "#FFE5EE",
-    },
-    {
-      id: 204,
-      name: "컴퓨터구조",
-      room: "07-505",
-      day: 2,
-      startTime: 15,
-      endTime: 17,
-      color: "#FFE5EE",
-    },
-    {
-      id: 205,
-      name: "멀티미디어프로그래밍",
-      room: "28-203",
-      day: 3, // 목
-      startTime: 12,
-      endTime: 15,
-      color: "#FFE5EE",
-    },
-  ],
-  "친구 2": [
-    {
-      id: 300,
-      name: "자료구조",
-      room: "07-302",
-      day: 1, // 화
-      startTime: 9,
-      endTime: 12,
-      color: "#FFE5EE",
-    },
-    {
-      id: 301,
-      name: "알고리즘",
-      room: "07-302",
-      day: 3, // 목
-      startTime: 13,
-      endTime: 16,
-      color: "#FFE5EE",
-    },
-  ],
-  "친구 3": [
-    {
-      id: 400,
-      name: "컴퓨터네트워크",
-      room: "07-201",
-      day: 2, // 수
-      startTime: 13,
-      endTime: 15,
-      color: "#FFE5EE",
-    },
-  ],
-  "친구 4": [
-    {
-      id: 500,
-      name: "데이터베이스",
-      room: "07-105",
-      day: 4, // 금
-      startTime: 9,
-      endTime: 12,
-      color: "#FFE5EE",
-    },
-  ],
-};
-
-const DEFAULT_FRIENDS_LIST = [
-  { friendId: 1001, nickname: "김유니", friendAlias: "김유니" },
-  { friendId: 1002, nickname: "친구 2", friendAlias: "친구 2" },
-  { friendId: 1003, nickname: "친구 3", friendAlias: "친구 3" },
-  { friendId: 1004, nickname: "친구 4", friendAlias: "친구 4" },
-];
 
 const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
 
@@ -239,9 +45,13 @@ export default function MobileTimeTableComparePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const friendIdsParam = searchParams.get("ids") || "";
+  const { selectedSemester, activeTimetableId, timetables } =
+    useTimetableStore();
 
   const chipScrollRef = useRef<HTMLDivElement | null>(null);
   const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
+
+  useTimeTables();
 
   // 2. 친구 목록 로드
   const { data: friendsRes } = useQuery({
@@ -251,8 +61,29 @@ export default function MobileTimeTableComparePage() {
 
   const friendsMap = useMemo(() => {
     const list = friendsRes?.data || [];
-    return list.length > 0 ? list : DEFAULT_FRIENDS_LIST;
+    return list;
   }, [friendsRes]);
+
+  const activeTimetable = useMemo(() => {
+    const list = timetables.filter((t) => t.semester === selectedSemester);
+    if (list.length === 0) return null;
+    return (
+      list.find((t) => t.id === activeTimetableId) ||
+      list.find((t) => t.isRepresentative) ||
+      list[0]
+    );
+  }, [timetables, selectedSemester, activeTimetableId]);
+
+  useTimeTableDetail(activeTimetable?.id);
+
+  const myClasses = useMemo(
+    () =>
+      (activeTimetable?.events ?? []).map((item) => ({
+        ...item,
+        color: item.color ?? "#FEF3C7",
+      })),
+    [activeTimetable?.events],
+  );
 
   // 쿼리 파라미터 기반 선택된 친구들
   const selectedFriendIds = useMemo(() => {
@@ -398,34 +229,14 @@ export default function MobileTimeTableComparePage() {
 
   // 친구의 시간표를 조회/할당하는 헬퍼 함수
   const getFriendTimetable = useMemo(() => {
-    return (friend: {
+    return (_friend: {
       friendId: number;
       nickname: string;
       friendAlias?: string;
-    }) => {
-      const name = friend.friendAlias || friend.nickname;
-      // 1. 목업 딕셔너리에 이름이 직접 매칭되면 그것을 반환
-      if (FRIEND_CLASSES[name]) {
-        return FRIEND_CLASSES[name];
-      }
-
-      // 2. 매칭되지 않는 실제 친구의 경우, friendsMap에서의 인덱스를 기반으로 순환 매핑
-      const friendIndex = friendsMap.findIndex(
-        (f) => f.friendId === friend.friendId,
-      );
-      const mockKeys = Object.keys(FRIEND_CLASSES); // ["김유니", "친구 2", "친구 3", "친구 4"]
-      const targetIndex =
-        friendIndex !== -1 ? friendIndex % mockKeys.length : 0;
-      const mockKey = mockKeys[targetIndex];
-      const baseClasses = FRIEND_CLASSES[mockKey] || [];
-
-      // ID 충돌 방지 및 고유 ID 부여
-      return baseClasses.map((item) => ({
-        ...item,
-        id: friend.friendId * 1000 + item.id,
-      }));
+    }): ClassItem[] => {
+      return [];
     };
-  }, [friendsMap]);
+  }, []);
 
   // 공강 시간 선택 상태 (시간표에 하이라이트 표시용)
   const [highlightedSlot, setHighlightedSlot] = useState<{
@@ -614,7 +425,7 @@ export default function MobileTimeTableComparePage() {
         const isMeSelected = selectedFriendIdsState.includes(99999);
         const isMeBusy =
           isMeSelected &&
-          MY_CLASSES.some(
+          myClasses.some(
             (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
           );
         const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
@@ -650,7 +461,7 @@ export default function MobileTimeTableComparePage() {
       }
     }
     return list;
-  }, [selectedFriendIdsState, friendsMap, getFriendTimetable]);
+  }, [selectedFriendIdsState, friendsMap, getFriendTimetable, myClasses]);
 
   // 만나기 좋은 시간: 1시간 초과인 경우 (긴 시간 순으로 정렬)
   const goodMeetingTimes = useMemo(() => {
@@ -690,7 +501,7 @@ export default function MobileTimeTableComparePage() {
         const isMeSelected = selectedFriendIdsState.includes(99999);
         const isMeBusy =
           isMeSelected &&
-          MY_CLASSES.some(
+          myClasses.some(
             (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
           );
         const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
@@ -738,7 +549,7 @@ export default function MobileTimeTableComparePage() {
       }
     }
     return result;
-  }, [selectedFriendIdsState, friendsMap, getFriendTimetable]);
+  }, [selectedFriendIdsState, friendsMap, getFriendTimetable, myClasses]);
 
   // 현재 탭 선택에 맞는 시간표 이벤트 결정
   const activeEvents = useMemo(() => {
@@ -749,7 +560,7 @@ export default function MobileTimeTableComparePage() {
     const result: ClassItem[] = [];
     if (selectedFriendIdsState.includes(99999)) {
       result.push(
-        ...MY_CLASSES.map((c) => ({
+        ...myClasses.map((c) => ({
           ...c,
           ownerName: "내 시간표",
         }))
@@ -774,6 +585,7 @@ export default function MobileTimeTableComparePage() {
     friendsMap,
     getFriendTimetable,
     freeViewClasses,
+    myClasses,
   ]);
 
   const isFreeTab = activeTabUpper === "free";
