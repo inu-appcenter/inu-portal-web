@@ -469,7 +469,7 @@ const MobileCourseSearchSheet = ({
                 })
               }
             >
-              <SlidersHorizontal size={24} />
+              <SlidersHorizontal size={20} />
               {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
             </FilterButton>
 
@@ -579,8 +579,8 @@ const FilterButton = styled.button<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 56px;
+  gap: 6px;
+  height: 48px;
   border-radius: 999px;
   cursor: pointer;
   pointer-events: auto;
@@ -606,10 +606,10 @@ const FilterButton = styled.button<{
     $isZeroCount
       ? "var(--text-secondary, #333d4b)"
       : "var(--text-inverse, #fff)"};
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 20px;
 
   width: fit-content;
   
@@ -635,17 +635,17 @@ const FilterButton = styled.button<{
   `
       : props.$isZeroCount
         ? `
-    max-width: 56px;
-    padding: 16px;
-    margin-right: 16px;
+    max-width: 48px;
+    padding: 12px;
+    margin-right: 12px;
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
   `
         : `
-    max-width: 240px; 
-    padding: 16px 20px;
-    margin-right: 16px;
+    max-width: 200px; 
+    padding: 12px 16px;
+    margin-right: 12px;
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
