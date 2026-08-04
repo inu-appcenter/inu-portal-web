@@ -18,6 +18,7 @@ import FloatingSearchBar, {
 } from "@/components/mobile/common/FloatingSearchBar";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   FilterState,
   DEFAULT_FILTERS,
@@ -575,14 +576,17 @@ const MobileCourseSearchSheet = ({
             <FilterButton
               $isHidden={isSearchActive}
               $isZeroCount={activeFilterCount === 0}
-              onClick={() =>
+              onClick={() => {
+                mixpanelTrack.timetableCourseSearchAction("필터 열기", {
+                  result_count: filteredCourses.length,
+                });
                 navigate(ROUTES.TIMETABLE.FILTER, {
                   state: {
                     filters: activeFilters,
                     storageKey: filterStorageKey,
                   },
-                })
-              }
+                });
+              }}
             >
               <SlidersHorizontal size={20} />
               {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}

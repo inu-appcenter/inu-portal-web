@@ -14,6 +14,7 @@ import { TimetableShareExtraData } from "@/types/chat";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -187,6 +188,10 @@ export default function MobileTimeTableComparePage() {
         ]}
         activeTabId={activeTabUpper}
         onChange={(id) => {
+          mixpanelTrack.timetableCompareAction("탭 전환", {
+            to_tab: id,
+            friend_count: selectedFriendIds.length,
+          });
           const newParams = new URLSearchParams(searchParams);
           newParams.set("tab", id);
           setSearchParams(newParams, { replace: true });
@@ -242,6 +247,10 @@ export default function MobileTimeTableComparePage() {
   }, [selectedFriendIds, activeTabUpper, isSingleFriendMode]);
 
   const handleFriendChipClick = (friendId: number) => {
+    mixpanelTrack.timetableCompareAction("친구 선택", {
+      selection_type: friendId === -1 ? "전체" : friendId === 99999 ? "나" : "친구",
+      tab_name: activeTabUpper,
+    });
     if (friendId === -1) {
       // 모두 버튼 클릭
       const isAllSelected =
@@ -290,6 +299,12 @@ export default function MobileTimeTableComparePage() {
     startTime: number;
     endTime: number;
   }) => {
+    mixpanelTrack.timetableCompareAction("공강 선택", {
+      day: slot.day,
+      duration: slot.endTime - slot.startTime,
+      selected_friend_count: selectedFriendIdsState.filter((id) => id !== 99999)
+        .length,
+    });
     setHighlightedSlot((prev) => {
       if (
         prev &&
@@ -669,6 +684,10 @@ export default function MobileTimeTableComparePage() {
       createPersonalChatRoom(targetFriendIds),
     onSuccess: (res: any, variables: number[]) => {
       setIsConfirmModalOpen(false);
+      mixpanelTrack.timetableCompareAction("공유", {
+        friend_count: variables.length,
+        free_slot_count: goodMeetingTimes.length,
+      });
       const roomData = res.data || res;
       const roomId = roomData.id || roomData.roomId;
       if (roomId) {
