@@ -10,6 +10,12 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 import Ripple from "@/components/common/Ripple";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import { useQueryClient } from "@tanstack/react-query";
+import { getCourseOfferingsPage } from "@/apis/courseOfferings";
+import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import type { CourseOfferingFilters } from "@/types/courseOfferings";
+import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 
 // --- Types & Constants ---
 export interface FilterState {
@@ -185,6 +191,58 @@ export function formatSlotsToTimeStr(slots: string[]): string {
   return dayStrings.join(" ");
 }
 
+const DAY_ENUMS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+];
+
+export function formatSlotsToMeetings(slots: string[]): string[] {
+  if (!slots || slots.length === 0) return [];
+  const dayGroups: Record<number, number[]> = {};
+  slots.forEach((slot) => {
+    const [dStr, hStr] = slot.split("-");
+    const d = parseInt(dStr, 10);
+    const h = parseFloat(hStr);
+    if (!dayGroups[d]) dayGroups[d] = [];
+    dayGroups[d].push(h);
+  });
+
+  const result: string[] = [];
+  Object.keys(dayGroups).forEach((dKey) => {
+    const d = parseInt(dKey, 10);
+    const dayEnum = DAY_ENUMS[d];
+    if (!dayEnum) return;
+
+    const hours = dayGroups[d].sort((a, b) => a - b);
+    let start = hours[0];
+    let prev = hours[0];
+
+    for (let i = 1; i <= hours.length; i++) {
+      const current = hours[i];
+      if (current === prev + 0.5) {
+        prev = current;
+      } else {
+        const end = prev + 0.5;
+        const formatHour = (val: number): string => {
+          const h = Math.floor(val);
+          const m = Math.round((val - h) * 60);
+          return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        };
+        result.push(`${dayEnum}|${formatHour(start)}|${formatHour(end)}`);
+        start = current;
+        prev = current;
+      }
+    }
+  });
+
+  return result;
+}
+
 type SubScreenType =
   | "main"
   | "major"
@@ -197,6 +255,12 @@ type SubScreenType =
 export default function MobileCourseFilterPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
+  const { timetables, activeTimetableId } = useTimetableStore();
+  const activeTimetable = useMemo(() => {
+    return timetables.find((t) => t.id === activeTimetableId) || null;
+  }, [timetables, activeTimetableId]);
+  const [isApplying, setIsApplying] = useState(false);
 
   // 상위 편집 화면에서 전달한 필터 상태가 있다면 수신, 없으면 디폴트
   const initialFilters = useMemo(() => {
@@ -353,7 +417,48 @@ export default function MobileCourseFilterPage() {
     };
   }, [view, hasChanges]);
 
-  const [pinnedMajors, setPinnedMajors] = useState<string[]>(["정보기술대학"]); // 즐겨찾기 단과대/학과 핀
+  const [pinnedMajors, setPinnedMajors] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("pinned_majors");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("즐겨찾기 전공 복원 오류:", e);
+    }
+    return ["정보기술대학"];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("pinned_majors", JSON.stringify(pinnedMajors));
+    } catch (e) {
+      console.error("즐겨찾기 전공 저장 오류:", e);
+    }
+  }, [pinnedMajors]);
+
+  const collegeList = useMemo(() => {
+    const list = SUB_MAJORS["전공"] || [];
+    return [...list].sort((a, b) => {
+      const aPinned = pinnedMajors.includes(a);
+      const bPinned = pinnedMajors.includes(b);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return 0;
+    });
+  }, [pinnedMajors]);
+
+  const deptList = useMemo(() => {
+    if (!majorLevel2) return [];
+    const list = COLLEGE_DEPARTMENTS[majorLevel2] || [];
+    return [...list].sort((a, b) => {
+      const aPinned = pinnedMajors.includes(a);
+      const bPinned = pinnedMajors.includes(b);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return 0;
+    });
+  }, [majorLevel2, pinnedMajors]);
 
   // 시간표 관련 내부 임시 설정
   const [showClasses, setShowClasses] = useState(true);
@@ -435,13 +540,51 @@ export default function MobileCourseFilterPage() {
     }));
   };
 
-  // 저장하기 핸들러 (편집 페이지로 복귀)
-  const handleSave = () => {
-    hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
-    backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
-    setIsSaving(true); // blocker 비활성화 후 navigate
-    localStorage.setItem("applied_filters", JSON.stringify(filters));
-    navigate(-1);
+  // 저장하기 핸들러 (서버 재조회 후 렌더링 준비 완료 시 편집 페이지로 복귀)
+  const handleSave = async () => {
+    if (isApplying) return;
+    setIsApplying(true);
+
+    try {
+      const offeringFilters = mapFilterToOfferingFilters(filters);
+
+      if (activeTimetable?.year && activeTimetable?.term) {
+        await queryClient.fetchInfiniteQuery({
+          queryKey: [
+            ...COURSE_OFFERINGS_QUERY_KEY,
+            activeTimetable.year,
+            activeTimetable.term,
+            offeringFilters.deptName ?? "",
+            offeringFilters.collegeName ?? "",
+            offeringFilters.hyNames?.join(",") ?? "",
+            offeringFilters.isuNames?.join(",") ?? "",
+            offeringFilters.isuFldNames?.join(",") ?? "",
+            offeringFilters.ssupTypeNames?.join(",") ?? "",
+            offeringFilters.credits?.join(",") ?? "",
+            offeringFilters.keyword ?? "",
+            offeringFilters.meetingFilterMode ?? "",
+            offeringFilters.meetings?.join(",") ?? "",
+          ],
+          queryFn: ({ pageParam = 0 }) =>
+            getCourseOfferingsPage(
+              activeTimetable.year,
+              activeTimetable.term,
+              pageParam as number,
+              50,
+              offeringFilters,
+            ),
+          initialPageParam: 0,
+        });
+      }
+    } catch (error) {
+      console.error("필터 데이터 사전 조회 오류:", error);
+    } finally {
+      hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
+      backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
+      setIsSaving(true); // blocker 비활성화 후 navigate
+      localStorage.setItem("applied_filters", JSON.stringify(filters));
+      navigate(-1);
+    }
   };
 
   // 즐겨찾기 별표 토글
@@ -678,7 +821,7 @@ export default function MobileCourseFilterPage() {
           {/* 전공 하위 - 단과대학 목록 */}
           {majorLevel1 === "전공" && !majorLevel2 && (
             <OptionsCard>
-              {SUB_MAJORS["전공"].map((college) => {
+              {collegeList.map((college) => {
                 const isPinned = pinnedMajors.includes(college);
                 return (
                   <OptionItemRow
@@ -734,7 +877,7 @@ export default function MobileCourseFilterPage() {
           {/* 단과대학 하위 - 학과 목록 */}
           {majorLevel1 === "전공" && majorLevel2 && (
             <OptionsCard>
-              {(COLLEGE_DEPARTMENTS[majorLevel2] || []).map((dept) => {
+              {deptList.map((dept) => {
                 const isSelected = filters.major === dept;
                 const isPinned = pinnedMajors.includes(dept);
                 return (
@@ -953,8 +1096,13 @@ export default function MobileCourseFilterPage() {
             >
               초기화
             </ResetBottomButton>
-            <BottomActionButton variant="primary" onClick={handleSave}>
-              적용하기
+            <BottomActionButton
+              variant="primary"
+              onClick={handleSave}
+              loading={isApplying}
+              disabled={isApplying}
+            >
+              {isApplying ? "적용 중..." : "적용하기"}
             </BottomActionButton>
           </FixedBottomContainer>
         </>
