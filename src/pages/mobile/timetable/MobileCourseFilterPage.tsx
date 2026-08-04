@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getCourseOfferingsPage } from "@/apis/courseOfferings";
 import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import useUserStore from "@/stores/useUserStore";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 
 // --- Types & Constants ---
@@ -158,6 +159,23 @@ const SUB_MAJORS: Record<string, string[]> = {
   연계전공: LINKED_MAJORS,
 };
 
+const DEFAULT_PINNED_MAJOR = "정보기술대학";
+
+const getDefaultPinnedMajors = (userDepartment: string): string[] => {
+  const department = userDepartment.trim();
+  if (!department) return [DEFAULT_PINNED_MAJOR];
+
+  if (COLLEGE_DEPARTMENTS[department]) {
+    return [department];
+  }
+
+  const college = Object.entries(COLLEGE_DEPARTMENTS).find(([, departments]) =>
+    departments.includes(department),
+  )?.[0];
+
+  return college ? [college, department] : [DEFAULT_PINNED_MAJOR];
+};
+
 // 목업 내 시간표 (시간 선택 시 가이드 오버레이용)
 const MOCK_MY_TIMETABLE: ClassItem[] = [
   {
@@ -292,6 +310,7 @@ export default function MobileCourseFilterPage() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { timetables, activeTimetableId } = useTimetableStore();
+  const userDepartment = useUserStore((state) => state.userInfo.department);
   const activeTimetable = useMemo(() => {
     return timetables.find((t) => t.id === activeTimetableId) || null;
   }, [timetables, activeTimetableId]);
@@ -452,17 +471,29 @@ export default function MobileCourseFilterPage() {
     };
   }, [view, hasChanges]);
 
+  const hasStoredPinnedMajorsRef = useRef(false);
   const [pinnedMajors, setPinnedMajors] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem("pinned_majors");
       if (saved) {
+        hasStoredPinnedMajorsRef.current = true;
         return JSON.parse(saved);
       }
     } catch (e) {
       console.error("즐겨찾기 전공 복원 오류:", e);
     }
-    return ["정보기술대학"];
+    return getDefaultPinnedMajors(userDepartment);
   });
+
+  useEffect(() => {
+    if (hasStoredPinnedMajorsRef.current || !userDepartment.trim()) return;
+
+    setPinnedMajors((prev) => {
+      const fallbackDefault = getDefaultPinnedMajors("");
+      if (JSON.stringify(prev) !== JSON.stringify(fallbackDefault)) return prev;
+      return getDefaultPinnedMajors(userDepartment);
+    });
+  }, [userDepartment]);
 
   useEffect(() => {
     try {
