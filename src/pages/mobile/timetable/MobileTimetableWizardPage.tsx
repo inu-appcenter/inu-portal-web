@@ -50,7 +50,6 @@ const MIN_CREDIT_SCALE = 12;
 const MAX_CREDIT_SCALE = 21;
 const DEFAULT_MIN_CREDIT = 15;
 const DEFAULT_MAX_CREDIT = 18;
-const MAX_MUST_HAVE = 6;
 const GENERATING_MIN_VISIBLE_MS = 1600;
 const GENERATING_MAX_WAIT_MS = 10000;
 
@@ -400,9 +399,7 @@ export default function MobileTimetableWizardPage() {
           <Card>
             <CardLabelRow>
               <CardLabel>꼭 넣고 싶은 강의</CardLabel>
-              <CardLabelCount>
-                {wishlistCourses.length} / {MAX_MUST_HAVE}
-              </CardLabelCount>
+              <CardLabelCount>{wishlistCourses.length}개</CardLabelCount>
             </CardLabelRow>
             <CardHint>칩을 눌러 필수/선택을 바꿀 수 있어요. 선택은 안 맞으면 자동으로 빠져요.</CardHint>
             {wishlistCourses.length > 0 && (
@@ -426,7 +423,7 @@ export default function MobileTimetableWizardPage() {
             )}
             <AddCourseButton
               type="button"
-              disabled={wishlistCourses.length >= MAX_MUST_HAVE || coursePool.length === 0}
+              disabled={coursePool.length === 0}
               onClick={() => setMustHaveSheetOpen(true)}
             >
               <Plus size={18} />
