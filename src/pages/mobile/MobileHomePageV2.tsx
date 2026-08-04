@@ -66,12 +66,17 @@ const getTimetableStatusText = (
 };
 
 export default function MobileHomePageV2() {
-  const { userInfo } = useUserStore();
+  const { userInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
   const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
   const { timetables, activeTimetableId } = useTimetableStore();
-  const { isLoading: isTimetablesLoading } = useTimeTables();
+
+  const isLoggedIn = Boolean(tokenInfo?.accessToken);
+
+  const { isLoading: isTimetablesLoading } = useTimeTables(undefined, undefined, {
+    enabled: isLoggedIn,
+  });
 
   useHeader({
     showAlarm: true,
@@ -92,14 +97,17 @@ export default function MobileHomePageV2() {
   const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
   const representativeTimetableId = useMemo(
     () =>
-      activeTimetableId ??
-      timetables.find((timetable) => timetable.isRepresentative)?.id ??
-      timetables[0]?.id ??
-      null,
-    [activeTimetableId, timetables],
+      isLoggedIn
+        ? activeTimetableId ??
+          timetables.find((timetable) => timetable.isRepresentative)?.id ??
+          timetables[0]?.id ??
+          null
+        : null,
+    [isLoggedIn, activeTimetableId, timetables],
   );
   const { isLoading: isDetailLoading } = useTimeTableDetail(
     representativeTimetableId,
+    { enabled: isLoggedIn && representativeTimetableId != null },
   );
   const activeTimetable = useMemo(
     () =>
@@ -113,8 +121,9 @@ export default function MobileHomePageV2() {
       .sort((a, b) => a.startTime - b.startTime);
   }, [activeTimetable?.events, today]);
   const nowMinutes = getMinutesFromStartOfDay(today);
-  const timetableStatusText =
-    isTimetablesLoading || isDetailLoading
+  const timetableStatusText = !isLoggedIn
+    ? "로그인 필요"
+    : isTimetablesLoading || isDetailLoading
       ? "불러오는 중"
       : getTimetableStatusText(todayClasses, today);
 
@@ -135,7 +144,9 @@ export default function MobileHomePageV2() {
             </WidgetHeader>
 
             <ClassList>
-              {isTimetablesLoading || isDetailLoading ? (
+              {!isLoggedIn ? (
+                <EmptyClassItem>로그인 후 시간표를 확인해보세요.</EmptyClassItem>
+              ) : isTimetablesLoading || isDetailLoading ? (
                 <EmptyClassItem>시간표를 불러오고 있어요.</EmptyClassItem>
               ) : todayClasses.length > 0 ? (
                 todayClasses.map((classItem) => {
