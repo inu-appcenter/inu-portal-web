@@ -1,31 +1,8 @@
 import { create } from "zustand";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-
-// MOCK DATA
-const MOCK_TIMETABLE_2026_1: ClassItem[] = [
-  { id: 1, name: "데이터구조", room: "302호", day: 0, startTime: 9, endTime: 11 },
-  { id: 2, name: "운영체제", room: "404호", day: 0, startTime: 13, endTime: 15 },
-  { id: 3, name: "컴퓨터네트워크", room: "201호", day: 1, startTime: 10, endTime: 12 },
-  { id: 4, name: "데이터구조", room: "302호", day: 2, startTime: 9, endTime: 11 },
-  { id: 5, name: "데이터베이스", room: "105호", day: 2, startTime: 14, endTime: 16 },
-  { id: 6, name: "운영체제", room: "404호", day: 3, startTime: 13, endTime: 15 },
-  { id: 7, name: "인공지능", room: "501호", day: 4, startTime: 15, endTime: 18 },
-];
-
-const MOCK_TIMETABLE_2025_1_A: ClassItem[] = [
-  { id: 21, name: "알고리즘", room: "202호", day: 1, startTime: 9, endTime: 11 },
-  { id: 22, name: "소프트웨어공학", room: "303호", day: 3, startTime: 14, endTime: 16 },
-];
-
-const MOCK_TIMETABLE_2025_1_B: ClassItem[] = [
-  { id: 23, name: "컴퓨터그래픽스", room: "401호", day: 0, startTime: 13, endTime: 16 },
-  { id: 24, name: "웹프로그래밍", room: "104호", day: 2, startTime: 10, endTime: 12 },
-];
-
-const MOCK_TIMETABLE_2024_2: ClassItem[] = [
-  { id: 31, name: "이산수학", room: "101호", day: 1, startTime: 13, endTime: 15 },
-  { id: 32, name: "선형대수학", room: "102호", day: 3, startTime: 9, endTime: 11 },
-];
+import type { TimeTable, TimeTableVisibility } from "@/types/timetables";
+import { formatSemester } from "@/utils/semester";
+import { broadcastSync } from "@/stores/middleware/broadcastSync";
 
 export interface TimetableTheme {
   colorTheme: "default" | "pastelWarm" | "pastelCool" | "monotone";
@@ -38,7 +15,11 @@ export interface Timetable {
   id: number;
   name: string;
   semester: string;
+  semesterId: number;
+  year: number;
+  term: TimeTable["term"];
   isRepresentative: boolean;
+  visibility: TimeTableVisibility;
   events: ClassItem[];
   theme?: TimetableTheme;
 }
@@ -49,117 +30,67 @@ interface TimetableStore {
   timetables: Timetable[];
   setSemester: (semester: string) => void;
   setActiveTimetable: (id: number) => void;
-  setRepresentative: (id: number) => void;
-  addTimetable: (semester: string, name: string) => void;
-  renameTimetable: (id: number, name: string) => void;
-  deleteTimetable: (id: number) => void;
+  setTimetables: (serverTimetables: TimeTable[]) => void;
   updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
   updateTimetableEvents: (id: number, events: ClassItem[]) => void;
 }
 
-export const useTimetableStore = create<TimetableStore>((set) => ({
-  selectedSemester: "2026년 1학기",
-  activeTimetableId: 1,
-  timetables: [
-    {
-      id: 1,
-      name: "시간표 1",
-      semester: "2026년 1학기",
-      isRepresentative: true,
-      events: MOCK_TIMETABLE_2026_1,
-    },
-    {
-      id: 2,
-      name: "시간표 1",
-      semester: "2025년 1학기",
-      isRepresentative: true,
-      events: MOCK_TIMETABLE_2025_1_A,
-    },
-    {
-      id: 3,
-      name: "시간표 2",
-      semester: "2025년 1학기",
-      isRepresentative: false,
-      events: MOCK_TIMETABLE_2025_1_B,
-    },
-    {
-      id: 4,
-      name: "시간표 3",
-      semester: "2025년 1학기",
-      isRepresentative: false,
-      events: [],
-    },
-    {
-      id: 5,
-      name: "시간표 1",
-      semester: "2024년 2학기",
-      isRepresentative: true,
-      events: MOCK_TIMETABLE_2024_2,
-    },
-    {
-      id: 6,
-      name: "시간표 2",
-      semester: "2024년 2학기",
-      isRepresentative: false,
-      events: [],
-    },
-  ],
+export const useTimetableStore = create<TimetableStore>()(
+  broadcastSync<TimetableStore>({
+    // 시간표 상세 화면 등이 별도 웹뷰로 뜬 RN 멀티 웹뷰 환경에서, 거기서 편집한
+    // 시간표(요소 추가/테마 변경 등)가 이전 화면(다른 웹뷰)의 목록에도 즉시
+    // 반영되도록 동기화한다.
+    name: "timetable-store-sync",
+    partialize: (state) => ({
+      selectedSemester: state.selectedSemester,
+      activeTimetableId: state.activeTimetableId,
+      timetables: state.timetables,
+    }),
+  })((set) => ({
+  selectedSemester: "",
+  activeTimetableId: null,
+  timetables: [],
   setSemester: (semester) => set({ selectedSemester: semester }),
   setActiveTimetable: (id) => set({ activeTimetableId: id }),
-  setRepresentative: (id) =>
+  // 서버에서 받아온 시간표 목록을 스토어 상태로 변환 (기존 events/theme는 유지)
+  setTimetables: (serverTimetables) =>
     set((state) => {
-      const target = state.timetables.find((t) => t.id === id);
-      if (!target) return {};
-      const updated = state.timetables.map((t) => {
-        if (t.semester === target.semester) {
-          return { ...t, isRepresentative: t.id === id };
-        }
-        return t;
+      const timetables = serverTimetables.map<Timetable>((t) => {
+        const prev = state.timetables.find((p) => p.id === t.id);
+        return {
+          id: t.id,
+          name: t.timeTableName,
+          semester: formatSemester(t.year, t.term),
+          semesterId: t.semesterId,
+          year: t.year,
+          term: t.term,
+          isRepresentative: t.isPrimary,
+          visibility: t.visibility,
+          events: prev?.events ?? [],
+          theme: prev?.theme,
+        };
       });
-      return { timetables: updated };
-    }),
-  addTimetable: (semester, name) =>
-    set((state) => {
-      const newId = Math.max(0, ...state.timetables.map((t) => t.id)) + 1;
-      const isFirst = !state.timetables.some((t) => t.semester === semester);
-      const newTimetable: Timetable = {
-        id: newId,
-        name,
-        semester,
-        isRepresentative: isFirst,
-        events: [],
-      };
-      return {
-        timetables: [...state.timetables, newTimetable],
-        activeTimetableId: newId,
-        selectedSemester: semester,
-      };
-    }),
-  renameTimetable: (id, name) =>
-    set((state) => ({
-      timetables: state.timetables.map((t) =>
-        t.id === id ? { ...t, name } : t
-      ),
-    })),
-  deleteTimetable: (id) =>
-    set((state) => {
-      const remaining = state.timetables.filter((t) => t.id !== id);
-      
-      // If we deleted the active timetable, find a new active one
-      let newActiveId = state.activeTimetableId;
-      if (state.activeTimetableId === id) {
-        const sameSemester = remaining.filter((t) => t.semester === state.selectedSemester);
-        if (sameSemester.length > 0) {
-          newActiveId = sameSemester[0].id;
-        } else {
-          newActiveId = remaining.length > 0 ? remaining[0].id : null;
-        }
+
+      // 선택된 학기가 없으면 대표 시간표(없으면 첫 시간표)의 학기를 선택
+      let selectedSemester = state.selectedSemester;
+      if (!selectedSemester) {
+        const primary =
+          timetables.find((t) => t.isRepresentative) ?? timetables[0];
+        selectedSemester = primary?.semester ?? "";
       }
-      
-      return {
-        timetables: remaining,
-        activeTimetableId: newActiveId,
-      };
+
+      // 활성 시간표가 목록에 없으면 선택된 학기의 대표 시간표로 재설정
+      let activeTimetableId = state.activeTimetableId;
+      if (!timetables.some((t) => t.id === activeTimetableId)) {
+        const inSemester = timetables.filter(
+          (t) => t.semester === selectedSemester,
+        );
+        const fallback =
+          inSemester.find((t) => t.isRepresentative) ?? inSemester[0];
+        activeTimetableId = fallback?.id ?? null;
+      }
+
+      return { timetables, selectedSemester, activeTimetableId };
     }),
   updateTimetableTheme: (id, theme) =>
     set((state) => ({
@@ -173,4 +104,5 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
         t.id === id ? { ...t, events } : t
       ),
     })),
-}));
+  })),
+);

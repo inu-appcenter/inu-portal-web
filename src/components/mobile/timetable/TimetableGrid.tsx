@@ -7,9 +7,15 @@ import { THEME_PALETTES } from "./TimetableThemeBottomSheet";
 // --- 타입 정의 ---
 export interface ClassItem {
   id: number;
+  // 서버 시간표 요소 id (삭제 API용). id는 meeting 단위, itemId는 요소 단위
+  itemId?: number;
+  // 개설강의 id (강의 수강 추가 여부 판단용)
+  courseOfferingId?: number;
+  // 커스텀 일정 수정 API용 id (id는 meeting 단위라 요소 식별에 쓸 수 없음)
+  customScheduleId?: number;
   name: string;
   room: string;
-  day: number; // 0:월 ~ 4:금
+  day: number; // 0:월 ~ 6:일 (기본은 월~금만 표시, 토/일 데이터가 있으면 그리드가 자동 확장됨)
   startTime: number; // 9 ~ 21
   endTime: number;
   credits?: number;
@@ -24,6 +30,7 @@ export interface ClassItem {
   evaluation?: string;
   courseId?: string;
   isCustom?: boolean;
+  isUntimed?: boolean;
 }
 
 interface TimetableGridProps {
@@ -46,12 +53,19 @@ interface TimetableGridProps {
   onSelectedSlotsChange?: (slots: string[]) => void;
   showClasses?: boolean;
   theme?: TimetableTheme;
+  // 최소로 보여줄 요일 컬럼 수(월요일부터). 이벤트/선택 슬롯에 토·일 데이터가 있으면
+  // 이 값과 무관하게 자동으로 늘어난다. 기본은 월~금(5) — 대부분의 개설강의가 평일이라
+  // 굳이 항상 7컬럼을 보여주면 컬럼 폭만 좁아진다. 주말 슬롯을 미리 선택하게 하고
+  // 싶은 화면(제외조건 등)은 7로 지정한다.
+  minDayCount?: number;
 }
 
 // --- 상수 데이터 ---
-const DAYS = ["월", "화", "수", "목", "금"];
+const ALL_DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 const START_HOUR = 9;
 const DEFAULT_MAX_HOUR = 18;
+const MIN_DAY_COUNT = 5;
+const MAX_DAY_COUNT = 7;
 
 const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
 const EMPTY_SELECTED_SLOTS: string[] = [];
@@ -69,6 +83,7 @@ const TimetableGrid = ({
   onSelectedSlotsChange,
   showClasses = true,
   theme,
+  minDayCount = MIN_DAY_COUNT,
 }: TimetableGridProps) => {
   // 바텀시트 상태 정의
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
@@ -214,9 +229,31 @@ const TimetableGrid = ({
     };
   }, [isSelectionMode]);
 
+  const timedEvents = useMemo(
+    () => events.filter((event) => !event.isUntimed),
+    [events],
+  );
+  const untimedEvents = useMemo(
+    () => events.filter((event) => event.isUntimed),
+    [events],
+  );
+  const timedPreviewEvents = useMemo(
+    () => previewEvents.filter((event) => !event.isUntimed),
+    [previewEvents],
+  );
+
+  // 0. 동적 요일 범위 계산 (이벤트/선택 슬롯에 토·일 데이터가 있으면 자동으로 확장)
+  const DAYS = useMemo(() => {
+    const slotDays = selectedSlots.map((slot) => parseInt(slot.split("-")[0], 10));
+    const eventDays = [...timedEvents, ...timedPreviewEvents].map((e) => e.day);
+    const maxDay = Math.max(minDayCount - 1, 0, ...eventDays, ...slotDays);
+    const dayCount = Math.min(MAX_DAY_COUNT, maxDay + 1);
+    return ALL_DAY_LABELS.slice(0, dayCount);
+  }, [timedEvents, timedPreviewEvents, selectedSlots, minDayCount]);
+
   // 1. 동적 시간 범위 계산 (기존 이벤트 + 미리보기 이벤트 포함)
   const timeSlots = useMemo(() => {
-    const allEvents = [...events, ...previewEvents];
+    const allEvents = [...timedEvents, ...timedPreviewEvents];
     const maxEventTime = Math.max(0, ...allEvents.map((e) => e.endTime));
     const endHour = Math.max(DEFAULT_MAX_HOUR, maxEventTime);
 
@@ -225,7 +262,7 @@ const TimetableGrid = ({
       slots.push(i);
     }
     return slots;
-  }, [events, previewEvents]);
+  }, [timedEvents, timedPreviewEvents]);
 
   const rowCount = (timeSlots.length - 1) * 2;
 
@@ -296,11 +333,18 @@ const TimetableGrid = ({
     );
   };
 
+  const handleUntimedClick = (item: ClassItem) => {
+    if (isFreeMode || isSelectionMode) return;
+    setSelectedClass(item);
+    setIsBottomSheetOpen(true);
+  };
+
   return (
     <>
       <GridContainer
         ref={containerRef}
         $rowCount={rowCount}
+        $dayCount={DAYS.length}
         onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
       >
         {/* (1) 요일 헤더 */}
@@ -338,7 +382,7 @@ const TimetableGrid = ({
                     key={`bg-${timeVal}-${dayIndex}`}
                     $isSelectionMode={isSelectionMode}
                     $isSelected={isSelected}
-                    $isLastDay={dayIndex === 4}
+                    $isLastDay={dayIndex === DAYS.length - 1}
                     data-day={dayIndex}
                     data-hour={timeVal}
                     onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
@@ -364,7 +408,7 @@ const TimetableGrid = ({
                     key={`bg-${timeVal}-${dayIndex}`}
                     $isSelectionMode={isSelectionMode}
                     $isSelected={isSelected}
-                    $isLastDay={dayIndex === 4}
+                    $isLastDay={dayIndex === DAYS.length - 1}
                     data-day={dayIndex}
                     data-hour={timeVal}
                     onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
@@ -385,10 +429,10 @@ const TimetableGrid = ({
         })}
 
         {/* (3) 기존 수업 아이템 */}
-        {showClasses && events.map((item, index) => renderEventBlock(item, index, false))}
+        {showClasses && timedEvents.map((item, index) => renderEventBlock(item, index, false))}
 
         {/* (4) 미리보기 아이템 (오버레이) */}
-        {showClasses && previewEvents.map((item, index) =>
+        {showClasses && timedPreviewEvents.map((item, index) =>
           renderEventBlock(item, index, true),
         )}
 
@@ -404,6 +448,21 @@ const TimetableGrid = ({
                 Math.round((highlightedSlot.endTime - START_HOUR) * 2) + 2,
             }}
           />
+        )}
+
+        {showClasses && untimedEvents.length > 0 && (
+          <UntimedCourseList>
+            {untimedEvents.map((item) => (
+              <UntimedCourseItem
+                key={`untimed-${item.id}`}
+                type="button"
+                onClick={() => handleUntimedClick(item)}
+                disabled={isFreeMode || isSelectionMode}
+              >
+                <UntimedCourseName>{item.name}</UntimedCourseName>
+              </UntimedCourseItem>
+            ))}
+          </UntimedCourseList>
         )}
       </GridContainer>
 
@@ -423,9 +482,9 @@ const TimetableGrid = ({
 export default TimetableGrid;
 
 // --- 스타일 컴포넌트 ---
-const GridContainer = styled.div<{ $rowCount: number }>`
+const GridContainer = styled.div<{ $rowCount: number; $dayCount: number }>`
   display: grid;
-  grid-template-columns: 24px repeat(5, minmax(0, 1fr));
+  grid-template-columns: 24px repeat(${({ $dayCount }) => $dayCount}, minmax(0, 1fr));
   grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, 25px);
   border: 1px solid var(--border-strong);
   border-radius: 16px;
@@ -522,7 +581,7 @@ const ClassItemBlock = styled.div<{
     `
     animation: previewPulse 1.5s infinite ease-in-out;
   `}
-  
+
   user-select: none;
   -webkit-user-drag: none;
 
@@ -609,4 +668,44 @@ const HighlightedBlock = styled.div`
       box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
     }
   }
+`;
+
+const UntimedCourseList = styled.div`
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+  border-top: 1px solid var(--border-default, #e5e8eb);
+`;
+
+const UntimedCourseItem = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+`;
+
+const UntimedCourseName = styled.span`
+  color: var(--text-tertiary, #6b7280);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;

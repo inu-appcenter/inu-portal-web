@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled, { css } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
+import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import type { ClassItem as TimetableClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import { formatHoursToTime } from "@/utils/timetable";
 import { ROUTES } from "@/constants/routes";
 import {
   MOBILE_PAGE_GUTTER,
@@ -23,11 +27,51 @@ import Banner from "@/containers/mobile/home/Banner";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
+const getTodayTimetableDay = (date: Date) => (date.getDay() + 6) % 7;
+
+const getMinutesFromStartOfDay = (date: Date) =>
+  date.getHours() * 60 + date.getMinutes();
+
+const toMinutes = (hours: number) => Math.round(hours * 60);
+
+const getTimetableStatusText = (
+  classes: TimetableClassItem[],
+  now: Date,
+) => {
+  if (classes.length === 0) return "등록된 수업 없음";
+
+  const nowMinutes = getMinutesFromStartOfDay(now);
+  const currentClass = classes.find(
+    (classItem) =>
+      toMinutes(classItem.startTime) <= nowMinutes &&
+      nowMinutes < toMinutes(classItem.endTime),
+  );
+
+  if (currentClass) return "진행 중";
+
+  const nextClass = classes.find(
+    (classItem) => toMinutes(classItem.startTime) > nowMinutes,
+  );
+
+  if (!nextClass) return "오늘 수업 끝";
+
+  const minutesUntilStart = toMinutes(nextClass.startTime) - nowMinutes;
+  if (minutesUntilStart < 60) return `${minutesUntilStart}분 후 시작`;
+
+  const hours = Math.floor(minutesUntilStart / 60);
+  const minutes = minutesUntilStart % 60;
+  return minutes === 0
+    ? `${hours}시간 후 시작`
+    : `${hours}시간 ${minutes}분 후 시작`;
+};
+
 export default function MobileHomePageV2() {
   const { userInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
   const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
+  const { timetables, activeTimetableId } = useTimetableStore();
+  const { isLoading: isTimetablesLoading } = useTimeTables();
 
   useHeader({
     showAlarm: true,
@@ -46,6 +90,33 @@ export default function MobileHomePageV2() {
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
   const today = new Date();
   const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
+  const representativeTimetableId = useMemo(
+    () =>
+      activeTimetableId ??
+      timetables.find((timetable) => timetable.isRepresentative)?.id ??
+      timetables[0]?.id ??
+      null,
+    [activeTimetableId, timetables],
+  );
+  const { isLoading: isDetailLoading } = useTimeTableDetail(
+    representativeTimetableId,
+  );
+  const activeTimetable = useMemo(
+    () =>
+      timetables.find((timetable) => timetable.id === representativeTimetableId),
+    [representativeTimetableId, timetables],
+  );
+  const todayClasses = useMemo(() => {
+    const todayDay = getTodayTimetableDay(today);
+    return (activeTimetable?.events ?? [])
+      .filter((classItem) => classItem.day === todayDay)
+      .sort((a, b) => a.startTime - b.startTime);
+  }, [activeTimetable?.events, today]);
+  const nowMinutes = getMinutesFromStartOfDay(today);
+  const timetableStatusText =
+    isTimetablesLoading || isDetailLoading
+      ? "불러오는 중"
+      : getTimetableStatusText(todayClasses, today);
 
   return (
     <V2Wrapper>
@@ -60,27 +131,41 @@ export default function MobileHomePageV2() {
           <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
             <WidgetHeader>
               <WidgetTitle>{todayDateText}</WidgetTitle>
-              <WidgetSubTitle>15분 후 시작</WidgetSubTitle>
+              <WidgetSubTitle>{timetableStatusText}</WidgetSubTitle>
             </WidgetHeader>
 
             <ClassList>
-              <ClassItem $current={true}>
-                <ClassName>자료구조</ClassName>
+              {isTimetablesLoading || isDetailLoading ? (
+                <EmptyClassItem>시간표를 불러오고 있어요.</EmptyClassItem>
+              ) : todayClasses.length > 0 ? (
+                todayClasses.map((classItem) => {
+                  const startMinutes = toMinutes(classItem.startTime);
+                  const endMinutes = toMinutes(classItem.endTime);
+                  const isCurrent =
+                    startMinutes <= nowMinutes && nowMinutes < endMinutes;
 
-                <ClassInfo>
-                  <ClassDetail>09:00~10:15</ClassDetail>
-                  <ClassRoom>07-504</ClassRoom>
-                </ClassInfo>
-              </ClassItem>
+                  return (
+                    <ClassItem
+                      key={`${classItem.itemId ?? classItem.id}-${classItem.day}-${classItem.startTime}`}
+                      $current={isCurrent}
+                    >
+                      <ClassName>{classItem.name}</ClassName>
 
-              <ClassItem $current={false}>
-                <ClassName>디지털공학</ClassName>
-
-                <ClassInfo>
-                  <ClassDetail>16:30~17:45</ClassDetail>
-                  <ClassRoom>07-504</ClassRoom>
-                </ClassInfo>
-              </ClassItem>
+                      <ClassInfo>
+                        <ClassDetail>
+                          {formatHoursToTime(classItem.startTime)}~
+                          {formatHoursToTime(classItem.endTime)}
+                        </ClassDetail>
+                        {classItem.room && (
+                          <ClassRoom>{classItem.room}</ClassRoom>
+                        )}
+                      </ClassInfo>
+                    </ClassItem>
+                  );
+                })
+              ) : (
+                <EmptyClassItem>오늘은 등록된 수업이 없어요.</EmptyClassItem>
+              )}
             </ClassList>
           </TodayTimetableCard>
 
@@ -314,6 +399,15 @@ const ClassDetail = styled.span`
 
 const ClassRoom = styled.span`
   color: var(--text-secondary, #333d4b);
+`;
+
+const EmptyClassItem = styled.div`
+  padding: 8px 16px;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
 `;
 
 const GridWidgets = styled.div`

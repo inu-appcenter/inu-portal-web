@@ -1,13 +1,23 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
+import { useCourses } from "@/hooks/useCourses";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import useUserStore from "@/stores/useUserStore";
+import {
+  useTimeTables,
+  useTimeTableDetail,
+  useUpdateTimeTableName,
+  useDeleteTimeTable,
+} from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
@@ -15,8 +25,10 @@ import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableTh
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
+const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 
 // --- SVG Icons ---
 const CaretDownIcon = () => (
@@ -350,6 +362,8 @@ const EmptyTimetableIllust = () => (
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
   const [isModalOpen] = useState(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputVal, setRenameInputVal] = useState("");
@@ -357,15 +371,14 @@ const MobileTimeTablePage = () => {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const {
-    selectedSemester,
-    activeTimetableId,
-    timetables,
-    renameTimetable,
-    deleteTimetable,
-  } = useTimetableStore();
+  const { selectedSemester, activeTimetableId, timetables } =
+    useTimetableStore();
 
-  // Find active timetable for the selected semester
+  useTimeTables(undefined, undefined, { enabled: isLoggedIn });
+  useTimetableUrlSync();
+  const updateNameMutation = useUpdateTimeTableName();
+  const deleteMutation = useDeleteTimeTable();
+
   const activeTimetable = useMemo(() => {
     const list = timetables.filter((t) => t.semester === selectedSemester);
     if (list.length === 0) return null;
@@ -376,42 +389,56 @@ const MobileTimeTablePage = () => {
     );
   }, [timetables, selectedSemester, activeTimetableId]);
 
+  useTimeTableDetail(activeTimetable?.id, { enabled: isLoggedIn });
+
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
   const appEnvironment = getAppEnvironmentStatus();
   const shouldOpenSimulatorInNewWebView =
     supportsMultiWebView() && appEnvironment === "NEW_APP";
 
-  const headerRight = useMemo(
-    () => (
+  const headerRight = useMemo(() => {
+    if (!isLoggedIn || !activeTimetable) return null;
+
+    return (
       <HeaderRightArea>
         <IconButton onClick={() => navigate(ROUTES.TIMETABLE.EDIT)}>
           <Pencil size={22} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
-    ),
-    [navigate],
-  );
+    );
+  }, [activeTimetable, isLoggedIn, navigate]);
 
   const headerTitle = useMemo(() => {
+    const handleHeaderTitleClick = () => {
+      if (!isLoggedIn) {
+        alert(LOGIN_REQUIRED_MESSAGE);
+        return;
+      }
+      navigate(ROUTES.TIMETABLE.LIST);
+    };
+
     return (
-      <HeaderTitleContainer onClick={() => navigate(ROUTES.TIMETABLE.LIST)}>
+      <HeaderTitleContainer onClick={handleHeaderTitleClick}>
         <HeaderMainTitle>{activeTitle}</HeaderMainTitle>
-        <HeaderTermWrapper>
-          <HeaderTermText>{selectedSemester}</HeaderTermText>
-          <CaretDownIcon />
-        </HeaderTermWrapper>
+        {isLoggedIn && (
+          <HeaderTermWrapper>
+            <HeaderTermText>{selectedSemester}</HeaderTermText>
+            <CaretDownIcon />
+          </HeaderTermWrapper>
+        )}
       </HeaderTitleContainer>
     );
-  }, [selectedSemester, activeTitle, navigate]);
+  }, [selectedSemester, activeTitle, isLoggedIn, navigate]);
 
   const timetableMenuItems = useMemo(() => {
-    if (!activeTimetable) return [];
+    if (!isLoggedIn || !activeTimetable) return [];
 
     return [
       {
         label: "시간표 이름 변경",
         icon: <Pencil size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("시간표 이름 변경", "헤더 메뉴");
           setRenameInputVal(activeTimetable.name);
           setIsRenameModalOpen(true);
         },
@@ -420,6 +447,7 @@ const MobileTimeTablePage = () => {
         label: "시간표 공개 범위 선택",
         icon: <Lock size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("공개 범위 설정", "헤더 메뉴");
           navigate(ROUTES.TIMETABLE.VISIBILITY);
         },
       },
@@ -427,6 +455,7 @@ const MobileTimeTablePage = () => {
         label: "강의 알림 설정",
         icon: <Bell size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("강의 알림 설정", "헤더 메뉴");
           navigate(ROUTES.MYPAGE.NOTIFICATION);
         },
       },
@@ -434,6 +463,7 @@ const MobileTimeTablePage = () => {
         label: "시간표 테마 설정",
         icon: <Palette size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("시간표 테마 설정", "헤더 메뉴");
           setIsThemeSheetOpen(true);
         },
       },
@@ -446,6 +476,9 @@ const MobileTimeTablePage = () => {
               ROUTES.TIMETABLE.ROOT +
               `?id=${activeTimetable.id}`,
           );
+          mixpanelTrack.timetableActionCompleted("링크 공유", {
+            semester: activeTimetable.semester,
+          });
           alert("시간표 링크가 클립보드에 복사되었습니다.");
         },
       },
@@ -453,14 +486,14 @@ const MobileTimeTablePage = () => {
         label: "시간표 삭제",
         icon: <Trash2 size={20} color="#FF3B30" />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("시간표 삭제", "헤더 메뉴");
           setIsDeleteModalOpen(true);
         },
       },
     ];
   }, [
     activeTimetable,
-    renameTimetable,
-    deleteTimetable,
+    isLoggedIn,
     navigate,
     setIsRenameModalOpen,
     setRenameInputVal,
@@ -476,9 +509,110 @@ const MobileTimeTablePage = () => {
     menuItems: timetableMenuItems,
   });
 
+  // 학점계산기 버튼 클릭 처리 핸들러
   const handleGradeCalculatorClick = () => {
-    navigate(ROUTES.TIMETABLE.CALCULATOR);
+    mixpanelTrack.timetableFeatureClicked("학점계산기", "시간표 홈", {
+      is_logged_in: isLoggedIn,
+    });
+    if (!isLoggedIn) {
+      alert(LOGIN_REQUIRED_MESSAGE);
+      return;
+    }
+
+    alert("곧 이전 성적 가져오기 기능을 포함하여 오픈될 예정이에요. 조금만 기다려주세요!");
   };
+
+  // 모의 수강신청 버튼 클릭 처리 핸들러
+  const handleSimulatorClick = () => {
+    mixpanelTrack.timetableFeatureClicked("모의 수강신청", "시간표 홈", {
+      open_method: shouldOpenSimulatorInNewWebView ? "새 웹뷰" : "내부 라우트",
+    });
+    alert(
+      "실제와 다를 수 있으며, PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다. 앱 내 강의 정보는 현시점에는 최신 정보가 아니니 주의하세요.",
+    );
+    if (shouldOpenSimulatorInNewWebView) {
+      appBridge.navigateTo(SIMULATOR_URL);
+    } else {
+      navigate(ROUTES.TIMETABLE.SIMULATOR);
+    }
+  };
+
+  const handleLoginRequiredClick = () => {
+    alert(LOGIN_REQUIRED_MESSAGE);
+  };
+
+  const { courses } = useCourses(undefined, { enabled: isLoggedIn });
+  const { courseOfferings } = useCourseOfferings(
+    isLoggedIn ? activeTimetable?.year : undefined,
+    isLoggedIn ? activeTimetable?.term : undefined,
+  );
+
+  const courseById = useMemo(
+    () => new Map(courses.map((c) => [c.id, c])),
+    [courses],
+  );
+
+  const offeringById = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.id, o])),
+    [courseOfferings],
+  );
+
+  const offeringBySubNum = useMemo(
+    () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
+    [courseOfferings],
+  );
+
+  const timetableEvents = activeTimetable?.events || [];
+
+  useEffect(() => {
+    mixpanelTrack.timetableViewed("시간표 홈", {
+      semester: selectedSemester,
+      timetable_count: timetables.length,
+      course_count: timetableEvents.length,
+      is_logged_in: isLoggedIn,
+    });
+  }, [isLoggedIn, selectedSemester, timetableEvents.length, timetables.length]);
+
+  const { majorCredits, generalCredits, otherCredits, totalCredits } =
+    useMemo(() => {
+      let major = 0;
+      let general = 0;
+      let other = 0;
+
+      timetableEvents.forEach((item) => {
+        const credits = item.credits || 0;
+        if (credits <= 0) return;
+
+        const offering =
+          (item.courseOfferingId
+            ? offeringById.get(item.courseOfferingId)
+            : null) ||
+          (item.courseId ? offeringBySubNum.get(item.courseId) : null);
+        const course = offering ? courseById.get(offering.courseId) : null;
+
+        const divisionName =
+          offering?.isuName ||
+          offering?.isuFldName ||
+          course?.completionDivisionName ||
+          "";
+
+        if (divisionName.includes("전공")) {
+          major += credits;
+        } else if (divisionName.includes("교양")) {
+          general += credits;
+        } else {
+          other += credits;
+        }
+      });
+
+      const total = major + general + other;
+      return {
+        majorCredits: major,
+        generalCredits: general,
+        otherCredits: other,
+        totalCredits: total,
+      };
+    }, [timetableEvents, offeringById, offeringBySubNum, courseById]);
 
   return (
     <MobileTimeTablePageWrapper>
@@ -491,9 +625,12 @@ const MobileTimeTablePage = () => {
         isOpen={isCreateModalOpen}
         initialSemester={selectedSemester}
         onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(created) => {
+          navigate(`${ROUTES.TIMETABLE.EDIT}?id=${created.id}`);
+        }}
       />
 
-      {activeTimetable && (
+      {isLoggedIn && activeTimetable && (
         <>
           <Modal
             isOpen={isRenameModalOpen}
@@ -503,12 +640,29 @@ const MobileTimeTablePage = () => {
               text: "변경",
               variant: "brand",
               onClick: () => {
-                if (renameInputVal.trim()) {
-                  renameTimetable(activeTimetable.id, renameInputVal.trim());
-                  setIsRenameModalOpen(false);
-                }
+                if (!renameInputVal.trim()) return;
+                updateNameMutation.mutate(
+                  {
+                    timeTableId: activeTimetable.id,
+                    timeTableName: renameInputVal.trim(),
+                  },
+                  {
+                    onSuccess: () => {
+                      mixpanelTrack.timetableActionCompleted("이름 변경", {
+                        semester: activeTimetable.semester,
+                      });
+                      setIsRenameModalOpen(false);
+                    },
+                    onError: (error: any) => {
+                      alert(
+                        error.response?.data?.msg ||
+                          "시간표 이름 변경에 실패했습니다.",
+                      );
+                    },
+                  },
+                );
               },
-              disabled: !renameInputVal.trim(),
+              disabled: !renameInputVal.trim() || updateNameMutation.isPending,
             }}
             secondaryButton={{
               text: "취소",
@@ -532,8 +686,22 @@ const MobileTimeTablePage = () => {
               text: "삭제",
               variant: "danger",
               onClick: () => {
-                deleteTimetable(activeTimetable.id);
-                setIsDeleteModalOpen(false);
+                if (deleteMutation.isPending) return;
+                deleteMutation.mutate(activeTimetable.id, {
+                  onSuccess: () => {
+                    mixpanelTrack.timetableActionCompleted("삭제", {
+                      semester: activeTimetable.semester,
+                      course_count: activeTimetable.events.length,
+                    });
+                    setIsDeleteModalOpen(false);
+                  },
+                  onError: (error: any) => {
+                    alert(
+                      error.response?.data?.msg ||
+                        "시간표 삭제에 실패했습니다.",
+                    );
+                  },
+                });
               },
             }}
             secondaryButton={{
@@ -550,7 +718,28 @@ const MobileTimeTablePage = () => {
         </>
       )}
 
-      {activeTimetable ? (
+      {!isLoggedIn ? (
+        <NoTimetableContainer>
+          <NoTimetableContent>
+            <EmptyTimetableIllust />
+            <NoTimetableTextGroup>
+              <NoTimetableTitle>로그인 후 시간표를 사용할 수 있어요</NoTimetableTitle>
+              <NoTimetableDescription>
+                내 시간표 생성, 친구와 비교, 학점계산기는 로그인 후 이용할 수 있어요.
+              </NoTimetableDescription>
+            </NoTimetableTextGroup>
+          </NoTimetableContent>
+          <CapsuleButton
+            variant="primary"
+            onClick={() => {
+              mixpanelTrack.timetableFeatureClicked("로그인 CTA", "시간표 홈");
+              navigate(ROUTES.LOGIN);
+            }}
+          >
+            로그인하기
+          </CapsuleButton>
+        </NoTimetableContainer>
+      ) : activeTimetable ? (
         <TimetableGrid
           events={activeTimetable.events}
           theme={activeTimetable.theme}
@@ -568,8 +757,14 @@ const MobileTimeTablePage = () => {
           </NoTimetableContent>
           <CapsuleButton
             variant="primary"
-            onClick={() => setIsCreateModalOpen(true)}
-            // style={{ width: "100%", maxWidth: "353px" }}
+            onClick={() => {
+              if (!isLoggedIn) {
+                alert(LOGIN_REQUIRED_MESSAGE);
+                return;
+              }
+              mixpanelTrack.timetableFeatureClicked("시간표 생성", "빈 시간표");
+              setIsCreateModalOpen(true);
+            }}
           >
             시간표 생성하기
           </CapsuleButton>
@@ -579,16 +774,26 @@ const MobileTimeTablePage = () => {
       <SemesterInfoLine>
         <ScoreArea>
           <div className="type1">
-            <span>전공 9</span>
-            <span>교양 9</span>
+            <span>전공 {majorCredits}</span>
+            <span>교양 {generalCredits}</span>
+            {otherCredits > 0 && <span>기타 {otherCredits}</span>}
           </div>
-          <div className="type2">총 18학점</div>
+          <div className="type2">총 {totalCredits}학점</div>
         </ScoreArea>
       </SemesterInfoLine>
 
       <ButtonGroup>
         <ButtonRow>
-          <MenuCard onClick={() => navigate(ROUTES.FRIEND.LIST)}>
+          <MenuCard
+            onClick={() => {
+              if (!isLoggedIn) {
+                handleLoginRequiredClick();
+                return;
+              }
+              mixpanelTrack.timetableFeatureClicked("친구 시간표 비교", "시간표 홈");
+              navigate(ROUTES.FRIEND.LIST);
+            }}
+          >
             <MenuCardTitleRow>
               <MenuCardTitle>친구</MenuCardTitle>
               <IconSlot>
@@ -609,14 +814,7 @@ const MobileTimeTablePage = () => {
           </MenuCard>
         </ButtonRow>
 
-        <MenuCard
-          onClick={() =>
-            shouldOpenSimulatorInNewWebView
-              ? appBridge.navigateTo(SIMULATOR_URL)
-              : navigate(ROUTES.TIMETABLE.SIMULATOR)
-          }
-          $fullWidth
-        >
+        <MenuCard onClick={handleSimulatorClick} $fullWidth>
           <MenuCardTitleRow>
             <MenuCardTitle>모의 수강신청 (수강신청 시뮬레이터)</MenuCardTitle>
             <IconSlot>
@@ -624,7 +822,7 @@ const MobileTimeTablePage = () => {
             </IconSlot>
           </MenuCardTitleRow>
           <MenuCardDescription>
-            수강신청 전 시간표를 미리 짜 보세요
+            미리 수강신청 앱/웹을 사용해보세요.
           </MenuCardDescription>
         </MenuCard>
       </ButtonGroup>
@@ -644,7 +842,7 @@ const MobileTimeTablePageWrapper = styled.div`
     calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
-    padding: var(--header-height, 56px) 0 40px;
+    padding: var(--header-height, 56px) 0 calc(var(--nav-height, 100px) + 60px);
   }
 `;
 
@@ -712,8 +910,8 @@ const HeaderTitleContainer = styled.div`
 const HeaderMainTitle = styled.span`
   font-family: Pretendard;
   font-weight: 700;
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 20px;
+  line-height: 28px;
   letter-spacing: -0.2px;
   color: var(--text-secondary, #333d4b);
 `;
@@ -749,7 +947,6 @@ const NoTimetableContainer = styled.div`
   background: var(--bg-base, #ffffff);
   box-sizing: border-box;
   padding: 40px 20px;
-  //margin-bottom: 24px;
 `;
 
 const NoTimetableContent = styled.div`

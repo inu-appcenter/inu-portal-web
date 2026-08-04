@@ -16,9 +16,6 @@ export const createStompClient = () => {
     reconnectDelay: 5000, // 재연결 시도
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
-    debug: (str) => {
-      console.log(new Date(), str);
-    },
   });
 
   return client;
@@ -29,10 +26,12 @@ export const publishMessage = (
   roomId: string | number,
   content: string,
   isAnonymous: boolean,
-) => {
+  messageType?: string,
+  extraData?: string,
+): boolean => {
   if (!client || !client.connected) {
     console.error("STOMP 클라이언트가 연결되지 않았습니다.");
-    return;
+    return false;
   }
 
   client.publish({
@@ -41,6 +40,9 @@ export const publishMessage = (
       roomId,
       content,
       isAnonymous,
+      messageType: messageType || "TEXT",
+      extraData,
     }),
   });
+  return true;
 };

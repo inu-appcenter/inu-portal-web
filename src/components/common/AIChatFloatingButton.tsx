@@ -2,37 +2,31 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X } from "lucide-react";
-import ChatBulButtonImg from "@/resources/assets/ai/챗불이버튼.webp";
-import TooltipMessage from "@/components/common/TooltipMessage";
+import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
 
 const AIChatFloatingButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(() => {
-    const stored = localStorage.getItem("showPortalAIChatTooltip");
-    return stored !== "false";
-  });
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      if (showTooltip) {
-        setShowTooltip(false);
-        localStorage.setItem("showPortalAIChatTooltip", "false");
-      }
     } else {
       document.body.style.overflow = "auto";
     }
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isOpen, showTooltip]);
+  }, [isOpen]);
 
-  const handleCloseTooltip = () => {
-    setShowTooltip(false);
-    localStorage.setItem("showPortalAIChatTooltip", "false");
-  };
-
+  // VITE_API_BASE_URL 확인 및 토글 처리
   const handleToggleChat = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+    if (apiBaseUrl === "https://portal.inuappcenter.kr/") {
+      alert('인천대학교 학사 AI 챗봇 "챗불이"가 곧 오픈 예정이에요!');
+      return;
+    }
+
     setIsOpen(!isOpen);
   };
 
@@ -121,38 +115,11 @@ const AIChatFloatingButton = () => {
         onClick={handleToggleChat}
         aria-label="학사 AI 챗봇 열기"
       >
-        <AnimatePresence>
-          {showTooltip && (
-            <TooltipWrapper
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <TooltipMessage
-                message="베타 오픈!\n학사에 대해\n무엇이든 물어보세요!"
-                onClose={handleCloseTooltip}
-                position="top"
-                align="right"
-                width="max-content"
-              />
-            </TooltipWrapper>
-          )}
-        </AnimatePresence>
         <img src={ChatBulButtonImg} alt="AI 챗봇" />
       </FloatingButton>
     </>
   );
 };
-
-const TooltipWrapper = styled(motion.div)`
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  width: max-content;
-  pointer-events: auto;
-  margin-bottom: -10px;
-`;
 
 const Backdrop = styled(motion.div)`
   position: fixed;

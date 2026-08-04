@@ -3,14 +3,11 @@ import styled from "styled-components";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import { Timetable, useTimetableStore } from "@/stores/useTimetableStore";
-
-export const TIMETABLE_SEMESTERS = [
-  "2026년 2학기",
-  "2026년 1학기",
-  "2025년 2학기",
-  "2025년 1학기",
-  "2024년 2학기",
-];
+import type { TimeTable } from "@/types/timetables";
+import { useSemesters } from "@/hooks/useSemesters";
+import { useCreateTimeTable } from "@/hooks/useTimeTables";
+import { formatSemester } from "@/utils/semester";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export const getDefaultTimetableName = (
   semester: string,
@@ -34,42 +31,76 @@ interface TimeTableCreateModalProps {
   isOpen: boolean;
   initialSemester?: string;
   onClose: () => void;
+  onSuccess?: (created: TimeTable) => void;
 }
 
 export default function TimeTableCreateModal({
   isOpen,
-  initialSemester = TIMETABLE_SEMESTERS[0],
+  initialSemester,
   onClose,
+  onSuccess,
 }: TimeTableCreateModalProps) {
-  const { timetables, addTimetable } = useTimetableStore();
-  const semesters = TIMETABLE_SEMESTERS;
-  const fallbackSemester = useMemo(
+  const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
+  const { semesters } = useSemesters();
+  const createTimeTableMutation = useCreateTimeTable();
+
+  const semesterOptions = useMemo(
     () =>
-      semesters.includes(initialSemester)
-        ? initialSemester
-        : semesters[0],
-    [initialSemester, semesters],
+      semesters.map((s) => ({
+        id: s.id,
+        label: formatSemester(s.year, s.term),
+      })),
+    [semesters],
   );
-  const [modalSemester, setModalSemester] = useState(fallbackSemester);
+
+  const fallbackSemesterId = useMemo(() => {
+    const matched = semesterOptions.find((s) => s.label === initialSemester);
+    return matched?.id ?? semesterOptions[0]?.id ?? null;
+  }, [initialSemester, semesterOptions]);
+
+  const [modalSemesterId, setModalSemesterId] = useState<number | null>(null);
   const [modalName, setModalName] = useState("");
+
+  const getSemesterLabel = (semesterId: number | null) =>
+    semesterOptions.find((s) => s.id === semesterId)?.label ?? "";
 
   useEffect(() => {
     if (!isOpen) return;
 
-    setModalSemester(fallbackSemester);
-    setModalName(getDefaultTimetableName(fallbackSemester, timetables));
-  }, [fallbackSemester, isOpen, timetables]);
+    setModalSemesterId(fallbackSemesterId);
+    setModalName(
+      getDefaultTimetableName(getSemesterLabel(fallbackSemesterId), timetables),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fallbackSemesterId, isOpen, timetables]);
 
-  const handleSemesterChange = (newSemester: string) => {
-    setModalSemester(newSemester);
-    setModalName(getDefaultTimetableName(newSemester, timetables));
+  const handleSemesterChange = (semesterId: number) => {
+    setModalSemesterId(semesterId);
+    setModalName(
+      getDefaultTimetableName(getSemesterLabel(semesterId), timetables),
+    );
   };
 
   const handleSave = () => {
-    if (!modalName.trim()) return;
+    if (!modalName.trim() || modalSemesterId === null) return;
 
-    addTimetable(modalSemester, modalName.trim());
-    onClose();
+    createTimeTableMutation.mutate(
+      { semesterId: modalSemesterId, timeTableName: modalName.trim() },
+      {
+        onSuccess: (created) => {
+          mixpanelTrack.timetableActionCompleted("생성", {
+            semester: formatSemester(created.year, created.term),
+          });
+          setSemester(formatSemester(created.year, created.term));
+          setActiveTimetable(created.id);
+          onClose();
+          onSuccess?.(created);
+        },
+        onError: (error: any) => {
+          alert(error.response?.data?.msg || "시간표 생성에 실패했습니다.");
+        },
+      },
+    );
   };
 
   return (
@@ -81,7 +112,10 @@ export default function TimeTableCreateModal({
         text: "저장",
         variant: "brand",
         onClick: handleSave,
-        disabled: !modalName.trim(),
+        disabled:
+          !modalName.trim() ||
+          modalSemesterId === null ||
+          createTimeTableMutation.isPending,
       }}
       secondaryButton={{
         text: "취소",
@@ -91,12 +125,12 @@ export default function TimeTableCreateModal({
       <SelectContainer>
         <SelectLabel>학기</SelectLabel>
         <StyledSelect
-          value={modalSemester}
-          onChange={(e) => handleSemesterChange(e.target.value)}
+          value={modalSemesterId ?? ""}
+          onChange={(e) => handleSemesterChange(Number(e.target.value))}
         >
-          {semesters.map((sem) => (
-            <option key={sem} value={sem}>
-              {sem}
+          {semesterOptions.map((sem) => (
+            <option key={sem.id} value={sem.id}>
+              {sem.label}
             </option>
           ))}
         </StyledSelect>

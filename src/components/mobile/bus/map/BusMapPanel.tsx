@@ -793,8 +793,7 @@ const BusList = styled.div`
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  //padding: 12px 8px 24px;
-  padding-bottom: 64px;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 
   & > * {

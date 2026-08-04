@@ -404,7 +404,7 @@ const LoadingText = styled.h4`
 const FloatingSearchBar = styled.div`
   position: fixed;
   left: 50%;
-  bottom: 28px;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   width: calc(100% - 32px);
   z-index: 120;

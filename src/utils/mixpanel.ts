@@ -646,4 +646,111 @@ export const mixpanelTrack = {
       location: location,
     });
   },
+
+  /**
+   * 시간표 화면 조회
+   */
+  timetableViewed: (
+    pageName: string,
+    properties?: {
+      semester?: string;
+      timetable_count?: number;
+      course_count?: number;
+      is_logged_in?: boolean;
+    },
+  ) => {
+    trackEvent("[시간표] 화면 조회", {
+      page_name: pageName,
+      ...properties,
+    });
+  },
+
+  /**
+   * 시간표 메뉴/기능 클릭
+   */
+  timetableFeatureClicked: (
+    featureName: string,
+    location: string,
+    properties?: Record<string, any>,
+  ) => {
+    trackEvent("[시간표] 기능 클릭", {
+      feature_name: featureName,
+      location: location,
+      ...properties,
+    });
+  },
+
+  /**
+   * 시간표 생성/수정/삭제 등 관리 액션 완료
+   */
+  timetableActionCompleted: (
+    actionType:
+      | "생성"
+      | "이름 변경"
+      | "삭제"
+      | "대표 설정"
+      | "공개 범위 변경"
+      | "테마 변경"
+      | "링크 공유",
+    properties?: Record<string, any>,
+  ) => {
+    trackEvent("[시간표] 관리 액션 완료", {
+      action_type: actionType,
+      ...properties,
+    });
+  },
+
+  /**
+   * 시간표 요소(강의/커스텀 일정) 액션 완료
+   */
+  timetableItemActionCompleted: (
+    actionType: "강의 추가" | "직접 일정 추가" | "직접 일정 수정" | "항목 삭제",
+    itemType: "강의" | "직접 일정",
+    properties?: Record<string, any>,
+  ) => {
+    trackEvent("[시간표] 항목 액션 완료", {
+      action_type: actionType,
+      item_type: itemType,
+      ...properties,
+    });
+  },
+
+  /**
+   * 강의 검색/필터 액션
+   */
+  timetableCourseSearchAction: (
+    actionType: "필터 열기" | "필터 적용" | "필터 초기화" | "강의 펼치기",
+    properties?: Record<string, any>,
+  ) => {
+    trackEvent("[시간표] 강의 검색 액션", {
+      action_type: actionType,
+      ...properties,
+    });
+  },
+
+  /**
+   * 시간표 비교/공강 기능 액션
+   */
+  timetableCompareAction: (
+    actionType: "탭 전환" | "친구 선택" | "공강 선택" | "공유",
+    properties?: Record<string, any>,
+  ) => {
+    trackEvent("[시간표] 비교 액션", {
+      action_type: actionType,
+      ...properties,
+    });
+  },
+
+  /**
+   * 시간표 마법사 액션
+   */
+  timetableWizardAction: (
+    actionType: "시작" | "단계 완료" | "추천 생성" | "후보 선택" | "저장",
+    properties?: Record<string, any>,
+  ) => {
+    trackEvent("[시간표] 마법사 액션", {
+      action_type: actionType,
+      ...properties,
+    });
+  },
 };

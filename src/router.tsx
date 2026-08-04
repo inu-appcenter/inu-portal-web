@@ -61,6 +61,7 @@ import MobileTimeTableVisibilityPage from "@/pages/mobile/timetable/MobileTimeTa
 import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
 import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimulatorPage";
 import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import MobileTimetableWizardPage from "@/pages/mobile/timetable/MobileTimetableWizardPage";
 import MobileTimeTableListPage from "@/pages/mobile/timetable/MobileTimeTableListPage";
 import MobileGradeCalculatorPage from "@/pages/mobile/timetable/MobileGradeCalculatorPage";
 import MobileSyllabusPage from "@/pages/mobile/timetable/MobileSyllabusPage";
@@ -123,14 +124,18 @@ export const router = createBrowserRouter([
       // 2. 서브 페이지 (SubLayout) - RootLayout에 의해 슬라이드, 하단 탭바 숨김
       // ----------------------------------------------------------------
       {
+        element: <SubLayout showNav={false} backgroundColor="#fff" />,
+        children: [
+          // 채팅
+          { path: "/chat/:roomId", element: <ChattingPage /> },
+          { path: ROUTES.CHAT.CREATE_PERSONAL, element: <CreatePersonalChatPage /> },
+        ],
+      },
+      {
         element: <SubLayout showNav={false} backgroundColor="transparent" />,
         children: [
           // 로그인
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
-
-          // 채팅
-          { path: "/chat/:roomId", element: <ChattingPage /> },
-          { path: ROUTES.CHAT.CREATE_PERSONAL, element: <CreatePersonalChatPage /> },
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
@@ -139,6 +144,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
           { path: ROUTES.TIMETABLE.FILTER, element: <MobileCourseFilterPage /> },
+          { path: ROUTES.TIMETABLE.WIZARD, element: <MobileTimetableWizardPage /> },
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
           { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
@@ -352,14 +358,25 @@ if (typeof window !== "undefined") {
 
     const path = getPathname(to);
     const isTabNavigation = opts?.state?.isTabNavigation === true;
-    
+    const isHomePath = path === ROUTES.HOME || path === ROUTES.MOBILE_HOME;
+    // 이 웹뷰 자신의 최초 부트스트랩 리다이렉트(루트 인덱스 라우트의
+    // <Navigate to={ROUTES.HOME} replace />, router.tsx 라우트 테이블 참고).
+    const isBootstrapRedirect = window.location.pathname === "/" && isHomePath;
+
+    // 2. 홈 탭 경로 이동: 탭바 클릭(isTabNavigation)이나 이 웹뷰 자신의 부팅
+    // 리다이렉트가 아니라면 항상 네이티브로 위임한다
+    if (supportsMultiWebView() && isHomePath && !isTabNavigation && !isBootstrapRedirect) {
+      appBridge.goHome(path);
+      return Promise.resolve();
+    }
+
     // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅이거나 빈 이동인지 확인
     const isHashOrSearchOnly =
       to === "" ||
       (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
       (typeof to === "object" && to !== null && !to.pathname);
 
-    // 2. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
+    // 3. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
     if (
       supportsMultiWebView() &&
       !isMainTabPath(path) &&
