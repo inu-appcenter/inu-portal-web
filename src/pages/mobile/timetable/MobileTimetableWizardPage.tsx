@@ -549,6 +549,7 @@ export default function MobileTimetableWizardPage() {
         onOpenChange={setMustHaveSheetOpen}
         onAddCourse={addMustHave}
         onFiltersChange={handleWishlistFiltersChange}
+        dismissible
         isLoading={isOfferingsLoading || hasMoreOfferings}
       />
 

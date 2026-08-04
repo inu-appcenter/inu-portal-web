@@ -83,6 +83,9 @@ interface MobileCourseSearchSheetProps {
   onSnapChange: (snap: string | number | null) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // 시간표 편집 화면은 강의 추가 도중 실수로 닫히지 않도록 스와이프/배경탭 dismiss를
+  // 막아야 하고(기본값), 마법사의 위시리스트 검색은 반대로 자유롭게 닫을 수 있어야 한다.
+  dismissible?: boolean;
   onAddCourse?: (course: CourseResult) => void;
   // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
   onFiltersChange?: (filters: FilterState) => void;
@@ -102,6 +105,7 @@ const MobileCourseSearchSheet = ({
   onSnapChange,
   open,
   onOpenChange,
+  dismissible = false,
   onAddCourse,
   onFiltersChange,
   addedCourseOfferingIds,
@@ -281,7 +285,7 @@ const MobileCourseSearchSheet = ({
         onClose={() => onOpenChange(false)}
         snapPoints={SHEET_SNAP_POINTS}
         initialSnap={initialSnap}
-        disableDismiss
+        disableDismiss={!dismissible}
         disableScrollLocking
         onSnap={(snapIndex) => {
           const nextSnap = COURSE_SEARCH_SNAP_POINTS[snapIndex - 1];
