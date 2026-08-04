@@ -581,8 +581,14 @@ const MobileTimeTablePage = () => {
       let major = 0;
       let general = 0;
       let other = 0;
+      const seenItemIds = new Set<number>();
 
       timetableEvents.forEach((item) => {
+        if (item.itemId) {
+          if (seenItemIds.has(item.itemId)) return;
+          seenItemIds.add(item.itemId);
+        }
+
         const credits = item.credits || 0;
         if (credits <= 0) return;
 
@@ -591,7 +597,9 @@ const MobileTimeTablePage = () => {
             ? offeringById.get(item.courseOfferingId)
             : null) ||
           (item.courseId ? offeringBySubNum.get(item.courseId) : null);
-        const course = offering ? courseById.get(offering.courseId) : null;
+        const course =
+          (item.numericCourseId ? courseById.get(item.numericCourseId) : null) ||
+          (offering ? courseById.get(offering.courseId) : null);
 
         const divisionName =
           offering?.isuName ||

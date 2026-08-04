@@ -29,6 +29,7 @@ export interface ClassItem {
   courseType?: string;
   evaluation?: string;
   courseId?: string;
+  numericCourseId?: number;
   isCustom?: boolean;
   isUntimed?: boolean;
 }

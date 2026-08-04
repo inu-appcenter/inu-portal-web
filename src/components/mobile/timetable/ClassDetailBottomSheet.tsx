@@ -44,7 +44,8 @@ export default function ClassDetailBottomSheet({
   const { activeTimetableId, timetables, updateTimetableEvents } =
     useTimetableStore();
 
-  const isQueryEnabled = open && Boolean(selectedClass) && !selectedClass?.isCustom;
+  const isQueryEnabled =
+    open && Boolean(selectedClass) && !selectedClass?.isCustom;
   const { courses } = useCourses(undefined, { enabled: isQueryEnabled });
   const { courseOfferings } = useCourseOfferings(
     undefined,
@@ -63,10 +64,16 @@ export default function ClassDetailBottomSheet({
     [courseOfferings],
   );
 
-  const offeringBySubNum = useMemo(
-    () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
-    [courseOfferings],
-  );
+  // 동일 학수번호의 분반 중 첫 번째 개설강의 유지
+  const offeringBySubNum = useMemo(() => {
+    const map = new Map<string, (typeof courseOfferings)[0]>();
+    for (const offering of courseOfferings) {
+      if (offering.subjectNumber && !map.has(offering.subjectNumber)) {
+        map.set(offering.subjectNumber, offering);
+      }
+    }
+    return map;
+  }, [courseOfferings]);
 
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState("");
@@ -83,7 +90,12 @@ export default function ClassDetailBottomSheet({
       (liveClass.courseId ? offeringBySubNum.get(liveClass.courseId) : null)
     : null;
 
-  const course = offering ? courseById.get(offering.courseId) : null;
+  // offering이 존재하면 offering.courseId로 조회하고, 그렇지 않으면 liveClass.numericCourseId로 직접 조회
+  const course = offering
+    ? courseById.get(offering.courseId)
+    : liveClass?.numericCourseId
+      ? courseById.get(liveClass.numericCourseId)
+      : null;
 
   const adjustHeight = (element: HTMLTextAreaElement) => {
     if (!element) return;
@@ -111,8 +123,12 @@ export default function ClassDetailBottomSheet({
 
   const professorName =
     liveClass.professor?.trim() || offering?.professor?.trim() || "-";
+
   const creditsVal =
-    liveClass.credits ?? offering?.credit ?? (parseInt(course?.credit ?? "", 10) || 0);
+    liveClass.credits ??
+    offering?.credit ??
+    (course?.credit ? parseInt(course.credit, 10) : 0);
+
   const evaluationVal = liveClass.evaluation || "상대평가";
 
   const lectureReviewUrl =
@@ -142,12 +158,12 @@ export default function ClassDetailBottomSheet({
       ? "전학년"
       : `${offering.hyName}학년`
     : course?.targetGradeName
-    ? `${course.targetGradeName}학년`
-    : liveClass.grade
-    ? typeof liveClass.grade === "number" || !isNaN(Number(liveClass.grade))
-      ? `${liveClass.grade}학년`
+      ? `${course.targetGradeName}학년`
       : liveClass.grade
-    : "";
+        ? typeof liveClass.grade === "number" || !isNaN(Number(liveClass.grade))
+          ? `${liveClass.grade}학년`
+          : liveClass.grade
+        : "";
 
   const courseTypeStr =
     offering?.isuName ||
@@ -171,7 +187,8 @@ export default function ClassDetailBottomSheet({
     .join(", ");
 
   const roomVal = liveClass.room || offering?.meetings[0]?.location || "-";
-  const isCustomCourse = liveClass.isCustom || (!liveClass.courseId && !liveClass.courseOfferingId);
+  const isCustomCourse =
+    liveClass.isCustom || (!liveClass.courseId && !liveClass.courseOfferingId);
 
   const handleSaveMemo = () => {
     if (activeTimetableId === null) return;
@@ -376,7 +393,7 @@ const SheetInner = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0; /* flex item 높이 제한 해제 */
+  min-height: 0;
 `;
 
 const DragHeader = styled.div`
@@ -401,7 +418,7 @@ const ContentArea = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0; /* flex item 높이 제한 해제 */
+  min-height: 0;
   overflow: hidden;
 `;
 
@@ -411,9 +428,8 @@ const ScrollableBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 0; /* flex item 높이 제한 해제 */
+  min-height: 0;
 
-  /* 스크롤바 숨김 */
   &::-webkit-scrollbar {
     display: none;
   }
