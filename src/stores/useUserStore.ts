@@ -83,4 +83,13 @@ const useUserStore = create<UserState>()(
   })),
 );
 
+// 네이티브가 자체 리프레시(백그라운드 FCM 토큰 등록 등)한 JWT를 store/localStorage에 반영.
+// (bridgeChannel.ts가 아닌 여기서 결선: bridgeChannel.ts → useUserStore.ts 순환 참조를
+// 피해야 broadcastSync가 store 생성 시점에 bridgeChannel을 참조해도 TDZ 에러가 나지 않는다.)
+if (bridgeChannel) {
+  bridgeChannel.on("tokenInfoUpdated", (tokenInfo) => {
+    useUserStore.getState().setTokenInfo(tokenInfo, { fromNative: true });
+  });
+}
+
 export default useUserStore;

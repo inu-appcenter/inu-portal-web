@@ -1,7 +1,6 @@
 // 공유 브릿지는 packages/intip-bridge git 서브모듈로 두고 소스를 직접 컴파일한다
 // (npm 패키지/레지스트리 없음). CLAUDE.md 참고.
 import { createWebChannel, type WebChannel } from "../../packages/intip-bridge/src/adapters/web";
-import useUserStore from "@/stores/useUserStore";
 
 /**
  * 신 Expo 셸(intip-mobile-app)과의 단일 PlatformChannel.
@@ -29,10 +28,5 @@ if (bridgeChannel) {
     if (!path || window.location.pathname === path) return;
     window.history.pushState({}, "", path);
     window.dispatchEvent(new PopStateEvent("popstate"));
-  });
-
-  // 네이티브가 자체 리프레시(백그라운드 FCM 토큰 등록 등)한 JWT를 store/localStorage에 반영.
-  bridgeChannel.on("tokenInfoUpdated", (tokenInfo) => {
-    useUserStore.getState().setTokenInfo(tokenInfo, { fromNative: true });
   });
 }

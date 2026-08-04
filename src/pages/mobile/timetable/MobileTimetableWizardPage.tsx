@@ -251,7 +251,7 @@ export default function MobileTimetableWizardPage() {
         : {
             ...prev,
             // 새로 담을 때는 필수로 시작 - 이후 칩에서 "선택"으로 바꿀 수 있음
-            wishlist: [...prev.wishlist, { subjectNumber, required: true }],
+            wishlist: [...prev.wishlist, { subjectNumber, required: false }],
           },
     );
     setMustHaveSheetOpen(false);
@@ -399,12 +399,12 @@ export default function MobileTimetableWizardPage() {
 
           <Card>
             <CardLabelRow>
-              <CardLabel>꼭 넣고 싶은 강의</CardLabel>
+              <CardLabel>듣고 싶은 강의</CardLabel>
               <CardLabelCount>
                 {wishlistCourses.length} / {MAX_MUST_HAVE}
               </CardLabelCount>
             </CardLabelRow>
-            <CardHint>칩을 눌러 필수/선택을 바꿀 수 있어요. 선택은 안 맞으면 자동으로 빠져요.</CardHint>
+            <CardHint>강의 후보를 선택할 수 있어요. 필수로 포함돼야 할 강의는 "필수" 체크해주세요.</CardHint>
             {wishlistCourses.length > 0 && (
               <ChipRow>
                 {wishlistCourses.map((c) => (
