@@ -11,6 +11,7 @@ import {
   MessagesSquare,
   FileText,
   Check,
+  SearchX,
 } from "lucide-react";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
@@ -286,6 +287,16 @@ const MobileCourseSearchSheet = ({
                       </div>
                     </SkeletonCard>
                   ))
+                ) : filteredCourses.length === 0 ? (
+                  <EmptyContainer>
+                    <SearchIconBox>
+                      <SearchX size={32} color="var(--gray-400, #b0b8c1)" />
+                    </SearchIconBox>
+                    <EmptyTitle>조회된 강의가 없습니다</EmptyTitle>
+                    <EmptyDescription>
+                      검색어나 필터 조건을 변경해 보세요
+                    </EmptyDescription>
+                  </EmptyContainer>
                 ) : (
                   filteredCourses.map((course) => {
                   const isExpanded = expandedId === course.id;
@@ -590,6 +601,42 @@ const FilterButton = styled.button<{
 
 const CourseList = styled.div`
   padding: 0;
+`;
+
+const EmptyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  text-align: center;
+`;
+
+const SearchIconBox = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--bg-muted, #f1f3f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+`;
+
+const EmptyTitle = styled.h3`
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary, #333d4b);
+  margin: 0 0 6px 0;
+`;
+
+const EmptyDescription = styled.p`
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-tertiary, #8b95a1);
+  margin: 0;
 `;
 
 const SkeletonCard = styled.div`
