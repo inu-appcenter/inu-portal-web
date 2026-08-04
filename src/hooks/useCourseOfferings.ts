@@ -31,6 +31,7 @@ export const useCourseOfferings = (
       getCourseOfferingsPage(year!, term!, pageParam as number, 50, filters),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      if (!lastPage) return undefined;
       const currentPage =
         typeof lastPage.number === "number"
           ? lastPage.number
@@ -53,7 +54,7 @@ export const useCourseOfferings = (
   });
 
   const courseOfferings = useMemo(
-    () => query.data?.pages.flatMap((page) => page.content ?? []) ?? [],
+    () => query.data?.pages.flatMap((page) => page?.content ?? []) ?? [],
     [query.data],
   );
 
