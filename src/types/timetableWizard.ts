@@ -21,21 +21,25 @@ export interface WizardCourseOption {
   meetings: WizardCourseMeeting[];
 }
 
-// "꼭 넣고 싶은 강의" 목록의 항목 하나. required=true(필수)면 반드시 포함하고, false(선택)면
-// 다른 조건과 시간이 안 맞을 때 이 과목만 조합에서 자동으로 빠질 수 있다(생성기가 후보 풀
-// 전체를 뒤지는 게 아니라 이 위시리스트 안에서만 조합을 탐색하기 때문에 가능한 동작).
+// "듣고 싶은 강의" 목록의 항목 하나.
+//
+// ★ 강의 정보를 subjectNumber 참조가 아니라 **스냅샷으로 통째로** 들고 있는 게 핵심이다.
+// 이전 구조는 subjectNumber만 저장하고 화면/생성기가 "현재 필터가 걸린 개설강의 조회 결과"에서
+// 매번 되찾아왔는데, 그 목록은 사용자가 필터를 바꾸는 순간 통째로 바뀐다. 그래서 컴공으로
+// 담은 강의가 필터를 경영학부로 바꾸는 순간 칩에서 사라지고 조합 생성에서도 조용히 누락됐다.
+// 담는 시점에 값을 확정하면 이후 어떤 조회 상태와도 무관해진다.
+//
+// required=true(필수)면 반드시 포함하고, false(선택)면 다른 조건과 시간이 안 맞을 때 이 과목만
+// 조합에서 자동으로 빠질 수 있다.
 export interface WizardWishlistItem {
-  subjectNumber: string;
+  course: WizardCourseOption;
   required: boolean;
 }
 
-export interface WizardBasicConditions {
-  semesterId: number | null;
-  year: number | null;
-  term: Term | null;
-  minCredit: number;
-  maxCredit: number;
-  wishlist: WizardWishlistItem[];
+export interface WizardSemesterSelection {
+  id: number;
+  year: number;
+  term: Term;
 }
 
 export interface WizardPreferenceConditions {
@@ -49,7 +53,15 @@ export interface WizardPreferenceConditions {
 
 export interface WizardExclusionConditions {
   excludedSlots: string[]; // "day-hour" 형식, TimetableGrid selectedSlots 규약
-  excludedSubjectNumbers: string[];
+  // 위시리스트와 같은 이유로 스냅샷을 보관한다(참조 재조회 금지)
+  excludedCourses: WizardCourseOption[];
+}
+
+export interface WizardBasicConditions {
+  semester: WizardSemesterSelection | null;
+  minCredit: number;
+  maxCredit: number;
+  wishlist: WizardWishlistItem[];
 }
 
 export interface WizardConditions {
@@ -57,6 +69,16 @@ export interface WizardConditions {
   preference: WizardPreferenceConditions;
   exclusion: WizardExclusionConditions;
 }
+
+export type WizardStep =
+  | "step1"
+  | "step2"
+  | "step3"
+  | "generating"
+  | "results"
+  | "detail"
+  | "empty"
+  | "error";
 
 export interface WizardReason {
   met: boolean; // true: ✓ 충족, false: ! 일부 충족/주의
@@ -93,5 +115,5 @@ export const DEFAULT_PREFERENCE_CONDITIONS: WizardPreferenceConditions = {
 
 export const DEFAULT_EXCLUSION_CONDITIONS: WizardExclusionConditions = {
   excludedSlots: [],
-  excludedSubjectNumbers: [],
+  excludedCourses: [],
 };
