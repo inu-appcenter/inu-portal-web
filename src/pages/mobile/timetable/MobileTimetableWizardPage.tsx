@@ -10,7 +10,13 @@ import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { buildWizardCourseOptions } from "@/utils/timetableWizardPool";
 import { generateWizardCandidates } from "@/utils/timetableWizardGenerator";
-import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
+import {
+  mapCourseOfferingToCourseResult,
+  mapFilterToOfferingFilters,
+} from "@/utils/courseSearchResult";
+import { matchesCourseOfferingFilters } from "@/apis/courseOfferings";
+import type { CourseOfferingFilters } from "@/types/courseOfferings";
+import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import CreditRangeSlider from "@/components/mobile/timetable/wizard/CreditRangeSlider";
 import WizardStepIndicator from "@/components/mobile/timetable/wizard/WizardStepIndicator";
 import MobileCourseSearchSheet, {
@@ -177,12 +183,27 @@ export default function MobileTimetableWizardPage() {
     [exclusion.excludedSubjectNumbers, findBySubjectNumber],
   );
 
+  // 학기 전체 개설강의를 이미 메모리에 들고 있으므로(서버 재조회 없이) 필터를
+  // 로컬에서 그대로 적용한다 - matchesCourseOfferingFilters가 mock API와 동일한 규칙을 씀.
+  const [wishlistOfferingFilters, setWishlistOfferingFilters] =
+    useState<CourseOfferingFilters>({});
+  const handleWishlistFiltersChange = (filters: FilterState) => {
+    setWishlistOfferingFilters(mapFilterToOfferingFilters(filters));
+  };
+
   const wishlistSearchResults = useMemo(() => {
     const pickedSet = new Set(basic.wishlist.map((item) => item.subjectNumber));
     return courseOfferings
       .filter((offering) => !pickedSet.has(offering.subjectNumber))
+      .filter((offering) =>
+        matchesCourseOfferingFilters(
+          offering,
+          courseById.get(offering.courseId),
+          wishlistOfferingFilters,
+        ),
+      )
       .map((offering) => mapCourseOfferingToCourseResult(offering, courseById.get(offering.courseId)));
-  }, [courseOfferings, courseById, basic.wishlist]);
+  }, [courseOfferings, courseById, basic.wishlist, wishlistOfferingFilters]);
 
   const [wishlistExpandedId, setWishlistExpandedId] = useState<number | null>(null);
   const [wishlistSheetSnap, setWishlistSheetSnap] = useState<string | number | null>(
@@ -503,6 +524,7 @@ export default function MobileTimetableWizardPage() {
         open={isMustHaveSheetOpen}
         onOpenChange={setMustHaveSheetOpen}
         onAddCourse={addMustHave}
+        onFiltersChange={handleWishlistFiltersChange}
       />
 
       {selectedCandidate && (
