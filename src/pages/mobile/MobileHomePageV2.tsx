@@ -34,10 +34,7 @@ const getMinutesFromStartOfDay = (date: Date) =>
 
 const toMinutes = (hours: number) => Math.round(hours * 60);
 
-const getTimetableStatusText = (
-  classes: TimetableClassItem[],
-  now: Date,
-) => {
+const getTimetableStatusText = (classes: TimetableClassItem[], now: Date) => {
   if (classes.length === 0) return "등록된 수업 없음";
 
   const nowMinutes = getMinutesFromStartOfDay(now);
@@ -69,14 +66,20 @@ export default function MobileHomePageV2() {
   const { userInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
-  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
+  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">(
+    "school",
+  );
   const { timetables, activeTimetableId } = useTimetableStore();
 
   const isLoggedIn = Boolean(tokenInfo?.accessToken);
 
-  const { isLoading: isTimetablesLoading } = useTimeTables(undefined, undefined, {
-    enabled: isLoggedIn,
-  });
+  const { isLoading: isTimetablesLoading } = useTimeTables(
+    undefined,
+    undefined,
+    {
+      enabled: isLoggedIn,
+    },
+  );
 
   useHeader({
     showAlarm: true,
@@ -91,17 +94,17 @@ export default function MobileHomePageV2() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const nickname = userInfo?.nickname || "유니";
+  // const nickname = userInfo?.nickname || "유니";
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
   const today = new Date();
   const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
   const representativeTimetableId = useMemo(
     () =>
       isLoggedIn
-        ? activeTimetableId ??
+        ? (activeTimetableId ??
           timetables.find((timetable) => timetable.isRepresentative)?.id ??
           timetables[0]?.id ??
-          null
+          null)
         : null,
     [isLoggedIn, activeTimetableId, timetables],
   );
@@ -111,7 +114,9 @@ export default function MobileHomePageV2() {
   );
   const activeTimetable = useMemo(
     () =>
-      timetables.find((timetable) => timetable.id === representativeTimetableId),
+      timetables.find(
+        (timetable) => timetable.id === representativeTimetableId,
+      ),
     [representativeTimetableId, timetables],
   );
   const todayClasses = useMemo(() => {
@@ -129,13 +134,12 @@ export default function MobileHomePageV2() {
 
   return (
     <V2Wrapper>
-
       <UpperSection>
         <SectionInner>
-          <WelcomeMessage>
-            <HighlightName>{nickname}님,</HighlightName>
-            <GreetingText>좋은 아침이에요!</GreetingText>
-          </WelcomeMessage>
+          {/*<WelcomeMessage>*/}
+          {/*  <HighlightName>{nickname}님,</HighlightName>*/}
+          {/*  <GreetingText>좋은 아침이에요!</GreetingText>*/}
+          {/*</WelcomeMessage>*/}
 
           <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
             <WidgetHeader>
@@ -145,7 +149,9 @@ export default function MobileHomePageV2() {
 
             <ClassList>
               {!isLoggedIn ? (
-                <EmptyClassItem>로그인 후 시간표를 확인해보세요.</EmptyClassItem>
+                <EmptyClassItem>
+                  로그인 후 시간표를 확인해보세요.
+                </EmptyClassItem>
               ) : isTimetablesLoading || isDetailLoading ? (
                 <EmptyClassItem>시간표를 불러오고 있어요.</EmptyClassItem>
               ) : todayClasses.length > 0 ? (
@@ -183,7 +189,6 @@ export default function MobileHomePageV2() {
           <GridWidgets>
             <SwipeBusWidget />
 
-
             <SwipeMenuWidget />
           </GridWidgets>
         </SectionInner>
@@ -217,8 +222,8 @@ export default function MobileHomePageV2() {
                       activeNoticeTab === "school"
                         ? ROUTES.BOARD.NOTICE
                         : userInfo?.department
-                        ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
-                        : ROUTES.BOARD.DEPT_NOTICE
+                          ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
+                          : ROUTES.BOARD.DEPT_NOTICE
                     }
                   />
                 </DesktopWidgetColumn>
@@ -256,8 +261,8 @@ export default function MobileHomePageV2() {
                     activeNoticeTab === "school"
                       ? ROUTES.BOARD.NOTICE
                       : userInfo?.department
-                      ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
-                      : ROUTES.BOARD.DEPT_NOTICE
+                        ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
+                        : ROUTES.BOARD.DEPT_NOTICE
                   }
                 />
                 <TitleContentArea
@@ -307,25 +312,25 @@ const UpperSection = styled.div`
   background: #eff5fc;
 `;
 
-const WelcomeMessage = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 24px;
-  text-align: left;
-  padding-left: 8px;
-
-  color: var(--text-secondary, #333d4b);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 28px;
-  letter-spacing: -0.2px;
-`;
-
-const HighlightName = styled.span``;
-
-const GreetingText = styled.span``;
+// const WelcomeMessage = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   gap: 4px;
+//   margin-bottom: 24px;
+//   text-align: left;
+//   padding-left: 8px;
+//
+//   color: var(--text-secondary, #333d4b);
+//   font-size: 20px;
+//   font-style: normal;
+//   font-weight: 700;
+//   line-height: 28px;
+//   letter-spacing: -0.2px;
+// `;
+//
+// const HighlightName = styled.span``;
+//
+// const GreetingText = styled.span``;
 
 const TodayTimetableCard = styled.div`
   background-color: #ffffff;
@@ -426,10 +431,6 @@ const GridWidgets = styled.div`
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 `;
-
-
-
-
 
 const LowerSheetSection = styled.div`
   background-color: #ffffff;
