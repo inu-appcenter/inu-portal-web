@@ -32,6 +32,7 @@ import {
   mapCourseOfferingToCourseResult,
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
 
@@ -246,12 +247,25 @@ const MobileTimeTableEditPage = () => {
   const headerRight = useMemo(
     () => (
       <HeaderRightArea>
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.ADD)}>
+        <IconButton
+          onClick={() => {
+            mixpanelTrack.timetableFeatureClicked(
+              "직접 일정 추가",
+              "시간표 편집 헤더",
+            );
+            navigate(ROUTES.TIMETABLE.ADD);
+          }}
+        >
           <IconsAddPlus />
         </IconButton>
         <IconButton
           ref={wizardButtonRef}
-          onClick={() => navigate(ROUTES.TIMETABLE.WIZARD)}
+          onClick={() => {
+            mixpanelTrack.timetableWizardAction("시작", {
+              location: "시간표 편집 헤더",
+            });
+            navigate(ROUTES.TIMETABLE.WIZARD);
+          }}
         >
           <IconsMagicWand />
         </IconButton>
@@ -265,7 +279,15 @@ const MobileTimeTableEditPage = () => {
             anchorRef={wizardButtonRef}
           />
         )}
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}>
+        <IconButton
+          onClick={() => {
+            mixpanelTrack.timetableFeatureClicked(
+              "공개 범위 설정",
+              "시간표 편집 헤더",
+            );
+            navigate(ROUTES.TIMETABLE.VISIBILITY);
+          }}
+        >
           <IconsLock />
         </IconButton>
       </HeaderRightArea>
@@ -287,6 +309,13 @@ const MobileTimeTableEditPage = () => {
   useTimetableUrlSync();
   // 상세 조회로 서버 요소를 스토어에 동기화 (뮤테이션 성공 시 invalidate로 재조회됨)
   useTimeTableDetail(activeTimetableId);
+
+  useEffect(() => {
+    mixpanelTrack.timetableViewed("시간표 편집", {
+      semester: activeTimetable?.semester,
+      course_count: timetable.length,
+    });
+  }, [activeTimetable?.semester, timetable.length]);
 
   const createCourseItemMutation = useCreateTimeTableCourseItem();
   const deleteItemMutation = useDeleteTimeTableItem();
@@ -310,6 +339,12 @@ const MobileTimeTableEditPage = () => {
         body: { courseOfferingId: newCourse.id },
       },
       {
+        onSuccess: () => {
+          mixpanelTrack.timetableItemActionCompleted("강의 추가", "강의", {
+            semester: activeTimetable?.semester,
+            result_count: searchResults.length,
+          });
+        },
         onError: (error: any) => {
           alert(error.response?.data?.msg || "강의 추가에 실패했습니다.");
         },
@@ -395,6 +430,13 @@ const MobileTimeTableEditPage = () => {
   }, [expandedId, snap]);
 
   const toggleExpand = (id: number) => {
+    const target = searchResults.find((course) => course.id === id);
+    if (expandedId !== id) {
+      mixpanelTrack.timetableCourseSearchAction("강의 펼치기", {
+        has_schedule: Boolean(target?.schedules?.length),
+        credits: target?.credits,
+      });
+    }
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
@@ -428,6 +470,15 @@ const MobileTimeTableEditPage = () => {
     deleteItemMutation.mutate(
       { timeTableId: activeTimetableId, timeTableItemId: target.itemId },
       {
+        onSuccess: () => {
+          mixpanelTrack.timetableItemActionCompleted(
+            "항목 삭제",
+            target.isCustom ? "직접 일정" : "강의",
+            {
+              semester: activeTimetable?.semester,
+            },
+          );
+        },
         onError: (error: any) => {
           alert(
             error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",

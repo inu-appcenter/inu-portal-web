@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
@@ -25,6 +25,7 @@ import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableTh
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
@@ -437,6 +438,7 @@ const MobileTimeTablePage = () => {
         label: "시간표 이름 변경",
         icon: <Pencil size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("시간표 이름 변경", "헤더 메뉴");
           setRenameInputVal(activeTimetable.name);
           setIsRenameModalOpen(true);
         },
@@ -445,6 +447,7 @@ const MobileTimeTablePage = () => {
         label: "시간표 공개 범위 선택",
         icon: <Lock size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("공개 범위 설정", "헤더 메뉴");
           navigate(ROUTES.TIMETABLE.VISIBILITY);
         },
       },
@@ -452,6 +455,7 @@ const MobileTimeTablePage = () => {
         label: "강의 알림 설정",
         icon: <Bell size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("강의 알림 설정", "헤더 메뉴");
           navigate(ROUTES.MYPAGE.NOTIFICATION);
         },
       },
@@ -459,6 +463,7 @@ const MobileTimeTablePage = () => {
         label: "시간표 테마 설정",
         icon: <Palette size={20} />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("시간표 테마 설정", "헤더 메뉴");
           setIsThemeSheetOpen(true);
         },
       },
@@ -471,6 +476,9 @@ const MobileTimeTablePage = () => {
               ROUTES.TIMETABLE.ROOT +
               `?id=${activeTimetable.id}`,
           );
+          mixpanelTrack.timetableActionCompleted("링크 공유", {
+            semester: activeTimetable.semester,
+          });
           alert("시간표 링크가 클립보드에 복사되었습니다.");
         },
       },
@@ -478,6 +486,7 @@ const MobileTimeTablePage = () => {
         label: "시간표 삭제",
         icon: <Trash2 size={20} color="#FF3B30" />,
         onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("시간표 삭제", "헤더 메뉴");
           setIsDeleteModalOpen(true);
         },
       },
@@ -502,6 +511,9 @@ const MobileTimeTablePage = () => {
 
   // 학점계산기 버튼 클릭 처리 핸들러
   const handleGradeCalculatorClick = () => {
+    mixpanelTrack.timetableFeatureClicked("학점계산기", "시간표 홈", {
+      is_logged_in: isLoggedIn,
+    });
     if (!isLoggedIn) {
       alert(LOGIN_REQUIRED_MESSAGE);
       return;
@@ -512,6 +524,9 @@ const MobileTimeTablePage = () => {
 
   // 모의 수강신청 버튼 클릭 처리 핸들러
   const handleSimulatorClick = () => {
+    mixpanelTrack.timetableFeatureClicked("모의 수강신청", "시간표 홈", {
+      open_method: shouldOpenSimulatorInNewWebView ? "새 웹뷰" : "내부 라우트",
+    });
     alert(
       "실제와 다를 수 있으며, PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다. 앱 내 강의 정보는 현시점에는 최신 정보가 아니니 주의하세요.",
     );
@@ -548,6 +563,15 @@ const MobileTimeTablePage = () => {
   );
 
   const timetableEvents = activeTimetable?.events || [];
+
+  useEffect(() => {
+    mixpanelTrack.timetableViewed("시간표 홈", {
+      semester: selectedSemester,
+      timetable_count: timetables.length,
+      course_count: timetableEvents.length,
+      is_logged_in: isLoggedIn,
+    });
+  }, [isLoggedIn, selectedSemester, timetableEvents.length, timetables.length]);
 
   const { majorCredits, generalCredits, otherCredits, totalCredits } =
     useMemo(() => {
@@ -624,6 +648,9 @@ const MobileTimeTablePage = () => {
                   },
                   {
                     onSuccess: () => {
+                      mixpanelTrack.timetableActionCompleted("이름 변경", {
+                        semester: activeTimetable.semester,
+                      });
                       setIsRenameModalOpen(false);
                     },
                     onError: (error: any) => {
@@ -662,6 +689,10 @@ const MobileTimeTablePage = () => {
                 if (deleteMutation.isPending) return;
                 deleteMutation.mutate(activeTimetable.id, {
                   onSuccess: () => {
+                    mixpanelTrack.timetableActionCompleted("삭제", {
+                      semester: activeTimetable.semester,
+                      course_count: activeTimetable.events.length,
+                    });
                     setIsDeleteModalOpen(false);
                   },
                   onError: (error: any) => {
@@ -700,7 +731,10 @@ const MobileTimeTablePage = () => {
           </NoTimetableContent>
           <CapsuleButton
             variant="primary"
-            onClick={() => navigate(ROUTES.LOGIN)}
+            onClick={() => {
+              mixpanelTrack.timetableFeatureClicked("로그인 CTA", "시간표 홈");
+              navigate(ROUTES.LOGIN);
+            }}
           >
             로그인하기
           </CapsuleButton>
@@ -728,6 +762,7 @@ const MobileTimeTablePage = () => {
                 alert(LOGIN_REQUIRED_MESSAGE);
                 return;
               }
+              mixpanelTrack.timetableFeatureClicked("시간표 생성", "빈 시간표");
               setIsCreateModalOpen(true);
             }}
           >
@@ -755,6 +790,7 @@ const MobileTimeTablePage = () => {
                 handleLoginRequiredClick();
                 return;
               }
+              mixpanelTrack.timetableFeatureClicked("친구 시간표 비교", "시간표 홈");
               navigate(ROUTES.FRIEND.LIST);
             }}
           >

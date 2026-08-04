@@ -11,6 +11,7 @@ import {
   useUpdateTimeTableVisibility,
 } from "@/hooks/useTimeTables";
 import type { TimeTableVisibility } from "@/types/timetables";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function MobileTimeTableVisibilityPage() {
   const navigate = useNavigate();
@@ -53,6 +54,10 @@ export default function MobileTimeTableVisibilityPage() {
       { timeTableId: activeTimetable.id, visibility },
       {
         onSuccess: () => {
+          mixpanelTrack.timetableActionCompleted("공개 범위 변경", {
+            visibility,
+            semester: activeTimetable.semester,
+          });
           navigate(-1);
         },
         onError: (error: any) => {

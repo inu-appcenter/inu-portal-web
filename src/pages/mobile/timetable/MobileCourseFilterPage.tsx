@@ -11,6 +11,7 @@ import Ripple from "@/components/common/Ripple";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { getCourseOfferingsPage } from "@/apis/courseOfferings";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import useUserStore from "@/stores/useUserStore";
@@ -607,11 +608,17 @@ export default function MobileCourseFilterPage() {
   // 초기화 핸들러
   const handleReset = () => {
     if (!window.confirm("선택된 필터를 초기화할까요?")) return;
+    mixpanelTrack.timetableCourseSearchAction("필터 초기화", {
+      scope: "전체",
+    });
     setFilters({ ...DEFAULT_FILTERS });
   };
 
   // 시간 전용 초기화 핸들러
   const handleResetTime = () => {
+    mixpanelTrack.timetableCourseSearchAction("필터 초기화", {
+      scope: "시간",
+    });
     setFilters((prev) => ({
       ...prev,
       time: "전체 시간",
@@ -664,6 +671,16 @@ export default function MobileCourseFilterPage() {
       setShowUnsavedModal(false);
       localStorage.setItem("applied_filters", JSON.stringify(filters));
       localStorage.setItem(storageKey, JSON.stringify(filters));
+      mixpanelTrack.timetableCourseSearchAction("필터 적용", {
+        has_major: Boolean(filters.major),
+        has_time:
+          filters.time !== "전체 시간" ||
+          Boolean(filters.selectedSlots?.length),
+        grade_count: filters.grades.length,
+        type_count: filters.types.length,
+        credit_count: filters.credits.length,
+        sort: filters.sort,
+      });
       flushSync(() => {
         setIsSaving(true); // blocker 비활성화 후 navigate
       });

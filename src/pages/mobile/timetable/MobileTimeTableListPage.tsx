@@ -13,6 +13,7 @@ import {
 } from "@/hooks/useTimeTables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { formatSemester } from "@/utils/semester";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // Icons
 const PlusIcon = () => (
@@ -46,6 +47,12 @@ export default function MobileTimeTableListPage() {
   const handleSetPrimary = (t: Timetable) => {
     if (t.isRepresentative || updatePrimaryMutation.isPending) return;
     updatePrimaryMutation.mutate(t.id, {
+      onSuccess: () => {
+        mixpanelTrack.timetableActionCompleted("대표 설정", {
+          semester: t.semester,
+          course_count: t.events.length,
+        });
+      },
       onError: (error: any) => {
         alert(error.response?.data?.msg || "대표 시간표 변경에 실패했습니다.");
       },
@@ -67,6 +74,7 @@ export default function MobileTimeTableListPage() {
 
   const handleAddClick = useCallback(() => {
     if (semesters.length === 0) return;
+    mixpanelTrack.timetableFeatureClicked("시간표 생성", "시간표 목록");
     openAddModal(semesters[0]);
   }, [openAddModal, semesters]);
 
@@ -85,6 +93,11 @@ export default function MobileTimeTableListPage() {
   });
 
   const handleSelectTimetable = (t: Timetable) => {
+    mixpanelTrack.timetableFeatureClicked("시간표 선택", "시간표 목록", {
+      semester: t.semester,
+      course_count: t.events.length,
+      is_representative: t.isRepresentative,
+    });
     setSemester(t.semester);
     setActiveTimetable(t.id);
     // id를 함께 넘겨 URL이 바로 이 시간표를 가리키게 함 (새로고침 시 복원용)
