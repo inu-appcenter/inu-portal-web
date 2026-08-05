@@ -56,6 +56,8 @@ export default function MobileTimeTableListPage() {
     if (t.isRepresentative || updatePrimaryMutation.isPending) return;
     updatePrimaryMutation.mutate(t.id, {
       onSuccess: () => {
+        setSemester(t.semester);
+        setActiveTimetable(t.id);
         mixpanelTrack.timetableActionCompleted("대표 설정", {
           semester: t.semester,
           course_count: t.events.length,
