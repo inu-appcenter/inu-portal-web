@@ -272,7 +272,7 @@ const HeaderBar = styled.div<{ $show: boolean }>`
   display: flex;
   align-items: center;
   padding: 0 16px;
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--native-safe-area-inset-top);
   z-index: 20005;
   box-sizing: border-box;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);

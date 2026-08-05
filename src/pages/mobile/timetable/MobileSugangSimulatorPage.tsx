@@ -55,6 +55,10 @@ const PageWrapper = styled.div`
   overflow: hidden;
   background-color: #ffffff;
   position: relative;
+  /* This page has no MobileHeader (FullscreenSubLayout), so unlike most
+     sub-pages it must pad its own top inset directly — the native shell no
+     longer reserves it. */
+  padding-top: var(--native-safe-area-inset-top);
 `;
 
 const StyledIframe = styled.iframe`
