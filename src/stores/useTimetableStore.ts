@@ -11,6 +11,34 @@ export interface TimetableTheme {
   showProfessor: boolean;
 }
 
+const TIMETABLE_THEMES_STORAGE_KEY = "timetable-themes";
+
+const getStoredTimetableThemes = (): Record<number, TimetableTheme> => {
+  if (typeof window === "undefined") return {};
+
+  try {
+    return JSON.parse(
+      window.localStorage.getItem(TIMETABLE_THEMES_STORAGE_KEY) ?? "{}",
+    );
+  } catch {
+    return {};
+  }
+};
+
+const storeTimetableTheme = (id: number, theme: TimetableTheme) => {
+  if (typeof window === "undefined") return;
+
+  try {
+    const themes = getStoredTimetableThemes();
+    window.localStorage.setItem(
+      TIMETABLE_THEMES_STORAGE_KEY,
+      JSON.stringify({ ...themes, [id]: theme }),
+    );
+  } catch {
+    // 저장소를 사용할 수 없는 환경에서도 현재 세션의 테마 적용은 유지한다.
+  }
+};
+
 export interface Timetable {
   id: number;
   name: string;
@@ -55,6 +83,7 @@ export const useTimetableStore = create<TimetableStore>()(
   // 서버에서 받아온 시간표 목록을 스토어 상태로 변환 (기존 events/theme는 유지)
   setTimetables: (serverTimetables) =>
     set((state) => {
+      const storedThemes = getStoredTimetableThemes();
       const timetables = serverTimetables.map<Timetable>((t) => {
         const prev = state.timetables.find((p) => p.id === t.id);
         return {
@@ -67,7 +96,7 @@ export const useTimetableStore = create<TimetableStore>()(
           isRepresentative: t.isPrimary,
           visibility: t.visibility,
           events: prev?.events ?? [],
-          theme: prev?.theme,
+          theme: prev?.theme ?? storedThemes[t.id],
         };
       });
 
@@ -93,11 +122,14 @@ export const useTimetableStore = create<TimetableStore>()(
       return { timetables, selectedSemester, activeTimetableId };
     }),
   updateTimetableTheme: (id, theme) =>
-    set((state) => ({
-      timetables: state.timetables.map((t) =>
-        t.id === id ? { ...t, theme } : t
-      ),
-    })),
+    set((state) => {
+      storeTimetableTheme(id, theme);
+      return {
+        timetables: state.timetables.map((t) =>
+          t.id === id ? { ...t, theme } : t
+        ),
+      };
+    }),
   updateTimetableEvents: (id, events) =>
     set((state) => {
       const target = state.timetables.find((t) => t.id === id);
