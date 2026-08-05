@@ -26,6 +26,7 @@ export const ROUTES = {
     CALCULATOR: "/timetable/calculator",
     SYLLABUS: "/timetable/syllabus",
     WIZARD: "/timetable/wizard",
+    WIZARD_GROUP: "/timetable/wizard-group",
   },
 
   // 친구
