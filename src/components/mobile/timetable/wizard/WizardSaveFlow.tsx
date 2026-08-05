@@ -86,6 +86,7 @@ const WizardSaveFlow = ({
     try {
       const existingItems = targetDetail?.items ?? [];
       for (const item of existingItems) {
+        if (item.id == null) continue;
         await deleteItemMutation.mutateAsync({
           timeTableId: targetTimetableId,
           timeTableItemId: item.id,
