@@ -19,6 +19,21 @@ interface BroadcastSyncOptions<T> {
  * api.setState(브로드캐스트 미발신)를 분리하는 것만으로 재전송 루프가 생기지
  * 않는다.
  */
+/**
+ * 채널 이름 → 대기 중인 브로드캐스트를 즉시 내보내는 함수.
+ *
+ * 아래 broadcastingSet은 한 틱의 set()들을 마이크로태스크로 병합해 1회만 보낸다.
+ * 그런데 "상태를 바꾸고 곧바로 이 웹뷰를 떠나는" 흐름(필터 저장 후 goBack)에서는
+ * 그 지연이 치명적이다 — 떠나는 요청이 동기적으로 먼저 네이티브에 도착해 웹뷰가
+ * pop되고, 뒤늦게 나가는 브로드캐스트는 유실된다. 그런 호출부는 이 함수로 병합을
+ * 건너뛰고 즉시 내보낸 뒤 이동해야 한다(브릿지 메시지는 FIFO라 순서가 보장된다).
+ */
+const pendingFlushers = new Map<string, () => void>();
+
+export function flushBroadcastSync(name: string): void {
+  pendingFlushers.get(name)?.();
+}
+
 export function broadcastSync<T extends object>(options: BroadcastSyncOptions<T>) {
   return (creator: StateCreator<T, [], []>): StateCreator<T, [], []> =>
     (set, get, api: StoreApi<T>) => {
@@ -39,6 +54,22 @@ export function broadcastSync<T extends object>(options: BroadcastSyncOptions<T>
       let pendingBroadcastTimer: Promise<void> | null = null;
       let lastBroadcastSerialized: string | null = null;
 
+      const sendNow = () => {
+        const nextPartial = options.partialize(get());
+        const serialized = JSON.stringify(nextPartial);
+
+        if (serialized !== lastBroadcastSerialized) {
+          lastBroadcastSerialized = serialized;
+          channel.postMessage(nextPartial);
+        }
+      };
+
+      // 이 웹뷰를 떠나기 직전의 호출부가 병합을 건너뛰고 즉시 내보낼 수 있게 한다.
+      pendingFlushers.set(options.name, () => {
+        pendingBroadcastTimer = null; // 예약된 마이크로태스크는 중복 전송하지 않도록 무력화
+        sendNow();
+      });
+
       const broadcastingSet: typeof set = (...args) => {
         set(...args);
 
@@ -46,14 +77,9 @@ export function broadcastSync<T extends object>(options: BroadcastSyncOptions<T>
         // 단일 이벤트 루프 틱 안에서 연속 호출된 set()을 하나로 병합하여 1회만 전송
         if (!pendingBroadcastTimer) {
           pendingBroadcastTimer = Promise.resolve().then(() => {
+            if (!pendingBroadcastTimer) return; // flush가 이미 내보냈다
             pendingBroadcastTimer = null;
-            const nextPartial = options.partialize(get());
-            const serialized = JSON.stringify(nextPartial);
-
-            if (serialized !== lastBroadcastSerialized) {
-              lastBroadcastSerialized = serialized;
-              channel.postMessage(nextPartial);
-            }
+            sendNow();
           });
         }
       };

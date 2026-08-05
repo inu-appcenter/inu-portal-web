@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { broadcastSync } from "@/stores/middleware/broadcastSync";
+import { broadcastSync, flushBroadcastSync } from "@/stores/middleware/broadcastSync";
 import useUserStore from "@/stores/useUserStore";
 import {
   DEFAULT_FILTERS,
@@ -37,15 +37,23 @@ interface CourseFilterState {
   applyFilters: (filters: FilterState) => void;
 }
 
+const SYNC_CHANNEL = "course-filter-sync";
+
 export const useCourseFilterStore = create<CourseFilterState>()(
   persist(
     broadcastSync<CourseFilterState>({
-      name: "course-filter-sync",
+      name: SYNC_CHANNEL,
       // 액션은 제외하고 확정 필터만 실어 보낸다.
       partialize: (state) => ({ filters: state.filters }),
     })((set) => ({
       filters: DEFAULT_FILTERS,
-      applyFilters: (filters) => set({ filters }),
+      applyFilters: (filters) => {
+        set({ filters });
+        // 이 액션의 유일한 호출부(필터 화면 "저장")는 곧바로 goBack을 보내 자기
+        // 웹뷰를 pop시킨다. 기본 마이크로태스크 병합에 맡기면 goBack이 먼저
+        // 네이티브에 도착해 브로드캐스트가 유실되므로 여기서 즉시 내보낸다.
+        flushBroadcastSync(SYNC_CHANNEL);
+      },
     })),
     {
       name: TIMETABLE_COURSE_FILTERS_KEY,
