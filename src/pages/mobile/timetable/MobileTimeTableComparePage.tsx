@@ -16,6 +16,7 @@ import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import type { TimeTableDetail } from "@/types/timetables";
+import { useSemesters } from "@/hooks/useSemesters";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -73,6 +74,11 @@ export default function MobileTimeTableComparePage() {
   const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
 
   useTimeTables();
+  const { semesters } = useSemesters();
+  const openSemester = useMemo(
+    () => semesters.find((semester) => semester.status === "OPEN") ?? null,
+    [semesters],
+  );
 
   // 2. 친구 목록 로드
   const { data: friendsRes } = useQuery({
@@ -114,19 +120,19 @@ export default function MobileTimeTableComparePage() {
           "timetables",
           "friend-primary",
           friendMemberId,
-          activeTimetable?.year,
-          activeTimetable?.term,
+          openSemester?.year,
+          openSemester?.term,
         ],
         queryFn: () =>
           getFriendPrimaryTimeTableDetail(
             friendMemberId,
-            activeTimetable!.year,
-            activeTimetable!.term,
+            openSemester!.year,
+            openSemester!.term,
           ),
         enabled:
           Boolean(friendMemberId) &&
-          activeTimetable?.year != null &&
-          activeTimetable?.term != null,
+          openSemester?.year != null &&
+          openSemester?.term != null,
         staleTime: 1000 * 60 * 5,
         gcTime: 1000 * 60 * 30,
         retry: false,
