@@ -125,10 +125,7 @@ export default function ClassDetailBottomSheet({
     liveClass.professor?.trim() || offering?.professor?.trim() || "-";
 
   const creditsVal =
-    liveClass.credits ??
-    offering?.credit ??
-    course?.credit ??
-    0;
+    liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
 
   const evaluationVal = liveClass.evaluation || "상대평가";
 
@@ -159,7 +156,7 @@ export default function ClassDetailBottomSheet({
       ? "전학년"
       : `${offering.hyName}학년`
     : course?.targetGradeName
-      ? `${course.targetGradeName}학년`
+      ? `${course.targetGradeName}`
       : liveClass.grade
         ? typeof liveClass.grade === "number" || !isNaN(Number(liveClass.grade))
           ? `${liveClass.grade}학년`
