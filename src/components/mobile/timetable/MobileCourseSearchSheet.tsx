@@ -16,13 +16,10 @@ import {
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import {
-  FilterState,
-  DEFAULT_FILTERS,
-} from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -97,17 +94,13 @@ interface MobileCourseSearchSheetProps {
   // 시간표 편집 화면은 강의 추가 도중 실수로 닫히지 않도록 스와이프/배경탭 dismiss를
   // 막아야 하고(기본값), 마법사의 위시리스트 검색은 반대로 자유롭게 닫을 수 있어야 한다.
   dismissible?: boolean;
-  initialFilters?: FilterState;
   onAddCourse?: (course: CourseResult) => void;
-  // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
-  onFiltersChange?: (filters: FilterState) => void;
   addedCourseOfferingIds?: Set<number>;
   addedCourseIds?: Set<string>;
   isLoading?: boolean;
   hasNextPage?: boolean;
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
-  filterStorageKey?: string;
 }
 
 const MobileCourseSearchSheet = ({
@@ -119,32 +112,22 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
   dismissible = false,
-  initialFilters = DEFAULT_FILTERS,
   onAddCourse,
-  onFiltersChange,
   addedCourseOfferingIds,
   addedCourseIds,
   isLoading = false,
   hasNextPage,
   fetchNextPage,
   isFetchingNextPage,
-  filterStorageKey = "timetable_course_filters",
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const [activeFilters, setActiveFiltersState] =
-    useState<FilterState>(initialFilters);
-
-  useEffect(() => {
-    setActiveFiltersState(initialFilters);
-  }, [initialFilters]);
-
-  const setActiveFilters = (filters: FilterState) => {
-    setActiveFiltersState(filters);
-    onFiltersChange?.(filters);
-  };
+  // 확정 필터는 useCourseFilterStore가 소유한다. 필터 화면이 별도 웹뷰로 뜨는
+  // 멀티 웹뷰 환경에서도 broadcastSync가 값을 실어오므로, 이 시트는 읽기만 한다.
+  // 부모(편집 화면)가 서버 조회에 쓰는 것과 반드시 같은 파생을 써야 한다 —
+  // 아래 filteredCourses가 같은 필터로 2차 로컬 필터링을 하기 때문이다.
+  const activeFilters = useEffectiveCourseFilters();
 
   const sheetRef = useRef<SheetRef | null>(null);
 
@@ -159,89 +142,22 @@ const MobileCourseSearchSheet = ({
     initialSnapRef.current = initialSnap;
   }, [initialSnap]);
 
-  const openRef = useRef(open);
+  // 필터 화면에서 돌아왔을 때 시트가 바닥으로 내려가 있지 않도록 지정된 snap으로 되돌린다.
+  // (예전에는 localStorage 복원 로직이 이 일을 겸했다.)
+  const isFirstFilterRender = useRef(true);
   useEffect(() => {
-    openRef.current = open;
-  }, [open]);
-
-  const onOpenChangeRef = useRef(onOpenChange);
-  useEffect(() => {
-    onOpenChangeRef.current = onOpenChange;
-  }, [onOpenChange]);
-
-  // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
-  useEffect(() => {
-    const restoreFilters = () => {
-      const savedFilters = localStorage.getItem("applied_filters");
-      if (savedFilters) {
-        try {
-          const parsed = JSON.parse(savedFilters);
-          setActiveFilters(parsed);
-          if (!openRef.current) {
-            onOpenChangeRef.current(true);
-          }
-          // 필터 적용 후 시트 위치가 바닥(0 또는 1)으로 내려가는 것을 방지하고 지정된 snap으로 복구
-          setTimeout(() => {
-            sheetRef.current?.snapTo(initialSnapRef.current);
-          }, 50);
-        } catch (e) {
-          console.error("필터 복원 오류:", e);
-        }
-        localStorage.removeItem("applied_filters");
-        return true;
-      }
-      return false;
-    };
-
-    // 1. 컴포넌트 마운트 시도 또는 location 변경 시 확인
-    const restored = restoreFilters();
-
-    // location.state 폴백 (앱이 아닌 일반 브라우저 환경에서 데이터가 올 때를 대비)
-    if (!restored && location.state && (location.state as any).filters) {
-      setActiveFilters((location.state as any).filters);
-      if (!openRef.current) {
-        onOpenChangeRef.current(true);
-      }
-      setTimeout(() => {
-        sheetRef.current?.snapTo(initialSnapRef.current);
-      }, 50);
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
     }
-
-    // 2. 멀티 웹뷰 덮인 화면이 닫히며 복귀할 때를 위한 이벤트 리스너 등록
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        restoreFilters();
-      }
-    };
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "applied_filters" && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          setActiveFilters(parsed);
-          if (!openRef.current) {
-            onOpenChangeRef.current(true);
-          }
-          setTimeout(() => {
-            sheetRef.current?.snapTo(initialSnapRef.current);
-          }, 50);
-          localStorage.removeItem("applied_filters");
-        } catch (err) {
-          console.error("필터 복원 오류:", err);
-        }
-      }
-    };
-
-    window.addEventListener("focus", restoreFilters);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("focus", restoreFilters);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [location.state, location.key]);
+    if (!open) onOpenChange(true);
+    const timer = setTimeout(() => {
+      sheetRef.current?.snapTo(initialSnapRef.current);
+    }, 50);
+    return () => clearTimeout(timer);
+    // 확정 필터가 바뀐 순간에만 반응한다(open/onOpenChange 변화에는 반응하지 않는다).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilters]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -584,12 +500,11 @@ const MobileCourseSearchSheet = ({
                 mixpanelTrack.timetableCourseSearchAction("필터 열기", {
                   result_count: filteredCourses.length,
                 });
-                navigate(ROUTES.TIMETABLE.FILTER, {
-                  state: {
-                    filters: activeFilters,
-                    storageKey: filterStorageKey,
-                  },
-                });
+                // state는 넘기지 않는다. 멀티 웹뷰에서는 이 이동이 네이티브
+                // 웹뷰 push(appBridge.navigateTo)로 위임되고 브릿지 payload는
+                // { path, url }뿐이라 state가 사라진다. 필터 화면은 양쪽 환경 모두
+                // useCourseFilterStore에서 현재 필터를 읽는다.
+                navigate(ROUTES.TIMETABLE.FILTER);
               }}
             >
               <SlidersHorizontal size={20} />

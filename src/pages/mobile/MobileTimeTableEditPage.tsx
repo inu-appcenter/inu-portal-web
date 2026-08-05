@@ -8,7 +8,7 @@ import MobileCourseSearchSheet, {
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import TooltipMessage from "@/components/common/TooltipMessage";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -21,30 +21,14 @@ import {
 } from "@/hooks/useTimeTables";
 import { formatHoursToTime } from "@/utils/timetable";
 import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
-import {
-  DEFAULT_FILTERS,
-  type FilterState,
-} from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import useUserStore from "@/stores/useUserStore";
+import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import {
   mapCourseOfferingToCourseResult,
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
 import { mixpanelTrack } from "@/utils/mixpanel";
-
-const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
-
-const readStoredFilters = (): FilterState => {
-  try {
-    const saved = localStorage.getItem(TIMETABLE_COURSE_FILTERS_KEY);
-    if (saved) return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
-  } catch (error) {
-    console.error("시간표 강의 필터 복원 오류:", error);
-  }
-  return DEFAULT_FILTERS;
-};
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -173,39 +157,18 @@ const MobileTimeTableEditPage = () => {
     return set;
   }, [timetable]);
 
-  // 전공/영역·학년·이수구분·학점 필터
-  const location = useLocation();
-  const userDepartment = useUserStore((state) => state.userInfo.department);
-  const defaultMajor = userDepartment || "컴퓨터공학부";
-
-  const getEffectiveFilters = (): FilterState => {
-    const stored = readStoredFilters();
-    return {
-      ...stored,
-      major: stored.major ?? defaultMajor,
-    };
-  };
-
-  const [activeFilters, setActiveFilters] =
-    useState<FilterState>(getEffectiveFilters);
-
-  // 복귀 시 localStorage의 저장된 필터와 즉시 동기화
-  useEffect(() => {
-    setActiveFilters(getEffectiveFilters());
-  }, [location.key, defaultMajor]);
+  // 전공/영역·학년·이수구분·학점 필터.
+  //
+  // 확정 필터는 useCourseFilterStore가 소유한다. 필터 화면(/timetable/filter)은 멀티
+  // 웹뷰에서 별도 웹뷰로 push되므로 이 웹뷰에는 라우팅 이벤트가 오지 않는다 —
+  // location.key도 변하지 않아 예전의 "복귀 시 localStorage 재동기화"는 애초에
+  // 재실행되지 않았다. broadcastSync가 웹뷰를 건너 값을 실어온다.
+  const activeFilters = useEffectiveCourseFilters();
 
   const offeringFilters = useMemo(
     () => mapFilterToOfferingFilters(activeFilters),
     [activeFilters],
   );
-
-  const handleFiltersChange = (filters: FilterState) => {
-    setActiveFilters(filters);
-    localStorage.setItem(
-      TIMETABLE_COURSE_FILTERS_KEY,
-      JSON.stringify(filters),
-    );
-  };
 
   const combinedFilters: CourseOfferingFilters = useMemo(
     () => ({
@@ -592,15 +555,12 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
-        initialFilters={activeFilters}
-        onFiltersChange={handleFiltersChange}
         addedCourseOfferingIds={addedCourseOfferingIds}
         addedCourseIds={addedCourseIds}
         isLoading={isSheetLoading}
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
-        filterStorageKey={TIMETABLE_COURSE_FILTERS_KEY}
       />
     </PageWrapper>
   );
