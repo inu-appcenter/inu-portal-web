@@ -21,7 +21,10 @@ export interface TimetableShareTimeSlot {
 
 export interface TimetableShareExtraData {
   title?: string;
+  /** @deprecated 기존 메시지 호환용 Friend 관계 ID */
   friendIds: number[];
+  /** 공유 참여자의 Member ID */
+  memberIds?: number[];
   topFreeTimes: TimetableShareTimeSlot[];
 }
 

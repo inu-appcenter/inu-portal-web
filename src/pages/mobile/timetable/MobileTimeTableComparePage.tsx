@@ -15,6 +15,10 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import type { TimeTableDetail } from "@/types/timetables";
+import { useSemesters } from "@/hooks/useSemesters";
+import { formatSemester } from "@/utils/semester";
+import useUserStore from "@/stores/useUserStore";
 
 // 공용 컴포넌트 임포트
 import TabUpper from "@/components/common/TabUpper";
@@ -27,6 +31,23 @@ import TimetableGrid, {
 import { Plus, Send } from "lucide-react";
 
 const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
+
+type FriendTimetableState =
+  | "LOADING"
+  | "PUBLIC"
+  | "PROTECTED"
+  | "PRIVATE"
+  | "NOT_FOUND"
+  | "ERROR";
+
+const isProtectedTimetable = (detail: TimeTableDetail) =>
+  detail.items.some((item) => {
+    const source = item.course ?? item.customSchedule;
+    return item.id == null || source?.title == null;
+  });
+
+const getErrorStatus = (error: unknown) =>
+  (error as { response?: { status?: number } })?.response?.status;
 
 const formatTime = (time: number) => {
   const h = Math.floor(time);
@@ -48,13 +69,19 @@ export default function MobileTimeTableComparePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const friendIdsParam = searchParams.get("ids") || "";
-  const { selectedSemester, activeTimetableId, timetables } =
-    useTimetableStore();
+  const memberIdsParam = searchParams.get("memberIds") || "";
+  const { userInfo } = useUserStore();
+  const { activeTimetableId, timetables } = useTimetableStore();
 
   const chipScrollRef = useRef<HTMLDivElement | null>(null);
   const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
 
   useTimeTables();
+  const { semesters } = useSemesters();
+  const openSemester = useMemo(
+    () => semesters.find((semester) => semester.status === "OPEN") ?? null,
+    [semesters],
+  );
 
   // 2. 친구 목록 로드
   const { data: friendsRes } = useQuery({
@@ -67,15 +94,30 @@ export default function MobileTimeTableComparePage() {
     return list;
   }, [friendsRes]);
 
+  const selectedFriendIds = useMemo(() => {
+    if (memberIdsParam) {
+      const memberIds = memberIdsParam.split(",").map(Number).filter(Boolean);
+      return friendsMap
+        .filter((friend) => memberIds.includes(friend.friendMemberId))
+        .map((friend) => friend.friendId);
+    }
+    return friendIdsParam.split(",").map(Number).filter(Boolean);
+  }, [friendIdsParam, memberIdsParam, friendsMap]);
+
   const activeTimetable = useMemo(() => {
-    const list = timetables.filter((t) => t.semester === selectedSemester);
+    if (!openSemester) return null;
+    const openSemesterLabel = formatSemester(
+      openSemester.year,
+      openSemester.term,
+    );
+    const list = timetables.filter((t) => t.semester === openSemesterLabel);
     if (list.length === 0) return null;
     return (
       list.find((t) => t.id === activeTimetableId) ||
       list.find((t) => t.isRepresentative) ||
       list[0]
     );
-  }, [timetables, selectedSemester, activeTimetableId]);
+  }, [timetables, activeTimetableId, openSemester]);
 
   useTimeTableDetail(activeTimetable?.id);
 
@@ -88,27 +130,34 @@ export default function MobileTimeTableComparePage() {
     [activeTimetable?.events],
   );
 
+  const queriedFriends = useMemo(() => {
+    if (!friendIdsParam && !memberIdsParam) return friendsMap;
+    return friendsMap.filter((friend) =>
+      selectedFriendIds.includes(friend.friendId),
+    );
+  }, [friendsMap, friendIdsParam, memberIdsParam, selectedFriendIds]);
+
   const friendTimetableQueries = useQueries({
-    queries: friendsMap.map((friend) => {
+    queries: queriedFriends.map((friend) => {
       const friendMemberId = friend.friendMemberId ?? friend.friendId;
       return {
         queryKey: [
           "timetables",
           "friend-primary",
           friendMemberId,
-          activeTimetable?.year,
-          activeTimetable?.term,
+          openSemester?.year,
+          openSemester?.term,
         ],
         queryFn: () =>
           getFriendPrimaryTimeTableDetail(
             friendMemberId,
-            activeTimetable!.year,
-            activeTimetable!.term,
+            openSemester!.year,
+            openSemester!.term,
           ),
         enabled:
           Boolean(friendMemberId) &&
-          activeTimetable?.year != null &&
-          activeTimetable?.term != null,
+          openSemester?.year != null &&
+          openSemester?.term != null,
         staleTime: 1000 * 60 * 5,
         gcTime: 1000 * 60 * 30,
         retry: false,
@@ -117,32 +166,50 @@ export default function MobileTimeTableComparePage() {
   });
 
   const friendTimetablesByFriendId = useMemo(() => {
-    const entries = friendsMap.map((friend, index) => {
+    const entries = queriedFriends.map((friend, index) => {
       const detail = friendTimetableQueries[index]?.data;
       const classes = detail ? mapDetailItemsToClassItems(detail.items) : [];
       return [friend.friendId, classes] as const;
     });
 
     return new Map(entries);
-  }, [friendsMap, friendTimetableQueries]);
+  }, [queriedFriends, friendTimetableQueries]);
 
-  // 쿼리 파라미터 기반 선택된 친구들
-  const selectedFriendIds = useMemo(() => {
-    return friendIdsParam.split(",").map(Number).filter(Boolean);
-  }, [friendIdsParam]);
+  const friendTimetableStatesByFriendId = useMemo(() => {
+    const entries = queriedFriends.map((friend, index) => {
+      const query = friendTimetableQueries[index];
+      const detail = query?.data;
+      let state: FriendTimetableState;
+
+      if (query?.isPending) {
+        state = "LOADING";
+      } else if (detail) {
+        state = isProtectedTimetable(detail) ? "PROTECTED" : "PUBLIC";
+      } else {
+        const status = getErrorStatus(query?.error);
+        state =
+          status === 403 ? "PRIVATE" : status === 404 ? "NOT_FOUND" : "ERROR";
+      }
+
+      return [friend.friendId, state] as const;
+    });
+
+    return new Map(entries);
+  }, [queriedFriends, friendTimetableQueries]);
 
   const activeFriends = useMemo(() => {
     // 쿼리로 들어온 ID에 매칭되는 친구 필터링
     const filtered = friendsMap.filter((f) =>
       selectedFriendIds.includes(f.friendId),
     );
-    const baseList = filtered.length > 0 ? filtered : friendsMap;
+    const hasSelectionParam = Boolean(friendIdsParam || memberIdsParam);
+    const baseList = hasSelectionParam ? filtered : friendsMap;
     // 맨 앞에 "나" 객체 추가
     return [
       { friendId: 99999, nickname: "나", friendAlias: "나" },
       ...baseList,
     ];
-  }, [friendsMap, selectedFriendIds]);
+  }, [friendsMap, selectedFriendIds, friendIdsParam, memberIdsParam]);
 
   useLayoutEffect(() => {
     const element = chipScrollRef.current;
@@ -248,7 +315,8 @@ export default function MobileTimeTableComparePage() {
 
   const handleFriendChipClick = (friendId: number) => {
     mixpanelTrack.timetableCompareAction("친구 선택", {
-      selection_type: friendId === -1 ? "전체" : friendId === 99999 ? "나" : "친구",
+      selection_type:
+        friendId === -1 ? "전체" : friendId === 99999 ? "나" : "친구",
       tab_name: activeTabUpper,
     });
     if (friendId === -1) {
@@ -267,7 +335,12 @@ export default function MobileTimeTableComparePage() {
       return;
     }
 
-    if (!isSingleFriendMode && activeTabUpper === "compare" && friendId === 99999) return; // 비교 탭에서만 "나" 고정 (선택 해제 불가)
+    if (
+      !isSingleFriendMode &&
+      activeTabUpper === "compare" &&
+      friendId === 99999
+    )
+      return; // 비교 탭에서만 "나" 고정 (선택 해제 불가)
     setSelectedFriendIdsState((prev) => {
       if (prev.includes(friendId)) {
         return prev.filter((id) => id !== friendId);
@@ -618,7 +691,7 @@ export default function MobileTimeTableComparePage() {
         ...myClasses.map((c) => ({
           ...c,
           ownerName: "내 시간표",
-        }))
+        })),
       );
     }
     selectedFriendIdsState.forEach((friendId) => {
@@ -644,6 +717,68 @@ export default function MobileTimeTableComparePage() {
   ]);
 
   const isFreeTab = activeTabUpper === "free";
+  const selectedFriendStates = useMemo(
+    () =>
+      selectedFriendIdsState
+        .filter((id) => id !== 99999)
+        .map((id) => ({
+          id,
+          name:
+            friendsMap.find((friend) => friend.friendId === id)?.friendAlias ||
+            friendsMap.find((friend) => friend.friendId === id)?.nickname ||
+            "친구",
+          state: friendTimetableStatesByFriendId.get(id) ?? "LOADING",
+        })),
+    [selectedFriendIdsState, friendsMap, friendTimetableStatesByFriendId],
+  );
+
+  const timetableNotice = useMemo(() => {
+    if (selectedFriendStates.length === 0) return null;
+
+    if (selectedFriendStates.some(({ state }) => state === "LOADING")) {
+      return { kind: "loading", text: "친구 시간표를 불러오고 있어요." };
+    }
+
+    const privateNames = selectedFriendStates
+      .filter(({ state }) => state === "PRIVATE")
+      .map(({ name }) => name);
+    if (privateNames.length > 0) {
+      return {
+        kind: "blocked",
+        text: `${privateNames.join(", ")}님의 시간표는 비공개예요.`,
+      };
+    }
+
+    const missingNames = selectedFriendStates
+      .filter(({ state }) => state === "NOT_FOUND")
+      .map(({ name }) => name);
+    if (missingNames.length > 0) {
+      return {
+        kind: "empty",
+        text: `${missingNames.join(", ")}님의 해당 학기 대표 시간표가 없어요.`,
+      };
+    }
+
+    if (selectedFriendStates.some(({ state }) => state === "ERROR")) {
+      return { kind: "error", text: "친구 시간표를 불러오지 못했어요." };
+    }
+
+    if (selectedFriendStates.some(({ state }) => state === "PROTECTED")) {
+      if (isFreeTab) return null;
+      return {
+        kind: "protected",
+        text: "상대방이 강의 시간만 공개하여 강의 정보는 볼 수 없어요.",
+      };
+    }
+
+    return null;
+  }, [selectedFriendStates, isFreeTab]);
+
+  const shouldHideGrid =
+    isSingleFriendMode &&
+    selectedFriendStates.some(({ state }) =>
+      ["LOADING", "PRIVATE", "NOT_FOUND", "ERROR"].includes(state),
+    );
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const confirmModalDescription = useMemo(() => {
@@ -694,6 +829,19 @@ export default function MobileTimeTableComparePage() {
         const payload: TimetableShareExtraData = {
           title: "시간표 겹쳐보기 & 공강 공유",
           friendIds: variables,
+          memberIds: [
+            userInfo.id,
+            ...variables
+              .map(
+                (friendId) =>
+                  friendsMap.find((friend) => friend.friendId === friendId)
+                    ?.friendMemberId,
+              )
+              .filter((memberId): memberId is number => memberId != null),
+          ].filter(
+            (memberId, index, ids) =>
+              memberId > 0 && ids.indexOf(memberId) === index,
+          ),
           topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
             day: slot.day,
             startTime: slot.startTime,
@@ -769,7 +917,9 @@ export default function MobileTimeTableComparePage() {
               {activeFriends.map((friend) => {
                 const name = friend.friendAlias || friend.nickname;
                 const isSelected =
-                  !isSingleFriendMode && activeTabUpper === "compare" && friend.friendId === 99999
+                  !isSingleFriendMode &&
+                  activeTabUpper === "compare" &&
+                  friend.friendId === 99999
                     ? true
                     : selectedFriendIdsState.includes(friend.friendId);
                 return (
@@ -812,14 +962,22 @@ export default function MobileTimeTableComparePage() {
         )}
 
         {/* 4. 시간표 영역 */}
-        <GridSection>
-          <TimetableGrid
-            events={activeEvents}
-            highlightedSlot={highlightedSlot}
-            isCompareMode={activeTabUpper === "compare"}
-            isFreeMode={activeTabUpper === "free"}
-          />
-        </GridSection>
+        {!shouldHideGrid && (
+          <GridSection>
+            <TimetableGrid
+              events={activeEvents}
+              highlightedSlot={highlightedSlot}
+              isCompareMode={activeTabUpper === "compare"}
+              isFreeMode={activeTabUpper === "free"}
+            />
+          </GridSection>
+        )}
+
+        {timetableNotice && (
+          <TimetableNotice $kind={timetableNotice.kind}>
+            {timetableNotice.text}
+          </TimetableNotice>
+        )}
       </ContentArea>
 
       {/* 5. 겹치는 공강 바텀시트 (대분류가 공강일 때만 상시 노출) */}
@@ -868,10 +1026,7 @@ export default function MobileTimeTableComparePage() {
                         </DayText>
                         <TimeText className="good">{`${formatTime(slot.startTime)}~${formatTime(slot.endTime)}`}</TimeText>
                       </SlotLeft>
-                      <Badge
-                        className="good"
-                        $isSelected={!!isSelected}
-                      >
+                      <Badge className="good" $isSelected={!!isSelected}>
                         {formatDuration(slot.duration)}
                       </Badge>
                     </SlotItem>
@@ -917,9 +1072,7 @@ export default function MobileTimeTableComparePage() {
             </EmptyStateText>
           ) : (
             freeSlotsList.length === 0 && (
-              <EmptyStateText>
-                겹치는 공강 시간이 없습니다.
-              </EmptyStateText>
+              <EmptyStateText>겹치는 공강 시간이 없습니다.</EmptyStateText>
             )
           )}
         </ScrollableBody>
@@ -1080,6 +1233,20 @@ const GridSection = styled.div`
   //margin-top: 8px;
 `;
 
+const TimetableNotice = styled.div<{ $kind: string }>`
+  padding: 16px;
+  border-radius: 12px;
+  background: ${({ $kind }) =>
+    $kind === "protected"
+      ? "var(--bg-warn, #fff8e1)"
+      : "var(--bg-muted, #f1f3f5)"};
+  color: var(--text-secondary, #333d4b);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
+`;
+
 const TimeGroup = styled.div`
   margin-bottom: 24px;
   display: flex;
@@ -1196,7 +1363,7 @@ const Badge = styled.div<{ $isSelected?: boolean }>`
       $isSelected
         ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
         : "var(--timeTable-color-yellow, #FFE589)"};
-    color: var(--text-secondary, #333D4B);
+    color: var(--text-secondary, #333d4b);
     font-size: 12px;
     font-style: normal;
     font-weight: 500;
@@ -1211,8 +1378,6 @@ const EmptyStateText = styled.div`
   font-size: 14px;
   font-weight: 500;
 `;
-
-
 
 const SectionTitleBottomSheet = styled.h2`
   font-size: 20px;

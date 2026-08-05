@@ -489,7 +489,11 @@ const MobileCourseSearchSheet = ({
                           <span>
                           {course.grade > 0 ? `${course.grade}학년` : "전학년"}
                         </span>
-                          <span>{course.isMajor ? "전공심화" : "교양"}</span>
+                          {/* 서버 이수구분(전공기초/전공핵심/전공심화/기초교양/핵심교양/
+                              심화교양/교직/일반선택/군사학)을 그대로 보여준다. 전공/교양
+                              두 갈래로 뭉개면 전공핵심·전공기초가 "전공심화"로, 교직·
+                              일반선택이 "교양"으로 잘못 표시된다. */}
+                          <span>{course.isuName || "-"}</span>
                           <span>{course.courseId}</span>
                         </InfoLine>
                         <div>{course.timeStr}</div>

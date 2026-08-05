@@ -1,6 +1,15 @@
 import { createGlobalStyle } from "styled-components";
 
 const CommonStyles = createGlobalStyle`
+  /* Native app top safe-area inset, mirrored in as a CSS var by the WebView
+     shell (intip-mobile-app's WebViewContainer/buildSafeAreaInsetsScript) so
+     pages can pad themselves without relying solely on the WebView engine's
+     own env(safe-area-inset-top) support (inconsistent on Android). Falls
+     back to env() (then 0) outside the app shell, e.g. browser/dev preview. */
+  :root {
+    --native-safe-area-inset-top: env(safe-area-inset-top, 0px);
+  }
+
   body {
     font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
     margin: 0;

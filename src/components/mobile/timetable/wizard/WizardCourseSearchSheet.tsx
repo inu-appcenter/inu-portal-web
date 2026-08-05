@@ -100,6 +100,7 @@ interface CourseRow {
   credit: number;
   gradeLabel: string;
   isMajor: boolean;
+  isuLabel: string;
   timeStr: string;
   room: string;
   enrolledCount: number | null;
@@ -127,6 +128,9 @@ const buildCourseRow = (
     credit: option.credit,
     gradeLabel: Number.isFinite(grade) && grade > 0 ? `${grade}학년` : "전학년",
     isMajor: isuName.includes("전공"),
+    // 서버 이수구분을 그대로 노출한다(전공기초/전공핵심/전공심화/기초교양/핵심교양/
+    // 심화교양/교직/일반선택/군사학). 전공·교양 두 갈래로 뭉개면 실제와 어긋난다.
+    isuLabel: isuName || "-",
     timeStr: offering.meetings
       .map((m) => `${DAY_LABELS[DAY_INDEX[m.day]]} ${m.startTime}~${m.endTime}`)
       .join(", "),
@@ -409,7 +413,7 @@ const WizardCourseSearchSheet = () => {
                         <CourseAdditionalInfo>
                           <InfoLine>
                             <span>{row.gradeLabel}</span>
-                            <span>{row.isMajor ? "전공심화" : "교양"}</span>
+                            <span>{row.isuLabel}</span>
                             <span>{row.subjectNumber}</span>
                           </InfoLine>
                           <div>{row.timeStr}</div>

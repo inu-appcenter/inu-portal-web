@@ -1,0 +1,189 @@
+import type { Term } from "@/types/timetables";
+import type { ParsedGradeRow, ParsedGradeSheet } from "@/types/gradeImport";
+
+/**
+ * 스마트캠퍼스(학교 ERP) "과목별 성적" 표를 그대로 복사해 붙여넣은 텍스트를 파싱한다.
+ *
+ * 표를 복사하면 셀 구분이 탭으로 오지만, 브라우저/앱에 따라 공백만 남는 경우도 있어
+ * 두 가지를 모두 받는다. 탭이 있으면 빈 셀(성적 미발표 학기의 등급 등)이 보존되므로
+ * 탭 기준 분리를 우선한다.
+ *
+ * 기대하는 행 모양:
+ *   `기업가정신 / 0005103` `1` `P` `심화교양` `사회` `(비고)`
+ *   (교과목명/과목코드, 학점, 등급, 이수구분, 이수영역, 비고)
+ *
+ * 뒤쪽 열은 얼마든지 잘려 있을 수 있다. 사용자가 표를 과목명까지만 드래그해
+ * `지능정보시스템 / 0009484`만 복사해 오는 경우도 정상 행으로 받아들이고,
+ * 모자란 값은 null로 둔 뒤 계산기에서 채우게 한다.
+ */
+
+const GRADE_TOKENS = new Set([
+  "A+",
+  "A0",
+  "A",
+  "B+",
+  "B0",
+  "B",
+  "C+",
+  "C0",
+  "C",
+  "D+",
+  "D0",
+  "D",
+  "F",
+  "P",
+  "NP",
+  "W",
+  "I",
+]);
+
+// 계산기가 다루는 등급 표기로 정규화한다(A -> A0 등).
+const GRADE_ALIASES: Record<string, string> = {
+  A: "A0",
+  B: "B0",
+  C: "C0",
+  D: "D0",
+};
+
+// `교과목명 / 과목코드` — 과목코드는 "0005103"처럼 순수 숫자이거나 "IAA6018"처럼
+// 영문 접두어가 붙는다. 교과목명 자체에 슬래시가 들어가도 코드 패턴 덕분에
+// 백트래킹으로 올바른 경계를 찾는다.
+const TITLE_CODE_RE = /^(.*?)\s*\/\s*([A-Za-z]{0,4}\d{3,10})(?=[\s\t]|$)/;
+
+const SEMESTER_TITLE_RE =
+  /(\d{4})\s*년도?\s*(1|2|여름|겨울|하계|동계|계절)\s*학기/;
+
+const toTerm = (raw: string): Term => {
+  switch (raw) {
+    case "1":
+      return "FIRST";
+    case "2":
+      return "SECOND";
+    case "여름":
+    case "하계":
+      return "SUMMER";
+    case "겨울":
+    case "동계":
+      return "WINTER";
+    default:
+      // "계절학기"만 적혀 있으면 어느 계절인지 알 수 없다. 여름을 기본값으로 두고
+      // 사용자가 시트에서 바꿀 수 있게 한다.
+      return "SUMMER";
+  }
+};
+
+const normalizeGrade = (raw: string): string | null => {
+  const token = raw.trim().toUpperCase().replace(/\s+/g, "");
+  if (!token) return null;
+  if (!GRADE_TOKENS.has(token)) return null;
+  return GRADE_ALIASES[token] ?? token;
+};
+
+/** 행의 나머지 부분(학점 이후)을 셀 배열로 자른다. */
+const splitCells = (rest: string): string[] => {
+  if (rest.includes("\t")) {
+    const cells = rest.split("\t").map((cell) => cell.trim());
+    // 이름/코드 셀과 학점 셀 사이의 구분자 때문에 앞쪽에 빈 셀이 생긴다.
+    while (cells.length > 0 && cells[0] === "") cells.shift();
+    while (cells.length > 0 && cells[cells.length - 1] === "") cells.pop();
+    return cells;
+  }
+  return rest.trim().split(/\s+/).filter(Boolean);
+};
+
+const parseLine = (line: string): ParsedGradeRow | null => {
+  const match = TITLE_CODE_RE.exec(line);
+  if (!match) return null;
+
+  const title = match[1].trim();
+  const courseCode = match[2].trim().toUpperCase();
+  if (!title) return null;
+
+  const cells = splitCells(line.slice(match[0].length));
+
+  // 학점 칸: 있으면 숫자여야 한다. 숫자가 아니면 학점 열이 통째로 빠진 것으로 보고
+  // 나머지 열을 한 칸씩 당겨 읽는다.
+  let cursor = 0;
+  let credit: number | null = null;
+  if (cells.length > 0) {
+    const parsedCredit = Number.parseFloat(cells[0]);
+    if (Number.isFinite(parsedCredit)) {
+      credit = parsedCredit;
+      cursor += 1;
+    }
+  }
+
+  // 등급 칸: 탭 구분이면 빈 문자열로 남고, 공백 구분이면 아예 사라진다.
+  // 다음 셀이 등급으로 읽히지 않으면 등급 없이 이수구분이 온 것으로 본다.
+  let grade: string | null = null;
+  if (cursor < cells.length) {
+    const candidate = cells[cursor];
+    if (candidate === "") {
+      cursor += 1;
+    } else {
+      const normalized = normalizeGrade(candidate);
+      if (normalized) {
+        grade = normalized;
+        cursor += 1;
+      }
+    }
+  }
+
+  const isuName = cells[cursor]?.trim() || null;
+  const isuFldName = cells[cursor + 1]?.trim() || null;
+  // 비고 이후에도 열이 더 있을 수 있어 남은 셀을 전부 이어붙인다.
+  const note = cells.slice(cursor + 2).join(" ").trim() || null;
+
+  return {
+    title,
+    courseCode,
+    credit,
+    grade,
+    isuName,
+    isuFldName,
+    note,
+    // "재수강성적취소" - 재수강해서 이 회차 성적이 무효가 된 행.
+    voided: note !== null && note.includes("취소"),
+  };
+};
+
+export const parseSmartCampusGrades = (input: string): ParsedGradeSheet => {
+  const rows: ParsedGradeRow[] = [];
+  const skippedLines: string[] = [];
+  let detectedSemester: ParsedGradeSheet["detectedSemester"] = null;
+
+  for (const rawLine of input.split(/\r?\n/)) {
+    const line = rawLine.trimEnd();
+    if (!line.trim()) continue;
+
+    const row = parseLine(line);
+    if (row) {
+      rows.push(row);
+      continue;
+    }
+
+    // 과목 행이 아니면 제목 줄에서 학기 정보만 건져낸다. 나머지(표 헤더, 학기별
+    // 요약 행 등)는 조용히 버리되 무엇을 버렸는지는 남겨 UI에서 알릴 수 있게 한다.
+    const semesterMatch = SEMESTER_TITLE_RE.exec(line);
+    if (semesterMatch && !detectedSemester) {
+      detectedSemester = {
+        year: Number.parseInt(semesterMatch[1], 10),
+        term: toTerm(semesterMatch[2]),
+      };
+      continue;
+    }
+
+    skippedLines.push(line.trim());
+  }
+
+  return { rows, detectedSemester, skippedLines };
+};
+
+/** 이수구분/이수영역 문자열로 전공 과목인지 판별한다. */
+export const isMajorCompletion = (
+  isuName: string | null,
+  isuFldName: string | null,
+): boolean => {
+  const source = `${isuName ?? ""} ${isuFldName ?? ""}`;
+  return source.includes("전공");
+};

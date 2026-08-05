@@ -42,7 +42,7 @@ export function matchesCourseOfferingFilters(
   }
   if (
     filters?.credits?.length &&
-    !filters.credits.includes(offering.credit ?? parseInt(course?.credit ?? "", 10))
+    !filters.credits.includes(offering.credit ?? Number(course?.credit))
   ) {
     return false;
   }
@@ -56,6 +56,20 @@ export function matchesCourseOfferingFilters(
     }
   }
   return true;
+}
+
+/**
+ * 개설강의의 학수번호(스마트캠퍼스 성적표의 "과목코드"와 같은 체계).
+ *
+ * 스웨거 기준 `courseCode`가 학수번호("2000259", "IAA6018")이고, `subjectNumber`는
+ * 거기에 분반 3자리가 붙은 수강번호("2000259001")다. 둘을 섞어 쓰면 매칭이 전부 어긋난다.
+ * `courseCode`가 비어 오는 응답(및 목 데이터)에서는 수강번호 뒤 3자리를 떼어 복원한다.
+ */
+export function getOfferingCourseCode(offering: CourseOffering): string | null {
+  if (offering.courseCode) return offering.courseCode.toUpperCase();
+  const subjectNumber = offering.subjectNumber ?? "";
+  if (subjectNumber.length <= 3) return null;
+  return subjectNumber.slice(0, -3).toUpperCase();
 }
 
 /**
@@ -123,3 +137,22 @@ export const getCourseOfferingsPage = async (
   return response.data.data;
 };
 
+
+/**
+ * 키워드로 개설강의를 좁혀 조회한다(첫 페이지만).
+ *
+ * `keyword`는 서버 명세상 강의명·영문명·학수번호를 훑으므로 둘 중 무엇으로도 좁힐 수 있다.
+ * 한 과목을 찾아내는 용도라 페이지네이션을 따라가지 않는다.
+ * 첫 페이지 안에 없다면 키워드가 충분히 구체적이지 않았다는 뜻이므로,
+ * 호출부에서 더 좁은 키워드로 다시 묻는 편이 낫다.
+ */
+export const searchCourseOfferings = async (
+  year: number,
+  term: Term,
+  keyword: string,
+): Promise<CourseOffering[]> => {
+  const page = await getCourseOfferingsPage(year, term, 0, PAGE_SIZE, {
+    keyword,
+  });
+  return page?.content ?? [];
+};

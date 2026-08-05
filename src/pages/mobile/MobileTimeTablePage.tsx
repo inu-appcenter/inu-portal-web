@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
+import { Pencil, Lock, Bell, Palette, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import { useCourses } from "@/hooks/useCourses";
@@ -465,21 +465,6 @@ const MobileTimeTablePage = () => {
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("시간표 테마 설정", "헤더 메뉴");
           setIsThemeSheetOpen(true);
-        },
-      },
-      {
-        label: "내 시간표 공유",
-        icon: <Link2 size={20} />,
-        onClick: () => {
-          navigator.clipboard.writeText(
-            window.location.origin +
-              ROUTES.TIMETABLE.ROOT +
-              `?id=${activeTimetable.id}`,
-          );
-          mixpanelTrack.timetableActionCompleted("링크 공유", {
-            semester: activeTimetable.semester,
-          });
-          alert("시간표 링크가 클립보드에 복사되었습니다.");
         },
       },
       {

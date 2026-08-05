@@ -56,7 +56,7 @@ const buildCourseDetailItem = (id: number, subjectNumber: string, memo?: string 
       title: offering.courseTitle,
       professor: offering.professor ?? "",
       subjectNumber: offering.subjectNumber,
-      credit: course.credit,
+      credit: String(course.credit),
       meetings: offering.meetings.map((m) => ({ ...m, sequence: null })),
     },
     customSchedule: null,

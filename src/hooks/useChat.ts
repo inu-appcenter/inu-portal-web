@@ -134,18 +134,23 @@ export const useChat = (roomId: string) => {
       clientRef.current = client;
     };
 
+    // 입장과 초기 동기화가 끝난 뒤 enterChatRoom 내부에서 한 번만 연결한다.
+    // 두 클라이언트가 경쟁하면 연결 상태와 sendMessage의 참조가 어긋날 수 있다.
     enterChatRoom();
-    connectStomp();
 
     const handleVisibilityChange = () => {
       const client = clientRef.current;
       if (!client) return;
 
       if (document.visibilityState === "hidden") {
-        console.log("브라우저 백그라운드 감지 - 실시간 FCM 푸시 수신을 위해 소켓 비활성화");
+        console.log(
+          "브라우저 백그라운드 감지 - 실시간 FCM 푸시 수신을 위해 소켓 비활성화",
+        );
         client.deactivate();
       } else if (document.visibilityState === "visible") {
-        console.log("브라우저 포그라운드 감지 - 실시간 메시징 수신을 위해 소켓 활성화");
+        console.log(
+          "브라우저 포그라운드 감지 - 실시간 메시징 수신을 위해 소켓 활성화",
+        );
         client.activate();
       }
     };
@@ -169,7 +174,13 @@ export const useChat = (roomId: string) => {
     extraData?: string,
   ): boolean => {
     if (imageFiles.length > 0 && roomInfo?.id) {
-      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles, onProgress) // 변경: 파일 배열 및 프로그레스 전달
+      sendImageMessage(
+        roomInfo.id,
+        content,
+        isAnonymous,
+        imageFiles,
+        onProgress,
+      ) // 변경: 파일 배열 및 프로그레스 전달
         .then((response) => {
           console.log("이미지 메시지 전송 완료:", response);
         })
@@ -179,7 +190,14 @@ export const useChat = (roomId: string) => {
         });
       return true;
     } else {
-      return publish(clientRef.current, roomId, content, isAnonymous, messageType, extraData);
+      return publish(
+        clientRef.current,
+        roomId,
+        content,
+        isAnonymous,
+        messageType,
+        extraData,
+      );
     }
   };
 
