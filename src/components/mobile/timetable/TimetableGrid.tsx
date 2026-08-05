@@ -71,6 +71,11 @@ const MAX_DAY_COUNT = 7;
 const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
 const EMPTY_SELECTED_SLOTS: string[] = [];
 
+const formatRoom = (room: string) => {
+  const match = room.match(/^제(.+?)호관\s+.*?-([^\s]+)/);
+  return match ? `${match[1]}-${match[2]}` : room;
+};
+
 const TimetableGrid = ({
   events,
   previewEvents = EMPTY_PREVIEW_EVENTS,
@@ -324,7 +329,7 @@ const TimetableGrid = ({
         <ItemContent>
           <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
           {(theme?.showRoom ?? true) && item.room && (
-            <ClassRoom $fontSize={theme?.fontSize}>{item.room}</ClassRoom>
+            <ClassRoom $fontSize={theme?.fontSize}>{formatRoom(item.room)}</ClassRoom>
           )}
           {theme?.showProfessor && item.professor && (
             <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
