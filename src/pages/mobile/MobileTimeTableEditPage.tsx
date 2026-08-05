@@ -36,14 +36,14 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 
 const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
 
-const readStoredFilters = (): FilterState => {
+const readStoredFilters = (): FilterState | null => {
   try {
     const saved = localStorage.getItem(TIMETABLE_COURSE_FILTERS_KEY);
     if (saved) return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
   } catch (error) {
     console.error("시간표 강의 필터 복원 오류:", error);
   }
-  return DEFAULT_FILTERS;
+  return null;
 };
 
 // --- SVG Icons from Figma ---
@@ -180,10 +180,8 @@ const MobileTimeTableEditPage = () => {
 
   const getEffectiveFilters = (): FilterState => {
     const stored = readStoredFilters();
-    return {
-      ...stored,
-      major: stored.major ?? defaultMajor,
-    };
+    if (stored) return stored;
+    return { ...DEFAULT_FILTERS, major: defaultMajor };
   };
 
   const [activeFilters, setActiveFilters] =

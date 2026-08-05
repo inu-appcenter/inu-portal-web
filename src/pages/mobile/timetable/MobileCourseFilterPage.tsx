@@ -77,15 +77,11 @@ export default function MobileCourseFilterPage() {
       return {
         ...DEFAULT_FILTERS,
         ...stateFilters,
-        major: stateFilters.major ?? defaultMajor,
       };
     }
     const stored = readStoredFilters(storageKey);
-    return {
-      ...DEFAULT_FILTERS,
-      ...stored,
-      major: stored?.major ?? defaultMajor,
-    };
+    if (stored) return stored;
+    return { ...DEFAULT_FILTERS, major: defaultMajor };
   }, [location.state, storageKey, defaultMajor]);
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);

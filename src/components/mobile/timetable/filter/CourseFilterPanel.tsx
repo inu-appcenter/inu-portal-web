@@ -81,10 +81,16 @@ const CourseFilterPanel = ({
   });
 
   useEffect(() => {
-    if (hasStoredPinnedMajorsRef.current || !userDepartment.trim()) return;
+    if (!userDepartment.trim()) return;
     setPinnedMajors((prev) => {
       const fallbackDefault = getDefaultPinnedMajors("");
-      if (JSON.stringify(prev) !== JSON.stringify(fallbackDefault)) return prev;
+      const isUnchangedFallback =
+        JSON.stringify(prev) === JSON.stringify(fallbackDefault);
+
+      // 저장값이 없거나 과거의 고정 기본값 그대로일 때만 로그인 사용자의
+      // 소속 단과대·학과를 기본 즐겨찾기로 설정한다. 사용자가 직접 변경한
+      // 즐겨찾기 목록은 덮어쓰지 않는다.
+      if (hasStoredPinnedMajorsRef.current && !isUnchangedFallback) return prev;
       return getDefaultPinnedMajors(userDepartment);
     });
   }, [userDepartment]);
