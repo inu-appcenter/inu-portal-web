@@ -54,6 +54,45 @@ export const FILTER_SUB_VIEW_TITLES: Record<FilterSubView, string> = {
 
 export const SORT_OPTIONS = ["기본순", "별점높은순", "담은인원많은순"] as const;
 export const TYPE_OPTIONS = ["전공", "교양", "교직", "일반선택", "군사학"] as const;
+
+/**
+ * 서버 `isuNames`(이수구분) 파라미터가 실제로 받는 값.
+ *
+ * 서버는 정확일치로 거르므로 여기 없는 문자열을 보내면 조건 없이 0건이 나온다.
+ * (2026-2학기 개설강의 전수 기준으로 확인한 값 — 코드값 "BASIC_LIBERAL_ARTS" 같은 것도
+ * 받지 않고 한글 라벨만 받는다.)
+ */
+export const SERVER_ISU_NAMES = [
+  "전공기초",
+  "전공핵심",
+  "전공심화",
+  "기초교양",
+  "핵심교양",
+  "심화교양",
+  "교직",
+  "일반선택",
+  "군사학",
+] as const;
+
+/**
+ * UI에서 쓰는 묶음 라벨("전공", "교양")은 서버 이수구분이 아니다.
+ * 서버 `isuNames`는 같은 파라미터를 반복하면 OR로 묶어주므로 구성 값으로 펼쳐서 보낸다.
+ */
+const ISU_NAME_GROUPS: Record<string, readonly string[]> = {
+  전공: ["전공기초", "전공핵심", "전공심화"],
+  교양: ["기초교양", "핵심교양", "심화교양"],
+};
+
+const SERVER_ISU_NAME_SET: ReadonlySet<string> = new Set(SERVER_ISU_NAMES);
+
+/** 필터 라벨이 이수구분(전공/교양 묶음 포함)인지 - 학과명·단과대명과 구분하는 데 쓴다. */
+export const isIsuNameLabel = (label: string): boolean =>
+  label in ISU_NAME_GROUPS || SERVER_ISU_NAME_SET.has(label);
+
+/** 필터 라벨을 서버가 받는 이수구분 값들로 펼친다. 이수구분이 아니면 빈 배열. */
+export const expandIsuNameLabel = (label: string): readonly string[] =>
+  ISU_NAME_GROUPS[label] ?? (SERVER_ISU_NAME_SET.has(label) ? [label] : []);
+
 export const GRADE_OPTIONS = [1, 2, 3, 4] as const;
 export const CREDIT_OPTIONS = [1, 2, 3, 4] as const;
 
@@ -170,7 +209,9 @@ export const MAJOR_CATEGORIES = [
 
 export const SUB_MAJORS: Record<string, string[]> = {
   전공: Object.keys(COLLEGE_DEPARTMENTS),
-  교양: ["기초교양", "균형교양", "일반교양"],
+  // 서버 이수구분(isuName) 값 그대로. 구 교육과정 명칭인 "균형교양"/"일반교양"을 보내면
+  // 서버가 정확일치로 걸러 항상 0건이 나온다.
+  교양: ["기초교양", "핵심교양", "심화교양"],
   연계전공: LINKED_MAJORS,
 };
 

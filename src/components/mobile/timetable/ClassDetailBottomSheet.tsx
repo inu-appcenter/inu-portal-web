@@ -127,7 +127,8 @@ export default function ClassDetailBottomSheet({
   const creditsVal =
     liveClass.credits ??
     offering?.credit ??
-    (course?.credit ? parseInt(course.credit, 10) : 0);
+    course?.credit ??
+    0;
 
   const evaluationVal = liveClass.evaluation || "상대평가";
 
