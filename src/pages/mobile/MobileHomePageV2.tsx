@@ -25,6 +25,8 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import AppcenterLogo from "@/resources/assets/앱센터로고_new.svg";
 import Banner from "@/containers/mobile/home/Banner";
 
+import {formatRoom} from "@/components/mobile/timetable/TimetableGrid"
+
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
 const getTodayTimetableDay = (date: Date) => (date.getDay() + 6) % 7;
@@ -183,7 +185,7 @@ export default function MobileHomePageV2() {
                           {formatHoursToTime(classItem.endTime)}
                         </ClassDetail>
                         {classItem.room && (
-                          <ClassRoom>{classItem.room}</ClassRoom>
+                          <ClassRoom>{formatRoom(classItem.room)}</ClassRoom>
                         )}
                       </ClassInfo>
                     </ClassItem>
