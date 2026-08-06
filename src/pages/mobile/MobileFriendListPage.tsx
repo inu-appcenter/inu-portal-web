@@ -15,7 +15,7 @@ import {
 } from "@/utils/userInfo";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
-import { ArrowDownAZ, ArrowUpZA, Search, MapPin } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA, Search, MapPin, QrCode } from "lucide-react";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
 
 // --- SVG Icons ---
@@ -740,6 +740,18 @@ export default function MobileFriendListPage() {
         {/* Plus button - scale out when selection mode is active */}
         <PlusButtonWrapper $visible={!isSelectionMode && !isSearchActive}>
           <SpeedDialList $open={isAddMenuOpen}>
+            <SpeedDialItem
+              $open={isAddMenuOpen}
+              $order={2}
+              onClick={() => {
+                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+              }}
+            >
+              <SpeedDialLabel>내 QR 코드</SpeedDialLabel>
+              <SpeedDialButton as="span">
+                <QrCode size={20} />
+              </SpeedDialButton>
+            </SpeedDialItem>
             <SpeedDialItem
               $open={isAddMenuOpen}
               $order={1}
