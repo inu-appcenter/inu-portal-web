@@ -34,6 +34,13 @@ export const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
 
 interface CourseFilterState {
   filters: FilterState;
+  /**
+   * 사용자가 필터를 한 번이라도 확정했는지. 학과 기본값을 "읽을 때마다 채우는 폴백"이
+   * 아니라 "한 번만 심는 씨앗"으로 만들기 위해 필요하다 — 이 값이 true면 major가
+   * null인 것은 미설정이 아니라 **사용자가 전공 필터를 명시적으로 해제한 상태**이므로
+   * 소속 학과로 되돌려서는 안 된다.
+   */
+  hasApplied: boolean;
   applyFilters: (filters: FilterState) => void;
 }
 
@@ -44,11 +51,15 @@ export const useCourseFilterStore = create<CourseFilterState>()(
     broadcastSync<CourseFilterState>({
       name: SYNC_CHANNEL,
       // 액션은 제외하고 확정 필터만 실어 보낸다.
-      partialize: (state) => ({ filters: state.filters }),
+      partialize: (state) => ({
+        filters: state.filters,
+        hasApplied: state.hasApplied,
+      }),
     })((set) => ({
       filters: DEFAULT_FILTERS,
+      hasApplied: false,
       applyFilters: (filters) => {
-        set({ filters });
+        set({ filters, hasApplied: true });
         // 이 액션의 유일한 호출부(필터 화면 "저장")는 곧바로 goBack을 보내 자기
         // 웹뷰를 pop시킨다. 기본 마이크로태스크 병합에 맡기면 goBack이 먼저
         // 네이티브에 도착해 브로드캐스트가 유실되므로 여기서 즉시 내보낸다.
@@ -58,17 +69,21 @@ export const useCourseFilterStore = create<CourseFilterState>()(
     {
       name: TIMETABLE_COURSE_FILTERS_KEY,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ filters: state.filters }) as CourseFilterState,
+      partialize: (state) =>
+        ({
+          filters: state.filters,
+          hasApplied: state.hasApplied,
+        }) as CourseFilterState,
       // 저장 포맷이 { state: { filters } }라 예전의 평평한 FilterState와 다르다.
       // 구 포맷이 남아 있으면 persist가 filters를 못 찾으므로 기본값으로 시작한다
       // (필터를 한 번 다시 적용하면 새 포맷으로 저장된다).
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<CourseFilterState>;
+        if (!saved.filters) return current;
         return {
           ...current,
-          filters: saved.filters
-            ? { ...DEFAULT_FILTERS, ...saved.filters }
-            : current.filters,
+          filters: { ...DEFAULT_FILTERS, ...saved.filters },
+          hasApplied: true,
         };
       },
     },
@@ -80,20 +95,20 @@ const FALLBACK_MAJOR = "컴퓨터공학부";
 /**
  * 화면이 실제로 조회에 쓰는 필터.
  *
- * 저장된 major가 없으면 사용자 학과로 채운다. 편집 화면(서버 조회)과 검색 시트(받아온
- * 목록의 2차 로컬 필터링)가 반드시 같은 값을 봐야 하므로 이 파생을 한 곳에서만 정의한다.
+ * 아직 한 번도 필터를 확정한 적이 없을 때만 major를 사용자 학과로 채운다. 확정 이력이
+ * 있으면 저장된 값을 그대로 쓴다 — 전공 필터를 해제한 사용자에게 소속 학과를 다시
+ * 끼워 넣지 않기 위해서다. 편집 화면(서버 조회)과 검색 시트(받아온 목록의 2차 로컬
+ * 필터링)가 반드시 같은 값을 봐야 하므로 이 파생을 한 곳에서만 정의한다.
  */
 export const useEffectiveCourseFilters = (): FilterState => {
   const filters = useCourseFilterStore((state) => state.filters);
+  const hasApplied = useCourseFilterStore((state) => state.hasApplied);
   const userDepartment = useUserStore((state) => state.userInfo.department);
 
-  return useMemo(
-    () => ({
-      ...filters,
-      major: filters.major ?? (userDepartment || FALLBACK_MAJOR),
-    }),
-    [filters, userDepartment],
-  );
+  return useMemo(() => {
+    if (hasApplied) return filters;
+    return { ...filters, major: userDepartment || FALLBACK_MAJOR };
+  }, [filters, hasApplied, userDepartment]);
 };
 
 /**

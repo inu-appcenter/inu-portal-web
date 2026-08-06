@@ -29,11 +29,19 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
   </svg>
 );
 
-const getTimetableCredits = (events: ClassItem[]) =>
-  events.reduce((total, item) => {
-    const fallbackCredits = Math.max(1, item.endTime - item.startTime);
-    return total + (item.credits ?? fallbackCredits);
+const getTimetableCredits = (events: ClassItem[]) => {
+  const seenItemIds = new Set<number>();
+
+  return events.reduce((total, item) => {
+    if (item.itemId) {
+      if (seenItemIds.has(item.itemId)) return total;
+      seenItemIds.add(item.itemId);
+    }
+
+    const credits = item.credits || 0;
+    return credits > 0 ? total + credits : total;
   }, 0);
+};
 
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
@@ -48,6 +56,8 @@ export default function MobileTimeTableListPage() {
     if (t.isRepresentative || updatePrimaryMutation.isPending) return;
     updatePrimaryMutation.mutate(t.id, {
       onSuccess: () => {
+        setSemester(t.semester);
+        setActiveTimetable(t.id);
         mixpanelTrack.timetableActionCompleted("대표 설정", {
           semester: t.semester,
           course_count: t.events.length,

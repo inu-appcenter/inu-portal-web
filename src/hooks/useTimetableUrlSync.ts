@@ -35,10 +35,17 @@ export const useTimetableUrlSync = (options?: UseTimetableUrlSyncOptions) => {
   const appliedEntryDefaultRef = useRef(false);
 
   const idParam = searchParams.get("id");
+  const previousIdParamRef = useRef(idParam);
   const preferPrimaryOnEntry = options?.preferPrimaryOnEntry;
 
   useEffect(() => {
     if (timetables.length === 0) return;
+
+    const idWasRemoved = Boolean(previousIdParamRef.current) && !idParam;
+    previousIdParamRef.current = idParam;
+    if (preferPrimaryOnEntry && idWasRemoved) {
+      appliedEntryDefaultRef.current = false;
+    }
 
     const parsedId = idParam ? Number(idParam) : NaN;
     const urlMatch = Number.isNaN(parsedId)

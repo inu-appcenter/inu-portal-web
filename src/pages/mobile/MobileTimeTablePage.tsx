@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { Pencil, Lock, Bell, Palette, Link2, Trash2 } from "lucide-react";
+import { Pencil, Lock, Bell, Palette, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import { useCourses } from "@/hooks/useCourses";
@@ -401,7 +401,17 @@ const MobileTimeTablePage = () => {
 
     return (
       <HeaderRightArea>
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.EDIT)}>
+        {/* 편집 대상 시간표 id를 반드시 URL로 넘긴다.
+            멀티 웹뷰에서 이 이동은 네이티브 웹뷰 push라 편집 화면이 별도 JS
+            런타임에서 뜬다. useTimetableStore는 persist를 쓰지 않으므로 그쪽
+            스토어는 빈 상태로 시작하고, setTimetables가 "대표 시간표"로 폴백해
+            (useTimetableStore.ts 참고) 보고 있던 시간표와 다른 학기가 열린다.
+            ?id= 가 있어야 useTimetableUrlSync가 올바른 시간표로 복원한다. */}
+        <IconButton
+          onClick={() =>
+            navigate(`${ROUTES.TIMETABLE.EDIT}?id=${activeTimetable.id}`)
+          }
+        >
           <Pencil size={22} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
@@ -465,21 +475,6 @@ const MobileTimeTablePage = () => {
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("시간표 테마 설정", "헤더 메뉴");
           setIsThemeSheetOpen(true);
-        },
-      },
-      {
-        label: "내 시간표 공유",
-        icon: <Link2 size={20} />,
-        onClick: () => {
-          navigator.clipboard.writeText(
-            window.location.origin +
-              ROUTES.TIMETABLE.ROOT +
-              `?id=${activeTimetable.id}`,
-          );
-          mixpanelTrack.timetableActionCompleted("링크 공유", {
-            semester: activeTimetable.semester,
-          });
-          alert("시간표 링크가 클립보드에 복사되었습니다.");
         },
       },
       {
