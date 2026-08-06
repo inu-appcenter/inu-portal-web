@@ -2,23 +2,18 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import styled from "styled-components";
 import { RotateCcw } from "lucide-react";
-import {
-  useNavigate,
-  useLocation,
-  useBlocker,
-  useBeforeUnload,
-} from "react-router-dom";
+import { useNavigate, useBlocker, useBeforeUnload } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import { useQueryClient } from "@tanstack/react-query";
-import { getCourseOfferingsPage } from "@/apis/courseOfferings";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import useUserStore from "@/stores/useUserStore";
-import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
+import {
+  useCourseFilterStore,
+  useEffectiveCourseFilters,
+} from "@/stores/useCourseFilterStore";
 import CourseFilterPanel, {
   resetTimeFilter,
 } from "@/components/mobile/timetable/filter/CourseFilterPanel";
@@ -40,24 +35,8 @@ export {
   formatSlotsToTimeStr,
 } from "@/components/mobile/timetable/filter/courseFilterModel";
 
-export const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
-
-const readStoredFilters = (
-  key: string = TIMETABLE_COURSE_FILTERS_KEY,
-): FilterState | null => {
-  try {
-    const saved = localStorage.getItem(key);
-    if (saved) return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
-  } catch (e) {
-    console.error("시간표 강의 필터 복원 오류:", e);
-  }
-  return null;
-};
-
 export default function MobileCourseFilterPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const queryClient = useQueryClient();
   const { timetables, activeTimetableId } = useTimetableStore();
   const userDepartment = useUserStore((state) => state.userInfo.department);
   const activeTimetable = useMemo(() => {
@@ -65,24 +44,18 @@ export default function MobileCourseFilterPage() {
   }, [timetables, activeTimetableId]);
   const activeTimetableEvents = activeTimetable?.events ?? [];
   const [isApplying, setIsApplying] = useState(false);
-  const storageKey =
-    (location.state?.storageKey as string) || TIMETABLE_COURSE_FILTERS_KEY;
 
-  const defaultMajor = userDepartment || "컴퓨터공학부";
+  // 이 화면은 멀티 웹뷰에서 별도 웹뷰로 뜨므로 location.state가 오지 않는다.
+  // 현재 확정 필터는 항상 스토어에서 읽는다(persist가 콜드스타트를 책임진다).
+  const effectiveFilters = useEffectiveCourseFilters();
+  const applyFilters = useCourseFilterStore((state) => state.applyFilters);
 
-  // 상위 편집/마법사 화면에서 전달한 필터 상태가 있다면 수신, 없으면 해당 storageKey에서 복원
-  const initialFilters = useMemo(() => {
-    const stateFilters = location.state?.filters as FilterState | undefined;
-    if (stateFilters) {
-      return {
-        ...DEFAULT_FILTERS,
-        ...stateFilters,
-      };
-    }
-    const stored = readStoredFilters(storageKey);
-    if (stored) return stored;
-    return { ...DEFAULT_FILTERS, major: defaultMajor };
-  }, [location.state, storageKey, defaultMajor]);
+  // 마운트 시점의 확정 필터를 초안의 출발점으로 삼는다. 편집 도중 다른 웹뷰가
+  // 필터를 바꿔 초안이 튀는 일이 없도록 스토어 변화를 따라가지는 않는다.
+  const [initialFilters] = useState<FilterState>(() => ({
+    ...DEFAULT_FILTERS,
+    ...effectiveFilters,
+  }));
 
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [view, setSubView] = useState<FilterSubView>("main");
@@ -100,25 +73,9 @@ export default function MobileCourseFilterPage() {
   const [isSaving, setIsSaving] = useState(false);
   const isSavingRef = useRef(false);
 
-  // localStorage 파열 언마운트 클린업용 제어 ref
-  const hasWrittenLocalStorageRef = useRef(false);
-  const initialFiltersRef = useRef(initialFilters);
-  useEffect(() => {
-    initialFiltersRef.current = initialFilters;
-  }, [initialFilters]);
-
-  // 컴포넌트가 언마운트될 때, 저장하지 않고 나가는 맰 경우 initialFilters를 localStorage에 복원
-  // (헤더 뿯로가기, 브라우저 뿯로가기, OS 백키 등 모든 이탈 경로에서 필터 상태를 보장)
-  useEffect(() => {
-    return () => {
-      if (!hasWrittenLocalStorageRef.current) {
-        localStorage.setItem(
-          "applied_filters",
-          JSON.stringify(initialFiltersRef.current),
-        );
-      }
-    };
-  }, []);
+  // 저장하지 않고 나가는 경로(헤더 뒤로가기, OS 백키, 브라우저 뒤로가기)를 위한 복원
+  // 로직은 더 이상 필요 없다. 초안은 이 화면의 로컬 state이고 확정 필터는 applyFilters를
+  // 부를 때만 바뀌므로, 그냥 나가면 스토어가 손대지지 않은 채로 남는다.
 
   // 초기 상태 대비 변경 사항이 존재하는지 깊은 비교
   const hasChanges = useMemo(() => {
@@ -159,9 +116,7 @@ export default function MobileCourseFilterPage() {
     setShowUnsavedModal(false);
     backHandler.setPageUnsavedChanges(false);
 
-    // 변경 전 원본 필터를 localStorage에 복원하여 시트가 올바른 상태를 읽도록 함
-    hasWrittenLocalStorageRef.current = true;
-    localStorage.setItem("applied_filters", JSON.stringify(initialFilters));
+    // 확정 필터(스토어)는 애초에 건드리지 않았으므로 되돌릴 것이 없다.
 
     if (blocker.state === "blocked") {
       blocker.proceed();
@@ -322,66 +277,38 @@ export default function MobileCourseFilterPage() {
     setFilters((prev) => resetTimeFilter(prev));
   };
 
-  // 저장하기 핸들러 (서버 재조회 후 렌더링 준비 완료 시 편집 페이지로 복귀)
-  const handleSave = async () => {
+  // 저장하기 핸들러.
+  //
+  // 예전에는 여기서 개설강의를 미리 fetch한 뒤 복귀했는데, 멀티 웹뷰에서 이 화면은
+  // 편집 화면과 다른 JS 런타임이라 그 prefetch는 **이 웹뷰의** QueryClient만 데웠다.
+  // 복귀만 그만큼 느려질 뿐이라 걷어냈다(편집 화면은 확정 필터를 받는 즉시 자기
+  // 쿼리를 돌리고, 성공 데이터는 queryBroadcastSync가 웹뷰 간에 실어 나른다).
+  const handleSave = () => {
     if (isApplying) return;
     setIsApplying(true);
 
-    try {
-      const offeringFilters = mapFilterToOfferingFilters(filters);
+    backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
+    isSavingRef.current = true;
+    setShowUnsavedModal(false);
 
-      if (activeTimetable?.year && activeTimetable?.term) {
-        await queryClient.fetchInfiniteQuery({
-          queryKey: [
-            ...COURSE_OFFERINGS_QUERY_KEY,
-            activeTimetable.year,
-            activeTimetable.term,
-            offeringFilters.deptName ?? "",
-            offeringFilters.collegeName ?? "",
-            offeringFilters.hyNames?.join(",") ?? "",
-            offeringFilters.isuNames?.join(",") ?? "",
-            offeringFilters.isuFldNames?.join(",") ?? "",
-            offeringFilters.ssupTypeNames?.join(",") ?? "",
-            offeringFilters.credits?.join(",") ?? "",
-            offeringFilters.keyword ?? "",
-            offeringFilters.meetingFilterMode ?? "",
-            offeringFilters.meetings?.join(",") ?? "",
-          ],
-          queryFn: ({ pageParam = 0 }) =>
-            getCourseOfferingsPage(
-              activeTimetable.year,
-              activeTimetable.term,
-              pageParam as number,
-              50,
-              offeringFilters,
-            ),
-          initialPageParam: 0,
-        });
-      }
-    } catch (error) {
-      console.error("필터 데이터 사전 조회 오류:", error);
-    } finally {
-      hasWrittenLocalStorageRef.current = true; // 언마운트 cleanup 덮어쓰기 방지
-      backHandler.setPageUnsavedChanges(false); // 앱 환경의 native back 이벤트 방어
-      isSavingRef.current = true;
-      setShowUnsavedModal(false);
-      localStorage.setItem("applied_filters", JSON.stringify(filters));
-      localStorage.setItem(storageKey, JSON.stringify(filters));
-      mixpanelTrack.timetableCourseSearchAction("필터 적용", {
-        has_major: Boolean(filters.major),
-        has_time:
-          filters.time !== "전체 시간" ||
-          Boolean(filters.selectedSlots?.length),
-        grade_count: filters.grades.length,
-        type_count: filters.types.length,
-        credit_count: filters.credits.length,
-        sort: filters.sort,
-      });
-      flushSync(() => {
-        setIsSaving(true); // blocker 비활성화 후 navigate
-      });
-      navigate(-1);
-    }
+    // 확정 필터 갱신. broadcastSync가 다른 웹뷰(편집 화면)로 실어 나르고,
+    // persist가 localStorage에 남긴다.
+    applyFilters(filters);
+
+    mixpanelTrack.timetableCourseSearchAction("필터 적용", {
+      has_major: Boolean(filters.major),
+      has_time:
+        filters.time !== "전체 시간" || Boolean(filters.selectedSlots?.length),
+      grade_count: filters.grades.length,
+      type_count: filters.types.length,
+      credit_count: filters.credits.length,
+      sort: filters.sort,
+    });
+
+    flushSync(() => {
+      setIsSaving(true); // blocker 비활성화 후 navigate
+    });
+    navigate(-1);
   };
 
   // 즐겨찾기 별표 토글
