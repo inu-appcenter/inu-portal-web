@@ -50,18 +50,14 @@ const MobileCourseAddPage = () => {
 
   // 헤더 설정
   useHeader({
-    title: editItem ? "과목 수정" : "과목 직접 추가",
+    title: editItem ? "일정 수정" : "일정 추가",
     showAlarm: false,
     hasback: true,
   });
 
-  // 상태 관리 - 강의 정보 (수정 모드면 기존 값으로 프리필)
+  // 상태 관리 - 일정 정보 (수정 모드면 기존 값으로 프리필)
   const [courseName, setCourseName] = useState(editItem?.title ?? "");
-  const [professor, setProfessor] = useState("");
-  const [room, setRoom] = useState(editItem?.meetings[0]?.location ?? "");
-  const [grade, setGrade] = useState("");
-  const [courseType, setCourseType] = useState("");
-  const [evaluation, setEvaluation] = useState("");
+  const [memo, setMemo] = useState(editItem?.memo ?? "");
 
   // 에러 상태
   const [nameError, setNameError] = useState("");
@@ -74,13 +70,13 @@ const MobileCourseAddPage = () => {
           day: meeting.day,
           startTime: meeting.startTime,
           endTime: meeting.endTime,
+          location: meeting.location,
         }))
       : [{ id: "slot-1", day: 0, startTime: "15:00", endTime: "16:30" }],
   );
 
   // Ref 관리
   const courseNameRef = useRef<HTMLInputElement>(null);
-  const professorRef = useRef<HTMLInputElement>(null);
 
   // 시간 슬롯 제어 함수들
   const handleTimeSlotChange = (updatedSlot: CourseTimeSlot) => {
@@ -107,7 +103,7 @@ const MobileCourseAddPage = () => {
   // 저장 로직 (커스텀 일정 요소 생성/수정 API 연동)
   const handleSave = () => {
     if (!courseName.trim()) {
-      setNameError("과목명을 입력해 주세요.");
+      setNameError("이름을 입력해 주세요.");
       courseNameRef.current?.focus();
       return;
     }
@@ -120,20 +116,20 @@ const MobileCourseAddPage = () => {
     if (isPending) return;
 
     const meetings: TimeTableCustomMeetingRequest[] = timeSlots.map((slot) => ({
-      location: room.trim() || undefined,
+      location: slot.location?.trim() || undefined,
       day: DAY_BY_INDEX[slot.day],
       startTime: slot.startTime,
       endTime: slot.endTime,
     }));
     const title = courseName.trim();
+    const trimmedMemo = memo.trim();
 
     if (editItem) {
       updateCustomItemMutation.mutate(
         {
           timeTableId: activeTimetableId,
           customScheduleId: editItem.customScheduleId,
-          // 수정 요청은 전체 교체이므로 기존 메모를 함께 보내야 유지된다
-          body: { title, memo: editItem.memo || undefined, meetings },
+          body: { title, memo: trimmedMemo || undefined, meetings },
         },
         {
           onSuccess: () => {
@@ -159,7 +155,10 @@ const MobileCourseAddPage = () => {
     }
 
     createCustomItemMutation.mutate(
-      { timeTableId: activeTimetableId, body: { title, meetings } },
+      {
+        timeTableId: activeTimetableId,
+        body: { title, memo: trimmedMemo || undefined, meetings },
+      },
       {
         onSuccess: () => {
           mixpanelTrack.timetableItemActionCompleted("직접 일정 추가", "직접 일정", {
@@ -178,69 +177,37 @@ const MobileCourseAddPage = () => {
 
   return (
     <PageWrapper>
-      {/* 강의 정보 */}
+      {/* 일정 정보 */}
       <FormSection>
-        <SectionTitle>강의 정보</SectionTitle>
+        <SectionTitle>일정 정보</SectionTitle>
         <FormFields>
-          <Row>
-            <StyledInputField
-              ref={courseNameRef as any}
-              label="과목명 *"
-              placeholder="과목명 입력"
-              value={courseName}
-              onChange={(val) => {
-                setCourseName(val);
-                if (val.trim()) setNameError("");
-              }}
-              error={nameError}
-            />
-            <StyledInputField
-              ref={professorRef as any}
-              label="교수명"
-              placeholder="교수명 입력"
-              value={professor}
-              onChange={setProfessor}
-            />
-          </Row>
-          <Row>
-            <StyledInputField
-              label="강의실"
-              placeholder="강의실 입력"
-              value={room}
-              onChange={setRoom}
-            />
-            <StyledInputField
-              label="학년"
-              placeholder="학년 입력"
-              value={grade}
-              onChange={setGrade}
-            />
-          </Row>
-          <Row>
-            <StyledInputField
-              label="이수구분"
-              placeholder="이수구분 입력"
-              value={courseType}
-              onChange={setCourseType}
-            />
-            <StyledInputField
-              label="평가방식"
-              placeholder="평가방식 입력"
-              value={evaluation}
-              onChange={setEvaluation}
-            />
-          </Row>
+          <StyledInputField
+            ref={courseNameRef as any}
+            label="이름"
+            placeholder="이름 입력"
+            value={courseName}
+            onChange={(val) => {
+              setCourseName(val);
+              if (val.trim()) setNameError("");
+            }}
+            error={nameError}
+          />
+          <StyledInputField
+            label="메모"
+            placeholder="메모 입력"
+            value={memo}
+            onChange={setMemo}
+          />
         </FormFields>
       </FormSection>
 
-      {/* 시간 설정 */}
+      {/* 일정 시간 */}
       <FormSection style={{ gap: "12px" }}>
         {timeSlots.map((slot, index) => (
           <CourseTimeSelector
             key={slot.id}
             slot={slot}
             index={index}
-            totalSlots={timeSlots.length}
             onChange={handleTimeSlotChange}
             onAdd={handleAddTimeSlot}
             onRemove={() => handleRemoveTimeSlot(slot.id)}
@@ -310,12 +277,6 @@ const SectionTitle = styled.h2`
 const FormFields = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 100%;
-`;
-
-const Row = styled.div`
-  display: flex;
   gap: 8px;
   width: 100%;
 `;
