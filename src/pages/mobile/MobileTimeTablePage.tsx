@@ -401,7 +401,17 @@ const MobileTimeTablePage = () => {
 
     return (
       <HeaderRightArea>
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.EDIT)}>
+        {/* 편집 대상 시간표 id를 반드시 URL로 넘긴다.
+            멀티 웹뷰에서 이 이동은 네이티브 웹뷰 push라 편집 화면이 별도 JS
+            런타임에서 뜬다. useTimetableStore는 persist를 쓰지 않으므로 그쪽
+            스토어는 빈 상태로 시작하고, setTimetables가 "대표 시간표"로 폴백해
+            (useTimetableStore.ts 참고) 보고 있던 시간표와 다른 학기가 열린다.
+            ?id= 가 있어야 useTimetableUrlSync가 올바른 시간표로 복원한다. */}
+        <IconButton
+          onClick={() =>
+            navigate(`${ROUTES.TIMETABLE.EDIT}?id=${activeTimetable.id}`)
+          }
+        >
           <Pencil size={22} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
