@@ -27,16 +27,37 @@ const PERIOD_HOURS = 1.5;
 // 위시리스트가 커도 조합 폭발을 막는 안전장치 (정상적인 6개 이하 위시리스트에서는 절대 도달하지 않음)
 const MAX_CANDIDATES = 5000;
 
-const meetingToSlots = (m: WizardCourseMeeting): string[] => {
+const EPSILON = 1e-6;
+
+// 두 수업 시간이 실제로 겹치는지(같은 요일 + 구간 교차). 예전에는 시작 시각부터 30분씩
+// 끊은 슬롯 문자열 집합으로 판정했는데, 45분 수업처럼 30분 배수가 아닌 시간이 오면
+// 슬롯 격자가 서로 어긋나 겹침을 통째로 놓쳤다(예: 09:00~09:45와 09:45~11:00).
+const meetingsOverlap = (a: WizardCourseMeeting, b: WizardCourseMeeting): boolean =>
+  a.day === b.day &&
+  a.startTime < b.endTime - EPSILON &&
+  b.startTime < a.endTime - EPSILON;
+
+const overlapsAny = (
+  course: WizardCourseOption,
+  meetings: WizardCourseMeeting[],
+): boolean => course.meetings.some((m) => meetings.some((o) => meetingsOverlap(m, o)));
+
+// 제외 시간대만은 사용자가 30분 격자(TimetableGrid 선택 칸)에서 고른 값이라, 수업이
+// 조금이라도 걸치는 30분 칸을 전부 구해서 비교한다(시작은 내림, 끝은 걸친 칸까지).
+const meetingToGridSlots = (m: WizardCourseMeeting): string[] => {
   const slots: string[] = [];
-  for (let t = m.startTime; t < m.endTime - 1e-6; t += SLOT_STEP) {
+  for (
+    let t = Math.floor(m.startTime / SLOT_STEP) * SLOT_STEP;
+    t < m.endTime - EPSILON;
+    t += SLOT_STEP
+  ) {
     slots.push(`${m.day}-${t}`);
   }
   return slots;
 };
 
-const courseSlots = (course: WizardCourseOption): string[] =>
-  course.meetings.flatMap(meetingToSlots);
+const courseGridSlots = (course: WizardCourseOption): string[] =>
+  course.meetings.flatMap(meetingToGridSlots);
 
 interface WishlistGroup {
   courseId: number;
@@ -89,10 +110,10 @@ interface HardCheckContext {
 // 이 강의 하나가 이미 배치된 슬롯과 무관하게 그 자체로 하드 조건을 위반하는지(요일 지정공강만
 // 하드). 오전/야간 회피(C-03/C-04)는 참고 아티팩트에서도 score()에만 반영되는 소프트
 // 조건이라 여기서는 검사하지 않는다 - buildReasons()에서 점수로만 반영한다.
-// courseSlots까지 계산해 배치된 슬롯·제외 슬롯과 겹치는지도 함께 확인한다.
+// 이미 배치된 수업 시간·제외 시간대와 겹치는지도 함께 확인한다.
 const violatesHardConstraints = (
   course: WizardCourseOption,
-  occupiedSlots: Set<string>,
+  occupiedMeetings: WizardCourseMeeting[],
   ctx: HardCheckContext,
 ): boolean => {
   if (!ctx.flags.ignoreExcludedCourses && ctx.excludedSubjectNumberSet.has(course.subjectNumber)) {
@@ -110,10 +131,21 @@ const violatesHardConstraints = (
     }
   }
 
-  const slots = courseSlots(course);
-  if (new Set(slots).size !== slots.length) return true; // 데이터 이상(자체 시간 중복) 방어
-  if (slots.some((s) => occupiedSlots.has(s))) return true; // 이미 배치된 강의와 겹침
-  if (!ctx.flags.ignoreExcludedSlots && slots.some((s) => ctx.excludedSlotSet.has(s))) return true;
+  // 데이터 이상(자체 시간 중복) 방어
+  const own = course.meetings;
+  for (let i = 0; i < own.length; i += 1) {
+    for (let j = i + 1; j < own.length; j += 1) {
+      if (meetingsOverlap(own[i], own[j])) return true;
+    }
+  }
+
+  if (overlapsAny(course, occupiedMeetings)) return true; // 이미 배치된 강의와 겹침
+  if (
+    !ctx.flags.ignoreExcludedSlots &&
+    courseGridSlots(course).some((s) => ctx.excludedSlotSet.has(s))
+  ) {
+    return true;
+  }
 
   return false;
 };
@@ -126,7 +158,11 @@ const searchCombinations = (
 ): WizardCourseOption[][] => {
   const results: WizardCourseOption[][] = [];
 
-  const backtrack = (index: number, chosen: WizardCourseOption[], occupiedSlots: Set<string>) => {
+  const backtrack = (
+    index: number,
+    chosen: WizardCourseOption[],
+    occupiedMeetings: WizardCourseMeeting[],
+  ) => {
     if (results.length >= MAX_CANDIDATES) return;
     if (index === groups.length) {
       results.push(chosen);
@@ -135,18 +171,16 @@ const searchCombinations = (
 
     const group = groups[index];
     for (const option of group.options) {
-      if (violatesHardConstraints(option, occupiedSlots, ctx)) continue;
-      const nextOccupied = new Set(occupiedSlots);
-      courseSlots(option).forEach((s) => nextOccupied.add(s));
-      backtrack(index + 1, [...chosen, option], nextOccupied);
+      if (violatesHardConstraints(option, occupiedMeetings, ctx)) continue;
+      backtrack(index + 1, [...chosen, option], [...occupiedMeetings, ...option.meetings]);
     }
 
     if (!group.required) {
-      backtrack(index + 1, chosen, occupiedSlots); // 선택 과목은 이번 조합에서 통째로 제외 가능
+      backtrack(index + 1, chosen, occupiedMeetings); // 선택 과목은 이번 조합에서 통째로 제외 가능
     }
   };
 
-  backtrack(0, [], new Set());
+  backtrack(0, [], []);
   return results;
 };
 
