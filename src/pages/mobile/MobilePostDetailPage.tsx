@@ -147,7 +147,7 @@ export default function PostDetailPage() {
   useHeader({
     title: post ? post.category || "게시글 상세" : "게시글 상세",
     hasback: true,
-    menu: headerMenu,
+    menuItems: headerMenu,
   });
 
   const handleWriterClick = (memberId: number) => {

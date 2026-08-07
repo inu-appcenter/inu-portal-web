@@ -19,7 +19,6 @@ interface PostTitleProps {
 }
 
 export default function PostTitle({
-  id,
   title,
   createDate,
   view,

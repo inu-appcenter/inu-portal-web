@@ -27,12 +27,6 @@ interface CommentListProps {
 }
 
 export default function CommentListMobile({
-  postId,
-  like,
-  isLiked,
-  scrap,
-  isScraped,
-  title,
   bestReply,
   replies,
   setReplyToReply,
