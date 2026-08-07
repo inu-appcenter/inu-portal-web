@@ -9,6 +9,7 @@ export interface FilterState {
   grades: number[];
   types: string[];
   credits: number[];
+  onlineTypes: string[];
   selectedSlots?: string[];
 }
 
@@ -19,6 +20,7 @@ export const DEFAULT_FILTERS: FilterState = {
   grades: [],
   types: [],
   credits: [],
+  onlineTypes: [],
   selectedSlots: [],
 };
 
@@ -29,7 +31,8 @@ export type FilterSubView =
   | "time"
   | "grade"
   | "type"
-  | "credit";
+  | "credit"
+  | "online";
 
 export const CATEGORIES = [
   { id: "major", label: "전공/영역" },
@@ -37,6 +40,7 @@ export const CATEGORIES = [
   { id: "time", label: "시간" },
   { id: "grade", label: "학년" },
   { id: "type", label: "이수구분" },
+  { id: "online", label: "이러닝/온라인" },
   { id: "credit", label: "학점" },
 ] as const;
 
@@ -49,8 +53,32 @@ export const FILTER_SUB_VIEW_TITLES: Record<FilterSubView, string> = {
   time: "시간",
   grade: "학년",
   type: "이수구분",
+  online: "이러닝/온라인",
   credit: "학점",
 };
+
+export const ONLINE_TYPE_OPTIONS = [
+  "이러닝",
+  "이러닝(HUSS)",
+  "OCU",
+  "블렌디드 온라인",
+  "블렌디드 온라인(HUSS)",
+  "K-MOOC",
+  "RISE(시간표 없음)",
+] as const;
+
+export const ONLINE_TYPE_TO_SSUP_NAME: Record<string, string> = {
+  이러닝: "E_LEARNING",
+  "이러닝(HUSS)": "E_LEARNING_HUSS",
+  OCU: "OCU",
+  "블렌디드 온라인": "BLENDED_ONLINE_COURSE",
+  "블렌디드 온라인(HUSS)": "BLENDED_ONLINE_COURSE_HUSS",
+  "K-MOOC": "K_MOOC",
+  "RISE(시간표 없음)": "RISE_WITHOUT_TIMETABLE",
+};
+
+export const expandOnlineTypeLabel = (label: string): string =>
+  ONLINE_TYPE_TO_SSUP_NAME[label] ?? label;
 
 export const SORT_OPTIONS = ["기본순", "별점높은순", "담은인원많은순"] as const;
 export const TYPE_OPTIONS = ["전공", "교양", "교직", "일반선택", "군사학"] as const;
@@ -292,6 +320,7 @@ export function countActiveFilters(filters: FilterState): number {
   if (filters.time !== DEFAULT_FILTERS.time) count += 1;
   count += filters.grades.length;
   count += filters.types.length;
+  count += filters.onlineTypes?.length ?? 0;
   count += filters.credits.length;
   return count;
 }
@@ -311,6 +340,7 @@ export function buildCategoryChips(
         : filters.time.split(" "),
     grade: filters.grades.map((g) => `${g}학년`),
     type: [...filters.types],
+    online: [...(filters.onlineTypes ?? [])],
     credit: filters.credits.map((c) => (c === 4 ? "4학점 이상" : `${c}학점`)),
   };
 }
@@ -346,6 +376,11 @@ export function removeChipFromFilters(
     }
     case "type":
       return { ...filters, types: filters.types.filter((t) => t !== chip) };
+    case "online":
+      return {
+        ...filters,
+        onlineTypes: (filters.onlineTypes ?? []).filter((t) => t !== chip),
+      };
     case "credit": {
       const val = chip === "4학점 이상" ? 4 : parseInt(chip.replace("학점", ""), 10);
       return { ...filters, credits: filters.credits.filter((c) => c !== val) };

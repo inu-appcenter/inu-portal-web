@@ -243,6 +243,10 @@ export default function MobileCourseFilterPage() {
         title: FILTER_SUB_VIEW_TITLES.type,
         onBack: () => setView("main"),
       },
+      online: {
+        title: FILTER_SUB_VIEW_TITLES.online,
+        onBack: () => setView("main"),
+      },
       credit: {
         title: FILTER_SUB_VIEW_TITLES.credit,
         onBack: () => setView("main"),
@@ -301,6 +305,7 @@ export default function MobileCourseFilterPage() {
         filters.time !== "전체 시간" || Boolean(filters.selectedSlots?.length),
       grade_count: filters.grades.length,
       type_count: filters.types.length,
+      online_type_count: filters.onlineTypes?.length ?? 0,
       credit_count: filters.credits.length,
       sort: filters.sort,
     });
@@ -363,7 +368,7 @@ export default function MobileCourseFilterPage() {
               초기화
             </ResetBottomButton>
           )}
-          {(view === "grade" || view === "type" || view === "credit") && (
+          {(view === "grade" || view === "type" || view === "credit" || view === "online") && (
             <BottomActionButton
               variant="primary"
               onClick={() => setView("main")}
