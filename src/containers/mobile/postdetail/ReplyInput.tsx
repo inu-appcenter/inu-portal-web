@@ -180,7 +180,7 @@ export default function ReplyInput({
         {isLoggedIn ? (
           <>
             <input
-              placeholder="댓글을 입력해주세요."
+              placeholder="댓글을 입력하세요"
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               onKeyDown={handleKeyPress}
@@ -209,31 +209,36 @@ export default function ReplyInput({
 
 const StyledReplyInput = styled.div`
   position: fixed;
-  bottom: 0;
+  bottom: calc(16px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
+  width: calc(100% - 32px);
+  max-width: 480px;
   z-index: 9999;
-  background-color: white;
-  border-top: 1px solid #eaeaea;
-  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-strong, #d1d6db);
+  border-radius: 32px;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  padding: 4px;
+  box-sizing: border-box;
 
   .wrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    min-height: 64px;
-    box-sizing: border-box;
+    gap: 4px;
+    width: 100%;
+    min-height: 48px;
   }
 
   .anonymous-wrapper {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 40px;
-    padding: 0 2px;
+    gap: 8px;
+    height: 44px;
+    padding-left: 12px;
+    padding-right: 8px;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
@@ -246,11 +251,10 @@ const StyledReplyInput = styled.div`
     }
 
     span {
-      display: inline-flex;
-      align-items: center;
-      font-size: 13px;
-      line-height: 1;
-      color: #9fa3a6;
+      font-family: Pretendard, sans-serif;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--text-disabled, #b0b8c1);
       white-space: nowrap;
     }
   }
@@ -260,30 +264,31 @@ const StyledReplyInput = styled.div`
     min-width: 0;
     display: block;
     margin: 0;
-    height: 40px;
+    height: 44px;
     border: none;
-    border-radius: 20px;
-    background-color: #eff2f9;
-    padding: 0 16px;
+    background: transparent;
+    padding: 0 8px;
+    font-family: Pretendard, sans-serif;
     font-size: 16px;
-    line-height: 1.25;
+    line-height: 1.6;
+    color: var(--text-secondary, #333d4b);
     outline: none;
     box-sizing: border-box;
+
+    &::placeholder {
+      color: var(--text-disabled, #b0b8c1);
+    }
   }
 
   .login-placeholder {
     cursor: pointer;
-
-    &::placeholder {
-      color: #969696;
-    }
   }
 
   .send-button {
     flex: 0 0 40px;
     width: 40px;
     height: 40px;
-    padding: 9px;
+    padding: 8px;
     box-sizing: border-box;
     display: block;
     cursor: pointer;
@@ -292,18 +297,26 @@ const StyledReplyInput = styled.div`
 
 const EditOrReplyBanner = styled.div`
   position: absolute;
-  top: -22px;
+  top: -28px;
   left: 16px;
-  font-size: 14px;
+  font-family: Pretendard, sans-serif;
+  font-size: 13px;
   display: flex;
+  align-items: center;
   gap: 8px;
-  background-color: white;
+  background: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
 
   button {
-    font-size: 14px;
+    font-family: Pretendard, sans-serif;
+    font-size: 13px;
     padding: 0;
-    color: #888;
+    color: var(--text-tertiary, #8b95a1);
     background-color: transparent;
     border: none;
+    cursor: pointer;
   }
 `;

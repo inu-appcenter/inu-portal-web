@@ -193,26 +193,20 @@ export default function PostDetailPage() {
 }
 const Wrapper = styled.div`
   width: 100%;
-  //height: calc(100svh - 65px);
-  //padding-top: 56px;
+  background-color: var(--bg-subtle, #f8f9fb);
   box-sizing: border-box;
+  min-height: 100vh;
 `;
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  //height: calc(100svh - 135px);
-  //overflow-y: auto;
   position: relative;
   z-index: 1;
 `;
-// PostDetailPage.tsx 내 스타일 수정
 
 const CommentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  /* ReplyInput 높이(약 64px~80px)만큼 하단 패딩 확보 */
-  padding-bottom: 120px;
   position: relative;
 `;

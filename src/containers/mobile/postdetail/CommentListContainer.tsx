@@ -1,17 +1,16 @@
 import styled from "styled-components";
 import { Reply } from "@/types/posts";
 import { useNavigate } from "react-router-dom";
-import CommentImg from "@/resources/assets/mobile-tips/comment-img.svg";
-import rereplyImage from "@/resources/assets/posts/rereply.svg";
 import ReplyLikeButton from "@/components/desktop/posts/ReplyLikeButton";
-import React from "react";
+import React, { useState } from "react";
 import axios, { AxiosError } from "axios";
 import { ROUTES } from "@/constants/routes";
 import { deleteReply } from "@/apis/replies";
 import useUserStore from "@/stores/useUserStore";
+import { MoreVertical } from "lucide-react";
 
 interface CommentListProps {
-  bestReply: Reply;
+  bestReply?: Reply;
   replies: Reply[];
   setReplyToReply: (reply: Reply | null) => void;
   setReplyToEdit: (reply: Reply | null) => void;
@@ -32,16 +31,18 @@ export default function CommentListMobile({
   const navigate = useNavigate();
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+
   const allComments = bestReply
     ? [bestReply, ...replies.filter((reply) => reply.id !== bestReply.id)]
     : replies;
 
   const formatDate = (dateString: string): string => {
-    // '2024.07.30' 형태를 Date 객체로 변환
+    if (!dateString) return "";
     const [year, month, day] = dateString.split(".").map(Number);
+    if (!year || !month || !day) return dateString;
     const commentDate = new Date(year, month - 1, day);
     const now = new Date();
-    // 현재 날짜와 댓글 날짜 비교
     const diffInDays = Math.floor(
       (now.getTime() - commentDate.getTime()) / (1000 * 60 * 60 * 24),
     );
@@ -64,14 +65,13 @@ export default function CommentListMobile({
       try {
         await deleteReply(replyId);
         alert("댓글이 삭제되었습니다.");
+        setActiveMenuId(null);
         onCommentUpdate();
       } catch (error) {
         console.error("댓글 삭제 실패", error);
-        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
-          !(error as AxiosError & { isRefreshError?: boolean })
-            .isRefreshError &&
+          !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
           error.response
         ) {
           switch (error.response.status) {
@@ -79,7 +79,7 @@ export default function CommentListMobile({
               alert("이 댓글의 수정/삭제에 대한 권한이 없습니다.");
               break;
             case 404:
-              alert("존재하지 않는 회원입니다. / 존재하지 않는 댓글입니다.");
+              alert("존재하지 않는 회원 또는 댓글입니다.");
               break;
             default:
               alert("댓글 삭제 실패");
@@ -95,7 +95,6 @@ export default function CommentListMobile({
       navigate(ROUTES.LOGIN);
       return;
     }
-
     setReplyToReply(reply);
     setReplyToEdit(null);
     setReplyContent("");
@@ -105,216 +104,298 @@ export default function CommentListMobile({
     setReplyToReply(null);
     setReplyToEdit(reply);
     setReplyContent(reply.content);
+    setActiveMenuId(null);
   };
+
   return (
-    <PostRepliesWrapper>
-      <div className="repliesTop">
-        <img src={CommentImg} className="replyImage" alt="" />
-        댓글
-      </div>
-      <RepliesContainer>
-        {allComments.length > 0 ? (
-          <>
-            {allComments.map((reply, index) => (
-              <React.Fragment key={reply.id}>
-                <ReplyContainer $isFirst={index === 0}>
-                  <img
-                    className="fire"
-                    src={`https://portal.inuappcenter.kr/images/profile/${reply.fireId}`}
-                    alt=""
-                    onClick={() => {
-                      if (!reply.isAnonymous && reply.memberId) {
-                        onWriterClick(reply.memberId);
-                      }
-                    }}
-                    style={{
-                      cursor:
-                        !reply.isAnonymous && reply.memberId
-                          ? "pointer"
-                          : "default",
-                    }}
-                  />
-                  <div className="main">
-                    <span
-                      className="writer"
+    <CommentSectionWrapper>
+      {allComments.length > 0 ? (
+        allComments.map((reply) => (
+          <React.Fragment key={reply.id}>
+            <CommentItemRow>
+              <Avatar
+                src={`https://portal.inuappcenter.kr/images/profile/${reply.fireId || 1}`}
+                alt={reply.writer || "프로필"}
+                onClick={() => {
+                  if (!reply.isAnonymous && reply.memberId) {
+                    onWriterClick(reply.memberId);
+                  }
+                }}
+                $isClickable={!reply.isAnonymous && Boolean(reply.memberId)}
+              />
+              <CommentContentBody>
+                <CommentHeaderRow>
+                  <UserIdGroup>
+                    <WriterName
                       onClick={() => {
                         if (!reply.isAnonymous && reply.memberId) {
                           onWriterClick(reply.memberId);
                         }
                       }}
-                      style={{
-                        cursor:
-                          !reply.isAnonymous && reply.memberId
-                            ? "pointer"
-                            : "default",
-                      }}
+                      $isClickable={!reply.isAnonymous && Boolean(reply.memberId)}
                     >
                       {reply.writer}
-                    </span>
-                    <p>{reply.content}</p>
-                    <div className="util-buttons">
-                      <button onClick={() => handleReplyTo(reply)}>답장</button>
-                      {reply.hasAuthority && (
-                        <>
-                          <button onClick={() => handleEditReply(reply)}>
-                            수정
-                          </button>
-                          <button onClick={() => handleDeleteReply(reply.id)}>
-                            삭제
-                          </button>
-                        </>
+                    </WriterName>
+                    <TimeText>{formatDate(reply.createDate)}</TimeText>
+                  </UserIdGroup>
+
+                  {reply.hasAuthority && (
+                    <MenuWrapper>
+                      <MenuIconBtn onClick={() => setActiveMenuId(activeMenuId === reply.id ? null : reply.id)}>
+                        <MoreVertical size={20} color="#8B95A1" />
+                      </MenuIconBtn>
+                      {activeMenuId === reply.id && (
+                        <DropdownMenu>
+                          <DropdownItem onClick={() => handleEditReply(reply)}>수정</DropdownItem>
+                          <DropdownItem onClick={() => handleDeleteReply(reply.id)}>삭제</DropdownItem>
+                        </DropdownMenu>
                       )}
-                    </div>
-                  </div>
-                  <div className="date-like">
-                    <span className="date">{formatDate(reply.createDate)}</span>
-                    <ReplyLikeButton
-                      id={reply.id}
-                      like={reply.like}
-                      isLiked={reply.isLiked}
-                    />
-                  </div>
-                </ReplyContainer>
-                {reply.reReplies?.map((reReply) => (
-                  <ReReplyContainer key={reReply.id}>
-                    <img src={rereplyImage} alt="" />
-                    <span
-                      className="writer"
-                      onClick={() => {
-                        if (!reReply.isAnonymous && reReply.memberId) {
-                          onWriterClick(reReply.memberId);
-                        }
-                      }}
-                      style={{
-                        cursor:
-                          !reReply.isAnonymous && reReply.memberId
-                            ? "pointer"
-                            : "default",
-                      }}
-                    >
-                      {reReply.writer}
-                    </span>
-                    <p>{reReply.content}</p>
-                    <div className="util-buttons">
-                      {reReply.hasAuthority && (
-                        <>
-                          <button onClick={() => handleEditReply(reReply)}>
-                            수정
-                          </button>
-                          <button onClick={() => handleDeleteReply(reReply.id)}>
-                            삭제
-                          </button>
-                        </>
-                      )}
-                    </div>
-                    <ReplyLikeButton
-                      id={reReply.id}
-                      like={reReply.like}
-                      isLiked={reReply.isLiked}
-                    />
-                  </ReReplyContainer>
-                ))}
-              </React.Fragment>
+                    </MenuWrapper>
+                  )}
+                </CommentHeaderRow>
+
+                <CommentText>{reply.content}</CommentText>
+
+                <CommentFooterRow>
+                  <ReplyActionBtn onClick={() => handleReplyTo(reply)}>답장</ReplyActionBtn>
+                  <HeartGroup>
+                    <ReplyLikeButton id={reply.id} like={reply.like} isLiked={reply.isLiked} />
+                  </HeartGroup>
+                </CommentFooterRow>
+              </CommentContentBody>
+            </CommentItemRow>
+
+            {reply.reReplies?.map((reReply) => (
+              <ReCommentItemRow key={reReply.id}>
+                <SubAvatar
+                  src={`https://portal.inuappcenter.kr/images/profile/${reReply.fireId || 1}`}
+                  alt={reReply.writer || "프로필"}
+                  onClick={() => {
+                    if (!reReply.isAnonymous && reReply.memberId) {
+                      onWriterClick(reReply.memberId);
+                    }
+                  }}
+                  $isClickable={!reReply.isAnonymous && Boolean(reReply.memberId)}
+                />
+                <CommentContentBody>
+                  <CommentHeaderRow>
+                    <UserIdGroup>
+                      <WriterName
+                        onClick={() => {
+                          if (!reReply.isAnonymous && reReply.memberId) {
+                            onWriterClick(reReply.memberId);
+                          }
+                        }}
+                        $isClickable={!reReply.isAnonymous && Boolean(reReply.memberId)}
+                      >
+                        {reReply.writer}
+                      </WriterName>
+                      <TimeText>{formatDate(reReply.createDate)}</TimeText>
+                    </UserIdGroup>
+
+                    {reReply.hasAuthority && (
+                      <MenuWrapper>
+                        <MenuIconBtn onClick={() => setActiveMenuId(activeMenuId === reReply.id ? null : reReply.id)}>
+                          <MoreVertical size={20} color="#8B95A1" />
+                        </MenuIconBtn>
+                        {activeMenuId === reReply.id && (
+                          <DropdownMenu>
+                            <DropdownItem onClick={() => handleEditReply(reReply)}>수정</DropdownItem>
+                            <DropdownItem onClick={() => handleDeleteReply(reReply.id)}>삭제</DropdownItem>
+                          </DropdownMenu>
+                        )}
+                      </MenuWrapper>
+                    )}
+                  </CommentHeaderRow>
+
+                  <CommentText>{reReply.content}</CommentText>
+
+                  <CommentFooterRow>
+                    <div />
+                    <HeartGroup>
+                      <ReplyLikeButton id={reReply.id} like={reReply.like} isLiked={reReply.isLiked} />
+                    </HeartGroup>
+                  </CommentFooterRow>
+                </CommentContentBody>
+              </ReCommentItemRow>
             ))}
-          </>
-        ) : (
-          <ReplyContainer $isFirst={true}>아직 댓글이 없어요 🤫</ReplyContainer>
-        )}
-      </RepliesContainer>
-    </PostRepliesWrapper>
+          </React.Fragment>
+        ))
+      ) : (
+        <EmptyCommentMsg>아직 댓글이 없어요 🤫</EmptyCommentMsg>
+      )}
+    </CommentSectionWrapper>
   );
 }
 
-const PostRepliesWrapper = styled.div`
+const CommentSectionWrapper = styled.div`
+  background: var(--bg-base, #ffffff);
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
+  box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.08);
+  padding: 16px 0 120px;
   display: flex;
   flex-direction: column;
-  .repliesTop {
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #eff2f9;
-    .replyImage {
-      width: 14px;
-    }
-  }
+  width: 100%;
 `;
 
-const RepliesContainer = styled.div`
+const CommentItemRow = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const ReCommentItemRow = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px 12px 52px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const Avatar = styled.img<{ $isClickable: boolean }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+`;
+
+const SubAvatar = styled.img<{ $isClickable: boolean }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+`;
+
+const CommentContentBody = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 `;
 
-const ReplyContainer = styled.div<{ $isFirst: boolean }>`
-  padding: 12px 24px;
-  border-top: ${({ $isFirst }) => ($isFirst ? "none" : "2px solid #dedede")};
+const CommentHeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const UserIdGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
-  .fire {
-    width: 52px;
-    border-radius: 100px;
-  }
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    .writer {
-      font-weight: 600;
-      color: #4071b9;
-    }
-    p {
-      margin: 0;
-    }
-    .util-buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-      button {
-        font-size: 14px;
-        color: #888888;
-        background-color: transparent;
-        border: none;
-        padding: 0;
-      }
-    }
-  }
-  .date-like {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-end;
-    .date {
-      font-size: 14px;
-      color: #888888;
-    }
+  gap: 8px;
+`;
+
+const WriterName = styled.span<{ $isClickable: boolean }>`
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--text-secondary, #333d4b);
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+`;
+
+const TimeText = styled.span`
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-tertiary, #8b95a1);
+`;
+
+const CommentText = styled.div`
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary, #333d4b);
+  word-break: break-word;
+  white-space: pre-wrap;
+`;
+
+const CommentFooterRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const ReplyActionBtn = styled.button`
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-tertiary, #8b95a1);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-secondary, #333d4b);
   }
 `;
 
-const ReReplyContainer = styled.div`
-  padding: 16px 32px;
-  border-top: 2px solid #dedede;
+const HeartGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
-  .writer {
-    font-weight: 600;
-    color: #4071b9;
-  }
+  gap: 4px;
+`;
 
-  .util-buttons {
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-    button {
-      font-size: 14px;
-      color: #888888;
-      background-color: transparent;
-      border: none;
-    }
+const MenuWrapper = styled.div`
+  position: relative;
+`;
+
+const MenuIconBtn = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 24px;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  overflow: hidden;
+`;
+
+const DropdownItem = styled.div`
+  padding: 8px 16px;
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary, #333d4b);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #f8f9fb;
   }
-  p {
-    flex: 1;
-    margin: 0;
-  }
+`;
+
+const EmptyCommentMsg = styled.div`
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  color: var(--text-tertiary, #8b95a1);
+  text-align: center;
+  padding: 32px 16px;
 `;

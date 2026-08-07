@@ -33,6 +33,8 @@ export default function PostContentContainer({
             scrap={ClubRecruit.scrap}
             isScraped={ClubRecruit.isScraped}
             memberId={ClubRecruit.memberId}
+            fireId={ClubRecruit.fireId}
+            replyCount={ClubRecruit.replies?.length || 0}
             onWriterClick={onWriterClick}
           />
           <PostContent
@@ -84,9 +86,9 @@ export default function PostContentContainer({
 }
 
 const Wrapper = styled.div`
-  margin: 20px 20px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-bottom: 100px;
+  gap: 32px;
+  padding: 32px 16px;
+  background-color: var(--bg-subtle, #f8f9fb);
 `;

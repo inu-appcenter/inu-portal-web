@@ -1,7 +1,6 @@
 import styled from "styled-components";
-import eyeImg from "@/resources/assets/posts/eye.svg";
+import { Eye, MessageSquare, Heart, Bookmark, Share2 } from "lucide-react";
 import PostUtilContainer from "../../../../containers/mobile/postdetail/PostUtilContainer.tsx";
-import { formatTimeAgo } from "@/utils/date";
 
 interface PostTitleProps {
   id: number;
@@ -14,6 +13,8 @@ interface PostTitleProps {
   scrap?: number;
   isScraped?: boolean;
   memberId?: number | null;
+  fireId?: number | null;
+  replyCount?: number;
   onWriterClick?: (id: number) => void;
 }
 
@@ -28,110 +29,212 @@ export default function PostTitle({
   scrap,
   isScraped,
   memberId,
+  fireId = 1,
+  replyCount = 0,
   onWriterClick,
 }: PostTitleProps) {
-  // const token = useSelector((state: any) => state.user.token);
-  return (
-    <>
-      <PostTitleWrapper>
-        {title}
-        {like !== undefined &&
-        isLiked !== undefined &&
-        scrap !== undefined &&
-        isScraped !== undefined ? (
-          <PostUtilContainer
-            id={id}
-            like={like}
-            isLiked={isLiked}
-            scrap={scrap}
-            isScraped={isScraped}
-          />
-        ) : null}
-      </PostTitleWrapper>
-      <Line />
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          url: window.location.href,
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("링크가 복사되었습니다.");
+      } catch (e) {
+        alert("링크 복사 실패");
+      }
+    }
+  };
 
-      <div className="m-PostInfo" key={id}>
-        <PostInfo>
-          <div className="postinfo1">
-            <span className="infoText">{formatTimeAgo(createDate)}</span>
-          </div>
-          <div className="postinfo2">
-            <img src={eyeImg} />
-            <span className="viewInfo">{view}</span>
-            <span
-              className="m-writerInfo"
+  const profileImgUrl = fireId
+    ? `https://portal.inuappcenter.kr/images/profile/${fireId}`
+    : "https://portal.inuappcenter.kr/images/profile/1";
+
+  return (
+    <HeaderContainer>
+      <TitleText>{title}</TitleText>
+
+      <AuthorRowContainer>
+        <AuthorInfoLeft>
+          <AvatarImg
+            src={profileImgUrl}
+            alt={writer || "작성자"}
+            onClick={() => {
+              if (memberId && onWriterClick) {
+                onWriterClick(memberId);
+              }
+            }}
+            $isClickable={Boolean(memberId && onWriterClick)}
+          />
+          <AuthorDetailColumn>
+            <AuthorName
               onClick={() => {
                 if (memberId && onWriterClick) {
                   onWriterClick(memberId);
                 }
               }}
-              style={{ cursor: memberId ? "pointer" : "default" }}
+              $isClickable={Boolean(memberId && onWriterClick)}
             >
-              {writer || "총학생회"}
-            </span>
-          </div>
-        </PostInfo>
-      </div>
-    </>
+              {writer || "익명"}
+            </AuthorName>
+            <DateText>{createDate}</DateText>
+          </AuthorDetailColumn>
+        </AuthorInfoLeft>
+
+        {view !== undefined && (
+          <ViewCountRow>
+            <Eye size={16} color="#8B95A1" />
+            <span>{view}</span>
+          </ViewCountRow>
+        )}
+      </AuthorRowContainer>
+
+      <ActionRow>
+        <CommentCountGroup>
+          <MessageSquare size={24} color="#333D4B" />
+          <span>댓글 {replyCount}</span>
+        </CommentCountGroup>
+
+        <ActionButtonsGroup>
+          {like !== undefined &&
+          isLiked !== undefined &&
+          scrap !== undefined &&
+          isScraped !== undefined ? (
+            <PostUtilContainer
+              id={id}
+              like={like}
+              isLiked={isLiked}
+              scrap={scrap}
+              isScraped={isScraped}
+            />
+          ) : null}
+          <ShareBtn onClick={handleShare}>
+            <Share2 size={24} color="#333D4B" />
+          </ShareBtn>
+        </ActionButtonsGroup>
+      </ActionRow>
+    </HeaderContainer>
   );
 }
 
-const PostTitleWrapper = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 20px;
-  text-align: left;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-
+const HeaderContainer = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
+`;
+
+const TitleText = styled.h1`
+  font-family: Pretendard, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: -0.2px;
+  color: var(--text-secondary, #333d4b);
+  word-break: break-word;
+  margin: 0;
+`;
+
+const AuthorRowContainer = styled.div`
+  display: flex;
   justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
 `;
-const Line = styled.div`
-  border-top: 1px solid #ccc; /* 1픽셀 두께의 실선 구분선, 색상은 회색 */
+
+const AuthorInfoLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
-const PostInfo = styled.div`
+
+const AvatarImg = styled.img<{ $isClickable: boolean }>`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+`;
+
+const AuthorDetailColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const AuthorName = styled.div<{ $isClickable: boolean }>`
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary, #333d4b);
+  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
+`;
+
+const DateText = styled.div`
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--text-tertiary, #8b95a1);
+`;
+
+const ViewCountRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  span {
+    font-family: Pretendard, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: var(--text-tertiary, #8b95a1);
+  }
+`;
+
+const ActionRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-left: auto;
-  gap: 15px;
+  padding: 8px 0;
+  width: 100%;
+  margin-top: 12px;
+`;
 
-  img {
-    margin-right: 5px;
-    top: 10px;
-    width: 16px;
-  }
+const CommentCountGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
 
-  .postinfo2 {
-    display: flex;
-    top: 10px;
-  }
-
-  .viewInfo {
-    margin-right: 10px;
-    font-size: 10px;
-    color: #969696;
-    display: flex;
-    position: relative;
-    top: 10px;
-  }
-
-  .m-writerInfo {
+  span {
+    font-family: Pretendard, sans-serif;
     font-size: 14px;
-    color: #666;
-    display: flex;
-    align-items: center;
-    height: 31px;
-    width: auto;
-    border-radius: 100px;
-    padding-left: 10px;
-    padding-right: 10px;
-    font-size: 13px;
     font-weight: 400;
-    background: #ecf4ff;
+    line-height: 1.6;
+    color: var(--text-secondary, #333d4b);
   }
+`;
+
+const ActionButtonsGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const ShareBtn = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
 `;
