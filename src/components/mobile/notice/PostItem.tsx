@@ -196,10 +196,12 @@ const Category = styled.div`
 `;
 
 const Title = styled.div<{ isEllipsis: boolean }>`
-  color: #20252d;
+  color: var(--text-primary, #191f28);
+  font-family: Pretendard, sans-serif;
   font-size: 16px;
-  font-weight: 700;
-  line-height: 1.35;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 24px;
   align-self: stretch;
 
   ${({ isEllipsis }) =>
@@ -212,9 +214,12 @@ const Title = styled.div<{ isEllipsis: boolean }>`
 `;
 
 const ContentLine = styled.div<{ isEllipsis: boolean }>`
-  color: #64748b;
-  font-size: 13px;
-  line-height: 1.4;
+  color: var(--text-secondary, #333d4b);
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 160%;
 
   ${({ isEllipsis }) =>
     isEllipsis &&
@@ -231,23 +236,30 @@ const InfoLine = styled.div`
   align-items: center;
 
   .writer {
-    color: #3f4a5a;
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1;
+    color: var(--text-tertiary, #8b95a1);
+    font-family: Pretendard, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 160%;
   }
 
   .dot {
-    color: #cbd5e1;
-    font-size: 12px;
-    line-height: 1;
+    color: var(--text-tertiary, #8b95a1);
+    font-family: Pretendard, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 160%;
   }
 
   .date {
-    color: #8491a3;
-    font-size: 13px;
+    color: var(--text-tertiary, #8b95a1);
+    font-family: Pretendard, sans-serif;
+    font-size: 14px;
+    font-style: normal;
     font-weight: 400;
-    line-height: 1;
+    line-height: 160%;
   }
 `;
 
@@ -263,19 +275,24 @@ const StatItem = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #8491a3;
+  color: var(--text-tertiary, #8b95a1);
+  font-family: Pretendard, sans-serif;
   font-size: 14px;
+  font-style: normal;
   font-weight: 400;
-  line-height: 1;
+  line-height: 160%;
 `;
 
 const ViewCount = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #8491a3;
+  color: var(--text-tertiary, #8b95a1);
+  font-family: Pretendard, sans-serif;
   font-size: 14px;
+  font-style: normal;
   font-weight: 400;
+  line-height: 160%;
 `;
 
 const ThumbnailWrapper = styled.div`
