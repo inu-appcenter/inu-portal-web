@@ -104,7 +104,7 @@ export default function CommentListMobile({
           <React.Fragment key={reply.id}>
             <CommentItemRow>
               <Avatar
-                src={`https://portal.inuappcenter.kr/images/profile/${reply.fireId || 1}`}
+                src={`https://portal.inuappcenter.kr/images/profile/${reply.isAnonymous ? 1 : (reply.fireId || 1)}`}
                 alt={reply.writer || "프로필"}
                 onClick={() => {
                   if (!reply.isAnonymous && reply.memberId) {
@@ -158,7 +158,7 @@ export default function CommentListMobile({
             {reply.reReplies?.map((reReply) => (
               <ReCommentItemRow key={reReply.id}>
                 <SubAvatar
-                  src={`https://portal.inuappcenter.kr/images/profile/${reReply.fireId || 1}`}
+                  src={`https://portal.inuappcenter.kr/images/profile/${reReply.isAnonymous ? 1 : (reReply.fireId || 1)}`}
                   alt={reReply.writer || "프로필"}
                   onClick={() => {
                     if (!reReply.isAnonymous && reReply.memberId) {
