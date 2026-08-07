@@ -7,11 +7,11 @@ type QueryBroadcastMessage =
 
 /**
  * 같은 오리진의 다른 웹뷰/탭과 TanStack Query 캐시를 동기화한다(전송은
- * openMultiWebViewChannel의 BroadcastChannel + 네이티브 브릿지 릴레이 이중
- * 경로). 한 웹뷰에서 성공적으로 패치된 쿼리 데이터를 다른 웹뷰에도 즉시
- * 반영해, 화면 전환 시(무한 스크롤 리스트로 돌아오는 경우 등) 불필요한
- * 리패치 없이도 최신 상태를 보여준다. 실험적인 @tanstack/query-broadcast-client
- * 대신, 필요한 "성공 데이터 반영/제거"만 직접 구현한다.
+ * openMultiWebViewChannel의 BroadcastChannel). 한 웹뷰에서 성공적으로 패치된
+ * 쿼리 데이터를 다른 웹뷰에도 즉시 반영해, 화면 전환 시(무한 스크롤 리스트로
+ * 돌아오는 경우 등) 불필요한 리패치 없이도 최신 상태를 보여준다. 실험적인
+ * @tanstack/query-broadcast-client 대신, 필요한 "성공 데이터 반영/제거"만
+ * 직접 구현한다.
  */
 export function attachQueryBroadcastSync(
   queryClient: QueryClient,

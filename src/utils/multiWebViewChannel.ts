@@ -1,4 +1,3 @@
-import { bridgeChannel } from "@/utils/bridgeChannel";
 import { createSafeBroadcastChannel } from "@/utils/broadcastChannel";
 
 export interface MultiWebViewChannel {
@@ -21,13 +20,12 @@ export interface SyncMessageEnvelope {
 /**
  * 같은 오리진의 다른 웹뷰/탭에 상태 스냅샷을 전달하는 통합 채널.
  *
- * 두 경로를 동시에 쓴다:
- *  1) BroadcastChannel API — 지원 환경에서 지연 없이 도달한다.
- *  2) 네이티브 브릿지 릴레이(relayBroadcastSync → broadcastSyncMessage,
- *     packages/intip-bridge) — BroadcastChannel 전역 자체가 없는 iOS 15.4
- *     미만 WKWebView, 그리고 지원 버전에서도 WebKit의 웹뷰 인스턴스 간 전달이
- *     알려진 대로 불안정한 경우를 위한 폴백. RN 셸 밖(일반 브라우저)에서는
- *     `bridgeChannel`이 null이라 이 경로는 자동으로 빠진다.
+ * BroadcastChannel API 하나로 전달한다. 이전에는 iOS 15.4 미만 WKWebView(전역
+ * 자체 없음) 대응으로 네이티브 브릿지 릴레이(relayBroadcastSync →
+ * broadcastSyncMessage)를 이중 경로로 병행했으나, intip-mobile-app이 Expo
+ * SDK 56로 최소 iOS를 16.4로 올리면서(2026-08) 그 바닥이 사라졌고, "지원
+ * 버전에서도 WebKit 인스턴스 간 전달이 불안정하다"는 우려도 재현 가능한
+ * 사례로 뒷받침되지 않아 네이티브 릴레이 자체를 걷어냈다.
  *
  * 상용 분산 하이브리드 어플리케이션 방법론 적용:
  *  - Self-Echo Guard: 발신 웹뷰 식별자(senderId) 검증으로 자가 릴레이 원천 차단
@@ -64,10 +62,6 @@ export function openMultiWebViewChannel(
       handleIncomingMessage(event.data);
   }
 
-  const offBridge = bridgeChannel?.on("broadcastSyncMessage", (message) => {
-    if (message.channel === name) handleIncomingMessage(message.payload);
-  });
-
   return {
     postMessage: (data) => {
       const envelope: SyncMessageEnvelope = {
@@ -76,14 +70,9 @@ export function openMultiWebViewChannel(
         payload: data,
       };
       broadcastChannel?.postMessage(envelope);
-      bridgeChannel?.send("relayBroadcastSync", {
-        channel: name,
-        payload: envelope,
-      });
     },
     close: () => {
       broadcastChannel?.close();
-      offBridge?.();
     },
   };
 }
