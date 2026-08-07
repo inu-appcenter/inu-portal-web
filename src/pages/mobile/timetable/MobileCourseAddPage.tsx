@@ -1,8 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import InputField from "@/components/common/InputField";
 import CourseTimeSelector, {
   CourseTimeSlot,
@@ -12,71 +11,99 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import {
   useCreateTimeTableCustomItem,
+  useTimeTableDetail,
   useTimeTables,
   useUpdateTimeTableCustomItem,
 } from "@/hooks/useTimeTables";
-import { DAY_BY_INDEX } from "@/utils/timetable";
+import { DAY_BY_INDEX, DAY_INDEX } from "@/utils/timetable";
 import type { TimeTableCustomMeetingRequest } from "@/types/timetables";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
-// 편집 페이지에서 커스텀 일정 수정으로 진입할 때 넘겨주는 라우터 state
-export interface CustomScheduleEditState {
-  customScheduleId: number;
-  title: string;
-  memo: string;
-  meetings: {
-    day: number; // 그리드 요일 인덱스 (0: 월)
-    startTime: string; // HH:mm
-    endTime: string; // HH:mm
-    location: string;
-  }[];
-}
+// 서버가 "HH:mm:ss"로 내려주더라도 시간 선택기가 쓰는 "HH:mm"으로 맞춘다
+const toHourMinute = (time: string) => time.slice(0, 5);
 
 const MobileCourseAddPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const editItem = (location.state as { editItem?: CustomScheduleEditState })
-    ?.editItem;
+  const [searchParams] = useSearchParams();
+
+  // 수정 대상은 URL로만 전달된다. 라우터 state는 신 앱의 멀티 웹뷰 전환에서
+  // 유실되기 때문(MobileTimeTableEditPage.handleEdit 주석 참고).
+  const editingScheduleIdParam = searchParams.get("customScheduleId");
+  const editingScheduleId =
+    editingScheduleIdParam && Number.isInteger(Number(editingScheduleIdParam))
+      ? Number(editingScheduleIdParam)
+      : null;
+  const isEditMode = editingScheduleId !== null;
 
   // 새로고침으로 이 페이지에 바로 진입해도 활성 시간표를 복구할 수 있도록 목록을 조회
   useTimeTables();
   const { timetables, activeTimetableId } = useTimetableStore();
   const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
 
+  // 수정 모드에서는 상세를 다시 조회해 기존 값을 채운다
+  const { detail, isLoading: isDetailLoading } = useTimeTableDetail(
+    activeTimetableId,
+    { enabled: isEditMode },
+  );
+
+  const editTarget = useMemo(() => {
+    if (!isEditMode || !detail) return null;
+    const item = detail.items.find(
+      (i) =>
+        i.type === "CUSTOM" &&
+        i.customSchedule?.customScheduleId === editingScheduleId,
+    );
+    return item?.customSchedule ? { item, custom: item.customSchedule } : null;
+  }, [detail, editingScheduleId, isEditMode]);
+
   const createCustomItemMutation = useCreateTimeTableCustomItem();
   const updateCustomItemMutation = useUpdateTimeTableCustomItem();
   const isPending =
     createCustomItemMutation.isPending || updateCustomItemMutation.isPending;
 
-  // 헤더 설정
+  // 헤더 설정 (상세 로딩과 무관하게 URL만으로 모드가 정해진다)
   useHeader({
-    title: editItem ? "일정 수정" : "일정 추가",
+    title: isEditMode ? "일정 수정" : "일정 추가",
     showAlarm: false,
     hasback: true,
   });
 
-  // 상태 관리 - 일정 정보 (수정 모드면 기존 값으로 프리필)
-  const [courseName, setCourseName] = useState(editItem?.title ?? "");
-  const [memo, setMemo] = useState(editItem?.memo ?? "");
+  // 상태 관리 - 일정 정보
+  const [courseName, setCourseName] = useState("");
+  const [memo, setMemo] = useState("");
 
   // 에러 상태
   const [nameError, setNameError] = useState("");
 
   // 상태 관리 - 시간 정보 (기본적으로 1개 슬롯 탑재)
-  const [timeSlots, setTimeSlots] = useState<CourseTimeSlot[]>(
-    editItem && editItem.meetings.length > 0
-      ? editItem.meetings.map((meeting, index) => ({
-          id: `slot-${index + 1}`,
-          day: meeting.day,
-          startTime: meeting.startTime,
-          endTime: meeting.endTime,
-          location: meeting.location,
-        }))
-      : [{ id: "slot-1", day: 0, startTime: "15:00", endTime: "16:30" }],
-  );
+  const [timeSlots, setTimeSlots] = useState<CourseTimeSlot[]>([
+    { id: "slot-1", day: 0, startTime: "15:00", endTime: "16:30" },
+  ]);
 
   // Ref 관리
   const courseNameRef = useRef<HTMLInputElement>(null);
+
+  // 상세가 도착한 시점에 한 번만 프리필한다.
+  // (이후 재조회로 폼이 다시 덮이면 사용자가 입력하던 값이 날아간다)
+  const hasPrefilledRef = useRef(false);
+  useEffect(() => {
+    if (!editTarget || hasPrefilledRef.current) return;
+    hasPrefilledRef.current = true;
+
+    setCourseName(editTarget.custom.title ?? "");
+    setMemo(editTarget.item.memo ?? "");
+    if (editTarget.custom.meetings.length > 0) {
+      setTimeSlots(
+        editTarget.custom.meetings.map((meeting, index) => ({
+          id: `slot-${index + 1}`,
+          day: DAY_INDEX[meeting.day],
+          startTime: toHourMinute(meeting.startTime),
+          endTime: toHourMinute(meeting.endTime),
+          location: meeting.location ?? undefined,
+        })),
+      );
+    }
+  }, [editTarget]);
 
   // 시간 슬롯 제어 함수들
   const handleTimeSlotChange = (updatedSlot: CourseTimeSlot) => {
@@ -109,6 +136,17 @@ const MobileCourseAddPage = () => {
     }
     setNameError("");
 
+    // "HH:mm"은 사전순 비교가 곧 시간순 비교다(0 패딩 고정폭)
+    const invalidSlotIndex = timeSlots.findIndex(
+      (slot) => slot.endTime <= slot.startTime,
+    );
+    if (invalidSlotIndex !== -1) {
+      alert(
+        `일정 ${invalidSlotIndex + 1}의 종료 시간이 시작 시간보다 빠르거나 같아요.`,
+      );
+      return;
+    }
+
     if (!activeTimetable || activeTimetableId === null) {
       alert("활성화된 시간표가 없습니다.");
       return;
@@ -124,11 +162,11 @@ const MobileCourseAddPage = () => {
     const title = courseName.trim();
     const trimmedMemo = memo.trim();
 
-    if (editItem) {
+    if (editingScheduleId !== null) {
       updateCustomItemMutation.mutate(
         {
           timeTableId: activeTimetableId,
-          customScheduleId: editItem.customScheduleId,
+          customScheduleId: editingScheduleId,
           body: { title, memo: trimmedMemo || undefined, meetings },
         },
         {
@@ -141,8 +179,12 @@ const MobileCourseAddPage = () => {
                 meeting_count: meetings.length,
               },
             );
-            alert(`"${title}" 과목이 수정되었습니다.`);
-            navigate(ROUTES.TIMETABLE.EDIT, { replace: true });
+            alert(`"${title}" 일정이 수정되었습니다.`);
+            // EDIT로 push하면 안 된다. 이 화면은 신 앱에서 별도 웹뷰로 열리므로
+            // 아래에 편집 화면 웹뷰가 그대로 살아 있고, 여기서 또 편집 화면을
+            // 그리면 같은 화면이 두 겹으로 쌓인다. 웹뷰를 닫아 원래 화면으로
+            // 돌아간다(router.tsx가 -1을 appBridge.goBack()으로 처리).
+            navigate(-1);
           },
           onError: (error: any) => {
             alert(
@@ -165,8 +207,8 @@ const MobileCourseAddPage = () => {
             semester: activeTimetable.semester,
             meeting_count: meetings.length,
           });
-          alert(`"${title}" 과목이 시간표에 추가되었습니다.`);
-          navigate(ROUTES.TIMETABLE.EDIT, { replace: true });
+          alert(`"${title}" 일정이 시간표에 추가되었습니다.`);
+          navigate(-1); // 위 수정 성공 분기의 주석 참고
         },
         onError: (error: any) => {
           alert(error.response?.data?.msg || "커스텀 일정 추가에 실패했습니다.");
@@ -174,6 +216,20 @@ const MobileCourseAddPage = () => {
       },
     );
   };
+
+  // 수정 모드인데 아직 값을 채우지 못했다면 빈 폼을 보여주지 않는다.
+  // 빈 폼이 스쳐 보이면 "추가 화면이 열렸다"로 오인되고, 그 사이 입력한 값도 덮인다.
+  if (isEditMode && !editTarget) {
+    return (
+      <PageWrapper>
+        <StatusText>
+          {isDetailLoading || activeTimetableId === null
+            ? "일정을 불러오는 중이에요."
+            : "일정을 찾을 수 없어요. 삭제되었을 수 있어요."}
+        </StatusText>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
@@ -183,7 +239,8 @@ const MobileCourseAddPage = () => {
         <FormFields>
           <StyledInputField
             ref={courseNameRef as any}
-            label="이름"
+            label="이름 *"
+            required
             placeholder="이름 입력"
             value={courseName}
             onChange={(val) => {
@@ -247,6 +304,15 @@ const PageWrapper = styled.div`
   @media ${DESKTOP_MEDIA} {
     padding: calc(var(--header-height, 56px) + 16px) 16px 120px;
   }
+`;
+
+const StatusText = styled.p`
+  color: var(--gray-600, #6b7684);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  margin: 0;
+  padding: 40px 0;
 `;
 
 const FormSection = styled.section`
