@@ -13,6 +13,7 @@ import {
   FcmAdminLogData,
   FcmSendRequest,
   FcmSendStatus,
+  isAdminUser,
 } from "@/types/admin.ts";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
@@ -51,7 +52,14 @@ export default function MobileAdminNotificationPage() {
   });
 
   useEffect(() => {
-    if (!tokenInfo.accessToken || userInfo.role !== "admin") {
+    const hasStoredToken = Boolean(localStorage.getItem("tokenInfo"));
+
+    if (!tokenInfo.accessToken && !hasStoredToken) {
+      mobilenavigate("/home");
+      return;
+    }
+
+    if (userInfo.role && !isAdminUser(userInfo.role)) {
       mobilenavigate("/home");
     }
   }, [mobilenavigate, tokenInfo.accessToken, userInfo.role]);
@@ -69,7 +77,7 @@ export default function MobileAdminNotificationPage() {
   };
 
   useEffect(() => {
-    if (tokenInfo.accessToken && userInfo.role === "admin") {
+    if (tokenInfo.accessToken && isAdminUser(userInfo.role)) {
       void fetchLogs();
     }
   }, [tokenInfo.accessToken, userInfo.role]);

@@ -17,6 +17,11 @@ export type AdminNotificationTargetType =
   | "STUDENT_IDS"
   | "DEPARTMENTS";
 
+export const isAdminUser = (role?: string): boolean => {
+  if (!role) return false;
+  return role.toLowerCase().includes("admin");
+};
+
 export type AdminNotificationSubFilter =
   | "NONE"
   | "NO_TIMETABLE_CURRENT_SEMESTER"
