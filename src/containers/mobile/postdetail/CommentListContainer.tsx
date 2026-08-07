@@ -170,7 +170,7 @@ export default function CommentListMobile({
                 <CommentText>{reply.content}</CommentText>
 
                 <CommentFooterRow>
-                  <ReplyActionBtn onClick={() => handleReplyTo(reply)}>답장</ReplyActionBtn>
+                  <ReplyActionBtn onClick={() => handleReplyTo(reply)}>답글 달기</ReplyActionBtn>
                   <HeartGroup>
                     <ReplyLikeButton id={reply.id} like={reply.like} isLiked={reply.isLiked} />
                   </HeartGroup>
