@@ -2,19 +2,20 @@ import styled from "styled-components";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 
 import Box from "@/components/common/Box";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
 import PostItem from "@/components/mobile/notice/PostItem";
-import { getAlerts } from "@/apis/members";
+import { getAlerts, readNotification } from "@/apis/members";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { Notification } from "@/types/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import notificationCategory from "@/resources/strings/notificationCategory";
 import { formatTimeAgo } from "@/utils/date";
+import { UNREAD_NOTIFICATION_QUERY_KEY } from "@/hooks/useUnreadNotification";
 
 function getStoredAccessToken() {
   const storedTokenInfo = localStorage.getItem("tokenInfo");
@@ -39,11 +40,40 @@ const MobileAlertPage = () => {
   const { tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { ref, inView } = useInView();
   const hasShownLoginConfirmRef = useRef(false);
 
   const isLoggedIn =
     Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
+
+  const handleAlertClick = async (alert: Notification) => {
+    mixpanelTrack.notificationClicked(alert.type, alert.title);
+
+    if (alert.memberFcmMessageId && !alert.isRead) {
+      try {
+        await readNotification(alert.memberFcmMessageId);
+        void queryClient.invalidateQueries({ queryKey: UNREAD_NOTIFICATION_QUERY_KEY });
+        void queryClient.invalidateQueries({ queryKey: ["alerts"] });
+      } catch (e) {
+        console.error("Failed to mark notification as read", e);
+      }
+    }
+
+    if (alert.type === "DEPARTMENT") {
+      navigate(ROUTES.BOARD.DEPT_NOTICE);
+    } else if (alert.type === "SCHOOL_NOTICE") {
+      navigate(ROUTES.BOARD.NOTICE);
+    } else if (alert.type === "CHAT") {
+      if (alert.targetId) {
+        navigate(`${ROUTES.CHAT.ROOT}/${alert.targetId}`);
+      } else {
+        navigate(ROUTES.CHAT.LIST);
+      }
+    } else if (alert.type === "FRIEND") {
+      navigate(`${ROUTES.CHAT.LIST}?category=친구`);
+    }
+  };
 
   const menuItems = useMemo<MenuItemType[]>(
     () => [
@@ -139,33 +169,21 @@ const MobileAlertPage = () => {
         ) : (
           <TipsCardWrapper>
             {alerts.map((alert: Notification, index: number) => (
-              <Box
-                key={`${alert.fcmMessageId || index}`}
-                onClick={() => {
-                  mixpanelTrack.notificationClicked(alert.type, alert.title);
-                  if (alert.type === "DEPARTMENT") {
-                    navigate(ROUTES.BOARD.DEPT_NOTICE);
-                  } else if (alert.type === "SCHOOL_NOTICE") {
-                    navigate(ROUTES.BOARD.NOTICE);
-                  } else if (alert.type === "CHAT") {
-                    if (alert.targetId) {
-                      navigate(`${ROUTES.CHAT.ROOT}/${alert.targetId}`);
-                    } else {
-                      navigate(ROUTES.CHAT.LIST);
-                    }
-                  } else if (alert.type === "FRIEND") {
-                    navigate(`${ROUTES.CHAT.LIST}?category=친구`);
-                  }
-                }}
+              <AlertItemBox
+                key={`${alert.memberFcmMessageId || alert.fcmMessageId || index}`}
+                $isRead={Boolean(alert.isRead)}
+                onClick={() => void handleAlertClick(alert)}
               >
-                <PostItem
-                  category={notificationCategory[alert.type] || alert.type}
-                  title={alert.title}
-                  content={alert.body}
-                  date={formatTimeAgo(alert.createDate)}
-                  isEllipsis={false}
-                />
-              </Box>
+                <Box>
+                  <PostItem
+                    category={notificationCategory[alert.type] || alert.type}
+                    title={alert.title}
+                    content={alert.body}
+                    date={formatTimeAgo(alert.createDate)}
+                    isEllipsis={false}
+                  />
+                </Box>
+              </AlertItemBox>
             ))}
           </TipsCardWrapper>
         )}
@@ -217,4 +235,10 @@ const LoadingText = styled.h4`
   padding: 20px 0;
   color: #888;
   font-size: 14px;
+`;
+
+const AlertItemBox = styled.div<{ $isRead?: boolean }>`
+  width: 100%;
+  opacity: ${({ $isRead }) => ($isRead ? 0.55 : 1)};
+  transition: opacity 0.2s ease;
 `;
