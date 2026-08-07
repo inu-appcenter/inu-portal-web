@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import { Eye, MessageSquare, Share2 } from "lucide-react";
-import PostUtilContainer from "../../../../containers/mobile/postdetail/PostUtilContainer.tsx";
+import { Eye } from "lucide-react";
+import { formatTimeAgo } from "@/utils/date";
 
 interface PostTitleProps {
   id: number;
@@ -17,20 +17,6 @@ interface PostTitleProps {
   replyCount?: number;
   onWriterClick?: (id: number) => void;
 }
-
-const formatDetailDate = (dateStr?: string) => {
-  if (!dateStr) return "";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}.${month}.${day}`;
-  } catch (e) {
-    return dateStr;
-  }
-};
 
 export default function PostTitle({
   id,
@@ -73,7 +59,7 @@ export default function PostTitle({
             >
               {writer || "익명"}
             </AuthorName>
-            <DateText>{formatDetailDate(createDate)}</DateText>
+            <DateText>{formatTimeAgo(createDate)}</DateText>
           </AuthorDetailColumn>
         </AuthorInfoLeft>
 
