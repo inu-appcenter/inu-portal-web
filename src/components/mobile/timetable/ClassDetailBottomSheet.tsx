@@ -332,7 +332,9 @@ export default function ClassDetailBottomSheet({
                     ) : hasMemo ? (
                       <>
                         <FieldLabel
-                          style={{ cursor: canEditMemo ? "pointer" : "default" }}
+                          style={{
+                            cursor: canEditMemo ? "pointer" : "default",
+                          }}
                         >
                           메모
                         </FieldLabel>
@@ -371,7 +373,7 @@ export default function ClassDetailBottomSheet({
                       alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                     }}
                   >
-                    과목 상세
+                    강의계획서
                   </SyllabusButton>
                 </FooterButtonGroup>
               </FooterSection>
