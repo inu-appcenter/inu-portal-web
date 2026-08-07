@@ -20,28 +20,28 @@ import { describe, expect, test, beforeAll } from "vitest";
 
 let DEFAULT_FILTERS: typeof import("../courseFilterModel").DEFAULT_FILTERS;
 let ONLINE_TYPE_OPTIONS: typeof import("../courseFilterModel").ONLINE_TYPE_OPTIONS;
-let ONLINE_TYPE_TO_SSUP_NAME: typeof import("../courseFilterModel").ONLINE_TYPE_TO_SSUP_NAME;
+let ONLINE_TYPE_TO_SSUP_NAMES: typeof import("../courseFilterModel").ONLINE_TYPE_TO_SSUP_NAMES;
 let expandOnlineTypeLabel: typeof import("../courseFilterModel").expandOnlineTypeLabel;
 let countActiveFilters: typeof import("../courseFilterModel").countActiveFilters;
 let buildCategoryChips: typeof import("../courseFilterModel").buildCategoryChips;
 let removeChipFromFilters: typeof import("../courseFilterModel").removeChipFromFilters;
-let mapFilterToOfferingFilters: typeof import("@/utils/courseSearchResult").mapFilterToOfferingFilters;
-let matchesCourseOfferingFilters: typeof import("@/apis/courseOfferings").matchesCourseOfferingFilters;
+let mapFilterToOfferingFilters: typeof import("../../../../../utils/courseSearchResult").mapFilterToOfferingFilters;
+let matchesCourseOfferingFilters: typeof import("../../../../../apis/courseOfferings").matchesCourseOfferingFilters;
 
 beforeAll(async () => {
   const model = await import("../courseFilterModel");
   DEFAULT_FILTERS = model.DEFAULT_FILTERS;
   ONLINE_TYPE_OPTIONS = model.ONLINE_TYPE_OPTIONS;
-  ONLINE_TYPE_TO_SSUP_NAME = model.ONLINE_TYPE_TO_SSUP_NAME;
+  ONLINE_TYPE_TO_SSUP_NAMES = model.ONLINE_TYPE_TO_SSUP_NAMES;
   expandOnlineTypeLabel = model.expandOnlineTypeLabel;
   countActiveFilters = model.countActiveFilters;
   buildCategoryChips = model.buildCategoryChips;
   removeChipFromFilters = model.removeChipFromFilters;
 
-  const resultUtil = await import("@/utils/courseSearchResult");
+  const resultUtil = await import("../../../../../utils/courseSearchResult");
   mapFilterToOfferingFilters = resultUtil.mapFilterToOfferingFilters;
 
-  const api = await import("@/apis/courseOfferings");
+  const api = await import("../../../../../apis/courseOfferings");
   matchesCourseOfferingFilters = api.matchesCourseOfferingFilters;
 });
 
@@ -49,17 +49,17 @@ describe("courseFilterModel & online filter tests", () => {
   test("DEFAULT_FILTERS initialized with empty onlineTypes", () => {
     expect(DEFAULT_FILTERS.onlineTypes).toEqual([]);
     expect(ONLINE_TYPE_OPTIONS.length).toBeGreaterThan(0);
-    expect(Object.keys(ONLINE_TYPE_TO_SSUP_NAME).length).toBeGreaterThan(0);
+    expect(Object.keys(ONLINE_TYPE_TO_SSUP_NAMES).length).toBeGreaterThan(0);
   });
 
-  test("ONLINE_TYPE_TO_SSUP_NAME maps UI labels to backend SSUP_TYPE_NAME enums", () => {
-    expect(expandOnlineTypeLabel("이러닝")).toBe("E_LEARNING");
-    expect(expandOnlineTypeLabel("이러닝(HUSS)")).toBe("E_LEARNING_HUSS");
-    expect(expandOnlineTypeLabel("OCU")).toBe("OCU");
-    expect(expandOnlineTypeLabel("블렌디드 온라인")).toBe("BLENDED_ONLINE_COURSE");
-    expect(expandOnlineTypeLabel("블렌디드 온라인(HUSS)")).toBe("BLENDED_ONLINE_COURSE_HUSS");
-    expect(expandOnlineTypeLabel("K-MOOC")).toBe("K_MOOC");
-    expect(expandOnlineTypeLabel("RISE(시간표 없음)")).toBe("RISE_WITHOUT_TIMETABLE");
+  test("ONLINE_TYPE_TO_SSUP_NAMES maps UI labels to backend ssupTypeName strings and enums", () => {
+    expect(expandOnlineTypeLabel("이러닝")).toEqual(["e-Learning", "E_LEARNING"]);
+    expect(expandOnlineTypeLabel("이러닝(HUSS)")).toEqual(["e-Learning(HUSS)", "E_LEARNING_HUSS"]);
+    expect(expandOnlineTypeLabel("OCU")).toEqual(["열린사이버대학(OCU)", "OCU"]);
+    expect(expandOnlineTypeLabel("블렌디드 온라인")).toEqual(["온라인혼합형강좌", "BLENDED_ONLINE_COURSE"]);
+    expect(expandOnlineTypeLabel("블렌디드 온라인(HUSS)")).toEqual(["온라인혼합형강좌(HUSS)", "BLENDED_ONLINE_COURSE_HUSS"]);
+    expect(expandOnlineTypeLabel("K-MOOC")).toEqual(["K-MOOC", "K_MOOC"]);
+    expect(expandOnlineTypeLabel("RISE(시간표 없음)")).toEqual(["RISE(시간표 없음)", "RISE_WITHOUT_TIMETABLE"]);
   });
 
   test("countActiveFilters includes onlineTypes", () => {
@@ -88,17 +88,22 @@ describe("courseFilterModel & online filter tests", () => {
     expect(updated.onlineTypes).toEqual(["OCU"]);
   });
 
-  test("mapFilterToOfferingFilters maps onlineTypes to ssupTypeNames", () => {
+  test("mapFilterToOfferingFilters maps onlineTypes to ssupTypeNames array", () => {
     const filters = {
       ...DEFAULT_FILTERS,
       onlineTypes: ["이러닝", "OCU"],
     };
     const mapped = mapFilterToOfferingFilters(filters);
-    expect(mapped.ssupTypeNames).toEqual(["E_LEARNING", "OCU"]);
+    expect(mapped.ssupTypeNames).toEqual([
+      "e-Learning",
+      "E_LEARNING",
+      "열린사이버대학(OCU)",
+      "OCU",
+    ]);
   });
 
   test("matchesCourseOfferingFilters correctly filters offerings by ssupTypeNames", () => {
-    const offering1: import("@/types/courseOfferings").CourseOffering = {
+    const offering1: import("../../../../../types/courseOfferings").CourseOffering = {
       id: 1,
       syllabus: null,
       subjectNumber: "10001001",
@@ -113,10 +118,10 @@ describe("courseFilterModel & online filter tests", () => {
       note: null,
       meetings: [],
       ssupTypeCode: "E_LEARNING",
-      ssupTypeName: "E_LEARNING",
+      ssupTypeName: "e-Learning",
     };
 
-    const offering2: import("@/types/courseOfferings").CourseOffering = {
+    const offering2: import("../../../../../types/courseOfferings").CourseOffering = {
       id: 2,
       syllabus: null,
       subjectNumber: "10002001",
@@ -131,10 +136,10 @@ describe("courseFilterModel & online filter tests", () => {
       note: null,
       meetings: [],
       ssupTypeCode: "OFFLINE",
-      ssupTypeName: "OFFLINE",
+      ssupTypeName: "강의(이론)",
     };
 
-    const filters = { ssupTypeNames: ["E_LEARNING", "OCU"] };
+    const filters = { ssupTypeNames: ["e-Learning", "E_LEARNING", "열린사이버대학(OCU)", "OCU"] };
 
     expect(matchesCourseOfferingFilters(offering1, undefined, filters)).toBe(true);
     expect(matchesCourseOfferingFilters(offering2, undefined, filters)).toBe(false);

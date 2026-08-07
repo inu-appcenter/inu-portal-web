@@ -163,7 +163,7 @@ export function mapFilterToOfferingFilters(filters: FilterState): CourseOffering
   }
 
   const meetings = filters.selectedSlots ? formatSlotsToMeetings(filters.selectedSlots) : [];
-  const ssupTypeNames = (filters.onlineTypes ?? []).map(expandOnlineTypeLabel);
+  const ssupTypeNames = (filters.onlineTypes ?? []).flatMap(expandOnlineTypeLabel);
 
   return {
     collegeName,

@@ -67,18 +67,18 @@ export const ONLINE_TYPE_OPTIONS = [
   "RISE(시간표 없음)",
 ] as const;
 
-export const ONLINE_TYPE_TO_SSUP_NAME: Record<string, string> = {
-  이러닝: "E_LEARNING",
-  "이러닝(HUSS)": "E_LEARNING_HUSS",
-  OCU: "OCU",
-  "블렌디드 온라인": "BLENDED_ONLINE_COURSE",
-  "블렌디드 온라인(HUSS)": "BLENDED_ONLINE_COURSE_HUSS",
-  "K-MOOC": "K_MOOC",
-  "RISE(시간표 없음)": "RISE_WITHOUT_TIMETABLE",
+export const ONLINE_TYPE_TO_SSUP_NAMES: Record<string, readonly string[]> = {
+  이러닝: ["e-Learning", "E_LEARNING"],
+  "이러닝(HUSS)": ["e-Learning(HUSS)", "E_LEARNING_HUSS"],
+  OCU: ["열린사이버대학(OCU)", "OCU"],
+  "블렌디드 온라인": ["온라인혼합형강좌", "BLENDED_ONLINE_COURSE"],
+  "블렌디드 온라인(HUSS)": ["온라인혼합형강좌(HUSS)", "BLENDED_ONLINE_COURSE_HUSS"],
+  "K-MOOC": ["K-MOOC", "K_MOOC"],
+  "RISE(시간표 없음)": ["RISE(시간표 없음)", "RISE_WITHOUT_TIMETABLE"],
 };
 
-export const expandOnlineTypeLabel = (label: string): string =>
-  ONLINE_TYPE_TO_SSUP_NAME[label] ?? label;
+export const expandOnlineTypeLabel = (label: string): readonly string[] =>
+  ONLINE_TYPE_TO_SSUP_NAMES[label] ?? [label];
 
 export const SORT_OPTIONS = ["기본순", "별점높은순", "담은인원많은순"] as const;
 export const TYPE_OPTIONS = ["전공", "교양", "교직", "일반선택", "군사학"] as const;
