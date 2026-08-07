@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Box from "@/components/common/Box";
 import { getTipsCategories } from "@/apis/categories";
 import { getPostsMobile } from "@/apis/posts";
@@ -9,7 +9,6 @@ import { Post } from "@/types/posts";
 import Divider from "@/components/common/Divider";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import Skeleton from "@/components/common/Skeleton";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import {
@@ -23,6 +22,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperClass } from "swiper";
 import "swiper/css";
 import { resetScrollToTop } from "@/utils/scroll";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 interface CategoryPostListProps {
   category: string;
@@ -30,44 +30,30 @@ interface CategoryPostListProps {
 
 const CategoryPostList = ({ category }: CategoryPostListProps) => {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [lastPostId, setLastPostId] = useState<number | undefined>(undefined);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const fetchData = useCallback(
-    async (isFirst: boolean = false) => {
-      if (isLoading && !isFirst) return;
-
-      setIsLoading(true);
-      try {
-        const response = await getPostsMobile(isFirst ? undefined : lastPostId, category);
-        const newPosts: Post[] = response.data;
-
-        if (newPosts && newPosts.length > 0) {
-          setPosts((prev) => (isFirst ? newPosts : [...prev, ...newPosts]));
-          setLastPostId(newPosts[newPosts.length - 1]?.id);
-          setHasMore(newPosts.length >= 10);
-        } else {
-          if (isFirst) setPosts([]);
-          setHasMore(false);
-        }
-      } catch (error) {
-        console.error("게시글 목록 로드 실패", error);
-        setHasMore(false);
-      } finally {
-        setIsLoading(false);
-      }
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["posts", "mobile", category],
+    queryFn: async ({ pageParam }) => {
+      const response = await getPostsMobile(pageParam, category);
+      return (response.data || []) as Post[];
     },
-    [category, isLoading, lastPostId],
-  );
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage || lastPage.length < 10) return undefined;
+      return lastPage[lastPage.length - 1]?.id;
+    },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+  });
 
-  useEffect(() => {
-    setPosts([]);
-    setLastPostId(undefined);
-    setHasMore(true);
-    fetchData(true);
-  }, [category]);
+  const posts = useMemo(() => {
+    return data?.pages.flatMap((page) => page) ?? [];
+  }, [data]);
 
   if (isLoading && posts.length === 0) {
     return (
@@ -88,10 +74,14 @@ const CategoryPostList = ({ category }: CategoryPostListProps) => {
     <ListContainer>
       <InfiniteScroll
         dataLength={posts.length}
-        next={() => fetchData()}
-        hasMore={hasMore}
+        next={fetchNextPage}
+        hasMore={Boolean(hasNextPage)}
         scrollableTarget="app-scroll-view"
-        loader={<LoadingText>Loading...</LoadingText>}
+        loader={
+          <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
+            <PostItem isLoading />
+          </Box>
+        }
         endMessage={posts.length > 0 ? <LoadingText>더 이상 게시물이 없습니다.</LoadingText> : null}
       >
         <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
@@ -101,6 +91,7 @@ const CategoryPostList = ({ category }: CategoryPostListProps) => {
                 <PostItem
                   id={post.id}
                   title={post.title}
+                  content={post.content}
                   date={post.createDate}
                   writer={post.writer}
                   like={post.like}
@@ -131,28 +122,21 @@ const MobileTipsPage = () => {
   const params = new URLSearchParams(location.search);
   const requestedCategory = params.get("category");
 
-  const [categoryList, setCategoryList] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [hasSwiped, setHasSwiped] = useState(() => {
     return localStorage.getItem("has_swiped_tips") === "true";
   });
 
-  useEffect(() => {
-    const initData = async () => {
-      setIsLoading(true);
-      try {
-        const categoryRes = await getTipsCategories();
-        setCategoryList(categoryRes.data);
-      } catch (error) {
-        console.error("카테고리 로드 실패", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: categoryResData } = useQuery({
+    queryKey: ["categories", "tips"],
+    queryFn: async () => {
+      const res = await getTipsCategories();
+      return (res.data || []) as string[];
+    },
+    staleTime: 1000 * 60 * 30,
+  });
 
-    initData();
-  }, []);
+  const categoryList = useMemo(() => categoryResData ?? [], [categoryResData]);
 
   const selectedCategory = useMemo(() => {
     if (requestedCategory && categoryList.includes(requestedCategory)) {
@@ -230,36 +214,25 @@ const MobileTipsPage = () => {
 
   return (
     <MobileTipsPageWrapper>
-      {isLoading ? (
-        <ListContainer>
-          <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Fragment key={`tips-page-skeleton-${index}`}>
-                <Skeleton width="70%" height={22} />
-                {index < 5 && <Divider margin="16px 0" />}
-              </Fragment>
-            ))}
-          </Box>
-        </ListContainer>
+      {categoryList.length > 0 ? (
+        <Swiper
+          onSwiper={setSwiperRef}
+          initialSlide={currentIndex}
+          onSlideChange={handleSlideChange}
+          speed={320}
+          autoHeight={true}
+          observer={true}
+          observeParents={true}
+          style={{ width: "100%" }}
+        >
+          {categoryList.map((category) => (
+            <SwiperSlide key={category} style={{ height: "auto" }}>
+              <CategoryPostList category={category} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       ) : (
-        categoryList.length > 0 && (
-          <Swiper
-            onSwiper={setSwiperRef}
-            initialSlide={currentIndex}
-            onSlideChange={handleSlideChange}
-            speed={320}
-            autoHeight={true}
-            observer={true}
-            observeParents={true}
-            style={{ width: "100%" }}
-          >
-            {categoryList.map((category) => (
-              <SwiperSlide key={category} style={{ height: "auto" }}>
-                <CategoryPostList category={category} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        )
+        <CategoryPostList category={selectedCategory} />
       )}
       <SwipeChevronGuides
         hasSwiped={hasSwiped}
@@ -289,11 +262,11 @@ const MobileTipsPageWrapper = styled.div`
 
 const ListContainer = styled.div`
   width: 100%;
-  padding: 12px 0 40px;
+  padding: 0 0 40px;
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 16px 0 120px;
+    padding: 0 0 120px;
   }
 `;
 
