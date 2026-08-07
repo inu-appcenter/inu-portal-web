@@ -12,6 +12,14 @@ export const formatCourseMeetings = (course: WizardCourseOption): string =>
     )
     .join(", ");
 
+export const formatCourseMeta = (course: WizardCourseOption): string => {
+  const timeStr = formatCourseMeetings(course);
+  const parts = [course.professor, course.subjectNumber, timeStr].filter(
+    (part): part is string => Boolean(part && part.trim()),
+  );
+  return parts.join(" · ");
+};
+
 // 마법사 후보 강의를 TimetableGrid가 그릴 수 있는 ClassItem으로 변환 (읽기 전용 미리보기용)
 export const mapWizardCoursesToClassItems = (
   courses: WizardCourseOption[],
