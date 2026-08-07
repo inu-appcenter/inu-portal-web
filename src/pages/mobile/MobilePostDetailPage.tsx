@@ -154,6 +154,12 @@ export default function PostDetailPage() {
             <PostContentContainer ClubRecruit={post} onWriterClick={handleWriterClick} />
             <CommentWrapper>
               <CommentListMobile
+                postId={post.id}
+                like={post.like}
+                isLiked={post.isLiked}
+                scrap={post.scrap}
+                isScraped={post.isScraped}
+                title={post.title}
                 bestReply={post.bestReplies[0]}
                 replies={post.replies}
                 setReplyToReply={setReplyToReply}
@@ -193,14 +199,17 @@ export default function PostDetailPage() {
 }
 const Wrapper = styled.div`
   width: 100%;
+  min-height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
   background-color: var(--bg-subtle, #f8f9fb);
   box-sizing: border-box;
-  min-height: 100vh;
 `;
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
   position: relative;
   z-index: 1;
 `;
@@ -208,5 +217,6 @@ const PostWrapper = styled.div`
 const CommentWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
   position: relative;
 `;

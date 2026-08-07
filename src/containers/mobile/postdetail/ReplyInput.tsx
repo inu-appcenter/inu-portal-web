@@ -6,10 +6,8 @@ import { Reply } from "@/types/posts";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { postReply, postReReply, putReply } from "@/apis/replies";
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
-import enter from "@/resources/assets/posts/enter.svg";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { CheckSquare, Square, CornerDownLeft } from "lucide-react";
 
 interface ReplyInputProps {
   postId: number;
@@ -174,7 +172,11 @@ export default function ReplyInput({
               : handleLoginRedirect
           }
         >
-          <img src={isAnonymous ? checkedCheckbox : uncheckedCheckbox} alt="" />
+          {isAnonymous ? (
+            <CheckSquare size={18} color="#0061FF" />
+          ) : (
+            <Square size={18} color="#B0B8C1" />
+          )}
           <span>익명</span>
         </span>
         {isLoggedIn ? (
@@ -185,12 +187,9 @@ export default function ReplyInput({
               onChange={(e) => setReplyContent(e.target.value)}
               onKeyDown={handleKeyPress}
             />
-            <img
-              className="send-button"
-              src={enter}
-              alt="전송"
-              onClick={handleCreateReply}
-            />
+            <SendButtonBtn onClick={handleCreateReply}>
+              <CornerDownLeft size={20} color="#0061FF" />
+            </SendButtonBtn>
           </>
         ) : (
           <input
@@ -283,15 +282,21 @@ const StyledReplyInput = styled.div`
   .login-placeholder {
     cursor: pointer;
   }
+`;
 
-  .send-button {
-    flex: 0 0 40px;
-    width: 40px;
-    height: 40px;
-    padding: 8px;
-    box-sizing: border-box;
-    display: block;
-    cursor: pointer;
+const SendButtonBtn = styled.div`
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.15s ease;
+
+  &:active {
+    background-color: #f0f4ff;
   }
 `;
 

@@ -1,5 +1,6 @@
 import PostTitle from "@/components/mobile/postdetail/post/posttitle";
 import PostContent from "@/components/mobile/postdetail/post/postcontent";
+import PostActionBar from "@/components/mobile/postdetail/post/PostActionBar";
 import styled from "styled-components";
 import { PostDetail } from "@/types/posts";
 import { CouncilNotice } from "@/types/councilNotices";
@@ -19,35 +20,41 @@ export default function PostContentContainer({
   onWriterClick,
 }: PostContentContainerProps) {
   return (
-    <Wrapper>
+    <OuterContainer>
       {ClubRecruit && (
         <>
-          <PostTitle
+          <HeaderAndContentWrapper>
+            <PostTitle
+              id={ClubRecruit.id}
+              title={ClubRecruit.title}
+              createDate={ClubRecruit.createDate}
+              view={ClubRecruit.view}
+              writer={ClubRecruit.writer}
+              memberId={ClubRecruit.memberId}
+              fireId={ClubRecruit.fireId}
+              onWriterClick={onWriterClick}
+            />
+            <PostContent
+              id={ClubRecruit.id}
+              content={ClubRecruit.content}
+              imageCount={ClubRecruit.imageCount}
+              modifiedDate={ClubRecruit.modifiedDate}
+              type="TIPS"
+            />
+          </HeaderAndContentWrapper>
+          <PostActionBar
             id={ClubRecruit.id}
-            title={ClubRecruit.title}
-            createDate={ClubRecruit.createDate}
-            view={ClubRecruit.view}
-            writer={ClubRecruit.writer}
             like={ClubRecruit.like}
             isLiked={ClubRecruit.isLiked}
             scrap={ClubRecruit.scrap}
             isScraped={ClubRecruit.isScraped}
-            memberId={ClubRecruit.memberId}
-            fireId={ClubRecruit.fireId}
             replyCount={ClubRecruit.replies?.length || 0}
-            onWriterClick={onWriterClick}
-          />
-          <PostContent
-            id={ClubRecruit.id}
-            content={ClubRecruit.content}
-            imageCount={ClubRecruit.imageCount}
-            modifiedDate={ClubRecruit.modifiedDate}
-            type="TIPS"
+            title={ClubRecruit.title}
           />
         </>
       )}
       {councilNotice && (
-        <>
+        <HeaderAndContentWrapper>
           <PostTitle
             id={councilNotice.id}
             title={councilNotice.title}
@@ -61,10 +68,10 @@ export default function PostContentContainer({
             modifiedDate={councilNotice.modifiedDate}
             type="COUNCILNOTICE"
           />
-        </>
+        </HeaderAndContentWrapper>
       )}
       {petition && (
-        <>
+        <HeaderAndContentWrapper>
           <PostTitle
             id={petition.id}
             title={petition.title}
@@ -79,16 +86,24 @@ export default function PostContentContainer({
             modifiedDate={petition.modifiedDate}
             type="PETITION"
           />
-        </>
+        </HeaderAndContentWrapper>
       )}
-    </Wrapper>
+    </OuterContainer>
   );
 }
 
-const Wrapper = styled.div`
+const OuterContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  padding: 32px 16px;
   background-color: var(--bg-subtle, #f8f9fb);
+  width: 100%;
+`;
+
+const HeaderAndContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 16px 8px;
+  width: 100%;
+  box-sizing: border-box;
 `;

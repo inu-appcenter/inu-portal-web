@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Reply } from "@/types/posts";
 import { useNavigate } from "react-router-dom";
 import ReplyLikeButton from "@/components/desktop/posts/ReplyLikeButton";
+import PostActionBar from "@/components/mobile/postdetail/post/PostActionBar";
 import React, { useState } from "react";
 import axios, { AxiosError } from "axios";
 import { ROUTES } from "@/constants/routes";
@@ -10,6 +11,12 @@ import useUserStore from "@/stores/useUserStore";
 import { MoreVertical } from "lucide-react";
 
 interface CommentListProps {
+  postId?: number;
+  like?: number;
+  isLiked?: boolean;
+  scrap?: number;
+  isScraped?: boolean;
+  title?: string;
   bestReply?: Reply;
   replies: Reply[];
   setReplyToReply: (reply: Reply | null) => void;
@@ -20,6 +27,12 @@ interface CommentListProps {
 }
 
 export default function CommentListMobile({
+  postId,
+  like,
+  isLiked,
+  scrap,
+  isScraped,
+  title,
   bestReply,
   replies,
   setReplyToReply,
@@ -230,13 +243,15 @@ export default function CommentListMobile({
 
 const CommentSectionWrapper = styled.div`
   background: var(--bg-base, #ffffff);
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
-  box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.08);
-  padding: 16px 0 120px;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0px -2px 8px 0px rgba(0, 0, 0, 0.04);
+  padding: 12px 0 80px;
   display: flex;
   flex-direction: column;
+  flex: 1;
   width: 100%;
+  box-sizing: border-box;
 `;
 
 const CommentItemRow = styled.div`
@@ -397,5 +412,5 @@ const EmptyCommentMsg = styled.div`
   font-size: 14px;
   color: var(--text-tertiary, #8b95a1);
   text-align: center;
-  padding: 32px 16px;
+  padding: 20px 16px;
 `;
