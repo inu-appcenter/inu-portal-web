@@ -30,6 +30,8 @@ export interface ClassItem {
   evaluation?: string;
   courseId?: string;
   numericCourseId?: number;
+  ssupTypeName?: string;
+  ssupTypeCode?: string;
   isCustom?: boolean;
   isUntimed?: boolean;
 }

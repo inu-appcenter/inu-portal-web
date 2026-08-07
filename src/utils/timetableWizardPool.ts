@@ -38,5 +38,7 @@ export const toWizardCourseOption = (
     credit: Number.isFinite(parsedCredit) ? parsedCredit : 0,
     department: offering.deptName ?? course?.departmentName ?? null,
     meetings,
+    ssupTypeName: offering.ssupTypeName ?? null,
+    ssupTypeCode: offering.ssupTypeCode ?? null,
   };
 };

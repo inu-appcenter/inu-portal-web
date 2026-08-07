@@ -22,6 +22,7 @@ let DEFAULT_FILTERS: typeof import("../courseFilterModel").DEFAULT_FILTERS;
 let ONLINE_TYPE_OPTIONS: typeof import("../courseFilterModel").ONLINE_TYPE_OPTIONS;
 let ONLINE_TYPE_TO_SSUP_NAMES: typeof import("../courseFilterModel").ONLINE_TYPE_TO_SSUP_NAMES;
 let expandOnlineTypeLabel: typeof import("../courseFilterModel").expandOnlineTypeLabel;
+let getOnlineTypeLabel: typeof import("../courseFilterModel").getOnlineTypeLabel;
 let countActiveFilters: typeof import("../courseFilterModel").countActiveFilters;
 let buildCategoryChips: typeof import("../courseFilterModel").buildCategoryChips;
 let removeChipFromFilters: typeof import("../courseFilterModel").removeChipFromFilters;
@@ -34,6 +35,7 @@ beforeAll(async () => {
   ONLINE_TYPE_OPTIONS = model.ONLINE_TYPE_OPTIONS;
   ONLINE_TYPE_TO_SSUP_NAMES = model.ONLINE_TYPE_TO_SSUP_NAMES;
   expandOnlineTypeLabel = model.expandOnlineTypeLabel;
+  getOnlineTypeLabel = model.getOnlineTypeLabel;
   countActiveFilters = model.countActiveFilters;
   buildCategoryChips = model.buildCategoryChips;
   removeChipFromFilters = model.removeChipFromFilters;
@@ -56,10 +58,20 @@ describe("courseFilterModel & online filter tests", () => {
     expect(expandOnlineTypeLabel("이러닝")).toEqual(["e-Learning", "E_LEARNING"]);
     expect(expandOnlineTypeLabel("이러닝(HUSS)")).toEqual(["e-Learning(HUSS)", "E_LEARNING_HUSS"]);
     expect(expandOnlineTypeLabel("OCU")).toEqual(["열린사이버대학(OCU)", "OCU"]);
-    expect(expandOnlineTypeLabel("블렌디드 온라인")).toEqual(["온라인혼합형강좌", "BLENDED_ONLINE_COURSE"]);
-    expect(expandOnlineTypeLabel("블렌디드 온라인(HUSS)")).toEqual(["온라인혼합형강좌(HUSS)", "BLENDED_ONLINE_COURSE_HUSS"]);
+    expect(expandOnlineTypeLabel("온라인 혼합")).toEqual(["온라인혼합형강좌", "BLENDED_ONLINE_COURSE"]);
+    expect(expandOnlineTypeLabel("온라인 혼합(HUSS)")).toEqual(["온라인혼합형강좌(HUSS)", "BLENDED_ONLINE_COURSE_HUSS"]);
     expect(expandOnlineTypeLabel("K-MOOC")).toEqual(["K-MOOC", "K_MOOC"]);
     expect(expandOnlineTypeLabel("RISE(시간표 없음)")).toEqual(["RISE(시간표 없음)", "RISE_WITHOUT_TIMETABLE"]);
+  });
+
+  test("getOnlineTypeLabel correctly extracts UI display label for online course types", () => {
+    expect(getOnlineTypeLabel("e-Learning", "E_LEARNING")).toBe("이러닝");
+    expect(getOnlineTypeLabel(null, "E_LEARNING")).toBe("이러닝");
+    expect(getOnlineTypeLabel("열린사이버대학(OCU)", "OCU")).toBe("OCU");
+    expect(getOnlineTypeLabel("온라인혼합형강좌")).toBe("온라인 혼합");
+    expect(getOnlineTypeLabel("K-MOOC")).toBe("K-MOOC");
+    expect(getOnlineTypeLabel("강의(이론)", "OFFLINE")).toBe(null);
+    expect(getOnlineTypeLabel(null, null)).toBe(null);
   });
 
   test("countActiveFilters includes onlineTypes", () => {

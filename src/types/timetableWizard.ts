@@ -19,6 +19,8 @@ export interface WizardCourseOption {
   credit: number;
   department: string | null;
   meetings: WizardCourseMeeting[];
+  ssupTypeName?: string | null;
+  ssupTypeCode?: string | null;
 }
 
 // "듣고 싶은 강의" 목록의 항목 하나.

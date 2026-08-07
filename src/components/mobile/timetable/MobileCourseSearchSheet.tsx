@@ -20,7 +20,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
-import { countActiveFilters } from "@/components/mobile/timetable/filter/courseFilterModel";
+import {
+  countActiveFilters,
+  getOnlineTypeLabel,
+} from "@/components/mobile/timetable/filter/courseFilterModel";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -385,6 +388,10 @@ const MobileCourseSearchSheet = ({
                     (addedCourseOfferingIds && addedCourseOfferingIds.has(course.id)) ||
                     (course.courseId && addedCourseIds && addedCourseIds.has(course.courseId)),
                   );
+                  const onlineTypeLabel = getOnlineTypeLabel(
+                    course.ssupTypeName,
+                    course.ssupTypeCode,
+                  );
 
                   return (
                     <CourseItem
@@ -424,6 +431,7 @@ const MobileCourseSearchSheet = ({
                               두 갈래로 뭉개면 전공핵심·전공기초가 "전공심화"로, 교직·
                               일반선택이 "교양"으로 잘못 표시된다. */}
                           <span>{course.isuName || "-"}</span>
+                          {onlineTypeLabel && <span>{onlineTypeLabel}</span>}
                           <span>{course.courseId}</span>
                         </InfoLine>
                         <div>{course.timeStr}</div>
