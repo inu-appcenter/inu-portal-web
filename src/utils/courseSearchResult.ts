@@ -5,6 +5,60 @@ import type { CourseResult } from "@/components/mobile/timetable/MobileCourseSea
 
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
+/**
+ * 이수구분에 따른 카테고리 정렬 순서 (서버 `categoryOrder`와 동일)
+ * 1: 전공 (전공기초/전공핵심/전공심화 등)
+ * 2: 교양 (기초교양/핵심교양/심화교양 등)
+ * 3: 기타 (일반선택, 군사학 등)
+ */
+export function getCategoryOrder(isuName?: string | null): number {
+  if (!isuName) return 3;
+  if (isuName.includes("전공")) return 1;
+  if (isuName.includes("교양")) return 2;
+  return 3;
+}
+
+/**
+ * 학년에 따른 정렬 순서 (서버 `hyNameOrder`와 동일)
+ * 1: 전체 / 공통 / 전학년 / null
+ * 2: 1학년
+ * 3: 2학년
+ * 4: 3학년
+ * 5: 4학년
+ * 99: 기타
+ */
+export function getHyNameOrder(hyName?: string | null): number {
+  if (!hyName) return 1;
+  const name = hyName.trim();
+  if (name === "전체" || name === "전학년" || name === "공통" || name === "") return 1;
+  if (name.startsWith("1") || name.includes("1학년")) return 2;
+  if (name.startsWith("2") || name.includes("2학년")) return 3;
+  if (name.startsWith("3") || name.includes("3학년")) return 4;
+  if (name.startsWith("4") || name.includes("4학년")) return 5;
+  return 99;
+}
+
+/**
+ * 개설강의 목록을 서버의 기본 정렬 기준(categoryOrder asc, hyNameOrder asc, title asc)으로 정렬한다.
+ */
+export function sortCourseOfferingsByGradeAndCategory<
+  T extends { isuName?: string | null; hyName?: string | null; courseTitle?: string; name?: string }
+>(offerings: T[]): T[] {
+  return [...offerings].sort((a, b) => {
+    const catA = getCategoryOrder(a.isuName);
+    const catB = getCategoryOrder(b.isuName);
+    if (catA !== catB) return catA - catB;
+
+    const hyA = getHyNameOrder(a.hyName);
+    const hyB = getHyNameOrder(b.hyName);
+    if (hyA !== hyB) return hyA - hyB;
+
+    const titleA = a.courseTitle || a.name || "";
+    const titleB = b.courseTitle || b.name || "";
+    return titleA.localeCompare(titleB, "ko");
+  });
+}
+
 // 개설강의(CourseOffering: 학기별 시간/강의실/교수) + Course(학점/학과/학년 등 교육과정
 // 정보)를 courseId로 조인해 MobileCourseSearchSheet가 요구하는 CourseResult로 변환한다.
 // 시간표 편집(강의 추가)과 시간표마법사(꼭 넣고 싶은 강의 추가)가 동일한 검색 바텀시트를

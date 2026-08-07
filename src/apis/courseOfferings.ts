@@ -5,6 +5,7 @@ import type { CourseOffering, CourseOfferingFilters } from "@/types/courseOfferi
 import type { Course } from "@/types/courses";
 import { isMockApiEnabled, mockDelay } from "@/mocks/mockFlag";
 import { MOCK_COURSES, MOCK_COURSE_OFFERINGS } from "@/mocks/mockTimetableWizardData";
+import { sortCourseOfferingsByGradeAndCategory } from "@/utils/courseSearchResult";
 
 // 서버 명세: 페이지당 크기는 50으로 고정됩니다.
 const PAGE_SIZE = 50;
@@ -90,15 +91,17 @@ export const getCourseOfferingsPage = async (
       return matchesCourseOfferingFilters(o, courseById.get(o.courseId), filters);
     });
 
+    const sorted = sortCourseOfferingsByGradeAndCategory(filtered);
+
     const start = page * size;
-    const content = filtered.slice(start, start + size);
-    const totalPages = Math.ceil(filtered.length / size) || 1;
+    const content = sorted.slice(start, start + size);
+    const totalPages = Math.ceil(sorted.length / size) || 1;
 
     return {
       content,
       number: page,
       size,
-      totalElements: filtered.length,
+      totalElements: sorted.length,
       totalPages,
       numberOfElements: content.length,
       first: page === 0,
