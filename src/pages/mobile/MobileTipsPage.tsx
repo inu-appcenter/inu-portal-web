@@ -101,6 +101,7 @@ const CategoryPostList = ({ category }: CategoryPostListProps) => {
                 <PostItem
                   id={post.id}
                   title={post.title}
+                  content={post.content}
                   date={post.createDate}
                   writer={post.writer}
                   like={post.like}

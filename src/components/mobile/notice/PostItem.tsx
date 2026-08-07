@@ -88,16 +88,13 @@ const PostItem = ({
           <TextContainer>
             {category && <Category>{category}</Category>}
             <Title isEllipsis={isEllipsis}>{title || ""}</Title>
-            {writer && showWriter && (
-              <WriterWrapper>
-                <WriterName>{writer}</WriterName>
-              </WriterWrapper>
-            )}
             {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
 
             {hasInfoLine && (
               <InfoLine>
                 <MetaGroup>
+                  {showWriter && writer && <div className="writer">{writer}</div>}
+                  {showWriter && writer && showDate && date && <div className="dot">·</div>}
                   {showDate && date && <div className="date">{formattedDate}</div>}
                   {replyCount !== undefined && (
                     <StatItem>
@@ -163,7 +160,7 @@ const MainSection = styled.div`
 const TextContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   flex: 1;
   min-width: 0;
 `;
@@ -214,32 +211,15 @@ const Title = styled.div<{ isEllipsis: boolean }>`
     `}
 `;
 
-const WriterWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-`;
-
-const WriterName = styled.span`
-  color: #3f4a5a;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.2;
-`;
-
 const ContentLine = styled.div<{ isEllipsis: boolean }>`
   color: #64748b;
   font-size: 13px;
   line-height: 1.4;
-  white-space: pre-wrap;
 
   ${({ isEllipsis }) =>
     isEllipsis &&
     css`
-      display: -webkit-box;
-      -webkit-line-clamp: 2; /* 두 줄 제한 */
-      -webkit-box-orient: vertical;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     `}
@@ -249,11 +229,23 @@ const InfoLine = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
+
+  .writer {
+    color: #3f4a5a;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .dot {
+    color: #cbd5e1;
+    font-size: 12px;
+    line-height: 1;
+  }
 
   .date {
     color: #8491a3;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 400;
     line-height: 1;
   }
@@ -262,7 +254,7 @@ const InfoLine = styled.div`
 const MetaGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
   flex-wrap: wrap;
 `;
