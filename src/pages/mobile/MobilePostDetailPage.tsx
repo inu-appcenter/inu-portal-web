@@ -145,7 +145,7 @@ export default function PostDetailPage() {
   }, [post, navigate]);
 
   useHeader({
-    title: "",
+    title: post ? post.category || "게시글 상세" : "게시글 상세",
     hasback: true,
     menu: headerMenu,
   });
