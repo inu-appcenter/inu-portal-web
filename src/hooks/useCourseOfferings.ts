@@ -26,6 +26,7 @@ export const useCourseOfferings = (
     filters?.keyword ?? "",
     filters?.meetingFilterMode ?? "",
     filters?.meetings?.join(",") ?? "",
+    filters?.sort ?? "",
   ];
 
   const query = useInfiniteQuery({

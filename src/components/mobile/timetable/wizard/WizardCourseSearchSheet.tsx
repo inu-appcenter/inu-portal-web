@@ -233,10 +233,9 @@ const WizardCourseSearchSheet = () => {
       .map((offering) => buildCourseRow(offering, courseById.get(offering.courseId)))
       .filter((row): row is CourseRow => row !== null);
 
-    // 서버에 정렬 파라미터가 없어 정렬만 클라이언트에서 처리한다.
-    // 이미 받아온 페이지 안에서의 정렬이라는 점에 유의(무한스크롤로 더 받으면 뒤에 붙는다).
+    // 서버가 전체 결과를 담은 인원순으로 페이지네이션하며, 로컬 목록도 같은 기준을 유지한다.
     if (filters.sort === "담은인원많은순") {
-      return [...list].sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
+      return [...list].sort((a, b) => (b.savedCount ?? 0) - (a.savedCount ?? 0));
     }
     return list;
   }, [courseOfferings, courseById, filters.sort]);

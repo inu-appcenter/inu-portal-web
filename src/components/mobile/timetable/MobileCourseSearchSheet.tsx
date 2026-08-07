@@ -233,7 +233,7 @@ const MobileCourseSearchSheet = ({
       };
       list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
     } else if (activeFilters.sort === "담은인원많은순") {
-      list.sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
+      list.sort((a, b) => (b.savedCount ?? 0) - (a.savedCount ?? 0));
     }
 
     return list;

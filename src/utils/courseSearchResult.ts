@@ -172,6 +172,10 @@ export function mapFilterToOfferingFilters(filters: FilterState): CourseOffering
     credits: filters.credits.length > 0 ? filters.credits : undefined,
     meetingFilterMode: meetings.length > 0 ? "HAS_CLASS" : undefined,
     meetings: meetings.length > 0 ? meetings : undefined,
+    sort:
+      filters.sort === "담은인원많은순"
+        ? "SAVED_COUNT_DESC"
+        : "DEFAULT",
   };
 }
 
