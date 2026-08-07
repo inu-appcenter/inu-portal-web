@@ -9,7 +9,6 @@ import { Post } from "@/types/posts";
 import Divider from "@/components/common/Divider";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import Skeleton from "@/components/common/Skeleton";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import {
@@ -231,36 +230,25 @@ const MobileTipsPage = () => {
 
   return (
     <MobileTipsPageWrapper>
-      {isLoading ? (
-        <ListContainer>
-          <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Fragment key={`tips-page-skeleton-${index}`}>
-                <Skeleton width="70%" height={22} />
-                {index < 5 && <Divider margin="16px 0" />}
-              </Fragment>
-            ))}
-          </Box>
-        </ListContainer>
+      {categoryList.length > 0 ? (
+        <Swiper
+          onSwiper={setSwiperRef}
+          initialSlide={currentIndex}
+          onSlideChange={handleSlideChange}
+          speed={320}
+          autoHeight={true}
+          observer={true}
+          observeParents={true}
+          style={{ width: "100%" }}
+        >
+          {categoryList.map((category) => (
+            <SwiperSlide key={category} style={{ height: "auto" }}>
+              <CategoryPostList category={category} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       ) : (
-        categoryList.length > 0 && (
-          <Swiper
-            onSwiper={setSwiperRef}
-            initialSlide={currentIndex}
-            onSlideChange={handleSlideChange}
-            speed={320}
-            autoHeight={true}
-            observer={true}
-            observeParents={true}
-            style={{ width: "100%" }}
-          >
-            {categoryList.map((category) => (
-              <SwiperSlide key={category} style={{ height: "auto" }}>
-                <CategoryPostList category={category} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        )
+        <CategoryPostList category={selectedCategory} />
       )}
       <SwipeChevronGuides
         hasSwiped={hasSwiped}
