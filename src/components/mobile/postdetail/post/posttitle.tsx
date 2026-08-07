@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Eye, MessageSquare, Heart, Bookmark, Share2 } from "lucide-react";
+import { Eye, MessageSquare, Share2 } from "lucide-react";
 import PostUtilContainer from "../../../../containers/mobile/postdetail/PostUtilContainer.tsx";
 
 interface PostTitleProps {
