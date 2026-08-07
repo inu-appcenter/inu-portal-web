@@ -44,7 +44,7 @@ export default function PostActionBar({
   return (
     <ActionRow>
       <CommentCountGroup>
-        <MessageSquare size={20} color="#333D4B" />
+        <MessageSquare size={24} color="#333D4B" />
         <span>댓글 {replyCount}</span>
       </CommentCountGroup>
 
@@ -62,7 +62,7 @@ export default function PostActionBar({
           />
         ) : null}
         <ShareBtn onClick={handleShare}>
-          <Share2 size={20} color="#333D4B" />
+          <Share2 size={24} color="#333D4B" />
         </ShareBtn>
       </ActionButtonsGroup>
     </ActionRow>
@@ -73,7 +73,7 @@ const ActionRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 16px;
+  padding: 12px 16px 20px;
   width: 100%;
   box-sizing: border-box;
   background-color: transparent;
@@ -83,13 +83,13 @@ const CommentCountGroup = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 36px;
+  height: 44px;
 
   span {
     font-family: Pretendard, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 400;
-    line-height: 1.5;
+    line-height: 1.6;
     color: var(--text-secondary, #333d4b);
   }
 `;
@@ -104,7 +104,7 @@ const ShareBtn = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
 `;

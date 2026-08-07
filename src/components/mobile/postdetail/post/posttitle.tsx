@@ -91,15 +91,15 @@ export default function PostTitle({
 const HeaderContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
 `;
 
 const TitleText = styled.h1`
   font-family: Pretendard, sans-serif;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 32px;
   letter-spacing: -0.2px;
   color: var(--text-secondary, #333d4b);
   word-break: break-word;
@@ -109,7 +109,7 @@ const TitleText = styled.h1`
 const AuthorRowContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   width: 100%;
 `;
 
@@ -120,8 +120,8 @@ const AuthorInfoLeft = styled.div`
 `;
 
 const AvatarImg = styled.img<{ $isClickable: boolean }>`
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
@@ -135,9 +135,9 @@ const AuthorDetailColumn = styled.div`
 
 const AuthorName = styled.div<{ $isClickable: boolean }>`
   font-family: Pretendard, sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
   color: var(--text-secondary, #333d4b);
   cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
 `;
