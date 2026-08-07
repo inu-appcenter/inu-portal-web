@@ -37,6 +37,7 @@ export interface CourseResult {
   // 서버 수강인원/정원 데이터가 아직 동기화되지 않아 null일 수 있음 - null이면 배지 자체를 숨김
   enrolledCount: number | null;
   capacity: number | null;
+  savedCount?: number | null;
   schedules: ClassItem[];
   deptName?: string;
   collegeName?: string;
@@ -383,6 +384,11 @@ const MobileCourseSearchSheet = ({
                           <CourseName>{course.name}</CourseName>
                         </MainInfo>
                         <RightInfo>
+                          {course.savedCount != null && (
+                            <SavedBadge>
+                              {course.savedCount}명 담음
+                            </SavedBadge>
+                          )}
                           {course.enrolledCount != null &&
                             course.capacity != null && (
                               <EnrolledBadge>
@@ -823,6 +829,23 @@ const EnrolledBadge = styled.span`
   background: var(--bg-brand-subtle, #eff6ff);
   color: var(--text-brand, #0061ff);
 
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+`;
+
+const SavedBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand, #eff6ff);
+  color: var(--text-brand, #0061ff);
+
+  font-family: Pretendard, sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;
