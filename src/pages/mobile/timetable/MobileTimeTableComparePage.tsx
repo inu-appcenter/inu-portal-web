@@ -702,6 +702,7 @@ export default function MobileTimeTableComparePage() {
           ...classes.map((c) => ({
             ...c,
             ownerName: (friend.friendAlias || friend.nickname) + "의 시간표",
+            isFriendOwned: true,
           })),
         );
       }
