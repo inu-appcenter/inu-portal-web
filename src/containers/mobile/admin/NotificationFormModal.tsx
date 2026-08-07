@@ -57,6 +57,21 @@ const SUB_FILTER_OPTIONS: Array<{
   { value: "NO_COMMUNITY_ACTIVITY", label: "[커뮤니티] 작성 글/댓글 없음", description: "게시글 및 댓글 작성 이력이 0건인 회원" },
 ];
 
+const PATH_OPTIONS = [
+  { value: "", label: "기본 메인 화면 (/home)", description: "앱 기본 홈 화면으로 이동" },
+  { value: "/timetable", label: "시간표 메인 (/timetable)", description: "시간표 조회 화면으로 이동" },
+  { value: "/timetable/wizard", label: "시간표 마법사 (/timetable/wizard)", description: "시간표 생성 및 과목 추가" },
+  { value: "/friend/list", label: "친구 목록 (/friend/list)", description: "친구 목록 및 시간표 공유" },
+  { value: "/home/notice", label: "학교 공지사항 (/home/notice)", description: "전체 공지사항 목록" },
+  { value: "/home/deptnotice", label: "학과 공지사항 (/home/deptnotice)", description: "학과 공지사항 목록" },
+  { value: "/home/council", label: "총학생회 공지 (/home/council)", description: "총학 공지사항" },
+  { value: "/home/club", label: "동아리 목록 (/home/club)", description: "동아리 정보 목록" },
+  { value: "/bus", label: "버스/셔틀 (/bus)", description: "버스 및 셔틀 정보" },
+  { value: "/chat/list", label: "채팅 목록 (/chat/list)", description: "실시간 채팅방 목록" },
+  { value: "/mypage", label: "마이페이지 (/mypage)", description: "내 정보 화면" },
+  { value: "CUSTOM", label: "직접 URL 입력", description: "특정 상세 게시글이나 외부 링크 직접 입력" },
+];
+
 const extractDepartmentOptions = (items: DepartmentNode[]): DepartmentOption[] => {
   const options: DepartmentOption[] = [];
   const seen = new Set<string>();
@@ -93,6 +108,8 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
   const [subFilter, setSubFilter] = useState<AdminNotificationSubFilter>("NONE");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [selectedPathOption, setSelectedPathOption] = useState<string>("");
+  const [customPath, setCustomPath] = useState<string>("");
   const [memberIdInput, setMemberIdInput] = useState("");
   const [studentIdInput, setStudentIdInput] = useState("");
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
@@ -114,11 +131,17 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
       return;
     }
 
+    const resolvedPath =
+      selectedPathOption === "CUSTOM"
+        ? customPath.trim()
+        : selectedPathOption.trim();
+
     let request: FcmSendRequest = {
       targetType,
       subFilter,
       title: title.trim(),
       content: content.trim(),
+      path: resolvedPath || undefined,
     };
 
     if (targetType === "MEMBERS") {
@@ -235,6 +258,26 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
             rows={4}
           />
         </FormGroup>
+
+        <FormGroup>
+          <AdminSelect
+            label="클릭 시 이동할 앱 경로 (선택)"
+            options={PATH_OPTIONS}
+            value={selectedPathOption}
+            onChange={(val) => setSelectedPathOption(val)}
+          />
+        </FormGroup>
+
+        {selectedPathOption === "CUSTOM" && (
+          <FormGroup>
+            <Label>직접 경로 입력</Label>
+            <Input
+              placeholder="예: /postdetail?id=123, https://... (상세 URL 입력)"
+              value={customPath}
+              onChange={(e) => setCustomPath(e.target.value)}
+            />
+          </FormGroup>
+        )}
 
         {sendMessage && <StatusMsg>{sendMessage}</StatusMsg>}
       </FormContainer>

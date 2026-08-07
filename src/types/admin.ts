@@ -56,4 +56,5 @@ export interface FcmSendRequest {
   departments?: string[];
   title: string;
   content: string;
+  path?: string;
 }
