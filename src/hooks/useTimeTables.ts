@@ -1,5 +1,10 @@
 import { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import {
   createTimeTable,
   createTimeTableCourseItem,
@@ -24,6 +29,31 @@ import type {
 } from "@/types/timetables";
 
 export const TIMETABLES_QUERY_KEY = ["timetables"] as const;
+
+/**
+ * year/term 없이 조회하는 모든 소비자(root의 MobileTimeTablePage 등, 현재
+ * useTimeTables() 호출부 전부)가 공유하는 정확한 쿼리 키.
+ */
+const ALL_TIMETABLES_QUERY_KEY = [...TIMETABLES_QUERY_KEY, "all", "all"] as const;
+
+/**
+ * 목록에 영향을 주는 mutation 성공 시, 다른 웹뷰(RN 멀티 웹뷰 스택의 sibling
+ * 컨텍스트 — 예: 시간표 마법사는 root와 별개의 QueryClient를 갖는 별도
+ * WebView)로 변경을 전파하기 위한 강제 refetch.
+ *
+ * `queryClient.invalidateQueries`만으로는 부족하다 — invalidate는 "이미
+ * 캐시에 존재하는" 쿼리만 대상으로 하는데, 이 mutation을 실행 중인 웹뷰(예:
+ * 마법사)에는 root가 구독하는 이 정확한 키가 한 번도 fetch된 적이 없어 캐시에
+ * 아예 없다. 그래서 명시적으로 fetchQuery를 호출해 이 웹뷰의 캐시에도 그
+ * 키를 채워 넣어야, broadcastQueryClient(main.tsx에서 결선)가 그 성공 fetch를
+ * root 등 다른 웹뷰로 미러링해줄 수 있다. 그 플러그인은 쿼리 fetch 성공
+ * ("success")·추가·제거만 브로드캐스트하고 invalidate는 보내지 않는다.
+ */
+const syncTimeTablesList = (queryClient: QueryClient) =>
+  queryClient.fetchQuery({
+    queryKey: ALL_TIMETABLES_QUERY_KEY,
+    queryFn: () => getTimeTables(),
+  });
 
 export const useTimeTables = (
   year?: number,
@@ -100,6 +130,7 @@ export const useCreateTimeTable = () => {
     }) => createTimeTable(semesterId, timeTableName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -117,6 +148,7 @@ export const useUpdateTimeTableName = () => {
     }) => updateTimeTableName(timeTableId, timeTableName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -134,6 +166,7 @@ export const useUpdateTimeTableVisibility = () => {
     }) => updateTimeTableVisibility(timeTableId, visibility),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -145,6 +178,7 @@ export const useUpdateTimeTablePrimary = () => {
     mutationFn: (timeTableId: number) => updateTimeTablePrimary(timeTableId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -156,6 +190,7 @@ export const useDeleteTimeTable = () => {
     mutationFn: (timeTableId: number) => deleteTimeTable(timeTableId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
