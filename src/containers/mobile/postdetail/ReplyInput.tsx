@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
@@ -7,7 +7,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { postReply, postReReply, putReply } from "@/apis/replies";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import { CheckSquare, Square, CornerDownLeft } from "lucide-react";
+import { CheckSquare, Square, CornerDownLeft, Loader2 } from "lucide-react";
 
 interface ReplyInputProps {
   postId: number;
@@ -151,13 +151,17 @@ export default function ReplyInput({
           {replyToEdit && (
             <>
               댓글 수정 중
-              <button onClick={cancelEditOrReply}>취소</button>
+              <button onClick={cancelEditOrReply} disabled={loading}>
+                취소
+              </button>
             </>
           )}
           {replyToReply && (
             <>
               {replyToReply.writer}에게 답글 작성 중
-              <button onClick={cancelEditOrReply}>취소</button>
+              <button onClick={cancelEditOrReply} disabled={loading}>
+                취소
+              </button>
             </>
           )}
         </EditOrReplyBanner>
@@ -168,12 +172,14 @@ export default function ReplyInput({
           className="anonymous-wrapper"
           onClick={
             isLoggedIn
-              ? () => setIsAnonymous(!isAnonymous)
+              ? () => {
+                  if (!loading) setIsAnonymous(!isAnonymous);
+                }
               : handleLoginRedirect
           }
         >
           {isAnonymous ? (
-            <CheckSquare size={18} color="#0061FF" />
+            <CheckSquare size={18} color={loading ? "#8B95A1" : "#0061FF"} />
           ) : (
             <Square size={18} color="#B0B8C1" />
           )}
@@ -182,13 +188,21 @@ export default function ReplyInput({
         {isLoggedIn ? (
           <>
             <input
-              placeholder="댓글을 입력하세요"
+              placeholder={loading ? "댓글 등록 중..." : "댓글을 입력하세요"}
               value={replyContent}
+              disabled={loading}
               onChange={(e) => setReplyContent(e.target.value)}
               onKeyDown={handleKeyPress}
             />
-            <SendButtonBtn onClick={handleCreateReply}>
-              <CornerDownLeft size={20} color="#0061FF" />
+            <SendButtonBtn
+              onClick={handleCreateReply}
+              $disabled={loading}
+            >
+              {loading ? (
+                <SpinIcon size={20} color="#0061FF" />
+              ) : (
+                <CornerDownLeft size={20} color="#0061FF" />
+              )}
             </SendButtonBtn>
           </>
         ) : (
@@ -284,19 +298,29 @@ const StyledReplyInput = styled.div`
   }
 `;
 
-const SendButtonBtn = styled.div`
+const spinAnimation = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const SpinIcon = styled(Loader2)`
+  animation: ${spinAnimation} 1s linear infinite;
+`;
+
+const SendButtonBtn = styled.div<{ $disabled?: boolean }>`
   flex: 0 0 36px;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+  opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
   border-radius: 50%;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 
   &:active {
-    background-color: #f0f4ff;
+    background-color: ${({ $disabled }) => ($disabled ? "transparent" : "#f0f4ff")};
   }
 `;
 
