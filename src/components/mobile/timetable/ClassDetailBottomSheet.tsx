@@ -80,7 +80,12 @@ export default function ClassDetailBottomSheet({
   const memoInputRef = useRef<HTMLTextAreaElement>(null);
 
   const liveClass = selectedClass
-    ? allEvents.find((e) => e.id === selectedClass.id) || selectedClass
+    ? allEvents.find(
+        (e) =>
+          e.id === selectedClass.id &&
+          Boolean(e.isFriendOwned) === Boolean(selectedClass.isFriendOwned) &&
+          e.ownerName === selectedClass.ownerName,
+      ) || selectedClass
     : null;
 
   const offering = liveClass
@@ -288,11 +293,11 @@ export default function ClassDetailBottomSheet({
                 </ClassInfoContainer>
 
                 {/*
-                  메모는 본인만 보는 개인 메모이므로 친구 소유 항목(isFriendOwned)이고
-                  값이 없으면(서버가 친구 조회 시 항상 memo를 null로 내려줌) 필드 자체를 노출하지 않는다.
+                  메모는 본인만 보는 개인 메모이므로 친구 소유 항목(isFriendOwned)인 경우
+                  필드 자체를 노출하지 않는다.
                   내 항목이면서 메모가 아직 없는 경우에는 "메모 추가" 진입점만 축소해서 보여준다.
                 */}
-                {(hasMemo || canEditMemo) && (
+                {!liveClass.isFriendOwned && (hasMemo || canEditMemo) && (
                   <InfoField
                     onClick={() =>
                       canEditMemo && !isEditingMemo && setIsEditingMemo(true)

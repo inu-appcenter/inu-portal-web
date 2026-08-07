@@ -58,16 +58,20 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   width: fit-content;
   height: fit-content;
 
-  border-radius: 50px;
   background: ${({ $isAIButton }) =>
     $isAIButton
       ? "linear-gradient(270deg, #EFFFF4 0%, #DEEFFF 67.31%, #FEEDFF 100%)"
       : "#fff"};
   position: relative;
   overflow: hidden;
-  border: none;
   outline: none;
   cursor: pointer;
+
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #fff);
+
+  //box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 
   &.active-touch {
     ${InnerContent} {
