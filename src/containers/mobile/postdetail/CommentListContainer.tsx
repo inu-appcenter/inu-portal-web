@@ -2,13 +2,13 @@ import styled from "styled-components";
 import { Reply } from "@/types/posts";
 import { useNavigate } from "react-router-dom";
 import ReplyLikeButton from "@/components/desktop/posts/ReplyLikeButton";
-import PostActionBar from "@/components/mobile/postdetail/post/PostActionBar";
 import React, { useState } from "react";
 import axios, { AxiosError } from "axios";
 import { ROUTES } from "@/constants/routes";
 import { deleteReply } from "@/apis/replies";
 import useUserStore from "@/stores/useUserStore";
 import { MoreVertical } from "lucide-react";
+import { formatTimeAgo } from "@/utils/date";
 
 interface CommentListProps {
   postId?: number;
@@ -49,29 +49,6 @@ export default function CommentListMobile({
   const allComments = bestReply
     ? [bestReply, ...replies.filter((reply) => reply.id !== bestReply.id)]
     : replies;
-
-  const formatDate = (dateString: string): string => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split(".").map(Number);
-    if (!year || !month || !day) return dateString;
-    const commentDate = new Date(year, month - 1, day);
-    const now = new Date();
-    const diffInDays = Math.floor(
-      (now.getTime() - commentDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
-
-    if (diffInDays === 0) {
-      return "오늘";
-    } else if (diffInDays < 30) {
-      return `${diffInDays}일 전`;
-    } else if (diffInDays < 365) {
-      const diffInMonths = Math.floor(diffInDays / 30);
-      return `${diffInMonths}개월 전`;
-    } else {
-      const diffInYears = Math.floor(diffInDays / 365);
-      return `${diffInYears}년 전`;
-    }
-  };
 
   const handleDeleteReply = async (replyId: number) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
@@ -149,7 +126,7 @@ export default function CommentListMobile({
                     >
                       {reply.writer}
                     </WriterName>
-                    <TimeText>{formatDate(reply.createDate)}</TimeText>
+                    <TimeText>{formatTimeAgo(reply.createDate)}</TimeText>
                   </UserIdGroup>
 
                   {reply.hasAuthority && (
@@ -203,7 +180,7 @@ export default function CommentListMobile({
                       >
                         {reReply.writer}
                       </WriterName>
-                      <TimeText>{formatDate(reReply.createDate)}</TimeText>
+                      <TimeText>{formatTimeAgo(reReply.createDate)}</TimeText>
                     </UserIdGroup>
 
                     {reReply.hasAuthority && (
