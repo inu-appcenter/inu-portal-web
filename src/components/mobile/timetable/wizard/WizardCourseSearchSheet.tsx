@@ -105,6 +105,7 @@ interface CourseRow {
   room: string;
   enrolledCount: number | null;
   capacity: number | null;
+  savedCount: number | null;
   note: string | null;
   option: WizardCourseOption;
 }
@@ -137,6 +138,7 @@ const buildCourseRow = (
     room: offering.meetings[0]?.location ?? "-",
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,
+    savedCount: offering.savedCount ?? 0,
     note: offering.note,
     option,
   };
@@ -396,6 +398,11 @@ const WizardCourseSearchSheet = () => {
                             <CourseName>{row.title}</CourseName>
                           </MainInfo>
                           <RightInfo>
+                            {row.savedCount != null && (
+                              <SavedBadge>
+                                {row.savedCount}명 담음
+                              </SavedBadge>
+                            )}
                             {row.enrolledCount != null && row.capacity != null && (
                               <EnrolledBadge>
                                 {row.enrolledCount}명 / {row.capacity}명
@@ -914,6 +921,23 @@ const EnrolledBadge = styled.span`
   border: 1px solid var(--border-brand-subtle, #d3e5ff);
   background: var(--bg-brand-subtle, #eff6ff);
   color: var(--text-brand, #0061ff);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+`;
+
+const SavedBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand, #eff6ff);
+  color: var(--text-brand, #0061ff);
+
+  font-family: Pretendard, sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;

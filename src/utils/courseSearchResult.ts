@@ -43,6 +43,7 @@ export const mapCourseOfferingToCourseResult = (
     remarks: offering.note || course?.content,
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,
+    savedCount: offering.savedCount ?? 0,
     schedules: offering.meetings.map((m, index) => ({
       id: m.id,
       name: offering.courseTitle,
