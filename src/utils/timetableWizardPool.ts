@@ -17,7 +17,6 @@ export const toWizardCourseOption = (
   offering: CourseOffering,
   course: Course | undefined,
 ): WizardCourseOption | null => {
-  if (offering.meetings.length === 0) return null;
 
   const meetings: WizardCourseMeeting[] = offering.meetings.map((meeting) => ({
     day: DAY_INDEX[meeting.day],

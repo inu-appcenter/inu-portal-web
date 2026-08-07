@@ -57,6 +57,8 @@ export const mapCourseOfferingToCourseResult = (
     collegeName: offering.collegeName ?? course?.collegeName,
     isuName: offering.isuName ?? course?.completionDivisionName,
     hyName: offering.hyName ?? course?.targetGradeName,
+    ssupTypeName: offering.ssupTypeName ?? undefined,
+    ssupTypeCode: offering.ssupTypeCode ?? undefined,
   };
 };
 
