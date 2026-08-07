@@ -78,6 +78,7 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
   const [targetType, setTargetType] = useState<AdminNotificationTargetType>("ALL");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [path, setPath] = useState("");
   const [memberIdInput, setMemberIdInput] = useState("");
   const [studentIdInput, setStudentIdInput] = useState("");
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
@@ -103,6 +104,7 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
       targetType,
       title: title.trim(),
       content: content.trim(),
+      ...(path.trim() ? { path: path.trim() } : {}),
     };
 
     if (targetType === "MEMBERS") {
@@ -208,6 +210,15 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={4}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label>이동 경로 (path, 선택)</Label>
+          <Input
+            placeholder="예: /board/1 (앱 내 상대경로) 또는 https://... (외부 URL)"
+            value={path}
+            onChange={(e) => setPath(e.target.value)}
           />
         </FormGroup>
 
