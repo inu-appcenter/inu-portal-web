@@ -25,6 +25,8 @@ export interface ClassItem {
   memo?: string; //메모
   color?: string; // 개별 배경 색상
   ownerName?: string; // 추가: 소유자 이름 (시간표 구분용)
+  // 친구 소유 항목 여부. true면 조회 전용(메모 등 본인만 봐야 하는 정보는 노출/편집 금지)
+  isFriendOwned?: boolean;
   grade?: string;
   courseType?: string;
   evaluation?: string;
@@ -71,7 +73,7 @@ const MAX_DAY_COUNT = 7;
 const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
 const EMPTY_SELECTED_SLOTS: string[] = [];
 
-const formatRoom = (room: string) => {
+export const formatRoom = (room: string) => {
   const match = room.match(/^제(.+?)호관\s+.*?-([^\s]+)/);
   return match ? `${match[1]}-${match[2]}` : room;
 };

@@ -121,6 +121,7 @@ export const getCourseOfferingsPage = async (
   if (filters?.meetingFilterMode) {
     params.append("meetingFilterMode", filters.meetingFilterMode);
   }
+  if (filters?.sort) params.append("sort", filters.sort);
 
   // 다중 선택 필터는 쉼표 CSV 방식이 아닌 동일 query parameter를 반복 생성
   filters?.hyNames?.forEach((val) => params.append("hyNames", val));

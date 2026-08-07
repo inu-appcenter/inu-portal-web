@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
@@ -30,6 +30,7 @@ const openExternalLink = (url: string) => {
 const Banner = () => {
   const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   const autoplay = useMemo(
     () =>
@@ -37,6 +38,7 @@ const Banner = () => {
         delay: 4000,
         stopOnInteraction: false,
         stopOnMouseEnter: true,
+        playOnInit: false,
       }),
     [],
   );
@@ -158,6 +160,28 @@ const Banner = () => {
     };
   }, [emblaApi]);
 
+  useEffect(() => {
+    const target = bannerRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          autoplay.play();
+        } else {
+          autoplay.stop();
+        }
+      },
+      { threshold: 0.6 },
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [autoplay]);
+
   const resetAutoplay = () => {
     autoplay.reset();
   };
@@ -182,7 +206,7 @@ const Banner = () => {
   };
 
   return (
-    <BannerWrapper>
+    <BannerWrapper ref={bannerRef}>
       <Viewport ref={emblaRef}>
         <Track>
           {banners.map((banner, index) => (

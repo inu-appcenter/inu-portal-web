@@ -80,7 +80,12 @@ export default function ClassDetailBottomSheet({
   const memoInputRef = useRef<HTMLTextAreaElement>(null);
 
   const liveClass = selectedClass
-    ? allEvents.find((e) => e.id === selectedClass.id) || selectedClass
+    ? allEvents.find(
+        (e) =>
+          e.id === selectedClass.id &&
+          Boolean(e.isFriendOwned) === Boolean(selectedClass.isFriendOwned) &&
+          e.ownerName === selectedClass.ownerName,
+      ) || selectedClass
     : null;
 
   const offering = liveClass
@@ -188,6 +193,10 @@ export default function ClassDetailBottomSheet({
   const isCustomCourse =
     liveClass.isCustom || (!liveClass.courseId && !liveClass.courseOfferingId);
 
+  // 메모는 본인만 보는 개인 메모. 친구 소유 항목은 조회/편집 모두 불가하다.
+  const hasMemo = Boolean(liveClass.memo && liveClass.memo.trim());
+  const canEditMemo = !liveClass.isFriendOwned;
+
   const handleSaveMemo = () => {
     if (activeTimetableId === null) return;
     const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
@@ -283,49 +292,76 @@ export default function ClassDetailBottomSheet({
                   </DetailsSection>
                 </ClassInfoContainer>
 
-                <InfoField
-                  onClick={() => !isEditingMemo && setIsEditingMemo(true)}
-                >
-                  <MemoHeaderRow>
-                    <FieldLabel style={{ cursor: "pointer" }}>메모</FieldLabel>
-                    {isEditingMemo && memoInput !== (liveClass.memo || "") && (
-                      <MemoSaveLink
+                {/*
+                  메모는 본인만 보는 개인 메모이므로 친구 소유 항목(isFriendOwned)인 경우
+                  필드 자체를 노출하지 않는다.
+                  내 항목이면서 메모가 아직 없는 경우에는 "메모 추가" 진입점만 축소해서 보여준다.
+                */}
+                {!liveClass.isFriendOwned && (hasMemo || canEditMemo) && (
+                  <InfoField
+                    onClick={() =>
+                      canEditMemo && !isEditingMemo && setIsEditingMemo(true)
+                    }
+                  >
+                    {isEditingMemo ? (
+                      <>
+                        <MemoHeaderRow>
+                          <FieldLabel style={{ cursor: "pointer" }}>
+                            메모
+                          </FieldLabel>
+                          {memoInput !== (liveClass.memo || "") && (
+                            <MemoSaveLink
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSaveMemo();
+                              }}
+                            >
+                              저장
+                            </MemoSaveLink>
+                          )}
+                        </MemoHeaderRow>
+                        <MemoEditContainer onClick={(e) => e.stopPropagation()}>
+                          <SeamlessTextarea
+                            ref={memoInputRef}
+                            value={memoInput}
+                            onChange={(e) => {
+                              setMemoInput(e.target.value);
+                              adjustHeight(e.target);
+                            }}
+                            placeholder="메모를 입력하세요."
+                            rows={1}
+                          />
+                        </MemoEditContainer>
+                      </>
+                    ) : hasMemo ? (
+                      <>
+                        <FieldLabel
+                          style={{
+                            cursor: canEditMemo ? "pointer" : "default",
+                          }}
+                        >
+                          메모
+                        </FieldLabel>
+                        <FieldValue
+                          style={{
+                            cursor: canEditMemo ? "pointer" : "default",
+                            color: "var(--text-secondary, #333d4b)",
+                          }}
+                        >
+                          {liveClass.memo}
+                        </FieldValue>
+                      </>
+                    ) : (
+                      <AddMemoButton
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSaveMemo();
-                        }}
+                        onClick={() => setIsEditingMemo(true)}
                       >
-                        저장
-                      </MemoSaveLink>
+                        + 메모 추가
+                      </AddMemoButton>
                     )}
-                  </MemoHeaderRow>
-                  {isEditingMemo ? (
-                    <MemoEditContainer onClick={(e) => e.stopPropagation()}>
-                      <SeamlessTextarea
-                        ref={memoInputRef}
-                        value={memoInput}
-                        onChange={(e) => {
-                          setMemoInput(e.target.value);
-                          adjustHeight(e.target);
-                        }}
-                        placeholder="메모를 입력하세요."
-                        rows={1}
-                      />
-                    </MemoEditContainer>
-                  ) : (
-                    <FieldValue
-                      style={{
-                        cursor: "pointer",
-                        color: liveClass.memo
-                          ? "var(--text-secondary, #333d4b)"
-                          : "var(--text-tertiary, #8b95a1)",
-                      }}
-                    >
-                      {liveClass.memo || "메모가 없습니다."}
-                    </FieldValue>
-                  )}
-                </InfoField>
+                  </InfoField>
+                )}
               </ScrollableBody>
 
               <FooterSection>
@@ -342,7 +378,7 @@ export default function ClassDetailBottomSheet({
                       alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                     }}
                   >
-                    과목 상세
+                    강의계획서
                   </SyllabusButton>
                 </FooterButtonGroup>
               </FooterSection>
@@ -710,6 +746,23 @@ const MemoSaveLink = styled.button`
   cursor: pointer;
   padding: 0;
   margin: 0;
+
+  &:active {
+    opacity: 0.7;
+  }
+`;
+
+const AddMemoButton = styled.button`
+  background: none;
+  border: none;
+  font-family: Pretendard, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  align-self: flex-start;
 
   &:active {
     opacity: 0.7;

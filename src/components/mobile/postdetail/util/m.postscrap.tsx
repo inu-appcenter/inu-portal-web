@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import scrapEmptyImg from "@/resources/assets/posts/scrap-empty.svg";
-import scrapFilledImg from "@/resources/assets/posts/scrap-filled.svg";
+import { Bookmark } from "lucide-react";
 import styled from "styled-components";
 import { ROUTES } from "@/constants/routes";
 import { putScrap } from "@/apis/posts";
@@ -62,7 +61,6 @@ export default function PostScrap({
       }
     } catch (error) {
       console.error("스크랩 여부 변경 실패", error);
-      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
         !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
@@ -81,12 +79,11 @@ export default function PostScrap({
   };
 
   return (
-    <ScrapContainer>
-      <img
-        className="UtilityImg"
-        src={isScrapedState ? scrapFilledImg : scrapEmptyImg}
-        alt="scrapImg"
-        onClick={handleScrap}
+    <ScrapContainer onClick={handleScrap}>
+      <Bookmark
+        size={24}
+        color={isScrapedState ? "#0061FF" : "#333D4B"}
+        fill={isScrapedState ? "#0061FF" : "none"}
       />
       <span>{scrapState}</span>
     </ScrapContainer>
@@ -95,9 +92,16 @@ export default function PostScrap({
 
 const ScrapContainer = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
-  img.UtilityImg {
-    width: 14px;
+  height: 44px;
+  cursor: pointer;
+
+  span {
+    font-family: Pretendard, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-secondary, #333d4b);
   }
 `;

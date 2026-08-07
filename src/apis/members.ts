@@ -137,6 +137,24 @@ export const getAlerts = async (
   return response.data;
 };
 
+// 단건 알림 읽음 처리
+export const readNotification = async (
+  memberFcmMessageId: number,
+): Promise<ApiResponse<null>> => {
+  const response = await tokenInstance.patch<ApiResponse<null>>(
+    `/api/tokens/notifications/${memberFcmMessageId}/read`,
+  );
+  return response.data;
+};
+
+// 안 읽은 알림 존재 여부 확인
+export const getUnreadStatus = async (): Promise<ApiResponse<boolean>> => {
+  const response = await tokenInstance.get<ApiResponse<boolean>>(
+    "/api/tokens/unread-status",
+  );
+  return response.data;
+};
+
 // FCM 토큰 등록
 export const postFcmToken = async (
   token: string,
