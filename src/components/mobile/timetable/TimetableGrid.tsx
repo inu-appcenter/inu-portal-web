@@ -71,7 +71,7 @@ const MAX_DAY_COUNT = 7;
 const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
 const EMPTY_SELECTED_SLOTS: string[] = [];
 
-const formatRoom = (room: string) => {
+export const formatRoom = (room: string) => {
   const match = room.match(/^제(.+?)호관\s+.*?-([^\s]+)/);
   return match ? `${match[1]}-${match[2]}` : room;
 };

@@ -22,9 +22,9 @@ import {
  *  - `storage` 이벤트는 WebView 인스턴스 사이를 건너지 않는다.
  *
  * 그래서 확정 필터를 in-memory 컴포넌트 상태가 아니라 broadcastSync 스토어가 소유한다.
- * 필터 화면이 applyFilters를 부르면 BroadcastChannel + 네이티브 브릿지 릴레이 이중
- * 경로로 편집 화면 웹뷰에 즉시 도달한다(useUserStore가 로그인 화면에 대해 쓰는 것과
- * 같은 방식). persist는 콜드스타트 복원용이다.
+ * 필터 화면이 applyFilters를 부르면 BroadcastChannel로 편집 화면 웹뷰에 즉시
+ * 도달한다(useUserStore가 로그인 화면에 대해 쓰는 것과 같은 방식). persist는
+ * 콜드스타트 복원용이다.
  *
  * 편집 중인 초안(draft)은 여기 두지 않는다. 필터 화면이 로컬 useState로 들고 있다가
  * "저장"에서만 applyFilters를 부르므로, 토글 하나하나가 브로드캐스트되지 않는다.
@@ -112,10 +112,10 @@ export const useEffectiveCourseFilters = (): FilterState => {
 };
 
 /**
- * 브릿지 릴레이가 없는 셸(구 네이티브 앱: bridgeChannel === null 인데 멀티 웹뷰 push는
- * 하는 조합)에서는 BroadcastChannel 한 경로만 남고, WKWebView에서는 그마저 웹뷰 간
- * 전달이 불안정하다. 그 경우를 위해 화면이 다시 앞으로 올라올 때 저장소에서 한 번 더
- * 끌어온다. 브로드캐스트가 이미 도달했다면 값이 같아 리렌더도 일어나지 않는다.
+ * BroadcastChannel이 유일한 동기화 경로이므로(네이티브 브릿지 릴레이 폴백
+ * 없음), 메시지가 어떤 이유로든(백그라운드 전환 중 발신 등) 씹혔을 때의
+ * 안전망으로 화면이 다시 앞으로 올라올 때 저장소에서 한 번 더 끌어온다.
+ * 브로드캐스트가 이미 도달했다면 값이 같아 리렌더도 일어나지 않는다.
  */
 if (typeof window !== "undefined") {
   const rehydrate = () => {
