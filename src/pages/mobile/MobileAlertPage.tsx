@@ -81,7 +81,7 @@ const MobileAlertPage = () => {
         label: "알림 설정",
         onClick: () => {
           mixpanelTrack.notificationSettingsOpened("Alert Page Menu");
-          navigate(ROUTES.BOARD.DEPT_SETTING);
+          navigate(ROUTES.MYPAGE.NOTIFICATION);
         },
       },
     ],
