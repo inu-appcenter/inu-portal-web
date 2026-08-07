@@ -290,11 +290,11 @@ const MobileTipsPageWrapper = styled.div`
 
 const ListContainer = styled.div`
   width: 100%;
-  padding: 12px 0 40px;
+  padding: 0 0 40px;
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 16px 0 120px;
+    padding: 0 0 120px;
   }
 `;
 
