@@ -90,7 +90,11 @@ const CategoryPostList = ({ category }: CategoryPostListProps) => {
         next={() => fetchData()}
         hasMore={hasMore}
         scrollableTarget="app-scroll-view"
-        loader={<LoadingText>Loading...</LoadingText>}
+        loader={
+          <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
+            <PostItem isLoading />
+          </Box>
+        }
         endMessage={posts.length > 0 ? <LoadingText>더 이상 게시물이 없습니다.</LoadingText> : null}
       >
         <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
