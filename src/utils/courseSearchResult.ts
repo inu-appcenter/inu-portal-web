@@ -40,21 +40,31 @@ export function getHyNameOrder(hyName?: string | null): number {
 
 /**
  * 개설강의 목록을 서버의 기본 정렬 기준(categoryOrder asc, hyNameOrder asc, title asc)으로 정렬한다.
+ * CourseOffering, CourseResult, CourseRow 등 다양한 객체 구조를 모두 지원한다.
  */
 export function sortCourseOfferingsByGradeAndCategory<
-  T extends { isuName?: string | null; hyName?: string | null; courseTitle?: string; name?: string }
+  T extends {
+    isuName?: string | null;
+    isuLabel?: string | null;
+    hyName?: string | null;
+    gradeLabel?: string | null;
+    grade?: number | null;
+    courseTitle?: string | null;
+    name?: string | null;
+    title?: string | null;
+  }
 >(offerings: T[]): T[] {
   return [...offerings].sort((a, b) => {
-    const catA = getCategoryOrder(a.isuName);
-    const catB = getCategoryOrder(b.isuName);
+    const catA = getCategoryOrder(a.isuName ?? a.isuLabel);
+    const catB = getCategoryOrder(b.isuName ?? b.isuLabel);
     if (catA !== catB) return catA - catB;
 
-    const hyA = getHyNameOrder(a.hyName);
-    const hyB = getHyNameOrder(b.hyName);
+    const hyA = getHyNameOrder(a.hyName ?? a.gradeLabel ?? (a.grade ? `${a.grade}학년` : null));
+    const hyB = getHyNameOrder(b.hyName ?? b.gradeLabel ?? (b.grade ? `${b.grade}학년` : null));
     if (hyA !== hyB) return hyA - hyB;
 
-    const titleA = a.courseTitle || a.name || "";
-    const titleB = b.courseTitle || b.name || "";
+    const titleA = a.courseTitle || a.name || a.title || "";
+    const titleB = b.courseTitle || b.name || b.title || "";
     return titleA.localeCompare(titleB, "ko");
   });
 }

@@ -20,7 +20,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
-import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
+import {
+  mapFilterToOfferingFilters,
+  sortCourseOfferingsByGradeAndCategory,
+} from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
 
 export interface CourseResult {
@@ -233,6 +236,8 @@ const MobileCourseSearchSheet = ({
       list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
     } else if (activeFilters.sort === "담은인원많은순") {
       list.sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
+    } else {
+      list = sortCourseOfferingsByGradeAndCategory(list);
     }
 
     return list;

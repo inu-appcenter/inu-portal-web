@@ -115,6 +115,28 @@ describe("Course Offerings Grade & Category Sorting (Issue #258)", () => {
 
       expect(sorted.map((item) => item.id)).toEqual([3, 5, 4, 2, 1, 6]);
     });
+
+    test("fixes out-of-order grade items like 1->2->3->4->1 into strictly ascending grade order 1->1->2->3->4", () => {
+      // computer engineering major out-of-order scenario (e.g. courseId 5 is 1학년 appearing after 3학년)
+      const list = [
+        { id: 101, isuName: "전공기초", hyName: "1학년", name: "프로그래밍입문" },
+        { id: 102, isuName: "전공핵심", hyName: "2학년", name: "자료구조" },
+        { id: 103, isuName: "전공핵심", hyName: "3학년", name: "운영체제" },
+        { id: 104, isuName: "전공핵심", hyName: "4학년", name: "인공지능개론" },
+        { id: 105, isuName: "전공기초", hyName: "1학년", name: "컴퓨터공학개론" },
+      ];
+
+      const sorted = sortCourseOfferingsByGradeAndCategory(list);
+
+      expect(sorted.map((item) => item.hyName)).toEqual([
+        "1학년",
+        "1학년",
+        "2학년",
+        "3학년",
+        "4학년",
+      ]);
+      expect(sorted.map((item) => item.id)).toEqual([105, 101, 102, 103, 104]);
+    });
   });
 
   describe("Mock API Page Response Sorting", () => {

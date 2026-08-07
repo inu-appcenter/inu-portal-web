@@ -27,7 +27,10 @@ import {
   FILTER_SUB_VIEW_TITLES,
   countActiveFilters,
 } from "@/components/mobile/timetable/filter/courseFilterModel";
-import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
+import {
+  mapFilterToOfferingFilters,
+  sortCourseOfferingsByGradeAndCategory,
+} from "@/utils/courseSearchResult";
 import { toWizardCourseOption } from "@/utils/timetableWizardPool";
 import { DAY_INDEX } from "@/utils/timetable";
 import { useCourses } from "@/hooks/useCourses";
@@ -236,7 +239,7 @@ const WizardCourseSearchSheet = () => {
     if (filters.sort === "담은인원많은순") {
       return [...list].sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
     }
-    return list;
+    return sortCourseOfferingsByGradeAndCategory(list);
   }, [courseOfferings, courseById, filters.sort]);
 
   const pickedSubjectNumbers = useMemo(
