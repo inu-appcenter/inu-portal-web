@@ -6,6 +6,7 @@ import AdminModal from "@/components/admin/AdminModal";
 import AdminSelect from "@/components/admin/AdminSelect";
 import {
   AdminNotificationTargetType,
+  AdminNotificationSubFilter,
   FcmSendRequest,
 } from "@/types/admin";
 import { navBarList } from "@/resources/strings/navBarList";
@@ -43,6 +44,19 @@ const TARGET_OPTIONS: Array<{
   { value: "DEPARTMENTS", label: "학과", description: "특정 학과 소속 회원" },
 ];
 
+const SUB_FILTER_OPTIONS: Array<{
+  value: AdminNotificationSubFilter;
+  label: string;
+  description: string;
+}> = [
+  { value: "NONE", label: "미적용 (전체)", description: "하위 필터 없이 상위 필터 대상 전체에 발송" },
+  { value: "NO_TIMETABLE_CURRENT_SEMESTER", label: "[시간표] 이번 학기 시간표 미생성자", description: "이번 활성 학기 시간표가 0개인 회원" },
+  { value: "EMPTY_TIMETABLE", label: "[시간표] 빈 시간표 보유자", description: "시간표는 있으나 수업/강의가 0개인 회원" },
+  { value: "PAST_USER_NO_CURRENT_TIMETABLE", label: "[시간표] 지난 학기 유저 (이번 학기 미작성)", description: "직전 학기는 시간표가 있으나 이번 학기 미작성 회원" },
+  { value: "NO_FRIENDS", label: "[친구] 친구 0명인 회원", description: "수락된 친구 관계가 0명인 회원" },
+  { value: "NO_COMMUNITY_ACTIVITY", label: "[커뮤니티] 작성 글/댓글 없음", description: "게시글 및 댓글 작성 이력이 0건인 회원" },
+];
+
 const extractDepartmentOptions = (items: DepartmentNode[]): DepartmentOption[] => {
   const options: DepartmentOption[] = [];
   const seen = new Set<string>();
@@ -76,6 +90,7 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
   sendMessage,
 }) => {
   const [targetType, setTargetType] = useState<AdminNotificationTargetType>("ALL");
+  const [subFilter, setSubFilter] = useState<AdminNotificationSubFilter>("NONE");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [memberIdInput, setMemberIdInput] = useState("");
@@ -101,6 +116,7 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
 
     let request: FcmSendRequest = {
       targetType,
+      subFilter,
       title: title.trim(),
       content: content.trim(),
     };
@@ -142,10 +158,19 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
       <FormContainer>
         <FormGroup>
           <AdminSelect
-            label="전송 대상 유형"
+            label="1. 상위 대상 유저 그룹"
             options={TARGET_OPTIONS}
             value={targetType}
             onChange={(val) => setTargetType(val)}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <AdminSelect
+            label="2. 하위 세부 기능/활동 타깃 필터"
+            options={SUB_FILTER_OPTIONS}
+            value={subFilter}
+            onChange={(val) => setSubFilter(val)}
           />
         </FormGroup>
 
