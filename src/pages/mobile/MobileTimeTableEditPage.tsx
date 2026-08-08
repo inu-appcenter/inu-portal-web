@@ -19,8 +19,6 @@ import {
   useTimeTableDetail,
   useTimeTables,
 } from "@/hooks/useTimeTables";
-import { formatHoursToTime } from "@/utils/timetable";
-import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
@@ -408,21 +406,13 @@ const MobileTimeTableEditPage = () => {
     const target = timetable.find((item) => item.id === id);
     if (!target?.isCustom || target.customScheduleId === undefined) return;
 
-    const editItem: CustomScheduleEditState = {
-      customScheduleId: target.customScheduleId,
-      title: target.name,
-      memo: target.memo ?? "",
-      // 같은 커스텀 일정의 모든 시간대를 함께 넘겨야 수정 시 누락되지 않음
-      meetings: timetable
-        .filter((item) => item.customScheduleId === target.customScheduleId)
-        .map((item) => ({
-          day: item.day,
-          startTime: formatHoursToTime(item.startTime),
-          endTime: formatHoursToTime(item.endTime),
-          location: item.room,
-        })),
-    };
-    navigate(ROUTES.TIMETABLE.ADD, { state: { editItem } });
+    // 라우터 state로 값을 넘기면 안 된다. 신 앱(멀티 웹뷰)에서는 router.tsx가
+    // 이 이동을 가로채 appBridge.navigateTo(URL)로 새 웹뷰를 띄우는데, 그 과정에서
+    // state는 전달 경로 자체가 없어 유실되고 빈 "일정 추가" 화면이 열린다.
+    // 식별자만 URL로 넘기고, 실제 값은 수정 화면에서 상세 조회로 채운다.
+    navigate(
+      `${ROUTES.TIMETABLE.ADD}?customScheduleId=${target.customScheduleId}`,
+    );
   };
 
   const handleDelete = (id: number) => {

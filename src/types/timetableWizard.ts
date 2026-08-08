@@ -1,6 +1,7 @@
 import type { Term } from "@/types/timetables";
 
-// TimetableGrid 규약과 동일: day 0=월 ~ 4=금, startTime/endTime은 9~21 사이 0.5 단위 시간값
+// TimetableGrid 규약과 동일: day 0=월 ~ 4=금, startTime/endTime은 9~21 사이 시간값
+// (10.75 = 10:45). 45분 수업도 있어 30분 배수라는 보장은 없다.
 export interface WizardCourseMeeting {
   day: number;
   startTime: number;
@@ -19,6 +20,8 @@ export interface WizardCourseOption {
   credit: number;
   department: string | null;
   meetings: WizardCourseMeeting[];
+  ssupTypeName?: string | null;
+  ssupTypeCode?: string | null;
 }
 
 // "듣고 싶은 강의" 목록의 항목 하나.
@@ -97,6 +100,9 @@ export interface WizardCandidate {
 
 export interface WizardConflictItem {
   label: string;
+  // 시간 겹침이 원인일 때 실제로 서로 충돌하는 강의(과목명·교수명·분반·요일·시간 식별용).
+  // formatCourseMeta()로 렌더링한다. 다른 원인(제외 조건/학점 범위 등)은 label만으로 충분해 비워둔다.
+  courses?: WizardCourseOption[];
 }
 
 export interface WizardGenerationResult {

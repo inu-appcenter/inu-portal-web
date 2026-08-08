@@ -58,12 +58,15 @@ export const mapCourseOfferingToCourseResult = (
     collegeName: offering.collegeName ?? course?.collegeName,
     isuName: offering.isuName ?? course?.completionDivisionName,
     hyName: offering.hyName ?? course?.targetGradeName,
+    ssupTypeName: offering.ssupTypeName ?? undefined,
+    ssupTypeCode: offering.ssupTypeCode ?? undefined,
   };
 };
 
 import type { FilterState } from "@/components/mobile/timetable/filter/courseFilterModel";
 import {
   expandIsuNameLabel,
+  expandOnlineTypeLabel,
   isIsuNameLabel,
 } from "@/components/mobile/timetable/filter/courseFilterModel";
 import type { CourseOfferingFilters } from "@/types/courseOfferings";
@@ -163,12 +166,14 @@ export function mapFilterToOfferingFilters(filters: FilterState): CourseOffering
   }
 
   const meetings = filters.selectedSlots ? formatSlotsToMeetings(filters.selectedSlots) : [];
+  const ssupTypeNames = (filters.onlineTypes ?? []).flatMap(expandOnlineTypeLabel);
 
   return {
     collegeName,
     deptName,
     hyNames: filters.grades.length > 0 ? filters.grades.map(String) : undefined,
     isuNames: isuNameSet.size > 0 ? [...isuNameSet] : undefined,
+    ssupTypeNames: ssupTypeNames.length > 0 ? ssupTypeNames : undefined,
     credits: filters.credits.length > 0 ? filters.credits : undefined,
     meetingFilterMode: meetings.length > 0 ? "HAS_CLASS" : undefined,
     meetings: meetings.length > 0 ? meetings : undefined,
