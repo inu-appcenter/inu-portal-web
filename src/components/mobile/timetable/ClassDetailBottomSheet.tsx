@@ -190,8 +190,11 @@ export default function ClassDetailBottomSheet({
     .join(", ");
 
   const roomVal = liveClass.room || offering?.meetings[0]?.location || "-";
-  const isCustomCourse =
-    liveClass.isCustom || (!liveClass.courseId && !liveClass.courseOfferingId);
+  // 일반 강의(학교 수업)는 수정 대상이 아니다. isCustom은 상세 응답의
+  // type === "CUSTOM"으로 정확히 채워지므로(utils/timetable.ts) 이것만 본다.
+  // courseId/courseOfferingId가 비었는지로 추정하면, 둘 다 없는 일반 강의가
+  // 커스텀으로 오판돼 수정 버튼이 뜬다(눌러도 handleEdit 가드에 걸려 무반응).
+  const isCustomCourse = Boolean(liveClass.isCustom);
 
   // 메모는 본인만 보는 개인 메모. 친구 소유 항목은 조회/편집 모두 불가하다.
   const hasMemo = Boolean(liveClass.memo && liveClass.memo.trim());
