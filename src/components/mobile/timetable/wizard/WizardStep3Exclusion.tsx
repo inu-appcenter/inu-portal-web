@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Search, X } from "lucide-react";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
 import { useTimetableWizardStore } from "@/stores/useTimetableWizardStore";
+import { formatCourseMeta } from "@/utils/timetableWizardFormat";
 
 const EMPTY_EVENTS: never[] = [];
 
@@ -51,7 +52,10 @@ const WizardStep3Exclusion = () => {
           <ChipRow>
             {excludedCourses.map((c) => (
               <Chip key={c.subjectNumber}>
-                <span>{c.title}</span>
+                <ChipTextWrap>
+                  <ChipTitle>{c.title}</ChipTitle>
+                  <ChipMeta>{formatCourseMeta(c)}</ChipMeta>
+                </ChipTextWrap>
                 <ChipRemove onClick={() => removeExcludedCourse(c.subjectNumber)}>
                   <X size={12} />
                 </ChipRemove>
@@ -158,17 +162,32 @@ const ChipRow = styled.div`
 const Chip = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 8px 8px 14px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 14px;
   background: var(--bg-error, #fff0f0);
   border: 1px solid rgba(239, 68, 68, 0.2);
+`;
 
-  span {
-    color: var(--text-error, #ef4444);
-    font-size: 14px;
-    font-weight: 500;
-  }
+const ChipTextWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const ChipTitle = styled.span`
+  color: var(--text-error, #ef4444);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+`;
+
+const ChipMeta = styled.span`
+  color: rgba(239, 68, 68, 0.75);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 15px;
 `;
 
 const ChipRemove = styled.button`
@@ -181,6 +200,7 @@ const ChipRemove = styled.button`
   background: transparent;
   color: var(--text-error, #ef4444);
   cursor: pointer;
+  flex-shrink: 0;
 `;
 
 const BottomActionsSpacer = styled.div`

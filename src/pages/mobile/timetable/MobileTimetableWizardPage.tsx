@@ -25,6 +25,7 @@ import {
   WizardEmptyState,
   WizardErrorState,
 } from "@/components/mobile/timetable/wizard/WizardEmptyErrorScreens";
+import { formatCourseMeta } from "@/utils/timetableWizardFormat";
 import type { WizardPreferenceConditions } from "@/types/timetableWizard";
 
 const GENERATING_MIN_VISIBLE_MS = 1600;
@@ -270,7 +271,10 @@ export default function MobileTimetableWizardPage() {
                     >
                       {item.required ? "필수" : "선택"}
                     </ChipRequiredToggle>
-                    <span>{item.course.title}</span>
+                    <ChipTextWrap>
+                      <ChipTitle $required={item.required}>{item.course.title}</ChipTitle>
+                      <ChipMeta $required={item.required}>{formatCourseMeta(item.course)}</ChipMeta>
+                    </ChipTextWrap>
                     <ChipRemove
                       type="button"
                       onClick={() => removeWishlistCourse(item.course.subjectNumber)}
@@ -652,22 +656,38 @@ const ChipRow = styled.div`
 const Chip = styled.div<{ $required: boolean }>`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 14px;
   background: ${({ $required }) =>
     $required ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)"};
   border: ${({ $required }) =>
     $required
-      ? "1px solid transparent"
+      ? "1px solid var(--interactive-primary, #3b82f6)"
       : "1px dashed var(--border-default, #e5e8eb)"};
+`;
 
-  span {
-    color: ${({ $required }) =>
-      $required ? "var(--interactive-primary, #3b82f6)" : "var(--text-secondary, #333d4b)"};
-    font-size: 14px;
-    font-weight: 500;
-  }
+const ChipTextWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const ChipTitle = styled.span<{ $required: boolean }>`
+  color: ${({ $required }) =>
+    $required ? "var(--interactive-primary, #3b82f6)" : "var(--text-primary, #191f28)"};
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+`;
+
+const ChipMeta = styled.span<{ $required: boolean }>`
+  color: ${({ $required }) =>
+    $required ? "rgba(59, 130, 246, 0.8)" : "var(--text-tertiary, #8b95a1)"};
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 15px;
 `;
 
 const ChipRequiredToggle = styled.button<{ $required: boolean }>`
