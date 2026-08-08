@@ -2,6 +2,7 @@ import styled from "styled-components";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import 안내횃불이 from "@/resources/assets/book/안내횃불이.png";
 import type { WizardConflictItem } from "@/types/timetableWizard";
+import { formatCourseMeta } from "@/utils/timetableWizardFormat";
 
 interface WizardEmptyStateProps {
   conflicts: WizardConflictItem[];
@@ -21,7 +22,18 @@ export function WizardEmptyState({ conflicts, onRelax }: WizardEmptyStateProps) 
             <ConflictHead>⚠ 서로 충돌하는 조건</ConflictHead>
             <ConflictList>
               {conflicts.map((c, index) => (
-                <ConflictItem key={index}>· {c.label}</ConflictItem>
+                <ConflictItem key={index}>
+                  · {c.label}
+                  {c.courses && c.courses.length > 0 && (
+                    <ConflictCourseList>
+                      {c.courses.map((course, courseIndex) => (
+                        <ConflictCourse key={courseIndex}>
+                          {course.title} ({formatCourseMeta(course)})
+                        </ConflictCourse>
+                      ))}
+                    </ConflictCourseList>
+                  )}
+                </ConflictItem>
               ))}
             </ConflictList>
             <ConflictFootnote>이 조건들을 동시에 만족하는 조합이 없어요.</ConflictFootnote>
@@ -141,9 +153,23 @@ const ConflictList = styled.div`
   gap: 8px;
 `;
 
-const ConflictItem = styled.span`
+const ConflictItem = styled.div`
   font-size: 13px;
   line-height: 20px;
+`;
+
+const ConflictCourseList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+  padding-left: 12px;
+`;
+
+const ConflictCourse = styled.span`
+  font-size: 12px;
+  line-height: 18px;
+  word-break: break-all;
 `;
 
 const ConflictFootnote = styled.span`

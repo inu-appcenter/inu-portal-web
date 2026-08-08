@@ -184,6 +184,30 @@ const searchCombinations = (
   return results;
 };
 
+// 필수 그룹끼리 시간이 겹쳐 조합이 아예 안 나올 때, 어느 강의끼리 겹치는지 짚어준다.
+// 선택(optional) 그룹은 통째로 건너뛸 수 있어 결과 0개의 원인이 될 수 없으므로(searchCombinations
+// 참고) 필수 그룹 사이의 겹침만 확인하면 된다. 그룹 안 모든 분반 조합이 전부 겹쳐야("피할 방법이
+// 없어야") 그 그룹 쌍을 원인으로 지목한다 - 분반을 바꾸면 피해지는 경우까지 잘못 지목하지 않기 위해서다.
+const findOverlappingRequiredPairs = (groups: WishlistGroup[]): WizardCourseOption[][] => {
+  const required = groups.filter((g) => g.required);
+  const pairs: WizardCourseOption[][] = [];
+
+  for (let i = 0; i < required.length; i += 1) {
+    for (let j = i + 1; j < required.length; j += 1) {
+      const gi = required[i];
+      const gj = required[j];
+      const allOptionsOverlap = gi.options.every((oi) =>
+        gj.options.every((oj) => overlapsAny(oi, oj.meetings)),
+      );
+      if (allOptionsOverlap) {
+        pairs.push([gi.options[0], gj.options[0]]);
+      }
+    }
+  }
+
+  return pairs;
+};
+
 const buildReasons = (
   courses: WizardCourseOption[],
   pref: WizardPreferenceConditions,
@@ -412,7 +436,14 @@ export const generateWizardCandidates = (
       }
 
       if (conflicts.length === 0) {
-        conflicts.push({ label: "담은 강의끼리 시간이 겹쳐요" });
+        const overlappingPairs = findOverlappingRequiredPairs(groups);
+        if (overlappingPairs.length > 0) {
+          overlappingPairs.forEach((pair) => {
+            conflicts.push({ label: "담은 강의끼리 시간이 겹쳐요", courses: pair });
+          });
+        } else {
+          conflicts.push({ label: "담은 강의끼리 시간이 겹쳐요" });
+        }
       }
     } else {
       // 하드 조건은 통과하지만 담은 강의만으로는 목표 학점 범위를 못 채움
