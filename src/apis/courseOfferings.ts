@@ -7,8 +7,6 @@ import { MOCK_COURSES, MOCK_COURSE_OFFERINGS } from "@/mocks/mockTimetableWizard
 
 // 서버 명세: 페이지당 크기는 50으로 고정됩니다.
 const PAGE_SIZE = 50;
-// 무한 루프 방지용 안전장치
-const MAX_PAGES = 50;
 
 /**
  * 학기별 개설 강의 목록 조회 (페이지 단위)

@@ -14,7 +14,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getCourseOfferingsPage } from "@/apis/courseOfferings";
 import { COURSE_OFFERINGS_QUERY_KEY } from "@/hooks/useCourseOfferings";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import type { CourseOfferingFilters } from "@/types/courseOfferings";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 
 // --- Types & Constants ---
