@@ -41,6 +41,21 @@ export function matchesCourseOfferingFilters(
     return false;
   }
   if (
+    filters?.ssupTypeNames?.length &&
+    !filters.ssupTypeNames.some((st) => {
+      const code = offering.ssupTypeCode;
+      const name = offering.ssupTypeName;
+      return (
+        code === st ||
+        name === st ||
+        (code && code.toLowerCase() === st.toLowerCase()) ||
+        (name && name.toLowerCase() === st.toLowerCase())
+      );
+    })
+  ) {
+    return false;
+  }
+  if (
     filters?.credits?.length &&
     !filters.credits.includes(offering.credit ?? Number(course?.credit))
   ) {

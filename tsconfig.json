@@ -24,6 +24,7 @@
     "types": ["node"]
   },
   "include": ["src", "src/types/turbo.d.ts"],
+  "exclude": ["node_modules", "src/**/__tests__"],
   "references": [
     {
       "path": "./tsconfig.node.json"

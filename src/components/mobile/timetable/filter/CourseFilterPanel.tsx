@@ -13,6 +13,7 @@ import {
   DEFAULT_FILTERS,
   GRADE_OPTIONS,
   MAJOR_CATEGORIES,
+  ONLINE_TYPE_OPTIONS,
   PINNED_MAJORS_STORAGE_KEY,
   SORT_OPTIONS,
   SUB_MAJORS,
@@ -422,6 +423,37 @@ const CourseFilterPanel = ({
               <CheckboxWrapper>
                 <CheckboxInput type="checkbox" checked={filters.types.includes(t)} readOnly />
                 <OptionLabel>{t}</OptionLabel>
+              </CheckboxWrapper>
+              <Ripple />
+            </OptionItemRow>
+          ))}
+        </OptionsCard>
+        <PanelBottomSpacer />
+      </PanelScroll>
+    );
+  }
+
+  if (view === "online") {
+    return (
+      <PanelScroll>
+        <OptionsCard>
+          {ONLINE_TYPE_OPTIONS.map((ot) => (
+            <OptionItemRow
+              key={ot}
+              onClick={() =>
+                onFiltersChange({
+                  ...filters,
+                  onlineTypes: toggleInList(filters.onlineTypes ?? [], ot),
+                })
+              }
+            >
+              <CheckboxWrapper>
+                <CheckboxInput
+                  type="checkbox"
+                  checked={(filters.onlineTypes ?? []).includes(ot)}
+                  readOnly
+                />
+                <OptionLabel>{ot}</OptionLabel>
               </CheckboxWrapper>
               <Ripple />
             </OptionItemRow>

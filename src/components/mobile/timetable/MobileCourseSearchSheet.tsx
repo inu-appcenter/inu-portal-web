@@ -20,6 +20,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
+import {
+  countActiveFilters,
+  getOnlineTypeLabel,
+} from "@/components/mobile/timetable/filter/courseFilterModel";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -43,6 +47,8 @@ export interface CourseResult {
   collegeName?: string;
   isuName?: string;
   hyName?: string;
+  ssupTypeName?: string;
+  ssupTypeCode?: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -160,16 +166,10 @@ const MobileCourseSearchSheet = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilters]);
 
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (activeFilters.major) count++;
-    if (activeFilters.sort !== "기본순") count++;
-    if (activeFilters.time !== "전체 시간") count++;
-    count += activeFilters.grades.length;
-    count += activeFilters.types.length;
-    count += activeFilters.credits.length;
-    return count;
-  }, [activeFilters]);
+  const activeFilterCount = useMemo(
+    () => countActiveFilters(activeFilters),
+    [activeFilters],
+  );
 
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("courseQuery");
@@ -188,7 +188,8 @@ const MobileCourseSearchSheet = ({
             !c.deptName ||
             c.deptName === targetDept ||
             c.deptName.includes(targetDept) ||
-            targetDept.includes(c.deptName),
+            targetDept.includes(c.deptName) ||
+            Boolean(offeringFilters.ssupTypeNames?.length),
         );
       }
 
@@ -199,7 +200,8 @@ const MobileCourseSearchSheet = ({
             !c.collegeName ||
             c.collegeName === targetCollege ||
             c.collegeName.includes(targetCollege) ||
-            targetCollege.includes(c.collegeName),
+            targetCollege.includes(c.collegeName) ||
+            Boolean(offeringFilters.ssupTypeNames?.length),
         );
       }
 
@@ -218,6 +220,21 @@ const MobileCourseSearchSheet = ({
             !c.isuName ||
             offeringFilters.isuNames?.some((isu) => c.isuName?.includes(isu)),
         );
+      }
+      if (offeringFilters.ssupTypeNames?.length) {
+        list = list.filter((c) => {
+          if (!c.ssupTypeName && !c.ssupTypeCode) return true;
+          return offeringFilters.ssupTypeNames?.some((st) => {
+            const code = c.ssupTypeCode;
+            const name = c.ssupTypeName;
+            return (
+              code === st ||
+              name === st ||
+              (code && code.toLowerCase() === st.toLowerCase()) ||
+              (name && name.toLowerCase() === st.toLowerCase())
+            );
+          });
+        });
       }
       if (offeringFilters.credits?.length) {
         list = list.filter((c) => offeringFilters.credits?.includes(c.credits));
@@ -372,6 +389,10 @@ const MobileCourseSearchSheet = ({
                     (addedCourseOfferingIds && addedCourseOfferingIds.has(course.id)) ||
                     (course.courseId && addedCourseIds && addedCourseIds.has(course.courseId)),
                   );
+                  const onlineTypeLabel = getOnlineTypeLabel(
+                    course.ssupTypeName,
+                    course.ssupTypeCode,
+                  );
 
                   return (
                     <CourseItem
@@ -416,6 +437,7 @@ const MobileCourseSearchSheet = ({
                               두 갈래로 뭉개면 전공핵심·전공기초가 "전공심화"로, 교직·
                               일반선택이 "교양"으로 잘못 표시된다. */}
                           <span>{course.isuName || "-"}</span>
+                          {onlineTypeLabel && <span>{onlineTypeLabel}</span>}
                           <span>{course.courseId}</span>
                         </InfoLine>
                         <div>{course.timeStr}</div>

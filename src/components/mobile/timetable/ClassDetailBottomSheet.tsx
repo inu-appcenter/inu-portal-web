@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
@@ -177,7 +178,12 @@ export default function ClassDetailBottomSheet({
 
   const courseIdStr = offering?.subjectNumber || liveClass.courseId || "";
 
-  const detailsList = [gradeStr, courseTypeStr, courseIdStr].filter(Boolean);
+  const onlineTypeStr = getOnlineTypeLabel(
+    offering?.ssupTypeName || liveClass.ssupTypeName,
+    offering?.ssupTypeCode || liveClass.ssupTypeCode,
+  );
+
+  const detailsList = [gradeStr, courseTypeStr, onlineTypeStr, courseIdStr].filter(Boolean);
   const detailsText = detailsList.join("  ");
 
   const scheduleText = matchingClasses
