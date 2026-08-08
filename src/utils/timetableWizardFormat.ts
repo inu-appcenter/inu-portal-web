@@ -26,5 +26,7 @@ export const mapWizardCoursesToClassItems = (
       endTime: meeting.endTime,
       credits: meetingIndex === 0 ? course.credit : 0,
       professor: course.professor ?? undefined,
+      ssupTypeName: course.ssupTypeName ?? undefined,
+      ssupTypeCode: course.ssupTypeCode ?? undefined,
     })),
   );

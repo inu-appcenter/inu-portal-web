@@ -25,7 +25,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import AppcenterLogo from "@/resources/assets/앱센터로고_new.svg";
 import Banner from "@/containers/mobile/home/Banner";
 
-import {formatRoom} from "@/components/mobile/timetable/TimetableGrid"
+import { formatRoom } from "@/components/mobile/timetable/TimetableGrid";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
@@ -68,7 +68,9 @@ export default function MobileHomePageV2() {
   const { userInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
-  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
+  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">(
+    "school",
+  );
   const { timetables, selectedSemester } = useTimetableStore();
 
   const isLoggedIn = Boolean(tokenInfo?.accessToken);
@@ -451,7 +453,7 @@ const LowerSheetSection = styled.div`
   position: relative;
   z-index: 5;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.02);
-  padding-top: 28px;
+  padding-top: 12px;
   padding-bottom: 40px;
 `;
 
@@ -459,7 +461,7 @@ const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 `;
 
 const FeedLayout = styled.div`

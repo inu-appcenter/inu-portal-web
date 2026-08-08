@@ -43,6 +43,7 @@ export interface CourseOffering {
   credit?: number | null;
   capacity: number | null;
   enrolledCount: number | null;
+  savedCount?: number | null;
   note: string | null;
   meetings: CourseOfferingMeeting[];
 }
@@ -59,5 +60,6 @@ export interface CourseOfferingFilters {
   keyword?: string;
   meetingFilterMode?: "HAS_CLASS" | "NO_CLASS";
   meetings?: string[];
+  sort?: "DEFAULT" | "SAVED_COUNT_DESC" | "SAVED_COUNT_ASC";
 }
 

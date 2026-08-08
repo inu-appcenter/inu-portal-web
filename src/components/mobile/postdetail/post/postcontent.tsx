@@ -90,9 +90,11 @@ const PostContentWrapper = styled.div`
 const ContentText = styled.div`
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 15px;
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
   line-height: 1.6;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary, #191f28);
 `;
 
 const SingleImageWrapper = styled.div`
@@ -102,7 +104,7 @@ const SingleImageWrapper = styled.div`
 
 const SingleImage = styled.img`
   max-width: 100%;
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   object-fit: cover;
   transition: opacity 0.15s ease-in-out;
@@ -114,7 +116,7 @@ const SingleImage = styled.img`
 
 const MultiImageScrollContainer = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 8px;
   overflow-x: auto;
   margin-top: 16px;
   padding-bottom: 6px;
@@ -131,13 +133,12 @@ const MultiImageScrollContainer = styled.div`
 `;
 
 const ThumbnailImage = styled.img`
-  width: 120px;
-  height: 120px;
+  width: 128px;
+  height: 128px;
   flex-shrink: 0;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 16px;
   cursor: pointer;
-  border: 1px solid var(--border-default, #e5e8eb);
   transition: transform 0.12s ease-in-out, opacity 0.12s ease-in-out;
 
   &:active {

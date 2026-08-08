@@ -17,6 +17,19 @@ export type AdminNotificationTargetType =
   | "STUDENT_IDS"
   | "DEPARTMENTS";
 
+export const isAdminUser = (role?: string): boolean => {
+  if (!role) return false;
+  return role.toLowerCase().includes("admin");
+};
+
+export type AdminNotificationSubFilter =
+  | "NONE"
+  | "NO_TIMETABLE_CURRENT_SEMESTER"
+  | "EMPTY_TIMETABLE"
+  | "PAST_USER_NO_CURRENT_TIMETABLE"
+  | "NO_FRIENDS"
+  | "NO_COMMUNITY_ACTIVITY";
+
 export type FcmSendStatus =
   | "PENDING"
   | "PROCESSING"
@@ -37,6 +50,7 @@ export interface FcmAdminLogData {
 
 export interface FcmSendRequest {
   targetType: AdminNotificationTargetType;
+  subFilter?: AdminNotificationSubFilter;
   memberIds?: number[];
   studentIds?: string[];
   departments?: string[];

@@ -11,6 +11,46 @@ import { useHeader } from "@/context/HeaderContext";
 import ReplyPortal from "@/components/common/ReplyPortal";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import Skeleton from "@/components/common/Skeleton";
+import { ROUTES } from "@/constants/routes";
+
+const PostDetailSkeleton = () => (
+  <PostWrapper>
+    <SkeletonHeaderContainer>
+      <Skeleton width="85%" height={28} />
+      <SkeletonAuthorRow>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Skeleton circle width={36} height={36} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Skeleton width={90} height={16} />
+            <Skeleton width={60} height={12} />
+          </div>
+        </div>
+      </SkeletonAuthorRow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+        <Skeleton width="100%" height={18} />
+        <Skeleton width="92%" height={18} />
+        <Skeleton width="65%" height={18} />
+      </div>
+    </SkeletonHeaderContainer>
+    <CommentWrapper>
+      <SkeletonCommentSection>
+        <div style={{ padding: "16px 16px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <Skeleton width={80} height={18} />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <Skeleton circle width={36} height={36} />
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                <Skeleton width={80} height={14} />
+                <Skeleton width="90%" height={16} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </SkeletonCommentSection>
+    </CommentWrapper>
+  </PostWrapper>
+);
 
 export default function PostDetailPage() {
   const [post, setPost] = useState<PostDetail>();
@@ -29,122 +69,91 @@ export default function PostDetailPage() {
   };
 
   const navigate = useNavigate();
+  const { id: paramId, postId } = useParams<{ id?: string; postId?: string }>();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const queryId = searchParams.get("id");
+  const targetId = paramId || postId || queryId;
+  const id = Number(targetId);
 
-  const fetchPost = async (id: number) => {
+  const fetchPost = async (targetPostId: number) => {
     try {
-      const response = await getPostDetail(id);
+      const response = await getPostDetail(targetPostId);
       console.log("게시글 가져오기 성공!!!");
       setPost(response.data);
 
-      // 믹스패널 트래킹: 게시글 상세 조회
       mixpanelTrack.tipViewed(response.data.category, response.data.title);
-
-      console.log(response);
-      setCommentUpdated(false);
     } catch (error) {
       console.error("게시글 가져오기 실패", error);
-      // refreshError가 아닌 경우 처리
-      if (
-        axios.isAxiosError(error) &&
-        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
-        error.response
-      ) {
-        switch (error.response.status) {
-          case 404:
-            alert("존재하지 않는 게시글입니다.");
-            navigate(-1);
-            break;
-          default:
-            alert("게시글 가져오기 실패");
-            navigate(-1);
-            break;
+    }
+  };
+
+  useEffect(() => {
+    if (id && !isNaN(id)) {
+      fetchPost(id);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (commentUpdated && id && !isNaN(id)) {
+      fetchPost(id);
+      setCommentUpdated(false);
+    }
+  }, [commentUpdated, id]);
+
+  const handleDeletePost = async () => {
+    if (!post) return;
+    if (window.confirm("정말 게시글을 삭제하시겠습니까?")) {
+      try {
+        await deletePost(post.id);
+        alert("게시글이 삭제되었습니다.");
+        navigate(-1);
+      } catch (error) {
+        console.error("게시글 삭제 실패", error);
+        if (
+          axios.isAxiosError(error) &&
+          !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+          error.response
+        ) {
+          const status = error.response.status;
+          if (status === 403) {
+            alert("해당 게시글을 삭제할 권한이 없습니다.");
+          } else if (status === 404) {
+            alert("존재하지 않는 회원 또는 게시글입니다.");
+          } else {
+            alert("게시글 삭제 중 오류가 발생했습니다.");
+          }
         }
       }
     }
   };
 
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm("정말 삭제할까요?");
-    if (!confirmDelete) return;
-
-    if (!post?.id) {
-      alert("게시글 삭제 중 오류가 발생했습니다.");
-      return;
+  const headerMenu = useMemo(() => {
+    if (post?.hasAuthority) {
+      return [
+        {
+          label: "수정하기",
+          onClick: () => navigate(ROUTES.BOARD.TIPS_EDIT(post.id)),
+        },
+        {
+          label: "삭제하기",
+          onClick: handleDeletePost,
+        },
+      ];
     }
+    return undefined;
+  }, [post, navigate]);
 
-    try {
-      await deletePost(post?.id);
-      alert("삭제되었습니다.");
-      navigate(-1);
-    } catch (error) {
-      console.error("게시글 삭제 실패", error);
-      // refreshError가 아닌 경우 처리
-      if (
-        axios.isAxiosError(error) &&
-        !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
-        error.response
-      ) {
-        switch (error.response.status) {
-          case 403:
-            alert("이 게시글의 수정/삭제에 대한 권한이 없습니다.");
-            break;
-          case 404:
-            alert("존재하지 않는 게시글입니다.");
-            break;
-          default:
-            alert("게시글 삭제 실패");
-            break;
-        }
-      }
-    }
-  };
-
-  const handleEdit = () => {
-    navigate(`/home/tips/write/${post?.id}`);
-  };
+  useHeader({
+    title: post ? post.category || "게시글 상세" : "게시글 상세",
+    hasback: true,
+    menuItems: headerMenu,
+  });
 
   const handleWriterClick = (memberId: number) => {
     setSelectedMemberId(memberId);
     setIsProfileModalOpen(true);
   };
-
-  const { id: paramId } = useParams<{ id: string }>();
-  const location = useLocation();
-  const queryId = new URLSearchParams(location.search).get("id");
-  const targetId = paramId || queryId;
-
-  useEffect(() => {
-    if (targetId) {
-      fetchPost(Number(targetId));
-    }
-  }, [targetId, commentUpdated]);
-
-  // 메뉴 아이템 메모이제이션
-  const menuItems = useMemo(() => {
-    // 권한 확인
-    if (!post?.hasAuthority) return undefined;
-
-    return [
-      {
-        label: "수정하기",
-        onClick: () => {
-          handleEdit();
-        },
-      },
-      {
-        label: "삭제하기",
-        onClick: () => {
-          handleDelete();
-        },
-      },
-    ];
-  }, [post?.hasAuthority]); // 의존성 배열
-
-  // 헤더 설정 주입
-  useHeader({
-    title: "게시글 상세",
-    menuItems,
-  });
 
   return (
     <Wrapper>
@@ -154,6 +163,12 @@ export default function PostDetailPage() {
             <PostContentContainer ClubRecruit={post} onWriterClick={handleWriterClick} />
             <CommentWrapper>
               <CommentListMobile
+                postId={post.id}
+                like={post.like}
+                isLiked={post.isLiked}
+                scrap={post.scrap}
+                isScraped={post.isScraped}
+                title={post.title}
                 bestReply={post.bestReplies[0]}
                 replies={post.replies}
                 setReplyToReply={setReplyToReply}
@@ -186,33 +201,58 @@ export default function PostDetailPage() {
           />
         </>
       ) : (
-        <div>Loading...</div>
+        <PostDetailSkeleton />
       )}
     </Wrapper>
   );
 }
+
 const Wrapper = styled.div`
   width: 100%;
-  //height: calc(100svh - 65px);
-  //padding-top: 56px;
+  min-height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-subtle, #f8f9fb);
   box-sizing: border-box;
 `;
 
 const PostWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  //height: calc(100svh - 135px);
-  //overflow-y: auto;
+  flex: 1;
   position: relative;
   z-index: 1;
 `;
-// PostDetailPage.tsx 내 스타일 수정
 
 const CommentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  /* ReplyInput 높이(약 64px~80px)만큼 하단 패딩 확보 */
-  padding-bottom: 120px;
+  flex: 1;
   position: relative;
+`;
+
+const SkeletonHeaderContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 16px 28px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const SkeletonAuthorRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const SkeletonCommentSection = styled.div`
+  background: var(--bg-base, #ffffff);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0px -2px 8px 0px rgba(0, 0, 0, 0.04);
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 `;
