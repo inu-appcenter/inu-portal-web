@@ -1,6 +1,7 @@
 import type { Term } from "@/types/timetables";
 
-// TimetableGrid 규약과 동일: day 0=월 ~ 4=금, startTime/endTime은 9~21 사이 0.5 단위 시간값
+// TimetableGrid 규약과 동일: day 0=월 ~ 4=금, startTime/endTime은 9~21 사이 시간값
+// (10.75 = 10:45). 45분 수업도 있어 30분 배수라는 보장은 없다.
 export interface WizardCourseMeeting {
   day: number;
   startTime: number;

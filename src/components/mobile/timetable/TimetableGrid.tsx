@@ -72,6 +72,22 @@ const DEFAULT_MAX_HOUR = 18;
 const MIN_DAY_COUNT = 5;
 const MAX_DAY_COUNT = 7;
 
+// 수업 블록을 얹는 그리드 행 단위(분). 45분·75분처럼 30분 배수가 아닌 수업이 실제로
+// 있어서, 행을 30분으로 두면 블록이 30분 격자로 반올림돼 실제와 다른 시간에 그려졌다.
+const ROW_MINUTES = 5;
+const ROWS_PER_HOUR = 60 / ROW_MINUTES;
+// 눈에 보이는 칸(시간대 드래그 선택 단위)은 그대로 30분 — 선택 슬롯 문자열
+// (`${day}-${hour}`, hour는 0.5 단위)이 필터·마법사 제외조건과 공유하는 규약이라
+// 여기만 잘게 쪼개면 안 된다. 30분 칸 하나가 SELECT_ROWS개 행을 덮는다.
+const SELECT_STEP_HOURS = 0.5;
+const SELECT_ROWS = (SELECT_STEP_HOURS * 60) / ROW_MINUTES;
+const SELECT_CELL_HEIGHT_PX = 25;
+const ROW_HEIGHT_PX = SELECT_CELL_HEIGHT_PX / SELECT_ROWS;
+
+// 시간값(9.75 = 09:45) -> 그리드 행 번호. 1행은 요일 헤더라 +2.
+const timeToRow = (time: number) =>
+  Math.round((time - START_HOUR) * ROWS_PER_HOUR) + 2;
+
 const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
 const EMPTY_SELECTED_SLOTS: string[] = [];
 
@@ -265,7 +281,8 @@ const TimetableGrid = ({
   const timeSlots = useMemo(() => {
     const allEvents = [...timedEvents, ...timedPreviewEvents];
     const maxEventTime = Math.max(0, ...allEvents.map((e) => e.endTime));
-    const endHour = Math.max(DEFAULT_MAX_HOUR, maxEventTime);
+    // 정시에 끝나지 않는 수업(예: 18:45)도 마지막 행 안에 들어오도록 올림한다.
+    const endHour = Math.max(DEFAULT_MAX_HOUR, Math.ceil(maxEventTime));
 
     const slots = [];
     for (let i = START_HOUR; i <= endHour; i++) {
@@ -274,7 +291,7 @@ const TimetableGrid = ({
     return slots;
   }, [timedEvents, timedPreviewEvents]);
 
-  const rowCount = (timeSlots.length - 1) * 2;
+  const rowCount = (timeSlots.length - 1) * ROWS_PER_HOUR;
 
   // 2. 색상 매핑
   const themeColors = useMemo(() => {
@@ -298,8 +315,9 @@ const TimetableGrid = ({
     isPreview: boolean,
   ) => {
     const colStart = item.day + 2;
-    const rowStart = Math.round((item.startTime - START_HOUR) * 2) + 2;
-    const rowEnd = Math.round((item.endTime - START_HOUR) * 2) + 2;
+    const rowStart = timeToRow(item.startTime);
+    // 5분 미만 길이(데이터 이상)라도 최소 한 행은 차지해야 그리드가 깨지지 않는다.
+    const rowEnd = Math.max(rowStart + 1, timeToRow(item.endTime));
     // 개별 색상이 지정되어 있으면 우선 사용, 아니면 미리보기면 고정색, 기본은 맵핑된 색
     const bgColor = item.color
       ? item.color
@@ -370,70 +388,46 @@ const TimetableGrid = ({
 
         {/* (2) 시간표 바디 */}
         {timeSlots.slice(0, -1).map((time, timeIndex) => {
-          const rowIndex = timeIndex * 2 + 2;
+          const rowIndex = timeIndex * ROWS_PER_HOUR + 2;
           return (
             <React.Fragment key={`row-${time}`}>
               <TimeCell
                 style={{
                   gridColumn: 1,
                   gridRowStart: rowIndex,
-                  gridRowEnd: "span 2",
+                  gridRowEnd: `span ${ROWS_PER_HOUR}`,
                 }}
               >
                 <span>{time}</span>
               </TimeCell>
-              {/* First 30 minutes */}
-              {DAYS.map((_, dayIndex) => {
-                const timeVal = time;
-                const slot = `${dayIndex}-${timeVal}`;
-                const isSelected = localSelected.includes(slot);
-                return (
-                  <GridBackgroundCell
-                    key={`bg-${timeVal}-${dayIndex}`}
-                    $isSelectionMode={isSelectionMode}
-                    $isSelected={isSelected}
-                    $isLastDay={dayIndex === DAYS.length - 1}
-                    data-day={dayIndex}
-                    data-hour={timeVal}
-                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
-                    onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
-                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
-                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
-                    onMouseUp={isSelectionMode ? handleMouseUp : undefined}
-                    style={{
-                      gridColumn: dayIndex + 2,
-                      gridRowStart: rowIndex,
-                      gridRowEnd: "span 1",
-                    }}
-                  />
-                );
-              })}
-              {/* Second 30 minutes */}
-              {DAYS.map((_, dayIndex) => {
-                const timeVal = time + 0.5;
-                const slot = `${dayIndex}-${timeVal}`;
-                const isSelected = localSelected.includes(slot);
-                return (
-                  <GridBackgroundCell
-                    key={`bg-${timeVal}-${dayIndex}`}
-                    $isSelectionMode={isSelectionMode}
-                    $isSelected={isSelected}
-                    $isLastDay={dayIndex === DAYS.length - 1}
-                    data-day={dayIndex}
-                    data-hour={timeVal}
-                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
-                    onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
-                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
-                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
-                    onMouseUp={isSelectionMode ? handleMouseUp : undefined}
-                    style={{
-                      gridColumn: dayIndex + 2,
-                      gridRowStart: rowIndex + 1,
-                      gridRowEnd: "span 1",
-                    }}
-                  />
-                );
-              })}
+              {/* 30분 칸 두 개(정시/30분)를 각각 SELECT_ROWS행씩 덮어서 그린다 */}
+              {[0, SELECT_STEP_HOURS].map((offset, halfIndex) =>
+                DAYS.map((_, dayIndex) => {
+                  const timeVal = time + offset;
+                  const slot = `${dayIndex}-${timeVal}`;
+                  const isSelected = localSelected.includes(slot);
+                  return (
+                    <GridBackgroundCell
+                      key={`bg-${timeVal}-${dayIndex}`}
+                      $isSelectionMode={isSelectionMode}
+                      $isSelected={isSelected}
+                      $isLastDay={dayIndex === DAYS.length - 1}
+                      data-day={dayIndex}
+                      data-hour={timeVal}
+                      onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
+                      onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
+                      onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
+                      onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
+                      onMouseUp={isSelectionMode ? handleMouseUp : undefined}
+                      style={{
+                        gridColumn: dayIndex + 2,
+                        gridRowStart: rowIndex + halfIndex * SELECT_ROWS,
+                        gridRowEnd: `span ${SELECT_ROWS}`,
+                      }}
+                    />
+                  );
+                }),
+              )}
             </React.Fragment>
           );
         })}
@@ -452,10 +446,11 @@ const TimetableGrid = ({
             style={{
               gridColumnStart: highlightedSlot.day + 2,
               gridColumnEnd: "span 1",
-              gridRowStart:
-                Math.round((highlightedSlot.startTime - START_HOUR) * 2) + 2,
-              gridRowEnd:
-                Math.round((highlightedSlot.endTime - START_HOUR) * 2) + 2,
+              gridRowStart: timeToRow(highlightedSlot.startTime),
+              gridRowEnd: Math.max(
+                timeToRow(highlightedSlot.startTime) + 1,
+                timeToRow(highlightedSlot.endTime),
+              ),
             }}
           />
         )}
@@ -495,7 +490,7 @@ export default TimetableGrid;
 const GridContainer = styled.div<{ $rowCount: number; $dayCount: number }>`
   display: grid;
   grid-template-columns: 24px repeat(${({ $dayCount }) => $dayCount}, minmax(0, 1fr));
-  grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, 25px);
+  grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, ${ROW_HEIGHT_PX}px);
   border: 1px solid var(--border-strong);
   border-radius: 16px;
   background-color: var(--bg-base);
