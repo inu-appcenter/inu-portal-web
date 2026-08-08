@@ -4,6 +4,7 @@ import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useTimetableStore, TimetableTheme } from "@/stores/useTimetableStore";
 import { Check } from "lucide-react";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export const THEME_PALETTES = {
   default: [
@@ -113,6 +114,12 @@ export default function TimetableThemeBottomSheet({
       showProfessor,
     };
     updateTimetableTheme(timetableId, updatedTheme);
+    mixpanelTrack.timetableActionCompleted("테마 변경", {
+      color_theme: updatedTheme.colorTheme,
+      font_size: updatedTheme.fontSize,
+      show_room: updatedTheme.showRoom,
+      show_professor: updatedTheme.showProfessor,
+    });
     onOpenChange(false);
   };
 

@@ -36,6 +36,7 @@ export const getMockInvitePreview = (): FriendInvitePreviewResponseDto => ({
 
 export const getMockAcceptedFriend = (): FriendResponseDto => ({
   friendId: 9001,
+  friendMemberId: 9001,
   nickname: "인천대사자",
   studentId: "2021****34",
   fireId: 3,

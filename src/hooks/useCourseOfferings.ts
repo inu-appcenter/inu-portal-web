@@ -10,23 +10,27 @@ export const useCourseOfferings = (
   year?: number,
   term?: Term,
   filters?: CourseOfferingFilters,
+  options?: { enabled?: boolean },
 ) => {
+  const queryKey = [
+    ...COURSE_OFFERINGS_QUERY_KEY,
+    year ?? "none",
+    term ?? "none",
+    filters?.deptName ?? "",
+    filters?.collegeName ?? "",
+    filters?.hyNames?.join(",") ?? "",
+    filters?.isuNames?.join(",") ?? "",
+    filters?.isuFldNames?.join(",") ?? "",
+    filters?.ssupTypeNames?.join(",") ?? "",
+    filters?.credits?.join(",") ?? "",
+    filters?.keyword ?? "",
+    filters?.meetingFilterMode ?? "",
+    filters?.meetings?.join(",") ?? "",
+    filters?.sort ?? "",
+  ];
+
   const query = useInfiniteQuery({
-    queryKey: [
-      ...COURSE_OFFERINGS_QUERY_KEY,
-      year ?? "none",
-      term ?? "none",
-      filters?.deptName ?? "",
-      filters?.collegeName ?? "",
-      filters?.hyNames?.join(",") ?? "",
-      filters?.isuNames?.join(",") ?? "",
-      filters?.isuFldNames?.join(",") ?? "",
-      filters?.ssupTypeNames?.join(",") ?? "",
-      filters?.credits?.join(",") ?? "",
-      filters?.keyword ?? "",
-      filters?.meetingFilterMode ?? "",
-      filters?.meetings?.join(",") ?? "",
-    ],
+    queryKey,
     queryFn: ({ pageParam = 0 }) =>
       getCourseOfferingsPage(year!, term!, pageParam as number, 50, filters),
     initialPageParam: 0,
@@ -48,7 +52,8 @@ export const useCourseOfferings = (
       }
       return currentPage + 1;
     },
-    enabled: year !== undefined && term !== undefined,
+    enabled:
+      year !== undefined && term !== undefined && (options?.enabled ?? true),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });

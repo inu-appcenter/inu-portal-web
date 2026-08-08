@@ -24,6 +24,96 @@ export interface Timetable {
   theme?: TimetableTheme;
 }
 
+interface TimetableCache {
+  version: 1;
+  selectedSemester: string;
+  activeTimetableId: number | null;
+  timetables: Timetable[];
+}
+
+const TIMETABLE_CACHE_PREFIX = "timetable-cache:v1";
+const LEGACY_TIMETABLE_THEMES_STORAGE_KEY = "timetable-themes";
+
+const getLegacyTimetableThemes = (): Record<number, TimetableTheme> => {
+  if (typeof window === "undefined") return {};
+
+  try {
+    return JSON.parse(
+      window.localStorage.getItem(LEGACY_TIMETABLE_THEMES_STORAGE_KEY) ?? "{}",
+    );
+  } catch {
+    return {};
+  }
+};
+
+const getCurrentMemberId = () => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const tokenInfo = JSON.parse(window.localStorage.getItem("tokenInfo") ?? "{}");
+    const token = tokenInfo.accessToken as string | undefined;
+    if (!token) return null;
+
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const decoded = JSON.parse(window.atob(normalized));
+    return typeof decoded.sub === "string" && decoded.sub ? decoded.sub : null;
+  } catch {
+    return null;
+  }
+};
+
+const getTimetableCacheKey = () => {
+  const memberId = getCurrentMemberId();
+  return memberId ? `${TIMETABLE_CACHE_PREFIX}:${memberId}` : null;
+};
+
+const getCachedTimetableState = (): Omit<TimetableCache, "version"> => {
+  const empty = {
+    selectedSemester: "",
+    activeTimetableId: null,
+    timetables: [],
+  };
+  const cacheKey = getTimetableCacheKey();
+  if (!cacheKey) return empty;
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(cacheKey) ?? "null");
+    if (
+      parsed?.version !== 1 ||
+      typeof parsed.selectedSemester !== "string" ||
+      !Array.isArray(parsed.timetables)
+    ) {
+      return empty;
+    }
+
+    return {
+      selectedSemester: parsed.selectedSemester,
+      activeTimetableId:
+        typeof parsed.activeTimetableId === "number"
+          ? parsed.activeTimetableId
+          : null,
+      timetables: parsed.timetables.filter(
+        (timetable: unknown): timetable is Timetable => {
+          if (!timetable || typeof timetable !== "object") return false;
+          const candidate = timetable as Partial<Timetable>;
+          return (
+            typeof candidate.id === "number" &&
+            typeof candidate.name === "string" &&
+            typeof candidate.semester === "string" &&
+            typeof candidate.year === "number" &&
+            Array.isArray(candidate.events)
+          );
+        },
+      ),
+    };
+  } catch {
+    return empty;
+  }
+};
+
 interface TimetableStore {
   selectedSemester: string;
   activeTimetableId: number | null;
@@ -34,6 +124,26 @@ interface TimetableStore {
   updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
   updateTimetableEvents: (id: number, events: ClassItem[]) => void;
 }
+
+const storeTimetableCache = (state: TimetableStore) => {
+  const cacheKey = getTimetableCacheKey();
+  if (!cacheKey) return;
+
+  const cache: TimetableCache = {
+    version: 1,
+    selectedSemester: state.selectedSemester,
+    activeTimetableId: state.activeTimetableId,
+    timetables: state.timetables,
+  };
+
+  try {
+    window.localStorage.setItem(cacheKey, JSON.stringify(cache));
+  } catch {
+    // 저장 공간 부족 등으로 캐시할 수 없어도 서버 기반 시간표는 계속 동작한다.
+  }
+};
+
+const initialCachedState = getCachedTimetableState();
 
 export const useTimetableStore = create<TimetableStore>()(
   broadcastSync<TimetableStore>({
@@ -46,15 +156,23 @@ export const useTimetableStore = create<TimetableStore>()(
       activeTimetableId: state.activeTimetableId,
       timetables: state.timetables,
     }),
-  })((set) => ({
-  selectedSemester: "",
-  activeTimetableId: null,
-  timetables: [],
-  setSemester: (semester) => set({ selectedSemester: semester }),
-  setActiveTimetable: (id) => set({ activeTimetableId: id }),
+    onReceive: (_partial, state) => storeTimetableCache(state),
+  })((set, get) => ({
+  selectedSemester: initialCachedState.selectedSemester,
+  activeTimetableId: initialCachedState.activeTimetableId,
+  timetables: initialCachedState.timetables,
+  setSemester: (semester) => {
+    set({ selectedSemester: semester });
+    storeTimetableCache(get());
+  },
+  setActiveTimetable: (id) => {
+    set({ activeTimetableId: id });
+    storeTimetableCache(get());
+  },
   // 서버에서 받아온 시간표 목록을 스토어 상태로 변환 (기존 events/theme는 유지)
-  setTimetables: (serverTimetables) =>
+  setTimetables: (serverTimetables) => {
     set((state) => {
+      const legacyThemes = getLegacyTimetableThemes();
       const timetables = serverTimetables.map<Timetable>((t) => {
         const prev = state.timetables.find((p) => p.id === t.id);
         return {
@@ -67,7 +185,7 @@ export const useTimetableStore = create<TimetableStore>()(
           isRepresentative: t.isPrimary,
           visibility: t.visibility,
           events: prev?.events ?? [],
-          theme: prev?.theme,
+          theme: prev?.theme ?? legacyThemes[t.id],
         };
       });
 
@@ -91,18 +209,32 @@ export const useTimetableStore = create<TimetableStore>()(
       }
 
       return { timetables, selectedSemester, activeTimetableId };
-    }),
-  updateTimetableTheme: (id, theme) =>
-    set((state) => ({
-      timetables: state.timetables.map((t) =>
-        t.id === id ? { ...t, theme } : t
-      ),
-    })),
-  updateTimetableEvents: (id, events) =>
-    set((state) => ({
-      timetables: state.timetables.map((t) =>
-        t.id === id ? { ...t, events } : t
-      ),
-    })),
+    });
+    storeTimetableCache(get());
+  },
+  updateTimetableTheme: (id, theme) => {
+    set((state) => {
+      return {
+        timetables: state.timetables.map((t) =>
+          t.id === id ? { ...t, theme } : t
+        ),
+      };
+    });
+    storeTimetableCache(get());
+  },
+  updateTimetableEvents: (id, events) => {
+    set((state) => {
+      const target = state.timetables.find((t) => t.id === id);
+      if (target && JSON.stringify(target.events) === JSON.stringify(events)) {
+        return state;
+      }
+      return {
+        timetables: state.timetables.map((t) =>
+          t.id === id ? { ...t, events } : t
+        ),
+      };
+    });
+    storeTimetableCache(get());
+  },
   })),
 );

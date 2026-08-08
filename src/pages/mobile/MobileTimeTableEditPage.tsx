@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
@@ -6,6 +6,7 @@ import MobileCourseSearchSheet, {
   CourseResult,
   COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
+import TooltipMessage from "@/components/common/TooltipMessage";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -20,13 +21,14 @@ import {
 } from "@/hooks/useTimeTables";
 import { formatHoursToTime } from "@/utils/timetable";
 import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
-import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import {
   mapCourseOfferingToCourseResult,
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -121,11 +123,12 @@ const IconButton = styled.button`
   padding: 4px;
 `;
 
-
 const MobileTimeTableEditPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("courseQuery") || undefined;
+  const wizardButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [showWizardTooltip, setShowWizardTooltip] = useState(true);
 
   // 상태 및 스토어 관리
   const { timetables, activeTimetableId } = useTimetableStore();
@@ -154,11 +157,18 @@ const MobileTimeTableEditPage = () => {
     return set;
   }, [timetable]);
 
-  // 전공/영역·학년·이수구분·학점 필터
-  const [offeringFilters, setOfferingFilters] = useState<CourseOfferingFilters>({});
-  const handleFiltersChange = (filters: FilterState) => {
-    setOfferingFilters(mapFilterToOfferingFilters(filters));
-  };
+  // 전공/영역·학년·이수구분·학점 필터.
+  //
+  // 확정 필터는 useCourseFilterStore가 소유한다. 필터 화면(/timetable/filter)은 멀티
+  // 웹뷰에서 별도 웹뷰로 push되므로 이 웹뷰에는 라우팅 이벤트가 오지 않는다 —
+  // location.key도 변하지 않아 예전의 "복귀 시 localStorage 재동기화"는 애초에
+  // 재실행되지 않았다. broadcastSync가 웹뷰를 건너 값을 실어온다.
+  const activeFilters = useEffectiveCourseFilters();
+
+  const offeringFilters = useMemo(
+    () => mapFilterToOfferingFilters(activeFilters),
+    [activeFilters],
+  );
 
   const combinedFilters: CourseOfferingFilters = useMemo(
     () => ({
@@ -197,22 +207,55 @@ const MobileTimeTableEditPage = () => {
     [courseOfferings, courseById],
   );
 
-
   const headerRight = useMemo(
     () => (
       <HeaderRightArea>
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.ADD)}>
+        <IconButton
+          onClick={() => {
+            mixpanelTrack.timetableFeatureClicked(
+              "직접 일정 추가",
+              "시간표 편집 헤더",
+            );
+            navigate(ROUTES.TIMETABLE.ADD);
+          }}
+        >
           <IconsAddPlus />
         </IconButton>
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.WIZARD)}>
+        <IconButton
+          ref={wizardButtonRef}
+          onClick={() => {
+            mixpanelTrack.timetableWizardAction("시작", {
+              location: "시간표 편집 헤더",
+            });
+            navigate(ROUTES.TIMETABLE.WIZARD);
+          }}
+        >
           <IconsMagicWand />
         </IconButton>
-        <IconButton onClick={() => navigate(ROUTES.TIMETABLE.VISIBILITY)}>
+        {showWizardTooltip && (
+          <TooltipMessage
+            message="시간표 마법사를\n사용해보세요!"
+            onClose={() => setShowWizardTooltip(false)}
+            position="bottom"
+            align="center"
+            width="max-content"
+            anchorRef={wizardButtonRef}
+          />
+        )}
+        <IconButton
+          onClick={() => {
+            mixpanelTrack.timetableFeatureClicked(
+              "공개 범위 설정",
+              "시간표 편집 헤더",
+            );
+            navigate(ROUTES.TIMETABLE.VISIBILITY);
+          }}
+        >
           <IconsLock />
         </IconButton>
       </HeaderRightArea>
     ),
-    [navigate],
+    [navigate, showWizardTooltip],
   );
 
   useHeader({
@@ -229,6 +272,13 @@ const MobileTimeTableEditPage = () => {
   useTimetableUrlSync();
   // 상세 조회로 서버 요소를 스토어에 동기화 (뮤테이션 성공 시 invalidate로 재조회됨)
   useTimeTableDetail(activeTimetableId);
+
+  useEffect(() => {
+    mixpanelTrack.timetableViewed("시간표 편집", {
+      semester: activeTimetable?.semester,
+      course_count: timetable.length,
+    });
+  }, [activeTimetable?.semester, timetable.length]);
 
   const createCourseItemMutation = useCreateTimeTableCourseItem();
   const deleteItemMutation = useDeleteTimeTableItem();
@@ -252,6 +302,12 @@ const MobileTimeTableEditPage = () => {
         body: { courseOfferingId: newCourse.id },
       },
       {
+        onSuccess: () => {
+          mixpanelTrack.timetableItemActionCompleted("강의 추가", "강의", {
+            semester: activeTimetable?.semester,
+            result_count: searchResults.length,
+          });
+        },
         onError: (error: any) => {
           alert(error.response?.data?.msg || "강의 추가에 실패했습니다.");
         },
@@ -337,6 +393,13 @@ const MobileTimeTableEditPage = () => {
   }, [expandedId, snap]);
 
   const toggleExpand = (id: number) => {
+    const target = searchResults.find((course) => course.id === id);
+    if (expandedId !== id) {
+      mixpanelTrack.timetableCourseSearchAction("강의 펼치기", {
+        has_schedule: Boolean(target?.schedules?.length),
+        credits: target?.credits,
+      });
+    }
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
@@ -370,6 +433,15 @@ const MobileTimeTableEditPage = () => {
     deleteItemMutation.mutate(
       { timeTableId: activeTimetableId, timeTableItemId: target.itemId },
       {
+        onSuccess: () => {
+          mixpanelTrack.timetableItemActionCompleted(
+            "항목 삭제",
+            target.isCustom ? "직접 일정" : "강의",
+            {
+              semester: activeTimetable?.semester,
+            },
+          );
+        },
         onError: (error: any) => {
           alert(
             error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",
@@ -407,8 +479,14 @@ const MobileTimeTableEditPage = () => {
       let major = 0;
       let general = 0;
       let other = 0;
+      const seenItemIds = new Set<number>();
 
       timetable.forEach((item) => {
+        if (item.itemId) {
+          if (seenItemIds.has(item.itemId)) return;
+          seenItemIds.add(item.itemId);
+        }
+
         const credits = item.credits || 0;
         if (credits <= 0) return;
 
@@ -417,7 +495,9 @@ const MobileTimeTableEditPage = () => {
             ? offeringById.get(item.courseOfferingId)
             : null) ||
           (item.courseId ? offeringBySubNum.get(item.courseId) : null);
-        const course = offering ? courseById.get(offering.courseId) : null;
+        const course =
+          (item.numericCourseId ? courseById.get(item.numericCourseId) : null) ||
+          (offering ? courseById.get(offering.courseId) : null);
 
         const divisionName =
           offering?.isuName ||
@@ -475,7 +555,6 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
-        onFiltersChange={handleFiltersChange}
         addedCourseOfferingIds={addedCourseOfferingIds}
         addedCourseIds={addedCourseIds}
         isLoading={isSheetLoading}

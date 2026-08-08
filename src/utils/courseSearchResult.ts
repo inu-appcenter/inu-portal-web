@@ -14,7 +14,7 @@ export const mapCourseOfferingToCourseResult = (
   course: Course | undefined,
 ): CourseResult => {
   const credits =
-    offering.credit ?? (parseInt(course?.credit ?? "", 10) || 0);
+    offering.credit ?? (Number(course?.credit) || 0);
 
   const grade = offering.hyName
     ? parseInt(offering.hyName, 10) || 0
@@ -43,6 +43,7 @@ export const mapCourseOfferingToCourseResult = (
     remarks: offering.note || course?.content,
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,
+    savedCount: offering.savedCount ?? 0,
     schedules: offering.meetings.map((m, index) => ({
       id: m.id,
       name: offering.courseTitle,
@@ -53,16 +54,30 @@ export const mapCourseOfferingToCourseResult = (
       credits: index === 0 ? credits : 0,
       professor: offering.professor ?? undefined,
     })),
+    deptName: offering.deptName ?? course?.departmentName,
+    collegeName: offering.collegeName ?? course?.collegeName,
+    isuName: offering.isuName ?? course?.completionDivisionName,
+    hyName: offering.hyName ?? course?.targetGradeName,
   };
 };
 
-import type { FilterState } from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import type { FilterState } from "@/components/mobile/timetable/filter/courseFilterModel";
+import {
+  expandIsuNameLabel,
+  isIsuNameLabel,
+} from "@/components/mobile/timetable/filter/courseFilterModel";
 import type { CourseOfferingFilters } from "@/types/courseOfferings";
 
 const COLLEGES = new Set([
   "경영대학",
   "공과대학",
+  "교양",
+  "교직",
+  "군사학",
   "글로벌정경대학",
+  "기타",
+  "단과대구분없음",
+  "단과대구분없음(법학)",
   "도시과학대학",
   "사범대학",
   "사회과학대학",
@@ -70,22 +85,9 @@ const COLLEGES = new Set([
   "예술체육대학",
   "융합자유전공대학",
   "인문대학",
+  "일선",
   "자연과학대학",
   "정보기술대학",
-]);
-
-const ISU_NAMES = new Set([
-  "교양",
-  "교직",
-  "일반선택",
-  "군사학",
-  "기초교양",
-  "균형교양",
-  "일반교양",
-  "전공",
-  "전공심화",
-  "전공선택",
-  "전공기초",
 ]);
 
 const DAY_ENUMS = [
@@ -145,15 +147,17 @@ export function mapFilterToOfferingFilters(filters: FilterState): CourseOffering
 
   let collegeName: string | undefined = undefined;
   let deptName: string | undefined = undefined;
-  let isuNames: string[] | undefined = filters.types.length > 0 ? [...filters.types] : undefined;
+
+  // 이수구분은 UI 라벨("전공"/"교양")을 서버가 아는 값으로 펼쳐서 넘긴다.
+  // 서버가 정확일치 + 같은 파라미터 반복은 OR이므로, 묶음 라벨을 그대로 보내면 0건이 된다.
+  const isuNameSet = new Set(filters.types.flatMap((type) => expandIsuNameLabel(type)));
 
   if (major) {
     if (COLLEGES.has(major)) {
       collegeName = major;
-    } else if (ISU_NAMES.has(major)) {
-      if (!isuNames) isuNames = [];
-      if (!isuNames.includes(major)) isuNames.push(major);
-    } else if (major !== "기타" && major !== "전체 학과/영역") {
+    } else if (isIsuNameLabel(major)) {
+      expandIsuNameLabel(major).forEach((name) => isuNameSet.add(name));
+    } else if (major !== "전체 학과/영역") {
       deptName = major;
     }
   }
@@ -164,10 +168,14 @@ export function mapFilterToOfferingFilters(filters: FilterState): CourseOffering
     collegeName,
     deptName,
     hyNames: filters.grades.length > 0 ? filters.grades.map(String) : undefined,
-    isuNames,
+    isuNames: isuNameSet.size > 0 ? [...isuNameSet] : undefined,
     credits: filters.credits.length > 0 ? filters.credits : undefined,
     meetingFilterMode: meetings.length > 0 ? "HAS_CLASS" : undefined,
     meetings: meetings.length > 0 ? meetings : undefined,
+    sort:
+      filters.sort === "담은인원많은순"
+        ? "SAVED_COUNT_DESC"
+        : "DEFAULT",
   };
 }
 

@@ -1,52 +1,21 @@
-import { useState } from "react";
 import styled from "styled-components";
 import { Search, X } from "lucide-react";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
-import WizardCourseSearchSheet from "@/components/mobile/timetable/wizard/WizardCourseSearchSheet";
-import type {
-  WizardCourseOption,
-  WizardExclusionConditions,
-} from "@/types/timetableWizard";
-
-interface WizardStep3ExclusionProps {
-  coursePool: WizardCourseOption[];
-  exclusion: WizardExclusionConditions;
-  excludedCourses: WizardCourseOption[];
-  onChangeExclusion: (
-    updater: (prev: WizardExclusionConditions) => WizardExclusionConditions,
-  ) => void;
-}
+import { useTimetableWizardStore } from "@/stores/useTimetableWizardStore";
 
 const EMPTY_EVENTS: never[] = [];
 
-const WizardStep3Exclusion = ({
-  coursePool,
-  exclusion,
-  excludedCourses,
-  onChangeExclusion,
-}: WizardStep3ExclusionProps) => {
-  const [isSearchSheetOpen, setSearchSheetOpen] = useState(false);
+// 제외 조건도 강의를 subjectNumber 참조가 아니라 스냅샷으로 들고 있다(스토어 참고).
+// 필터를 바꿔도 여기 담긴 칩이 사라지지 않는다.
+const WizardStep3Exclusion = () => {
+  const excludedSlots = useTimetableWizardStore((s) => s.exclusion.excludedSlots);
+  const excludedCourses = useTimetableWizardStore((s) => s.exclusion.excludedCourses);
+  const setExcludedSlots = useTimetableWizardStore((s) => s.setExcludedSlots);
+  const removeExcludedCourse = useTimetableWizardStore((s) => s.removeExcludedCourse);
+  const openCourseSearch = useTimetableWizardStore((s) => s.openCourseSearch);
+  const semester = useTimetableWizardStore((s) => s.semester);
 
-  const excludedSlotCount = new Set(exclusion.excludedSlots).size;
-
-  const addExcludedCourse = (course: WizardCourseOption) => {
-    onChangeExclusion((prev) =>
-      prev.excludedSubjectNumbers.includes(course.subjectNumber)
-        ? prev
-        : {
-            ...prev,
-            excludedSubjectNumbers: [...prev.excludedSubjectNumbers, course.subjectNumber],
-          },
-    );
-    setSearchSheetOpen(false);
-  };
-
-  const removeExcludedCourse = (subjectNumber: string) => {
-    onChangeExclusion((prev) => ({
-      ...prev,
-      excludedSubjectNumbers: prev.excludedSubjectNumbers.filter((sn) => sn !== subjectNumber),
-    }));
-  };
+  const excludedSlotCount = new Set(excludedSlots).size;
 
   return (
     <ScrollContent>
@@ -59,10 +28,8 @@ const WizardStep3Exclusion = ({
           events={EMPTY_EVENTS}
           isSelectionMode
           minDayCount={7}
-          selectedSlots={exclusion.excludedSlots}
-          onSelectedSlotsChange={(slots) =>
-            onChangeExclusion((prev) => ({ ...prev, excludedSlots: slots }))
-          }
+          selectedSlots={excludedSlots}
+          onSelectedSlotsChange={setExcludedSlots}
         />
         <Legend>
           <LegendSwatch />
@@ -72,9 +39,13 @@ const WizardStep3Exclusion = ({
 
       <Card>
         <CardTitle>빼고 싶은 강의</CardTitle>
-        <SearchFieldButton type="button" onClick={() => setSearchSheetOpen(true)}>
+        <SearchFieldButton
+          type="button"
+          disabled={semester === null}
+          onClick={() => openCourseSearch("exclusion")}
+        >
           <Search size={16} color="var(--text-tertiary, #8b95a1)" />
-          <span>강의명 검색</span>
+          <span>교과목명, 교수명 검색</span>
         </SearchFieldButton>
         {excludedCourses.length > 0 && (
           <ChipRow>
@@ -91,15 +62,6 @@ const WizardStep3Exclusion = ({
       </Card>
 
       <BottomActionsSpacer />
-
-      <WizardCourseSearchSheet
-        open={isSearchSheetOpen}
-        onOpenChange={setSearchSheetOpen}
-        title="빼고 싶은 강의 검색"
-        pool={coursePool}
-        disabledSubjectNumbers={exclusion.excludedSubjectNumbers}
-        onSelect={addExcludedCourse}
-      />
     </ScrollContent>
   );
 };
@@ -179,6 +141,11 @@ const SearchFieldButton = styled.button`
   span {
     color: var(--text-tertiary, #8b95a1);
     font-size: 14px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 

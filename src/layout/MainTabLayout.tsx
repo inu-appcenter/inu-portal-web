@@ -174,10 +174,10 @@ const NavFloating = styled.div<{ $isHomeV2?: boolean }>`
   pointer-events: none;
 
   @media ${DESKTOP_MEDIA} {
-    width: ${({ $isHomeV2 }) => ($isHomeV2 ? "100%" : `min(100%, ${DESKTOP_CONTENT_MAX_WIDTH})`)};
-    max-width: ${({ $isHomeV2 }) => ($isHomeV2 ? "none" : DESKTOP_CONTENT_MAX_WIDTH)};
-    padding: ${({ $isHomeV2 }) => ($isHomeV2 ? "0" : `0 ${DESKTOP_GUTTER}`)};
+    width: 100%;
+    max-width: none;
+    padding: 0;
     box-sizing: border-box;
-    bottom: ${({ $isHomeV2 }) => ($isHomeV2 ? "0" : "20px")};
+    bottom: 0;
   }
 `;

@@ -3,7 +3,7 @@ import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode, RefObject, UIEventHandler } from "react";
 import { createPortal } from "react-dom";
-import { Sheet } from "react-modal-sheet";
+import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import {
   SlidersHorizontal,
@@ -16,12 +16,11 @@ import {
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import {
-  FilterState,
-  DEFAULT_FILTERS,
-} from "@/pages/mobile/timetable/MobileCourseFilterPage";
+import { mixpanelTrack } from "@/utils/mixpanel";
+import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
+import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
 
 export interface CourseResult {
@@ -38,12 +37,22 @@ export interface CourseResult {
   // 서버 수강인원/정원 데이터가 아직 동기화되지 않아 null일 수 있음 - null이면 배지 자체를 숨김
   enrolledCount: number | null;
   capacity: number | null;
+  savedCount?: number | null;
   schedules: ClassItem[];
+  deptName?: string;
+  collegeName?: string;
+  isuName?: string;
+  hyName?: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
 const SHEET_SNAP_POINTS = [0, 0.2, 0.5, 1];
+const SYLLABUS_UNAVAILABLE_MESSAGE =
+  "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
+const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
+const LECTURE_REVIEW_NOTICE_MESSAGE =
+  "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
@@ -88,9 +97,10 @@ interface MobileCourseSearchSheetProps {
   onSnapChange: (snap: string | number | null) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // 시간표 편집 화면은 강의 추가 도중 실수로 닫히지 않도록 스와이프/배경탭 dismiss를
+  // 막아야 하고(기본값), 마법사의 위시리스트 검색은 반대로 자유롭게 닫을 수 있어야 한다.
+  dismissible?: boolean;
   onAddCourse?: (course: CourseResult) => void;
-  // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
-  onFiltersChange?: (filters: FilterState) => void;
   addedCourseOfferingIds?: Set<number>;
   addedCourseIds?: Set<string>;
   isLoading?: boolean;
@@ -107,8 +117,8 @@ const MobileCourseSearchSheet = ({
   onSnapChange,
   open,
   onOpenChange,
+  dismissible = false,
   onAddCourse,
-  onFiltersChange,
   addedCourseOfferingIds,
   addedCourseIds,
   isLoading = false,
@@ -117,71 +127,43 @@ const MobileCourseSearchSheet = ({
   isFetchingNextPage,
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const [activeFilters, setActiveFiltersState] =
-    useState<FilterState>(DEFAULT_FILTERS);
+  // 확정 필터는 useCourseFilterStore가 소유한다. 필터 화면이 별도 웹뷰로 뜨는
+  // 멀티 웹뷰 환경에서도 broadcastSync가 값을 실어오므로, 이 시트는 읽기만 한다.
+  // 부모(편집 화면)가 서버 조회에 쓰는 것과 반드시 같은 파생을 써야 한다 —
+  // 아래 filteredCourses가 같은 필터로 2차 로컬 필터링을 하기 때문이다.
+  const activeFilters = useEffectiveCourseFilters();
 
-  const setActiveFilters = (filters: FilterState) => {
-    setActiveFiltersState(filters);
-    onFiltersChange?.(filters);
-  };
+  const sheetRef = useRef<SheetRef | null>(null);
 
-  // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
+  const activeSnap =
+    typeof snap === "number" && COURSE_SEARCH_SNAP_POINTS.includes(snap)
+      ? snap
+      : COURSE_SEARCH_SNAP_POINTS[1];
+  const initialSnap = COURSE_SEARCH_SNAP_POINTS.indexOf(activeSnap) + 1;
+
+  const initialSnapRef = useRef(initialSnap);
   useEffect(() => {
-    const restoreFilters = () => {
-      const savedFilters = localStorage.getItem("applied_filters");
-      if (savedFilters) {
-        try {
-          const parsed = JSON.parse(savedFilters);
-          setActiveFilters(parsed);
-        } catch (e) {
-          console.error("필터 복원 오류:", e);
-        }
-        localStorage.removeItem("applied_filters");
-        return true;
-      }
-      return false;
-    };
+    initialSnapRef.current = initialSnap;
+  }, [initialSnap]);
 
-    // 1. 컴포넌트 마운트 시도 또는 location 변경 시 확인
-    const restored = restoreFilters();
-
-    // location.state 폴백 (앱이 아닌 일반 브라우저 환경에서 데이터가 올 때를 대비)
-    if (!restored && location.state && (location.state as any).filters) {
-      setActiveFilters((location.state as any).filters);
+  // 필터 화면에서 돌아왔을 때 시트가 바닥으로 내려가 있지 않도록 지정된 snap으로 되돌린다.
+  // (예전에는 localStorage 복원 로직이 이 일을 겸했다.)
+  const isFirstFilterRender = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
     }
-
-    // 2. 멀티 웹뷰 덮인 화면이 닫히며 복귀할 때를 위한 이벤트 리스너 등록
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        restoreFilters();
-      }
-    };
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "applied_filters" && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          setActiveFilters(parsed);
-          localStorage.removeItem("applied_filters");
-        } catch (err) {
-          console.error("필터 복원 오류:", err);
-        }
-      }
-    };
-
-    window.addEventListener("focus", restoreFilters);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("focus", restoreFilters);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [location.state, location.key]);
+    if (!open) onOpenChange(true);
+    const timer = setTimeout(() => {
+      sheetRef.current?.snapTo(initialSnapRef.current);
+    }, 50);
+    return () => clearTimeout(timer);
+    // 확정 필터가 바뀐 순간에만 반응한다(open/onOpenChange 변화에는 반응하지 않는다).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilters]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -194,12 +176,58 @@ const MobileCourseSearchSheet = ({
     return count;
   }, [activeFilters]);
 
+  const [searchParams] = useSearchParams();
+  const keyword = searchParams.get("courseQuery");
+
   const filteredCourses = useMemo(() => {
     let list: CourseResult[] = [...courses];
 
-    // 1~4. 전공/영역·학년·이수구분·학점 필터는 상위(MobileTimeTableEditPage)에서
-    // onFiltersChange로 전달받아 querystring으로 서버에 재조회하므로 여기서는 거르지 않는다
-    // (inu-appcenter/inu-portal-server#297 - 서버가 지원하기 전까지는 필터링되지 않음).
+    // 키워드 검색(courseQuery)이 작동 중이 아닌 경우에만 2차 유연 필터링 적용 (검색어 결과는 API 응답 그대로 렌더링)
+    if (!keyword) {
+      const offeringFilters = mapFilterToOfferingFilters(activeFilters);
+
+      const targetDept = offeringFilters.deptName;
+      if (targetDept) {
+        list = list.filter(
+          (c) =>
+            !c.deptName ||
+            c.deptName === targetDept ||
+            c.deptName.includes(targetDept) ||
+            targetDept.includes(c.deptName),
+        );
+      }
+
+      const targetCollege = offeringFilters.collegeName;
+      if (targetCollege) {
+        list = list.filter(
+          (c) =>
+            !c.collegeName ||
+            c.collegeName === targetCollege ||
+            c.collegeName.includes(targetCollege) ||
+            targetCollege.includes(c.collegeName),
+        );
+      }
+
+      if (offeringFilters.hyNames?.length) {
+        list = list.filter(
+          (c) =>
+            !c.hyName ||
+            offeringFilters.hyNames?.some((h) =>
+              (c.hyName ?? String(c.grade))?.startsWith(h),
+            ),
+        );
+      }
+      if (offeringFilters.isuNames?.length) {
+        list = list.filter(
+          (c) =>
+            !c.isuName ||
+            offeringFilters.isuNames?.some((isu) => c.isuName?.includes(isu)),
+        );
+      }
+      if (offeringFilters.credits?.length) {
+        list = list.filter((c) => offeringFilters.credits?.includes(c.credits));
+      }
+    }
 
     // 5. 정렬 필터
     if (activeFilters.sort === "별점높은순") {
@@ -210,11 +238,11 @@ const MobileCourseSearchSheet = ({
       };
       list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
     } else if (activeFilters.sort === "담은인원많은순") {
-      list.sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
+      list.sort((a, b) => (b.savedCount ?? 0) - (a.savedCount ?? 0));
     }
 
     return list;
-  }, [courses, activeFilters]);
+  }, [courses, activeFilters, keyword]);
 
   // 바텀시트를 닫으면 react-modal-sheet가 스크롤 컨테이너 DOM을 통째로 언마운트하므로,
   // 재오픈 시 맨 위로 스크롤이 튀지 않도록 마지막으로 보고 있던 강의(id)와 그 화면상 위치를
@@ -329,35 +357,41 @@ const MobileCourseSearchSheet = ({
   }, [isSearchActive]);
 
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isLoading || isFetchingNextPage) return;
-      if (observerRef.current) observerRef.current.disconnect();
 
-      observerRef.current = new IntersectionObserver((entries) => {
+  const fetchNextPageRef = useRef(fetchNextPage);
+  fetchNextPageRef.current = fetchNextPage;
+
+  const hasNextPageRef = useRef(hasNextPage);
+  hasNextPageRef.current = hasNextPage;
+
+  const isFetchingRef = useRef(false);
+  isFetchingRef.current = Boolean(isLoading || isFetchingNextPage);
+
+  const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) observerRef.current.disconnect();
+    if (!node) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
         if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          !isFetchingNextPage &&
-          fetchNextPage
+          entry?.isIntersecting &&
+          hasNextPageRef.current &&
+          !isFetchingRef.current &&
+          fetchNextPageRef.current
         ) {
-          fetchNextPage();
+          isFetchingRef.current = true;
+          fetchNextPageRef.current();
         }
-      });
+      },
+      { threshold: 0.1 },
+    );
 
-      if (node) observerRef.current.observe(node);
-    },
-    [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage],
-  );
+    observerRef.current.observe(node);
+  }, []);
 
-  const handleScroll: UIEventHandler<HTMLDivElement> = (e) => {
+  const handleScroll: UIEventHandler<HTMLDivElement> = () => {
     searchBarRef.current?.blur();
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollTop > 0 && scrollHeight - scrollTop - clientHeight < 150) {
-      if (hasNextPage && !isFetchingNextPage && fetchNextPage) {
-        fetchNextPage();
-      }
-    }
   };
 
   const openLectureReview = (professor: string) => {
@@ -367,23 +401,24 @@ const MobileCourseSearchSheet = ({
       return;
     }
 
+    if (!localStorage.getItem(LECTURE_REVIEW_NOTICE_KEY)) {
+      alert(LECTURE_REVIEW_NOTICE_MESSAGE);
+      localStorage.setItem(LECTURE_REVIEW_NOTICE_KEY, "true");
+    }
+
     const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const activeSnap =
-    typeof snap === "number" && COURSE_SEARCH_SNAP_POINTS.includes(snap)
-      ? snap
-      : COURSE_SEARCH_SNAP_POINTS[1];
-  const initialSnap = COURSE_SEARCH_SNAP_POINTS.indexOf(activeSnap) + 1;
-
   return (
     <>
       <CourseSheet
+        ref={sheetRef}
         isOpen={open}
         onClose={() => onOpenChange(false)}
         snapPoints={SHEET_SNAP_POINTS}
         initialSnap={initialSnap}
+        disableDismiss={!dismissible}
         disableScrollLocking
         onSnap={(snapIndex) => {
           const nextSnap = COURSE_SEARCH_SNAP_POINTS[snapIndex - 1];
@@ -454,6 +489,11 @@ const MobileCourseSearchSheet = ({
                           <CourseName>{course.name}</CourseName>
                         </MainInfo>
                         <RightInfo>
+                          {course.savedCount != null && (
+                            <SavedBadge>
+                              {course.savedCount}명 담음
+                            </SavedBadge>
+                          )}
                           {course.enrolledCount != null &&
                             course.capacity != null && (
                               <EnrolledBadge>
@@ -476,7 +516,11 @@ const MobileCourseSearchSheet = ({
                           <span>
                           {course.grade > 0 ? `${course.grade}학년` : "전학년"}
                         </span>
-                          <span>{course.isMajor ? "전공심화" : "교양"}</span>
+                          {/* 서버 이수구분(전공기초/전공핵심/전공심화/기초교양/핵심교양/
+                              심화교양/교직/일반선택/군사학)을 그대로 보여준다. 전공/교양
+                              두 갈래로 뭉개면 전공핵심·전공기초가 "전공심화"로, 교직·
+                              일반선택이 "교양"으로 잘못 표시된다. */}
+                          <span>{course.isuName || "-"}</span>
                           <span>{course.courseId}</span>
                         </InfoLine>
                         <div>{course.timeStr}</div>
@@ -515,12 +559,7 @@ const MobileCourseSearchSheet = ({
                             <SecondaryActionButton
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(ROUTES.TIMETABLE.SYLLABUS, {
-                                  state: {
-                                    courseName: course.name,
-                                    professor: course.professor,
-                                  },
-                                });
+                                alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                               }}
                             >
                               <FileText size={20} />
@@ -559,7 +598,7 @@ const MobileCourseSearchSheet = ({
             </SheetContentWrapper>
           </CourseSheetScrollableContent>
         </CourseSheetContainer>
-        <Sheet.Backdrop onTap={() => onOpenChange(false)} />
+        {/* <Sheet.Backdrop onTap={() => onOpenChange(false)} /> */}
       </CourseSheet>
 
       {open &&
@@ -568,13 +607,18 @@ const MobileCourseSearchSheet = ({
             <FilterButton
               $isHidden={isSearchActive}
               $isZeroCount={activeFilterCount === 0}
-              onClick={() =>
-                navigate(ROUTES.TIMETABLE.FILTER, {
-                  state: { filters: activeFilters },
-                })
-              }
+              onClick={() => {
+                mixpanelTrack.timetableCourseSearchAction("필터 열기", {
+                  result_count: filteredCourses.length,
+                });
+                // state는 넘기지 않는다. 멀티 웹뷰에서는 이 이동이 네이티브
+                // 웹뷰 push(appBridge.navigateTo)로 위임되고 브릿지 payload는
+                // { path, url }뿐이라 state가 사라진다. 필터 화면은 양쪽 환경 모두
+                // useCourseFilterStore에서 현재 필터를 읽는다.
+                navigate(ROUTES.TIMETABLE.FILTER);
+              }}
             >
-              <SlidersHorizontal size={24} />
+              <SlidersHorizontal size={20} />
               {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
             </FilterButton>
 
@@ -684,8 +728,8 @@ const FilterButton = styled.button<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 56px;
+  gap: 6px;
+  height: 48px;
   border-radius: 999px;
   cursor: pointer;
   pointer-events: auto;
@@ -711,10 +755,10 @@ const FilterButton = styled.button<{
     $isZeroCount
       ? "var(--text-secondary, #333d4b)"
       : "var(--text-inverse, #fff)"};
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 20px;
 
   width: fit-content;
   
@@ -740,17 +784,17 @@ const FilterButton = styled.button<{
   `
       : props.$isZeroCount
         ? `
-    max-width: 56px;
-    padding: 16px;
-    margin-right: 16px;
+    max-width: 48px;
+    padding: 12px;
+    margin-right: 12px;
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
   `
         : `
-    max-width: 240px; 
-    padding: 16px 20px;
-    margin-right: 16px;
+    max-width: 200px; 
+    padding: 12px 16px;
+    margin-right: 12px;
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
@@ -890,6 +934,23 @@ const EnrolledBadge = styled.span`
   background: var(--bg-brand-subtle, #eff6ff);
   color: var(--text-brand, #0061ff);
 
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+`;
+
+const SavedBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand, #eff6ff);
+  color: var(--text-brand, #0061ff);
+
+  font-family: Pretendard, sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;

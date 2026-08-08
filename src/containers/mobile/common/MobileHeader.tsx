@@ -13,6 +13,7 @@ import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import Ripple from "@/components/common/Ripple";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { useUnreadNotification } from "@/hooks/useUnreadNotification";
 
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
     } = useHeaderConfig(targetPath);
 
     const navigate = useCustomNavigate();
+    const { hasUnreadNotification } = useUnreadNotification();
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -156,7 +158,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
-              {showAlarm && <NotificationBell hasNew={false} />}
+              {showAlarm && <NotificationBell hasNew={hasUnreadNotification} />}
               {menuItems && <TopRightDropdownMenu items={menuItems} />}
             </IconBackgroundWrapper>
           )}
@@ -201,14 +203,14 @@ const MainHeaderWrapper = styled.div<{
   position: relative;
   z-index: 2;
   width: 100%;
-  height: calc(64px + env(safe-area-inset-top, 0px));
+  height: calc(64px + var(--native-safe-area-inset-top));
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
   pointer-events: none;
 
-  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-top: calc(12px + var(--native-safe-area-inset-top));
   padding-bottom: 8px;
   padding-left: ${({ $hasBack }) => ($hasBack ? "12px" : "20px")};
   padding-right: ${({ $hasBack }) => ($hasBack ? "16px" : "20px")};

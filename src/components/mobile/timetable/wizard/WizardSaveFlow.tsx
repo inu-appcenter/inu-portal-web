@@ -12,6 +12,7 @@ import {
 } from "@/hooks/useTimeTables";
 import { formatSemester } from "@/utils/semester";
 import type { WizardCandidate } from "@/types/timetableWizard";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface WizardSaveFlowProps {
   open: boolean;
@@ -66,6 +67,10 @@ const WizardSaveFlow = ({
         timeTableName: `${candidate.label} (마법사 추천)`,
       });
       await addCandidateCourses(created.id);
+      mixpanelTrack.timetableWizardAction("저장", {
+        save_mode: "새 시간표",
+        course_count: candidate.courses.length,
+      });
       onOpenChange(false);
       onSaved();
     } catch (error: any) {
@@ -81,12 +86,18 @@ const WizardSaveFlow = ({
     try {
       const existingItems = targetDetail?.items ?? [];
       for (const item of existingItems) {
+        if (item.id == null) continue;
         await deleteItemMutation.mutateAsync({
           timeTableId: targetTimetableId,
           timeTableItemId: item.id,
         });
       }
       await addCandidateCourses(targetTimetableId);
+      mixpanelTrack.timetableWizardAction("저장", {
+        save_mode: "덮어쓰기",
+        course_count: candidate.courses.length,
+        replaced_item_count: existingItems.length,
+      });
       setOverwriteConfirmOpen(false);
       onOpenChange(false);
       onSaved();

@@ -13,6 +13,7 @@ import {
 } from "@/hooks/useTimeTables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { formatSemester } from "@/utils/semester";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // Icons
 const PlusIcon = () => (
@@ -28,11 +29,19 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
   </svg>
 );
 
-const getTimetableCredits = (events: ClassItem[]) =>
-  events.reduce((total, item) => {
-    const fallbackCredits = Math.max(1, item.endTime - item.startTime);
-    return total + (item.credits ?? fallbackCredits);
+const getTimetableCredits = (events: ClassItem[]) => {
+  const seenItemIds = new Set<number>();
+
+  return events.reduce((total, item) => {
+    if (item.itemId) {
+      if (seenItemIds.has(item.itemId)) return total;
+      seenItemIds.add(item.itemId);
+    }
+
+    const credits = item.credits || 0;
+    return credits > 0 ? total + credits : total;
   }, 0);
+};
 
 export default function MobileTimeTableListPage() {
   const navigate = useNavigate();
@@ -46,6 +55,14 @@ export default function MobileTimeTableListPage() {
   const handleSetPrimary = (t: Timetable) => {
     if (t.isRepresentative || updatePrimaryMutation.isPending) return;
     updatePrimaryMutation.mutate(t.id, {
+      onSuccess: () => {
+        setSemester(t.semester);
+        setActiveTimetable(t.id);
+        mixpanelTrack.timetableActionCompleted("대표 설정", {
+          semester: t.semester,
+          course_count: t.events.length,
+        });
+      },
       onError: (error: any) => {
         alert(error.response?.data?.msg || "대표 시간표 변경에 실패했습니다.");
       },
@@ -67,6 +84,7 @@ export default function MobileTimeTableListPage() {
 
   const handleAddClick = useCallback(() => {
     if (semesters.length === 0) return;
+    mixpanelTrack.timetableFeatureClicked("시간표 생성", "시간표 목록");
     openAddModal(semesters[0]);
   }, [openAddModal, semesters]);
 
@@ -76,19 +94,29 @@ export default function MobileTimeTableListPage() {
     </IconButton>
   ), [handleAddClick]);
 
+  const handleBack = useCallback(() => {
+    navigate(ROUTES.TIMETABLE.ROOT, { replace: true });
+  }, [navigate]);
+
   useHeader({
     title: "시간표 목록",
     hasback: true,
+    onBack: handleBack,
     immersive: true,
     pageBgColor: "#f8f9fb",
     rightArea: headerRight
   });
 
   const handleSelectTimetable = (t: Timetable) => {
+    mixpanelTrack.timetableFeatureClicked("시간표 선택", "시간표 목록", {
+      semester: t.semester,
+      course_count: t.events.length,
+      is_representative: t.isRepresentative,
+    });
     setSemester(t.semester);
     setActiveTimetable(t.id);
     // id를 함께 넘겨 URL이 바로 이 시간표를 가리키게 함 (새로고침 시 복원용)
-    navigate(`${ROUTES.TIMETABLE.ROOT}?id=${t.id}`);
+    navigate(`${ROUTES.TIMETABLE.ROOT}?id=${t.id}`, { replace: true });
   };
 
   return (

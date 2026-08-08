@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled, { css } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
+import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import type { ClassItem as TimetableClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import { formatHoursToTime } from "@/utils/timetable";
 import { ROUTES } from "@/constants/routes";
 import {
   MOBILE_PAGE_GUTTER,
@@ -11,7 +15,7 @@ import {
 } from "@/styles/responsive";
 
 import NoticeTabWidget from "@/containers/mobile/home/NoticeTabWidget";
-import TipsWidget from "@/components/mobile/tips/TipsWidget";
+import CommunityWidget from "@/components/mobile/community/CommunityWidget";
 import SwipeMenuWidget from "@/containers/mobile/home/SwipeMenuWidget";
 import SwipeBusWidget from "@/containers/mobile/home/SwipeBusWidget";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
@@ -21,13 +25,63 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import AppcenterLogo from "@/resources/assets/앱센터로고_new.svg";
 import Banner from "@/containers/mobile/home/Banner";
 
+import { formatRoom } from "@/components/mobile/timetable/TimetableGrid";
+
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
+const getTodayTimetableDay = (date: Date) => (date.getDay() + 6) % 7;
+
+const getMinutesFromStartOfDay = (date: Date) =>
+  date.getHours() * 60 + date.getMinutes();
+
+const toMinutes = (hours: number) => Math.round(hours * 60);
+
+const getTimetableStatusText = (classes: TimetableClassItem[], now: Date) => {
+  if (classes.length === 0) return "등록된 수업 없음";
+
+  const nowMinutes = getMinutesFromStartOfDay(now);
+  const currentClass = classes.find(
+    (classItem) =>
+      toMinutes(classItem.startTime) <= nowMinutes &&
+      nowMinutes < toMinutes(classItem.endTime),
+  );
+
+  if (currentClass) return "진행 중";
+
+  const nextClass = classes.find(
+    (classItem) => toMinutes(classItem.startTime) > nowMinutes,
+  );
+
+  if (!nextClass) return "오늘 수업 끝";
+
+  const minutesUntilStart = toMinutes(nextClass.startTime) - nowMinutes;
+  if (minutesUntilStart < 60) return `${minutesUntilStart}분 후 시작`;
+
+  const hours = Math.floor(minutesUntilStart / 60);
+  const minutes = minutesUntilStart % 60;
+  return minutes === 0
+    ? `${hours}시간 후 시작`
+    : `${hours}시간 ${minutes}분 후 시작`;
+};
+
 export default function MobileHomePageV2() {
-  const { userInfo } = useUserStore();
+  const { userInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
-  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">("school");
+  const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">(
+    "school",
+  );
+  const { timetables, selectedSemester } = useTimetableStore();
+
+  const isLoggedIn = Boolean(tokenInfo?.accessToken);
+
+  const { isLoading: isTimetablesLoading } = useTimeTables(
+    undefined,
+    undefined,
+    {
+      enabled: isLoggedIn,
+    },
+  );
 
   useHeader({
     showAlarm: true,
@@ -42,51 +96,111 @@ export default function MobileHomePageV2() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const nickname = userInfo?.nickname || "유니";
+  // const nickname = userInfo?.nickname || "유니";
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
   const today = new Date();
   const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
 
+  const representativeTimetableId = useMemo(() => {
+    if (!isLoggedIn) return null;
+
+    const targetSemester =
+      selectedSemester ||
+      (timetables.find((timetable) => timetable.isRepresentative)?.semester ??
+        timetables[0]?.semester);
+
+    const inSemester = targetSemester
+      ? timetables.filter((timetable) => timetable.semester === targetSemester)
+      : timetables;
+
+    return (
+      inSemester.find((timetable) => timetable.isRepresentative)?.id ??
+      inSemester[0]?.id ??
+      timetables.find((timetable) => timetable.isRepresentative)?.id ??
+      timetables[0]?.id ??
+      null
+    );
+  }, [isLoggedIn, selectedSemester, timetables]);
+  const { isLoading: isDetailLoading } = useTimeTableDetail(
+    representativeTimetableId,
+    { enabled: isLoggedIn && representativeTimetableId != null },
+  );
+  const activeTimetable = useMemo(
+    () =>
+      timetables.find(
+        (timetable) => timetable.id === representativeTimetableId,
+      ),
+    [representativeTimetableId, timetables],
+  );
+  const todayClasses = useMemo(() => {
+    const todayDay = getTodayTimetableDay(today);
+    return (activeTimetable?.events ?? [])
+      .filter((classItem) => classItem.day === todayDay)
+      .sort((a, b) => a.startTime - b.startTime);
+  }, [activeTimetable?.events, today]);
+  const nowMinutes = getMinutesFromStartOfDay(today);
+  const timetableStatusText = !isLoggedIn
+    ? "로그인 필요"
+    : isTimetablesLoading || isDetailLoading
+      ? "불러오는 중"
+      : getTimetableStatusText(todayClasses, today);
+
   return (
     <V2Wrapper>
-
       <UpperSection>
         <SectionInner>
-          <WelcomeMessage>
-            <HighlightName>{nickname}님,</HighlightName>
-            <GreetingText>좋은 아침이에요!</GreetingText>
-          </WelcomeMessage>
+          {/*<WelcomeMessage>*/}
+          {/*  <HighlightName>{nickname}님,</HighlightName>*/}
+          {/*  <GreetingText>좋은 아침이에요!</GreetingText>*/}
+          {/*</WelcomeMessage>*/}
 
           <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
             <WidgetHeader>
               <WidgetTitle>{todayDateText}</WidgetTitle>
-              <WidgetSubTitle>15분 후 시작</WidgetSubTitle>
+              <WidgetSubTitle>{timetableStatusText}</WidgetSubTitle>
             </WidgetHeader>
 
             <ClassList>
-              <ClassItem $current={true}>
-                <ClassName>자료구조</ClassName>
+              {!isLoggedIn ? (
+                <EmptyClassItem>
+                  로그인 후 시간표를 확인해보세요.
+                </EmptyClassItem>
+              ) : isTimetablesLoading || isDetailLoading ? (
+                <EmptyClassItem>시간표를 불러오고 있어요.</EmptyClassItem>
+              ) : todayClasses.length > 0 ? (
+                todayClasses.map((classItem) => {
+                  const startMinutes = toMinutes(classItem.startTime);
+                  const endMinutes = toMinutes(classItem.endTime);
+                  const isCurrent =
+                    startMinutes <= nowMinutes && nowMinutes < endMinutes;
 
-                <ClassInfo>
-                  <ClassDetail>09:00~10:15</ClassDetail>
-                  <ClassRoom>07-504</ClassRoom>
-                </ClassInfo>
-              </ClassItem>
+                  return (
+                    <ClassItem
+                      key={`${classItem.itemId ?? classItem.id}-${classItem.day}-${classItem.startTime}`}
+                      $current={isCurrent}
+                    >
+                      <ClassName>{classItem.name}</ClassName>
 
-              <ClassItem $current={false}>
-                <ClassName>디지털공학</ClassName>
-
-                <ClassInfo>
-                  <ClassDetail>16:30~17:45</ClassDetail>
-                  <ClassRoom>07-504</ClassRoom>
-                </ClassInfo>
-              </ClassItem>
+                      <ClassInfo>
+                        <ClassDetail>
+                          {formatHoursToTime(classItem.startTime)}~
+                          {formatHoursToTime(classItem.endTime)}
+                        </ClassDetail>
+                        {classItem.room && (
+                          <ClassRoom>{formatRoom(classItem.room)}</ClassRoom>
+                        )}
+                      </ClassInfo>
+                    </ClassItem>
+                  );
+                })
+              ) : (
+                <EmptyClassItem>오늘은 등록된 수업이 없어요.</EmptyClassItem>
+              )}
             </ClassList>
           </TodayTimetableCard>
 
           <GridWidgets>
             <SwipeBusWidget />
-
 
             <SwipeMenuWidget />
           </GridWidgets>
@@ -104,8 +218,8 @@ export default function MobileHomePageV2() {
               <DesktopWidgetColumns>
                 <DesktopWidgetColumn>
                   <TitleContentArea
-                    title="TIPS 알아보기"
-                    children={<TipsWidget />}
+                    title="커뮤니티"
+                    children={<CommunityWidget />}
                     link={ROUTES.BOARD.TIPS}
                   />
                   <Banner />
@@ -121,8 +235,8 @@ export default function MobileHomePageV2() {
                       activeNoticeTab === "school"
                         ? ROUTES.BOARD.NOTICE
                         : userInfo?.department
-                        ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
-                        : ROUTES.BOARD.DEPT_NOTICE
+                          ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
+                          : ROUTES.BOARD.DEPT_NOTICE
                     }
                   />
                 </DesktopWidgetColumn>
@@ -143,8 +257,8 @@ export default function MobileHomePageV2() {
             ) : (
               <>
                 <TitleContentArea
-                  title="TIPS 알아보기"
-                  children={<TipsWidget />}
+                  title="커뮤니티"
+                  children={<CommunityWidget />}
                   link={ROUTES.BOARD.TIPS}
                 />
                 <Banner />
@@ -160,8 +274,8 @@ export default function MobileHomePageV2() {
                     activeNoticeTab === "school"
                       ? ROUTES.BOARD.NOTICE
                       : userInfo?.department
-                      ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
-                      : ROUTES.BOARD.DEPT_NOTICE
+                        ? ROUTES.BOARD.DEPT_NOTICE_DETAIL(userInfo.department)
+                        : ROUTES.BOARD.DEPT_NOTICE
                   }
                 />
                 <TitleContentArea
@@ -211,25 +325,25 @@ const UpperSection = styled.div`
   background: #eff5fc;
 `;
 
-const WelcomeMessage = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 24px;
-  text-align: left;
-  padding-left: 8px;
-
-  color: var(--text-secondary, #333d4b);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 28px;
-  letter-spacing: -0.2px;
-`;
-
-const HighlightName = styled.span``;
-
-const GreetingText = styled.span``;
+// const WelcomeMessage = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   gap: 4px;
+//   margin-bottom: 24px;
+//   text-align: left;
+//   padding-left: 8px;
+//
+//   color: var(--text-secondary, #333d4b);
+//   font-size: 20px;
+//   font-style: normal;
+//   font-weight: 700;
+//   line-height: 28px;
+//   letter-spacing: -0.2px;
+// `;
+//
+// const HighlightName = styled.span``;
+//
+// const GreetingText = styled.span``;
 
 const TodayTimetableCard = styled.div`
   background-color: #ffffff;
@@ -316,15 +430,20 @@ const ClassRoom = styled.span`
   color: var(--text-secondary, #333d4b);
 `;
 
+const EmptyClassItem = styled.div`
+  padding: 8px 16px;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+`;
+
 const GridWidgets = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 `;
-
-
-
-
 
 const LowerSheetSection = styled.div`
   background-color: #ffffff;
@@ -334,7 +453,7 @@ const LowerSheetSection = styled.div`
   position: relative;
   z-index: 5;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.02);
-  padding-top: 28px;
+  padding-top: 12px;
   padding-bottom: 40px;
 `;
 
@@ -342,7 +461,7 @@ const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 `;
 
 const FeedLayout = styled.div`

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Plus, X } from "lucide-react";
@@ -6,17 +6,16 @@ import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
 import { useSemesters } from "@/hooks/useSemesters";
-import { useCourses } from "@/hooks/useCourses";
-import { useCourseOfferings } from "@/hooks/useCourseOfferings";
-import { buildWizardCourseOptions } from "@/utils/timetableWizardPool";
+import useUserStore from "@/stores/useUserStore";
+import {
+  WIZARD_MAX_CREDIT_SCALE,
+  WIZARD_MIN_CREDIT_SCALE,
+  useTimetableWizardStore,
+} from "@/stores/useTimetableWizardStore";
 import { generateWizardCandidates } from "@/utils/timetableWizardGenerator";
-import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
 import CreditRangeSlider from "@/components/mobile/timetable/wizard/CreditRangeSlider";
 import WizardStepIndicator from "@/components/mobile/timetable/wizard/WizardStepIndicator";
-import MobileCourseSearchSheet, {
-  CourseResult,
-  COURSE_SEARCH_SNAP_POINTS,
-} from "@/components/mobile/timetable/MobileCourseSearchSheet";
+import WizardCourseSearchSheet from "@/components/mobile/timetable/wizard/WizardCourseSearchSheet";
 import WizardStep3Exclusion from "@/components/mobile/timetable/wizard/WizardStep3Exclusion";
 import WizardGeneratingScreen from "@/components/mobile/timetable/wizard/WizardGeneratingScreen";
 import WizardResultsScreen from "@/components/mobile/timetable/wizard/WizardResultsScreen";
@@ -26,34 +25,9 @@ import {
   WizardEmptyState,
   WizardErrorState,
 } from "@/components/mobile/timetable/wizard/WizardEmptyErrorScreens";
-import {
-  DEFAULT_EXCLUSION_CONDITIONS,
-  DEFAULT_PREFERENCE_CONDITIONS,
-} from "@/types/timetableWizard";
-import type {
-  WizardBasicConditions,
-  WizardCourseOption,
-  WizardGenerationResult,
-} from "@/types/timetableWizard";
+import type { WizardPreferenceConditions } from "@/types/timetableWizard";
 
-type WizardStep =
-  | "step1"
-  | "step2"
-  | "step3"
-  | "generating"
-  | "results"
-  | "detail"
-  | "empty"
-  | "error";
-
-const MIN_CREDIT_SCALE = 12;
-const MAX_CREDIT_SCALE = 21;
-const DEFAULT_MIN_CREDIT = 15;
-const DEFAULT_MAX_CREDIT = 18;
-const MAX_MUST_HAVE = 6;
 const GENERATING_MIN_VISIBLE_MS = 1600;
-const GENERATING_MAX_WAIT_MS = 10000;
-
 const DAY_LABELS = ["월", "화", "수", "목", "금"];
 
 // Figma 시안의 "2026-2학기" 표기를 위한 축약 포맷 (앱 전역 formatSemester와는 별개, 드롭다운 전용)
@@ -66,245 +40,134 @@ const COMPACT_TERM_LABELS: Record<string, string> = {
 const formatSemesterCompact = (year: number, term: string) =>
   `${year}-${COMPACT_TERM_LABELS[term] ?? term}`;
 
-// 위시리스트 검색 시트의 "필터" 버튼이 별도 라우트(ROUTES.TIMETABLE.FILTER)로 실제
-// 네비게이션하는데, 이 페이지의 스텝 상태는 전부 로컬 useState라 그 경로로 갔다 오면
-// 언마운트→리마운트되어 입력값이 통째로 날아간다. applied_filters 복원(MobileCourseSearchSheet)과
-// 같은 방식으로 스텝1~3 입력값을 localStorage에 저장해두고 마운트 시 복원한다.
-// 결과/생성중 단계는 후보 데이터 자체가 저장돼있지 않아 복원 대상에서 제외(스텝3으로 되돌림).
-const WIZARD_DRAFT_STORAGE_KEY = "timetableWizardDraft";
-const RESTORABLE_STEPS: WizardStep[] = ["step1", "step2", "step3"];
-
-interface WizardDraft {
-  step: WizardStep;
-  basic: WizardBasicConditions;
-  preference: typeof DEFAULT_PREFERENCE_CONDITIONS;
-  exclusion: typeof DEFAULT_EXCLUSION_CONDITIONS;
-}
-
-const loadWizardDraft = (): WizardDraft | null => {
-  try {
-    const raw = localStorage.getItem(WIZARD_DRAFT_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as WizardDraft;
-    return {
-      ...parsed,
-      step: RESTORABLE_STEPS.includes(parsed.step) ? parsed.step : "step3",
-    };
-  } catch {
-    return null;
-  }
-};
-
 export default function MobileTimetableWizardPage() {
   const navigate = useNavigate();
   const { semesters } = useSemesters();
-  const { courses } = useCourses();
+  const userDepartment = useUserStore((state) => state.userInfo.department);
 
-  const [step, setStep] = useState<WizardStep>(() => loadWizardDraft()?.step ?? "step1");
+  const step = useTimetableWizardStore((s) => s.step);
+  const semester = useTimetableWizardStore((s) => s.semester);
+  const minCredit = useTimetableWizardStore((s) => s.minCredit);
+  const maxCredit = useTimetableWizardStore((s) => s.maxCredit);
+  const wishlist = useTimetableWizardStore((s) => s.wishlist);
+  const preference = useTimetableWizardStore((s) => s.preference);
+  const exclusion = useTimetableWizardStore((s) => s.exclusion);
+  const result = useTimetableWizardStore((s) => s.result);
+  const selectedCandidateId = useTimetableWizardStore((s) => s.selectedCandidateId);
+  const isSaveSheetOpen = useTimetableWizardStore((s) => s.isSaveSheetOpen);
 
-  const [basic, setBasic] = useState<WizardBasicConditions>(
-    () =>
-      loadWizardDraft()?.basic ?? {
-        semesterId: null,
-        year: null,
-        term: null,
-        minCredit: DEFAULT_MIN_CREDIT,
-        maxCredit: DEFAULT_MAX_CREDIT,
-        wishlist: [],
-      },
-  );
-  const [preference, setPreference] = useState(
-    () => loadWizardDraft()?.preference ?? DEFAULT_PREFERENCE_CONDITIONS,
-  );
-  const [exclusion, setExclusion] = useState(
-    () => loadWizardDraft()?.exclusion ?? DEFAULT_EXCLUSION_CONDITIONS,
-  );
+  const setStep = useTimetableWizardStore((s) => s.setStep);
+  const setSemester = useTimetableWizardStore((s) => s.setSemester);
+  const setCreditRange = useTimetableWizardStore((s) => s.setCreditRange);
+  const removeWishlistCourse = useTimetableWizardStore((s) => s.removeWishlistCourse);
+  const toggleWishlistRequired = useTimetableWizardStore((s) => s.toggleWishlistRequired);
+  const updatePreference = useTimetableWizardStore((s) => s.updatePreference);
+  const setResult = useTimetableWizardStore((s) => s.setResult);
+  const selectCandidate = useTimetableWizardStore((s) => s.selectCandidate);
+  const openSaveSheet = useTimetableWizardStore((s) => s.openSaveSheet);
+  const closeSaveSheet = useTimetableWizardStore((s) => s.closeSaveSheet);
+  const openCourseSearch = useTimetableWizardStore((s) => s.openCourseSearch);
+  const closeTopLayer = useTimetableWizardStore((s) => s.closeTopLayer);
+  const seedDefaultMajor = useTimetableWizardStore((s) => s.seedDefaultMajor);
+  const resetWizard = useTimetableWizardStore((s) => s.resetWizard);
 
-  // 스텝1~3 입력값이 바뀔 때마다 draft로 저장 (생성중/결과 단계는 재생성하면 되므로 저장 안 함)
+  // 검색 시트의 기본 전공 필터를 사용자 학과로 1회만 심는다(이후 사용자의 선택을 덮지 않음)
   useEffect(() => {
-    if (!RESTORABLE_STEPS.includes(step)) return;
-    const draft: WizardDraft = { step, basic, preference, exclusion };
-    localStorage.setItem(WIZARD_DRAFT_STORAGE_KEY, JSON.stringify(draft));
-  }, [step, basic, preference, exclusion]);
+    seedDefaultMajor(userDepartment || "컴퓨터공학부");
+  }, [userDepartment, seedDefaultMajor]);
 
-  // 학기 목록이 로드되면 1회에 한해 기본 학기를 자동 선택 (진행중 학기 우선, 없으면 최신 학기)
+  // 아직 고른 학기가 없거나, 저장돼 있던 학기가 서버 목록에서 사라진 경우 기본값을 채운다
+  // (진행중 학기 우선). 후자를 방치하면 select의 value와 실제 조회 학기가 어긋난다.
   useEffect(() => {
-    if (basic.semesterId !== null || semesters.length === 0) return;
+    if (semesters.length === 0) return;
+    if (semester && semesters.some((s) => s.id === semester.id)) return;
     const preferred = semesters.find((s) => s.status === "OPEN") ?? semesters[0];
-    setBasic((prev) => ({
-      ...prev,
-      semesterId: preferred.id,
-      year: preferred.year,
-      term: preferred.term,
-    }));
-  }, [semesters, basic.semesterId]);
+    setSemester({ id: preferred.id, year: preferred.year, term: preferred.term });
+  }, [semesters, semester, setSemester]);
 
-  const {
-    courseOfferings,
-    isLoading: isOfferingsLoading,
-    isError: isOfferingsError,
-  } = useCourseOfferings(basic.year ?? undefined, basic.term ?? undefined);
-
-  const coursePool = useMemo(
-    () => buildWizardCourseOptions(courses, courseOfferings),
-    [courses, courseOfferings],
-  );
-
-  const findBySubjectNumber = useCallback(
-    (sn: string) => coursePool.find((c) => c.subjectNumber === sn),
-    [coursePool],
-  );
-
-  // "꼭 넣고 싶은 강의" 검색은 시간표 편집(강의 추가)과 동일한 MobileCourseSearchSheet를
-  // 그대로 재사용한다 - 이미 담은 과목은 목록에서 제외해 중복 담기를 막는다.
-  const courseById = useMemo(() => new Map(courses.map((c) => [c.id, c])), [courses]);
-
-  const wishlistCourses = useMemo(
-    () =>
-      basic.wishlist
-        .map((item) => {
-          const course = findBySubjectNumber(item.subjectNumber);
-          return course ? { ...course, required: item.required } : null;
-        })
-        .filter((c): c is WizardCourseOption & { required: boolean } => !!c),
-    [basic.wishlist, findBySubjectNumber],
-  );
-
-  const excludedCourses = useMemo(
-    () =>
-      exclusion.excludedSubjectNumbers
-        .map(findBySubjectNumber)
-        .filter((c): c is WizardCourseOption => !!c),
-    [exclusion.excludedSubjectNumbers, findBySubjectNumber],
-  );
-
-  const wishlistSearchResults = useMemo(() => {
-    const pickedSet = new Set(basic.wishlist.map((item) => item.subjectNumber));
-    return courseOfferings
-      .filter((offering) => !pickedSet.has(offering.subjectNumber))
-      .map((offering) => mapCourseOfferingToCourseResult(offering, courseById.get(offering.courseId)));
-  }, [courseOfferings, courseById, basic.wishlist]);
-
-  const [wishlistExpandedId, setWishlistExpandedId] = useState<number | null>(null);
-  const [wishlistSheetSnap, setWishlistSheetSnap] = useState<string | number | null>(
-    COURSE_SEARCH_SNAP_POINTS[1],
-  );
-
-  const [generationResult, setGenerationResult] =
-    useState<WizardGenerationResult | null>(null);
-  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
-    null,
-  );
-  const [isMustHaveSheetOpen, setMustHaveSheetOpen] = useState(false);
-  const [isSaveSheetOpen, setSaveSheetOpen] = useState(false);
-
-  // generating 단계 진입 시 실제 조합 계산을 수행. 서버 추천 API가 없어 이미 받아온
-  // course-offerings 데이터를 바탕으로 클라이언트에서 직접 조합을 탐색한다.
+  // 조합 생성. 위시리스트가 강의 스냅샷을 들고 있어 서버 조회에 전혀 의존하지 않으므로
+  // 이 단계는 순수 계산이다 - 개설강의 전체 선로딩, 로딩/에러 경합, 페이지가 도착할
+  // 때마다 계산이 처음부터 다시 도는 문제가 구조적으로 사라졌다.
+  // 타이머는 결과가 순식간에 튀어 나와 화면이 깜빡이는 걸 막는 최소 노출 시간일 뿐이다.
   useEffect(() => {
     if (step !== "generating") return;
 
-    if (isOfferingsError) {
-      setStep("error");
-      return;
-    }
-
-    if (isOfferingsLoading) {
-      const timer = window.setTimeout(() => {
-        setStep((s) => (s === "generating" ? "error" : s));
-      }, GENERATING_MAX_WAIT_MS);
-      return () => window.clearTimeout(timer);
-    }
-
-    let cancelled = false;
-    const startedAt = Date.now();
-    let result: WizardGenerationResult;
+    let generated;
     try {
-      result = generateWizardCandidates(coursePool, { basic, preference, exclusion });
+      generated = generateWizardCandidates({
+        basic: { semester, minCredit, maxCredit, wishlist },
+        preference,
+        exclusion,
+      });
     } catch (e) {
-      console.error(e);
+      console.error("시간표 조합 생성 실패:", e);
       setStep("error");
       return;
     }
 
-    const remaining = Math.max(0, GENERATING_MIN_VISIBLE_MS - (Date.now() - startedAt));
     const timer = window.setTimeout(() => {
-      if (cancelled) return;
-      setGenerationResult(result);
-      setStep(result.candidates.length === 0 ? "empty" : "results");
-    }, remaining);
+      setResult(generated);
+      setStep(generated.candidates.length === 0 ? "empty" : "results");
+    }, GENERATING_MIN_VISIBLE_MS);
 
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [step, isOfferingsLoading, isOfferingsError, coursePool, basic, preference, exclusion]);
+    return () => window.clearTimeout(timer);
+  }, [
+    step,
+    semester,
+    minCredit,
+    maxCredit,
+    wishlist,
+    preference,
+    exclusion,
+    setResult,
+    setStep,
+  ]);
 
-  const runGeneration = useCallback(() => setStep("generating"), []);
-
-  const addMustHave = (course: CourseResult) => {
-    // MobileCourseSearchSheet의 CourseResult.courseId는 subjectNumber다
-    // (mapCourseOfferingToCourseResult 참고, offering.id가 아님).
-    const subjectNumber = course.courseId;
-    setBasic((prev) =>
-      prev.wishlist.some((item) => item.subjectNumber === subjectNumber)
-        ? prev
-        : {
-            ...prev,
-            // 새로 담을 때는 필수로 시작 - 이후 칩에서 "선택"으로 바꿀 수 있음
-            wishlist: [...prev.wishlist, { subjectNumber, required: false }],
-          },
-    );
-    setMustHaveSheetOpen(false);
-  };
-
-  const removeMustHave = (subjectNumber: string) => {
-    setBasic((prev) => ({
-      ...prev,
-      wishlist: prev.wishlist.filter((item) => item.subjectNumber !== subjectNumber),
-    }));
-  };
-
-  const toggleWishlistRequired = (subjectNumber: string) => {
-    setBasic((prev) => ({
-      ...prev,
-      wishlist: prev.wishlist.map((item) =>
-        item.subjectNumber === subjectNumber ? { ...item, required: !item.required } : item,
-      ),
-    }));
-  };
+  const runGeneration = useCallback(() => setStep("generating"), [setStep]);
 
   const selectedCandidate = useMemo(
-    () => generationResult?.candidates.find((c) => c.id === selectedCandidateId) ?? null,
-    [generationResult, selectedCandidateId],
+    () => result?.candidates.find((c) => c.id === selectedCandidateId) ?? null,
+    [result, selectedCandidateId],
   );
+
+  // 뒤로가기 한 번이 무엇을 닫는지는 스토어의 closeTopLayer가 단독으로 결정한다
+  // (필터 오버레이 → 강의 시트 → 스텝). 화면마다 제각각 판단하지 않는다.
+  const handleBack = useCallback(() => {
+    if (closeTopLayer()) return;
+    switch (step) {
+      case "step1":
+        navigate(-1);
+        break;
+      case "step2":
+        setStep("step1");
+        break;
+      case "step3":
+        setStep("step2");
+        break;
+      case "detail":
+        setStep("results");
+        break;
+      default:
+        setStep("step3");
+    }
+  }, [closeTopLayer, step, navigate, setStep]);
 
   const headerConfig = useMemo(() => {
     switch (step) {
       case "step1":
-        return {
-          title: "기본 조건",
-          rightArea: <StepBadge>1/3</StepBadge>,
-          onBack: () => navigate(-1),
-        };
+        return { title: "기본 조건", rightArea: <StepBadge>1/3</StepBadge> };
       case "step2":
-        return {
-          title: "선호 조건",
-          rightArea: <StepBadge>2/3</StepBadge>,
-          onBack: () => setStep("step1"),
-        };
+        return { title: "선호 조건", rightArea: <StepBadge>2/3</StepBadge> };
       case "step3":
-        return {
-          title: "제외 조건",
-          rightArea: <StepBadge>3/3</StepBadge>,
-          onBack: () => setStep("step2"),
-        };
+        return { title: "제외 조건", rightArea: <StepBadge>3/3</StepBadge> };
       case "generating":
         return { visible: false };
       case "results":
         return {
           title: "추천 시간표",
-          rightArea: <HeaderTextButton onClick={runGeneration}>다시 만들기</HeaderTextButton>,
-          onBack: () => setStep("step3"),
+          rightArea: (
+            <HeaderTextButton onClick={runGeneration}>다시 만들기</HeaderTextButton>
+          ),
         };
       case "detail":
         return {
@@ -314,14 +177,11 @@ export default function MobileTimetableWizardPage() {
               text={`${selectedCandidate.totalCredit}학점 · ${selectedCandidate.courses.length}과목`}
             />
           ),
-          onBack: () => setStep("results"),
         };
-      case "empty":
-      case "error":
       default:
-        return { title: "추천 시간표", onBack: () => setStep("step3") };
+        return { title: "추천 시간표" };
     }
-  }, [step, navigate, runGeneration, selectedCandidate]);
+  }, [step, runGeneration, selectedCandidate]);
 
   useHeader({
     hasback: true,
@@ -330,10 +190,11 @@ export default function MobileTimetableWizardPage() {
     // 헤더 우측 영역이 기본 원형(아이콘 전용) 폭으로 제한되어 "1/3"보다 긴 텍스트/배지가
     // 줄바꿈되는 문제 방지 (MobileHeader의 $isCircle 로직 참고)
     rightAreaNotCircle: true,
+    onBack: handleBack,
     ...headerConfig,
   });
 
-  const canProceedStep1 = basic.semesterId !== null;
+  const isConditionStep = step === "step1" || step === "step2" || step === "step3";
 
   const handlePrimaryNext = () => {
     if (step === "step1") setStep("step2");
@@ -341,16 +202,16 @@ export default function MobileTimetableWizardPage() {
     else if (step === "step3") runGeneration();
   };
 
-  const semesterLabel = useMemo(() => {
-    if (basic.year === null || basic.term === null) return "학기를 선택하세요";
-    return formatSemesterCompact(basic.year, basic.term);
-  }, [basic.year, basic.term]);
+  const semesterLabel = semester
+    ? formatSemesterCompact(semester.year, semester.term)
+    : "학기를 선택하세요";
 
   return (
     <PageWrapper>
-      {(step === "step1" || step === "step2" || step === "step3") && (
+      {isConditionStep && (
         <WizardStepIndicator step={step === "step1" ? 1 : step === "step2" ? 2 : 3} />
       )}
+
       {step === "step1" && (
         <ScrollContent>
           <Card>
@@ -358,16 +219,11 @@ export default function MobileTimetableWizardPage() {
               학기<Required>*</Required>
             </CardLabel>
             <SelectBox
-              value={basic.semesterId ?? ""}
+              value={semester?.id ?? ""}
               onChange={(e) => {
                 const found = semesters.find((s) => s.id === Number(e.target.value));
                 if (!found) return;
-                setBasic((prev) => ({
-                  ...prev,
-                  semesterId: found.id,
-                  year: found.year,
-                  term: found.term,
-                }));
+                setSemester({ id: found.id, year: found.year, term: found.term });
               }}
             >
               {semesters.length === 0 && <option value="">{semesterLabel}</option>}
@@ -383,51 +239,54 @@ export default function MobileTimetableWizardPage() {
             <CardLabelRow>
               <CardLabel>목표 학점</CardLabel>
               <CardLabelValue>
-                {basic.minCredit} ~ {basic.maxCredit}학점
+                {minCredit} ~ {maxCredit}학점
               </CardLabelValue>
             </CardLabelRow>
             <CreditRangeSlider
-              min={MIN_CREDIT_SCALE}
-              max={MAX_CREDIT_SCALE}
-              valueMin={basic.minCredit}
-              valueMax={basic.maxCredit}
-              onChange={({ min, max }) =>
-                setBasic((prev) => ({ ...prev, minCredit: min, maxCredit: max }))
-              }
+              min={WIZARD_MIN_CREDIT_SCALE}
+              max={WIZARD_MAX_CREDIT_SCALE}
+              valueMin={minCredit}
+              valueMax={maxCredit}
+              onChange={({ min, max }) => setCreditRange(min, max)}
             />
           </Card>
 
           <Card>
             <CardLabelRow>
-              <CardLabel>듣고 싶은 강의</CardLabel>
-              <CardLabelCount>
-                {wishlistCourses.length} / {MAX_MUST_HAVE}
-              </CardLabelCount>
+              <CardLabel>듣고 싶은 강의 선택</CardLabel>
+              <CardLabelCount>{wishlist.length}개</CardLabelCount>
             </CardLabelRow>
-            <CardHint>강의 후보를 선택할 수 있어요. 필수로 포함돼야 할 강의는 "필수" 체크해주세요.</CardHint>
-            {wishlistCourses.length > 0 && (
+            <CardHint>
+              강의 후보를 담아주세요. 반드시 들어가야 하는 강의는 "필수"로 바꿔주세요.
+            </CardHint>
+            {wishlist.length > 0 && (
               <ChipRow>
-                {wishlistCourses.map((c) => (
-                  <Chip key={c.subjectNumber} $required={c.required}>
+                {wishlist.map((item) => (
+                  <Chip key={item.course.subjectNumber} $required={item.required}>
                     <ChipRequiredToggle
                       type="button"
-                      $required={c.required}
-                      onClick={() => toggleWishlistRequired(c.subjectNumber)}
+                      $required={item.required}
+                      onClick={() => toggleWishlistRequired(item.course.subjectNumber)}
                     >
-                      {c.required ? "필수" : "선택"}
+                      {item.required ? "필수" : "선택"}
                     </ChipRequiredToggle>
-                    <span>{c.title}</span>
-                    <ChipRemove onClick={() => removeMustHave(c.subjectNumber)}>
+                    <span>{item.course.title}</span>
+                    <ChipRemove
+                      type="button"
+                      onClick={() => removeWishlistCourse(item.course.subjectNumber)}
+                    >
                       <X size={12} />
                     </ChipRemove>
                   </Chip>
                 ))}
               </ChipRow>
             )}
+            {/* 학기만 정해지면 항상 열 수 있다. 조회 결과가 0건이어도 시트 안에서
+                필터를 되돌릴 수 있어야 하므로 결과 개수로 막지 않는다. */}
             <AddCourseButton
               type="button"
-              disabled={wishlistCourses.length >= MAX_MUST_HAVE || coursePool.length === 0}
-              onClick={() => setMustHaveSheetOpen(true)}
+              disabled={semester === null}
+              onClick={() => openCourseSearch("wishlist")}
             >
               <Plus size={18} />
               강의 추가
@@ -438,27 +297,18 @@ export default function MobileTimetableWizardPage() {
       )}
 
       {step === "step2" && (
-        <Step2PreferenceConditions preference={preference} onChange={setPreference} />
+        <Step2PreferenceConditions preference={preference} onChange={updatePreference} />
       )}
 
-      {step === "step3" && (
-        <WizardStep3Exclusion
-          coursePool={coursePool}
-          exclusion={exclusion}
-          onChangeExclusion={setExclusion}
-          excludedCourses={excludedCourses}
-        />
-      )}
+      {step === "step3" && <WizardStep3Exclusion />}
 
-      {step === "generating" && (
-        <WizardGeneratingScreen onCancel={() => setStep("step3")} />
-      )}
+      {step === "generating" && <WizardGeneratingScreen onCancel={() => setStep("step3")} />}
 
-      {step === "results" && generationResult && (
+      {step === "results" && result && (
         <WizardResultsScreen
-          candidates={generationResult.candidates}
+          candidates={result.candidates}
           onSelectCandidate={(id) => {
-            setSelectedCandidateId(id);
+            selectCandidate(id);
             setStep("detail");
           }}
         />
@@ -468,20 +318,17 @@ export default function MobileTimetableWizardPage() {
         <WizardDetailScreen candidate={selectedCandidate} />
       )}
 
-      {step === "empty" && generationResult && (
-        <WizardEmptyState
-          conflicts={generationResult.conflicts}
-          onRelax={() => setStep("step1")}
-        />
+      {step === "empty" && result && (
+        <WizardEmptyState conflicts={result.conflicts} onRelax={() => setStep("step1")} />
       )}
 
       {step === "error" && <WizardErrorState onRetry={runGeneration} />}
 
-      {(step === "step1" || step === "step2" || step === "step3") && (
+      {isConditionStep && (
         <FixedBottomContainer>
           <BottomActionButton
             variant="primary"
-            disabled={step === "step1" && !canProceedStep1}
+            disabled={step === "step1" && semester === null}
             onClick={handlePrimaryNext}
           >
             {step === "step1" ? "시작하기" : step === "step3" ? "시간표 만들기" : "다음"}
@@ -491,31 +338,24 @@ export default function MobileTimetableWizardPage() {
 
       {step === "detail" && selectedCandidate && (
         <FixedBottomContainer>
-          <BottomActionButton variant="primary" onClick={() => setSaveSheetOpen(true)}>
+          <BottomActionButton variant="primary" onClick={openSaveSheet}>
             이 시간표 저장
           </BottomActionButton>
         </FixedBottomContainer>
       )}
 
-      <MobileCourseSearchSheet
-        courses={wishlistSearchResults}
-        expandedId={wishlistExpandedId}
-        onToggleExpand={(id) => setWishlistExpandedId((prev) => (prev === id ? null : id))}
-        snap={wishlistSheetSnap}
-        onSnapChange={setWishlistSheetSnap}
-        open={isMustHaveSheetOpen}
-        onOpenChange={setMustHaveSheetOpen}
-        onAddCourse={addMustHave}
-      />
+      <WizardCourseSearchSheet />
 
       {selectedCandidate && (
         <WizardSaveFlow
           open={isSaveSheetOpen}
-          onOpenChange={setSaveSheetOpen}
+          onOpenChange={(open) => {
+            if (!open) closeSaveSheet();
+          }}
           candidate={selectedCandidate}
-          semesterId={basic.semesterId}
+          semesterId={semester?.id ?? null}
           onSaved={() => {
-            localStorage.removeItem(WIZARD_DRAFT_STORAGE_KEY);
+            resetWizard();
             navigate(-1);
           }}
         />
@@ -527,8 +367,10 @@ export default function MobileTimetableWizardPage() {
 // --- Step 2: 선호조건 --------------------------------------------------
 
 interface Step2Props {
-  preference: typeof DEFAULT_PREFERENCE_CONDITIONS;
-  onChange: (updater: (prev: typeof DEFAULT_PREFERENCE_CONDITIONS) => typeof DEFAULT_PREFERENCE_CONDITIONS) => void;
+  preference: WizardPreferenceConditions;
+  onChange: (
+    updater: (prev: WizardPreferenceConditions) => WizardPreferenceConditions,
+  ) => void;
 }
 
 function Step2PreferenceConditions({ preference, onChange }: Step2Props) {
@@ -557,7 +399,10 @@ function Step2PreferenceConditions({ preference, onChange }: Step2Props) {
         onToggle={() =>
           onChange((prev) => ({
             ...prev,
-            freeDayOfWeek: { ...prev.freeDayOfWeek, enabled: !prev.freeDayOfWeek.enabled },
+            freeDayOfWeek: {
+              ...prev.freeDayOfWeek,
+              enabled: !prev.freeDayOfWeek.enabled,
+            },
           }))
         }
         title="특정 요일 공강"
@@ -584,7 +429,10 @@ function Step2PreferenceConditions({ preference, onChange }: Step2Props) {
         onToggle={() =>
           onChange((prev) => ({
             ...prev,
-            noMorningClasses: { ...prev.noMorningClasses, enabled: !prev.noMorningClasses.enabled },
+            noMorningClasses: {
+              ...prev.noMorningClasses,
+              enabled: !prev.noMorningClasses.enabled,
+            },
           }))
         }
         title="오전 수업 없는 시간표"
@@ -596,7 +444,10 @@ function Step2PreferenceConditions({ preference, onChange }: Step2Props) {
             onChange={(e) =>
               onChange((prev) => ({
                 ...prev,
-                noMorningClasses: { ...prev.noMorningClasses, startAfter: Number(e.target.value) },
+                noMorningClasses: {
+                  ...prev.noMorningClasses,
+                  startAfter: Number(e.target.value),
+                },
               }))
             }
           >
@@ -614,14 +465,18 @@ function Step2PreferenceConditions({ preference, onChange }: Step2Props) {
 
       <PreferenceCard
         checked={preference.noNightClasses}
-        onToggle={() => onChange((prev) => ({ ...prev, noNightClasses: !prev.noNightClasses }))}
+        onToggle={() =>
+          onChange((prev) => ({ ...prev, noNightClasses: !prev.noNightClasses }))
+        }
         title="야간 수업 제외"
         code="C-04"
       />
 
       <PreferenceCard
         checked={preference.fewConsecutive}
-        onToggle={() => onChange((prev) => ({ ...prev, fewConsecutive: !prev.fewConsecutive }))}
+        onToggle={() =>
+          onChange((prev) => ({ ...prev, fewConsecutive: !prev.fewConsecutive }))
+        }
         title="연강 적은 시간표"
         code="C-05"
       />
@@ -798,13 +653,18 @@ const Chip = styled.div<{ $required: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px 6px 8px;
+  padding: 6px 8px;
   border-radius: 999px;
-  background: ${({ $required }) => ($required ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)")};
-  border: ${({ $required }) => ($required ? "1px solid transparent" : "1px dashed var(--border-default, #e5e8eb)")};
+  background: ${({ $required }) =>
+    $required ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)"};
+  border: ${({ $required }) =>
+    $required
+      ? "1px solid transparent"
+      : "1px dashed var(--border-default, #e5e8eb)"};
 
   span {
-    color: ${({ $required }) => ($required ? "var(--interactive-primary, #3b82f6)" : "var(--text-secondary, #333d4b)")};
+    color: ${({ $required }) =>
+      $required ? "var(--interactive-primary, #3b82f6)" : "var(--text-secondary, #333d4b)"};
     font-size: 14px;
     font-weight: 500;
   }
@@ -818,11 +678,12 @@ const ChipRequiredToggle = styled.button<{ $required: boolean }>`
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  background: ${({ $required }) => ($required ? "var(--interactive-primary, #3b82f6)" : "var(--bg-disabled, #e5e8eb)")};
+  background: ${({ $required }) =>
+    $required ? "var(--interactive-primary, #3b82f6)" : "var(--bg-disabled, #e5e8eb)"};
   color: ${({ $required }) => ($required ? "#ffffff" : "var(--text-tertiary, #8b95a1)")};
 `;
 
-const ChipRemove = styled.button<{ $required?: boolean }>`
+const ChipRemove = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -937,8 +798,10 @@ const DayButton = styled.button<{ $active: boolean }>`
   height: 44px;
   border-radius: 999px;
   border: 1px solid
-    ${({ $active }) => ($active ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)")};
-  background: ${({ $active }) => ($active ? "var(--interactive-primary, #3b82f6)" : "var(--bg-subtle, #f8f9fb)")};
+    ${({ $active }) =>
+      $active ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
+  background: ${({ $active }) =>
+    $active ? "var(--interactive-primary, #3b82f6)" : "var(--bg-subtle, #f8f9fb)"};
   color: ${({ $active }) => ($active ? "#ffffff" : "var(--text-secondary, #333d4b)")};
   font-size: 14px;
   font-weight: 500;

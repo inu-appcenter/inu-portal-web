@@ -3,10 +3,11 @@ import styled from "styled-components";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import { Timetable, useTimetableStore } from "@/stores/useTimetableStore";
+import type { TimeTable } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { useCreateTimeTable } from "@/hooks/useTimeTables";
 import { formatSemester } from "@/utils/semester";
-import type { TimeTable } from "@/types/timetables";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export const getDefaultTimetableName = (
   semester: string,
@@ -87,6 +88,9 @@ export default function TimeTableCreateModal({
       { semesterId: modalSemesterId, timeTableName: modalName.trim() },
       {
         onSuccess: (created) => {
+          mixpanelTrack.timetableActionCompleted("생성", {
+            semester: formatSemester(created.year, created.term),
+          });
           setSemester(formatSemester(created.year, created.term));
           setActiveTimetable(created.id);
           onClose();

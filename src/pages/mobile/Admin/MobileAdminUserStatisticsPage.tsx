@@ -5,7 +5,7 @@ import { Calendar, Users, UserCheck, UserMinus } from "lucide-react";
 
 import useUserStore from "@/stores/useUserStore.ts";
 import { getMemberLogs } from "@/apis/admin";
-import { MemberLogData } from "@/types/admin";
+import { MemberLogData, isAdminUser } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive.ts";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
@@ -37,7 +37,7 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
       navigate(ROUTES.HOME, { replace: true });
       return;
     }
-    if (tokenInfo.accessToken && userInfo.role && userInfo.role !== "admin") {
+    if (tokenInfo.accessToken && userInfo.role && !isAdminUser(userInfo.role)) {
       navigate(ROUTES.HOME, { replace: true });
     }
   }, [tokenInfo, userInfo, navigate]);

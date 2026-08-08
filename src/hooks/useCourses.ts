@@ -5,12 +5,17 @@ import { useCourseStore } from "@/stores/useCourseStore";
 
 export const COURSES_QUERY_KEY = ["courses"] as const;
 
-export const useCourses = (department?: string) => {
+export const useCourses = (
+  department?: string,
+  options?: { enabled?: boolean },
+) => {
   const setCourses = useCourseStore((state) => state.setCourses);
+  const enabled = options?.enabled ?? true;
 
   const query = useQuery({
     queryKey: [...COURSES_QUERY_KEY, department ?? "all"],
     queryFn: () => getCourses(department),
+    enabled,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });

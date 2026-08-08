@@ -193,7 +193,7 @@ const FloatingSearchBar = forwardRef<
           }
         }}
       >
-        <Search size={24} />
+        <Search size={20} />
       </SearchButtonCircle>
     </SearchBarWrapper>
   );
@@ -209,7 +209,7 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  height: 48px;
   border-radius: 999px;
   transition: 
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -227,23 +227,23 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
   backdrop-filter: ${(props) => (props.$isActive ? "none" : "blur(8px)")};
 
-  width: ${(props) => (props.$isActive ? "100%" : "56px")};
-  flex: ${(props) => (props.$isActive ? "1" : "0 0 56px")};
+  width: ${(props) => (props.$isActive ? "100%" : "48px")};
+  flex: ${(props) => (props.$isActive ? "1" : "0 0 48px")};
 `;
 
 const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
   width: 100%;
   height: 100%;
   outline: none;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-primary, #333d4b);
   box-sizing: border-box;
 
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
-  padding-left: ${(props) => (props.$isActive ? "20px" : "0px")};
+  padding-left: ${(props) => (props.$isActive ? "16px" : "0px")};
   padding-right: ${(props) =>
-    props.$isActive ? (props.$hasValue ? "88px" : "56px") : "0px"};
+    props.$isActive ? (props.$hasValue ? "76px" : "46px") : "0px"};
   pointer-events: ${(props) => (props.$isActive ? "auto" : "none")};
 
   border-radius: 999px;
@@ -264,13 +264,13 @@ const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
 const ClearButton = styled.button`
   position: absolute;
   top: 50%;
-  right: 56px;
+  right: 46px;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--bg-neutral, #e5e8eb);
   color: var(--text-tertiary, #8b95a1);
@@ -312,8 +312,8 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean }>`
       ? `
     top: 3px;
     right: 3px;
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     background: var(--interactive-primary, #3b82f6);
     color: #ffffff;
     border: 1px solid var(--border-brand, #0061FF);
@@ -321,8 +321,8 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean }>`
       : `
     top: 0px;
     right: 0px;
-    width: 54px;
-    height: 54px;
+    width: 46px;
+    height: 46px;
     background: transparent;
     color: var(--text-secondary, #333d4b);
   `}

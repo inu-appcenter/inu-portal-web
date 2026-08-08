@@ -18,10 +18,15 @@ export const useChat = (roomId: string) => {
   const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isStompConnected, setIsStompConnected] = useState(false);
   const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
 
+  const isFetchingRef = useRef(false);
+
   const fetchMessages = useCallback(async () => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       const roomResponse: any = await getChatMessages(roomId);
       const actualRoomData = roomResponse.data || roomResponse;
@@ -31,7 +36,6 @@ export const useChat = (roomId: string) => {
 
       // 메시지 저장 (unreadCount 등이 갱신됨)
       if (actualRoomData.messages && Array.isArray(actualRoomData.messages)) {
-        console.log("초기 메시지 데이터 확인:", actualRoomData.messages[0]);
         setMessages([...actualRoomData.messages]);
       } else if (Array.isArray(actualRoomData)) {
         setMessages([...actualRoomData]);
@@ -45,6 +49,8 @@ export const useChat = (roomId: string) => {
       }
     } catch (err) {
       console.error("메시지 동기화 실패:", err);
+    } finally {
+      isFetchingRef.current = false;
     }
   }, [roomId]);
 
@@ -90,32 +96,35 @@ export const useChat = (roomId: string) => {
       client.connectHeaders = { Auth: `${jwtToken}` };
 
       client.onConnect = () => {
+        setIsStompConnected(true);
         // 새 메시지 구독
         client.subscribe(`/sub/room/${roomId}`, (message) => {
-          const receivedMessage: ChatMessage = JSON.parse(message.body);
-          setMessages((prev) => {
-            // 중복 메시지 방지 로직 추가
-            const isDuplicate = prev.some(
-              (m) => m.messageId === receivedMessage.messageId,
-            );
-            if (isDuplicate) return prev;
-            return [...prev, receivedMessage];
-          });
+          if (!message.body) return;
+          try {
+            const receivedMessage: ChatMessage = JSON.parse(message.body);
+            setMessages((prev) => {
+              // 중복 메시지 방지 로직 추가
+              const isDuplicate = prev.some(
+                (m) => m.messageId === receivedMessage.messageId,
+              );
+              if (isDuplicate) return prev;
+              return [...prev, receivedMessage];
+            });
+          } catch (err) {
+            // non-JSON 메시지는 안전하게 건너뜀
+          }
         });
 
         // 읽음 상태 업데이트 구독
         client.subscribe(`/sub/room/${roomId}/read`, (message) => {
           if (message.body === "updated") {
-            console.log("읽음 상태 업데이트 감지 - 메시지 동기화");
             fetchMessages();
           }
         });
-
-        // 입장 시 데이터 동기화 (읽음 처리 반영 포함)
-        fetchMessages();
       };
 
       client.onStompError = (frame) => {
+        setIsStompConnected(false);
         console.error("STOMP 브로커 연결 오류:", frame.headers["message"]);
         console.error("STOMP 상세 오류 정보:", frame.body);
         setError("연결 오류가 발생했습니다. 페이지를 새로고침 해주세요.");
@@ -125,18 +134,23 @@ export const useChat = (roomId: string) => {
       clientRef.current = client;
     };
 
+    // 입장과 초기 동기화가 끝난 뒤 enterChatRoom 내부에서 한 번만 연결한다.
+    // 두 클라이언트가 경쟁하면 연결 상태와 sendMessage의 참조가 어긋날 수 있다.
     enterChatRoom();
-    connectStomp();
 
     const handleVisibilityChange = () => {
       const client = clientRef.current;
       if (!client) return;
 
       if (document.visibilityState === "hidden") {
-        console.log("브라우저 백그라운드 감지 - 실시간 FCM 푸시 수신을 위해 소켓 비활성화");
+        console.log(
+          "브라우저 백그라운드 감지 - 실시간 FCM 푸시 수신을 위해 소켓 비활성화",
+        );
         client.deactivate();
       } else if (document.visibilityState === "visible") {
-        console.log("브라우저 포그라운드 감지 - 실시간 메시징 수신을 위해 소켓 활성화");
+        console.log(
+          "브라우저 포그라운드 감지 - 실시간 메시징 수신을 위해 소켓 활성화",
+        );
         client.activate();
       }
     };
@@ -156,9 +170,17 @@ export const useChat = (roomId: string) => {
     isAnonymous: boolean,
     imageFiles: File[] = [],
     onProgress?: (progressEvent: any) => void,
-  ) => {
+    messageType?: string,
+    extraData?: string,
+  ): boolean => {
     if (imageFiles.length > 0 && roomInfo?.id) {
-      sendImageMessage(roomInfo.id, content, isAnonymous, imageFiles, onProgress) // 변경: 파일 배열 및 프로그레스 전달
+      sendImageMessage(
+        roomInfo.id,
+        content,
+        isAnonymous,
+        imageFiles,
+        onProgress,
+      ) // 변경: 파일 배열 및 프로그레스 전달
         .then((response) => {
           console.log("이미지 메시지 전송 완료:", response);
         })
@@ -166,8 +188,16 @@ export const useChat = (roomId: string) => {
           console.error("이미지 메시지 전송 실패:", error);
           window.alert("이미지 메시지 전송에 실패했습니다.");
         });
+      return true;
     } else {
-      publish(clientRef.current, roomId, content, isAnonymous);
+      return publish(
+        clientRef.current,
+        roomId,
+        content,
+        isAnonymous,
+        messageType,
+        extraData,
+      );
     }
   };
 
@@ -219,6 +249,7 @@ export const useChat = (roomId: string) => {
     error,
     myHash,
     roomInfo,
+    isStompConnected,
     fetchPreviousMessages,
     refreshRoom: fetchMessages,
   };

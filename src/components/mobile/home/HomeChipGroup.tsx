@@ -8,6 +8,7 @@ import TooltipMessage from "@/components/common/TooltipMessage";
 import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
+import CampusMapIcon from "@/resources/assets/mobile-home/category-form/map.svg";
 import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png";
 import { LuFlaskConical, LuPartyPopper } from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
@@ -38,6 +39,15 @@ const HomeChipGroup = () => {
   );
 
   const chips = [
+    {
+      id: "campus-map",
+      iconSrc: CampusMapIcon,
+      title: "캠퍼스맵",
+      onClick: () => {
+        mixpanelTrack.featureClicked("캠퍼스맵", "Home Chip");
+        navigate(ROUTES.BOARD.CAMPUS);
+      },
+    },
     {
       id: "ai",
       iconSrc: AIIcon,

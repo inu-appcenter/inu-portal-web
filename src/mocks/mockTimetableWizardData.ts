@@ -32,35 +32,35 @@ interface MockCourseSeed {
   id: number;
   title: string;
   departmentName: string;
-  credit: string;
+  credit: number;
   targetGradeName: string;
 }
 
 const SEEDS: MockCourseSeed[] = [
-  { id: 1, title: "프로그래밍입문", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "1학년" },
-  { id: 2, title: "자료구조", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "2학년" },
-  { id: 3, title: "운영체제", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "3학년" },
-  { id: 4, title: "웹프로그래밍", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "3학년" },
-  { id: 5, title: "컴퓨터공학개론", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "1학년" },
-  { id: 6, title: "데이터베이스", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "3학년" },
-  { id: 7, title: "알고리즘", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "3학년" },
-  { id: 8, title: "인공지능개론", departmentName: "컴퓨터공학부", credit: "3", targetGradeName: "4학년" },
-  { id: 9, title: "대학수학(1)", departmentName: "수학과", credit: "3", targetGradeName: "1학년" },
-  { id: 10, title: "일반물리학", departmentName: "물리학과", credit: "3", targetGradeName: "1학년" },
-  { id: 11, title: "Academic English", departmentName: "교양", credit: "2", targetGradeName: "공통" },
-  { id: 12, title: "창의적사고와문제해결", departmentName: "교양", credit: "2", targetGradeName: "공통" },
-  { id: 13, title: "소셜커뮤니케이션", departmentName: "교양", credit: "2", targetGradeName: "공통" },
-  { id: 14, title: "자기설계세미나", departmentName: "교양", credit: "1", targetGradeName: "공통" },
-  { id: 15, title: "경영학원론", departmentName: "경영학부", credit: "3", targetGradeName: "1학년" },
-  { id: 16, title: "마케팅원론", departmentName: "경영학부", credit: "3", targetGradeName: "2학년" },
-  { id: 17, title: "회계원리", departmentName: "세무회계학과", credit: "3", targetGradeName: "1학년" },
-  { id: 18, title: "심리학개론", departmentName: "교양", credit: "3", targetGradeName: "공통" },
-  { id: 19, title: "영어회화", departmentName: "교양", credit: "2", targetGradeName: "공통" },
-  { id: 20, title: "스포츠와건강", departmentName: "교양", credit: "1", targetGradeName: "공통" },
-  { id: 21, title: "야간세미나", departmentName: "교양", credit: "2", targetGradeName: "공통" },
-  { id: 22, title: "저녁교양", departmentName: "교양", credit: "1", targetGradeName: "공통" },
+  { id: 1, title: "프로그래밍입문", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "1학년" },
+  { id: 2, title: "자료구조", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "2학년" },
+  { id: 3, title: "운영체제", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "3학년" },
+  { id: 4, title: "웹프로그래밍", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "3학년" },
+  { id: 5, title: "컴퓨터공학개론", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "1학년" },
+  { id: 6, title: "데이터베이스", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "3학년" },
+  { id: 7, title: "알고리즘", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "3학년" },
+  { id: 8, title: "인공지능개론", departmentName: "컴퓨터공학부", credit: 3, targetGradeName: "4학년" },
+  { id: 9, title: "대학수학(1)", departmentName: "수학과", credit: 3, targetGradeName: "1학년" },
+  { id: 10, title: "일반물리학", departmentName: "물리학과", credit: 3, targetGradeName: "1학년" },
+  { id: 11, title: "Academic English", departmentName: "교양", credit: 2, targetGradeName: "공통" },
+  { id: 12, title: "창의적사고와문제해결", departmentName: "교양", credit: 2, targetGradeName: "공통" },
+  { id: 13, title: "소셜커뮤니케이션", departmentName: "교양", credit: 2, targetGradeName: "공통" },
+  { id: 14, title: "자기설계세미나", departmentName: "교양", credit: 1, targetGradeName: "공통" },
+  { id: 15, title: "경영학원론", departmentName: "경영학부", credit: 3, targetGradeName: "1학년" },
+  { id: 16, title: "마케팅원론", departmentName: "경영학부", credit: 3, targetGradeName: "2학년" },
+  { id: 17, title: "회계원리", departmentName: "세무회계학과", credit: 3, targetGradeName: "1학년" },
+  { id: 18, title: "심리학개론", departmentName: "교양", credit: 3, targetGradeName: "공통" },
+  { id: 19, title: "영어회화", departmentName: "교양", credit: 2, targetGradeName: "공통" },
+  { id: 20, title: "스포츠와건강", departmentName: "교양", credit: 1, targetGradeName: "공통" },
+  { id: 21, title: "야간세미나", departmentName: "교양", credit: 2, targetGradeName: "공통" },
+  { id: 22, title: "저녁교양", departmentName: "교양", credit: 1, targetGradeName: "공통" },
   // 토요일 개설강의 - 그리드 요일 자동 확장 검증용 (inu-appcenter/inu-portal-server#297)
-  { id: 23, title: "토요특강", departmentName: "교양", credit: "1", targetGradeName: "공통" },
+  { id: 23, title: "토요특강", departmentName: "교양", credit: 1, targetGradeName: "공통" },
 ];
 
 export const MOCK_COURSES: Course[] = SEEDS.map((s) => ({

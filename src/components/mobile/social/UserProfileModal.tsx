@@ -695,7 +695,9 @@ export default function UserProfileModal({
                       )}
                     </NicknameArea>
                     <SubInfo>
-                      {profile.maskedStudentId && profile.maskedStudentId.length >= 2 ? `${profile.maskedStudentId.substring(0, 2)}학번 · ` : ""}
+                      {profile.maskedStudentId && profile.maskedStudentId.length >= 4
+                        ? `${profile.maskedStudentId.slice(2, 4)}학번 · `
+                        : ""}
                       {isMe ? profile.department : findTitleOrCode(profile.department)}
                     </SubInfo>
                   </UserInfoArea>

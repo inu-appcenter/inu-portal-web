@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useTimeTables";
 import { DAY_BY_INDEX } from "@/utils/timetable";
 import type { TimeTableCustomMeetingRequest } from "@/types/timetables";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // 편집 페이지에서 커스텀 일정 수정으로 진입할 때 넘겨주는 라우터 state
 export interface CustomScheduleEditState {
@@ -136,8 +137,16 @@ const MobileCourseAddPage = () => {
         },
         {
           onSuccess: () => {
+            mixpanelTrack.timetableItemActionCompleted(
+              "직접 일정 수정",
+              "직접 일정",
+              {
+                semester: activeTimetable.semester,
+                meeting_count: meetings.length,
+              },
+            );
             alert(`"${title}" 과목이 수정되었습니다.`);
-            navigate(ROUTES.TIMETABLE.EDIT);
+            navigate(ROUTES.TIMETABLE.EDIT, { replace: true });
           },
           onError: (error: any) => {
             alert(
@@ -153,8 +162,12 @@ const MobileCourseAddPage = () => {
       { timeTableId: activeTimetableId, body: { title, meetings } },
       {
         onSuccess: () => {
+          mixpanelTrack.timetableItemActionCompleted("직접 일정 추가", "직접 일정", {
+            semester: activeTimetable.semester,
+            meeting_count: meetings.length,
+          });
           alert(`"${title}" 과목이 시간표에 추가되었습니다.`);
-          navigate(ROUTES.TIMETABLE.EDIT);
+          navigate(ROUTES.TIMETABLE.EDIT, { replace: true });
         },
         onError: (error: any) => {
           alert(error.response?.data?.msg || "커스텀 일정 추가에 실패했습니다.");
