@@ -54,6 +54,8 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 import MobileFriendListPage from "@/pages/mobile/MobileFriendListPage";
+import MobileFriendQrPage from "@/pages/mobile/MobileFriendQrPage";
+import MobileFriendInvitePage from "@/pages/mobile/MobileFriendInvitePage";
 import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
 import MobileTimeTableVisibilityPage from "@/pages/mobile/timetable/MobileTimeTableVisibilityPage";
 import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
@@ -138,6 +140,11 @@ export const router = createBrowserRouter([
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
           { path: ROUTES.FRIEND.LIST, element: <MobileFriendListPage /> },
+          { path: ROUTES.FRIEND.QR, element: <MobileFriendQrPage /> },
+          {
+            path: ROUTES.FRIEND.INVITE_PATTERN,
+            element: <MobileFriendInvitePage />,
+          },
           { path: ROUTES.TIMETABLE.COMPARE, element: <MobileTimeTableComparePage /> },
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
