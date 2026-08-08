@@ -41,6 +41,21 @@ export function matchesCourseOfferingFilters(
     return false;
   }
   if (
+    filters?.ssupTypeNames?.length &&
+    !filters.ssupTypeNames.some((st) => {
+      const code = offering.ssupTypeCode;
+      const name = offering.ssupTypeName;
+      return (
+        code === st ||
+        name === st ||
+        (code && code.toLowerCase() === st.toLowerCase()) ||
+        (name && name.toLowerCase() === st.toLowerCase())
+      );
+    })
+  ) {
+    return false;
+  }
+  if (
     filters?.credits?.length &&
     !filters.credits.includes(offering.credit ?? Number(course?.credit))
   ) {
@@ -121,6 +136,7 @@ export const getCourseOfferingsPage = async (
   if (filters?.meetingFilterMode) {
     params.append("meetingFilterMode", filters.meetingFilterMode);
   }
+  if (filters?.sort) params.append("sort", filters.sort);
 
   // 다중 선택 필터는 쉼표 CSV 방식이 아닌 동일 query parameter를 반복 생성
   filters?.hyNames?.forEach((val) => params.append("hyNames", val));

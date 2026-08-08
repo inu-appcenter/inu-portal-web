@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { ChevronRight } from "lucide-react";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
 import { formatCourseMeetings, mapWizardCoursesToClassItems } from "@/utils/timetableWizardFormat";
+import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 import type { WizardCandidate } from "@/types/timetableWizard";
 
 interface WizardDetailScreenProps {
@@ -39,18 +40,25 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
       <Card>
         <CardTitle>강의 목록</CardTitle>
         <CourseList>
-          {candidate.courses.map((course, index) => (
-            <CourseRow key={course.subjectNumber}>
-              <AccentBar $colorIndex={index} />
-              <CourseTextWrap>
-                <CourseName>{course.title}</CourseName>
-                <CourseMeta>
-                  {formatCourseMeetings(course)} · {course.credit}학점
-                </CourseMeta>
-              </CourseTextWrap>
-              <ChevronRight size={18} color="#8a96a5" />
-            </CourseRow>
-          ))}
+          {candidate.courses.map((course, index) => {
+            const onlineTypeLabel = getOnlineTypeLabel(
+              course.ssupTypeName,
+              course.ssupTypeCode,
+            );
+            return (
+              <CourseRow key={course.subjectNumber}>
+                <AccentBar $colorIndex={index} />
+                <CourseTextWrap>
+                  <CourseName>{course.title}</CourseName>
+                  <CourseMeta>
+                    {formatCourseMeetings(course)} · {course.credit}학점
+                    {onlineTypeLabel ? ` · ${onlineTypeLabel}` : ""}
+                  </CourseMeta>
+                </CourseTextWrap>
+                <ChevronRight size={18} color="#8a96a5" />
+              </CourseRow>
+            );
+          })}
         </CourseList>
       </Card>
 

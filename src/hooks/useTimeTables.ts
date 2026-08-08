@@ -1,5 +1,10 @@
 import { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import {
   createTimeTable,
   createTimeTableCourseItem,
@@ -24,6 +29,55 @@ import type {
 } from "@/types/timetables";
 
 export const TIMETABLES_QUERY_KEY = ["timetables"] as const;
+
+/**
+ * year/term 없이 조회하는 모든 소비자(root의 MobileTimeTablePage 등, 현재
+ * useTimeTables() 호출부 전부)가 공유하는 정확한 쿼리 키.
+ */
+const ALL_TIMETABLES_QUERY_KEY = [...TIMETABLES_QUERY_KEY, "all", "all"] as const;
+
+/**
+ * 목록에 영향을 주는 mutation 성공 시, 다른 웹뷰(RN 멀티 웹뷰 스택의 sibling
+ * 컨텍스트 — 예: 시간표 마법사는 root와 별개의 QueryClient를 갖는 별도
+ * WebView)로 변경을 전파하기 위한 강제 refetch.
+ *
+ * `queryClient.invalidateQueries`만으로는 부족하다 — invalidate는 "이미
+ * 캐시에 존재하는" 쿼리만 대상으로 하는데, 이 mutation을 실행 중인 웹뷰(예:
+ * 마법사)에는 root가 구독하는 이 정확한 키가 한 번도 fetch된 적이 없어 캐시에
+ * 아예 없다. 그래서 명시적으로 fetchQuery를 호출해 이 웹뷰의 캐시에도 그
+ * 키를 채워 넣어야, broadcastQueryClient(main.tsx에서 결선)가 그 성공 fetch를
+ * root 등 다른 웹뷰로 미러링해줄 수 있다. 그 플러그인은 쿼리 fetch 성공
+ * ("success")·추가·제거만 브로드캐스트하고 invalidate는 보내지 않는다.
+ */
+const syncTimeTablesList = (queryClient: QueryClient) =>
+  queryClient.fetchQuery({
+    queryKey: ALL_TIMETABLES_QUERY_KEY,
+    queryFn: () => getTimeTables(),
+  });
+
+/**
+ * 상세(시간표에 담긴 요소 목록)에 영향을 주는 mutation 성공 시의 강제 refetch.
+ * `syncTimeTablesList`와 같은 이유이며, 대상만 상세 쿼리다.
+ *
+ * 특히 "일정 추가" 화면이 그렇다 — 이 화면은 별도 웹뷰로 열리는데 추가 모드에서는
+ * 상세를 한 번도 조회하지 않아 캐시에 그 키 자체가 없다. 그래서 invalidate는 아무
+ * 것도 refetch하지 않고, 미러링할 성공 fetch도 생기지 않아 편집 화면 웹뷰로 돌아가도
+ * 방금 추가한 일정이 보이지 않는다.
+ *
+ * 반환한 Promise는 mutation이 호출부 onSuccess를 실행하기 전에 await한다(v5 동작).
+ * 이 대기는 필수다 — 호출부가 곧바로 navigate(-1) → appBridge.goBack()으로 웹뷰를
+ * 닫아버리면, 사라지는 웹뷰에서 fetch가 끊겨 브로드캐스트가 아예 출발하지 못한다.
+ * 필터 화면에서 이미 같은 이유로 유실을 겪었다(08ce1716 참고).
+ *
+ * 저장 자체는 이미 성공했으므로, 이 동기화가 실패해도 에러로 번지게 두지 않는다.
+ */
+const syncTimeTableDetail = (queryClient: QueryClient, timeTableId: number) =>
+  queryClient
+    .fetchQuery({
+      queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
+      queryFn: () => getTimeTableDetail(timeTableId),
+    })
+    .catch(() => undefined);
 
 export const useTimeTables = (
   year?: number,
@@ -100,6 +154,7 @@ export const useCreateTimeTable = () => {
     }) => createTimeTable(semesterId, timeTableName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -117,6 +172,7 @@ export const useUpdateTimeTableName = () => {
     }) => updateTimeTableName(timeTableId, timeTableName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -134,6 +190,7 @@ export const useUpdateTimeTableVisibility = () => {
     }) => updateTimeTableVisibility(timeTableId, visibility),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -145,6 +202,7 @@ export const useUpdateTimeTablePrimary = () => {
     mutationFn: (timeTableId: number) => updateTimeTablePrimary(timeTableId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -156,6 +214,7 @@ export const useDeleteTimeTable = () => {
     mutationFn: (timeTableId: number) => deleteTimeTable(timeTableId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
+      void syncTimeTablesList(queryClient);
     },
   });
 };
@@ -171,6 +230,9 @@ export const useCreateTimeTableCourseItem = () => {
       timeTableId: number;
       body: TimeTableCourseItemRequest;
     }) => createTimeTableCourseItem(timeTableId, body),
+    // 강의 추가는 상세를 이미 구독 중인 편집 화면에서만 일어나므로 invalidate로 충분하다.
+    // 마법사(WizardSaveFlow)는 이 mutation을 강의 수만큼 순차 호출하므로, 여기에
+    // syncTimeTableDetail을 붙이면 강의 하나당 상세 조회가 한 번씩 더 붙는다.
     onSuccess: (_data, { timeTableId }) => {
       queryClient.invalidateQueries({
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
@@ -194,6 +256,7 @@ export const useCreateTimeTableCustomItem = () => {
       queryClient.invalidateQueries({
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
       });
+      return syncTimeTableDetail(queryClient, timeTableId);
     },
   });
 };
@@ -215,6 +278,7 @@ export const useUpdateTimeTableCustomItem = () => {
       queryClient.invalidateQueries({
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
       });
+      return syncTimeTableDetail(queryClient, timeTableId);
     },
   });
 };
@@ -230,6 +294,8 @@ export const useDeleteTimeTableItem = () => {
       timeTableId: number;
       timeTableItemId: number;
     }) => deleteTimeTableItem(timeTableId, timeTableItemId),
+    // 삭제도 상세를 구독 중인 화면에서만 일어난다. 마법사가 기존 요소를 비울 때
+    // 이 mutation을 요소 수만큼 순차 호출하므로 위 강의 추가와 같은 이유로 제외한다.
     onSuccess: (_data, { timeTableId }) => {
       queryClient.invalidateQueries({
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],

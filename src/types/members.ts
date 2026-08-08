@@ -36,6 +36,7 @@ export interface MembersReplies {
 
 //알림
 export interface Notification {
+  memberFcmMessageId?: number;
   fcmMessageId: number;
   memberId: number;
   title: string;
@@ -49,6 +50,7 @@ export interface Notification {
     | string;
   targetId?: number; // 게시글 ID, 채팅방 ID 등
   createDate: string;
+  isRead?: boolean;
 }
 
 //api로그

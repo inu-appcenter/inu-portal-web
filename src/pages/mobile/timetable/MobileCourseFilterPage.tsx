@@ -243,6 +243,10 @@ export default function MobileCourseFilterPage() {
         title: FILTER_SUB_VIEW_TITLES.type,
         onBack: () => setView("main"),
       },
+      online: {
+        title: FILTER_SUB_VIEW_TITLES.online,
+        onBack: () => setView("main"),
+      },
       credit: {
         title: FILTER_SUB_VIEW_TITLES.credit,
         onBack: () => setView("main"),
@@ -282,7 +286,7 @@ export default function MobileCourseFilterPage() {
   // 예전에는 여기서 개설강의를 미리 fetch한 뒤 복귀했는데, 멀티 웹뷰에서 이 화면은
   // 편집 화면과 다른 JS 런타임이라 그 prefetch는 **이 웹뷰의** QueryClient만 데웠다.
   // 복귀만 그만큼 느려질 뿐이라 걷어냈다(편집 화면은 확정 필터를 받는 즉시 자기
-  // 쿼리를 돌리고, 성공 데이터는 queryBroadcastSync가 웹뷰 간에 실어 나른다).
+  // 쿼리를 돌리고, 성공 데이터는 broadcastQueryClient가 웹뷰 간에 실어 나른다).
   const handleSave = () => {
     if (isApplying) return;
     setIsApplying(true);
@@ -301,6 +305,7 @@ export default function MobileCourseFilterPage() {
         filters.time !== "전체 시간" || Boolean(filters.selectedSlots?.length),
       grade_count: filters.grades.length,
       type_count: filters.types.length,
+      online_type_count: filters.onlineTypes?.length ?? 0,
       credit_count: filters.credits.length,
       sort: filters.sort,
     });
@@ -363,7 +368,7 @@ export default function MobileCourseFilterPage() {
               초기화
             </ResetBottomButton>
           )}
-          {(view === "grade" || view === "type" || view === "credit") && (
+          {(view === "grade" || view === "type" || view === "credit" || view === "online") && (
             <BottomActionButton
               variant="primary"
               onClick={() => setView("main")}

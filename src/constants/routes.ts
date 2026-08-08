@@ -72,6 +72,7 @@ export const ROUTES = {
     TIPS_CATEGORY: (category: string) => `/home/tips/category/${category}`,
     TIPS_DETAIL: (id: string | number) => `/home/tips/${id}`,
     TIPS_WRITE: "/home/tips/write",
+    TIPS_EDIT: (id: string | number) => `/home/tips/write/${id}`,
     NOTICE: "/home/notice",
     DEPT_NOTICE: "/home/deptnotice",
     DEPT_NOTICE_DETAIL: (dept: string | number) =>
