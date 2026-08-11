@@ -54,6 +54,23 @@ export const putMemberDepartment = async (
   return response.data;
 };
 
+// 학교 강좌 데이터 기반 회원 학과 수정
+export const patchSchoolDepartment = async (
+  departmentCode: string,
+): Promise<ApiResponse<UserInfoInput>> => {
+  const normalizedDepartmentCode = departmentCode.trim();
+
+  if (!normalizedDepartmentCode) {
+    throw new Error("Department is required.");
+  }
+
+  const response = await tokenInstance.patch<ApiResponse<UserInfoInput>>(
+    "/api/members/school-department",
+    { departmentCode: normalizedDepartmentCode },
+  );
+  return response.data;
+};
+
 // 회원 삭제
 export const deleteMembers = async (): Promise<ApiResponse<number>> => {
   const response =
