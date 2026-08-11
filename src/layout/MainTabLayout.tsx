@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
-import MobileBottomNav, { BOTTOM_NAV_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
+import MobileBottomNav, { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
@@ -50,7 +50,7 @@ export default function MainTabLayout({
   const headerHeight = showHeader ? measuredHeaderHeight : 20;
 
   const navHeight = showNav
-    ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`
+    ? BOTTOM_NAV_SAFE_HEIGHT
     : "40px";
 
   return (

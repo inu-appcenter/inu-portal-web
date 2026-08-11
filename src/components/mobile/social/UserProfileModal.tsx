@@ -1,6 +1,6 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditFriendAliasModal from "./EditFriendAliasModal";
 import Modal from "@/components/common/Modal";
 import {
@@ -31,6 +31,7 @@ import findTitleOrCode from "@/utils/findTitleOrCode";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
 import { blockUser } from "@/apis/blocks";
+import { backHandler } from "@/utils/backHandler";
 import {
   kickMember,
   delegateOwner,
@@ -352,6 +353,8 @@ export default function UserProfileModal({
   const [isAliasModalOpen, setIsAliasModalOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [blockConfirmOpen, setBlockConfirmOpen] = useState(false);
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
 
   const isChatContext = !!roomContext && !!chatRoomMemberId;
@@ -359,6 +362,39 @@ export default function UserProfileModal({
   // memberId만 있고 chat/friend context가 없을 때 = 내 프로필
   const isSelfProfile = !!memberId && !isChatContext && !isFriendContext;
   const isConfirmModalOpen = deleteConfirmOpen || blockConfirmOpen || isAliasModalOpen;
+  const isConfirmModalOpenRef = useRef(isConfirmModalOpen);
+  isConfirmModalOpenRef.current = isConfirmModalOpen;
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let hasHistoryEntry = true;
+    window.history.pushState({ userProfileSheetOpen: true }, "");
+
+    const closeProfileSheet = () => {
+      if (isConfirmModalOpenRef.current) return false;
+      onOpenChangeRef.current(false);
+      return true;
+    };
+
+    const handlePopState = () => {
+      if (isConfirmModalOpenRef.current) return;
+      hasHistoryEntry = false;
+      onOpenChangeRef.current(false);
+    };
+
+    backHandler.pushHandler(closeProfileSheet);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      backHandler.popHandler(closeProfileSheet);
+      window.removeEventListener("popstate", handlePopState);
+
+      if (hasHistoryEntry) {
+        window.history.back();
+      }
+    };
+  }, [isOpen]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],

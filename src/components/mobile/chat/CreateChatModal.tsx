@@ -7,6 +7,7 @@ import { createChatRoom } from "@/apis/chat";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { Camera } from "lucide-react";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
 import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
@@ -30,6 +31,7 @@ export default function CreateChatModal({
   isOpen,
   onOpenChange,
 }: CreateChatModalProps) {
+  useSheetBackHandler(isOpen, () => onOpenChange(false));
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

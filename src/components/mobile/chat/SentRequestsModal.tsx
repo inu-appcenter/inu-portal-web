@@ -6,6 +6,7 @@ import { getSentPendingFriends, deleteFriend } from "@/apis/friends";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import Divider from "@/components/common/Divider";
 import EmptyState from "@/components/common/EmptyState";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -26,6 +27,7 @@ export default function SentRequestsModal({
   isOpen,
   onOpenChange,
 }: SentRequestsModalProps) {
+  useSheetBackHandler(isOpen, () => onOpenChange(false));
   const queryClient = useQueryClient();
 
   const { data: sentRes, isLoading } = useQuery({

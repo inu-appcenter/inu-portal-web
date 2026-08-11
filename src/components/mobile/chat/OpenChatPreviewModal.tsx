@@ -6,6 +6,7 @@ import { OpenChatRoomResponseDto } from "@/types/chat";
 import { Users, Calendar, Crown, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -28,6 +29,7 @@ export default function OpenChatPreviewModal({
   onOpenChange,
   room,
 }: OpenChatPreviewModalProps) {
+  useSheetBackHandler(isOpen, () => onOpenChange(false), Boolean(room));
   const navigate = useNavigate();
 
   if (!room) return null;

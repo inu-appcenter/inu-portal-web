@@ -118,26 +118,15 @@ export default function MobileBottomNav() {
       setShowTimetableTooltip(false);
     }
 
-    const isChat = to === ROUTES.CHAT.LIST;
-    const isCurrentlyActive =
-      location.pathname === to || location.pathname.startsWith(to);
-
-    if (isChat && isCurrentlyActive) {
-      const params = new URLSearchParams(location.search);
-      const currentCategory = params.get("category") || "개인";
-      const nextCategory =
-        currentCategory === "개인"
-          ? "오픈채팅"
-          : currentCategory === "오픈채팅"
-            ? "친구"
-            : "개인";
-      params.set("category", nextCategory);
-      navigate(`${to}?${params.toString()}`, { replace: true, state: { isTabNavigation: true } });
+    const targetIndex = NAV_ITEMS.findIndex((item) => item.to === to);
+    if (targetIndex === activeIndex) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     mixpanelTrack.navTabClicked(label);
 
+    const isChat = to === ROUTES.CHAT.LIST;
     if (isChat) {
       const savedCategory = localStorage.getItem("lastChatCategory");
       const target = savedCategory ? `${to}?category=${savedCategory}` : to;
@@ -204,12 +193,14 @@ export default function MobileBottomNav() {
 }
 
 export const BOTTOM_PADDING = 8;
-export const BOTTOM_NAV_HEIGHT = 76 + BOTTOM_PADDING;
+export const BOTTOM_NAV_CONTENT_HEIGHT = 76;
+export const BOTTOM_NAV_HEIGHT = BOTTOM_NAV_CONTENT_HEIGHT + BOTTOM_PADDING;
+export const BOTTOM_NAV_SAFE_HEIGHT = `calc(${BOTTOM_NAV_CONTENT_HEIGHT}px + max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px)))`;
 
 const NavContainer = styled.div`
   position: relative;
   width: 100%;
-  height: calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px));
+  height: ${BOTTOM_NAV_SAFE_HEIGHT};
   z-index: 1000;
   pointer-events: auto;
   background: var(--bg-blur, rgba(255, 255, 255, 0.60));
@@ -234,7 +225,7 @@ const NavItemsContainer = styled.nav`
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
   padding-top: 0px;
-  padding-bottom: calc(${BOTTOM_PADDING}px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 `;
 

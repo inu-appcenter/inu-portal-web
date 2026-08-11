@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
 import { X } from "lucide-react";
+import { backHandler } from "@/utils/backHandler";
 
 export interface BottomSheetProps {
   open: boolean;
@@ -49,6 +50,20 @@ export default function BottomSheet({
   const setActiveSnapPoint = externalSetActiveSnapPoint || setInternalActiveSnapPoint;
 
   const shouldCloseOnBack = closeOnBack !== undefined ? closeOnBack : (dismissible && modal);
+  const onOpenChangeRef = React.useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+
+  useEffect(() => {
+    if (!open || !shouldCloseOnBack || !onOpenChange) return;
+
+    const handleNativeBack = () => {
+      onOpenChangeRef.current?.(false);
+      return true;
+    };
+
+    backHandler.pushHandler(handleNativeBack);
+    return () => backHandler.popHandler(handleNativeBack);
+  }, [open, onOpenChange, shouldCloseOnBack]);
 
   // Hybrid-app friendly back button support
   const hasPushStateRef = React.useRef(false);

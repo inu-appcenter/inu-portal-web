@@ -1,6 +1,6 @@
 import { postBooks, putBooks } from "@/apis/books.ts";
 import { useEffect, useState } from "react";
-import { BottomSheet } from "react-spring-bottom-sheet";
+import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 

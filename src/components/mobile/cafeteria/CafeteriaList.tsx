@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useState } from "react";
-import { BottomSheet } from "react-spring-bottom-sheet";
+import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { cafeterias } from "@/resources/strings/cafeterias";
