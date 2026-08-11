@@ -99,6 +99,18 @@ export const getDepartmentNotices = async (
   return response.data;
 };
 
+export const getSchoolDepartmentNotices = async (
+  departmentCode: string,
+  sort: "date" | "view" = "date",
+  page: number = 1,
+): Promise<ApiResponse<Pagination<DepartmentNotice[]>>> => {
+  const response = await axiosInstance.get<ApiResponse<Pagination<DepartmentNotice[]>>>(
+    "/api/notices/school-department",
+    { params: { departmentCode: normalizeRequiredDepartment(departmentCode), sort, page } },
+  );
+  return response.data;
+};
+
 export const getDepartmentNoticeSchedules = async (
   departmentNoticeId: number,
 ): Promise<ApiResponse<Schedule[]>> => {
@@ -125,7 +137,7 @@ export const getKeywords = async (): Promise<ApiResponse<Keyword[]>> => {
 // 키워드 구독 생성
 export const createKeyword = async (
   keyword: string,
-  department?: string,
+  departmentCode?: string,
   category?: string,
 ): Promise<ApiResponse<Keyword>> => {
   const normalizedKeyword = keyword.trim();
@@ -134,11 +146,11 @@ export const createKeyword = async (
     throw new Error("Keyword is required.");
   }
 
-  const params: { keyword: string; department?: string; category?: string } = {
+  const params: { keyword: string; departmentCode?: string; category?: string } = {
     keyword: normalizedKeyword,
   };
 
-  if (department) params.department = department;
+  if (departmentCode) params.departmentCode = departmentCode;
   if (category) params.category = category;
 
   const response = await tokenInstance.post<ApiResponse<Keyword>>(
@@ -185,6 +197,16 @@ export const subscribeDepartment = async (
   const response = await tokenInstance.post<ApiResponse<Keyword[]>>(
     "/api/keywords/department",
     departments,
+  );
+  return response.data;
+};
+
+export const subscribeSchoolDepartment = async (
+  departmentCodes: string[],
+): Promise<ApiResponse<Keyword[]>> => {
+  const response = await tokenInstance.post<ApiResponse<Keyword[]>>(
+    "/api/keywords/school-department",
+    departmentCodes,
   );
   return response.data;
 };
