@@ -8,7 +8,7 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, MapPin } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -22,7 +22,9 @@ import OpenChatRoomListItem from "@/components/mobile/chat/OpenChatRoomListItem"
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
+import AddFriendMenuCard from "@/components/mobile/social/AddFriendMenuCard";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
+import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
@@ -42,7 +44,11 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const selectedCategory = params.get("category") || "개인";
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const {
+    isOpen: isAddMenuOpen,
+    close: closeAddMenu,
+    toggle: toggleAddMenu,
+  } = useHistoryBackedOverlay();
   const [isNearbyInfoOpen, setIsNearbyInfoOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
@@ -206,32 +212,11 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     }
   }, []);
 
-  // 메뉴를 닫고, 필요하면 다음 동작(after)을 실행한다.
-  // addFriendMenu가 history.back()으로 pop되는 도중에 다음 오버레이(BottomSheet 등)가
-  // 곧바로 pushState를 하면 back()이 그 새 entry를 대신 pop해버려 오버레이가 열리자마자
-  // 닫히는 레이스가 발생한다. back()의 popstate가 실제로 끝난 뒤에만 after를 실행해 방지한다.
-  const closeAddMenu = useCallback((after?: () => void) => {
-    setIsAddMenuOpen(false);
-    if (window.history.state?.modal === "addFriendMenu") {
-      const handlePoppedAddMenu = () => {
-        window.removeEventListener("popstate", handlePoppedAddMenu);
-        after?.();
-      };
-      window.addEventListener("popstate", handlePoppedAddMenu);
-      window.history.back();
-    } else {
-      after?.();
-    }
-  }, []);
-
   useEffect(() => {
     const handlePopState = () => {
       if (isSearching) {
         setIsSearching(false);
         setSearchTerm("");
-      }
-      if (isAddMenuOpen) {
-        setIsAddMenuOpen(false);
       }
     };
 
@@ -239,7 +224,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [isSearching, isAddMenuOpen]);
+  }, [isSearching]);
 
   // Category/search 전환 시 add-friend 메뉴 닫기
   useEffect(() => {
@@ -689,40 +674,25 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         </SwiperSlide>
       </Swiper>
 
-      {isAddMenuOpen && <FabMenuScrim onClick={() => closeAddMenu()} />}
-
       {!isSearching && isLoggedIn && (
         <FabAnchor>
           {selectedCategory === "친구" && (
-            <SpeedDialList $open={isAddMenuOpen}>
-              <SpeedDialItem
-                $open={isAddMenuOpen}
-                $order={1}
-                onClick={() => {
-                  closeAddMenu(() => setIsNearbyInfoOpen(true));
-                }}
-              >
-                <SpeedDialLabel>주변 친구 찾기</SpeedDialLabel>
-                <SpeedDialButton as="span">
-                  <MapPin size={20} color="#5e92f0" />
-                </SpeedDialButton>
-              </SpeedDialItem>
-              <SpeedDialItem
-                $open={isAddMenuOpen}
-                $order={0}
-                onClick={() => {
-                  closeAddMenu(() => {
-                    mixpanelTrack.friendActionClicked("친구 추가");
-                    setIsAddFriendModalOpen(true);
-                  });
-                }}
-              >
-                <SpeedDialLabel>친구 찾기</SpeedDialLabel>
-                <SpeedDialButton as="span">
-                  <Search size={20} color="#5e92f0" />
-                </SpeedDialButton>
-              </SpeedDialItem>
-            </SpeedDialList>
+            <AddFriendMenuCard
+              open={isAddMenuOpen}
+              onScrimClick={() => closeAddMenu()}
+              onSearchClick={() => {
+                closeAddMenu(() => {
+                  mixpanelTrack.friendActionClicked("친구 추가");
+                  setIsAddFriendModalOpen(true);
+                });
+              }}
+              onNearbyClick={() => {
+                closeAddMenu(() => setIsNearbyInfoOpen(true));
+              }}
+              onInviteClick={() => {
+                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+              }}
+            />
           )}
           <FloatingActionButton
             onClick={() => {
@@ -733,13 +703,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                 );
                 navigate(ROUTES.CHAT.CREATE_PERSONAL);
               } else if (selectedCategory === "친구") {
-                setIsAddMenuOpen((prev) => {
-                  const next = !prev;
-                  if (next) {
-                    window.history.pushState({ modal: "addFriendMenu" }, "");
-                  }
-                  return next;
-                });
+                toggleAddMenu();
               } else {
                 mixpanelTrack.chatRoomMenuClicked("오픈 채팅방 생성", "new_open");
                 setIsCreateModalOpen(true);
@@ -865,69 +829,6 @@ const FabAnchor = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-`;
-
-const FabMenuScrim = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 9;
-`;
-
-const SpeedDialList = styled.div<{ $open: boolean }>`
-  position: absolute;
-  bottom: calc(100% + 12px);
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-`;
-
-const SpeedDialItem = styled.div<{ $open: boolean; $order: number }>`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  cursor: pointer;
-  opacity: ${({ $open }) => ($open ? 1 : 0)};
-  transform: ${({ $open }) => ($open ? "translateY(0)" : "translateY(12px)")};
-  transition:
-    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.2s ease;
-  transition-delay: ${({ $open, $order }) => ($open ? `${$order * 40}ms` : "0ms")};
-`;
-
-const SpeedDialLabel = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: #1c1c1e;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
-  border-radius: 999px;
-  padding: 6px 14px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  white-space: nowrap;
-`;
-
-const SpeedDialButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
-  outline: none;
-
-  &:active {
-    background-color: #f1f3f5;
-    transform: scale(0.95);
-  }
 `;
 
 const FloatingActionButton = styled.button<{ $isTop: boolean }>`

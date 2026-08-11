@@ -9,6 +9,7 @@ import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
+import AddFriendMenuCard from "@/components/mobile/social/AddFriendMenuCard";
 import TabUpper from "@/components/common/TabUpper";
 import { MyChatRoomResponseDto } from "@/types/chat";
 import {
@@ -18,8 +19,9 @@ import {
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
-import { ArrowDownAZ, ArrowUpZA, Check, Search, MapPin, QrCode } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA, Check } from "lucide-react";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
+import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 
 // --- SVG Icons ---
 
@@ -302,50 +304,12 @@ export default function MobileFriendListPage() {
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
   const [isNearbyInfoOpen, setIsNearbyInfoOpen] = useState(false);
 
-  // Add-friend FAB speed dial (choose between search / nearby)
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const hasAddMenuHistoryEntryRef = useRef(false);
-
-  // 하드웨어/브라우저 back 버튼으로 메뉴가 닫힐 때만 반응한다.
-  useEffect(() => {
-    const handlePopStateForAddMenu = () => {
-      if (!hasAddMenuHistoryEntryRef.current) return;
-      hasAddMenuHistoryEntryRef.current = false;
-      setIsAddMenuOpen(false);
-    };
-
-    window.addEventListener("popstate", handlePopStateForAddMenu);
-    return () =>
-      window.removeEventListener("popstate", handlePopStateForAddMenu);
-  }, []);
-
-  const openAddMenu = useCallback(() => {
-    setIsAddMenuOpen(true);
-    window.history.pushState(
-      { ...(window.history.state ?? {}), __intipFriendAddMenuOpen: true },
-      "",
-    );
-    hasAddMenuHistoryEntryRef.current = true;
-  }, []);
-
-  // 메뉴를 닫고, 필요하면 다음 동작(after)을 실행한다.
-  // history.back()은 비동기이므로, 곧바로 다른 오버레이(BottomSheet 등)를 열어
-  // pushState를 하면 back()이 그 새 entry를 대신 pop해버려 오버레이가 열리자마자
-  // 닫히는 레이스가 생긴다. back()의 popstate가 실제로 끝난 뒤에만 after를 실행해 방지한다.
-  const closeAddMenu = useCallback((after?: () => void) => {
-    setIsAddMenuOpen(false);
-    if (hasAddMenuHistoryEntryRef.current) {
-      hasAddMenuHistoryEntryRef.current = false;
-      const handlePopped = () => {
-        window.removeEventListener("popstate", handlePopped);
-        after?.();
-      };
-      window.addEventListener("popstate", handlePopped);
-      window.history.back();
-    } else {
-      after?.();
-    }
-  }, []);
+  // Add-friend FAB 드롭다운 메뉴 (닉네임 검색 / 주변 친구 찾기 / 링크·QR 초대)
+  const {
+    isOpen: isAddMenuOpen,
+    close: closeAddMenu,
+    toggle: toggleAddMenu,
+  } = useHistoryBackedOverlay();
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
     () =>
       (localStorage.getItem("__intipFriendSortOrder") as "asc" | "desc") ||
@@ -842,55 +806,27 @@ export default function MobileFriendListPage() {
         </>
       )}
 
-      {/* Speed-dial scrim - closes the add-friend menu on outside tap */}
-      {isAddMenuOpen && <SpeedDialScrim onClick={() => closeAddMenu()} />}
-
       {/* Floating Area (always rendered for animation) */}
       <FloatingActionsWrapper>
         {/* Plus button - scale out when selection mode is active */}
         <PlusButtonWrapper
           $visible={!isSelectionMode && !isSearchActive && !isShareMode}
         >
-          <SpeedDialList $open={isAddMenuOpen}>
-            <SpeedDialItem
-              $open={isAddMenuOpen}
-              $order={2}
-              onClick={() => {
-                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
-              }}
-            >
-              <SpeedDialLabel>내 QR 코드</SpeedDialLabel>
-              <SpeedDialButton as="span">
-                <QrCode size={20} />
-              </SpeedDialButton>
-            </SpeedDialItem>
-            <SpeedDialItem
-              $open={isAddMenuOpen}
-              $order={1}
-              onClick={() => {
-                closeAddMenu(() => setIsNearbyInfoOpen(true));
-              }}
-            >
-              <SpeedDialLabel>주변 친구 찾기</SpeedDialLabel>
-              <SpeedDialButton as="span">
-                <MapPin size={20} />
-              </SpeedDialButton>
-            </SpeedDialItem>
-            <SpeedDialItem
-              $open={isAddMenuOpen}
-              $order={0}
-              onClick={() => {
-                closeAddMenu(() => setIsAddFriendOpen(true));
-              }}
-            >
-              <SpeedDialLabel>친구 찾기</SpeedDialLabel>
-              <SpeedDialButton as="span">
-                <Search size={20} />
-              </SpeedDialButton>
-            </SpeedDialItem>
-          </SpeedDialList>
+          <AddFriendMenuCard
+            open={isAddMenuOpen}
+            onScrimClick={() => closeAddMenu()}
+            onSearchClick={() => {
+              closeAddMenu(() => setIsAddFriendOpen(true));
+            }}
+            onNearbyClick={() => {
+              closeAddMenu(() => setIsNearbyInfoOpen(true));
+            }}
+            onInviteClick={() => {
+              closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+            }}
+          />
           <FloatingButton
-            onClick={() => (isAddMenuOpen ? closeAddMenu() : openAddMenu())}
+            onClick={toggleAddMenu}
             $rotated={isAddMenuOpen}
           >
             <PlusIcon />
@@ -905,6 +841,7 @@ export default function MobileFriendListPage() {
               onSearch={setSearchTerm}
               onActiveChange={handleSearchActiveChange}
               searchParamKey="q"
+              size={56}
             />
           </SearchBarContainer>
         )}
@@ -1228,72 +1165,6 @@ const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
     transition:
       transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
       opacity 0.25s ease;
-  }
-`;
-
-const SpeedDialScrim = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 98;
-`;
-
-const SpeedDialList = styled.div<{ $open: boolean }>`
-  position: absolute;
-  bottom: calc(100% + 12px);
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-`;
-
-const SpeedDialItem = styled.div<{ $open: boolean; $order: number }>`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  cursor: pointer;
-  opacity: ${({ $open }) => ($open ? 1 : 0)};
-  transform: ${({ $open }) => ($open ? "translateY(0)" : "translateY(12px)")};
-  transition:
-    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.2s ease;
-  transition-delay: ${({ $open, $order }) => ($open ? `${$order * 40}ms` : "0ms")};
-`;
-
-const SpeedDialLabel = styled.span`
-  font-family: Pretendard;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-primary, #333d4b);
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 999px;
-  padding: 6px 14px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  white-space: nowrap;
-`;
-
-const SpeedDialButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  color: var(--text-brand, #0061ff);
-  cursor: pointer;
-  outline: none;
-
-  &:active {
-    background-color: var(--bg-muted, #f1f3f5);
-    transform: scale(0.95);
   }
 `;
 
