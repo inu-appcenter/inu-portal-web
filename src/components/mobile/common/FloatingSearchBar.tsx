@@ -14,6 +14,8 @@ interface FloatingSearchBarProps {
   onSearch?: (query: string) => void;
   onActiveChange?: (isActive: boolean) => void;
   searchParamKey?: string;
+  /** 접혀있을 때(비활성 상태) FAB 지름(px). 다른 FAB과 크기를 맞출 때 사용. 기본 48px. */
+  size?: number;
 }
 
 const SEARCH_HISTORY_STATE_KEY = "__intipFloatingSearchBarOpen";
@@ -21,7 +23,7 @@ const SEARCH_HISTORY_STATE_KEY = "__intipFloatingSearchBarOpen";
 const FloatingSearchBar = forwardRef<
   FloatingSearchBarRef,
   FloatingSearchBarProps
->(({ placeholder = "검색어를 입력하세요", onSearch, onActiveChange, searchParamKey }, ref) => {
+>(({ placeholder = "검색어를 입력하세요", onSearch, onActiveChange, searchParamKey, size = 48 }, ref) => {
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -154,7 +156,7 @@ const FloatingSearchBar = forwardRef<
   };
 
   return (
-    <SearchBarWrapper $isActive={isSearchActive}>
+    <SearchBarWrapper $isActive={isSearchActive} $size={size}>
       <SearchInput
         ref={inputRef}
         $isActive={isSearchActive}
@@ -181,6 +183,7 @@ const FloatingSearchBar = forwardRef<
       )}
       <SearchButtonCircle
         $isActive={isSearchActive}
+        $size={size}
         onClick={(e) => {
           e.stopPropagation();
           if (!isSearchActive) {
@@ -205,13 +208,13 @@ export default FloatingSearchBar;
 
 // --- 스타일 정의 ---
 
-const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
+const SearchBarWrapper = styled.div<{ $isActive: boolean; $size: number }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  height: ${(props) => props.$size}px;
   border-radius: 999px;
-  transition: 
+  transition:
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     flex 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s ease,
@@ -227,8 +230,8 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean }>`
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
   backdrop-filter: ${(props) => (props.$isActive ? "none" : "blur(8px)")};
 
-  width: ${(props) => (props.$isActive ? "100%" : "48px")};
-  flex: ${(props) => (props.$isActive ? "1" : "0 0 48px")};
+  width: ${(props) => (props.$isActive ? "100%" : `${props.$size}px`)};
+  flex: ${(props) => (props.$isActive ? "1" : `0 0 ${props.$size}px`)};
 `;
 
 const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
@@ -291,7 +294,7 @@ const ClearButton = styled.button`
   }
 `;
 
-const SearchButtonCircle = styled.button<{ $isActive: boolean }>`
+const SearchButtonCircle = styled.button<{ $isActive: boolean; $size: number }>`
   position: absolute;
   display: flex;
   align-items: center;
@@ -312,8 +315,8 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean }>`
       ? `
     top: 3px;
     right: 3px;
-    width: 40px;
-    height: 40px;
+    width: ${props.$size - 8}px;
+    height: ${props.$size - 8}px;
     background: var(--interactive-primary, #3b82f6);
     color: #ffffff;
     border: 1px solid var(--border-brand, #0061FF);
@@ -321,8 +324,8 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean }>`
       : `
     top: 0px;
     right: 0px;
-    width: 46px;
-    height: 46px;
+    width: ${props.$size - 2}px;
+    height: ${props.$size - 2}px;
     background: transparent;
     color: var(--text-secondary, #333d4b);
   `}

@@ -560,9 +560,7 @@ const MobileTimeTablePage = () => {
       return;
     }
 
-    alert(
-      "곧 이전 성적 가져오기 기능을 포함하여 오픈될 예정이에요. 조금만 기다려주세요!",
-    );
+    navigate(ROUTES.TIMETABLE.CALCULATOR);
   };
 
   // 모의 수강신청 버튼 클릭 처리 핸들러
