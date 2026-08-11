@@ -21,18 +21,13 @@ export function getAppEnvironmentStatus(): AppEnvironmentStatus {
   if (hasReactNativeWebView()) return "NEW_APP";
 
   const userAgent = navigator.userAgent || "";
+  const hasOfficialUaTag = userAgent.includes("INTIPApp");
 
-  // 플랫폼 판별은 UA가 아니라 "주입된 브릿지 객체"로 한다.
-  // 네이티브 앱은 iOS/Android 공통으로 UA에 "INTIPApp" 접미사를 붙이므로
-  // (User-Agent 규격, 양 플랫폼 공통), UA의 "INTIPApp" 포함 여부를 안드로이드
-  // 신호로 사용하면 iOS 앱이 안드로이드 분기로 잘못 빠져 항상 OLD_APP으로 오판된다.
   const isAndroidBridgeExists = typeof window.AndroidBridge !== "undefined";
   const isIOSBridgeExists =
     typeof window.webkit?.messageHandlers?.requestAppUpdate !== "undefined";
 
-  // 1. iOS 공식 앱 판정 (AndroidBridge가 없고 webkit 브릿지가 존재하는 경우)
-  // 구버전 iOS 앱도 window.webkit.messageHandlers.requestAppUpdate는 가지고 있고,
-  // 신버전(멀티 웹뷰) iOS 앱만 navigateTo 핸들러를 노출한다.
+  // 1. iOS 공식 앱 판정 (AndroidBridge가 없고, 인팁 iOS 메시지 핸들러가 존재하는 경우)
   if (!isAndroidBridgeExists && isIOSBridgeExists) {
     return typeof window.webkit?.messageHandlers?.navigateTo !== "undefined"
       ? "NEW_APP"
@@ -41,8 +36,7 @@ export function getAppEnvironmentStatus(): AppEnvironmentStatus {
 
   // 2. 안드로이드 공식 앱 판정
   // AndroidBridge 객체가 주입되었거나, (브릿지 주입 전 타이밍 대비) UA에 INTIPApp이 포함된 경우.
-  // 신버전 안드로이드 앱은 navigateTo 함수가 존재한다.
-  if (isAndroidBridgeExists || userAgent.includes("INTIPApp")) {
+  if (isAndroidBridgeExists || (hasOfficialUaTag && !/iPhone|iPad|iPod/i.test(userAgent))) {
     return typeof window.AndroidBridge?.navigateTo === "function"
       ? "NEW_APP"
       : "OLD_APP";
