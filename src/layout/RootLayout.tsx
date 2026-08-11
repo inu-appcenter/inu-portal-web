@@ -21,6 +21,7 @@ import { DESKTOP_MEDIA } from "@/styles/responsive";
 import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
+import { safeLocalStorage } from "@/utils/safeStorage";
 
 
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
@@ -92,7 +93,7 @@ export default function RootLayout() {
       return;
     }
 
-    const hasPersistedAuth = Boolean(localStorage.getItem("tokenInfo"));
+    const hasPersistedAuth = Boolean(safeLocalStorage.getItem("tokenInfo"));
     const isAuthenticated = Boolean(tokenInfo.accessToken);
 
     if (!isAuthenticated && hasPersistedAuth) {
@@ -122,7 +123,7 @@ export default function RootLayout() {
           isAuthenticated,
           syncedAt: Date.now(),
         });
-        localStorage.setItem("fcmSendLog", JSON.stringify(log));
+        safeLocalStorage.setItem("fcmSendLog", JSON.stringify(log));
         console.log("FCM 토큰 동기화 성공", log);
       } catch (error) {
         const log = {
@@ -134,7 +135,7 @@ export default function RootLayout() {
           error: error instanceof Error ? error.message : String(error),
         };
 
-        localStorage.setItem("fcmSendLog", JSON.stringify(log));
+        safeLocalStorage.setItem("fcmSendLog", JSON.stringify(log));
         console.error("FCM 토큰 동기화 실패", error);
       }
     })();
@@ -143,9 +144,9 @@ export default function RootLayout() {
   useEffect(() => {
     const apiCount = async () => {
       const today = new Date().toISOString().split("T")[0];
-      if (localStorage.getItem("user_count_date") !== today) {
+      if (safeLocalStorage.getItem("user_count_date") !== today) {
         await postApiLogs("/api/members/no-dup");
-        localStorage.setItem("user_count_date", today);
+        safeLocalStorage.setItem("user_count_date", today);
       }
     };
 
