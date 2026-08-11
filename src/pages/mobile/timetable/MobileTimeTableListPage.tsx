@@ -95,7 +95,7 @@ export default function MobileTimeTableListPage() {
   ), [handleAddClick]);
 
   const handleBack = useCallback(() => {
-    navigate(ROUTES.TIMETABLE.ROOT, { replace: true });
+    navigate(-1);
   }, [navigate]);
 
   useHeader({
