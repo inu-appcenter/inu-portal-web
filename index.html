@@ -63,8 +63,15 @@
           );
         }
 
+        var initialToken = "";
+        try {
+          initialToken = localStorage.getItem(STORAGE_KEY);
+        } catch (error) {
+          console.warn("FCM 토큰 읽기 실패", error);
+        }
+
         window.__INTIP_FCM_BOOTSTRAP__ = {
-          token: normalizeToken(localStorage.getItem(STORAGE_KEY)),
+          token: normalizeToken(initialToken),
           receivedAt: Date.now(),
         };
 

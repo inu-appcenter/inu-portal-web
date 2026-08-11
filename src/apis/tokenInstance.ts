@@ -21,11 +21,13 @@ let refreshPromise: Promise<string> | null = null;
 // 만료 안내는 로그아웃 1회당 한 번만. 다시 로그인하면 아래 subscribe에서 풀린다.
 let hasNotifiedExpiry = false;
 
+import { safeLocalStorage } from "@/utils/safeStorage";
+
 const clearAuth = () => {
   resetMixpanel();
   useUserStore.getState().setTokenInfo({ ...EMPTY_TOKEN_INFO });
-  localStorage.removeItem("tokenInfo");
-  localStorage.removeItem("fcmToken");
+  safeLocalStorage.removeItem("tokenInfo");
+  safeLocalStorage.removeItem("fcmToken");
 };
 
 const notifyExpiredOnce = () => {
