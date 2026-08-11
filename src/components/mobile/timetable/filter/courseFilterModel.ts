@@ -68,17 +68,27 @@ export const ONLINE_TYPE_OPTIONS = [
 ] as const;
 
 export const ONLINE_TYPE_TO_SSUP_NAMES: Record<string, readonly string[]> = {
-  이러닝: ["e-Learning", "E_LEARNING"],
-  "이러닝(HUSS)": ["e-Learning(HUSS)", "E_LEARNING_HUSS"],
-  OCU: ["열린사이버대학(OCU)", "OCU"],
-  "온라인 혼합": ["온라인혼합형강좌", "BLENDED_ONLINE_COURSE"],
-  "온라인 혼합(HUSS)": ["온라인혼합형강좌(HUSS)", "BLENDED_ONLINE_COURSE_HUSS"],
-  "K-MOOC": ["K-MOOC", "K_MOOC"],
-  "RISE(시간표 없음)": ["RISE(시간표 없음)", "RISE_WITHOUT_TIMETABLE"],
+  이러닝: ["e-Learning"],
+  "이러닝(HUSS)": ["e-Learning(HUSS)"],
+  OCU: ["열린사이버대학(OCU)"],
+  "온라인 혼합": ["온라인혼합형강좌"],
+  "온라인 혼합(HUSS)": ["온라인혼합형강좌(HUSS)"],
+  "K-MOOC": ["K-MOOC"],
+  "RISE(시간표 없음)": ["RISE(시간표 없음)"],
 };
 
 export const expandOnlineTypeLabel = (label: string): readonly string[] =>
   ONLINE_TYPE_TO_SSUP_NAMES[label] ?? [label];
+
+const ONLINE_TYPE_CODE_TO_LABEL: Record<string, string> = {
+  E_LEARNING: "이러닝",
+  E_LEARNING_HUSS: "이러닝(HUSS)",
+  OCU: "OCU",
+  BLENDED_ONLINE_COURSE: "온라인 혼합",
+  BLENDED_ONLINE_COURSE_HUSS: "온라인 혼합(HUSS)",
+  K_MOOC: "K-MOOC",
+  RISE_WITHOUT_TIMETABLE: "RISE(시간표 없음)",
+};
 
 export function getOnlineTypeLabel(
   ssupTypeName?: string | null,
@@ -94,6 +104,11 @@ export function getOnlineTypeLabel(
     if (names.some((n) => n.toLowerCase() === val.toLowerCase())) {
       return label;
     }
+  }
+
+  if (ssupTypeCode) {
+    const codeLabel = ONLINE_TYPE_CODE_TO_LABEL[ssupTypeCode.toUpperCase()];
+    if (codeLabel) return codeLabel;
   }
 
   return ssupTypeName || ssupTypeCode || null;

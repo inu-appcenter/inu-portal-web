@@ -54,14 +54,18 @@ describe("courseFilterModel & online filter tests", () => {
     expect(Object.keys(ONLINE_TYPE_TO_SSUP_NAMES).length).toBeGreaterThan(0);
   });
 
-  test("ONLINE_TYPE_TO_SSUP_NAMES maps UI labels to backend ssupTypeName strings and enums", () => {
-    expect(expandOnlineTypeLabel("이러닝")).toEqual(["e-Learning", "E_LEARNING"]);
-    expect(expandOnlineTypeLabel("이러닝(HUSS)")).toEqual(["e-Learning(HUSS)", "E_LEARNING_HUSS"]);
-    expect(expandOnlineTypeLabel("OCU")).toEqual(["열린사이버대학(OCU)", "OCU"]);
-    expect(expandOnlineTypeLabel("온라인 혼합")).toEqual(["온라인혼합형강좌", "BLENDED_ONLINE_COURSE"]);
-    expect(expandOnlineTypeLabel("온라인 혼합(HUSS)")).toEqual(["온라인혼합형강좌(HUSS)", "BLENDED_ONLINE_COURSE_HUSS"]);
-    expect(expandOnlineTypeLabel("K-MOOC")).toEqual(["K-MOOC", "K_MOOC"]);
-    expect(expandOnlineTypeLabel("RISE(시간표 없음)")).toEqual(["RISE(시간표 없음)", "RISE_WITHOUT_TIMETABLE"]);
+  test("ONLINE_TYPE_TO_SSUP_NAMES maps UI labels to backend ssupTypeName strings", () => {
+    expect(expandOnlineTypeLabel("이러닝")).toEqual(["e-Learning"]);
+    expect(expandOnlineTypeLabel("이러닝(HUSS)")).toEqual(["e-Learning(HUSS)"]);
+    expect(expandOnlineTypeLabel("OCU")).toEqual(["열린사이버대학(OCU)"]);
+    expect(expandOnlineTypeLabel("온라인 혼합")).toEqual(["온라인혼합형강좌"]);
+    expect(expandOnlineTypeLabel("온라인 혼합(HUSS)")).toEqual([
+      "온라인혼합형강좌(HUSS)",
+    ]);
+    expect(expandOnlineTypeLabel("K-MOOC")).toEqual(["K-MOOC"]);
+    expect(expandOnlineTypeLabel("RISE(시간표 없음)")).toEqual([
+      "RISE(시간표 없음)",
+    ]);
   });
 
   test("getOnlineTypeLabel correctly extracts UI display label for online course types", () => {
@@ -106,12 +110,7 @@ describe("courseFilterModel & online filter tests", () => {
       onlineTypes: ["이러닝", "OCU"],
     };
     const mapped = mapFilterToOfferingFilters(filters);
-    expect(mapped.ssupTypeNames).toEqual([
-      "e-Learning",
-      "E_LEARNING",
-      "열린사이버대학(OCU)",
-      "OCU",
-    ]);
+    expect(mapped.ssupTypeNames).toEqual(["e-Learning", "열린사이버대학(OCU)"]);
   });
 
   test("matchesCourseOfferingFilters correctly filters offerings by ssupTypeNames", () => {
@@ -151,7 +150,9 @@ describe("courseFilterModel & online filter tests", () => {
       ssupTypeName: "강의(이론)",
     };
 
-    const filters = { ssupTypeNames: ["e-Learning", "E_LEARNING", "열린사이버대학(OCU)", "OCU"] };
+    const filters = {
+      ssupTypeNames: ["e-Learning", "열린사이버대학(OCU)"],
+    };
 
     expect(matchesCourseOfferingFilters(offering1, undefined, filters)).toBe(true);
     expect(matchesCourseOfferingFilters(offering2, undefined, filters)).toBe(false);
