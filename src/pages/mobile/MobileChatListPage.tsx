@@ -8,7 +8,7 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, MapPin, QrCode, UserRoundSearch } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -22,7 +22,9 @@ import OpenChatRoomListItem from "@/components/mobile/chat/OpenChatRoomListItem"
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
+import AddFriendMenuCard from "@/components/mobile/social/AddFriendMenuCard";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
+import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
@@ -42,7 +44,11 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const selectedCategory = params.get("category") || "개인";
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const {
+    isOpen: isAddMenuOpen,
+    close: closeAddMenu,
+    toggle: toggleAddMenu,
+  } = useHistoryBackedOverlay();
   const [isNearbyInfoOpen, setIsNearbyInfoOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
@@ -206,32 +212,11 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     }
   }, []);
 
-  // 메뉴를 닫고, 필요하면 다음 동작(after)을 실행한다.
-  // addFriendMenu가 history.back()으로 pop되는 도중에 다음 오버레이(BottomSheet 등)가
-  // 곧바로 pushState를 하면 back()이 그 새 entry를 대신 pop해버려 오버레이가 열리자마자
-  // 닫히는 레이스가 발생한다. back()의 popstate가 실제로 끝난 뒤에만 after를 실행해 방지한다.
-  const closeAddMenu = useCallback((after?: () => void) => {
-    setIsAddMenuOpen(false);
-    if (window.history.state?.modal === "addFriendMenu") {
-      const handlePoppedAddMenu = () => {
-        window.removeEventListener("popstate", handlePoppedAddMenu);
-        after?.();
-      };
-      window.addEventListener("popstate", handlePoppedAddMenu);
-      window.history.back();
-    } else {
-      after?.();
-    }
-  }, []);
-
   useEffect(() => {
     const handlePopState = () => {
       if (isSearching) {
         setIsSearching(false);
         setSearchTerm("");
-      }
-      if (isAddMenuOpen) {
-        setIsAddMenuOpen(false);
       }
     };
 
@@ -239,7 +224,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [isSearching, isAddMenuOpen]);
+  }, [isSearching]);
 
   // Category/search 전환 시 add-friend 메뉴 닫기
   useEffect(() => {
@@ -689,43 +674,25 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         </SwiperSlide>
       </Swiper>
 
-      {isAddMenuOpen && <FabMenuScrim onClick={() => closeAddMenu()} />}
-
       {!isSearching && isLoggedIn && (
         <FabAnchor>
           {selectedCategory === "친구" && (
-            <AddMenuCard $open={isAddMenuOpen}>
-              <AddMenuRow
-                type="button"
-                onClick={() => {
-                  closeAddMenu(() => {
-                    mixpanelTrack.friendActionClicked("친구 추가");
-                    setIsAddFriendModalOpen(true);
-                  });
-                }}
-              >
-                <UserRoundSearch size={20} />
-                닉네임으로 찾기
-              </AddMenuRow>
-              <AddMenuRow
-                type="button"
-                onClick={() => {
-                  closeAddMenu(() => setIsNearbyInfoOpen(true));
-                }}
-              >
-                <MapPin size={20} />
-                주변 친구 찾기
-              </AddMenuRow>
-              <AddMenuRow
-                type="button"
-                onClick={() => {
-                  closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
-                }}
-              >
-                <QrCode size={20} />
-                링크·QR로 초대
-              </AddMenuRow>
-            </AddMenuCard>
+            <AddFriendMenuCard
+              open={isAddMenuOpen}
+              onScrimClick={() => closeAddMenu()}
+              onSearchClick={() => {
+                closeAddMenu(() => {
+                  mixpanelTrack.friendActionClicked("친구 추가");
+                  setIsAddFriendModalOpen(true);
+                });
+              }}
+              onNearbyClick={() => {
+                closeAddMenu(() => setIsNearbyInfoOpen(true));
+              }}
+              onInviteClick={() => {
+                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+              }}
+            />
           )}
           <FloatingActionButton
             onClick={() => {
@@ -736,13 +703,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                 );
                 navigate(ROUTES.CHAT.CREATE_PERSONAL);
               } else if (selectedCategory === "친구") {
-                setIsAddMenuOpen((prev) => {
-                  const next = !prev;
-                  if (next) {
-                    window.history.pushState({ modal: "addFriendMenu" }, "");
-                  }
-                  return next;
-                });
+                toggleAddMenu();
               } else {
                 mixpanelTrack.chatRoomMenuClicked("오픈 채팅방 생성", "new_open");
                 setIsCreateModalOpen(true);
@@ -868,60 +829,6 @@ const FabAnchor = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-`;
-
-const FabMenuScrim = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 9;
-`;
-
-const AddMenuCard = styled.div<{ $open: boolean }>`
-  position: absolute;
-  bottom: calc(100% + 12px);
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  min-width: 190px;
-  padding: 8px;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
-  border-radius: 20px;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
-  transform-origin: bottom right;
-  opacity: ${({ $open }) => ($open ? 1 : 0)};
-  transform: ${({ $open }) =>
-    $open ? "scale(1) translateY(0)" : "scale(0.92) translateY(8px)"};
-  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-  transition:
-    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.15s ease;
-`;
-
-const AddMenuRow = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 10px;
-  border: none;
-  background: none;
-  border-radius: 14px;
-  color: #1c1c1e;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
-  outline: none;
-
-  & > svg {
-    flex-shrink: 0;
-    color: #5e92f0;
-  }
-
-  &:active {
-    background-color: #f1f3f5;
-  }
 `;
 
 const FloatingActionButton = styled.button<{ $isTop: boolean }>`
