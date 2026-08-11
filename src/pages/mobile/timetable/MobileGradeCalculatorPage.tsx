@@ -40,6 +40,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { backHandler } from "@/utils/backHandler";
+import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 
 // --- Types ---
 interface Subject {
@@ -172,6 +173,20 @@ const serializeGradeData = (data: SemestersData, targetCredits: number) =>
   JSON.stringify({ semestersData: data, targetCredits });
 
 const serializeSubjects = (subjects: Subject[]) => JSON.stringify(subjects);
+
+// tb.events는 "미팅(요일별 시간 블록) 1개당 1행"이라 주 2회 이상 만나는 과목은
+// 이벤트가 여러 개로 쪼개져 있다. itemId(같은 요소면 동일)로 묶어 과목당 하나만 남긴다.
+// 커스텀 일정(isCustom)은 강의가 아니므로 제외한다.
+const getUniqueCourseEvents = (events: ClassItem[]): ClassItem[] => {
+  const byItemId = new Map<number | string, ClassItem>();
+  events
+    .filter((event) => !event.isCustom)
+    .forEach((event) => {
+      const key = event.itemId ?? event.id;
+      if (!byItemId.has(key)) byItemId.set(key, event);
+    });
+  return Array.from(byItemId.values());
+};
 
 const CustomXAxisTick = (props: any) => {
   const { x, y, payload } = props;
@@ -664,23 +679,30 @@ export default function MobileGradeCalculatorPage() {
     const tb = timetables.find((t) => t.id === timetableId);
     if (!tb) return;
 
+    const courseEvents = getUniqueCourseEvents(tb.events);
+
+    if (courseEvents.length === 0) {
+      alert("이 시간표에는 불러올 과목이 없어요.");
+      return;
+    }
+
     if (
       window.confirm(
-        `"${tb.semester} (${tb.name})" 시간표의 과목들을 불러올까요?\n현재 학기(${selectedSemesterLabel})에 작성 중인 과목 목록은 덮어씌워집니다.`,
+        `"${tb.semester} (${tb.name})" 시간표의 과목 ${courseEvents.length}개를 불러올까요?\n현재 학기(${selectedSemesterLabel})에 작성 중인 과목 목록은 덮어씌워집니다.`,
       )
     ) {
-      const imported: Subject[] = tb.events.map((event) => {
-        // Estimate credits based on class hours (endTime - startTime)
-        // Usually, 2 hours = 2 credits, 3 hours = 3 credits, etc.
-        const hours = Math.max(1, event.endTime - event.startTime);
-        return {
-          id: `${Date.now()}-${Math.random()}`,
-          name: event.name,
-          credits: hours,
-          grade: "A+",
-          isMajor: false,
-        };
-      });
+      const imported: Subject[] = courseEvents.map((event) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        name: event.name,
+        // 개설강의에 등록된 실제 학점을 쓴다. 값이 없는 예외적인 경우에만 강의
+        // 시간(끝-시작)으로 대략 추정한다.
+        credits:
+          event.credits ?? Math.max(1, Math.round(event.endTime - event.startTime)),
+        grade: "A+",
+        isMajor: false,
+        courseCode: event.courseId,
+        courseId: event.numericCourseId ?? null,
+      }));
 
       updateSubjects(imported);
       setShowTimetableSheet(false);
@@ -1266,7 +1288,9 @@ export default function MobileGradeCalculatorPage() {
                     <div className="timetable-info">
                       <span className="semester">{tb.semester}</span>
                       <span className="name">{tb.name}</span>
-                      <span className="count">({tb.events.length}개 과목)</span>
+                      <span className="count">
+                        ({getUniqueCourseEvents(tb.events).length}개 과목)
+                      </span>
                     </div>
                   </SheetItem>
                 ))
