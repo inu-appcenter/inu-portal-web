@@ -1,14 +1,8 @@
-import React, { ReactNode, useEffect, useRef } from "react";
+import React, { ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import CapsuleButton, { CapsuleButtonVariant } from "./CapsuleButton";
-import { backHandler } from "@/utils/backHandler";
-
-const MODAL_HISTORY_STATE_KEY = "__intipModalId";
-let nextModalId = 0;
-const openModalIds: number[] = [];
-let isModalPopStateConsumed = false;
-let isCleaningModalHistory = false;
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -45,69 +39,7 @@ export default function Modal({
   secondaryButton,
   closeOnOverlayClick = true,
 }: ModalProps) {
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-
-  // 뒤로가기 가로채기 효과
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const modalId = ++nextModalId;
-    let hasHistoryEntry = true;
-    openModalIds.push(modalId);
-    window.history.pushState(
-      { ...window.history.state, [MODAL_HISTORY_STATE_KEY]: modalId },
-      "",
-    );
-
-    const handleBack = () => {
-      onCloseRef.current();
-      return true; // 뒤로가기 가로채서 모달만 닫음
-    };
-
-    const handlePopState = () => {
-      if (isCleaningModalHistory || isModalPopStateConsumed) return;
-      if (openModalIds[openModalIds.length - 1] !== modalId) return;
-
-      isModalPopStateConsumed = true;
-      queueMicrotask(() => {
-        isModalPopStateConsumed = false;
-      });
-
-      hasHistoryEntry = false;
-      openModalIds.pop();
-      onCloseRef.current();
-    };
-
-    backHandler.pushHandler(handleBack);
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      backHandler.popHandler(handleBack);
-      window.removeEventListener("popstate", handlePopState);
-
-      const modalIndex = openModalIds.lastIndexOf(modalId);
-      if (modalIndex !== -1) openModalIds.splice(modalIndex, 1);
-
-      // 버튼이나 오버레이로 닫힌 경우 모달이 추가한 동일 URL의 엔트리를 제거한다.
-      if (hasHistoryEntry) {
-        isCleaningModalHistory = true;
-        const finishHistoryCleanup = () => {
-          queueMicrotask(() => {
-            isCleaningModalHistory = false;
-          });
-        };
-        window.addEventListener("popstate", finishHistoryCleanup, {
-          once: true,
-        });
-        window.history.back();
-        window.setTimeout(() => {
-          isCleaningModalHistory = false;
-          window.removeEventListener("popstate", finishHistoryCleanup);
-        }, 500);
-      }
-    };
-  }, [isOpen]);
+  useSheetBackHandler(isOpen, onClose);
 
   return (
     <Dialog.Root
