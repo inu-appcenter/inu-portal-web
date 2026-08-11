@@ -28,7 +28,7 @@ import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 
-const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
+const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 
 // --- SVG Icons ---
@@ -373,11 +373,7 @@ const MobileTimeTablePage = () => {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const {
-    timetables,
-    setSemester,
-    setActiveTimetable,
-  } = useTimetableStore();
+  const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
 
   useTimeTables(undefined, undefined, { enabled: isLoggedIn });
   const { semesters } = useSemesters();
@@ -492,7 +488,10 @@ const MobileTimeTablePage = () => {
         label: "시간표 이름 변경",
         icon: <Pencil size={20} />,
         onClick: () => {
-          mixpanelTrack.timetableFeatureClicked("시간표 이름 변경", "헤더 메뉴");
+          mixpanelTrack.timetableFeatureClicked(
+            "시간표 이름 변경",
+            "헤더 메뉴",
+          );
           setRenameInputVal(activeTimetable.name);
           setIsRenameModalOpen(true);
         },
@@ -517,7 +516,10 @@ const MobileTimeTablePage = () => {
         label: "시간표 테마 설정",
         icon: <Palette size={20} />,
         onClick: () => {
-          mixpanelTrack.timetableFeatureClicked("시간표 테마 설정", "헤더 메뉴");
+          mixpanelTrack.timetableFeatureClicked(
+            "시간표 테마 설정",
+            "헤더 메뉴",
+          );
           setIsThemeSheetOpen(true);
         },
       },
@@ -558,7 +560,9 @@ const MobileTimeTablePage = () => {
       return;
     }
 
-    alert("곧 이전 성적 가져오기 기능을 포함하여 오픈될 예정이에요. 조금만 기다려주세요!");
+    alert(
+      "곧 이전 성적 가져오기 기능을 포함하여 오픈될 예정이에요. 조금만 기다려주세요!",
+    );
   };
 
   // 모의 수강신청 버튼 클릭 처리 핸들러
@@ -642,8 +646,9 @@ const MobileTimeTablePage = () => {
             : null) ||
           (item.courseId ? offeringBySubNum.get(item.courseId) : null);
         const course =
-          (item.numericCourseId ? courseById.get(item.numericCourseId) : null) ||
-          (offering ? courseById.get(offering.courseId) : null);
+          (item.numericCourseId
+            ? courseById.get(item.numericCourseId)
+            : null) || (offering ? courseById.get(offering.courseId) : null);
 
         const divisionName =
           offering?.isuName ||
@@ -778,9 +783,12 @@ const MobileTimeTablePage = () => {
           <NoTimetableContent>
             <EmptyTimetableIllust />
             <NoTimetableTextGroup>
-              <NoTimetableTitle>로그인 후 시간표를 사용할 수 있어요</NoTimetableTitle>
+              <NoTimetableTitle>
+                로그인 후 시간표를 사용할 수 있어요
+              </NoTimetableTitle>
               <NoTimetableDescription>
-                내 시간표 생성, 친구와 비교, 학점계산기는 로그인 후 이용할 수 있어요.
+                내 시간표 생성, 친구와 비교, 학점계산기는 로그인 후 이용할 수
+                있어요.
               </NoTimetableDescription>
             </NoTimetableTextGroup>
           </NoTimetableContent>
@@ -845,7 +853,10 @@ const MobileTimeTablePage = () => {
                 handleLoginRequiredClick();
                 return;
               }
-              mixpanelTrack.timetableFeatureClicked("친구 시간표 비교", "시간표 홈");
+              mixpanelTrack.timetableFeatureClicked(
+                "친구 시간표 비교",
+                "시간표 홈",
+              );
               navigate(ROUTES.FRIEND.LIST);
             }}
           >
