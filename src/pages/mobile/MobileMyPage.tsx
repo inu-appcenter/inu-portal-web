@@ -4,7 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
-import { Bell } from "lucide-react";
+import { Bell, UserX } from "lucide-react";
 import loginImg from "@/resources/assets/login/login-modal-logo.svg";
 import {
   MyPageActive,
@@ -21,16 +21,21 @@ import {
   DESKTOP_READING_WIDTH,
 } from "@/styles/responsive";
 import Ripple from "@/components/common/Ripple";
+import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isBlockedUsersOpen, setIsBlockedUsersOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   const isLoggedIn = userInfo.id !== 0;
   const renderMenuIcon = (image?: string, title?: string) => {
     if (image) return <img src={image} alt="" />;
     if (title === "알림 설정") {
       return <Bell className="fallback-icon" aria-hidden="true" />;
+    }
+    if (title === "차단 사용자 관리") {
+      return <UserX className="fallback-icon" aria-hidden="true" />;
     }
     return <HiOutlineCog6Tooth className="fallback-icon" aria-hidden="true" />;
   };
@@ -87,6 +92,9 @@ export default function MobileMyPage() {
         break;
       case "알림 설정":
         navigate(ROUTES.MYPAGE.NOTIFICATION);
+        break;
+      case "차단 사용자 관리":
+        setIsBlockedUsersOpen(true);
         break;
       case "로그아웃":
         handleLogoutModalClick();
@@ -248,6 +256,11 @@ export default function MobileMyPage() {
           </ModalContent>
         </ModalOverlay>
       )}
+      <BlockedUsersModal
+        isOpen={isBlockedUsersOpen}
+        onOpenChange={setIsBlockedUsersOpen}
+        title="차단 사용자 관리"
+      />
     </MyPageWrapper>
   );
 }

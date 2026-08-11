@@ -20,11 +20,14 @@ const fadeIn = keyframes`
 interface BlockedUsersModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  /** 진입 지점에 따라 제목을 바꾼다. (채팅: 차단 친구 관리 / 마이페이지: 차단 사용자 관리) */
+  title?: string;
 }
 
 export default function BlockedUsersModal({
   isOpen,
   onOpenChange,
+  title = "차단 친구 관리",
 }: BlockedUsersModalProps) {
   useSheetBackHandler(isOpen, () => onOpenChange(false));
   const queryClient = useQueryClient();
@@ -52,7 +55,7 @@ export default function BlockedUsersModal({
         <StyledContent>
           <Header>
             <TitleArea>
-              <Title>차단 친구 관리</Title>
+              <Title>{title}</Title>
             </TitleArea>
             <CloseButton onClick={() => onOpenChange(false)}>
               <X size={24} color="#1C1C1E" />

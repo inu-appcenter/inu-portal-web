@@ -15,7 +15,6 @@ interface PostTitleProps {
   memberId?: number | null;
   fireId?: number | null;
   replyCount?: number;
-  onWriterClick?: (id: number) => void;
 }
 
 export default function PostTitle({
@@ -23,9 +22,7 @@ export default function PostTitle({
   createDate,
   view,
   writer,
-  memberId,
   fireId = 1,
-  onWriterClick,
 }: PostTitleProps) {
   const profileImgUrl = fireId
     ? `https://portal.inuappcenter.kr/images/profile/${fireId}`
@@ -37,27 +34,9 @@ export default function PostTitle({
 
       <AuthorRowContainer>
         <AuthorInfoLeft>
-          <AvatarImg
-            src={profileImgUrl}
-            alt={writer || "작성자"}
-            onClick={() => {
-              if (memberId && onWriterClick) {
-                onWriterClick(memberId);
-              }
-            }}
-            $isClickable={Boolean(memberId && onWriterClick)}
-          />
+          <AvatarImg src={profileImgUrl} alt={writer || "작성자"} />
           <AuthorDetailColumn>
-            <AuthorName
-              onClick={() => {
-                if (memberId && onWriterClick) {
-                  onWriterClick(memberId);
-                }
-              }}
-              $isClickable={Boolean(memberId && onWriterClick)}
-            >
-              {writer || "익명"}
-            </AuthorName>
+            <AuthorName>{writer || "익명"}</AuthorName>
             <DateText>{formatTimeAgo(createDate)}</DateText>
           </AuthorDetailColumn>
         </AuthorInfoLeft>
@@ -104,12 +83,11 @@ const AuthorInfoLeft = styled.div`
   gap: 8px;
 `;
 
-const AvatarImg = styled.img<{ $isClickable: boolean }>`
+const AvatarImg = styled.img`
   width: 36px;
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
 `;
 
 const AuthorDetailColumn = styled.div`
@@ -118,13 +96,12 @@ const AuthorDetailColumn = styled.div`
   justify-content: center;
 `;
 
-const AuthorName = styled.div<{ $isClickable: boolean }>`
+const AuthorName = styled.div`
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
   color: var(--text-secondary, #333d4b);
-  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
 `;
 
 const DateText = styled.div`

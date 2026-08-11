@@ -10,14 +10,12 @@ interface PostContentContainerProps {
   ClubRecruit?: PostDetail;
   councilNotice?: CouncilNotice;
   petition?: Petition;
-  onWriterClick?: (id: number) => void;
 }
 
 export default function PostContentContainer({
   ClubRecruit,
   councilNotice,
   petition,
-  onWriterClick,
 }: PostContentContainerProps) {
   return (
     <OuterContainer>
@@ -32,7 +30,6 @@ export default function PostContentContainer({
               writer={ClubRecruit.writer}
               memberId={ClubRecruit.memberId}
               fireId={ClubRecruit.fireId}
-              onWriterClick={onWriterClick}
             />
             <PostContent
               id={ClubRecruit.id}
