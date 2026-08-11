@@ -8,7 +8,7 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, MapPin } from "lucide-react";
+import { Plus, Search, MapPin, QrCode, UserRoundSearch } from "lucide-react";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -694,22 +694,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       {!isSearching && isLoggedIn && (
         <FabAnchor>
           {selectedCategory === "친구" && (
-            <SpeedDialList $open={isAddMenuOpen}>
-              <SpeedDialItem
-                $open={isAddMenuOpen}
-                $order={1}
-                onClick={() => {
-                  closeAddMenu(() => setIsNearbyInfoOpen(true));
-                }}
-              >
-                <SpeedDialLabel>주변 친구 찾기</SpeedDialLabel>
-                <SpeedDialButton as="span">
-                  <MapPin size={20} color="#5e92f0" />
-                </SpeedDialButton>
-              </SpeedDialItem>
-              <SpeedDialItem
-                $open={isAddMenuOpen}
-                $order={0}
+            <AddMenuCard $open={isAddMenuOpen}>
+              <AddMenuRow
+                type="button"
                 onClick={() => {
                   closeAddMenu(() => {
                     mixpanelTrack.friendActionClicked("친구 추가");
@@ -717,12 +704,28 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                   });
                 }}
               >
-                <SpeedDialLabel>친구 찾기</SpeedDialLabel>
-                <SpeedDialButton as="span">
-                  <Search size={20} color="#5e92f0" />
-                </SpeedDialButton>
-              </SpeedDialItem>
-            </SpeedDialList>
+                <UserRoundSearch size={20} />
+                닉네임으로 찾기
+              </AddMenuRow>
+              <AddMenuRow
+                type="button"
+                onClick={() => {
+                  closeAddMenu(() => setIsNearbyInfoOpen(true));
+                }}
+              >
+                <MapPin size={20} />
+                주변 친구 찾기
+              </AddMenuRow>
+              <AddMenuRow
+                type="button"
+                onClick={() => {
+                  closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+                }}
+              >
+                <QrCode size={20} />
+                링크·QR로 초대
+              </AddMenuRow>
+            </AddMenuCard>
           )}
           <FloatingActionButton
             onClick={() => {
@@ -873,60 +876,51 @@ const FabMenuScrim = styled.div`
   z-index: 9;
 `;
 
-const SpeedDialList = styled.div<{ $open: boolean }>`
+const AddMenuCard = styled.div<{ $open: boolean }>`
   position: absolute;
   bottom: calc(100% + 12px);
   right: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-`;
-
-const SpeedDialItem = styled.div<{ $open: boolean; $order: number }>`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  cursor: pointer;
+  min-width: 190px;
+  padding: 8px;
+  background-color: #ffffff;
+  border: 1px solid #e5e8eb;
+  border-radius: 20px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
+  transform-origin: bottom right;
   opacity: ${({ $open }) => ($open ? 1 : 0)};
-  transform: ${({ $open }) => ($open ? "translateY(0)" : "translateY(12px)")};
+  transform: ${({ $open }) =>
+    $open ? "scale(1) translateY(0)" : "scale(0.92) translateY(8px)"};
+  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
   transition:
-    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.2s ease;
-  transition-delay: ${({ $open, $order }) => ($open ? `${$order * 40}ms` : "0ms")};
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.15s ease;
 `;
 
-const SpeedDialLabel = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: #1c1c1e;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
-  border-radius: 999px;
-  padding: 6px 14px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  white-space: nowrap;
-`;
-
-const SpeedDialButton = styled.button`
+const AddMenuRow = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  gap: 10px;
+  width: 100%;
+  padding: 12px 10px;
+  border: none;
+  background: none;
+  border-radius: 14px;
+  color: #1c1c1e;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
+  text-align: left;
   outline: none;
+
+  & > svg {
+    flex-shrink: 0;
+    color: #5e92f0;
+  }
 
   &:active {
     background-color: #f1f3f5;
-    transform: scale(0.95);
   }
 `;
 
