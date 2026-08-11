@@ -7,6 +7,8 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
 import { useSemesters } from "@/hooks/useSemesters";
 import useUserStore from "@/stores/useUserStore";
+import { ROUTES } from "@/constants/routes";
+import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import {
   WIZARD_MAX_CREDIT_SCALE,
   WIZARD_MIN_CREDIT_SCALE,
@@ -358,9 +360,20 @@ export default function MobileTimetableWizardPage() {
           }}
           candidate={selectedCandidate}
           semesterId={semester?.id ?? null}
-          onSaved={() => {
+          // 위시리스트 등 조건은 그대로 둔 채(resetWizard 미호출) 결과만 새로 뽑는다 -
+          // 헤더의 "다시 만들기"와 동일한 동작.
+          onGenerateMore={runGeneration}
+          onViewTimetable={(timeTableId) => {
             resetWizard();
-            navigate(-1);
+            const path = `${ROUTES.TIMETABLE.ROOT}?id=${timeTableId}`;
+            // 멀티 웹뷰 앱에서는 네이티브 스택을 root로 collapse하고 그 root를
+            // 이 경로로 이동시켜야 한다(마법사는 push된 별도 웹뷰이므로 일반 SPA
+            // navigate로는 그 웹뷰 자신만 이동하고 root의 시간표 탭은 안 바뀐다).
+            if (supportsMultiWebView()) {
+              appBridge.goHome(path);
+            } else {
+              navigate(path, { replace: true });
+            }
           }}
         />
       )}
