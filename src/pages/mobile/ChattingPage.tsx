@@ -430,7 +430,6 @@ export default function ChattingPage() {
       senderChatRoomMemberId: resolvedId,
     });
     setIsImageModalOpen(true);
-    window.history.pushState({ modal: "image" }, "");
   };
 
   const handleOpenProfileFromImage = (chatRoomMemberId: number) => {
@@ -439,26 +438,8 @@ export default function ChattingPage() {
   };
 
   const handleImageModalOpenChange = (open: boolean) => {
-    if (!open) {
-      setIsImageModalOpen(false);
-      if (window.history.state?.modal === "image") {
-        window.history.back();
-      }
-    }
+    setIsImageModalOpen(open);
   };
-
-  useEffect(() => {
-    const handlePopState = () => {
-      if (isImageModalOpen) {
-        setIsImageModalOpen(false);
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [isImageModalOpen]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];

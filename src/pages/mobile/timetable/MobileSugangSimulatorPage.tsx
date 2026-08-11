@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
 
-const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
+const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
 
 export default function MobileSugangSimulatorPage() {
   const [isLoading, setIsLoading] = useState(true);

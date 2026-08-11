@@ -3,6 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { ArrowLeft, Download } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { getMobilePlatform } from "@/utils/getMobilePlatform";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Zoom } from "swiper/modules";
@@ -40,6 +41,12 @@ export default function ImageModal({
   senderId,
   onSenderClick,
 }: ImageModalProps) {
+  useSheetBackHandler(
+    isOpen,
+    () => onOpenChange(false),
+    Boolean(imageUrl),
+  );
+
   const [isDownloading, setIsDownloading] = useState(false);
   const [showControls, setShowControls] = useState(true);
 

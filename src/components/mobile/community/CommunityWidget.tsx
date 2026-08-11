@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { getPostsByCategories } from "@/apis/posts";
 import { CategoryPosts } from "@/types/posts";
 import Box from "@/components/common/Box";
@@ -9,24 +9,14 @@ import { ROUTES } from "@/constants/routes";
 
 export default function CommunityWidget() {
   const navigate = useNavigate();
-  const [categoryPosts, setCategoryPosts] = useState<CategoryPosts[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getPostsByCategories(1);
-        setCategoryPosts(response.data);
-      } catch (error) {
-        console.error("커뮤니티 게시글 로드 실패", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const { data: categoryPosts = [], isLoading } = useQuery({
+    queryKey: ["posts", "community"],
+    queryFn: async () => {
+      const response = await getPostsByCategories(1);
+      return (response.data || []) as CategoryPosts[];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
 
   return (
     <Box style={{ padding: 0 }}>

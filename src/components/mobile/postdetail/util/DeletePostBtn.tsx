@@ -4,6 +4,7 @@ import deletebtn from "@/resources/assets/mypage/minus.svg";
 import styled from "styled-components";
 import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import axios, { AxiosError } from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DeletePostBtnProps {
   id: number;
@@ -15,6 +16,7 @@ export default function DeletePostBtn({
   onPostUpdate,
 }: DeletePostBtnProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
 
   const handleDelete = async () => {
@@ -23,6 +25,7 @@ export default function DeletePostBtn({
 
     try {
       await deletePost(id);
+      await queryClient.invalidateQueries({ queryKey: ["posts"] });
       onPostUpdate();
       triggerReset();
       navigate(-1);
