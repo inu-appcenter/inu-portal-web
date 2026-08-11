@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
@@ -9,6 +9,7 @@ import {
 import {
   Pencil,
   Plus,
+  Trash2,
   X,
   ChevronDown,
   ChevronUp,
@@ -22,6 +23,14 @@ import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
 import { isMajorCompletion } from "@/utils/parseSmartCampusGrades";
 import type { ResolvedGradeRow } from "@/types/gradeImport";
 import type { Term } from "@/types/timetables";
+import { TERM_LABELS, TERM_ORDER, formatSemester } from "@/utils/semester";
+import useUserStore from "@/stores/useUserStore";
+import {
+  useAllGradeRecords,
+  useDeleteAllGradeRecords,
+  useUpsertGradeRecords,
+} from "@/hooks/useGradeRecords";
+import type { GradeLetter, GradeRecord } from "@/types/gradeRecords";
 import {
   ResponsiveContainer,
   LineChart,
@@ -62,22 +71,71 @@ interface Subject {
   sourceTerm?: Term;
 }
 
+/** 실제 연도 + 학기. 서버 GradeRecord API의 year/term과 그대로 대응한다. */
+interface SemesterEntry {
+  year: number;
+  term: Term;
+}
+
+// SemestersData의 키는 "연도-학기"(예: "2026-FIRST") 문자열이다.
 type SemestersData = Record<string, Subject[]>;
 
 // --- Constants ---
-const SEMESTERS = [
-  "1학년 1학기",
-  "1학년 2학기",
-  "2학년 1학기",
-  "2학년 2학기",
-  "3학년 1학기",
-  "3학년 2학기",
-  "4학년 1학기",
-  "4학년 2학기",
-  "기타학기",
-];
-
 const GRADES = ["A+", "A0", "B+", "B0", "C+", "C0", "D+", "D0", "F", "P", "NP"];
+
+// --- 학기 키 헬퍼 ---
+const semesterKey = (entry: SemesterEntry): string =>
+  `${entry.year}-${entry.term}`;
+
+const parseSemesterKey = (key: string): SemesterEntry => {
+  const [yearStr, term] = key.split("-");
+  return { year: Number(yearStr), term: term as Term };
+};
+
+const compareSemesterKeys = (a: string, b: string): number => {
+  const ea = parseSemesterKey(a);
+  const eb = parseSemesterKey(b);
+  return ea.year - eb.year || TERM_ORDER[ea.term] - TERM_ORDER[eb.term];
+};
+
+const formatSemesterKeyLabel = (key: string): string => {
+  const entry = parseSemesterKey(key);
+  return formatSemester(entry.year, entry.term);
+};
+
+// 정확한 개강일 대신 대략적인 학사 일정으로 "현재 학기"를 추정한다.
+// (1~2월은 겨울학기로 보고 전년도로 취급)
+const getDefaultSemesterEntry = (): SemesterEntry => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  if (month >= 3 && month <= 6) return { year, term: "FIRST" };
+  if (month >= 7 && month <= 8) return { year, term: "SUMMER" };
+  if (month >= 9 && month <= 12) return { year, term: "SECOND" };
+  return { year: year - 1, term: "WINTER" };
+};
+
+// --- Subject <-> GradeRecord 매핑 ---
+const toGradeRecordRequest = (subject: Subject) => ({
+  courseCode: subject.courseCode || undefined,
+  title: subject.name,
+  credit: subject.credits,
+  grade: subject.grade === UNGRADED ? null : (subject.grade as GradeLetter),
+  isMajor: subject.isMajor,
+  isCourseRepetition: Boolean(subject.excluded),
+});
+
+const fromGradeRecord = (record: GradeRecord): Subject => ({
+  id: `server-${record.id}`,
+  name: record.title,
+  credits: record.credit,
+  grade: record.grade_value ?? UNGRADED,
+  isMajor: record.isMajor,
+  excluded: record.isCourseRepetition,
+  courseCode: record.courseCode ?? undefined,
+  sourceYear: record.year,
+  sourceTerm: record.term,
+});
 
 // 성적이 아직 안 나온 과목. 평점에도, 취득 학점에도 반영하지 않는다.
 const UNGRADED = "";
@@ -94,26 +152,6 @@ const GRADE_POINTS: Record<string, number> = {
   F: 0.0,
 };
 
-const DEFAULT_SUBJECTS_2_1: Subject[] = [
-  {
-    id: "1",
-    name: "디지털엔터테인먼트콘텐츠",
-    credits: 2,
-    grade: "A+",
-    isMajor: true,
-  },
-  { id: "2", name: "문학과테마기행", credits: 3, grade: "B+", isMajor: false },
-  { id: "3", name: "대학영어회화", credits: 1, grade: "C+", isMajor: false },
-  {
-    id: "4",
-    name: "멀티미디어프로그래밍",
-    credits: 2,
-    grade: "D+",
-    isMajor: true,
-  },
-  { id: "5", name: "캐릭터디자인", credits: 2, grade: "F", isMajor: true },
-];
-
 // P/NP는 평점에서 빠지고, F/NP는 취득 학점에서 빠진다. 미입력(성적 미발표)과
 // 재수강으로 취소된 과목은 둘 다 빠진다.
 const countsInGpa = (sub: Subject) =>
@@ -127,10 +165,13 @@ const isPassed = (sub: Subject) =>
   sub.grade !== "NP" &&
   sub.grade !== UNGRADED;
 
-const LOCAL_STORAGE_KEY = "intip_grade_calculator_data";
+// v2: 학기 키가 "N학년 M학기" 프리셋 라벨에서 실제 "연도-학기"로 바뀌어 예전 캐시와 호환되지 않는다.
+const LOCAL_STORAGE_KEY = "intip_grade_calculator_data_v2";
 
 const serializeGradeData = (data: SemestersData, targetCredits: number) =>
   JSON.stringify({ semestersData: data, targetCredits });
+
+const serializeSubjects = (subjects: Subject[]) => JSON.stringify(subjects);
 
 const CustomXAxisTick = (props: any) => {
   const { x, y, payload } = props;
@@ -166,8 +207,9 @@ const CustomXAxisTick = (props: any) => {
 
 export default function MobileGradeCalculatorPage() {
   // --- State ---
-  const [selectedSemester, setSelectedSemester] =
-    useState<string>("2학년 1학기");
+  const [selectedSemesterKey, setSelectedSemesterKey] = useState<
+    string | null
+  >(null);
   const [semestersData, setSemestersData] = useState<SemestersData>({});
   const [savedSemestersData, setSavedSemestersData] = useState<SemestersData>(
     {},
@@ -184,8 +226,15 @@ export default function MobileGradeCalculatorPage() {
   const [showTimetableSheet, setShowTimetableSheet] = useState<boolean>(false);
   const [showGradeImportSheet, setShowGradeImportSheet] =
     useState<boolean>(false);
+  const [showAddSemesterModal, setShowAddSemesterModal] =
+    useState<boolean>(false);
+  const [newSemesterYearInput, setNewSemesterYearInput] =
+    useState<string>("");
+  const [newSemesterTerm, setNewSemesterTerm] = useState<Term>("FIRST");
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const { timetables } = useTimetableStore();
+  const isLoggedIn = Boolean(useUserStore((state) => state.tokenInfo.accessToken));
 
   // --- Header Integration ---
   useHeader({
@@ -195,30 +244,64 @@ export default function MobileGradeCalculatorPage() {
   });
 
   // --- Load Data ---
+  // 로그인한 사용자는 서버(GET /api/grades/all)를 우선하고, 서버에 데이터가
+  // 없거나 비로그인이면 로컬 캐시로 폴백한다. 초기 진입 시 한 번만 반영한다.
+  const allGradeRecordsQuery = useAllGradeRecords();
+  const hasInitializedRef = useRef(false);
+
   useEffect(() => {
+    if (hasInitializedRef.current) return;
+    // 로그인 상태면 서버 조회가 끝날 때까지 기다렸다가 한 번에 반영한다
+    // (캐시 → 서버 두 번 렌더링해서 깜빡이는 걸 피하기 위함).
+    if (isLoggedIn && !allGradeRecordsQuery.isFetched) return;
+    hasInitializedRef.current = true;
+
+    let initialSemestersData: SemestersData | null = null;
+    let initialTargetCredits = 130;
+
     const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        const loadedSemestersData = parsed.semestersData || {};
-        const loadedTargetCredits = parsed.targetCredits || 130;
-        setSemestersData(loadedSemestersData);
-        setSavedSemestersData(loadedSemestersData);
-        setTargetCredits(loadedTargetCredits);
-        setSavedTargetCredits(loadedTargetCredits);
+        initialTargetCredits = parsed.targetCredits || 130;
+        if (!isLoggedIn) initialSemestersData = parsed.semestersData || {};
       } catch (e) {
         console.error("Failed to parse cached grades", e);
       }
-    } else {
-      // Default initial data
-      const initial: SemestersData = {
-        "2학년 1학기": DEFAULT_SUBJECTS_2_1,
-      };
-      setSemestersData(initial);
-      setSavedSemestersData(initial);
-      localStorage.setItem(LOCAL_STORAGE_KEY, serializeGradeData(initial, 130));
     }
-  }, []);
+
+    if (isLoggedIn) {
+      const serverRecords = allGradeRecordsQuery.data ?? [];
+      if (serverRecords.length > 0) {
+        const grouped: SemestersData = {};
+        serverRecords.forEach((record) => {
+          const key = semesterKey({ year: record.year, term: record.term });
+          grouped[key] = [...(grouped[key] ?? []), fromGradeRecord(record)];
+        });
+        initialSemestersData = grouped;
+      } else if (cached) {
+        try {
+          initialSemestersData = JSON.parse(cached).semestersData || {};
+        } catch {
+          initialSemestersData = {};
+        }
+      }
+    }
+
+    if (!initialSemestersData || Object.keys(initialSemestersData).length === 0) {
+      initialSemestersData = { [semesterKey(getDefaultSemesterEntry())]: [] };
+    }
+
+    setSemestersData(initialSemestersData);
+    setSavedSemestersData(initialSemestersData);
+    setTargetCredits(initialTargetCredits);
+    setSavedTargetCredits(initialTargetCredits);
+
+    const sortedKeys = Object.keys(initialSemestersData).sort(
+      compareSemesterKeys,
+    );
+    setSelectedSemesterKey(sortedKeys[sortedKeys.length - 1] ?? null);
+  }, [isLoggedIn, allGradeRecordsQuery.isFetched, allGradeRecordsQuery.data]);
 
   // --- Save Data Helper ---
   const hasChanges = useMemo(() => {
@@ -228,13 +311,83 @@ export default function MobileGradeCalculatorPage() {
     );
   }, [savedSemestersData, savedTargetCredits, semestersData, targetCredits]);
 
-  const saveToLocalStorage = () => {
+  const upsertGradeRecordsMutation = useUpsertGradeRecords();
+  const deleteAllGradeRecordsMutation = useDeleteAllGradeRecords();
+
+  const saveToLocalStorageOnly = () => {
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
       serializeGradeData(semestersData, targetCredits),
     );
     setSavedSemestersData(semestersData);
     setSavedTargetCredits(targetCredits);
+  };
+
+  // 과목명이 비어 있으면 서버가 요구하는 필수값(title)을 못 채우니 저장 전에 걸러낸다.
+  const findSemesterWithBlankSubjectName = (): string | null => {
+    for (const key of Object.keys(semestersData)) {
+      if (semestersData[key].some((sub) => !sub.name.trim())) return key;
+    }
+    return null;
+  };
+
+  const handleSave = async () => {
+    const invalidKey = findSemesterWithBlankSubjectName();
+    if (invalidKey) {
+      setSelectedSemesterKey(invalidKey);
+      alert(
+        `"${formatSemesterKeyLabel(invalidKey)}"에 과목명이 비어 있는 과목이 있어요. 입력 후 다시 저장해주세요.`,
+      );
+      return;
+    }
+
+    if (!isLoggedIn) {
+      saveToLocalStorageOnly();
+      return;
+    }
+
+    const changedKeys = Object.keys(semestersData).filter(
+      (key) =>
+        serializeSubjects(semestersData[key]) !==
+        serializeSubjects(savedSemestersData[key] ?? []),
+    );
+    const removedKeys = Object.keys(savedSemestersData).filter(
+      (key) => !(key in semestersData),
+    );
+
+    if (changedKeys.length === 0 && removedKeys.length === 0) {
+      saveToLocalStorageOnly();
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await Promise.all([
+        ...changedKeys.map((key) => {
+          const entry = parseSemesterKey(key);
+          return upsertGradeRecordsMutation.mutateAsync({
+            year: entry.year,
+            term: entry.term,
+            records: semestersData[key].map(toGradeRecordRequest),
+          });
+        }),
+        ...removedKeys.map((key) =>
+          deleteAllGradeRecordsMutation.mutateAsync(parseSemesterKey(key)),
+        ),
+      ]);
+
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        serializeGradeData(semestersData, targetCredits),
+      );
+      setSavedSemestersData(semestersData);
+      setSavedTargetCredits(targetCredits);
+    } catch (e) {
+      console.error("Failed to save grades to server", e);
+      alert("성적 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const blocker = useBlocker(hasChanges);
@@ -283,17 +436,68 @@ export default function MobileGradeCalculatorPage() {
     };
   }, [hasChanges]);
 
+  // --- Semester Operations ---
+  const sortedSemesterKeys = useMemo(
+    () => Object.keys(semestersData).sort(compareSemesterKeys),
+    [semestersData],
+  );
+
+  const openAddSemesterModal = () => {
+    const def = getDefaultSemesterEntry();
+    setNewSemesterYearInput(String(def.year));
+    setNewSemesterTerm(def.term);
+    setShowAddSemesterModal(true);
+  };
+
+  const isNewSemesterValid = useMemo(() => {
+    const year = parseInt(newSemesterYearInput, 10);
+    if (Number.isNaN(year) || year < 2000 || year > 2100) return false;
+    return !(semesterKey({ year, term: newSemesterTerm }) in semestersData);
+  }, [newSemesterYearInput, newSemesterTerm, semestersData]);
+
+  const handleConfirmAddSemester = () => {
+    const year = parseInt(newSemesterYearInput, 10);
+    if (Number.isNaN(year)) return;
+    const key = semesterKey({ year, term: newSemesterTerm });
+    if (key in semestersData) return;
+
+    setSemestersData((prev) => ({ ...prev, [key]: [] }));
+    setSelectedSemesterKey(key);
+    setShowAddSemesterModal(false);
+  };
+
+  const handleDeleteSemesterEntry = (key: string) => {
+    const subjects = semestersData[key] ?? [];
+    const label = formatSemesterKeyLabel(key);
+    const confirmMessage =
+      subjects.length > 0
+        ? `"${label}"에 입력된 ${subjects.length}개 과목이 모두 삭제됩니다. 계속할까요?`
+        : `"${label}"을(를) 목록에서 삭제할까요?`;
+    if (!window.confirm(confirmMessage)) return;
+
+    setSemestersData((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+
+    if (selectedSemesterKey === key) {
+      const remaining = sortedSemesterKeys.filter((k) => k !== key);
+      setSelectedSemesterKey(remaining[remaining.length - 1] ?? null);
+    }
+  };
+
   // --- Subject Operations ---
   const currentSubjects = useMemo(() => {
-    return semestersData[selectedSemester] || [];
-  }, [semestersData, selectedSemester]);
+    return selectedSemesterKey ? semestersData[selectedSemesterKey] || [] : [];
+  }, [semestersData, selectedSemesterKey]);
 
   const updateSubjects = (newSubjects: Subject[]) => {
-    const updated = {
-      ...semestersData,
-      [selectedSemester]: newSubjects,
-    };
-    setSemestersData(updated);
+    if (!selectedSemesterKey) return;
+    setSemestersData((prev) => ({
+      ...prev,
+      [selectedSemesterKey]: newSubjects,
+    }));
   };
 
   const handleAddSubject = () => {
@@ -429,26 +633,40 @@ export default function MobileGradeCalculatorPage() {
 
   // --- SVG Graph Data ---
   const graphData = useMemo(() => {
-    const semestersWithData = SEMESTERS.map((sem) => {
-      const subjects = semestersData[sem] || [];
-      if (subjects.length === 0) return null;
-      const stats = calculateSemesterStats(subjects);
-      return { semester: sem, gpa: stats.gpa };
-    }).filter(
-      (item): item is { semester: string; gpa: number } => item !== null,
-    );
+    const semestersWithData = sortedSemesterKeys
+      .map((key) => {
+        const subjects = semestersData[key] || [];
+        if (subjects.length === 0) return null;
+        const stats = calculateSemesterStats(subjects);
+        return {
+          semesterKey: key,
+          semester: formatSemesterKeyLabel(key),
+          gpa: stats.gpa,
+        };
+      })
+      .filter(
+        (
+          item,
+        ): item is { semesterKey: string; semester: string; gpa: number } =>
+          item !== null,
+      );
 
     return semestersWithData;
-  }, [semestersData]);
+  }, [semestersData, sortedSemesterKeys]);
+
+  const selectedSemesterLabel = selectedSemesterKey
+    ? formatSemesterKeyLabel(selectedSemesterKey)
+    : "";
 
   // --- Timetable Importer ---
   const handleImportTimetable = (timetableId: number) => {
+    if (!selectedSemesterKey) return;
     const tb = timetables.find((t) => t.id === timetableId);
     if (!tb) return;
 
     if (
       window.confirm(
-        `"${tb.semester} (${tb.name})" 시간표의 과목들을 불러올까요?\n현재 학기(${selectedSemester})에 작성 중인 과목 목록은 덮어씌워집니다.`,
+        `"${tb.semester} (${tb.name})" 시간표의 과목들을 불러올까요?\n현재 학기(${selectedSemesterLabel})에 작성 중인 과목 목록은 덮어씌워집니다.`,
       )
     ) {
       const imported: Subject[] = tb.events.map((event) => {
@@ -474,10 +692,11 @@ export default function MobileGradeCalculatorPage() {
     rows: ResolvedGradeRow[],
     source: { year: number; term: Term } | null,
   ) => {
+    if (!selectedSemesterKey) return;
     if (
       currentSubjects.length > 0 &&
       !window.confirm(
-        `현재 학기(${selectedSemester})에 입력된 ${currentSubjects.length}개 과목을 불러온 ${rows.length}개 과목으로 바꿀까요?`,
+        `현재 학기(${selectedSemesterLabel})에 입력된 ${currentSubjects.length}개 과목을 불러온 ${rows.length}개 과목으로 바꿀까요?`,
       )
     ) {
       return;
@@ -671,7 +890,7 @@ export default function MobileGradeCalculatorPage() {
                 <LineChart
                   data={(() => {
                     return graphData.map((d) => {
-                      const subjects = semestersData[d.semester] || [];
+                      const subjects = semestersData[d.semesterKey] || [];
                       const stats = calculateSemesterStats(subjects);
                       return {
                         name: d.semester,
@@ -757,9 +976,19 @@ export default function MobileGradeCalculatorPage() {
 
       {/* 2. 학기별 학점계산기 메인 카드 */}
       <MainContainer>
+        {!selectedSemesterKey ? (
+          <EmptySemesterState>
+            <p>아직 추가된 학기가 없어요.</p>
+            <p className="sub">학기를 추가하고 성적을 입력해보세요.</p>
+            <CapsuleButton variant="brand" onClick={openAddSemesterModal}>
+              학기 추가
+            </CapsuleButton>
+          </EmptySemesterState>
+        ) : (
+        <>
         <SemesterSummaryHeader>
           <SemesterSelectButton onClick={() => setShowSemesterSheet(true)}>
-            <span className="semester-name">{selectedSemester}</span>
+            <span className="semester-name">{selectedSemesterLabel}</span>
             <ChevronDown size={20} className="dropdown-caret" />
           </SemesterSelectButton>
 
@@ -925,6 +1154,8 @@ export default function MobileGradeCalculatorPage() {
             <ResetButton onClick={handleResetSubjects}>초기화</ResetButton>
           </TableFooter>
         </GradeTable>
+        </>
+        )}
       </MainContainer>
 
       {/* 학기 선택 바텀 시트 */}
@@ -937,22 +1168,82 @@ export default function MobileGradeCalculatorPage() {
               <div className="title">학기 선택</div>
             </SheetHeader>
             <SheetList>
-              {SEMESTERS.map((sem) => (
-                <SheetItem
-                  key={sem}
-                  $active={sem === selectedSemester}
-                  onClick={() => {
-                    setSelectedSemester(sem);
-                    setShowSemesterSheet(false);
-                  }}
-                >
-                  {sem}
-                </SheetItem>
-              ))}
+              {sortedSemesterKeys.length === 0 ? (
+                <EmptySheetText>추가된 학기가 없습니다.</EmptySheetText>
+              ) : (
+                sortedSemesterKeys.map((key) => (
+                  <SemesterSheetRow key={key} $active={key === selectedSemesterKey}>
+                    <SemesterLabelButton
+                      $active={key === selectedSemesterKey}
+                      onClick={() => {
+                        setSelectedSemesterKey(key);
+                        setShowSemesterSheet(false);
+                      }}
+                    >
+                      {formatSemesterKeyLabel(key)}
+                    </SemesterLabelButton>
+                    <DeleteSemesterButton
+                      onClick={() => handleDeleteSemesterEntry(key)}
+                      aria-label="학기 삭제"
+                    >
+                      <Trash2 size={16} />
+                    </DeleteSemesterButton>
+                  </SemesterSheetRow>
+                ))
+              )}
+              <AddSemesterRow
+                onClick={() => {
+                  setShowSemesterSheet(false);
+                  openAddSemesterModal();
+                }}
+              >
+                <Plus size={16} />
+                <span>학기 추가</span>
+              </AddSemesterRow>
             </SheetList>
           </BottomSheet>
         </>
       )}
+
+      {/* 학기 추가 모달 */}
+      <Modal
+        isOpen={showAddSemesterModal}
+        onClose={() => setShowAddSemesterModal(false)}
+        title="학기 추가"
+        description="추가할 학기의 연도와 학기를 선택해주세요."
+        primaryButton={{
+          text: "추가",
+          variant: "brand",
+          onClick: handleConfirmAddSemester,
+          disabled: !isNewSemesterValid,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setShowAddSemesterModal(false),
+        }}
+      >
+        <InputField
+          label="연도"
+          value={newSemesterYearInput}
+          onChange={(v) => setNewSemesterYearInput(v.replace(/\D/g, "").slice(0, 4))}
+          placeholder="예: 2026"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+        />
+        <TermPickerRow>
+          {(Object.keys(TERM_LABELS) as Term[]).map((term) => (
+            <TermPickerButton
+              key={term}
+              type="button"
+              $active={term === newSemesterTerm}
+              onClick={() => setNewSemesterTerm(term)}
+            >
+              {TERM_LABELS[term]}
+            </TermPickerButton>
+          ))}
+        </TermPickerRow>
+      </Modal>
 
       {/* 시간표 불러오기 바텀 시트 */}
       {showTimetableSheet && (
@@ -988,7 +1279,7 @@ export default function MobileGradeCalculatorPage() {
       <GradeImportSheet
         isOpen={showGradeImportSheet}
         onClose={() => setShowGradeImportSheet(false)}
-        targetSemesterLabel={selectedSemester}
+        targetSemesterLabel={selectedSemesterLabel}
         onApply={handleApplyImportedGrades}
       />
 
@@ -996,8 +1287,9 @@ export default function MobileGradeCalculatorPage() {
         <CapsuleButton
           variant="primary"
           fullWidth
-          disabled={!hasChanges}
-          onClick={saveToLocalStorage}
+          disabled={!hasChanges || isSaving}
+          loading={isSaving}
+          onClick={handleSave}
           style={{ width: "fit-content" }}
         >
           저장
@@ -1656,4 +1948,113 @@ const EmptySheetText = styled.div`
   font-size: 14px;
   color: var(--text-tertiary, #8b95a1);
   padding: 32px 16px;
+`;
+
+// 학기 선택 시트의 학기 항목(라벨 + 삭제 버튼)
+const SemesterSheetRow = styled.div<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  background-color: ${({ $active }) =>
+    $active ? "var(--bg-brand-subtle, #eff6ff)" : "transparent"};
+`;
+
+const SemesterLabelButton = styled.button<{ $active?: boolean }>`
+  flex: 1;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px 0 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 15px;
+  color: ${({ $active }) =>
+    $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
+  font-weight: ${({ $active }) => ($active ? 600 : 400)};
+  cursor: pointer;
+  outline: none;
+`;
+
+const DeleteSemesterButton = styled.button`
+  width: 40px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #8b95a1);
+  cursor: pointer;
+  outline: none;
+
+  &:hover {
+    color: var(--text-error, #ef4444);
+  }
+`;
+
+const AddSemesterRow = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  padding: 0 16px;
+  margin-top: 4px;
+  border: none;
+  border-top: 1px solid var(--border-default, #e5e8eb);
+  background: none;
+  color: var(--text-brand, #0061ff);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+`;
+
+// 학기 추가 모달의 학기(FIRST/SUMMER/SECOND/WINTER) 선택 버튼 그룹
+const TermPickerRow = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+`;
+
+const TermPickerButton = styled.button<{ $active: boolean }>`
+  flex: 1;
+  min-width: 70px;
+  padding: 10px 0;
+  border-radius: 10px;
+  border: 1px solid
+    ${({ $active }) =>
+      $active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+  background-color: ${({ $active }) =>
+    $active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-base, #ffffff)"};
+  color: ${({ $active }) =>
+    $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
+  font-size: 14px;
+  font-weight: ${({ $active }) => ($active ? 600 : 400)};
+  cursor: pointer;
+  outline: none;
+`;
+
+// 학기가 하나도 없을 때 메인 카드에 보여주는 빈 상태
+const EmptySemesterState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary, #333d4b);
+  }
+
+  .sub {
+    font-size: 13px;
+    color: var(--text-tertiary, #8b95a1);
+    margin-bottom: 8px;
+  }
 `;
