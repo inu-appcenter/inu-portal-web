@@ -4,6 +4,7 @@ import { ApiResponse } from "@/types/common";
 export interface SchoolDepartment {
   code: string;
   name: string;
+  noticeAvailable: boolean;
 }
 
 export const getSchoolDepartments = async (): Promise<

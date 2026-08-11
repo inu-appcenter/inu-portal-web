@@ -6,20 +6,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   getDepartmentNoticeSchedules,
-  getDepartmentNotices,
+  getSchoolDepartmentNotices,
 } from "@/apis/notices";
-import { putMemberDepartment } from "@/apis/members";
 import ActionButton from "@/components/common/ActionButton";
 import Box from "@/components/common/Box";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
 import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
 import LoginRequiredModal from "@/components/mobile/common/LoginRequiredModal";
-import DepartmentNoticeSelector from "@/components/mobile/notice/DepartmentNoticeSelector";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { ROUTES } from "@/constants/routes";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
 import AI_LOGO from "@/resources/assets/calendar/챗불이요약.png";
-import { navBarList } from "@/resources/strings/navBarList";
 import useUserStore from "@/stores/useUserStore";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
@@ -28,13 +25,10 @@ import {
 } from "@/styles/responsive";
 import { DepartmentNotice } from "@/types/notices";
 import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
-import findTitleOrCode, {
-  findDepartmentHomepageUrl,
-} from "@/utils/findTitleOrCode";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 const MobileDeptNoticePage = () => {
-  const { userInfo, setUserInfo, tokenInfo } = useUserStore();
+  const { userInfo, tokenInfo } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { ref, inView } = useInView();
@@ -45,7 +39,6 @@ const MobileDeptNoticePage = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(
     !tokenInfo.accessToken,
   );
-  const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedDepartmentNoticeId, setSelectedDepartmentNoticeId] = useState<
     number | null
@@ -138,31 +131,9 @@ const MobileDeptNoticePage = () => {
     };
   }, [isScheduleModalOpen, selectedDepartmentNoticeId]);
 
-  const departmentHomepageUrl = useMemo(() => {
-    return currentDept ? findDepartmentHomepageUrl(currentDept) : "";
-  }, [currentDept]);
-
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
-    const items: MenuItemType[] = [];
-
-    if (departmentHomepageUrl) {
-      items.push({
-        label: "학과 홈페이지로 이동",
-        onClick: () => {
-          window.open(departmentHomepageUrl, "_blank", "noopener,noreferrer");
-        },
-      });
-    }
-
-    if (userInfo.department) {
-      items.push({
-        label: "학과 변경",
-        onClick: () => setIsDeptSelectorOpen(true),
-      });
-    }
-
-    return items.length > 0 ? items : undefined;
-  }, [departmentHomepageUrl, userInfo.department]);
+    return undefined;
+  }, []);
 
   useHeader({
     title: currentDept ? `${currentDept} 공지사항` : "학과 공지사항",
@@ -178,11 +149,10 @@ const MobileDeptNoticePage = () => {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ["deptNotices", currentDept],
+    queryKey: ["deptNotices", userInfo.departmentCode],
     queryFn: ({ pageParam = 1 }) => {
-      const deptCode = currentDept ? findTitleOrCode(currentDept) : undefined;
-      if (!deptCode) return Promise.reject("학과 정보가 없습니다.");
-      return getDepartmentNotices(deptCode, "date", pageParam);
+      if (!userInfo.departmentCode) return Promise.reject("학과 정보가 없습니다.");
+      return getSchoolDepartmentNotices(userInfo.departmentCode, "date", pageParam);
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
@@ -190,7 +160,7 @@ const MobileDeptNoticePage = () => {
       const currentPage = allPages.length;
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
-    enabled: !!currentDept && !!tokenInfo.accessToken,
+    enabled: !!userInfo.departmentCode && !!tokenInfo.accessToken,
   });
 
   useEffect(() => {
@@ -202,19 +172,6 @@ const MobileDeptNoticePage = () => {
   const deptNotices = useMemo(() => {
     return data?.pages.flatMap((page) => page.data.contents) || [];
   }, [data]);
-
-  const handleDepartmentClick = async (department: string) => {
-    try {
-      await putMemberDepartment(department);
-      const deptKorean = findTitleOrCode(department);
-      setUserInfo({ ...userInfo, department: deptKorean });
-      setIsDeptSelectorOpen(false);
-      navigate(ROUTES.BOARD.DEPT_NOTICE_DETAIL(deptKorean), { replace: true });
-    } catch (error) {
-      console.error(error);
-      alert("학과 변경에 실패했습니다.");
-    }
-  };
 
   if (!tokenInfo.accessToken) {
     return (
@@ -297,15 +254,6 @@ const MobileDeptNoticePage = () => {
 
       {!hasNextPage && deptNotices.length > 0 && (
         <LoadingText>더이상 게시물이 없습니다.</LoadingText>
-      )}
-
-      {navBarList[1].child && (
-        <DepartmentNoticeSelector
-          departments={navBarList[1].child}
-          isOpen={isDeptSelectorOpen}
-          setIsOpen={setIsDeptSelectorOpen}
-          handleClick={handleDepartmentClick}
-        />
       )}
 
       {userInfo.department && (
