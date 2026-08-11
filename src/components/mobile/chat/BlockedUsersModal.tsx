@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getBlockedUsers, unblockUser } from "@/apis/blocks";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import Divider from "@/components/common/Divider";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -25,6 +26,7 @@ export default function BlockedUsersModal({
   isOpen,
   onOpenChange,
 }: BlockedUsersModalProps) {
+  useSheetBackHandler(isOpen, () => onOpenChange(false));
   const queryClient = useQueryClient();
 
   const { data: blockedRes, isLoading } = useQuery({

@@ -118,26 +118,15 @@ export default function MobileBottomNav() {
       setShowTimetableTooltip(false);
     }
 
-    const isChat = to === ROUTES.CHAT.LIST;
-    const isCurrentlyActive =
-      location.pathname === to || location.pathname.startsWith(to);
-
-    if (isChat && isCurrentlyActive) {
-      const params = new URLSearchParams(location.search);
-      const currentCategory = params.get("category") || "개인";
-      const nextCategory =
-        currentCategory === "개인"
-          ? "오픈채팅"
-          : currentCategory === "오픈채팅"
-            ? "친구"
-            : "개인";
-      params.set("category", nextCategory);
-      navigate(`${to}?${params.toString()}`, { replace: true, state: { isTabNavigation: true } });
+    const targetIndex = NAV_ITEMS.findIndex((item) => item.to === to);
+    if (targetIndex === activeIndex) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     mixpanelTrack.navTabClicked(label);
 
+    const isChat = to === ROUTES.CHAT.LIST;
     if (isChat) {
       const savedCategory = localStorage.getItem("lastChatCategory");
       const target = savedCategory ? `${to}?category=${savedCategory}` : to;

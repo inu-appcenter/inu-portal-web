@@ -9,6 +9,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
@@ -41,6 +42,7 @@ export default function ClassDetailBottomSheet({
   onEdit,
   onDelete,
 }: ClassDetailBottomSheetProps) {
+  useSheetBackHandler(open, () => onOpenChange(false));
   const navigate = useNavigate();
   const { activeTimetableId, timetables, updateTimetableEvents } =
     useTimetableStore();

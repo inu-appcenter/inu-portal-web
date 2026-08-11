@@ -4,9 +4,11 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X } from "lucide-react";
 import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 const AIChatFloatingButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  useSheetBackHandler(isOpen, () => setIsOpen(false));
 
   useEffect(() => {
     if (isOpen) {
