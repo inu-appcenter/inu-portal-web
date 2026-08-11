@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
 import { X } from "lucide-react";
-import { backHandler } from "@/utils/backHandler";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 export interface BottomSheetProps {
   open: boolean;
@@ -50,49 +50,11 @@ export default function BottomSheet({
   const setActiveSnapPoint = externalSetActiveSnapPoint || setInternalActiveSnapPoint;
 
   const shouldCloseOnBack = closeOnBack !== undefined ? closeOnBack : (dismissible && modal);
-  const onOpenChangeRef = React.useRef(onOpenChange);
-  onOpenChangeRef.current = onOpenChange;
-
-  useEffect(() => {
-    if (!open || !shouldCloseOnBack || !onOpenChange) return;
-
-    const handleNativeBack = () => {
-      onOpenChangeRef.current?.(false);
-      return true;
-    };
-
-    backHandler.pushHandler(handleNativeBack);
-    return () => backHandler.popHandler(handleNativeBack);
-  }, [open, onOpenChange, shouldCloseOnBack]);
-
-  // Hybrid-app friendly back button support
-  const hasPushStateRef = React.useRef(false);
-
-  useEffect(() => {
-    if (!onOpenChange || !shouldCloseOnBack) return;
-
-    if (open) {
-      window.history.pushState({ bottomSheetOpen: true }, "");
-      hasPushStateRef.current = true;
-    } else if (hasPushStateRef.current) {
-      window.history.back();
-      hasPushStateRef.current = false;
-    }
-  }, [open, onOpenChange, shouldCloseOnBack]);
-
-  useEffect(() => {
-    if (!open || !onOpenChange || !shouldCloseOnBack) return;
-
-    const handlePopState = () => {
-      hasPushStateRef.current = false;
-      onOpenChange(false);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [open, onOpenChange, shouldCloseOnBack]);
+  useSheetBackHandler(
+    open,
+    () => onOpenChange?.(false),
+    shouldCloseOnBack && Boolean(onOpenChange),
+  );
 
   useEffect(() => {
     if (open && snapPoints && snapPoints.length > 0 && externalActiveSnapPoint === undefined) {
