@@ -3,3 +3,19 @@
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# 딥링크 도메인 소유 증명 파일(`public/app-links/`, `_redirects`로 `/.well-known/`에 매핑).
+# AASA는 확장자가 없어 Pages가 타입을 못 정하고 text/html로 나가는데, Apple은
+# application/json이 아니면 도메인 연결을 인정하지 않는다. 요청 경로 기준으로
+# 매칭되므로 rewrite 이전 경로와 실제 파일 경로 둘 다 적어 준다.
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
+
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
+
+/app-links/*
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
