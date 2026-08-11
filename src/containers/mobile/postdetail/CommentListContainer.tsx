@@ -23,7 +23,8 @@ interface CommentListProps {
   setReplyToEdit: (reply: Reply | null) => void;
   setReplyContent: (content: string) => void;
   onCommentUpdate: () => void;
-  onWriterClick: (id: number) => void;
+  onReportReply: (reply: Reply) => void;
+  onBlockWriter: (memberId: number, nickname: string) => void;
 }
 
 export default function CommentListMobile({
@@ -33,7 +34,8 @@ export default function CommentListMobile({
   setReplyToEdit,
   setReplyContent,
   onCommentUpdate,
-  onWriterClick,
+  onReportReply,
+  onBlockWriter,
 }: CommentListProps) {
   const navigate = useNavigate();
   const { tokenInfo } = useUserStore();
@@ -91,6 +93,60 @@ export default function CommentListMobile({
     setActiveMenuId(null);
   };
 
+  // 본인 댓글이면 수정/삭제, 타인 댓글이면 신고/차단을 노출한다.
+  const renderCommentMenu = (reply: Reply) => (
+    <MenuWrapper>
+      <MenuIconBtn
+        onClick={() =>
+          setActiveMenuId(activeMenuId === reply.id ? null : reply.id)
+        }
+      >
+        <MoreVertical size={20} color="#8B95A1" />
+      </MenuIconBtn>
+      {activeMenuId === reply.id && (
+        <>
+          <MenuBackdrop onClick={() => setActiveMenuId(null)} />
+          <DropdownMenu>
+            {reply.hasAuthority ? (
+              <>
+                <DropdownItem onClick={() => handleEditReply(reply)}>
+                  수정
+                </DropdownItem>
+                <DropdownItem onClick={() => handleDeleteReply(reply.id)}>
+                  삭제
+                </DropdownItem>
+              </>
+            ) : (
+              <>
+                <DropdownItem
+                  $danger
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onReportReply(reply);
+                  }}
+                >
+                  신고
+                </DropdownItem>
+                {/* 익명 댓글은 memberId가 없어 차단 대상을 특정할 수 없다. */}
+                {!reply.isAnonymous && reply.memberId && (
+                  <DropdownItem
+                    $danger
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      onBlockWriter(reply.memberId!, reply.writer || "작성자");
+                    }}
+                  >
+                    차단
+                  </DropdownItem>
+                )}
+              </>
+            )}
+          </DropdownMenu>
+        </>
+      )}
+    </MenuWrapper>
+  );
+
   return (
     <CommentSectionWrapper>
       {allComments.length > 0 ? (
@@ -100,42 +156,15 @@ export default function CommentListMobile({
               <Avatar
                 src={`https://portal.inuappcenter.kr/images/profile/${reply.isAnonymous ? 1 : (reply.fireId || 1)}`}
                 alt={reply.writer || "프로필"}
-                onClick={() => {
-                  if (!reply.isAnonymous && reply.memberId) {
-                    onWriterClick(reply.memberId);
-                  }
-                }}
-                $isClickable={!reply.isAnonymous && Boolean(reply.memberId)}
               />
               <CommentContentBody>
                 <CommentHeaderRow>
                   <UserIdGroup>
-                    <WriterName
-                      onClick={() => {
-                        if (!reply.isAnonymous && reply.memberId) {
-                          onWriterClick(reply.memberId);
-                        }
-                      }}
-                      $isClickable={!reply.isAnonymous && Boolean(reply.memberId)}
-                    >
-                      {reply.writer}
-                    </WriterName>
+                    <WriterName>{reply.writer}</WriterName>
                     <TimeText>{formatTimeAgo(reply.createDate)}</TimeText>
                   </UserIdGroup>
 
-                  {reply.hasAuthority && (
-                    <MenuWrapper>
-                      <MenuIconBtn onClick={() => setActiveMenuId(activeMenuId === reply.id ? null : reply.id)}>
-                        <MoreVertical size={20} color="#8B95A1" />
-                      </MenuIconBtn>
-                      {activeMenuId === reply.id && (
-                        <DropdownMenu>
-                          <DropdownItem onClick={() => handleEditReply(reply)}>수정</DropdownItem>
-                          <DropdownItem onClick={() => handleDeleteReply(reply.id)}>삭제</DropdownItem>
-                        </DropdownMenu>
-                      )}
-                    </MenuWrapper>
-                  )}
+                  {renderCommentMenu(reply)}
                 </CommentHeaderRow>
 
                 <CommentText>{reply.content}</CommentText>
@@ -154,42 +183,15 @@ export default function CommentListMobile({
                 <SubAvatar
                   src={`https://portal.inuappcenter.kr/images/profile/${reReply.isAnonymous ? 1 : (reReply.fireId || 1)}`}
                   alt={reReply.writer || "프로필"}
-                  onClick={() => {
-                    if (!reReply.isAnonymous && reReply.memberId) {
-                      onWriterClick(reReply.memberId);
-                    }
-                  }}
-                  $isClickable={!reReply.isAnonymous && Boolean(reReply.memberId)}
                 />
                 <CommentContentBody>
                   <CommentHeaderRow>
                     <UserIdGroup>
-                      <WriterName
-                        onClick={() => {
-                          if (!reReply.isAnonymous && reReply.memberId) {
-                            onWriterClick(reReply.memberId);
-                          }
-                        }}
-                        $isClickable={!reReply.isAnonymous && Boolean(reReply.memberId)}
-                      >
-                        {reReply.writer}
-                      </WriterName>
+                      <WriterName>{reReply.writer}</WriterName>
                       <TimeText>{formatTimeAgo(reReply.createDate)}</TimeText>
                     </UserIdGroup>
 
-                    {reReply.hasAuthority && (
-                      <MenuWrapper>
-                        <MenuIconBtn onClick={() => setActiveMenuId(activeMenuId === reReply.id ? null : reReply.id)}>
-                          <MoreVertical size={20} color="#8B95A1" />
-                        </MenuIconBtn>
-                        {activeMenuId === reReply.id && (
-                          <DropdownMenu>
-                            <DropdownItem onClick={() => handleEditReply(reReply)}>수정</DropdownItem>
-                            <DropdownItem onClick={() => handleDeleteReply(reReply.id)}>삭제</DropdownItem>
-                          </DropdownMenu>
-                        )}
-                      </MenuWrapper>
-                    )}
+                    {renderCommentMenu(reReply)}
                   </CommentHeaderRow>
 
                   <CommentText>{reReply.content}</CommentText>
@@ -243,22 +245,20 @@ const ReCommentItemRow = styled.div`
   box-sizing: border-box;
 `;
 
-const Avatar = styled.img<{ $isClickable: boolean }>`
+const Avatar = styled.img`
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
 `;
 
-const SubAvatar = styled.img<{ $isClickable: boolean }>`
+const SubAvatar = styled.img`
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
 `;
 
 const CommentContentBody = styled.div`
@@ -282,13 +282,12 @@ const UserIdGroup = styled.div`
   gap: 8px;
 `;
 
-const WriterName = styled.span<{ $isClickable: boolean }>`
+const WriterName = styled.span`
   font-family: Pretendard, sans-serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
   color: var(--text-secondary, #333d4b);
-  cursor: ${({ $isClickable }) => ($isClickable ? "pointer" : "default")};
 `;
 
 const TimeText = styled.span`
@@ -365,17 +364,24 @@ const DropdownMenu = styled.div`
   overflow: hidden;
 `;
 
-const DropdownItem = styled.div`
+const DropdownItem = styled.div<{ $danger?: boolean }>`
   padding: 8px 16px;
   font-family: Pretendard, sans-serif;
   font-size: 14px;
-  color: var(--text-secondary, #333d4b);
+  color: ${({ $danger }) =>
+    $danger ? "var(--text-error, #ef4444)" : "var(--text-secondary, #333d4b)"};
   cursor: pointer;
   white-space: nowrap;
 
   &:hover {
     background-color: #f8f9fb;
   }
+`;
+
+const MenuBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9;
 `;
 
 const EmptyCommentMsg = styled.div`

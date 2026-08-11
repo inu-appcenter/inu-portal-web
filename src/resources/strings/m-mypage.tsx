@@ -28,6 +28,10 @@ export const MyPageCategoryLoggeedIn = [
     title: "알림 설정",
     description: "채팅 및 학과/학교 공지 알림 설정",
   },
+  {
+    title: "차단 사용자 관리",
+    description: "차단한 사용자를 확인하고 차단을 해제할 수 있어요.",
+  },
   { title: "로그아웃", image: `${logoutImg}` },
   // { title: "회원탈퇴", image: `${removeImg}` },
 ];
