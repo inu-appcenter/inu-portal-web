@@ -11,6 +11,7 @@ import useAppStateStore from "@/stores/useAppStateStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { X } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   category: string;
@@ -19,6 +20,7 @@ interface Props {
 
 export default function WriteForm({ category, setCategory }: Props) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { id: routeId } = useParams<{ id?: string }>();
   const postId = routeId ? Number(routeId) : 0;
   const [title, setTitle] = useState<string>("");
@@ -126,6 +128,7 @@ export default function WriteForm({ category, setCategory }: Props) {
     if (postId) {
       try {
         await putPost(postId, title, content, category, anonymous, images);
+        await queryClient.invalidateQueries({ queryKey: ["posts"] });
         triggerResetTips();
         triggerResetWrite();
         navigate(-1);
@@ -160,6 +163,7 @@ export default function WriteForm({ category, setCategory }: Props) {
           images,
         );
         mixpanelTrack.boardInteraction("Write", "TIPS", category);
+        await queryClient.invalidateQueries({ queryKey: ["posts"] });
         triggerResetTips();
         triggerResetWrite();
         navigate(ROUTES.BOARD.TIPS_DETAIL(response.data), { replace: true });

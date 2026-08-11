@@ -13,6 +13,7 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import Skeleton from "@/components/common/Skeleton";
 import { ROUTES } from "@/constants/routes";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PostDetailSkeleton = () => (
   <PostWrapper>
@@ -53,6 +54,7 @@ const PostDetailSkeleton = () => (
 );
 
 export default function PostDetailPage() {
+  const queryClient = useQueryClient();
   const [post, setPost] = useState<PostDetail>();
   const [commentUpdated, setCommentUpdated] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(true);
@@ -106,6 +108,7 @@ export default function PostDetailPage() {
     if (window.confirm("정말 게시글을 삭제하시겠습니까?")) {
       try {
         await deletePost(post.id);
+        await queryClient.invalidateQueries({ queryKey: ["posts"] });
         alert("게시글이 삭제되었습니다.");
         navigate(-1);
       } catch (error) {
