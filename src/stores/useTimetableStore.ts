@@ -119,7 +119,7 @@ interface TimetableStore {
   activeTimetableId: number | null;
   timetables: Timetable[];
   setSemester: (semester: string) => void;
-  setActiveTimetable: (id: number) => void;
+  setActiveTimetable: (id: number | null) => void;
   setTimetables: (serverTimetables: TimeTable[]) => void;
   updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
   updateTimetableEvents: (id: number, events: ClassItem[]) => void;

@@ -2,15 +2,15 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { Pencil, Lock, Bell, Palette, Trash2 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { useSemesters } from "@/hooks/useSemesters";
 import useUserStore from "@/stores/useUserStore";
 import {
   useTimeTables,
@@ -26,6 +26,7 @@ import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateM
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { formatSemester } from "@/utils/semester";
 
 const SIMULATOR_URL = "https://inu-sugang-simulator.pages.dev";
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
@@ -362,6 +363,7 @@ const EmptyTimetableIllust = () => (
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
   const [isModalOpen] = useState(false);
@@ -371,23 +373,65 @@ const MobileTimeTablePage = () => {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { selectedSemester, activeTimetableId, timetables } =
-    useTimetableStore();
+  const {
+    timetables,
+    setSemester,
+    setActiveTimetable,
+  } = useTimetableStore();
 
   useTimeTables(undefined, undefined, { enabled: isLoggedIn });
-  useTimetableUrlSync({ preferPrimaryOnEntry: true });
+  const { semesters } = useSemesters();
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
 
+  const currentSemester = useMemo(
+    () => semesters.find((semester) => semester.status === "OPEN") ?? null,
+    [semesters],
+  );
+
+  const currentSemesterLabel = useMemo(
+    () =>
+      currentSemester
+        ? formatSemester(currentSemester.year, currentSemester.term)
+        : "",
+    [currentSemester],
+  );
+
+  const requestedTimetable = useMemo(() => {
+    const idParam = searchParams.get("id");
+    if (!idParam) return null;
+    const id = Number(idParam);
+    if (!Number.isFinite(id)) return null;
+    return timetables.find((t) => t.id === id) ?? null;
+  }, [searchParams, timetables]);
+
   const activeTimetable = useMemo(() => {
-    const list = timetables.filter((t) => t.semester === selectedSemester);
-    if (list.length === 0) return null;
+    if (requestedTimetable) return requestedTimetable;
+    if (!currentSemester) return null;
     return (
-      list.find((t) => t.id === activeTimetableId) ||
-      list.find((t) => t.isRepresentative) ||
-      list[0]
+      timetables.find(
+        (t) =>
+          t.year === currentSemester.year &&
+          t.term === currentSemester.term &&
+          t.isRepresentative,
+      ) ?? null
     );
-  }, [timetables, selectedSemester, activeTimetableId]);
+  }, [timetables, currentSemester, requestedTimetable]);
+
+  const displayedSemesterLabel =
+    requestedTimetable?.semester || currentSemesterLabel;
+
+  useEffect(() => {
+    if (!isLoggedIn || !displayedSemesterLabel) return;
+    setSemester(displayedSemesterLabel);
+    setActiveTimetable(activeTimetable?.id ?? null);
+  }, [
+    activeTimetable?.id,
+    displayedSemesterLabel,
+    isLoggedIn,
+    setActiveTimetable,
+    setSemester,
+  ]);
 
   useTimeTableDetail(activeTimetable?.id, { enabled: isLoggedIn });
 
@@ -432,13 +476,13 @@ const MobileTimeTablePage = () => {
         <HeaderMainTitle>{activeTitle}</HeaderMainTitle>
         {isLoggedIn && (
           <HeaderTermWrapper>
-            <HeaderTermText>{selectedSemester}</HeaderTermText>
+            <HeaderTermText>{displayedSemesterLabel}</HeaderTermText>
             <CaretDownIcon />
           </HeaderTermWrapper>
         )}
       </HeaderTitleContainer>
     );
-  }, [selectedSemester, activeTitle, isLoggedIn, navigate]);
+  }, [displayedSemesterLabel, activeTitle, isLoggedIn, navigate]);
 
   const timetableMenuItems = useMemo(() => {
     if (!isLoggedIn || !activeTimetable) return [];
@@ -564,12 +608,17 @@ const MobileTimeTablePage = () => {
 
   useEffect(() => {
     mixpanelTrack.timetableViewed("시간표 홈", {
-      semester: selectedSemester,
+      semester: displayedSemesterLabel,
       timetable_count: timetables.length,
       course_count: timetableEvents.length,
       is_logged_in: isLoggedIn,
     });
-  }, [isLoggedIn, selectedSemester, timetableEvents.length, timetables.length]);
+  }, [
+    displayedSemesterLabel,
+    isLoggedIn,
+    timetableEvents.length,
+    timetables.length,
+  ]);
 
   const { majorCredits, generalCredits, otherCredits, totalCredits } =
     useMemo(() => {
@@ -629,7 +678,7 @@ const MobileTimeTablePage = () => {
 
       <TimeTableCreateModal
         isOpen={isCreateModalOpen}
-        initialSemester={selectedSemester}
+        initialSemester={currentSemesterLabel}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={(created) => {
           navigate(`${ROUTES.TIMETABLE.EDIT}?id=${created.id}`);
@@ -757,7 +806,7 @@ const MobileTimeTablePage = () => {
             <NoTimetableTextGroup>
               <NoTimetableTitle>등록된 시간표가 없어요</NoTimetableTitle>
               <NoTimetableDescription>
-                {selectedSemester} 시간표를 만들어볼까요?
+                {currentSemesterLabel} 시간표를 만들어볼까요?
               </NoTimetableDescription>
             </NoTimetableTextGroup>
           </NoTimetableContent>

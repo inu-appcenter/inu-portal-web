@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
@@ -177,7 +178,12 @@ export default function ClassDetailBottomSheet({
 
   const courseIdStr = offering?.subjectNumber || liveClass.courseId || "";
 
-  const detailsList = [gradeStr, courseTypeStr, courseIdStr].filter(Boolean);
+  const onlineTypeStr = getOnlineTypeLabel(
+    offering?.ssupTypeName || liveClass.ssupTypeName,
+    offering?.ssupTypeCode || liveClass.ssupTypeCode,
+  );
+
+  const detailsList = [gradeStr, courseTypeStr, onlineTypeStr, courseIdStr].filter(Boolean);
   const detailsText = detailsList.join("  ");
 
   const scheduleText = matchingClasses
@@ -190,8 +196,11 @@ export default function ClassDetailBottomSheet({
     .join(", ");
 
   const roomVal = liveClass.room || offering?.meetings[0]?.location || "-";
-  const isCustomCourse =
-    liveClass.isCustom || (!liveClass.courseId && !liveClass.courseOfferingId);
+  // 일반 강의(학교 수업)는 수정 대상이 아니다. isCustom은 상세 응답의
+  // type === "CUSTOM"으로 정확히 채워지므로(utils/timetable.ts) 이것만 본다.
+  // courseId/courseOfferingId가 비었는지로 추정하면, 둘 다 없는 일반 강의가
+  // 커스텀으로 오판돼 수정 버튼이 뜬다(눌러도 handleEdit 가드에 걸려 무반응).
+  const isCustomCourse = Boolean(liveClass.isCustom);
 
   // 메모는 본인만 보는 개인 메모. 친구 소유 항목은 조회/편집 모두 불가하다.
   const hasMemo = Boolean(liveClass.memo && liveClass.memo.trim());

@@ -7,12 +7,12 @@ export interface CourseTimeSlot {
   day: number; // 0:월 ~ 4:금
   startTime: string; // "HH:MM"
   endTime: string; // "HH:MM"
+  location?: string;
 }
 
 interface CourseTimeSelectorProps {
   slot: CourseTimeSlot;
   index: number;
-  totalSlots: number;
   onChange: (updatedSlot: CourseTimeSlot) => void;
   onAdd: () => void;
   onRemove: () => void;
@@ -23,7 +23,6 @@ const DAYS = ["월", "화", "수", "목", "금", "토", "일"];
 const CourseTimeSelector = ({
   slot,
   index,
-  totalSlots,
   onChange,
   onAdd,
   onRemove,
@@ -59,12 +58,20 @@ const CourseTimeSelector = ({
     }
   };
 
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange({
+      ...slot,
+      location: e.target.value,
+    });
+  };
+
   return (
     <SelectorContainer>
       <SelectorHeader>
-        <Title>시간 {index + 1}</Title>
+        <Title>일정 {index + 1}</Title>
         <ActionButtons>
-          {totalSlots > 1 && (
+          {/* 첫 일정은 삭제 불가 — 항상 최소 1개 슬롯이 남는다 */}
+          {index > 0 && (
             <IconButton onClick={onRemove} type="button">
               <Minus size={20} color="#8b95a1" strokeWidth={2.5} />
             </IconButton>
@@ -91,7 +98,7 @@ const CourseTimeSelector = ({
 
       <TimeInputRow>
         <TimePickerField>
-          <TimePickerLabel>시작</TimePickerLabel>
+          <TimePickerLabel>시작 시간</TimePickerLabel>
           <TimePickerDisplay>{slot.startTime}</TimePickerDisplay>
           <HiddenTimeInput
             type="time"
@@ -102,7 +109,7 @@ const CourseTimeSelector = ({
         </TimePickerField>
 
         <TimePickerField>
-          <TimePickerLabel>종료</TimePickerLabel>
+          <TimePickerLabel>종료 시간</TimePickerLabel>
           <TimePickerDisplay>{slot.endTime}</TimePickerDisplay>
           <HiddenTimeInput
             type="time"
@@ -111,6 +118,16 @@ const CourseTimeSelector = ({
             onClick={handleTimeClick}
           />
         </TimePickerField>
+
+        <LocationField>
+          <TimePickerLabel>장소</TimePickerLabel>
+          <LocationInput
+            type="text"
+            value={slot.location ?? ""}
+            onChange={handleLocationChange}
+            placeholder="선택"
+          />
+        </LocationField>
       </TimeInputRow>
     </SelectorContainer>
   );
@@ -244,6 +261,39 @@ const TimePickerDisplay = styled.span`
   font-weight: 600;
   color: var(--text-primary, #333d4b);
   text-align: left;
+`;
+
+const LocationField = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: 8px 12px;
+  height: 58px;
+  box-sizing: border-box;
+  justify-content: center;
+`;
+
+const LocationInput = styled.input`
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--text-primary, #333d4b);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+
+  &::placeholder {
+    color: var(--text-disabled, #b0b8c1);
+    font-weight: 400;
+  }
 `;
 
 const HiddenTimeInput = styled.input`

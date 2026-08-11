@@ -54,12 +54,14 @@ const BellWrapper = styled.div`
 
 const Badge = styled.div`
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
   width: 8px;
   height: 8px;
   background-color: #ffd60a;
   border-radius: 50%;
+  pointer-events: none;
 `;
 
 interface MobileHeaderProps {
