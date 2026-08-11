@@ -10,8 +10,14 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import ReplyPortal from "@/components/common/ReplyPortal";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import Skeleton from "@/components/common/Skeleton";
+import ReportModal, {
+  ReportTarget,
+} from "@/components/mobile/moderation/ReportModal";
+import BlockUserModal, {
+  BlockTarget,
+} from "@/components/mobile/moderation/BlockUserModal";
+import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 
 const PostDetailSkeleton = () => (
@@ -59,8 +65,8 @@ export default function PostDetailPage() {
   const [replyContent, setReplyContent] = useState("");
   const [replyToEdit, setReplyToEdit] = useState<Reply | null>(null);
   const [replyToReply, setReplyToReply] = useState<Reply | null>(null);
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const [blockTarget, setBlockTarget] = useState<BlockTarget | null>(null);
 
   const cancelEditOrReply = () => {
     setReplyToEdit(null);
@@ -69,6 +75,8 @@ export default function PostDetailPage() {
   };
 
   const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
   const { id: paramId, postId } = useParams<{ id?: string; postId?: string }>();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -128,8 +136,34 @@ export default function PostDetailPage() {
     }
   };
 
+  // 로그인이 필요한 동작(신고/차단) 앞에서 호출한다.
+  const requireLogin = () => {
+    if (isLoggedIn) return true;
+    if (window.confirm("로그인이 필요해요. 로그인 페이지로 이동할까요?")) {
+      navigate(ROUTES.LOGIN);
+    }
+    return false;
+  };
+
+  const handleReportPost = () => {
+    if (!post || !requireLogin()) return;
+    setReportTarget({ type: "POST", postId: post.id });
+  };
+
+  const handleReportReply = (reply: Reply) => {
+    if (!post || !requireLogin()) return;
+    setReportTarget({ type: "REPLY", postId: post.id, replyId: reply.id });
+  };
+
+  const handleBlockAuthor = (memberId: number, nickname: string) => {
+    if (!requireLogin()) return;
+    setBlockTarget({ memberId, nickname });
+  };
+
   const headerMenu = useMemo(() => {
-    if (post?.hasAuthority) {
+    if (!post) return undefined;
+
+    if (post.hasAuthority) {
       return [
         {
           label: "수정하기",
@@ -141,8 +175,24 @@ export default function PostDetailPage() {
         },
       ];
     }
-    return undefined;
-  }, [post, navigate]);
+
+    const menu = [
+      {
+        label: "신고하기",
+        onClick: handleReportPost,
+      },
+    ];
+
+    // 익명 게시글은 memberId가 내려오지 않아 차단 대상을 특정할 수 없다.
+    if (post.memberId) {
+      menu.push({
+        label: "작성자 차단하기",
+        onClick: () => handleBlockAuthor(post.memberId!, post.writer || "작성자"),
+      });
+    }
+
+    return menu;
+  }, [post, navigate, isLoggedIn]);
 
   useHeader({
     title: post ? post.category || "게시글 상세" : "게시글 상세",
@@ -150,17 +200,12 @@ export default function PostDetailPage() {
     menuItems: headerMenu,
   });
 
-  const handleWriterClick = (memberId: number) => {
-    setSelectedMemberId(memberId);
-    setIsProfileModalOpen(true);
-  };
-
   return (
     <Wrapper>
       {post ? (
         <>
           <PostWrapper>
-            <PostContentContainer ClubRecruit={post} onWriterClick={handleWriterClick} />
+            <PostContentContainer ClubRecruit={post} />
             <CommentWrapper>
               <CommentListMobile
                 postId={post.id}
@@ -175,7 +220,8 @@ export default function PostDetailPage() {
                 setReplyToEdit={setReplyToEdit}
                 setReplyContent={setReplyContent}
                 onCommentUpdate={() => setCommentUpdated(true)}
-                onWriterClick={handleWriterClick}
+                onReportReply={handleReportReply}
+                onBlockWriter={handleBlockAuthor}
               />
             </CommentWrapper>
           </PostWrapper>
@@ -194,10 +240,23 @@ export default function PostDetailPage() {
               onCommentUpdate={() => setCommentUpdated(true)}
             />
           </ReplyPortal>
-          <UserProfileModal
-            memberId={selectedMemberId}
-            isOpen={isProfileModalOpen}
-            onOpenChange={setIsProfileModalOpen}
+          <ReportModal
+            target={reportTarget}
+            onClose={() => setReportTarget(null)}
+          />
+          <BlockUserModal
+            target={blockTarget}
+            onClose={() => setBlockTarget(null)}
+            onBlocked={(blockedMemberId) => {
+              // 차단 직후 해당 작성자의 글/댓글이 더 이상 보이지 않아야 한다.
+              // 글쓴이를 차단했다면 이 상세 페이지 자체를 벗어나고,
+              // 댓글 작성자를 차단했다면 목록만 다시 불러온다.
+              if (post.memberId === blockedMemberId) {
+                navigate(-1);
+              } else {
+                setCommentUpdated(true);
+              }
+            }}
           />
         </>
       ) : (
