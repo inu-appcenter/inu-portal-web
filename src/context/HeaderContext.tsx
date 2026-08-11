@@ -5,6 +5,7 @@ import {
   useState,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -107,11 +108,7 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
                 item.onClick?.toString() === newMenu[i].onClick?.toString(),
             ));
 
-        const isOnBackSame =
-          prevOnBack === newOnBack ||
-          (typeof prevOnBack === "function" &&
-            typeof newOnBack === "function" &&
-            prevOnBack.toString() === newOnBack.toString());
+        const isOnBackSame = prevOnBack === newOnBack;
 
         // 3. 나머지 단순 값(문자열, 불리언)만 JSON 문자열로 비교
         if (
@@ -159,6 +156,9 @@ export const useHeader = (config?: HeaderConfig) => {
   const { updateHeaderConfig } = context;
   const location = useLocation();
   const currentPath = location.pathname;
+  const latestOnBackRef = useRef(config?.onBack);
+  latestOnBackRef.current = config?.onBack;
+  const stableOnBack = useCallback(() => latestOnBackRef.current?.(), []);
 
   const configString = JSON.stringify({
     hasback: config?.hasback,
@@ -174,16 +174,18 @@ export const useHeader = (config?: HeaderConfig) => {
   const menuString = config?.menuItems
     ? config.menuItems.map((m) => `${m.label}:${m.onClick?.toString()}`).join("|")
     : "";
-  const onBackString = config?.onBack?.toString() ?? "";
-
   useLayoutEffect(() => {
     if (!config) return;
-    updateHeaderConfig(currentPath, { ...defaultHeaderConfig, ...config });
+    updateHeaderConfig(currentPath, {
+      ...defaultHeaderConfig,
+      ...config,
+      onBack: config.onBack ? stableOnBack : undefined,
+    });
   }, [
     currentPath,
     configString,
     menuString,
-    onBackString,
+    stableOnBack,
     config?.subHeader,
     config?.rightArea,
     config?.title,
