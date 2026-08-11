@@ -204,12 +204,14 @@ export default function MobileBottomNav() {
 }
 
 export const BOTTOM_PADDING = 8;
-export const BOTTOM_NAV_HEIGHT = 76 + BOTTOM_PADDING;
+export const BOTTOM_NAV_CONTENT_HEIGHT = 76;
+export const BOTTOM_NAV_HEIGHT = BOTTOM_NAV_CONTENT_HEIGHT + BOTTOM_PADDING;
+export const BOTTOM_NAV_SAFE_HEIGHT = `calc(${BOTTOM_NAV_CONTENT_HEIGHT}px + max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px)))`;
 
 const NavContainer = styled.div`
   position: relative;
   width: 100%;
-  height: calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px));
+  height: ${BOTTOM_NAV_SAFE_HEIGHT};
   z-index: 1000;
   pointer-events: auto;
   background: var(--bg-blur, rgba(255, 255, 255, 0.60));
@@ -234,7 +236,7 @@ const NavItemsContainer = styled.nav`
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
   padding-top: 0px;
-  padding-bottom: calc(${BOTTOM_PADDING}px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 `;
 

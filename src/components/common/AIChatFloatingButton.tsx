@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X } from "lucide-react";
 import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
+import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 
 const AIChatFloatingButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -133,7 +134,7 @@ const Backdrop = styled(motion.div)`
 
 const FloatingButton = styled(motion.button)`
   position: fixed;
-  bottom: 85px;
+  bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 12px);
   right: 15px;
   width: 75px;
   height: 75px;
@@ -153,6 +154,7 @@ const FloatingButton = styled(motion.button)`
   }
 
   @media (min-width: 1024px) {
+    bottom: 85px;
     right: calc(50% - 600px + 15px);
   }
 `;
