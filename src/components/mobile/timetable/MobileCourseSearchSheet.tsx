@@ -46,6 +46,7 @@ export interface CourseResult {
   deptName?: string;
   collegeName?: string;
   isuName?: string;
+  isuFldName?: string;
   hyName?: string;
   ssupTypeName?: string;
   ssupTypeCode?: string;
@@ -224,6 +225,13 @@ const MobileCourseSearchSheet = ({
           (c) =>
             !c.isuName ||
             offeringFilters.isuNames?.some((isu) => c.isuName?.includes(isu)),
+        );
+      }
+      if (offeringFilters.isuFldNames?.length) {
+        list = list.filter(
+          (c) =>
+            !c.isuFldName ||
+            offeringFilters.isuFldNames?.includes(c.isuFldName),
         );
       }
       if (offeringFilters.ssupTypeNames?.length) {

@@ -41,6 +41,12 @@ export function matchesCourseOfferingFilters(
     return false;
   }
   if (
+    filters?.isuFldNames?.length &&
+    !filters.isuFldNames.includes(offering.isuFldName ?? "")
+  ) {
+    return false;
+  }
+  if (
     filters?.ssupTypeNames?.length &&
     !filters.ssupTypeNames.some((st) => {
       const code = offering.ssupTypeCode;

@@ -12,6 +12,7 @@ import {
   CREDIT_OPTIONS,
   DEFAULT_FILTERS,
   GRADE_OPTIONS,
+  ISU_FIELD_OPTIONS,
   MAJOR_CATEGORIES,
   ONLINE_TYPE_OPTIONS,
   PINNED_MAJORS_STORAGE_KEY,
@@ -398,7 +399,7 @@ const CourseFilterPanel = ({
             >
               <CheckboxWrapper>
                 <CheckboxInput type="checkbox" checked={filters.grades.includes(g)} readOnly />
-                <OptionLabel>{g}학년</OptionLabel>
+                <OptionLabel>{g === "전학년" ? g : `${g}학년`}</OptionLabel>
               </CheckboxWrapper>
               <Ripple />
             </OptionItemRow>
@@ -423,6 +424,37 @@ const CourseFilterPanel = ({
               <CheckboxWrapper>
                 <CheckboxInput type="checkbox" checked={filters.types.includes(t)} readOnly />
                 <OptionLabel>{t}</OptionLabel>
+              </CheckboxWrapper>
+              <Ripple />
+            </OptionItemRow>
+          ))}
+        </OptionsCard>
+        <PanelBottomSpacer />
+      </PanelScroll>
+    );
+  }
+
+  if (view === "field") {
+    return (
+      <PanelScroll>
+        <OptionsCard>
+          {ISU_FIELD_OPTIONS.map((field) => (
+            <OptionItemRow
+              key={field}
+              onClick={() =>
+                onFiltersChange({
+                  ...filters,
+                  isuFields: toggleInList(filters.isuFields ?? [], field),
+                })
+              }
+            >
+              <CheckboxWrapper>
+                <CheckboxInput
+                  type="checkbox"
+                  checked={(filters.isuFields ?? []).includes(field)}
+                  readOnly
+                />
+                <OptionLabel>{field}</OptionLabel>
               </CheckboxWrapper>
               <Ripple />
             </OptionItemRow>
@@ -477,7 +509,7 @@ const CourseFilterPanel = ({
           >
             <CheckboxWrapper>
               <CheckboxInput type="checkbox" checked={filters.credits.includes(c)} readOnly />
-              <OptionLabel>{c === 4 ? "4학점 이상" : `${c}학점`}</OptionLabel>
+              <OptionLabel>{c}학점</OptionLabel>
             </CheckboxWrapper>
             <Ripple />
           </OptionItemRow>

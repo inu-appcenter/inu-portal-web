@@ -6,8 +6,9 @@ export interface FilterState {
   major: string | null;
   sort: string;
   time: string;
-  grades: number[];
+  grades: GradeOption[];
   types: string[];
+  isuFields: string[];
   credits: number[];
   onlineTypes: string[];
   selectedSlots?: string[];
@@ -19,6 +20,7 @@ export const DEFAULT_FILTERS: FilterState = {
   time: "전체 시간",
   grades: [],
   types: [],
+  isuFields: [],
   credits: [],
   onlineTypes: [],
   selectedSlots: [],
@@ -31,6 +33,7 @@ export type FilterSubView =
   | "time"
   | "grade"
   | "type"
+  | "field"
   | "credit"
   | "online";
 
@@ -40,7 +43,8 @@ export const CATEGORIES = [
   { id: "time", label: "시간" },
   { id: "grade", label: "학년" },
   { id: "type", label: "이수구분" },
-  { id: "online", label: "이러닝/온라인" },
+  { id: "field", label: "이수영역" },
+  { id: "online", label: "수업 유형" },
   { id: "credit", label: "학점" },
 ] as const;
 
@@ -53,7 +57,8 @@ export const FILTER_SUB_VIEW_TITLES: Record<FilterSubView, string> = {
   time: "시간",
   grade: "학년",
   type: "이수구분",
-  online: "이러닝/온라인",
+  field: "이수영역",
+  online: "수업 유형",
   credit: "학점",
 };
 
@@ -65,6 +70,19 @@ export const ONLINE_TYPE_OPTIONS = [
   "온라인 혼합(HUSS)",
   "K-MOOC",
   "RISE(시간표 없음)",
+  "RISE(시간표 있음)",
+  "강의(이론)",
+  "담장너머~,사회봉사(1)",
+  "미술실기",
+  "사회봉사(2)",
+  "사회봉사(3)",
+  "실험실습",
+  "예술체육실기",
+  "이론(어학)",
+  "이론실험실습",
+  "자기설계세미나",
+  "체육실기",
+  "현장형(HUSS)",
 ] as const;
 
 export const ONLINE_TYPE_TO_SSUP_NAMES: Record<string, readonly string[]> = {
@@ -75,6 +93,19 @@ export const ONLINE_TYPE_TO_SSUP_NAMES: Record<string, readonly string[]> = {
   "온라인 혼합(HUSS)": ["온라인혼합형강좌(HUSS)"],
   "K-MOOC": ["K-MOOC"],
   "RISE(시간표 없음)": ["RISE(시간표 없음)"],
+  "RISE(시간표 있음)": ["RISE(시간표 있음)"],
+  "강의(이론)": ["강의(이론)"],
+  "담장너머~,사회봉사(1)": ["담장너머~,사회봉사(1)"],
+  미술실기: ["미술실기"],
+  "사회봉사(2)": ["사회봉사(2)"],
+  "사회봉사(3)": ["사회봉사(3)"],
+  실험실습: ["실험실습"],
+  예술체육실기: ["예술체육실기"],
+  "이론(어학)": ["이론(어학)"],
+  이론실험실습: ["이론실험실습"],
+  자기설계세미나: ["자기설계세미나"],
+  체육실기: ["체육실기"],
+  "현장형(HUSS)": ["현장형(HUSS)"],
 };
 
 export const expandOnlineTypeLabel = (label: string): readonly string[] =>
@@ -118,6 +149,28 @@ export function getOnlineTypeLabel(
 export const SORT_OPTIONS = ["기본순", "별점높은순", "담은인원많은순"] as const;
 export const TYPE_OPTIONS = ["전공", "교양", "교직", "일반선택", "군사학"] as const;
 
+export const ISU_FIELD_OPTIONS = [
+  "(핵심)INU세미나",
+  "(핵심)과학기술",
+  "(핵심)사회",
+  "(핵심)예술체육",
+  "(핵심)외국어",
+  "(핵심)인문",
+  "과학기술",
+  "교직",
+  "군사학",
+  "기초과학ㆍ공학",
+  "사회",
+  "예술체육",
+  "외국어",
+  "인문",
+  "일반선택",
+  "전공기초",
+  "전공심화",
+  "전공핵심",
+  "학문의기초",
+] as const;
+
 /**
  * 서버 `isuNames`(이수구분) 파라미터가 실제로 받는 값.
  *
@@ -156,7 +209,8 @@ export const isIsuNameLabel = (label: string): boolean =>
 export const expandIsuNameLabel = (label: string): readonly string[] =>
   ISU_NAME_GROUPS[label] ?? (SERVER_ISU_NAME_SET.has(label) ? [label] : []);
 
-export const GRADE_OPTIONS = [1, 2, 3, 4] as const;
+export type GradeOption = 1 | 2 | 3 | 4 | "전학년";
+export const GRADE_OPTIONS: readonly GradeOption[] = [1, 2, 3, 4, "전학년"];
 export const CREDIT_OPTIONS = [1, 2, 3, 4] as const;
 
 // 단과대별 매핑 — 서버 Swagger deptName / collegeName 기준
@@ -269,6 +323,8 @@ export const MAJOR_CATEGORIES = [
   { id: "major_3", name: "교직", hasChevron: false },
   { id: "major_4", name: "일반선택", hasChevron: false },
   { id: "major_5", name: "군사학", hasChevron: false },
+  { id: "major_8", name: "기타", hasChevron: false },
+  { id: "major_9", name: "단과대구분없음", hasChevron: false },
 ];
 
 export const SUB_MAJORS: Record<string, string[]> = {
@@ -356,6 +412,7 @@ export function countActiveFilters(filters: FilterState): number {
   if (filters.time !== DEFAULT_FILTERS.time) count += 1;
   count += filters.grades.length;
   count += filters.types.length;
+  count += filters.isuFields?.length ?? 0;
   count += filters.onlineTypes?.length ?? 0;
   count += filters.credits.length;
   return count;
@@ -374,10 +431,11 @@ export function buildCategoryChips(
       filters.time === DEFAULT_FILTERS.time || filters.time === "직접 시간 선택"
         ? []
         : filters.time.split(" "),
-    grade: filters.grades.map((g) => `${g}학년`),
+    grade: filters.grades.map((g) => (g === "전학년" ? g : `${g}학년`)),
     type: [...filters.types],
+    field: [...(filters.isuFields ?? [])],
     online: [...(filters.onlineTypes ?? [])],
-    credit: filters.credits.map((c) => (c === 4 ? "4학점 이상" : `${c}학점`)),
+    credit: filters.credits.map((c) => `${c}학점`),
   };
 }
 
@@ -407,18 +465,24 @@ export function removeChipFromFilters(
       };
     }
     case "grade": {
-      const val = parseInt(chip.replace("학년", ""), 10);
+      const val: GradeOption =
+        chip === "전학년" ? chip : (parseInt(chip.replace("학년", ""), 10) as GradeOption);
       return { ...filters, grades: filters.grades.filter((g) => g !== val) };
     }
     case "type":
       return { ...filters, types: filters.types.filter((t) => t !== chip) };
+    case "field":
+      return {
+        ...filters,
+        isuFields: (filters.isuFields ?? []).filter((field) => field !== chip),
+      };
     case "online":
       return {
         ...filters,
         onlineTypes: (filters.onlineTypes ?? []).filter((t) => t !== chip),
       };
     case "credit": {
-      const val = chip === "4학점 이상" ? 4 : parseInt(chip.replace("학점", ""), 10);
+      const val = parseInt(chip.replace("학점", ""), 10);
       return { ...filters, credits: filters.credits.filter((c) => c !== val) };
     }
     default:

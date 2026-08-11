@@ -20,6 +20,8 @@ import { describe, expect, test, beforeAll } from "vitest";
 
 let DEFAULT_FILTERS: typeof import("../courseFilterModel").DEFAULT_FILTERS;
 let ONLINE_TYPE_OPTIONS: typeof import("../courseFilterModel").ONLINE_TYPE_OPTIONS;
+let GRADE_OPTIONS: typeof import("../courseFilterModel").GRADE_OPTIONS;
+let ISU_FIELD_OPTIONS: typeof import("../courseFilterModel").ISU_FIELD_OPTIONS;
 let ONLINE_TYPE_TO_SSUP_NAMES: typeof import("../courseFilterModel").ONLINE_TYPE_TO_SSUP_NAMES;
 let expandOnlineTypeLabel: typeof import("../courseFilterModel").expandOnlineTypeLabel;
 let getOnlineTypeLabel: typeof import("../courseFilterModel").getOnlineTypeLabel;
@@ -33,6 +35,8 @@ beforeAll(async () => {
   const model = await import("../courseFilterModel");
   DEFAULT_FILTERS = model.DEFAULT_FILTERS;
   ONLINE_TYPE_OPTIONS = model.ONLINE_TYPE_OPTIONS;
+  GRADE_OPTIONS = model.GRADE_OPTIONS;
+  ISU_FIELD_OPTIONS = model.ISU_FIELD_OPTIONS;
   ONLINE_TYPE_TO_SSUP_NAMES = model.ONLINE_TYPE_TO_SSUP_NAMES;
   expandOnlineTypeLabel = model.expandOnlineTypeLabel;
   getOnlineTypeLabel = model.getOnlineTypeLabel;
@@ -52,6 +56,32 @@ describe("courseFilterModel & online filter tests", () => {
     expect(DEFAULT_FILTERS.onlineTypes).toEqual([]);
     expect(ONLINE_TYPE_OPTIONS.length).toBeGreaterThan(0);
     expect(Object.keys(ONLINE_TYPE_TO_SSUP_NAMES).length).toBeGreaterThan(0);
+  });
+
+  test("서버가 제공하는 전학년과 이수영역 옵션을 노출한다", () => {
+    expect(GRADE_OPTIONS).toContain("전학년");
+    expect(ISU_FIELD_OPTIONS).toContain("(핵심)INU세미나");
+    expect(ISU_FIELD_OPTIONS).toContain("학문의기초");
+  });
+
+  test("서버가 제공하는 모든 수업 유형 옵션을 노출한다", () => {
+    expect(ONLINE_TYPE_OPTIONS).toEqual(
+      expect.arrayContaining([
+        "RISE(시간표 있음)",
+        "강의(이론)",
+        "담장너머~,사회봉사(1)",
+        "미술실기",
+        "사회봉사(2)",
+        "사회봉사(3)",
+        "실험실습",
+        "예술체육실기",
+        "이론(어학)",
+        "이론실험실습",
+        "자기설계세미나",
+        "체육실기",
+        "현장형(HUSS)",
+      ]),
+    );
   });
 
   test("ONLINE_TYPE_TO_SSUP_NAMES maps UI labels to backend ssupTypeName strings", () => {
@@ -111,6 +141,17 @@ describe("courseFilterModel & online filter tests", () => {
     };
     const mapped = mapFilterToOfferingFilters(filters);
     expect(mapped.ssupTypeNames).toEqual(["e-Learning", "열린사이버대학(OCU)"]);
+  });
+
+  test("전학년과 이수영역을 서버 Name 필터로 매핑한다", () => {
+    const mapped = mapFilterToOfferingFilters({
+      ...DEFAULT_FILTERS,
+      grades: ["전학년"],
+      isuFields: ["(핵심)인문", "학문의기초"],
+    });
+
+    expect(mapped.hyNames).toEqual(["전학년"]);
+    expect(mapped.isuFldNames).toEqual(["(핵심)인문", "학문의기초"]);
   });
 
   test("matchesCourseOfferingFilters correctly filters offerings by ssupTypeNames", () => {
