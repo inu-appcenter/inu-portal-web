@@ -3,6 +3,7 @@ import styled from "styled-components";
 import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import InputField from "@/components/common/InputField";
 import {
   useCreateTimeTable,
   useCreateTimeTableCourseItem,
@@ -19,7 +20,10 @@ interface WizardSaveFlowProps {
   onOpenChange: (open: boolean) => void;
   candidate: WizardCandidate;
   semesterId: number | null;
-  onSaved: () => void;
+  /** 저장 완료 후 "더 많은 후보 생성"을 선택했을 때. 위시리스트 등 조건은 그대로 둔 채 재생성만 트리거한다. */
+  onGenerateMore: () => void;
+  /** 저장 완료 후 "시간표 보러 가기"를 선택했을 때. 저장된 시간표 id를 넘긴다. */
+  onViewTimetable: (timeTableId: number) => void;
 }
 
 type SaveMode = "new" | "overwrite";
@@ -29,12 +33,19 @@ const WizardSaveFlow = ({
   onOpenChange,
   candidate,
   semesterId,
-  onSaved,
+  onGenerateMore,
+  onViewTimetable,
 }: WizardSaveFlowProps) => {
   const [mode, setMode] = useState<SaveMode>("new");
   const [targetTimetableId, setTargetTimetableId] = useState<number | null>(null);
   const [isOverwriteConfirmOpen, setOverwriteConfirmOpen] = useState(false);
   const [isSaving, setSaving] = useState(false);
+  // 새 시간표 이름 입력 모달. "이미 있는 이름이면 저장 실패"를 저장 시도 후에야
+  // 알게 되는 게 아니라, 저장 전에 사용자가 직접 이름을 정하고 실패 시 즉시 고칠 수 있게 한다.
+  const [isNameModalOpen, setNameModalOpen] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  // 저장 완료 후 "더 많은 후보 생성 / 시간표 보러 가기"를 고르는 모달. 저장된 시간표 id를 들고 있는다.
+  const [savedTimetableId, setSavedTimetableId] = useState<number | null>(null);
 
   const { timeTables: semesterTimetables } = useSemesterTimeTables(
     semesterId ?? undefined,
@@ -58,22 +69,25 @@ const WizardSaveFlow = ({
     }
   };
 
-  const handleSaveAsNew = async () => {
-    if (!semesterId || isSaving) return;
+  const handleConfirmSaveAsNew = async () => {
+    const timeTableName = nameDraft.trim();
+    if (!semesterId || isSaving || !timeTableName) return;
     setSaving(true);
     try {
       const created = await createTimeTableMutation.mutateAsync({
         semesterId,
-        timeTableName: `${candidate.label} (마법사 추천)`,
+        timeTableName,
       });
       await addCandidateCourses(created.id);
       mixpanelTrack.timetableWizardAction("저장", {
         save_mode: "새 시간표",
         course_count: candidate.courses.length,
       });
+      setNameModalOpen(false);
       onOpenChange(false);
-      onSaved();
+      setSavedTimetableId(created.id);
     } catch (error: any) {
+      // 이름 모달은 닫지 않는다 - 실패 원인이 대개 이름 중복이라, 사용자가 바로 고쳐 재시도할 수 있어야 한다.
       alert(error.response?.data?.msg || "시간표 저장에 실패했습니다.");
     } finally {
       setSaving(false);
@@ -100,7 +114,7 @@ const WizardSaveFlow = ({
       });
       setOverwriteConfirmOpen(false);
       onOpenChange(false);
-      onSaved();
+      setSavedTimetableId(targetTimetableId);
     } catch (error: any) {
       alert(error.response?.data?.msg || "시간표 덮어쓰기에 실패했습니다.");
     } finally {
@@ -110,7 +124,8 @@ const WizardSaveFlow = ({
 
   const handleSaveClick = () => {
     if (mode === "new") {
-      handleSaveAsNew();
+      setNameDraft(candidate.label);
+      setNameModalOpen(true);
     } else if (!targetTimetableId) {
       alert("덮어쓸 시간표를 선택해주세요.");
     } else {
@@ -188,6 +203,51 @@ const WizardSaveFlow = ({
           // Figma는 파괴적 확정 버튼을 진한 빨강 채움으로 표현 — 공용 danger variant(파스텔)는
           // 다른 화면(필터 미저장 이탈 등)과 공유하므로 그대로 두고 이 버튼만 override
           style: { background: "#dc322f", color: "#ffffff" },
+        }}
+      />
+
+      <Modal
+        isOpen={isNameModalOpen}
+        onClose={() => setNameModalOpen(false)}
+        title="시간표 이름"
+        description="새로 만들 시간표의 이름을 정해주세요."
+        secondaryButton={{ text: "취소", onClick: () => setNameModalOpen(false) }}
+        primaryButton={{
+          text: "저장",
+          variant: "brand",
+          loading: isSaving,
+          disabled: !nameDraft.trim() || isSaving,
+          onClick: handleConfirmSaveAsNew,
+        }}
+      >
+        <InputField
+          label="시간표 이름"
+          value={nameDraft}
+          onChange={setNameDraft}
+          placeholder="예: 시안 A"
+        />
+      </Modal>
+
+      <Modal
+        isOpen={savedTimetableId !== null}
+        onClose={() => setSavedTimetableId(null)}
+        title="시간표를 저장했어요"
+        description="더 많은 후보를 만들거나, 저장한 시간표를 바로 확인할 수 있어요."
+        secondaryButton={{
+          text: "더 많은 후보 생성",
+          onClick: () => {
+            setSavedTimetableId(null);
+            onGenerateMore();
+          },
+        }}
+        primaryButton={{
+          text: "시간표 보러 가기",
+          variant: "brand",
+          onClick: () => {
+            const id = savedTimetableId;
+            setSavedTimetableId(null);
+            if (id !== null) onViewTimetable(id);
+          },
         }}
       />
     </>
