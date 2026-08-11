@@ -7,7 +7,6 @@ import { useCourses } from "@/hooks/useCourses";
 import useUserStore from "@/stores/useUserStore";
 import { parseSmartCampusGrades } from "@/utils/parseSmartCampusGrades";
 import { resolveGradeCourses } from "@/utils/resolveGradeCourses";
-import { formatSemester } from "@/utils/semester";
 import type {
   GradeMatchStatus,
   ParsedGradeSheet,
@@ -49,8 +48,10 @@ export default function GradeImportSheet({
     null,
   );
   const [isResolving, setIsResolving] = useState(false);
-  const [sourceYear, setSourceYear] = useState<number | null>(null);
-  const [sourceTerm, setSourceTerm] = useState<Term | null>(null);
+  const [detectedSemester, setDetectedSemester] = useState<{
+    year: number;
+    term: Term;
+  } | null>(null);
 
   const { semesters } = useSemesters();
   // 과목명 매칭용 전 학과 Course 목록. 시트를 열 때만 받아온다(3천여 건, 한 번에 옴).
@@ -66,20 +67,20 @@ export default function GradeImportSheet({
     setParsed(null);
     setResolvedRows(null);
     setIsResolving(false);
-    setSourceYear(null);
-    setSourceTerm(null);
+    setDetectedSemester(null);
   }, [isOpen]);
 
-  // 학기를 고르지 않았으면 가장 최근 학기를 기본값으로 쓴다.
+  // 붙여넣은 텍스트에서 학기를 못 읽었으면 가장 최근 학기를 쓴다. 이 학기는 학수번호로
+  // 개설강의를 되짚을 때만 쓰이는데, 학수번호는 개설이 아니라 과목의 식별자라 그 과목이
+  // 열린 학기면 어느 학기로 조회하든 같은 courseId가 나온다. 그래서 사용자에게 고르게
+  // 하지 않는다.
   const effectiveSemester = useMemo(() => {
-    if (sourceYear !== null && sourceTerm !== null) {
-      return { year: sourceYear, term: sourceTerm };
-    }
+    if (detectedSemester) return detectedSemester;
     if (semesters.length > 0) {
       return { year: semesters[0].year, term: semesters[0].term };
     }
     return null;
-  }, [semesters, sourceTerm, sourceYear]);
+  }, [detectedSemester, semesters]);
 
   const handleParse = async () => {
     const result = parseSmartCampusGrades(text);
@@ -93,8 +94,7 @@ export default function GradeImportSheet({
     // 붙여넣은 텍스트에 "2026년 1학기 과목별 성적" 제목이 같이 왔다면 그 학기를 쓴다.
     const semester = result.detectedSemester ?? effectiveSemester;
     if (result.detectedSemester) {
-      setSourceYear(result.detectedSemester.year);
-      setSourceTerm(result.detectedSemester.term);
+      setDetectedSemester(result.detectedSemester);
     }
 
     setIsResolving(true);
@@ -181,34 +181,6 @@ export default function GradeImportSheet({
                 autoCapitalize="off"
                 autoCorrect="off"
               />
-
-              {semesters.length > 0 && (
-                <FieldBlock>
-                  <FieldLabel>성적을 받은 학기</FieldLabel>
-                  <ChipRow>
-                    {semesters.map((semester) => {
-                      const active =
-                        effectiveSemester?.year === semester.year &&
-                        effectiveSemester?.term === semester.term;
-                      return (
-                        <Chip
-                          key={semester.id}
-                          $active={active}
-                          onClick={() => {
-                            setSourceYear(semester.year);
-                            setSourceTerm(semester.term);
-                          }}
-                        >
-                          {formatSemester(semester.year, semester.term)}
-                        </Chip>
-                      );
-                    })}
-                  </ChipRow>
-                  <FieldHint>
-                    과목코드를 개설강의와 연결할 때 쓰는 학기예요.
-                  </FieldHint>
-                </FieldBlock>
-              )}
             </>
           ) : (
             <>
@@ -436,45 +408,6 @@ const PasteArea = styled.textarea`
     color: var(--text-disabled, #b0b8c1);
     white-space: pre;
   }
-`;
-
-const FieldBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const FieldLabel = styled.span`
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary, #333d4b);
-`;
-
-const FieldHint = styled.span`
-  font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
-`;
-
-const ChipRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const Chip = styled.button<{ $active: boolean }>`
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-size: 13px;
-  cursor: pointer;
-  outline: none;
-  border: 1px solid
-    ${({ $active }) =>
-      $active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
-  background-color: ${({ $active }) =>
-    $active ? "var(--bg-brand-subtle, #eff6ff)" : "transparent"};
-  color: ${({ $active }) =>
-    $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
-  font-weight: ${({ $active }) => ($active ? 600 : 400)};
 `;
 
 const SummaryLine = styled.div`
