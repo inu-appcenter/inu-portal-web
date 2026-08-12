@@ -21,6 +21,7 @@ import { DESKTOP_MEDIA } from "@/styles/responsive";
 import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
+import FeatureTourSheet from "@/components/common/FeatureTourSheet";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
 
@@ -165,16 +166,23 @@ export default function RootLayout() {
     return <AppUpdateModal />;
   }
 
+  const isHomeScreen =
+    location.pathname === ROUTES.HOME ||
+    location.pathname === ROUTES.MOBILE_HOME ||
+    location.pathname === ROUTES.HOME_V2 ||
+    location.pathname === ROUTES.ROOT;
+
   return (
     <HeaderProvider>
       <ScrollBarStyles />
       <ScreenContainer>
         {outlet}
-        {(location.pathname === ROUTES.HOME ||
-          location.pathname === ROUTES.MOBILE_HOME ||
-          location.pathname === ROUTES.HOME_V2 ||
-          location.pathname === ROUTES.ROOT) && <AIChatFloatingButton />}
+        {isHomeScreen && <AIChatFloatingButton />}
       </ScreenContainer>
+      {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
+      <FeatureTourSheet
+        enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
+      />
     </HeaderProvider>
   );
 }
