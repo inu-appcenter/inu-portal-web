@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { ChevronLeft } from "lucide-react";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -25,6 +25,16 @@ interface GradeImportSheetProps {
     rows: ResolvedGradeRow[],
     source: { year: number; term: Term } | null,
   ) => void;
+  /**
+   * OS 공유 시트 등으로 이미 들고 있는 성적 텍스트. 시트가 열리면 붙여넣기
+   * 칸에 미리 채워 넣는다("바로 시작" 플로우). `undefined`면 평소처럼 빈 칸.
+   */
+  initialText?: string;
+  /**
+   * `initialText`가 있을 때, 강의 목록 로딩이 끝나는 대로 "불러오기"까지
+   * 자동으로 실행해 사용자를 곧장 미리보기 화면에 데려다 놓는다.
+   */
+  autoParse?: boolean;
 }
 
 const PLACEHOLDER = `기업가정신 / 0005103	1	P	심화교양	사회
@@ -42,6 +52,8 @@ export default function GradeImportSheet({
   onClose,
   targetSemesterLabel,
   onApply,
+  initialText,
+  autoParse,
 }: GradeImportSheetProps) {
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState<ParsedGradeSheet | null>(null);
@@ -68,7 +80,24 @@ export default function GradeImportSheet({
     setIsResolving(false);
     setSourceYear(null);
     setSourceTerm(null);
+    autoParsedRef.current = false;
   }, [isOpen]);
+
+  // OS 공유 시트로 전달받은 텍스트가 있으면 열리자마자 붙여넣기 칸을 채우고,
+  // 강의 목록 로딩이 끝나는 대로 "불러오기"까지 자동으로 실행한다("바로 시작"
+  // 플로우). 한 번 붙여넣은/파싱한 뒤에는(예: 사용자가 뒤로 가서 직접 고친
+  // 경우) 다시 덮어쓰지 않도록 세션당 한 번만 동작한다.
+  const autoParsedRef = useRef(false);
+  useEffect(() => {
+    if (!isOpen || !initialText || autoParsedRef.current) return;
+    setText(initialText);
+    if (!autoParse || isCoursesLoading) return;
+    autoParsedRef.current = true;
+    void handleParse(initialText);
+    // handleParse는 매 렌더마다 새로 만들어지는 일반 함수라 의존성 배열에 넣지
+    // 않는다 — 넣으면 courses/effectiveSemester가 갱신될 때마다 재실행된다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, initialText, autoParse, isCoursesLoading]);
 
   // 학기를 고르지 않았으면 가장 최근 학기를 기본값으로 쓴다.
   const effectiveSemester = useMemo(() => {
@@ -81,8 +110,10 @@ export default function GradeImportSheet({
     return null;
   }, [semesters, sourceTerm, sourceYear]);
 
-  const handleParse = async () => {
-    const result = parseSmartCampusGrades(text);
+  // `overrideText` lets the auto-parse effect above parse the just-set
+  // `initialText` without waiting a render for the `text` state to catch up.
+  const handleParse = async (overrideText?: string) => {
+    const result = parseSmartCampusGrades(overrideText ?? text);
     setParsed(result);
 
     if (result.rows.length === 0) {
@@ -288,7 +319,7 @@ export default function GradeImportSheet({
               fullWidth
               loading={isResolving || isCoursesLoading}
               disabled={!text.trim() || isResolving || isCoursesLoading}
-              onClick={handleParse}
+              onClick={() => handleParse()}
             >
               {isResolving
                 ? "과목 연결 중…"

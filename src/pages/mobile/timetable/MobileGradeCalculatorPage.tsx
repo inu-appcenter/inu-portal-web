@@ -5,6 +5,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import {
   useBlocker,
   useBeforeUnload,
+  useSearchParams,
 } from "react-router-dom";
 import {
   Pencil,
@@ -184,8 +185,15 @@ export default function MobileGradeCalculatorPage() {
   const [showTimetableSheet, setShowTimetableSheet] = useState<boolean>(false);
   const [showGradeImportSheet, setShowGradeImportSheet] =
     useState<boolean>(false);
+  // 앱이 OS 공유 시트로 받은 성적 텍스트를 넘겨줄 때만 채워진다. 시트가 닫히면
+  // (취소/적용 어느 쪽이든) 비워서, 다음에 사용자가 직접 "성적 붙여넣기"를
+  // 눌렀을 때 지난 공유 내용이 다시 뜨지 않게 한다.
+  const [sharedGradesText, setSharedGradesText] = useState<string | undefined>(
+    undefined,
+  );
 
   const { timetables } = useTimetableStore();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // --- Header Integration ---
   useHeader({
@@ -219,6 +227,34 @@ export default function MobileGradeCalculatorPage() {
       localStorage.setItem(LOCAL_STORAGE_KEY, serializeGradeData(initial, 130));
     }
   }, []);
+
+  // --- OS 공유 시트로 받은 성적 텍스트 ---
+  // 앱이 `/timetable/calculator?sharedGrades=...`로 이 페이지를 띄운 경우
+  // (인팁 모바일 앱 `src/share/gradeShareIntent.ts` 참고), 진입하자마자 "성적
+  // 붙여넣기" 시트를 열고 그 텍스트를 채워 넣는다. 페이지 최초 진입에서만
+  // 확인하면 되므로 의존성 배열은 비워 둔다 — 쿼리스트링은 한 번 소비하고
+  // 지운다(뒤로가기/새로고침 시 같은 텍스트가 다시 열리지 않도록).
+  useEffect(() => {
+    const shared = searchParams.get("sharedGrades");
+    if (!shared) return;
+
+    setSharedGradesText(shared);
+    setShowGradeImportSheet(true);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("sharedGrades");
+        return next;
+      },
+      { replace: true },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const closeGradeImportSheet = () => {
+    setShowGradeImportSheet(false);
+    setSharedGradesText(undefined);
+  };
 
   // --- Save Data Helper ---
   const hasChanges = useMemo(() => {
@@ -501,7 +537,7 @@ export default function MobileGradeCalculatorPage() {
     }));
 
     updateSubjects(imported);
-    setShowGradeImportSheet(false);
+    closeGradeImportSheet();
   };
 
   return (
@@ -987,9 +1023,11 @@ export default function MobileGradeCalculatorPage() {
 
       <GradeImportSheet
         isOpen={showGradeImportSheet}
-        onClose={() => setShowGradeImportSheet(false)}
+        onClose={closeGradeImportSheet}
         targetSemesterLabel={selectedSemester}
         onApply={handleApplyImportedGrades}
+        initialText={sharedGradesText}
+        autoParse={Boolean(sharedGradesText)}
       />
 
       <FloatingSaveArea>
