@@ -158,9 +158,14 @@ export default function PostDetailPage() {
     setReportTarget({ type: "REPLY", postId: post.id, replyId: reply.id });
   };
 
-  const handleBlockAuthor = (memberId: number, nickname: string) => {
+  const handleBlockPostAuthor = (postId: number, nickname: string) => {
     if (!requireLogin()) return;
-    setBlockTarget({ memberId, nickname });
+    setBlockTarget({ postId, nickname });
+  };
+
+  const handleBlockReplyAuthor = (replyId: number, nickname: string) => {
+    if (!requireLogin()) return;
+    setBlockTarget({ replyId, nickname });
   };
 
   const headerMenu = useMemo(() => {
@@ -186,13 +191,11 @@ export default function PostDetailPage() {
       },
     ];
 
-    // 익명 게시글은 memberId가 내려오지 않아 차단 대상을 특정할 수 없다.
-    if (post.memberId) {
-      menu.push({
-        label: "작성자 차단하기",
-        onClick: () => handleBlockAuthor(post.memberId!, post.writer || "작성자"),
-      });
-    }
+    // postId만으로 서버가 작성자를 찾아 차단하므로(#294) 익명 글도 차단 가능하다.
+    menu.push({
+      label: "작성자 차단하기",
+      onClick: () => handleBlockPostAuthor(post.id, post.writer || "작성자"),
+    });
 
     return menu;
   }, [post, navigate, isLoggedIn]);
@@ -224,7 +227,7 @@ export default function PostDetailPage() {
                 setReplyContent={setReplyContent}
                 onCommentUpdate={() => setCommentUpdated(true)}
                 onReportReply={handleReportReply}
-                onBlockWriter={handleBlockAuthor}
+                onBlockWriter={handleBlockReplyAuthor}
               />
             </CommentWrapper>
           </PostWrapper>
@@ -250,11 +253,12 @@ export default function PostDetailPage() {
           <BlockUserModal
             target={blockTarget}
             onClose={() => setBlockTarget(null)}
-            onBlocked={(blockedMemberId) => {
+            onBlocked={() => {
               // 차단 직후 해당 작성자의 글/댓글이 더 이상 보이지 않아야 한다.
               // 글쓴이를 차단했다면 이 상세 페이지 자체를 벗어나고,
-              // 댓글 작성자를 차단했다면 목록만 다시 불러온다.
-              if (post.memberId === blockedMemberId) {
+              // 댓글 작성자를 차단했다면 목록만 다시 불러온다. blockTarget이
+              // postId/replyId 중 무엇이었는지로 직접 판단한다(응답에 값이 없다).
+              if (blockTarget && "postId" in blockTarget) {
                 navigate(-1);
               } else {
                 setCommentUpdated(true);
