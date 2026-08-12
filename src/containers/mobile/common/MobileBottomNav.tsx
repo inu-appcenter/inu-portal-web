@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
@@ -15,17 +15,8 @@ import { DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import TooltipMessage from "@/components/common/TooltipMessage";
-import {
-  dismissTooltip,
-  isTooltipDismissed,
-} from "@/utils/dismissibleTooltipStorage";
-
-const TIMETABLE_UPDATE_TOOLTIP_ID = "timetable-update-2026-08";
-const TIMETABLE_UPDATE_ANNOUNCED_AT = new Date("2026-08-04T16:00:00+09:00");
-
-function isAfterTimetableUpdateAnnouncement() {
-  return new Date() >= TIMETABLE_UPDATE_ANNOUNCED_AT;
-}
+import { usePromotion } from "@/hooks/usePromotion";
+import { PROMOTIONS } from "@/utils/promotion/registry";
 
 const NAV_ITEMS = [
   {
@@ -63,28 +54,11 @@ export default function MobileBottomNav() {
   const isLoggedIn = !!tokenInfo.accessToken;
 
   const timetableIconRef = useRef<HTMLDivElement | null>(null);
-  const [showTimetableTooltip, setShowTimetableTooltip] = useState(
-    () =>
-      isLoggedIn &&
-      isAfterTimetableUpdateAnnouncement() &&
-      !isTooltipDismissed(TIMETABLE_UPDATE_TOOLTIP_ID),
-  );
-
-  useEffect(() => {
-    if (showTimetableTooltip) {
-      mixpanelTrack.promotionImpression(TIMETABLE_UPDATE_TOOLTIP_ID, "Bottom Nav");
-    }
-  }, []);
-
-  const handleCloseTimetableTooltip = () => {
-    mixpanelTrack.promotionClicked(
-      TIMETABLE_UPDATE_TOOLTIP_ID,
-      "Close Button",
-      "Bottom Nav",
-    );
-    dismissTooltip(TIMETABLE_UPDATE_TOOLTIP_ID);
-    setShowTimetableTooltip(false);
-  };
+  const {
+    isVisible: showTimetableTooltip,
+    dismiss: dismissTimetableTooltip,
+    accept: acceptTimetableTooltip,
+  } = usePromotion(PROMOTIONS.TIMETABLE_UPDATE, { enabled: isLoggedIn });
 
   const { data: unreadResponse } = useQuery({
     queryKey: ["unreadTotalCount"],
@@ -114,8 +88,7 @@ export default function MobileBottomNav() {
 
   const handleNavClick = (to: string, label: string) => {
     if (to === ROUTES.TIMETABLE.ROOT && showTimetableTooltip) {
-      dismissTooltip(TIMETABLE_UPDATE_TOOLTIP_ID);
-      setShowTimetableTooltip(false);
+      acceptTimetableTooltip("Nav Item");
     }
 
     const targetIndex = NAV_ITEMS.findIndex((item) => item.to === to);
@@ -177,7 +150,7 @@ export default function MobileBottomNav() {
               {isTimetableItem && showTimetableTooltip && (
                 <TooltipMessage
                   message={"편람 업데이트 완료!\n시간표 기능을 이용해보세요."}
-                  onClose={handleCloseTimetableTooltip}
+                  onClose={dismissTimetableTooltip}
                   position="top"
                   align="center"
                   width="max-content"

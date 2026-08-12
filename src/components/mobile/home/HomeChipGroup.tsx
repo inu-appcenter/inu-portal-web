@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Chip from "src/components/common/Chip";
@@ -13,15 +13,11 @@ import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png
 import { LuFlaskConical, LuPartyPopper } from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
-import {
-  dismissTooltip,
-  isTooltipDismissed,
-} from "@/utils/dismissibleTooltipStorage";
+import { usePromotion } from "@/hooks/usePromotion";
+import { PROMOTIONS } from "@/utils/promotion/registry";
 import { ROUTES } from "@/constants/routes";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { mixpanelTrack } from "@/utils/mixpanel";
-
-const FESTIVAL_TOOLTIP_ID = "home-festival-2026";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
@@ -32,11 +28,11 @@ const HomeChipGroup = () => {
     FEATURE_FLAG_KEYS.FESTIVAL,
   );
 
-  const [isFestivalTooltipVisible, setIsFestivalTooltipVisible] = useState(
-    () => {
-      return !isTooltipDismissed(FESTIVAL_TOOLTIP_ID);
-    },
-  );
+  const {
+    isVisible: isFestivalTooltipVisible,
+    dismiss: dismissFestivalTooltip,
+    accept: acceptFestivalTooltip,
+  } = usePromotion(PROMOTIONS.HOME_FESTIVAL, { enabled: isFestivalEnabled });
 
   const chips = [
     {
@@ -68,6 +64,11 @@ const HomeChipGroup = () => {
           "2026년 대동제: PAINT THE UNION",
           "Home Chip",
         );
+
+        if (isFestivalTooltipVisible) {
+          acceptFestivalTooltip("Chip");
+        }
+
         navigate(ROUTES.FESTIVAL2026);
       },
       isActive: isFestivalEnabled,
@@ -120,22 +121,6 @@ const HomeChipGroup = () => {
     },
   ];
 
-  useEffect(() => {
-    if (isFestivalTooltipVisible) {
-      mixpanelTrack.promotionImpression("Festival Tooltip", "Home Chip Group");
-    }
-  }, [isFestivalTooltipVisible]);
-
-  const handleCloseFestivalTooltip = () => {
-    mixpanelTrack.promotionClicked(
-      "Festival Tooltip",
-      "Close Button",
-      "Home Chip Group",
-    );
-    dismissTooltip(FESTIVAL_TOOLTIP_ID);
-    setIsFestivalTooltipVisible(false);
-  };
-
   return (
     <MaskContainer>
       <ChipGroupWrapper>
@@ -173,7 +158,7 @@ const HomeChipGroup = () => {
                   {isFestivalChip && isFestivalTooltipVisible && (
                     <TooltipMessage
                       message="2026년 대동제 정보를\n확인해보세요!"
-                      onClose={handleCloseFestivalTooltip}
+                      onClose={dismissFestivalTooltip}
                       position="top"
                       align="center"
                       anchorRef={festivalTooltipAnchorRef}
