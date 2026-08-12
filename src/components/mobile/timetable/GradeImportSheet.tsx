@@ -219,6 +219,13 @@ export default function GradeImportSheet({
                         빠집니다.
                       </span>
                     )}
+                    {matchedCount > 0 && (
+                      <span className="target">
+                        학점은 현재 편람 기준으로 표시돼요. 이수 당시와
+                        학점이 바뀐 과목은 실제와 다를 수 있어요 — 다르면
+                        직접 수정해주세요.
+                      </span>
+                    )}
                     <span className="target">
                       {targetSemesterLabel}에 추가됩니다.
                     </span>
