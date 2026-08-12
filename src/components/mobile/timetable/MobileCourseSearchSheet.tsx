@@ -23,6 +23,7 @@ import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
 import {
   countActiveFilters,
   getOnlineTypeLabel,
+  getEnrollmentLabel,
 } from "@/components/mobile/timetable/filter/courseFilterModel";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
@@ -505,6 +506,10 @@ const MobileCourseSearchSheet = ({
                     course.ssupTypeName,
                     course.ssupTypeCode,
                   );
+                  const enrollmentLabel = getEnrollmentLabel(
+                    course.enrolledCount,
+                    course.capacity,
+                  );
 
                   return (
                     <CourseItem
@@ -523,12 +528,9 @@ const MobileCourseSearchSheet = ({
                               {course.savedCount}명 담음
                             </SavedBadge>
                           )}
-                          {course.enrolledCount != null &&
-                            course.capacity != null && (
-                              <EnrolledBadge>
-                                {course.enrolledCount}명 / {course.capacity}명
-                              </EnrolledBadge>
-                            )}
+                          {enrollmentLabel && (
+                            <EnrolledBadge>{enrollmentLabel}</EnrolledBadge>
+                          )}
                         </RightInfo>
                       </InfoRow>
 
