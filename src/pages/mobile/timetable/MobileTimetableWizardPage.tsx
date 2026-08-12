@@ -130,6 +130,16 @@ export default function MobileTimetableWizardPage() {
 
   const runGeneration = useCallback(() => setStep("generating"), [setStep]);
 
+  // 빈 결과 화면에서 원인 강의를 바로 빼고 그 자리에서 재생성한다(#248). Step1로
+  // 돌아가 사용자가 직접 어떤 강의였는지 기억해 빼야 했던 흐름을 없앤다.
+  const handleRemoveWishlistCourseFromConflict = useCallback(
+    (subjectNumber: string) => {
+      removeWishlistCourse(subjectNumber);
+      runGeneration();
+    },
+    [removeWishlistCourse, runGeneration],
+  );
+
   const selectedCandidate = useMemo(
     () => result?.candidates.find((c) => c.id === selectedCandidateId) ?? null,
     [result, selectedCandidateId],
@@ -327,7 +337,11 @@ export default function MobileTimetableWizardPage() {
       )}
 
       {step === "empty" && result && (
-        <WizardEmptyState conflicts={result.conflicts} onRelax={() => setStep("step1")} />
+        <WizardEmptyState
+          conflicts={result.conflicts}
+          onRelax={() => setStep("step1")}
+          onRemoveWishlistCourse={handleRemoveWishlistCourseFromConflict}
+        />
       )}
 
       {step === "error" && <WizardErrorState onRetry={runGeneration} />}
