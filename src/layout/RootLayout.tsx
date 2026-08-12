@@ -22,6 +22,7 @@ import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
 import FeatureTourSheet from "@/components/common/FeatureTourSheet";
+import AppInstallBanner from "@/components/common/AppInstallBanner";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
 
@@ -175,6 +176,9 @@ export default function RootLayout() {
   return (
     <HeaderProvider>
       <ScrollBarStyles />
+      {/* 앱 미설치 iOS 사용자용 설치 유도 배너. 노출 조건은 컴포넌트 안에서
+          판단하고, 해당 없으면 아무것도 렌더하지 않는다. */}
+      <AppInstallBanner />
       <ScreenContainer>
         {outlet}
         {isHomeScreen && <AIChatFloatingButton />}

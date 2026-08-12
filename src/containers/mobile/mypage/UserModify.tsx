@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { putMemberDepartment, putMembers } from "@/apis/members";
+import { patchSchoolDepartment, putMembers } from "@/apis/members";
 import useUserStore from "@/stores/useUserStore";
-import { navBarList } from "@/resources/strings/navBarList";
-import DepartmentNoticeSelector from "../../../components/mobile/notice/DepartmentNoticeSelector.tsx";
-import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
-import { subscribeDepartment } from "@/apis/notices";
+import {
+  getSchoolDepartments,
+  SchoolDepartment,
+} from "@/apis/departments";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import {
@@ -14,6 +14,7 @@ import {
   normalizeOptionalText,
   normalizeProfileImageId,
 } from "@/utils/userInfo";
+import { UserInfoInput } from "@/types/members";
 
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
 const MAX_NICKNAME_LENGTH = 10;
@@ -39,10 +40,11 @@ export default function UserModify() {
   const [fireId, setFireId] = useState(() =>
     normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
   );
-  const [department, setDepartment] = useState(() =>
-    normalizeOptionalText(userInfo.department),
+  const [departmentCode, setDepartmentCode] = useState(() =>
+    normalizeOptionalText(userInfo.departmentCode),
   );
-  const [isDeptSelectorOpen, setIsDeptSelectorOpen] = useState(false);
+  const [departments, setDepartments] = useState<SchoolDepartment[]>([]);
+  const [isDepartmentLoading, setIsDepartmentLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
@@ -51,25 +53,51 @@ export default function UserModify() {
     setFireId(
       normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
     );
-    setDepartment(normalizeOptionalText(userInfo.department));
-  }, [userInfo.department, userInfo.fireId, userInfo.nickname]);
+    setDepartmentCode(normalizeOptionalText(userInfo.departmentCode));
+  }, [userInfo.departmentCode, userInfo.fireId, userInfo.nickname]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadDepartments = async () => {
+      try {
+        const response = await getSchoolDepartments();
+        if (isMounted) {
+          setDepartments(response.data);
+        }
+      } catch (error) {
+        console.error("학과 목록 조회 실패", error);
+        if (isMounted) {
+          alert("학과 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsDepartmentLoading(false);
+        }
+      }
+    };
+
+    void loadDepartments();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const originalNickname = normalizeOptionalText(userInfo.nickname).trim();
-  const originalDepartment = normalizeOptionalText(userInfo.department).trim();
+  const originalDepartmentCode = normalizeOptionalText(userInfo.departmentCode);
   const trimmedNickname = normalizeOptionalText(nickname).trim();
-  const normalizedDepartment = normalizeOptionalText(department).trim();
+  const selectedDepartment = departments.find(
+    (item) => item.code === departmentCode,
+  );
+  const departmentName = selectedDepartment?.name ?? userInfo.department;
   const selectedFireId = normalizeProfileImageId(
     fireId,
     DEFAULT_PROFILE_IMAGE_ID,
   );
   const nicknameLength = nickname.length;
-  const normalizedDepartmentCode = normalizedDepartment
-    ? findTitleOrCode(normalizedDepartment)
-    : "";
   const hasNicknameChanged = trimmedNickname !== originalNickname;
-  const hasDepartmentChanged = normalizedDepartment !== originalDepartment;
-  const hasValidDepartmentChange =
-    hasDepartmentChanged && Boolean(normalizedDepartmentCode);
+  const hasDepartmentChanged = departmentCode !== originalDepartmentCode;
+  const hasValidDepartmentChange = hasDepartmentChanged && Boolean(departmentCode);
   const hasImageChanged =
     selectedFireId !==
     normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID);
@@ -96,17 +124,29 @@ export default function UserModify() {
       return;
     }
 
-    const shouldSubscribeDepartment =
-      !originalDepartment && hasValidDepartmentChange;
-
     try {
       setIsSaving(true);
 
       const updatedNickname = hasNicknameChanged ? trimmedNickname : null;
-      const response = await putMembers(updatedNickname, selectedFireId);
+      let updatedUserInfo: UserInfoInput = {
+        ...userInfo,
+        nickname: updatedNickname ?? originalNickname,
+        department: departmentName,
+        departmentCode,
+        fireId: selectedFireId,
+      };
+
+      if (hasNicknameChanged || hasImageChanged) {
+        const response = await putMembers(updatedNickname, selectedFireId);
+        updatedUserInfo = {
+          ...updatedUserInfo,
+          id: response.data,
+        };
+      }
 
       if (hasValidDepartmentChange) {
-        await putMemberDepartment(normalizedDepartmentCode);
+        const response = await patchSchoolDepartment(departmentCode);
+        updatedUserInfo = response.data;
       }
 
       // 믹스패널 트래킹: 어떤 필드가 수정되었는지 기록
@@ -119,24 +159,9 @@ export default function UserModify() {
         mixpanelTrack.profileUpdated(updatedFields);
       }
 
-      setUserInfo({
-        id: response.data,
-        nickname: updatedNickname ?? originalNickname,
-        department: hasValidDepartmentChange
-          ? normalizedDepartment
-          : originalDepartment,
-        role: userInfo.role,
-        fireId: selectedFireId,
-      });
+      setUserInfo(updatedUserInfo);
 
-      if (shouldSubscribeDepartment) {
-        await subscribeDepartment([normalizedDepartmentCode]);
-        alert(
-          "성공적으로 수정되었습니다.\n\n학과공지 알리미 기능도 자동으로 활성화되었습니다. 학과 공지 페이지에서 설정을 변경할 수 있어요.",
-        );
-      } else {
-        alert("성공적으로 수정되었습니다.");
-      }
+      alert("성공적으로 수정되었습니다.");
 
       navigate("/mypage");
     } catch (error: any) {
@@ -156,25 +181,8 @@ export default function UserModify() {
     }
   };
 
-  const handleDepartmentClick = (selectedDepartment: string) => {
-    const departmentName = findTitleOrCode(selectedDepartment);
-    if (departmentName) {
-      setDepartment(departmentName);
-    }
-    setIsDeptSelectorOpen(false);
-  };
-
   return (
     <UserModifyWrapper>
-      {navBarList[1].child && (
-        <DepartmentNoticeSelector
-          departments={navBarList[1].child}
-          isOpen={isDeptSelectorOpen}
-          setIsOpen={setIsDeptSelectorOpen}
-          handleClick={handleDepartmentClick}
-        />
-      )}
-
       <SectionCard>
         <SectionTop>
           <div>
@@ -202,13 +210,20 @@ export default function UserModify() {
           </div>
         </SectionTop>
 
-        <StyledInput
-          value={department}
-          onChange={(event) => setDepartment(event.target.value)}
-          placeholder="학과를 선택해주세요"
-          readOnly
-          onClick={() => setIsDeptSelectorOpen(true)}
-        />
+        <DepartmentSelect
+          value={departmentCode}
+          onChange={(event) => setDepartmentCode(event.target.value)}
+          disabled={isDepartmentLoading}
+        >
+          <option value="">
+            {isDepartmentLoading ? "학과 목록을 불러오는 중..." : "학과를 선택해주세요"}
+          </option>
+          {departments.map((item) => (
+            <option key={item.code} value={item.code}>
+              {item.name}
+            </option>
+          ))}
+        </DepartmentSelect>
       </SectionCard>
 
       <SectionCard>
@@ -228,7 +243,7 @@ export default function UserModify() {
           <PreviewText>
             <strong>{trimmedNickname || "닉네임 없음"}</strong>
             <span>
-              {normalizedDepartment || "학과를 아직 선택하지 않았어요."}
+              {departmentName || "학과를 아직 선택하지 않았어요."}
             </span>
           </PreviewText>
         </PreviewCard>
@@ -368,6 +383,31 @@ const StyledInput = styled.input`
   &[readonly] {
     color: #51657f;
     cursor: pointer;
+  }
+`;
+
+const DepartmentSelect = styled.select`
+  width: 100%;
+  padding: 15px 44px 15px 16px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  color: #21324c;
+  font-size: 15px;
+  font-weight: 700;
+  background: #f8fbff;
+  border: 1px solid #dce8f6;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #5e92f0;
+    box-shadow: 0 0 0 4px rgba(94, 146, 240, 0.12);
+    background: #ffffff;
+  }
+
+  &:disabled {
+    cursor: default;
+    color: #9aa9bd;
   }
 `;
 

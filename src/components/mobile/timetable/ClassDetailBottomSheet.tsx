@@ -291,9 +291,11 @@ export default function ClassDetailBottomSheet({
                       <RoomMapButton
                         type="button"
                         onClick={() => {
-                          navigate(ROUTES.BOARD.CAMPUS, {
-                            state: { search: roomVal },
-                          });
+                          // 새 웹뷰로 열려도(멀티 웹뷰 앱) 값이 유실되지 않도록
+                          // router state가 아니라 URL 쿼리로 전달한다 (#274).
+                          navigate(
+                            `${ROUTES.BOARD.CAMPUS}?search=${encodeURIComponent(roomVal)}`,
+                          );
                           onOpenChange(false);
                         }}
                       >

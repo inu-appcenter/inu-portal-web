@@ -7,11 +7,10 @@ import {
   deleteKeyword,
   getKeywords,
   getKeywordsNotice,
-  subscribeDepartment,
+  subscribeSchoolDepartment,
   subscribeKeywordsNotice,
 } from "@/apis/notices";
 import useUserStore from "../../stores/useUserStore.ts";
-import findTitleOrCode from "../../utils/findTitleOrCode.ts";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew.tsx";
 import { useLocation } from "react-router-dom";
 import { NoticeRecommendKeywords } from "@/resources/strings/NoticeRecommendKeywords";
@@ -378,8 +377,7 @@ function MobileDeptAlarmSetting({
     if (!keyword) return;
 
     try {
-      const deptCode = findTitleOrCode(userInfo.department);
-      await createKeyword(keyword, deptCode);
+      await createKeyword(keyword, userInfo.departmentCode);
       mixpanelTrack.noticeKeywordAdded(
         "Department",
         keyword,
@@ -426,12 +424,11 @@ function MobileDeptAlarmSetting({
     try {
       if (checked) {
         // 학과 전체 알림 구독
-        console.log(userInfo.department, findTitleOrCode(userInfo.department));
-        await subscribeDepartment([findTitleOrCode(userInfo.department)]);
+        await subscribeSchoolDepartment([userInfo.departmentCode]);
         fetchKeywords();
       } else {
         // 빈 배열 전달로 전체 알림 해제
-        await subscribeDepartment([]);
+        await subscribeSchoolDepartment([]);
       }
 
       setAllAlarm(checked);

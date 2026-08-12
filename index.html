@@ -21,6 +21,29 @@
       content="인천대학교 학생들을 위한 팁을 담다"
     />
     <meta property="og:url" content="https://intip.inuappcenter.kr/" />
+    <!-- iOS Safari 네이티브 Smart App Banner. 앱이 없으면 설치를, 있으면 '열기'를
+         띄운다. `app-argument`에 지금 보고 있는 URL을 넣어야 '열기'로 진입했을 때
+         앱이 같은 화면으로 갈 수 있다(앱 쪽 `+native-intent`가 이 URL을 받는다).
+         Safari가 head를 파싱할 때 값이 있어야 하므로 인라인 스크립트로 바로 채운다.
+         Safari가 아닌 iOS 브라우저·인앱 웹뷰는 이 메타를 무시하므로, 그쪽은
+         커스텀 배너(`components/common/AppInstallBanner.tsx`)가 담당한다. -->
+    <meta name="apple-itunes-app" content="app-id=6740070975" />
+    <script>
+      (function () {
+        try {
+          var meta = document.querySelector('meta[name="apple-itunes-app"]');
+          if (meta) {
+            meta.setAttribute(
+              "content",
+              "app-id=6740070975, app-argument=" + window.location.href,
+            );
+          }
+        } catch (error) {
+          /* 메타 갱신 실패해도 배너 자체는 뜬다(앱은 기본 화면으로 열림) */
+        }
+      })();
+    </script>
+
 <!--    네이버 검색 등록을 위한 태그-->
     <meta name="naver-site-verification" content="d21e463ea38d2db93ba9d1a7ae7cbba5da7dc29f" />
 
