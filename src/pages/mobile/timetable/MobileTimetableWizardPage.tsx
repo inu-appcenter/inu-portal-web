@@ -29,7 +29,10 @@ import {
   WizardErrorState,
 } from "@/components/mobile/timetable/wizard/WizardEmptyErrorScreens";
 import { formatCourseMeta } from "@/utils/timetableWizardFormat";
-import type { WizardPreferenceConditions } from "@/types/timetableWizard";
+import type {
+  WizardPreferenceConditions,
+  WizardCourseOption,
+} from "@/types/timetableWizard";
 
 const GENERATING_MIN_VISIBLE_MS = 1600;
 const DAY_LABELS = ["월", "화", "수", "목", "금"];
@@ -138,6 +141,20 @@ export default function MobileTimetableWizardPage() {
       runGeneration();
     },
     [removeWishlistCourse, runGeneration],
+  );
+
+  // 원인 강의를 다른 분반으로 "교체"한다(#248). 강의 자체를 빼고, 같은 과목명으로
+  // 미리 필터링된 검색 시트를 열어 다른 분반을 바로 담을 수 있게 한다. 시트에서
+  // 담은 뒤 재생성은 자동으로 이어지지 않는다 - 사용자가 몇 개를 더 조정할지
+  // 스스로 판단해야 하는 흐름(빈 결과 화면과 달리 여기서는 몇 번이고 검색/담기를
+  // 반복할 수 있음)이라, 매번 자동 재생성하면 오히려 방해가 된다. 다 고른 뒤
+  // "다시 만들기"로 직접 재생성한다.
+  const handleReplaceWishlistCourseFromConflict = useCallback(
+    (course: WizardCourseOption) => {
+      removeWishlistCourse(course.subjectNumber);
+      openCourseSearch("wishlist", course.title);
+    },
+    [removeWishlistCourse, openCourseSearch],
   );
 
   const selectedCandidate = useMemo(
@@ -341,6 +358,7 @@ export default function MobileTimetableWizardPage() {
           conflicts={result.conflicts}
           onRelax={() => setStep("step1")}
           onRemoveWishlistCourse={handleRemoveWishlistCourseFromConflict}
+          onReplaceWishlistCourse={handleReplaceWishlistCourseFromConflict}
         />
       )}
 
