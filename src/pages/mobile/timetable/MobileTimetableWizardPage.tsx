@@ -6,6 +6,7 @@ import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
 import { useSemesters } from "@/hooks/useSemesters";
+import { pickCurrentSemester } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
@@ -84,7 +85,8 @@ export default function MobileTimetableWizardPage() {
   useEffect(() => {
     if (semesters.length === 0) return;
     if (semester && semesters.some((s) => s.id === semester.id)) return;
-    const preferred = semesters.find((s) => s.status === "OPEN") ?? semesters[0];
+    const preferred = pickCurrentSemester(semesters);
+    if (!preferred) return;
     setSemester({ id: preferred.id, year: preferred.year, term: preferred.term });
   }, [semesters, semester, setSemester]);
 

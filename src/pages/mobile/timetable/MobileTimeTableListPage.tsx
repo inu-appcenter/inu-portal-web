@@ -12,7 +12,7 @@ import {
   useUpdateTimeTablePrimary,
 } from "@/hooks/useTimeTables";
 import { useSemesters } from "@/hooks/useSemesters";
-import { formatSemester } from "@/utils/semester";
+import { formatSemester, pickCurrentSemester } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 // Icons
@@ -83,10 +83,14 @@ export default function MobileTimeTableListPage() {
   }, []);
 
   const handleAddClick = useCallback(() => {
-    if (semesters.length === 0) return;
+    // 목록(semesters[0])이 아니라 serverSemesters에서 진행중(OPEN) 학기를 직접
+    // 고른다 — 다음 학기가 미리 등록돼 있으면 semesters[0]이 아직 아무 시간표도
+    // 없어야 정상인 미래 학기가 될 수 있다(#235).
+    const preferred = pickCurrentSemester(serverSemesters);
+    if (!preferred) return;
     mixpanelTrack.timetableFeatureClicked("시간표 생성", "시간표 목록");
-    openAddModal(semesters[0]);
-  }, [openAddModal, semesters]);
+    openAddModal(formatSemester(preferred.year, preferred.term));
+  }, [openAddModal, serverSemesters]);
 
   const headerRight = useMemo(() => (
     <IconButton onClick={handleAddClick}>
