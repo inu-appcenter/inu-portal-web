@@ -1,18 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Modal from "@/components/common/Modal";
-import { blockUser } from "@/apis/blocks";
+import { blockPostAuthor, blockReplyAuthor } from "@/apis/blocks";
 
-export interface BlockTarget {
-  memberId: number;
-  nickname: string;
-}
+// postId/replyId 기준으로만 차단한다 — PostResponseDto/ReplyResponseDto가
+// memberId를 내려주지 않아(익명 글/댓글 재식별 방지) 클라이언트는 애초에
+// memberId를 알 수 없다. 서버가 postId/replyId로 작성자를 찾아 차단한다.
+export type BlockTarget =
+  | { postId: number; nickname: string }
+  | { replyId: number; nickname: string };
 
 interface BlockUserModalProps {
   /** null 이면 닫힌 상태 */
   target: BlockTarget | null;
   onClose: () => void;
-  /** 차단 성공 후 차단된 memberId와 함께 호출 (목록/상세 새로고침 등) */
-  onBlocked?: (blockedMemberId: number) => void;
+  /** 차단 성공 후 호출. target이 post였는지 reply였는지는 호출부가 target으로 직접 판단한다. */
+  onBlocked?: () => void;
 }
 
 export default function BlockUserModal({
@@ -23,15 +25,16 @@ export default function BlockUserModal({
   const queryClient = useQueryClient();
 
   const blockMutation = useMutation({
-    mutationFn: (targetMemberId: number) => blockUser(targetMemberId),
-    onSuccess: (_data, blockedMemberId) => {
+    mutationFn: (t: BlockTarget) =>
+      "postId" in t ? blockPostAuthor(t.postId) : blockReplyAuthor(t.replyId),
+    onSuccess: () => {
       alert(
         "차단했습니다.\n차단한 사용자의 글과 댓글은 더 이상 보이지 않습니다.",
       );
       queryClient.invalidateQueries({ queryKey: ["blockedUsers"] });
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       onClose();
-      onBlocked?.(blockedMemberId);
+      onBlocked?.();
     },
     onError: (error: unknown) => {
       console.error("유저 차단 실패", error);
@@ -52,7 +55,7 @@ export default function BlockUserModal({
       }
       primaryButton={{
         text: "차단하기",
-        onClick: () => target && blockMutation.mutate(target.memberId),
+        onClick: () => target && blockMutation.mutate(target),
         variant: "danger",
         disabled: !target || blockMutation.isPending,
         loading: blockMutation.isPending,

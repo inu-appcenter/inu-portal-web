@@ -24,7 +24,7 @@ interface CommentListProps {
   setReplyContent: (content: string) => void;
   onCommentUpdate: () => void;
   onReportReply: (reply: Reply) => void;
-  onBlockWriter: (memberId: number, nickname: string) => void;
+  onBlockWriter: (replyId: number, nickname: string) => void;
 }
 
 export default function CommentListMobile({
@@ -127,18 +127,16 @@ export default function CommentListMobile({
                 >
                   신고
                 </DropdownItem>
-                {/* 익명 댓글은 memberId가 없어 차단 대상을 특정할 수 없다. */}
-                {!reply.isAnonymous && reply.memberId && (
-                  <DropdownItem
-                    $danger
-                    onClick={() => {
-                      setActiveMenuId(null);
-                      onBlockWriter(reply.memberId!, reply.writer || "작성자");
-                    }}
-                  >
-                    차단
-                  </DropdownItem>
-                )}
+                {/* replyId만으로 서버가 작성자를 찾아 차단하므로(#294) 익명 댓글도 차단 가능하다. */}
+                <DropdownItem
+                  $danger
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    onBlockWriter(reply.id, reply.writer || "작성자");
+                  }}
+                >
+                  차단
+                </DropdownItem>
               </>
             )}
           </DropdownMenu>
