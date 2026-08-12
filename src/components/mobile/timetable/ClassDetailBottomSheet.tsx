@@ -135,7 +135,7 @@ export default function ClassDetailBottomSheet({
   const creditsVal =
     liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
 
-  const evaluationVal = liveClass.evaluation || "상대평가";
+  const evaluationVal = liveClass.evaluation || "";
 
   const lectureReviewUrl =
     professorName && professorName !== "-"
