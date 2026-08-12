@@ -7,6 +7,7 @@ import { useCourses } from "@/hooks/useCourses";
 import useUserStore from "@/stores/useUserStore";
 import { parseSmartCampusGrades } from "@/utils/parseSmartCampusGrades";
 import { resolveGradeCourses } from "@/utils/resolveGradeCourses";
+import GradeImportGuideSheet from "@/components/mobile/timetable/GradeImportGuideSheet";
 import type {
   GradeMatchStatus,
   ParsedGradeSheet,
@@ -52,6 +53,7 @@ export default function GradeImportSheet({
     year: number;
     term: Term;
   } | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
 
   const { semesters } = useSemesters();
   // 과목명 매칭용 전 학과 Course 목록. 시트를 열 때만 받아온다(3천여 건, 한 번에 옴).
@@ -171,6 +173,9 @@ export default function GradeImportSheet({
                   교과목명/과목코드, 학점, 등급, 이수구분 순서면 됩니다. 표
                   제목까지 함께 붙여넣으면 학기도 자동으로 인식해요.
                 </p>
+                <GuideLinkButton type="button" onClick={() => setShowGuide(true)}>
+                  복사하는 방법이 궁금하다면? 예시로 보기
+                </GuideLinkButton>
               </GuideBox>
 
               <PasteArea
@@ -280,6 +285,11 @@ export default function GradeImportSheet({
           )}
         </SheetFooter>
       </Sheet>
+
+      <GradeImportGuideSheet
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+      />
     </>
   );
 }
@@ -384,6 +394,21 @@ const GuideBox = styled.div`
   .sub {
     color: var(--text-tertiary, #8b95a1);
   }
+`;
+
+const GuideLinkButton = styled.button`
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 2px 0 0;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-brand, #0061ff);
+  cursor: pointer;
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 `;
 
 const PasteArea = styled.textarea`
