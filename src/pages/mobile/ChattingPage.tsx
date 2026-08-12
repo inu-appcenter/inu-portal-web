@@ -36,6 +36,7 @@ const getMessageColor = (identifier: string) => {
 };
 
 import { updateChatRoomTitle, getChatRoomMembers } from "@/apis/chat";
+import { getFriends } from "@/apis/friends";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleModal";
@@ -160,6 +161,48 @@ export default function ChattingPage() {
   });
   const members = membersRes?.data || [];
 
+  // "공강 맞추기"(#264)에서만 쓰인다. 채팅방 멤버 API는 friendMemberId를 안 주므로
+  // 친구 목록과 studentId/nickname으로 대조해야 시간표 조회에 쓸 friendMemberId를
+  // 얻을 수 있다(MemberListDrawer.tsx의 매칭 방식과 동일).
+  const { data: friendsRes } = useQuery({
+    queryKey: ["friends"],
+    queryFn: getFriends,
+  });
+  const friends = friendsRes?.data || [];
+
+  const handleFindFreeTime = () => {
+    const nonSelfMembers = members.filter((m) => !m.isMe);
+    const matchedFriendMemberIds = nonSelfMembers
+      .map(
+        (m) =>
+          friends.find(
+            (f) =>
+              (m.studentId && m.studentId === f.studentId) ||
+              m.nickname === f.nickname,
+          )?.friendMemberId,
+      )
+      .filter((id): id is number => id != null);
+
+    if (matchedFriendMemberIds.length === 0) {
+      alert(
+        "친구로 등록된 참여자가 없어 공강을 계산할 수 없어요. 먼저 친구를 추가해 주세요.",
+      );
+      return;
+    }
+    if (matchedFriendMemberIds.length < nonSelfMembers.length) {
+      alert(
+        "친구가 아닌 참여자는 제외하고, 친구로 등록된 참여자만 시간표를 비교해요.",
+      );
+    }
+
+    mixpanelTrack.chatRoomMenuClicked("공강 맞추기", roomId ?? "");
+    const params = new URLSearchParams();
+    params.set("memberIds", matchedFriendMemberIds.join(","));
+    params.set("tab", "free");
+    if (roomId) params.set("roomId", roomId);
+    navigate(`${ROUTES.TIMETABLE.COMPARE}?${params.toString()}`);
+  };
+
   useVisualViewport();
 
   const handleUpdateTitle = () => {
@@ -261,8 +304,13 @@ export default function ChattingPage() {
       });
     }
 
+    items.push({
+      label: "공강 맞추기",
+      onClick: handleFindFreeTime,
+    });
+
     return items;
-  }, [roomInfo, isAdmin]);
+  }, [roomInfo, isAdmin, members, friends]);
 
   useHeader({
     title: headerTitle,

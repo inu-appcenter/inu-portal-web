@@ -83,6 +83,9 @@ export default function MobileTimeTableComparePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const friendIdsParam = searchParams.get("ids") || "";
   const memberIdsParam = searchParams.get("memberIds") || "";
+  // 채팅방 내부의 "공강 맞추기" 버튼(#264)에서 진입한 경우에만 채워진다. 있으면
+  // "공유"가 새 채팅방을 만드는 대신 이 방으로 바로 공유한다.
+  const originRoomId = searchParams.get("roomId") || "";
   const { userInfo } = useUserStore();
   const { activeTimetableId, timetables } = useTimetableStore();
 
@@ -843,6 +846,32 @@ export default function MobileTimeTableComparePage() {
     return `선택한 ${topNames} 님 외 ${extraCount}명 단체톡방에 공유할까요?`;
   }, [selectedFriendIdsState, searchParams, friendsMap]);
 
+  const buildTimetableSharePayload = (
+    targetFriendIds: number[],
+  ): TimetableShareExtraData => ({
+    title: "시간표 겹쳐보기 & 공강 공유",
+    friendIds: targetFriendIds,
+    memberIds: [
+      userInfo.id,
+      ...targetFriendIds
+        .map(
+          (friendId) =>
+            friendsMap.find((friend) => friend.friendId === friendId)
+              ?.friendMemberId,
+        )
+        .filter((memberId): memberId is number => memberId != null),
+    ].filter(
+      (memberId, index, ids) =>
+        memberId > 0 && ids.indexOf(memberId) === index,
+    ),
+    topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
+      day: slot.day,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      duration: slot.duration,
+    })),
+  });
+
   const shareMutation = useMutation({
     mutationFn: async (targetFriendIds: number[]) =>
       createPersonalChatRoom(targetFriendIds),
@@ -855,29 +884,7 @@ export default function MobileTimeTableComparePage() {
       const roomData = res.data || res;
       const roomId = roomData.id || roomData.roomId;
       if (roomId) {
-        const payload: TimetableShareExtraData = {
-          title: "시간표 겹쳐보기 & 공강 공유",
-          friendIds: variables,
-          memberIds: [
-            userInfo.id,
-            ...variables
-              .map(
-                (friendId) =>
-                  friendsMap.find((friend) => friend.friendId === friendId)
-                    ?.friendMemberId,
-              )
-              .filter((memberId): memberId is number => memberId != null),
-          ].filter(
-            (memberId, index, ids) =>
-              memberId > 0 && ids.indexOf(memberId) === index,
-          ),
-          topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
-            day: slot.day,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            duration: slot.duration,
-          })),
-        };
+        const payload = buildTimetableSharePayload(variables);
         const payloadStr = encodeURIComponent(JSON.stringify(payload));
         navigate(`${ROUTES.CHAT.ROOT}/${roomId}?sharePayload=${payloadStr}`);
       }
@@ -918,6 +925,21 @@ export default function MobileTimeTableComparePage() {
           .filter((id) => Boolean(id) && id !== 99999);
       }
     }
+
+    // 채팅방 "공강 맞추기" 버튼으로 들어온 경우, 새 채팅방을 만들지 않고 원래
+    // 있던 그 방으로 바로 공유한다(#264 목표 상태의 마지막 항목).
+    if (originRoomId) {
+      setIsConfirmModalOpen(false);
+      mixpanelTrack.timetableCompareAction("공유", {
+        friend_count: targetIds.length,
+        free_slot_count: goodMeetingTimes.length,
+      });
+      const payload = buildTimetableSharePayload(targetIds);
+      const payloadStr = encodeURIComponent(JSON.stringify(payload));
+      navigate(`${ROUTES.CHAT.ROOT}/${originRoomId}?sharePayload=${payloadStr}`);
+      return;
+    }
+
     shareMutation.mutate(targetIds);
   };
 
