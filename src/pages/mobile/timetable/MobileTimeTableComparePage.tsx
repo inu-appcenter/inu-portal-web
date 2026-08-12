@@ -15,7 +15,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import type { TimeTableDetail } from "@/types/timetables";
+import type { TimeTableDetail, Term } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { formatSemester } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
@@ -45,6 +45,19 @@ const isProtectedTimetable = (detail: TimeTableDetail) =>
     const source = item.course ?? item.customSchedule;
     return item.id == null || source?.title == null;
   });
+
+// 응답 유효성 방어 로직(#267). 서버의 "대표 시간표 자동 승격"이 아직 미완성이라
+// (server #328), /friends/{id}/primary가 요청한 학기와 다른 학기의 시간표를
+// 잘못 대표로 내려줄 가능성을 프론트에서 감지한다. 그대로 표시하면 "이 사람이
+// 신청한 이번 학기 시간표"처럼 보이지만 실제로는 다른 학기 데이터라 완전히
+// 틀린 정보를 신뢰도 있게 보여주는 셈이 된다 - 차라리 에러로 처리해 숨긴다.
+const isSemesterMismatch = (
+  detail: TimeTableDetail,
+  requested: { year?: number; term?: Term } | null | undefined,
+) =>
+  requested?.year != null &&
+  requested?.term != null &&
+  (detail.year !== requested.year || detail.term !== requested.term);
 
 const getErrorStatus = (error: unknown) =>
   (error as { response?: { status?: number } })?.response?.status;
@@ -168,12 +181,17 @@ export default function MobileTimeTableComparePage() {
   const friendTimetablesByFriendId = useMemo(() => {
     const entries = queriedFriends.map((friend, index) => {
       const detail = friendTimetableQueries[index]?.data;
-      const classes = detail ? mapDetailItemsToClassItems(detail.items) : [];
+      // 학기가 어긋난 응답은 그리드에도 올리지 않는다 - 상태만 ERROR로 감춰도
+      // 이 맵에서 걸러지지 않으면 블록은 그대로 그려진다.
+      const classes =
+        detail && !isSemesterMismatch(detail, openSemester)
+          ? mapDetailItemsToClassItems(detail.items)
+          : [];
       return [friend.friendId, classes] as const;
     });
 
     return new Map(entries);
-  }, [queriedFriends, friendTimetableQueries]);
+  }, [queriedFriends, friendTimetableQueries, openSemester]);
 
   const friendTimetableStatesByFriendId = useMemo(() => {
     const entries = queriedFriends.map((friend, index) => {
@@ -183,6 +201,16 @@ export default function MobileTimeTableComparePage() {
 
       if (query?.isPending) {
         state = "LOADING";
+      } else if (detail && isSemesterMismatch(detail, openSemester)) {
+        console.warn(
+          "친구 대표 시간표 응답이 요청한 학기와 다릅니다(server #328 관련 방어 로직, #267):",
+          {
+            friendId: friend.friendId,
+            requested: openSemester,
+            received: { year: detail.year, term: detail.term },
+          },
+        );
+        state = "ERROR";
       } else if (detail) {
         state = isProtectedTimetable(detail) ? "PROTECTED" : "PUBLIC";
       } else {
@@ -195,7 +223,7 @@ export default function MobileTimeTableComparePage() {
     });
 
     return new Map(entries);
-  }, [queriedFriends, friendTimetableQueries]);
+  }, [queriedFriends, friendTimetableQueries, openSemester]);
 
   const activeFriends = useMemo(() => {
     // 쿼리로 들어온 ID에 매칭되는 친구 필터링
