@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
+import { X } from "lucide-react";
 import { getCourseOfferingsPage, searchCourseOfferings } from "@/apis/courseOfferings";
 import { useCreateTimeTableCourseItem } from "@/hooks/useTimeTables";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
@@ -8,8 +9,10 @@ import type { CourseOffering } from "@/types/courseOfferings";
 import type { Term } from "@/types/timetables";
 import {
   detectTimetableBlocks,
+  detectTimetableImageLayout,
   extractBracketedSubjectNumbers,
   findConfidentOffering,
+  findUniqueTitleOffering,
   isOfferingFragmentMatch,
   parseAndGroupBlocks,
   scoreOffering,
@@ -30,6 +33,14 @@ type Match = { group: DetectedCourseGroup; candidates: CourseOffering[]; selecte
 const DAY_LABEL: Record<string, string> = {
   MONDAY: "월", TUESDAY: "화", WEDNESDAY: "수", THURSDAY: "목", FRIDAY: "금", SATURDAY: "토",
 };
+
+const formatOfferingMeetings = (offering: CourseOffering) =>
+  offering.meetings
+    .map(
+      (meeting) =>
+        `${DAY_LABEL[meeting.day] ?? meeting.day} ${meeting.startTime.slice(0, 5)}~${meeting.endTime.slice(0, 5)}`,
+    )
+    .join(", ");
 
 export default function TimetableImageImportModal({
   open,
@@ -120,7 +131,8 @@ export default function TimetableImageImportModal({
           return;
         }
 
-        detectedBlocks = await detectTimetableBlocks(file);
+        const layout = detectTimetableImageLayout(fullImageResult.data.text);
+        detectedBlocks = await detectTimetableBlocks(file, layout);
         if (!detectedBlocks.length) throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
         for (let index = 0; index < detectedBlocks.length; index += 1) {
           setStatus(`강의 글자를 읽고 있어요. (${index + 1}/${detectedBlocks.length})`);
@@ -209,6 +221,10 @@ export default function TimetableImageImportModal({
   };
 
   const save = async () => {
+    if (!matches.length || matches.some((match) => match.selectedId === null)) {
+      alert("모든 항목의 분반을 선택하거나 불필요한 항목을 제외해 주세요.");
+      return;
+    }
     const selectedOfferings = matches
       .map((match) =>
         match.candidates.find((candidate) => candidate.id === match.selectedId),
@@ -259,6 +275,9 @@ export default function TimetableImageImportModal({
     }
   };
 
+  const isSelectionComplete =
+    matches.length > 0 && matches.every((match) => match.selectedId !== null);
+
   return (
     <Drawer.Root
       open={open}
@@ -285,12 +304,38 @@ export default function TimetableImageImportModal({
               {status && <Status>{status}{progress > 0 && progress < 100 ? ` ${progress}%` : ""}</Status>}
               <Results>
                 {matches.map((match) => (
-                  <ResultCard key={match.group.id}>
-                    <Detected>
-                      <strong>{match.candidates.find((candidate) => candidate.id === match.selectedId)?.courseTitle ?? match.group.title}</strong>
-                      {" · "}
-                      {(match.candidates.find((candidate) => candidate.id === match.selectedId)?.professor ?? match.group.professor) || "교수 인식 안 됨"}
-                    </Detected>
+                  <ResultCard
+                    key={match.group.id}
+                    $completed={match.selectedId !== null}
+                  >
+                    <ResultHeader>
+                      <Detected>
+                        <strong>
+                          {match.candidates.find((candidate) => candidate.id === match.selectedId)?.courseTitle ??
+                            findUniqueTitleOffering(match.group.title, match.candidates)?.courseTitle ??
+                            match.group.title}
+                        </strong>
+                        {" · "}
+                        {(match.candidates.find((candidate) => candidate.id === match.selectedId)?.professor ?? match.group.professor) || "교수 인식 안 됨"}
+                      </Detected>
+                      <ResultActions>
+                        <SelectionStatus $completed={match.selectedId !== null}>
+                          {match.selectedId !== null ? "선택 완료" : "선택 필요"}
+                        </SelectionStatus>
+                        <RemoveButton
+                          type="button"
+                          aria-label={`${match.group.title} 분석 결과 제외`}
+                          title="분석 결과에서 제외"
+                          onClick={() =>
+                            setMatches((current) =>
+                              current.filter((item) => item.group.id !== match.group.id),
+                            )
+                          }
+                        >
+                          <X size={18} />
+                        </RemoveButton>
+                      </ResultActions>
+                    </ResultHeader>
                     <Schedule>{match.group.blocks.map((block) => `${DAY_LABEL[block.day]} ${block.startTime}~${block.endTime}`).join(", ")}</Schedule>
                     {match.candidates.length ? (
                       <Select value={match.selectedId ?? ""} onChange={(event) => {
@@ -298,9 +343,15 @@ export default function TimetableImageImportModal({
                         setMatches((current) => current.map((item) => item.group.id === match.group.id ? { ...item, selectedId } : item));
                       }}>
                         <option value="">등록할 분반을 선택하세요</option>
-                        {match.candidates.map((candidate) => (
-                          <option key={candidate.id} value={candidate.id}>{candidate.courseTitle} · {candidate.professor || "교수 미정"} · {candidate.subjectNumber}</option>
-                        ))}
+                        {match.candidates.map((candidate) => {
+                          const meetingLabel = formatOfferingMeetings(candidate);
+                          return (
+                            <option key={candidate.id} value={candidate.id}>
+                              {candidate.courseTitle} · {candidate.professor || "교수 미정"} · {candidate.subjectNumber}
+                              {meetingLabel ? ` · ${meetingLabel}` : ""}
+                            </option>
+                          );
+                        })}
                       </Select>
                     ) : <Warning>일치하는 개설 강좌를 찾지 못했습니다.</Warning>}
                   </ResultCard>
@@ -309,8 +360,12 @@ export default function TimetableImageImportModal({
             </Body>
             <Actions>
               <CancelButton type="button" onClick={onClose} disabled={isSaving}>취소</CancelButton>
-              <SaveButton type="button" onClick={() => void save()} disabled={isSaving || !matches.some((match) => match.selectedId)}>
-                {isSaving ? "등록 중..." : "선택 강의 등록"}
+              <SaveButton type="button" onClick={() => void save()} disabled={isSaving || !isSelectionComplete}>
+                {isSaving
+                  ? "등록 중..."
+                  : isSelectionComplete
+                    ? "선택 강의 등록"
+                    : "모든 분반을 선택해 주세요"}
               </SaveButton>
             </Actions>
           </Sheet>
@@ -331,8 +386,12 @@ const Description = styled.p`margin: 0 0 18px; font-size: 14px; line-height: 21p
 const UploadButton = styled.button`width: 100%; padding: 13px; border: 1px solid #0061ff; border-radius: 12px; background: #fff; color: #0061ff; font-weight: 600;`;
 const Status = styled.p`margin: 14px 0 0; font-size: 14px; color: #4e5968;`;
 const Results = styled.div`display: flex; flex-direction: column; gap: 10px; margin-top: 16px;`;
-const ResultCard = styled.div`padding: 14px; border: 1px solid #e5e8eb; border-radius: 14px;`;
+const ResultCard = styled.div<{ $completed: boolean }>`padding: 14px; border: 1px solid ${({ $completed }) => $completed ? "#8bb8ff" : "#f0b8b8"}; border-radius: 14px; background: ${({ $completed }) => $completed ? "#f5f9ff" : "#fffafa"}; transition: border-color .2s, background .2s;`;
+const ResultHeader = styled.div`display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;`;
 const Detected = styled.div`font-size: 15px; color: #333d4b;`;
+const ResultActions = styled.div`display: flex; flex: 0 0 auto; align-items: center; gap: 6px;`;
+const SelectionStatus = styled.span<{ $completed: boolean }>`padding: 4px 7px; border-radius: 999px; background: ${({ $completed }) => $completed ? "#e8f2ff" : "#fff0f0"}; color: ${({ $completed }) => $completed ? "#0061ff" : "#e5484d"}; font-size: 11px; font-weight: 700; white-space: nowrap;`;
+const RemoveButton = styled.button`flex: 0 0 auto; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: 8px; background: #f2f4f6; color: #6b7684; cursor: pointer; &:hover { background: #e5e8eb; }`;
 const Schedule = styled.div`margin: 5px 0 10px; font-size: 13px; color: #6b7684;`;
 const Select = styled.select`width: 100%; padding: 11px; border: 1px solid #d1d6db; border-radius: 10px; background: #fff; color: #333d4b;`;
 const Warning = styled.div`font-size: 13px; color: #e5484d;`;

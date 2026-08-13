@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   extractBracketedSubjectNumbers,
+  detectTimetableImageLayout,
   findConfidentOffering,
+  findUniqueTitleOffering,
   isConfidentOfferingMatch,
   parseAndGroupBlocks,
   type DetectedTimetableBlock,
@@ -19,6 +21,62 @@ const block = (rawText: string, day: DetectedTimetableBlock["day"]): DetectedTim
 });
 
 describe("parseAndGroupBlocks", () => {
+  it("한글 요일 헤더가 있는 이미지를 에브리타임 격자로 판별한다", () => {
+    expect(detectTimetableImageLayout("시간포 1\n월 화 수 목 금")).toBe(
+      "EVERYTIME_GRID",
+    );
+  });
+
+  it("강의실 표기를 교수명에서 제외하고 줄바꿈 과목명을 합친다", () => {
+    const [course] = parseAndGroupBlocks([
+      block("모바일소프\n트웨어\n07-4O8", "MONDAY"),
+    ]);
+
+    expect(course.title).toBe("모바일소프트웨어");
+    expect(course.professor).toBe("");
+  });
+
+  it("과목명 첫 글자가 기호로 인식돼도 시간과 나머지 이름이 맞는 후보를 찾는다", () => {
+    const course = parseAndGroupBlocks([
+      {
+        ...block("(언어\n07-408", "FRIDAY"),
+        startTime: "10:00",
+        endTime: "11:50",
+      },
+    ])[0];
+    const offering = {
+      courseTitle: "C언어",
+      professor: "교수갑",
+      meetings: [{
+        day: "FRIDAY",
+        startTime: "10:00:00",
+        endTime: "11:50:00",
+      }],
+    } as CourseOffering;
+
+    expect(isConfidentOfferingMatch(course, offering)).toBe(true);
+    expect(findUniqueTitleOffering(course.title, [offering])?.courseTitle).toBe(
+      "C언어",
+    );
+  });
+
+  it("비슷한 정식 과목명이 여러 개면 표시명을 임의로 보정하지 않는다", () => {
+    const candidates = [
+      { courseTitle: "C언어" },
+      { courseTitle: "R언어" },
+    ] as CourseOffering[];
+
+    expect(findUniqueTitleOffering("(언어", candidates)).toBeNull();
+  });
+
+  it("정식 과목명에 포함된 일반 괄호는 제거하지 않는다", () => {
+    const [course] = parseAndGroupBlocks([
+      block("프로그래밍(C++)\n07-408", "MONDAY"),
+    ]);
+
+    expect(course.title).toBe("프로그래밍(C++)");
+  });
+
   it("장바구니 목록의 대괄호 수강번호를 중복 없이 추출한다", () => {
     const text = "[0012345001] 과목가\n[0012345002] 과목나\n[0012345001]";
 
@@ -63,6 +121,27 @@ describe("parseAndGroupBlocks", () => {
         day: "MONDAY",
         startTime: "10:30:00",
         endTime: "12:00:00",
+      }],
+    } as CourseOffering;
+
+    expect(isConfidentOfferingMatch(course, offering)).toBe(true);
+  });
+
+  it("이미지 시간이 서버 시간보다 시작과 종료가 5분씩 밀려도 일치한다", () => {
+    const course = parseAndGroupBlocks([
+      {
+        ...block("과목가\n07-408", "MONDAY"),
+        startTime: "13:05",
+        endTime: "14:55",
+      },
+    ])[0];
+    const offering = {
+      courseTitle: "과목가",
+      professor: "교수갑",
+      meetings: [{
+        day: "MONDAY",
+        startTime: "13:00:00",
+        endTime: "14:50:00",
       }],
     } as CourseOffering;
 

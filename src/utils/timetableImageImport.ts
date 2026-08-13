@@ -19,6 +19,8 @@ export type DetectedCourseGroup = {
   blocks: DetectedTimetableBlock[];
 };
 
+export type TimetableImageLayout = "INU_CART_GRID" | "EVERYTIME_GRID";
+
 const DAYS: TimeTableDay[] = [
   "MONDAY",
   "TUESDAY",
@@ -46,6 +48,15 @@ export function extractBracketedSubjectNumbers(text: string): string[] {
   return [...new Set([...bracketed, ...standalone])];
 }
 
+export function detectTimetableImageLayout(text: string): TimetableImageLayout {
+  const koreanWeekdays = ["월", "화", "수", "목", "금"].filter((day) =>
+    new RegExp(`(^|\\s)${day}(?=\\s|$)`, "m").test(text),
+  ).length;
+  return koreanWeekdays >= 3 || /시간표\s*\d/.test(text)
+    ? "EVERYTIME_GRID"
+    : "INU_CART_GRID";
+}
+
 const padTime = (minutes: number) =>
   `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 
@@ -58,7 +69,10 @@ const isCoursePixel = (r: number, g: number, b: number) => {
 };
 
 /** 장바구니 시간표 캡처의 색상 강의 블록을 브라우저 Canvas만으로 찾는다. */
-export async function detectTimetableBlocks(file: File) {
+export async function detectTimetableBlocks(
+  file: File,
+  layout: TimetableImageLayout = "INU_CART_GRID",
+) {
   const bitmap = await createImageBitmap(file);
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
@@ -142,10 +156,14 @@ export async function detectTimetableBlocks(file: File) {
     boxes.push({ minX, minY, maxX, maxY });
   }
 
-  const gridLeft = width * 0.143;
-  const timetableTop = height * 0.129;
-  const pixelsPerMinute = height * 0.001373;
-  const columnWidth = (width - gridLeft) / 6;
+  const isEverytime = layout === "EVERYTIME_GRID";
+  const gridLeft = width * (isEverytime ? 0.068 : 0.143);
+  const gridRight = width * (isEverytime ? 0.976 : 1);
+  const timetableTop = height * (isEverytime ? 0.12 : 0.129);
+  const pixelsPerMinute = height * (isEverytime ? 0.001204 : 0.001373);
+  const firstMinute = isEverytime ? 9 * 60 : 7 * 60 + 30;
+  const dayCount = isEverytime ? 5 : 6;
+  const columnWidth = (gridRight - gridLeft) / dayCount;
 
   return boxes
     .map((box, index): DetectedTimetableBlock | null => {
@@ -155,14 +173,14 @@ export async function detectTimetableBlocks(file: File) {
       const boxHeight = Math.min(height - y, (box.maxY - box.minY + 1) * scale);
       if (boxWidth < width * 0.09 || boxHeight < height * 0.025 || y < timetableTop) return null;
       const dayIndex = Math.floor((x + boxWidth / 2 - gridLeft) / columnWidth);
-      if (dayIndex < 0 || dayIndex >= DAYS.length) return null;
+      if (dayIndex < 0 || dayIndex >= dayCount) return null;
 
       const crop = document.createElement("canvas");
       crop.width = Math.max(1, Math.round(boxWidth));
       crop.height = Math.max(1, Math.round(boxHeight));
       crop.getContext("2d")?.drawImage(canvas, x, y, boxWidth, boxHeight, 0, 0, boxWidth, boxHeight);
-      const start = snapTime(450 + (y - timetableTop) / pixelsPerMinute);
-      const end = snapTime(450 + (y + boxHeight - timetableTop) / pixelsPerMinute);
+      const start = snapTime(firstMinute + (y - timetableTop) / pixelsPerMinute);
+      const end = snapTime(firstMinute + (y + boxHeight - timetableTop) / pixelsPerMinute);
       return {
         id: `block-${index}`,
         crop,
@@ -177,6 +195,15 @@ export async function detectTimetableBlocks(file: File) {
 }
 
 const normalize = (value: string) => value.toLowerCase().replace(/[^0-9a-z가-힣]/g, "");
+const TIME_TOLERANCE_MINUTES = 5;
+
+const timeToMinutes = (value: string) => {
+  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
+  return hour * 60 + minute;
+};
+
+const sameTime = (left: string, right: string) =>
+  Math.abs(timeToMinutes(left) - timeToMinutes(right)) <= TIME_TOLERANCE_MINUTES;
 
 const commonPrefixLength = (left: string, right: string) => {
   const a = normalize(left);
@@ -186,21 +213,45 @@ const commonPrefixLength = (left: string, right: string) => {
   return index;
 };
 
+/** OCR이 과목명의 맨 앞/뒤 한 글자를 기호로 읽거나 누락한 경우까지 후보 기반으로 허용한다. */
+const titleMatches = (detected: string, official: string, threshold: number) => {
+  const detectedNormalized = normalize(detected);
+  const officialNormalized = normalize(official);
+  if (!detectedNormalized || !officialNormalized) return false;
+  if (similarity(detected, official) >= threshold) return true;
+  const lengthDifference = Math.abs(
+    detectedNormalized.length - officialNormalized.length,
+  );
+  if (lengthDifference > 1) return false;
+  const shorter = detectedNormalized.length <= officialNormalized.length
+    ? detectedNormalized
+    : officialNormalized;
+  const longer = shorter === detectedNormalized
+    ? officialNormalized
+    : detectedNormalized;
+  return longer.startsWith(shorter) || longer.endsWith(shorter);
+};
+
 export function parseAndGroupBlocks(blocks: DetectedTimetableBlock[]): DetectedCourseGroup[] {
   const groups = new Map<string, DetectedCourseGroup>();
   blocks.forEach((block) => {
     // 수업 유형 표기가 여러 줄로 감싸져도 먼저 전체 문자열에서 제거한다.
     const withoutMetadata = block.rawText
-      .replace(/\[[\s\S]*?\]/g, "")
-      .replace(/\([\s\S]*?\)/g, "")
+      .replace(/\[[^\]]*(?:수업|강좌)[^\]]*\]/g, "")
+      .replace(/\([^)]*(?:수업|강좌)[^)]*\)/g, "")
       // 정상 인식된 수업 유형만 제거한다. 특정 OCR 오인식 문자열은 하드코딩하지 않는다.
       .replace(/75\s*분\s*수업/g, "");
     const cleaned = withoutMetadata
       .split(/\n+/)
       .map((line) => line.trim())
       .filter(Boolean);
-    const professor = cleaned.at(-1) ?? "";
-    const title = cleaned.slice(0, -1).join("") || cleaned[0] || "인식 실패";
+    const lastLine = cleaned.at(-1) ?? "";
+    const hasLocationLast = /^[0-9OoIl]{1,2}-[0-9OoIl]{2,4}(?:호)?$/.test(
+      lastLine.replace(/\s/g, ""),
+    );
+    const professor = hasLocationLast ? "" : lastLine;
+    const titleLines = cleaned.slice(0, -1);
+    const title = titleLines.join("") || cleaned[0] || "인식 실패";
     const key = `${normalize(title)}:${normalize(professor)}`;
     const existing = groups.get(key);
     if (existing) existing.blocks.push(block);
@@ -233,24 +284,24 @@ export function scoreOffering(group: DetectedCourseGroup, offering: CourseOfferi
     offering.meetings.some(
       (meeting) =>
         meeting.day === block.day &&
-        meeting.startTime.slice(0, 5) === block.startTime.slice(0, 5) &&
-        meeting.endTime.slice(0, 5) === block.endTime.slice(0, 5),
+        sameTime(meeting.startTime, block.startTime) &&
+        sameTime(meeting.endTime, block.endTime),
     ),
   ).length;
   const scheduleScore = (matchedMeetings / Math.max(group.blocks.length, offering.meetings.length, 1)) * 35;
   return titleScore + professorScore + scheduleScore;
 }
 
-const sameTime = (left: string, right: string) => left.slice(0, 5) === right.slice(0, 5);
-
 /** 한 OCR 그룹이 특정 개설 분반의 일부 블록인지 판별한다. 병합은 이 결과가 유일할 때만 한다. */
 export function isOfferingFragmentMatch(
   group: DetectedCourseGroup,
   offering: CourseOffering,
 ) {
-  if (similarity(group.professor, offering.professor ?? "") < 0.8) return false;
+  const hasProfessor = normalize(group.professor).length >= 2;
+  if (hasProfessor && similarity(group.professor, offering.professor ?? "") < 0.8) return false;
+  const requiredTitleSimilarity = hasProfessor ? 0.55 : 0.8;
   if (
-    similarity(group.title, offering.courseTitle) < 0.55 &&
+    !titleMatches(group.title, offering.courseTitle, requiredTitleSimilarity) &&
     commonPrefixLength(group.title, offering.courseTitle) < 4
   ) return false;
   return group.blocks.every((block) =>
@@ -271,7 +322,7 @@ export function isConfidentOfferingMatch(
     normalize(group.professor).length >= 2 &&
     similarity(group.professor, offering.professor ?? "") >= 0.9;
   const titleReliable =
-    similarity(group.title, offering.courseTitle) >= 0.85 ||
+    titleMatches(group.title, offering.courseTitle, 0.85) ||
     commonPrefixLength(group.title, offering.courseTitle) >= 4;
   if (!professorReliable && !titleReliable) return false;
 
@@ -329,4 +380,16 @@ export function findConfidentOffering(
   }
 
   return null;
+}
+
+/** 시간 후보 중 OCR 과목명과 대응하는 정식 과목명이 하나일 때 표시명 보정에 사용한다. */
+export function findUniqueTitleOffering(
+  detectedTitle: string,
+  candidates: CourseOffering[],
+): CourseOffering | null {
+  const matches = candidates.filter((offering) =>
+    titleMatches(detectedTitle, offering.courseTitle, 0.8),
+  );
+  const uniqueTitles = new Set(matches.map((offering) => normalize(offering.courseTitle)));
+  return uniqueTitles.size === 1 ? matches[0] : null;
 }
