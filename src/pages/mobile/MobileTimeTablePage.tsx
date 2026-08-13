@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { Pencil, Lock, Bell, Palette, Trash2 } from "lucide-react";
+import { Pencil, Lock, Bell, Palette, Trash2, ScanLine } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -27,6 +27,7 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
+import TimetableImageImportModal from "@/components/mobile/timetable/TimetableImageImportModal";
 
 const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
@@ -363,7 +364,7 @@ const EmptyTimetableIllust = () => (
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
   const [isModalOpen] = useState(false);
@@ -372,6 +373,8 @@ const MobileTimeTablePage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImageImportOpen, setIsImageImportOpen] = useState(false);
+  const [createThenImport, setCreateThenImport] = useState(false);
 
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
 
@@ -431,6 +434,14 @@ const MobileTimeTablePage = () => {
 
   useTimeTableDetail(activeTimetable?.id, { enabled: isLoggedIn });
 
+  useEffect(() => {
+    if (!activeTimetable || searchParams.get("imageImport") !== "1") return;
+    setIsImageImportOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("imageImport");
+    setSearchParams(nextParams, { replace: true });
+  }, [activeTimetable, searchParams, setSearchParams]);
+
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
   const appEnvironment = getAppEnvironmentStatus();
   const shouldOpenSimulatorInNewWebView =
@@ -484,6 +495,17 @@ const MobileTimeTablePage = () => {
     if (!isLoggedIn || !activeTimetable) return [];
 
     return [
+      {
+        label: "시간표 이미지로 등록",
+        icon: <ScanLine size={20} />,
+        onClick: () => {
+          mixpanelTrack.timetableFeatureClicked(
+            "시간표 이미지로 등록",
+            "헤더 메뉴",
+          );
+          setIsImageImportOpen(true);
+        },
+      },
       {
         label: "시간표 이름 변경",
         icon: <Pencil size={20} />,
@@ -684,12 +706,33 @@ const MobileTimeTablePage = () => {
         initialSemester={currentSemesterLabel}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={(created) => {
+          setIsCreateModalOpen(false);
+          if (createThenImport) {
+            setCreateThenImport(false);
+            navigate(`${ROUTES.TIMETABLE.ROOT}?id=${created.id}&imageImport=1`);
+            return;
+          }
           navigate(`${ROUTES.TIMETABLE.EDIT}?id=${created.id}`);
         }}
       />
 
       {isLoggedIn && activeTimetable && (
         <>
+          <TimetableImageImportModal
+            open={isImageImportOpen}
+            onClose={() => setIsImageImportOpen(false)}
+            timetableId={activeTimetable.id}
+            year={activeTimetable.year}
+            term={activeTimetable.term}
+            existingOfferingIds={activeTimetable.events
+              .map((event) => event.courseOfferingId)
+              .filter((id): id is number => id !== undefined)}
+            existingSubjectNumbers={activeTimetable.events
+              .map((event) => event.courseId)
+              .filter((subjectNumber): subjectNumber is string =>
+                Boolean(subjectNumber),
+              )}
+          />
           <Modal
             isOpen={isRenameModalOpen}
             onClose={() => setIsRenameModalOpen(false)}
@@ -801,10 +844,27 @@ const MobileTimeTablePage = () => {
           </CapsuleButton>
         </NoTimetableContainer>
       ) : activeTimetable ? (
-        <TimetableGrid
-          events={activeTimetable.events}
-          theme={activeTimetable.theme}
-        />
+        <>
+          {activeTimetable.events.length === 0 && (
+            <ImageImportPrompt>
+              <ImageImportPromptText>
+                <strong>다른 서비스에서 시간표를 가져올 수 있어요.</strong>
+                <span>수강신청 앱 또는 에브리타임에서 가져와 보세요.</span>
+              </ImageImportPromptText>
+              <ImageImportButton
+                type="button"
+                onClick={() => setIsImageImportOpen(true)}
+              >
+                <ScanLine size={18} />
+                이미지로 가져오기
+              </ImageImportButton>
+            </ImageImportPrompt>
+          )}
+          <TimetableGrid
+            events={activeTimetable.events}
+            theme={activeTimetable.theme}
+          />
+        </>
       ) : (
         <NoTimetableContainer>
           <NoTimetableContent>
@@ -816,19 +876,39 @@ const MobileTimeTablePage = () => {
               </NoTimetableDescription>
             </NoTimetableTextGroup>
           </NoTimetableContent>
-          <CapsuleButton
-            variant="primary"
-            onClick={() => {
-              if (!isLoggedIn) {
-                alert(LOGIN_REQUIRED_MESSAGE);
-                return;
-              }
-              mixpanelTrack.timetableFeatureClicked("시간표 생성", "빈 시간표");
-              setIsCreateModalOpen(true);
-            }}
-          >
-            시간표 생성하기
-          </CapsuleButton>
+          <EmptyActionGroup>
+            <CapsuleButton
+              variant="primary"
+              onClick={() => {
+                mixpanelTrack.timetableFeatureClicked(
+                  "시간표 생성",
+                  "빈 시간표",
+                );
+                setCreateThenImport(false);
+                setIsCreateModalOpen(true);
+              }}
+            >
+              시간표 생성하기
+            </CapsuleButton>
+            <ImportOptionGroup>
+              <ImportActionDescription>
+                에브리타임이나 수강신청 앱에서 시간표를 가져오시겠어요?
+              </ImportActionDescription>
+              <SecondaryImportButton
+                type="button"
+                onClick={() => {
+                  mixpanelTrack.timetableFeatureClicked(
+                    "이미지로 시간표 가져오기",
+                    "빈 시간표",
+                  );
+                  setCreateThenImport(true);
+                  setIsCreateModalOpen(true);
+                }}
+              >
+                이미지로 시간표 가져오기
+              </SecondaryImportButton>
+            </ImportOptionGroup>
+          </EmptyActionGroup>
         </NoTimetableContainer>
       )}
 
@@ -1003,29 +1083,111 @@ const NoTimetableContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: 20px;
   width: 100%;
-  height: 480px;
+  height: 360px;
   border-radius: 20px;
   border: 1px solid var(--border-default, #e5e8eb);
   background: var(--bg-base, #ffffff);
   box-sizing: border-box;
-  padding: 40px 20px;
+  padding: 24px 20px;
+`;
+
+const ImageImportPrompt = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid #d7e6ff;
+  border-radius: 16px;
+  background: #f5f9ff;
+`;
+
+const ImageImportPromptText = styled.div`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  color: #333d4b;
+  font-size: 14px;
+  line-height: 20px;
+
+  span {
+    color: #6b7684;
+    font-size: 13px;
+    word-break: keep-all;
+  }
+`;
+
+const ImageImportButton = styled.button`
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #0061ff;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+`;
+
+const EmptyActionGroup = styled.div`
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+`;
+
+const ImportOptionGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+`;
+
+const SecondaryImportButton = styled.button`
+  border: 0;
+  background: transparent;
+  color: #6b7684;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+`;
+
+const ImportActionDescription = styled.p`
+  margin: 0;
+  color: #8b95a1;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+  word-break: keep-all;
 `;
 
 const NoTimetableContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   width: 100%;
+
+  > svg {
+    width: 100px;
+    height: 100px;
+  }
 `;
 
 const NoTimetableTextGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
 `;
 

@@ -91,6 +91,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
 
     const navigate = useCustomNavigate();
     const { hasUnreadNotification } = useUnreadNotification();
+    const hasMenuItems = (menuItems?.length ?? 0) > 0;
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -148,20 +149,20 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
             </TitleArea>
           )}
 
-          {(showAlarm || menuItems || rightArea) && (
+          {(showAlarm || hasMenuItems || rightArea) && (
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
               $isCircle={
                 rightAreaNotCircle
                   ? false
-                  : [showAlarm, menuItems, rightArea].filter(Boolean).length ===
+                  : [showAlarm, hasMenuItems, rightArea].filter(Boolean).length ===
                     1
               }
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
               {showAlarm && <NotificationBell hasNew={hasUnreadNotification} />}
-              {menuItems && <TopRightDropdownMenu items={menuItems} />}
+              {hasMenuItems && <TopRightDropdownMenu items={menuItems!} />}
             </IconBackgroundWrapper>
           )}
         </MainHeaderWrapper>
