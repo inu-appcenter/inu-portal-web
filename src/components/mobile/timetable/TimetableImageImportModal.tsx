@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
   CheckCircle2,
@@ -66,8 +67,23 @@ export default function TimetableImageImportModal({
   const [matches, setMatches] = useState<Match[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [openCandidateGroupId, setOpenCandidateGroupId] = useState<string | null>(null);
   const createMutation = useCreateTimeTableCourseItem();
   useSheetBackHandler(open, onClose, !isSaving);
+
+  useEffect(() => {
+    if (!openCandidateGroupId) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest('[data-candidate-popover="true"]')
+      ) return;
+      setOpenCandidateGroupId(null);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [openCandidateGroupId]);
 
   if (!open) return null;
 
@@ -391,8 +407,18 @@ export default function TimetableImageImportModal({
                 </ResultSummary>
               )}
 
-              <Results>
-                {matches.map((match) => (
+              {matches.length > 0 && (
+                <ResultNotice>
+                  <AlertCircle size={17} />
+                  <span>
+                    과목명·요일·시간이 맞는지 확인해 주세요. 완전히 잘못 인식된 과목은
+                    오른쪽 X로 제외하고, 등록 후 시간표 편집에서 직접 추가해 주세요.
+                  </span>
+                </ResultNotice>
+              )}
+
+              <Results $popoverOpen={openCandidateGroupId !== null}>
+                {matches.map((match, matchIndex) => (
                   <ResultCard
                     key={match.group.id}
                     $completed={match.selectedId !== null}
@@ -429,60 +455,93 @@ export default function TimetableImageImportModal({
                     {match.candidates.length ? (
                       <CandidateField>
                         <CandidateLabel>등록할 분반</CandidateLabel>
-                        <SelectWrapper $selected={match.selectedId !== null}>
-                          <CandidateSelect
-                            value={match.selectedId ?? ""}
+                        <SelectWrapper
+                          $selected={match.selectedId !== null}
+                          $open={openCandidateGroupId === match.group.id}
+                          data-candidate-popover="true"
+                        >
+                          <SelectTrigger
+                            type="button"
                             aria-label={`${match.group.title} 분반 선택`}
-                            onChange={(event) => {
-                              const selectedId = event.target.value
-                                ? Number(event.target.value)
-                                : null;
-                              setMatches((current) =>
-                                current.map((item) =>
-                                  item.group.id === match.group.id
-                                    ? { ...item, selectedId }
-                                    : item,
-                                ),
+                            aria-haspopup="listbox"
+                            aria-expanded={openCandidateGroupId === match.group.id}
+                            onClick={() => {
+                              setOpenCandidateGroupId((current) =>
+                                current === match.group.id ? null : match.group.id,
                               );
                             }}
                           >
-                            <option value="">분반을 선택해 주세요</option>
-                            {match.candidates.map((candidate) => {
-                              const meetingLabel = formatOfferingMeetings(candidate);
-                              return (
-                                <option key={candidate.id} value={candidate.id}>
-                                  {candidate.courseTitle} · {candidate.professor || "교수 미정"} · {candidate.subjectNumber}
-                                  {meetingLabel ? ` · ${meetingLabel}` : ""}
-                                </option>
-                              );
-                            })}
-                          </CandidateSelect>
+                            <TriggerText $placeholder={match.selectedId === null}>
+                              {(() => {
+                                const selected = match.candidates.find(
+                                  (candidate) => candidate.id === match.selectedId,
+                                );
+                                return selected
+                                  ? `${selected.courseTitle} · ${selected.professor || "교수 미정"} · ${selected.subjectNumber}`
+                                  : "분반을 선택해 주세요";
+                              })()}
+                            </TriggerText>
                           <ChevronDown size={18} />
+                          </SelectTrigger>
+                          <AnimatePresence>
+                            {openCandidateGroupId === match.group.id && (
+                            <CandidatePopover
+                              role="listbox"
+                              $openUpward={matchIndex >= matches.length - 2}
+                              initial={{
+                                opacity: 0,
+                                y: matchIndex >= matches.length - 2 ? 6 : -6,
+                                scale: 0.98,
+                              }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{
+                                opacity: 0,
+                                y: matchIndex >= matches.length - 2 ? 4 : -4,
+                                scale: 0.985,
+                              }}
+                              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                              {match.candidates.map((candidate) => {
+                                const meetingLabel = formatOfferingMeetings(candidate);
+                                const selected = match.selectedId === candidate.id;
+                                return (
+                                  <PopoverOption
+                                    key={candidate.id}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={selected}
+                                    $selected={selected}
+                                    onClick={() => {
+                                      setMatches((current) =>
+                                        current.map((item) =>
+                                          item.group.id === match.group.id
+                                            ? { ...item, selectedId: candidate.id }
+                                            : item,
+                                        ),
+                                      );
+                                      setOpenCandidateGroupId(null);
+                                    }}
+                                  >
+                                    <PopoverOptionText>
+                                      <strong>{candidate.courseTitle}<span>{candidate.professor || "교수 미정"}</span></strong>
+                                      <small>수강번호 {candidate.subjectNumber}</small>
+                                      {meetingLabel && <em>{meetingLabel}</em>}
+                                    </PopoverOptionText>
+                                    <OptionCheck $selected={selected}>
+                                      {selected && <CheckCircle2 size={16} />}
+                                    </OptionCheck>
+                                  </PopoverOption>
+                                );
+                              })}
+                            </CandidatePopover>
+                            )}
+                          </AnimatePresence>
                         </SelectWrapper>
-                        {match.selectedId !== null && (() => {
-                          const selected = match.candidates.find(
-                            (candidate) => candidate.id === match.selectedId,
-                          );
-                          return selected ? (
-                            <SelectedCandidateMeta>
-                              서버 강의시간 · {formatOfferingMeetings(selected) || "시간 정보 없음"}
-                            </SelectedCandidateMeta>
-                          ) : null;
-                        })()}
                       </CandidateField>
                     ) : <Warning>일치하는 개설 강좌를 찾지 못했습니다.</Warning>}
                   </ResultCard>
                 ))}
               </Results>
-              {matches.length > 0 && (
-                <ResultNotice>
-                  <AlertCircle size={17} />
-                  <span>
-                    과목명·요일·시간이 맞는지 확인해 주세요. 완전히 잘못 인식된 과목은
-                    오른쪽 X로 제외하고, 등록 후 시간표 편집에서 직접 추가해 주세요.
-                  </span>
-                </ResultNotice>
-              )}
             </Body>
             <Actions>
               <CancelButton type="button" onClick={onClose} disabled={isSaving}>취소</CancelButton>
@@ -514,10 +573,10 @@ const SemesterBadge = styled.span`flex: 0 0 auto; padding: 6px 9px; border-radiu
 const SemesterDescription = styled.p`margin: 6px 0 0; color: #6b7684; font-size: 13px; line-height: 19px; word-break: keep-all;`;
 const SupportedSection = styled.section`margin-bottom: 16px;`;
 const SectionLabel = styled.div`margin-bottom: 8px; color: #4e5968; font-size: 13px; font-weight: 700;`;
-const SupportedGrid = styled.div`display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;`;
-const SupportedItem = styled.div`display: flex; align-items: center; gap: 9px; min-width: 0; padding: 12px; border-radius: 12px; background: #f7f8fa; color: #0061ff; span { display: flex; min-width: 0; flex-direction: column; color: #6b7684; font-size: 11px; line-height: 16px; } strong { overflow: hidden; color: #333d4b; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }`;
-const SupportedTitleRow = styled.span`display: flex !important; flex-direction: row !important; align-items: center; gap: 5px;`;
-const RecommendedBadge = styled.em`padding: 2px 5px; border-radius: 999px; background: #e8f2ff; color: #0061ff; font-size: 9px; font-style: normal; font-weight: 700; white-space: nowrap;`;
+const SupportedGrid = styled.div`display: grid; grid-template-columns: 1fr; gap: 8px;`;
+const SupportedItem = styled.div`display: flex; align-items: center; gap: 9px; min-width: 0; padding: 12px; border-radius: 12px; background: #f7f8fa; color: #0061ff; span { display: flex; min-width: 0; flex-direction: column; color: #6b7684; font-size: 11px; line-height: 16px; } strong { color: #333d4b; font-size: 13px; white-space: nowrap; }`;
+const SupportedTitleRow = styled.span`display: flex !important; flex-direction: row !important; align-items: center; gap: 6px;`;
+const RecommendedBadge = styled.em`padding: 2px 6px; border-radius: 999px; background: #e8f2ff; color: #0061ff; font-size: 9px; line-height: 14px; font-style: normal; font-weight: 700; white-space: nowrap;`;
 const HiddenFileInput = styled.input`display: none !important;`;
 const UploadButton = styled.button`width: 100%; display: flex; align-items: center; gap: 12px; padding: 15px 16px; border: 1px solid #b8d2ff; border-radius: 14px; background: #f5f9ff; text-align: left; cursor: pointer; transition: background .2s, border-color .2s; &:hover { border-color: #0061ff; background: #eef5ff; } &:disabled { cursor: default; opacity: .65; }`;
 const UploadIcon = styled.div`width: 40px; height: 40px; flex: 0 0 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #0061ff; color: #fff;`;
@@ -534,7 +593,7 @@ const ProgressValue = styled.span`color: #0061ff; font-size: 12px; font-weight: 
 const ResultSummary = styled.div`display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 20px; padding: 14px 15px; border-radius: 14px; background: #f7f8fa;`;
 const SummaryText = styled.div`display: flex; flex-direction: column; gap: 2px; strong { color: #333d4b; font-size: 15px; } span { color: #8b95a1; font-size: 12px; }`;
 const SummaryBadge = styled.span<{ $completed: boolean }>`display: flex; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 999px; background: ${({ $completed }) => $completed ? "#e8f2ff" : "#fff0f0"}; color: ${({ $completed }) => $completed ? "#0061ff" : "#e5484d"}; font-size: 11px; font-weight: 700; white-space: nowrap;`;
-const Results = styled.div`display: flex; flex-direction: column; gap: 10px; margin-top: 12px;`;
+const Results = styled.div<{ $popoverOpen: boolean }>`display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding-bottom: ${({ $popoverOpen }) => $popoverOpen ? "220px" : "0"}; transition: padding-bottom .2s ease;`;
 const ResultCard = styled.div<{ $completed: boolean }>`padding: 15px; border: 1px solid ${({ $completed }) => $completed ? "#b8d2ff" : "#f0caca"}; border-radius: 16px; background: ${({ $completed }) => $completed ? "#f7faff" : "#fffafa"}; box-shadow: 0 2px 8px rgba(0,0,0,.025); transition: border-color .2s, background .2s;`;
 const ResultHeader = styled.div`display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;`;
 const Detected = styled.div`font-size: 15px; color: #333d4b;`;
@@ -544,11 +603,15 @@ const RemoveButton = styled.button`flex: 0 0 auto; width: 28px; height: 28px; di
 const Schedule = styled.div`margin: 5px 0 10px; font-size: 13px; color: #6b7684;`;
 const CandidateField = styled.div`display: flex; flex-direction: column; gap: 6px; margin-top: 2px;`;
 const CandidateLabel = styled.div`color: #6b7684; font-size: 12px; font-weight: 700;`;
-const SelectWrapper = styled.div<{ $selected: boolean }>`position: relative; display: flex; align-items: center; border: 1px solid ${({ $selected }) => $selected ? "#0061ff" : "#d1d6db"}; border-radius: 12px; background: ${({ $selected }) => $selected ? "#f5f9ff" : "#fff"}; color: ${({ $selected }) => $selected ? "#0061ff" : "#6b7684"}; overflow: hidden; transition: border-color .15s, background .15s; svg { position: absolute; right: 12px; pointer-events: none; }`;
-const CandidateSelect = styled.select`width: 100%; min-width: 0; padding: 12px 40px 12px 13px; border: 0; outline: 0; appearance: none; -webkit-appearance: none; background: transparent; color: #333d4b; font-family: inherit; font-size: 13px; line-height: 20px; text-overflow: ellipsis; cursor: pointer;`;
-const SelectedCandidateMeta = styled.div`padding: 0 2px; color: #6b7684; font-size: 11px; line-height: 17px; word-break: keep-all;`;
+const SelectWrapper = styled.div<{ $selected: boolean; $open: boolean }>`position: relative; z-index: ${({ $open }) => $open ? 30 : 1}; border: 1px solid ${({ $selected }) => $selected ? "#0061ff" : "#d1d6db"}; border-radius: 12px; background: ${({ $selected }) => $selected ? "#f5f9ff" : "#fff"}; color: ${({ $selected }) => $selected ? "#0061ff" : "#6b7684"}; transition: border-color .15s, background .15s;`;
+const SelectTrigger = styled.button`width: 100%; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 12px 12px 13px; border: 0; border-radius: inherit; outline: 0; background: transparent; color: inherit; font-family: inherit; cursor: pointer; svg { flex: 0 0 auto; transition: transform .15s; } &[aria-expanded="true"] svg { transform: rotate(180deg); }`;
+const TriggerText = styled.span<{ $placeholder: boolean }>`min-width: 0; overflow: hidden; color: ${({ $placeholder }) => $placeholder ? "#8b95a1" : "#333d4b"}; font-size: 13px; line-height: 20px; text-align: left; text-overflow: ellipsis; white-space: nowrap;`;
+const CandidatePopover = styled(motion.div)<{ $openUpward: boolean }>`position: absolute; left: -1px; right: -1px; top: ${({ $openUpward }) => $openUpward ? "auto" : "calc(100% + 7px)"}; bottom: ${({ $openUpward }) => $openUpward ? "calc(100% + 7px)" : "auto"}; z-index: 24; max-height: 260px; overflow-y: auto; padding: 6px; border: 1px solid #d1d6db; border-radius: 14px; background: #fff; box-shadow: 0 12px 32px rgba(0,0,0,.16); overscroll-behavior: contain; transform-origin: ${({ $openUpward }) => $openUpward ? "bottom center" : "top center"};`;
+const PopoverOption = styled.button<{ $selected: boolean }>`width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 10px; border: 0; border-radius: 10px; background: ${({ $selected }) => $selected ? "#eef5ff" : "transparent"}; text-align: left; cursor: pointer; &:hover { background: ${({ $selected }) => $selected ? "#eef5ff" : "#f7f8fa"}; }`;
+const PopoverOptionText = styled.span`display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; strong { display: flex; align-items: baseline; gap: 6px; color: #333d4b; font-size: 13px; line-height: 19px; } strong span { color: #6b7684; font-size: 11px; font-weight: 500; } small { color: #8b95a1; font-size: 10px; line-height: 15px; } em { color: #4e5968; font-size: 11px; line-height: 17px; font-style: normal; word-break: keep-all; }`;
+const OptionCheck = styled.span<{ $selected: boolean }>`width: 20px; height: 20px; flex: 0 0 20px; display: flex; align-items: center; justify-content: center; color: ${({ $selected }) => $selected ? "#0061ff" : "transparent"};`;
 const Warning = styled.div`font-size: 13px; color: #e5484d;`;
-const ResultNotice = styled.div`display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding: 12px 13px; border-radius: 12px; background: #fff8e8; color: #8a6218; font-size: 12px; line-height: 18px; word-break: keep-all; svg { flex: 0 0 auto; margin-top: 1px; }`;
+const ResultNotice = styled.div`display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; padding: 12px 13px; border-radius: 12px; background: #fff8e8; color: #8a6218; font-size: 12px; line-height: 18px; word-break: keep-all; svg { flex: 0 0 auto; margin-top: 1px; }`;
 const ErrorNotice = styled.div`display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding: 12px 13px; border-radius: 12px; background: #fff0f0; color: #d93d3d; font-size: 13px; line-height: 19px; svg { flex: 0 0 auto; margin-top: 1px; }`;
 const Actions = styled.div`flex: 0 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 8px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #f2f4f6; background: #fff; box-shadow: 0 -8px 20px rgba(0,0,0,.04);`;
 const CancelButton = styled.button`padding: 14px; border: 0; border-radius: 12px; background: #f2f4f6; color: #4e5968; font-weight: 600;`;
