@@ -28,6 +28,24 @@ const DAYS: TimeTableDay[] = [
   "SATURDAY",
 ];
 
+/** 장바구니 목록 OCR에서 대괄호 안 10자리 수강번호를 추출한다. */
+export function extractBracketedSubjectNumbers(text: string): string[] {
+  const normalizeDigits = (value: string) =>
+    value
+      .replace(/[OoQqD]/g, "0")
+      .replace(/[Il|]/g, "1")
+      .replace(/[Ss]/g, "5")
+      .replace(/[Bb]/g, "8")
+      .replace(/[^0-9]/g, "");
+
+  const bracketed = [...text.matchAll(/[\[【]([^\]】]{6,20})[\]】]/g)]
+    .map((match) => normalizeDigits(match[1]))
+    .filter((value) => value.length === 10);
+  // OCR이 대괄호만 누락한 경우에도 독립된 10자리 숫자는 복구한다.
+  const standalone = text.match(/(?<!\d)\d{10}(?!\d)/g) ?? [];
+  return [...new Set([...bracketed, ...standalone])];
+}
+
 const padTime = (minutes: number) =>
   `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 

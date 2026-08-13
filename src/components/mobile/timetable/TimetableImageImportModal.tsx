@@ -8,6 +8,7 @@ import type { CourseOffering } from "@/types/courseOfferings";
 import type { Term } from "@/types/timetables";
 import {
   detectTimetableBlocks,
+  extractBracketedSubjectNumbers,
   findConfidentOffering,
   isOfferingFragmentMatch,
   parseAndGroupBlocks,
@@ -54,8 +55,7 @@ export default function TimetableImageImportModal({
     setProgress(0);
     setStatus("강의 블록을 찾고 있어요.");
     try {
-      const blocks = await detectTimetableBlocks(file);
-      if (!blocks.length) throw new Error("색상 강의 블록을 찾지 못했습니다.");
+      let detectedBlocks: Awaited<ReturnType<typeof detectTimetableBlocks>> = [];
       // OCR 런타임은 이 기능을 열었을 때만 내려받아 기본 시간표 번들에 싣지 않는다.
       const { createWorker } = await import("tesseract.js");
       const worker = await createWorker("kor+eng", 1, {
@@ -64,17 +64,75 @@ export default function TimetableImageImportModal({
         },
       });
       try {
-        for (let index = 0; index < blocks.length; index += 1) {
-          setStatus(`강의 글자를 읽고 있어요. (${index + 1}/${blocks.length})`);
-          const result = await worker.recognize(blocks[index].crop);
-          blocks[index].rawText = result.data.text.trim();
-          blocks[index].confidence = result.data.confidence;
+        setStatus("시간표 이미지 형식을 확인하고 있어요.");
+        const fullImageResult = await worker.recognize(file);
+        const subjectNumbers = extractBracketedSubjectNumbers(
+          fullImageResult.data.text,
+        );
+
+        if (subjectNumbers.length > 0) {
+          setStatus("수강번호로 개설 강좌를 찾고 있어요.");
+          const numberMatches: Match[] = [];
+          for (const subjectNumber of subjectNumbers) {
+            const offerings = await searchCourseOfferings(year, term, subjectNumber);
+            const offering = offerings.find(
+              (candidate) => candidate.subjectNumber === subjectNumber,
+            );
+            if (!offering) {
+              numberMatches.push({
+                group: {
+                  id: `subject-${subjectNumber}`,
+                  title: subjectNumber,
+                  professor: "",
+                  rawText: subjectNumber,
+                  blocks: [],
+                },
+                candidates: [],
+                selectedId: null,
+              });
+              continue;
+            }
+            numberMatches.push({
+              group: {
+                id: `subject-${subjectNumber}`,
+                title: offering.courseTitle,
+                professor: offering.professor ?? "",
+                rawText: subjectNumber,
+                blocks: offering.meetings.map((meeting, index) => ({
+                  id: `subject-${subjectNumber}-${index}`,
+                  crop: document.createElement("canvas"),
+                  day: meeting.day,
+                  startTime: meeting.startTime.slice(0, 5),
+                  endTime: meeting.endTime.slice(0, 5),
+                  rawText: subjectNumber,
+                  confidence: fullImageResult.data.confidence,
+                })),
+              },
+              candidates: [offering],
+              selectedId: existingOfferingIds.includes(offering.id) ||
+                existingSubjectNumbers.includes(offering.subjectNumber)
+                ? null
+                : offering.id,
+            });
+          }
+          setMatches(numberMatches);
+          setStatus(`${subjectNumbers.length}개의 수강번호를 인식했습니다.`);
+          return;
+        }
+
+        detectedBlocks = await detectTimetableBlocks(file);
+        if (!detectedBlocks.length) throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
+        for (let index = 0; index < detectedBlocks.length; index += 1) {
+          setStatus(`강의 글자를 읽고 있어요. (${index + 1}/${detectedBlocks.length})`);
+          const result = await worker.recognize(detectedBlocks[index].crop);
+          detectedBlocks[index].rawText = result.data.text.trim();
+          detectedBlocks[index].confidence = result.data.confidence;
         }
       } finally {
         await worker.terminate();
       }
-
-      const groups = parseAndGroupBlocks(blocks);
+      // 위 try 블록에서 격자 분석을 완료한 경우에만 아래 로직에 도달한다.
+      const groups = parseAndGroupBlocks(detectedBlocks);
       setStatus("개설 강좌와 비교하고 있어요.");
       const preliminaryMatches: Match[] = [];
       for (const group of groups) {

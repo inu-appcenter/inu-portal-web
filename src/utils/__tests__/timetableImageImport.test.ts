@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  extractBracketedSubjectNumbers,
   findConfidentOffering,
   isConfidentOfferingMatch,
   parseAndGroupBlocks,
@@ -18,6 +19,21 @@ const block = (rawText: string, day: DetectedTimetableBlock["day"]): DetectedTim
 });
 
 describe("parseAndGroupBlocks", () => {
+  it("장바구니 목록의 대괄호 수강번호를 중복 없이 추출한다", () => {
+    const text = "[0012345001] 과목가\n[0012345002] 과목나\n[0012345001]";
+
+    expect(extractBracketedSubjectNumbers(text)).toEqual([
+      "0012345001",
+      "0012345002",
+    ]);
+  });
+
+  it("수강번호 안의 흔한 영문 OCR 오인식을 숫자로 복구한다", () => {
+    expect(extractBracketedSubjectNumbers("[OO12345OOI] 과목가")).toEqual([
+      "0012345001",
+    ]);
+  });
+
   it("여러 줄 수업 유형 문구를 과목명에서 제거한다", () => {
     const [course] = parseAndGroupBlocks([
       block("과목가[75\n분수업]\n교수갑", "MONDAY"),
