@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { Pencil, Lock, Bell, Palette, Trash2 } from "lucide-react";
+import { Pencil, Lock, Bell, Palette, Trash2, ScanLine } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -27,6 +27,7 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
+import TimetableImageImportModal from "@/components/mobile/timetable/TimetableImageImportModal";
 
 const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
@@ -372,6 +373,7 @@ const MobileTimeTablePage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImageImportOpen, setIsImageImportOpen] = useState(false);
 
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
 
@@ -484,6 +486,14 @@ const MobileTimeTablePage = () => {
     if (!isLoggedIn || !activeTimetable) return [];
 
     return [
+      {
+        label: "시간표 이미지로 등록",
+        icon: <ScanLine size={20} />,
+        onClick: () => {
+          mixpanelTrack.timetableFeatureClicked("시간표 이미지로 등록", "헤더 메뉴");
+          setIsImageImportOpen(true);
+        },
+      },
       {
         label: "시간표 이름 변경",
         icon: <Pencil size={20} />,
@@ -690,6 +700,19 @@ const MobileTimeTablePage = () => {
 
       {isLoggedIn && activeTimetable && (
         <>
+          <TimetableImageImportModal
+            open={isImageImportOpen}
+            onClose={() => setIsImageImportOpen(false)}
+            timetableId={activeTimetable.id}
+            year={activeTimetable.year}
+            term={activeTimetable.term}
+            existingOfferingIds={activeTimetable.events
+              .map((event) => event.courseOfferingId)
+              .filter((id): id is number => id !== undefined)}
+            existingSubjectNumbers={activeTimetable.events
+              .map((event) => event.courseId)
+              .filter((subjectNumber): subjectNumber is string => Boolean(subjectNumber))}
+          />
           <Modal
             isOpen={isRenameModalOpen}
             onClose={() => setIsRenameModalOpen(false)}
