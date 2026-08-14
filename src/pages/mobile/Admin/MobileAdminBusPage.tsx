@@ -66,7 +66,7 @@ export default function MobileAdminBusPage() {
     startStopName: "",
     startStopAlias: "",
     endBstopId: "",
-    endStopName: "",
+    endBstopName: "",
     endStopAlias: "",
     targetKeywords: "",
   });
@@ -222,15 +222,27 @@ export default function MobileAdminBusPage() {
       return;
     }
 
+    const payload = {
+      category: ruleForm.category,
+      tabName: ruleForm.tabName,
+      startBstopId: ruleForm.startBstopId.trim(),
+      startStopName: ruleForm.startStopName.trim(),
+      startStopAlias: ruleForm.startStopAlias.trim() || undefined,
+      endBstopId: ruleForm.endBstopId.trim() || undefined,
+      endBstopName: ruleForm.endBstopName.trim() || undefined,
+      endStopAlias: ruleForm.endStopAlias.trim() || undefined,
+      targetKeywords: ruleForm.targetKeywords.trim() || undefined,
+    };
+
     setLoading(true);
     setMessage(null);
     try {
       if (editingRuleId !== null) {
-        await updateAdminTargetRule(editingRuleId, ruleForm);
+        await updateAdminTargetRule(editingRuleId, payload);
         setMessage(`탐색 규칙 (#${editingRuleId})이 성공적으로 수정되었습니다!`);
         setEditingRuleId(null);
       } else {
-        await addAdminTargetRule(ruleForm);
+        await addAdminTargetRule(payload as any);
         setMessage("자동 탐색 타겟 규칙이 성공적으로 추가되었습니다!");
       }
       setRuleForm({
@@ -240,7 +252,7 @@ export default function MobileAdminBusPage() {
         startStopName: "",
         startStopAlias: "",
         endBstopId: "",
-        endStopName: "",
+        endBstopName: "",
         endStopAlias: "",
         targetKeywords: "",
       });
@@ -263,7 +275,7 @@ export default function MobileAdminBusPage() {
       startStopName: rule.startStopName || "",
       startStopAlias: rule.startStopAlias || "",
       endBstopId: rule.endBstopId || "",
-      endStopName: rule.endBstopName || "",
+      endBstopName: rule.endBstopName || rule.endStopName || "",
       endStopAlias: rule.endStopAlias || "",
       targetKeywords: rule.targetKeywords || "",
     });
@@ -280,7 +292,7 @@ export default function MobileAdminBusPage() {
       startStopName: "",
       startStopAlias: "",
       endBstopId: "",
-      endStopName: "",
+      endBstopName: "",
       endStopAlias: "",
       targetKeywords: "",
     });
@@ -678,11 +690,11 @@ export default function MobileAdminBusPage() {
                           <SubLabel>정류소 명칭</SubLabel>
                           <Input
                             type="text"
-                            value={ruleForm.endStopName}
+                            value={ruleForm.endBstopName}
                             onChange={(e) =>
                               setRuleForm((prev) => ({
                                 ...prev,
-                                endStopName: e.target.value,
+                                endBstopName: e.target.value,
                               }))
                             }
                             placeholder="예: 인천대학교 자연과학대학"
@@ -720,8 +732,8 @@ export default function MobileAdminBusPage() {
                                     endStopAlias: a,
                                     endBstopId:
                                       prev.endBstopId || matched?.bstopId || "",
-                                    endStopName:
-                                      prev.endStopName || matched?.bstopName || "",
+                                    endBstopName:
+                                      prev.endBstopName || matched?.bstopName || "",
                                   }));
                                 }}
                               >
@@ -1124,7 +1136,7 @@ export default function MobileAdminBusPage() {
                   type="text"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
-                  placeholder="정류장 명칭 입력 (예: 인천대입구, 자연과학, 송도캠)"
+                  placeholder="정류장명, 단축번호(5자리), 별칭 입력 (예: 인천대입구, 38395, 인입)"
                   autoFocus
                 />
                 <SearchSubmitBtn type="submit" disabled={searching}>
@@ -1135,7 +1147,7 @@ export default function MobileAdminBusPage() {
               <SearchResultsList>
                 {searchResults.length === 0 && !searching && (
                   <SearchGuideText>
-                    정류장 이름을 검색해주세요. (공공데이터포털 실시간 조회)
+                    정류장 이름, 5자리 단축번호 또는 별칭을 검색해주세요. (공공데이터포털 실시간 조회)
                   </SearchGuideText>
                 )}
                 {searchResults.map((stop) => (
