@@ -23,6 +23,9 @@ import {
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
 
+const SHUTTLE_TABS = ["사범대 셔틀", "인천대입구 셔틀", "통학 셔틀"];
+const EMPTY_TABS: string[] = [];
+
 export default function BusInfoPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,13 +37,14 @@ export default function BusInfoPage() {
 
   const tabList = useMemo(() => {
     if (type === "shuttle") {
-      return ["사범대 셔틀", "인천대입구 셔틀", "통학 셔틀"];
+      return SHUTTLE_TABS;
     }
     if (dynamicTabs && dynamicTabs.length > 0) {
       return dynamicTabs.map((t) => t.label);
     }
-    return [];
+    return EMPTY_TABS;
   }, [type, dynamicTabs]);
+
 
   const defaultTab = tabList[0] || (
     type === "go-school"
@@ -140,15 +144,15 @@ export default function BusInfoPage() {
     }
   }, [selectedTab, swiperRef]);
 
-  const subHeader = useMemo(
-    () => (
+  const subHeader = useMemo(() => {
+    if (tabList.length === 0) return null;
+    return (
       <CategorySelectorNew
         categories={tabList}
         selectedCategory={selectedTab}
       />
-    ),
-    [selectedTab, tabList],
-  );
+    );
+  }, [selectedTab, tabList]);
 
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     if (!isSwitchableBusInfoType(type)) {

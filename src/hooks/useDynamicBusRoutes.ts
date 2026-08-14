@@ -9,15 +9,19 @@ const DEFAULT_INU_COORD: LatLng = {
   lng: 126.632,
 };
 
+const EMPTY_TABS: BusMapTabConfig[] = [];
+const EMPTY_STOPS: BusMapStop[] = [];
+const EMPTY_RESULT = { tabs: EMPTY_TABS, stops: EMPTY_STOPS };
+
 export function useDynamicBusRoutes(type: string | null) {
-  const { data: dynamicRoutes = [], isLoading: isRoutesLoading } = useQuery({
+  const { data: dynamicRoutes, isLoading: isRoutesLoading } = useQuery({
     queryKey: ["busRoutes", type],
     queryFn: () => getBusRoutes(type ?? undefined),
     enabled: !!type,
     staleTime: 2 * 60 * 1000,
   });
 
-  const { data: stopAliases = [], isLoading: isAliasesLoading } = useQuery({
+  const { data: stopAliases, isLoading: isAliasesLoading } = useQuery({
     queryKey: ["stopAliases"],
     queryFn: () => getPublicStopAliases(),
     staleTime: 5 * 60 * 1000,
@@ -34,7 +38,7 @@ export function useDynamicBusRoutes(type: string | null) {
 
   const getDynamicStopName = useCallback(
     (bstopId?: string, fallbackName?: string): string => {
-      if (!bstopId) return fallbackName || "";
+      if (!bstopId || !stopAliases || stopAliases.length === 0) return fallbackName || "";
       const aliasObj = stopAliases.find((a: any) => a.bstopId === bstopId);
       return aliasObj?.stopAlias || aliasObj?.bstopName || fallbackName || "";
     },
@@ -44,8 +48,9 @@ export function useDynamicBusRoutes(type: string | null) {
   // 서버 API 데이터(dynamicRoutes + stopAliases)로부터 순수 100% 동적 탭 및 정류소 목록 구성
   const { tabs, stops } = useMemo(() => {
     if (!dynamicRoutes || dynamicRoutes.length === 0) {
-      return { tabs: [], stops: [] };
+      return EMPTY_RESULT;
     }
+
 
     const tabMap = new Map<string, { tabName: string; stopIds: Set<string>; defaultStopId?: string }>();
     const stopMap = new Map<string, BusMapStop>();

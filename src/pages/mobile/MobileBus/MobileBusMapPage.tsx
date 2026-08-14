@@ -119,15 +119,18 @@ export default function MobileBusMapPage() {
   const selectedBus =
     selectedStop?.buses.find((bus) => bus.id === selectedBusId) ?? null;
 
-  const subHeader = useMemo(
-    () => (
+  const tabCategories = useMemo(() => tabs.map((tab) => tab.label), [tabs]);
+
+  const subHeader = useMemo(() => {
+    if (tabCategories.length === 0) return null;
+    return (
       <CategorySelectorNew
-        categories={tabs.map((tab) => tab.label)}
+        categories={tabCategories}
         selectedCategory={selectedCategory}
       />
-    ),
-    [selectedCategory, tabs],
-  );
+    );
+  }, [selectedCategory, tabCategories]);
+
 
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     if (!isSwitchableBusInfoType(type)) {
@@ -366,11 +369,21 @@ export default function MobileBusMapPage() {
     return null;
   }
 
-  if (!pageConfig || !selectedStop) {
+  if (!pageConfig) {
     return (
       <FallbackWrapper>
         <FallbackCard>
           신버전 지도 UI는 학교 갈래요와 집 갈래요에서 먼저 제공돼요.
+        </FallbackCard>
+      </FallbackWrapper>
+    );
+  }
+
+  if (!selectedStop) {
+    return (
+      <FallbackWrapper>
+        <FallbackCard>
+          현재 등록된 버스 노선 정보가 없습니다. 관리자 페이지에서 노선 자동 동기화를 진행해주세요.
         </FallbackCard>
       </FallbackWrapper>
     );
