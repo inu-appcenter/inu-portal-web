@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -14,15 +14,12 @@ import {
 } from "@/apis/notices";
 import { getSearch } from "@/apis/search";
 import { getPosts } from "@/apis/posts";
-import { Post } from "@/types/posts";
 import heart from "@/resources/assets/posts/posts-heart.svg";
 import { formatTimeAgo } from "@/utils/date";
 
 export default function PostsList() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [pages, setPages] = useState(1);
 
   const params = useMemo(
     () => new URLSearchParams(location.search),
@@ -45,41 +42,19 @@ export default function PostsList() {
     placeholderData: keepPreviousData,
   });
 
-  useEffect(() => {
-    if (isNoticeType) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    const fetchPosts = async () => {
-      try {
-        const response = query
-          ? await getSearch(query, sort, page)
-          : await getPosts(category, sort, page);
-
-        if (isCancelled) {
-          return;
-        }
-
-        setPosts(response.data.contents);
-        setPages(response.data.pages);
-      } catch (error) {
-        if (!isCancelled) {
-          console.error("게시글/공지 가져오기 실패", error);
-        }
-      }
-    };
-
-    fetchPosts();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [category, isNoticeType, page, query, sort]);
+  const { data: postsResponse } = useQuery({
+    queryKey: ["posts", "desktop", category, sort, page, query],
+    queryFn: () =>
+      query ? getSearch(query, sort, page) : getPosts(category, sort, page),
+    enabled: !isNoticeType,
+    placeholderData: keepPreviousData,
+  });
 
   const notices = noticeResponse?.data.contents ?? [];
-  const totalPages = isNoticeType ? noticeResponse?.data.pages ?? page : pages;
+  const posts = postsResponse?.data.contents ?? [];
+  const totalPages = isNoticeType
+    ? (noticeResponse?.data.pages ?? page)
+    : (postsResponse?.data.pages ?? page);
 
   const handleClickPost = (postId: number) => {
     const nextParams = new URLSearchParams(location.search);
