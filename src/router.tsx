@@ -350,7 +350,9 @@ if (typeof window !== "undefined") {
     // 1. 숫자가 전달된 경우 (뒤로가기)
     if (typeof to === "number") {
       if (to === -1 && supportsMultiWebView()) {
-        appBridge.goBack();
+        // 이 웹뷰 안에 되돌릴 것(모달/SPA 히스토리)이 있으면 웹에서 처리하고,
+        // 없을 때만 네이티브가 웹뷰를 pop 한다. appBridgeAdapter 참고.
+        appBridge.requestBack();
         return Promise.resolve();
       }
       return (originalNavigate as any).call(router, to, opts);
