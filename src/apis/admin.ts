@@ -77,3 +77,172 @@ export const sendFcmAdminNotification = async (
     throw new Error("회원 알림 전송에 실패했습니다.");
   }
 };
+
+// 버스 관리자 API
+export interface RouteSectionRequest {
+  sectionName: string;
+  category: string;
+  tabName: string;
+  routeNo: string;
+  startStop?: string;
+  endStop?: string;
+}
+
+export interface TargetStopRequest {
+  bstopId: string;
+  bstopName: string;
+  category?: string;
+}
+
+export const createAdminRouteSection = async (data: RouteSectionRequest) => {
+  const response = await tokenInstance.post<ApiResponse<any>>(
+    "/api/admin/buses/routes",
+    data,
+  );
+  return response.data;
+};
+
+export const getAdminRouteSections = async () => {
+  const response = await tokenInstance.get<ApiResponse<any[]>>(
+    "/api/admin/buses/routes",
+  );
+  return response.data;
+};
+
+export const autoSyncAdminRouteSections = async () => {
+  const response = await tokenInstance.post<ApiResponse<any[]>>(
+    "/api/admin/buses/routes/auto-sync",
+  );
+  return response.data;
+};
+
+export const updateAdminRouteSection = async (
+  id: number,
+  data: {
+    sectionName: string;
+    category: string;
+    tabName?: string;
+    busNotice?: string;
+    routeNotice?: string;
+  },
+) => {
+  const response = await tokenInstance.put<ApiResponse<any>>(
+    `/api/admin/buses/routes/${id}`,
+    data,
+  );
+  return response.data;
+};
+
+export const deleteAdminRouteSection = async (id: number) => {
+  const response = await tokenInstance.delete<ApiResponse<any>>(
+    `/api/admin/buses/routes/${id}`,
+  );
+  return response.data;
+};
+
+export const searchAdminBusStops = async (keyword: string) => {
+  const response = await tokenInstance.get<ApiResponse<any[]>>(
+    `/api/admin/buses/stops/search?keyword=${encodeURIComponent(keyword)}`,
+  );
+  return response.data;
+};
+
+export const getAdminStopAliases = async () => {
+  const response = await tokenInstance.get<ApiResponse<any[]>>(
+    "/api/admin/buses/stop-aliases",
+  );
+  return response.data;
+};
+
+export const saveAdminStopAlias = async (data: {
+  bstopId: string;
+  bstopName: string;
+  stopAlias: string;
+  stopNotice?: string;
+  memo?: string;
+}) => {
+
+  const response = await tokenInstance.post<ApiResponse<any>>(
+    "/api/admin/buses/stop-aliases",
+    data,
+  );
+  return response.data;
+};
+
+export const deleteAdminStopAlias = async (id: number) => {
+  const response = await tokenInstance.delete<ApiResponse<any>>(
+    `/api/admin/buses/stop-aliases/${id}`,
+  );
+  return response.data;
+};
+
+export const getAdminTargetRules = async () => {
+  const response = await tokenInstance.get<ApiResponse<any[]>>(
+    "/api/admin/buses/target-rules",
+  );
+  return response.data;
+};
+
+export const addAdminTargetRule = async (data: {
+  category: string;
+  tabName: string;
+  startBstopId: string;
+  startStopName: string;
+  startStopAlias?: string;
+  endBstopId?: string;
+  endBstopName?: string;
+  endStopAlias?: string;
+  targetKeywords?: string;
+}) => {
+  const response = await tokenInstance.post<ApiResponse<any>>(
+    "/api/admin/buses/target-rules",
+    data,
+  );
+  return response.data;
+};
+
+export const updateAdminTargetRule = async (
+  id: number,
+  data: {
+    category: string;
+    tabName: string;
+    startBstopId: string;
+    startStopName: string;
+    startStopAlias?: string;
+    endBstopId?: string;
+    endBstopName?: string;
+    endStopAlias?: string;
+    targetKeywords?: string;
+  }
+) => {
+  const response = await tokenInstance.put<ApiResponse<any>>(
+    `/api/admin/buses/target-rules/${id}`,
+    data,
+  );
+  return response.data;
+};
+
+export const deleteAdminTargetRule = async (id: number) => {
+  const response = await tokenInstance.delete<ApiResponse<any>>(
+    `/api/admin/buses/target-rules/${id}`,
+  );
+  return response.data;
+};
+
+
+export const addAdminTargetStop = async (data: TargetStopRequest) => {
+  const response = await tokenInstance.post<ApiResponse<any>>(
+    "/api/admin/buses/target-stops",
+    data,
+  );
+  return response.data;
+};
+
+export const getAdminTargetStops = async () => {
+  const response = await tokenInstance.get<ApiResponse<any[]>>(
+    "/api/admin/buses/target-stops",
+  );
+  return response.data;
+};
+
+

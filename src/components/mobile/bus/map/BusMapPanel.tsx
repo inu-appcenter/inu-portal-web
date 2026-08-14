@@ -2,11 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled, { css, keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Drawer } from "vaul";
-import { ChevronDown, RotateCw } from "lucide-react";
+import { ChevronDown, RotateCw, Calendar } from "lucide-react";
 import { FiChevronRight } from "react-icons/fi";
 import BusCircle from "@/components/mobile/bus/BusCircle";
 import BusRouteBar from "@/components/mobile/bus/BusRouteBar";
+import BusHistoryModal from "@/components/mobile/bus/BusHistoryModal";
 import { BUS_MAP_BOTTOM_SHEET_HEIGHT } from "@/components/mobile/bus/map/busMapSheetConfig";
+
 import BusStopSwitcher, {
   type BusStopSwitcherOption,
 } from "@/components/mobile/bus/map/BusStopSwitcher";
@@ -56,11 +58,15 @@ export default function BusMapPanel({
     Record<string, boolean>
   >({});
   const [sortMode, setSortMode] = useState<BusSortMode>("arrival");
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyTargetRouteNo, setHistoryTargetRouteNo] = useState<string | undefined>(undefined);
+
   const selectedStopCooldownKey =
     selectedStop?.bstopId ?? selectedStop?.id ?? "";
   const isSelectedStopCooldown = selectedStopCooldownKey
     ? Boolean(cooldownsByStopKey[selectedStopCooldownKey])
     : false;
+
 
   const displayedBuses = useMemo(() => {
     if (!selectedStop) {
@@ -278,15 +284,26 @@ export default function BusMapPanel({
               <LastUpdatedText>
                 업데이트: {formatTime(lastUpdated)}
               </LastUpdatedText>
-              <RefreshButton
-                type="button"
-                onClick={handleRefresh}
-                $isFetching={isFetching}
-                $isCooldown={isSelectedStopCooldown}
-                disabled={isSelectedStopCooldown || isFetching}
-              >
-                <RotateCw size={12} />
-              </RefreshButton>
+              <RightHeaderActionRow>
+                <TimetableTriggerBtn
+                  type="button"
+                  onClick={() => {
+                    setHistoryTargetRouteNo(undefined);
+                    setHistoryModalOpen(true);
+                  }}
+                >
+                  <Calendar size={12} /> 시간표 / 과거 이력
+                </TimetableTriggerBtn>
+                <RefreshButton
+                  type="button"
+                  onClick={handleRefresh}
+                  $isFetching={isFetching}
+                  $isCooldown={isSelectedStopCooldown}
+                  disabled={isSelectedStopCooldown || isFetching}
+                >
+                  <RotateCw size={12} />
+                </RefreshButton>
+              </RightHeaderActionRow>
             </RefreshRow>
 
             <ListViewport
@@ -380,6 +397,21 @@ export default function BusMapPanel({
                                 </ChevronIcon>
                               </BusCardButton>
 
+                              {isSelected && (
+                                <CardTimetableActionRow>
+                                  <CardTimetableBtn
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setHistoryTargetRouteNo(bus.number);
+                                      setHistoryModalOpen(true);
+                                    }}
+                                  >
+                                    <Calendar size={11} /> {bus.number}번 과거 도착 시간표 조회
+                                  </CardTimetableBtn>
+                                </CardTimetableActionRow>
+                              )}
+
                               {showBusNotice ? (
                                 <BusNoticeText
                                   $hasRouteProgress={canShowRouteProgress}
@@ -413,6 +445,18 @@ export default function BusMapPanel({
                     ))}
               </BusList>
             </ListViewport>
+
+            {/* 정류장별 실측 도착 시간표 & n주 전 이력 모달 */}
+            <BusHistoryModal
+              isOpen={historyModalOpen}
+              onClose={() => setHistoryModalOpen(false)}
+              bstopId={selectedStop.bstopId ?? ""}
+              stopName={selectedStop.stopName}
+              defaultRouteNo={historyTargetRouteNo}
+              availableRoutes={Array.from(
+                new Set(selectedStop.buses.map((b) => b.number)),
+              )}
+            />
           </>
         ) : (
           <EmptyPanelMessage>
@@ -426,6 +470,7 @@ export default function BusMapPanel({
   if (isDesktop) {
     return <DesktopPanelShell>{panelContent}</DesktopPanelShell>;
   }
+
 
   return (
     <Drawer.Root
@@ -726,9 +771,60 @@ const SortChevron = styled(ChevronDown)`
 const RefreshRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  //margin-top: 8px;
+  justify-content: space-between;
+  gap: 8px;
   flex-shrink: 0;
+`;
+
+const RightHeaderActionRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const TimetableTriggerBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background-color: #dcfce7;
+  }
+`;
+
+const CardTimetableActionRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #e2e8f0;
+`;
+
+const CardTimetableBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #dbeafe;
+  }
 `;
 
 const LastUpdatedText = styled.span`
@@ -743,12 +839,12 @@ const RefreshButton = styled.button<{
   width: 22px;
   height: 22px;
   border: 0;
-  border-radius: 0;
+  border-radius: 999px;
   background: transparent;
-  color: ${({ $isCooldown }) => ($isCooldown ? "#a6bad9" : "#2b62b8")};
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #70839d;
   cursor: pointer;
   padding: 0;
 

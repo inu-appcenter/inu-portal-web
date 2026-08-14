@@ -11,9 +11,6 @@ import { BUS_MAP_BOTTOM_SHEET_HEIGHT } from "@/components/mobile/bus/map/busMapS
 import {
   BUS_MAP_FALLBACK_COORD,
   getBusMapPageConfig,
-  getBusMapStopById,
-  getBusMapStops,
-  getBusMapTabs,
 } from "@/components/mobile/bus/data/busMapConfig";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
@@ -27,7 +24,10 @@ import {
 } from "@/utils/busUiPreference";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
+import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
+
 const MOBILE_MAP_HEADER_HEIGHT = 100;
+
 const MOBILE_SUBHEADER_OFFSET = 50;
 const MOBILE_FULL_HEADER_OFFSET =
   MOBILE_MAP_HEADER_HEIGHT + MOBILE_SUBHEADER_OFFSET;
@@ -58,7 +58,9 @@ export default function MobileBusMapPage() {
   const requestedCategory = searchParams.get("category");
 
   const pageConfig = useMemo(() => getBusMapPageConfig(type), [type]);
-  const tabs = useMemo(() => getBusMapTabs(type), [type]);
+  const { tabs: dynamicTabs, stops: dynamicStops } = useDynamicBusRoutes(type);
+
+  const tabs = dynamicTabs;
   const defaultCategory = tabs[0]?.label ?? "";
   const selectedCategory = tabs.some((tab) => tab.label === requestedCategory)
     ? (requestedCategory ?? defaultCategory)
@@ -74,23 +76,19 @@ export default function MobileBusMapPage() {
     : null;
   const activeTab =
     tabs.find((tab) => tab.label === selectedCategory) ?? tabs[0] ?? null;
-  const allStopIds = useMemo(
-    () => Array.from(new Set(tabs.flatMap((tab) => tab.stopIds))),
-    [tabs],
-  );
-  const visibleStops = useMemo(() => getBusMapStops(allStopIds), [allStopIds]);
-  const activeStops = useMemo(
-    () => getBusMapStops(activeTab?.stopIds ?? []),
-    [activeTab],
-  );
-  const defaultStop = useMemo(
-    () => getBusMapStopById(activeTab?.defaultStopId ?? null),
-    [activeTab],
-  );
 
-  const [selectedStopId, setSelectedStopId] = useState<string | null>(
-    defaultStop?.id ?? null,
-  );
+  const visibleStops = dynamicStops;
+  const activeStops = useMemo(() => {
+    if (!activeTab) return dynamicStops;
+    return dynamicStops.filter((stop) => activeTab.stopIds.includes(stop.id));
+  }, [activeTab, dynamicStops]);
+
+  const defaultStop = useMemo(() => {
+    if (!activeTab) return activeStops[0] ?? null;
+    return activeStops.find((s) => s.id === activeTab.defaultStopId) ?? activeStops[0] ?? null;
+  }, [activeTab, activeStops]);
+
+  const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
   const [selectedBusId, setSelectedBusId] = useState<number | null>(null);
   const [snap, setSnap] = useState<string | number | null>(
     BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT,
@@ -109,6 +107,7 @@ export default function MobileBusMapPage() {
     activeStops[0] ??
     visibleStops[0] ??
     null;
+
   const stopSwitcherOptions = useMemo(
     () =>
       activeStops.map((stop) => ({
@@ -120,15 +119,18 @@ export default function MobileBusMapPage() {
   const selectedBus =
     selectedStop?.buses.find((bus) => bus.id === selectedBusId) ?? null;
 
-  const subHeader = useMemo(
-    () => (
+  const tabCategories = useMemo(() => tabs.map((tab) => tab.label), [tabs]);
+
+  const subHeader = useMemo(() => {
+    if (tabCategories.length === 0) return null;
+    return (
       <CategorySelectorNew
-        categories={tabs.map((tab) => tab.label)}
+        categories={tabCategories}
         selectedCategory={selectedCategory}
       />
-    ),
-    [selectedCategory, tabs],
-  );
+    );
+  }, [selectedCategory, tabCategories]);
+
 
   const menuItems = useMemo<MenuItemType[] | undefined>(() => {
     if (!isSwitchableBusInfoType(type)) {
@@ -220,18 +222,26 @@ export default function MobileBusMapPage() {
     void logApi();
   }, [pageConfig, redirectTarget, type]);
 
+  // 카테고리(탭)가 변경되었을 때만 정류장 및 버스 선택 리셋
   useEffect(() => {
-    const isSelectedStopVisible = activeStops.some(
-      (stop) => stop.id === selectedStopId,
-    );
-
-    if (!isSelectedStopVisible) {
-      setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
-    }
+    setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
     setSelectedBusId(null);
     setSnap(BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT);
     setMapFocusTrigger((prev) => prev + 1);
-  }, [activeStops, defaultStop?.id, selectedCategory, selectedStopId]);
+  }, [selectedCategory]);
+
+  // 선택된 정류장이 현재 탭의 정류장 목록에 없으면 기본 정류장으로 보정
+  useEffect(() => {
+    if (!selectedStopId) return;
+    const isSelectedStopVisible = activeStops.some(
+      (stop) => stop.id === selectedStopId,
+    );
+    if (!isSelectedStopVisible && activeStops.length > 0) {
+      setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
+      setSelectedBusId(null);
+    }
+  }, [activeStops, defaultStop?.id, selectedStopId]);
+
 
   useLayoutEffect(() => {
     if (redirectTarget || !pageConfig || typeof window === "undefined") {
@@ -359,11 +369,21 @@ export default function MobileBusMapPage() {
     return null;
   }
 
-  if (!pageConfig || !selectedStop) {
+  if (!pageConfig) {
     return (
       <FallbackWrapper>
         <FallbackCard>
           신버전 지도 UI는 학교 갈래요와 집 갈래요에서 먼저 제공돼요.
+        </FallbackCard>
+      </FallbackWrapper>
+    );
+  }
+
+  if (!selectedStop) {
+    return (
+      <FallbackWrapper>
+        <FallbackCard>
+          현재 등록된 버스 노선 정보가 없습니다. 관리자 페이지에서 노선 자동 동기화를 진행해주세요.
         </FallbackCard>
       </FallbackWrapper>
     );
