@@ -201,12 +201,34 @@ export const addAdminTargetRule = async (data: {
   return response.data;
 };
 
+export const updateAdminTargetRule = async (
+  id: number,
+  data: {
+    category: string;
+    tabName: string;
+    startBstopId: string;
+    startStopName: string;
+    startStopAlias?: string;
+    endBstopId?: string;
+    endBstopName?: string;
+    endStopAlias?: string;
+    targetKeywords?: string;
+  }
+) => {
+  const response = await tokenInstance.put<ApiResponse<any>>(
+    `/api/admin/buses/target-rules/${id}`,
+    data,
+  );
+  return response.data;
+};
+
 export const deleteAdminTargetRule = async (id: number) => {
   const response = await tokenInstance.delete<ApiResponse<any>>(
     `/api/admin/buses/target-rules/${id}`,
   );
   return response.data;
 };
+
 
 export const addAdminTargetStop = async (data: TargetStopRequest) => {
   const response = await tokenInstance.post<ApiResponse<any>>(

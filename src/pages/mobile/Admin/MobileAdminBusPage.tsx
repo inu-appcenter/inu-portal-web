@@ -26,6 +26,7 @@ import {
   updateAdminRouteSection,
   getAdminTargetRules,
   addAdminTargetRule,
+  updateAdminTargetRule,
   deleteAdminTargetRule,
   searchAdminBusStops,
   getAdminStopAliases,
@@ -47,23 +48,27 @@ export default function MobileAdminBusPage() {
     "rules",
   );
 
-  // 데이터 상태
-  const [routeSections, setRouteSections] = useState<any[]>([]);
-  const [targetRules, setTargetRules] = useState<any[]>([]);
-  const [stopAliases, setStopAliases] = useState<any[]>([]);
+  // 로딩 및 알림 상태
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // 1. 자동 탐색 룰 폼 상태
+  // 데이터 목록
+  const [routeSections, setRouteSections] = useState<any[]>([]);
+  const [targetRules, setTargetRules] = useState<any[]>([]);
+  const [stopAliases, setStopAliases] = useState<any[]>([]);
+
+  // 1. 규칙 등록/수정 폼 상태
+  const [editingRuleId, setEditingRuleId] = useState<number | null>(null);
   const [ruleForm, setRuleForm] = useState({
     category: "go-school",
     tabName: "인입런",
-    startBstopId: "164000395",
-    startStopName: "인천대입구역 2번출구",
-    startStopAlias: "인입",
-    endBstopId: "164000378",
-    endStopName: "인천대학교 자연과학대학",
-    endStopAlias: "자연대",
+    startBstopId: "",
+    startStopName: "",
+    startStopAlias: "",
+    endBstopId: "",
+    endStopName: "",
+    endStopAlias: "",
+    targetKeywords: "",
   });
 
   // 2. 정류장 검색 모달 상태
@@ -95,6 +100,32 @@ export default function MobileAdminBusPage() {
     memo: "",
   });
 
+  // 기존 등록된 고유 탭명 및 별칭 목록 (오타 방지용 제안 칩)
+  const existingTabNames = Array.from(
+    new Set([
+      ...targetRules.map((r) => r.tabName).filter(Boolean),
+      ...routeSections.map((s) => s.tabName).filter(Boolean),
+      "인입런",
+      "지정단런",
+      "인천대 정문",
+      "공대/자연대",
+      "기숙사 앞",
+    ]),
+  );
+
+  const existingAliases = Array.from(
+    new Set([
+      ...stopAliases.map((a) => a.stopAlias).filter(Boolean),
+      ...targetRules.map((r) => r.startStopAlias).filter(Boolean),
+      ...targetRules.map((r) => r.endStopAlias).filter(Boolean),
+      "인입",
+      "지정단",
+      "정문",
+      "공대",
+      "자연대",
+      "기숙사",
+    ]),
+  );
 
   useEffect(() => {
     const hasStoredToken = Boolean(localStorage.getItem("tokenInfo"));
@@ -183,27 +214,78 @@ export default function MobileAdminBusPage() {
     setSearchModalOpen(false);
   };
 
-  // 탐색 룰 등록
+  // 탐색 룰 등록 및 수정
   const handleRuleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ruleForm.startBstopId.trim() || !ruleForm.startStopName.trim()) {
-      alert("출발 정류장을 지정해주세요.");
+      alert("출발 정류장 ID와 정류장명을 지정해주세요.");
       return;
     }
 
     setLoading(true);
     setMessage(null);
     try {
-      await addAdminTargetRule(ruleForm);
-      setMessage("자동 탐색 타겟 규칙이 성공적으로 추가되었습니다!");
+      if (editingRuleId !== null) {
+        await updateAdminTargetRule(editingRuleId, ruleForm);
+        setMessage(`탐색 규칙 (#${editingRuleId})이 성공적으로 수정되었습니다!`);
+        setEditingRuleId(null);
+      } else {
+        await addAdminTargetRule(ruleForm);
+        setMessage("자동 탐색 타겟 규칙이 성공적으로 추가되었습니다!");
+      }
+      setRuleForm({
+        category: "go-school",
+        tabName: "인입런",
+        startBstopId: "",
+        startStopName: "",
+        startStopAlias: "",
+        endBstopId: "",
+        endStopName: "",
+        endStopAlias: "",
+        targetKeywords: "",
+      });
       loadData();
     } catch (err) {
       console.error(err);
-      alert("자동 탐색 타겟 규칙 등록 실패.");
+      alert("자동 탐색 타겟 규칙 저장 실패.");
     } finally {
       setLoading(false);
     }
   };
+
+  // 룰 수정 모드 진입
+  const handleEditRule = (rule: any) => {
+    setEditingRuleId(rule.id);
+    setRuleForm({
+      category: rule.category || "go-school",
+      tabName: rule.tabName || "인입런",
+      startBstopId: rule.startBstopId || "",
+      startStopName: rule.startStopName || "",
+      startStopAlias: rule.startStopAlias || "",
+      endBstopId: rule.endBstopId || "",
+      endStopName: rule.endBstopName || "",
+      endStopAlias: rule.endStopAlias || "",
+      targetKeywords: rule.targetKeywords || "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // 룰 수정 취소
+  const handleCancelEditRule = () => {
+    setEditingRuleId(null);
+    setRuleForm({
+      category: "go-school",
+      tabName: "인입런",
+      startBstopId: "",
+      startStopName: "",
+      startStopAlias: "",
+      endBstopId: "",
+      endStopName: "",
+      endStopAlias: "",
+      targetKeywords: "",
+    });
+  };
+
 
   // 룰 삭제
   const handleDeleteRule = async (id: number) => {
@@ -395,13 +477,25 @@ export default function MobileAdminBusPage() {
               </CardBody>
             </Card>
 
-            {/* 시종점 기반 탐색 규칙 추가 폼 */}
+            {/* 시종점 기반 탐색 규칙 추가/수정 폼 */}
             <Card>
               <CardHeader>
                 <HeaderTitle>
-                  <Plus size={20} color="#16a34a" /> 시종점 기반 자동 탐색 규칙
-                  추가
+                  {editingRuleId !== null ? (
+                    <>
+                      <Edit2 size={20} color="#2563eb" /> 탐색 규칙 수정 (ID: #{editingRuleId})
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={20} color="#16a34a" /> 시종점 기반 자동 탐색 규칙 추가
+                    </>
+                  )}
                 </HeaderTitle>
+                {editingRuleId !== null && (
+                  <CancelMiniButton type="button" onClick={handleCancelEditRule}>
+                    <X size={14} /> 수정 취소
+                  </CancelMiniButton>
+                )}
               </CardHeader>
               <CardBody>
                 <form onSubmit={handleRuleSubmit}>
@@ -423,9 +517,10 @@ export default function MobileAdminBusPage() {
                     </FormGroup>
 
                     <FormGroup>
-                      <Label>탭 명 (예: 인입런, 지정단런, 공대/자연대)</Label>
+                      <Label>탭 명 (직접 입력 또는 아래 칩 선택)</Label>
                       <Input
                         type="text"
+                        list="tab-suggestions"
                         value={ruleForm.tabName}
                         onChange={(e) =>
                           setRuleForm((prev) => ({
@@ -433,34 +528,83 @@ export default function MobileAdminBusPage() {
                             tabName: e.target.value,
                           }))
                         }
-                        placeholder="예: 인입런, 인천대 정문"
+                        placeholder="예: 인입런, 지정단런, 인천대 정문"
                         required
                       />
+                      <datalist id="tab-suggestions">
+                        {existingTabNames.map((t) => (
+                          <option key={t} value={t} />
+                        ))}
+                      </datalist>
+                      {existingTabNames.length > 0 && (
+                        <ChipContainer>
+                          <ChipLabel>추천 탭:</ChipLabel>
+                          {existingTabNames.map((t) => (
+                            <ChipButton
+                              key={t}
+                              type="button"
+                              isSelected={ruleForm.tabName === t}
+                              onClick={() =>
+                                setRuleForm((prev) => ({ ...prev, tabName: t }))
+                              }
+                            >
+                              {t}
+                            </ChipButton>
+                          ))}
+                        </ChipContainer>
+                      )}
                     </FormGroup>
                   </FormGrid>
 
-                  {/* 출발 정류장 & 도착 정류장 선택 영역 */}
+                  {/* 출발 정류장 & 도착 정류장 선택 / 수기 입력 영역 */}
                   <StopSelectionGrid>
                     {/* 출발 정류소 */}
                     <StopSelectBox>
-                      <BoxLabel>🚩 출발 정류장 (기점)</BoxLabel>
-                      <SelectedStopInfo>
-                        <StopNameText>
-                          {ruleForm.startStopName || "정류장을 검색해주세요"}
-                        </StopNameText>
-                        <StopMetaText>
-                          ID: {ruleForm.startBstopId || "-"} | 별칭:{" "}
-                          <b>{ruleForm.startStopAlias || "-"}</b>
-                        </StopMetaText>
-                      </SelectedStopInfo>
-                      <SearchTriggerButton
-                        type="button"
-                        onClick={() => openSearchModal("start")}
-                      >
-                        <Search size={14} /> 정류장 검색 / 변경
-                      </SearchTriggerButton>
-                      <InlineInputRow>
-                        <InlineLabel>출발지 별칭:</InlineLabel>
+                      <BoxHeaderRow>
+                        <BoxLabel>🚩 출발 정류장 (기점)</BoxLabel>
+                        <SearchTriggerButton
+                          type="button"
+                          onClick={() => openSearchModal("start")}
+                        >
+                          <Search size={13} /> 공공데이터 검색
+                        </SearchTriggerButton>
+                      </BoxHeaderRow>
+
+                      <ManualInputGrid>
+                        <FormGroup>
+                          <SubLabel>정류소 ID (9자리/번호)</SubLabel>
+                          <Input
+                            type="text"
+                            value={ruleForm.startBstopId}
+                            onChange={(e) =>
+                              setRuleForm((prev) => ({
+                                ...prev,
+                                startBstopId: e.target.value,
+                              }))
+                            }
+                            placeholder="예: 164000395"
+                            required
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <SubLabel>정류소 명칭</SubLabel>
+                          <Input
+                            type="text"
+                            value={ruleForm.startStopName}
+                            onChange={(e) =>
+                              setRuleForm((prev) => ({
+                                ...prev,
+                                startStopName: e.target.value,
+                              }))
+                            }
+                            placeholder="예: 인천대입구역 2번출구"
+                            required
+                          />
+                        </FormGroup>
+                      </ManualInputGrid>
+
+                      <FormGroup>
+                        <SubLabel>출발지 별칭 (화면 표시용):</SubLabel>
                         <Input
                           type="text"
                           value={ruleForm.startStopAlias}
@@ -470,31 +614,84 @@ export default function MobileAdminBusPage() {
                               startStopAlias: e.target.value,
                             }))
                           }
-                          placeholder="예: 인입"
+                          placeholder="예: 인입, 지정단"
                         />
-                      </InlineInputRow>
+                        {existingAliases.length > 0 && (
+                          <ChipContainer>
+                            <ChipLabel>추천 별칭:</ChipLabel>
+                            {existingAliases.map((a) => (
+                              <ChipButton
+                                key={a}
+                                type="button"
+                                isSelected={ruleForm.startStopAlias === a}
+                                onClick={() => {
+                                  // 해당 별칭에 매칭되는 정류장 사전 정보가 있으면 ID/명칭도 자동 보조 채움
+                                  const matched = stopAliases.find(
+                                    (sa) => sa.stopAlias === a,
+                                  );
+                                  setRuleForm((prev) => ({
+                                    ...prev,
+                                    startStopAlias: a,
+                                    startBstopId:
+                                      prev.startBstopId || matched?.bstopId || "",
+                                    startStopName:
+                                      prev.startStopName || matched?.bstopName || "",
+                                  }));
+                                }}
+                              >
+                                {a}
+                              </ChipButton>
+                            ))}
+                          </ChipContainer>
+                        )}
+                      </FormGroup>
                     </StopSelectBox>
 
                     {/* 도착 정류소 */}
                     <StopSelectBox>
-                      <BoxLabel>🏁 목표 도착 정류장 (종점)</BoxLabel>
-                      <SelectedStopInfo>
-                        <StopNameText>
-                          {ruleForm.endStopName || "정류장을 검색해주세요"}
-                        </StopNameText>
-                        <StopMetaText>
-                          ID: {ruleForm.endBstopId || "-"} | 별칭:{" "}
-                          <b>{ruleForm.endStopAlias || "-"}</b>
-                        </StopMetaText>
-                      </SelectedStopInfo>
-                      <SearchTriggerButton
-                        type="button"
-                        onClick={() => openSearchModal("end")}
-                      >
-                        <Search size={14} /> 정류장 검색 / 변경
-                      </SearchTriggerButton>
-                      <InlineInputRow>
-                        <InlineLabel>도착지 별칭:</InlineLabel>
+                      <BoxHeaderRow>
+                        <BoxLabel>🏁 목표 도착 정류장 (종점)</BoxLabel>
+                        <SearchTriggerButton
+                          type="button"
+                          onClick={() => openSearchModal("end")}
+                        >
+                          <Search size={13} /> 공공데이터 검색
+                        </SearchTriggerButton>
+                      </BoxHeaderRow>
+
+                      <ManualInputGrid>
+                        <FormGroup>
+                          <SubLabel>정류소 ID (선택)</SubLabel>
+                          <Input
+                            type="text"
+                            value={ruleForm.endBstopId}
+                            onChange={(e) =>
+                              setRuleForm((prev) => ({
+                                ...prev,
+                                endBstopId: e.target.value,
+                              }))
+                            }
+                            placeholder="예: 164000378"
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <SubLabel>정류소 명칭</SubLabel>
+                          <Input
+                            type="text"
+                            value={ruleForm.endStopName}
+                            onChange={(e) =>
+                              setRuleForm((prev) => ({
+                                ...prev,
+                                endStopName: e.target.value,
+                              }))
+                            }
+                            placeholder="예: 인천대학교 자연과학대학"
+                          />
+                        </FormGroup>
+                      </ManualInputGrid>
+
+                      <FormGroup>
+                        <SubLabel>도착지 별칭 (화면 표시용):</SubLabel>
                         <Input
                           type="text"
                           value={ruleForm.endStopAlias}
@@ -504,15 +701,57 @@ export default function MobileAdminBusPage() {
                               endStopAlias: e.target.value,
                             }))
                           }
-                          placeholder="예: 자연대"
+                          placeholder="예: 자연대, 공대"
                         />
-                      </InlineInputRow>
+                        {existingAliases.length > 0 && (
+                          <ChipContainer>
+                            <ChipLabel>추천 별칭:</ChipLabel>
+                            {existingAliases.map((a) => (
+                              <ChipButton
+                                key={a}
+                                type="button"
+                                isSelected={ruleForm.endStopAlias === a}
+                                onClick={() => {
+                                  const matched = stopAliases.find(
+                                    (sa) => sa.stopAlias === a,
+                                  );
+                                  setRuleForm((prev) => ({
+                                    ...prev,
+                                    endStopAlias: a,
+                                    endBstopId:
+                                      prev.endBstopId || matched?.bstopId || "",
+                                    endStopName:
+                                      prev.endStopName || matched?.bstopName || "",
+                                  }));
+                                }}
+                              >
+                                {a}
+                              </ChipButton>
+                            ))}
+                          </ChipContainer>
+                        )}
+                      </FormGroup>
                     </StopSelectBox>
                   </StopSelectionGrid>
 
-                  <SubmitButton type="submit" disabled={loading}>
-                    <Plus size={16} /> 규칙 등록하기
-                  </SubmitButton>
+                  <ButtonGroup>
+                    <SubmitButton type="submit" disabled={loading}>
+                      {editingRuleId !== null ? (
+                        <>
+                          <Check size={16} /> 탐색 규칙 수정 완료 (#ID: {editingRuleId})
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} /> 새 규칙 등록하기
+                        </>
+                      )}
+                    </SubmitButton>
+                    {editingRuleId !== null && (
+                      <CancelButton type="button" onClick={handleCancelEditRule}>
+                        수정 취소
+                      </CancelButton>
+                    )}
+                  </ButtonGroup>
                 </form>
               </CardBody>
             </Card>
@@ -561,17 +800,28 @@ export default function MobileAdminBusPage() {
                             </PathStop>
                           </RulePath>
                         </RuleContent>
-                        <DeleteButton
-                          onClick={() => handleDeleteRule(rule.id)}
-                        >
-                          <Trash2 size={16} />
-                        </DeleteButton>
+                        <RuleActionGroup>
+                          <EditRuleButton
+                            type="button"
+                            onClick={() => handleEditRule(rule)}
+                            title="규칙 수정"
+                          >
+                            <Edit2 size={15} /> 수정
+                          </EditRuleButton>
+                          <DeleteButton
+                            onClick={() => handleDeleteRule(rule.id)}
+                            title="규칙 삭제"
+                          >
+                            <Trash2 size={15} />
+                          </DeleteButton>
+                        </RuleActionGroup>
                       </RuleItem>
                     ))}
                   </RuleList>
                 )}
               </CardBody>
             </Card>
+
           </>
         )}
 
@@ -718,6 +968,7 @@ export default function MobileAdminBusPage() {
                       <Label>별칭 / 축약명 (화면 노출용)</Label>
                       <Input
                         type="text"
+                        list="alias-suggestions"
                         value={aliasForm.stopAlias}
                         onChange={(e) =>
                           setAliasForm((prev) => ({
@@ -725,10 +976,36 @@ export default function MobileAdminBusPage() {
                             stopAlias: e.target.value,
                           }))
                         }
-                        placeholder="예: 인입"
+                        placeholder="예: 인입, 지정단, 정문, 공대, 자연대"
                         required
                       />
+                      <datalist id="alias-suggestions">
+                        {existingAliases.map((a) => (
+                          <option key={a} value={a} />
+                        ))}
+                      </datalist>
+                      {existingAliases.length > 0 && (
+                        <ChipContainer>
+                          <ChipLabel>추천 별칭:</ChipLabel>
+                          {existingAliases.map((a) => (
+                            <ChipButton
+                              key={a}
+                              type="button"
+                              isSelected={aliasForm.stopAlias === a}
+                              onClick={() =>
+                                setAliasForm((prev) => ({
+                                  ...prev,
+                                  stopAlias: a,
+                                }))
+                              }
+                            >
+                              {a}
+                            </ChipButton>
+                          ))}
+                        </ChipContainer>
+                      )}
                     </FormGroup>
+
 
                     <FormGroup style={{ gridColumn: "1 / -1" }}>
                       <Label>💡 정류장 상단 실시간 안내 문구 (stopNotice)</Label>
@@ -1194,30 +1471,126 @@ const StopSelectBox = styled.div`
   gap: 10px;
 `;
 
+const BoxHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
 const BoxLabel = styled.div`
   font-size: 14px;
   font-weight: 700;
   color: #1f2937;
 `;
 
-const SelectedStopInfo = styled.div`
-  background: white;
-  border: 1px solid #e5e7eb;
-  padding: 10px 12px;
-  border-radius: 6px;
-`;
-
-const StopNameText = styled.div`
-  font-size: 14px;
+const SubLabel = styled.label`
+  font-size: 11px;
   font-weight: 600;
-  color: #111827;
+  color: #4b5563;
 `;
 
-const StopMetaText = styled.div`
-  font-size: 12px;
-  color: #6b7280;
+const ManualInputGrid = styled.div`
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 8px;
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ChipContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
   margin-top: 4px;
 `;
+
+const ChipLabel = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+`;
+
+const ChipButton = styled.button<{ isSelected?: boolean }>`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid ${(props) => (props.isSelected ? "#2563eb" : "#e5e7eb")};
+  background-color: ${(props) => (props.isSelected ? "#eff6ff" : "#ffffff")};
+  color: ${(props) => (props.isSelected ? "#1d4ed8" : "#374151")};
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CancelMiniButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    background-color: #fecaca;
+  }
+`;
+
+const CancelButton = styled.button`
+  padding: 12px 18px;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #4b5563;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover {
+    background-color: #e5e7eb;
+  }
+`;
+
+const RuleActionGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const EditRuleButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    background-color: #dbeafe;
+  }
+`;
+
 
 const SearchTriggerButton = styled.button`
   display: flex;
@@ -1237,18 +1610,6 @@ const SearchTriggerButton = styled.button`
   }
 `;
 
-const InlineInputRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const InlineLabel = styled.span`
-  font-size: 12px;
-  font-weight: 600;
-  color: #4b5563;
-  white-space: nowrap;
-`;
 
 const SubmitButton = styled.button`
   display: flex;
@@ -1639,13 +2000,3 @@ const ModalFooter = styled.div`
   margin-top: 20px;
 `;
 
-const CancelButton = styled.button`
-  padding: 10px 16px;
-  background-color: #f3f4f6;
-  color: #4b5563;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-`;
