@@ -81,31 +81,34 @@ export default function MobileBusMapPage() {
     () => Array.from(new Set(tabs.flatMap((tab) => tab.stopIds))),
     [tabs],
   );
-  const { applyDynamicRoutesToBuses } = useDynamicBusRoutes(type);
+  const { applyDynamicRoutesToBuses, getDynamicStopNotice } = useDynamicBusRoutes(type);
 
   const visibleStops = useMemo(() => {
     const rawStops = getBusMapStops(allStopIds);
     return rawStops.map((stop) => ({
       ...stop,
+      stopNotice: getDynamicStopNotice(stop.bstopId) || stop.stopNotice,
       buses: applyDynamicRoutesToBuses(stop.buses),
       busSections: stop.busSections.map((sec) => ({
         ...sec,
         buses: applyDynamicRoutesToBuses(sec.buses),
       })),
     }));
-  }, [allStopIds, applyDynamicRoutesToBuses]);
+  }, [allStopIds, applyDynamicRoutesToBuses, getDynamicStopNotice]);
 
   const activeStops = useMemo(() => {
     const rawStops = getBusMapStops(activeTab?.stopIds ?? []);
     return rawStops.map((stop) => ({
       ...stop,
+      stopNotice: getDynamicStopNotice(stop.bstopId) || stop.stopNotice,
       buses: applyDynamicRoutesToBuses(stop.buses),
       busSections: stop.busSections.map((sec) => ({
         ...sec,
         buses: applyDynamicRoutesToBuses(sec.buses),
       })),
     }));
-  }, [activeTab, applyDynamicRoutesToBuses]);
+  }, [activeTab, applyDynamicRoutesToBuses, getDynamicStopNotice]);
+
 
   const defaultStop = useMemo(
     () => getBusMapStopById(activeTab?.defaultStopId ?? null),

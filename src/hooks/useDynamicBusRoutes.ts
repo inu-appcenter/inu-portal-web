@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getBusRoutes } from "@/apis/busArrival";
+import { getBusRoutes, getPublicStopAliases } from "@/apis/busArrival";
 import type { BusData } from "@/types/bus";
 
 export function useDynamicBusRoutes(type: string | null) {
@@ -9,6 +9,18 @@ export function useDynamicBusRoutes(type: string | null) {
     enabled: !!type,
     staleTime: 5 * 60 * 1000, // 5분 캐시
   });
+
+  const { data: stopAliases = [] } = useQuery({
+    queryKey: ["stopAliases"],
+    queryFn: () => getPublicStopAliases(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const getDynamicStopNotice = (bstopId?: string): string | undefined => {
+    if (!bstopId || !stopAliases || stopAliases.length === 0) return undefined;
+    const aliasObj = stopAliases.find((a: any) => a.bstopId === bstopId);
+    return aliasObj?.stopNotice || undefined;
+  };
 
   const applyDynamicRoutesToBuses = (buses: BusData[]): BusData[] => {
     if (!dynamicRoutes || dynamicRoutes.length === 0) {
@@ -55,7 +67,6 @@ export function useDynamicBusRoutes(type: string | null) {
     });
   };
 
-
-
-  return { dynamicRoutes, applyDynamicRoutesToBuses };
+  return { dynamicRoutes, stopAliases, getDynamicStopNotice, applyDynamicRoutesToBuses };
 }
+

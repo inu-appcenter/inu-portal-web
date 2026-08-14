@@ -91,8 +91,10 @@ export default function MobileAdminBusPage() {
     bstopId: "",
     bstopName: "",
     stopAlias: "",
+    stopNotice: "",
     memo: "",
   });
+
 
   useEffect(() => {
     const hasStoredToken = Boolean(localStorage.getItem("tokenInfo"));
@@ -300,9 +302,9 @@ export default function MobileAdminBusPage() {
     try {
       await saveAdminStopAlias(aliasForm);
       setMessage(
-        `'${aliasForm.bstopName}' 정류장의 별칭('${aliasForm.stopAlias}')이 저장되었습니다.`,
+        `'${aliasForm.bstopName}' 정류장의 별칭('${aliasForm.stopAlias}') 및 안내 문구가 저장되었습니다.`,
       );
-      setAliasForm({ bstopId: "", bstopName: "", stopAlias: "", memo: "" });
+      setAliasForm({ bstopId: "", bstopName: "", stopAlias: "", stopNotice: "", memo: "" });
       loadData();
     } catch (err) {
       console.error(err);
@@ -312,8 +314,20 @@ export default function MobileAdminBusPage() {
     }
   };
 
+  const handleEditAlias = (a: any) => {
+    setAliasForm({
+      bstopId: a.bstopId,
+      bstopName: a.bstopName,
+      stopAlias: a.stopAlias,
+      stopNotice: a.stopNotice || "",
+      memo: a.memo || "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // 별칭 삭제
   const handleDeleteAlias = async (id: number) => {
+
     if (!confirm("이 정류장 별칭을 삭제하시겠습니까?")) return;
     try {
       await deleteAdminStopAlias(id);
@@ -717,7 +731,22 @@ export default function MobileAdminBusPage() {
                     </FormGroup>
 
                     <FormGroup style={{ gridColumn: "1 / -1" }}>
-                      <Label>메모 / 설명</Label>
+                      <Label>💡 정류장 상단 실시간 안내 문구 (stopNotice)</Label>
+                      <TextArea
+                        rows={2}
+                        value={aliasForm.stopNotice}
+                        onChange={(e) =>
+                          setAliasForm((prev) => ({
+                            ...prev,
+                            stopNotice: e.target.value,
+                          }))
+                        }
+                        placeholder="예: ※ 8시 ~ 10시에는 매우 혼잡해요. 계단에서 줄서기를 꼭 지켜주세요."
+                      />
+                    </FormGroup>
+
+                    <FormGroup style={{ gridColumn: "1 / -1" }}>
+                      <Label>메모 / 설명 (어드민 내부용)</Label>
                       <Input
                         type="text"
                         value={aliasForm.memo}
@@ -733,7 +762,7 @@ export default function MobileAdminBusPage() {
                   </FormGrid>
 
                   <SubmitButton type="submit" disabled={loading}>
-                    <Plus size={16} /> 별칭 사전 저장하기
+                    <Plus size={16} /> 별칭 및 안내 문구 저장하기
                   </SubmitButton>
                 </form>
               </CardBody>
@@ -742,7 +771,7 @@ export default function MobileAdminBusPage() {
             <Card>
               <CardHeader>
                 <HeaderTitle>
-                  <List size={20} color="#6b7280" /> 등록된 정류장 별칭 목록 (
+                  <List size={20} color="#6b7280" /> 등록된 정류장 별칭 및 안내 문구 목록 (
                   {stopAliases.length}개)
                 </HeaderTitle>
               </CardHeader>
@@ -756,8 +785,8 @@ export default function MobileAdminBusPage() {
                         <th>정류소 ID</th>
                         <th>공식 정류소명</th>
                         <th>별칭 (Alias)</th>
-                        <th>메모</th>
-                        <th>삭제</th>
+                        <th>정류장 안내 문구 (stopNotice)</th>
+                        <th>관리</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -768,13 +797,24 @@ export default function MobileAdminBusPage() {
                           <td>
                             <AliasTag>{a.stopAlias}</AliasTag>
                           </td>
-                          <td>{a.memo || "-"}</td>
+                          <td style={{ fontSize: "12px", color: "#b45309" }}>
+                            {a.stopNotice || <span style={{ color: "#9ca3af" }}>-</span>}
+                          </td>
                           <td>
-                            <DeleteButton
-                              onClick={() => handleDeleteAlias(a.id)}
-                            >
-                              <Trash2 size={14} />
-                            </DeleteButton>
+                            <div style={{ display: "flex", gap: "6px" }}>
+                              <EditButton
+                                type="button"
+                                style={{ padding: "4px 8px", fontSize: "11px" }}
+                                onClick={() => handleEditAlias(a)}
+                              >
+                                <Edit2 size={12} /> 수정
+                              </EditButton>
+                              <DeleteButton
+                                onClick={() => handleDeleteAlias(a.id)}
+                              >
+                                <Trash2 size={14} />
+                              </DeleteButton>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -783,6 +823,7 @@ export default function MobileAdminBusPage() {
                 )}
               </CardBody>
             </Card>
+
           </>
         )}
 

@@ -158,8 +158,10 @@ export const saveAdminStopAlias = async (data: {
   bstopId: string;
   bstopName: string;
   stopAlias: string;
+  stopNotice?: string;
   memo?: string;
 }) => {
+
   const response = await tokenInstance.post<ApiResponse<any>>(
     "/api/admin/buses/stop-aliases",
     data,

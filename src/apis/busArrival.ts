@@ -62,6 +62,17 @@ export async function getBusHistory(bstopId: string, targetDate?: string) {
   }
 }
 
+export async function getPublicStopAliases() {
+  try {
+    const response = await axiosInstance.get("/api/buses/stop-aliases");
+    return response.data?.data ?? [];
+  } catch (error) {
+    console.error("정류소 별칭 및 안내문구 API 요청 실패", error);
+    return [];
+  }
+}
+
+
 export async function getBusRoutes(category?: string) {
   try {
     const response = await axiosInstance.get("/api/buses/routes", {
