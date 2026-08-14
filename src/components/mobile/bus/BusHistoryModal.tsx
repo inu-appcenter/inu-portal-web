@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 import {
   Calendar,
@@ -6,6 +7,7 @@ import {
   X,
   RotateCw,
 } from "lucide-react";
+
 
 
 import { getBusHistory } from "@/apis/busArrival";
@@ -118,7 +120,9 @@ export default function BusHistoryModal({
     }
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <ModalOverlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         {/* 모달 헤더 */}
@@ -256,7 +260,8 @@ export default function BusHistoryModal({
           )}
         </ListContainer>
       </ModalContainer>
-    </ModalOverlay>
+    </ModalOverlay>,
+    document.body
   );
 }
 
@@ -267,13 +272,15 @@ const ModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 99999;
   padding: 16px;
 `;
+
 
 const ModalContainer = styled.div`
   background: white;
