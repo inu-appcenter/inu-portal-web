@@ -11,9 +11,6 @@ import { BUS_MAP_BOTTOM_SHEET_HEIGHT } from "@/components/mobile/bus/map/busMapS
 import {
   BUS_MAP_FALLBACK_COORD,
   getBusMapPageConfig,
-  getBusMapStopById,
-  getBusMapStops,
-  getBusMapTabs,
 } from "@/components/mobile/bus/data/busMapConfig";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
@@ -61,7 +58,9 @@ export default function MobileBusMapPage() {
   const requestedCategory = searchParams.get("category");
 
   const pageConfig = useMemo(() => getBusMapPageConfig(type), [type]);
-  const tabs = useMemo(() => getBusMapTabs(type), [type]);
+  const { tabs: dynamicTabs, stops: dynamicStops } = useDynamicBusRoutes(type);
+
+  const tabs = dynamicTabs;
   const defaultCategory = tabs[0]?.label ?? "";
   const selectedCategory = tabs.some((tab) => tab.label === requestedCategory)
     ? (requestedCategory ?? defaultCategory)
@@ -77,48 +76,19 @@ export default function MobileBusMapPage() {
     : null;
   const activeTab =
     tabs.find((tab) => tab.label === selectedCategory) ?? tabs[0] ?? null;
-  const allStopIds = useMemo(
-    () => Array.from(new Set(tabs.flatMap((tab) => tab.stopIds))),
-    [tabs],
-  );
-  const { applyDynamicRoutesToBuses, getDynamicStopNotice } = useDynamicBusRoutes(type);
 
-  const visibleStops = useMemo(() => {
-    const rawStops = getBusMapStops(allStopIds);
-    return rawStops.map((stop) => ({
-      ...stop,
-      stopNotice: getDynamicStopNotice(stop.bstopId) || stop.stopNotice,
-      buses: applyDynamicRoutesToBuses(stop.buses),
-      busSections: stop.busSections.map((sec) => ({
-        ...sec,
-        buses: applyDynamicRoutesToBuses(sec.buses),
-      })),
-    }));
-  }, [allStopIds, applyDynamicRoutesToBuses, getDynamicStopNotice]);
-
+  const visibleStops = dynamicStops;
   const activeStops = useMemo(() => {
-    const rawStops = getBusMapStops(activeTab?.stopIds ?? []);
-    return rawStops.map((stop) => ({
-      ...stop,
-      stopNotice: getDynamicStopNotice(stop.bstopId) || stop.stopNotice,
-      buses: applyDynamicRoutesToBuses(stop.buses),
-      busSections: stop.busSections.map((sec) => ({
-        ...sec,
-        buses: applyDynamicRoutesToBuses(sec.buses),
-      })),
-    }));
-  }, [activeTab, applyDynamicRoutesToBuses, getDynamicStopNotice]);
+    if (!activeTab) return dynamicStops;
+    return dynamicStops.filter((stop) => activeTab.stopIds.includes(stop.id));
+  }, [activeTab, dynamicStops]);
 
+  const defaultStop = useMemo(() => {
+    if (!activeTab) return activeStops[0] ?? null;
+    return activeStops.find((s) => s.id === activeTab.defaultStopId) ?? activeStops[0] ?? null;
+  }, [activeTab, activeStops]);
 
-  const defaultStop = useMemo(
-    () => getBusMapStopById(activeTab?.defaultStopId ?? null),
-    [activeTab],
-  );
-
-
-  const [selectedStopId, setSelectedStopId] = useState<string | null>(
-    defaultStop?.id ?? null,
-  );
+  const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
   const [selectedBusId, setSelectedBusId] = useState<number | null>(null);
   const [snap, setSnap] = useState<string | number | null>(
     BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT,
@@ -137,6 +107,7 @@ export default function MobileBusMapPage() {
     activeStops[0] ??
     visibleStops[0] ??
     null;
+
   const stopSwitcherOptions = useMemo(
     () =>
       activeStops.map((stop) => ({

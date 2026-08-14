@@ -6,11 +6,8 @@ import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew"
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import { Swiper as SwiperClass } from "swiper";
 import "swiper/css";
-import GoSchoolINU from "@/components/mobile/bus/goHomeSchool/GoSchoolINU";
-import GoSchoolBIT from "@/components/mobile/bus/goHomeSchool/GoSchoolBIT";
-import GoHomeMain from "@/components/mobile/bus/goHomeSchool/GoHomeMain";
-import GoHomeDorm from "@/components/mobile/bus/goHomeSchool/GoHomeDorm";
-import GoHomeScience from "@/components/mobile/bus/goHomeSchool/GoHomeScience";
+import DynamicLegacyBusTabContent from "@/components/mobile/bus/goHomeSchool/DynamicLegacyBusTabContent";
+import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
 import MichuholShuttle from "@/components/mobile/bus/shuttle/MichuholShuttle";
 import SubwayShuttle from "@/components/mobile/bus/shuttle/SubwayShuttle";
 import SchoolShuttle from "@/components/mobile/bus/shuttle/SchoolShuttle";
@@ -33,12 +30,25 @@ export default function BusInfoPage() {
   const type = query.get("type");
   const tab = query.get("category");
 
-  const defaultTab =
+  const { tabs: dynamicTabs } = useDynamicBusRoutes(type);
+
+  const tabList = useMemo(() => {
+    if (type === "shuttle") {
+      return ["사범대 셔틀", "인천대입구 셔틀", "통학 셔틀"];
+    }
+    if (dynamicTabs && dynamicTabs.length > 0) {
+      return dynamicTabs.map((t) => t.label);
+    }
+    return [];
+  }, [type, dynamicTabs]);
+
+  const defaultTab = tabList[0] || (
     type === "go-school"
       ? "인입런"
       : type === "go-home"
         ? "인천대 정문"
-        : "사범대 셔틀";
+        : "사범대 셔틀"
+  );
   const selectedTab = tab ?? defaultTab;
   const shouldUseNewUi =
     isSwitchableBusInfoType(type) && getStoredBusUiVersion() === "new";
@@ -49,8 +59,6 @@ export default function BusInfoPage() {
         version: "new",
       })
     : null;
-
-  const [tabList, setTabList] = useState<string[]>([]);
 
   useEffect(() => {
     if (type && !redirectTarget) {
@@ -68,25 +76,17 @@ export default function BusInfoPage() {
   }, [navigate, redirectTarget]);
 
   useEffect(() => {
-    if (redirectTarget) {
+    if (redirectTarget || !type) {
       return;
     }
 
     const logApi = async () => {
-      if (type === "go-school") {
-        setTabList(["인입런", "지정단런"]);
-        await postApiLogs("/api/buses/go-school");
-      } else if (type === "go-home") {
-        setTabList(["인천대 정문", "공대/자연대", "기숙사 앞"]);
-        await postApiLogs("/api/buses/go-home");
-      } else if (type === "shuttle") {
-        setTabList(["사범대 셔틀", "인천대입구 셔틀", "통학 셔틀"]);
-        await postApiLogs("/api/buses/shuttle");
-      }
+      await postApiLogs(`/api/buses/${type}`);
     };
 
     void logApi();
   }, [redirectTarget, type]);
+
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [hasSwiped, setHasSwiped] = useState(() => {
@@ -193,13 +193,8 @@ export default function BusInfoPage() {
   }
 
   const renderBusComponent = (category: string) => {
-    if (type === "go-school") {
-      if (category === "인입런") return <GoSchoolINU />;
-      if (category === "지정단런") return <GoSchoolBIT />;
-    } else if (type === "go-home") {
-      if (category === "인천대 정문") return <GoHomeMain />;
-      if (category === "공대/자연대") return <GoHomeScience />;
-      if (category === "기숙사 앞") return <GoHomeDorm />;
+    if (type === "go-school" || type === "go-home") {
+      return <DynamicLegacyBusTabContent type={type} tabName={category} />;
     } else if (type === "shuttle") {
       if (category === "사범대 셔틀") return <MichuholShuttle />;
       if (category === "인천대입구 셔틀") return <SubwayShuttle />;

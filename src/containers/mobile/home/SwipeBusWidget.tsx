@@ -7,16 +7,7 @@ import useBusArrival from "@/hooks/useBusArrival";
 import { ROUTES } from "@/constants/routes";
 import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 import Skeleton from "@/components/common/Skeleton";
-import {
-  goSchool_INU2,
-  goSchool_BIT3,
-  goHome_MainOut,
-  goHome_Nature_INU,
-  goHome_Nature_BIT,
-  goHome_Nature_IntercityBuses,
-  goHome_Dorm1,
-  goHome_Dorm2,
-} from "@/components/mobile/bus/data/BusDummy";
+import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
 import type { BusData } from "@/types/bus";
 
 // 버스 노선 유형별 테마 컬러 매핑 함수
@@ -329,55 +320,34 @@ export default function SwipeBusWidget() {
     return now.getHours() < 14;
   }, []);
 
-  // 시간대 기준 정류장 데이터 구성
+  const currentType = isMorning ? "go-school" : "go-home";
+  const { tabs: dynamicTabs, stops: dynamicStops } = useDynamicBusRoutes(currentType);
+
+  // 시간대 기준 정류장 데이터 구성 (순수 서버 API 데이터 기반)
   const busStops = useMemo(() => {
-    if (isMorning) {
-      return [
-        {
-          key: "go-school-inu",
-          stopName: "인입런",
-          sectionLabel: "2번 출구",
-          bstopId: "164000395",
-          busList: goSchool_INU2,
-        },
-        {
-          key: "go-school-bit",
-          stopName: "지정단런",
-          sectionLabel: "3번 출구",
-          bstopId: "164000403",
-          busList: goSchool_BIT3,
-        },
-      ];
-    } else {
-      return [
-        {
-          key: "go-home-main",
-          stopName: "인천대 정문",
-          sectionLabel: "정문 (길 건너)",
-          bstopId: "164000385",
-          busList: goHome_MainOut,
-        },
-        {
-          key: "go-home-science",
-          stopName: "공대/자연대",
-          sectionLabel: "자연대",
-          bstopId: "164000378",
-          busList: [
-            ...goHome_Nature_INU,
-            ...goHome_Nature_BIT,
-            ...goHome_Nature_IntercityBuses,
-          ],
-        },
-        {
-          key: "go-home-dorm",
-          stopName: "기숙사 앞",
-          sectionLabel: "송도캠퍼스",
-          bstopId: "164000751",
-          busList: [...goHome_Dorm1, ...goHome_Dorm2],
-        },
-      ];
+    if (!dynamicTabs || dynamicTabs.length === 0 || !dynamicStops || dynamicStops.length === 0) {
+      return [];
     }
-  }, [isMorning]);
+
+    return dynamicTabs.map((tab) => {
+      const tabStops = dynamicStops.filter((s) => tab.stopIds.includes(s.id));
+      const firstStop = tabStops[0];
+      const allBuses = tabStops.flatMap((s) => s.buses);
+      // 중복 버스 제거
+      const uniqueBuses = Array.from(
+        new Map(allBuses.map((b) => [b.routeId || b.id, b])).values(),
+      );
+
+      return {
+        key: `${currentType}-${tab.label}`,
+        stopName: tab.label,
+        sectionLabel: firstStop?.stopName || tab.label,
+        bstopId: firstStop?.bstopId || "",
+        busList: uniqueBuses,
+      };
+    });
+  }, [currentType, dynamicTabs, dynamicStops]);
+
 
   const storageKey = isMorning
     ? "swipe_bus_index_morning"
