@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getBusRoutes, getPublicStopAliases } from "@/apis/busArrival";
 import type { BusData } from "@/types/bus";
@@ -16,57 +17,64 @@ export function useDynamicBusRoutes(type: string | null) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const getDynamicStopNotice = (bstopId?: string): string | undefined => {
-    if (!bstopId || !stopAliases || stopAliases.length === 0) return undefined;
-    const aliasObj = stopAliases.find((a: any) => a.bstopId === bstopId);
-    return aliasObj?.stopNotice || undefined;
-  };
+  const getDynamicStopNotice = useCallback(
+    (bstopId?: string): string | undefined => {
+      if (!bstopId || !stopAliases || stopAliases.length === 0) return undefined;
+      const aliasObj = stopAliases.find((a: any) => a.bstopId === bstopId);
+      return aliasObj?.stopNotice || undefined;
+    },
+    [stopAliases]
+  );
 
-  const applyDynamicRoutesToBuses = (buses: BusData[]): BusData[] => {
-    if (!dynamicRoutes || dynamicRoutes.length === 0) {
-      return buses;
-    }
-
-    return buses.map((bus) => {
-      const match = dynamicRoutes.find(
-        (r: any) =>
-          r.routeNo === bus.number || (bus.routeId && r.routeId === bus.routeId),
-      );
-
-      if (!match || !match.stops || match.stops.length === 0) {
-        return bus;
+  const applyDynamicRoutesToBuses = useCallback(
+    (buses: BusData[]): BusData[] => {
+      if (!dynamicRoutes || dynamicRoutes.length === 0) {
+        return buses;
       }
 
-      const validStops = match.stops.filter(
-        (s: any) => s.latitude && s.longitude,
-      );
+      return buses.map((bus) => {
+        const match = dynamicRoutes.find(
+          (r: any) =>
+            r.routeNo === bus.number || (bus.routeId && r.routeId === bus.routeId),
+        );
 
-      if (validStops.length === 0) {
-        return bus;
-      }
+        if (!match || !match.stops || match.stops.length === 0) {
+          return bus;
+        }
 
-      const dynamicPath = validStops.map((s: any) => ({
-        lat: s.latitude,
-        lng: s.longitude,
-      }));
+        const validStops = match.stops.filter(
+          (s: any) => s.latitude && s.longitude,
+        );
 
-      const dynamicMarkers = validStops.map((s: any) => ({
-        name: s.bstopName,
-        lat: s.latitude,
-        lng: s.longitude,
-      }));
+        if (validStops.length === 0) {
+          return bus;
+        }
 
-      return {
-        ...bus,
-        path: dynamicPath,
-        stopMarker: dynamicMarkers,
-        startStopAlias: match.startBstopAlias || match.tabName,
-        busNotice: match.busNotice || bus.busNotice,
-        routeNotice: match.routeNotice || bus.routeNotice,
-      };
-    });
-  };
+        const dynamicPath = validStops.map((s: any) => ({
+          lat: s.latitude,
+          lng: s.longitude,
+        }));
+
+        const dynamicMarkers = validStops.map((s: any) => ({
+          name: s.bstopName,
+          lat: s.latitude,
+          lng: s.longitude,
+        }));
+
+        return {
+          ...bus,
+          path: dynamicPath,
+          stopMarker: dynamicMarkers,
+          startStopAlias: match.startBstopAlias || match.tabName,
+          busNotice: match.busNotice || bus.busNotice,
+          routeNotice: match.routeNotice || bus.routeNotice,
+        };
+      });
+    },
+    [dynamicRoutes]
+  );
 
   return { dynamicRoutes, stopAliases, getDynamicStopNotice, applyDynamicRoutesToBuses };
 }
+
 

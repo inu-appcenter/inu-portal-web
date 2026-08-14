@@ -248,18 +248,26 @@ export default function MobileBusMapPage() {
     void logApi();
   }, [pageConfig, redirectTarget, type]);
 
+  // 카테고리(탭)가 변경되었을 때만 정류장 및 버스 선택 리셋
   useEffect(() => {
-    const isSelectedStopVisible = activeStops.some(
-      (stop) => stop.id === selectedStopId,
-    );
-
-    if (!isSelectedStopVisible) {
-      setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
-    }
+    setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
     setSelectedBusId(null);
     setSnap(BUS_MAP_BOTTOM_SHEET_HEIGHT.DEFAULT);
     setMapFocusTrigger((prev) => prev + 1);
-  }, [activeStops, defaultStop?.id, selectedCategory, selectedStopId]);
+  }, [selectedCategory]);
+
+  // 선택된 정류장이 현재 탭의 정류장 목록에 없으면 기본 정류장으로 보정
+  useEffect(() => {
+    if (!selectedStopId) return;
+    const isSelectedStopVisible = activeStops.some(
+      (stop) => stop.id === selectedStopId,
+    );
+    if (!isSelectedStopVisible && activeStops.length > 0) {
+      setSelectedStopId(defaultStop?.id ?? activeStops[0]?.id ?? null);
+      setSelectedBusId(null);
+    }
+  }, [activeStops, defaultStop?.id, selectedStopId]);
+
 
   useLayoutEffect(() => {
     if (redirectTarget || !pageConfig || typeof window === "undefined") {
