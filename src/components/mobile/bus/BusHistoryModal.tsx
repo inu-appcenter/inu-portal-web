@@ -5,11 +5,9 @@ import {
   Clock,
   X,
   RotateCw,
-  Bus,
-  ChevronRight,
-  TrendingUp,
-  Info,
 } from "lucide-react";
+
+
 import { getBusHistory } from "@/apis/busArrival";
 import BusCircle from "@/components/mobile/bus/BusCircle";
 import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
