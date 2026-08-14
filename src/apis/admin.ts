@@ -116,9 +116,60 @@ export const autoSyncAdminRouteSections = async () => {
   return response.data;
 };
 
+export const updateAdminRouteSection = async (
+  id: number,
+  data: {
+    sectionName: string;
+    category: string;
+    tabName?: string;
+    busNotice?: string;
+    routeNotice?: string;
+  },
+) => {
+  const response = await tokenInstance.put<ApiResponse<any>>(
+    `/api/admin/buses/routes/${id}`,
+    data,
+  );
+  return response.data;
+};
+
 export const deleteAdminRouteSection = async (id: number) => {
   const response = await tokenInstance.delete<ApiResponse<any>>(
     `/api/admin/buses/routes/${id}`,
+  );
+  return response.data;
+};
+
+export const searchAdminBusStops = async (keyword: string) => {
+  const response = await tokenInstance.get<ApiResponse<any[]>>(
+    `/api/admin/buses/stops/search?keyword=${encodeURIComponent(keyword)}`,
+  );
+  return response.data;
+};
+
+export const getAdminStopAliases = async () => {
+  const response = await tokenInstance.get<ApiResponse<any[]>>(
+    "/api/admin/buses/stop-aliases",
+  );
+  return response.data;
+};
+
+export const saveAdminStopAlias = async (data: {
+  bstopId: string;
+  bstopName: string;
+  stopAlias: string;
+  memo?: string;
+}) => {
+  const response = await tokenInstance.post<ApiResponse<any>>(
+    "/api/admin/buses/stop-aliases",
+    data,
+  );
+  return response.data;
+};
+
+export const deleteAdminStopAlias = async (id: number) => {
+  const response = await tokenInstance.delete<ApiResponse<any>>(
+    `/api/admin/buses/stop-aliases/${id}`,
   );
   return response.data;
 };
@@ -135,7 +186,11 @@ export const addAdminTargetRule = async (data: {
   tabName: string;
   startBstopId: string;
   startStopName: string;
-  targetKeywords: string;
+  startStopAlias?: string;
+  endBstopId?: string;
+  endBstopName?: string;
+  endStopAlias?: string;
+  targetKeywords?: string;
 }) => {
   const response = await tokenInstance.post<ApiResponse<any>>(
     "/api/admin/buses/target-rules",
@@ -143,7 +198,6 @@ export const addAdminTargetRule = async (data: {
   );
   return response.data;
 };
-
 
 export const deleteAdminTargetRule = async (id: number) => {
   const response = await tokenInstance.delete<ApiResponse<any>>(
@@ -153,7 +207,6 @@ export const deleteAdminTargetRule = async (id: number) => {
 };
 
 export const addAdminTargetStop = async (data: TargetStopRequest) => {
-
   const response = await tokenInstance.post<ApiResponse<any>>(
     "/api/admin/buses/target-stops",
     data,
@@ -167,4 +220,5 @@ export const getAdminTargetStops = async () => {
   );
   return response.data;
 };
+
 

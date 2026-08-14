@@ -1,7 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Bus, Plus, RefreshCw, Trash2, List } from "lucide-react";
+import {
+  Bus,
+  Plus,
+  RefreshCw,
+  Trash2,
+  List,
+  Search,
+  Edit2,
+  Tag,
+  X,
+  ArrowRight,
+  Check,
+  Info,
+} from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
@@ -10,9 +23,14 @@ import {
   getAdminRouteSections,
   autoSyncAdminRouteSections,
   deleteAdminRouteSection,
+  updateAdminRouteSection,
   getAdminTargetRules,
   addAdminTargetRule,
   deleteAdminTargetRule,
+  searchAdminBusStops,
+  getAdminStopAliases,
+  saveAdminStopAlias,
+  deleteAdminStopAlias,
 } from "@/apis/admin";
 
 export default function MobileAdminBusPage() {
@@ -24,57 +42,57 @@ export default function MobileAdminBusPage() {
     hasback: true,
   });
 
-  const GO_SCHOOL_STOPS = [
-    { name: "인천대입구역 2번출구", id: "164000395", alias: "인입" },
-    { name: "인천대입구역 1번출구", id: "164000396", alias: "인입" },
-    { name: "지식정보단지역 3번출구", id: "164000403", alias: "지정단" },
-    { name: "인천대입구역.롯데몰", id: "164000648", alias: "인입" },
-  ];
+  // 활성 탭 (rules | routes | aliases)
+  const [activeTab, setActiveTab] = useState<"rules" | "routes" | "aliases">(
+    "rules",
+  );
 
-  const GO_HOME_STOPS = [
-    { name: "인천대 정문(길 건너)", id: "164000385", alias: "정문" },
-    { name: "인천대 공과대학", id: "164000377", alias: "공대" },
-    { name: "인천대 자연과학대학", id: "164000378", alias: "자연대" },
-    { name: "인천대 송도캠퍼스(기숙사)", id: "164000751", alias: "기숙사" },
-  ];
+  // 데이터 상태
+  const [routeSections, setRouteSections] = useState<any[]>([]);
+  const [targetRules, setTargetRules] = useState<any[]>([]);
+  const [stopAliases, setStopAliases] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  // 자동 탐색 룰 폼 상태
+  // 1. 자동 탐색 룰 폼 상태
   const [ruleForm, setRuleForm] = useState({
     category: "go-school",
     tabName: "인입런",
     startBstopId: "164000395",
     startStopName: "인천대입구역 2번출구",
     startStopAlias: "인입",
-    targetKeywords: "정문,자연,공과,공대,송도캠",
+    endBstopId: "164000378",
+    endStopName: "인천대학교 자연과학대학",
+    endStopAlias: "자연대",
   });
 
-  const handleCategoryChange = (category: string) => {
-    if (category === "go-school") {
-      setRuleForm({
-        category: "go-school",
-        tabName: "인입런",
-        startBstopId: "164000395",
-        startStopName: "인천대입구역 2번출구",
-        startStopAlias: "인입",
-        targetKeywords: "정문,자연,공과,공대,송도캠",
-      });
-    } else {
-      setRuleForm({
-        category: "go-home",
-        tabName: "인천대 정문",
-        startBstopId: "164000385",
-        startStopName: "인천대 정문(길 건너)",
-        startStopAlias: "정문",
-        targetKeywords: "인천대입구역,지식정보단지역,홍대입구",
-      });
-    }
-  };
+  // 2. 정류장 검색 모달 상태
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchTargetType, setSearchTargetType] = useState<
+    "start" | "end" | "alias"
+  >("start");
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
 
+  // 3. 노선 수정 모달 상태
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingSection, setEditingSection] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({
+    sectionName: "",
+    category: "go-school",
+    tabName: "",
+    busNotice: "",
+    routeNotice: "",
+  });
 
-  const [routeSections, setRouteSections] = useState<any[]>([]);
-  const [targetRules, setTargetRules] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  // 4. 별칭 사전 등록 폼 상태
+  const [aliasForm, setAliasForm] = useState({
+    bstopId: "",
+    bstopName: "",
+    stopAlias: "",
+    memo: "",
+  });
 
   useEffect(() => {
     const hasStoredToken = Boolean(localStorage.getItem("tokenInfo"));
@@ -93,12 +111,14 @@ export default function MobileAdminBusPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [routesRes, rulesRes] = await Promise.all([
+      const [routesRes, rulesRes, aliasesRes] = await Promise.all([
         getAdminRouteSections(),
         getAdminTargetRules(),
+        getAdminStopAliases(),
       ]);
       setRouteSections(routesRes.data ?? []);
       setTargetRules(rulesRes.data ?? []);
+      setStopAliases(aliasesRes.data ?? []);
     } catch (e) {
       console.error("버스 어드민 데이터 불러오기 실패", e);
     } finally {
@@ -106,22 +126,66 @@ export default function MobileAdminBusPage() {
     }
   };
 
-  const handleDeleteRouteSection = async (id: number) => {
-    if (!confirm("정말 이 노선 구간을 삭제하시겠습니까?")) return;
+  // 정류장 검색 실행
+  const handleSearchStops = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!searchKeyword.trim()) {
+      alert("검색어를 입력해주세요.");
+      return;
+    }
+
+    setSearching(true);
     try {
-      await deleteAdminRouteSection(id);
-      setMessage("노선 구간이 삭제되었습니다.");
-      loadData();
+      const res = await searchAdminBusStops(searchKeyword.trim());
+      setSearchResults(res.data ?? []);
     } catch (err) {
       console.error(err);
-      alert("노선 구간 삭제 실패.");
+      alert("정류소 검색에 실패했습니다.");
+    } finally {
+      setSearching(false);
     }
   };
 
+  // 검색 모달 열기
+  const openSearchModal = (target: "start" | "end" | "alias") => {
+    setSearchTargetType(target);
+    setSearchKeyword("");
+    setSearchResults([]);
+    setSearchModalOpen(true);
+  };
+
+  // 검색된 정류장 선택 시 적용
+  const handleSelectStop = (stop: any) => {
+    if (searchTargetType === "start") {
+      setRuleForm((prev) => ({
+        ...prev,
+        startBstopId: stop.bstopId,
+        startStopName: stop.bstopName,
+        startStopAlias: stop.stopAlias || prev.startStopAlias,
+      }));
+    } else if (searchTargetType === "end") {
+      setRuleForm((prev) => ({
+        ...prev,
+        endBstopId: stop.bstopId,
+        endStopName: stop.bstopName,
+        endStopAlias: stop.stopAlias || prev.endStopAlias,
+      }));
+    } else if (searchTargetType === "alias") {
+      setAliasForm((prev) => ({
+        ...prev,
+        bstopId: stop.bstopId,
+        bstopName: stop.bstopName,
+        stopAlias: stop.stopAlias || "",
+      }));
+    }
+    setSearchModalOpen(false);
+  };
+
+  // 탐색 룰 등록
   const handleRuleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ruleForm.startBstopId.trim() || !ruleForm.startStopName.trim() || !ruleForm.targetKeywords.trim()) {
-      alert("시작 정류소 ID, 정류장명, 목적지 키워드를 모두 입력해주세요.");
+    if (!ruleForm.startBstopId.trim() || !ruleForm.startStopName.trim()) {
+      alert("출발 정류장을 지정해주세요.");
       return;
     }
 
@@ -139,6 +203,7 @@ export default function MobileAdminBusPage() {
     }
   };
 
+  // 룰 삭제
   const handleDeleteRule = async (id: number) => {
     if (!confirm("이 탐색 규칙을 삭제하시겠습니까?")) return;
     try {
@@ -151,16 +216,20 @@ export default function MobileAdminBusPage() {
     }
   };
 
+  // 전체 노선 자동 탐색 & 슬라이싱 동기화
   const handleAutoSync = async () => {
-    if (!confirm("주요 정류장을 지나는 전체 버스 노선을 자동으로 탐색하고 구간을 슬라이싱하여 동기화하시겠습니까?")) {
+    if (
+      !confirm(
+        "등록된 규칙에 따라 공공데이터포털에서 전체 노선을 탐색하고 정밀 슬라이싱하여 동기화하시겠습니까?",
+      )
+    ) {
       return;
     }
     setLoading(true);
     setMessage(null);
     try {
       const res = await autoSyncAdminRouteSections();
-      setMessage(res.msg || "학교/하교 노선 전체 자동 탐색 및 동기화 완료!");
-
+      setMessage(res.msg || "노선 구간 전체 자동 탐색 및 동기화 완료!");
       loadData();
     } catch (err) {
       console.error(err);
@@ -170,286 +239,854 @@ export default function MobileAdminBusPage() {
     }
   };
 
-  const currentPresetStops = ruleForm.category === "go-school" ? GO_SCHOOL_STOPS : GO_HOME_STOPS;
+  // 노선 수정 모달 열기
+  const openEditModal = (sec: any) => {
+    setEditingSection(sec);
+    setEditForm({
+      sectionName: sec.sectionName || "",
+      category: sec.category || "go-school",
+      tabName: sec.tabName || "",
+      busNotice: sec.busNotice || "",
+      routeNotice: sec.routeNotice || "",
+    });
+    setEditModalOpen(true);
+  };
+
+  // 노선 수정 저장
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSection) return;
+
+    setLoading(true);
+    try {
+      await updateAdminRouteSection(editingSection.id, editForm);
+      setMessage(`'${editForm.sectionName}' 노선 정보가 수정되었습니다.`);
+      setEditModalOpen(false);
+      loadData();
+    } catch (err) {
+      console.error(err);
+      alert("노선 수정에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 노선 삭제
+  const handleDeleteRouteSection = async (id: number) => {
+    if (!confirm("정말 이 노선 구간을 삭제하시겠습니까?")) return;
+    try {
+      await deleteAdminRouteSection(id);
+      setMessage("노선 구간이 삭제되었습니다.");
+      loadData();
+    } catch (err) {
+      console.error(err);
+      alert("노선 구간 삭제 실패.");
+    }
+  };
+
+  // 별칭 저장
+  const handleAliasSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (
+      !aliasForm.bstopId.trim() ||
+      !aliasForm.bstopName.trim() ||
+      !aliasForm.stopAlias.trim()
+    ) {
+      alert("정류소 ID, 정류장명, 별칭을 모두 입력해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await saveAdminStopAlias(aliasForm);
+      setMessage(
+        `'${aliasForm.bstopName}' 정류장의 별칭('${aliasForm.stopAlias}')이 저장되었습니다.`,
+      );
+      setAliasForm({ bstopId: "", bstopName: "", stopAlias: "", memo: "" });
+      loadData();
+    } catch (err) {
+      console.error(err);
+      alert("정류장 별칭 저장 실패.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 별칭 삭제
+  const handleDeleteAlias = async (id: number) => {
+    if (!confirm("이 정류장 별칭을 삭제하시겠습니까?")) return;
+    try {
+      await deleteAdminStopAlias(id);
+      setMessage("별칭이 삭제되었습니다.");
+      loadData();
+    } catch (err) {
+      console.error(err);
+      alert("별칭 삭제 실패.");
+    }
+  };
 
   return (
     <AdminLayout>
       <Container>
         {message && <SuccessBanner>{message}</SuccessBanner>}
 
-        {/* 1. 원클릭 노선 전체 자동 탐색 & 동기화 섹션 */}
-        <SectionCard>
-          <HeaderRow>
-            <Bus size={20} color="#3b82f6" />
-            <SectionTitle>학교/하교 전체 노선 자동 탐색 및 동기화</SectionTitle>
-          </HeaderRow>
-          <Description>
-            공공데이터포털 API 기반으로 "학교 갈래요" 및 "집 갈래요" 정류소를 지나는 버스 노선을 자동 감지하고 최장 구간으로 슬라이싱하여 동기화합니다.
-          </Description>
+        {/* 상단 탭 네비게이션 */}
+        <TabHeader>
+          <TabButton
+            active={activeTab === "rules"}
+            onClick={() => setActiveTab("rules")}
+          >
+            <RefreshCw size={16} /> 1. 자동 탐색 룰 & 동기화 ({targetRules.length})
+          </TabButton>
+          <TabButton
+            active={activeTab === "routes"}
+            onClick={() => setActiveTab("routes")}
+          >
+            <Bus size={16} /> 2. 노선 목록 & 직접 수정 ({routeSections.length})
+          </TabButton>
+          <TabButton
+            active={activeTab === "aliases"}
+            onClick={() => setActiveTab("aliases")}
+          >
+            <Tag size={16} /> 3. 정류장 별칭 사전 ({stopAliases.length})
+          </TabButton>
+        </TabHeader>
 
-          <AutoSyncBox>
-            <AutoSyncTitle>⚡ 원클릭 노선 전체 자동 동기화</AutoSyncTitle>
-            <AutoSyncDesc>
-              주요 지하철역 및 학교 정류소를 지나가는 8번, 16번, 41번, 46번, 6번, 6-1번 등 모든 노선을 자동 탐색하여 학교/하교 최장 구간으로 슬라이싱합니다.
-            </AutoSyncDesc>
-            <AutoSyncButton type="button" onClick={handleAutoSync} disabled={loading}>
-              <RefreshCw size={16} />
-              {loading ? "자동 탐색 및 분석 중..." : "전체 노선 자동 탐색 및 동기화 실행"}
-            </AutoSyncButton>
-          </AutoSyncBox>
-        </SectionCard>
+        {/* ======================================================== */}
+        {/* 탭 1: 자동 탐색 규칙 및 동기화 */}
+        {/* ======================================================== */}
+        {activeTab === "rules" && (
+          <>
+            {/* 원클릭 동기화 배너 */}
+            <Card>
+              <CardHeader>
+                <HeaderTitle>
+                  <RefreshCw size={20} color="#2563eb" /> 원클릭 노선 전체 자동
+                  동기화
+                </HeaderTitle>
+              </CardHeader>
+              <CardBody>
+                <CardDesc>
+                  아래 등록된 시종점 규칙들을 기반으로 인천 버스 공공데이터에서
+                  경유 노선을 자동 탐색하고 정밀 슬라이싱하여 실시간 노선 DB를
+                  최신화합니다.
+                </CardDesc>
+                <SyncButton onClick={handleAutoSync} disabled={loading}>
+                  <RefreshCw
+                    size={16}
+                    className={loading ? "spin" : undefined}
+                  />
+                  {loading ? "노선 탐색 & 동기화 중..." : "전체 노선 자동 탐색 및 동기화 실행"}
+                </SyncButton>
+              </CardBody>
+            </Card>
 
-        {/* 2. 등록된 동적 노선 목록 섹션 */}
-        <SectionCard>
-          <HeaderRow>
-            <List size={20} color="#10b981" />
-            <SectionTitle>등록된 동적 노선 목록 ({routeSections.length}개)</SectionTitle>
-            <RefreshButton onClick={loadData} style={{ marginLeft: "auto" }}>
-              <RefreshCw size={14} /> 새로고침
-            </RefreshButton>
-          </HeaderRow>
+            {/* 시종점 기반 탐색 규칙 추가 폼 */}
+            <Card>
+              <CardHeader>
+                <HeaderTitle>
+                  <Plus size={20} color="#16a34a" /> 시종점 기반 자동 탐색 규칙
+                  추가
+                </HeaderTitle>
+              </CardHeader>
+              <CardBody>
+                <form onSubmit={handleRuleSubmit}>
+                  <FormGrid>
+                    <FormGroup>
+                      <Label>카테고리</Label>
+                      <Select
+                        value={ruleForm.category}
+                        onChange={(e) =>
+                          setRuleForm((prev) => ({
+                            ...prev,
+                            category: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="go-school">학교 갈래요 (등교)</option>
+                        <option value="go-home">집 갈래요 (하교)</option>
+                      </Select>
+                    </FormGroup>
 
-          <RouteList>
-            {routeSections.map((sec) => (
-              <RouteItem key={sec.id}>
-                <ItemInfo>
-                  <strong>{sec.sectionName}</strong>
-                  <Badge>{sec.category}</Badge>
-                  <Badge style={{ background: "#dbeafe", color: "#1e40af" }}>
-                    {sec.tabName}
-                  </Badge>
-                  <SubText>
-                    [{sec.routeNo}번] {sec.startBstopName ?? sec.startBstopId} →{" "}
-                    {sec.endBstopName ?? sec.endBstopId} ({sec.stops?.length ?? 0}개 정류장)
-                  </SubText>
-                </ItemInfo>
-                <DeleteButton onClick={() => handleDeleteRouteSection(sec.id)}>
-                  <Trash2 size={16} color="#ef4444" />
-                </DeleteButton>
-              </RouteItem>
-            ))}
-            {routeSections.length === 0 && (
-              <EmptyText>현재 등록된 동적 노선 구간이 없습니다.</EmptyText>
-            )}
-          </RouteList>
-        </SectionCard>
+                    <FormGroup>
+                      <Label>탭 명 (예: 인입런, 지정단런, 공대/자연대)</Label>
+                      <Input
+                        type="text"
+                        value={ruleForm.tabName}
+                        onChange={(e) =>
+                          setRuleForm((prev) => ({
+                            ...prev,
+                            tabName: e.target.value,
+                          }))
+                        }
+                        placeholder="예: 인입런, 인천대 정문"
+                        required
+                      />
+                    </FormGroup>
+                  </FormGrid>
 
-        {/* 3. 자동 탐색 타겟 규칙 관리 섹션 */}
-        <SectionCard>
-          <HeaderRow>
-            <RefreshCw size={20} color="#8b5cf6" />
-            <SectionTitle>자동 탐색 타겟 규칙 (학교/하교 시종점 & 키워드)</SectionTitle>
-          </HeaderRow>
-          <Description>
-            "학교 갈래요" 및 "집 갈래요"의 각 탭별 시작 정류소와 종점 탐색 키워드를 관리합니다. 원클릭 동기화 버튼 실행 시 이 규칙을 바탕으로 노선이 자동 슬라이싱됩니다.
-          </Description>
+                  {/* 출발 정류장 & 도착 정류장 선택 영역 */}
+                  <StopSelectionGrid>
+                    {/* 출발 정류소 */}
+                    <StopSelectBox>
+                      <BoxLabel>🚩 출발 정류장 (기점)</BoxLabel>
+                      <SelectedStopInfo>
+                        <StopNameText>
+                          {ruleForm.startStopName || "정류장을 검색해주세요"}
+                        </StopNameText>
+                        <StopMetaText>
+                          ID: {ruleForm.startBstopId || "-"} | 별칭:{" "}
+                          <b>{ruleForm.startStopAlias || "-"}</b>
+                        </StopMetaText>
+                      </SelectedStopInfo>
+                      <SearchTriggerButton
+                        type="button"
+                        onClick={() => openSearchModal("start")}
+                      >
+                        <Search size={14} /> 정류장 검색 / 변경
+                      </SearchTriggerButton>
+                      <InlineInputRow>
+                        <InlineLabel>출발지 별칭:</InlineLabel>
+                        <Input
+                          type="text"
+                          value={ruleForm.startStopAlias}
+                          onChange={(e) =>
+                            setRuleForm((prev) => ({
+                              ...prev,
+                              startStopAlias: e.target.value,
+                            }))
+                          }
+                          placeholder="예: 인입"
+                        />
+                      </InlineInputRow>
+                    </StopSelectBox>
 
-          <Form onSubmit={handleRuleSubmit}>
-            <FormRow>
-              <FormGroup>
-                <Label>카테고리</Label>
-                <Select
-                  value={ruleForm.category}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                >
-                  <option value="go-school">학교 갈래요 (go-school)</option>
-                  <option value="go-home">집 갈래요 (go-home)</option>
-                </Select>
-              </FormGroup>
+                    {/* 도착 정류소 */}
+                    <StopSelectBox>
+                      <BoxLabel>🏁 목표 도착 정류장 (종점)</BoxLabel>
+                      <SelectedStopInfo>
+                        <StopNameText>
+                          {ruleForm.endStopName || "정류장을 검색해주세요"}
+                        </StopNameText>
+                        <StopMetaText>
+                          ID: {ruleForm.endBstopId || "-"} | 별칭:{" "}
+                          <b>{ruleForm.endStopAlias || "-"}</b>
+                        </StopMetaText>
+                      </SelectedStopInfo>
+                      <SearchTriggerButton
+                        type="button"
+                        onClick={() => openSearchModal("end")}
+                      >
+                        <Search size={14} /> 정류장 검색 / 변경
+                      </SearchTriggerButton>
+                      <InlineInputRow>
+                        <InlineLabel>도착지 별칭:</InlineLabel>
+                        <Input
+                          type="text"
+                          value={ruleForm.endStopAlias}
+                          onChange={(e) =>
+                            setRuleForm((prev) => ({
+                              ...prev,
+                              endStopAlias: e.target.value,
+                            }))
+                          }
+                          placeholder="예: 자연대"
+                        />
+                      </InlineInputRow>
+                    </StopSelectBox>
+                  </StopSelectionGrid>
 
-              <FormGroup>
-                <Label>탭명 (분류)</Label>
-                <Input
+                  <SubmitButton type="submit" disabled={loading}>
+                    <Plus size={16} /> 규칙 등록하기
+                  </SubmitButton>
+                </form>
+              </CardBody>
+            </Card>
+
+            {/* 등록된 탐색 룰 목록 */}
+            <Card>
+              <CardHeader>
+                <HeaderTitle>
+                  <List size={20} color="#6b7280" /> 등록된 탐색 규칙 목록 (
+                  {targetRules.length}개)
+                </HeaderTitle>
+              </CardHeader>
+              <CardBody>
+                {targetRules.length === 0 ? (
+                  <EmptyText>등록된 탐색 규칙이 없습니다.</EmptyText>
+                ) : (
+                  <RuleList>
+                    {targetRules.map((rule) => (
+                      <RuleItem key={rule.id}>
+                        <RuleContent>
+                          <Badge
+                            isSchool={rule.category === "go-school"}
+                          >
+                            {rule.category === "go-school"
+                              ? "학교 갈래요"
+                              : "집 갈래요"}
+                          </Badge>
+                          <TabBadge>{rule.tabName}</TabBadge>
+                          <RulePath>
+                            <PathStop>
+                              <b>{rule.startStopName}</b>{" "}
+                              <SmallId>({rule.startBstopId})</SmallId>
+                              {rule.startStopAlias && (
+                                <AliasTag>[{rule.startStopAlias}]</AliasTag>
+                              )}
+                            </PathStop>
+                            <ArrowRight size={14} color="#9ca3af" />
+                            <PathStop>
+                              <b>{rule.endBstopName || "목표 키워드 매칭"}</b>{" "}
+                              {rule.endBstopId && (
+                                <SmallId>({rule.endBstopId})</SmallId>
+                              )}
+                              {rule.endStopAlias && (
+                                <AliasTag>[{rule.endStopAlias}]</AliasTag>
+                              )}
+                            </PathStop>
+                          </RulePath>
+                        </RuleContent>
+                        <DeleteButton
+                          onClick={() => handleDeleteRule(rule.id)}
+                        >
+                          <Trash2 size={16} />
+                        </DeleteButton>
+                      </RuleItem>
+                    ))}
+                  </RuleList>
+                )}
+              </CardBody>
+            </Card>
+          </>
+        )}
+
+        {/* ======================================================== */}
+        {/* 탭 2: 등록된 노선 목록 및 직접 수정 (Edit) */}
+        {/* ======================================================== */}
+        {activeTab === "routes" && (
+          <Card>
+            <CardHeader>
+              <HeaderTitle>
+                <Bus size={20} color="#2563eb" /> 등록된 노선 구간 목록 및 직접
+                수정 ({routeSections.length}개)
+              </HeaderTitle>
+            </CardHeader>
+            <CardBody>
+              {routeSections.length === 0 ? (
+                <EmptyText>
+                  등록된 노선 구간이 없습니다. 1번 탭에서 [자동 동기화]를
+                  실행해주세요.
+                </EmptyText>
+              ) : (
+                <RouteGrid>
+                  {routeSections.map((sec) => (
+                    <RouteCard key={sec.id}>
+                      <RouteHeader>
+                        <RouteNoBadge>{sec.routeNo}번</RouteNoBadge>
+                        <TabBadge>{sec.tabName}</TabBadge>
+                        <Badge isSchool={sec.category === "go-school"}>
+                          {sec.category === "go-school" ? "학교" : "집"}
+                        </Badge>
+                      </RouteHeader>
+
+                      <SectionTitleText>{sec.sectionName}</SectionTitleText>
+
+                      <RoutePathText>
+                        <span>{sec.startBstopName}</span>
+                        <ArrowRight size={12} />
+                        <span>{sec.endBstopName}</span>
+                      </RoutePathText>
+
+                      <StopCountBadge>
+                        경유 정류소: {sec.stops?.length ?? 0}개
+                      </StopCountBadge>
+
+                      {sec.busNotice && (
+                        <NoticeBox>
+                          <Info size={12} />
+                          <span>{sec.busNotice}</span>
+                        </NoticeBox>
+                      )}
+
+                      {sec.routeNotice ? (
+                        <TipBox>
+                          <b>💡 운행 팁:</b> {sec.routeNotice}
+                        </TipBox>
+                      ) : (
+                        <NoTipText>💡 등록된 팁 코멘트 없음</NoTipText>
+                      )}
+
+                      <ActionRow>
+                        <EditButton onClick={() => openEditModal(sec)}>
+                          <Edit2 size={14} /> 팁/정보 수정
+                        </EditButton>
+                        <DeleteButton
+                          onClick={() => handleDeleteRouteSection(sec.id)}
+                        >
+                          <Trash2 size={14} />
+                        </DeleteButton>
+                      </ActionRow>
+                    </RouteCard>
+                  ))}
+                </RouteGrid>
+              )}
+            </CardBody>
+          </Card>
+        )}
+
+        {/* ======================================================== */}
+        {/* 탭 3: 주요 정류장 별칭(Alias) 사전 관리 */}
+        {/* ======================================================== */}
+        {activeTab === "aliases" && (
+          <>
+            <Card>
+              <CardHeader>
+                <HeaderTitle>
+                  <Tag size={20} color="#8b5cf6" /> 정류장 별칭(Alias) 등록
+                </HeaderTitle>
+              </CardHeader>
+              <CardBody>
+                <CardDesc>
+                  주요 정류소에 대해 모바일 화면에 표시될 짧은 축약명(예:
+                  '인입', '정문', '공대', '자연대')을 등록해두면, 노선
+                  fetching 및 맵 화면에 자동 매핑됩니다.
+                </CardDesc>
+
+                <form onSubmit={handleAliasSubmit}>
+                  <FormGrid>
+                    <FormGroup>
+                      <Label>정류장 검색 / 선택</Label>
+                      <SearchTriggerButton
+                        type="button"
+                        onClick={() => openSearchModal("alias")}
+                      >
+                        <Search size={14} />{" "}
+                        {aliasForm.bstopName
+                          ? `${aliasForm.bstopName} (${aliasForm.bstopId})`
+                          : "공공데이터 정류소 검색하기"}
+                      </SearchTriggerButton>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <Label>정류소 ID (공공데이터)</Label>
+                      <Input
+                        type="text"
+                        value={aliasForm.bstopId}
+                        onChange={(e) =>
+                          setAliasForm((prev) => ({
+                            ...prev,
+                            bstopId: e.target.value,
+                          }))
+                        }
+                        placeholder="예: 164000395"
+                        required
+                      />
+                    </FormGroup>
+
+                    <FormGroup>
+                      <Label>공식 정류소 명칭</Label>
+                      <Input
+                        type="text"
+                        value={aliasForm.bstopName}
+                        onChange={(e) =>
+                          setAliasForm((prev) => ({
+                            ...prev,
+                            bstopName: e.target.value,
+                          }))
+                        }
+                        placeholder="예: 인천대입구역 2번출구"
+                        required
+                      />
+                    </FormGroup>
+
+                    <FormGroup>
+                      <Label>별칭 / 축약명 (화면 노출용)</Label>
+                      <Input
+                        type="text"
+                        value={aliasForm.stopAlias}
+                        onChange={(e) =>
+                          setAliasForm((prev) => ({
+                            ...prev,
+                            stopAlias: e.target.value,
+                          }))
+                        }
+                        placeholder="예: 인입"
+                        required
+                      />
+                    </FormGroup>
+
+                    <FormGroup style={{ gridColumn: "1 / -1" }}>
+                      <Label>메모 / 설명</Label>
+                      <Input
+                        type="text"
+                        value={aliasForm.memo}
+                        onChange={(e) =>
+                          setAliasForm((prev) => ({
+                            ...prev,
+                            memo: e.target.value,
+                          }))
+                        }
+                        placeholder="예: 인입런 출발 정류소"
+                      />
+                    </FormGroup>
+                  </FormGrid>
+
+                  <SubmitButton type="submit" disabled={loading}>
+                    <Plus size={16} /> 별칭 사전 저장하기
+                  </SubmitButton>
+                </form>
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <HeaderTitle>
+                  <List size={20} color="#6b7280" /> 등록된 정류장 별칭 목록 (
+                  {stopAliases.length}개)
+                </HeaderTitle>
+              </CardHeader>
+              <CardBody>
+                {stopAliases.length === 0 ? (
+                  <EmptyText>등록된 별칭이 없습니다.</EmptyText>
+                ) : (
+                  <AliasTable>
+                    <thead>
+                      <tr>
+                        <th>정류소 ID</th>
+                        <th>공식 정류소명</th>
+                        <th>별칭 (Alias)</th>
+                        <th>메모</th>
+                        <th>삭제</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stopAliases.map((a) => (
+                        <tr key={a.id}>
+                          <td>{a.bstopId}</td>
+                          <td>{a.bstopName}</td>
+                          <td>
+                            <AliasTag>{a.stopAlias}</AliasTag>
+                          </td>
+                          <td>{a.memo || "-"}</td>
+                          <td>
+                            <DeleteButton
+                              onClick={() => handleDeleteAlias(a.id)}
+                            >
+                              <Trash2 size={14} />
+                            </DeleteButton>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </AliasTable>
+                )}
+              </CardBody>
+            </Card>
+          </>
+        )}
+
+        {/* ======================================================== */}
+        {/* 정류소 실시간 검색 모달 */}
+        {/* ======================================================== */}
+        {searchModalOpen && (
+          <ModalOverlay onClick={() => setSearchModalOpen(false)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <ModalTitle>
+                  <Search size={18} /> 정류장 실시간 검색
+                </ModalTitle>
+                <CloseButton onClick={() => setSearchModalOpen(false)}>
+                  <X size={18} />
+                </CloseButton>
+              </ModalHeader>
+
+              <SearchForm onSubmit={handleSearchStops}>
+                <SearchInput
                   type="text"
-                  placeholder="예: 인입런, 지정단런, 인천대 정문"
-                  value={ruleForm.tabName}
-                  onChange={(e) =>
-                    setRuleForm({ ...ruleForm, tabName: e.target.value })
-                  }
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  placeholder="정류장 명칭 입력 (예: 인천대입구, 자연과학, 송도캠)"
+                  autoFocus
                 />
-              </FormGroup>
-            </FormRow>
+                <SearchSubmitBtn type="submit" disabled={searching}>
+                  {searching ? "검색 중..." : "검색"}
+                </SearchSubmitBtn>
+              </SearchForm>
 
-            <FormGroup>
-              <Label>시작 정류장 선택 (추천 목록)</Label>
-              <Select
-                value={`${ruleForm.startStopName} (${ruleForm.startBstopId})`}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  const matched = currentPresetStops.find(
-                    (s) => `${s.name} (${s.id})` === val,
-                  );
-                  if (matched) {
-                    setRuleForm({
-                      ...ruleForm,
-                      startBstopId: matched.id,
-                      startStopName: matched.name,
-                      startStopAlias: matched.alias,
-                    });
-                  }
-                }}
-              >
-                {currentPresetStops.map((s) => (
-                  <option key={`rule-stop-${s.id}`} value={`${s.name} (${s.id})`}>
-                    {s.name} ({s.id}) [별칭: {s.alias}]
-                  </option>
+              <SearchResultsList>
+                {searchResults.length === 0 && !searching && (
+                  <SearchGuideText>
+                    정류장 이름을 검색해주세요. (공공데이터포털 실시간 조회)
+                  </SearchGuideText>
+                )}
+                {searchResults.map((stop) => (
+                  <SearchResultItem
+                    key={stop.bstopId}
+                    onClick={() => handleSelectStop(stop)}
+                  >
+                    <ResultItemLeft>
+                      <ResultStopName>{stop.bstopName}</ResultStopName>
+                      <ResultStopMeta>
+                        ID: {stop.bstopId} | 단축번호: {stop.bstopNo || "-"} |{" "}
+                        {stop.adminNm || "인천"}
+                      </ResultStopMeta>
+                    </ResultItemLeft>
+                    <ResultItemRight>
+                      {stop.stopAlias && (
+                        <AliasTag>[{stop.stopAlias}]</AliasTag>
+                      )}
+                      <SelectStopBtn type="button">
+                        <Check size={14} /> 선택
+                      </SelectStopBtn>
+                    </ResultItemRight>
+                  </SearchResultItem>
                 ))}
-              </Select>
-            </FormGroup>
+              </SearchResultsList>
+            </ModalContent>
+          </ModalOverlay>
+        )}
 
-            <FormRow>
-              <FormGroup>
-                <Label>정류소 ID (bstopId)</Label>
-                <Input
-                  type="text"
-                  placeholder="예: 164000395"
-                  value={ruleForm.startBstopId}
-                  onChange={(e) =>
-                    setRuleForm({ ...ruleForm, startBstopId: e.target.value })
-                  }
-                />
-              </FormGroup>
+        {/* ======================================================== */}
+        {/* 노선 구간 직접 수정 모달 */}
+        {/* ======================================================== */}
+        {editModalOpen && (
+          <ModalOverlay onClick={() => setEditModalOpen(false)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <ModalTitle>
+                  <Edit2 size={18} /> 노선 팁 및 구간 정보 수정
+                </ModalTitle>
+                <CloseButton onClick={() => setEditModalOpen(false)}>
+                  <X size={18} />
+                </CloseButton>
+              </ModalHeader>
 
-              <FormGroup>
-                <Label>정류장 명칭 (풀네임)</Label>
-                <Input
-                  type="text"
-                  placeholder="예: 인천대입구역 2번출구"
-                  value={ruleForm.startStopName}
-                  onChange={(e) =>
-                    setRuleForm({ ...ruleForm, startStopName: e.target.value })
-                  }
-                />
-              </FormGroup>
-            </FormRow>
+              <form onSubmit={handleEditSubmit}>
+                <FormGroup>
+                  <Label>구간명 (별칭)</Label>
+                  <Input
+                    type="text"
+                    value={editForm.sectionName}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        sectionName: e.target.value,
+                      }))
+                    }
+                    placeholder="예: 인입런 - 8번"
+                    required
+                  />
+                </FormGroup>
 
-            <FormGroup>
-              <Label>정류장 축약명/별칭 (앱 바텀시트/탭 표시용)</Label>
-              <Input
-                type="text"
-                placeholder="예: 인입, 지정단, 정문, 공대, 자연대"
-                value={ruleForm.startStopAlias}
-                onChange={(e) =>
-                  setRuleForm({ ...ruleForm, startStopAlias: e.target.value })
-                }
-              />
-            </FormGroup>
+                <FormGrid style={{ marginTop: "12px" }}>
+                  <FormGroup>
+                    <Label>카테고리</Label>
+                    <Select
+                      value={editForm.category}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          category: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="go-school">학교 갈래요</option>
+                      <option value="go-home">집 갈래요</option>
+                    </Select>
+                  </FormGroup>
 
-            <FormGroup>
-              <Label>목적지 키워드 목록 (콤마 구분)</Label>
-              <Input
-                type="text"
-                placeholder={
-                  ruleForm.category === "go-school"
-                    ? "예: 정문,자연,공과,공대,송도캠"
-                    : "예: 인천대입구역,지식정보단지역,홍대입구"
-                }
-                value={ruleForm.targetKeywords}
-                onChange={(e) =>
-                  setRuleForm({ ...ruleForm, targetKeywords: e.target.value })
-                }
-              />
-            </FormGroup>
+                  <FormGroup>
+                    <Label>탭명</Label>
+                    <Input
+                      type="text"
+                      value={editForm.tabName}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          tabName: e.target.value,
+                        }))
+                      }
+                      placeholder="예: 인입런"
+                    />
+                  </FormGroup>
+                </FormGrid>
 
-            <SubmitButton type="submit" disabled={loading} style={{ background: "#8b5cf6" }}>
-              <Plus size={16} />
-              {loading ? "등록 중..." : "탐색 규칙 추가하기"}
-            </SubmitButton>
-          </Form>
+                <FormGroup style={{ marginTop: "12px" }}>
+                  <Label>운행시간 및 배차간격 안내 (busNotice)</Label>
+                  <TextArea
+                    rows={2}
+                    value={editForm.busNotice}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        busNotice: e.target.value,
+                      }))
+                    }
+                    placeholder="예: 운행시간 | 05:54 ~ 00:31&#10;배차간격 | 5 ~ 13분"
+                  />
+                </FormGroup>
 
-          <SubTitleRow>
-            <h4>
-              <List size={16} style={{ display: "inline", marginRight: 4 }} />
-              등록된 탐색 규칙 목록 ({targetRules.length}개)
-            </h4>
-          </SubTitleRow>
+                <FormGroup style={{ marginTop: "12px" }}>
+                  <Label>💡 한 줄 팁 또는 주의 코멘트 (routeNotice)</Label>
+                  <TextArea
+                    rows={3}
+                    value={editForm.routeNotice}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        routeNotice: e.target.value,
+                      }))
+                    }
+                    placeholder="예: 많이 돌아가는 노선이니 주의하세요! 또는 공대생은 자연대에서 하차하는 것이 빠릅니다."
+                  />
+                </FormGroup>
 
-          <RouteList>
-            {targetRules.map((rule) => (
-              <RouteItem key={rule.id}>
-                <ItemInfo>
-                  <strong>[{rule.category}] {rule.tabName}</strong>
-                  <Badge style={{ background: "#f3e8ff", color: "#6b21a8" }}>
-                    시작: {rule.startStopName} ({rule.startBstopId}) {rule.startStopAlias && `[별칭: ${rule.startStopAlias}]`}
-                  </Badge>
-                  <SubText>
-                    목적지 키워드: {rule.targetKeywords}
-                  </SubText>
-                </ItemInfo>
-                <DeleteButton onClick={() => handleDeleteRule(rule.id)}>
-                  <Trash2 size={16} color="#ef4444" />
-                </DeleteButton>
-              </RouteItem>
-            ))}
-
-            {targetRules.length === 0 && (
-              <EmptyText>현재 등록된 자동 탐색 규칙이 없습니다.</EmptyText>
-            )}
-          </RouteList>
-        </SectionCard>
+                <ModalFooter>
+                  <CancelButton
+                    type="button"
+                    onClick={() => setEditModalOpen(false)}
+                  >
+                    취소
+                  </CancelButton>
+                  <SubmitButton type="submit" disabled={loading}>
+                    <Check size={16} /> 수정 완료
+                  </SubmitButton>
+                </ModalFooter>
+              </form>
+            </ModalContent>
+          </ModalOverlay>
+        )}
       </Container>
     </AdminLayout>
   );
 }
 
-
-
-
+// Styled Components
 const Container = styled.div`
+  padding: 16px;
+  max-width: 1000px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 `;
 
 const SuccessBanner = styled.div`
-  background: #ecfdf5;
-  border: 1px solid #10b981;
+  background-color: #ecfdf5;
   color: #065f46;
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #a7f3d0;
+`;
+
+const TabHeader = styled.div`
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+  overflow-x: auto;
+`;
+
+const TabButton = styled.button<{ active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  background-color: ${({ active }) => (active ? "#2563eb" : "#f3f4f6")};
+  color: ${({ active }) => (active ? "#ffffff" : "#4b5563")};
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: ${({ active }) => (active ? "#1d4ed8" : "#e5e7eb")};
+  }
 `;
 
-const SectionCard = styled.div`
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+const Card = styled.div`
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
 `;
 
-const HeaderRow = styled.div`
+const CardHeader = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  background-color: #fafafa;
+`;
+
+const HeaderTitle = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
 `;
 
-const SectionTitle = styled.h3`
-  font-size: 17px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
+const CardBody = styled.div`
+  padding: 20px;
 `;
 
-const Description = styled.p`
+const CardDesc = styled.p`
+  margin: 0 0 16px 0;
   font-size: 13px;
-  color: #64748b;
+  color: #6b7280;
   line-height: 1.5;
-  margin: 0 0 16px;
 `;
 
-const Form = styled.form`
+const SyncButton = styled.button`
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #1d4ed8;
+  }
+  &:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+  }
+
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;
 
-const FormRow = styled.div`
+const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
 `;
 
 const FormGroup = styled.div`
@@ -461,28 +1098,115 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: #374151;
 `;
 
 const Input = styled.input`
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 14px;
-  outline: none;
-
   &:focus {
-    border-color: #3b82f6;
+    outline: none;
+    border-color: #2563eb;
+  }
+`;
+
+const TextArea = styled.textarea`
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  resize: vertical;
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
   }
 `;
 
 const Select = styled.select`
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 14px;
-  outline: none;
-  background: #ffffff;
+  background-color: white;
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+`;
+
+const StopSelectionGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+`;
+
+const StopSelectBox = styled.div`
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const BoxLabel = styled.div`
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+`;
+
+const SelectedStopInfo = styled.div`
+  background: white;
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  border-radius: 6px;
+`;
+
+const StopNameText = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+`;
+
+const StopMetaText = styled.div`
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+`;
+
+const SearchTriggerButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background-color: #ffffff;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    background-color: #eff6ff;
+  }
+`;
+
+const InlineInputRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const InlineLabel = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  white-space: nowrap;
 `;
 
 const SubmitButton = styled.button`
@@ -490,157 +1214,397 @@ const SubmitButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 12px;
-  border-radius: 10px;
-  background: #3b82f6;
-  color: #ffffff;
+  padding: 12px 20px;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
-  border: none;
   cursor: pointer;
-  margin-top: 6px;
-  transition: opacity 0.2s;
-
+  width: 100%;
+  &:hover:not(:disabled) {
+    background-color: #15803d;
+  }
   &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    background-color: #86efac;
   }
 `;
 
-const SubTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 24px;
-  margin-bottom: 12px;
-
-  h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-  }
-`;
-
-const RefreshButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: #64748b;
-  font-size: 12px;
-  cursor: pointer;
-`;
-
-const RouteList = styled.div`
+const RuleList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
 `;
 
-const RouteItem = styled.div`
+const RuleItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  background: #f8fafc;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
 `;
 
-const ItemInfo = styled.div`
-
-  font-size: 13px;
-  color: #334155;
+const RuleContent = styled.div`
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
+  flex-wrap: wrap;
 `;
 
-const SubText = styled.span`
-  display: block;
-  width: 100%;
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 2px;
+const RulePath = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
 `;
 
-const Badge = styled.span`
-  background: #e2e8f0;
-  color: #475569;
+const PathStop = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const SmallId = styled.span`
   font-size: 11px;
+  color: #6b7280;
+`;
+
+const AliasTag = styled.span`
+  background-color: #ede9fe;
+  color: #6d28d9;
+  font-size: 11px;
+  font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
+`;
+
+const Badge = styled.span<{ isSchool: boolean }>`
+  font-size: 11px;
   font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background-color: ${({ isSchool }) => (isSchool ? "#dbeafe" : "#fee2e2")};
+  color: ${({ isSchool }) => (isSchool ? "#1e40af" : "#991b1b")};
+`;
+
+const TabBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background-color: #f3f4f6;
+  color: #374151;
+`;
+
+const RouteNoBadge = styled.span`
+  background-color: #2563eb;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
 `;
 
 const DeleteButton = styled.button`
   background: none;
   border: none;
+  color: #ef4444;
   cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-
+  padding: 6px;
+  border-radius: 4px;
   &:hover {
-    background: #fee2e2;
-  }
-`;
-
-const AutoSyncBox = styled.div`
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-`;
-
-const AutoSyncTitle = styled.div`
-  font-size: 14px;
-  font-weight: 700;
-  color: #1d4ed8;
-  margin-bottom: 4px;
-`;
-
-const AutoSyncDesc = styled.div`
-  font-size: 12px;
-  color: #3b82f6;
-  line-height: 1.4;
-  margin-bottom: 12px;
-`;
-
-const AutoSyncButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: #2563eb;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    background-color: #fee2e2;
   }
 `;
 
 const EmptyText = styled.p`
-
-  font-size: 13px;
-  color: #94a3b8;
   text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+  margin: 20px 0;
+`;
+
+const RouteGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+`;
+
+const RouteCard = styled.div`
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+`;
+
+const RouteHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const SectionTitleText = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+`;
+
+const RoutePathText = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+`;
+
+const StopCountBadge = styled.div`
+  font-size: 11px;
+  color: #6b7280;
+`;
+
+const NoticeBox = styled.div`
+  background-color: #f3f4f6;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #4b5563;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  white-space: pre-line;
+`;
+
+const TipBox = styled.div`
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+`;
+
+const NoTipText = styled.div`
+  font-size: 11px;
+  color: #9ca3af;
+  font-style: italic;
+`;
+
+const ActionRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #f3f4f6;
+`;
+
+const EditButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    background-color: #dbeafe;
+  }
+`;
+
+const AliasTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+  }
+`;
+
+// Modal Styles
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const ModalTitle = styled.h3`
   margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+`;
+
+const SearchForm = styled.form`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+`;
+
+const SearchSubmitBtn = styled.button`
+  padding: 10px 16px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+`;
+
+const SearchResultsList = styled.div`
+  overflow-y: auto;
+  max-height: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SearchGuideText = styled.div`
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+  padding: 30px 0;
+`;
+
+const SearchResultItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #eff6ff;
+    border-color: #93c5fd;
+  }
+`;
+
+const ResultItemLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const ResultStopName = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+`;
+
+const ResultStopMeta = styled.div`
+  font-size: 12px;
+  color: #6b7280;
+`;
+
+const ResultItemRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const SelectStopBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+`;
+
+const CancelButton = styled.button`
+  padding: 10px 16px;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 `;
