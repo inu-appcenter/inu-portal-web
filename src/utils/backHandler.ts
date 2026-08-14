@@ -40,7 +40,12 @@ class BackHandlerManager {
     }
   }
 
-  private handleBack(): boolean {
+  /**
+   * 등록된 핸들러로 뒤로가기를 소비했는지 반환한다.
+   * 구앱은 `window.__intipHandleNativeBackRequest` 로, 신앱은 브릿지의
+   * `checkBack` 경로(`nativeBackRequest.ts`)로 같은 로직을 탄다.
+   */
+  handleBack(): boolean {
     // 1. 등록된 오버레이 핸들러가 있으면 가장 최근 등록된 핸들러 실행
     if (this.handlers.length > 0) {
       const handler = this.handlers[this.handlers.length - 1];

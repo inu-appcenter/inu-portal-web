@@ -21,6 +21,9 @@ import { DESKTOP_MEDIA } from "@/styles/responsive";
 import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
+import FeatureTourSheet from "@/components/common/FeatureTourSheet";
+import AppInstallBanner from "@/components/common/AppInstallBanner";
+import { safeLocalStorage } from "@/utils/safeStorage";
 
 
 type MainTabPath = "/" | "/home" | "/save" | "/mypage" | "/bus";
@@ -92,7 +95,7 @@ export default function RootLayout() {
       return;
     }
 
-    const hasPersistedAuth = Boolean(localStorage.getItem("tokenInfo"));
+    const hasPersistedAuth = Boolean(safeLocalStorage.getItem("tokenInfo"));
     const isAuthenticated = Boolean(tokenInfo.accessToken);
 
     if (!isAuthenticated && hasPersistedAuth) {
@@ -122,7 +125,7 @@ export default function RootLayout() {
           isAuthenticated,
           syncedAt: Date.now(),
         });
-        localStorage.setItem("fcmSendLog", JSON.stringify(log));
+        safeLocalStorage.setItem("fcmSendLog", JSON.stringify(log));
         console.log("FCM 토큰 동기화 성공", log);
       } catch (error) {
         const log = {
@@ -134,7 +137,7 @@ export default function RootLayout() {
           error: error instanceof Error ? error.message : String(error),
         };
 
-        localStorage.setItem("fcmSendLog", JSON.stringify(log));
+        safeLocalStorage.setItem("fcmSendLog", JSON.stringify(log));
         console.error("FCM 토큰 동기화 실패", error);
       }
     })();
@@ -143,9 +146,9 @@ export default function RootLayout() {
   useEffect(() => {
     const apiCount = async () => {
       const today = new Date().toISOString().split("T")[0];
-      if (localStorage.getItem("user_count_date") !== today) {
+      if (safeLocalStorage.getItem("user_count_date") !== today) {
         await postApiLogs("/api/members/no-dup");
-        localStorage.setItem("user_count_date", today);
+        safeLocalStorage.setItem("user_count_date", today);
       }
     };
 
@@ -164,16 +167,26 @@ export default function RootLayout() {
     return <AppUpdateModal />;
   }
 
+  const isHomeScreen =
+    location.pathname === ROUTES.HOME ||
+    location.pathname === ROUTES.MOBILE_HOME ||
+    location.pathname === ROUTES.HOME_V2 ||
+    location.pathname === ROUTES.ROOT;
+
   return (
     <HeaderProvider>
       <ScrollBarStyles />
+      {/* 앱 미설치 iOS 사용자용 설치 유도 배너. 노출 조건은 컴포넌트 안에서
+          판단하고, 해당 없으면 아무것도 렌더하지 않는다. */}
+      <AppInstallBanner />
       <ScreenContainer>
         {outlet}
-        {(location.pathname === ROUTES.HOME ||
-          location.pathname === ROUTES.MOBILE_HOME ||
-          location.pathname === ROUTES.HOME_V2 ||
-          location.pathname === ROUTES.ROOT) && <AIChatFloatingButton />}
+        {isHomeScreen && <AIChatFloatingButton />}
       </ScreenContainer>
+      {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
+      <FeatureTourSheet
+        enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
+      />
     </HeaderProvider>
   );
 }

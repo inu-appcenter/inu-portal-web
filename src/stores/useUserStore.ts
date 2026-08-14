@@ -5,6 +5,8 @@ import { identifyUser } from "@/utils/mixpanel";
 import { bridgeChannel } from "@/utils/bridgeChannel";
 import { broadcastSync } from "@/stores/middleware/broadcastSync";
 
+import { safeLocalStorage } from "@/utils/safeStorage";
+
 interface UserState {
   tokenInfo: TokenInfo;
   userInfo: UserInfo;
@@ -14,7 +16,7 @@ interface UserState {
 }
 
 const getInitialToken = () => {
-  const stored = localStorage.getItem("tokenInfo");
+  const stored = safeLocalStorage.getItem("tokenInfo");
   if (stored) {
     try {
       return JSON.parse(stored);
@@ -45,7 +47,7 @@ const useUserStore = create<UserState>()(
     partialize: (state) => ({ tokenInfo: state.tokenInfo, userInfo: state.userInfo }),
     onReceive: (partial) => {
       if (partial.tokenInfo) {
-        localStorage.setItem("tokenInfo", JSON.stringify(partial.tokenInfo));
+        safeLocalStorage.setItem("tokenInfo", JSON.stringify(partial.tokenInfo));
       }
     },
   })((set) => ({
@@ -55,7 +57,7 @@ const useUserStore = create<UserState>()(
 
     setTokenInfo: (tokenInfo, options) => {
       set(() => ({ tokenInfo }));
-      localStorage.setItem("tokenInfo", JSON.stringify(tokenInfo));
+      safeLocalStorage.setItem("tokenInfo", JSON.stringify(tokenInfo));
 
     // 네이티브 셸(intip-mobile-app)로 JWT를 미러링해 SecureStore에 보관시킨다 —
     // 백그라운드 FCM 토큰 등록 등 네이티브가 웹뷰 없이 자체적으로 API를 호출해야

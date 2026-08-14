@@ -1,8 +1,11 @@
 import axios from "axios";
 import useUserStore from "@/stores/useUserStore";
 
+// 재발급도 토큰을 발급한 서버(tokenInstance와 동일 오리진)로 보내야 한다.
+// 운영 URL을 하드코딩해두면 dev 서버로 로그인한 토큰이 운영에서 거부돼
+// 401 → 재발급 실패 → 만료 alert이 계속 뜬다.
 const refreshInstance = axios.create({
-  baseURL: "https://portal.inuappcenter.kr/",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 // 요청 인터셉터 - 토큰 설정

@@ -22,6 +22,9 @@ import OpenChatRoomListItem from "@/components/mobile/chat/OpenChatRoomListItem"
 import CreateChatModal from "@/components/mobile/chat/CreateChatModal";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
+import AddFriendMenuCard from "@/components/mobile/social/AddFriendMenuCard";
+import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
+import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
@@ -41,6 +44,12 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const selectedCategory = params.get("category") || "개인";
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
+  const {
+    isOpen: isAddMenuOpen,
+    close: closeAddMenu,
+    toggle: toggleAddMenu,
+  } = useHistoryBackedOverlay();
+  const [isNearbyInfoOpen, setIsNearbyInfoOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -217,6 +226,14 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     };
   }, [isSearching]);
 
+  // Category/search 전환 시 add-friend 메뉴 닫기
+  useEffect(() => {
+    if ((selectedCategory !== "친구" || isSearching) && isAddMenuOpen) {
+      closeAddMenu();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, isSearching]);
+
   const headerRight = useMemo(() => {
     if (!isSearching && selectedCategory === "친구") {
       return (
@@ -278,6 +295,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const isAnyModalOpen =
     isCreateModalOpen ||
     isAddFriendModalOpen ||
+    isNearbyInfoOpen ||
     isBlockedModalOpen ||
     isSentRequestsModalOpen ||
     isPreviewModalOpen;
@@ -657,27 +675,56 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       </Swiper>
 
       {!isSearching && isLoggedIn && (
-        <FloatingActionButton
-          onClick={() => {
-            if (selectedCategory === "개인") {
-              mixpanelTrack.chatRoomMenuClicked(
-                "개인 채팅방 생성",
-                "new_personal",
-              );
-              navigate(ROUTES.CHAT.CREATE_PERSONAL);
-            } else if (selectedCategory === "친구") {
-              mixpanelTrack.friendActionClicked("친구 추가");
-              setIsAddFriendModalOpen(true);
-            } else {
-              mixpanelTrack.chatRoomMenuClicked("오픈 채팅방 생성", "new_open");
-              setIsCreateModalOpen(true);
-            }
-          }}
-          $isTop={isTop}
-        >
-          <Plus size={20} color="white" />
-          <ButtonLabel $isTop={isTop}>{fabLabel}</ButtonLabel>
-        </FloatingActionButton>
+        <FabAnchor>
+          {selectedCategory === "친구" && (
+            <AddFriendMenuCard
+              open={isAddMenuOpen}
+              onScrimClick={() => closeAddMenu()}
+              onSearchClick={() => {
+                closeAddMenu(() => {
+                  mixpanelTrack.friendActionClicked("친구 추가");
+                  setIsAddFriendModalOpen(true);
+                });
+              }}
+              onNearbyClick={() => {
+                closeAddMenu(() => setIsNearbyInfoOpen(true));
+              }}
+              onInviteClick={() => {
+                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+              }}
+            />
+          )}
+          <FloatingActionButton
+            onClick={() => {
+              if (selectedCategory === "개인") {
+                mixpanelTrack.chatRoomMenuClicked(
+                  "개인 채팅방 생성",
+                  "new_personal",
+                );
+                navigate(ROUTES.CHAT.CREATE_PERSONAL);
+              } else if (selectedCategory === "친구") {
+                toggleAddMenu();
+              } else {
+                mixpanelTrack.chatRoomMenuClicked("오픈 채팅방 생성", "new_open");
+                setIsCreateModalOpen(true);
+              }
+            }}
+            $isTop={isTop}
+          >
+            <Plus
+              size={20}
+              color="white"
+              style={{
+                transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                transform:
+                  selectedCategory === "친구" && isAddMenuOpen
+                    ? "rotate(45deg)"
+                    : "rotate(0deg)",
+              }}
+            />
+            <ButtonLabel $isTop={isTop}>{fabLabel}</ButtonLabel>
+          </FloatingActionButton>
+        </FabAnchor>
       )}
 
       {isSearching && (
@@ -704,6 +751,10 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       <AddFriendModal
         isOpen={isAddFriendModalOpen}
         onOpenChange={setIsAddFriendModalOpen}
+      />
+      <NearbyFriendInfoSheet
+        open={isNearbyInfoOpen}
+        onOpenChange={setIsNearbyInfoOpen}
       />
       <BlockedUsersModal
         isOpen={isBlockedModalOpen}
@@ -770,11 +821,17 @@ const ListWrapper = styled.div`
   flex-direction: column;
 `;
 
-const FloatingActionButton = styled.button<{ $isTop: boolean }>`
+const FabAnchor = styled.div`
   position: fixed;
   bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   right: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+`;
 
+const FloatingActionButton = styled.button<{ $isTop: boolean }>`
   height: 48px;
   border-radius: 24px;
   background-color: #5e92f0;

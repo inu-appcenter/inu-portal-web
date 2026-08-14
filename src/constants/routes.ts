@@ -31,6 +31,10 @@ export const ROUTES = {
   // 친구
   FRIEND: {
     LIST: "/friend/list",
+    QR: "/friend/qr",
+    // 초대 링크. functions/_middleware.ts 의 OG 태그 주입 경로와 맞춰져 있다.
+    INVITE: (code: string) => `/friend/invite/${code}`,
+    INVITE_PATTERN: "/friend/invite/:code",
   },
 
   //전화번호부
@@ -72,6 +76,7 @@ export const ROUTES = {
     TIPS_CATEGORY: (category: string) => `/home/tips/category/${category}`,
     TIPS_DETAIL: (id: string | number) => `/home/tips/${id}`,
     TIPS_WRITE: "/home/tips/write",
+    TIPS_EDIT: (id: string | number) => `/home/tips/write/${id}`,
     NOTICE: "/home/notice",
     DEPT_NOTICE: "/home/deptnotice",
     DEPT_NOTICE_DETAIL: (dept: string | number) =>

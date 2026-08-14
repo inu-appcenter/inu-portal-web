@@ -2,6 +2,7 @@ import { Drawer } from "vaul";
 import styled from "styled-components";
 import { Info } from "lucide-react";
 import type { ReactNode } from "react";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 interface InfoBottomSheetProps {
   open: boolean;
@@ -18,6 +19,8 @@ export default function InfoBottomSheet({
   children,
   isLoading = false,
 }: InfoBottomSheetProps) {
+  useSheetBackHandler(open, () => onOpenChange(false), !isLoading);
+
   return (
     <Drawer.Root
       open={open}

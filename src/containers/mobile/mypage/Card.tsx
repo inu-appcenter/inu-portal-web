@@ -11,6 +11,7 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import { Fragment } from "react";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { formatTimeAgo } from "@/utils/date";
 
 interface TipsCardContainerProps {
   post: Post[];
@@ -82,7 +83,7 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
               <PostItem
                 title={p.title}
                 category={p.category}
-                date={p.createDate}
+                date={formatTimeAgo(p.createDate)}
                 writer={p.writer}
                 onClick={() => handleDocumentClick(p.id)}
               />

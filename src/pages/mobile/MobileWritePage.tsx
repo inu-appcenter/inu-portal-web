@@ -1,13 +1,11 @@
 import styled from "styled-components";
-import WritePageTitle from "@/components/mobile/write/WritePageTitle";
 import WriteForm from "@/containers/mobile/write/WriteForm";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import loginImg from "@/resources/assets/login/login-modal-logo.svg";
 import { useResetWriteStore } from "@/reducer/resetWriteStore";
 import useUserStore from "@/stores/useUserStore";
 import CategorySelect from "@/components/mobile/write/CategorySelect";
-import { useState } from "react";
-import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
+import { useEffect, useMemo, useState } from "react";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
@@ -15,24 +13,34 @@ export default function MobileWritePage() {
   const { tokenInfo } = useUserStore();
   const { id: routeId } = useParams<{ id?: string }>();
   const id = routeId ? Number(routeId) : 0;
-  const [category, setCategory] = useState<string>("");
+  const location = useLocation();
+  const queryCategory = new URLSearchParams(location.search).get("category");
+  const [category, setCategory] = useState<string>(queryCategory || "");
   const resetKey = useResetWriteStore((state) => state.resetKey);
+
+  useEffect(() => {
+    if (queryCategory) {
+      setCategory(queryCategory);
+    }
+  }, [queryCategory]);
+
+  const headerRightArea = useMemo(
+    () => <CategorySelect category={category} setCategory={setCategory} />,
+    [category],
+  );
 
   // 헤더 설정 주입
   useHeader({
-    title: id === 0 ? "TIP 글쓰기" : "TIP 수정하기",
+    title: id === 0 ? "글쓰기" : "글 수정하기",
+    hasback: true,
+    rightArea: headerRightArea,
+    rightAreaNotCircle: true,
   });
 
   return (
     <>
       {tokenInfo.accessToken ? (
         <MobileWritePageWrapper>
-          <MobileHeader />
-
-          <TitleCategorySelectorWrapper>
-            <WritePageTitle id={id} />
-            <CategorySelect category={category} setCategory={setCategory} />
-          </TitleCategorySelectorWrapper>
           <WriteForm
             key={resetKey}
             category={category}
@@ -59,19 +67,10 @@ const MobileWritePageWrapper = styled.div`
   min-height: calc(100svh - 72px - 72px - 24px);
   width: 100%;
 
-  padding-top: 65px;
-
   @media ${DESKTOP_MEDIA} {
     padding-left: 0;
     padding-right: 0;
   }
-`;
-
-const TitleCategorySelectorWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 `;
 
 const ErrorWrapper = styled.div`

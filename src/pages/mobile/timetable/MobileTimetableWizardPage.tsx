@@ -6,7 +6,10 @@ import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
 import { useSemesters } from "@/hooks/useSemesters";
+import { pickCurrentSemester } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
+import { ROUTES } from "@/constants/routes";
+import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import {
   WIZARD_MAX_CREDIT_SCALE,
   WIZARD_MIN_CREDIT_SCALE,
@@ -25,7 +28,11 @@ import {
   WizardEmptyState,
   WizardErrorState,
 } from "@/components/mobile/timetable/wizard/WizardEmptyErrorScreens";
-import type { WizardPreferenceConditions } from "@/types/timetableWizard";
+import { formatCourseMeta } from "@/utils/timetableWizardFormat";
+import type {
+  WizardPreferenceConditions,
+  WizardCourseOption,
+} from "@/types/timetableWizard";
 
 const GENERATING_MIN_VISIBLE_MS = 1600;
 const DAY_LABELS = ["월", "화", "수", "목", "금"];
@@ -81,7 +88,8 @@ export default function MobileTimetableWizardPage() {
   useEffect(() => {
     if (semesters.length === 0) return;
     if (semester && semesters.some((s) => s.id === semester.id)) return;
-    const preferred = semesters.find((s) => s.status === "OPEN") ?? semesters[0];
+    const preferred = pickCurrentSemester(semesters);
+    if (!preferred) return;
     setSemester({ id: preferred.id, year: preferred.year, term: preferred.term });
   }, [semesters, semester, setSemester]);
 
@@ -124,6 +132,30 @@ export default function MobileTimetableWizardPage() {
   ]);
 
   const runGeneration = useCallback(() => setStep("generating"), [setStep]);
+
+  // 빈 결과 화면에서 원인 강의를 바로 빼고 그 자리에서 재생성한다(#248). Step1로
+  // 돌아가 사용자가 직접 어떤 강의였는지 기억해 빼야 했던 흐름을 없앤다.
+  const handleRemoveWishlistCourseFromConflict = useCallback(
+    (subjectNumber: string) => {
+      removeWishlistCourse(subjectNumber);
+      runGeneration();
+    },
+    [removeWishlistCourse, runGeneration],
+  );
+
+  // 원인 강의를 다른 분반으로 "교체"한다(#248). 강의 자체를 빼고, 같은 과목명으로
+  // 미리 필터링된 검색 시트를 열어 다른 분반을 바로 담을 수 있게 한다. 시트에서
+  // 담은 뒤 재생성은 자동으로 이어지지 않는다 - 사용자가 몇 개를 더 조정할지
+  // 스스로 판단해야 하는 흐름(빈 결과 화면과 달리 여기서는 몇 번이고 검색/담기를
+  // 반복할 수 있음)이라, 매번 자동 재생성하면 오히려 방해가 된다. 다 고른 뒤
+  // "다시 만들기"로 직접 재생성한다.
+  const handleReplaceWishlistCourseFromConflict = useCallback(
+    (course: WizardCourseOption) => {
+      removeWishlistCourse(course.subjectNumber);
+      openCourseSearch("wishlist", course.title);
+    },
+    [removeWishlistCourse, openCourseSearch],
+  );
 
   const selectedCandidate = useMemo(
     () => result?.candidates.find((c) => c.id === selectedCandidateId) ?? null,
@@ -270,7 +302,10 @@ export default function MobileTimetableWizardPage() {
                     >
                       {item.required ? "필수" : "선택"}
                     </ChipRequiredToggle>
-                    <span>{item.course.title}</span>
+                    <ChipTextWrap>
+                      <ChipTitle $required={item.required}>{item.course.title}</ChipTitle>
+                      <ChipMeta $required={item.required}>{formatCourseMeta(item.course)}</ChipMeta>
+                    </ChipTextWrap>
                     <ChipRemove
                       type="button"
                       onClick={() => removeWishlistCourse(item.course.subjectNumber)}
@@ -319,7 +354,12 @@ export default function MobileTimetableWizardPage() {
       )}
 
       {step === "empty" && result && (
-        <WizardEmptyState conflicts={result.conflicts} onRelax={() => setStep("step1")} />
+        <WizardEmptyState
+          conflicts={result.conflicts}
+          onRelax={() => setStep("step1")}
+          onRemoveWishlistCourse={handleRemoveWishlistCourseFromConflict}
+          onReplaceWishlistCourse={handleReplaceWishlistCourseFromConflict}
+        />
       )}
 
       {step === "error" && <WizardErrorState onRetry={runGeneration} />}
@@ -354,9 +394,20 @@ export default function MobileTimetableWizardPage() {
           }}
           candidate={selectedCandidate}
           semesterId={semester?.id ?? null}
-          onSaved={() => {
+          // 위시리스트 등 조건은 그대로 둔 채(resetWizard 미호출) 결과만 새로 뽑는다 -
+          // 헤더의 "다시 만들기"와 동일한 동작.
+          onGenerateMore={runGeneration}
+          onViewTimetable={(timeTableId) => {
             resetWizard();
-            navigate(-1);
+            const path = `${ROUTES.TIMETABLE.ROOT}?id=${timeTableId}`;
+            // 멀티 웹뷰 앱에서는 네이티브 스택을 root로 collapse하고 그 root를
+            // 이 경로로 이동시켜야 한다(마법사는 push된 별도 웹뷰이므로 일반 SPA
+            // navigate로는 그 웹뷰 자신만 이동하고 root의 시간표 탭은 안 바뀐다).
+            if (supportsMultiWebView()) {
+              appBridge.goHome(path);
+            } else {
+              navigate(path, { replace: true });
+            }
           }}
         />
       )}
@@ -652,22 +703,38 @@ const ChipRow = styled.div`
 const Chip = styled.div<{ $required: boolean }>`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 14px;
   background: ${({ $required }) =>
     $required ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)"};
   border: ${({ $required }) =>
     $required
-      ? "1px solid transparent"
+      ? "1px solid var(--interactive-primary, #3b82f6)"
       : "1px dashed var(--border-default, #e5e8eb)"};
+`;
 
-  span {
-    color: ${({ $required }) =>
-      $required ? "var(--interactive-primary, #3b82f6)" : "var(--text-secondary, #333d4b)"};
-    font-size: 14px;
-    font-weight: 500;
-  }
+const ChipTextWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const ChipTitle = styled.span<{ $required: boolean }>`
+  color: ${({ $required }) =>
+    $required ? "var(--interactive-primary, #3b82f6)" : "var(--text-primary, #191f28)"};
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+`;
+
+const ChipMeta = styled.span<{ $required: boolean }>`
+  color: ${({ $required }) =>
+    $required ? "rgba(59, 130, 246, 0.8)" : "var(--text-tertiary, #8b95a1)"};
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 15px;
 `;
 
 const ChipRequiredToggle = styled.button<{ $required: boolean }>`

@@ -24,8 +24,10 @@ const normalizeFcmToken = (token: unknown): string | null => {
   return normalized ? normalized : null;
 };
 
+import { safeLocalStorage } from "@/utils/safeStorage";
+
 export const getStoredFcmToken = (): string | null => {
-  const token = normalizeFcmToken(localStorage.getItem(FCM_TOKEN_STORAGE_KEY));
+  const token = normalizeFcmToken(safeLocalStorage.getItem(FCM_TOKEN_STORAGE_KEY));
   return token;
 };
 
@@ -78,7 +80,7 @@ export const getFcmDeviceType = (): string => {
 };
 
 export const getLastFcmSyncState = (): FcmSyncState | null => {
-  const raw = localStorage.getItem(FCM_SYNC_STATE_STORAGE_KEY);
+  const raw = safeLocalStorage.getItem(FCM_SYNC_STATE_STORAGE_KEY);
 
   if (!raw) {
     return null;
@@ -132,5 +134,5 @@ export const shouldSyncFcmToken = (
 };
 
 export const saveLastFcmSyncState = (state: FcmSyncState): void => {
-  localStorage.setItem(FCM_SYNC_STATE_STORAGE_KEY, JSON.stringify(state));
+  safeLocalStorage.setItem(FCM_SYNC_STATE_STORAGE_KEY, JSON.stringify(state));
 };

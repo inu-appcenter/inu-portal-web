@@ -1,0 +1,30 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["AANGG4Q668.kr.inuappcenter.intip"],
+        "components": [
+          {
+            "/": "/.well-known/*",
+            "exclude": true,
+            "comment": "Domain-verification files themselves always stay on the web."
+          },
+          {
+            "/": "/privacy-policy.html",
+            "exclude": true,
+            "comment": "Static legal page linked from the store listings: must open in a browser, including for reviewers who do not have the app installed."
+          },
+          {
+            "/": "/terms-of-use.html",
+            "exclude": true,
+            "comment": "Same as the privacy policy: store-review and external-linking surface."
+          },
+          {
+            "/": "*",
+            "comment": "Every other portal path opens in the app when it is installed."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,14 +1,30 @@
 import styled from "styled-components";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import 안내횃불이 from "@/resources/assets/book/안내횃불이.png";
-import type { WizardConflictItem } from "@/types/timetableWizard";
+import type {
+  WizardConflictItem,
+  WizardCourseOption,
+} from "@/types/timetableWizard";
+import { formatCourseMeta } from "@/utils/timetableWizardFormat";
 
 interface WizardEmptyStateProps {
   conflicts: WizardConflictItem[];
   onRelax: () => void;
+  // 담은 강의끼리 시간이 겹치는 conflict(courses가 채워진 경우, 항상 위시리스트
+  // 항목이다 - timetableWizardGenerator.ts의 findOverlappingRequiredPairs 참고)를
+  // 이 화면에서 바로 뺄 수 있게 한다. 없으면(레거시 호출부) 빼기 버튼을 숨긴다.
+  onRemoveWishlistCourse?: (subjectNumber: string) => void;
+  // 같은 과목의 다른 분반으로 바꾸고 싶을 때 - 원인 강의를 빼고 그 과목명으로
+  // 미리 필터링된 강의 검색 시트를 연다.
+  onReplaceWishlistCourse?: (course: WizardCourseOption) => void;
 }
 
-export function WizardEmptyState({ conflicts, onRelax }: WizardEmptyStateProps) {
+export function WizardEmptyState({
+  conflicts,
+  onRelax,
+  onRemoveWishlistCourse,
+  onReplaceWishlistCourse,
+}: WizardEmptyStateProps) {
   return (
     <Wrapper>
       <Body>
@@ -21,7 +37,42 @@ export function WizardEmptyState({ conflicts, onRelax }: WizardEmptyStateProps) 
             <ConflictHead>⚠ 서로 충돌하는 조건</ConflictHead>
             <ConflictList>
               {conflicts.map((c, index) => (
-                <ConflictItem key={index}>· {c.label}</ConflictItem>
+                <ConflictItem key={index}>
+                  · {c.label}
+                  {c.courses && c.courses.length > 0 && (
+                    <ConflictCourseList>
+                      {c.courses.map((course, courseIndex) => (
+                        <ConflictCourseRow key={courseIndex}>
+                          <ConflictCourse>
+                            {course.title} ({formatCourseMeta(course)})
+                          </ConflictCourse>
+                          <ConflictCourseActions>
+                            {onReplaceWishlistCourse && (
+                              <ConflictCourseRemoveButton
+                                type="button"
+                                onClick={() =>
+                                  onReplaceWishlistCourse(course)
+                                }
+                              >
+                                교체
+                              </ConflictCourseRemoveButton>
+                            )}
+                            {onRemoveWishlistCourse && (
+                              <ConflictCourseRemoveButton
+                                type="button"
+                                onClick={() =>
+                                  onRemoveWishlistCourse(course.subjectNumber)
+                                }
+                              >
+                                빼기
+                              </ConflictCourseRemoveButton>
+                            )}
+                          </ConflictCourseActions>
+                        </ConflictCourseRow>
+                      ))}
+                    </ConflictCourseList>
+                  )}
+                </ConflictItem>
               ))}
             </ConflictList>
             <ConflictFootnote>이 조건들을 동시에 만족하는 조합이 없어요.</ConflictFootnote>
@@ -141,9 +192,49 @@ const ConflictList = styled.div`
   gap: 8px;
 `;
 
-const ConflictItem = styled.span`
+const ConflictItem = styled.div`
   font-size: 13px;
   line-height: 20px;
+`;
+
+const ConflictCourseList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+  padding-left: 12px;
+`;
+
+const ConflictCourseRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const ConflictCourseActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+`;
+
+const ConflictCourse = styled.span`
+  font-size: 12px;
+  line-height: 18px;
+  word-break: break-all;
+`;
+
+const ConflictCourseRemoveButton = styled.button`
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #ffffff);
+  color: var(--text-secondary, #4e5968);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
 `;
 
 const ConflictFootnote = styled.span`

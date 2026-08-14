@@ -1,8 +1,8 @@
-import React, { ReactNode, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
+import React, { ReactNode } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import CapsuleButton, { CapsuleButtonVariant } from "./CapsuleButton";
-import { backHandler } from "@/utils/backHandler";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -39,105 +39,67 @@ export default function Modal({
   secondaryButton,
   closeOnOverlayClick = true,
 }: ModalProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  useSheetBackHandler(isOpen, onClose);
 
-  // ESC 키 클릭 시 닫기, 스크롤 차단 및 뒤로가기 가로채기 효과
-  useEffect(() => {
-    if (!isOpen) return;
-
-    // 모달 오픈 시 body 스크롤 방지
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    const handleBack = () => {
-      onClose();
-      return true; // 뒤로가기 가로채서 모달만 닫음
-    };
-    backHandler.pushHandler(handleBack);
-
-    return () => {
-      document.body.style.overflow = originalStyle;
-      window.removeEventListener("keydown", handleKeyDown);
-      backHandler.popHandler(handleBack);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (closeOnOverlayClick && containerRef.current && !containerRef.current.contains(e.target as Node)) {
-      onClose();
-    }
-  };
-
-  const handleStopPropagation = (e: React.SyntheticEvent) => {
-    e.stopPropagation();
-  };
-
-  return createPortal(
-    <ModalOverlay
-      onClick={handleOverlayClick}
-      onPointerDown={handleStopPropagation}
-      onMouseDown={handleStopPropagation}
-      onTouchStart={handleStopPropagation}
+  return (
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <ModalContainer
-        ref={containerRef}
-        onClick={handleStopPropagation}
-        onPointerDown={handleStopPropagation}
-        onMouseDown={handleStopPropagation}
-        onTouchStart={handleStopPropagation}
-      >
-        <HeaderContainer>
-          <ModalTitle>{title}</ModalTitle>
-          {description && (
-            <ModalDescription>
-              {description}
-            </ModalDescription>
+      <Dialog.Portal>
+        <ModalOverlay />
+        <ModalContainer
+          onPointerDownOutside={(e) => {
+            if (!closeOnOverlayClick) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <HeaderContainer>
+            <Dialog.Title asChild>
+              <ModalTitle>{title}</ModalTitle>
+            </Dialog.Title>
+            {description && (
+              <Dialog.Description asChild>
+                <ModalDescription>{description}</ModalDescription>
+              </Dialog.Description>
+            )}
+          </HeaderContainer>
+
+          {children && <ModalSlot>{children}</ModalSlot>}
+
+          {(primaryButton || secondaryButton) && (
+            <ButtonContainer>
+              {secondaryButton && (
+                <ModalButton
+                  variant={secondaryButton.variant || "secondary"}
+                  onClick={secondaryButton.onClick}
+                  disabled={secondaryButton.disabled}
+                  fullWidth={!primaryButton}
+                  style={secondaryButton.style}
+                >
+                  {secondaryButton.text}
+                </ModalButton>
+              )}
+              {primaryButton && (
+                <ModalButton
+                  variant={primaryButton.variant || "brand"}
+                  onClick={primaryButton.onClick}
+                  disabled={primaryButton.disabled}
+                  loading={primaryButton.loading}
+                  fullWidth={!secondaryButton}
+                  style={primaryButton.style}
+                >
+                  {primaryButton.text}
+                </ModalButton>
+              )}
+            </ButtonContainer>
           )}
-        </HeaderContainer>
-
-        {children && <ModalSlot>{children}</ModalSlot>}
-
-        {(primaryButton || secondaryButton) && (
-          <ButtonContainer>
-            {secondaryButton && (
-              <ModalButton
-                variant={secondaryButton.variant || "secondary"}
-                onClick={secondaryButton.onClick}
-                disabled={secondaryButton.disabled}
-                fullWidth={!primaryButton}
-                style={secondaryButton.style}
-              >
-                {secondaryButton.text}
-              </ModalButton>
-            )}
-            {primaryButton && (
-              <ModalButton
-                variant={primaryButton.variant || "brand"}
-                onClick={primaryButton.onClick}
-                disabled={primaryButton.disabled}
-                loading={primaryButton.loading}
-                fullWidth={!secondaryButton}
-                style={primaryButton.style}
-              >
-                {primaryButton.text}
-              </ModalButton>
-            )}
-          </ButtonContainer>
-        )}
-      </ModalContainer>
-    </ModalOverlay>,
-    document.body
+        </ModalContainer>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -149,33 +111,32 @@ const fadeIn = keyframes`
 const scaleUp = keyframes`
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: translate(-50%, -50%) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 `;
 
-const ModalOverlay = styled.div`
+const ModalOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   background-color: var(--bg-dim, rgba(0, 0, 0, 0.2));
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px;
-  box-sizing: border-box;
   animation: ${fadeIn} 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 `;
 
-const ModalContainer = styled.div`
+const ModalContainer = styled(Dialog.Content)`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: var(--bg-base, #ffffff);
   border-radius: 32px;
-  width: 100%;
+  width: calc(100% - 32px);
   max-width: 328px;
   padding: 20px 16px 16px 16px;
   box-sizing: border-box;
@@ -183,8 +144,9 @@ const ModalContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
+  z-index: 10000;
+  outline: none;
   animation: ${scaleUp} 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  pointer-events: auto;
 `;
 
 const HeaderContainer = styled.div`

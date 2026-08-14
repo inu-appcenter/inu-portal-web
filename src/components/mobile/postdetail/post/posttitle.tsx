@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import eyeImg from "@/resources/assets/posts/eye.svg";
-import PostUtilContainer from "../../../../containers/mobile/postdetail/PostUtilContainer.tsx";
+import { Eye } from "lucide-react";
+import { formatTimeAgo } from "@/utils/date";
 
 interface PostTitleProps {
   id: number;
@@ -13,124 +13,115 @@ interface PostTitleProps {
   scrap?: number;
   isScraped?: boolean;
   memberId?: number | null;
-  onWriterClick?: (id: number) => void;
+  fireId?: number | null;
+  replyCount?: number;
 }
 
 export default function PostTitle({
-  id,
   title,
   createDate,
   view,
   writer,
-  like,
-  isLiked,
-  scrap,
-  isScraped,
-  memberId,
-  onWriterClick,
+  fireId = 1,
 }: PostTitleProps) {
-  // const token = useSelector((state: any) => state.user.token);
-  return (
-    <>
-      <PostTitleWrapper>
-        {title}
-        {like !== undefined &&
-        isLiked !== undefined &&
-        scrap !== undefined &&
-        isScraped !== undefined ? (
-          <PostUtilContainer
-            id={id}
-            like={like}
-            isLiked={isLiked}
-            scrap={scrap}
-            isScraped={isScraped}
-          />
-        ) : null}
-      </PostTitleWrapper>
-      <Line />
+  const profileImgUrl = fireId
+    ? `https://portal.inuappcenter.kr/images/profile/${fireId}`
+    : "https://portal.inuappcenter.kr/images/profile/1";
 
-      <div className="m-PostInfo" key={id}>
-        <PostInfo>
-          <div className="postinfo1">
-            <span className="infoText">{createDate}</span>
-          </div>
-          <div className="postinfo2">
-            <img src={eyeImg} />
-            <span className="viewInfo">{view}</span>
-            <span
-              className="m-writerInfo"
-              onClick={() => {
-                if (memberId && onWriterClick) {
-                  onWriterClick(memberId);
-                }
-              }}
-              style={{ cursor: memberId ? "pointer" : "default" }}
-            >
-              {writer || "총학생회"}
-            </span>
-          </div>
-        </PostInfo>
-      </div>
-    </>
+  return (
+    <HeaderContainer>
+      <TitleText>{title}</TitleText>
+
+      <AuthorRowContainer>
+        <AuthorInfoLeft>
+          <AvatarImg src={profileImgUrl} alt={writer || "작성자"} />
+          <AuthorDetailColumn>
+            <AuthorName>{writer || "익명"}</AuthorName>
+            <DateText>{formatTimeAgo(createDate)}</DateText>
+          </AuthorDetailColumn>
+        </AuthorInfoLeft>
+
+        {view !== undefined && (
+          <ViewCountRow>
+            <Eye size={16} color="#8B95A1" />
+            <span>{view}</span>
+          </ViewCountRow>
+        )}
+      </AuthorRowContainer>
+    </HeaderContainer>
   );
 }
 
-const PostTitleWrapper = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 20px;
-  text-align: left;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-
+const HeaderContainer = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
-  justify-content: space-between;
 `;
-const Line = styled.div`
-  border-top: 1px solid #ccc; /* 1픽셀 두께의 실선 구분선, 색상은 회색 */
+
+const TitleText = styled.h1`
+  font-family: Pretendard, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: -0.2px;
+  color: var(--text-secondary, #333d4b);
+  word-break: break-word;
+  margin: 0;
 `;
-const PostInfo = styled.div`
+
+const AuthorRowContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+`;
+
+const AuthorInfoLeft = styled.div`
+  display: flex;
   align-items: center;
-  margin-left: auto;
-  gap: 15px;
+  gap: 8px;
+`;
 
-  img {
-    margin-right: 5px;
-    top: 10px;
-    width: 16px;
-  }
+const AvatarImg = styled.img`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
 
-  .postinfo2 {
-    display: flex;
-    top: 10px;
-  }
+const AuthorDetailColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
 
-  .viewInfo {
-    margin-right: 10px;
-    font-size: 10px;
-    color: #969696;
-    display: flex;
-    position: relative;
-    top: 10px;
-  }
+const AuthorName = styled.div`
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary, #333d4b);
+`;
 
-  .m-writerInfo {
-    font-size: 14px;
-    color: #666;
-    display: flex;
-    align-items: center;
-    height: 31px;
-    width: auto;
-    border-radius: 100px;
-    padding-left: 10px;
-    padding-right: 10px;
-    font-size: 13px;
+const DateText = styled.div`
+  font-family: Pretendard, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--text-tertiary, #8b95a1);
+`;
+
+const ViewCountRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  span {
+    font-family: Pretendard, sans-serif;
+    font-size: 12px;
     font-weight: 400;
-    background: #ecf4ff;
+    line-height: 16px;
+    color: var(--text-tertiary, #8b95a1);
   }
 `;

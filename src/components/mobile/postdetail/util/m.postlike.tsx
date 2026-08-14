@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import heartEmptyImg from "@/resources/assets/posts/heart-empty.svg";
-import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
+import { Heart } from "lucide-react";
 import styled from "styled-components";
 import { ROUTES } from "@/constants/routes";
 import { putLike } from "@/apis/posts";
@@ -58,7 +57,6 @@ export default function PostLike({ id, like, isLikedProp }: PostLikeProps) {
       }
     } catch (error) {
       console.error("게시글 좋아요 여부 변경 실패", error);
-      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
         !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
@@ -80,12 +78,11 @@ export default function PostLike({ id, like, isLikedProp }: PostLikeProps) {
   };
 
   return (
-    <LikeContainer>
-      <img
-        className="UtilityImg"
-        src={isLikedState ? heartFilledImg : heartEmptyImg}
-        alt="heartImg"
-        onClick={handleLike}
+    <LikeContainer onClick={handleLike}>
+      <Heart
+        size={24}
+        color={isLikedState ? "#ef4444" : "#333D4B"}
+        fill={isLikedState ? "#ef4444" : "none"}
       />
       <span>{likeState}</span>
     </LikeContainer>
@@ -94,9 +91,16 @@ export default function PostLike({ id, like, isLikedProp }: PostLikeProps) {
 
 const LikeContainer = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
-  img.UtilityImg {
-    width: 23px;
+  height: 44px;
+  cursor: pointer;
+
+  span {
+    font-family: Pretendard, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-secondary, #333d4b);
   }
 `;

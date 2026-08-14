@@ -13,6 +13,7 @@ import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import Ripple from "@/components/common/Ripple";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { useUnreadNotification } from "@/hooks/useUnreadNotification";
 
 const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   const navigate = useNavigate();
@@ -53,12 +54,14 @@ const BellWrapper = styled.div`
 
 const Badge = styled.div`
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
   width: 8px;
   height: 8px;
   background-color: #ffd60a;
   border-radius: 50%;
+  pointer-events: none;
 `;
 
 interface MobileHeaderProps {
@@ -87,6 +90,8 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
     } = useHeaderConfig(targetPath);
 
     const navigate = useCustomNavigate();
+    const { hasUnreadNotification } = useUnreadNotification();
+    const hasMenuItems = (menuItems?.length ?? 0) > 0;
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -144,20 +149,20 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
             </TitleArea>
           )}
 
-          {(showAlarm || menuItems || rightArea) && (
+          {(showAlarm || hasMenuItems || rightArea) && (
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
               $isCircle={
                 rightAreaNotCircle
                   ? false
-                  : [showAlarm, menuItems, rightArea].filter(Boolean).length ===
+                  : [showAlarm, hasMenuItems, rightArea].filter(Boolean).length ===
                     1
               }
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
-              {showAlarm && <NotificationBell hasNew={false} />}
-              {menuItems && <TopRightDropdownMenu items={menuItems} />}
+              {showAlarm && <NotificationBell hasNew={hasUnreadNotification} />}
+              {hasMenuItems && <TopRightDropdownMenu items={menuItems!} />}
             </IconBackgroundWrapper>
           )}
         </MainHeaderWrapper>
@@ -201,14 +206,14 @@ const MainHeaderWrapper = styled.div<{
   position: relative;
   z-index: 2;
   width: 100%;
-  height: calc(64px + env(safe-area-inset-top, 0px));
+  height: calc(64px + var(--native-safe-area-inset-top));
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
   pointer-events: none;
 
-  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-top: calc(12px + var(--native-safe-area-inset-top));
   padding-bottom: 8px;
   padding-left: ${({ $hasBack }) => ($hasBack ? "12px" : "20px")};
   padding-right: ${({ $hasBack }) => ($hasBack ? "16px" : "20px")};

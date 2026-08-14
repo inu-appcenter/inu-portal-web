@@ -11,6 +11,7 @@ export interface InputFieldProps extends Omit<
   value?: string;
   onChange?: (val: string) => void;
   rows?: number;
+  required?: boolean;
 }
 
 const InputField = forwardRef<
@@ -27,6 +28,7 @@ const InputField = forwardRef<
       onFocus,
       onBlur,
       rows = 3,
+      required,
       ...props
     },
     ref,
@@ -51,13 +53,32 @@ const InputField = forwardRef<
       }
     };
 
+    const renderLabelContent = () => {
+      if (typeof label === "string" && label.endsWith("*")) {
+        const baseLabel = label.slice(0, -1).trim();
+        return (
+          <>
+            {baseLabel} <RequiredAsterisk>*</RequiredAsterisk>
+          </>
+        );
+      }
+      if (required) {
+        return (
+          <>
+            {label} <RequiredAsterisk>*</RequiredAsterisk>
+          </>
+        );
+      }
+      return label;
+    };
+
     return (
       <Container
         $hasError={!!error}
         $isFocused={isFocused}
         className={props.className}
       >
-        <Label $hasError={!!error}>{label}</Label>
+        <Label $hasError={!!error}>{renderLabelContent()}</Label>
         {isTextArea ? (
           <StyledTextArea
             ref={ref as React.Ref<HTMLTextAreaElement>}
@@ -132,6 +153,12 @@ const Label = styled.span<{ $hasError: boolean }>`
   font-style: normal;
   font-weight: 400;
   line-height: 16px;
+`;
+
+const RequiredAsterisk = styled.span`
+  color: var(--text-error, #ef4444);
+  font-weight: 600;
+  margin-left: 2px;
 `;
 
 const StyledInput = styled.input`

@@ -54,6 +54,23 @@ export const putMemberDepartment = async (
   return response.data;
 };
 
+// 학교 강좌 데이터 기반 회원 학과 수정
+export const patchSchoolDepartment = async (
+  departmentCode: string,
+): Promise<ApiResponse<UserInfoInput>> => {
+  const normalizedDepartmentCode = departmentCode.trim();
+
+  if (!normalizedDepartmentCode) {
+    throw new Error("Department is required.");
+  }
+
+  const response = await tokenInstance.patch<ApiResponse<UserInfoInput>>(
+    "/api/members/school-department",
+    { departmentCode: normalizedDepartmentCode },
+  );
+  return response.data;
+};
+
 // 회원 삭제
 export const deleteMembers = async (): Promise<ApiResponse<number>> => {
   const response =
@@ -134,6 +151,24 @@ export const getAlerts = async (
   const response = await tokenInstance.get<
     ApiResponse<Pagination<Notification[]>>
   >("/api/tokens", { params });
+  return response.data;
+};
+
+// 단건 알림 읽음 처리
+export const readNotification = async (
+  memberFcmMessageId: number,
+): Promise<ApiResponse<null>> => {
+  const response = await tokenInstance.patch<ApiResponse<null>>(
+    `/api/tokens/notifications/${memberFcmMessageId}/read`,
+  );
+  return response.data;
+};
+
+// 안 읽은 알림 존재 여부 확인
+export const getUnreadStatus = async (): Promise<ApiResponse<boolean>> => {
+  const response = await tokenInstance.get<ApiResponse<boolean>>(
+    "/api/tokens/unread-status",
+  );
   return response.data;
 };
 

@@ -5,7 +5,7 @@ import { Calendar, Activity, Zap, BarChart3 } from "lucide-react";
 
 import useUserStore from "@/stores/useUserStore.ts";
 import { getApiLogs } from "@/apis/admin";
-import { ApiLogData } from "@/types/admin";
+import { ApiLogData, isAdminUser } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
@@ -40,7 +40,7 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
       navigate(ROUTES.HOME, { replace: true });
       return;
     }
-    if (tokenInfo.accessToken && userInfo.role && userInfo.role !== "admin") {
+    if (tokenInfo.accessToken && userInfo.role && !isAdminUser(userInfo.role)) {
       navigate(ROUTES.HOME, { replace: true });
     }
   }, [tokenInfo, userInfo, navigate]);

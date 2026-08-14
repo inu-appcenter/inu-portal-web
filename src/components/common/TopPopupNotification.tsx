@@ -15,7 +15,7 @@ const slideDown = keyframes`
 
 const NotificationWrapper = styled.div`
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  top: calc(var(--native-safe-area-inset-top) + 12px);
   left: 50%;
   z-index: 999999;
   width: calc(100% - 10px);

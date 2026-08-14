@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import TitleContentInput from "@/components/mobile/write/TitleContentInput";
-import PhotoUpload from "@/components/mobile/write/PhotoUpload";
-import AnonymousCheck from "@/components/mobile/write/AnonymousCheck";
+import WriteBottomBar from "@/components/mobile/write/WriteBottomBar";
 import { useEffect, useState } from "react";
 import { getPostDetail, postPost, putPost } from "@/apis/posts";
 import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
@@ -10,6 +9,9 @@ import { useResetWriteStore } from "@/reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
 import useAppStateStore from "@/stores/useAppStateStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { X } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   category: string;
@@ -18,11 +20,12 @@ interface Props {
 
 export default function WriteForm({ category, setCategory }: Props) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { id: routeId } = useParams<{ id?: string }>();
   const postId = routeId ? Number(routeId) : 0;
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
-  const [anonymous, setAnonymous] = useState<boolean>(false);
+  const [anonymous, setAnonymous] = useState<boolean>(true);
   const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const triggerResetTips = useResetTipsStore((state) => state.triggerReset);
@@ -61,13 +64,11 @@ export default function WriteForm({ category, setCategory }: Props) {
       } else {
         setTitle("");
         setContent("");
-        setCategory("");
-        setAnonymous(false);
+        setAnonymous(true);
         setImages([]);
       }
     } catch (error) {
       console.error("게시글 가져오기 실패", error);
-      // refreshError가 아닌 경우 처리
       if (
         axios.isAxiosError(error) &&
         !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
@@ -127,12 +128,12 @@ export default function WriteForm({ category, setCategory }: Props) {
     if (postId) {
       try {
         await putPost(postId, title, content, category, anonymous, images);
+        await queryClient.invalidateQueries({ queryKey: ["posts"] });
         triggerResetTips();
         triggerResetWrite();
         navigate(-1);
       } catch (error) {
         console.error("게시글 수정 실패", error);
-        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
           !(error as AxiosError & { isRefreshError?: boolean })
@@ -162,12 +163,12 @@ export default function WriteForm({ category, setCategory }: Props) {
           images,
         );
         mixpanelTrack.boardInteraction("Write", "TIPS", category);
+        await queryClient.invalidateQueries({ queryKey: ["posts"] });
         triggerResetTips();
         triggerResetWrite();
-        navigate(`/postdetail?id=${response.data}`, { replace: true });
+        navigate(ROUTES.BOARD.TIPS_DETAIL(response.data), { replace: true });
       } catch (error) {
         console.error("게시글 등록 실패", error);
-        // refreshError가 아닌 경우 처리
         if (
           axios.isAxiosError(error) &&
           !(error as AxiosError & { isRefreshError?: boolean })
@@ -202,21 +203,31 @@ export default function WriteForm({ category, setCategory }: Props) {
         content={content}
         onContentChange={(value: string) => setContent(value)}
       />
-      <PhotoUpload
-        images={images}
+
+      {images.length > 0 && (
+        <ImagePreviewRow>
+          {images.map((image, index) => (
+            <ThumbnailContainer key={index}>
+              <img src={URL.createObjectURL(image)} alt={`preview ${index}`} />
+              <RemoveImageButton
+                onClick={() => handleImageRemove(index)}
+                type="button"
+              >
+                <X size={12} color="#FFF" />
+              </RemoveImageButton>
+            </ThumbnailContainer>
+          ))}
+        </ImagePreviewRow>
+      )}
+
+      <WriteBottomBar
+        anonymous={anonymous}
+        onAnonymousChange={(checked) => setAnonymous(checked)}
         onImageChange={handleImageUpload}
-        onImageRemove={handleImageRemove}
+        onSubmit={handleSubmit}
+        loading={loading}
+        imageCount={images.length}
       />
-      <AnonymousCheck
-        checked={anonymous}
-        onChange={(checked: boolean) => setAnonymous(checked)}
-      />
-      <UploadButton $disabled={loading} onClick={handleSubmit}>
-        {loading ? "업로드 중..." : "업로드"}
-      </UploadButton>
-      <Desc>
-        부적절하거나 불쾌감을 줄 수 있는 컨텐츠는 제재를 받을 수 있습니다.
-      </Desc>
     </WriteFormWrapper>
   );
 }
@@ -226,31 +237,47 @@ const WriteFormWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  padding-bottom: 70px;
+  box-sizing: border-box;
 `;
 
-const UploadButton = styled.button<{ $disabled: boolean }>`
-  height: 48px;
+const ImagePreviewRow = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  border: none; /* border 제거 */
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-  background: ${({ $disabled }) => ($disabled ? "#AAA" : "#3B6CE1")};
-  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
-  transition: background 0.15s ease-in-out;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 0 16px;
+  width: 100%;
+`;
 
-  /* 모바일 터치 효과 */
-  &:active {
-    background: ${({ $disabled }) => ($disabled ? "#AAA" : "#2F54B2")};
+const ThumbnailContainer = styled.div`
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-default, #e5e8eb);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 `;
 
-const Desc = styled.span`
-  color: gray;
-  font-size: 10px;
-  text-align: center;
+const RemoveImageButton = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
 `;

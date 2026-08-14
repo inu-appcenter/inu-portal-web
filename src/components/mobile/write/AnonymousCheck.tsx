@@ -32,18 +32,18 @@ export default function AnonymousCheck({
 const AnonymousCheckWrapper = styled.div`
   display: flex;
   align-items: center;
-  height: 22px;
-  gap: 8px;
+  height: 24px;
+  gap: 6px;
+  cursor: pointer;
 `;
 
 const CheckboxImg = styled.img`
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 `;
 
 const CheckboxText = styled.div`
-  font-size: 16px;
-  font-weight: 400;
-  text-align: center;
-  color: #9fa3a6;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary, #333d4b);
 `;

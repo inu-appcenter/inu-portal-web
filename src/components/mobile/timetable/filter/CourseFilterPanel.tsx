@@ -12,7 +12,9 @@ import {
   CREDIT_OPTIONS,
   DEFAULT_FILTERS,
   GRADE_OPTIONS,
+  ISU_FIELD_OPTIONS,
   MAJOR_CATEGORIES,
+  ONLINE_TYPE_OPTIONS,
   PINNED_MAJORS_STORAGE_KEY,
   SORT_OPTIONS,
   SUB_MAJORS,
@@ -81,10 +83,16 @@ const CourseFilterPanel = ({
   });
 
   useEffect(() => {
-    if (hasStoredPinnedMajorsRef.current || !userDepartment.trim()) return;
+    if (!userDepartment.trim()) return;
     setPinnedMajors((prev) => {
       const fallbackDefault = getDefaultPinnedMajors("");
-      if (JSON.stringify(prev) !== JSON.stringify(fallbackDefault)) return prev;
+      const isUnchangedFallback =
+        JSON.stringify(prev) === JSON.stringify(fallbackDefault);
+
+      // 저장값이 없거나 과거의 고정 기본값 그대로일 때만 로그인 사용자의
+      // 소속 단과대·학과를 기본 즐겨찾기로 설정한다. 사용자가 직접 변경한
+      // 즐겨찾기 목록은 덮어쓰지 않는다.
+      if (hasStoredPinnedMajorsRef.current && !isUnchangedFallback) return prev;
       return getDefaultPinnedMajors(userDepartment);
     });
   }, [userDepartment]);
@@ -391,7 +399,7 @@ const CourseFilterPanel = ({
             >
               <CheckboxWrapper>
                 <CheckboxInput type="checkbox" checked={filters.grades.includes(g)} readOnly />
-                <OptionLabel>{g}학년</OptionLabel>
+                <OptionLabel>{g === "전학년" ? g : `${g}학년`}</OptionLabel>
               </CheckboxWrapper>
               <Ripple />
             </OptionItemRow>
@@ -426,6 +434,68 @@ const CourseFilterPanel = ({
     );
   }
 
+  if (view === "field") {
+    return (
+      <PanelScroll>
+        <OptionsCard>
+          {ISU_FIELD_OPTIONS.map((field) => (
+            <OptionItemRow
+              key={field}
+              onClick={() =>
+                onFiltersChange({
+                  ...filters,
+                  isuFields: toggleInList(filters.isuFields ?? [], field),
+                })
+              }
+            >
+              <CheckboxWrapper>
+                <CheckboxInput
+                  type="checkbox"
+                  checked={(filters.isuFields ?? []).includes(field)}
+                  readOnly
+                />
+                <OptionLabel>{field}</OptionLabel>
+              </CheckboxWrapper>
+              <Ripple />
+            </OptionItemRow>
+          ))}
+        </OptionsCard>
+        <PanelBottomSpacer />
+      </PanelScroll>
+    );
+  }
+
+  if (view === "online") {
+    return (
+      <PanelScroll>
+        <OptionsCard>
+          {ONLINE_TYPE_OPTIONS.map((ot) => (
+            <OptionItemRow
+              key={ot}
+              onClick={() =>
+                onFiltersChange({
+                  ...filters,
+                  onlineTypes: toggleInList(filters.onlineTypes ?? [], ot),
+                })
+              }
+            >
+              <CheckboxWrapper>
+                <CheckboxInput
+                  type="checkbox"
+                  checked={(filters.onlineTypes ?? []).includes(ot)}
+                  readOnly
+                />
+                <OptionLabel>{ot}</OptionLabel>
+              </CheckboxWrapper>
+              <Ripple />
+            </OptionItemRow>
+          ))}
+        </OptionsCard>
+        <PanelBottomSpacer />
+      </PanelScroll>
+    );
+  }
+
   // view === "credit"
   return (
     <PanelScroll>
@@ -439,7 +509,7 @@ const CourseFilterPanel = ({
           >
             <CheckboxWrapper>
               <CheckboxInput type="checkbox" checked={filters.credits.includes(c)} readOnly />
-              <OptionLabel>{c === 4 ? "4학점 이상" : `${c}학점`}</OptionLabel>
+              <OptionLabel>{c}학점</OptionLabel>
             </CheckboxWrapper>
             <Ripple />
           </OptionItemRow>

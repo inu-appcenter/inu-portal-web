@@ -6,6 +6,7 @@ import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
 import { MembersReplies } from "@/types/members";
 import { deleteReply } from "@/apis/replies";
 import axios, { AxiosError } from "axios";
+import { formatTimeAgo } from "@/utils/date";
 
 interface TipsCardContainerProps {
   posts: MembersReplies[];
@@ -85,7 +86,7 @@ export default function CardComment({
                 handleXButtonClick(p.id);
               }}
             />
-            <Date>{p.createDate}</Date>
+            <Date>{formatTimeAgo(p.createDate)}</Date>
             <Content>{p.content}</Content>
             <Title>
               제목 : {p.title}

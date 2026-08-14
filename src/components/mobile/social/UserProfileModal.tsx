@@ -31,6 +31,7 @@ import findTitleOrCode from "@/utils/findTitleOrCode";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
 import { blockUser } from "@/apis/blocks";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import {
   kickMember,
   delegateOwner,
@@ -359,6 +360,7 @@ export default function UserProfileModal({
   // memberId만 있고 chat/friend context가 없을 때 = 내 프로필
   const isSelfProfile = !!memberId && !isChatContext && !isFriendContext;
   const isConfirmModalOpen = deleteConfirmOpen || blockConfirmOpen || isAliasModalOpen;
+  useSheetBackHandler(isOpen, () => onOpenChange(false));
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
@@ -695,7 +697,9 @@ export default function UserProfileModal({
                       )}
                     </NicknameArea>
                     <SubInfo>
-                      {profile.maskedStudentId && profile.maskedStudentId.length >= 2 ? `${profile.maskedStudentId.substring(0, 2)}학번 · ` : ""}
+                      {profile.maskedStudentId && profile.maskedStudentId.length >= 4
+                        ? `${profile.maskedStudentId.slice(2, 4)}학번 · `
+                        : ""}
                       {isMe ? profile.department : findTitleOrCode(profile.department)}
                     </SubInfo>
                   </UserInfoArea>

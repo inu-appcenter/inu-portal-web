@@ -21,6 +21,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
 import { getMemberLogs, getApiLogs } from "@/apis/admin";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { isAdminUser } from "@/types/admin";
 
 const MobileAdminPage = () => {
   const navigate = useNavigate();
@@ -106,7 +107,7 @@ const MobileAdminPage = () => {
       return;
     }
 
-    if (tokenInfo.accessToken && userInfo.role && userInfo.role !== "admin") {
+    if (tokenInfo.accessToken && userInfo.role && !isAdminUser(userInfo.role)) {
       navigate(ROUTES.HOME, { replace: true });
     }
   }, [navigate, tokenInfo.accessToken, userInfo.role]);
