@@ -223,8 +223,8 @@ const TimetableAiEvaluationBubble = ({
 
               {/* 말풍선 본문 */}
               <BubbleBody ref={contentBodyRef} onScroll={handleScroll}>
-                {/* 1. 로딩 상태 */}
-                {(isLoading || isCacheLoading) && !displayText && (
+                {/* 1. 로딩 상태: 캐시 확인 중이거나, AI 스트리밍 요청 후 첫 텍스트 도착 전 */}
+                {(isLoading || isCacheLoading || isStreaming) && !displayText && (
                   <LoadingStateContainer>
                     <ScanningAvatarWrapper>
                       <ScanningAvatar src={ChatBulButtonImg} alt="분석 중" />
@@ -298,10 +298,13 @@ const TimetableAiEvaluationBubble = ({
                 )}
 
                 {/* 4. 초기 미분석 상태 */}
-                {!isLoading && !isCacheLoading && !error && !displayText && (
+                {!isLoading && !isCacheLoading && !isStreaming && !error && !displayText && (
                   <EmptyStateContainer>
                     <p>아직 평가를 받지 않았어!</p>
-                    <StartButton onClick={() => startEvaluation(false)}>
+                    <StartButton
+                      onClick={() => startEvaluation(false)}
+                      disabled={isLoading || isStreaming}
+                    >
                       <Sparkles size={15} />
                       시간표 평가받기
                     </StartButton>

@@ -44,6 +44,7 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
   const startEvaluation = useCallback(
     async (forceRefresh = false) => {
       if (!timetableId) return;
+      if (isStreaming || isLoading) return; // 중복 요청 방지
 
       // 기존 요청이 있으면 취소
       if (abortControllerRef.current) {
@@ -60,7 +61,6 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
         timetableId,
         {
           onStart: (data) => {
-            setIsLoading(false);
             setIsCached(data.isCached);
             if (data.regenerateCount !== undefined) {
               setRegenerateCount(data.regenerateCount);
