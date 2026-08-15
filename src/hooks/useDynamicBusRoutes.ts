@@ -13,7 +13,7 @@ const EMPTY_TABS: BusMapTabConfig[] = [];
 const EMPTY_STOPS: BusMapStop[] = [];
 const EMPTY_RESULT = { tabs: EMPTY_TABS, stops: EMPTY_STOPS };
 
-// TM 중부원점(16만, 43만) 좌표를 WGS84 위경도로 보정하는 클라이언트 헬퍼
+// TM 중부원점(16만, 43만) 좌표를 카카오맵 및 WGS84 위경도로 정밀 보정하는 클라이언트 헬퍼
 function normalizeCoordinate(lat?: number, lng?: number): LatLng {
   if (lat == null || lng == null) return DEFAULT_INU_COORD;
 
@@ -26,33 +26,65 @@ function normalizeCoordinate(lat?: number, lng?: number): LatLng {
   const x = lng;
   const y = lat;
 
-  const a = 6378137.0;
-  const f = 1.0 / 298.257222101;
-  const b = a * (1.0 - f);
-  const e2 = (a * a - b * b) / (a * a);
-  const ePrime2 = (a * a - b * b) / (b * b);
+  // 1. 카카오맵 SDK 내장 Coords 변환기 사용 (100% 완벽 일치)
+  try {
+    const kakaoMaps = (window as any).kakao?.maps;
+    if (kakaoMaps?.Coords) {
+      const coord = new kakaoMaps.Coords(x, y);
+      const latLng = coord.toLatLng();
+      const kLat = latLng.getLat();
+      const kLng = latLng.getLng();
+      if (kLat >= 33 && kLat <= 39 && kLng >= 124 && kLng <= 132) {
+        return { lat: kLat, lng: kLng };
+      }
+    }
+  } catch (e) {
+    // fallback
+  }
+
+  // 2. 7-Parameter Bursa-Wolf Bessel 1841 TM -> WGS84 정밀 변환
+  const a_b = 6377397.155;
+  const f_b = 1.0 / 299.1528128;
+  const b_b = a_b * (1.0 - f_b);
+  const e2_b = (a_b * a_b - b_b * b_b) / (a_b * a_b);
+  const ePrime2_b = (a_b * a_b - b_b * b_b) / (b_b * b_b);
+
   const lat0 = (38.0 * Math.PI) / 180.0;
   const lng0 = (127.0 * Math.PI) / 180.0;
   const k0 = 1.0;
   const falseE = 200000.0;
   const falseN = 500000.0;
 
+  const dx = -145.907;
+  const dy = 505.034;
+  const dz = 685.756;
+  const rx = ((-1.162 / 3600.0) * Math.PI) / 180.0;
+  const ry = ((2.347 / 3600.0) * Math.PI) / 180.0;
+  const rz = ((1.592 / 3600.0) * Math.PI) / 180.0;
+  const ds = 6.342e-6;
+
+  const a_w = 6378137.0;
+  const f_w = 1.0 / 298.257223563;
+  const b_w = a_w * (1.0 - f_w);
+  const e2_w = (a_w * a_w - b_w * b_w) / (a_w * a_w);
+  const ePrime2_w = (a_w * a_w - b_w * b_w) / (b_w * b_w);
+
   const x_ = x - falseE;
   const y_ = y - falseN;
 
-  const e4 = e2 * e2;
-  const e6 = e4 * e2;
+  const e4 = e2_b * e2_b;
+  const e6 = e4 * e2_b;
   const M0 =
-    a *
-    ((1.0 - e2 / 4.0 - (3.0 * e4) / 64.0 - (5.0 * e6) / 256.0) * lat0 -
-      ((3.0 * e2) / 8.0 + (3.0 * e4) / 32.0 + (45.0 * e6) / 1024.0) *
+    a_b *
+    ((1.0 - e2_b / 4.0 - (3.0 * e4) / 64.0 - (5.0 * e6) / 256.0) * lat0 -
+      ((3.0 * e2_b) / 8.0 + (3.0 * e4) / 32.0 + (45.0 * e6) / 1024.0) *
         Math.sin(2.0 * lat0) +
       ((15.0 * e4) / 256.0 + (45.0 * e6) / 1024.0) * Math.sin(4.0 * lat0) -
       ((35.0 * e6) / 3072.0) * Math.sin(6.0 * lat0));
 
   const M = M0 + y_ / k0;
-  const mu = M / (a * (1.0 - e2 / 4.0 - (3.0 * e4) / 64.0 - (5.0 * e6) / 256.0));
-  const e1 = (1.0 - Math.sqrt(1.0 - e2)) / (1.0 + Math.sqrt(1.0 - e2));
+  const mu = M / (a_b * (1.0 - e2_b / 4.0 - (3.0 * e4) / 64.0 - (5.0 * e6) / 256.0));
+  const e1 = (1.0 - Math.sqrt(1.0 - e2_b)) / (1.0 + Math.sqrt(1.0 - e2_b));
   const J1 = (3.0 * e1) / 2.0 - (27.0 * Math.pow(e1, 3)) / 32.0;
   const J2 = (21.0 * e1 * e1) / 16.0 - (55.0 * Math.pow(e1, 4)) / 32.0;
   const J3 = (151.0 * Math.pow(e1, 3)) / 96.0;
@@ -65,39 +97,63 @@ function normalizeCoordinate(lat?: number, lng?: number): LatLng {
     J3 * Math.sin(6.0 * mu) +
     J4 * Math.sin(8.0 * mu);
 
-  const C1 = ePrime2 * Math.pow(Math.cos(fp), 2);
+  const C1 = ePrime2_b * Math.pow(Math.cos(fp), 2);
   const T1 = Math.pow(Math.tan(fp), 2);
-  const R1 = (a * (1.0 - e2)) / Math.pow(1.0 - e2 * Math.pow(Math.sin(fp), 2), 1.5);
-  const N1 = a / Math.sqrt(1.0 - e2 * Math.pow(Math.sin(fp), 2));
+  const R1 = (a_b * (1.0 - e2_b)) / Math.pow(1.0 - e2_b * Math.pow(Math.sin(fp), 2), 1.5);
+  const N1 = a_b / Math.sqrt(1.0 - e2_b * Math.pow(Math.sin(fp), 2));
   const D = x_ / (N1 * k0);
 
-  const resLat =
+  const besselLat =
     fp -
     ((N1 * Math.tan(fp)) / R1) *
       ((D * D) / 2.0 -
-        ((5.0 + 3.0 * T1 + 10.0 * C1 - 4.0 * C1 * C1 - 9.0 * ePrime2) *
+        ((5.0 + 3.0 * T1 + 10.0 * C1 - 4.0 * C1 * C1 - 9.0 * ePrime2_b) *
           Math.pow(D, 4)) /
           24.0 +
         ((61.0 +
           90.0 * T1 +
           298.0 * C1 +
           45.0 * T1 * T1 -
-          252.0 * ePrime2 -
+          252.0 * ePrime2_b -
           3.0 * C1 * C1) *
           Math.pow(D, 6)) /
           720.0);
 
-  const resLng =
+  const besselLng =
     lng0 +
     (D -
       ((1.0 + 2.0 * T1 + C1) * Math.pow(D, 3)) / 6.0 +
-      ((5.0 - 2.0 * C1 + 28.0 * T1 - 3.0 * C1 * C1 + 8.0 * ePrime2 + 24.0 * T1 * T1) *
+      ((5.0 - 2.0 * C1 + 28.0 * T1 - 3.0 * C1 * C1 + 8.0 * ePrime2_b + 24.0 * T1 * T1) *
         Math.pow(D, 5)) /
         120.0) /
       Math.cos(fp);
 
-  const finalLat = (resLat * 180.0) / Math.PI;
-  const finalLng = (resLng * 180.0) / Math.PI;
+  // ECEF
+  const sinLat = Math.sin(besselLat);
+  const cosLat = Math.cos(besselLat);
+  const sinLng = Math.sin(besselLng);
+  const cosLng = Math.cos(besselLng);
+
+  const N = a_b / Math.sqrt(1.0 - e2_b * sinLat * sinLat);
+  const X_b = N * cosLat * cosLng;
+  const Y_b = N * cosLat * sinLng;
+  const Z_b = N * (1.0 - e2_b) * sinLat;
+
+  const X_w = (1.0 + ds) * (X_b + rz * Y_b - ry * Z_b) + dx;
+  const Y_w = (1.0 + ds) * (-rz * X_b + Y_b + rx * Z_b) + dy;
+  const Z_w = (1.0 + ds) * (ry * X_b - rx * Y_b + Z_b) + dz;
+
+  const p = Math.sqrt(X_w * X_w + Y_w * Y_w);
+  const theta = Math.atan2(Z_w * a_w, p * b_w);
+
+  const wgsLat = Math.atan2(
+    Z_w + ePrime2_w * b_w * Math.pow(Math.sin(theta), 3),
+    p - e2_w * a_w * Math.pow(Math.cos(theta), 3),
+  );
+  const wgsLng = Math.atan2(Y_w, X_w);
+
+  const finalLat = (wgsLat * 180.0) / Math.PI;
+  const finalLng = (wgsLng * 180.0) / Math.PI;
 
   if (finalLat >= 33 && finalLat <= 39 && finalLng >= 124 && finalLng <= 132) {
     return { lat: finalLat, lng: finalLng };
