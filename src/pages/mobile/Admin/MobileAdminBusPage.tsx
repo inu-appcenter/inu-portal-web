@@ -2007,40 +2007,6 @@ const EndStopIdText = styled.span`
   border-radius: 4px;
 `;
 
-const RuleCardFooter = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background-color: #f8fafc;
-  border-top: 1px solid #f1f5f9;
-  font-size: 12px;
-`;
-
-const FooterLabel = styled.span`
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
-`;
-
-const KeywordTagsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-`;
-
-const KeywordChip = styled.span`
-  font-size: 11px;
-  color: #475569;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  padding: 2px 7px;
-  border-radius: 12px;
-  font-weight: 500;
-`;
-
 const AliasTag = styled.span`
   background-color: #ede9fe;
   color: #6d28d9;
