@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { X, Sparkles, AlertCircle } from "lucide-react";
+import { X, Sparkles, AlertCircle, Copy, Check, RefreshCw } from "lucide-react";
 import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
 import { useTimeTableEvaluation } from "@/hooks/useTimeTableEvaluation";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -18,6 +18,7 @@ const TimetableAiEvaluationBubble = ({
   hasEvents,
 }: TimetableAiEvaluationBubbleProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const contentBodyRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -56,6 +57,17 @@ const TimetableAiEvaluationBubble = ({
     if (isStreaming || isLoading) return;
     mixpanelTrack.timetableFeatureClicked("시간표 AI 재평가", "AI 평가 말풍선");
     startEvaluation(true);
+  };
+
+  const handleCopy = async () => {
+    if (!displayText) return;
+    try {
+      await navigator.clipboard.writeText(displayText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error("복사 실패:", e);
+    }
   };
 
   // 스트리밍 중일 때 최하단으로 자동 스크롤
@@ -216,6 +228,25 @@ const TimetableAiEvaluationBubble = ({
                     <TypingCursor>
                       <span />
                     </TypingCursor>
+                  )}
+
+                  {/* 하단 액션 버튼 (복사 & 다시 생성) */}
+                  {!isStreaming && !isLoading && (
+                    <MessageFooter>
+                      <ActionButton onClick={handleCopy} title="답변 복사">
+                        {copied ? (
+                          <Check size={12} color="#52c41a" />
+                        ) : (
+                          <Copy size={12} />
+                        )}
+                        <span>{copied ? "복사됨" : "복사"}</span>
+                      </ActionButton>
+
+                      <ActionButton onClick={handleRetry} title="다시 생성">
+                        <RefreshCw size={12} />
+                        <span>다시 생성</span>
+                      </ActionButton>
+                    </MessageFooter>
                   )}
                 </ContentArea>
               )}
@@ -580,6 +611,39 @@ const TypingCursor = styled.span`
     background: #ff5f15;
     animation: ${blink} 0.8s infinite;
     vertical-align: middle;
+  }
+`;
+
+const MessageFooter = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+`;
+
+const ActionButton = styled.button`
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: #8e8e93;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #1c1c1e;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 `;
 
