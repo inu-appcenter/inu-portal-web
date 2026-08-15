@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 
 interface CategoryOption {
   label: string;
