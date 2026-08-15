@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { X, Sparkles, RefreshCw, AlertCircle, Zap } from "lucide-react";
+import { X, Sparkles, AlertCircle } from "lucide-react";
 import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
 import { useTimeTableEvaluation } from "@/hooks/useTimeTableEvaluation";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -26,7 +26,6 @@ const TimetableAiEvaluationBubble = ({
     evaluationText,
     isStreaming,
     isLoading,
-    isCached,
     error,
     startEvaluation,
   } = useTimeTableEvaluation(timetableId);
@@ -53,7 +52,7 @@ const TimetableAiEvaluationBubble = ({
     }
   };
 
-  const handleRefresh = () => {
+  const handleRetry = () => {
     if (isStreaming || isLoading) return;
     mixpanelTrack.timetableFeatureClicked("시간표 AI 재평가", "AI 평가 말풍선");
     startEvaluation(true);
@@ -68,7 +67,6 @@ const TimetableAiEvaluationBubble = ({
 
   // 표시할 본문 결정 (실시간 스트리밍 텍스트 -> 캐시 데이터 순)
   const displayText = evaluationText || (cachedData?.content ?? "");
-  const isCurrentCached = Boolean(isCached || (cachedData && !evaluationText));
 
   // 간단한 마크다운 파서 렌더러
   const renderFormattedContent = (content: string) => {
@@ -78,7 +76,7 @@ const TimetableAiEvaluationBubble = ({
     return lines.map((line, idx) => {
       const trimmed = line.trim();
       if (!trimmed) {
-        return <div key={idx} style={{ height: "8px" }} />;
+        return <div key={idx} style={{ height: "6px" }} />;
       }
 
       // 강조 볼드체 처리 (**text** or `text`)
@@ -96,17 +94,28 @@ const TimetableAiEvaluationBubble = ({
         const headerText = trimmed.replace(/^#+\s*/, "");
         return (
           <SectionHeader key={idx}>
-            <Sparkles size={14} color="#FF5F15" />
+            <Sparkles size={13} color="#FF5F15" />
             <span>{headerText}</span>
           </SectionHeader>
         );
       }
 
-      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+      if (trimmed.startsWith("-") || trimmed.startsWith("*") || trimmed.startsWith("•")) {
+        const bulletText = line.replace(/^\s*[-*•]\s*/, "");
+        const formattedBulletParts = bulletText.split(/(\*\*.*?\*\*|`.*?`)/g).map((part, pIdx) => {
+          if (part.startsWith("**") && part.endsWith("**")) {
+            return <BoldText key={pIdx}>{part.slice(2, -2)}</BoldText>;
+          }
+          if (part.startsWith("`") && part.endsWith("`")) {
+            return <HighlightBadge key={pIdx}>{part.slice(1, -1)}</HighlightBadge>;
+          }
+          return part;
+        });
+
         return (
           <BulletItem key={idx}>
             <BulletDot />
-            <div>{formattedParts}</div>
+            <span>{formattedBulletParts}</span>
           </BulletItem>
         );
       }
@@ -116,24 +125,30 @@ const TimetableAiEvaluationBubble = ({
   };
 
   const bubbleVariants: Variants = {
-    hidden: { scale: 0.7, opacity: 0, y: 20 },
+    hidden: {
+      opacity: 0,
+      scale: 0.88,
+      y: 12,
+      transformOrigin: "bottom right",
+    },
     visible: {
-      scale: 1,
       opacity: 1,
+      scale: 1,
       y: 0,
+      transformOrigin: "bottom right",
       transition: {
         type: "spring",
-        stiffness: 400,
-        damping: 28,
-        mass: 0.8,
+        stiffness: 380,
+        damping: 26,
       },
     },
     exit: {
-      scale: 0.7,
       opacity: 0,
-      y: 15,
+      scale: 0.88,
+      y: 10,
+      transformOrigin: "bottom right",
       transition: {
-        duration: 0.18,
+        duration: 0.16,
         ease: "easeOut",
       },
     },
@@ -149,39 +164,19 @@ const TimetableAiEvaluationBubble = ({
             animate="visible"
             exit="exit"
           >
-            <BubbleHeader>
-              <HeaderLeft>
+            {/* 말풍선 상단 (자연스럽게 녹아든 헤더) */}
+            <BubbleTopBar>
+              <ProfileGroup>
                 <TorchAvatar src={ChatBulButtonImg} alt="횃불이" />
-                <TitleWrapper>
-                  <HeaderTitle>횃불이의 시간표 코칭</HeaderTitle>
-                  <HeaderSubtitle>{timetableName}</HeaderSubtitle>
-                </TitleWrapper>
-              </HeaderLeft>
+                <TorchName>횃불이의 시간표 평가 😎</TorchName>
+              </ProfileGroup>
 
-              <HeaderActions>
-                {isCurrentCached && !isStreaming && !isLoading && (
-                  <CacheTag title="기존에 분석된 시간표 평가 결과입니다">
-                    <Zap size={11} />
-                    <span>캐시됨</span>
-                  </CacheTag>
-                )}
-                <IconButton
-                  onClick={handleRefresh}
-                  disabled={isStreaming || isLoading}
-                  title="다시 평가받기"
-                  aria-label="다시 평가받기"
-                >
-                  <RefreshCw
-                    size={16}
-                    className={isStreaming || isLoading ? "spin" : ""}
-                  />
-                </IconButton>
-                <IconButton onClick={() => setIsOpen(false)} aria-label="닫기">
-                  <X size={18} />
-                </IconButton>
-              </HeaderActions>
-            </BubbleHeader>
+              <CloseButton onClick={() => setIsOpen(false)} aria-label="닫기">
+                <X size={17} />
+              </CloseButton>
+            </BubbleTopBar>
 
+            {/* 말풍선 본문 */}
             <BubbleBody ref={contentBodyRef}>
               {/* 1. 로딩 상태 */}
               {(isLoading || isCacheLoading) && !displayText && (
@@ -190,9 +185,9 @@ const TimetableAiEvaluationBubble = ({
                     <ScanningAvatar src={ChatBulButtonImg} alt="분석 중" />
                     <ScanningRadar />
                   </ScanningAvatarWrapper>
-                  <LoadingTitle>횃불이가 시간표 뜯어보는 중... 🔥</LoadingTitle>
+                  <LoadingTitle>시간표 뜯어보는 중... 🔥</LoadingTitle>
                   <LoadingDesc>
-                    공강 시간, 1교시, 점심시간까지 꼼꼼히 확인하고 있어요!
+                    공강 시간, 1교시, 점심시간까지 꼼꼼히 확인하고 있어!
                   </LoadingDesc>
                   <DotsLoader>
                     <span />
@@ -205,10 +200,9 @@ const TimetableAiEvaluationBubble = ({
               {/* 2. 에러 상태 */}
               {error && (
                 <ErrorContainer>
-                  <AlertCircle size={32} color="#FF3B30" />
+                  <AlertCircle size={28} color="#FF3B30" />
                   <ErrorMessage>{error}</ErrorMessage>
-                  <RetryButton onClick={handleRefresh}>
-                    <RefreshCw size={14} />
+                  <RetryButton onClick={handleRetry}>
                     다시 시도하기
                   </RetryButton>
                 </ErrorContainer>
@@ -229,10 +223,10 @@ const TimetableAiEvaluationBubble = ({
               {/* 4. 초기 미분석 상태 */}
               {!isLoading && !isCacheLoading && !error && !displayText && (
                 <EmptyStateContainer>
-                  <p>아직 평가를 받지 않았어요!</p>
+                  <p>아직 평가를 받지 않았어!</p>
                   <StartButton onClick={() => startEvaluation(false)}>
-                    <Sparkles size={16} />
-                    횃불이에게 시간표 평가받기
+                    <Sparkles size={15} />
+                    시간표 평가받기
                   </StartButton>
                 </EmptyStateContainer>
               )}
@@ -249,7 +243,7 @@ const TimetableAiEvaluationBubble = ({
         <AiButton
           onClick={handleToggle}
           whileTap={{ scale: 0.92 }}
-          animate={{ y: [0, -6, 0] }}
+          animate={{ y: [0, -5, 0] }}
           transition={{
             duration: 2.8,
             repeat: Infinity,
@@ -336,22 +330,21 @@ const AiButton = styled(motion.button)`
 
 const BubbleWrapper = styled(motion.div)`
   position: fixed;
-  bottom: 160px;
+  bottom: 154px;
   right: 16px;
   width: calc(100vw - 32px);
-  max-width: 360px;
-  max-height: 480px;
+  max-width: 340px;
+  max-height: 440px;
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 20px 20px 6px 20px;
   box-shadow:
-    0 20px 40px -10px rgba(0, 0, 0, 0.22),
-    0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 95, 21, 0.18);
+    0 16px 36px -8px rgba(0, 0, 0, 0.18),
+    0 3px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
   z-index: 1001;
-  overflow: hidden;
-  transform-origin: bottom right;
+  overflow: visible;
 
   @media (min-width: 1024px) {
     right: calc(50% - 600px + 16px);
@@ -360,122 +353,77 @@ const BubbleWrapper = styled(motion.div)`
 
 const BubbleTail = styled.div`
   position: absolute;
-  bottom: -10px;
-  right: 28px;
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid #ffffff;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.05));
+  bottom: -7px;
+  right: 18px;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  transform: rotate(45deg);
 `;
 
-const BubbleHeader = styled.div`
+const BubbleTopBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #fff7f2 0%, #fff1ea 100%);
-  border-bottom: 1px solid rgba(255, 95, 21, 0.1);
+  padding: 14px 16px 8px 16px;
 `;
 
-const HeaderLeft = styled.div`
+const ProfileGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 `;
 
 const TorchAvatar = styled.img`
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   object-fit: contain;
-  background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 `;
 
-const TitleWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const HeaderTitle = styled.span`
-  font-size: 15px;
+const TorchName = styled.span`
+  font-size: 14px;
   font-weight: 700;
   color: #1c1c1e;
 `;
 
-const HeaderSubtitle = styled.span`
-  font-size: 11px;
-  color: #8e8e93;
-  font-weight: 500;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const CacheTag = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: #eef2ff;
-  color: #4f46e5;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 6px;
-`;
-
-const IconButton = styled.button`
-  background: rgba(0, 0, 0, 0.05);
+const CloseButton = styled.button`
+  background: transparent;
   border: none;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #48484a;
+  color: #8e8e93;
   transition: all 0.15s;
+  padding: 0;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.05);
     color: #1c1c1e;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .spin {
-    animation: ${spin} 1s linear infinite;
   }
 `;
 
 const BubbleBody = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  font-size: 14px;
-  line-height: 1.65;
+  padding: 4px 16px 16px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
   color: #2c2c2e;
   word-break: break-word;
 
   &::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
   }
   &::-webkit-scrollbar-thumb {
     background: #e5e5ea;
-    border-radius: 4px;
+    border-radius: 3px;
   }
 `;
 
@@ -484,15 +432,15 @@ const LoadingStateContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 30px 10px;
+  padding: 24px 10px;
   text-align: center;
 `;
 
 const ScanningAvatarWrapper = styled.div`
   position: relative;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 12px;
 `;
 
 const ScanningAvatar = styled.img`
@@ -504,33 +452,33 @@ const ScanningAvatar = styled.img`
 
 const ScanningRadar = styled.div`
   position: absolute;
-  inset: -6px;
-  border: 2px dashed #ff5f15;
+  inset: -5px;
+  border: 1.5px dashed #ff5f15;
   border-radius: 50%;
-  animation: ${spin} 6s linear infinite;
+  animation: ${spin} 5s linear infinite;
 `;
 
 const LoadingTitle = styled.h4`
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #1c1c1e;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
 `;
 
 const LoadingDesc = styled.p`
-  font-size: 12px;
+  font-size: 11.5px;
   color: #8e8e93;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   line-height: 1.4;
 `;
 
 const DotsLoader = styled.div`
   display: flex;
-  gap: 6px;
+  gap: 5px;
 
   span {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     background: #ff5f15;
     border-radius: 50%;
     animation: ${pulse} 1.2s infinite ease-in-out;
@@ -549,25 +497,22 @@ const ErrorContainer = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 24px 10px;
+  padding: 20px 10px;
 `;
 
 const ErrorMessage = styled.p`
-  font-size: 13px;
+  font-size: 12.5px;
   color: #ff3b30;
-  margin: 12px 0 16px 0;
+  margin: 8px 0 12px 0;
 `;
 
 const RetryButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
   background: #ff3b30;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 `;
@@ -586,43 +531,42 @@ const HighlightBadge = styled.span`
   background: #fff3eb;
   color: #ea580c;
   font-weight: 700;
-  font-size: 13px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  border: 1px solid rgba(234, 88, 12, 0.2);
+  font-size: 12.5px;
+  padding: 1px 5px;
+  border-radius: 5px;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #ff5f15;
-  margin-top: 12px;
-  margin-bottom: 4px;
+  margin-top: 10px;
+  margin-bottom: 3px;
 `;
 
 const BulletItem = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  margin: 3px 0;
+  margin: 2px 0;
   line-height: 1.5;
 `;
 
 const BulletDot = styled.span`
-  width: 4px;
-  height: 4px;
+  width: 3.5px;
+  height: 3.5px;
   background: #ff5f15;
   border-radius: 50%;
-  margin-top: 8px;
+  margin-top: 7px;
   flex-shrink: 0;
 `;
 
 const Paragraph = styled.div`
-  margin: 4px 0;
-  line-height: 1.6;
+  margin: 3px 0;
+  line-height: 1.55;
 `;
 
 const TypingCursor = styled.span`
@@ -631,8 +575,8 @@ const TypingCursor = styled.span`
 
   span {
     display: inline-block;
-    width: 6px;
-    height: 14px;
+    width: 5px;
+    height: 13px;
     background: #ff5f15;
     animation: ${blink} 0.8s infinite;
     vertical-align: middle;
@@ -644,28 +588,28 @@ const EmptyStateContainer = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 30px 10px;
+  padding: 24px 10px;
 
   p {
-    font-size: 13px;
+    font-size: 12.5px;
     color: #8e8e93;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 `;
 
 const StartButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: linear-gradient(135deg, #ff5f15 0%, #ff3b30 100%);
   color: white;
   border: none;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 95, 21, 0.35);
+  box-shadow: 0 3px 10px rgba(255, 95, 21, 0.3);
   transition: transform 0.15s;
 
   &:active {
