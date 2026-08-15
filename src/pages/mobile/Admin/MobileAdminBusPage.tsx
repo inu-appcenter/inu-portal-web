@@ -192,23 +192,23 @@ export default function MobileAdminBusPage() {
     if (searchTargetType === "start") {
       setRuleForm((prev) => ({
         ...prev,
-        startBstopId: stop.bstopId,
-        startStopName: stop.bstopName,
-        startStopAlias: stop.stopAlias || prev.startStopAlias,
+        startBstopId: stop.bstopId || "",
+        startStopName: stop.bstopName || "",
+        startStopAlias: stop.stopAlias || prev.startStopAlias || "",
       }));
     } else if (searchTargetType === "end") {
       setRuleForm((prev) => ({
         ...prev,
-        endBstopId: stop.bstopId,
-        endStopName: stop.bstopName,
-        endStopAlias: stop.stopAlias || prev.endStopAlias,
+        endBstopId: stop.bstopId || "",
+        endBstopName: stop.bstopName || "",
+        endStopAlias: stop.stopAlias || prev.endStopAlias || "",
       }));
     } else if (searchTargetType === "alias") {
       setAliasForm((prev) => ({
         ...prev,
-        bstopId: stop.bstopId,
-        bstopName: stop.bstopName,
-        stopAlias: stop.stopAlias || "",
+        bstopId: stop.bstopId || "",
+        bstopName: stop.bstopName || "",
+        stopAlias: stop.stopAlias || prev.stopAlias || "",
       }));
     }
     setSearchModalOpen(false);
