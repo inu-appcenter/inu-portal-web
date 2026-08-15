@@ -42,6 +42,14 @@ export default function BusHistoryModal({
     defaultRouteNo || "ALL",
   );
 
+  // 모달이 열리거나 defaultRouteNo prop이 변경될 때 선택된 노선 동기화
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedRoute(defaultRouteNo || "ALL");
+      hasAutoScrolledRef.current = false;
+    }
+  }, [isOpen, defaultRouteNo]);
+
   // API 데이터 상태
   const [historyData, setHistoryData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -131,32 +139,22 @@ export default function BusHistoryModal({
     });
   }, [historyData, selectedRoute, validAvailableRoutes]);
 
-  // 현재 시간 기준 가장 빠른 다음 버스 인덱스 계산
+  // 현재 시간 기준 가장 빠른 다음 버스 인덱스 계산 (오늘 날짜 & 현재 시각 이후 도착 예정 버스가 있을 때만)
   const nextArrivalIndex = useMemo(() => {
-    if (filteredRecords.length === 0) {
+    if (selectedDate !== todayStr || filteredRecords.length === 0) {
       return -1;
     }
 
-    if (selectedDate === todayStr) {
-      // 오늘 날짜인 경우: 현재 시각 이후(arrivalTime >= nowTimeStr)의 첫 번째 도착 버스 찾기
-      const upcomingIdx = filteredRecords.findIndex((r: any) => {
-        const timeStr = r.arrivalTime
-          ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
-            r.arrivalTime.substring(11, 16)
-          : "";
-        return timeStr >= nowTimeStr;
-      });
+    // 현재 시각 이후(arrivalTime >= nowTimeStr)의 첫 번째 도착 버스 찾기
+    const upcomingIdx = filteredRecords.findIndex((r: any) => {
+      const timeStr = r.arrivalTime
+        ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
+          r.arrivalTime.substring(11, 16)
+        : "";
+      return timeStr >= nowTimeStr;
+    });
 
-      if (upcomingIdx !== -1) {
-        return upcomingIdx;
-      }
-
-      // 이미 막차가 지난 경우 마지막 버스 인덱스 선택
-      return filteredRecords.length - 1;
-    }
-
-    // 과거 날짜인 경우 첫 번째 인덱스
-    return 0;
+    return upcomingIdx; // 현재 시간 이후 버스가 없으면 -1 반환 (과거 버스에 강조 붙지 않음)
   }, [selectedDate, todayStr, filteredRecords, nowTimeStr]);
 
   useEffect(() => {
@@ -171,7 +169,6 @@ export default function BusHistoryModal({
       !isOpen ||
       loading ||
       filteredRecords.length === 0 ||
-      nextArrivalIndex === -1 ||
       hasAutoScrolledRef.current
     ) {
       return;
@@ -181,20 +178,28 @@ export default function BusHistoryModal({
       const container = listContainerRef.current;
       const target = targetItemRef.current;
 
-      if (container && target) {
+      if (container) {
         hasAutoScrolledRef.current = true;
-        const targetOffsetTop = target.offsetTop;
-        const scrollToY = Math.max(0, targetOffsetTop - 50);
-
-        container.scrollTo({
-          top: scrollToY,
-          behavior: "smooth",
-        });
+        if (target) {
+          // 다음 도착 예정 버스가 있는 경우 해당 위치로 스크롤
+          const targetOffsetTop = target.offsetTop;
+          const scrollToY = Math.max(0, targetOffsetTop - 50);
+          container.scrollTo({
+            top: scrollToY,
+            behavior: "smooth",
+          });
+        } else if (selectedDate === todayStr && nextArrivalIndex === -1) {
+          // 오늘 운행이 모두 종료된 경우 가장 최근 운행 기록(목록 맨 아래)으로 이동
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth",
+          });
+        }
       }
     }, 80);
 
     return () => clearTimeout(timer);
-  }, [isOpen, loading, filteredRecords, nextArrivalIndex]);
+  }, [isOpen, loading, filteredRecords, nextArrivalIndex, selectedDate, todayStr]);
 
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
