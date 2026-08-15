@@ -34,6 +34,12 @@ import {
   deleteAdminStopAlias,
 } from "@/apis/admin";
 
+export interface TargetEndStopItem {
+  bstopId: string;
+  bstopName: string;
+  stopAlias: string;
+}
+
 export default function MobileAdminBusPage() {
   const navigate = useNavigate();
   const { tokenInfo, userInfo } = useUserStore();
@@ -65,9 +71,7 @@ export default function MobileAdminBusPage() {
     startBstopId: "",
     startStopName: "",
     startStopAlias: "",
-    endBstopId: "",
-    endBstopName: "",
-    endStopAlias: "",
+    endStops: [] as TargetEndStopItem[],
     targetKeywords: "",
   });
 
@@ -117,7 +121,7 @@ export default function MobileAdminBusPage() {
     new Set([
       ...stopAliases.map((a) => a.stopAlias).filter(Boolean),
       ...targetRules.map((r) => r.startStopAlias).filter(Boolean),
-      ...targetRules.map((r) => r.endStopAlias).filter(Boolean),
+      ...targetRules.flatMap((r) => (r.endStopAlias || "").split(",")).map((s: string) => s.trim()).filter(Boolean),
       "인입",
       "지정단",
       "정문",
@@ -187,7 +191,7 @@ export default function MobileAdminBusPage() {
     setSearchModalOpen(true);
   };
 
-  // 검색된 정류장 선택 시 적용 (도착 정류장은 다중 선택 누적 지원)
+  // 검색된 정류장 선택 시 적용
   const handleSelectStop = (stop: any) => {
     if (searchTargetType === "start") {
       setRuleForm((prev) => ({
@@ -198,27 +202,20 @@ export default function MobileAdminBusPage() {
       }));
     } else if (searchTargetType === "end") {
       setRuleForm((prev) => {
-        const currentIds = prev.endBstopId
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
-        const currentNames = prev.endBstopName
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
-
-        if (!currentIds.includes(stop.bstopId)) {
-          currentIds.push(stop.bstopId);
+        const existing = prev.endStops.find((s) => s.bstopId === stop.bstopId);
+        if (existing) {
+          return prev;
         }
-        if (!currentNames.includes(stop.bstopName)) {
-          currentNames.push(stop.bstopName);
-        }
-
         return {
           ...prev,
-          endBstopId: currentIds.join(", "),
-          endBstopName: currentNames.join(", "),
-          endStopAlias: prev.endStopAlias || stop.stopAlias || "",
+          endStops: [
+            ...prev.endStops,
+            {
+              bstopId: stop.bstopId || "",
+              bstopName: stop.bstopName || "",
+              stopAlias: stop.stopAlias || "",
+            },
+          ],
         };
       });
     } else if (searchTargetType === "alias") {
@@ -230,6 +227,25 @@ export default function MobileAdminBusPage() {
       }));
     }
     setSearchModalOpen(false);
+  };
+
+  // 도착 정류장 별칭 수정 핸들러
+  const handleEndStopAliasChange = (index: number, newAlias: string) => {
+    setRuleForm((prev) => {
+      const updated = [...prev.endStops];
+      if (updated[index]) {
+        updated[index] = { ...updated[index], stopAlias: newAlias };
+      }
+      return { ...prev, endStops: updated };
+    });
+  };
+
+  // 도착 정류장 삭제 핸들러
+  const handleRemoveEndStop = (index: number) => {
+    setRuleForm((prev) => ({
+      ...prev,
+      endStops: prev.endStops.filter((_, i) => i !== index),
+    }));
   };
 
   // 탐색 룰 등록 및 수정
@@ -246,9 +262,9 @@ export default function MobileAdminBusPage() {
       startBstopId: ruleForm.startBstopId.trim(),
       startStopName: ruleForm.startStopName.trim(),
       startStopAlias: ruleForm.startStopAlias.trim() || undefined,
-      endBstopId: ruleForm.endBstopId.trim() || undefined,
-      endBstopName: ruleForm.endBstopName.trim() || undefined,
-      endStopAlias: ruleForm.endStopAlias.trim() || undefined,
+      endBstopId: ruleForm.endStops.map((s) => s.bstopId.trim()).filter(Boolean).join(", ") || undefined,
+      endBstopName: ruleForm.endStops.map((s) => s.bstopName.trim()).filter(Boolean).join(", ") || undefined,
+      endStopAlias: ruleForm.endStops.map((s) => s.stopAlias.trim()).filter(Boolean).join(", ") || undefined,
       targetKeywords: ruleForm.targetKeywords.trim() || undefined,
     };
 
@@ -269,9 +285,7 @@ export default function MobileAdminBusPage() {
         startBstopId: "",
         startStopName: "",
         startStopAlias: "",
-        endBstopId: "",
-        endBstopName: "",
-        endStopAlias: "",
+        endStops: [],
         targetKeywords: "",
       });
       loadData();
@@ -286,15 +300,28 @@ export default function MobileAdminBusPage() {
   // 룰 수정 모드 진입
   const handleEditRule = (rule: any) => {
     setEditingRuleId(rule.id);
+
+    const ids = (rule.endBstopId || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+    const names = (rule.endBstopName || rule.endStopName || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+    const aliases = (rule.endStopAlias || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+
+    const maxLen = Math.max(ids.length, names.length, aliases.length);
+    const parsedEndStops: TargetEndStopItem[] = [];
+    for (let i = 0; i < maxLen; i++) {
+      parsedEndStops.push({
+        bstopId: ids[i] || "",
+        bstopName: names[i] || "",
+        stopAlias: aliases[i] || "",
+      });
+    }
+
     setRuleForm({
       category: rule.category || "go-school",
       tabName: rule.tabName || "인입런",
       startBstopId: rule.startBstopId || "",
       startStopName: rule.startStopName || "",
       startStopAlias: rule.startStopAlias || "",
-      endBstopId: rule.endBstopId || "",
-      endBstopName: rule.endBstopName || rule.endStopName || "",
-      endStopAlias: rule.endStopAlias || "",
+      endStops: parsedEndStops,
       targetKeywords: rule.targetKeywords || "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -309,9 +336,7 @@ export default function MobileAdminBusPage() {
       startBstopId: "",
       startStopName: "",
       startStopAlias: "",
-      endBstopId: "",
-      endBstopName: "",
-      endStopAlias: "",
+      endStops: [],
       targetKeywords: "",
     });
   };
@@ -677,147 +702,143 @@ export default function MobileAdminBusPage() {
                       </FormGroup>
                     </StopSelectBox>
 
-                    {/* 도착 정류소 (다중 목표 정류소 지원) */}
+                    {/* 도착 정류소 (다중 목표 정류소 1:1 개별 별칭 지원) */}
                     <StopSelectBox>
                       <BoxHeaderRow>
-                        <BoxLabel>🏁 목표 도착 정류장 (1개 또는 다중 지정 가능)</BoxLabel>
+                        <BoxLabel>
+                          🏁 목표 도착 정류장 (
+                          {ruleForm.endStops.length > 0
+                            ? `${ruleForm.endStops.length}개 선택됨`
+                            : "선택 안됨"}
+                          )
+                        </BoxLabel>
                         <SearchTriggerButton
                           type="button"
                           onClick={() => openSearchModal("end")}
                         >
-                          <Plus size={13} /> 정류장 추가 검색
+                          <Plus size={13} /> 목표 정류장 추가 검색
                         </SearchTriggerButton>
                       </BoxHeaderRow>
 
-                      {/* 다중 선택된 정류장 칩 목록 */}
-                      {ruleForm.endBstopName.trim() && (
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
-                          {ruleForm.endBstopName.split(",").map((name, i) => {
-                            const trimmedName = name.trim();
-                            if (!trimmedName) return null;
-                            const ids = ruleForm.endBstopId.split(",").map((s) => s.trim());
-                            const matchedId = ids[i] || "";
-
-                            return (
+                      {ruleForm.endStops.length === 0 ? (
+                        <div
+                          style={{
+                            border: "1.5px dashed #cbd5e1",
+                            borderRadius: "8px",
+                            padding: "24px 16px",
+                            textAlign: "center",
+                            backgroundColor: "#f8fafc",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => openSearchModal("end")}
+                        >
+                          <Search size={22} color="#94a3b8" style={{ marginBottom: "6px" }} />
+                          <div style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>
+                            목표 도착 정류장을 검색하여 추가해주세요
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
+                            1개 또는 여러 개(자연대, 공대, 정문, 기숙사 등)를 원하는 만큼 등록할 수 있습니다.
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                          {ruleForm.endStops.map((stopItem, index) => (
+                            <div
+                              key={stopItem.bstopId || index}
+                              style={{
+                                border: "1px solid #e2e8f0",
+                                borderRadius: "8px",
+                                padding: "12px",
+                                backgroundColor: "#ffffff",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+                              }}
+                            >
                               <div
-                                key={i}
                                 style={{
-                                  display: "inline-flex",
+                                  display: "flex",
                                   alignItems: "center",
-                                  gap: "5px",
-                                  backgroundColor: "#eff6ff",
-                                  border: "1px solid #bfdbfe",
-                                  color: "#1e40af",
-                                  borderRadius: "6px",
-                                  padding: "4px 8px",
-                                  fontSize: "12px",
-                                  fontWeight: 500,
+                                  justifyContent: "space-between",
+                                  marginBottom: "8px",
                                 }}
                               >
-                                <span>{trimmedName} {matchedId ? `(${matchedId})` : ""}</span>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <span
+                                    style={{
+                                      fontSize: "13px",
+                                      fontWeight: 700,
+                                      color: "#1e293b",
+                                    }}
+                                  >
+                                    {stopItem.bstopName || "이름 없는 정류장"}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: "11px",
+                                      backgroundColor: "#f1f5f9",
+                                      color: "#64748b",
+                                      padding: "2px 6px",
+                                      borderRadius: "4px",
+                                      fontFamily: "monospace",
+                                    }}
+                                  >
+                                    ID: {stopItem.bstopId}
+                                  </span>
+                                </div>
                                 <button
                                   type="button"
                                   style={{
                                     border: "none",
-                                    background: "transparent",
+                                    background: "#fee2e2",
+                                    color: "#ef4444",
+                                    borderRadius: "4px",
+                                    padding: "3px 7px",
+                                    fontSize: "11px",
+                                    fontWeight: 600,
                                     cursor: "pointer",
-                                    color: "#93c5fd",
-                                    padding: 0,
                                     display: "flex",
                                     alignItems: "center",
+                                    gap: "3px",
                                   }}
-                                  onClick={() => {
-                                    const names = ruleForm.endBstopName.split(",").map((s) => s.trim()).filter(Boolean);
-                                    const ids = ruleForm.endBstopId.split(",").map((s) => s.trim()).filter(Boolean);
-                                    names.splice(i, 1);
-                                    if (ids.length > i) ids.splice(i, 1);
-                                    setRuleForm((prev) => ({
-                                      ...prev,
-                                      endBstopName: names.join(", "),
-                                      endBstopId: ids.join(", "),
-                                    }));
-                                  }}
+                                  onClick={() => handleRemoveEndStop(index)}
                                 >
-                                  <X size={13} />
+                                  <Trash2 size={12} /> 삭제
                                 </button>
                               </div>
-                            );
-                          })}
+
+                              <FormGroup style={{ marginBottom: 0 }}>
+                                <SubLabel style={{ fontSize: "11px", color: "#64748b" }}>
+                                  도착지 별칭 (화면 노출용):
+                                </SubLabel>
+                                <Input
+                                  type="text"
+                                  value={stopItem.stopAlias}
+                                  onChange={(e) =>
+                                    handleEndStopAliasChange(index, e.target.value)
+                                  }
+                                  placeholder="예: 자연대, 공대, 정문, 기숙사"
+                                  style={{ fontSize: "12px", padding: "6px 10px" }}
+                                />
+                                {existingAliases.length > 0 && (
+                                  <ChipContainer style={{ marginTop: "4px" }}>
+                                    <ChipLabel style={{ fontSize: "10px" }}>추천:</ChipLabel>
+                                    {existingAliases.map((a) => (
+                                      <ChipButton
+                                        key={a}
+                                        type="button"
+                                        style={{ fontSize: "10px", padding: "2px 6px" }}
+                                        isSelected={stopItem.stopAlias === a}
+                                        onClick={() => handleEndStopAliasChange(index, a)}
+                                      >
+                                        {a}
+                                      </ChipButton>
+                                    ))}
+                                  </ChipContainer>
+                                )}
+                              </FormGroup>
+                            </div>
+                          ))}
                         </div>
                       )}
-
-                      <ManualInputGrid>
-                        <FormGroup>
-                          <SubLabel>정류소 ID (다중 지정 시 쉼표로 구분)</SubLabel>
-                          <Input
-                            type="text"
-                            value={ruleForm.endBstopId}
-                            onChange={(e) =>
-                              setRuleForm((prev) => ({
-                                ...prev,
-                                endBstopId: e.target.value,
-                              }))
-                            }
-                            placeholder="예: 164000375, 164000499, 164000386"
-                          />
-                        </FormGroup>
-                        <FormGroup>
-                          <SubLabel>정류소 명칭 (다중 지정 시 쉼표로 구분)</SubLabel>
-                          <Input
-                            type="text"
-                            value={ruleForm.endBstopName}
-                            onChange={(e) =>
-                              setRuleForm((prev) => ({
-                                ...prev,
-                                endBstopName: e.target.value,
-                              }))
-                            }
-                            placeholder="예: 자연과학대학, 공과대학, 정문"
-                          />
-                        </FormGroup>
-                      </ManualInputGrid>
-
-                      <FormGroup>
-                        <SubLabel>도착지 별칭 (화면 표시용):</SubLabel>
-                        <Input
-                          type="text"
-                          value={ruleForm.endStopAlias}
-                          onChange={(e) =>
-                            setRuleForm((prev) => ({
-                              ...prev,
-                              endStopAlias: e.target.value,
-                            }))
-                          }
-                          placeholder="예: 자연대, 공대"
-                        />
-                        {existingAliases.length > 0 && (
-                          <ChipContainer>
-                            <ChipLabel>추천 별칭:</ChipLabel>
-                            {existingAliases.map((a) => (
-                              <ChipButton
-                                key={a}
-                                type="button"
-                                isSelected={ruleForm.endStopAlias === a}
-                                onClick={() => {
-                                  const matched = stopAliases.find(
-                                    (sa) => sa.stopAlias === a,
-                                  );
-                                  setRuleForm((prev) => ({
-                                    ...prev,
-                                    endStopAlias: a,
-                                    endBstopId:
-                                      prev.endBstopId || matched?.bstopId || "",
-                                    endBstopName:
-                                      prev.endBstopName || matched?.bstopName || "",
-                                  }));
-                                }}
-                              >
-                                {a}
-                              </ChipButton>
-                            ))}
-                          </ChipContainer>
-                        )}
-                      </FormGroup>
                     </StopSelectBox>
                   </StopSelectionGrid>
 
