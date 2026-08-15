@@ -114,6 +114,7 @@ export default function MobileAdminBusPage() {
       "인천대 정문",
       "공대/자연대",
       "기숙사 앞",
+      "1301번",
     ]),
   );
 
