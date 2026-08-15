@@ -28,6 +28,7 @@ import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 import TimetableImageImportModal from "@/components/mobile/timetable/TimetableImageImportModal";
+import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
 const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
@@ -970,6 +971,14 @@ const MobileTimeTablePage = () => {
           </MenuCardDescription>
         </MenuCard>
       </ButtonGroup>
+
+      {isLoggedIn && activeTimetable && (
+        <TimetableAiEvaluationBubble
+          timetableId={activeTimetable.id}
+          timetableName={activeTimetable.name}
+          hasEvents={timetableEvents.length > 0}
+        />
+      )}
     </MobileTimeTablePageWrapper>
   );
 };
