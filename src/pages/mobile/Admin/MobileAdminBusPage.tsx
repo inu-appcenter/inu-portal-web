@@ -72,7 +72,6 @@ export default function MobileAdminBusPage() {
     startStopName: "",
     startStopAlias: "",
     endStops: [] as TargetEndStopItem[],
-    targetKeywords: "",
   });
 
   // 2. 정류장 검색 모달 상태
@@ -266,7 +265,6 @@ export default function MobileAdminBusPage() {
       endBstopId: ruleForm.endStops.map((s) => s.bstopId.trim()).filter(Boolean).join(", ") || undefined,
       endBstopName: ruleForm.endStops.map((s) => s.bstopName.trim()).filter(Boolean).join(", ") || undefined,
       endStopAlias: ruleForm.endStops.map((s) => s.stopAlias.trim()).filter(Boolean).join(", ") || undefined,
-      targetKeywords: ruleForm.targetKeywords.trim() || undefined,
     };
 
     setLoading(true);
@@ -287,7 +285,6 @@ export default function MobileAdminBusPage() {
         startStopName: "",
         startStopAlias: "",
         endStops: [],
-        targetKeywords: "",
       });
       loadData();
     } catch (err) {
@@ -323,7 +320,6 @@ export default function MobileAdminBusPage() {
       startStopName: rule.startStopName || "",
       startStopAlias: rule.startStopAlias || "",
       endStops: parsedEndStops,
-      targetKeywords: rule.targetKeywords || "",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -338,7 +334,6 @@ export default function MobileAdminBusPage() {
       startStopName: "",
       startStopAlias: "",
       endStops: [],
-      targetKeywords: "",
     });
   };
 
@@ -971,20 +966,6 @@ export default function MobileAdminBusPage() {
                               </EndStopsList>
                             </StopSectionBox>
                           </RuleCardBody>
-
-                          {/* 3. 카드 푸터 (타겟 키워드가 있는 경우) */}
-                          {rule.targetKeywords && (
-                            <RuleCardFooter>
-                              <FooterLabel>탐색 키워드:</FooterLabel>
-                              <KeywordTagsContainer>
-                                {rule.targetKeywords.split(",").map((kw: string, kIdx: number) => {
-                                  const trimmed = kw.trim();
-                                  if (!trimmed) return null;
-                                  return <KeywordChip key={kIdx}>#{trimmed}</KeywordChip>;
-                                })}
-                              </KeywordTagsContainer>
-                            </RuleCardFooter>
-                          )}
                         </RuleCard>
                       );
                     })}
