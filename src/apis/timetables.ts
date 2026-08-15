@@ -331,7 +331,10 @@ export const streamTimeTableEvaluation = async (
 
       for (const line of lines) {
         const trimmed = line.trim();
-        if (!trimmed) continue;
+        if (!trimmed) {
+          currentEvent = "message";
+          continue;
+        }
 
         if (trimmed.startsWith("event:")) {
           currentEvent = trimmed.substring(6).trim();
@@ -342,15 +345,21 @@ export const streamTimeTableEvaluation = async (
             if (currentEvent === "start") {
               callbacks.onStart?.(parsed);
             } else if (currentEvent === "delta") {
-              callbacks.onDelta?.(parsed.content || "");
+              const deltaContent = typeof parsed === "string" ? parsed : (parsed.content || "");
+              callbacks.onDelta?.(deltaContent);
             } else if (currentEvent === "done") {
               callbacks.onDone?.(parsed);
             } else if (currentEvent === "error") {
               callbacks.onError?.(new Error(parsed.message || "평가 생성 실패"));
+            } else {
+              // event가 message이거나 생략된 경우 delta로 처리
+              if (parsed.content) {
+                callbacks.onDelta?.(parsed.content);
+              }
             }
           } catch {
-            // raw string data
-            if (currentEvent === "delta") {
+            // JSON이 아닌 일반 문자열인 경우
+            if (currentEvent === "delta" || currentEvent === "message") {
               callbacks.onDelta?.(dataStr);
             }
           }
