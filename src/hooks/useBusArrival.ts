@@ -53,27 +53,15 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
         return bus;
       }
 
-      const match = data.find((item) => item.ROUTEID === bus.routeId);
+      const match = data.find(
+        (item) =>
+          item.ROUTEID === bus.routeId ||
+          (item as any).routeId === bus.routeId ||
+          (item as any).routeNo === bus.number ||
+          (item as any).ROUTENO === bus.number,
+      );
 
       if (!match) {
-        const estimatedItem = data.find(
-          (item) => item.estimatedArrivalSeconds || item.estimationNotice,
-        );
-        if (estimatedItem && estimatedItem.estimatedArrivalSeconds) {
-          const sec = estimatedItem.estimatedArrivalSeconds;
-          return {
-            ...bus,
-            arrivalInfo: {
-              time: toTime(sec),
-              seconds: sec,
-              station: "통계 추정",
-              status: "여유" as const,
-              isLastBus: false,
-            },
-
-          };
-        }
-
         return {
           ...bus,
           arrivalInfo: {
@@ -84,12 +72,34 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
         };
       }
 
+      const isEstimated =
+        (match as any).latestStopName === "시간표 기반" ||
+        match.LATEST_STOP_NAME === "시간표 기반" ||
+        (match as any).estimationNotice === "시간표 기반" ||
+        Boolean((match as any).estimatedArrivalSeconds);
 
-      const rawSeconds = Number(match.ARRIVALESTIMATETIME);
+      const rawSeconds = Number(
+        (match as any).arrivalEstimateTime ??
+          match.ARRIVALESTIMATETIME ??
+          (match as any).estimatedArrivalSeconds,
+      );
       const elapsedSeconds = dataUpdatedAt
         ? Math.max(0, Math.floor((Date.now() - dataUpdatedAt) / 1000))
         : 0;
       const seconds = Math.max(0, rawSeconds - elapsedSeconds);
+
+      if (isEstimated) {
+        return {
+          ...bus,
+          arrivalInfo: {
+            time: toTime(seconds),
+            seconds,
+            station: "시간표 기반",
+            status: "보통" as const,
+            isLastBus: false,
+          },
+        };
+      }
 
       return {
         ...bus,

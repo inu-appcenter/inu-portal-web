@@ -55,14 +55,22 @@ export default function BusItem({
                 {(arrivalInfo.status || stationText) && (
                   <LabelWrapper>
                     <StatusInfo>
-                      {stationText}{" "}
-                      {arrivalInfo.isLastBus ? (
-                        <LastBus>🚨막차</LastBus>
+                      {stationText === "시간표 기반" ||
+                      stationText === "통계 추정" ? (
+                        <span style={{ color: "#4f46e5", fontWeight: 600 }}>
+                          ⏱️ 시간표 기반
+                        </span>
                       ) : (
-                        /* 상태 텍스트에만 색상 적용 */
-                        <StatusText $status={arrivalInfo.status}>
-                          {arrivalInfo.status}
-                        </StatusText>
+                        <>
+                          {stationText}{" "}
+                          {arrivalInfo.isLastBus ? (
+                            <LastBus>🚨막차</LastBus>
+                          ) : (
+                            <StatusText $status={arrivalInfo.status}>
+                              {arrivalInfo.status}
+                            </StatusText>
+                          )}
+                        </>
                       )}
                     </StatusInfo>
                   </LabelWrapper>
