@@ -427,18 +427,28 @@ const DatePresetBar = styled.div`
 
 const PresetButtonGroup = styled.div`
   display: flex;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
+  padding: 2px 0;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const PresetBtn = styled.button<{ active: boolean }>`
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   border: none;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 32px;
   background-color: ${({ active }) => (active ? "#2563eb" : "#ffffff")};
   color: ${({ active }) => (active ? "#ffffff" : "#4b5563")};
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -471,22 +481,41 @@ const DateInput = styled.input`
 
 const RouteFilterBar = styled.div`
   display: flex;
-  gap: 6px;
-  padding: 10px 20px;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
   overflow-x: auto;
+  flex-shrink: 0;
   border-bottom: 1px solid #f3f4f6;
+  background-color: #ffffff;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const FilterChip = styled.button<{ active: boolean }>`
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
-  border: 1px solid ${({ active }) => (active ? "#2563eb" : "#e5e7eb")};
+  flex-shrink: 0;
+  min-height: 34px;
+  line-height: 1;
+  border: 1.5px solid ${({ active }) => (active ? "#2563eb" : "#e5e7eb")};
   background-color: ${({ active }) => (active ? "#eff6ff" : "#ffffff")};
-  color: ${({ active }) => (active ? "#2563eb" : "#6b7280")};
+  color: ${({ active }) => (active ? "#2563eb" : "#64748b")};
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: ${({ active }) => (active ? "#1d4ed8" : "#cbd5e1")};
+    background-color: ${({ active }) => (active ? "#e0eeff" : "#f8fafc")};
+  }
 `;
 
 const StatsSummaryCard = styled.div`
