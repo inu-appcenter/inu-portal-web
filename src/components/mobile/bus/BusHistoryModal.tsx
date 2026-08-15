@@ -233,6 +233,8 @@ export default function BusHistoryModal({
                     item.arrivalTime.substring(11, 16)
                   : "-";
 
+                const routeDisplay = item.routeNo || (item.routeId ? `${item.routeId}` : "순환");
+
                 return (
                   <TimelineItem key={item.id || idx}>
                     <TimeColumn>
@@ -240,16 +242,14 @@ export default function BusHistoryModal({
                     </TimeColumn>
                     <BusColumn>
                       <BusCircle
-                        number={item.routeNo}
-                        tone={getBusCircleTone(item.routeNo)}
+                        number={routeDisplay}
+                        tone={getBusCircleTone(routeDisplay)}
                       />
                       <BusInfoWrapper>
-                        <BusRouteText>{item.routeNo}번 버스</BusRouteText>
+                        <BusRouteText>{routeDisplay}번 버스</BusRouteText>
                         <BusSubMeta>
-                          {item.busNumPlate ? `차량: ${item.busNumPlate}` : ""}
-                          {item.restStopCount
-                            ? ` · ${item.restStopCount} 정거장 전 감지`
-                            : ""}
+                          {item.busNumPlate ? `차량: ${item.busNumPlate} · ` : ""}
+                          정류소 도착
                         </BusSubMeta>
                       </BusInfoWrapper>
                     </BusColumn>
