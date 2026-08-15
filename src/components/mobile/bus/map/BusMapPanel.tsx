@@ -533,7 +533,7 @@ function cleanRouteStopName(name: string): string {
 
 function formatRouteText(bus: BusData) {
   if (bus.routeNotice) {
-    return bus.routeNotice;
+    return bus.routeNotice.replace(/->/g, "→").replace(/\.\.\./g, "…");
   }
 
   const rawRoute = (bus.route || []).filter(Boolean);
@@ -544,13 +544,13 @@ function formatRouteText(bus: BusData) {
   const cleanedRoute = rawRoute.map(cleanRouteStopName);
 
   if (cleanedRoute.length <= 4) {
-    return cleanedRoute.join(" -> ");
+    return cleanedRoute.join(" → ");
   }
 
   const firstTwo = cleanedRoute.slice(0, 2);
   const lastTwo = cleanedRoute.slice(-2);
 
-  return `${firstTwo.join(" -> ")} -> ... -> ${lastTwo.join(" -> ")}`;
+  return `${firstTwo.join(" → ")} → … → ${lastTwo.join(" → ")}`;
 }
 
 function compareBusesByArrival(

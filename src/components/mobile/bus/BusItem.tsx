@@ -19,16 +19,16 @@ function cleanRouteStopName(name: string): string {
 }
 
 function formatRouteText(routeNotice?: string, route: string[] = []) {
-  if (routeNotice) return routeNotice;
+  if (routeNotice) return routeNotice.replace(/->/g, "→").replace(/\.\.\./g, "…");
   const rawRoute = (route || []).filter(Boolean);
   if (rawRoute.length === 0) return "";
   const cleanedRoute = rawRoute.map(cleanRouteStopName);
   if (cleanedRoute.length <= 4) {
-    return cleanedRoute.join(" -> ");
+    return cleanedRoute.join(" → ");
   }
   const firstTwo = cleanedRoute.slice(0, 2);
   const lastTwo = cleanedRoute.slice(-2);
-  return `${firstTwo.join(" -> ")} -> ... -> ${lastTwo.join(" -> ")}`;
+  return `${firstTwo.join(" → ")} → … → ${lastTwo.join(" → ")}`;
 }
 
 export default function BusItem({
