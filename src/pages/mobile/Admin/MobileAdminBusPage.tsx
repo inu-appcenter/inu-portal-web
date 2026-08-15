@@ -877,56 +877,118 @@ export default function MobileAdminBusPage() {
                 {targetRules.length === 0 ? (
                   <EmptyText>등록된 탐색 규칙이 없습니다.</EmptyText>
                 ) : (
-                  <RuleList>
-                    {targetRules.map((rule) => (
-                      <RuleItem key={rule.id}>
-                        <RuleContent>
-                          <Badge
-                            isSchool={rule.category === "go-school"}
-                          >
-                            {rule.category === "go-school"
-                              ? "학교 갈래요"
-                              : "집 갈래요"}
-                          </Badge>
-                          <TabBadge>{rule.tabName}</TabBadge>
-                          <RulePath>
-                            <PathStop>
-                              <b>{rule.startStopName}</b>{" "}
-                              <SmallId>({rule.startBstopId})</SmallId>
-                              {rule.startStopAlias && (
-                                <AliasTag>[{rule.startStopAlias}]</AliasTag>
-                              )}
-                            </PathStop>
-                            <ArrowRight size={14} color="#9ca3af" />
-                            <PathStop>
-                              <b>{rule.endBstopName || "목표 키워드 매칭"}</b>{" "}
-                              {rule.endBstopId && (
-                                <SmallId>({rule.endBstopId})</SmallId>
-                              )}
-                              {rule.endStopAlias && (
-                                <AliasTag>[{rule.endStopAlias}]</AliasTag>
-                              )}
-                            </PathStop>
-                          </RulePath>
-                        </RuleContent>
-                        <RuleActionGroup>
-                          <EditRuleButton
-                            type="button"
-                            onClick={() => handleEditRule(rule)}
-                            title="규칙 수정"
-                          >
-                            <Edit2 size={15} /> 수정
-                          </EditRuleButton>
-                          <DeleteButton
-                            onClick={() => handleDeleteRule(rule.id)}
-                            title="규칙 삭제"
-                          >
-                            <Trash2 size={15} />
-                          </DeleteButton>
-                        </RuleActionGroup>
-                      </RuleItem>
-                    ))}
-                  </RuleList>
+                  <RuleCardGrid>
+                    {targetRules.map((rule) => {
+                      // 도착 정류소들 파싱
+                      const endIds = (rule.endBstopId || "")
+                        .split(",")
+                        .map((s: string) => s.trim())
+                        .filter(Boolean);
+                      const endNames = (rule.endBstopName || "")
+                        .split(",")
+                        .map((s: string) => s.trim())
+                        .filter(Boolean);
+                      const endAliases = (rule.endStopAlias || "")
+                        .split(",")
+                        .map((s: string) => s.trim())
+                        .filter(Boolean);
+
+                      const endCount = Math.max(endIds.length, endNames.length, 1);
+                      const endList = Array.from({ length: endCount }).map((_, idx) => ({
+                        id: endIds[idx] || "",
+                        name: endNames[idx] || (rule.endBstopName ? "" : "목표 키워드 매칭"),
+                        alias: endAliases[idx] || "",
+                      }));
+
+                      return (
+                        <RuleCard key={rule.id}>
+                          {/* 1. 카드 헤더: 카테고리 + 탭명 + 수정/삭제 버튼 */}
+                          <RuleCardHeader>
+                            <RuleHeaderLeft>
+                              <Badge isSchool={rule.category === "go-school"}>
+                                {rule.category === "go-school" ? "학교 갈래요" : "집 갈래요"}
+                              </Badge>
+                              <TabBadge>{rule.tabName}</TabBadge>
+                            </RuleHeaderLeft>
+                            <RuleActionGroup>
+                              <EditRuleButton
+                                type="button"
+                                onClick={() => handleEditRule(rule)}
+                                title="규칙 수정"
+                              >
+                                <Edit2 size={13} /> 수정
+                              </EditRuleButton>
+                              <DeleteButton
+                                onClick={() => handleDeleteRule(rule.id)}
+                                title="규칙 삭제"
+                              >
+                                <Trash2 size={14} />
+                              </DeleteButton>
+                            </RuleActionGroup>
+                          </RuleCardHeader>
+
+                          {/* 2. 카드 본문: 출발지 ➡️ 도착 목표들 */}
+                          <RuleCardBody>
+                            {/* 출발지 섹션 */}
+                            <StopSectionBox isStart={true}>
+                              <SectionHeaderLabel>
+                                <span className="dot start-dot"></span> 출발 정류소
+                              </SectionHeaderLabel>
+                              <StopNameRow>
+                                <MainStopName>{rule.startStopName}</MainStopName>
+                                {rule.startStopAlias && (
+                                  <AliasTag>[{rule.startStopAlias}]</AliasTag>
+                                )}
+                              </StopNameRow>
+                              <StopIdBadge>ID: {rule.startBstopId}</StopIdBadge>
+                            </StopSectionBox>
+
+                            {/* 연결 구분선/화살표 */}
+                            <FlowDivider>
+                              <ArrowRight size={16} className="flow-arrow" />
+                              <FlowText>노선 자동 탐색</FlowText>
+                            </FlowDivider>
+
+                            {/* 도착지 목표 목록 섹션 */}
+                            <StopSectionBox isStart={false}>
+                              <SectionHeaderLabel>
+                                <span className="dot end-dot"></span> 도착 목표 정류소 ({endList.length}개)
+                              </SectionHeaderLabel>
+                              <EndStopsList>
+                                {endList.map((endItem, eIdx) => (
+                                  <EndStopCard key={eIdx}>
+                                    <EndStopCardLeft>
+                                      <EndStopName>{endItem.name || "목표 정류소"}</EndStopName>
+                                      {endItem.id && (
+                                        <EndStopIdText>ID: {endItem.id}</EndStopIdText>
+                                      )}
+                                    </EndStopCardLeft>
+                                    {endItem.alias && (
+                                      <AliasTag>[{endItem.alias}]</AliasTag>
+                                    )}
+                                  </EndStopCard>
+                                ))}
+                              </EndStopsList>
+                            </StopSectionBox>
+                          </RuleCardBody>
+
+                          {/* 3. 카드 푸터 (타겟 키워드가 있는 경우) */}
+                          {rule.targetKeywords && (
+                            <RuleCardFooter>
+                              <FooterLabel>탐색 키워드:</FooterLabel>
+                              <KeywordTagsContainer>
+                                {rule.targetKeywords.split(",").map((kw: string, kIdx: number) => {
+                                  const trimmed = kw.trim();
+                                  if (!trimmed) return null;
+                                  return <KeywordChip key={kIdx}>#{trimmed}</KeywordChip>;
+                                })}
+                              </KeywordTagsContainer>
+                            </RuleCardFooter>
+                          )}
+                        </RuleCard>
+                      );
+                    })}
+                  </RuleCardGrid>
                 )}
               </CardBody>
             </Card>
@@ -1742,45 +1804,193 @@ const SubmitButton = styled.button`
   }
 `;
 
-const RuleList = styled.div`
+const RuleCardGrid = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 `;
 
-const RuleItem = styled.div`
+const RuleCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  &:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  }
+`;
+
+const RuleCardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #f1f5f9;
 `;
 
-const RuleContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-`;
-
-const RulePath = styled.div`
+const RuleHeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  flex-wrap: wrap;
 `;
 
-const PathStop = styled.span`
+const RuleCardBody = styled.div`
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const StopSectionBox = styled.div<{ isStart?: boolean }>`
+  background-color: ${({ isStart }) => (isStart ? "#f8fafc" : "#ffffff")};
+  border: 1px solid ${({ isStart }) => (isStart ? "#e2e8f0" : "#f1f5f9")};
+  border-radius: 8px;
+  padding: 12px 14px;
+`;
+
+const SectionHeaderLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .start-dot {
+    background-color: #2563eb;
+  }
+  .end-dot {
+    background-color: #10b981;
+  }
+`;
+
+const StopNameRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+`;
+
+const MainStopName = styled.span`
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+`;
+
+const StopIdBadge = styled.span`
+  display: inline-block;
+  font-size: 11px;
+  font-family: monospace;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const FlowDivider = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 2px 0;
+  color: #94a3b8;
+
+  .flow-arrow {
+    color: #3b82f6;
+  }
+`;
+
+const FlowText = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+`;
+
+const EndStopsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const EndStopCard = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  gap: 8px;
+`;
+
+const EndStopCardLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const EndStopName = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+`;
+
+const EndStopIdText = styled.span`
+  font-size: 11px;
+  font-family: monospace;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 1px 5px;
+  border-radius: 4px;
+`;
+
+const RuleCardFooter = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12px;
+`;
+
+const FooterLabel = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+`;
+
+const KeywordTagsContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: wrap;
 `;
 
-const SmallId = styled.span`
+const KeywordChip = styled.span`
   font-size: 11px;
-  color: #6b7280;
+  color: #475569;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-weight: 500;
 `;
 
 const AliasTag = styled.span`
