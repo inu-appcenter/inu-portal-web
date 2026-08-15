@@ -87,6 +87,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       floatingSubHeader,
       isScrolled,
       rightAreaNotCircle,
+      noBlur,
     } = useHeaderConfig(targetPath);
 
     const navigate = useCustomNavigate();
@@ -111,14 +112,21 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       navigate(-1);
     };
 
+    const hasTitle = Boolean(title);
+
     if (visible === false) return null;
 
     return (
-      <MobileHeaderWrapper ref={ref} $contained={contained} $visible={true}>
+      <MobileHeaderWrapper
+        ref={ref}
+        $contained={contained}
+        $visible={true}
+      >
         <MainHeaderWrapper
           $isScrolled={isScrolled}
           $hasBack={(hasback && !!title) ?? false}
-          $hasTitle={!!title}
+          $hasTitle={hasTitle}
+          $noBlur={Boolean(noBlur)}
         >
           {title ? (
             <TitleArea>
@@ -202,6 +210,7 @@ const MainHeaderWrapper = styled.div<{
   $isScrolled: boolean;
   $hasBack: boolean;
   $hasTitle: boolean;
+  $noBlur?: boolean;
 }>`
   position: relative;
   z-index: 2;
@@ -218,22 +227,22 @@ const MainHeaderWrapper = styled.div<{
   padding-left: ${({ $hasBack }) => ($hasBack ? "12px" : "20px")};
   padding-right: ${({ $hasBack }) => ($hasBack ? "16px" : "20px")};
 
-  background: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle
+  background: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle
       ? "transparent"
       : "var(--bg-blur, rgba(255, 255, 255, 0.6))"};
-  backdrop-filter: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
-  -webkit-backdrop-filter: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
-  box-shadow: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle
+  backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
+  -webkit-backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
+  box-shadow: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle
       ? "none"
       : "0px 4px 12px 0px rgba(0, 0, 0, 0.08)"};
-  border-bottom-left-radius: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "0px" : "32px"};
-  border-bottom-right-radius: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "0px" : "32px"};
+  border-bottom-left-radius: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "0px" : "32px"};
+  border-bottom-right-radius: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "0px" : "32px"};
 
   transition:
     background 0.25s ease,

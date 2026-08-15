@@ -161,6 +161,7 @@ export default function MobileBusMapPage() {
     subHeader: pageConfig ? subHeader : null,
     menuItems,
     floatingSubHeader: true,
+    noBlur: true,
   });
 
   useEffect(() => {
