@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X, Sparkles, AlertCircle, Copy, Check, RefreshCw } from "lucide-react";
@@ -177,12 +178,12 @@ const TimetableAiEvaluationBubble = ({
     },
   };
 
-  return (
+  return createPortal(
     <>
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* 배경 흐림 및 딤 효과 백드롭 */}
+            {/* 배경 흐림 및 딤 효과 백드롭 (헤더/바텀바 포함 전체 화면 덮음) */}
             <Backdrop
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -311,7 +312,8 @@ const TimetableAiEvaluationBubble = ({
           <img src={ChatBulButtonImg} alt="시간표 AI 평가" />
         </AiButton>
       </FloatingButtonContainer>
-    </>
+    </>,
+    document.body
   );
 };
 
@@ -334,12 +336,12 @@ const Backdrop = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
-  z-index: 1001;
+  z-index: 10001;
   -webkit-tap-highlight-color: transparent;
 `;
 
@@ -347,7 +349,7 @@ const FloatingButtonContainer = styled.div`
   position: fixed;
   bottom: 80px;
   right: 16px;
-  z-index: 1003;
+  z-index: 10002;
 
   @media (min-width: 1024px) {
     bottom: 85px;
@@ -400,7 +402,7 @@ const BubbleWrapper = styled(motion.div)`
   right: 16px;
   width: calc(100vw - 32px);
   max-width: 340px;
-  max-height: min(400px, calc(100dvh - 240px));
+  max-height: min(480px, calc(100dvh - 170px));
   min-height: 120px;
   background: #eef6ff;
   border-radius: 20px 20px 6px 20px;
@@ -410,17 +412,17 @@ const BubbleWrapper = styled(motion.div)`
   border: 1px solid rgba(0, 102, 255, 0.12);
   display: flex;
   flex-direction: column;
-  z-index: 1002;
+  z-index: 10003;
   overflow: visible;
 
   @media (max-height: 650px) {
-    max-height: calc(100dvh - 210px);
-    bottom: 140px;
+    max-height: calc(100dvh - 150px);
+    bottom: 130px;
   }
 
   @media (min-width: 1024px) {
     max-width: 380px;
-    max-height: min(580px, calc(100vh - 200px));
+    max-height: min(600px, calc(100vh - 180px));
     right: calc(50% - 600px + 16px);
   }
 `;
