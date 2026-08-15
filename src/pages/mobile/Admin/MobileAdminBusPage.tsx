@@ -187,7 +187,7 @@ export default function MobileAdminBusPage() {
     setSearchModalOpen(true);
   };
 
-  // 검색된 정류장 선택 시 적용
+  // 검색된 정류장 선택 시 적용 (도착 정류장은 다중 선택 누적 지원)
   const handleSelectStop = (stop: any) => {
     if (searchTargetType === "start") {
       setRuleForm((prev) => ({
@@ -197,12 +197,30 @@ export default function MobileAdminBusPage() {
         startStopAlias: stop.stopAlias || prev.startStopAlias || "",
       }));
     } else if (searchTargetType === "end") {
-      setRuleForm((prev) => ({
-        ...prev,
-        endBstopId: stop.bstopId || "",
-        endBstopName: stop.bstopName || "",
-        endStopAlias: stop.stopAlias || prev.endStopAlias || "",
-      }));
+      setRuleForm((prev) => {
+        const currentIds = prev.endBstopId
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const currentNames = prev.endBstopName
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        if (!currentIds.includes(stop.bstopId)) {
+          currentIds.push(stop.bstopId);
+        }
+        if (!currentNames.includes(stop.bstopName)) {
+          currentNames.push(stop.bstopName);
+        }
+
+        return {
+          ...prev,
+          endBstopId: currentIds.join(", "),
+          endBstopName: currentNames.join(", "),
+          endStopAlias: prev.endStopAlias || stop.stopAlias || "",
+        };
+      });
     } else if (searchTargetType === "alias") {
       setAliasForm((prev) => ({
         ...prev,
@@ -659,21 +677,78 @@ export default function MobileAdminBusPage() {
                       </FormGroup>
                     </StopSelectBox>
 
-                    {/* 도착 정류소 */}
+                    {/* 도착 정류소 (다중 목표 정류소 지원) */}
                     <StopSelectBox>
                       <BoxHeaderRow>
-                        <BoxLabel>🏁 목표 도착 정류장 (종점)</BoxLabel>
+                        <BoxLabel>🏁 목표 도착 정류장 (1개 또는 다중 지정 가능)</BoxLabel>
                         <SearchTriggerButton
                           type="button"
                           onClick={() => openSearchModal("end")}
                         >
-                          <Search size={13} /> 공공데이터 검색
+                          <Plus size={13} /> 정류장 추가 검색
                         </SearchTriggerButton>
                       </BoxHeaderRow>
 
+                      {/* 다중 선택된 정류장 칩 목록 */}
+                      {ruleForm.endBstopName.trim() && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
+                          {ruleForm.endBstopName.split(",").map((name, i) => {
+                            const trimmedName = name.trim();
+                            if (!trimmedName) return null;
+                            const ids = ruleForm.endBstopId.split(",").map((s) => s.trim());
+                            const matchedId = ids[i] || "";
+
+                            return (
+                              <div
+                                key={i}
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px",
+                                  backgroundColor: "#eff6ff",
+                                  border: "1px solid #bfdbfe",
+                                  color: "#1e40af",
+                                  borderRadius: "6px",
+                                  padding: "4px 8px",
+                                  fontSize: "12px",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                <span>{trimmedName} {matchedId ? `(${matchedId})` : ""}</span>
+                                <button
+                                  type="button"
+                                  style={{
+                                    border: "none",
+                                    background: "transparent",
+                                    cursor: "pointer",
+                                    color: "#93c5fd",
+                                    padding: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                  onClick={() => {
+                                    const names = ruleForm.endBstopName.split(",").map((s) => s.trim()).filter(Boolean);
+                                    const ids = ruleForm.endBstopId.split(",").map((s) => s.trim()).filter(Boolean);
+                                    names.splice(i, 1);
+                                    if (ids.length > i) ids.splice(i, 1);
+                                    setRuleForm((prev) => ({
+                                      ...prev,
+                                      endBstopName: names.join(", "),
+                                      endBstopId: ids.join(", "),
+                                    }));
+                                  }}
+                                >
+                                  <X size={13} />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       <ManualInputGrid>
                         <FormGroup>
-                          <SubLabel>정류소 ID (선택)</SubLabel>
+                          <SubLabel>정류소 ID (다중 지정 시 쉼표로 구분)</SubLabel>
                           <Input
                             type="text"
                             value={ruleForm.endBstopId}
@@ -683,11 +758,11 @@ export default function MobileAdminBusPage() {
                                 endBstopId: e.target.value,
                               }))
                             }
-                            placeholder="예: 164000378"
+                            placeholder="예: 164000375, 164000499, 164000386"
                           />
                         </FormGroup>
                         <FormGroup>
-                          <SubLabel>정류소 명칭</SubLabel>
+                          <SubLabel>정류소 명칭 (다중 지정 시 쉼표로 구분)</SubLabel>
                           <Input
                             type="text"
                             value={ruleForm.endBstopName}
@@ -697,7 +772,7 @@ export default function MobileAdminBusPage() {
                                 endBstopName: e.target.value,
                               }))
                             }
-                            placeholder="예: 인천대학교 자연과학대학"
+                            placeholder="예: 자연과학대학, 공과대학, 정문"
                           />
                         </FormGroup>
                       </ManualInputGrid>
