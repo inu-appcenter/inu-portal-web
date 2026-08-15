@@ -4,6 +4,7 @@ import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X, Sparkles, AlertCircle, Copy, Check, RefreshCw } from "lucide-react";
 import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
+import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useTimeTableEvaluation } from "@/hooks/useTimeTableEvaluation";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
@@ -347,20 +348,25 @@ const Backdrop = styled(motion.div)`
 
 const FloatingButtonContainer = styled.div`
   position: fixed;
-  bottom: 80px;
-  right: 16px;
+  bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 12px);
+  right: 15px;
+  width: 75px;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 10002;
 
   @media (min-width: 1024px) {
     bottom: 85px;
-    right: calc(50% - 600px + 16px);
+    right: calc(50% - 600px + 15px);
   }
 `;
 
 const ButtonBadge = styled.div`
   position: absolute;
-  top: -6px;
-  right: -4px;
+  top: -4px;
+  right: -2px;
   background: linear-gradient(135deg, #ff5f15 0%, #ff3b30 100%);
   color: white;
   font-size: 10px;
@@ -378,8 +384,8 @@ const ButtonBadge = styled.div`
 
 const AiButton = styled(motion.button)`
   position: relative;
-  width: 68px;
-  height: 68px;
+  width: 75px;
+  height: 75px;
   background: none;
   border: none;
   cursor: pointer;
@@ -387,7 +393,7 @@ const AiButton = styled(motion.button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.22));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
 
   img {
     width: 100%;
@@ -398,32 +404,32 @@ const AiButton = styled(motion.button)`
 
 const BubbleWrapper = styled(motion.div)`
   position: fixed;
-  bottom: 154px;
-  right: 16px;
-  width: calc(100vw - 32px);
+  bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 12px + 78px);
+  right: 15px;
+  width: calc(100vw - 30px);
   max-width: 340px;
-  max-height: min(480px, calc(100dvh - 170px));
+  max-height: min(480px, calc(100dvh - ${BOTTOM_NAV_SAFE_HEIGHT} - 160px));
   min-height: 120px;
-  background: #eef6ff;
+  background: #ffffff;
   border-radius: 20px 20px 6px 20px;
   box-shadow:
-    0 18px 38px -8px rgba(0, 70, 160, 0.16),
-    0 4px 14px rgba(0, 70, 160, 0.06);
-  border: 1px solid rgba(0, 102, 255, 0.12);
+    0 16px 36px -8px rgba(0, 0, 0, 0.18),
+    0 3px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
   z-index: 10003;
   overflow: visible;
 
   @media (max-height: 650px) {
-    max-height: calc(100dvh - 150px);
-    bottom: 130px;
+    max-height: calc(100dvh - ${BOTTOM_NAV_SAFE_HEIGHT} - 130px);
   }
 
   @media (min-width: 1024px) {
+    bottom: calc(85px + 78px);
+    right: calc(50% - 600px + 15px);
     max-width: 380px;
-    max-height: min(600px, calc(100vh - 180px));
-    right: calc(50% - 600px + 16px);
+    max-height: min(600px, calc(100vh - 200px));
   }
 `;
 
@@ -433,9 +439,9 @@ const BubbleTail = styled.div`
   right: 18px;
   width: 14px;
   height: 14px;
-  background: #eef6ff;
-  border-right: 1px solid rgba(0, 102, 255, 0.12);
-  border-bottom: 1px solid rgba(0, 102, 255, 0.12);
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   transform: rotate(45deg);
 `;
 
@@ -666,7 +672,7 @@ const MessageFooter = styled.div`
   gap: 8px;
   margin-top: 12px;
   padding-top: 8px;
-  border-top: 1px solid rgba(0, 102, 255, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 `;
 
 const ActionButton = styled.button`
@@ -674,7 +680,7 @@ const ActionButton = styled.button`
   border: none;
   padding: 4px 6px;
   cursor: pointer;
-  color: #6b7280;
+  color: #8e8e93;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -684,8 +690,8 @@ const ActionButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover {
-    color: #1d4ed8;
-    background-color: rgba(0, 102, 255, 0.08);
+    color: #1c1c1e;
+    background-color: rgba(0, 0, 0, 0.05);
   }
 
   &:active {
