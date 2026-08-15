@@ -330,7 +330,20 @@ export default function BusHistoryModal({
         <RouteSelectorContainer>
           <RouteSelectWrapper>
             <RouteBadge tone={getBusCircleTone(selectedRoute)}>
-              {selectedRoute.startsWith("순환") ? "순환" : "간선"}
+              {selectedRoute.startsWith("순환") ||
+              ["41", "42", "43", "46", "47"].includes(selectedRoute)
+                ? "순환"
+                : selectedRoute.startsWith("M") ||
+                    [
+                      "1301",
+                      "3002",
+                      "303-1",
+                      "6405",
+                      "M6405",
+                      "M6464",
+                    ].includes(selectedRoute)
+                  ? "광역"
+                  : "간선"}
             </RouteBadge>
             <RouteSelect
               value={selectedRoute}
@@ -396,8 +409,7 @@ export default function BusHistoryModal({
               <Clock size={36} color="#d1d5db" />
               <EmptyTitle>해당 요일의 실측 도착 기록이 없습니다.</EmptyTitle>
               <EmptyDesc>
-                스케줄러가 수집한 1~3주 전 도착 이력을 기반으로 시간표가
-                구성됩니다.
+                1~3주 전 도착 이력을 기반으로 시간표가 구성됩니다.
               </EmptyDesc>
             </EmptyBox>
           ) : (
@@ -563,7 +575,11 @@ const RouteBadge = styled.span<{ tone?: string }>`
   font-weight: 700;
   padding: 3px 6px;
   border-radius: 4px;
-  background-color: #2563eb;
+  background-color: ${({ tone }) => {
+    if (tone === "green") return "#16a34a";
+    if (tone === "red") return "#dc2626";
+    return "#2563eb";
+  }};
   color: #ffffff;
   margin-right: 10px;
 `;
