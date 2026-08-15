@@ -276,9 +276,19 @@ export const getTimeTableEvaluation = async (
 };
 
 export interface StreamEvaluationCallbacks {
-  onStart?: (data: { isCached: boolean; timetableHash: string }) => void;
+  onStart?: (data: {
+    isCached: boolean;
+    timetableHash?: string;
+    regenerateCount?: number;
+    remainingCount?: number;
+  }) => void;
   onDelta?: (token: string) => void;
-  onDone?: (data: { status: string; isCached: boolean }) => void;
+  onDone?: (data: {
+    status: string;
+    isCached: boolean;
+    regenerateCount?: number;
+    remainingCount?: number;
+  }) => void;
   onError?: (error: Error) => void;
 }
 

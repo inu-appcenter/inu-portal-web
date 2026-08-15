@@ -16,7 +16,6 @@ interface TimetableAiEvaluationBubbleProps {
 
 const TimetableAiEvaluationBubble = ({
   timetableId,
-  timetableName = "시간표",
   hasEvents,
 }: TimetableAiEvaluationBubbleProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +30,6 @@ const TimetableAiEvaluationBubble = ({
     isStreaming,
     isLoading,
     error,
-    regenerateCount,
     remainingCount,
     startEvaluation,
   } = useTimeTableEvaluation(timetableId);
