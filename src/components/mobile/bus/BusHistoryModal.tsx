@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
 import {
@@ -6,9 +6,8 @@ import {
   Clock,
   X,
   RotateCw,
+  Zap,
 } from "lucide-react";
-
-
 
 import { getBusHistory } from "@/apis/busArrival";
 import BusCircle from "@/components/mobile/bus/BusCircle";
@@ -46,6 +45,22 @@ export default function BusHistoryModal({
   // API 데이터 상태
   const [historyData, setHistoryData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  // 타깃 아이템 자동 스크롤용 ref
+  const targetItemRef = useRef<HTMLDivElement | null>(null);
+
+  // 현재 시각 (HH:mm)
+  const nowTimeStr = useMemo(() => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }, [isOpen, selectedDate]);
+
+  // 해당 정류장에 실제로 정차하는 유효 노선 목록
+  const validAvailableRoutes = useMemo(() => {
+    return Array.from(new Set(availableRoutes.filter(Boolean)));
+  }, [availableRoutes]);
 
   // 주차 오프셋 변경 시 날짜 계산
   const handleWeekOffsetChange = (offset: number) => {
@@ -88,15 +103,64 @@ export default function BusHistoryModal({
     };
   }, [isOpen, bstopId, selectedDate]);
 
-  if (!isOpen) return null;
-
-  // 필터링된 이력 목록
-  const filteredRecords = (historyData?.historyRecords ?? []).filter(
-    (record: any) => {
+  // 필터링된 이력 목록 (해당 정류장에 서지 않는 노선 완벽 제외)
+  const filteredRecords = useMemo(() => {
+    const raw = historyData?.historyRecords ?? [];
+    return raw.filter((record: any) => {
+      // 1. 해당 정류장에 정차하는 유효 노선 목록에 포함되는지 확인
+      if (
+        validAvailableRoutes.length > 0 &&
+        record.routeNo &&
+        !validAvailableRoutes.includes(record.routeNo)
+      ) {
+        return false;
+      }
+      // 2. 선택된 노선 필터 적용
       if (selectedRoute === "ALL") return true;
       return record.routeNo === selectedRoute;
-    },
-  );
+    });
+  }, [historyData, selectedRoute, validAvailableRoutes]);
+
+  // 현재 시간 기준 가장 빠른 다음 버스 인덱스 계산
+  const nextArrivalIndex = useMemo(() => {
+    if (selectedDate !== todayStr || filteredRecords.length === 0) {
+      return -1;
+    }
+
+    // 1. 현재 시각 이후(arrivalTime >= nowTimeStr)의 첫 번째 도착 버스 찾기
+    const upcomingIdx = filteredRecords.findIndex((r: any) => {
+      const timeStr = r.arrivalTime
+        ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
+          r.arrivalTime.substring(11, 16)
+        : "";
+      return timeStr >= nowTimeStr;
+    });
+
+    if (upcomingIdx !== -1) {
+      return upcomingIdx;
+    }
+
+    // 2. 이미 막차가 지난 경우 마지막 버스 인덱스 선택
+    return filteredRecords.length - 1;
+  }, [selectedDate, todayStr, filteredRecords, nowTimeStr]);
+
+  // 강조된 가장 빠른 시간대 아이템으로 부드럽게 자동 스크롤
+  useEffect(() => {
+    if (!loading && filteredRecords.length > 0 && nextArrivalIndex !== -1) {
+      const timer = setTimeout(() => {
+        if (targetItemRef.current) {
+          targetItemRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, filteredRecords, nextArrivalIndex, selectedRoute, selectedDate]);
+
+  if (!isOpen) return null;
+  if (typeof document === "undefined") return null;
 
   // 요일 한글 변환
   const getDayKorean = (dayOfWeekStr?: string) => {
@@ -120,8 +184,6 @@ export default function BusHistoryModal({
     }
   };
 
-  if (typeof document === "undefined") return null;
-
   return createPortal(
     <ModalOverlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
@@ -132,7 +194,7 @@ export default function BusHistoryModal({
               <Calendar size={18} color="#2563eb" />
               <HeaderTitle>{stopName}</HeaderTitle>
             </HeaderTitleRow>
-            <HeaderSubtitle>실측 도착 이력 및 n주 전 시간표 통계</HeaderSubtitle>
+            <HeaderSubtitle>실측 도착 이력 및 시간표 통계</HeaderSubtitle>
           </HeaderLeft>
           <CloseButton onClick={onClose}>
             <X size={20} />
@@ -176,7 +238,7 @@ export default function BusHistoryModal({
           >
             전체 노선
           </FilterChip>
-          {availableRoutes.map((r) => (
+          {validAvailableRoutes.map((r) => (
             <FilterChip
               key={r}
               active={selectedRoute === r}
@@ -233,12 +295,19 @@ export default function BusHistoryModal({
                     item.arrivalTime.substring(11, 16)
                   : "-";
 
-                const routeDisplay = item.routeNo || (item.routeId ? `${item.routeId}` : "순환");
+                const routeDisplay =
+                  item.routeNo || (item.routeId ? `${item.routeId}` : "순환");
+
+                const isTarget = idx === nextArrivalIndex;
 
                 return (
-                  <TimelineItem key={item.id || idx}>
+                  <TimelineItem
+                    key={item.id || idx}
+                    ref={isTarget ? targetItemRef : null}
+                    isTarget={isTarget}
+                  >
                     <TimeColumn>
-                      <TimeBadge>{arrivalTime}</TimeBadge>
+                      <TimeBadge isTarget={isTarget}>{arrivalTime}</TimeBadge>
                     </TimeColumn>
                     <BusColumn>
                       <BusCircle
@@ -253,6 +322,12 @@ export default function BusHistoryModal({
                         </BusSubMeta>
                       </BusInfoWrapper>
                     </BusColumn>
+                    {isTarget && (
+                      <CurrentTimeBadge>
+                        <Zap size={11} fill="#2563eb" color="#2563eb" />
+                        가장 빠른 도착
+                      </CurrentTimeBadge>
+                    )}
                   </TimelineItem>
                 );
               })}
@@ -507,20 +582,23 @@ const TimelineList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-`;
-
-const TimelineItem = styled.div`
+const TimelineItem = styled.div<{ isTarget?: boolean }>`
   display: flex;
   align-items: center;
   padding: 10px 12px;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  gap: 14px;
-  transition: background-color 0.15s;
+  background-color: ${({ isTarget }) =>
+    isTarget ? "#eff6ff" : "#ffffff"};
+  border: ${({ isTarget }) =>
+    isTarget ? "1.5px solid #3b82f6" : "1px solid #e5e7eb"};
+  border-radius: 10px;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: ${({ isTarget }) =>
+    isTarget ? "0 2px 8px rgba(59, 130, 246, 0.15)" : "none"};
 
   &:hover {
-    background-color: #f9fafb;
+    background-color: ${({ isTarget }) =>
+      isTarget ? "#e0eeff" : "#f9fafb"};
   }
 `;
 
@@ -529,13 +607,15 @@ const TimeColumn = styled.div`
   align-items: center;
 `;
 
-const TimeBadge = styled.span`
-  background-color: #f3f4f6;
-  color: #1f2937;
+const TimeBadge = styled.span<{ isTarget?: boolean }>`
+  background-color: ${({ isTarget }) =>
+    isTarget ? "#2563eb" : "#f3f4f6"};
+  color: ${({ isTarget }) => (isTarget ? "#ffffff" : "#1f2937")};
   font-size: 13px;
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 6px;
+  transition: all 0.2s ease;
 `;
 
 const BusColumn = styled.div`
@@ -561,3 +641,27 @@ const BusSubMeta = styled.span`
   font-size: 11px;
   color: #6b7280;
 `;
+
+const CurrentTimeBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  white-space: nowrap;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.75;
+    }
+  }
+`;
+
