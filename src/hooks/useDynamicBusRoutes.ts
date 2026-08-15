@@ -50,7 +50,7 @@ function normalizeCoordinate(lat?: number, lng?: number): LatLng {
   const ePrime2_b = (a_b * a_b - b_b * b_b) / (b_b * b_b);
 
   const lat0 = (38.0 * Math.PI) / 180.0;
-  const lng0 = (127.0 * Math.PI) / 180.0;
+  const lng0 = ((127.0 + 10.405 / 3600.0) * Math.PI) / 180.0;
   const k0 = 1.0;
   const falseE = 200000.0;
   const falseN = 500000.0;
