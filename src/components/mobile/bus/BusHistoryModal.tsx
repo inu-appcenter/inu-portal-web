@@ -144,9 +144,25 @@ export default function BusHistoryModal({
     return filteredRecords.length - 1;
   }, [selectedDate, todayStr, filteredRecords, nowTimeStr]);
 
-  // 강조된 가장 빠른 시간대 아이템으로 부드럽게 자동 스크롤
+  // 모달 오픈 시 최초 1회만 자동 스크롤하도록 제어하는 플래그
+  const hasAutoScrolledRef = useRef<boolean>(false);
+
   useEffect(() => {
-    if (!loading && filteredRecords.length > 0 && nextArrivalIndex !== -1) {
+    if (!isOpen) {
+      hasAutoScrolledRef.current = false;
+    }
+  }, [isOpen]);
+
+  // 강조된 가장 빠른 시간대 아이템으로 모달 최초 오픈 시 1회만 부드럽게 스크롤
+  useEffect(() => {
+    if (
+      isOpen &&
+      !loading &&
+      filteredRecords.length > 0 &&
+      nextArrivalIndex !== -1 &&
+      !hasAutoScrolledRef.current
+    ) {
+      hasAutoScrolledRef.current = true;
       const timer = setTimeout(() => {
         if (targetItemRef.current) {
           targetItemRef.current.scrollIntoView({
@@ -157,7 +173,7 @@ export default function BusHistoryModal({
       }, 150);
       return () => clearTimeout(timer);
     }
-  }, [loading, filteredRecords, nextArrivalIndex, selectedRoute, selectedDate]);
+  }, [isOpen, loading, filteredRecords, nextArrivalIndex]);
 
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
@@ -295,8 +311,10 @@ export default function BusHistoryModal({
                     item.arrivalTime.substring(11, 16)
                   : "-";
 
-                const routeDisplay =
-                  item.routeNo || (item.routeId ? `${item.routeId}` : "순환");
+                let routeDisplay = item.routeNo;
+                if (!routeDisplay || /^\d{8,}$/.test(routeDisplay)) {
+                  routeDisplay = item.routeId && !/^\d{8,}$/.test(item.routeId) ? item.routeId : "순환";
+                }
 
                 const isTarget = idx === nextArrivalIndex;
 
@@ -315,7 +333,6 @@ export default function BusHistoryModal({
                         tone={getBusCircleTone(routeDisplay)}
                       />
                       <BusInfoWrapper>
-                        <BusRouteText>{routeDisplay}번 버스</BusRouteText>
                         <BusSubMeta>
                           {item.busNumPlate ? `차량: ${item.busNumPlate} · ` : ""}
                           정류소 도착
@@ -611,6 +628,8 @@ const TimelineList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
+`;
+
 const TimelineItem = styled.div<{ isTarget?: boolean }>`
   display: flex;
   align-items: center;
@@ -660,15 +679,10 @@ const BusInfoWrapper = styled.div`
   gap: 2px;
 `;
 
-const BusRouteText = styled.span`
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
-`;
-
 const BusSubMeta = styled.span`
-  font-size: 11px;
-  color: #6b7280;
+  font-size: 12px;
+  color: #4b5563;
+  font-weight: 500;
 `;
 
 const CurrentTimeBadge = styled.div`
