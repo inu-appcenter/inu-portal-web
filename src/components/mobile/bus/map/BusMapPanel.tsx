@@ -619,8 +619,16 @@ function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
     return null;
   }
 
-  const { status, isLastBus } = bus.arrivalInfo;
+  const { status, isLastBus, time } = bus.arrivalInfo;
   const stationText = getArrivalStationText(bus.arrivalInfo);
+
+  if (time === "도착정보 없음") {
+    return null;
+  }
+
+  if (stationText === "시간표 기반" || stationText === "통계 추정") {
+    return <span style={{ color: "#4f46e5", fontWeight: 600 }}>⏱️ 시간표 기반</span>;
+  }
 
   if (!stationText && !status && !isLastBus) {
     return null;
