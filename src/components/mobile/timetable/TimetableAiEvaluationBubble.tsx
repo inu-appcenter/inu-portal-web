@@ -181,102 +181,110 @@ const TimetableAiEvaluationBubble = ({
     <>
       <AnimatePresence>
         {isOpen && (
-          <BubbleWrapper
-            variants={bubbleVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            {/* 말풍선 상단 (자연스럽게 녹아든 헤더) */}
-            <BubbleTopBar>
-              <ProfileGroup>
-                <TorchAvatar src={ChatBulButtonImg} alt="횃불이" />
-                <TorchName>횃불이의 시간표 평가 😎</TorchName>
-              </ProfileGroup>
+          <>
+            {/* 바깥 영역 터치 시 닫히는 투명 백드롭 (흐림 효과 없음) */}
+            <TransparentBackdrop
+              onClick={() => setIsOpen(false)}
+              aria-hidden="true"
+            />
 
-              <CloseButton onClick={() => setIsOpen(false)} aria-label="닫기">
-                <X size={17} />
-              </CloseButton>
-            </BubbleTopBar>
+            <BubbleWrapper
+              variants={bubbleVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {/* 말풍선 상단 (자연스럽게 녹아든 헤더) */}
+              <BubbleTopBar>
+                <ProfileGroup>
+                  <TorchAvatar src={ChatBulButtonImg} alt="횃불이" />
+                  <TorchName>횃불이의 시간표 평가 😎</TorchName>
+                </ProfileGroup>
 
-            {/* 말풍선 본문 */}
-            <BubbleBody ref={contentBodyRef} onScroll={handleScroll}>
-              {/* 1. 로딩 상태 */}
-              {(isLoading || isCacheLoading) && !displayText && (
-                <LoadingStateContainer>
-                  <ScanningAvatarWrapper>
-                    <ScanningAvatar src={ChatBulButtonImg} alt="분석 중" />
-                    <ScanningRadar />
-                  </ScanningAvatarWrapper>
-                  <LoadingTitle>시간표 뜯어보는 중... 🔥</LoadingTitle>
-                  <LoadingDesc>
-                    공강 시간, 1교시, 점심시간까지 꼼꼼히 확인하고 있어!
-                  </LoadingDesc>
-                  <DotsLoader>
-                    <span />
-                    <span />
-                    <span />
-                  </DotsLoader>
-                </LoadingStateContainer>
-              )}
+                <CloseButton onClick={() => setIsOpen(false)} aria-label="닫기">
+                  <X size={17} />
+                </CloseButton>
+              </BubbleTopBar>
 
-              {/* 2. 에러 상태 */}
-              {error && (
-                <ErrorContainer>
-                  <AlertCircle size={28} color="#FF3B30" />
-                  <ErrorMessage>{error}</ErrorMessage>
-                  <RetryButton onClick={handleRetry}>
-                    다시 시도하기
-                  </RetryButton>
-                </ErrorContainer>
-              )}
-
-              {/* 3. 텍스트 표시 영역 */}
-              {displayText && (
-                <ContentArea>
-                  {renderFormattedContent(displayText)}
-                  {isStreaming && (
-                    <TypingCursor>
+              {/* 말풍선 본문 */}
+              <BubbleBody ref={contentBodyRef} onScroll={handleScroll}>
+                {/* 1. 로딩 상태 */}
+                {(isLoading || isCacheLoading) && !displayText && (
+                  <LoadingStateContainer>
+                    <ScanningAvatarWrapper>
+                      <ScanningAvatar src={ChatBulButtonImg} alt="분석 중" />
+                      <ScanningRadar />
+                    </ScanningAvatarWrapper>
+                    <LoadingTitle>시간표 뜯어보는 중... 🔥</LoadingTitle>
+                    <LoadingDesc>
+                      공강 시간, 1교시, 점심시간까지 꼼꼼히 확인하고 있어!
+                    </LoadingDesc>
+                    <DotsLoader>
                       <span />
-                    </TypingCursor>
-                  )}
+                      <span />
+                      <span />
+                    </DotsLoader>
+                  </LoadingStateContainer>
+                )}
 
-                  {/* 하단 액션 버튼 (복사 & 다시 생성) */}
-                  {!isStreaming && !isLoading && (
-                    <MessageFooter>
-                      <ActionButton onClick={handleCopy} title="답변 복사">
-                        {copied ? (
-                          <Check size={12} color="#52c41a" />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                        <span>{copied ? "복사됨" : "복사"}</span>
-                      </ActionButton>
+                {/* 2. 에러 상태 */}
+                {error && (
+                  <ErrorContainer>
+                    <AlertCircle size={28} color="#FF3B30" />
+                    <ErrorMessage>{error}</ErrorMessage>
+                    <RetryButton onClick={handleRetry}>
+                      다시 시도하기
+                    </RetryButton>
+                  </ErrorContainer>
+                )}
 
-                      <ActionButton onClick={handleRetry} title="다시 생성">
-                        <RefreshCw size={12} />
-                        <span>다시 생성</span>
-                      </ActionButton>
-                    </MessageFooter>
-                  )}
-                </ContentArea>
-              )}
+                {/* 3. 텍스트 표시 영역 */}
+                {displayText && (
+                  <ContentArea>
+                    {renderFormattedContent(displayText)}
+                    {isStreaming && (
+                      <TypingCursor>
+                        <span />
+                      </TypingCursor>
+                    )}
 
-              {/* 4. 초기 미분석 상태 */}
-              {!isLoading && !isCacheLoading && !error && !displayText && (
-                <EmptyStateContainer>
-                  <p>아직 평가를 받지 않았어!</p>
-                  <StartButton onClick={() => startEvaluation(false)}>
-                    <Sparkles size={15} />
-                    시간표 평가받기
-                  </StartButton>
-                </EmptyStateContainer>
-              )}
-            </BubbleBody>
+                    {/* 하단 액션 버튼 (복사 & 다시 생성) */}
+                    {!isStreaming && !isLoading && (
+                      <MessageFooter>
+                        <ActionButton onClick={handleCopy} title="답변 복사">
+                          {copied ? (
+                            <Check size={12} color="#52c41a" />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                          <span>{copied ? "복사됨" : "복사"}</span>
+                        </ActionButton>
 
-            {/* 말풍선 꼬리 */}
-            <BubbleTail />
-          </BubbleWrapper>
+                        <ActionButton onClick={handleRetry} title="다시 생성">
+                          <RefreshCw size={12} />
+                          <span>다시 생성</span>
+                        </ActionButton>
+                      </MessageFooter>
+                    )}
+                  </ContentArea>
+                )}
+
+                {/* 4. 초기 미분석 상태 */}
+                {!isLoading && !isCacheLoading && !error && !displayText && (
+                  <EmptyStateContainer>
+                    <p>아직 평가를 받지 않았어!</p>
+                    <StartButton onClick={() => startEvaluation(false)}>
+                      <Sparkles size={15} />
+                      시간표 평가받기
+                    </StartButton>
+                  </EmptyStateContainer>
+                )}
+              </BubbleBody>
+
+              {/* 말풍선 꼬리 */}
+              <BubbleTail />
+            </BubbleWrapper>
+          </>
         )}
       </AnimatePresence>
 
@@ -319,11 +327,19 @@ const blink = keyframes`
   50% { opacity: 0; }
 `;
 
+const TransparentBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+`;
+
 const FloatingButtonContainer = styled.div`
   position: fixed;
   bottom: 80px;
   right: 16px;
-  z-index: 1000;
+  z-index: 1003;
 
   @media (min-width: 1024px) {
     bottom: 85px;
@@ -376,7 +392,8 @@ const BubbleWrapper = styled(motion.div)`
   right: 16px;
   width: calc(100vw - 32px);
   max-width: 340px;
-  max-height: 440px;
+  max-height: min(400px, calc(100dvh - 240px));
+  min-height: 120px;
   background: #ffffff;
   border-radius: 20px 20px 6px 20px;
   box-shadow:
@@ -385,8 +402,13 @@ const BubbleWrapper = styled(motion.div)`
   border: 1px solid rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
-  z-index: 1001;
+  z-index: 1002;
   overflow: visible;
+
+  @media (max-height: 650px) {
+    max-height: calc(100dvh - 210px);
+    bottom: 140px;
+  }
 
   @media (min-width: 1024px) {
     right: calc(50% - 600px + 16px);
@@ -410,6 +432,7 @@ const BubbleTopBar = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px 8px 16px;
+  flex-shrink: 0;
 `;
 
 const ProfileGroup = styled.div`
