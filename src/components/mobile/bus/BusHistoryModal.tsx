@@ -199,28 +199,6 @@ export default function BusHistoryModal({
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
 
-  // 요일 한글 변환
-  const getDayKorean = (dayOfWeekStr?: string) => {
-    switch (dayOfWeekStr) {
-      case "MONDAY":
-        return "월요일";
-      case "TUESDAY":
-        return "화요일";
-      case "WEDNESDAY":
-        return "수요일";
-      case "THURSDAY":
-        return "목요일";
-      case "FRIDAY":
-        return "금요일";
-      case "SATURDAY":
-        return "토요일";
-      case "SUNDAY":
-        return "일요일";
-      default:
-        return "";
-    }
-  };
-
   return createPortal(
     <ModalOverlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
@@ -286,27 +264,17 @@ export default function BusHistoryModal({
           ))}
         </RouteFilterBar>
 
-        {/* 통계 요약 카드 */}
-        {historyData && (
+        {/* 4주간 평균 배차 간격 요약 배너 */}
+        {historyData?.averageIntervalSeconds ? (
           <StatsSummaryCard>
             <StatsRow>
-              <StatsItem>
-                <StatsLabel>조회 기준 요일</StatsLabel>
-                <StatsValue>
-                  {selectedDate} ({getDayKorean(historyData.dayOfWeek)})
-                </StatsValue>
-              </StatsItem>
-              {historyData.averageIntervalSeconds ? (
-                <StatsItem>
-                  <StatsLabel>4주간 평균 배차 간격</StatsLabel>
-                  <StatsValue>
-                    약 {Math.round(historyData.averageIntervalSeconds / 60)}분
-                  </StatsValue>
-                </StatsItem>
-              ) : null}
+              <StatsLabel>4주간 평균 배차 간격</StatsLabel>
+              <StatsValue>
+                약 {Math.round(historyData.averageIntervalSeconds / 60)}분
+              </StatsValue>
             </StatsRow>
           </StatsSummaryCard>
-        )}
+        ) : null}
 
         {/* 도착 이력 타임라인 리스트 */}
         <ListContainer ref={listContainerRef}>
@@ -558,7 +526,7 @@ const FilterChip = styled.button<{ active: boolean }>`
 
 const StatsSummaryCard = styled.div`
   margin: 12px 20px 0 20px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   background-color: #f0fdf4;
   border: 1px solid #bbf7d0;
   border-radius: 8px;
@@ -566,19 +534,13 @@ const StatsSummaryCard = styled.div`
 
 const StatsRow = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-`;
-
-const StatsItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  gap: 8px;
 `;
 
 const StatsLabel = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: #166534;
   font-weight: 600;
 `;
@@ -586,7 +548,7 @@ const StatsLabel = styled.span`
 const StatsValue = styled.span`
   font-size: 13px;
   font-weight: 700;
-  color: #14532d;
+  color: #15803d;
 `;
 
 const ListContainer = styled.div`
