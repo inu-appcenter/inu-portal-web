@@ -46,8 +46,10 @@ export default function BusHistoryModal({
   const [historyData, setHistoryData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // 타깃 아이템 자동 스크롤용 ref
+  // 타깃 아이템 및 컨테이너 자동 스크롤용 ref
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
   const targetItemRef = useRef<HTMLDivElement | null>(null);
+  const hasAutoScrolledRef = useRef<boolean>(false);
 
   // 현재 시각 (HH:mm)
   const nowTimeStr = useMemo(() => {
@@ -65,6 +67,7 @@ export default function BusHistoryModal({
   // 주차 오프셋 변경 시 날짜 계산
   const handleWeekOffsetChange = (offset: number) => {
     setWeekOffset(offset);
+    hasAutoScrolledRef.current = false; // 날짜 탭 변경 시 해당 날짜 위치로 스크롤 허용
     const d = new Date();
     d.setDate(d.getDate() - offset * 7);
     setSelectedDate(d.toISOString().split("T")[0]);
@@ -73,7 +76,14 @@ export default function BusHistoryModal({
   // 날짜 직접 선택 시
   const handleDateChange = (dateStr: string) => {
     setSelectedDate(dateStr);
+    hasAutoScrolledRef.current = false;
     setWeekOffset(-1); // 커스텀 날짜
+  };
+
+  // 노선 필터 변경 시
+  const handleRouteChange = (route: string) => {
+    setSelectedRoute(route);
+    hasAutoScrolledRef.current = false; // 노선 탭 변경 시 해당 노선 위치로 스크롤 허용
   };
 
   // 데이터 로드
@@ -123,29 +133,31 @@ export default function BusHistoryModal({
 
   // 현재 시간 기준 가장 빠른 다음 버스 인덱스 계산
   const nextArrivalIndex = useMemo(() => {
-    if (selectedDate !== todayStr || filteredRecords.length === 0) {
+    if (filteredRecords.length === 0) {
       return -1;
     }
 
-    // 1. 현재 시각 이후(arrivalTime >= nowTimeStr)의 첫 번째 도착 버스 찾기
-    const upcomingIdx = filteredRecords.findIndex((r: any) => {
-      const timeStr = r.arrivalTime
-        ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
-          r.arrivalTime.substring(11, 16)
-        : "";
-      return timeStr >= nowTimeStr;
-    });
+    if (selectedDate === todayStr) {
+      // 오늘 날짜인 경우: 현재 시각 이후(arrivalTime >= nowTimeStr)의 첫 번째 도착 버스 찾기
+      const upcomingIdx = filteredRecords.findIndex((r: any) => {
+        const timeStr = r.arrivalTime
+          ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
+            r.arrivalTime.substring(11, 16)
+          : "";
+        return timeStr >= nowTimeStr;
+      });
 
-    if (upcomingIdx !== -1) {
-      return upcomingIdx;
+      if (upcomingIdx !== -1) {
+        return upcomingIdx;
+      }
+
+      // 이미 막차가 지난 경우 마지막 버스 인덱스 선택
+      return filteredRecords.length - 1;
     }
 
-    // 2. 이미 막차가 지난 경우 마지막 버스 인덱스 선택
-    return filteredRecords.length - 1;
+    // 과거 날짜인 경우 첫 번째 인덱스
+    return 0;
   }, [selectedDate, todayStr, filteredRecords, nowTimeStr]);
-
-  // 모달 오픈 시 최초 1회만 자동 스크롤하도록 제어하는 플래그
-  const hasAutoScrolledRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -153,26 +165,35 @@ export default function BusHistoryModal({
     }
   }, [isOpen]);
 
-  // 강조된 가장 빠른 시간대 아이템으로 모달 최초 오픈 시 1회만 부드럽게 스크롤
+  // 모달 오픈 및 데이터 렌더링 시 현재 시간 기준 가장 빠른 버스 위치로 1회 부드럽게 스크롤
   useEffect(() => {
     if (
-      isOpen &&
-      !loading &&
-      filteredRecords.length > 0 &&
-      nextArrivalIndex !== -1 &&
-      !hasAutoScrolledRef.current
+      !isOpen ||
+      loading ||
+      filteredRecords.length === 0 ||
+      nextArrivalIndex === -1 ||
+      hasAutoScrolledRef.current
     ) {
-      hasAutoScrolledRef.current = true;
-      const timer = setTimeout(() => {
-        if (targetItemRef.current) {
-          targetItemRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
-      }, 150);
-      return () => clearTimeout(timer);
+      return;
     }
+
+    const timer = setTimeout(() => {
+      const container = listContainerRef.current;
+      const target = targetItemRef.current;
+
+      if (container && target) {
+        hasAutoScrolledRef.current = true;
+        const targetOffsetTop = target.offsetTop;
+        const scrollToY = Math.max(0, targetOffsetTop - 50);
+
+        container.scrollTo({
+          top: scrollToY,
+          behavior: "smooth",
+        });
+      }
+    }, 80);
+
+    return () => clearTimeout(timer);
   }, [isOpen, loading, filteredRecords, nextArrivalIndex]);
 
   if (!isOpen) return null;
@@ -250,7 +271,7 @@ export default function BusHistoryModal({
         <RouteFilterBar>
           <FilterChip
             active={selectedRoute === "ALL"}
-            onClick={() => setSelectedRoute("ALL")}
+            onClick={() => handleRouteChange("ALL")}
           >
             전체 노선
           </FilterChip>
@@ -258,7 +279,7 @@ export default function BusHistoryModal({
             <FilterChip
               key={r}
               active={selectedRoute === r}
-              onClick={() => setSelectedRoute(r)}
+              onClick={() => handleRouteChange(r)}
             >
               {r}번
             </FilterChip>
@@ -288,7 +309,7 @@ export default function BusHistoryModal({
         )}
 
         {/* 도착 이력 타임라인 리스트 */}
-        <ListContainer>
+        <ListContainer ref={listContainerRef}>
           {loading ? (
             <LoadingContainer>
               <RotateCw size={24} className="spin" color="#2563eb" />
