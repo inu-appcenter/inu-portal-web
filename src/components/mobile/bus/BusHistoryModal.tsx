@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
-import {
-  ChevronLeft,
-  ChevronDown,
-  Clock,
-  RotateCw,
-} from "lucide-react";
+import { ChevronLeft, ChevronDown, Clock, RotateCw } from "lucide-react";
 
 import { getBusHistory } from "@/apis/busArrival";
 import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
@@ -51,12 +46,13 @@ export default function BusHistoryModal({
   const todayDayIndex = useMemo(() => new Date().getDay(), [isOpen]);
 
   // 선택된 요일 상태 (기본값: 오늘 요일)
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(todayDayIndex);
+  const [selectedDayIndex, setSelectedDayIndex] =
+    useState<number>(todayDayIndex);
 
   // 선택된 노선 상태
   const validAvailableRoutes = useMemo(() => {
     return Array.from(new Set(availableRoutes.filter(Boolean)));
-  }, [availableRoutes]);
+  }, [availableRoutes.join(",")]);
 
   const [selectedRoute, setSelectedRoute] = useState<string>(() => {
     if (defaultRouteNo && validAvailableRoutes.includes(defaultRouteNo)) {
@@ -65,9 +61,11 @@ export default function BusHistoryModal({
     return validAvailableRoutes[0] || "순환";
   });
 
-  // 모달 열리거나 defaultRouteNo 변경 시 상태 초기화
+  // 모달이 처음 열릴 때만 상태 초기화 (부모 리렌더링으로 인한 강제 덮어쓰기 방지)
+  const prevIsOpenRef = useRef<boolean>(false);
+
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       setSelectedDayIndex(new Date().getDay());
       if (defaultRouteNo && validAvailableRoutes.includes(defaultRouteNo)) {
         setSelectedRoute(defaultRouteNo);
@@ -76,6 +74,7 @@ export default function BusHistoryModal({
       }
       hasAutoScrolledRef.current = false;
     }
+    prevIsOpenRef.current = isOpen;
   }, [isOpen, defaultRouteNo, validAvailableRoutes]);
 
   // 1주 전, 2주 전, 3주 전 날짜 계산 함수
@@ -98,7 +97,9 @@ export default function BusHistoryModal({
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, "0");
       const dd = String(d.getDate()).padStart(2, "0");
-      const dayLabel = DAYS_OF_WEEK.find((item) => item.dayIndex === selectedDayIndex)?.label || "";
+      const dayLabel =
+        DAYS_OF_WEEK.find((item) => item.dayIndex === selectedDayIndex)
+          ?.label || "";
 
       return {
         dateStr: `${yyyy}-${mm}-${dd}`,
@@ -315,9 +316,7 @@ export default function BusHistoryModal({
         {/* 정류장 정보 */}
         <StopInfoSection>
           <StopName>{stopName}</StopName>
-          <StopMeta>
-            {bstopId} · 인천대 방면 실측 도착 시간표
-          </StopMeta>
+          <StopMeta>{bstopId} · 인천대 방면</StopMeta>
         </StopInfoSection>
 
         {/* 노선 선택 드롭다운 / 셀렉터 */}
@@ -390,7 +389,8 @@ export default function BusHistoryModal({
               <Clock size={36} color="#d1d5db" />
               <EmptyTitle>해당 요일의 실측 도착 기록이 없습니다.</EmptyTitle>
               <EmptyDesc>
-                스케줄러가 수집한 1~3주 전 도착 이력을 기반으로 시간표가 구성됩니다.
+                스케줄러가 수집한 1~3주 전 도착 이력을 기반으로 시간표가
+                구성됩니다.
               </EmptyDesc>
             </EmptyBox>
           ) : (
@@ -450,7 +450,7 @@ export default function BusHistoryModal({
         </TableViewport>
       </ModalContainer>
     </ModalOverlay>,
-    document.body
+    document.body,
   );
 }
 
@@ -687,13 +687,11 @@ const TableHeaderCell = styled.th`
 `;
 
 const MatrixTableRow = styled.tr<{ isTarget?: boolean }>`
-  background-color: ${({ isTarget }) =>
-    isTarget ? "#eff6ff" : "#ffffff"};
+  background-color: ${({ isTarget }) => (isTarget ? "#eff6ff" : "#ffffff")};
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: ${({ isTarget }) =>
-      isTarget ? "#e0eeff" : "#f8fafc"};
+    background-color: ${({ isTarget }) => (isTarget ? "#e0eeff" : "#f8fafc")};
   }
 `;
 
@@ -702,8 +700,10 @@ const MatrixTableCell = styled.td<{ isTarget?: boolean }>`
   font-size: 14px;
   font-weight: ${({ isTarget }) => (isTarget ? "800" : "600")};
   color: ${({ isTarget }) => (isTarget ? "#2563eb" : "#1e293b")};
-  border-bottom: 1px solid ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
-  border-right: 1px solid ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
+  border-bottom: 1px solid
+    ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
+  border-right: 1px solid
+    ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
 
   &:last-child {
     border-right: none;
