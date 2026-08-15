@@ -13,6 +13,7 @@ interface BusHistoryModalProps {
   stopName: string;
   defaultRouteNo?: string;
   availableRoutes?: string[];
+  routeNextStopMap?: Record<string, string>;
 }
 
 interface MatrixRow {
@@ -41,6 +42,7 @@ export default function BusHistoryModal({
   stopName,
   defaultRouteNo,
   availableRoutes = [],
+  routeNextStopMap = {},
 }: BusHistoryModalProps) {
   // 오늘 요일 인덱스 (0: 일, 1: 월, ..., 6: 토)
   const todayDayIndex = useMemo(() => new Date().getDay(), [isOpen]);
@@ -316,7 +318,12 @@ export default function BusHistoryModal({
         {/* 정류장 정보 */}
         <StopInfoSection>
           <StopName>{stopName}</StopName>
-          <StopMeta>{bstopId} · 인천대 방면</StopMeta>
+          <StopMeta>
+            {bstopId}
+            {routeNextStopMap[selectedRoute]
+              ? ` · ${routeNextStopMap[selectedRoute]} 방면`
+              : ""}
+          </StopMeta>
         </StopInfoSection>
 
         {/* 노선 선택 드롭다운 / 셀렉터 */}

@@ -456,6 +456,24 @@ export default function BusMapPanel({
               availableRoutes={Array.from(
                 new Set(selectedStop.buses.map((b) => b.number)),
               )}
+              routeNextStopMap={selectedStop.buses.reduce(
+                (acc: Record<string, string>, bus) => {
+                  if (bus.route && bus.route.length > 0) {
+                    const idx = bus.route.findIndex(
+                      (name) =>
+                        selectedStop.stopName.includes(name) ||
+                        name.includes(selectedStop.stopName),
+                    );
+                    if (idx !== -1 && idx + 1 < bus.route.length) {
+                      acc[bus.number] = bus.route[idx + 1];
+                    } else if (bus.route.length > 1) {
+                      acc[bus.number] = bus.route[bus.route.length - 1];
+                    }
+                  }
+                  return acc;
+                },
+                {},
+              )}
             />
           </>
         ) : (
