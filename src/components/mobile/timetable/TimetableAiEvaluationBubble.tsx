@@ -394,12 +394,12 @@ const BubbleWrapper = styled(motion.div)`
   max-width: 340px;
   max-height: min(400px, calc(100dvh - 240px));
   min-height: 120px;
-  background: #ffffff;
+  background: #eef6ff;
   border-radius: 20px 20px 6px 20px;
   box-shadow:
-    0 16px 36px -8px rgba(0, 0, 0, 0.18),
-    0 3px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+    0 18px 38px -8px rgba(0, 70, 160, 0.16),
+    0 4px 14px rgba(0, 70, 160, 0.06);
+  border: 1px solid rgba(0, 102, 255, 0.12);
   display: flex;
   flex-direction: column;
   z-index: 1002;
@@ -411,6 +411,8 @@ const BubbleWrapper = styled(motion.div)`
   }
 
   @media (min-width: 1024px) {
+    max-width: 380px;
+    max-height: min(580px, calc(100vh - 200px));
     right: calc(50% - 600px + 16px);
   }
 `;
@@ -421,9 +423,9 @@ const BubbleTail = styled.div`
   right: 18px;
   width: 14px;
   height: 14px;
-  background: #ffffff;
-  border-right: 1px solid rgba(0, 0, 0, 0.07);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  background: #eef6ff;
+  border-right: 1px solid rgba(0, 102, 255, 0.12);
+  border-bottom: 1px solid rgba(0, 102, 255, 0.12);
   transform: rotate(45deg);
 `;
 
@@ -654,7 +656,7 @@ const MessageFooter = styled.div`
   gap: 8px;
   margin-top: 12px;
   padding-top: 8px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(0, 102, 255, 0.08);
 `;
 
 const ActionButton = styled.button`
@@ -662,7 +664,7 @@ const ActionButton = styled.button`
   border: none;
   padding: 4px 6px;
   cursor: pointer;
-  color: #8e8e93;
+  color: #6b7280;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -672,8 +674,8 @@ const ActionButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover {
-    color: #1c1c1e;
-    background-color: rgba(0, 0, 0, 0.05);
+    color: #1d4ed8;
+    background-color: rgba(0, 102, 255, 0.08);
   }
 
   &:active {
