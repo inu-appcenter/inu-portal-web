@@ -182,8 +182,11 @@ const TimetableAiEvaluationBubble = ({
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* 바깥 영역 터치 시 닫히는 투명 백드롭 (흐림 효과 없음) */}
-            <TransparentBackdrop
+            {/* 배경 흐림 및 딤 효과 백드롭 */}
+            <Backdrop
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
               aria-hidden="true"
             />
@@ -327,11 +330,16 @@ const blink = keyframes`
   50% { opacity: 0; }
 `;
 
-const TransparentBackdrop = styled.div`
+const Backdrop = styled(motion.div)`
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 1001;
-  background: transparent;
   -webkit-tap-highlight-color: transparent;
 `;
 
