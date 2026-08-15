@@ -20,6 +20,7 @@ const TimetableAiEvaluationBubble = ({
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const contentBodyRef = useRef<HTMLDivElement>(null);
+  const isAutoScrollRef = useRef<boolean>(true);
 
   const {
     cachedData,
@@ -48,6 +49,7 @@ const TimetableAiEvaluationBubble = ({
 
       // 캐시가 없고, 현재 스트리밍 중도 아니고, 기존 텍스트도 없으면 즉시 시작
       if (!cachedData && !evaluationText && !isStreaming) {
+        isAutoScrollRef.current = true;
         startEvaluation(false);
       }
     }
@@ -56,6 +58,7 @@ const TimetableAiEvaluationBubble = ({
   const handleRetry = () => {
     if (isStreaming || isLoading) return;
     mixpanelTrack.timetableFeatureClicked("시간표 AI 재평가", "AI 평가 말풍선");
+    isAutoScrollRef.current = true;
     startEvaluation(true);
   };
 
@@ -70,9 +73,17 @@ const TimetableAiEvaluationBubble = ({
     }
   };
 
-  // 스트리밍 중일 때 최하단으로 자동 스크롤
+  // 사용자가 스크롤을 위로 올리면 자동 스크롤 해제, 바닥 근처로 내리면 다시 자동 스크롤 활성화
+  const handleScroll = () => {
+    if (!contentBodyRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = contentBodyRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 40;
+    isAutoScrollRef.current = isNearBottom;
+  };
+
+  // 스트리밍 중일 때 사용자가 위를 보고 있지 않은 경우에만 최하단으로 자동 스크롤
   useEffect(() => {
-    if (isStreaming && contentBodyRef.current) {
+    if (isStreaming && isAutoScrollRef.current && contentBodyRef.current) {
       contentBodyRef.current.scrollTop = contentBodyRef.current.scrollHeight;
     }
   }, [evaluationText, isStreaming]);
@@ -189,7 +200,7 @@ const TimetableAiEvaluationBubble = ({
             </BubbleTopBar>
 
             {/* 말풍선 본문 */}
-            <BubbleBody ref={contentBodyRef}>
+            <BubbleBody ref={contentBodyRef} onScroll={handleScroll}>
               {/* 1. 로딩 상태 */}
               {(isLoading || isCacheLoading) && !displayText && (
                 <LoadingStateContainer>
