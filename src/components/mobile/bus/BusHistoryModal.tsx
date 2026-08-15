@@ -1,17 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
-import {
-  Calendar,
-  Clock,
-  X,
-  RotateCw,
-} from "lucide-react";
-
-
+import { ChevronLeft, ChevronDown, Clock, RotateCw } from "lucide-react";
 
 import { getBusHistory } from "@/apis/busArrival";
-import BusCircle from "@/components/mobile/bus/BusCircle";
 import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
 
 interface BusHistoryModalProps {
@@ -21,7 +13,27 @@ interface BusHistoryModalProps {
   stopName: string;
   defaultRouteNo?: string;
   availableRoutes?: string[];
+  routeNextStopMap?: Record<string, string>;
 }
+
+interface MatrixRow {
+  hour: number;
+  timeW1?: string; // 1주 전
+  timeW2?: string; // 2주 전
+  timeW3?: string; // 3주 전
+  representativeMinutes: number; // 분 단위 (HH * 60 + MM)
+}
+
+// 요일 정보 매핑
+const DAYS_OF_WEEK = [
+  { dayIndex: 1, label: "월" },
+  { dayIndex: 2, label: "화" },
+  { dayIndex: 3, label: "수" },
+  { dayIndex: 4, label: "목" },
+  { dayIndex: 5, label: "금" },
+  { dayIndex: 6, label: "토" },
+  { dayIndex: 0, label: "일" },
+];
 
 export default function BusHistoryModal({
   isOpen,
@@ -30,52 +42,132 @@ export default function BusHistoryModal({
   stopName,
   defaultRouteNo,
   availableRoutes = [],
+  routeNextStopMap = {},
 }: BusHistoryModalProps) {
-  // 날짜 선택 상태 (기본: 오늘 날짜 YYYY-MM-DD)
-  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
-  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  // 오늘 요일 인덱스 (0: 일, 1: 월, ..., 6: 토)
+  const todayDayIndex = useMemo(() => new Date().getDay(), [isOpen]);
 
-  // 주차 간편 프리셋 (0: 오늘, 1: 1주 전, 2: 2주 전, 3: 3주 전, 4: 4주 전)
-  const [weekOffset, setWeekOffset] = useState<number>(0);
+  // 선택된 요일 상태 (기본값: 오늘 요일)
+  const [selectedDayIndex, setSelectedDayIndex] =
+    useState<number>(todayDayIndex);
 
-  // 노선 필터 상태
-  const [selectedRoute, setSelectedRoute] = useState<string>(
-    defaultRouteNo || "ALL",
-  );
+  // 선택된 노선 상태
+  const validAvailableRoutes = useMemo(() => {
+    return Array.from(new Set(availableRoutes.filter(Boolean)));
+  }, [availableRoutes.join(",")]);
 
-  // API 데이터 상태
-  const [historyData, setHistoryData] = useState<any | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<string>(() => {
+    if (defaultRouteNo && validAvailableRoutes.includes(defaultRouteNo)) {
+      return defaultRouteNo;
+    }
+    return validAvailableRoutes[0] || "순환";
+  });
+
+  // 모달이 처음 열릴 때만 상태 초기화 (부모 리렌더링으로 인한 강제 덮어쓰기 방지)
+  const prevIsOpenRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (isOpen && !prevIsOpenRef.current) {
+      setSelectedDayIndex(new Date().getDay());
+      if (defaultRouteNo && validAvailableRoutes.includes(defaultRouteNo)) {
+        setSelectedRoute(defaultRouteNo);
+      } else if (validAvailableRoutes.length > 0) {
+        setSelectedRoute(validAvailableRoutes[0]);
+      }
+      hasAutoScrolledRef.current = false;
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, defaultRouteNo, validAvailableRoutes]);
+
+  // 1주 전, 2주 전, 3주 전 날짜 계산 함수
+  const targetDates = useMemo(() => {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0(일) ~ 6(토)
+
+    // 선택된 요일까지의 차이 계산 (가장 최근 과거의 해당 요일 기준)
+    let diffDays = currentDay - selectedDayIndex;
+    if (diffDays < 0) {
+      diffDays += 7;
+    }
+
+    const baseDate = new Date(today);
+    baseDate.setDate(today.getDate() - diffDays);
+
+    const getWeekDate = (weeksAgo: number) => {
+      const d = new Date(baseDate);
+      d.setDate(baseDate.getDate() - weeksAgo * 7);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const dayLabel =
+        DAYS_OF_WEEK.find((item) => item.dayIndex === selectedDayIndex)
+          ?.label || "";
+
+      return {
+        dateStr: `${yyyy}-${mm}-${dd}`,
+        headerLabel: `${d.getMonth() + 1}.${d.getDate()}.(${dayLabel})`,
+      };
+    };
+
+    return {
+      w1: getWeekDate(1),
+      w2: getWeekDate(2),
+      w3: getWeekDate(3),
+    };
+  }, [selectedDayIndex]);
+
+  // 3주치 데이터 상태
+  const [w1Records, setW1Records] = useState<string[]>([]);
+  const [w2Records, setW2Records] = useState<string[]>([]);
+  const [w3Records, setW3Records] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // 주차 오프셋 변경 시 날짜 계산
-  const handleWeekOffsetChange = (offset: number) => {
-    setWeekOffset(offset);
-    const d = new Date();
-    d.setDate(d.getDate() - offset * 7);
-    setSelectedDate(d.toISOString().split("T")[0]);
-  };
+  // 스크롤 및 타깃 참조 ref
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
+  const targetItemRef = useRef<HTMLTableRowElement | null>(null);
+  const hourRowRefs = useRef<Record<number, HTMLTableRowElement | null>>({});
+  const hasAutoScrolledRef = useRef<boolean>(false);
 
-  // 날짜 직접 선택 시
-  const handleDateChange = (dateStr: string) => {
-    setSelectedDate(dateStr);
-    setWeekOffset(-1); // 커스텀 날짜
-  };
+  // 현재 시간 (HH:mm)
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinutes = currentHour * 60 + now.getMinutes();
 
-  // 데이터 로드
+  // 3주치 과거 이력 API 병렬 호출
   useEffect(() => {
     if (!isOpen || !bstopId) return;
 
     let isMounted = true;
     setLoading(true);
 
-    getBusHistory(bstopId, selectedDate)
-      .then((data) => {
-        if (isMounted) {
-          setHistoryData(data);
-        }
-      })
-      .catch((err) => {
-        console.error("버스 이력 로드 실패", err);
+    Promise.all([
+      getBusHistory(bstopId, targetDates.w1.dateStr).catch(() => null),
+      getBusHistory(bstopId, targetDates.w2.dateStr).catch(() => null),
+      getBusHistory(bstopId, targetDates.w3.dateStr).catch(() => null),
+    ])
+      .then(([res1, res2, res3]) => {
+        if (!isMounted) return;
+
+        const extractTimes = (res: any) => {
+          const raw = res?.historyRecords ?? [];
+          return raw
+            .filter((r: any) => {
+              if (!selectedRoute) return true;
+              return r.routeNo === selectedRoute;
+            })
+            .map((r: any) => {
+              return r.arrivalTime
+                ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
+                    r.arrivalTime.substring(11, 16)
+                : "";
+            })
+            .filter(Boolean)
+            .sort();
+        };
+
+        setW1Records(extractTimes(res1));
+        setW2Records(extractTimes(res2));
+        setW3Records(extractTimes(res3));
       })
       .finally(() => {
         if (isMounted) {
@@ -86,182 +178,298 @@ export default function BusHistoryModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, bstopId, selectedDate]);
+  }, [isOpen, bstopId, targetDates, selectedRoute]);
 
-  if (!isOpen) return null;
+  // 다주차 시간표 매트릭스 표 생성 알고리즘
+  const matrixRows = useMemo(() => {
+    const toMin = (t: string) => {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
+    };
 
-  // 필터링된 이력 목록
-  const filteredRecords = (historyData?.historyRecords ?? []).filter(
-    (record: any) => {
-      if (selectedRoute === "ALL") return true;
-      return record.routeNo === selectedRoute;
-    },
-  );
+    const list1 = [...w1Records];
+    const list2 = [...w2Records];
+    const list3 = [...w3Records];
 
-  // 요일 한글 변환
-  const getDayKorean = (dayOfWeekStr?: string) => {
-    switch (dayOfWeekStr) {
-      case "MONDAY":
-        return "월요일";
-      case "TUESDAY":
-        return "화요일";
-      case "WEDNESDAY":
-        return "수요일";
-      case "THURSDAY":
-        return "목요일";
-      case "FRIDAY":
-        return "금요일";
-      case "SATURDAY":
-        return "토요일";
-      case "SUNDAY":
-        return "일요일";
-      default:
-        return "";
+    const rows: MatrixRow[] = [];
+    let i = 0,
+      j = 0,
+      k = 0;
+
+    while (i < list1.length || j < list2.length || k < list3.length) {
+      const m1 = i < list1.length ? toMin(list1[i]) : Infinity;
+      const m2 = j < list2.length ? toMin(list2[j]) : Infinity;
+      const m3 = k < list3.length ? toMin(list3[k]) : Infinity;
+
+      const minVal = Math.min(m1, m2, m3);
+      const THRESHOLD = 12; // 12분 이내의 유사 도착 시간대는 동일 행으로 정렬
+
+      let w1Val: string | undefined = undefined;
+      let w2Val: string | undefined = undefined;
+      let w3Val: string | undefined = undefined;
+
+      if (m1 !== Infinity && Math.abs(m1 - minVal) <= THRESHOLD) {
+        w1Val = list1[i++];
+      }
+      if (m2 !== Infinity && Math.abs(m2 - minVal) <= THRESHOLD) {
+        w2Val = list2[j++];
+      }
+      if (m3 !== Infinity && Math.abs(m3 - minVal) <= THRESHOLD) {
+        w3Val = list3[k++];
+      }
+
+      rows.push({
+        hour: Math.floor(minVal / 60),
+        timeW1: w1Val,
+        timeW2: w2Val,
+        timeW3: w3Val,
+        representativeMinutes: minVal,
+      });
+    }
+
+    return rows;
+  }, [w1Records, w2Records, w3Records]);
+
+  // 현재 시간과 비교하여 가장 유사/가까운 행 인덱스 계산
+  const targetRowIndex = useMemo(() => {
+    if (matrixRows.length === 0) return -1;
+    if (selectedDayIndex !== todayDayIndex) return -1; // 오늘 요일일 때만 하이라이트
+
+    // 1. 현재 시각 이후 도착 시간 중 가장 가까운 행
+    const upcomingIdx = matrixRows.findIndex(
+      (row) => row.representativeMinutes >= currentMinutes,
+    );
+
+    if (upcomingIdx !== -1) {
+      return upcomingIdx;
+    }
+
+    // 2. 이미 막차가 지난 경우 마지막 행
+    return matrixRows.length - 1;
+  }, [matrixRows, selectedDayIndex, todayDayIndex, currentMinutes]);
+
+  // 사용 가능한 시간대(Hour) 칩 목록 (예: 6시 ~ 23시)
+  const availableHours = useMemo(() => {
+    const hours = Array.from(new Set(matrixRows.map((r) => r.hour))).sort(
+      (a, b) => a - b,
+    );
+    if (hours.length === 0) {
+      return [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+    }
+    return hours;
+  }, [matrixRows]);
+
+  // 시간대 칩 클릭 시 해당 시간대로 부드럽게 스크롤
+  const handleHourClick = (hour: number) => {
+    const targetElement = hourRowRefs.current[hour];
+    const container = listContainerRef.current;
+    if (container && targetElement) {
+      const topPos = targetElement.offsetTop - 45;
+      container.scrollTo({
+        top: Math.max(0, topPos),
+        behavior: "smooth",
+      });
     }
   };
 
+  // 모달 오픈 시 현재 시간 강조 라인으로 자동 스크롤
+  useEffect(() => {
+    if (
+      !isOpen ||
+      loading ||
+      matrixRows.length === 0 ||
+      hasAutoScrolledRef.current
+    ) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const container = listContainerRef.current;
+      const target = targetItemRef.current;
+
+      if (container && target) {
+        hasAutoScrolledRef.current = true;
+        const topPos = target.offsetTop - 90;
+        container.scrollTo({
+          top: Math.max(0, topPos),
+          behavior: "smooth",
+        });
+      }
+    }, 80);
+
+    return () => clearTimeout(timer);
+  }, [isOpen, loading, matrixRows, targetRowIndex]);
+
+  if (!isOpen) return null;
   if (typeof document === "undefined") return null;
 
   return createPortal(
     <ModalOverlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
-        {/* 모달 헤더 */}
-        <Header>
-          <HeaderLeft>
-            <HeaderTitleRow>
-              <Calendar size={18} color="#2563eb" />
-              <HeaderTitle>{stopName}</HeaderTitle>
-            </HeaderTitleRow>
-            <HeaderSubtitle>실측 도착 이력 및 n주 전 시간표 통계</HeaderSubtitle>
-          </HeaderLeft>
-          <CloseButton onClick={onClose}>
-            <X size={20} />
-          </CloseButton>
-        </Header>
+        {/* 상단 네비게이션 헤더 */}
+        <NavHeader>
+          <BackButton onClick={onClose}>
+            <ChevronLeft size={24} color="#111827" />
+          </BackButton>
+          <NavTitle>과거 시간표</NavTitle>
+          <div style={{ width: 24 }} />
+        </NavHeader>
 
-        {/* 날짜 선택 및 n주 전 프리셋 바 */}
-        <DatePresetBar>
-          <PresetButtonGroup>
-            {[
-              { label: "오늘", offset: 0 },
-              { label: "1주 전", offset: 1 },
-              { label: "2주 전", offset: 2 },
-              { label: "3주 전", offset: 3 },
-              { label: "4주 전", offset: 4 },
-            ].map((p) => (
-              <PresetBtn
-                key={p.offset}
-                active={weekOffset === p.offset}
-                onClick={() => handleWeekOffsetChange(p.offset)}
-              >
-                {p.label}
-              </PresetBtn>
-            ))}
-          </PresetButtonGroup>
+        {/* 정류장 정보 */}
+        <StopInfoSection>
+          <StopName>{stopName}</StopName>
+          <StopMeta>
+            {bstopId}
+            {routeNextStopMap[selectedRoute]
+              ? ` · ${routeNextStopMap[selectedRoute]} 방면`
+              : ""}
+          </StopMeta>
+        </StopInfoSection>
 
-          <DateInputWrapper>
-            <DateInput
-              type="date"
-              value={selectedDate}
-              onChange={(e) => handleDateChange(e.target.value)}
-            />
-          </DateInputWrapper>
-        </DatePresetBar>
-
-        {/* 노선 필터 칩 */}
-        <RouteFilterBar>
-          <FilterChip
-            active={selectedRoute === "ALL"}
-            onClick={() => setSelectedRoute("ALL")}
-          >
-            전체 노선
-          </FilterChip>
-          {availableRoutes.map((r) => (
-            <FilterChip
-              key={r}
-              active={selectedRoute === r}
-              onClick={() => setSelectedRoute(r)}
+        {/* 노선 선택 드롭다운 / 셀렉터 */}
+        <RouteSelectorContainer>
+          <RouteSelectWrapper>
+            <RouteBadge tone={getBusCircleTone(selectedRoute)}>
+              {selectedRoute.startsWith("순환") ||
+              ["41", "42", "43", "46", "47"].includes(selectedRoute)
+                ? "순환"
+                : selectedRoute.startsWith("M") ||
+                    [
+                      "1301",
+                      "3002",
+                      "303-1",
+                      "6405",
+                      "M6405",
+                      "M6464",
+                    ].includes(selectedRoute)
+                  ? "광역"
+                  : "간선"}
+            </RouteBadge>
+            <RouteSelect
+              value={selectedRoute}
+              onChange={(e) => {
+                setSelectedRoute(e.target.value);
+                hasAutoScrolledRef.current = false;
+              }}
             >
-              {r}번
-            </FilterChip>
+              {validAvailableRoutes.map((routeNo) => (
+                <option key={routeNo} value={routeNo}>
+                  {routeNo}번
+                </option>
+              ))}
+            </RouteSelect>
+            <SelectArrow>
+              <ChevronDown size={18} color="#6b7280" />
+            </SelectArrow>
+          </RouteSelectWrapper>
+        </RouteSelectorContainer>
+
+        {/* 요일 탭 바 */}
+        <DayTabBar>
+          {DAYS_OF_WEEK.map((item) => (
+            <DayTabItem
+              key={item.dayIndex}
+              active={selectedDayIndex === item.dayIndex}
+              onClick={() => {
+                setSelectedDayIndex(item.dayIndex);
+                hasAutoScrolledRef.current = false;
+              }}
+            >
+              {item.label}
+            </DayTabItem>
           ))}
-        </RouteFilterBar>
+        </DayTabBar>
 
-        {/* 통계 요약 카드 */}
-        {historyData && (
-          <StatsSummaryCard>
-            <StatsRow>
-              <StatsItem>
-                <StatsLabel>조회 기준 요일</StatsLabel>
-                <StatsValue>
-                  {selectedDate} ({getDayKorean(historyData.dayOfWeek)})
-                </StatsValue>
-              </StatsItem>
-              {historyData.averageIntervalSeconds ? (
-                <StatsItem>
-                  <StatsLabel>4주간 평균 배차 간격</StatsLabel>
-                  <StatsValue>
-                    약 {Math.round(historyData.averageIntervalSeconds / 60)}분
-                  </StatsValue>
-                </StatsItem>
-              ) : null}
-            </StatsRow>
-          </StatsSummaryCard>
-        )}
+        {/* 시간대(Hour) 빠른 필터 칩 바 */}
+        <HourFilterBar>
+          {availableHours.map((hour) => {
+            const isCurrentHour =
+              selectedDayIndex === todayDayIndex && hour === currentHour;
+            return (
+              <HourChip
+                key={hour}
+                active={isCurrentHour}
+                onClick={() => handleHourClick(hour)}
+              >
+                {hour}시
+              </HourChip>
+            );
+          })}
+        </HourFilterBar>
 
-        {/* 도착 이력 타임라인 리스트 */}
-        <ListContainer>
+        {/* 다주차 시간표 매트릭스 테이블 */}
+        <TableViewport ref={listContainerRef}>
           {loading ? (
-            <LoadingContainer>
+            <LoadingBox>
               <RotateCw size={24} className="spin" color="#2563eb" />
-              <LoadingText>시간표 데이터를 불러오는 중...</LoadingText>
-            </LoadingContainer>
-          ) : filteredRecords.length === 0 ? (
-            <EmptyContainer>
+              <LoadingText>3주간의 시간표 데이터를 불러오는 중...</LoadingText>
+            </LoadingBox>
+          ) : matrixRows.length === 0 ? (
+            <EmptyBox>
               <Clock size={36} color="#d1d5db" />
-              <EmptyTitle>해당 날짜의 실측 도착 기록이 없습니다.</EmptyTitle>
+              <EmptyTitle>해당 요일의 실측 도착 기록이 없습니다.</EmptyTitle>
               <EmptyDesc>
-                스케줄러가 30초마다 수집한 도착 로그를 기반으로 시간표가
-                표시됩니다.
+                1~3주 전 도착 이력을 기반으로 시간표가 구성됩니다.
               </EmptyDesc>
-            </EmptyContainer>
+            </EmptyBox>
           ) : (
-            <TimelineList>
-              {filteredRecords.map((item: any, idx: number) => {
-                const arrivalTime = item.arrivalTime
-                  ? item.arrivalTime.split("T")[1]?.substring(0, 5) ||
-                    item.arrivalTime.substring(11, 16)
-                  : "-";
+            <MatrixTable>
+              <thead>
+                <tr>
+                  <TableHeaderCell>
+                    <div className="title">1주 전</div>
+                    <div className="date">{targetDates.w1.headerLabel}</div>
+                  </TableHeaderCell>
+                  <TableHeaderCell>
+                    <div className="title">2주 전</div>
+                    <div className="date">{targetDates.w2.headerLabel}</div>
+                  </TableHeaderCell>
+                  <TableHeaderCell>
+                    <div className="title">3주 전</div>
+                    <div className="date">{targetDates.w3.headerLabel}</div>
+                  </TableHeaderCell>
+                </tr>
+              </thead>
+              <tbody>
+                {matrixRows.map((row, idx) => {
+                  const isTarget = idx === targetRowIndex;
 
-                return (
-                  <TimelineItem key={item.id || idx}>
-                    <TimeColumn>
-                      <TimeBadge>{arrivalTime}</TimeBadge>
-                    </TimeColumn>
-                    <BusColumn>
-                      <BusCircle
-                        number={item.routeNo}
-                        tone={getBusCircleTone(item.routeNo)}
-                      />
-                      <BusInfoWrapper>
-                        <BusRouteText>{item.routeNo}번 버스</BusRouteText>
-                        <BusSubMeta>
-                          {item.busNumPlate ? `차량: ${item.busNumPlate}` : ""}
-                          {item.restStopCount
-                            ? ` · ${item.restStopCount} 정거장 전 감지`
-                            : ""}
-                        </BusSubMeta>
-                      </BusInfoWrapper>
-                    </BusColumn>
-                  </TimelineItem>
-                );
-              })}
-            </TimelineList>
+                  // 각 시간대의 첫 번째 행인 경우 ref 저장
+                  const isHourFirstRow =
+                    idx === 0 || matrixRows[idx - 1].hour !== row.hour;
+
+                  return (
+                    <MatrixTableRow
+                      key={idx}
+                      ref={(el) => {
+                        if (isTarget) {
+                          targetItemRef.current = el;
+                        }
+                        if (isHourFirstRow) {
+                          hourRowRefs.current[row.hour] = el;
+                        }
+                      }}
+                      isTarget={isTarget}
+                    >
+                      <MatrixTableCell isTarget={isTarget}>
+                        {row.timeW1 || ""}
+                      </MatrixTableCell>
+                      <MatrixTableCell isTarget={isTarget}>
+                        {row.timeW2 || ""}
+                      </MatrixTableCell>
+                      <MatrixTableCell isTarget={isTarget}>
+                        {row.timeW3 || ""}
+                      </MatrixTableCell>
+                    </MatrixTableRow>
+                  );
+                })}
+              </tbody>
+            </MatrixTable>
           )}
-        </ListContainer>
+        </TableViewport>
       </ModalContainer>
     </ModalOverlay>,
-    document.body
+    document.body,
   );
 }
 
@@ -278,188 +486,259 @@ const ModalOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 99999;
-  padding: 16px;
+  padding: 12px;
 `;
 
-
 const ModalContainer = styled.div`
-  background: white;
-  border-radius: 16px;
+  background: #ffffff;
+  border-radius: 18px;
   width: 100%;
-  max-width: 480px;
-  max-height: 85vh;
+  max-width: 440px;
+  height: 88vh;
+  max-height: 780px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15);
   overflow: hidden;
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 18px 20px;
-  border-bottom: 1px solid #f3f4f6;
-`;
-
-const HeaderLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const HeaderTitleRow = styled.div`
+const NavHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
 `;
 
-const HeaderTitle = styled.h3`
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: #111827;
-`;
-
-const HeaderSubtitle = styled.p`
-  margin: 0;
-  font-size: 12px;
-  color: #6b7280;
-`;
-
-const CloseButton = styled.button`
+const BackButton = styled.button`
   background: none;
   border: none;
-  color: #9ca3af;
   cursor: pointer;
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover {
-    color: #4b5563;
-  }
+  color: #1e293b;
 `;
 
-const DatePresetBar = styled.div`
+const NavTitle = styled.h2`
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+`;
+
+const StopInfoSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 20px;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+  padding: 16px 20px 10px 20px;
+  text-align: center;
 `;
 
-const PresetButtonGroup = styled.div`
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
+const StopName = styled.h3`
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
 `;
 
-const PresetBtn = styled.button<{ active: boolean }>`
-  padding: 6px 12px;
-  border-radius: 20px;
+const StopMeta = styled.p`
+  margin: 4px 0 0 0;
   font-size: 12px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  background-color: ${({ active }) => (active ? "#2563eb" : "#ffffff")};
-  color: ${({ active }) => (active ? "#ffffff" : "#4b5563")};
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid ${({ active }) => (active ? "#2563eb" : "#e5e7eb")};
-  transition: all 0.15s;
+  color: #64748b;
+`;
 
-  &:hover {
-    background-color: ${({ active }) => (active ? "#1d4ed8" : "#f3f4f6")};
+const RouteSelectorContainer = styled.div`
+  padding: 8px 20px 12px 20px;
+`;
+
+const RouteSelectWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  position: relative;
+  transition: all 0.2s;
+
+  &:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
 `;
 
-const DateInputWrapper = styled.div`
+const RouteBadge = styled.span<{ tone?: string }>`
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background-color: ${({ tone }) => {
+    if (tone === "green") return "#16a34a";
+    if (tone === "red") return "#dc2626";
+    return "#2563eb";
+  }};
+  color: #ffffff;
+  margin-right: 10px;
+`;
+
+const RouteSelect = styled.select`
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+`;
+
+const SelectArrow = styled.div`
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
   display: flex;
   align-items: center;
 `;
 
-const DateInput = styled.input`
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 13px;
-  background-color: white;
-  color: #374151;
-  &:focus {
-    outline: none;
+const DayTabBar = styled.div`
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #ffffff;
+`;
+
+const DayTabItem = styled.button<{ active: boolean }>`
+  flex: 1;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: ${({ active }) => (active ? "800" : "500")};
+  color: ${({ active }) => (active ? "#0f172a" : "#94a3b8")};
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid
+    ${({ active }) => (active ? "#0f172a" : "transparent")};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    color: #0f172a;
+  }
+`;
+
+const HourFilterBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #f8fafc;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const HourChip = styled.button<{ active: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid ${({ active }) => (active ? "#2563eb" : "#e2e8f0")};
+  background-color: ${({ active }) => (active ? "#dbeafe" : "#ffffff")};
+  color: ${({ active }) => (active ? "#2563eb" : "#64748b")};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
     border-color: #2563eb;
   }
 `;
 
-const RouteFilterBar = styled.div`
-  display: flex;
-  gap: 6px;
-  padding: 10px 20px;
-  overflow-x: auto;
-  border-bottom: 1px solid #f3f4f6;
-`;
-
-const FilterChip = styled.button<{ active: boolean }>`
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid ${({ active }) => (active ? "#2563eb" : "#e5e7eb")};
-  background-color: ${({ active }) => (active ? "#eff6ff" : "#ffffff")};
-  color: ${({ active }) => (active ? "#2563eb" : "#6b7280")};
-  cursor: pointer;
-  white-space: nowrap;
-`;
-
-const StatsSummaryCard = styled.div`
-  margin: 12px 20px 0 20px;
-  padding: 12px 14px;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-`;
-
-const StatsRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-`;
-
-const StatsItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const StatsLabel = styled.span`
-  font-size: 11px;
-  color: #166534;
-  font-weight: 600;
-`;
-
-const StatsValue = styled.span`
-  font-size: 13px;
-  font-weight: 700;
-  color: #14532d;
-`;
-
-const ListContainer = styled.div`
+const TableViewport = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 12px 20px;
-  min-height: 250px;
+  background-color: #ffffff;
+  position: relative;
 `;
 
-const LoadingContainer = styled.div`
+const MatrixTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f8fafc;
+  }
+`;
+
+const TableHeaderCell = styled.th`
+  padding: 12px 6px;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #f1f5f9;
+  width: 33.333%;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  .title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .date {
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 2px;
+  }
+`;
+
+const MatrixTableRow = styled.tr<{ isTarget?: boolean }>`
+  background-color: ${({ isTarget }) => (isTarget ? "#eff6ff" : "#ffffff")};
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: ${({ isTarget }) => (isTarget ? "#e0eeff" : "#f8fafc")};
+  }
+`;
+
+const MatrixTableCell = styled.td<{ isTarget?: boolean }>`
+  padding: 15px 6px;
+  font-size: 14px;
+  font-weight: ${({ isTarget }) => (isTarget ? "800" : "600")};
+  color: ${({ isTarget }) => (isTarget ? "#2563eb" : "#1e293b")};
+  border-bottom: 1px solid
+    ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
+  border-right: 1px solid
+    ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
+
+  &:last-child {
+    border-right: none;
+  }
+`;
+
+const LoadingBox = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 0;
+  padding: 70px 0;
   gap: 12px;
 
   .spin {
@@ -477,87 +756,28 @@ const LoadingContainer = styled.div`
 
 const LoadingText = styled.div`
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
 `;
 
-const EmptyContainer = styled.div`
+const EmptyBox = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 50px 0;
+  padding: 60px 20px;
   gap: 8px;
   text-align: center;
 `;
 
 const EmptyTitle = styled.div`
   font-size: 14px;
-  font-weight: 600;
-  color: #4b5563;
+  font-weight: 700;
+  color: #475569;
 `;
 
 const EmptyDesc = styled.div`
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
   max-width: 280px;
   line-height: 1.4;
-`;
-
-const TimelineList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const TimelineItem = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 10px 12px;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  gap: 14px;
-  transition: background-color 0.15s;
-
-  &:hover {
-    background-color: #f9fafb;
-  }
-`;
-
-const TimeColumn = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const TimeBadge = styled.span`
-  background-color: #f3f4f6;
-  color: #1f2937;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 6px;
-`;
-
-const BusColumn = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-`;
-
-const BusInfoWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const BusRouteText = styled.span`
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
-`;
-
-const BusSubMeta = styled.span`
-  font-size: 11px;
-  color: #6b7280;
 `;

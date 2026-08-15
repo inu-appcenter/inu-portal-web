@@ -83,6 +83,33 @@ export default function BusRouteBar({
     startCooldown,
   ]);
 
+function shortenStopName(name: string): string {
+  if (!name) return "";
+  const trimmed = name.trim();
+
+  // 1. 역/캠퍼스 주요 정류소 직관적 별칭 우선 치환
+  if (trimmed.includes("인천대입구역")) return "인입";
+  if (trimmed.includes("지식정보단지역")) return "지정단";
+  if (trimmed.includes("자연과학대학") || trimmed.includes("자연대")) return "자연대";
+  if (trimmed.includes("공과대학") || trimmed.includes("공대")) return "공대";
+  if (trimmed.includes("기숙사") || trimmed.includes("송도캠퍼스")) return "기숙사";
+  if (trimmed.includes("북문")) return "북문";
+  if (trimmed.includes("정문")) return "정문";
+  if (trimmed.includes("타임스페이스")) return "타임스페이스";
+  if (trimmed.includes("퍼스트월드")) return "퍼스트월드";
+  if (trimmed.includes("마스터뷰")) return "마스터뷰";
+  if (trimmed.includes("웰카운티")) return "웰카운티";
+  if (trimmed.includes("칼빈매니토바")) return "칼빈국제학교";
+  if (trimmed.includes("소리공원")) return "소리공원";
+  if (trimmed.includes("미추홀공원")) return "미추홀공원";
+  if (trimmed.includes("해양경찰청")) return "해경";
+
+  return trimmed
+    .replace(/^인천대(?:학교)?\s*/, "")
+    .replace(/\(하모니로\)|\(미정차\)|\(서문\)|\(앞\)/g, "")
+    .trim();
+}
+
   const passArrival = passArrivals[0]?.arrivalInfo;
   const arrivalStationText = getArrivalStationText(arrivalInfo, {
     compact: true,
@@ -96,8 +123,11 @@ export default function BusRouteBar({
 
   const dots = Array.from({ length: totalDots }, (_, index) => {
     const isCurrent = index === 4;
-    const label =
+    const isLastStop = index === totalDots - 1;
+    const rawLabel =
       index >= 5 ? (route[index - 4] ?? "") : index === 4 ? route[0] : "";
+    const shortLabel = shortenStopName(rawLabel);
+
     const showBus =
       arrivalInfo?.time === "도착정보 없음"
         ? index === 0
@@ -112,9 +142,15 @@ export default function BusRouteBar({
       passIndex < route.length &&
       index === passIndex + 4;
 
+    // 1번 방식: 정류소가 많을 때는 [현재 정류소], [종점], [버스 위치] 등 핵심 정류소만 선별 표시
+    const shouldShowLabel =
+      route.length <= 4 || isCurrent || isLastStop || showBus || showPassBus;
+
     return {
-      label,
+      label: shouldShowLabel ? shortLabel : "",
+      fullLabel: rawLabel,
       isCurrent,
+      isLastStop,
       showBus,
       showInfoBox: showBus,
       showPassBus,
@@ -154,7 +190,11 @@ export default function BusRouteBar({
 
               {dot.showBus ? <BusIcon src={BUS_ICON_SRC} alt="" /> : null}
               <Dot $current={dot.isCurrent} />
-              {dot.label ? <Label>{dot.label}</Label> : null}
+              {dot.label ? (
+                <Label $current={dot.isCurrent} title={dot.fullLabel}>
+                  {dot.label}
+                </Label>
+              ) : null}
             </DotBox>
           ))}
         </DotList>
@@ -352,9 +392,13 @@ const StatusText = styled.span<{ $status?: BusStatus }>`
   }};
 `;
 
-const Label = styled.div`
+const Label = styled.div<{ $current?: boolean }>`
   position: absolute;
-  top: 15px;
-  font-size: 12px;
+  top: 16px;
+  font-size: 11px;
+  font-weight: ${({ $current }) => ($current ? "700" : "500")};
+  color: ${({ $current }) => ($current ? "#2563eb" : "#475569")};
   white-space: nowrap;
+  text-align: center;
+  pointer-events: none;
 `;

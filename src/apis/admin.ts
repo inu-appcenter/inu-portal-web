@@ -245,4 +245,19 @@ export const getAdminTargetStops = async () => {
   return response.data;
 };
 
+export const getAdminBusServiceStatus = async () => {
+  const response = await tokenInstance.get<ApiResponse<boolean>>(
+    "/api/admin/buses/service-status",
+  );
+  return response.data;
+};
+
+export const updateAdminBusServiceStatus = async (enabled: boolean) => {
+  const response = await tokenInstance.post<ApiResponse<boolean>>(
+    `/api/admin/buses/service-status?enabled=${enabled}`,
+  );
+  return response.data;
+};
+
+
 

@@ -456,6 +456,24 @@ export default function BusMapPanel({
               availableRoutes={Array.from(
                 new Set(selectedStop.buses.map((b) => b.number)),
               )}
+              routeNextStopMap={selectedStop.buses.reduce(
+                (acc: Record<string, string>, bus) => {
+                  if (bus.route && bus.route.length > 0) {
+                    const idx = bus.route.findIndex(
+                      (name) =>
+                        selectedStop.stopName.includes(name) ||
+                        name.includes(selectedStop.stopName),
+                    );
+                    if (idx !== -1 && idx + 1 < bus.route.length) {
+                      acc[bus.number] = bus.route[idx + 1];
+                    } else if (bus.route.length > 1) {
+                      acc[bus.number] = bus.route[bus.route.length - 1];
+                    }
+                  }
+                  return acc;
+                },
+                {},
+              )}
             />
           </>
         ) : (
@@ -505,8 +523,34 @@ export default function BusMapPanel({
   );
 }
 
+function cleanRouteStopName(name: string): string {
+  if (!name) return "";
+  return name
+    .replace(/인천대학교/g, "")
+    .replace(/^인천대(?!(?:입구|교))/g, "")
+    .trim();
+}
+
 function formatRouteText(bus: BusData) {
-  return bus.routeNotice ?? bus.route.filter(Boolean).join(" -> ");
+  if (bus.routeNotice) {
+    return bus.routeNotice.replace(/->/g, "→").replace(/\.\.\./g, "…");
+  }
+
+  const rawRoute = (bus.route || []).filter(Boolean);
+  if (rawRoute.length === 0) {
+    return "";
+  }
+
+  const cleanedRoute = rawRoute.map(cleanRouteStopName);
+
+  if (cleanedRoute.length <= 4) {
+    return cleanedRoute.join(" → ");
+  }
+
+  const firstTwo = cleanedRoute.slice(0, 2);
+  const lastTwo = cleanedRoute.slice(-2);
+
+  return `${firstTwo.join(" → ")} → … → ${lastTwo.join(" → ")}`;
 }
 
 function compareBusesByArrival(

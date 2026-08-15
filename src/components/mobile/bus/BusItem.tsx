@@ -10,6 +10,27 @@ interface BusItemProps extends BusData {
   onClick?: () => void;
 }
 
+function cleanRouteStopName(name: string): string {
+  if (!name) return "";
+  return name
+    .replace(/인천대학교/g, "")
+    .replace(/^인천대(?!(?:입구|교))/g, "")
+    .trim();
+}
+
+function formatRouteText(routeNotice?: string, route: string[] = []) {
+  if (routeNotice) return routeNotice.replace(/->/g, "→").replace(/\.\.\./g, "…");
+  const rawRoute = (route || []).filter(Boolean);
+  if (rawRoute.length === 0) return "";
+  const cleanedRoute = rawRoute.map(cleanRouteStopName);
+  if (cleanedRoute.length <= 4) {
+    return cleanedRoute.join(" → ");
+  }
+  const firstTwo = cleanedRoute.slice(0, 2);
+  const lastTwo = cleanedRoute.slice(-2);
+  return `${firstTwo.join(" → ")} → … → ${lastTwo.join(" → ")}`;
+}
+
 export default function BusItem({
   number,
   route,
@@ -23,11 +44,7 @@ export default function BusItem({
     <Box onClick={onClick}>
       <BusItemWrapper>
         <TopSection>
-          {routeNotice ? (
-            <RouteText>{routeNotice}</RouteText>
-          ) : (
-            <RouteText>{route.filter(Boolean).join(" → ")}</RouteText>
-          )}
+          <RouteText>{formatRouteText(routeNotice, route)}</RouteText>
         </TopSection>
         <MainSection>
           <BusCircle number={number} tone={getBusCircleTone(number)} />
