@@ -395,14 +395,17 @@ const HeaderTitle = styled.div<{ $hasBack?: boolean }>`
 const FloatingWrapper = styled.div`
   width: fit-content;
   max-width: 100%;
-  padding: 4px 16px;
-  border-radius: 50px;
+  padding: 0;
+  border-radius: 100px;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  min-height: 36px;
-  overflow: visible;
+  min-height: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
   pointer-events: auto;
 `;
