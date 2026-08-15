@@ -1,10 +1,12 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getTimeTableEvaluation,
   streamTimeTableEvaluation,
 } from "@/apis/timetables";
 import type { TimeTableEvaluation } from "@/types/timetables";
+
+export const MAX_REGENERATE_COUNT = 3;
 
 export const useTimeTableEvaluation = (timetableId: number | null | undefined) => {
   const queryClient = useQueryClient();
@@ -13,6 +15,8 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCached, setIsCached] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [regenerateCount, setRegenerateCount] = useState<number>(0);
+  const [remainingCount, setRemainingCount] = useState<number>(MAX_REGENERATE_COUNT);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -26,6 +30,15 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
     enabled: Boolean(timetableId),
     staleTime: 1000 * 60 * 5, // 5분
   });
+
+  // 캐시 데이터가 들어오면 카운트 동기화
+  useEffect(() => {
+    if (cachedData) {
+      const regCount = cachedData.regenerateCount ?? 0;
+      setRegenerateCount(regCount);
+      setRemainingCount(cachedData.remainingCount ?? Math.max(0, MAX_REGENERATE_COUNT - regCount));
+    }
+  }, [cachedData]);
 
   // 2. 평가 시작 (SSE 스트리밍)
   const startEvaluation = useCallback(
@@ -49,6 +62,12 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
           onStart: (data) => {
             setIsLoading(false);
             setIsCached(data.isCached);
+            if (data.regenerateCount !== undefined) {
+              setRegenerateCount(data.regenerateCount);
+            }
+            if (data.remainingCount !== undefined) {
+              setRemainingCount(data.remainingCount);
+            }
           },
           onDelta: (token) => {
             setIsLoading(false);
@@ -58,6 +77,12 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
             setIsStreaming(false);
             setIsLoading(false);
             setIsCached(data.isCached);
+            if (data.regenerateCount !== undefined) {
+              setRegenerateCount(data.regenerateCount);
+            }
+            if (data.remainingCount !== undefined) {
+              setRemainingCount(data.remainingCount);
+            }
             // 쿼리 캐시 갱신
             queryClient.invalidateQueries({
               queryKey: ["timetableEvaluation", timetableId],
@@ -99,6 +124,8 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
     isLoading,
     isCached,
     error,
+    regenerateCount,
+    remainingCount,
     startEvaluation,
     cancelEvaluation,
     reset,

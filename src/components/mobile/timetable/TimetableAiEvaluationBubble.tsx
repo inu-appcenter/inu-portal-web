@@ -31,6 +31,8 @@ const TimetableAiEvaluationBubble = ({
     isStreaming,
     isLoading,
     error,
+    regenerateCount,
+    remainingCount,
     startEvaluation,
   } = useTimeTableEvaluation(timetableId);
 
@@ -59,6 +61,14 @@ const TimetableAiEvaluationBubble = ({
 
   const handleRetry = () => {
     if (isStreaming || isLoading) return;
+
+    if (remainingCount <= 0) {
+      alert(
+        "동일한 시간표에서는 최대 3회까지만 다시 생성할 수 있어! 시간표 강의나 일정을 변경하면 새롭게 평가받을 수 있어 🔥",
+      );
+      return;
+    }
+
     mixpanelTrack.timetableFeatureClicked("시간표 AI 재평가", "AI 평가 말풍선");
     isAutoScrollRef.current = true;
     startEvaluation(true);
@@ -265,9 +275,22 @@ const TimetableAiEvaluationBubble = ({
                           <span>{copied ? "복사됨" : "복사"}</span>
                         </ActionButton>
 
-                        <ActionButton onClick={handleRetry} title="다시 생성">
+                        <ActionButton
+                          onClick={handleRetry}
+                          title={
+                            remainingCount > 0
+                              ? `다시 생성 (남은 횟수: ${remainingCount}회)`
+                              : "동일 시간표 재생성 횟수(3회)를 모두 사용했습니다."
+                          }
+                          $disabled={remainingCount <= 0}
+                        >
                           <RefreshCw size={12} />
-                          <span>다시 생성</span>
+                          <span>
+                            다시 생성{" "}
+                            {remainingCount > 0
+                              ? `(${remainingCount}/3)`
+                              : "(0/3)"}
+                          </span>
                         </ActionButton>
                       </MessageFooter>
                     )}
@@ -675,12 +698,12 @@ const MessageFooter = styled.div`
   border-top: 1px solid rgba(0, 0, 0, 0.05);
 `;
 
-const ActionButton = styled.button`
+const ActionButton = styled.button<{ $disabled?: boolean }>`
   background: none;
   border: none;
   padding: 4px 6px;
-  cursor: pointer;
-  color: #8e8e93;
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+  color: ${({ $disabled }) => ($disabled ? "#c7c7cc" : "#8e8e93")};
   display: flex;
   align-items: center;
   gap: 4px;
@@ -688,14 +711,16 @@ const ActionButton = styled.button`
   font-size: 11px;
   font-weight: 500;
   transition: all 0.15s ease;
+  opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
 
   &:hover {
-    color: #1c1c1e;
-    background-color: rgba(0, 0, 0, 0.05);
+    color: ${({ $disabled }) => ($disabled ? "#c7c7cc" : "#1c1c1e")};
+    background-color: ${({ $disabled }) =>
+      $disabled ? "transparent" : "rgba(0, 0, 0, 0.05)"};
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: ${({ $disabled }) => ($disabled ? "none" : "scale(0.95)")};
   }
 `;
 

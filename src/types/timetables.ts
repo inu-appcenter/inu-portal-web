@@ -99,6 +99,8 @@ export interface TimeTableEvaluation {
   content: string;
   timetableHash: string;
   isCached: boolean;
+  regenerateCount?: number;
+  remainingCount?: number;
   updatedAt?: string;
 }
 
