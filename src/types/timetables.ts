@@ -92,3 +92,13 @@ export interface TimeTableItemSummary {
   title?: string;
   memo?: string | null;
 }
+
+// 시간표 AI 평가 응답 인터페이스
+export interface TimeTableEvaluation {
+  timeTableId: number;
+  content: string;
+  timetableHash: string;
+  isCached: boolean;
+  updatedAt?: string;
+}
+
