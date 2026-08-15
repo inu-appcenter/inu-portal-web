@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Check,
   Info,
+  Power,
 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useHeader } from "@/context/HeaderContext";
@@ -32,6 +33,8 @@ import {
   getAdminStopAliases,
   saveAdminStopAlias,
   deleteAdminStopAlias,
+  getAdminBusServiceStatus,
+  updateAdminBusServiceStatus,
 } from "@/apis/admin";
 
 export interface TargetEndStopItem {
@@ -53,6 +56,10 @@ export default function MobileAdminBusPage() {
   const [activeTab, setActiveTab] = useState<"rules" | "routes" | "aliases">(
     "rules",
   );
+
+  // 서비스 동작 상태 (ON/OFF)
+  const [serviceStatus, setServiceStatus] = useState<boolean>(true);
+  const [togglingStatus, setTogglingStatus] = useState<boolean>(false);
 
   // 로딩 및 알림 상태
   const [loading, setLoading] = useState(false);
@@ -148,18 +155,46 @@ export default function MobileAdminBusPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [routesRes, rulesRes, aliasesRes] = await Promise.all([
+      const [routesRes, rulesRes, aliasesRes, statusRes] = await Promise.all([
         getAdminRouteSections(),
         getAdminTargetRules(),
         getAdminStopAliases(),
+        getAdminBusServiceStatus(),
       ]);
       setRouteSections(routesRes.data ?? []);
       setTargetRules(rulesRes.data ?? []);
       setStopAliases(aliasesRes.data ?? []);
+      if (typeof statusRes.data === "boolean") {
+        setServiceStatus(statusRes.data);
+      }
     } catch (e) {
       console.error("버스 어드민 데이터 불러오기 실패", e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 서비스 동작 ON/OFF 상태 토글
+  const handleToggleServiceStatus = async () => {
+    const nextStatus = !serviceStatus;
+    const confirmMsg = nextStatus
+      ? "버스 실시간 도착 정보 수집 및 서비스를 활성화(ON)하시겠습니까?"
+      : "버스 실시간 수집 및 API 조회를 일시 중단(OFF)하시겠습니까?\n(중단 시 30초 주기 폴링이 정지되며 DB에 상태가 영구 저장됩니다.)";
+
+    if (!confirm(confirmMsg)) return;
+
+    setTogglingStatus(true);
+    try {
+      const res = await updateAdminBusServiceStatus(nextStatus);
+      if (typeof res.data === "boolean") {
+        setServiceStatus(res.data);
+        setMessage(res.msg || (res.data ? "서비스가 활성화되었습니다." : "서비스가 일시 중단되었습니다."));
+      }
+    } catch (e) {
+      console.error(e);
+      alert("서비스 상태 변경에 실패했습니다.");
+    } finally {
+      setTogglingStatus(false);
     }
   };
 
@@ -476,6 +511,38 @@ export default function MobileAdminBusPage() {
     <AdminLayout>
       <Container>
         {message && <SuccessBanner>{message}</SuccessBanner>}
+
+        {/* ⚡ 버스 실시간 서비스 및 수집 상태 제어 배너 */}
+        <StatusControlCard isOnline={serviceStatus}>
+          <StatusCardLeft>
+            <StatusIconBox isOnline={serviceStatus}>
+              <Power size={18} />
+            </StatusIconBox>
+            <StatusTextGroup>
+              <StatusTitleRow>
+                <StatusTitle>버스 실시간 도착 정보 수집 서비스</StatusTitle>
+                <StatusBadge isOnline={serviceStatus}>
+                  <span className="dot"></span>
+                  {serviceStatus ? "정상 동작 중 (ON)" : "일시 중단됨 (OFF)"}
+                </StatusBadge>
+              </StatusTitleRow>
+              <StatusDesc>
+                {serviceStatus
+                  ? "30초 주기로 주요 정류장의 실시간 버스 도착 정보를 수집하고 있습니다. (DB 영구 보존)"
+                  : "실시간 도착 정보 수집 및 공공데이터포털 API 호출이 중단된 상태입니다. (DB 영구 보존)"}
+              </StatusDesc>
+            </StatusTextGroup>
+          </StatusCardLeft>
+          <StatusToggleBtn
+            type="button"
+            isOnline={serviceStatus}
+            onClick={handleToggleServiceStatus}
+            disabled={togglingStatus}
+          >
+            <Power size={15} />
+            {togglingStatus ? "상태 변경 중..." : serviceStatus ? "서비스 끄기 (OFF)" : "서비스 켜기 (ON)"}
+          </StatusToggleBtn>
+        </StatusControlCard>
 
         {/* 상단 탭 네비게이션 */}
         <TabHeader>
@@ -2299,4 +2366,113 @@ const ModalFooter = styled.div`
   gap: 8px;
   margin-top: 20px;
 `;
+
+const StatusControlCard = styled.div<{ isOnline: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background-color: ${({ isOnline }) => (isOnline ? "#f0fdf4" : "#fef2f2")};
+  border: 1.5px solid ${({ isOnline }) => (isOnline ? "#86efac" : "#fca5a5")};
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+`;
+
+const StatusCardLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+`;
+
+const StatusIconBox = styled.div<{ isOnline: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "#ef4444")};
+  color: #ffffff;
+  flex-shrink: 0;
+`;
+
+const StatusTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const StatusTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const StatusTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+const StatusBadge = styled.span<{ isOnline: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background-color: ${({ isOnline }) => (isOnline ? "#dcfce7" : "#fee2e2")};
+  color: ${({ isOnline }) => (isOnline ? "#15803d" : "#b91c1c")};
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "#ef4444")};
+  }
+`;
+
+const StatusDesc = styled.div`
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+`;
+
+const StatusToggleBtn = styled.button<{ isOnline: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  background-color: ${({ isOnline }) => (isOnline ? "#ef4444" : "#16a34a")};
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
 
