@@ -8,7 +8,10 @@ import type { TimeTableEvaluation } from "@/types/timetables";
 
 export const MAX_REGENERATE_COUNT = 3;
 
-export const useTimeTableEvaluation = (timetableId: number | null | undefined) => {
+export const useTimeTableEvaluation = (
+  timetableId: number | null | undefined,
+  eventsDependency?: any,
+) => {
   const queryClient = useQueryClient();
   const [evaluationText, setEvaluationText] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
@@ -20,23 +23,38 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // 1. 캐시 조회 쿼리
-  const { data: cachedData, isLoading: isCacheLoading } = useQuery<TimeTableEvaluation | null>({
-    queryKey: ["timetableEvaluation", timetableId],
+  // 1. 캐시 조회 쿼리 (시간표 아이템 dependency를 queryKey에 포함하여 변경 시 자동 갱신)
+  const {
+    data: cachedData,
+    isLoading: isCacheLoading,
+    refetch: refetchCache,
+  } = useQuery<TimeTableEvaluation | null>({
+    queryKey: ["timetableEvaluation", timetableId, eventsDependency],
     queryFn: () => {
       if (!timetableId) return null;
       return getTimeTableEvaluation(timetableId);
     },
     enabled: Boolean(timetableId),
-    staleTime: 1000 * 60 * 5, // 5분
+    staleTime: 1000 * 30, // 30초
   });
+
+  // 시간표 아이템이 변경되면 기존 평가 텍스트 초기화
+  useEffect(() => {
+    setEvaluationText("");
+    setError(null);
+  }, [eventsDependency]);
 
   // 캐시 데이터가 들어오면 카운트 동기화
   useEffect(() => {
     if (cachedData) {
       const regCount = cachedData.regenerateCount ?? 0;
       setRegenerateCount(regCount);
-      setRemainingCount(cachedData.remainingCount ?? Math.max(0, MAX_REGENERATE_COUNT - regCount));
+      setRemainingCount(
+        cachedData.remainingCount ?? Math.max(0, MAX_REGENERATE_COUNT - regCount),
+      );
+    } else {
+      setRegenerateCount(0);
+      setRemainingCount(MAX_REGENERATE_COUNT);
     }
   }, [cachedData]);
 
@@ -98,7 +116,7 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
         abortControllerRef.current.signal,
       );
     },
-    [timetableId, queryClient],
+    [timetableId, queryClient, isStreaming, isLoading],
   );
 
   const cancelEvaluation = useCallback(() => {
@@ -119,6 +137,7 @@ export const useTimeTableEvaluation = (timetableId: number | null | undefined) =
   return {
     cachedData,
     isCacheLoading,
+    refetchCache,
     evaluationText,
     isStreaming,
     isLoading,
