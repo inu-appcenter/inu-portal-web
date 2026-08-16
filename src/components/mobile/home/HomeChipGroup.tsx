@@ -44,16 +44,7 @@ const HomeChipGroup = () => {
         navigate(ROUTES.BOARD.CAMPUS);
       },
     },
-    {
-      id: "ai",
-      iconSrc: AIIcon,
-      title: "횃불이 AI",
-      onClick: () => {
-        mixpanelTrack.featureClicked("횃불이 AI", "Home Chip");
-        navigate(ROUTES.AI.ROOT);
-      },
-      isAIButton: true,
-    },
+
     {
       id: "festival2026",
       iconComponent: LuPartyPopper,
@@ -80,6 +71,16 @@ const HomeChipGroup = () => {
         mixpanelTrack.featureClicked("INU 전화번호부", "Home Chip");
         navigate(ROUTES.PHONEBOOK.ROOT);
       },
+    },
+    {
+      id: "ai",
+      iconSrc: AIIcon,
+      title: "횃불이 AI",
+      onClick: () => {
+        mixpanelTrack.featureClicked("횃불이 AI", "Home Chip");
+        navigate(ROUTES.AI.ROOT);
+      },
+      isAIButton: true,
     },
 
     {
