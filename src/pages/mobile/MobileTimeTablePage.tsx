@@ -977,6 +977,7 @@ const MobileTimeTablePage = () => {
           timetableId={activeTimetable.id}
           timetableName={activeTimetable.name}
           hasEvents={timetableEvents.length > 0}
+          eventsKey={timetableEvents}
         />
       )}
     </MobileTimeTablePageWrapper>

@@ -12,11 +12,13 @@ interface TimetableAiEvaluationBubbleProps {
   timetableId: number | null | undefined;
   timetableName?: string;
   hasEvents: boolean;
+  eventsKey?: any;
 }
 
 const TimetableAiEvaluationBubble = ({
   timetableId,
   hasEvents,
+  eventsKey,
 }: TimetableAiEvaluationBubbleProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -32,7 +34,7 @@ const TimetableAiEvaluationBubble = ({
     error,
     remainingCount,
     startEvaluation,
-  } = useTimeTableEvaluation(timetableId);
+  } = useTimeTableEvaluation(timetableId, eventsKey);
 
   // 말풍선 열릴 때 자동으로 캐시가 없으면 평가 시작하거나 캐시 표시
   const handleToggle = () => {
@@ -50,12 +52,39 @@ const TimetableAiEvaluationBubble = ({
       mixpanelTrack.timetableFeatureClicked("시간표 AI 평가 열기", "시간표 홈");
 
       // 캐시가 없고, 현재 스트리밍 중도 아니고, 기존 텍스트도 없으면 즉시 시작
-      if (!cachedData && !evaluationText && !isStreaming) {
+      if (!isCacheLoading && !cachedData && !evaluationText && !isStreaming) {
         isAutoScrollRef.current = true;
         startEvaluation(false);
       }
     }
   };
+
+  // 말풍선이 열린 상태에서 캐시 조회가 끝났는데 유효 캐시/텍스트가 없다면(시간표 변경 등) 자동 스트리밍 시작
+  useEffect(() => {
+    if (
+      isOpen &&
+      hasEvents &&
+      !isCacheLoading &&
+      !cachedData &&
+      !evaluationText &&
+      !isStreaming &&
+      !isLoading &&
+      !error
+    ) {
+      isAutoScrollRef.current = true;
+      startEvaluation(false);
+    }
+  }, [
+    isOpen,
+    hasEvents,
+    isCacheLoading,
+    cachedData,
+    evaluationText,
+    isStreaming,
+    isLoading,
+    error,
+    startEvaluation,
+  ]);
 
   const handleRetry = () => {
     if (isStreaming || isLoading) return;
