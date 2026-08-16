@@ -78,27 +78,21 @@ export default function ReplyInput({
 
       if (mode === "reReply") {
         switch (status) {
-          case 400:
-            alert("일정 시간 동안 같은 게시글이나 댓글은 작성할 수 없습니다.");
-            return;
           case 404:
             alert("존재하지 않는 회원, 게시글 또는 댓글입니다.");
             return;
           default:
-            alert("대댓글 등록에 실패했습니다.");
+            alert(error.response?.data?.msg || "대댓글 등록에 실패했습니다.");
             return;
         }
       }
 
       switch (status) {
-        case 400:
-          alert("일정 시간 동안 같은 게시글이나 댓글은 작성할 수 없습니다.");
-          return;
         case 404:
           alert("존재하지 않는 회원 또는 게시글입니다.");
           return;
         default:
-          alert("댓글 등록에 실패했습니다.");
+          alert(error.response?.data?.msg || "댓글 등록에 실패했습니다.");
       }
     }
   };
