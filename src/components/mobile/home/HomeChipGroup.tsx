@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Chip from "src/components/common/Chip";
 
 import TooltipMessage from "@/components/common/TooltipMessage";
-import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
+import AIIcon from "@/resources/assets/ai/횃불이AI로고.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import CampusMapIcon from "@/resources/assets/mobile-home/category-form/map.svg";
@@ -44,17 +44,7 @@ const HomeChipGroup = () => {
         navigate(ROUTES.BOARD.CAMPUS);
       },
     },
-    {
-      id: "ai",
-      iconSrc: AIIcon,
-      title: "횃불이 AI",
-      onClick: () => {
-        mixpanelTrack.featureClicked("횃불이 AI", "Home Chip");
-        navigate(`/ai`);
-      },
-      isAIButton: true,
-      isActive: false,
-    },
+
     {
       id: "festival2026",
       iconComponent: LuPartyPopper,
@@ -81,6 +71,16 @@ const HomeChipGroup = () => {
         mixpanelTrack.featureClicked("INU 전화번호부", "Home Chip");
         navigate(ROUTES.PHONEBOOK.ROOT);
       },
+    },
+    {
+      id: "ai",
+      iconSrc: AIIcon,
+      title: "횃불이 AI",
+      onClick: () => {
+        mixpanelTrack.featureClicked("횃불이 AI", "Home Chip");
+        navigate(ROUTES.AI.ROOT);
+      },
+      isAIButton: true,
     },
 
     {

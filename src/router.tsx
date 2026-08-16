@@ -14,6 +14,7 @@ import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
+import AiBrandPage from "@/pages/mobile/Ai/AiBrandPage";
 import MobileSavePage from "@/pages/mobile/MobileSavePage";
 import MobileMyPage from "@/pages/mobile/MobileMyPage";
 import MobileWritePage from "@/pages/mobile/MobileWritePage";
@@ -190,7 +191,13 @@ export const router = createBrowserRouter([
           },
 
           // 횃불이 AI
-          { path: ROUTES.AI, element: <AiPage /> },
+          {
+            path: ROUTES.AI.ROOT,
+            children: [
+              { index: true, element: <AiBrandPage /> },
+              { path: "image-generation", element: <AiPage /> },
+            ],
+          },
 
           // 게시판
           { path: ROUTES.BOARD.ALERT, element: <MobileAlertPage /> },
