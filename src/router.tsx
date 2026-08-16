@@ -379,9 +379,9 @@ if (typeof window !== "undefined") {
     // <Navigate to={ROUTES.HOME} replace />, router.tsx 라우트 테이블 참고).
     const isBootstrapRedirect = window.location.pathname === "/" && isHomePath;
 
-    // 2. 홈 탭 경로 이동: 탭바 클릭(isTabNavigation)이나 이 웹뷰 자신의 부팅
-    // 리다이렉트가 아니라면 항상 네이티브로 위임한다
-    if (supportsMultiWebView() && isHomePath && !isTabNavigation && !isBootstrapRedirect) {
+    // 2. 메인 탭 경로 이동: 탭바 클릭(isTabNavigation)이나 이 웹뷰 자신의 부팅
+    // 리다이렉트가 아니라면 항상 네이티브로 위임한다 (서브 웹뷰 스택을 root 로 collapse 후 탭 전환)
+    if (supportsMultiWebView() && isMainTabPath(path) && !isTabNavigation && !isBootstrapRedirect) {
       appBridge.goHome(path);
       return Promise.resolve();
     }
