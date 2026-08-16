@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { createPortal } from "react-dom";
-import styled from "styled-components";
+import * as Dialog from "@radix-ui/react-dialog";
+import styled, { keyframes } from "styled-components";
 import { ChevronLeft, ChevronDown, Clock, RotateCw } from "lucide-react";
 
 import { getBusHistory } from "@/apis/busArrival";
 import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 interface BusHistoryModalProps {
   isOpen: boolean;
@@ -16,13 +17,40 @@ interface BusHistoryModalProps {
   routeNextStopMap?: Record<string, string>;
 }
 
-interface MatrixRow {
-  hour: number;
-  timeW1?: string; // 1주 전
-  timeW2?: string; // 2주 전
-  timeW3?: string; // 3주 전
-  representativeMinutes: number; // 분 단위 (HH * 60 + MM)
+interface ColumnInfo {
+  key: string;
+  title: string;
+  headerLabel: string;
+  isToday?: boolean;
 }
+
+interface RawHistoryRecord {
+  id?: string | number;
+  routeNo: string;
+  busNumPlate?: string;
+  arrivalTime: string;
+}
+
+interface TimelineItem {
+  id: string | number;
+  routeNo: string;
+  busNumPlate?: string;
+  timeStr: string; // "14:23"
+  hour: number;
+  minutes: number;
+}
+
+interface MatrixCellData {
+  time: string;
+  plate?: string;
+}
+
+// 차량 번호판 포맷터 (예: "인천70바1234" -> "70바1234")
+const formatBusPlate = (plate?: string) => {
+  if (!plate) return "";
+  // 앞의 지역명(인천, 경기, 서울 등 2자리)을 제거하고 "70바1234" 형식으로 반환
+  return plate.replace(/^[가-힣]{2}(?=\d)/, "").trim();
+};
 
 // 요일 정보 매핑
 const DAYS_OF_WEEK = [
@@ -35,6 +63,13 @@ const DAYS_OF_WEEK = [
   { dayIndex: 0, label: "일" },
 ];
 
+// 서버에서 수집하는 모든 시간대 (05시 ~ 23시)
+const ALL_COLLECTED_HOURS = [
+  5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+];
+
+const ALL_ROUTES_VALUE = "ALL";
+
 export default function BusHistoryModal({
   isOpen,
   onClose,
@@ -44,6 +79,9 @@ export default function BusHistoryModal({
   availableRoutes = [],
   routeNextStopMap = {},
 }: BusHistoryModalProps) {
+  // 모바일/브라우저 뒤로가기 핸들러 연동
+  useSheetBackHandler(isOpen, onClose);
+
   // 오늘 요일 인덱스 (0: 일, 1: 월, ..., 6: 토)
   const todayDayIndex = useMemo(() => new Date().getDay(), [isOpen]);
 
@@ -51,24 +89,35 @@ export default function BusHistoryModal({
   const [selectedDayIndex, setSelectedDayIndex] =
     useState<number>(todayDayIndex);
 
-  // 선택된 노선 상태
+  // 선택된 시간대 칩 상태 (기본값: 현재 시간)
+  const [selectedHour, setSelectedHour] = useState<number>(() =>
+    new Date().getHours(),
+  );
+
+  // 선택 가능한 노선 목록 (전체 옵션 포함)
   const validAvailableRoutes = useMemo(() => {
-    return Array.from(new Set(availableRoutes.filter(Boolean)));
-  }, [availableRoutes.join(",")]);
+    const uniqueRoutes = Array.from(new Set(availableRoutes.filter(Boolean)));
+    if (uniqueRoutes.length > 1) {
+      return [ALL_ROUTES_VALUE, ...uniqueRoutes];
+    }
+    return uniqueRoutes;
+  }, [availableRoutes]);
 
   const [selectedRoute, setSelectedRoute] = useState<string>(() => {
     if (defaultRouteNo && validAvailableRoutes.includes(defaultRouteNo)) {
       return defaultRouteNo;
     }
-    return validAvailableRoutes[0] || "순환";
+    return validAvailableRoutes[0] || ALL_ROUTES_VALUE;
   });
 
-  // 모달이 처음 열릴 때만 상태 초기화 (부모 리렌더링으로 인한 강제 덮어쓰기 방지)
+  // 모달이 처음 열릴 때 상태 초기화
   const prevIsOpenRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (isOpen && !prevIsOpenRef.current) {
-      setSelectedDayIndex(new Date().getDay());
+      const now = new Date();
+      setSelectedDayIndex(now.getDay());
+      setSelectedHour(now.getHours());
       if (defaultRouteNo && validAvailableRoutes.includes(defaultRouteNo)) {
         setSelectedRoute(defaultRouteNo);
       } else if (validAvailableRoutes.length > 0) {
@@ -79,53 +128,131 @@ export default function BusHistoryModal({
     prevIsOpenRef.current = isOpen;
   }, [isOpen, defaultRouteNo, validAvailableRoutes]);
 
-  // 1주 전, 2주 전, 3주 전 날짜 계산 함수
-  const targetDates = useMemo(() => {
+  // 날짜 및 열(Column) 구성
+  const { columns, targetDates } = useMemo(() => {
     const today = new Date();
-    const currentDay = today.getDay(); // 0(일) ~ 6(토)
+    const currentDay = today.getDay();
+    const isTodaySelected = selectedDayIndex === currentDay;
 
-    // 선택된 요일까지의 차이 계산 (가장 최근 과거의 해당 요일 기준)
-    let diffDays = currentDay - selectedDayIndex;
-    if (diffDays < 0) {
-      diffDays += 7;
-    }
-
-    const baseDate = new Date(today);
-    baseDate.setDate(today.getDate() - diffDays);
-
-    const getWeekDate = (weeksAgo: number) => {
-      const d = new Date(baseDate);
-      d.setDate(baseDate.getDate() - weeksAgo * 7);
+    const formatDateStr = (d: Date) => {
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, "0");
       const dd = String(d.getDate()).padStart(2, "0");
-      const dayLabel =
-        DAYS_OF_WEEK.find((item) => item.dayIndex === selectedDayIndex)
-          ?.label || "";
+      return `${yyyy}-${mm}-${dd}`;
+    };
 
-      return {
-        dateStr: `${yyyy}-${mm}-${dd}`,
-        headerLabel: `${d.getMonth() + 1}.${d.getDate()}.(${dayLabel})`,
+    const formatHeaderLabel = (
+      d: Date,
+      dayLabel: string,
+      isTodayLabel = false,
+    ) => {
+      if (isTodayLabel) {
+        return `${d.getMonth() + 1}.${d.getDate()}.(오늘)`;
+      }
+      return `${d.getMonth() + 1}.${d.getDate()}.(${dayLabel})`;
+    };
+
+    const dayLabel =
+      DAYS_OF_WEEK.find((item) => item.dayIndex === selectedDayIndex)?.label ||
+      "";
+
+    if (isTodaySelected) {
+      // 오늘 요일이 선택된 경우: 오늘(w0), 1주 전(w1), 2주 전(w2), 3주 전(w3)
+      const d0 = new Date(today);
+      const d1 = new Date(today);
+      d1.setDate(today.getDate() - 7);
+      const d2 = new Date(today);
+      d2.setDate(today.getDate() - 14);
+      const d3 = new Date(today);
+      d3.setDate(today.getDate() - 21);
+
+      const dates = {
+        w0: {
+          dateStr: formatDateStr(d0),
+          headerLabel: formatHeaderLabel(d0, dayLabel, true),
+        },
+        w1: {
+          dateStr: formatDateStr(d1),
+          headerLabel: formatHeaderLabel(d1, dayLabel),
+        },
+        w2: {
+          dateStr: formatDateStr(d2),
+          headerLabel: formatHeaderLabel(d2, dayLabel),
+        },
+        w3: {
+          dateStr: formatDateStr(d3),
+          headerLabel: formatHeaderLabel(d3, dayLabel),
+        },
       };
-    };
 
-    return {
-      w1: getWeekDate(1),
-      w2: getWeekDate(2),
-      w3: getWeekDate(3),
-    };
+      const cols: ColumnInfo[] = [
+        {
+          key: "w0",
+          title: "오늘",
+          headerLabel: dates.w0.headerLabel,
+          isToday: true,
+        },
+        { key: "w1", title: "1주 전", headerLabel: dates.w1.headerLabel },
+        { key: "w2", title: "2주 전", headerLabel: dates.w2.headerLabel },
+        { key: "w3", title: "3주 전", headerLabel: dates.w3.headerLabel },
+      ];
+
+      return { columns: cols, targetDates: dates };
+    } else {
+      // 다른 요일이 선택된 경우: 가장 최근 해당 요일(w1), 1주 전(w2), 2주 전(w3)
+      let diffDays = currentDay - selectedDayIndex;
+      if (diffDays < 0) {
+        diffDays += 7;
+      }
+      const baseDate = new Date(today);
+      baseDate.setDate(today.getDate() - diffDays);
+
+      const d1 = new Date(baseDate);
+      const d2 = new Date(baseDate);
+      d2.setDate(baseDate.getDate() - 7);
+      const d3 = new Date(baseDate);
+      d3.setDate(baseDate.getDate() - 14);
+
+      const dates = {
+        w1: {
+          dateStr: formatDateStr(d1),
+          headerLabel: formatHeaderLabel(d1, dayLabel),
+        },
+        w2: {
+          dateStr: formatDateStr(d2),
+          headerLabel: formatHeaderLabel(d2, dayLabel),
+        },
+        w3: {
+          dateStr: formatDateStr(d3),
+          headerLabel: formatHeaderLabel(d3, dayLabel),
+        },
+      };
+
+      const cols: ColumnInfo[] = [
+        { key: "w1", title: "1주 전", headerLabel: dates.w1.headerLabel },
+        { key: "w2", title: "2주 전", headerLabel: dates.w2.headerLabel },
+        { key: "w3", title: "3주 전", headerLabel: dates.w3.headerLabel },
+      ];
+
+      return { columns: cols, targetDates: dates };
+    }
   }, [selectedDayIndex]);
 
-  // 3주치 데이터 상태
-  const [w1Records, setW1Records] = useState<string[]>([]);
-  const [w2Records, setW2Records] = useState<string[]>([]);
-  const [w3Records, setW3Records] = useState<string[]>([]);
+  // 기록 데이터 상태 (날짜 키별 원본 DTO 리스트)
+  const [rawRecordsMap, setRawRecordsMap] = useState<
+    Record<string, RawHistoryRecord[]>
+  >({});
   const [loading, setLoading] = useState<boolean>(false);
 
   // 스크롤 및 타깃 참조 ref
   const listContainerRef = useRef<HTMLDivElement | null>(null);
-  const targetItemRef = useRef<HTMLTableRowElement | null>(null);
-  const hourRowRefs = useRef<Record<number, HTMLTableRowElement | null>>({});
+  const targetItemRef = useRef<HTMLTableRowElement | HTMLDivElement | null>(
+    null,
+  );
+  const hourRowRefs = useRef<
+    Record<number, HTMLTableRowElement | HTMLDivElement | null>
+  >({});
+  const hourChipRefs = useRef<Record<number, HTMLButtonElement | null>>({});
   const hasAutoScrolledRef = useRef<boolean>(false);
 
   // 현재 시간 (HH:mm)
@@ -133,41 +260,31 @@ export default function BusHistoryModal({
   const currentHour = now.getHours();
   const currentMinutes = currentHour * 60 + now.getMinutes();
 
-  // 3주치 과거 이력 API 병렬 호출
+  // 날짜별 실측 도착 이력 API 병렬 호출
   useEffect(() => {
     if (!isOpen || !bstopId) return;
 
     let isMounted = true;
     setLoading(true);
 
-    Promise.all([
-      getBusHistory(bstopId, targetDates.w1.dateStr).catch(() => null),
-      getBusHistory(bstopId, targetDates.w2.dateStr).catch(() => null),
-      getBusHistory(bstopId, targetDates.w3.dateStr).catch(() => null),
-    ])
-      .then(([res1, res2, res3]) => {
+    const keys = Object.keys(targetDates);
+
+    Promise.all(
+      keys.map((k) =>
+        getBusHistory(bstopId, (targetDates as any)[k].dateStr)
+          .then((res) => ({ key: k, res }))
+          .catch(() => ({ key: k, res: null })),
+      ),
+    )
+      .then((results) => {
         if (!isMounted) return;
 
-        const extractTimes = (res: any) => {
+        const newMap: Record<string, RawHistoryRecord[]> = {};
+        results.forEach(({ key, res }) => {
           const raw = res?.historyRecords ?? [];
-          return raw
-            .filter((r: any) => {
-              if (!selectedRoute) return true;
-              return r.routeNo === selectedRoute;
-            })
-            .map((r: any) => {
-              return r.arrivalTime
-                ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
-                    r.arrivalTime.substring(11, 16)
-                : "";
-            })
-            .filter(Boolean)
-            .sort();
-        };
-
-        setW1Records(extractTimes(res1));
-        setW2Records(extractTimes(res2));
-        setW3Records(extractTimes(res3));
+          newMap[key] = raw;
+        });
+        setRawRecordsMap(newMap);
       })
       .finally(() => {
         if (isMounted) {
@@ -178,321 +295,641 @@ export default function BusHistoryModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, bstopId, targetDates, selectedRoute]);
+  }, [isOpen, bstopId, targetDates]);
 
-  // 다주차 시간표 매트릭스 표 생성 알고리즘
+  const isAllRoutesMode = selectedRoute === ALL_ROUTES_VALUE;
+
+  // 순환 버스 접두사 유무와 무관하게 동일 노선인지 판별 ("순환41" === "41")
+  const isMatchingRoute = (routeA?: string, routeB?: string) => {
+    if (!routeA || !routeB) return false;
+    if (routeA === routeB) return true;
+    const cleanA = routeA.replace(/^순환/, "").trim();
+    const cleanB = routeB.replace(/^순환/, "").trim();
+    return cleanA === cleanB;
+  };
+
+  // 1) 전체 노선 모드일 때: 타임라인 아이템 리스트 생성
+  const timelineItems = useMemo(() => {
+    if (!isAllRoutesMode) return [];
+
+    // 오늘 요일이면 w0(오늘), 다른 요일이면 w1(가장 최근 해당 요일) 데이터 사용
+    const primaryKey = selectedDayIndex === todayDayIndex ? "w0" : "w1";
+    const records = rawRecordsMap[primaryKey] || [];
+
+    // 해당 정류장에서 운행/관리 중인 노선 목록으로만 엄격히 필터링
+    const allowedRouteList = availableRoutes.filter(Boolean);
+
+    const items: TimelineItem[] = [];
+    records.forEach((r, idx) => {
+      if (
+        allowedRouteList.length > 0 &&
+        !allowedRouteList.some((allowed) => isMatchingRoute(allowed, r.routeNo))
+      ) {
+        return;
+      }
+      const timeStr = r.arrivalTime
+        ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
+          r.arrivalTime.substring(11, 16)
+        : "";
+      if (!timeStr) return;
+
+      const [h, m] = timeStr.split(":").map(Number);
+      items.push({
+        id: r.id || `${r.routeNo}_${timeStr}_${idx}`,
+        routeNo: r.routeNo,
+        busNumPlate: r.busNumPlate,
+        timeStr,
+        hour: h,
+        minutes: h * 60 + m,
+      });
+    });
+
+    items.sort((a, b) => a.minutes - b.minutes);
+    return items;
+  }, [
+    isAllRoutesMode,
+    selectedDayIndex,
+    todayDayIndex,
+    rawRecordsMap,
+    availableRoutes,
+  ]);
+
+  // 2) 개별 노선 모드일 때: 다주차 비교 매트릭스 표 생성 (차량 번호 포함)
   const matrixRows = useMemo(() => {
-    const toMin = (t: string) => {
-      const [h, m] = t.split(":").map(Number);
-      return h * 60 + m;
-    };
+    if (isAllRoutesMode) return [];
 
-    const list1 = [...w1Records];
-    const list2 = [...w2Records];
-    const list3 = [...w3Records];
+    interface CellRecord {
+      time: string;
+      plate?: string;
+      minutes: number;
+    }
 
-    const rows: MatrixRow[] = [];
-    let i = 0,
-      j = 0,
-      k = 0;
+    const keys = columns.map((c) => c.key);
+    const lists: CellRecord[][] = keys.map((k) => {
+      const list = rawRecordsMap[k] || [];
+      const cells: CellRecord[] = [];
+      list.forEach((r) => {
+        if (!isMatchingRoute(r.routeNo, selectedRoute)) return;
+        const time = r.arrivalTime
+          ? r.arrivalTime.split("T")[1]?.substring(0, 5) ||
+            r.arrivalTime.substring(11, 16)
+          : "";
+        if (!time) return;
+        const [h, m] = time.split(":").map(Number);
+        cells.push({
+          time,
+          plate: formatBusPlate(r.busNumPlate),
+          minutes: h * 60 + m,
+        });
+      });
+      cells.sort((a, b) => a.minutes - b.minutes);
+      return cells;
+    });
 
-    while (i < list1.length || j < list2.length || k < list3.length) {
-      const m1 = i < list1.length ? toMin(list1[i]) : Infinity;
-      const m2 = j < list2.length ? toMin(list2[j]) : Infinity;
-      const m3 = k < list3.length ? toMin(list3[k]) : Infinity;
+    const pointers = new Array(keys.length).fill(0);
 
-      const minVal = Math.min(m1, m2, m3);
-      const THRESHOLD = 12; // 12분 이내의 유사 도착 시간대는 동일 행으로 정렬
+    const rows: Array<{
+      hour: number;
+      representativeMinutes: number;
+      cells: Record<string, MatrixCellData | undefined>;
+    }> = [];
 
-      let w1Val: string | undefined = undefined;
-      let w2Val: string | undefined = undefined;
-      let w3Val: string | undefined = undefined;
+    const THRESHOLD = 12;
 
-      if (m1 !== Infinity && Math.abs(m1 - minVal) <= THRESHOLD) {
-        w1Val = list1[i++];
-      }
-      if (m2 !== Infinity && Math.abs(m2 - minVal) <= THRESHOLD) {
-        w2Val = list2[j++];
-      }
-      if (m3 !== Infinity && Math.abs(m3 - minVal) <= THRESHOLD) {
-        w3Val = list3[k++];
-      }
+    while (pointers.some((ptr, idx) => ptr < lists[idx].length)) {
+      let minVal = Infinity;
+      pointers.forEach((ptr, idx) => {
+        if (ptr < lists[idx].length) {
+          const m = lists[idx][ptr].minutes;
+          if (m < minVal) minVal = m;
+        }
+      });
+
+      if (minVal === Infinity) break;
+
+      const rowCells: Record<string, MatrixCellData | undefined> = {};
+      pointers.forEach((ptr, idx) => {
+        if (ptr < lists[idx].length) {
+          const cell = lists[idx][ptr];
+          if (Math.abs(cell.minutes - minVal) <= THRESHOLD) {
+            rowCells[keys[idx]] = {
+              time: cell.time,
+              plate: cell.plate,
+            };
+            pointers[idx]++;
+          }
+        }
+      });
 
       rows.push({
         hour: Math.floor(minVal / 60),
-        timeW1: w1Val,
-        timeW2: w2Val,
-        timeW3: w3Val,
         representativeMinutes: minVal,
+        cells: rowCells,
       });
     }
 
     return rows;
-  }, [w1Records, w2Records, w3Records]);
+  }, [isAllRoutesMode, selectedRoute, columns, rawRecordsMap]);
 
-  // 현재 시간과 비교하여 가장 유사/가까운 행 인덱스 계산
+  // 타깃 행/아이템 인덱스 (오늘 요일일 때 현재 시각 기준 가장 가까운 항목)
   const targetRowIndex = useMemo(() => {
-    if (matrixRows.length === 0) return -1;
-    if (selectedDayIndex !== todayDayIndex) return -1; // 오늘 요일일 때만 하이라이트
+    if (selectedDayIndex !== todayDayIndex) return -1;
 
-    // 1. 현재 시각 이후 도착 시간 중 가장 가까운 행
-    const upcomingIdx = matrixRows.findIndex(
-      (row) => row.representativeMinutes >= currentMinutes,
-    );
-
-    if (upcomingIdx !== -1) {
-      return upcomingIdx;
+    if (isAllRoutesMode) {
+      if (timelineItems.length === 0) return -1;
+      const upcomingIdx = timelineItems.findIndex(
+        (item) => item.minutes >= currentMinutes,
+      );
+      return upcomingIdx !== -1 ? upcomingIdx : timelineItems.length - 1;
+    } else {
+      if (matrixRows.length === 0) return -1;
+      const upcomingIdx = matrixRows.findIndex(
+        (row) => row.representativeMinutes >= currentMinutes,
+      );
+      return upcomingIdx !== -1 ? upcomingIdx : matrixRows.length - 1;
     }
+  }, [
+    isAllRoutesMode,
+    timelineItems,
+    matrixRows,
+    selectedDayIndex,
+    todayDayIndex,
+    currentMinutes,
+  ]);
 
-    // 2. 이미 막차가 지난 경우 마지막 행
-    return matrixRows.length - 1;
-  }, [matrixRows, selectedDayIndex, todayDayIndex, currentMinutes]);
+  // 데이터 변경 시 ref 초기화
+  useEffect(() => {
+    hourRowRefs.current = {};
+  }, [matrixRows, timelineItems, isAllRoutesMode]);
 
-  // 사용 가능한 시간대(Hour) 칩 목록 (예: 6시 ~ 23시)
+  // 사용 가능한 시간대 칩 목록 (05시~23시)
   const availableHours = useMemo(() => {
-    const hours = Array.from(new Set(matrixRows.map((r) => r.hour))).sort(
-      (a, b) => a - b,
-    );
-    if (hours.length === 0) {
-      return [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
-    }
-    return hours;
-  }, [matrixRows]);
+    return ALL_COLLECTED_HOURS;
+  }, []);
+
+  // 선택된 시간대 칩이 보이도록 칩 바 가로 스크롤
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      const chipEl = hourChipRefs.current[selectedHour];
+      if (chipEl) {
+        chipEl.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest",
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isOpen, selectedHour, selectedDayIndex]);
 
   // 시간대 칩 클릭 시 해당 시간대로 부드럽게 스크롤
   const handleHourClick = (hour: number) => {
-    const targetElement = hourRowRefs.current[hour];
     const container = listContainerRef.current;
-    if (container && targetElement) {
-      const topPos = targetElement.offsetTop - 45;
-      container.scrollTo({
-        top: Math.max(0, topPos),
-        behavior: "smooth",
-      });
+    if (!container) return;
+
+    if (isAllRoutesMode) {
+      if (timelineItems.length === 0) return;
+      const firstHour = timelineItems[0].hour;
+      const lastHour = timelineItems[timelineItems.length - 1].hour;
+
+      if (hour <= firstHour) {
+        container.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (hour >= lastHour) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: "smooth",
+        });
+        return;
+      }
+
+      let targetIdx = timelineItems.findIndex((item) => item.hour >= hour);
+      if (targetIdx === -1) targetIdx = timelineItems.length - 1;
+
+      const targetHour = timelineItems[targetIdx].hour;
+      const targetElement = hourRowRefs.current[targetHour];
+      if (targetElement) {
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const relativeTop = targetRect.top - containerRect.top;
+        const targetScrollTop = container.scrollTop + relativeTop - 45;
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: "smooth",
+        });
+      }
+    } else {
+      if (matrixRows.length === 0) return;
+      const firstHour = matrixRows[0].hour;
+      const lastHour = matrixRows[matrixRows.length - 1].hour;
+
+      if (hour <= firstHour) {
+        container.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (hour >= lastHour) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: "smooth",
+        });
+        return;
+      }
+
+      let targetIdx = matrixRows.findIndex((r) => r.hour >= hour);
+      if (targetIdx === -1) targetIdx = matrixRows.length - 1;
+
+      const targetHour = matrixRows[targetIdx].hour;
+      const targetElement = hourRowRefs.current[targetHour];
+      if (targetElement) {
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const relativeTop = targetRect.top - containerRect.top;
+        const targetScrollTop = container.scrollTop + relativeTop - 45;
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: "smooth",
+        });
+      }
     }
+  };
+
+  const handleHourChipClick = (hour: number) => {
+    setSelectedHour(hour);
+    handleHourClick(hour);
   };
 
   // 모달 오픈 시 현재 시간 강조 라인으로 자동 스크롤
   useEffect(() => {
-    if (
-      !isOpen ||
-      loading ||
-      matrixRows.length === 0 ||
-      hasAutoScrolledRef.current
-    ) {
+    const hasData = isAllRoutesMode
+      ? timelineItems.length > 0
+      : matrixRows.length > 0;
+    if (!isOpen || loading || !hasData || hasAutoScrolledRef.current) {
       return;
     }
 
     const timer = setTimeout(() => {
       const container = listContainerRef.current;
-      const target = targetItemRef.current;
+      hasAutoScrolledRef.current = true;
 
-      if (container && target) {
-        hasAutoScrolledRef.current = true;
-        const topPos = target.offsetTop - 90;
+      if (
+        selectedDayIndex === todayDayIndex &&
+        targetItemRef.current &&
+        container
+      ) {
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetItemRef.current.getBoundingClientRect();
+        const relativeTop = targetRect.top - containerRect.top;
+        const targetScrollTop = container.scrollTop + relativeTop - 90;
+
         container.scrollTo({
-          top: Math.max(0, topPos),
+          top: Math.max(0, targetScrollTop),
           behavior: "smooth",
         });
+        return;
       }
-    }, 80);
+
+      handleHourClick(selectedHour);
+    }, 120);
 
     return () => clearTimeout(timer);
-  }, [isOpen, loading, matrixRows, targetRowIndex]);
+  }, [
+    isOpen,
+    loading,
+    matrixRows,
+    timelineItems,
+    isAllRoutesMode,
+    targetRowIndex,
+    selectedDayIndex,
+    todayDayIndex,
+    selectedHour,
+  ]);
 
-  if (!isOpen) return null;
-  if (typeof document === "undefined") return null;
+  const currentDayLabel =
+    DAYS_OF_WEEK.find((d) => d.dayIndex === selectedDayIndex)?.label || "";
 
-  return createPortal(
-    <ModalOverlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
-        {/* 상단 네비게이션 헤더 */}
-        <NavHeader>
-          <BackButton onClick={onClose}>
-            <ChevronLeft size={24} color="#111827" />
-          </BackButton>
-          <NavTitle>과거 시간표</NavTitle>
-          <div style={{ width: 24 }} />
-        </NavHeader>
+  return (
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <Dialog.Portal>
+        <ModalOverlay />
+        <ModalContainer>
+          {/* 상단 네비게이션 헤더 */}
+          <NavHeader>
+            <BackButton onClick={onClose} aria-label="뒤로가기">
+              <ChevronLeft size={24} color="#111827" />
+            </BackButton>
+            <Dialog.Title asChild>
+              <NavTitle>과거 시간표</NavTitle>
+            </Dialog.Title>
+            <div style={{ width: 24 }} />
+          </NavHeader>
 
-        {/* 정류장 정보 */}
-        <StopInfoSection>
-          <StopName>{stopName}</StopName>
-          <StopMeta>
-            {bstopId}
-            {routeNextStopMap[selectedRoute]
-              ? ` · ${routeNextStopMap[selectedRoute]} 방면`
-              : ""}
-          </StopMeta>
-        </StopInfoSection>
+          {/* 정류장 정보 */}
+          <StopInfoSection>
+            <StopName>{stopName}</StopName>
+            <StopMeta>
+              {bstopId}
+              {routeNextStopMap[selectedRoute]
+                ? ` · ${routeNextStopMap[selectedRoute]} 방면`
+                : ""}
+            </StopMeta>
+          </StopInfoSection>
 
-        {/* 노선 선택 드롭다운 / 셀렉터 */}
-        <RouteSelectorContainer>
-          <RouteSelectWrapper>
-            <RouteBadge tone={getBusCircleTone(selectedRoute)}>
-              {selectedRoute.startsWith("순환") ||
-              ["41", "42", "43", "46", "47"].includes(selectedRoute)
-                ? "순환"
-                : selectedRoute.startsWith("M") ||
-                    [
-                      "1301",
-                      "3002",
-                      "303-1",
-                      "6405",
-                      "M6405",
-                      "M6464",
-                    ].includes(selectedRoute)
-                  ? "광역"
-                  : "간선"}
-            </RouteBadge>
-            <RouteSelect
-              value={selectedRoute}
-              onChange={(e) => {
-                setSelectedRoute(e.target.value);
-                hasAutoScrolledRef.current = false;
-              }}
-            >
-              {validAvailableRoutes.map((routeNo) => (
-                <option key={routeNo} value={routeNo}>
-                  {routeNo}번
-                </option>
-              ))}
-            </RouteSelect>
-            <SelectArrow>
-              <ChevronDown size={18} color="#6b7280" />
-            </SelectArrow>
-          </RouteSelectWrapper>
-        </RouteSelectorContainer>
-
-        {/* 요일 탭 바 */}
-        <DayTabBar>
-          {DAYS_OF_WEEK.map((item) => (
-            <DayTabItem
-              key={item.dayIndex}
-              active={selectedDayIndex === item.dayIndex}
-              onClick={() => {
-                setSelectedDayIndex(item.dayIndex);
-                hasAutoScrolledRef.current = false;
-              }}
-            >
-              {item.label}
-            </DayTabItem>
-          ))}
-        </DayTabBar>
-
-        {/* 시간대(Hour) 빠른 필터 칩 바 */}
-        <HourFilterBar>
-          {availableHours.map((hour) => {
-            const isCurrentHour =
-              selectedDayIndex === todayDayIndex && hour === currentHour;
-            return (
-              <HourChip
-                key={hour}
-                active={isCurrentHour}
-                onClick={() => handleHourClick(hour)}
+          {/* 노선 선택 드롭다운 / 셀렉터 */}
+          <RouteSelectorContainer>
+            <RouteSelectWrapper>
+              <RouteBadge
+                tone={
+                  isAllRoutesMode ? "all" : getBusCircleTone(selectedRoute)
+                }
               >
-                {hour}시
-              </HourChip>
-            );
-          })}
-        </HourFilterBar>
+                {isAllRoutesMode
+                  ? "전체"
+                  : selectedRoute.startsWith("순환") ||
+                      ["41", "42", "43", "46", "47"].includes(selectedRoute)
+                    ? "순환"
+                    : selectedRoute.startsWith("M") ||
+                        [
+                          "1301",
+                          "3002",
+                          "303-1",
+                          "6405",
+                          "M6405",
+                          "M6464",
+                        ].includes(selectedRoute)
+                      ? "광역"
+                      : "간선"}
+              </RouteBadge>
+              <RouteSelect
+                value={selectedRoute}
+                onChange={(e) => {
+                  setSelectedRoute(e.target.value);
+                  hasAutoScrolledRef.current = false;
+                }}
+              >
+                {validAvailableRoutes.map((routeNo) => (
+                  <option key={routeNo} value={routeNo}>
+                    {routeNo === ALL_ROUTES_VALUE
+                      ? "전체 노선 도착 순서"
+                      : `${routeNo}번`}
+                  </option>
+                ))}
+              </RouteSelect>
+              <SelectArrow>
+                <ChevronDown size={18} color="#6b7280" />
+              </SelectArrow>
+            </RouteSelectWrapper>
+          </RouteSelectorContainer>
 
-        {/* 다주차 시간표 매트릭스 테이블 */}
-        <TableViewport ref={listContainerRef}>
-          {loading ? (
-            <LoadingBox>
-              <RotateCw size={24} className="spin" color="#2563eb" />
-              <LoadingText>3주간의 시간표 데이터를 불러오는 중...</LoadingText>
-            </LoadingBox>
-          ) : matrixRows.length === 0 ? (
-            <EmptyBox>
-              <Clock size={36} color="#d1d5db" />
-              <EmptyTitle>해당 요일의 실측 도착 기록이 없습니다.</EmptyTitle>
-              <EmptyDesc>
-                1~3주 전 도착 이력을 기반으로 시간표가 구성됩니다.
-              </EmptyDesc>
-            </EmptyBox>
-          ) : (
-            <MatrixTable>
-              <thead>
-                <tr>
-                  <TableHeaderCell>
-                    <div className="title">1주 전</div>
-                    <div className="date">{targetDates.w1.headerLabel}</div>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <div className="title">2주 전</div>
-                    <div className="date">{targetDates.w2.headerLabel}</div>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <div className="title">3주 전</div>
-                    <div className="date">{targetDates.w3.headerLabel}</div>
-                  </TableHeaderCell>
-                </tr>
-              </thead>
-              <tbody>
-                {matrixRows.map((row, idx) => {
-                  const isTarget = idx === targetRowIndex;
-
-                  // 각 시간대의 첫 번째 행인 경우 ref 저장
-                  const isHourFirstRow =
-                    idx === 0 || matrixRows[idx - 1].hour !== row.hour;
-
-                  return (
-                    <MatrixTableRow
-                      key={idx}
-                      ref={(el) => {
-                        if (isTarget) {
-                          targetItemRef.current = el;
-                        }
-                        if (isHourFirstRow) {
-                          hourRowRefs.current[row.hour] = el;
-                        }
-                      }}
-                      isTarget={isTarget}
-                    >
-                      <MatrixTableCell isTarget={isTarget}>
-                        {row.timeW1 || ""}
-                      </MatrixTableCell>
-                      <MatrixTableCell isTarget={isTarget}>
-                        {row.timeW2 || ""}
-                      </MatrixTableCell>
-                      <MatrixTableCell isTarget={isTarget}>
-                        {row.timeW3 || ""}
-                      </MatrixTableCell>
-                    </MatrixTableRow>
+          {/* 요일 탭 바 */}
+          <DayTabBar>
+            {DAYS_OF_WEEK.map((item) => (
+              <DayTabItem
+                key={item.dayIndex}
+                active={selectedDayIndex === item.dayIndex}
+                onClick={() => {
+                  setSelectedDayIndex(item.dayIndex);
+                  setSelectedHour(
+                    item.dayIndex === todayDayIndex
+                      ? new Date().getHours()
+                      : 9,
                   );
-                })}
-              </tbody>
-            </MatrixTable>
-          )}
-        </TableViewport>
-      </ModalContainer>
-    </ModalOverlay>,
-    document.body,
+                  hasAutoScrolledRef.current = false;
+                }}
+              >
+                {item.label}
+              </DayTabItem>
+            ))}
+          </DayTabBar>
+
+          {/* 시간대(Hour) 빠른 필터 칩 바 (05시~23시) */}
+          <HourFilterBar>
+            {availableHours.map((hour) => {
+              const isSelected = selectedHour === hour;
+              return (
+                <HourChip
+                  key={hour}
+                  ref={(el) => {
+                    hourChipRefs.current[hour] = el;
+                  }}
+                  active={isSelected}
+                  onClick={() => handleHourChipClick(hour)}
+                >
+                  {hour}시
+                </HourChip>
+              );
+            })}
+          </HourFilterBar>
+
+          {/* 본문 뷰포트 (전체 노선: 타임라인 뷰 / 개별 노선: 매트릭스 표) */}
+          <TableViewport ref={listContainerRef}>
+            {loading ? (
+              <LoadingBox>
+                <RotateCw size={24} className="spin" color="#2563eb" />
+                <LoadingText>
+                  {isAllRoutesMode
+                    ? `${selectedDayIndex === todayDayIndex ? "오늘" : `${currentDayLabel}요일`} 도착 기록을 불러오는 중...`
+                    : "시간표 데이터를 불러오는 중..."}
+                </LoadingText>
+              </LoadingBox>
+            ) : isAllRoutesMode ? (
+              /* 1. 전체 노선 타임라인 뷰 */
+              timelineItems.length === 0 ? (
+                <EmptyBox>
+                  <Clock size={36} color="#d1d5db" />
+                  <EmptyTitle>해당 요일의 도착 기록이 없습니다.</EmptyTitle>
+                  <EmptyDesc>
+                    운행 시간(05:00~23:59) 중 실측된 버스 도착 기록이 표시됩니다.
+                  </EmptyDesc>
+                </EmptyBox>
+              ) : (
+                <TimelineContainer>
+                  <TimelineHeaderNotice>
+                    <span>
+                      {selectedDayIndex === todayDayIndex
+                        ? "오늘 정류장을 통과한 전체 버스 실측 도착 순서입니다."
+                        : `최근 ${currentDayLabel}요일에 정류장을 통과한 전체 버스 도착 순서입니다.`}
+                    </span>
+                  </TimelineHeaderNotice>
+
+                  <TimelineList>
+                    {timelineItems.map((item, idx) => {
+                      const isTarget = idx === targetRowIndex;
+                      const isHourFirstItem =
+                        idx === 0 || timelineItems[idx - 1].hour !== item.hour;
+                      const tone = getBusCircleTone(item.routeNo);
+
+                      return (
+                        <TimelineItemWrapper
+                          key={item.id}
+                          ref={(el) => {
+                            if (isTarget) {
+                              targetItemRef.current = el;
+                            }
+                            if (isHourFirstItem) {
+                              hourRowRefs.current[item.hour] = el;
+                            }
+                          }}
+                          $isTarget={isTarget}
+                        >
+                          <TimelineTimeColumn $isTarget={isTarget}>
+                            <TimeText>{item.timeStr}</TimeText>
+                          </TimelineTimeColumn>
+
+                          <TimelineNodeColumn>
+                            <TimelineNode $tone={tone} $isTarget={isTarget} />
+                            <TimelineLine />
+                          </TimelineNodeColumn>
+
+                          <TimelineContentCard $isTarget={isTarget}>
+                            <CardMainRow>
+                              <BusBadge tone={tone}>{item.routeNo}번</BusBadge>
+                              {item.busNumPlate && (
+                                <PlateBadge>
+                                  {formatBusPlate(item.busNumPlate)}
+                                </PlateBadge>
+                              )}
+                              {isTarget && selectedDayIndex === todayDayIndex && (
+                                <TargetTag>현재 근접</TargetTag>
+                              )}
+                            </CardMainRow>
+                            {routeNextStopMap[item.routeNo] && (
+                              <NextStopText>
+                                {routeNextStopMap[item.routeNo]} 방면
+                              </NextStopText>
+                            )}
+                          </TimelineContentCard>
+                        </TimelineItemWrapper>
+                      );
+                    })}
+                  </TimelineList>
+                </TimelineContainer>
+              )
+            ) : (
+              /* 2. 개별 노선 다주차 비교 매트릭스 표 */
+              matrixRows.length === 0 ? (
+                <EmptyBox>
+                  <Clock size={36} color="#d1d5db" />
+                  <EmptyTitle>해당 요일의 실측 도착 기록이 없습니다.</EmptyTitle>
+                  <EmptyDesc>
+                    {selectedDayIndex === todayDayIndex
+                      ? "오늘 및 과거 3주간의 도착 이력을 기반으로 시간표가 구성됩니다."
+                      : "과거 3주간의 도착 이력을 기반으로 시간표가 구성됩니다."}
+                  </EmptyDesc>
+                </EmptyBox>
+              ) : (
+                <MatrixTable>
+                  <thead>
+                    <tr>
+                      {columns.map((col) => (
+                        <TableHeaderCell
+                          key={col.key}
+                          $isToday={col.isToday}
+                          $colCount={columns.length}
+                        >
+                          <div className="title">{col.title}</div>
+                          <div className="date">{col.headerLabel}</div>
+                        </TableHeaderCell>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matrixRows.map((row, idx) => {
+                      const isTarget = idx === targetRowIndex;
+                      const isHourFirstRow =
+                        idx === 0 || matrixRows[idx - 1].hour !== row.hour;
+
+                      return (
+                        <MatrixTableRow
+                          key={idx}
+                          ref={(el) => {
+                            if (isTarget) {
+                              targetItemRef.current = el;
+                            }
+                            if (isHourFirstRow) {
+                              hourRowRefs.current[row.hour] = el;
+                            }
+                          }}
+                          isTarget={isTarget}
+                        >
+                          {columns.map((col) => {
+                            const cellData = row.cells[col.key];
+                            return (
+                              <MatrixTableCell
+                                key={col.key}
+                                isTarget={isTarget}
+                                $isToday={col.isToday}
+                              >
+                                {cellData ? (
+                                  <CellContent>
+                                    <span className="time">{cellData.time}</span>
+                                    {cellData.plate && (
+                                      <span className="plate">
+                                        {cellData.plate}
+                                      </span>
+                                    )}
+                                  </CellContent>
+                                ) : (
+                                  ""
+                                )}
+                              </MatrixTableCell>
+                            );
+                          })}
+                        </MatrixTableRow>
+                      );
+                    })}
+                  </tbody>
+                </MatrixTable>
+              )
+            )}
+          </TableViewport>
+        </ModalContainer>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
-// Styled Components
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  padding: 12px;
+// Styled Components & Keyframes
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
 `;
 
-const ModalContainer = styled.div`
+const scaleUp = keyframes`
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+`;
+
+const ModalOverlay = styled(Dialog.Overlay)`
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 99999;
+  animation: ${fadeIn} 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+`;
+
+const ModalContainer = styled(Dialog.Content)`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: #ffffff;
   border-radius: 18px;
-  width: 100%;
+  width: calc(100% - 24px);
   max-width: 440px;
   height: 88vh;
   max-height: 780px;
@@ -500,6 +937,9 @@ const ModalContainer = styled.div`
   flex-direction: column;
   box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  z-index: 100000;
+  outline: none;
+  animation: ${scaleUp} 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 `;
 
 const NavHeader = styled.div`
@@ -576,19 +1016,21 @@ const RouteBadge = styled.span<{ tone?: string }>`
   padding: 3px 6px;
   border-radius: 4px;
   background-color: ${({ tone }) => {
+    if (tone === "all") return "#475569";
     if (tone === "green") return "#16a34a";
     if (tone === "red") return "#dc2626";
     return "#2563eb";
   }};
   color: #ffffff;
   margin-right: 10px;
+  flex-shrink: 0;
 `;
 
 const RouteSelect = styled.select`
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
   outline: none;
@@ -672,6 +1114,135 @@ const TableViewport = styled.div`
   position: relative;
 `;
 
+// --- 타임라인 뷰 스타일 ---
+const TimelineContainer = styled.div`
+  padding: 14px 16px 30px;
+`;
+
+const TimelineHeaderNotice = styled.div`
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+`;
+
+const TimelineList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const TimelineItemWrapper = styled.div<{ $isTarget?: boolean }>`
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  background-color: ${({ $isTarget }) =>
+    $isTarget ? "rgba(239, 246, 255, 0.7)" : "transparent"};
+  border-radius: 10px;
+  padding: 4px 8px;
+  transition: background-color 0.15s;
+`;
+
+const TimelineTimeColumn = styled.div<{ $isTarget?: boolean }>`
+  width: 50px;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: ${({ $isTarget }) => ($isTarget ? "800" : "600")};
+  color: ${({ $isTarget }) => ($isTarget ? "#2563eb" : "#334155")};
+`;
+
+const TimeText = styled.span`
+  letter-spacing: -0.2px;
+`;
+
+const TimelineNodeColumn = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+  align-self: stretch;
+  justify-content: center;
+`;
+
+const TimelineNode = styled.div<{ $tone?: string; $isTarget?: boolean }>`
+  width: ${({ $isTarget }) => ($isTarget ? "12px" : "8px")};
+  height: ${({ $isTarget }) => ($isTarget ? "12px" : "8px")};
+  border-radius: 50%;
+  background-color: ${({ $tone }) => {
+    if ($tone === "green") return "#16a34a";
+    if ($tone === "red") return "#dc2626";
+    return "#2563eb";
+  }};
+  z-index: 2;
+  box-shadow: ${({ $isTarget }) =>
+    $isTarget ? "0 0 0 3px rgba(37, 99, 235, 0.25)" : "none"};
+`;
+
+const TimelineLine = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background-color: #e2e8f0;
+  z-index: 1;
+`;
+
+const TimelineContentCard = styled.div<{ $isTarget?: boolean }>`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 8px;
+`;
+
+const CardMainRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const BusBadge = styled.span<{ tone?: string }>`
+  font-size: 12.5px;
+  font-weight: 700;
+  color: ${({ tone }) => {
+    if (tone === "green") return "#15803d";
+    if (tone === "red") return "#b91c1c";
+    return "#1d4ed8";
+  }};
+`;
+
+const PlateBadge = styled.span`
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748b;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 1.5px 5px;
+  border-radius: 4px;
+`;
+
+const NextStopText = styled.span`
+  font-size: 11.5px;
+  color: #64748b;
+  margin-left: 2px;
+`;
+
+const TargetTag = styled.span`
+  font-size: 10px;
+  font-weight: 700;
+  color: #2563eb;
+  background-color: #dbeafe;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: auto;
+`;
+
+// --- 매트릭스 표 스타일 ---
 const MatrixTable = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -685,11 +1256,12 @@ const MatrixTable = styled.table`
   }
 `;
 
-const TableHeaderCell = styled.th`
-  padding: 12px 6px;
+const TableHeaderCell = styled.th<{ $isToday?: boolean; $colCount: number }>`
+  padding: 12px 4px;
   border-bottom: 1px solid #e2e8f0;
   border-right: 1px solid #f1f5f9;
-  width: 33.333%;
+  width: ${({ $colCount }) => `${100 / $colCount}%`};
+  background-color: ${({ $isToday }) => ($isToday ? "#eff6ff" : "inherit")};
 
   &:last-child {
     border-right: none;
@@ -698,13 +1270,13 @@ const TableHeaderCell = styled.th`
   .title {
     font-size: 13px;
     font-weight: 700;
-    color: #1e293b;
+    color: ${({ $isToday }) => ($isToday ? "#2563eb" : "#1e293b")};
   }
 
   .date {
     font-size: 11px;
     font-weight: 500;
-    color: #64748b;
+    color: ${({ $isToday }) => ($isToday ? "#3b82f6" : "#64748b")};
     margin-top: 2px;
   }
 `;
@@ -718,18 +1290,44 @@ const MatrixTableRow = styled.tr<{ isTarget?: boolean }>`
   }
 `;
 
-const MatrixTableCell = styled.td<{ isTarget?: boolean }>`
-  padding: 15px 6px;
-  font-size: 14px;
-  font-weight: ${({ isTarget }) => (isTarget ? "800" : "600")};
-  color: ${({ isTarget }) => (isTarget ? "#2563eb" : "#1e293b")};
+const MatrixTableCell = styled.td<{ isTarget?: boolean; $isToday?: boolean }>`
+  padding: 10px 3px;
+  font-size: 13.5px;
+  font-weight: ${({ isTarget, $isToday }) =>
+    isTarget ? "800" : $isToday ? "700" : "600"};
+  color: ${({ isTarget, $isToday }) =>
+    isTarget ? "#2563eb" : $isToday ? "#1d4ed8" : "#1e293b"};
   border-bottom: 1px solid
     ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
   border-right: 1px solid
     ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
+  background-color: ${({ isTarget, $isToday }) =>
+    isTarget ? "inherit" : $isToday ? "rgba(239, 246, 255, 0.4)" : "inherit"};
 
   &:last-child {
     border-right: none;
+  }
+`;
+
+const CellContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  .time {
+    font-size: 13.5px;
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  .plate {
+    font-size: 10px;
+    font-weight: 500;
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-radius: 3px;
+    padding: 0 3px;
   }
 `;
 
