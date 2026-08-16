@@ -181,7 +181,7 @@ export default function RootLayout() {
       <AppInstallBanner />
       <ScreenContainer>
         {outlet}
-        {isHomeScreen && <AIChatFloatingButton />}
+        <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
       </ScreenContainer>
       {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
       <FeatureTourSheet

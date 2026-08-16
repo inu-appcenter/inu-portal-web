@@ -1,25 +1,30 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
+import Ripple from "@/components/common/Ripple";
 
-import AiBanner from "@/resources/assets/ai/횃불-ai-enter-1.svg";
+import AiBanner from "@/resources/assets/ai/횃불이ai배너이미지.webp";
+import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
+import TimetableEvaluateIcon from "@/resources/assets/ai/시간표이미지평가횃불이.svg";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 import {
-  LuMessageSquare,
   LuCalendar,
   LuImage,
   LuLock,
   LuNewspaper,
   LuTable,
-  LuBot,
 } from "react-icons/lu";
 import { IconType } from "react-icons";
 import Divider from "@/components/common/Divider";
 import ExternalLinkIcon from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
+import useAIChatStore from "@/stores/useAIChatStore";
+
+const isProduction =
+  import.meta.env.VITE_API_BASE_URL === "https://portal.inuappcenter.kr/";
 
 interface AppItemProps {
   iconSrc?: string | null;
@@ -42,33 +47,36 @@ const AppItem = ({
 }: AppItemProps) => {
   return (
     <AppItemWrapper onClick={onClick} $isPreparing={isPreparing}>
-      {iconSrc ? (
-        <Icon src={iconSrc} alt={title} />
-      ) : IconComponent ? (
-        <IconWrapper $isPreparing={isPreparing}>
-          <IconComponent
-            size={24}
-            color={isPreparing ? "#a0a0a0" : "#6d4dc7"}
-          />
-        </IconWrapper>
-      ) : null}
-      <ContentArea>
-        <TitleRow>
-          <div
-            className="title"
-            style={{ color: isPreparing ? "#8e8e93" : "#000" }}
-          >
-            {title}
-          </div>
-          {isPreparing && (
-            <LuLock size={13} color="#8e8e93" style={{ flexShrink: 0 }} />
-          )}
-          {isExternal && (
-            <ExternalIconImg src={ExternalLinkIcon} alt="외부 서비스" />
-          )}
-        </TitleRow>
-        <div className="description">{description}</div>
-      </ContentArea>
+      {!isPreparing && <Ripple />}
+      <InnerContent>
+        {iconSrc ? (
+          <Icon src={iconSrc} alt={title} />
+        ) : IconComponent ? (
+          <IconWrapper $isPreparing={isPreparing}>
+            <IconComponent
+              size={24}
+              color={isPreparing ? "#a0a0a0" : "#6d4dc7"}
+            />
+          </IconWrapper>
+        ) : null}
+        <ContentArea>
+          <TitleRow>
+            <div
+              className="title"
+              style={{ color: isPreparing ? "#8e8e93" : "#000" }}
+            >
+              {title}
+            </div>
+            {isPreparing && (
+              <LuLock size={13} color="#8e8e93" style={{ flexShrink: 0 }} />
+            )}
+            {isExternal && (
+              <ExternalIconImg src={ExternalLinkIcon} alt="외부 서비스" />
+            )}
+          </TitleRow>
+          <div className="description">{description}</div>
+        </ContentArea>
+      </InnerContent>
     </AppItemWrapper>
   );
 };
@@ -91,6 +99,7 @@ interface ServiceCategory {
 const AiBrandPage = () => {
   useHeader({ title: "횃불이 AI" });
   const navigate = useNavigate();
+  const { openChat } = useAIChatStore();
 
   const categories: ServiceCategory[] = [
     {
@@ -99,18 +108,18 @@ const AiBrandPage = () => {
         {
           title: "챗불이",
           description:
-            "인천대학교 AI 챗봇 챗불이에게 무엇이든 물어보세요. 학칙과 공지사항을 기반으로 궁금증을 해결해드려요.",
-          iconComponent: LuMessageSquare,
-          isPreparing: true,
+            "인천대학교 AI 챗봇 챗불이에게 학사 관련 질문을 해보세요. 학칙과 공지사항을 기반으로 궁금증을 해결해드려요.",
+          iconSrc: ChatBulButtonImg,
+          isPreparing: isProduction,
           onClick: () => {
-            alert("챗불이 서비스는 준비 중입니다!");
+            openChat();
           },
         },
         {
           title: "챗불이 in UNIDorm",
           description:
             "챗불이가 기숙사앱 유니돔에 찾아왔어요! 기숙사 관련 질문을 해결해드릴 수 있어요.",
-          iconComponent: LuMessageSquare,
+          iconSrc: ChatBulButtonImg,
           isExternal: true,
           onClick: () => {
             window.open(
@@ -135,13 +144,12 @@ const AiBrandPage = () => {
           },
         },
         {
-          title: "Daily Brief",
+          title: "시간표 평가",
           description:
-            "나만을 위한 맞춤 정보 요약과 꼭 필요한 학교 생활 알림을 매일 아침 전해드려요.",
-          iconComponent: LuNewspaper,
-          isPreparing: true,
+            "내 시간표 평가와 분석을 받아보세요. 횃불이가 놀랄지도 몰라요!",
+          iconSrc: TimetableEvaluateIcon,
           onClick: () => {
-            alert("Daily Brief 서비스는 준비 중입니다!");
+            navigate(ROUTES.TIMETABLE.ROOT);
           },
         },
         {
@@ -155,13 +163,13 @@ const AiBrandPage = () => {
           },
         },
         {
-          title: "포털 에이전트",
+          title: "Daily Brief",
           description:
-            "포털 사이트에서 원하는 기능을 찾기 힘드신가요? 포털 사이트 작업을 대신 수행해요.",
-          iconComponent: LuBot,
+            "나만을 위한 맞춤 정보 요약과 꼭 필요한 학교 생활 알림을 매일 아침 전해드려요.",
+          iconComponent: LuNewspaper,
           isPreparing: true,
           onClick: () => {
-            alert("포털 에이전트 서비스는 준비 중입니다!");
+            alert("Daily Brief 서비스는 준비 중입니다!");
           },
         },
       ],
@@ -248,7 +256,9 @@ const AiBrandPage = () => {
                       isExternal={item.isExternal}
                       onClick={item.onClick}
                     />
-                    {index < category.items.length - 1 && <Divider />}
+                    {index < category.items.length - 1 && (
+                      <Divider margin="0" />
+                    )}
                   </div>
                 ))}
               </Box>
@@ -259,9 +269,13 @@ const AiBrandPage = () => {
             description={
               <>
                 <strong>횃불이 AI</strong>는 인천대학교
-                IT이노베이션랩(앱센터)에서 개발 및 운영하는 AI 서비스입니다.{" "}
+                IT이노베이션랩(앱센터)에서 개발 및 운영하는 AI 서비스입니다.
+                <br />
                 <strong>횃불이 AI</strong> 기능은 바람처럼 나타났다 소리 없이
-                사라질 수 있어요.
+                사라질 수 있어요. 서비스의 지속 운영과 기능 추가를 위해 학우
+                분들의 많은 관심과 성원을 부탁드립니다!
+                <br />
+                AI는 실수할 수 있습니다. 정보의 사실 여부를 반드시 확인하세요.
               </>
             }
           />
@@ -273,6 +287,18 @@ const AiBrandPage = () => {
 
 export default AiBrandPage;
 
+const InnerContent = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: start;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.12s ease-in-out;
+`;
+
 const AiBrandPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -283,18 +309,24 @@ const AiBrandPageWrapper = styled.div`
 const AppItemWrapper = styled.div<{ $isPreparing?: boolean }>`
   display: flex;
   flex-direction: row;
-  gap: 12px;
-  align-items: center;
-  justify-content: start;
   box-sizing: border-box;
   text-align: start;
+  padding: 16px 20px;
   cursor: ${({ $isPreparing }) => ($isPreparing ? "not-allowed" : "pointer")};
   width: 100%;
+  position: relative;
+  overflow: hidden;
   opacity: ${({ $isPreparing }) => ($isPreparing ? 0.65 : 1)};
   transition: opacity 0.2s ease;
 
   &:hover {
     opacity: ${({ $isPreparing }) => ($isPreparing ? 0.65 : 0.85)};
+  }
+
+  &.active-touch {
+    ${InnerContent} {
+      transform: scale(0.98);
+    }
   }
 `;
 
@@ -302,8 +334,7 @@ const Icon = styled.img`
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  object-fit: cover;
-  background-color: #f0f0f0;
+  object-fit: contain;
   flex-shrink: 0;
 `;
 
