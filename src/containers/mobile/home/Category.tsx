@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useRef, useState, type RefObject, useEffect } from "react";
+import { useRef, type RefObject } from "react";
 
 import menuImg from "@/resources/assets/mobile-home/category-form/menu.svg";
 import noticeImg from "@/resources/assets/mobile-home/category-form/notice.svg";
@@ -12,18 +12,17 @@ import busImg from "@/resources/assets/mobile-home/category-form/bus.svg";
 import schoolNoticeImg from "@/resources/assets/mobile-home/category-form/school-notice.svg";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
-import TooltipMessage, {
+import {
   type TooltipAlign,
   type TooltipPosition,
 } from "@/components/common/TooltipMessage";
-import {
-  dismissTooltip,
-  isTooltipDismissed,
-} from "@/utils/dismissibleTooltipStorage";
+import PromotionTooltip from "@/components/common/PromotionTooltip";
+import { PROMOTIONS } from "@/utils/promotion/registry";
+import type { PromotionDefinition } from "@/utils/promotion/types";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 type CategoryTooltip = {
-  id: string;
+  promotion: PromotionDefinition;
   message: string;
   position?: TooltipPosition;
   align?: TooltipAlign;
@@ -46,7 +45,7 @@ const categories: CategoryItem[] = [
     img: schoolNoticeImg,
     href: "/home/notice",
     tooltip: {
-      id: "school-notice-tooltip",
+      promotion: PROMOTIONS.SCHOOL_NOTICE,
       message: "학교 공지 알리미 오픈!",
       position: "top",
       align: "right",
@@ -64,7 +63,7 @@ const categories: CategoryItem[] = [
     img: calendarImg,
     href: "/home/calendar",
     tooltip: {
-      id: "academic-calendar-tooltip",
+      promotion: PROMOTIONS.ACADEMIC_CALENDAR,
       message: "[횃불이 AI]\n내 학과 일정도\n한 눈에 확인해보세요!",
       position: "top",
       align: "right",
@@ -82,37 +81,6 @@ export default function CategoryForm() {
 
   const tooltipRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const [visibleTooltips, setVisibleTooltips] = useState<
-    Record<string, boolean>
-  >(() =>
-    categories.reduce(
-      (acc, category) => {
-        if (category.tooltip) {
-          acc[category.tooltip.id] = !isTooltipDismissed(category.tooltip.id);
-        }
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    ),
-  );
-
-  const handleCloseTooltip = (tooltipId: string) => {
-    mixpanelTrack.promotionClicked(tooltipId, "Close Button", "Home Category");
-    dismissTooltip(tooltipId);
-    setVisibleTooltips((prev) => ({
-      ...prev,
-      [tooltipId]: false,
-    }));
-  };
-
-  useEffect(() => {
-    Object.entries(visibleTooltips).forEach(([id, visible]) => {
-      if (id && visible) {
-        mixpanelTrack.promotionImpression(id, "Home Category");
-      }
-    });
-  }, []);
-
   return (
     <CategoryFormWrapper>
       {categories.map((category) => {
@@ -120,7 +88,7 @@ export default function CategoryForm() {
         const anchorRef = tooltip
           ? ({
               get current() {
-                return tooltipRefs.current[tooltip.id];
+                return tooltipRefs.current[tooltip.promotion.id];
               },
             } as RefObject<HTMLDivElement | null>)
           : undefined;
@@ -130,7 +98,7 @@ export default function CategoryForm() {
             key={category.title}
             ref={(el) => {
               if (tooltip) {
-                tooltipRefs.current[tooltip.id] = el;
+                tooltipRefs.current[tooltip.promotion.id] = el;
               }
             }}
           >
@@ -148,10 +116,10 @@ export default function CategoryForm() {
               <CategoryLabel>{category.title}</CategoryLabel>
             </CategoryCard>
 
-            {tooltip && visibleTooltips[tooltip.id] && (
-              <TooltipMessage
+            {tooltip && (
+              <PromotionTooltip
+                promotion={tooltip.promotion}
                 message={tooltip.message}
-                onClose={() => handleCloseTooltip(tooltip.id)}
                 position={tooltip.position}
                 align={tooltip.align}
                 width={tooltip.width}

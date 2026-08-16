@@ -4,17 +4,7 @@ import BusRouteMap from "@/components/mobile/bus/BusRouteMap.tsx";
 import styled from "styled-components";
 import BusRouteBar from "@/components/mobile/bus/BusRouteBar.tsx";
 import SectionLabel from "@/components/mobile/bus/SectionLabel.tsx";
-import {
-  goHome_Dorm1,
-  goHome_Dorm2,
-  goHome_MainIn,
-  goHome_MainOut,
-  goHome_Nature_BIT,
-  goHome_Nature_INU,
-  goSchool_BIT3,
-  goSchool_INU1,
-  goSchool_INU2,
-} from "@/components/mobile/bus/data/BusDummy";
+import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
 import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
@@ -40,22 +30,17 @@ export default function MobileBusDetailPage() {
 
   const mobileBusStopNavigate = useBusStopNavigate();
 
-  const allBus = [
-    ...goSchool_INU1,
-    ...goSchool_INU2,
-    ...goSchool_BIT3,
-    ...goHome_Dorm1,
-    ...goHome_Dorm2,
-    ...goHome_MainIn,
-    ...goHome_MainOut,
-    ...goHome_Nature_BIT,
-    ...goHome_Nature_INU,
-  ];
+  const { stops: schoolStops } = useDynamicBusRoutes("go-school");
+  const { stops: homeStops } = useDynamicBusRoutes("go-home");
+
+  const allBuses = [...schoolStops, ...homeStops].flatMap((s) => s.buses);
+
 
   const navigationBus =
     (location.state as BusDetailLocationState | null)?.bus ?? null;
   const bus =
-    navigationBus?.id === id ? navigationBus : allBus.find((b) => b.id === id);
+    navigationBus?.id === id ? navigationBus : allBuses.find((b) => b.id === id);
+
 
   useEffect(() => {
     if (bus) {

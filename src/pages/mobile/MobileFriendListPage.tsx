@@ -9,6 +9,7 @@ import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
+import AddFriendMenuCard from "@/components/mobile/social/AddFriendMenuCard";
 import TabUpper from "@/components/common/TabUpper";
 import { MyChatRoomResponseDto } from "@/types/chat";
 import {
@@ -19,6 +20,8 @@ import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
 import { ArrowDownAZ, ArrowUpZA, Check } from "lucide-react";
+import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
+import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 
 // --- SVG Icons ---
 
@@ -299,6 +302,14 @@ export default function MobileFriendListPage() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
+  const [isNearbyInfoOpen, setIsNearbyInfoOpen] = useState(false);
+
+  // Add-friend FAB 드롭다운 메뉴 (닉네임 검색 / 주변 친구 찾기 / 링크·QR 초대)
+  const {
+    isOpen: isAddMenuOpen,
+    close: closeAddMenu,
+    toggle: toggleAddMenu,
+  } = useHistoryBackedOverlay();
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
     () =>
       (localStorage.getItem("__intipFriendSortOrder") as "asc" | "desc") ||
@@ -432,8 +443,9 @@ export default function MobileFriendListPage() {
     } else {
       setIsSelectionMode(true);
       setExpandedId(null); // Collapse all accordion items
+      closeAddMenu();
     }
-  }, [isSelectionMode]);
+  }, [isSelectionMode, closeAddMenu]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.length === filteredFriends.length) {
@@ -592,12 +604,17 @@ export default function MobileFriendListPage() {
     setIsProfileModalOpen(true);
   };
 
-  const handleSearchActiveChange = useCallback((active: boolean) => {
-    setIsSearchActive(active);
-    if (!active) {
-      setSearchTerm("");
-    }
-  }, []);
+  const handleSearchActiveChange = useCallback(
+    (active: boolean) => {
+      setIsSearchActive(active);
+      if (!active) {
+        setSearchTerm("");
+      } else {
+        closeAddMenu();
+      }
+    },
+    [closeAddMenu],
+  );
 
   const renderFriendRows = (list: typeof filteredFriends, prefix: string) => {
     return list.map((friend) => {
@@ -699,6 +716,10 @@ export default function MobileFriendListPage() {
           }
         }}
       />
+      <NearbyFriendInfoSheet
+        open={isNearbyInfoOpen}
+        onOpenChange={setIsNearbyInfoOpen}
+      />
 
       {isShareMode && shareTab === "rooms" ? (
         <FriendListContainer style={{ marginTop: "12px", marginBottom: "32px" }}>
@@ -788,8 +809,26 @@ export default function MobileFriendListPage() {
       {/* Floating Area (always rendered for animation) */}
       <FloatingActionsWrapper>
         {/* Plus button - scale out when selection mode is active */}
-        <PlusButtonWrapper $visible={!isSelectionMode && !isSearchActive && !isShareMode}>
-          <FloatingButton onClick={() => setIsAddFriendOpen(true)}>
+        <PlusButtonWrapper
+          $visible={!isSelectionMode && !isSearchActive && !isShareMode}
+        >
+          <AddFriendMenuCard
+            open={isAddMenuOpen}
+            onScrimClick={() => closeAddMenu()}
+            onSearchClick={() => {
+              closeAddMenu(() => setIsAddFriendOpen(true));
+            }}
+            onNearbyClick={() => {
+              closeAddMenu(() => setIsNearbyInfoOpen(true));
+            }}
+            onInviteClick={() => {
+              closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+            }}
+          />
+          <FloatingButton
+            onClick={toggleAddMenu}
+            $rotated={isAddMenuOpen}
+          >
             <PlusIcon />
           </FloatingButton>
         </PlusButtonWrapper>
@@ -802,6 +841,7 @@ export default function MobileFriendListPage() {
               onSearch={setSearchTerm}
               onActiveChange={handleSearchActiveChange}
               searchParamKey="q"
+              size={56}
             />
           </SearchBarContainer>
         )}
@@ -1110,6 +1150,7 @@ const FloatingActionsWrapper = styled.div`
 `;
 
 const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
+  position: relative;
   height: ${({ $visible }) => ($visible ? "56px" : "0px")};
   width: 56px;
   margin-bottom: ${({ $visible }) => ($visible ? "12px" : "0px")};
@@ -1118,7 +1159,7 @@ const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
     height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  & > button {
+  & > button:last-child {
     transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
     opacity: ${({ $visible }) => ($visible ? 1 : 0)};
     transition:
@@ -1152,7 +1193,7 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-const FloatingButton = styled.button`
+const FloatingButton = styled.button<{ $rotated?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1166,6 +1207,11 @@ const FloatingButton = styled.button`
   -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
   outline: none;
+
+  & > svg {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: ${({ $rotated }) => ($rotated ? "rotate(45deg)" : "rotate(0deg)")};
+  }
 
   &:active {
     background-color: var(--bg-muted, #f1f3f5);

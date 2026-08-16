@@ -7,6 +7,7 @@ import { requestFriend, searchFriend } from "@/apis/friends";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { FriendResponseDto } from "@/types/friends";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -27,6 +28,7 @@ export default function AddFriendModal({
   isOpen,
   onOpenChange,
 }: AddFriendModalProps) {
+  useSheetBackHandler(isOpen, () => onOpenChange(false));
   const queryClient = useQueryClient();
   const [nicknameInput, setNicknameInput] = useState("");
   const [searchResult, setSearchResult] = useState<FriendResponseDto | null>(

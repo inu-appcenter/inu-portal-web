@@ -1,8 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { ChevronRight } from "lucide-react";
-import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
+import TimetableGrid, {
+  type ClassItem,
+} from "@/components/mobile/timetable/TimetableGrid";
+import ClassDetailBottomSheet from "@/components/mobile/timetable/ClassDetailBottomSheet";
 import { formatCourseMeetings, mapWizardCoursesToClassItems } from "@/utils/timetableWizardFormat";
+import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 import type { WizardCandidate } from "@/types/timetableWizard";
 
 interface WizardDetailScreenProps {
@@ -14,6 +18,43 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
     () => mapWizardCoursesToClassItems(candidate.courses),
     [candidate.courses],
   );
+
+  // 강의 목록 행의 accent bar와 동일한 색으로 상세 시트의 점 색상을 맞춘다.
+  const colorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    candidate.courses.forEach((course, index) => {
+      map.set(course.title, BLOCK_COLORS[index % BLOCK_COLORS.length]);
+    });
+    return map;
+  }, [candidate.courses]);
+
+  const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  // meetings가 없는(비대면/온라인 전용) 강의도 상세를 열 수 있도록 gridEvents 조회에
+  // 의존하지 않고 candidate.courses에서 직접 ClassItem을 구성한다.
+  const handleCourseRowClick = (
+    course: WizardCandidate["courses"][number],
+    courseIndex: number,
+  ) => {
+    const firstMeeting = course.meetings[0];
+    setSelectedClass({
+      id: courseIndex * 1000,
+      name: course.title,
+      room: firstMeeting?.location ?? "",
+      day: firstMeeting?.day ?? 0,
+      startTime: firstMeeting?.startTime ?? 0,
+      endTime: firstMeeting?.endTime ?? 0,
+      credits: course.credit,
+      professor: course.professor ?? undefined,
+      ssupTypeName: course.ssupTypeName ?? undefined,
+      ssupTypeCode: course.ssupTypeCode ?? undefined,
+      courseOfferingId: course.courseOfferingId,
+      courseId: course.subjectNumber,
+      isUntimed: course.meetings.length === 0,
+    });
+    setDetailOpen(true);
+  };
 
   return (
     <ScrollContent>
@@ -39,22 +80,41 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
       <Card>
         <CardTitle>강의 목록</CardTitle>
         <CourseList>
-          {candidate.courses.map((course, index) => (
-            <CourseRow key={course.subjectNumber}>
-              <AccentBar $colorIndex={index} />
-              <CourseTextWrap>
-                <CourseName>{course.title}</CourseName>
-                <CourseMeta>
-                  {formatCourseMeetings(course)} · {course.credit}학점
-                </CourseMeta>
-              </CourseTextWrap>
-              <ChevronRight size={18} color="#8a96a5" />
-            </CourseRow>
-          ))}
+          {candidate.courses.map((course, index) => {
+            const onlineTypeLabel = getOnlineTypeLabel(
+              course.ssupTypeName,
+              course.ssupTypeCode,
+            );
+            return (
+              <CourseRow
+                key={course.subjectNumber}
+                onClick={() => handleCourseRowClick(course, index)}
+              >
+                <AccentBar $colorIndex={index} />
+                <CourseTextWrap>
+                  <CourseName>{course.title}</CourseName>
+                  <CourseMeta>
+                    {formatCourseMeetings(course)} · {course.credit}학점
+                    {onlineTypeLabel ? ` · ${onlineTypeLabel}` : ""}
+                  </CourseMeta>
+                </CourseTextWrap>
+                <ChevronRight size={18} color="#8a96a5" />
+              </CourseRow>
+            );
+          })}
         </CourseList>
       </Card>
 
       <BottomActionsSpacer />
+
+      <ClassDetailBottomSheet
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        selectedClass={selectedClass}
+        allEvents={gridEvents}
+        colorMap={colorMap}
+        readOnly
+      />
     </ScrollContent>
   );
 };
@@ -154,6 +214,7 @@ const CourseRow = styled.div`
   gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
+  cursor: pointer;
 
   &:last-child {
     border-bottom: none;

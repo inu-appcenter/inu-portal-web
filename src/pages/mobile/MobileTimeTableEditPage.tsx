@@ -7,8 +7,10 @@ import MobileCourseSearchSheet, {
   COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import TooltipMessage from "@/components/common/TooltipMessage";
+import { usePromotion } from "@/hooks/usePromotion";
+import { PROMOTIONS } from "@/utils/promotion/registry";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -19,32 +21,14 @@ import {
   useTimeTableDetail,
   useTimeTables,
 } from "@/hooks/useTimeTables";
-import { formatHoursToTime } from "@/utils/timetable";
-import type { CustomScheduleEditState } from "@/pages/mobile/timetable/MobileCourseAddPage";
-import {
-  DEFAULT_FILTERS,
-  type FilterState,
-} from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import useUserStore from "@/stores/useUserStore";
+import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
 import { useTimetableUrlSync } from "@/hooks/useTimetableUrlSync";
 import {
   mapCourseOfferingToCourseResult,
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
 import { mixpanelTrack } from "@/utils/mixpanel";
-
-const TIMETABLE_COURSE_FILTERS_KEY = "timetable_course_filters";
-
-const readStoredFilters = (): FilterState => {
-  try {
-    const saved = localStorage.getItem(TIMETABLE_COURSE_FILTERS_KEY);
-    if (saved) return { ...DEFAULT_FILTERS, ...JSON.parse(saved) };
-  } catch (error) {
-    console.error("시간표 강의 필터 복원 오류:", error);
-  }
-  return DEFAULT_FILTERS;
-};
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -144,7 +128,11 @@ const MobileTimeTableEditPage = () => {
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("courseQuery") || undefined;
   const wizardButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [showWizardTooltip, setShowWizardTooltip] = useState(true);
+  const {
+    isVisible: showWizardTooltip,
+    dismiss: dismissWizardTooltip,
+    accept: acceptWizardTooltip,
+  } = usePromotion(PROMOTIONS.TIMETABLE_WIZARD);
 
   // 상태 및 스토어 관리
   const { timetables, activeTimetableId } = useTimetableStore();
@@ -173,39 +161,18 @@ const MobileTimeTableEditPage = () => {
     return set;
   }, [timetable]);
 
-  // 전공/영역·학년·이수구분·학점 필터
-  const location = useLocation();
-  const userDepartment = useUserStore((state) => state.userInfo.department);
-  const defaultMajor = userDepartment || "컴퓨터공학부";
-
-  const getEffectiveFilters = (): FilterState => {
-    const stored = readStoredFilters();
-    return {
-      ...stored,
-      major: stored.major ?? defaultMajor,
-    };
-  };
-
-  const [activeFilters, setActiveFilters] =
-    useState<FilterState>(getEffectiveFilters);
-
-  // 복귀 시 localStorage의 저장된 필터와 즉시 동기화
-  useEffect(() => {
-    setActiveFilters(getEffectiveFilters());
-  }, [location.key, defaultMajor]);
+  // 전공/영역·학년·이수구분·학점 필터.
+  //
+  // 확정 필터는 useCourseFilterStore가 소유한다. 필터 화면(/timetable/filter)은 멀티
+  // 웹뷰에서 별도 웹뷰로 push되므로 이 웹뷰에는 라우팅 이벤트가 오지 않는다 —
+  // location.key도 변하지 않아 예전의 "복귀 시 localStorage 재동기화"는 애초에
+  // 재실행되지 않았다. broadcastSync가 웹뷰를 건너 값을 실어온다.
+  const activeFilters = useEffectiveCourseFilters();
 
   const offeringFilters = useMemo(
     () => mapFilterToOfferingFilters(activeFilters),
     [activeFilters],
   );
-
-  const handleFiltersChange = (filters: FilterState) => {
-    setActiveFilters(filters);
-    localStorage.setItem(
-      TIMETABLE_COURSE_FILTERS_KEY,
-      JSON.stringify(filters),
-    );
-  };
 
   const combinedFilters: CourseOfferingFilters = useMemo(
     () => ({
@@ -264,6 +231,11 @@ const MobileTimeTableEditPage = () => {
             mixpanelTrack.timetableWizardAction("시작", {
               location: "시간표 편집 헤더",
             });
+
+            if (showWizardTooltip) {
+              acceptWizardTooltip("Wizard Button");
+            }
+
             navigate(ROUTES.TIMETABLE.WIZARD);
           }}
         >
@@ -272,7 +244,7 @@ const MobileTimeTableEditPage = () => {
         {showWizardTooltip && (
           <TooltipMessage
             message="시간표 마법사를\n사용해보세요!"
-            onClose={() => setShowWizardTooltip(false)}
+            onClose={dismissWizardTooltip}
             position="bottom"
             align="center"
             width="max-content"
@@ -292,7 +264,7 @@ const MobileTimeTableEditPage = () => {
         </IconButton>
       </HeaderRightArea>
     ),
-    [navigate, showWizardTooltip],
+    [navigate, showWizardTooltip, dismissWizardTooltip, acceptWizardTooltip],
   );
 
   useHeader({
@@ -445,21 +417,13 @@ const MobileTimeTableEditPage = () => {
     const target = timetable.find((item) => item.id === id);
     if (!target?.isCustom || target.customScheduleId === undefined) return;
 
-    const editItem: CustomScheduleEditState = {
-      customScheduleId: target.customScheduleId,
-      title: target.name,
-      memo: target.memo ?? "",
-      // 같은 커스텀 일정의 모든 시간대를 함께 넘겨야 수정 시 누락되지 않음
-      meetings: timetable
-        .filter((item) => item.customScheduleId === target.customScheduleId)
-        .map((item) => ({
-          day: item.day,
-          startTime: formatHoursToTime(item.startTime),
-          endTime: formatHoursToTime(item.endTime),
-          location: item.room,
-        })),
-    };
-    navigate(ROUTES.TIMETABLE.ADD, { state: { editItem } });
+    // 라우터 state로 값을 넘기면 안 된다. 신 앱(멀티 웹뷰)에서는 router.tsx가
+    // 이 이동을 가로채 appBridge.navigateTo(URL)로 새 웹뷰를 띄우는데, 그 과정에서
+    // state는 전달 경로 자체가 없어 유실되고 빈 "일정 추가" 화면이 열린다.
+    // 식별자만 URL로 넘기고, 실제 값은 수정 화면에서 상세 조회로 채운다.
+    navigate(
+      `${ROUTES.TIMETABLE.ADD}?customScheduleId=${target.customScheduleId}`,
+    );
   };
 
   const handleDelete = (id: number) => {
@@ -516,8 +480,14 @@ const MobileTimeTableEditPage = () => {
       let major = 0;
       let general = 0;
       let other = 0;
+      const seenItemIds = new Set<number>();
 
       timetable.forEach((item) => {
+        if (item.itemId) {
+          if (seenItemIds.has(item.itemId)) return;
+          seenItemIds.add(item.itemId);
+        }
+
         const credits = item.credits || 0;
         if (credits <= 0) return;
 
@@ -526,7 +496,9 @@ const MobileTimeTableEditPage = () => {
             ? offeringById.get(item.courseOfferingId)
             : null) ||
           (item.courseId ? offeringBySubNum.get(item.courseId) : null);
-        const course = offering ? courseById.get(offering.courseId) : null;
+        const course =
+          (item.numericCourseId ? courseById.get(item.numericCourseId) : null) ||
+          (offering ? courseById.get(offering.courseId) : null);
 
         const divisionName =
           offering?.isuName ||
@@ -584,15 +556,12 @@ const MobileTimeTableEditPage = () => {
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
         onAddCourse={handleAddCourse}
-        initialFilters={activeFilters}
-        onFiltersChange={handleFiltersChange}
         addedCourseOfferingIds={addedCourseOfferingIds}
         addedCourseIds={addedCourseIds}
         isLoading={isSheetLoading}
         hasNextPage={hasNextPage}
         fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
-        filterStorageKey={TIMETABLE_COURSE_FILTERS_KEY}
       />
     </PageWrapper>
   );

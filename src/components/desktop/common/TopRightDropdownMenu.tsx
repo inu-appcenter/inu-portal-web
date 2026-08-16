@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { MoreVertical } from "lucide-react";
 import Ripple from "@/components/common/Ripple";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 type MenuItemType = {
   label: string;
@@ -44,6 +45,8 @@ const TopRightDropdownMenu: React.FC<TopRightDropdownMenuProps> = ({
   const handleClose = () => {
     setIsOpen(false);
   };
+
+  useSheetBackHandler(isOpen, handleClose);
 
   const handleAnimationEnd = () => {
     if (!isOpen) {

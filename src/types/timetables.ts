@@ -24,7 +24,7 @@ export type TimeTableDay =
 export type TimeTableItemType = "COURSE" | "CUSTOM";
 
 export interface TimeTableMeeting {
-  id: number;
+  id: number | null;
   location: string | null;
   sequence: number | null;
   day: TimeTableDay;
@@ -33,24 +33,24 @@ export interface TimeTableMeeting {
 }
 
 export interface TimeTableCourseItem {
-  courseOfferingId: number;
-  courseId: number;
-  title: string;
-  professor: string;
-  subjectNumber: string;
-  credit: string;
+  courseOfferingId: number | null;
+  courseId: number | null;
+  title: string | null;
+  professor: string | null;
+  subjectNumber: string | null;
+  credit: string | number | null;
   meetings: TimeTableMeeting[];
 }
 
 export interface TimeTableCustomScheduleItem {
-  customScheduleId: number;
-  title: string;
+  customScheduleId: number | null;
+  title: string | null;
   meetings: TimeTableMeeting[];
 }
 
 // type에 따라 course 또는 customSchedule 중 하나만 값을 가짐
 export interface TimeTableDetailItem {
-  id: number;
+  id: number | null;
   type: TimeTableItemType;
   memo: string | null;
   course: TimeTableCourseItem | null;
@@ -92,3 +92,15 @@ export interface TimeTableItemSummary {
   title?: string;
   memo?: string | null;
 }
+
+// 시간표 AI 평가 응답 인터페이스
+export interface TimeTableEvaluation {
+  timeTableId: number;
+  content: string;
+  timetableHash: string;
+  isCached: boolean;
+  regenerateCount?: number;
+  remainingCount?: number;
+  updatedAt?: string;
+}
+

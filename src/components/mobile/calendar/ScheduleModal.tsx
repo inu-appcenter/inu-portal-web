@@ -6,7 +6,7 @@ import styled, { keyframes } from "styled-components";
 import { getScheduleById } from "@/apis/schedules";
 import Divider from "@/components/common/Divider";
 import EventItem from "@/components/mobile/calendar/EventItem";
-import AI_LOGO from "@/resources/assets/calendar/챗불이요약.png";
+import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
 import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
 
 const contentShow = keyframes`
@@ -102,7 +102,7 @@ export default function ScheduleModal({
 
     return (
       <Title>
-        <img src={AI_LOGO} alt="횃불이AI" />
+        <TorchAiLogoIcon width={24} height={24} aria-hidden="true" />
         <span>
           <strong>횃불이 AI</strong> 캘린더
         </span>
@@ -239,10 +239,13 @@ const Title = styled(Dialog.Title)`
   font-weight: 500;
   color: #1c1c1e;
 
-  img {
+  img,
+  svg {
     width: 28px;
+    height: 28px;
     margin-right: 4px;
     vertical-align: middle;
+    flex-shrink: 0;
   }
 `;
 

@@ -26,8 +26,13 @@ export const formatTimeAgo = (isoString: string | null): string => {
   if (!isoString) return "";
 
   try {
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return "";
+    const dateStr = isoString
+      .trim()
+      .replace(/^(\d{4})\.(\d{1,2})\.(\d{1,2})/, "$1-$2-$3")
+      .replace(" ", "T")
+      .replace(/(\.\d{3})\d+/, "$1");
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return isoString;
 
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();

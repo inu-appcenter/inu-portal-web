@@ -8,6 +8,8 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
@@ -23,6 +25,10 @@ interface ClassDetailBottomSheetProps {
   colorMap: Map<string, string>;
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
+  // 실제 내 시간표 요소가 아닌 읽기 전용 미리보기(예: 마법사 후보 강의)에서 사용.
+  // 메모 표시/편집을 막아, 미리보기 항목의 memo 저장 시도가 activeTimetable의
+  // 이름이 같은 실제 요소를 잘못 덮어쓰는 것을 방지한다.
+  readOnly?: boolean;
 }
 
 const formatHour = (hour: number) => {
@@ -39,13 +45,22 @@ export default function ClassDetailBottomSheet({
   colorMap,
   onEdit,
   onDelete,
+  readOnly = false,
 }: ClassDetailBottomSheetProps) {
+  useSheetBackHandler(open, () => onOpenChange(false));
   const navigate = useNavigate();
   const { activeTimetableId, timetables, updateTimetableEvents } =
     useTimetableStore();
 
-  const { courses } = useCourses();
-  const { courseOfferings } = useCourseOfferings();
+  const isQueryEnabled =
+    open && Boolean(selectedClass) && !selectedClass?.isCustom;
+  const { courses } = useCourses(undefined, { enabled: isQueryEnabled });
+  const { courseOfferings } = useCourseOfferings(
+    undefined,
+    undefined,
+    undefined,
+    { enabled: isQueryEnabled },
+  );
 
   const courseById = useMemo(
     () => new Map(courses.map((c) => [c.id, c])),
@@ -57,17 +72,28 @@ export default function ClassDetailBottomSheet({
     [courseOfferings],
   );
 
-  const offeringBySubNum = useMemo(
-    () => new Map(courseOfferings.map((o) => [o.subjectNumber, o])),
-    [courseOfferings],
-  );
+  // 동일 학수번호의 분반 중 첫 번째 개설강의 유지
+  const offeringBySubNum = useMemo(() => {
+    const map = new Map<string, (typeof courseOfferings)[0]>();
+    for (const offering of courseOfferings) {
+      if (offering.subjectNumber && !map.has(offering.subjectNumber)) {
+        map.set(offering.subjectNumber, offering);
+      }
+    }
+    return map;
+  }, [courseOfferings]);
 
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState("");
   const memoInputRef = useRef<HTMLTextAreaElement>(null);
 
   const liveClass = selectedClass
-    ? allEvents.find((e) => e.id === selectedClass.id) || selectedClass
+    ? allEvents.find(
+        (e) =>
+          e.id === selectedClass.id &&
+          Boolean(e.isFriendOwned) === Boolean(selectedClass.isFriendOwned) &&
+          e.ownerName === selectedClass.ownerName,
+      ) || selectedClass
     : null;
 
   const offering = liveClass
@@ -77,7 +103,12 @@ export default function ClassDetailBottomSheet({
       (liveClass.courseId ? offeringBySubNum.get(liveClass.courseId) : null)
     : null;
 
-  const course = offering ? courseById.get(offering.courseId) : null;
+  // offering이 존재하면 offering.courseId로 조회하고, 그렇지 않으면 liveClass.numericCourseId로 직접 조회
+  const course = offering
+    ? courseById.get(offering.courseId)
+    : liveClass?.numericCourseId
+      ? courseById.get(liveClass.numericCourseId)
+      : null;
 
   const adjustHeight = (element: HTMLTextAreaElement) => {
     if (!element) return;
@@ -105,9 +136,11 @@ export default function ClassDetailBottomSheet({
 
   const professorName =
     liveClass.professor?.trim() || offering?.professor?.trim() || "-";
+
   const creditsVal =
-    liveClass.credits ?? offering?.credit ?? (parseInt(course?.credit ?? "", 10) || 0);
-  const evaluationVal = liveClass.evaluation || "상대평가";
+    liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
+
+  const evaluationVal = liveClass.evaluation || "";
 
   const lectureReviewUrl =
     professorName && professorName !== "-"
@@ -136,12 +169,12 @@ export default function ClassDetailBottomSheet({
       ? "전학년"
       : `${offering.hyName}학년`
     : course?.targetGradeName
-    ? `${course.targetGradeName}학년`
-    : liveClass.grade
-    ? typeof liveClass.grade === "number" || !isNaN(Number(liveClass.grade))
-      ? `${liveClass.grade}학년`
+      ? `${course.targetGradeName}`
       : liveClass.grade
-    : "";
+        ? typeof liveClass.grade === "number" || !isNaN(Number(liveClass.grade))
+          ? `${liveClass.grade}학년`
+          : liveClass.grade
+        : "";
 
   const courseTypeStr =
     offering?.isuName ||
@@ -152,7 +185,12 @@ export default function ClassDetailBottomSheet({
 
   const courseIdStr = offering?.subjectNumber || liveClass.courseId || "";
 
-  const detailsList = [gradeStr, courseTypeStr, courseIdStr].filter(Boolean);
+  const onlineTypeStr = getOnlineTypeLabel(
+    offering?.ssupTypeName || liveClass.ssupTypeName,
+    offering?.ssupTypeCode || liveClass.ssupTypeCode,
+  );
+
+  const detailsList = [gradeStr, courseTypeStr, onlineTypeStr, courseIdStr].filter(Boolean);
   const detailsText = detailsList.join("  ");
 
   const scheduleText = matchingClasses
@@ -165,7 +203,15 @@ export default function ClassDetailBottomSheet({
     .join(", ");
 
   const roomVal = liveClass.room || offering?.meetings[0]?.location || "-";
-  const isCustomCourse = liveClass.isCustom || (!liveClass.courseId && !liveClass.courseOfferingId);
+  // 일반 강의(학교 수업)는 수정 대상이 아니다. isCustom은 상세 응답의
+  // type === "CUSTOM"으로 정확히 채워지므로(utils/timetable.ts) 이것만 본다.
+  // courseId/courseOfferingId가 비었는지로 추정하면, 둘 다 없는 일반 강의가
+  // 커스텀으로 오판돼 수정 버튼이 뜬다(눌러도 handleEdit 가드에 걸려 무반응).
+  const isCustomCourse = Boolean(liveClass.isCustom);
+
+  // 메모는 본인만 보는 개인 메모. 친구 소유 항목은 조회/편집 모두 불가하다.
+  const hasMemo = Boolean(liveClass.memo && liveClass.memo.trim());
+  const canEditMemo = !liveClass.isFriendOwned && !readOnly;
 
   const handleSaveMemo = () => {
     if (activeTimetableId === null) return;
@@ -250,9 +296,11 @@ export default function ClassDetailBottomSheet({
                       <RoomMapButton
                         type="button"
                         onClick={() => {
-                          navigate(ROUTES.BOARD.CAMPUS, {
-                            state: { search: roomVal },
-                          });
+                          // 새 웹뷰로 열려도(멀티 웹뷰 앱) 값이 유실되지 않도록
+                          // router state가 아니라 URL 쿼리로 전달한다 (#274).
+                          navigate(
+                            `${ROUTES.BOARD.CAMPUS}?search=${encodeURIComponent(roomVal)}`,
+                          );
                           onOpenChange(false);
                         }}
                       >
@@ -262,49 +310,76 @@ export default function ClassDetailBottomSheet({
                   </DetailsSection>
                 </ClassInfoContainer>
 
-                <InfoField
-                  onClick={() => !isEditingMemo && setIsEditingMemo(true)}
-                >
-                  <MemoHeaderRow>
-                    <FieldLabel style={{ cursor: "pointer" }}>메모</FieldLabel>
-                    {isEditingMemo && memoInput !== (liveClass.memo || "") && (
-                      <MemoSaveLink
+                {/*
+                  메모는 본인만 보는 개인 메모이므로 친구 소유 항목(isFriendOwned)인 경우
+                  필드 자체를 노출하지 않는다.
+                  내 항목이면서 메모가 아직 없는 경우에는 "메모 추가" 진입점만 축소해서 보여준다.
+                */}
+                {!liveClass.isFriendOwned && (hasMemo || canEditMemo) && (
+                  <InfoField
+                    onClick={() =>
+                      canEditMemo && !isEditingMemo && setIsEditingMemo(true)
+                    }
+                  >
+                    {isEditingMemo ? (
+                      <>
+                        <MemoHeaderRow>
+                          <FieldLabel style={{ cursor: "pointer" }}>
+                            메모
+                          </FieldLabel>
+                          {memoInput !== (liveClass.memo || "") && (
+                            <MemoSaveLink
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSaveMemo();
+                              }}
+                            >
+                              저장
+                            </MemoSaveLink>
+                          )}
+                        </MemoHeaderRow>
+                        <MemoEditContainer onClick={(e) => e.stopPropagation()}>
+                          <SeamlessTextarea
+                            ref={memoInputRef}
+                            value={memoInput}
+                            onChange={(e) => {
+                              setMemoInput(e.target.value);
+                              adjustHeight(e.target);
+                            }}
+                            placeholder="메모를 입력하세요."
+                            rows={1}
+                          />
+                        </MemoEditContainer>
+                      </>
+                    ) : hasMemo ? (
+                      <>
+                        <FieldLabel
+                          style={{
+                            cursor: canEditMemo ? "pointer" : "default",
+                          }}
+                        >
+                          메모
+                        </FieldLabel>
+                        <FieldValue
+                          style={{
+                            cursor: canEditMemo ? "pointer" : "default",
+                            color: "var(--text-secondary, #333d4b)",
+                          }}
+                        >
+                          {liveClass.memo}
+                        </FieldValue>
+                      </>
+                    ) : (
+                      <AddMemoButton
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSaveMemo();
-                        }}
+                        onClick={() => setIsEditingMemo(true)}
                       >
-                        저장
-                      </MemoSaveLink>
+                        + 메모 추가
+                      </AddMemoButton>
                     )}
-                  </MemoHeaderRow>
-                  {isEditingMemo ? (
-                    <MemoEditContainer onClick={(e) => e.stopPropagation()}>
-                      <SeamlessTextarea
-                        ref={memoInputRef}
-                        value={memoInput}
-                        onChange={(e) => {
-                          setMemoInput(e.target.value);
-                          adjustHeight(e.target);
-                        }}
-                        placeholder="메모를 입력하세요."
-                        rows={1}
-                      />
-                    </MemoEditContainer>
-                  ) : (
-                    <FieldValue
-                      style={{
-                        cursor: "pointer",
-                        color: liveClass.memo
-                          ? "var(--text-secondary, #333d4b)"
-                          : "var(--text-tertiary, #8b95a1)",
-                      }}
-                    >
-                      {liveClass.memo || "메모가 없습니다."}
-                    </FieldValue>
-                  )}
-                </InfoField>
+                  </InfoField>
+                )}
               </ScrollableBody>
 
               <FooterSection>
@@ -321,7 +396,7 @@ export default function ClassDetailBottomSheet({
                       alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                     }}
                   >
-                    과목 상세
+                    강의계획서
                   </SyllabusButton>
                 </FooterButtonGroup>
               </FooterSection>
@@ -370,7 +445,7 @@ const SheetInner = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0; /* flex item 높이 제한 해제 */
+  min-height: 0;
 `;
 
 const DragHeader = styled.div`
@@ -395,7 +470,7 @@ const ContentArea = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0; /* flex item 높이 제한 해제 */
+  min-height: 0;
   overflow: hidden;
 `;
 
@@ -405,9 +480,8 @@ const ScrollableBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 0; /* flex item 높이 제한 해제 */
+  min-height: 0;
 
-  /* 스크롤바 숨김 */
   &::-webkit-scrollbar {
     display: none;
   }
@@ -690,6 +764,23 @@ const MemoSaveLink = styled.button`
   cursor: pointer;
   padding: 0;
   margin: 0;
+
+  &:active {
+    opacity: 0.7;
+  }
+`;
+
+const AddMemoButton = styled.button`
+  background: none;
+  border: none;
+  font-family: Pretendard, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  align-self: flex-start;
 
   &:active {
     opacity: 0.7;

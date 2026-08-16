@@ -47,6 +47,8 @@ import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
+import MobileAdminBusPage from "@/pages/mobile/Admin/MobileAdminBusPage";
+
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
@@ -55,6 +57,8 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 import MobileFriendListPage from "@/pages/mobile/MobileFriendListPage";
+import MobileFriendQrPage from "@/pages/mobile/MobileFriendQrPage";
+import MobileFriendInvitePage from "@/pages/mobile/MobileFriendInvitePage";
 import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
 import MobileTimeTableVisibilityPage from "@/pages/mobile/timetable/MobileTimeTableVisibilityPage";
 import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
@@ -139,6 +143,11 @@ export const router = createBrowserRouter([
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
           { path: ROUTES.FRIEND.LIST, element: <MobileFriendListPage /> },
+          { path: ROUTES.FRIEND.QR, element: <MobileFriendQrPage /> },
+          {
+            path: ROUTES.FRIEND.INVITE_PATTERN,
+            element: <MobileFriendInvitePage />,
+          },
           { path: ROUTES.TIMETABLE.COMPARE, element: <MobileTimeTableComparePage /> },
           { path: ROUTES.TIMETABLE.VISIBILITY, element: <MobileTimeTableVisibilityPage /> },
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
@@ -286,6 +295,11 @@ export const router = createBrowserRouter([
             path: ROUTES.ADMIN.CHAT,
             element: <MobileAdminChatPage />,
           },
+          {
+            path: ROUTES.ADMIN.BUS,
+            element: <MobileAdminBusPage />,
+          },
+
         ],
       },
       // ----------------------------------------------------------------
@@ -350,7 +364,9 @@ if (typeof window !== "undefined") {
     // 1. 숫자가 전달된 경우 (뒤로가기)
     if (typeof to === "number") {
       if (to === -1 && supportsMultiWebView()) {
-        appBridge.goBack();
+        // 이 웹뷰 안에 되돌릴 것(모달/SPA 히스토리)이 있으면 웹에서 처리하고,
+        // 없을 때만 네이티브가 웹뷰를 pop 한다. appBridgeAdapter 참고.
+        appBridge.requestBack();
         return Promise.resolve();
       }
       return (originalNavigate as any).call(router, to, opts);

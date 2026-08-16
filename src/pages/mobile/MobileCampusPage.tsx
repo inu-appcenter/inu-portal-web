@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 
 import { postApiLogs } from "@/apis/members";
@@ -9,6 +9,7 @@ import {
   BOTTOM_SHEET_HEIGHT,
   TabType,
 } from "@/components/map/constants/mapConfig";
+import { findCampusPlaceByRoom } from "@/components/map/utils/findCampusPlaceByRoom";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 
@@ -57,6 +58,8 @@ export default function MobileCampusPage() {
   };
 
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const roomSearchQuery = searchParams.get("search");
 
   const isCampus = useMemo(
     () => location.pathname.includes("/campus"),
@@ -115,6 +118,27 @@ export default function MobileCampusPage() {
 
     void logApi();
   }, [isCampus]);
+
+  // 강의 상세에서 "강의실 위치 보기"로 진입한 경우(?search=) 해당 건물을
+  // 학교 탭에서 찾아 포커스한다. 호실 단위 좌표는 없으므로 건물 단위로
+  // 검색/포커스한다 (#274).
+  useEffect(() => {
+    if (!isCampus || !roomSearchQuery) {
+      return;
+    }
+
+    const place = findCampusPlaceByRoom(roomSearchQuery);
+    if (!place) {
+      return;
+    }
+
+    setSelectedTab("학교");
+    handleMarkerClick(place.location, {
+      X: Number(place.latitude),
+      Y: Number(place.longitude),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCampus, roomSearchQuery]);
 
   useLayoutEffect(() => {
     if (!isCampus || typeof window === "undefined") {

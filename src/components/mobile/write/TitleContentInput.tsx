@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import useUserStore from "@/stores/useUserStore";
 
 interface TitleContentInputProps {
   title: string;
@@ -13,50 +14,71 @@ export default function TitleContentInput({
   onTitleChange,
   onContentChange,
 }: TitleContentInputProps) {
+  const { userInfo } = useUserStore();
+  const nickname = userInfo?.nickname || "유니";
+
   return (
-    <TitleContentInputWrapper>
+    <InputContainer>
       <TitleInput
         type="text"
-        placeholder="제목"
+        placeholder="제목을 입력하세요."
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
       />
-      <Line />
+      <TitleDivider />
       <ContentTextarea
-        placeholder="내용을 입력하세요."
+        placeholder={`${nickname}님의 TIP을 자유롭게 공유해 보세요.`}
         value={content}
         onChange={(e) => onContentChange(e.target.value)}
       />
-    </TitleContentInputWrapper>
+    </InputContainer>
   );
 }
 
-const TitleContentInputWrapper = styled.div`
-  flex: 2;
+const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
-  border-radius: 1px;
-  border: 1px solid #e0e0e0;
+  width: 100%;
+  flex: 1;
 `;
 
 const TitleInput = styled.input`
-  margin: 8px;
+  width: 100%;
+  padding: 16px 0 12px;
   border: none;
-  font-size: 16px;
-  font-weight: 400;
+  outline: none;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, #191f28);
+  background: transparent;
+
+  &::placeholder {
+    color: var(--text-tertiary, #8b95a1);
+    font-weight: 600;
+  }
 `;
 
-const Line = styled.div`
-  margin-left: 8px;
-  width: 40%;
-  border: 1px solid #bebebe;
+const TitleDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-default, #e5e8eb);
+  margin-bottom: 16px;
 `;
 
 const ContentTextarea = styled.textarea`
-  margin: 8px;
-  height: 300px;
-  //flex: 1;
+  width: 100%;
+  flex: 1;
+  min-height: 250px;
   border: none;
-  font-size: 16px;
-  font-weight: 300;
+  outline: none;
+  resize: none;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-primary, #333d4b);
+  background: transparent;
+
+  &::placeholder {
+    color: var(--text-tertiary, #8b95a1);
+  }
 `;

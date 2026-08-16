@@ -9,7 +9,9 @@ import {
   ArrowRight,
   MessageSquare,
   Bot,
+  Bus,
 } from "lucide-react";
+
 
 import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -19,6 +21,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
 import { getMemberLogs, getApiLogs } from "@/apis/admin";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { isAdminUser } from "@/types/admin";
 
 const MobileAdminPage = () => {
   const navigate = useNavigate();
@@ -79,6 +82,15 @@ const MobileAdminPage = () => {
       color: "#ec4899",
       isExternal: true,
     },
+    {
+      label: "버스 노선 및 수집 관리",
+      path: ROUTES.ADMIN.BUS,
+      description: "동적 노선 구간 슬라이싱 및 30초 수집 정류장 설정",
+      icon: Bus,
+      color: "#2563eb",
+      isExternal: false,
+    },
+
   ];
 
   const [stats, setStats] = useState({
@@ -95,7 +107,7 @@ const MobileAdminPage = () => {
       return;
     }
 
-    if (tokenInfo.accessToken && userInfo.role && userInfo.role !== "admin") {
+    if (tokenInfo.accessToken && userInfo.role && !isAdminUser(userInfo.role)) {
       navigate(ROUTES.HOME, { replace: true });
     }
   }, [navigate, tokenInfo.accessToken, userInfo.role]);

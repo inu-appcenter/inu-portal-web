@@ -6,9 +6,11 @@ export interface FilterState {
   major: string | null;
   sort: string;
   time: string;
-  grades: number[];
+  grades: GradeOption[];
   types: string[];
+  isuFields: string[];
   credits: number[];
+  onlineTypes: string[];
   selectedSlots?: string[];
 }
 
@@ -18,7 +20,9 @@ export const DEFAULT_FILTERS: FilterState = {
   time: "전체 시간",
   grades: [],
   types: [],
+  isuFields: [],
   credits: [],
+  onlineTypes: [],
   selectedSlots: [],
 };
 
@@ -29,7 +33,9 @@ export type FilterSubView =
   | "time"
   | "grade"
   | "type"
-  | "credit";
+  | "field"
+  | "credit"
+  | "online";
 
 export const CATEGORIES = [
   { id: "major", label: "전공/영역" },
@@ -37,6 +43,8 @@ export const CATEGORIES = [
   { id: "time", label: "시간" },
   { id: "grade", label: "학년" },
   { id: "type", label: "이수구분" },
+  { id: "field", label: "이수영역" },
+  { id: "online", label: "수업 유형" },
   { id: "credit", label: "학점" },
 ] as const;
 
@@ -49,12 +57,172 @@ export const FILTER_SUB_VIEW_TITLES: Record<FilterSubView, string> = {
   time: "시간",
   grade: "학년",
   type: "이수구분",
+  field: "이수영역",
+  online: "수업 유형",
   credit: "학점",
 };
 
+export const ONLINE_TYPE_OPTIONS = [
+  "이러닝",
+  "이러닝(HUSS)",
+  "OCU",
+  "온라인 혼합",
+  "온라인 혼합(HUSS)",
+  "K-MOOC",
+  "RISE(시간표 없음)",
+  "RISE(시간표 있음)",
+  "강의(이론)",
+  "담장너머~,사회봉사(1)",
+  "미술실기",
+  "사회봉사(2)",
+  "사회봉사(3)",
+  "실험실습",
+  "예술체육실기",
+  "이론(어학)",
+  "이론실험실습",
+  "자기설계세미나",
+  "체육실기",
+  "현장형(HUSS)",
+] as const;
+
+export const ONLINE_TYPE_TO_SSUP_NAMES: Record<string, readonly string[]> = {
+  이러닝: ["e-Learning"],
+  "이러닝(HUSS)": ["e-Learning(HUSS)"],
+  OCU: ["열린사이버대학(OCU)"],
+  "온라인 혼합": ["온라인혼합형강좌"],
+  "온라인 혼합(HUSS)": ["온라인혼합형강좌(HUSS)"],
+  "K-MOOC": ["K-MOOC"],
+  "RISE(시간표 없음)": ["RISE(시간표 없음)"],
+  "RISE(시간표 있음)": ["RISE(시간표 있음)"],
+  "강의(이론)": ["강의(이론)"],
+  "담장너머~,사회봉사(1)": ["담장너머~,사회봉사(1)"],
+  미술실기: ["미술실기"],
+  "사회봉사(2)": ["사회봉사(2)"],
+  "사회봉사(3)": ["사회봉사(3)"],
+  실험실습: ["실험실습"],
+  예술체육실기: ["예술체육실기"],
+  "이론(어학)": ["이론(어학)"],
+  이론실험실습: ["이론실험실습"],
+  자기설계세미나: ["자기설계세미나"],
+  체육실기: ["체육실기"],
+  "현장형(HUSS)": ["현장형(HUSS)"],
+};
+
+export const expandOnlineTypeLabel = (label: string): readonly string[] =>
+  ONLINE_TYPE_TO_SSUP_NAMES[label] ?? [label];
+
+const ONLINE_TYPE_CODE_TO_LABEL: Record<string, string> = {
+  E_LEARNING: "이러닝",
+  E_LEARNING_HUSS: "이러닝(HUSS)",
+  OCU: "OCU",
+  BLENDED_ONLINE_COURSE: "온라인 혼합",
+  BLENDED_ONLINE_COURSE_HUSS: "온라인 혼합(HUSS)",
+  K_MOOC: "K-MOOC",
+  RISE_WITHOUT_TIMETABLE: "RISE(시간표 없음)",
+};
+
+export function getOnlineTypeLabel(
+  ssupTypeName?: string | null,
+  ssupTypeCode?: string | null,
+): string | null {
+  const val = ssupTypeName || ssupTypeCode;
+  if (!val) return null;
+
+  const upper = val.toUpperCase();
+  if (upper === "OFFLINE" || val === "강의(이론)") return null;
+
+  for (const [label, names] of Object.entries(ONLINE_TYPE_TO_SSUP_NAMES)) {
+    if (names.some((n) => n.toLowerCase() === val.toLowerCase())) {
+      return label;
+    }
+  }
+
+  if (ssupTypeCode) {
+    const codeLabel = ONLINE_TYPE_CODE_TO_LABEL[ssupTypeCode.toUpperCase()];
+    if (codeLabel) return codeLabel;
+  }
+
+  return ssupTypeName || ssupTypeCode || null;
+}
+
+// 정원/실제 수강 인원 배지 라벨. 값이 하나만 있어도(둘 다 있어야만 노출하던
+// all-or-nothing 대신) 있는 값만이라도 라벨과 함께 보여준다(#256).
+export function getEnrollmentLabel(
+  enrolledCount?: number | null,
+  capacity?: number | null,
+): string | null {
+  const parts: string[] = [];
+  if (capacity != null) parts.push(`정원 ${capacity}명`);
+  if (enrolledCount != null) parts.push(`수강 ${enrolledCount}명`);
+  if (parts.length === 0) return null;
+  return parts.join(" · ");
+}
+
 export const SORT_OPTIONS = ["기본순", "별점높은순", "담은인원많은순"] as const;
 export const TYPE_OPTIONS = ["전공", "교양", "교직", "일반선택", "군사학"] as const;
-export const GRADE_OPTIONS = [1, 2, 3, 4] as const;
+
+export const ISU_FIELD_OPTIONS = [
+  "(핵심)INU세미나",
+  "(핵심)과학기술",
+  "(핵심)사회",
+  "(핵심)예술체육",
+  "(핵심)외국어",
+  "(핵심)인문",
+  "과학기술",
+  "교직",
+  "군사학",
+  "기초과학ㆍ공학",
+  "사회",
+  "예술체육",
+  "외국어",
+  "인문",
+  "일반선택",
+  "전공기초",
+  "전공심화",
+  "전공핵심",
+  "학문의기초",
+] as const;
+
+/**
+ * 서버 `isuNames`(이수구분) 파라미터가 실제로 받는 값.
+ *
+ * 서버는 정확일치로 거르므로 여기 없는 문자열을 보내면 조건 없이 0건이 나온다.
+ * (2026-2학기 개설강의 전수 기준으로 확인한 값 — 코드값 "BASIC_LIBERAL_ARTS" 같은 것도
+ * 받지 않고 한글 라벨만 받는다.)
+ */
+export const SERVER_ISU_NAMES = [
+  "전공기초",
+  "전공핵심",
+  "전공심화",
+  "기초교양",
+  "핵심교양",
+  "심화교양",
+  "교직",
+  "일반선택",
+  "군사학",
+] as const;
+
+/**
+ * UI에서 쓰는 묶음 라벨("전공", "교양")은 서버 이수구분이 아니다.
+ * 서버 `isuNames`는 같은 파라미터를 반복하면 OR로 묶어주므로 구성 값으로 펼쳐서 보낸다.
+ */
+const ISU_NAME_GROUPS: Record<string, readonly string[]> = {
+  전공: ["전공기초", "전공핵심", "전공심화"],
+  교양: ["기초교양", "핵심교양", "심화교양"],
+};
+
+const SERVER_ISU_NAME_SET: ReadonlySet<string> = new Set(SERVER_ISU_NAMES);
+
+/** 필터 라벨이 이수구분(전공/교양 묶음 포함)인지 - 학과명·단과대명과 구분하는 데 쓴다. */
+export const isIsuNameLabel = (label: string): boolean =>
+  label in ISU_NAME_GROUPS || SERVER_ISU_NAME_SET.has(label);
+
+/** 필터 라벨을 서버가 받는 이수구분 값들로 펼친다. 이수구분이 아니면 빈 배열. */
+export const expandIsuNameLabel = (label: string): readonly string[] =>
+  ISU_NAME_GROUPS[label] ?? (SERVER_ISU_NAME_SET.has(label) ? [label] : []);
+
+export type GradeOption = 1 | 2 | 3 | 4 | "전학년";
+export const GRADE_OPTIONS: readonly GradeOption[] = [1, 2, 3, 4, "전학년"];
 export const CREDIT_OPTIONS = [1, 2, 3, 4] as const;
 
 // 단과대별 매핑 — 서버 Swagger deptName / collegeName 기준
@@ -156,6 +324,7 @@ export const LINKED_MAJORS = [
   "인문문화예술기획연계전공",
   "지능형로봇시스템연계전공",
   "창의적디자인연계전공",
+  "HUSS(타대학)",
   "HUSS포용사회이니셔티브학부",
 ];
 
@@ -166,11 +335,15 @@ export const MAJOR_CATEGORIES = [
   { id: "major_3", name: "교직", hasChevron: false },
   { id: "major_4", name: "일반선택", hasChevron: false },
   { id: "major_5", name: "군사학", hasChevron: false },
+  { id: "major_8", name: "기타", hasChevron: false },
+  { id: "major_9", name: "단과대구분없음", hasChevron: false },
 ];
 
 export const SUB_MAJORS: Record<string, string[]> = {
   전공: Object.keys(COLLEGE_DEPARTMENTS),
-  교양: ["기초교양", "균형교양", "일반교양"],
+  // 서버 이수구분(isuName) 값 그대로. 구 교육과정 명칭인 "균형교양"/"일반교양"을 보내면
+  // 서버가 정확일치로 걸러 항상 0건이 나온다.
+  교양: ["기초교양", "핵심교양", "심화교양"],
   연계전공: LINKED_MAJORS,
 };
 
@@ -251,6 +424,8 @@ export function countActiveFilters(filters: FilterState): number {
   if (filters.time !== DEFAULT_FILTERS.time) count += 1;
   count += filters.grades.length;
   count += filters.types.length;
+  count += filters.isuFields?.length ?? 0;
+  count += filters.onlineTypes?.length ?? 0;
   count += filters.credits.length;
   return count;
 }
@@ -268,9 +443,11 @@ export function buildCategoryChips(
       filters.time === DEFAULT_FILTERS.time || filters.time === "직접 시간 선택"
         ? []
         : filters.time.split(" "),
-    grade: filters.grades.map((g) => `${g}학년`),
+    grade: filters.grades.map((g) => (g === "전학년" ? g : `${g}학년`)),
     type: [...filters.types],
-    credit: filters.credits.map((c) => (c === 4 ? "4학점 이상" : `${c}학점`)),
+    field: [...(filters.isuFields ?? [])],
+    online: [...(filters.onlineTypes ?? [])],
+    credit: filters.credits.map((c) => `${c}학점`),
   };
 }
 
@@ -300,13 +477,24 @@ export function removeChipFromFilters(
       };
     }
     case "grade": {
-      const val = parseInt(chip.replace("학년", ""), 10);
+      const val: GradeOption =
+        chip === "전학년" ? chip : (parseInt(chip.replace("학년", ""), 10) as GradeOption);
       return { ...filters, grades: filters.grades.filter((g) => g !== val) };
     }
     case "type":
       return { ...filters, types: filters.types.filter((t) => t !== chip) };
+    case "field":
+      return {
+        ...filters,
+        isuFields: (filters.isuFields ?? []).filter((field) => field !== chip),
+      };
+    case "online":
+      return {
+        ...filters,
+        onlineTypes: (filters.onlineTypes ?? []).filter((t) => t !== chip),
+      };
     case "credit": {
-      const val = chip === "4학점 이상" ? 4 : parseInt(chip.replace("학점", ""), 10);
+      const val = parseInt(chip.replace("학점", ""), 10);
       return { ...filters, credits: filters.credits.filter((c) => c !== val) };
     }
     default:

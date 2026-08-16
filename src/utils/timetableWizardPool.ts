@@ -17,7 +17,6 @@ export const toWizardCourseOption = (
   offering: CourseOffering,
   course: Course | undefined,
 ): WizardCourseOption | null => {
-  if (offering.meetings.length === 0) return null;
 
   const meetings: WizardCourseMeeting[] = offering.meetings.map((meeting) => ({
     day: DAY_INDEX[meeting.day],
@@ -26,9 +25,9 @@ export const toWizardCourseOption = (
     location: meeting.location,
   }));
 
-  // credit: 서버가 개설강의에 학점을 안 실어주는 경우가 있어 Course의 문자열 학점으로 보정.
-  // parseFloat 실패는 NaN이라 ??로는 걸러지지 않으므로 유한값 검사가 필요하다.
-  const parsedCredit = offering.credit ?? parseFloat(course?.credit ?? "");
+  // credit: 서버가 개설강의에 학점을 안 실어주는 경우가 있어 Course의 학점으로 보정.
+  // Number(undefined)는 NaN이라 ??로는 걸러지지 않으므로 아래에서 유한값 검사가 필요하다.
+  const parsedCredit = offering.credit ?? Number(course?.credit);
 
   return {
     courseId: offering.courseId,
@@ -39,5 +38,7 @@ export const toWizardCourseOption = (
     credit: Number.isFinite(parsedCredit) ? parsedCredit : 0,
     department: offering.deptName ?? course?.departmentName ?? null,
     meetings,
+    ssupTypeName: offering.ssupTypeName ?? null,
+    ssupTypeCode: offering.ssupTypeCode ?? null,
   };
 };

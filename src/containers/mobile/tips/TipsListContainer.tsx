@@ -243,14 +243,20 @@ export default function TipsListContainer({
           {(docType === "TIPS" || docType === "SEARCH") &&
             viewMode === "list" ? (
             posts.length > 0 && (
-              <Box>
+              <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
                 {posts.map((p, i) => (
                   <Fragment key={p.id}>
                     <PostItem
+                      id={p.id}
                       title={p.title}
                       category={p.category}
                       date={p.createDate}
                       writer={p.writer}
+                      like={p.like}
+                      scrap={p.scrap}
+                      replyCount={p.replyCount}
+                      imageCount={p.imageCount}
+                      imageUrl={p.imageUrl}
                       onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(p.id))}
                     />
                     {i < posts.length - 1 && <Divider margin="0" />}

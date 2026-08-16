@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import type { ReactNode, UIEventHandler } from "react";
+import type { ReactNode, RefObject, UIEventHandler } from "react";
 import { createPortal } from "react-dom";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
@@ -16,13 +16,15 @@ import {
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
 import {
-  FilterState,
-  DEFAULT_FILTERS,
-} from "@/pages/mobile/timetable/MobileCourseFilterPage";
+  countActiveFilters,
+  getOnlineTypeLabel,
+  getEnrollmentLabel,
+} from "@/components/mobile/timetable/filter/courseFilterModel";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -40,11 +42,15 @@ export interface CourseResult {
   // 서버 수강인원/정원 데이터가 아직 동기화되지 않아 null일 수 있음 - null이면 배지 자체를 숨김
   enrolledCount: number | null;
   capacity: number | null;
+  savedCount?: number | null;
   schedules: ClassItem[];
   deptName?: string;
   collegeName?: string;
   isuName?: string;
+  isuFldName?: string;
   hyName?: string;
+  ssupTypeName?: string;
+  ssupTypeCode?: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -60,18 +66,23 @@ interface CourseSheetScrollableContentProps {
   children: ReactNode;
   onScrollCapture: UIEventHandler<HTMLDivElement>;
   isAnimating: boolean;
+  scrollRef: (node: HTMLDivElement | null) => void;
 }
 
 const CourseSheetScrollableContent = ({
   children,
   onScrollCapture,
   isAnimating,
+  scrollRef,
 }: CourseSheetScrollableContentProps) => {
   const { y } = Sheet.useContext();
   const scrollPaddingBottom = useTransform(y, (currentY) => currentY + 124);
 
   return (
     <CourseSheetContent
+      // react-modal-sheet의 타입 선언은 scrollRef를 RefObject로만 허용하지만,
+      // 내부 mergeRefs는 함수형 콜백 ref도 그대로 호출해 준다 (dist/index.js 참고).
+      scrollRef={scrollRef as unknown as RefObject<HTMLDivElement | null>}
       onScrollCapture={onScrollCapture}
       scrollStyle={{ paddingBottom: scrollPaddingBottom }}
       disableDrag={({ scrollPosition }) =>
@@ -97,17 +108,13 @@ interface MobileCourseSearchSheetProps {
   // 시간표 편집 화면은 강의 추가 도중 실수로 닫히지 않도록 스와이프/배경탭 dismiss를
   // 막아야 하고(기본값), 마법사의 위시리스트 검색은 반대로 자유롭게 닫을 수 있어야 한다.
   dismissible?: boolean;
-  initialFilters?: FilterState;
   onAddCourse?: (course: CourseResult) => void;
-  // 전공/영역 필터 등 서버 조회가 필요한 필터는 상위에서 querystring으로 다시 조회해야 하므로 변경을 알림
-  onFiltersChange?: (filters: FilterState) => void;
   addedCourseOfferingIds?: Set<number>;
   addedCourseIds?: Set<string>;
   isLoading?: boolean;
   hasNextPage?: boolean;
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
-  filterStorageKey?: string;
 }
 
 const MobileCourseSearchSheet = ({
@@ -119,32 +126,22 @@ const MobileCourseSearchSheet = ({
   open,
   onOpenChange,
   dismissible = false,
-  initialFilters = DEFAULT_FILTERS,
   onAddCourse,
-  onFiltersChange,
   addedCourseOfferingIds,
   addedCourseIds,
   isLoading = false,
   hasNextPage,
   fetchNextPage,
   isFetchingNextPage,
-  filterStorageKey = "timetable_course_filters",
 }: MobileCourseSearchSheetProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const [activeFilters, setActiveFiltersState] =
-    useState<FilterState>(initialFilters);
-
-  useEffect(() => {
-    setActiveFiltersState(initialFilters);
-  }, [initialFilters]);
-
-  const setActiveFilters = (filters: FilterState) => {
-    setActiveFiltersState(filters);
-    onFiltersChange?.(filters);
-  };
+  // 확정 필터는 useCourseFilterStore가 소유한다. 필터 화면이 별도 웹뷰로 뜨는
+  // 멀티 웹뷰 환경에서도 broadcastSync가 값을 실어오므로, 이 시트는 읽기만 한다.
+  // 부모(편집 화면)가 서버 조회에 쓰는 것과 반드시 같은 파생을 써야 한다 —
+  // 아래 filteredCourses가 같은 필터로 2차 로컬 필터링을 하기 때문이다.
+  const activeFilters = useEffectiveCourseFilters();
 
   const sheetRef = useRef<SheetRef | null>(null);
 
@@ -159,100 +156,27 @@ const MobileCourseSearchSheet = ({
     initialSnapRef.current = initialSnap;
   }, [initialSnap]);
 
-  const openRef = useRef(open);
+  // 필터 화면에서 돌아왔을 때 시트가 바닥으로 내려가 있지 않도록 지정된 snap으로 되돌린다.
+  // (예전에는 localStorage 복원 로직이 이 일을 겸했다.)
+  const isFirstFilterRender = useRef(true);
   useEffect(() => {
-    openRef.current = open;
-  }, [open]);
-
-  const onOpenChangeRef = useRef(onOpenChange);
-  useEffect(() => {
-    onOpenChangeRef.current = onOpenChange;
-  }, [onOpenChange]);
-
-  // listen to returned filters from filter page (LocalStorage & window focus & storage & visibilitychange & location fallback)
-  useEffect(() => {
-    const restoreFilters = () => {
-      const savedFilters = localStorage.getItem("applied_filters");
-      if (savedFilters) {
-        try {
-          const parsed = JSON.parse(savedFilters);
-          setActiveFilters(parsed);
-          if (!openRef.current) {
-            onOpenChangeRef.current(true);
-          }
-          // 필터 적용 후 시트 위치가 바닥(0 또는 1)으로 내려가는 것을 방지하고 지정된 snap으로 복구
-          setTimeout(() => {
-            sheetRef.current?.snapTo(initialSnapRef.current);
-          }, 50);
-        } catch (e) {
-          console.error("필터 복원 오류:", e);
-        }
-        localStorage.removeItem("applied_filters");
-        return true;
-      }
-      return false;
-    };
-
-    // 1. 컴포넌트 마운트 시도 또는 location 변경 시 확인
-    const restored = restoreFilters();
-
-    // location.state 폴백 (앱이 아닌 일반 브라우저 환경에서 데이터가 올 때를 대비)
-    if (!restored && location.state && (location.state as any).filters) {
-      setActiveFilters((location.state as any).filters);
-      if (!openRef.current) {
-        onOpenChangeRef.current(true);
-      }
-      setTimeout(() => {
-        sheetRef.current?.snapTo(initialSnapRef.current);
-      }, 50);
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
     }
-
-    // 2. 멀티 웹뷰 덮인 화면이 닫히며 복귀할 때를 위한 이벤트 리스너 등록
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        restoreFilters();
-      }
-    };
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "applied_filters" && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          setActiveFilters(parsed);
-          if (!openRef.current) {
-            onOpenChangeRef.current(true);
-          }
-          setTimeout(() => {
-            sheetRef.current?.snapTo(initialSnapRef.current);
-          }, 50);
-          localStorage.removeItem("applied_filters");
-        } catch (err) {
-          console.error("필터 복원 오류:", err);
-        }
-      }
-    };
-
-    window.addEventListener("focus", restoreFilters);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("focus", restoreFilters);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [location.state, location.key]);
-
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (activeFilters.major) count++;
-    if (activeFilters.sort !== "기본순") count++;
-    if (activeFilters.time !== "전체 시간") count++;
-    count += activeFilters.grades.length;
-    count += activeFilters.types.length;
-    count += activeFilters.credits.length;
-    return count;
+    if (!open) onOpenChange(true);
+    const timer = setTimeout(() => {
+      sheetRef.current?.snapTo(initialSnapRef.current);
+    }, 50);
+    return () => clearTimeout(timer);
+    // 확정 필터가 바뀐 순간에만 반응한다(open/onOpenChange 변화에는 반응하지 않는다).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilters]);
+
+  const activeFilterCount = useMemo(
+    () => countActiveFilters(activeFilters),
+    [activeFilters],
+  );
 
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("courseQuery");
@@ -271,7 +195,8 @@ const MobileCourseSearchSheet = ({
             !c.deptName ||
             c.deptName === targetDept ||
             c.deptName.includes(targetDept) ||
-            targetDept.includes(c.deptName),
+            targetDept.includes(c.deptName) ||
+            Boolean(offeringFilters.ssupTypeNames?.length),
         );
       }
 
@@ -282,7 +207,8 @@ const MobileCourseSearchSheet = ({
             !c.collegeName ||
             c.collegeName === targetCollege ||
             c.collegeName.includes(targetCollege) ||
-            targetCollege.includes(c.collegeName),
+            targetCollege.includes(c.collegeName) ||
+            Boolean(offeringFilters.ssupTypeNames?.length),
         );
       }
 
@@ -302,6 +228,28 @@ const MobileCourseSearchSheet = ({
             offeringFilters.isuNames?.some((isu) => c.isuName?.includes(isu)),
         );
       }
+      if (offeringFilters.isuFldNames?.length) {
+        list = list.filter(
+          (c) =>
+            !c.isuFldName ||
+            offeringFilters.isuFldNames?.includes(c.isuFldName),
+        );
+      }
+      if (offeringFilters.ssupTypeNames?.length) {
+        list = list.filter((c) => {
+          if (!c.ssupTypeName && !c.ssupTypeCode) return true;
+          return offeringFilters.ssupTypeNames?.some((st) => {
+            const code = c.ssupTypeCode;
+            const name = c.ssupTypeName;
+            return (
+              code === st ||
+              name === st ||
+              (code && code.toLowerCase() === st.toLowerCase()) ||
+              (name && name.toLowerCase() === st.toLowerCase())
+            );
+          });
+        });
+      }
       if (offeringFilters.credits?.length) {
         list = list.filter((c) => offeringFilters.credits?.includes(c.credits));
       }
@@ -316,11 +264,109 @@ const MobileCourseSearchSheet = ({
       };
       list.sort((a, b) => (ratings[b.name] || 0) - (ratings[a.name] || 0));
     } else if (activeFilters.sort === "담은인원많은순") {
-      list.sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
+      list.sort((a, b) => (b.savedCount ?? 0) - (a.savedCount ?? 0));
     }
 
     return list;
   }, [courses, activeFilters, keyword]);
+
+  // 바텀시트를 닫으면 react-modal-sheet가 스크롤 컨테이너 DOM을 통째로 언마운트하므로,
+  // 재오픈 시 맨 위로 스크롤이 튀지 않도록 마지막으로 보고 있던 강의(id)와 그 화면상 위치를
+  // 기억해 뒀다가 스크롤 컨테이너가 다시 마운트될 때 동일한 위치로 복원한다.
+  const scrollerElRef = useRef<HTMLDivElement | null>(null);
+  const scrollAnchorRef = useRef<{ id: number; offset: number } | null>(null);
+  const restoreAttemptsRef = useRef(0);
+  const pendingRestoreRef = useRef(false);
+  const scrollCleanupRef = useRef<(() => void) | null>(null);
+
+  const captureScrollAnchor = useCallback((scroller: HTMLDivElement) => {
+    const scrollerTop = scroller.getBoundingClientRect().top;
+    const items = scroller.querySelectorAll<HTMLElement>("[data-course-id]");
+    for (const item of items) {
+      const rect = item.getBoundingClientRect();
+      if (rect.bottom > scrollerTop) {
+        const id = Number(item.dataset.courseId);
+        if (Number.isFinite(id)) {
+          scrollAnchorRef.current = { id, offset: rect.top - scrollerTop };
+        }
+        return;
+      }
+    }
+  }, []);
+
+  // 기억해 둔 강의를 화면에서 찾아 그 위치로 스크롤을 복원한다.
+  // 아직 로드되지 않은 뒷 페이지에 있을 수 있으므로, 다음 페이지를 더 불러오며 재시도하되
+  // 필터 변경 등으로 영영 찾을 수 없는 경우를 대비해 재시도 횟수에 상한을 둔다.
+  const restoreScrollAnchor = useCallback(
+    (scroller: HTMLDivElement) => {
+      const anchor = scrollAnchorRef.current;
+      if (!anchor) return;
+
+      const target = scroller.querySelector<HTMLElement>(
+        `[data-course-id="${anchor.id}"]`,
+      );
+
+      if (target) {
+        const scrollerTop = scroller.getBoundingClientRect().top;
+        const targetTop = target.getBoundingClientRect().top;
+        scroller.scrollTop += targetTop - scrollerTop - anchor.offset;
+        pendingRestoreRef.current = false;
+        return;
+      }
+
+      if (
+        hasNextPage &&
+        fetchNextPage &&
+        !isFetchingNextPage &&
+        restoreAttemptsRef.current < 30
+      ) {
+        pendingRestoreRef.current = true;
+        restoreAttemptsRef.current += 1;
+        fetchNextPage();
+      } else {
+        pendingRestoreRef.current = false;
+      }
+    },
+    [hasNextPage, fetchNextPage, isFetchingNextPage],
+  );
+
+  // 스크롤 컨테이너가 새로 마운트될 때(바텀시트 재오픈 시) 위치를 복원하고,
+  // 스크롤할 때마다 현재 보고 있는 강의를 기준점으로 갱신한다.
+  const attachScroller = useCallback(
+    (node: HTMLDivElement | null) => {
+      scrollCleanupRef.current?.();
+      scrollCleanupRef.current = null;
+      scrollerElRef.current = node;
+      if (!node) return;
+
+      restoreAttemptsRef.current = 0;
+      restoreScrollAnchor(node);
+
+      let rafId: number | null = null;
+      const handleScroll = () => {
+        if (rafId != null) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          captureScrollAnchor(node);
+        });
+      };
+
+      node.addEventListener("scroll", handleScroll, { passive: true });
+      scrollCleanupRef.current = () => {
+        node.removeEventListener("scroll", handleScroll);
+        if (rafId != null) cancelAnimationFrame(rafId);
+      };
+    },
+    [restoreScrollAnchor, captureScrollAnchor],
+  );
+
+  // 페이지네이션으로 새 강의가 로드되거나 로딩이 끝나면, 이전에 찾지 못했던 기준 강의를 재탐색한다.
+  useEffect(() => {
+    if (!pendingRestoreRef.current) return;
+    const scroller = scrollerElRef.current;
+    if (!scroller) return;
+    restoreScrollAnchor(scroller);
+  }, [filteredCourses, isFetchingNextPage, restoreScrollAnchor]);
 
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
@@ -413,6 +459,7 @@ const MobileCourseSearchSheet = ({
           <CourseSheetScrollableContent
             onScrollCapture={handleScroll}
             isAnimating={isAnimating}
+            scrollRef={attachScroller}
           >
             <SheetContentWrapper>
               <CourseList>
@@ -455,10 +502,19 @@ const MobileCourseSearchSheet = ({
                     (addedCourseOfferingIds && addedCourseOfferingIds.has(course.id)) ||
                     (course.courseId && addedCourseIds && addedCourseIds.has(course.courseId)),
                   );
+                  const onlineTypeLabel = getOnlineTypeLabel(
+                    course.ssupTypeName,
+                    course.ssupTypeCode,
+                  );
+                  const enrollmentLabel = getEnrollmentLabel(
+                    course.enrolledCount,
+                    course.capacity,
+                  );
 
                   return (
                     <CourseItem
                       key={course.id}
+                      data-course-id={course.id}
                       onClick={() => onToggleExpand(course.id)}
                     >
                       {/* 기본 정보 */}
@@ -467,12 +523,14 @@ const MobileCourseSearchSheet = ({
                           <CourseName>{course.name}</CourseName>
                         </MainInfo>
                         <RightInfo>
-                          {course.enrolledCount != null &&
-                            course.capacity != null && (
-                              <EnrolledBadge>
-                                {course.enrolledCount}명 / {course.capacity}명
-                              </EnrolledBadge>
-                            )}
+                          {course.savedCount != null && (
+                            <SavedBadge>
+                              {course.savedCount}명 담음
+                            </SavedBadge>
+                          )}
+                          {enrollmentLabel && (
+                            <EnrolledBadge>{enrollmentLabel}</EnrolledBadge>
+                          )}
                         </RightInfo>
                       </InfoRow>
 
@@ -489,7 +547,12 @@ const MobileCourseSearchSheet = ({
                           <span>
                           {course.grade > 0 ? `${course.grade}학년` : "전학년"}
                         </span>
-                          <span>{course.isMajor ? "전공심화" : "교양"}</span>
+                          {/* 서버 이수구분(전공기초/전공핵심/전공심화/기초교양/핵심교양/
+                              심화교양/교직/일반선택/군사학)을 그대로 보여준다. 전공/교양
+                              두 갈래로 뭉개면 전공핵심·전공기초가 "전공심화"로, 교직·
+                              일반선택이 "교양"으로 잘못 표시된다. */}
+                          <span>{course.isuName || "-"}</span>
+                          {onlineTypeLabel && <span>{onlineTypeLabel}</span>}
                           <span>{course.courseId}</span>
                         </InfoLine>
                         <div>{course.timeStr}</div>
@@ -580,12 +643,11 @@ const MobileCourseSearchSheet = ({
                 mixpanelTrack.timetableCourseSearchAction("필터 열기", {
                   result_count: filteredCourses.length,
                 });
-                navigate(ROUTES.TIMETABLE.FILTER, {
-                  state: {
-                    filters: activeFilters,
-                    storageKey: filterStorageKey,
-                  },
-                });
+                // state는 넘기지 않는다. 멀티 웹뷰에서는 이 이동이 네이티브
+                // 웹뷰 push(appBridge.navigateTo)로 위임되고 브릿지 payload는
+                // { path, url }뿐이라 state가 사라진다. 필터 화면은 양쪽 환경 모두
+                // useCourseFilterStore에서 현재 필터를 읽는다.
+                navigate(ROUTES.TIMETABLE.FILTER);
               }}
             >
               <SlidersHorizontal size={20} />
@@ -904,6 +966,23 @@ const EnrolledBadge = styled.span`
   background: var(--bg-brand-subtle, #eff6ff);
   color: var(--text-brand, #0061ff);
 
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+`;
+
+const SavedBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand, #eff6ff);
+  color: var(--text-brand, #0061ff);
+
+  font-family: Pretendard, sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;

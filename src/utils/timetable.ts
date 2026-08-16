@@ -39,51 +39,55 @@ export const formatHoursToTime = (hours: number) => {
 export const mapDetailItemsToClassItems = (
   items: TimeTableDetailItem[],
 ): ClassItem[] =>
-  items.flatMap((item) => {
+  items.flatMap((item, itemIndex) => {
     const source = item.course ?? item.customSchedule;
     if (!source) return [];
 
+    const itemId = item.id ?? -(itemIndex + 1);
+
     const credits = item.course
-      ? parseFloat(item.course.credit) || undefined
+      ? parseFloat(String(item.course.credit)) || undefined
       : undefined;
 
     if (source.meetings.length === 0) {
       return [
         {
-          id: -item.id,
-          itemId: item.id,
-          courseOfferingId: item.course?.courseOfferingId,
-          customScheduleId: item.customSchedule?.customScheduleId,
-          name: source.title,
+          id: -Math.abs(itemId),
+          itemId,
+          courseOfferingId: item.course?.courseOfferingId ?? undefined,
+          customScheduleId: item.customSchedule?.customScheduleId ?? undefined,
+          name: source.title ?? "",
           room: "",
           day: 0,
           startTime: 0,
           endTime: 0,
           credits,
-          professor: item.course?.professor,
+          professor: item.course?.professor ?? undefined,
           memo: item.memo ?? undefined,
-          courseId: item.course?.subjectNumber,
+          courseId: item.course?.subjectNumber ?? undefined,
+          numericCourseId: item.course?.courseId ?? undefined,
           isCustom: item.type === "CUSTOM",
           isUntimed: true,
         },
       ];
     }
 
-    return source.meetings.map<ClassItem>((meeting, index) => ({
-      id: meeting.id,
-      itemId: item.id,
-      courseOfferingId: item.course?.courseOfferingId,
-      customScheduleId: item.customSchedule?.customScheduleId,
-      name: source.title,
+    return source.meetings.map<ClassItem>((meeting, meetingIndex) => ({
+      id: meeting.id ?? -(itemIndex * 100 + meetingIndex + 1),
+      itemId,
+      courseOfferingId: item.course?.courseOfferingId ?? undefined,
+      customScheduleId: item.customSchedule?.customScheduleId ?? undefined,
+      name: source.title ?? "",
       room: meeting.location ?? "",
       day: DAY_INDEX[meeting.day],
       startTime: parseTimeToHours(meeting.startTime),
       endTime: parseTimeToHours(meeting.endTime),
-      // 학점 합산이 중복되지 않도록 첫 미팅에만 학점을 부여
-      credits: index === 0 ? credits : 0,
-      professor: item.course?.professor,
+      // 모든 미팅에 credits를 유지 (바텀시트용)
+      credits,
+      professor: item.course?.professor ?? undefined,
       memo: item.memo ?? undefined,
-      courseId: item.course?.subjectNumber,
+      courseId: item.course?.subjectNumber ?? undefined,
+      numericCourseId: item.course?.courseId ?? undefined,
       isCustom: item.type === "CUSTOM",
     }));
   });

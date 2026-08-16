@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
@@ -15,17 +15,8 @@ import { DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import TooltipMessage from "@/components/common/TooltipMessage";
-import {
-  dismissTooltip,
-  isTooltipDismissed,
-} from "@/utils/dismissibleTooltipStorage";
-
-const TIMETABLE_UPDATE_TOOLTIP_ID = "timetable-update-2026-08";
-const TIMETABLE_UPDATE_ANNOUNCED_AT = new Date("2026-08-04T16:00:00+09:00");
-
-function isAfterTimetableUpdateAnnouncement() {
-  return new Date() >= TIMETABLE_UPDATE_ANNOUNCED_AT;
-}
+import { usePromotion } from "@/hooks/usePromotion";
+import { PROMOTIONS } from "@/utils/promotion/registry";
 
 const NAV_ITEMS = [
   {
@@ -63,28 +54,11 @@ export default function MobileBottomNav() {
   const isLoggedIn = !!tokenInfo.accessToken;
 
   const timetableIconRef = useRef<HTMLDivElement | null>(null);
-  const [showTimetableTooltip, setShowTimetableTooltip] = useState(
-    () =>
-      isLoggedIn &&
-      isAfterTimetableUpdateAnnouncement() &&
-      !isTooltipDismissed(TIMETABLE_UPDATE_TOOLTIP_ID),
-  );
-
-  useEffect(() => {
-    if (showTimetableTooltip) {
-      mixpanelTrack.promotionImpression(TIMETABLE_UPDATE_TOOLTIP_ID, "Bottom Nav");
-    }
-  }, []);
-
-  const handleCloseTimetableTooltip = () => {
-    mixpanelTrack.promotionClicked(
-      TIMETABLE_UPDATE_TOOLTIP_ID,
-      "Close Button",
-      "Bottom Nav",
-    );
-    dismissTooltip(TIMETABLE_UPDATE_TOOLTIP_ID);
-    setShowTimetableTooltip(false);
-  };
+  const {
+    isVisible: showTimetableTooltip,
+    dismiss: dismissTimetableTooltip,
+    accept: acceptTimetableTooltip,
+  } = usePromotion(PROMOTIONS.TIMETABLE_UPDATE, { enabled: isLoggedIn });
 
   const { data: unreadResponse } = useQuery({
     queryKey: ["unreadTotalCount"],
@@ -114,38 +88,26 @@ export default function MobileBottomNav() {
 
   const handleNavClick = (to: string, label: string) => {
     if (to === ROUTES.TIMETABLE.ROOT && showTimetableTooltip) {
-      dismissTooltip(TIMETABLE_UPDATE_TOOLTIP_ID);
-      setShowTimetableTooltip(false);
+      acceptTimetableTooltip("Nav Item");
     }
 
-    const isChat = to === ROUTES.CHAT.LIST;
-    const isCurrentlyActive =
-      location.pathname === to || location.pathname.startsWith(to);
-
-    if (isChat && isCurrentlyActive) {
-      const params = new URLSearchParams(location.search);
-      const currentCategory = params.get("category") || "개인";
-      const nextCategory =
-        currentCategory === "개인"
-          ? "오픈채팅"
-          : currentCategory === "오픈채팅"
-            ? "친구"
-            : "개인";
-      params.set("category", nextCategory);
-      navigate(`${to}?${params.toString()}`, { replace: true });
+    const targetIndex = NAV_ITEMS.findIndex((item) => item.to === to);
+    if (targetIndex === activeIndex) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     mixpanelTrack.navTabClicked(label);
 
+    const isChat = to === ROUTES.CHAT.LIST;
     if (isChat) {
       const savedCategory = localStorage.getItem("lastChatCategory");
       const target = savedCategory ? `${to}?category=${savedCategory}` : to;
-      navigate(target, { replace: true });
+      navigate(target, { replace: true, state: { isTabNavigation: true } });
       return;
     }
 
-    navigate(to, { replace: true });
+    navigate(to, { replace: true, state: { isTabNavigation: true } });
   };
 
   return (
@@ -188,7 +150,7 @@ export default function MobileBottomNav() {
               {isTimetableItem && showTimetableTooltip && (
                 <TooltipMessage
                   message={"편람 업데이트 완료!\n시간표 기능을 이용해보세요."}
-                  onClose={handleCloseTimetableTooltip}
+                  onClose={dismissTimetableTooltip}
                   position="top"
                   align="center"
                   width="max-content"
@@ -204,12 +166,14 @@ export default function MobileBottomNav() {
 }
 
 export const BOTTOM_PADDING = 8;
-export const BOTTOM_NAV_HEIGHT = 76 + BOTTOM_PADDING;
+export const BOTTOM_NAV_CONTENT_HEIGHT = 76;
+export const BOTTOM_NAV_HEIGHT = BOTTOM_NAV_CONTENT_HEIGHT + BOTTOM_PADDING;
+export const BOTTOM_NAV_SAFE_HEIGHT = `calc(${BOTTOM_NAV_CONTENT_HEIGHT}px + max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px)))`;
 
 const NavContainer = styled.div`
   position: relative;
   width: 100%;
-  height: calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px));
+  height: ${BOTTOM_NAV_SAFE_HEIGHT};
   z-index: 1000;
   pointer-events: auto;
   background: var(--bg-blur, rgba(255, 255, 255, 0.60));
@@ -234,7 +198,7 @@ const NavItemsContainer = styled.nav`
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
   padding-top: 0px;
-  padding-bottom: calc(${BOTTOM_PADDING}px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 `;
 

@@ -26,6 +26,8 @@ import CourseFilterPanel, {
 import {
   FILTER_SUB_VIEW_TITLES,
   countActiveFilters,
+  getOnlineTypeLabel,
+  getEnrollmentLabel,
 } from "@/components/mobile/timetable/filter/courseFilterModel";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import { toWizardCourseOption } from "@/utils/timetableWizardPool";
@@ -100,10 +102,14 @@ interface CourseRow {
   credit: number;
   gradeLabel: string;
   isMajor: boolean;
+  isuLabel: string;
+  onlineTypeLabel: string | null;
+  enrollmentLabel: string | null;
   timeStr: string;
   room: string;
   enrolledCount: number | null;
   capacity: number | null;
+  savedCount: number | null;
   note: string | null;
   option: WizardCourseOption;
 }
@@ -118,6 +124,14 @@ const buildCourseRow = (
   const gradeName = offering.hyName ?? course?.targetGradeName ?? "";
   const grade = parseInt(gradeName, 10);
   const isuName = offering.isuName ?? course?.completionDivisionName ?? "";
+  const onlineTypeLabel = getOnlineTypeLabel(
+    offering.ssupTypeName,
+    offering.ssupTypeCode,
+  );
+  const enrollmentLabel = getEnrollmentLabel(
+    offering.enrolledCount,
+    offering.capacity,
+  );
 
   return {
     offeringId: offering.id,
@@ -127,12 +141,18 @@ const buildCourseRow = (
     credit: option.credit,
     gradeLabel: Number.isFinite(grade) && grade > 0 ? `${grade}학년` : "전학년",
     isMajor: isuName.includes("전공"),
+    // 서버 이수구분을 그대로 노출한다(전공기초/전공핵심/전공심화/기초교양/핵심교양/
+    // 심화교양/교직/일반선택/군사학). 전공·교양 두 갈래로 뭉개면 실제와 어긋난다.
+    isuLabel: isuName || "-",
+    onlineTypeLabel,
+    enrollmentLabel,
     timeStr: offering.meetings
       .map((m) => `${DAY_LABELS[DAY_INDEX[m.day]]} ${m.startTime}~${m.endTime}`)
       .join(", "),
     room: offering.meetings[0]?.location ?? "-",
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,
+    savedCount: offering.savedCount ?? 0,
     note: offering.note,
     option,
   };
@@ -227,10 +247,9 @@ const WizardCourseSearchSheet = () => {
       .map((offering) => buildCourseRow(offering, courseById.get(offering.courseId)))
       .filter((row): row is CourseRow => row !== null);
 
-    // 서버에 정렬 파라미터가 없어 정렬만 클라이언트에서 처리한다.
-    // 이미 받아온 페이지 안에서의 정렬이라는 점에 유의(무한스크롤로 더 받으면 뒤에 붙는다).
+    // 서버가 전체 결과를 담은 인원순으로 페이지네이션하며, 로컬 목록도 같은 기준을 유지한다.
     if (filters.sort === "담은인원많은순") {
-      return [...list].sort((a, b) => (b.enrolledCount ?? 0) - (a.enrolledCount ?? 0));
+      return [...list].sort((a, b) => (b.savedCount ?? 0) - (a.savedCount ?? 0));
     }
     return list;
   }, [courseOfferings, courseById, filters.sort]);
@@ -392,10 +411,13 @@ const WizardCourseSearchSheet = () => {
                             <CourseName>{row.title}</CourseName>
                           </MainInfo>
                           <RightInfo>
-                            {row.enrolledCount != null && row.capacity != null && (
-                              <EnrolledBadge>
-                                {row.enrolledCount}명 / {row.capacity}명
-                              </EnrolledBadge>
+                            {row.savedCount != null && (
+                              <SavedBadge>
+                                {row.savedCount}명 담음
+                              </SavedBadge>
+                            )}
+                            {row.enrollmentLabel && (
+                              <EnrolledBadge>{row.enrollmentLabel}</EnrolledBadge>
                             )}
                           </RightInfo>
                         </InfoRow>
@@ -409,7 +431,8 @@ const WizardCourseSearchSheet = () => {
                         <CourseAdditionalInfo>
                           <InfoLine>
                             <span>{row.gradeLabel}</span>
-                            <span>{row.isMajor ? "전공심화" : "교양"}</span>
+                            <span>{row.isuLabel}</span>
+                            {row.onlineTypeLabel && <span>{row.onlineTypeLabel}</span>}
                             <span>{row.subjectNumber}</span>
                           </InfoLine>
                           <div>{row.timeStr}</div>
@@ -910,6 +933,23 @@ const EnrolledBadge = styled.span`
   border: 1px solid var(--border-brand-subtle, #d3e5ff);
   background: var(--bg-brand-subtle, #eff6ff);
   color: var(--text-brand, #0061ff);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+`;
+
+const SavedBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand, #eff6ff);
+  color: var(--text-brand, #0061ff);
+
+  font-family: Pretendard, sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;

@@ -1,5 +1,6 @@
 import { getAppEnvironmentStatus } from "./getMobilePlatform";
 import { bridgeChannel } from "./bridgeChannel";
+import { handleBackRequest } from "./nativeBackRequest";
 
 /**
  * 단일 브릿지 채널.
@@ -87,7 +88,23 @@ export const appBridge = {
   },
 
   /**
+   * 웹 안의 뒤로가기(헤더 백버튼, `navigate(-1)`) 요청입니다.
+   *
+   * 이 웹뷰 안에 되돌릴 것(오버레이/모달, SPA 히스토리)이 있으면 웹에서 처리하고,
+   * 없을 때만 네이티브에 웹뷰 pop 을 요청합니다. 예전에는 조건 없이 pop 을
+   * 요청해서, 모달을 열어둔 채 백버튼을 누르면 화면 자체가 닫혔습니다
+   * (intip-mobile-app#15). 안드로이드 시스템 백도 네이티브의 `checkBack` 을 거쳐
+   * 같은 판단(`handleBackRequest`)을 탑니다.
+   */
+  requestBack(): void {
+    if (handleBackRequest()) return;
+    this.goBack();
+  },
+
+  /**
    * 현재 웹뷰 액티비티/뷰컨트롤러를 닫고 이전 화면으로 복귀합니다.
+   * 웹 안의 상태와 무관하게 화면을 닫으므로, 사용자의 뒤로가기에는
+   * `requestBack()` 을 쓰세요.
    */
   goBack(): void {
     // 신버전 앱: PlatformChannel 우선
@@ -122,6 +139,9 @@ export const appBridge = {
   goHome(path: string): void {
     if (bridgeChannel) {
       bridgeChannel.send("goHome", { path });
+      return;
     }
+
+    this.goBack();
   },
 };

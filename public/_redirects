@@ -1,0 +1,15 @@
+# 딥링크(iOS Universal Links / Android App Links) 도메인 소유 증명 파일.
+#
+# Apple과 Google은 이 두 파일을 반드시 `/.well-known/` 아래에서 200으로 받아야
+# 도메인↔앱 연결을 인정한다. 그런데 Cloudflare Pages는 `.`으로 시작하는 디렉터리를
+# 업로드하지 않는 사례가 반복 보고돼 있어(wrangler#980 등), `public/.well-known/`에
+# 파일을 두면 배포본에서 통째로 사라질 수 있다.
+#
+# 그래서 실제 파일은 점 없는 `/app-links/`에 두고, 규격이 요구하는 경로로는 여기서
+# 200 rewrite(리다이렉트 아님 — Apple은 3xx를 거부한다)로 매핑한다. 원본이 한 벌뿐이라
+# 두 경로가 서로 어긋날 일이 없다.
+#
+# Content-Type(application/json)은 `_headers`에서 지정한다. AASA는 확장자가 없어
+# Pages가 타입을 정하지 못하기 때문.
+/.well-known/apple-app-site-association  /app-links/apple-app-site-association  200
+/.well-known/assetlinks.json             /app-links/assetlinks.json             200

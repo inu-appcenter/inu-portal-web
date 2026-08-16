@@ -8,6 +8,7 @@ import pencil from "@/resources/assets/posts/pencil.svg";
 import eye from "@/resources/assets/posts/eye.svg";
 import LikeScrapButtons from "./LikeScrapButtons";
 import PostReplies from "./PostReplies";
+import { formatTimeAgo } from "@/utils/date";
 
 export default function PostDetails({ postId }: { postId: number }) {
   // const location = useLocation();
@@ -114,7 +115,7 @@ export default function PostDetails({ postId }: { postId: number }) {
                 )}
                 <span className="createDate">
                   <img src={pencil} alt="" />
-                  <span>{post.createDate}</span>
+                  <span>{formatTimeAgo(post.createDate)}</span>
                 </span>
                 <span className="view">
                   <img src={eye} alt="" />

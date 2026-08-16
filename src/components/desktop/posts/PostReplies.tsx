@@ -22,7 +22,7 @@ export default function PostReplies({
   replies: Reply[];
   refreshReplies: () => void;
 }) {
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const [replyContent, setReplyContent] = useState("");
   const [replyToEdit, setReplyToEdit] = useState<Reply | null>(null);
   const [replyToReply, setReplyToReply] = useState<Reply | null>(null);

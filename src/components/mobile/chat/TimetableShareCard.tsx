@@ -45,12 +45,15 @@ export default function TimetableShareCard({
   }
 
   const friendIds = parsedData?.friendIds || [];
+  const memberIds = parsedData?.memberIds || [];
   const topTimes = parsedData?.topFreeTimes || [];
 
   const handleNavigate = (e: React.MouseEvent) => {
     e.stopPropagation();
     const queryParams = new URLSearchParams();
-    if (friendIds.length > 0) {
+    if (memberIds.length > 0) {
+      queryParams.set("memberIds", memberIds.join(","));
+    } else if (friendIds.length > 0) {
       queryParams.set("ids", friendIds.join(","));
     }
     queryParams.set("tab", "free");
@@ -99,7 +102,9 @@ const CardContainer = styled.div<{ $isMe?: boolean }>`
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   margin-top: 4px;
 
   &:active {

@@ -25,10 +25,15 @@ export interface ClassItem {
   memo?: string; //메모
   color?: string; // 개별 배경 색상
   ownerName?: string; // 추가: 소유자 이름 (시간표 구분용)
+  // 친구 소유 항목 여부. true면 조회 전용(메모 등 본인만 봐야 하는 정보는 노출/편집 금지)
+  isFriendOwned?: boolean;
   grade?: string;
   courseType?: string;
   evaluation?: string;
   courseId?: string;
+  numericCourseId?: number;
+  ssupTypeName?: string;
+  ssupTypeCode?: string;
   isCustom?: boolean;
   isUntimed?: boolean;
 }
@@ -67,8 +72,29 @@ const DEFAULT_MAX_HOUR = 18;
 const MIN_DAY_COUNT = 5;
 const MAX_DAY_COUNT = 7;
 
+// 수업 블록을 얹는 그리드 행 단위(분). 45분·75분처럼 30분 배수가 아닌 수업이 실제로
+// 있어서, 행을 30분으로 두면 블록이 30분 격자로 반올림돼 실제와 다른 시간에 그려졌다.
+const ROW_MINUTES = 5;
+const ROWS_PER_HOUR = 60 / ROW_MINUTES;
+// 눈에 보이는 칸(시간대 드래그 선택 단위)은 그대로 30분 — 선택 슬롯 문자열
+// (`${day}-${hour}`, hour는 0.5 단위)이 필터·마법사 제외조건과 공유하는 규약이라
+// 여기만 잘게 쪼개면 안 된다. 30분 칸 하나가 SELECT_ROWS개 행을 덮는다.
+const SELECT_STEP_HOURS = 0.5;
+const SELECT_ROWS = (SELECT_STEP_HOURS * 60) / ROW_MINUTES;
+const SELECT_CELL_HEIGHT_PX = 25;
+const ROW_HEIGHT_PX = SELECT_CELL_HEIGHT_PX / SELECT_ROWS;
+
+// 시간값(9.75 = 09:45) -> 그리드 행 번호. 1행은 요일 헤더라 +2.
+const timeToRow = (time: number) =>
+  Math.round((time - START_HOUR) * ROWS_PER_HOUR) + 2;
+
 const EMPTY_PREVIEW_EVENTS: ClassItem[] = [];
 const EMPTY_SELECTED_SLOTS: string[] = [];
+
+export const formatRoom = (room: string) => {
+  const match = room.match(/^제(.+?)호관\s+.*?-([^\s]+)/);
+  return match ? `${match[1]}-${match[2]}` : room;
+};
 
 const TimetableGrid = ({
   events,
@@ -255,7 +281,8 @@ const TimetableGrid = ({
   const timeSlots = useMemo(() => {
     const allEvents = [...timedEvents, ...timedPreviewEvents];
     const maxEventTime = Math.max(0, ...allEvents.map((e) => e.endTime));
-    const endHour = Math.max(DEFAULT_MAX_HOUR, maxEventTime);
+    // 정시에 끝나지 않는 수업(예: 18:45)도 마지막 행 안에 들어오도록 올림한다.
+    const endHour = Math.max(DEFAULT_MAX_HOUR, Math.ceil(maxEventTime));
 
     const slots = [];
     for (let i = START_HOUR; i <= endHour; i++) {
@@ -264,7 +291,7 @@ const TimetableGrid = ({
     return slots;
   }, [timedEvents, timedPreviewEvents]);
 
-  const rowCount = (timeSlots.length - 1) * 2;
+  const rowCount = (timeSlots.length - 1) * ROWS_PER_HOUR;
 
   // 2. 색상 매핑
   const themeColors = useMemo(() => {
@@ -281,6 +308,64 @@ const TimetableGrid = ({
     return map;
   }, [events, themeColors]);
 
+  // 비교 모드 전용: 사람(ownerName) 단위로 색을 고정한다. 과목명 단위(colorMap)로
+  // 배정하면 같은 사람이 여러 과목을 들을 때 색이 갈리고, 다른 사람이라도 과목명이
+  // 우연히 같으면 같은 색이 될 수 있어 "누구 시간표인지" 구분이 안 됐다(#241).
+  // 내 시간표는 항상 themeColors[0], 친구들은 그 다음부터 순환 배정해 겹치지 않는다.
+  // colorMap(과목명 기준)은 그대로 두어 ClassDetailBottomSheet의 점 색상 등
+  // 기존 동작에 영향이 없게 한다.
+  const ownerColorMap = useMemo(() => {
+    if (!isCompareMode) return null;
+    const map = new Map<string, string>();
+    const ownerIsFriend = new Map<string, boolean>();
+    events.forEach((e) => {
+      if (e.ownerName && !ownerIsFriend.has(e.ownerName)) {
+        ownerIsFriend.set(e.ownerName, Boolean(e.isFriendOwned));
+      }
+    });
+    const friendOwners = Array.from(ownerIsFriend.entries())
+      .filter(([, isFriend]) => isFriend)
+      .map(([name]) => name);
+    ownerIsFriend.forEach((isFriend, owner) => {
+      map.set(
+        owner,
+        isFriend
+          ? themeColors[(friendOwners.indexOf(owner) + 1) % themeColors.length]
+          : themeColors[0],
+      );
+    });
+    return map;
+  }, [events, themeColors, isCompareMode]);
+
+  // 비교 모드 전용: 나와 친구가 같은 요일·겹치는 시간에 같은 과목(courseOfferingId,
+  // 없으면 과목명)을 듣는 블록 쌍을 찾아 "함께 듣는 수업"으로 강조 표시한다.
+  // item.id는 시간표마다 독립적으로 매겨져 소유자가 다르면 충돌할 수 있으므로
+  // (ownerName, id) 조합을 키로 쓴다.
+  const sharedBlockKeys = useMemo(() => {
+    const shared = new Set<string>();
+    if (!isCompareMode) return shared;
+    const timedItems = events.filter((e) => !e.isUntimed);
+    const keyOf = (e: ClassItem) => `${e.ownerName ?? ""}-${e.id}`;
+    for (let i = 0; i < timedItems.length; i++) {
+      for (let j = i + 1; j < timedItems.length; j++) {
+        const a = timedItems[i];
+        const b = timedItems[j];
+        if (a.ownerName === b.ownerName) continue; // 같은 사람 것끼리는 비교하지 않는다
+        if (a.day !== b.day) continue;
+        const overlaps = a.startTime < b.endTime && b.startTime < a.endTime;
+        if (!overlaps) continue;
+        const sameCourse =
+          a.courseOfferingId && b.courseOfferingId
+            ? a.courseOfferingId === b.courseOfferingId
+            : a.name === b.name;
+        if (!sameCourse) continue;
+        shared.add(keyOf(a));
+        shared.add(keyOf(b));
+      }
+    }
+    return shared;
+  }, [events, isCompareMode]);
+
   // 렌더링 헬퍼 함수
   const renderEventBlock = (
     item: ClassItem,
@@ -288,14 +373,21 @@ const TimetableGrid = ({
     isPreview: boolean,
   ) => {
     const colStart = item.day + 2;
-    const rowStart = Math.round((item.startTime - START_HOUR) * 2) + 2;
-    const rowEnd = Math.round((item.endTime - START_HOUR) * 2) + 2;
-    // 개별 색상이 지정되어 있으면 우선 사용, 아니면 미리보기면 고정색, 기본은 맵핑된 색
+    const rowStart = timeToRow(item.startTime);
+    // 5분 미만 길이(데이터 이상)라도 최소 한 행은 차지해야 그리드가 깨지지 않는다.
+    const rowEnd = Math.max(rowStart + 1, timeToRow(item.endTime));
+    // 개별 색상이 지정되어 있으면 우선 사용, 아니면 미리보기면 고정색, 비교 모드면
+    // 사람 단위 색, 기본은 과목명 단위로 맵핑된 색
     const bgColor = item.color
       ? item.color
       : isPreview
         ? "rgba(0, 123, 255, 0.5)" // 반투명 파란색
-        : colorMap.get(item.name) || "#FFFFFF";
+        : isCompareMode && item.ownerName && ownerColorMap?.get(item.ownerName)
+          ? ownerColorMap.get(item.ownerName)!
+          : colorMap.get(item.name) || "#FFFFFF";
+
+    const isShared =
+      isCompareMode && sharedBlockKeys.has(`${item.ownerName ?? ""}-${item.id}`);
 
     const handleClassClick = () => {
       if (isPreview || isFreeMode) return;
@@ -312,6 +404,8 @@ const TimetableGrid = ({
         $isCompareMode={isCompareMode} // 추가
         $isFreeMode={isFreeMode} // 추가
         $isSelectionMode={isSelectionMode} // 추가
+        $isFriendOwned={Boolean(item.isFriendOwned)}
+        $isShared={isShared}
         onClick={handleClassClick}
         style={{
           gridColumnStart: colStart,
@@ -323,7 +417,7 @@ const TimetableGrid = ({
         <ItemContent>
           <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
           {(theme?.showRoom ?? true) && item.room && (
-            <ClassRoom $fontSize={theme?.fontSize}>{item.room}</ClassRoom>
+            <ClassRoom $fontSize={theme?.fontSize}>{formatRoom(item.room)}</ClassRoom>
           )}
           {theme?.showProfessor && item.professor && (
             <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
@@ -360,70 +454,46 @@ const TimetableGrid = ({
 
         {/* (2) 시간표 바디 */}
         {timeSlots.slice(0, -1).map((time, timeIndex) => {
-          const rowIndex = timeIndex * 2 + 2;
+          const rowIndex = timeIndex * ROWS_PER_HOUR + 2;
           return (
             <React.Fragment key={`row-${time}`}>
               <TimeCell
                 style={{
                   gridColumn: 1,
                   gridRowStart: rowIndex,
-                  gridRowEnd: "span 2",
+                  gridRowEnd: `span ${ROWS_PER_HOUR}`,
                 }}
               >
                 <span>{time}</span>
               </TimeCell>
-              {/* First 30 minutes */}
-              {DAYS.map((_, dayIndex) => {
-                const timeVal = time;
-                const slot = `${dayIndex}-${timeVal}`;
-                const isSelected = localSelected.includes(slot);
-                return (
-                  <GridBackgroundCell
-                    key={`bg-${timeVal}-${dayIndex}`}
-                    $isSelectionMode={isSelectionMode}
-                    $isSelected={isSelected}
-                    $isLastDay={dayIndex === DAYS.length - 1}
-                    data-day={dayIndex}
-                    data-hour={timeVal}
-                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
-                    onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
-                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
-                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
-                    onMouseUp={isSelectionMode ? handleMouseUp : undefined}
-                    style={{
-                      gridColumn: dayIndex + 2,
-                      gridRowStart: rowIndex,
-                      gridRowEnd: "span 1",
-                    }}
-                  />
-                );
-              })}
-              {/* Second 30 minutes */}
-              {DAYS.map((_, dayIndex) => {
-                const timeVal = time + 0.5;
-                const slot = `${dayIndex}-${timeVal}`;
-                const isSelected = localSelected.includes(slot);
-                return (
-                  <GridBackgroundCell
-                    key={`bg-${timeVal}-${dayIndex}`}
-                    $isSelectionMode={isSelectionMode}
-                    $isSelected={isSelected}
-                    $isLastDay={dayIndex === DAYS.length - 1}
-                    data-day={dayIndex}
-                    data-hour={timeVal}
-                    onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
-                    onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
-                    onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
-                    onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
-                    onMouseUp={isSelectionMode ? handleMouseUp : undefined}
-                    style={{
-                      gridColumn: dayIndex + 2,
-                      gridRowStart: rowIndex + 1,
-                      gridRowEnd: "span 1",
-                    }}
-                  />
-                );
-              })}
+              {/* 30분 칸 두 개(정시/30분)를 각각 SELECT_ROWS행씩 덮어서 그린다 */}
+              {[0, SELECT_STEP_HOURS].map((offset, halfIndex) =>
+                DAYS.map((_, dayIndex) => {
+                  const timeVal = time + offset;
+                  const slot = `${dayIndex}-${timeVal}`;
+                  const isSelected = localSelected.includes(slot);
+                  return (
+                    <GridBackgroundCell
+                      key={`bg-${timeVal}-${dayIndex}`}
+                      $isSelectionMode={isSelectionMode}
+                      $isSelected={isSelected}
+                      $isLastDay={dayIndex === DAYS.length - 1}
+                      data-day={dayIndex}
+                      data-hour={timeVal}
+                      onTouchStart={isSelectionMode ? (e) => handleCellTouchStart(dayIndex, timeVal, e) : undefined}
+                      onTouchEnd={isSelectionMode ? handleTouchEnd : undefined}
+                      onMouseDown={isSelectionMode ? () => handleMouseDown(dayIndex, timeVal) : undefined}
+                      onMouseEnter={isSelectionMode ? () => handleMouseEnter(dayIndex, timeVal) : undefined}
+                      onMouseUp={isSelectionMode ? handleMouseUp : undefined}
+                      style={{
+                        gridColumn: dayIndex + 2,
+                        gridRowStart: rowIndex + halfIndex * SELECT_ROWS,
+                        gridRowEnd: `span ${SELECT_ROWS}`,
+                      }}
+                    />
+                  );
+                }),
+              )}
             </React.Fragment>
           );
         })}
@@ -442,10 +512,11 @@ const TimetableGrid = ({
             style={{
               gridColumnStart: highlightedSlot.day + 2,
               gridColumnEnd: "span 1",
-              gridRowStart:
-                Math.round((highlightedSlot.startTime - START_HOUR) * 2) + 2,
-              gridRowEnd:
-                Math.round((highlightedSlot.endTime - START_HOUR) * 2) + 2,
+              gridRowStart: timeToRow(highlightedSlot.startTime),
+              gridRowEnd: Math.max(
+                timeToRow(highlightedSlot.startTime) + 1,
+                timeToRow(highlightedSlot.endTime),
+              ),
             }}
           />
         )}
@@ -485,7 +556,7 @@ export default TimetableGrid;
 const GridContainer = styled.div<{ $rowCount: number; $dayCount: number }>`
   display: grid;
   grid-template-columns: 24px repeat(${({ $dayCount }) => $dayCount}, minmax(0, 1fr));
-  grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, 25px);
+  grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, ${ROW_HEIGHT_PX}px);
   border: 1px solid var(--border-strong);
   border-radius: 16px;
   background-color: var(--bg-base);
@@ -558,6 +629,8 @@ const ClassItemBlock = styled.div<{
   $isCompareMode?: boolean; // 추가
   $isFreeMode?: boolean; // 추가
   $isSelectionMode?: boolean; // 추가
+  $isFriendOwned?: boolean; // 비교 모드에서 친구 소유 블록인지 (레이어 순서용, #241)
+  $isShared?: boolean; // 비교 모드에서 나와 겹치는(함께 듣는) 블록인지 (#241)
 }>`
   background-color: ${({ $bgColor }) => $bgColor};
   margin: 1px;
@@ -565,10 +638,18 @@ const ClassItemBlock = styled.div<{
   padding: 4px;
   display: flex;
   flex-direction: column;
-  z-index: ${({ $isPreview }) =>
-    $isPreview ? 20 : 10}; /* 미리보기가 더 위로 */
+  /* 레이어 순서: 미리보기(30) > 비교 모드에서 내 블록(15) > 친구/일반 블록(10).
+     배열에 넣은 순서에 기대지 않고 명시적으로 고정한다(#241 - 기존엔 규칙이 없어
+     내 시간표가 항상 activeEvents에 먼저 push된다는 우연에만 의존했다). */
+  z-index: ${({ $isPreview, $isCompareMode, $isFriendOwned }) =>
+    $isPreview ? 30 : $isCompareMode && !$isFriendOwned ? 15 : 10};
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  ${({ $isShared }) =>
+    $isShared &&
+    `
+    border: 2px solid var(--text-brand, #0061ff);
+  `}
   pointer-events: ${({ $isPreview, $isFreeMode, $isSelectionMode }) =>
     $isPreview || $isFreeMode || $isSelectionMode
       ? "none"

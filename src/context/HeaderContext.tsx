@@ -5,6 +5,7 @@ import {
   useState,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -29,6 +30,7 @@ export interface HeaderConfig {
   pageBgColor?: string; // 전역 페이지 배경색 지정 속성
   immersive?: boolean; // 상하단 물리 패딩을 제거하고 풀-스크린을 쓸지 여부
   rightAreaNotCircle?: boolean; // 우측 버튼 영역을 단일 원이 아닌 알약 형태(auto)로 렌더링할지 여부
+  noBlur?: boolean; // 헤더 블러 효과 제거 여부
 }
 
 type HeaderConfigMap = Record<string, HeaderConfig>;
@@ -53,6 +55,7 @@ const defaultHeaderConfig: HeaderConfig = {
   pageBgColor: undefined,
   immersive: false,
   rightAreaNotCircle: undefined,
+  noBlur: false,
 };
 
 const HeaderStateContext = createContext<HeaderStateContextType | undefined>(
@@ -96,11 +99,24 @@ export const HeaderProvider = ({ children }: { children: ReactNode }) => {
           ...newRest
         } = config;
 
+        const isMenuSame =
+          prevMenu === newMenu ||
+          (Array.isArray(prevMenu) &&
+            Array.isArray(newMenu) &&
+            prevMenu.length === newMenu.length &&
+            prevMenu.every(
+              (item, i) =>
+                item.label === newMenu[i].label &&
+                item.onClick?.toString() === newMenu[i].onClick?.toString(),
+            ));
+
+        const isOnBackSame = prevOnBack === newOnBack;
+
         // 3. 나머지 단순 값(문자열, 불리언)만 JSON 문자열로 비교
         if (
           prevSub === newSub &&
-          prevMenu === newMenu &&
-          prevOnBack === newOnBack &&
+          isMenuSame &&
+          isOnBackSame &&
           prevRightArea === newRightArea &&
           prevTitle === newTitle &&
           JSON.stringify(prevRest) === JSON.stringify(newRest)
@@ -142,6 +158,9 @@ export const useHeader = (config?: HeaderConfig) => {
   const { updateHeaderConfig } = context;
   const location = useLocation();
   const currentPath = location.pathname;
+  const latestOnBackRef = useRef(config?.onBack);
+  latestOnBackRef.current = config?.onBack;
+  const stableOnBack = useCallback(() => latestOnBackRef.current?.(), []);
 
   const configString = JSON.stringify({
     hasback: config?.hasback,
@@ -154,14 +173,21 @@ export const useHeader = (config?: HeaderConfig) => {
     rightAreaNotCircle: config?.rightAreaNotCircle,
   });
 
+  const menuString = config?.menuItems
+    ? config.menuItems.map((m) => `${m.label}:${m.onClick?.toString()}`).join("|")
+    : "";
   useLayoutEffect(() => {
     if (!config) return;
-    updateHeaderConfig(currentPath, { ...defaultHeaderConfig, ...config });
+    updateHeaderConfig(currentPath, {
+      ...defaultHeaderConfig,
+      ...config,
+      onBack: config.onBack ? stableOnBack : undefined,
+    });
   }, [
     currentPath,
     configString,
-    config?.menuItems,
-    config?.onBack,
+    menuString,
+    stableOnBack,
     config?.subHeader,
     config?.rightArea,
     config?.title,

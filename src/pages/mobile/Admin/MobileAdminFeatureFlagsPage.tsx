@@ -19,6 +19,7 @@ import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 import useUserStore from "@/stores/useUserStore";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AdminModal from "@/components/admin/AdminModal";
+import { isAdminUser } from "@/types/admin";
 import type {
   AdminFeatureFlag,
   CreateFeatureFlagRequest,
@@ -52,7 +53,7 @@ export default function MobileAdminFeatureFlagsPage() {
       navigate(ROUTES.HOME, { replace: true });
       return;
     }
-    if (tokenInfo.accessToken && userInfo.role && userInfo.role !== "admin") {
+    if (tokenInfo.accessToken && userInfo.role && !isAdminUser(userInfo.role)) {
       navigate(ROUTES.HOME, { replace: true });
     }
   }, [navigate, tokenInfo.accessToken, userInfo.role]);

@@ -13,10 +13,15 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
+  ClipboardPaste,
 } from "lucide-react";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
+import { isMajorCompletion } from "@/utils/parseSmartCampusGrades";
+import type { ResolvedGradeRow } from "@/types/gradeImport";
+import type { Term } from "@/types/timetables";
 import {
   ResponsiveContainer,
   LineChart,
@@ -32,8 +37,29 @@ interface Subject {
   id: string;
   name: string;
   credits: number;
-  grade: string; // A+, A0, B+, B0, C+, C0, D+, D0, F, P, NP
+  grade: string; // A+, A0, B+, B0, C+, C0, D+, D0, F, P, NP, "" (미입력)
   isMajor: boolean;
+  /**
+   * 아래 필드들은 스마트캠퍼스 성적표를 붙여넣어 불러온 과목에만 붙는다.
+   * 직접 입력한 과목은 undefined이며, 예전에 저장된 데이터에도 없다(하위 호환).
+   */
+  courseCode?: string;
+  /** 개설강의와 매칭된 Course PK. 매칭 실패 시 null. */
+  courseId?: number | null;
+  /** 이수구분(전공핵심 / 심화교양 …) 원문 */
+  isuName?: string | null;
+  /** 이수영역(전공심화 / 사회 …) 원문 */
+  isuFldName?: string | null;
+  /** 비고("재수강성적취소" 등) 원문 */
+  note?: string | null;
+  /**
+   * 재수강으로 성적이 취소된 과목. 평점·취득학점 어디에도 넣지 않는다.
+   * 목록에서는 지우지 않고 흐리게 남겨 사용자가 왜 빠졌는지 알 수 있게 한다.
+   */
+  excluded?: boolean;
+  /** 성적을 받은 실제 학기. 서버 저장/강의 추천에 쓰려면 학년-학기 라벨만으로는 부족하다. */
+  sourceYear?: number;
+  sourceTerm?: Term;
 }
 
 type SemestersData = Record<string, Subject[]>;
@@ -52,6 +78,9 @@ const SEMESTERS = [
 ];
 
 const GRADES = ["A+", "A0", "B+", "B0", "C+", "C0", "D+", "D0", "F", "P", "NP"];
+
+// 성적이 아직 안 나온 과목. 평점에도, 취득 학점에도 반영하지 않는다.
+const UNGRADED = "";
 
 const GRADE_POINTS: Record<string, number> = {
   "A+": 4.5,
@@ -84,6 +113,19 @@ const DEFAULT_SUBJECTS_2_1: Subject[] = [
   },
   { id: "5", name: "캐릭터디자인", credits: 2, grade: "F", isMajor: true },
 ];
+
+// P/NP는 평점에서 빠지고, F/NP는 취득 학점에서 빠진다. 미입력(성적 미발표)과
+// 재수강으로 취소된 과목은 둘 다 빠진다.
+const countsInGpa = (sub: Subject) =>
+  !sub.excluded &&
+  sub.grade !== "P" &&
+  sub.grade !== "NP" &&
+  sub.grade !== UNGRADED;
+const isPassed = (sub: Subject) =>
+  !sub.excluded &&
+  sub.grade !== "F" &&
+  sub.grade !== "NP" &&
+  sub.grade !== UNGRADED;
 
 const LOCAL_STORAGE_KEY = "intip_grade_calculator_data";
 
@@ -140,6 +182,8 @@ export default function MobileGradeCalculatorPage() {
   const [showGraph, setShowGraph] = useState<boolean>(false);
   const [showSemesterSheet, setShowSemesterSheet] = useState<boolean>(false);
   const [showTimetableSheet, setShowTimetableSheet] = useState<boolean>(false);
+  const [showGradeImportSheet, setShowGradeImportSheet] =
+    useState<boolean>(false);
 
   const { timetables } = useTimetableStore();
 
@@ -316,15 +360,11 @@ export default function MobileGradeCalculatorPage() {
     let acquiredCredits = 0;
 
     subjects.forEach((sub) => {
-      // P, NP do not count in GPA
-      const countsInGpa = sub.grade !== "P" && sub.grade !== "NP";
-      const isPass = sub.grade !== "F" && sub.grade !== "NP";
-
-      if (isPass) {
+      if (isPassed(sub)) {
         acquiredCredits += sub.credits;
       }
 
-      if (countsInGpa) {
+      if (countsInGpa(sub)) {
         const point = GRADE_POINTS[sub.grade] ?? 0.0;
         totalGpaCredits += sub.credits;
         totalGpaPoints += sub.credits * point;
@@ -354,14 +394,11 @@ export default function MobileGradeCalculatorPage() {
     Object.keys(semestersData).forEach((sem) => {
       const subjects = semestersData[sem] || [];
       subjects.forEach((sub) => {
-        const countsInGpa = sub.grade !== "P" && sub.grade !== "NP";
-        const isPass = sub.grade !== "F" && sub.grade !== "NP";
-
-        if (isPass) {
+        if (isPassed(sub)) {
           totalAcquired += sub.credits;
         }
 
-        if (countsInGpa) {
+        if (countsInGpa(sub)) {
           const point = GRADE_POINTS[sub.grade] ?? 0.0;
           totalGpaCredits += sub.credits;
           totalGpaPoints += sub.credits * point;
@@ -430,6 +467,41 @@ export default function MobileGradeCalculatorPage() {
       updateSubjects(imported);
       setShowTimetableSheet(false);
     }
+  };
+
+  // --- 스마트캠퍼스 성적 붙여넣기 ---
+  const handleApplyImportedGrades = (
+    rows: ResolvedGradeRow[],
+    source: { year: number; term: Term } | null,
+  ) => {
+    if (
+      currentSubjects.length > 0 &&
+      !window.confirm(
+        `현재 학기(${selectedSemester})에 입력된 ${currentSubjects.length}개 과목을 불러온 ${rows.length}개 과목으로 바꿀까요?`,
+      )
+    ) {
+      return;
+    }
+
+    const imported: Subject[] = rows.map((row) => ({
+      id: `${Date.now()}-${Math.random()}`,
+      name: row.title,
+      // 학점 열까지 복사되지 않은 행은 0으로 두고 사용자가 채우게 한다.
+      credits: row.resolvedCredit ?? 0,
+      grade: row.grade ?? UNGRADED,
+      isMajor: isMajorCompletion(row.resolvedIsuName, row.isuFldName),
+      note: row.note,
+      excluded: row.voided,
+      courseCode: row.courseCode,
+      courseId: row.courseId,
+      isuName: row.resolvedIsuName,
+      isuFldName: row.isuFldName,
+      sourceYear: source?.year,
+      sourceTerm: source?.term,
+    }));
+
+    updateSubjects(imported);
+    setShowGradeImportSheet(false);
   };
 
   return (
@@ -712,10 +784,18 @@ export default function MobileGradeCalculatorPage() {
             </SemStatBox>
           </SemesterStatsRow>
 
-          <ImportTimetableButton onClick={() => setShowTimetableSheet(true)}>
-            <Calendar size={16} className="calendar-icon" />
-            <span className="import-text">시간표 불러오기</span>
-          </ImportTimetableButton>
+          <ImportButtonRow>
+            <ImportTimetableButton onClick={() => setShowTimetableSheet(true)}>
+              <Calendar size={16} className="calendar-icon" />
+              <span className="import-text">시간표 불러오기</span>
+            </ImportTimetableButton>
+            <ImportTimetableButton
+              onClick={() => setShowGradeImportSheet(true)}
+            >
+              <ClipboardPaste size={16} className="calendar-icon" />
+              <span className="import-text">성적 붙여넣기</span>
+            </ImportTimetableButton>
+          </ImportButtonRow>
         </SemesterSummaryHeader>
 
         {/* 3. 과목 리스트 테이블 */}
@@ -735,7 +815,7 @@ export default function MobileGradeCalculatorPage() {
               </EmptyRowText>
             ) : (
               currentSubjects.map((subject) => (
-                <TableRow key={subject.id}>
+                <TableRow key={subject.id} $dimmed={subject.excluded}>
                   <ColSubject>
                     <SubjectInput
                       type="text"
@@ -768,7 +848,9 @@ export default function MobileGradeCalculatorPage() {
                   </ColCredits>
                   <ColGrade>
                     <GradeSelectorButton>
-                      <span className="grade-val">{subject.grade}</span>
+                      <span className="grade-val">
+                        {subject.grade === UNGRADED ? "-" : subject.grade}
+                      </span>
                       <ChevronDown size={14} className="grade-caret" />
                       <HiddenSelect
                         value={subject.grade}
@@ -785,6 +867,7 @@ export default function MobileGradeCalculatorPage() {
                             {g}
                           </option>
                         ))}
+                        <option value={UNGRADED}>미입력</option>
                       </HiddenSelect>
                     </GradeSelectorButton>
                   </ColGrade>
@@ -901,6 +984,13 @@ export default function MobileGradeCalculatorPage() {
           </BottomSheet>
         </>
       )}
+
+      <GradeImportSheet
+        isOpen={showGradeImportSheet}
+        onClose={() => setShowGradeImportSheet(false)}
+        targetSemesterLabel={selectedSemester}
+        onApply={handleApplyImportedGrades}
+      />
 
       <FloatingSaveArea>
         <CapsuleButton
@@ -1186,6 +1276,13 @@ const SemStatBox = styled.div`
   }
 `;
 
+const ImportButtonRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+`;
+
 const ImportTimetableButton = styled.button`
   background: none;
   border: none;
@@ -1234,11 +1331,13 @@ const TableBody = styled.div`
   min-height: 100px;
 `;
 
-const TableRow = styled.div`
+const TableRow = styled.div<{ $dimmed?: boolean }>`
   display: flex;
   align-items: center;
   height: 52px;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
+  /* 재수강으로 성적이 취소된 과목 — 계산에서 빠졌다는 걸 보이게 남긴다 */
+  opacity: ${({ $dimmed }) => ($dimmed ? 0.5 : 1)};
   &:last-child {
     border-bottom: none;
   }
