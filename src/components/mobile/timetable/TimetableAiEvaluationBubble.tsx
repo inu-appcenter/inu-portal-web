@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
@@ -22,8 +22,6 @@ const TimetableAiEvaluationBubble = ({
 }: TimetableAiEvaluationBubbleProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const contentBodyRef = useRef<HTMLDivElement>(null);
-  const isAutoScrollRef = useRef<boolean>(true);
 
   const {
     cachedData,
@@ -53,7 +51,6 @@ const TimetableAiEvaluationBubble = ({
 
       // 캐시가 없고, 현재 스트리밍 중도 아니고, 기존 텍스트도 없으면 즉시 시작
       if (!isCacheLoading && !cachedData && !evaluationText && !isStreaming) {
-        isAutoScrollRef.current = true;
         startEvaluation(false);
       }
     }
@@ -71,7 +68,6 @@ const TimetableAiEvaluationBubble = ({
       !isLoading &&
       !error
     ) {
-      isAutoScrollRef.current = true;
       startEvaluation(false);
     }
   }, [
@@ -97,7 +93,6 @@ const TimetableAiEvaluationBubble = ({
     }
 
     mixpanelTrack.timetableFeatureClicked("시간표 AI 재평가", "AI 평가 말풍선");
-    isAutoScrollRef.current = true;
     startEvaluation(true);
   };
 
@@ -111,21 +106,6 @@ const TimetableAiEvaluationBubble = ({
       console.error("복사 실패:", e);
     }
   };
-
-  // 사용자가 스크롤을 위로 올리면 자동 스크롤 해제, 바닥 근처로 내리면 다시 자동 스크롤 활성화
-  const handleScroll = () => {
-    if (!contentBodyRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = contentBodyRef.current;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 40;
-    isAutoScrollRef.current = isNearBottom;
-  };
-
-  // 스트리밍 중일 때 사용자가 위를 보고 있지 않은 경우에만 최하단으로 자동 스크롤
-  useEffect(() => {
-    if (isStreaming && isAutoScrollRef.current && contentBodyRef.current) {
-      contentBodyRef.current.scrollTop = contentBodyRef.current.scrollHeight;
-    }
-  }, [evaluationText, isStreaming]);
 
   // 표시할 본문 결정 (실시간 스트리밍 텍스트 -> 캐시 데이터 순)
   const displayText = evaluationText || (cachedData?.content ?? "");
@@ -249,7 +229,7 @@ const TimetableAiEvaluationBubble = ({
               </BubbleTopBar>
 
               {/* 말풍선 본문 */}
-              <BubbleBody ref={contentBodyRef} onScroll={handleScroll}>
+              <BubbleBody>
                 {/* 1. 로딩 상태: 캐시 확인 중이거나, AI 스트리밍 요청 후 첫 텍스트 도착 전 */}
                 {(isLoading || isCacheLoading || isStreaming) && !displayText && (
                   <LoadingStateContainer>
