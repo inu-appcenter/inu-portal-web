@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Chip from "src/components/common/Chip";
 
 import TooltipMessage from "@/components/common/TooltipMessage";
-import AIIcon from "@/resources/assets/mobile-home/chip/AIIcon.svg";
+import AIIcon from "@/resources/assets/ai/횃불이AI로고.svg";
 import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
 import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import CampusMapIcon from "@/resources/assets/mobile-home/category-form/map.svg";
