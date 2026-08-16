@@ -12,6 +12,8 @@ import deptNoticeBanner from "@/resources/assets/banner/학과공지알리미.we
 import busBanner from "@/resources/assets/banner/인입런.webp";
 import surveyBanner from "@/resources/assets/banner/설문배너.webp";
 import appcenterBanner from "@/resources/assets/banner/앱센터배너.webp";
+import appcenterRecruitBanner from "@/resources/assets/banner/앱센터18.5기모집배너.webp";
+import ainuBanner from "@/resources/assets/banner/AINU배너.webp";
 
 import WeatherForm from "./Weather.tsx";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -65,6 +67,34 @@ const Banner = () => {
         render: () => (
           <BannerSurface>
             <WeatherForm />
+          </BannerSurface>
+        ),
+      },
+      {
+        id: "appcenter-recruit",
+        alt: "앱센터 18.5기 모집 배너",
+        onClick: () => openExternalLink("https://home.inuappcenter.kr/joinus/239"),
+        render: () => (
+          <BannerSurface>
+            <BannerImage
+              src={appcenterRecruitBanner}
+              alt="앱센터 18.5기 모집 배너"
+              loading="eager"
+            />
+          </BannerSurface>
+        ),
+      },
+      {
+        id: "ainu",
+        alt: "AINU 배너",
+        onClick: () => openExternalLink("https://ainu.inu.ac.kr/"),
+        render: () => (
+          <BannerSurface>
+            <BannerImage
+              src={ainuBanner}
+              alt="AINU 배너"
+              loading="eager"
+            />
           </BannerSurface>
         ),
       },
@@ -239,6 +269,12 @@ const Banner = () => {
           />
         ))}
       </PaginationDots>
+
+      <PageCounter aria-label={`현재 ${selectedIndex + 1}페이지, 총 ${banners.length}페이지`}>
+        <span className="current">{selectedIndex + 1}</span>
+        <span className="divider">/</span>
+        <span className="total">{banners.length}</span>
+      </PageCounter>
     </BannerWrapper>
   );
 };
@@ -368,4 +404,45 @@ const PaginationDot = styled.button<{ $active: boolean }>`
     transform 0.2s ease,
     background-color 0.2s ease;
   transform: ${(props) => (props.$active ? "scale(1)" : "scale(0.95)")};
+`;
+
+const PageCounter = styled.div`
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.2px;
+  pointer-events: none;
+  user-select: none;
+
+  span.current {
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  span.divider {
+    opacity: 0.6;
+    margin: 0 1px;
+  }
+
+  span.total {
+    opacity: 0.75;
+  }
+
+  @media ${DESKTOP_MEDIA} {
+    right: calc(30% - 12px);
+    bottom: 12px;
+  }
 `;

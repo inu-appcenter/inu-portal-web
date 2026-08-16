@@ -3,9 +3,12 @@ import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X, Sparkles, AlertCircle, Copy, Check, RefreshCw } from "lucide-react";
-import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
+import TimetableAiEvalButtonIcon from "@/resources/assets/timetable/시간표평가버튼.svg?react";
+import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
+import TimetableTorchIcon from "@/resources/assets/ai/시간표이미지평가횃불이.svg?react";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useTimeTableEvaluation } from "@/hooks/useTimeTableEvaluation";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface TimetableAiEvaluationBubbleProps {
@@ -22,6 +25,8 @@ const TimetableAiEvaluationBubble = ({
 }: TimetableAiEvaluationBubbleProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useSheetBackHandler(isOpen, () => setIsOpen(false));
 
   const {
     cachedData,
@@ -110,7 +115,53 @@ const TimetableAiEvaluationBubble = ({
   // 표시할 본문 결정 (실시간 스트리밍 텍스트 -> 캐시 데이터 순)
   const displayText = evaluationText || (cachedData?.content ?? "");
 
-  // 간단한 마크다운 파서 렌더러
+  // 인라인 마크다운 렌더링 (굵은기울임 ***, 굵게 **, 하이라이트 `, 기울임 *)
+  const renderInlineMarkdown = (text: string) => {
+    if (!text) return null;
+
+    // ***굵은기울임***, **볼드**, `코드/뱃지`, *기울임* 토큰 분리 (긴 패턴 우선)
+    const parts = text.split(/(\*\*\*[^*]+?\*\*\*|\*\*[^*]+?\*\*|`[^`]+?`|\*[^*]+?\*)/g);
+
+    return parts.map((part, pIdx) => {
+      if (part.startsWith("***") && part.endsWith("***") && part.length >= 6) {
+        return (
+          <BoldText key={pIdx}>
+            <em>{part.slice(3, -3)}</em>
+          </BoldText>
+        );
+      }
+      if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+        return <BoldText key={pIdx}>{part.slice(2, -2)}</BoldText>;
+      }
+      if (part.startsWith("`") && part.endsWith("`") && part.length >= 2) {
+        return <HighlightBadge key={pIdx}>{part.slice(1, -1)}</HighlightBadge>;
+      }
+      if (
+        part.startsWith("*") &&
+        part.endsWith("*") &&
+        part.length >= 2 &&
+        !part.startsWith("**")
+      ) {
+        return <em key={pIdx}>{part.slice(1, -1)}</em>;
+      }
+      // 스트리밍 도중 마지막 토큰이 닫히지 않은 기호로 시작할 경우
+      if (isStreaming) {
+        if (part.startsWith("***") && part.length > 3) {
+          return (
+            <BoldText key={pIdx}>
+              <em>{part.slice(3)}</em>
+            </BoldText>
+          );
+        }
+        if (part.startsWith("**") && part.length > 2) {
+          return <BoldText key={pIdx}>{part.slice(2)}</BoldText>;
+        }
+      }
+      return part;
+    });
+  };
+
+  // 마크다운 형식의 텍스트를 자연스럽게 렌더링
   const renderFormattedContent = (content: string) => {
     if (!content) return null;
 
@@ -121,48 +172,47 @@ const TimetableAiEvaluationBubble = ({
         return <div key={idx} style={{ height: "6px" }} />;
       }
 
-      // 강조 볼드체 처리 (**text** or `text`)
-      const formattedParts = line.split(/(\*\*.*?\*\*|`.*?`)/g).map((part, pIdx) => {
-        if (part.startsWith("**") && part.endsWith("**")) {
-          return <BoldText key={pIdx}>{part.slice(2, -2)}</BoldText>;
-        }
-        if (part.startsWith("`") && part.endsWith("`")) {
-          return <HighlightBadge key={pIdx}>{part.slice(1, -1)}</HighlightBadge>;
-        }
-        return part;
-      });
+      // 0. 가로 구분선 (***, ---, ___)
+      if (/^(\*{3,}|-{3,}|_{3,})$/.test(trimmed)) {
+        return <HorizontalDivider key={idx} />;
+      }
 
-      if (trimmed.startsWith("###") || trimmed.startsWith("##") || trimmed.startsWith("#")) {
-        const headerText = trimmed.replace(/^#+\s*/, "");
+      // 1. 헤더 (#, ##, ### 뒤에 공백)
+      if (/^#{1,6}\s+/.test(trimmed)) {
+        const headerText = trimmed.replace(/^#{1,6}\s+/, "");
         return (
           <SectionHeader key={idx}>
             <Sparkles size={13} color="#FF5F15" />
-            <span>{headerText}</span>
+            <span>{renderInlineMarkdown(headerText)}</span>
           </SectionHeader>
         );
       }
 
-      if (trimmed.startsWith("-") || trimmed.startsWith("*") || trimmed.startsWith("•")) {
-        const bulletText = line.replace(/^\s*[-*•]\s*/, "");
-        const formattedBulletParts = bulletText.split(/(\*\*.*?\*\*|`.*?`)/g).map((part, pIdx) => {
-          if (part.startsWith("**") && part.endsWith("**")) {
-            return <BoldText key={pIdx}>{part.slice(2, -2)}</BoldText>;
-          }
-          if (part.startsWith("`") && part.endsWith("`")) {
-            return <HighlightBadge key={pIdx}>{part.slice(1, -1)}</HighlightBadge>;
-          }
-          return part;
-        });
+      // 2. 번호 목록 (1. , 2. 등)
+      if (/^\d+\.\s+/.test(trimmed)) {
+        const numberPrefix = trimmed.match(/^(\d+\.)\s+/)?.[1] || "";
+        const listText = trimmed.replace(/^\d+\.\s+/, "");
+        return (
+          <NumberedItem key={idx}>
+            <NumberLabel>{numberPrefix}</NumberLabel>
+            <div>{renderInlineMarkdown(listText)}</div>
+          </NumberedItem>
+        );
+      }
 
+      // 3. 불릿 목록 (-, *, •, + 뒤에 반드시 공백이 있는 경우만)
+      if (/^[-*•+]\s+/.test(trimmed)) {
+        const bulletText = trimmed.replace(/^[-*•+]\s+/, "");
         return (
           <BulletItem key={idx}>
             <BulletDot />
-            <span>{formattedBulletParts}</span>
+            <div>{renderInlineMarkdown(bulletText)}</div>
           </BulletItem>
         );
       }
 
-      return <Paragraph key={idx}>{formattedParts}</Paragraph>;
+      // 4. 일반 문단
+      return <Paragraph key={idx}>{renderInlineMarkdown(line)}</Paragraph>;
     });
   };
 
@@ -219,7 +269,9 @@ const TimetableAiEvaluationBubble = ({
               {/* 말풍선 상단 (자연스럽게 녹아든 헤더) */}
               <BubbleTopBar>
                 <ProfileGroup>
-                  <TorchAvatar src={ChatBulButtonImg} alt="횃불이" />
+                  <TorchAvatar>
+                    <TimetableTorchIcon aria-hidden="true" />
+                  </TorchAvatar>
                   <TorchName>횃불이의 시간표 평가 😎</TorchName>
                 </ProfileGroup>
 
@@ -234,7 +286,7 @@ const TimetableAiEvaluationBubble = ({
                 {(isLoading || isCacheLoading || isStreaming) && !displayText && (
                   <LoadingStateContainer>
                     <ScanningAvatarWrapper>
-                      <ScanningAvatar src={ChatBulButtonImg} alt="분석 중" />
+                      <TimetableTorchIcon aria-hidden="true" />
                       <ScanningRadar />
                     </ScanningAvatarWrapper>
                     <LoadingTitle>시간표 뜯어보는 중... 🔥</LoadingTitle>
@@ -272,34 +324,45 @@ const TimetableAiEvaluationBubble = ({
 
                     {/* 하단 액션 버튼 (복사 & 다시 생성) */}
                     {!isStreaming && !isLoading && (
-                      <MessageFooter>
-                        <ActionButton onClick={handleCopy} title="답변 복사">
-                          {copied ? (
-                            <Check size={12} color="#52c41a" />
-                          ) : (
-                            <Copy size={12} />
-                          )}
-                          <span>{copied ? "복사됨" : "복사"}</span>
-                        </ActionButton>
+                      <>
+                        <MessageFooter>
+                          <ActionButton onClick={handleCopy} title="답변 복사">
+                            {copied ? (
+                              <Check size={12} color="#52c41a" />
+                            ) : (
+                              <Copy size={12} />
+                            )}
+                            <span>{copied ? "복사됨" : "복사"}</span>
+                          </ActionButton>
 
-                        <ActionButton
-                          onClick={handleRetry}
-                          title={
-                            remainingCount > 0
-                              ? `다시 생성 (남은 횟수: ${remainingCount}회)`
-                              : "동일 시간표 재생성 횟수(3회)를 모두 사용했습니다."
-                          }
-                          $disabled={remainingCount <= 0}
-                        >
-                          <RefreshCw size={12} />
-                          <span>
-                            다시 생성{" "}
-                            {remainingCount > 0
-                              ? `(${remainingCount}/3)`
-                              : "(0/3)"}
-                          </span>
-                        </ActionButton>
-                      </MessageFooter>
+                          <ActionButton
+                            onClick={handleRetry}
+                            title={
+                              remainingCount > 0
+                                ? `다시 생성 (남은 횟수: ${remainingCount}회)`
+                                : "동일 시간표 재생성 횟수(3회)를 모두 사용했습니다."
+                            }
+                            $disabled={remainingCount <= 0}
+                          >
+                            <RefreshCw size={12} />
+                            <span>
+                              다시 생성{" "}
+                              {remainingCount > 0
+                                ? `(${remainingCount}/3)`
+                                : "(0/3)"}
+                            </span>
+                          </ActionButton>
+                        </MessageFooter>
+
+                        <AiDisclaimerBadge>
+                          <TorchAiLogoIcon width={28} height={28} aria-hidden="true" />
+                          <AiDisclaimerText>
+                            <strong>횃불이 AI</strong>로 생성된 콘텐츠입니다.
+                            <br />
+                            중요한 내용은 직접 확인하세요.
+                          </AiDisclaimerText>
+                        </AiDisclaimerBadge>
+                      </>
                     )}
                   </ContentArea>
                 )}
@@ -339,11 +402,7 @@ const TimetableAiEvaluationBubble = ({
           }}
           aria-label="시간표 AI 평가 횃불이"
         >
-          <ButtonBadge>
-            <Sparkles size={10} color="#FFFFFF" />
-            <span>AI 평가</span>
-          </ButtonBadge>
-          <img src={ChatBulButtonImg} alt="시간표 AI 평가" />
+          <TimetableAiEvalButtonIcon width="100%" height="100%" aria-hidden="true" />
         </AiButton>
       </FloatingButtonContainer>
     </>,
@@ -381,44 +440,25 @@ const Backdrop = styled(motion.div)`
 
 const FloatingButtonContainer = styled.div`
   position: fixed;
-  bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 12px);
-  right: 15px;
-  width: 75px;
-  height: 75px;
+  bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 6px);
+  right: 10px;
+  width: 88px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10002;
 
   @media (min-width: 1024px) {
-    bottom: 85px;
-    right: calc(50% - 600px + 15px);
+    bottom: 80px;
+    right: calc(50% - 600px + 10px);
   }
-`;
-
-const ButtonBadge = styled.div`
-  position: absolute;
-  top: -4px;
-  right: -2px;
-  background: linear-gradient(135deg, #ff5f15 0%, #ff3b30 100%);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  box-shadow: 0 2px 6px rgba(255, 95, 21, 0.4);
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 2;
 `;
 
 const AiButton = styled(motion.button)`
   position: relative;
-  width: 75px;
-  height: 75px;
+  width: 100%;
+  height: 100%;
   background: none;
   border: none;
   cursor: pointer;
@@ -426,22 +466,24 @@ const AiButton = styled(motion.button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 
-  img {
+  svg {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    display: block;
   }
 `;
 
 const BubbleWrapper = styled(motion.div)`
   position: fixed;
-  bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 12px + 78px);
+  bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 6px + 112px);
+  left: 15px;
   right: 15px;
-  width: calc(100vw - 30px);
-  max-width: 340px;
-  max-height: min(480px, calc(100dvh - ${BOTTOM_NAV_SAFE_HEIGHT} - 160px));
+  width: auto;
+  max-width: none;
+  max-height: min(480px, calc(100dvh - ${BOTTOM_NAV_SAFE_HEIGHT} - 190px));
   min-height: 120px;
   background: #ffffff;
   border-radius: 20px 20px 6px 20px;
@@ -455,21 +497,23 @@ const BubbleWrapper = styled(motion.div)`
   overflow: visible;
 
   @media (max-height: 650px) {
-    max-height: calc(100dvh - ${BOTTOM_NAV_SAFE_HEIGHT} - 130px);
+    max-height: calc(100dvh - ${BOTTOM_NAV_SAFE_HEIGHT} - 150px);
   }
 
   @media (min-width: 1024px) {
-    bottom: calc(85px + 78px);
+    bottom: calc(80px + 112px);
+    left: auto;
     right: calc(50% - 600px + 15px);
+    width: 380px;
     max-width: 380px;
-    max-height: min(600px, calc(100vh - 200px));
+    max-height: min(600px, calc(100vh - 220px));
   }
 `;
 
 const BubbleTail = styled.div`
   position: absolute;
   bottom: -7px;
-  right: 18px;
+  right: 28px;
   width: 14px;
   height: 14px;
   background: #ffffff;
@@ -492,11 +536,19 @@ const ProfileGroup = styled.div`
   gap: 8px;
 `;
 
-const TorchAvatar = styled.img`
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  object-fit: contain;
+const TorchAvatar = styled.div`
+  width: 20px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 `;
 
 const TorchName = styled.span`
@@ -556,14 +608,16 @@ const ScanningAvatarWrapper = styled.div`
   position: relative;
   width: 52px;
   height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 12px;
-`;
 
-const ScanningAvatar = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  animation: ${pulse} 2s ease-in-out infinite;
+  svg {
+    width: 32px;
+    height: 45px;
+    animation: ${pulse} 2s ease-in-out infinite;
+  }
 `;
 
 const ScanningRadar = styled.div`
@@ -638,6 +692,13 @@ const ContentArea = styled.div`
   flex-direction: column;
 `;
 
+const HorizontalDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.06);
+  margin: 8px 0;
+`;
+
 const BoldText = styled.strong`
   font-weight: 700;
   color: #111827;
@@ -669,6 +730,10 @@ const BulletItem = styled.div`
   gap: 6px;
   margin: 2px 0;
   line-height: 1.5;
+
+  > div {
+    flex: 1;
+  }
 `;
 
 const BulletDot = styled.span`
@@ -677,6 +742,25 @@ const BulletDot = styled.span`
   background: #ff5f15;
   border-radius: 50%;
   margin-top: 7px;
+  flex-shrink: 0;
+`;
+
+const NumberedItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 3px 0;
+  line-height: 1.5;
+
+  > div {
+    flex: 1;
+  }
+`;
+
+const NumberLabel = styled.span`
+  font-weight: 700;
+  color: #ff5f15;
+  font-size: 13px;
   flex-shrink: 0;
 `;
 
@@ -706,6 +790,35 @@ const MessageFooter = styled.div`
   margin-top: 12px;
   padding-top: 8px;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
+`;
+
+const AiDisclaimerBadge = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 10.5px;
+  color: #8e8e93;
+
+  svg {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+`;
+
+const AiDisclaimerText = styled.span`
+  display: block;
+  line-height: 1.35;
+  text-align: left;
+  word-break: keep-all;
+
+  strong {
+    font-weight: 600;
+    color: #636366;
+  }
 `;
 
 const ActionButton = styled.button<{ $disabled?: boolean }>`
