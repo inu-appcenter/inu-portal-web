@@ -432,11 +432,11 @@ export default function BusInteractiveMap({
     routeStopMarkersRef.current = [];
 
     const newMarkers = routeStopMarkersData.map((stop) => {
-      const width = 40;
-      const height = 50;
+      const width = 38;
+      const height = 48;
 
       const markerImage = new window.kakao.maps.MarkerImage(
-        `/Bus/marker/${stop.name}.png`,
+        DEFAULT_MARKER_IMAGE,
         new window.kakao.maps.Size(width, height),
         {
           offset: new window.kakao.maps.Point(width / 2, height),

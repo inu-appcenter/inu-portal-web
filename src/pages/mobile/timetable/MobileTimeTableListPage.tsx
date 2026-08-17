@@ -5,14 +5,19 @@ import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
+import Modal from "@/components/common/Modal";
+import InputField from "@/components/common/InputField";
 import {
   useTimeTables,
   useUpdateTimeTablePrimary,
+  useUpdateTimeTableName,
+  useDeleteTimeTable,
 } from "@/hooks/useTimeTables";
 import { useSemesters } from "@/hooks/useSemesters";
-import { formatSemester } from "@/utils/semester";
+import { formatSemester, pickCurrentSemester } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 // Icons
@@ -51,6 +56,54 @@ export default function MobileTimeTableListPage() {
   useTimeTables();
   const { semesters: serverSemesters } = useSemesters();
   const updatePrimaryMutation = useUpdateTimeTablePrimary();
+  const updateNameMutation = useUpdateTimeTableName();
+  const deleteMutation = useDeleteTimeTable();
+
+  // 이름 변경/삭제(#252). 그리드 화면(MobileTimeTablePage)에는 있었지만 여러
+  // 시간표를 한 눈에 보는 이 목록 화면에는 관리 동작이 아예 없었다 - 같은
+  // mutation을 그대로 재사용한다.
+  const [renameTarget, setRenameTarget] = useState<Timetable | null>(null);
+  const [renameInputVal, setRenameInputVal] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Timetable | null>(null);
+
+  const openRenameModal = (t: Timetable) => {
+    setRenameInputVal(t.name);
+    setRenameTarget(t);
+  };
+
+  const handleRenameConfirm = () => {
+    if (!renameTarget || !renameInputVal.trim()) return;
+    updateNameMutation.mutate(
+      { timeTableId: renameTarget.id, timeTableName: renameInputVal.trim() },
+      {
+        onSuccess: () => {
+          mixpanelTrack.timetableActionCompleted("이름 변경", {
+            semester: renameTarget.semester,
+          });
+          setRenameTarget(null);
+        },
+        onError: (error: any) => {
+          alert(error.response?.data?.msg || "시간표 이름 변경에 실패했습니다.");
+        },
+      },
+    );
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget || deleteMutation.isPending) return;
+    deleteMutation.mutate(deleteTarget.id, {
+      onSuccess: () => {
+        mixpanelTrack.timetableActionCompleted("삭제", {
+          semester: deleteTarget.semester,
+          course_count: deleteTarget.events.length,
+        });
+        setDeleteTarget(null);
+      },
+      onError: (error: any) => {
+        alert(error.response?.data?.msg || "시간표 삭제에 실패했습니다.");
+      },
+    });
+  };
 
   const handleSetPrimary = (t: Timetable) => {
     if (t.isRepresentative || updatePrimaryMutation.isPending) return;
@@ -83,10 +136,14 @@ export default function MobileTimeTableListPage() {
   }, []);
 
   const handleAddClick = useCallback(() => {
-    if (semesters.length === 0) return;
+    // 목록(semesters[0])이 아니라 serverSemesters에서 진행중(OPEN) 학기를 직접
+    // 고른다 — 다음 학기가 미리 등록돼 있으면 semesters[0]이 아직 아무 시간표도
+    // 없어야 정상인 미래 학기가 될 수 있다(#235).
+    const preferred = pickCurrentSemester(serverSemesters);
+    if (!preferred) return;
     mixpanelTrack.timetableFeatureClicked("시간표 생성", "시간표 목록");
-    openAddModal(semesters[0]);
-  }, [openAddModal, semesters]);
+    openAddModal(formatSemester(preferred.year, preferred.term));
+  }, [openAddModal, serverSemesters]);
 
   const headerRight = useMemo(() => (
     <IconButton onClick={handleAddClick}>
@@ -155,6 +212,24 @@ export default function MobileTimeTableListPage() {
                       <ScheduleName>{t.name}</ScheduleName>
                       <TimetableMeta>
                         <CreditBadge>{getTimetableCredits(t.events)}학점</CreditBadge>
+                        <RowIconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openRenameModal(t);
+                          }}
+                          aria-label="이름 변경"
+                        >
+                          <Pencil size={16} />
+                        </RowIconButton>
+                        <RowIconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(t);
+                          }}
+                          aria-label="삭제"
+                        >
+                          <Trash2 size={16} />
+                        </RowIconButton>
                         <StarButton onClick={(e) => {
                           e.stopPropagation();
                           handleSetPrimary(t);
@@ -179,6 +254,46 @@ export default function MobileTimeTableListPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         initialSemester={addModalSemester}
+      />
+
+      <Modal
+        isOpen={renameTarget !== null}
+        onClose={() => setRenameTarget(null)}
+        title="시간표 이름 변경"
+        primaryButton={{
+          text: "변경",
+          variant: "brand",
+          onClick: handleRenameConfirm,
+          disabled: !renameInputVal.trim() || updateNameMutation.isPending,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setRenameTarget(null),
+        }}
+      >
+        <InputField
+          label="시간표 이름"
+          value={renameInputVal}
+          onChange={setRenameInputVal}
+          placeholder="시간표 이름을 입력하세요"
+        />
+      </Modal>
+
+      <Modal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title="시간표 삭제"
+        description={`"${deleteTarget?.name ?? ""}" 시간표를 삭제하면\n복구할 수 없습니다. 삭제하시겠습니까?`}
+        primaryButton={{
+          text: "삭제",
+          variant: "danger",
+          onClick: handleDeleteConfirm,
+          disabled: deleteMutation.isPending,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setDeleteTarget(null),
+        }}
       />
     </PageWrapper>
   );
@@ -296,6 +411,19 @@ const StarButton = styled.button`
   border: none;
   cursor: pointer;
   outline: none;
+`;
+
+const RowIconButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  color: var(--text-tertiary, #8b95a1);
 `;
 
 const EmptySemesterWrapper = styled.div`

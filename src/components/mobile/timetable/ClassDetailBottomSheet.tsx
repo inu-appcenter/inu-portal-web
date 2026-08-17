@@ -25,6 +25,10 @@ interface ClassDetailBottomSheetProps {
   colorMap: Map<string, string>;
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
+  // 실제 내 시간표 요소가 아닌 읽기 전용 미리보기(예: 마법사 후보 강의)에서 사용.
+  // 메모 표시/편집을 막아, 미리보기 항목의 memo 저장 시도가 activeTimetable의
+  // 이름이 같은 실제 요소를 잘못 덮어쓰는 것을 방지한다.
+  readOnly?: boolean;
 }
 
 const formatHour = (hour: number) => {
@@ -41,6 +45,7 @@ export default function ClassDetailBottomSheet({
   colorMap,
   onEdit,
   onDelete,
+  readOnly = false,
 }: ClassDetailBottomSheetProps) {
   useSheetBackHandler(open, () => onOpenChange(false));
   const navigate = useNavigate();
@@ -135,7 +140,7 @@ export default function ClassDetailBottomSheet({
   const creditsVal =
     liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
 
-  const evaluationVal = liveClass.evaluation || "상대평가";
+  const evaluationVal = liveClass.evaluation || "";
 
   const lectureReviewUrl =
     professorName && professorName !== "-"
@@ -206,7 +211,7 @@ export default function ClassDetailBottomSheet({
 
   // 메모는 본인만 보는 개인 메모. 친구 소유 항목은 조회/편집 모두 불가하다.
   const hasMemo = Boolean(liveClass.memo && liveClass.memo.trim());
-  const canEditMemo = !liveClass.isFriendOwned;
+  const canEditMemo = !liveClass.isFriendOwned && !readOnly;
 
   const handleSaveMemo = () => {
     if (activeTimetableId === null) return;

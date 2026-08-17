@@ -87,10 +87,12 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       floatingSubHeader,
       isScrolled,
       rightAreaNotCircle,
+      noBlur,
     } = useHeaderConfig(targetPath);
 
     const navigate = useCustomNavigate();
     const { hasUnreadNotification } = useUnreadNotification();
+    const hasMenuItems = (menuItems?.length ?? 0) > 0;
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -110,14 +112,21 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       navigate(-1);
     };
 
+    const hasTitle = Boolean(title);
+
     if (visible === false) return null;
 
     return (
-      <MobileHeaderWrapper ref={ref} $contained={contained} $visible={true}>
+      <MobileHeaderWrapper
+        ref={ref}
+        $contained={contained}
+        $visible={true}
+      >
         <MainHeaderWrapper
           $isScrolled={isScrolled}
           $hasBack={(hasback && !!title) ?? false}
-          $hasTitle={!!title}
+          $hasTitle={hasTitle}
+          $noBlur={Boolean(noBlur)}
         >
           {title ? (
             <TitleArea>
@@ -148,20 +157,20 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
             </TitleArea>
           )}
 
-          {(showAlarm || menuItems || rightArea) && (
+          {(showAlarm || hasMenuItems || rightArea) && (
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
               $isCircle={
                 rightAreaNotCircle
                   ? false
-                  : [showAlarm, menuItems, rightArea].filter(Boolean).length ===
+                  : [showAlarm, hasMenuItems, rightArea].filter(Boolean).length ===
                     1
               }
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
               {showAlarm && <NotificationBell hasNew={hasUnreadNotification} />}
-              {menuItems && <TopRightDropdownMenu items={menuItems} />}
+              {hasMenuItems && <TopRightDropdownMenu items={menuItems!} />}
             </IconBackgroundWrapper>
           )}
         </MainHeaderWrapper>
@@ -201,6 +210,7 @@ const MainHeaderWrapper = styled.div<{
   $isScrolled: boolean;
   $hasBack: boolean;
   $hasTitle: boolean;
+  $noBlur?: boolean;
 }>`
   position: relative;
   z-index: 2;
@@ -217,22 +227,22 @@ const MainHeaderWrapper = styled.div<{
   padding-left: ${({ $hasBack }) => ($hasBack ? "12px" : "20px")};
   padding-right: ${({ $hasBack }) => ($hasBack ? "16px" : "20px")};
 
-  background: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle
+  background: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle
       ? "transparent"
       : "var(--bg-blur, rgba(255, 255, 255, 0.6))"};
-  backdrop-filter: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
-  -webkit-backdrop-filter: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
-  box-shadow: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle
+  backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
+  -webkit-backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
+  box-shadow: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle
       ? "none"
       : "0px 4px 12px 0px rgba(0, 0, 0, 0.08)"};
-  border-bottom-left-radius: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "0px" : "32px"};
-  border-bottom-right-radius: ${({ $isScrolled, $hasTitle }) =>
-    $isScrolled || !$hasTitle ? "0px" : "32px"};
+  border-bottom-left-radius: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "0px" : "32px"};
+  border-bottom-right-radius: ${({ $isScrolled, $hasTitle, $noBlur }) =>
+    $noBlur || $isScrolled || !$hasTitle ? "0px" : "32px"};
 
   transition:
     background 0.25s ease,
@@ -385,14 +395,17 @@ const HeaderTitle = styled.div<{ $hasBack?: boolean }>`
 const FloatingWrapper = styled.div`
   width: fit-content;
   max-width: 100%;
-  padding: 4px 16px;
-  border-radius: 50px;
+  padding: 0;
+  border-radius: 100px;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  min-height: 36px;
-  overflow: visible;
+  min-height: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
   pointer-events: auto;
 `;

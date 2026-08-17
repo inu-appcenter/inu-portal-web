@@ -20,6 +20,7 @@ import BlockUserModal, {
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import { useQueryClient } from "@tanstack/react-query";
+import { isAdminUser } from "@/types/admin";
 
 const PostDetailSkeleton = () => (
   <PostWrapper>
@@ -77,7 +78,7 @@ export default function PostDetailPage() {
   };
 
   const navigate = useNavigate();
-  const { tokenInfo } = useUserStore();
+  const { tokenInfo, userInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
   const { id: paramId, postId } = useParams<{ id?: string; postId?: string }>();
   const location = useLocation();
@@ -158,16 +159,33 @@ export default function PostDetailPage() {
     setReportTarget({ type: "REPLY", postId: post.id, replyId: reply.id });
   };
 
-  const handleBlockAuthor = (memberId: number, nickname: string) => {
+  const handleBlockPostAuthor = (postId: number, nickname: string) => {
     if (!requireLogin()) return;
-    setBlockTarget({ memberId, nickname });
+    setBlockTarget({ postId, nickname });
+  };
+
+  const handleBlockReplyAuthor = (replyId: number, nickname: string) => {
+    if (!requireLogin()) return;
+    setBlockTarget({ replyId, nickname });
   };
 
   const headerMenu = useMemo(() => {
     if (!post) return undefined;
 
+    // hasAuthority(수정/삭제 권한)는 작성자 또는 관리자면 true다. PostDetail은
+    // 익명 글 재식별 방지 때문에 memberId를 내려주지 않아(src/apis/blocks.ts 참고)
+    // "본인 글인지"를 클라이언트에서 직접 판별할 수 없다 — 그래서 관리자 여부로
+    // 근사한다: 관리자라면 hasAuthority=true여도 본인 글이 아닐 수 있으니
+    // 신고/차단도 함께 보여준다. (관리자 본인 글에서도 신고/차단이 뜨는 극히
+    // 드문 예외가 남는다 — 서버가 hasAuthority와 별개로 "본인 작성 여부" 필드를
+    // 내려주기 전까지는 감수한다. 서버 이슈 필요.)
+    const isAdmin = isAdminUser(userInfo.role);
+    const showReportBlock = !post.hasAuthority || isAdmin;
+
+    const menu: { label: string; onClick: () => void }[] = [];
+
     if (post.hasAuthority) {
-      return [
+      menu.push(
         {
           label: "수정하기",
           onClick: () => navigate(ROUTES.BOARD.TIPS_EDIT(post.id)),
@@ -176,26 +194,24 @@ export default function PostDetailPage() {
           label: "삭제하기",
           onClick: handleDeletePost,
         },
-      ];
+      );
     }
 
-    const menu = [
-      {
+    if (showReportBlock) {
+      menu.push({
         label: "신고하기",
         onClick: handleReportPost,
-      },
-    ];
+      });
 
-    // 익명 게시글은 memberId가 내려오지 않아 차단 대상을 특정할 수 없다.
-    if (post.memberId) {
+      // postId만으로 서버가 작성자를 찾아 차단하므로(#294) 익명 글도 차단 가능하다.
       menu.push({
         label: "작성자 차단하기",
-        onClick: () => handleBlockAuthor(post.memberId!, post.writer || "작성자"),
+        onClick: () => handleBlockPostAuthor(post.id, post.writer || "작성자"),
       });
     }
 
-    return menu;
-  }, [post, navigate, isLoggedIn]);
+    return menu.length > 0 ? menu : undefined;
+  }, [post, navigate, isLoggedIn, userInfo.role]);
 
   useHeader({
     title: post ? post.category || "게시글 상세" : "게시글 상세",
@@ -224,7 +240,7 @@ export default function PostDetailPage() {
                 setReplyContent={setReplyContent}
                 onCommentUpdate={() => setCommentUpdated(true)}
                 onReportReply={handleReportReply}
-                onBlockWriter={handleBlockAuthor}
+                onBlockWriter={handleBlockReplyAuthor}
               />
             </CommentWrapper>
           </PostWrapper>
@@ -250,11 +266,12 @@ export default function PostDetailPage() {
           <BlockUserModal
             target={blockTarget}
             onClose={() => setBlockTarget(null)}
-            onBlocked={(blockedMemberId) => {
+            onBlocked={() => {
               // 차단 직후 해당 작성자의 글/댓글이 더 이상 보이지 않아야 한다.
               // 글쓴이를 차단했다면 이 상세 페이지 자체를 벗어나고,
-              // 댓글 작성자를 차단했다면 목록만 다시 불러온다.
-              if (post.memberId === blockedMemberId) {
+              // 댓글 작성자를 차단했다면 목록만 다시 불러온다. blockTarget이
+              // postId/replyId 중 무엇이었는지로 직접 판단한다(응답에 값이 없다).
+              if (blockTarget && "postId" in blockTarget) {
                 navigate(-1);
               } else {
                 setCommentUpdated(true);

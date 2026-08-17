@@ -1,14 +1,21 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X } from "lucide-react";
 import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import useAIChatStore from "@/stores/useAIChatStore";
 
-const AIChatFloatingButton = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  useSheetBackHandler(isOpen, () => setIsOpen(false));
+interface AIChatFloatingButtonProps {
+  isFloatingButtonVisible?: boolean;
+}
+
+const AIChatFloatingButton = ({
+  isFloatingButtonVisible = true,
+}: AIChatFloatingButtonProps) => {
+  const { isOpen, closeChat, toggleChat } = useAIChatStore();
+  useSheetBackHandler(isOpen, closeChat);
 
   useEffect(() => {
     if (isOpen) {
@@ -21,16 +28,8 @@ const AIChatFloatingButton = () => {
     };
   }, [isOpen]);
 
-  // VITE_API_BASE_URL 확인 및 토글 처리
   const handleToggleChat = () => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-    if (apiBaseUrl === "https://portal.inuappcenter.kr/") {
-      alert('인천대학교 학사 AI 챗봇 "챗불이"가 곧 오픈 예정이에요!');
-      return;
-    }
-
-    setIsOpen(!isOpen);
+    toggleChat();
   };
 
   const modalVariants: Variants = {
@@ -79,7 +78,7 @@ const AIChatFloatingButton = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
+              onClick={closeChat}
             />
             <ModalContainer
               variants={modalVariants}
@@ -88,7 +87,7 @@ const AIChatFloatingButton = () => {
               exit="exit"
             >
               <FloatingCloseButton
-                onClick={() => setIsOpen(false)}
+                onClick={closeChat}
                 variants={itemVariants}
               >
                 <X size={20} />
@@ -108,18 +107,20 @@ const AIChatFloatingButton = () => {
         )}
       </AnimatePresence>
 
-      <FloatingButton
-        animate={{ y: [0, -8, 0] }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        onClick={handleToggleChat}
-        aria-label="학사 AI 챗봇 열기"
-      >
-        <img src={ChatBulButtonImg} alt="AI 챗봇" />
-      </FloatingButton>
+      {isFloatingButtonVisible && (
+        <FloatingButton
+          animate={{ y: [0, -8, 0] }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          onClick={handleToggleChat}
+          aria-label="학사 AI 챗봇 열기"
+        >
+          <img src={ChatBulButtonImg} alt="AI 챗봇" />
+        </FloatingButton>
+      )}
     </>
   );
 };

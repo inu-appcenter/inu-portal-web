@@ -40,7 +40,9 @@ export function useCustomNavigate() {
     // 1. 숫자가 전달된 경우 (예: -1) 뒤로가기 동작으로 간주
     if (typeof path === "number") {
       if (path === -1 && supportsMultiWebView()) {
-        appBridge.goBack();
+        // 웹이 되돌릴 수 있으면(모달/SPA 히스토리) 웹에서 처리하고, 없을 때만
+        // 네이티브가 이 웹뷰를 pop 한다. appBridgeAdapter 참고.
+        appBridge.requestBack();
       } else {
         reactNavigate(path);
       }
