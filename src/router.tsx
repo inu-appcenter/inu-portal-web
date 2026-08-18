@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES, isMainTabPath } from "@/constants/routes";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 
 
@@ -323,29 +323,6 @@ export const router = createBrowserRouter([
   },
 ]);
 
-const MAIN_TAB_PATHS = new Set([
-  "/",
-  "/home",
-  "/bus",
-  "/chat/list",
-  "/save",
-  "/mypage",
-  "/timetable",
-  "/m",
-  "/m/home",
-  "/m/bus",
-  "/m/chat/list",
-  "/m/save",
-  "/m/mypage",
-  "/m/timetable"
-]);
-
-function isMainTabPath(path: string): boolean {
-  if (!path) return false;
-  const cleanPath = path.split("?")[0].split("#")[0];
-  return MAIN_TAB_PATHS.has(cleanPath);
-}
-
 function getPathname(to: any): string {
   if (!to) return "";
   if (typeof to === "string") {
@@ -379,18 +356,29 @@ if (typeof window !== "undefined") {
     // <Navigate to={ROUTES.HOME} replace />, router.tsx 라우트 테이블 참고).
     const isBootstrapRedirect = window.location.pathname === "/" && isHomePath;
 
-    // 2. 메인 탭 경로 이동: 탭바 클릭(isTabNavigation)이나 이 웹뷰 자신의 부팅
-    // 리다이렉트가 아니라면 항상 네이티브로 위임한다 (서브 웹뷰 스택을 root 로 collapse 후 탭 전환)
-    if (supportsMultiWebView() && isMainTabPath(path) && !isTabNavigation && !isBootstrapRedirect) {
-      appBridge.goHome(path);
-      return Promise.resolve();
-    }
-
     // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅이거나 빈 이동인지 확인
     const isHashOrSearchOnly =
       to === "" ||
       (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
       (typeof to === "object" && to !== null && !to.pathname);
+    const isSamePath = window.location.pathname === path;
+    const isCurrentInMainTab = isMainTabPath(window.location.pathname);
+
+    // 2. 메인 탭 경로 이동:
+    // - 이미 루트/메인 탭 화면에 있는 상태에서 다른 메인 탭으로 이동하거나 쿼리를 변경하는 경우: 웹 내부 SPA 이동 유지
+    // - 서브 웹뷰(pushed webview)에서 메인 탭으로 복귀하는 경우에만 네이티브로 위임(collapse stack)
+    if (
+      supportsMultiWebView() &&
+      isMainTabPath(path) &&
+      !isCurrentInMainTab &&
+      !isTabNavigation &&
+      !isBootstrapRedirect &&
+      !isSamePath &&
+      !isHashOrSearchOnly
+    ) {
+      appBridge.goHome(path);
+      return Promise.resolve();
+    }
 
     // 3. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
     if (
@@ -409,7 +397,6 @@ if (typeof window !== "undefined") {
 
     return (originalNavigate as any).call(router, to, opts);
   };
-
 }
 
 

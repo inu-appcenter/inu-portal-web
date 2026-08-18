@@ -1,6 +1,7 @@
 import { getAppEnvironmentStatus } from "./getMobilePlatform";
 import { bridgeChannel } from "./bridgeChannel";
 import { handleBackRequest } from "./nativeBackRequest";
+import { isMainTabPath } from "@/constants/routes";
 
 /**
  * 단일 브릿지 채널.
@@ -139,6 +140,11 @@ export const appBridge = {
   goHome(path: string): void {
     if (bridgeChannel) {
       bridgeChannel.send("goHome", { path });
+      return;
+    }
+
+    // 구버전 또는 단일 웹뷰 환경에서 이미 메인 탭에 있는 경우 goBack(앱 종료)을 호출하지 않는다.
+    if (typeof window !== "undefined" && isMainTabPath(window.location.pathname)) {
       return;
     }
 

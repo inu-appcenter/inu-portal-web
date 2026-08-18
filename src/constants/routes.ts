@@ -135,3 +135,27 @@ export const ROUTES = {
   },
 
 } as const;
+
+export const MAIN_TAB_PATHS = new Set([
+  "/",
+  "/home",
+  "/bus",
+  "/chat/list",
+  "/save",
+  "/mypage",
+  "/timetable",
+  "/m",
+  "/m/home",
+  "/m/bus",
+  "/m/chat/list",
+  "/m/save",
+  "/m/mypage",
+  "/m/timetable",
+]);
+
+export function isMainTabPath(path: string): boolean {
+  if (!path) return false;
+  const cleanPath = path.split("?")[0].split("#")[0];
+  return MAIN_TAB_PATHS.has(cleanPath);
+}
+
