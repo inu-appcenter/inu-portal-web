@@ -11,6 +11,54 @@ import "@/styles/variables.css";
 
 initMixpanel();
 
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
+
+  let refreshing = false;
+  const hadController = Boolean(navigator.serviceWorker.controller);
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    // The first install also claims this page. Reloading then would cause an
+    // unnecessary first-load flicker, so reload only for an actual update.
+    if (hadController && !refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+
+  navigator.serviceWorker
+    .register("/sw.js", { updateViaCache: "none" })
+    .then((registration) => {
+      const activateWaitingWorker = () => {
+        registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+      };
+
+      activateWaitingWorker();
+
+      registration.addEventListener("updatefound", () => {
+        const installingWorker = registration.installing;
+        if (!installingWorker) return;
+
+        installingWorker.addEventListener("statechange", () => {
+          if (installingWorker.state === "installed") {
+            activateWaitingWorker();
+          }
+        });
+      });
+
+      // Long-running webviews otherwise may not navigate for a long time.
+      const checkForUpdate = () => void registration.update();
+      window.addEventListener("focus", checkForUpdate);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") checkForUpdate();
+      });
+    })
+    .catch((error: unknown) => {
+      console.warn("Service Worker registration failed:", error);
+    });
+}
+
+registerServiceWorker();
 
 const queryClient = new QueryClient({
   defaultOptions: {

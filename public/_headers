@@ -6,6 +6,10 @@
   Pragma: no-cache
   Expires: 0
 
+# 서비스 워커 업데이트 확인은 브라우저 HTTP 캐시를 거치지 않아야 한다.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
 # 빌드 자원 중 쿼리스트링이나 해시가 변경되면 무조건 최신 요청
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
