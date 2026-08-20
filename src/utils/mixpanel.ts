@@ -753,4 +753,39 @@ export const mixpanelTrack = {
       ...properties,
     });
   },
+
+  // --- 3. 운영/기술 이벤트 (Operational) ---
+
+  /**
+   * PWA 잔재(서비스워커 등록 + Cache Storage) 정리 완료.
+   *
+   * 옛 PWA·임시 핫픽스 워커가 아직 남아 있던 클라이언트에서만 발생한다. 이 이벤트가
+   * 사실상 0으로 수렴하면 `public/sw.js`와 `utils/pwaCleanup.ts`를 지워도 된다.
+   */
+  pwaCleanupCompleted: (properties: {
+    hadController: boolean;
+    unregisteredCount: number;
+    deletedCacheCount: number;
+    scopes: string[];
+  }) => {
+    trackEvent("[PWA] 잔재 정리 완료", {
+      had_controller: properties.hadController,
+      unregistered_count: properties.unregisteredCount,
+      deleted_cache_count: properties.deletedCacheCount,
+      scopes: properties.scopes,
+    });
+  },
+
+  /**
+   * PWA 잔재 정리 실패. 워커가 계속 남아 옛 자원을 물고 있을 수 있는 상태다.
+   */
+  pwaCleanupFailed: (properties: {
+    hadController: boolean;
+    errorMessage: string;
+  }) => {
+    trackEvent("[PWA] 잔재 정리 실패", {
+      had_controller: properties.hadController,
+      error_message: properties.errorMessage,
+    });
+  },
 };

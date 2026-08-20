@@ -6,59 +6,14 @@ import CommonStyles from "@/styles/CommonStyles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
 import { initMixpanel } from "./utils/mixpanel";
+import { startPwaCleanup } from "./utils/pwaCleanup";
 import "@/utils/bridgeChannel"; // 신 앱 PlatformChannel 초기화 + Native→Web 수신 결선
 import "@/styles/variables.css";
 
 initMixpanel();
 
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
-
-  let refreshing = false;
-  const hadController = Boolean(navigator.serviceWorker.controller);
-
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    // The first install also claims this page. Reloading then would cause an
-    // unnecessary first-load flicker, so reload only for an actual update.
-    if (hadController && !refreshing) {
-      refreshing = true;
-      window.location.reload();
-    }
-  });
-
-  navigator.serviceWorker
-    .register("/sw.js", { updateViaCache: "none" })
-    .then((registration) => {
-      const activateWaitingWorker = () => {
-        registration.waiting?.postMessage({ type: "SKIP_WAITING" });
-      };
-
-      activateWaitingWorker();
-
-      registration.addEventListener("updatefound", () => {
-        const installingWorker = registration.installing;
-        if (!installingWorker) return;
-
-        installingWorker.addEventListener("statechange", () => {
-          if (installingWorker.state === "installed") {
-            activateWaitingWorker();
-          }
-        });
-      });
-
-      // Long-running webviews otherwise may not navigate for a long time.
-      const checkForUpdate = () => void registration.update();
-      window.addEventListener("focus", checkForUpdate);
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") checkForUpdate();
-      });
-    })
-    .catch((error: unknown) => {
-      console.warn("Service Worker registration failed:", error);
-    });
-}
-
-registerServiceWorker();
+// 옛 PWA·임시 핫픽스 워커의 잔재를 회수한다. 자세한 배경은 utils/pwaCleanup.ts 참고.
+startPwaCleanup();
 
 const queryClient = new QueryClient({
   defaultOptions: {

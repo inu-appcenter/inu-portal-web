@@ -3,46 +3,12 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
 
-function selfUpdateServiceWorker() {
-  return {
-    name: "self-update-service-worker",
-    apply: "build" as const,
-    generateBundle() {
-      // The build id deliberately changes on every deployment. Browsers compare a
-      // service worker byte-for-byte, so this makes each deployment observable.
-      const buildId = new Date().toISOString();
-
-      this.emitFile({
-        type: "asset",
-        fileName: "sw.js",
-        source: `const BUILD_ID = ${JSON.stringify(buildId)};
-
-self.addEventListener("install", () => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
-      .then(() => self.clients.claim()),
-  );
-});
-
-self.addEventListener("message", (event) => {
-  if (event.data?.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
-`,
-      });
-    },
-  };
-}
+// 서비스워커는 더 이상 빌드가 만들지 않는다. 남은 등록을 회수하기 위한 묘비 워커만
+// `public/sw.js`에 정적으로 두고, 등록 해제는 `src/utils/pwaCleanup.ts`가 맡는다.
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), tsconfigPaths(), svgr(), selfUpdateServiceWorker()],
+  plugins: [react(), tsconfigPaths(), svgr()],
   define: {
     global: "window",
   },
