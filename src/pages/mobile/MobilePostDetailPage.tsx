@@ -262,6 +262,16 @@ export default function PostDetailPage() {
           <ReportModal
             target={reportTarget}
             onClose={() => setReportTarget(null)}
+            onReported={(reported) => {
+              // 신고한 콘텐츠는 즉시 숨겨야 한다.
+              // 게시글을 신고했다면 상세 페이지를 벗어나고,
+              // 댓글을 신고했다면 목록만 다시 불러온다.
+              if (reported.type === "POST") {
+                navigate(-1);
+              } else {
+                setCommentUpdated(true);
+              }
+            }}
           />
           <BlockUserModal
             target={blockTarget}

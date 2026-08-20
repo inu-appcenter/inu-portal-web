@@ -9,6 +9,7 @@ import { deleteReply } from "@/apis/replies";
 import useUserStore from "@/stores/useUserStore";
 import { MoreVertical } from "lucide-react";
 import { formatTimeAgo } from "@/utils/date";
+import useHiddenContentStore from "@/stores/useHiddenContentStore";
 
 interface CommentListProps {
   postId?: number;
@@ -41,10 +42,21 @@ export default function CommentListMobile({
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+  const hiddenReplyIds = useHiddenContentStore((state) => state.replyIds);
 
-  const allComments = bestReply
+  const rawComments = bestReply
     ? [bestReply, ...replies.filter((reply) => reply.id !== bestReply.id)]
     : replies;
+
+  // 신고한 댓글은 서버 검토 전이라도 내 화면에서 즉시 사라져야 한다.
+  const allComments = rawComments
+    .filter((reply) => !hiddenReplyIds.includes(reply.id))
+    .map((reply) => ({
+      ...reply,
+      reReplies: reply.reReplies?.filter(
+        (reReply) => !hiddenReplyIds.includes(reReply.id),
+      ),
+    }));
 
   const handleDeleteReply = async (replyId: number) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
