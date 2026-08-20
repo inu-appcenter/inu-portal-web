@@ -40,5 +40,6 @@ export const mapWizardCoursesToClassItems = (
       ssupTypeCode: course.ssupTypeCode ?? undefined,
       courseOfferingId: course.courseOfferingId,
       courseId: course.subjectNumber,
+      evaluation: course.gradeEvaluationMethod ?? undefined,
     })),
   );

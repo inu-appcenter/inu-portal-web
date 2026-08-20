@@ -93,6 +93,7 @@ interface CourseRow {
   enrolledCount: number | null;
   capacity: number | null;
   note: string | null;
+  gradeEvaluationMethod: string;
   option: WizardCourseOption;
 }
 
@@ -122,6 +123,7 @@ const buildCourseRow = (
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,
     note: offering.note,
+    gradeEvaluationMethod: option.gradeEvaluationMethod ?? "-",
     option,
   };
 };
@@ -412,7 +414,9 @@ const GroupWizardCourseSearchSheet = () => {
                         <CourseAttributes>
                           <AttributeItem $primary>{row.professor}</AttributeItem>
                           <AttributeItem>{row.credit}학점</AttributeItem>
-                          <AttributeItem>상대평가</AttributeItem>
+                          <AttributeItem>
+                            {row.gradeEvaluationMethod}
+                          </AttributeItem>
                         </CourseAttributes>
 
                         <CourseAdditionalInfo>

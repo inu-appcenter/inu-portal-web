@@ -140,7 +140,8 @@ export default function ClassDetailBottomSheet({
   const creditsVal =
     liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
 
-  const evaluationVal = liveClass.evaluation || "";
+  const evaluationVal =
+    offering?.gradeEvaluationName || liveClass.evaluation || "";
 
   const lectureReviewUrl =
     professorName && professorName !== "-"

@@ -22,6 +22,7 @@ export interface WizardCourseOption {
   meetings: WizardCourseMeeting[];
   ssupTypeName?: string | null;
   ssupTypeCode?: string | null;
+  gradeEvaluationMethod?: string | null;
 }
 
 // "듣고 싶은 강의" 목록의 항목 하나.

@@ -66,6 +66,7 @@ export const mapDetailItemsToClassItems = (
           memo: item.memo ?? undefined,
           courseId: item.course?.subjectNumber ?? undefined,
           numericCourseId: item.course?.courseId ?? undefined,
+          evaluation: item.course?.gradeEvaluationName ?? undefined,
           isCustom: item.type === "CUSTOM",
           isUntimed: true,
         },
@@ -88,6 +89,8 @@ export const mapDetailItemsToClassItems = (
       memo: item.memo ?? undefined,
       courseId: item.course?.subjectNumber ?? undefined,
       numericCourseId: item.course?.courseId ?? undefined,
+      // 평가 방식은 강의 단위 값이라 모든 미팅에 같이 넣는다(바텀시트용).
+      evaluation: item.course?.gradeEvaluationName ?? undefined,
       isCustom: item.type === "CUSTOM",
     }));
   });

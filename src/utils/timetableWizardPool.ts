@@ -40,5 +40,6 @@ export const toWizardCourseOption = (
     meetings,
     ssupTypeName: offering.ssupTypeName ?? null,
     ssupTypeCode: offering.ssupTypeCode ?? null,
+    gradeEvaluationMethod: offering.gradeEvaluationName ?? null,
   };
 };

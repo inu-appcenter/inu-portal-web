@@ -51,6 +51,7 @@ export interface CourseResult {
   hyName?: string;
   ssupTypeName?: string;
   ssupTypeCode?: string;
+  gradeEvaluationMethod: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -539,7 +540,9 @@ const MobileCourseSearchSheet = ({
                           {course.professor}
                         </AttributeItem>
                         <AttributeItem>{course.credits}학점</AttributeItem>
-                        <AttributeItem>상대평가</AttributeItem>
+                        <AttributeItem>
+                          {course.gradeEvaluationMethod}
+                        </AttributeItem>
                       </CourseAttributes>
 
                       <CourseAdditionalInfo>

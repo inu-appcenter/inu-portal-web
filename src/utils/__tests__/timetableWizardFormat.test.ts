@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatCourseMeetings,
   formatCourseMeta,
+  mapWizardCoursesToClassItems,
 } from "../timetableWizardFormat";
 import type { WizardCourseOption } from "../../types/timetableWizard";
 
@@ -88,5 +89,34 @@ describe("timetableWizardFormat", () => {
       };
       expect(formatCourseMeta(courseNoMeetings)).toBe("홍길동 · CS101-01");
     });
+  });
+});
+
+describe("mapWizardCoursesToClassItems", () => {
+  const course: WizardCourseOption = {
+    courseId: 101,
+    courseOfferingId: 1002,
+    subjectNumber: "CS101-02",
+    title: "자바프로그래밍",
+    professor: "김철수",
+    credit: 3,
+    department: "컴퓨터공학부",
+    meetings: [
+      { day: 1, startTime: 13, endTime: 14.5, location: "정보기술대학 302호" },
+    ],
+  };
+
+  it("평가 방식을 ClassItem.evaluation으로 넘긴다", () => {
+    const [item] = mapWizardCoursesToClassItems([
+      { ...course, gradeEvaluationMethod: "절대평가" },
+    ]);
+
+    expect(item.evaluation).toBe("절대평가");
+  });
+
+  it("평가 방식이 없으면 비워 둔다", () => {
+    const [item] = mapWizardCoursesToClassItems([course]);
+
+    expect(item.evaluation).toBeUndefined();
   });
 });
