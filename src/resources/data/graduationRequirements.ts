@@ -7,6 +7,8 @@
 //  - "C": 학과 자료를 확보하지 못해 대학 공통기준으로 추정 — 학과 사무실 확인 필요
 //
 // 갱신 주기: 매년 2월·8월 개강 전 (issue #335)
+//
+// 원본 수집 데이터와 학과별 근거·신뢰도 상세: docs/graduation-requirements/
 import type { DepartmentGraduationRequirement } from "@/types/graduation";
 
 export const GRADUATION_REQUIREMENTS: Record<
