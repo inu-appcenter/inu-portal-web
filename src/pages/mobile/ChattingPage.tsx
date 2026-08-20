@@ -11,6 +11,10 @@ import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import TimetableShareCard from "@/components/mobile/chat/TimetableShareCard";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
+import {
+  buildProfanityAlertMessage,
+  checkProfanity,
+} from "@/utils/profanityFilter";
 import Skeleton from "@/components/common/Skeleton";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
@@ -371,6 +375,13 @@ export default function ChattingPage() {
 
   const handleSendMessage = () => {
     if (!inputValue.trim() || !roomInfo) return;
+
+    // 욕설·혐오·성적 표현은 전송 전에 차단한다 (커뮤니티 무관용 정책)
+    const profanity = checkProfanity(inputValue);
+    if (profanity.hasProfanity) {
+      alert(buildProfanityAlertMessage(profanity.matched));
+      return;
+    }
 
     const isFestivalChat = roomId === "1";
     mixpanelTrack.chatMessageSent(

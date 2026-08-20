@@ -6,6 +6,10 @@ import { Reply } from "@/types/posts";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { postReply, postReReply, putReply } from "@/apis/replies";
+import {
+  buildProfanityAlertMessage,
+  checkProfanity,
+} from "@/utils/profanityFilter";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { CheckSquare, Square, CornerDownLeft, Loader2 } from "lucide-react";
 
@@ -113,6 +117,13 @@ export default function ReplyInput({
     }
     if (!replyContent.trim()) {
       alert("댓글 내용을 작성해주세요.");
+      return;
+    }
+
+    // 욕설·혐오·성적 표현은 등록 전에 차단한다 (커뮤니티 무관용 정책)
+    const profanity = checkProfanity(replyContent);
+    if (profanity.hasProfanity) {
+      alert(buildProfanityAlertMessage(profanity.matched));
       return;
     }
 
