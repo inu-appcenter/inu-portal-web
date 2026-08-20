@@ -12,17 +12,17 @@ import { MoreVertical } from "lucide-react";
 
 interface PostModerationMenuProps {
   postId: number;
-  /** 익명 게시글은 memberId가 없어 차단 대상을 특정할 수 없다. */
-  memberId?: number | null;
   writer?: string;
   onReport: (postId: number) => void;
-  onBlock: (memberId: number, nickname: string) => void;
+  /** postId 기준으로 차단한다 — PostResponseDto/PostListResponseDto가 memberId를
+   * 내려주지 않아(익명 글 재식별 방지, src/apis/blocks.ts 참고) 서버가 postId로
+   * 작성자를 찾아 차단한다. */
+  onBlock: (postId: number, nickname: string) => void;
   onHide: (postId: number) => void;
 }
 
 export default function PostModerationMenu({
   postId,
-  memberId,
   writer,
   onReport,
   onBlock,
@@ -79,19 +79,17 @@ export default function PostModerationMenu({
             >
               신고하기
             </DropdownItem>
-            {memberId ? (
-              <DropdownItem
-                type="button"
-                $danger
-                onClick={(event) => {
-                  stop(event);
-                  setIsOpen(false);
-                  onBlock(memberId, writer || "작성자");
-                }}
-              >
-                작성자 차단하기
-              </DropdownItem>
-            ) : null}
+            <DropdownItem
+              type="button"
+              $danger
+              onClick={(event) => {
+                stop(event);
+                setIsOpen(false);
+                onBlock(postId, writer || "작성자");
+              }}
+            >
+              작성자 차단하기
+            </DropdownItem>
           </DropdownMenu>
         </>
       )}

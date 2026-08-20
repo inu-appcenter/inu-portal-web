@@ -242,15 +242,14 @@ export default function TipsListContainer({
     setReportTarget({ type: "POST", postId });
   };
 
-  const handleBlockWriter = (memberId: number, nickname: string) => {
+  const handleBlockWriter = (postId: number, nickname: string) => {
     if (!requireLogin()) return;
-    setBlockTarget({ memberId, nickname });
+    setBlockTarget({ postId, nickname });
   };
 
   const renderModerationMenu = (post: Post) => (
     <PostModerationMenu
       postId={post.id}
-      memberId={post.memberId}
       writer={post.writer}
       onReport={handleReportPost}
       onBlock={handleBlockWriter}
@@ -380,11 +379,14 @@ export default function TipsListContainer({
       <BlockUserModal
         target={blockTarget}
         onClose={() => setBlockTarget(null)}
-        onBlocked={(blockedMemberId) => {
-          // 차단 즉시 해당 작성자의 게시글이 목록에서 사라져야 한다.
-          setPosts((prev) =>
-            prev.filter((post) => post.memberId !== blockedMemberId),
-          );
+        onBlocked={() => {
+          // 차단 즉시 이 게시글이 목록에서 사라져야 한다. 응답에 memberId가
+          // 없어(src/apis/blocks.ts 참고) 같은 작성자의 다른 글까지는 이
+          // 목록에서 특정할 수 없으므로, blockTarget이었던 글만 제거한다.
+          if (blockTarget && "postId" in blockTarget) {
+            const { postId } = blockTarget;
+            setPosts((prev) => prev.filter((post) => post.id !== postId));
+          }
         }}
       />
     </TipsListContainerWrapper>
