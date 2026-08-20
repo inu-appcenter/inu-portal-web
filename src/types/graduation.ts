@@ -100,7 +100,13 @@ export interface CreditProgress {
   unverifiable?: boolean;
 }
 
-export type RequiredCourseStatus = "DONE" | "PARTIAL" | "MISSING" | "UNKNOWN";
+export type RequiredCourseStatus =
+  | "DONE"
+  | "PARTIAL"
+  | "MISSING"
+  /** 학과 특성상 그 요건을 적용하지 않는 경우 (예: 정보기술대학의 SW 교양) */
+  | "EXEMPT"
+  | "UNKNOWN";
 
 export interface RequiredCourseProgress {
   courseName: string;

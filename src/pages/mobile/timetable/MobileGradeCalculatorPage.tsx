@@ -551,7 +551,11 @@ export default function MobileGradeCalculatorPage() {
         isuFldName: sub.isuFldName,
       }));
 
-    return evaluateGraduation(resolvedGraduationRule.rule, subjects);
+    return evaluateGraduation(
+      resolvedGraduationRule.rule,
+      subjects,
+      resolvedGraduationRule.departmentCode,
+    );
   }, [resolvedGraduationRule, semestersData]);
 
   const requiredAverageGpa = useMemo(() => {

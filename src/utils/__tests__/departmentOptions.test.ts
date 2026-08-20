@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   findDepartmentCodeByName,
+  getCollegeByDepartmentCode,
   getDepartmentOptionGroups,
 } from "../departmentOptions";
 import { isGraduationRequirementSupported } from "../graduationRequirements";
@@ -85,5 +86,23 @@ describe("getDepartmentOptionGroups", () => {
       );
 
     expect(missing).toEqual([]);
+  });
+});
+
+describe("getCollegeByDepartmentCode", () => {
+  it("학과 코드로 소속 단과대학을 찾는다", () => {
+    expect(getCollegeByDepartmentCode("COMPUTER_ENGINEERING")).toBe(
+      "정보기술대학",
+    );
+    expect(getCollegeByDepartmentCode("EMBEDDED_SYSTEM")).toBe("정보기술대학");
+    expect(getCollegeByDepartmentCode("BUSINESS_ADMINISTRATION")).toBe(
+      "경영대학",
+    );
+  });
+
+  it("모르는 코드는 빈 문자열", () => {
+    expect(getCollegeByDepartmentCode("NOT_A_DEPARTMENT")).toBe("");
+    expect(getCollegeByDepartmentCode("")).toBe("");
+    expect(getCollegeByDepartmentCode(null)).toBe("");
   });
 });

@@ -83,6 +83,29 @@ const normalizeDepartmentName = (name: string): string =>
     .replace(/[\s·\-()]/g, "")
     .toLowerCase();
 
+let codeToCollege: Map<string, string> | null = null;
+
+/**
+ * 학과 코드로 소속 단과대학 이름을 찾는다.
+ * 졸업요건처럼 학과가 아니라 단과대 단위로 갈리는 규정을 판정할 때 쓴다.
+ */
+export const getCollegeByDepartmentCode = (
+  departmentCode: string | null | undefined,
+): string => {
+  if (!departmentCode) return "";
+
+  if (!codeToCollege) {
+    codeToCollege = new Map();
+    getDepartmentOptionGroups().forEach((group) =>
+      group.departments.forEach(({ code }) => {
+        codeToCollege!.set(code, group.college);
+      }),
+    );
+  }
+
+  return codeToCollege.get(departmentCode) ?? "";
+};
+
 let normalizedNameToCode: Map<string, string> | null = null;
 
 /** navBarList 학과명 + 별칭을 정규화한 이름으로 찾을 수 있게 편다. */

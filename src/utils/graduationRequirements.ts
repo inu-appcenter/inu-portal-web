@@ -1,4 +1,5 @@
 import { GRADUATION_REQUIREMENTS } from "@/resources/data/graduationRequirements";
+import { getCollegeByDepartmentCode } from "@/utils/departmentOptions";
 import type {
   CreditProgress,
   DepartmentGraduationRequirement,
@@ -88,6 +89,24 @@ export const resolveGraduationRule = (
 
   return { departmentCode, department, rule: nearest, exact: false };
 };
+
+// --- 학과 특성에 따른 요건 면제 ---
+
+/**
+ * SW 필수 교양을 면제로 보는 단과대학.
+ *
+ * 정보기술대학 학과들은 프로그래밍 교과가 전공에 들어 있어 SW 교양을 따로 듣지
+ * 않는다. 학칙 표에는 SW가 그대로 적혀 있어 데이터는 원문대로 두고, 판정할 때만
+ * 면제로 본다. (전공 과목을 SW 요건에 끌어다 쓰면 전공 학점이 이중으로 세여서
+ * `allowMajor`로 푸는 방식은 쓰지 않는다.)
+ */
+const SW_EXEMPT_COLLEGES = new Set(["정보기술대학"]);
+
+/** 그 학과가 SW 필수 교양을 면제받는지 */
+export const isSwRequirementExempt = (
+  departmentCode: string | null | undefined,
+): boolean =>
+  SW_EXEMPT_COLLEGES.has(getCollegeByDepartmentCode(departmentCode));
 
 // --- 필수 교양 과목 매칭 ---
 
@@ -236,6 +255,8 @@ const buildCreditProgress = (
 export const evaluateGraduation = (
   rule: GraduationRule,
   subjects: EvaluatedSubject[],
+  /** 학과 단위 면제 규정을 적용하려면 넘긴다. 없으면 학칙 그대로 본다. */
+  departmentCode?: string | null,
 ): GraduationEvaluation => {
   const passed = subjects.filter((subject) => subject.passed);
 
@@ -291,10 +312,23 @@ export const evaluateGraduation = (
     }
   }
 
+  const swExempt = isSwRequirementExempt(departmentCode);
+
   // 한 과목이 두 요건에 동시에 잡히지 않도록 소비한 과목을 기록한다.
   const consumed = new Set<number>();
   const requiredCourses: RequiredCourseProgress[] =
     general.requiredGeneralCourses.map((course) => {
+      if (swExempt && course.category === "SW") {
+        return {
+          courseName: course.courseName,
+          category: course.category,
+          requiredCredits: course.credits,
+          earnedCredits: 0,
+          status: "EXEMPT" as RequiredCourseStatus,
+          matchedNames: [],
+        };
+      }
+
       if (course.category === "기타") {
         return {
           courseName: course.courseName,
@@ -336,6 +370,12 @@ export const evaluateGraduation = (
         matchedNames,
       };
     });
+
+  if (requiredCourses.some((course) => course.status === "EXEMPT")) {
+    notices.push(
+      "정보기술대학은 SW 교과가 전공에 들어 있어 SW 필수 교양은 면제로 봤어요.",
+    );
+  }
 
   if (requiredCourses.some((course) => course.status === "UNKNOWN")) {
     notices.push(

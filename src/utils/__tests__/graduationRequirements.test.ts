@@ -3,6 +3,7 @@ import {
   calculateRequiredAverageGpa,
   evaluateGraduation,
   isGraduationRequirementSupported,
+  isSwRequirementExempt,
   parseEntryYearFromStudentId,
   resolveGraduationRule,
 } from "../graduationRequirements";
@@ -275,5 +276,72 @@ describe("calculateRequiredAverageGpa", () => {
         remainingCredits: 0,
       }),
     ).toBeNull();
+  });
+});
+
+describe("SW 필수 교양 면제 (정보기술대학)", () => {
+  const rule = resolveGraduationRule("COMPUTER_ENGINEERING", 2023)!.rule;
+  const findSw = (evaluation: ReturnType<typeof evaluateGraduation>) =>
+    evaluation.requiredCourses.find((course) => course.category === "SW");
+
+  it("정보기술대학 학과는 SW 요건을 면제로 본다", () => {
+    expect(isSwRequirementExempt("COMPUTER_ENGINEERING")).toBe(true);
+    expect(isSwRequirementExempt("INFORMATION_COMMUNICATION_ENGINEERING")).toBe(
+      true,
+    );
+    expect(isSwRequirementExempt("EMBEDDED_SYSTEM")).toBe(true);
+  });
+
+  it("다른 단과대 학과와 빈 코드는 면제가 아니다", () => {
+    expect(isSwRequirementExempt("MECHANICAL_ENGINEERING")).toBe(false);
+    expect(isSwRequirementExempt("BUSINESS_ADMINISTRATION")).toBe(false);
+    expect(isSwRequirementExempt("")).toBe(false);
+    expect(isSwRequirementExempt(null)).toBe(false);
+  });
+
+  it("SW 과목을 안 들었어도 미이수로 잡지 않는다", () => {
+    const evaluation = evaluateGraduation(
+      rule,
+      [subject("자료구조", 3, { isMajor: true })],
+      "COMPUTER_ENGINEERING",
+    );
+
+    expect(findSw(evaluation)?.status).toBe("EXEMPT");
+    expect(evaluation.notices).toContain(
+      "정보기술대학은 SW 교과가 전공에 들어 있어 SW 필수 교양은 면제로 봤어요.",
+    );
+  });
+
+  it("면제 학과는 SW 교양을 이미 들었어도 면제로 표시한다", () => {
+    const evaluation = evaluateGraduation(
+      rule,
+      [subject("컴퓨팅적사고와SW", 2)],
+      "COMPUTER_ENGINEERING",
+    );
+
+    const sw = findSw(evaluation);
+    expect(sw?.status).toBe("EXEMPT");
+    expect(sw?.earnedCredits).toBe(0);
+    expect(sw?.matchedNames).toEqual([]);
+  });
+
+  it("면제 학과가 아니면 SW 요건을 그대로 판정한다", () => {
+    const mechanical = resolveGraduationRule("MECHANICAL_ENGINEERING", 2023)!;
+    const evaluation = evaluateGraduation(
+      mechanical.rule,
+      [subject("기계기초프로그래밍", 3, { isMajor: true })],
+      mechanical.departmentCode,
+    );
+
+    // 기계공학과는 SW 요건이 전공필수 과목으로 대체되는 형태라 그대로 판정한다.
+    expect(findSw(evaluation)?.status).toBe("DONE");
+  });
+
+  it("학과 코드를 안 넘기면 학칙 그대로 본다", () => {
+    const evaluation = evaluateGraduation(rule, [
+      subject("자료구조", 3, { isMajor: true }),
+    ]);
+
+    expect(findSw(evaluation)?.status).toBe("MISSING");
   });
 });

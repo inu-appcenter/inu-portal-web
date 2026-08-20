@@ -142,6 +142,7 @@ export default function GraduationRequirementCard({
                           `${course.earnedCredits}/${course.requiredCredits}학점`}
                         {course.status === "MISSING" &&
                           `미이수 · ${course.requiredCredits}학점`}
+                        {course.status === "EXEMPT" && "면제"}
                         {course.status === "UNKNOWN" && "확인 필요"}
                       </span>
                     </CourseStatus>
