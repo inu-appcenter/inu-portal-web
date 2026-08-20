@@ -371,12 +371,6 @@ export const evaluateGraduation = (
       };
     });
 
-  if (requiredCourses.some((course) => course.status === "EXEMPT")) {
-    notices.push(
-      "정보기술대학은 SW 교과가 전공에 들어 있어 SW 필수 교양은 면제로 봤어요.",
-    );
-  }
-
   if (requiredCourses.some((course) => course.status === "UNKNOWN")) {
     notices.push(
       "일부 필수 교양은 과목명만으로 판정할 수 없어 직접 확인이 필요해요.",

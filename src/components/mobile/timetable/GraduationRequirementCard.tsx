@@ -47,7 +47,10 @@ export default function GraduationRequirementCard({
   if (!resolved || !evaluation)
     return <EmptyText>{emptyMessage}</EmptyText>
 
-  const requiredCourses = evaluation.requiredCourses;
+  // 면제(EXEMPT) 요건은 그 학과에 적용되지 않는 규정이라 아예 보여주지 않는다.
+  const requiredCourses = evaluation.requiredCourses.filter(
+    (course) => course.status !== "EXEMPT",
+  );
 
   return (
     <Card>
@@ -142,7 +145,6 @@ export default function GraduationRequirementCard({
                           `${course.earnedCredits}/${course.requiredCredits}학점`}
                         {course.status === "MISSING" &&
                           `미이수 · ${course.requiredCredits}학점`}
-                        {course.status === "EXEMPT" && "면제"}
                         {course.status === "UNKNOWN" && "확인 필요"}
                       </span>
                     </CourseStatus>

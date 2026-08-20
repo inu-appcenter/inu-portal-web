@@ -307,9 +307,8 @@ describe("SW 필수 교양 면제 (정보기술대학)", () => {
     );
 
     expect(findSw(evaluation)?.status).toBe("EXEMPT");
-    expect(evaluation.notices).toContain(
-      "정보기술대학은 SW 교과가 전공에 들어 있어 SW 필수 교양은 면제로 봤어요.",
-    );
+    // 화면에서 아예 감추는 요건이라 면제를 알리는 안내도 띄우지 않는다.
+    expect(evaluation.notices.join()).not.toContain("SW");
   });
 
   it("면제 학과는 SW 교양을 이미 들었어도 면제로 표시한다", () => {
