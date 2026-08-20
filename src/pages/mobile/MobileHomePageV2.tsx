@@ -303,6 +303,34 @@ export default function MobileHomePageV2() {
             onClick={() => window.open("https://home.inuappcenter.kr")}
           />
         </LogoInner>
+
+        <PolicyLinksInner>
+          <PolicyLinks>
+            <a href="/terms-of-use.html" target="_blank" rel="noopener noreferrer">
+              이용약관
+            </a>
+            <PolicyDivider />
+            <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">
+              개인정보 처리방침
+            </a>
+            <PolicyDivider />
+            <a
+              href="/community-guideline.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              커뮤니티 이용규칙
+            </a>
+            <PolicyDivider />
+            <a
+              href="/youth-protection.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              청소년 보호정책
+            </a>
+          </PolicyLinks>
+        </PolicyLinksInner>
       </AppcenterLogoWrapper>
     </V2Wrapper>
   );
@@ -488,7 +516,7 @@ const DesktopWidgetColumn = styled.div`
 
 const AppcenterLogoWrapper = styled.div`
   background: var(--gray-1000, #000);
-  padding: 48px 0 148px;
+  padding: 48px 0 calc(var(--nav-height, 100px) + 24px);
   width: 100%;
   box-sizing: border-box;
 
@@ -498,6 +526,31 @@ const AppcenterLogoWrapper = styled.div`
     aspect-ratio: 34/13;
     cursor: pointer;
   }
+`;
+
+const PolicyLinks = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  a {
+    color: var(--gray-500, #8b95a1);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--gray-300, #b0b8c1);
+    }
+  }
+`;
+
+const PolicyDivider = styled.span`
+  width: 1px;
+  height: 10px;
+  background: var(--gray-800, #333);
 `;
 
 const SectionInner = styled.div`
@@ -520,6 +573,17 @@ const LogoInner = styled(SectionInner)`
   display: flex;
   justify-content: flex-start;
   align-items: center;
+
+  @media ${DESKTOP_MEDIA} {
+    padding-left: clamp(24px, 4vw, 48px);
+    padding-right: clamp(24px, 4vw, 48px);
+  }
+`;
+
+const PolicyLinksInner = styled(SectionInner)`
+  padding-left: 32px;
+  padding-right: 32px;
+  margin-top: 20px;
 
   @media ${DESKTOP_MEDIA} {
     padding-left: clamp(24px, 4vw, 48px);

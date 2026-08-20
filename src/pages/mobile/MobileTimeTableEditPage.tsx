@@ -7,6 +7,8 @@ import MobileCourseSearchSheet, {
   COURSE_SEARCH_SNAP_POINTS,
 } from "@/components/mobile/timetable/MobileCourseSearchSheet";
 import TooltipMessage from "@/components/common/TooltipMessage";
+import { usePromotion } from "@/hooks/usePromotion";
+import { PROMOTIONS } from "@/utils/promotion/registry";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -126,7 +128,11 @@ const MobileTimeTableEditPage = () => {
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("courseQuery") || undefined;
   const wizardButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [showWizardTooltip, setShowWizardTooltip] = useState(true);
+  const {
+    isVisible: showWizardTooltip,
+    dismiss: dismissWizardTooltip,
+    accept: acceptWizardTooltip,
+  } = usePromotion(PROMOTIONS.TIMETABLE_WIZARD);
 
   // 상태 및 스토어 관리
   const { timetables, activeTimetableId } = useTimetableStore();
@@ -225,6 +231,11 @@ const MobileTimeTableEditPage = () => {
             mixpanelTrack.timetableWizardAction("시작", {
               location: "시간표 편집 헤더",
             });
+
+            if (showWizardTooltip) {
+              acceptWizardTooltip("Wizard Button");
+            }
+
             navigate(ROUTES.TIMETABLE.WIZARD);
           }}
         >
@@ -233,7 +244,7 @@ const MobileTimeTableEditPage = () => {
         {showWizardTooltip && (
           <TooltipMessage
             message="시간표 마법사를\n사용해보세요!"
-            onClose={() => setShowWizardTooltip(false)}
+            onClose={dismissWizardTooltip}
             position="bottom"
             align="center"
             width="max-content"
@@ -253,7 +264,7 @@ const MobileTimeTableEditPage = () => {
         </IconButton>
       </HeaderRightArea>
     ),
-    [navigate, showWizardTooltip],
+    [navigate, showWizardTooltip, dismissWizardTooltip, acceptWizardTooltip],
   );
 
   useHeader({

@@ -27,6 +27,7 @@ import {
   FILTER_SUB_VIEW_TITLES,
   countActiveFilters,
   getOnlineTypeLabel,
+  getEnrollmentLabel,
 } from "@/components/mobile/timetable/filter/courseFilterModel";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
 import { toWizardCourseOption } from "@/utils/timetableWizardPool";
@@ -103,6 +104,7 @@ interface CourseRow {
   isMajor: boolean;
   isuLabel: string;
   onlineTypeLabel: string | null;
+  enrollmentLabel: string | null;
   timeStr: string;
   room: string;
   enrolledCount: number | null;
@@ -126,6 +128,10 @@ const buildCourseRow = (
     offering.ssupTypeName,
     offering.ssupTypeCode,
   );
+  const enrollmentLabel = getEnrollmentLabel(
+    offering.enrolledCount,
+    offering.capacity,
+  );
 
   return {
     offeringId: offering.id,
@@ -139,6 +145,7 @@ const buildCourseRow = (
     // 심화교양/교직/일반선택/군사학). 전공·교양 두 갈래로 뭉개면 실제와 어긋난다.
     isuLabel: isuName || "-",
     onlineTypeLabel,
+    enrollmentLabel,
     timeStr: offering.meetings
       .map((m) => `${DAY_LABELS[DAY_INDEX[m.day]]} ${m.startTime}~${m.endTime}`)
       .join(", "),
@@ -409,10 +416,8 @@ const WizardCourseSearchSheet = () => {
                                 {row.savedCount}명 담음
                               </SavedBadge>
                             )}
-                            {row.enrolledCount != null && row.capacity != null && (
-                              <EnrolledBadge>
-                                {row.enrolledCount}명 / {row.capacity}명
-                              </EnrolledBadge>
+                            {row.enrollmentLabel && (
+                              <EnrolledBadge>{row.enrollmentLabel}</EnrolledBadge>
                             )}
                           </RightInfo>
                         </InfoRow>

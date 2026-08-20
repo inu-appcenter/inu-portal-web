@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { ChevronLeft } from "lucide-react";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useSemesters } from "@/hooks/useSemesters";
+import { pickCurrentSemester } from "@/utils/semester";
 import { useCourses } from "@/hooks/useCourses";
 import useUserStore from "@/stores/useUserStore";
 import { parseSmartCampusGrades } from "@/utils/parseSmartCampusGrades";
@@ -78,8 +79,11 @@ export default function GradeImportSheet({
   // 하지 않는다.
   const effectiveSemester = useMemo(() => {
     if (detectedSemester) return detectedSemester;
-    if (semesters.length > 0) {
-      return { year: semesters[0].year, term: semesters[0].term };
+    // 진행중(OPEN) 학기를 우선한다 — 다음 학기가 개설강의 동기화 전에
+    // 미리 등록돼 있으면(#235) 최신 학기가 아직 텅 빈 학기일 수 있다.
+    const preferred = pickCurrentSemester(semesters);
+    if (preferred) {
+      return { year: preferred.year, term: preferred.term };
     }
     return null;
   }, [detectedSemester, semesters]);
@@ -213,6 +217,13 @@ export default function GradeImportSheet({
                       <span className="target">
                         재수강으로 성적이 취소된 {voidedCount}개는 평점 계산에서
                         빠집니다.
+                      </span>
+                    )}
+                    {matchedCount > 0 && (
+                      <span className="target">
+                        학점은 현재 편람 기준으로 표시돼요. 이수 당시와
+                        학점이 바뀐 과목은 실제와 다를 수 있어요 — 다르면
+                        직접 수정해주세요.
                       </span>
                     )}
                     <span className="target">

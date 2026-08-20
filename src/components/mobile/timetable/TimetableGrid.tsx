@@ -308,6 +308,64 @@ const TimetableGrid = ({
     return map;
   }, [events, themeColors]);
 
+  // 비교 모드 전용: 사람(ownerName) 단위로 색을 고정한다. 과목명 단위(colorMap)로
+  // 배정하면 같은 사람이 여러 과목을 들을 때 색이 갈리고, 다른 사람이라도 과목명이
+  // 우연히 같으면 같은 색이 될 수 있어 "누구 시간표인지" 구분이 안 됐다(#241).
+  // 내 시간표는 항상 themeColors[0], 친구들은 그 다음부터 순환 배정해 겹치지 않는다.
+  // colorMap(과목명 기준)은 그대로 두어 ClassDetailBottomSheet의 점 색상 등
+  // 기존 동작에 영향이 없게 한다.
+  const ownerColorMap = useMemo(() => {
+    if (!isCompareMode) return null;
+    const map = new Map<string, string>();
+    const ownerIsFriend = new Map<string, boolean>();
+    events.forEach((e) => {
+      if (e.ownerName && !ownerIsFriend.has(e.ownerName)) {
+        ownerIsFriend.set(e.ownerName, Boolean(e.isFriendOwned));
+      }
+    });
+    const friendOwners = Array.from(ownerIsFriend.entries())
+      .filter(([, isFriend]) => isFriend)
+      .map(([name]) => name);
+    ownerIsFriend.forEach((isFriend, owner) => {
+      map.set(
+        owner,
+        isFriend
+          ? themeColors[(friendOwners.indexOf(owner) + 1) % themeColors.length]
+          : themeColors[0],
+      );
+    });
+    return map;
+  }, [events, themeColors, isCompareMode]);
+
+  // 비교 모드 전용: 나와 친구가 같은 요일·겹치는 시간에 같은 과목(courseOfferingId,
+  // 없으면 과목명)을 듣는 블록 쌍을 찾아 "함께 듣는 수업"으로 강조 표시한다.
+  // item.id는 시간표마다 독립적으로 매겨져 소유자가 다르면 충돌할 수 있으므로
+  // (ownerName, id) 조합을 키로 쓴다.
+  const sharedBlockKeys = useMemo(() => {
+    const shared = new Set<string>();
+    if (!isCompareMode) return shared;
+    const timedItems = events.filter((e) => !e.isUntimed);
+    const keyOf = (e: ClassItem) => `${e.ownerName ?? ""}-${e.id}`;
+    for (let i = 0; i < timedItems.length; i++) {
+      for (let j = i + 1; j < timedItems.length; j++) {
+        const a = timedItems[i];
+        const b = timedItems[j];
+        if (a.ownerName === b.ownerName) continue; // 같은 사람 것끼리는 비교하지 않는다
+        if (a.day !== b.day) continue;
+        const overlaps = a.startTime < b.endTime && b.startTime < a.endTime;
+        if (!overlaps) continue;
+        const sameCourse =
+          a.courseOfferingId && b.courseOfferingId
+            ? a.courseOfferingId === b.courseOfferingId
+            : a.name === b.name;
+        if (!sameCourse) continue;
+        shared.add(keyOf(a));
+        shared.add(keyOf(b));
+      }
+    }
+    return shared;
+  }, [events, isCompareMode]);
+
   // 렌더링 헬퍼 함수
   const renderEventBlock = (
     item: ClassItem,
@@ -318,12 +376,18 @@ const TimetableGrid = ({
     const rowStart = timeToRow(item.startTime);
     // 5분 미만 길이(데이터 이상)라도 최소 한 행은 차지해야 그리드가 깨지지 않는다.
     const rowEnd = Math.max(rowStart + 1, timeToRow(item.endTime));
-    // 개별 색상이 지정되어 있으면 우선 사용, 아니면 미리보기면 고정색, 기본은 맵핑된 색
+    // 개별 색상이 지정되어 있으면 우선 사용, 아니면 미리보기면 고정색, 비교 모드면
+    // 사람 단위 색, 기본은 과목명 단위로 맵핑된 색
     const bgColor = item.color
       ? item.color
       : isPreview
         ? "rgba(0, 123, 255, 0.5)" // 반투명 파란색
-        : colorMap.get(item.name) || "#FFFFFF";
+        : isCompareMode && item.ownerName && ownerColorMap?.get(item.ownerName)
+          ? ownerColorMap.get(item.ownerName)!
+          : colorMap.get(item.name) || "#FFFFFF";
+
+    const isShared =
+      isCompareMode && sharedBlockKeys.has(`${item.ownerName ?? ""}-${item.id}`);
 
     const handleClassClick = () => {
       if (isPreview || isFreeMode) return;
@@ -340,6 +404,8 @@ const TimetableGrid = ({
         $isCompareMode={isCompareMode} // 추가
         $isFreeMode={isFreeMode} // 추가
         $isSelectionMode={isSelectionMode} // 추가
+        $isFriendOwned={Boolean(item.isFriendOwned)}
+        $isShared={isShared}
         onClick={handleClassClick}
         style={{
           gridColumnStart: colStart,
@@ -563,6 +629,8 @@ const ClassItemBlock = styled.div<{
   $isCompareMode?: boolean; // 추가
   $isFreeMode?: boolean; // 추가
   $isSelectionMode?: boolean; // 추가
+  $isFriendOwned?: boolean; // 비교 모드에서 친구 소유 블록인지 (레이어 순서용, #241)
+  $isShared?: boolean; // 비교 모드에서 나와 겹치는(함께 듣는) 블록인지 (#241)
 }>`
   background-color: ${({ $bgColor }) => $bgColor};
   margin: 1px;
@@ -570,10 +638,18 @@ const ClassItemBlock = styled.div<{
   padding: 4px;
   display: flex;
   flex-direction: column;
-  z-index: ${({ $isPreview }) =>
-    $isPreview ? 20 : 10}; /* 미리보기가 더 위로 */
+  /* 레이어 순서: 미리보기(30) > 비교 모드에서 내 블록(15) > 친구/일반 블록(10).
+     배열에 넣은 순서에 기대지 않고 명시적으로 고정한다(#241 - 기존엔 규칙이 없어
+     내 시간표가 항상 activeEvents에 먼저 push된다는 우연에만 의존했다). */
+  z-index: ${({ $isPreview, $isCompareMode, $isFriendOwned }) =>
+    $isPreview ? 30 : $isCompareMode && !$isFriendOwned ? 15 : 10};
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  ${({ $isShared }) =>
+    $isShared &&
+    `
+    border: 2px solid var(--text-brand, #0061ff);
+  `}
   pointer-events: ${({ $isPreview, $isFreeMode, $isSelectionMode }) =>
     $isPreview || $isFreeMode || $isSelectionMode
       ? "none"

@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 
 interface CategoryOption {
   label: string;
@@ -134,7 +133,7 @@ const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
     $hasHorizontalOverflow ? "auto" : "hidden"};
 
   /* 스크롤 시에만 우측 여백 확보 */
-  padding: 4px 0;
+  padding: 0;
   padding-right: ${({ $hasHorizontalOverflow }) =>
     $hasHorizontalOverflow ? "24px" : "0px"};
 
@@ -157,16 +156,16 @@ const FillItem = styled.div<{ $selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: fit-content;
+  height: 38px;
   border-radius: 100px;
-  padding: 8px 14px;
+  padding: 0 16px;
   font-size: 14px;
   font-weight: ${({ $selected }) => ($selected ? "600" : "500")};
   background: ${({ $selected }) => ($selected ? "#5E92F0" : "transparent")};
   color: ${({ $selected }) => ($selected ? "#F4F4F4" : "#666")};
-  // box-shadow: ${SOFT_CHIP_SHADOW};
   cursor: pointer;
   white-space: nowrap;
+  box-sizing: border-box;
 `;
 
 const Count = styled.span<{ $selected: boolean }>`

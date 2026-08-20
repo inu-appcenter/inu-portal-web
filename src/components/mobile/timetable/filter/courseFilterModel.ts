@@ -145,6 +145,18 @@ export function getOnlineTypeLabel(
   return ssupTypeName || ssupTypeCode || null;
 }
 
+// 정원/실제 수강 인원 배지 라벨. 값이 하나만 있어도(둘 다 있어야만 노출하던
+// all-or-nothing 대신) 있는 값만이라도 라벨과 함께 보여준다(#256).
+export function getEnrollmentLabel(
+  enrolledCount?: number | null,
+  capacity?: number | null,
+): string | null {
+  const parts: string[] = [];
+  if (capacity != null) parts.push(`정원 ${capacity}명`);
+  if (enrolledCount != null) parts.push(`수강 ${enrolledCount}명`);
+  if (parts.length === 0) return null;
+  return parts.join(" · ");
+}
 
 export const SORT_OPTIONS = ["기본순", "별점높은순", "담은인원많은순"] as const;
 export const TYPE_OPTIONS = ["전공", "교양", "교직", "일반선택", "군사학"] as const;

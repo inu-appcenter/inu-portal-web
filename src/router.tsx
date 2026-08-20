@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES, isMainTabPath } from "@/constants/routes";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 
 
@@ -14,6 +14,7 @@ import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
 import AiPage from "@/pages/desktop/AiPage";
+import AiBrandPage from "@/pages/mobile/Ai/AiBrandPage";
 import MobileSavePage from "@/pages/mobile/MobileSavePage";
 import MobileMyPage from "@/pages/mobile/MobileMyPage";
 import MobileWritePage from "@/pages/mobile/MobileWritePage";
@@ -46,6 +47,8 @@ import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
+import MobileAdminBusPage from "@/pages/mobile/Admin/MobileAdminBusPage";
+
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
@@ -62,6 +65,7 @@ import MobileCourseAddPage from "@/pages/mobile/timetable/MobileCourseAddPage";
 import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimulatorPage";
 import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import MobileTimetableWizardPage from "@/pages/mobile/timetable/MobileTimetableWizardPage";
+import MobileTimetableGroupWizardPage from "@/pages/mobile/timetable/MobileTimetableGroupWizardPage";
 import MobileTimeTableListPage from "@/pages/mobile/timetable/MobileTimeTableListPage";
 import MobileGradeCalculatorPage from "@/pages/mobile/timetable/MobileGradeCalculatorPage";
 import MobileSyllabusPage from "@/pages/mobile/timetable/MobileSyllabusPage";
@@ -150,6 +154,10 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.ADD, element: <MobileCourseAddPage /> },
           { path: ROUTES.TIMETABLE.FILTER, element: <MobileCourseFilterPage /> },
           { path: ROUTES.TIMETABLE.WIZARD, element: <MobileTimetableWizardPage /> },
+          {
+            path: ROUTES.TIMETABLE.WIZARD_GROUP,
+            element: <MobileTimetableGroupWizardPage />,
+          },
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
           { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
@@ -188,7 +196,13 @@ export const router = createBrowserRouter([
           },
 
           // 횃불이 AI
-          { path: ROUTES.AI, element: <AiPage /> },
+          {
+            path: ROUTES.AI.ROOT,
+            children: [
+              { index: true, element: <AiBrandPage /> },
+              { path: "image-generation", element: <AiPage /> },
+            ],
+          },
 
           // 게시판
           { path: ROUTES.BOARD.ALERT, element: <MobileAlertPage /> },
@@ -286,6 +300,11 @@ export const router = createBrowserRouter([
             path: ROUTES.ADMIN.CHAT,
             element: <MobileAdminChatPage />,
           },
+          {
+            path: ROUTES.ADMIN.BUS,
+            element: <MobileAdminBusPage />,
+          },
+
         ],
       },
       // ----------------------------------------------------------------
@@ -309,29 +328,6 @@ export const router = createBrowserRouter([
   },
 ]);
 
-const MAIN_TAB_PATHS = new Set([
-  "/",
-  "/home",
-  "/bus",
-  "/chat/list",
-  "/save",
-  "/mypage",
-  "/timetable",
-  "/m",
-  "/m/home",
-  "/m/bus",
-  "/m/chat/list",
-  "/m/save",
-  "/m/mypage",
-  "/m/timetable"
-]);
-
-function isMainTabPath(path: string): boolean {
-  if (!path) return false;
-  const cleanPath = path.split("?")[0].split("#")[0];
-  return MAIN_TAB_PATHS.has(cleanPath);
-}
-
 function getPathname(to: any): string {
   if (!to) return "";
   if (typeof to === "string") {
@@ -350,7 +346,9 @@ if (typeof window !== "undefined") {
     // 1. 숫자가 전달된 경우 (뒤로가기)
     if (typeof to === "number") {
       if (to === -1 && supportsMultiWebView()) {
-        appBridge.goBack();
+        // 이 웹뷰 안에 되돌릴 것(모달/SPA 히스토리)이 있으면 웹에서 처리하고,
+        // 없을 때만 네이티브가 웹뷰를 pop 한다. appBridgeAdapter 참고.
+        appBridge.requestBack();
         return Promise.resolve();
       }
       return (originalNavigate as any).call(router, to, opts);
@@ -363,18 +361,29 @@ if (typeof window !== "undefined") {
     // <Navigate to={ROUTES.HOME} replace />, router.tsx 라우트 테이블 참고).
     const isBootstrapRedirect = window.location.pathname === "/" && isHomePath;
 
-    // 2. 홈 탭 경로 이동: 탭바 클릭(isTabNavigation)이나 이 웹뷰 자신의 부팅
-    // 리다이렉트가 아니라면 항상 네이티브로 위임한다
-    if (supportsMultiWebView() && isHomePath && !isTabNavigation && !isBootstrapRedirect) {
-      appBridge.goHome(path);
-      return Promise.resolve();
-    }
-
     // 단순 해시(#)나 쿼리(?)만 변경하는 라우팅이거나 빈 이동인지 확인
     const isHashOrSearchOnly =
       to === "" ||
       (typeof to === "string" && (to.startsWith("#") || to.startsWith("?"))) ||
       (typeof to === "object" && to !== null && !to.pathname);
+    const isSamePath = window.location.pathname === path;
+    const isCurrentInMainTab = isMainTabPath(window.location.pathname);
+
+    // 2. 메인 탭 경로 이동:
+    // - 이미 루트/메인 탭 화면에 있는 상태에서 다른 메인 탭으로 이동하거나 쿼리를 변경하는 경우: 웹 내부 SPA 이동 유지
+    // - 서브 웹뷰(pushed webview)에서 메인 탭으로 복귀하는 경우에만 네이티브로 위임(collapse stack)
+    if (
+      supportsMultiWebView() &&
+      isMainTabPath(path) &&
+      !isCurrentInMainTab &&
+      !isTabNavigation &&
+      !isBootstrapRedirect &&
+      !isSamePath &&
+      !isHashOrSearchOnly
+    ) {
+      appBridge.goHome(path);
+      return Promise.resolve();
+    }
 
     // 3. 신규 멀티 웹뷰 환경이고 메인 탭이 아니며, 탭 이동 옵션도 없는 경우 -> 새 웹뷰 액티비티로 오픈
     if (
@@ -393,7 +402,6 @@ if (typeof window !== "undefined") {
 
     return (originalNavigate as any).call(router, to, opts);
   };
-
 }
 
 

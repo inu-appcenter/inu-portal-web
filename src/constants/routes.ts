@@ -8,7 +8,11 @@ export const ROUTES = {
   MOBILE_HOME: "/m/home",
   HOME_V2: "/home/v2",
 
-  AI: "/ai",
+  // 횃불이 AI
+  AI: {
+    ROOT: "/ai",
+    IMAGE_GEN: "/ai/image-generation",
+  },
   SAVE: "/save",
 
   FESTIVAL2026: "/festival2026",
@@ -26,6 +30,7 @@ export const ROUTES = {
     CALCULATOR: "/timetable/calculator",
     SYLLABUS: "/timetable/syllabus",
     WIZARD: "/timetable/wizard",
+    WIZARD_GROUP: "/timetable/wizard-group",
   },
 
   // 친구
@@ -127,5 +132,31 @@ export const ROUTES = {
     USER_NOTIFICATIION: "/admin/usernotification",
     FEATURE_FLAGS: "/admin/feature-flags",
     CHAT: "/admin/chat",
+    BUS: "/admin/bus",
   },
+
 } as const;
+
+export const MAIN_TAB_PATHS = new Set([
+  "/",
+  "/home",
+  "/bus",
+  "/chat/list",
+  "/save",
+  "/mypage",
+  "/timetable",
+  "/m",
+  "/m/home",
+  "/m/bus",
+  "/m/chat/list",
+  "/m/save",
+  "/m/mypage",
+  "/m/timetable",
+]);
+
+export function isMainTabPath(path: string): boolean {
+  if (!path) return false;
+  const cleanPath = path.split("?")[0].split("#")[0];
+  return MAIN_TAB_PATHS.has(cleanPath);
+}
+

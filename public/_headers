@@ -1,6 +1,18 @@
+
+
+# HTML 파일 및 루트 경로는 항상 서버 재검증
 /*
   Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
 
+# `/sw.js`는 남은 서비스워커 등록을 회수하기 위한 묘비 워커다(내용은 public/sw.js).
+# 이 파일을 못 받으면 옛 워커가 그대로 남으므로, 업데이트 확인이 브라우저 HTTP 캐시를
+# 거치지 않게 한다.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# 빌드 자원 중 쿼리스트링이나 해시가 변경되면 무조건 최신 요청
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 

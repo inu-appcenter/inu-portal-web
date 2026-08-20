@@ -6,7 +6,7 @@ import styled from "styled-components";
 import ActionButton from "@/components/common/ActionButton";
 import useUserStore from "@/stores/useUserStore";
 import { ScheduleEvent, ScheduleType } from "@/types/schedules";
-import AI_LOGO from "@/resources/assets/calendar/챗불이요약.png";
+import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 type EventItemProps = ScheduleEvent & {
@@ -83,7 +83,7 @@ const EventItem = ({ isOpenMode, ...props }: EventItemProps) => {
               )}
               {props.aiGenerated && (
                 <AiBadge>
-                  <img src={AI_LOGO} alt="횃불이AI" />
+                  <TorchAiLogoIcon width={28} height={28} aria-hidden="true" />
                   <AiText>
                     <strong>횃불이 AI</strong>로 생성된 콘텐츠입니다.
                     <br />
@@ -219,24 +219,31 @@ const DetailContainer = styled.div`
 
 const AiBadge = styled.div`
   display: flex;
-  justify-content: end;
-  align-items: flex-start;
-  gap: 4px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
   width: 100%;
-  font-size: 10px;
-  color: gray;
+  font-size: 10.5px;
+  color: #8e8e93;
   border-radius: 4px;
 
-  img {
-    width: 18px;
+  svg {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
   }
 `;
 
 const AiText = styled.span`
   display: block;
-  line-height: 1.4;
+  line-height: 1.35;
   text-align: left;
   word-break: keep-all;
+
+  strong {
+    color: #48484a;
+    font-weight: 600;
+  }
 `;
 
 const Description = styled.p`

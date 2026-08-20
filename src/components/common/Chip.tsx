@@ -29,8 +29,8 @@ const Chip = ({
     >
       <Ripple />
       <InnerContent>
-        {iconSrc && <Icon src={iconSrc} alt="" />}
-        {IconComponent && <IconComponent size={18} color="#4071B9" />}
+        {iconSrc && <Icon src={iconSrc} alt="" $isAIButton={isAIButton} />}
+        {IconComponent && <IconComponent size={20} color="#4071B9" />}
         <ContentArea>
           <div className="title">{title}</div>
           {isExternalLink && <img src={외부연결버튼} />}
@@ -45,13 +45,13 @@ export default Chip;
 const InnerContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   transition: transform 0.12s ease-in-out;
 `;
 
 const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   display: flex;
-  padding: 8px 12px;
+  padding: 8px 14px;
   align-items: center;
   gap: 4px;
 
@@ -80,8 +80,16 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   }
 `;
 
-const Icon = styled.img`
-  height: 20px;
+const Icon = styled.img<{ $isAIButton?: boolean }>`
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+  ${({ $isAIButton }) =>
+    $isAIButton &&
+    `
+    transform: scale(1.28);
+  `}
 `;
 
 const ContentArea = styled.div`

@@ -6,11 +6,14 @@ import CommonStyles from "@/styles/CommonStyles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
 import { initMixpanel } from "./utils/mixpanel";
+import { startPwaCleanup } from "./utils/pwaCleanup";
 import "@/utils/bridgeChannel"; // 신 앱 PlatformChannel 초기화 + Native→Web 수신 결선
 import "@/styles/variables.css";
 
 initMixpanel();
 
+// 옛 PWA·임시 핫픽스 워커의 잔재를 회수한다. 자세한 배경은 utils/pwaCleanup.ts 참고.
+startPwaCleanup();
 
 const queryClient = new QueryClient({
   defaultOptions: {

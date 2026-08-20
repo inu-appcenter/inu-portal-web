@@ -117,7 +117,9 @@ interface WizardActions {
   closeSaveSheet: () => void;
 
   // --- 강의 검색 시트 ---
-  openCourseSearch: (target: CourseSearchTarget) => void;
+  // initialKeyword: 빈 결과 화면의 "교체" 버튼(#248)에서, 원인이 된 과목명으로
+  // 미리 필터링한 채로 열기 위해 쓴다. 생략하면 기존처럼 빈 검색어로 연다.
+  openCourseSearch: (target: CourseSearchTarget, initialKeyword?: string) => void;
   closeCourseSearch: () => void;
   setSearchSnapIndex: (index: number) => void;
   toggleExpandedOffering: (offeringId: number) => void;
@@ -283,7 +285,7 @@ export const useTimetableWizardStore = create<TimetableWizardStore>()(
 
       closeSaveSheet: () => set({ isSaveSheetOpen: false }),
 
-      openCourseSearch: (target) =>
+      openCourseSearch: (target, initialKeyword) =>
         set((state) => ({
           search: {
             ...state.search,
@@ -292,7 +294,7 @@ export const useTimetableWizardStore = create<TimetableWizardStore>()(
             // 조건이므로 유지 - 이게 사용자가 기대하는 유일한 "기억"이다.
             snapIndex: WIZARD_SEARCH_DEFAULT_SNAP_INDEX,
             expandedOfferingId: null,
-            keyword: "",
+            keyword: initialKeyword ?? "",
             filterDraft: null,
           },
         })),

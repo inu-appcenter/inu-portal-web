@@ -29,6 +29,7 @@ export interface BusData {
   sectionLabel?: string;
   stopId?: string;
   lastStopId?: string;
+  startStopAlias?: string;
 }
 
 //정류장 상세 정보 (BusDummy)

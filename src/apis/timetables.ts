@@ -1,4 +1,5 @@
 import tokenInstance from "@/apis/tokenInstance";
+import useUserStore from "@/stores/useUserStore";
 import type { ApiResponse } from "@/types/common";
 import type {
   Term,
@@ -8,6 +9,7 @@ import type {
   TimeTableDetail,
   TimeTableItemSummary,
   TimeTableVisibility,
+  TimeTableEvaluation,
 } from "@/types/timetables";
 import { isMockApiEnabled, mockDelay } from "@/mocks/mockFlag";
 import {
@@ -260,3 +262,125 @@ export const getFriendPrimaryTimeTableDetail = async (
   );
   return response.data.data;
 };
+
+/**
+ * 시간표 AI 평가 캐시 조회
+ */
+export const getTimeTableEvaluation = async (
+  timeTableId: number,
+): Promise<TimeTableEvaluation | null> => {
+  const response = await tokenInstance.get<ApiResponse<TimeTableEvaluation | null>>(
+    `/api/timetables/${timeTableId}/evaluation`,
+  );
+  return response.data.data;
+};
+
+export interface StreamEvaluationCallbacks {
+  onStart?: (data: {
+    isCached: boolean;
+    timetableHash?: string;
+    regenerateCount?: number;
+    remainingCount?: number;
+  }) => void;
+  onDelta?: (token: string) => void;
+  onDone?: (data: {
+    status: string;
+    isCached: boolean;
+    regenerateCount?: number;
+    remainingCount?: number;
+  }) => void;
+  onError?: (error: Error) => void;
+}
+
+/**
+ * 시간표 AI 평가 실시간 SSE 스트리밍 요청
+ */
+export const streamTimeTableEvaluation = async (
+  timeTableId: number,
+  callbacks: StreamEvaluationCallbacks,
+  forceRefresh = false,
+  signal?: AbortSignal,
+): Promise<void> => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+  const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  const url = `${cleanBaseUrl}/api/timetables/${timeTableId}/evaluation/stream?forceRefresh=${forceRefresh}`;
+
+  const { accessToken } = useUserStore.getState().tokenInfo;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "text/event-stream",
+        ...(accessToken ? { Auth: accessToken } : {}),
+      },
+      signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    if (!response.body) {
+      throw new Error("ReadableStream not supported by browser");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      let currentEvent = "message";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          currentEvent = "message";
+          continue;
+        }
+
+        if (trimmed.startsWith("event:")) {
+          currentEvent = trimmed.substring(6).trim();
+        } else if (trimmed.startsWith("data:")) {
+          const dataStr = trimmed.substring(5).trim();
+          try {
+            const parsed = JSON.parse(dataStr);
+            if (currentEvent === "start") {
+              callbacks.onStart?.(parsed);
+            } else if (currentEvent === "delta") {
+              const deltaContent = typeof parsed === "string" ? parsed : (parsed.content || "");
+              callbacks.onDelta?.(deltaContent);
+            } else if (currentEvent === "done") {
+              callbacks.onDone?.(parsed);
+            } else if (currentEvent === "error") {
+              callbacks.onError?.(new Error(parsed.message || "평가 생성 실패"));
+            } else {
+              // event가 message이거나 생략된 경우 delta로 처리
+              if (parsed.content) {
+                callbacks.onDelta?.(parsed.content);
+              }
+            }
+          } catch {
+            // JSON이 아닌 일반 문자열인 경우
+            if (currentEvent === "delta" || currentEvent === "message") {
+              callbacks.onDelta?.(dataStr);
+            }
+          }
+        }
+      }
+    }
+  } catch (error: any) {
+    if (error.name === "AbortError") {
+      return;
+    }
+    callbacks.onError?.(error instanceof Error ? error : new Error(String(error)));
+  }
+};
+
