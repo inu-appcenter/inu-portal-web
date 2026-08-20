@@ -10,6 +10,7 @@ export interface UserInfoInput {
   nickname?: string | null;
   department?: string | null;
   departmentCode?: string | null;
+  studentId?: string | null;
   fireId?: number | null;
   role?: string | null;
   chatPushEnabled?: boolean | null;
@@ -20,6 +21,7 @@ export interface UserInfo {
   nickname: string;
   department: string; //학과 정보
   departmentCode: string;
+  studentId: string; // 학번 "20YYxxxxx" — 앞 4자리가 입학연도
   fireId: number;
   role: string; // "admin" | ""
   chatPushEnabled: boolean;

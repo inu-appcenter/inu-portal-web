@@ -1,0 +1,5310 @@
+{
+  "COMPUTER_SCIENCE": {
+    "departmentName": "컴퓨터공학부",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2001,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2002,
+        "endYear": 2007,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2016,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2017,
+        "endYear": 2018,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2019,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2020,
+        "endYear": 2022,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72,
+          "minRequiredMajorCredits": 19
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72,
+          "minRequiredMajorCredits": 19
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "ECONOMICS": {
+    "departmentName": "경제학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2001,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2002,
+        "endYear": 2007,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2016,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2017,
+        "endYear": 2018,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2019,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2020,
+        "endYear": 2022,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "KOREAN": {
+    "departmentName": "국어국문학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2001,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2002,
+        "endYear": 2007,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2016,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2017,
+        "endYear": 2018,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2019,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2020,
+        "endYear": 2022,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "MECHANICAL_ENGINEERING": {
+    "departmentName": "기계공학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2001,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        }
+      },
+      {
+        "startYear": 2002,
+        "endYear": 2007,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2016,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2017,
+        "endYear": 2018,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2019,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW(=전공필수 기계기초프로그래밍)",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2020,
+        "endYear": 2022,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW(=전공필수 기계기초프로그래밍)",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW(=전공필수 기계기초프로그래밍)",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "PUBLIC_ADMINISTRATION": {
+    "departmentName": "행정학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "ENGLISH_LITERATURE": {
+    "departmentName": "영어영문학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2001,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2002,
+        "endYear": 2007,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2018,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2022,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      }
+    ]
+  },
+  "GERMAN": {
+    "departmentName": "독어독문학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2007,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어",
+              "credits": 6,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어",
+              "credits": 6,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어",
+              "credits": 6,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어",
+              "credits": 6,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2016,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2017,
+        "endYear": 2022,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "CHEMISTRY": {
+    "departmentName": "화학과",
+    "rules": [
+      {
+        "startYear": 2017,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "대학영어1,2",
+              "credits": 4,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화1,2",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "글쓰기이론과실제 또는 공학작문및발표",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "대학수학1,2",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 2,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "MARINE_SCIENCE": {
+    "departmentName": "해양학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "SOCIAL_WELFARE": {
+    "departmentName": "사회복지학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "MEDIA_COMMUNICATION": {
+    "departmentName": "미디어커뮤니케이션학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "LIBRARY_INFORMATION_SCIENCE": {
+    "departmentName": "문헌정보학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "CREATIVE_TALENT_DEVELOPMENT": {
+    "departmentName": "창의인재개발학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "POLITICAL_SCIENCE_DIPLOMACY": {
+    "departmentName": "정치외교학과",
+    "rules": [
+      {
+        "startYear": 2010,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "MATHEMATICS": {
+    "departmentName": "수학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      }
+    ]
+  },
+  "PHYSICS": {
+    "departmentName": "물리학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2007,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2016,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      },
+      {
+        "startYear": 2017,
+        "endYear": 2018,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2022,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2025,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      },
+      {
+        "startYear": 2026,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "AI시대의글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화1,2",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "AI사고와데이터리터러시",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "AI와인간중심윤리",
+              "credits": 2,
+              "category": "기타"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        }
+      }
+    ]
+  },
+  "FASHION_INDUSTRY": {
+    "departmentName": "패션산업학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "생활과학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "FRENCH": {
+    "departmentName": "불어불문학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "CHINESE": {
+    "departmentName": "중어중국학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2007,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 999,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2008,
+        "endYear": 2009,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 51
+        }
+      },
+      {
+        "startYear": 2010,
+        "endYear": 2011,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 25,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2012,
+        "endYear": 2015,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어 관련 1과목",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어 관련 과목",
+              "credits": 4,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2016,
+        "endYear": 2018,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "JAPAN_AREA_STUDIES": {
+    "departmentName": "일본지역문화학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "TRADE": {
+    "departmentName": "무역학부",
+    "rules": [
+      {
+        "startYear": 2020,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "ELECTRICAL_ENGINEERING": {
+    "departmentName": "전기공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72,
+          "minRequiredMajorCredits": 24
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "INDUSTRIAL_MANAGEMENT_ENGINEERING": {
+    "departmentName": "산업경영공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2025,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "MATERIALS_SCIENCE_ENGINEERING": {
+    "departmentName": "신소재공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "SAFETY_ENGINEERING": {
+    "departmentName": "안전공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "INFORMATION_COMMUNICATION_ENGINEERING": {
+    "departmentName": "정보통신공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "BUSINESS_ADMINISTRATION": {
+    "departmentName": "경영학부",
+    "rules": [
+      {
+        "startYear": 2020,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "DATA_SCIENCE": {
+    "departmentName": "데이터과학과",
+    "rules": [
+      {
+        "startYear": 2020,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "TAX_ACCOUNTING": {
+    "departmentName": "세무회계학과",
+    "rules": [
+      {
+        "startYear": 2020,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60,
+          "minRequiredMajorCredits": 27
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "CONSUMER_STUDIES": {
+    "departmentName": "소비자학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "ELECTRONIC_ENGINEERING": {
+    "departmentName": "전자공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "ENERGY_CHEMICAL_ENGINEERING": {
+    "departmentName": "에너지화학공학과",
+    "rules": [
+      {
+        "startYear": 1979,
+        "endYear": 2018,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2022,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2025,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "대학수학1,2",
+              "credits": 6,
+              "category": "수학"
+            },
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60,
+          "minRequiredMajorCredits": 38
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      },
+      {
+        "startYear": 2026,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "대학수학1,2",
+              "credits": 6,
+              "category": "수학"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "AI시대의글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "AI사고와데이터리터러시",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "AI와인간중심윤리",
+              "credits": 2,
+              "category": "기타"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60,
+          "minRequiredMajorCredits": 38
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "BIO_ROBOT_SYSTEM_ENGINEERING": {
+    "departmentName": "바이오-로봇시스템공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "EMBEDDED_SYSTEM_ENGINEERING": {
+    "departmentName": "임베디드시스템공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "KOREAN_PAINTING": {
+    "departmentName": "한국화전공",
+    "rules": [
+      {
+        "startYear": 2019,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "WESTERN_PAINTING": {
+    "departmentName": "서양화전공",
+    "rules": [
+      {
+        "startYear": 2019,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "DESIGN": {
+    "departmentName": "디자인학부",
+    "rules": [
+      {
+        "startYear": 2020,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "기초교양",
+              "credits": 8,
+              "category": "기타"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 600,
+          "TOEIC_SPEAKING": 110,
+          "OPIC": "IL"
+        }
+      }
+    ]
+  },
+  "PERFORMING_ARTS": {
+    "departmentName": "공연예술학과",
+    "rules": [
+      {
+        "startYear": 2019,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "SPORTS_SCIENCE": {
+    "departmentName": "스포츠과학부",
+    "rules": [
+      {
+        "startYear": 2019,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "EXERCISE_HEALTH_SCIENCE": {
+    "departmentName": "운동건강학부",
+    "rules": [
+      {
+        "startYear": 2019,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어(대학영어 또는 Academic English)",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "KOREAN_EDUCATION": {
+    "departmentName": "국어교육과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "대학영어",
+              "credits": 4,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minCoreGeneralCount": 2,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "ENGLISH_EDUCATION": {
+    "departmentName": "영어교육과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      }
+    ]
+  },
+  "JAPANESE_EDUCATION": {
+    "departmentName": "일어교육과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "AI시대의글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화1,2",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "AI사고와데이터리터러시",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "AI와인간중심윤리",
+              "credits": 2,
+              "category": "기타"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "MATHEMATICS_EDUCATION": {
+    "departmentName": "수학교육과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "PHYSICAL_EDUCATION": {
+    "departmentName": "체육교육과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "대학영어",
+              "credits": 4,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minCoreGeneralCount": 2,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "EARLY_CHILDHOOD_EDUCATION": {
+    "departmentName": "유아교육과",
+    "rules": [
+      {
+        "startYear": 2016,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "영어",
+              "credits": 6,
+              "category": "영어"
+            }
+          ],
+          "minCoreGeneralCount": 2,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "HISTORY_EDUCATION": {
+    "departmentName": "역사교육과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "ETHICS_EDUCATION": {
+    "departmentName": "윤리교육과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "URBAN_ADMINISTRATION": {
+    "departmentName": "도시행정학과",
+    "rules": [
+      {
+        "startYear": 2010,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "ENVIRONMENTAL_ENGINEERING": {
+    "departmentName": "환경공학전공",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 66
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "SMART_CITY_ENGINEERING": {
+    "departmentName": "도시공학과",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        }
+      }
+    ]
+  },
+  "ARCHITECTURAL_ENGINEERING": {
+    "departmentName": "건축공학(도시건축학부)",
+    "rules": [
+      {
+        "startYear": 2011,
+        "endYear": 2019,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700
+        }
+      },
+      {
+        "startYear": 2020,
+        "endYear": 2022,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700
+        }
+      }
+    ]
+  },
+  "URBAN_ARCHITECTURE": {
+    "departmentName": "도시건축학(도시건축학부)",
+    "rules": [
+      {
+        "startYear": 2016,
+        "endYear": 2022,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minTotalCredits": 140
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700
+        }
+      }
+    ]
+  },
+  "CIVIL_ENVIRONMENTAL_ENGINEERING": {
+    "departmentName": "건설환경공학전공(도시환경공학부)",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "LIFE_SCIENCE": {
+    "departmentName": "생명과학부(생명과학전공)",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "MOLECULAR_BIOMEDICAL_SCIENCE": {
+    "departmentName": "생명과학부(분자의생명전공)",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 63
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "BIOENGINEERING": {
+    "departmentName": "생명공학부(생명공학전공)",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "NANO_BIOENGINEERING": {
+    "departmentName": "생명공학부(나노바이오공학전공)",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "자연·공학계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "대학수학",
+              "credits": 6,
+              "category": "수학"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 72
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "LIBERAL_STUDIES": {
+    "departmentName": "자유전공학부",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "INTERNATIONAL_LIBERAL_STUDIES": {
+    "departmentName": "국제자유전공학부",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "CONVERGENCE_STUDIES": {
+    "departmentName": "융합학부",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "NORTHEAST_ASIA_TRADE": {
+    "departmentName": "동북아국제통상전공",
+    "rules": [
+      {
+        "startYear": 2020,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 850,
+          "TOEIC_SPEAKING": 150,
+          "OPIC": "IH"
+        }
+      }
+    ]
+  },
+  "SMART_LOGISTICS_ENGINEERING": {
+    "departmentName": "스마트물류공학전공",
+    "rules": [
+      {
+        "startYear": 2024,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기 이론과 실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "컴퓨터적 사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화1,2",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60,
+          "minRequiredMajorCredits": 40
+        },
+        "englishCertification": {
+          "TOEIC": 700,
+          "TOEIC_SPEAKING": 130,
+          "OPIC": "IM"
+        }
+      }
+    ]
+  },
+  "IBE": {
+    "departmentName": "IBE전공(국제통상학부)",
+    "rules": [
+      {
+        "startYear": 2017,
+        "endYear": 2018,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "Theory and Practice of Writing",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "College English Conversation 1,2",
+              "credits": 2,
+              "category": "영어"
+            }
+          ],
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2019,
+        "endYear": 2019,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "Theory and Practice of Writing",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "College English Conversation 1,2",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "Computational Thinking and SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 135
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2020,
+        "endYear": 2022,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "Theory and Practice of Writing",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "College English Conversation 1,2",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "Computational Thinking and SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2023,
+        "endYear": 2023,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "Theory and Practice of Writing",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "College English Conversation 1,2",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "Computational Thinking and SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      },
+      {
+        "startYear": 2024,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "Theory and Practice of Writing",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "College English Conversation 1,2",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "Computational Thinking and SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60,
+          "minRequiredMajorCredits": 31
+        },
+        "englishCertification": {
+          "TOEIC": 800,
+          "TOEIC_SPEAKING": 140,
+          "OPIC": "IH"
+        }
+      }
+    ]
+  },
+  "LAW": {
+    "departmentName": "법학부",
+    "rules": [
+      {
+        "startYear": 2023,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "글쓰기이론과실제",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "대학영어회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "컴퓨팅적사고와 SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  },
+  "TECHNO_MANAGEMENT": {
+    "departmentName": "테크노경영학과",
+    "rules": [
+      {
+        "startYear": 2020,
+        "endYear": 2099,
+        "track": "인문·사회·예체능계열",
+        "generalRequirements": {
+          "minGeneralCredits": 30,
+          "maxGeneralCredits": 55,
+          "requiredGeneralCourses": [
+            {
+              "courseName": "국어",
+              "credits": 2,
+              "category": "국어"
+            },
+            {
+              "courseName": "Academic English",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "회화",
+              "credits": 2,
+              "category": "영어"
+            },
+            {
+              "courseName": "SW",
+              "credits": 2,
+              "category": "SW"
+            }
+          ],
+          "minCoreGeneralCount": 3,
+          "minTotalCredits": 130
+        },
+        "majorRequirements": {
+          "minMajorCredits": 60
+        }
+      }
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
@@ -19,7 +19,20 @@ import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
+import GraduationRequirementCard from "@/components/mobile/timetable/GraduationRequirementCard";
+import GraduationSettingModal, {
+  type GraduationProfile,
+} from "@/components/mobile/timetable/GraduationSettingModal";
 import { isMajorCompletion } from "@/utils/parseSmartCampusGrades";
+import {
+  calculateRequiredAverageGpa,
+  evaluateGraduation,
+  parseEntryYearFromStudentId,
+  resolveGraduationRule,
+} from "@/utils/graduationRequirements";
+import useUserStore from "@/stores/useUserStore";
+import { findDepartmentCodeByName } from "@/utils/departmentOptions";
+import { groupClassItemsByCourse } from "@/utils/timetable";
 import type { ResolvedGradeRow } from "@/types/gradeImport";
 import type { Term } from "@/types/timetables";
 import {
@@ -129,8 +142,29 @@ const isPassed = (sub: Subject) =>
 
 const LOCAL_STORAGE_KEY = "intip_grade_calculator_data";
 
-const serializeGradeData = (data: SemestersData, targetCredits: number) =>
-  JSON.stringify({ semestersData: data, targetCredits });
+const EMPTY_GRADUATION_PROFILE: GraduationProfile = {
+  departmentCode: "",
+  entryYear: null,
+  targetGpa: null,
+};
+
+// 예전에 저장된 데이터에는 graduationProfile이 없다(하위 호환).
+const normalizeGraduationProfile = (value: unknown): GraduationProfile => {
+  if (!value || typeof value !== "object") return EMPTY_GRADUATION_PROFILE;
+  const raw = value as Partial<GraduationProfile>;
+  return {
+    departmentCode:
+      typeof raw.departmentCode === "string" ? raw.departmentCode : "",
+    entryYear: typeof raw.entryYear === "number" ? raw.entryYear : null,
+    targetGpa: typeof raw.targetGpa === "number" ? raw.targetGpa : null,
+  };
+};
+
+const serializeGradeData = (
+  data: SemestersData,
+  targetCredits: number,
+  graduationProfile: GraduationProfile,
+) => JSON.stringify({ semestersData: data, targetCredits, graduationProfile });
 
 const CustomXAxisTick = (props: any) => {
   const { x, y, payload } = props;
@@ -184,8 +218,19 @@ export default function MobileGradeCalculatorPage() {
   const [showTimetableSheet, setShowTimetableSheet] = useState<boolean>(false);
   const [showGradeImportSheet, setShowGradeImportSheet] =
     useState<boolean>(false);
+  const [graduationProfile, setGraduationProfile] = useState<GraduationProfile>(
+    EMPTY_GRADUATION_PROFILE,
+  );
+  const [savedGraduationProfile, setSavedGraduationProfile] =
+    useState<GraduationProfile>(EMPTY_GRADUATION_PROFILE);
+  const [showGraduationModal, setShowGraduationModal] =
+    useState<boolean>(false);
+  /** 저장된 졸업요건 설정이 이미 있는지 — 있으면 학과 자동 채움을 하지 않는다. */
+  const hasStoredGraduationProfile = useRef<boolean>(false);
 
   const { timetables } = useTimetableStore();
+  const userDepartment = useUserStore((state) => state.userInfo.department);
+  const userStudentId = useUserStore((state) => state.userInfo.studentId);
 
   // --- Header Integration ---
   useHeader({
@@ -202,10 +247,16 @@ export default function MobileGradeCalculatorPage() {
         const parsed = JSON.parse(cached);
         const loadedSemestersData = parsed.semestersData || {};
         const loadedTargetCredits = parsed.targetCredits || 130;
+        const loadedProfile = normalizeGraduationProfile(
+          parsed.graduationProfile,
+        );
         setSemestersData(loadedSemestersData);
         setSavedSemestersData(loadedSemestersData);
         setTargetCredits(loadedTargetCredits);
         setSavedTargetCredits(loadedTargetCredits);
+        setGraduationProfile(loadedProfile);
+        setSavedGraduationProfile(loadedProfile);
+        hasStoredGraduationProfile.current = !!parsed.graduationProfile;
       } catch (e) {
         console.error("Failed to parse cached grades", e);
       }
@@ -216,25 +267,76 @@ export default function MobileGradeCalculatorPage() {
       };
       setSemestersData(initial);
       setSavedSemestersData(initial);
-      localStorage.setItem(LOCAL_STORAGE_KEY, serializeGradeData(initial, 130));
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        serializeGradeData(initial, 130, EMPTY_GRADUATION_PROFILE),
+      );
     }
   }, []);
+
+  // 학과·학번은 로그인한 사용자 정보(/api/members)에서 채워둔다. 저장된 졸업요건
+  // 설정이 아직 없을 때만 넣고(사용자가 직접 지운 값을 되살리지 않도록), 저장본에도
+  // 같이 반영해 "저장 안 된 변경사항"으로 잡히지 않게 한다.
+  useEffect(() => {
+    if (hasStoredGraduationProfile.current) return;
+
+    // 서버 departmentCode("0000077")는 학사 시스템 코드라 졸업요건 데이터의
+    // 학과 코드와 다른 체계다. 학과명으로 찾아야 한다.
+    const departmentCode =
+      graduationProfile.departmentCode ||
+      findDepartmentCodeByName(userDepartment);
+    const entryYear =
+      graduationProfile.entryYear ??
+      parseEntryYearFromStudentId(userStudentId);
+
+    if (
+      departmentCode === graduationProfile.departmentCode &&
+      entryYear === graduationProfile.entryYear
+    ) {
+      return;
+    }
+
+    const filled = { ...graduationProfile, departmentCode, entryYear };
+    setGraduationProfile(filled);
+    setSavedGraduationProfile(filled);
+
+    // 학과·학번이 다 채워졌으면 취득 목표 학점도 그 규정의 졸업학점으로 맞춘다.
+    const resolved = resolveGraduationRule(departmentCode, entryYear);
+    if (resolved) {
+      const minTotalCredits = resolved.rule.generalRequirements.minTotalCredits;
+      setTargetCredits(minTotalCredits);
+      setSavedTargetCredits(minTotalCredits);
+    }
+  }, [graduationProfile, userDepartment, userStudentId]);
 
   // --- Save Data Helper ---
   const hasChanges = useMemo(() => {
     return (
-      serializeGradeData(semestersData, targetCredits) !==
-      serializeGradeData(savedSemestersData, savedTargetCredits)
+      serializeGradeData(semestersData, targetCredits, graduationProfile) !==
+      serializeGradeData(
+        savedSemestersData,
+        savedTargetCredits,
+        savedGraduationProfile,
+      )
     );
-  }, [savedSemestersData, savedTargetCredits, semestersData, targetCredits]);
+  }, [
+    graduationProfile,
+    savedGraduationProfile,
+    savedSemestersData,
+    savedTargetCredits,
+    semestersData,
+    targetCredits,
+  ]);
 
   const saveToLocalStorage = () => {
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      serializeGradeData(semestersData, targetCredits),
+      serializeGradeData(semestersData, targetCredits, graduationProfile),
     );
     setSavedSemestersData(semestersData);
     setSavedTargetCredits(targetCredits);
+    setSavedGraduationProfile(graduationProfile);
+    hasStoredGraduationProfile.current = true;
   };
 
   const blocker = useBlocker(hasChanges);
@@ -419,8 +521,85 @@ export default function MobileGradeCalculatorPage() {
       gpa,
       majorGpa,
       acquiredCredits: totalAcquired,
+      // 목표 평점 계산에 쓰려면 평점 산입 학점/평점합이 그대로 필요하다.
+      gpaCredits: totalGpaCredits,
+      gpaPoints: totalGpaPoints,
     };
   }, [semestersData]);
+
+  // --- 졸업요건 판정 ---
+  const resolvedGraduationRule = useMemo(
+    () =>
+      resolveGraduationRule(
+        graduationProfile.departmentCode,
+        graduationProfile.entryYear,
+      ),
+    [graduationProfile.departmentCode, graduationProfile.entryYear],
+  );
+
+  const graduationEvaluation = useMemo(() => {
+    if (!resolvedGraduationRule) return null;
+
+    const subjects = Object.values(semestersData)
+      .flat()
+      .map((sub) => ({
+        name: sub.name,
+        credits: sub.credits,
+        isMajor: sub.isMajor,
+        passed: isPassed(sub),
+        isuName: sub.isuName,
+        isuFldName: sub.isuFldName,
+      }));
+
+    return evaluateGraduation(resolvedGraduationRule.rule, subjects);
+  }, [resolvedGraduationRule, semestersData]);
+
+  const requiredAverageGpa = useMemo(() => {
+    if (!graduationEvaluation || graduationProfile.targetGpa === null) {
+      return null;
+    }
+    return calculateRequiredAverageGpa({
+      targetGpa: graduationProfile.targetGpa,
+      gpaCredits: overallStats.gpaCredits,
+      gpaPoints: overallStats.gpaPoints,
+      remainingCredits: graduationEvaluation.remainingTotalCredits,
+    });
+  }, [
+    graduationEvaluation,
+    graduationProfile.targetGpa,
+    overallStats.gpaCredits,
+    overallStats.gpaPoints,
+  ]);
+
+  const handleSaveGraduationProfile = (profile: GraduationProfile) => {
+    // 학과·학번이 정해지면 취득 목표 학점은 그 규정의 졸업학점으로 맞춘다.
+    // (연필 버튼으로 직접 고치는 건 그대로 열려 있다.)
+    const resolved = resolveGraduationRule(
+      profile.departmentCode,
+      profile.entryYear,
+    );
+    const nextTargetCredits = resolved
+      ? resolved.rule.generalRequirements.minTotalCredits
+      : savedTargetCredits;
+
+    setGraduationProfile(profile);
+    setShowGraduationModal(false);
+    if (resolved) {
+      setTargetCredits(nextTargetCredits);
+    }
+
+    // 졸업요건 설정은 성적 입력과 별개라 여기서 바로 저장한다. 작성 중인 과목
+    // 목록까지 딸려 저장되지 않도록 저장본(savedSemestersData)을 그대로 쓴다.
+    // (안 그러면 설정만 바꿔도 "저장 안 된 변경사항"으로 잡혀 새로고침할 때
+    //  브라우저 이탈 경고가 뜬다.)
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      serializeGradeData(savedSemestersData, nextTargetCredits, profile),
+    );
+    setSavedGraduationProfile(profile);
+    setSavedTargetCredits(nextTargetCredits);
+    hasStoredGraduationProfile.current = true;
+  };
 
   // Current semester calculations
   const currentSemesterStats = useMemo(() => {
@@ -446,23 +625,35 @@ export default function MobileGradeCalculatorPage() {
     const tb = timetables.find((t) => t.id === timetableId);
     if (!tb) return;
 
+    // events는 meeting 단위라 주 2회 강의는 같은 강의가 두 번 들어 있다.
+    // 강의(시간표 요소) 단위로 묶어야 학점계산기에 한 번씩 들어간다.
+    const groups = groupClassItemsByCourse(tb.events);
+    const courses = groups.filter((group) => !group.isCustom)
+                          .map(course => mapCourseOffering(course.courseOfferingId))
+
+    const customCount = groups.length - courses.length;
+
+    if (courses.length === 0) {
+      window.alert("이 시간표에는 불러올 강의가 없어요.");
+      return;
+    }
+
+    const customNotice =
+      customCount > 0 ? `\n개인 일정 ${customCount}개는 제외돼요.` : "";
+
     if (
       window.confirm(
-        `"${tb.semester} (${tb.name})" 시간표의 과목들을 불러올까요?\n현재 학기(${selectedSemester})에 작성 중인 과목 목록은 덮어씌워집니다.`,
+        `"${tb.semester} (${tb.name})" 시간표의 강의 ${courses.length}개를 불러올까요?${customNotice}\n현재 학기(${selectedSemester})에 작성 중인 과목 목록은 덮어씌워집니다.`,
       )
     ) {
-      const imported: Subject[] = tb.events.map((event) => {
-        // Estimate credits based on class hours (endTime - startTime)
-        // Usually, 2 hours = 2 credits, 3 hours = 3 credits, etc.
-        const hours = Math.max(1, event.endTime - event.startTime);
-        return {
-          id: `${Date.now()}-${Math.random()}`,
-          name: event.name,
-          credits: hours,
-          grade: "A+",
-          isMajor: false,
-        };
-      });
+      const imported: Subject[] = courses.map((course) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        name: course.name,
+        // 강의 학점이 없으면 주당 수업 시간 합으로 어림잡는다(2시간 = 2학점).
+        credits: course.credits ?? Math.max(1, Math.round(course.totalHours)),
+        grade: "A+",
+        isMajor: false,
+      }));
 
       updateSubjects(imported);
       setShowTimetableSheet(false);
@@ -511,7 +702,7 @@ export default function MobileGradeCalculatorPage() {
         onClose={() => setShowTargetCreditsModal(false)}
         title="취득 학점 입력"
         description={
-          "학과별로 취득학점 기준이 다를 수 있어요.\n정확한 학점은 챗불이에게 확인해보세요."
+          "졸업요건에서 학과와 학번을 고르면 자동으로 채워져요.\n직접 고쳐서 쓸 수도 있어요."
         }
         primaryButton={{
           text: "저장",
@@ -551,6 +742,13 @@ export default function MobileGradeCalculatorPage() {
           onClick: handleStayOnPage,
         }}
         closeOnOverlayClick={false}
+      />
+
+      <GraduationSettingModal
+        isOpen={showGraduationModal}
+        profile={graduationProfile}
+        onClose={() => setShowGraduationModal(false)}
+        onSave={handleSaveGraduationProfile}
       />
 
       {/* 1. 전체 학기 요약 카드 */}
@@ -755,7 +953,16 @@ export default function MobileGradeCalculatorPage() {
         </GraphSection>
       </StickyStatsCard>
 
-      {/* 2. 학기별 학점계산기 메인 카드 */}
+      {/* 2. 졸업요건 피드백 카드 */}
+      <GraduationRequirementCard
+        profile={graduationProfile}
+        resolved={resolvedGraduationRule}
+        evaluation={graduationEvaluation}
+        requiredAverageGpa={requiredAverageGpa}
+        onEdit={() => setShowGraduationModal(true)}
+      />
+
+      {/* 3. 학기별 학점계산기 메인 카드 */}
       <MainContainer>
         <SemesterSummaryHeader>
           <SemesterSelectButton onClick={() => setShowSemesterSheet(true)}>
@@ -798,7 +1005,7 @@ export default function MobileGradeCalculatorPage() {
           </ImportButtonRow>
         </SemesterSummaryHeader>
 
-        {/* 3. 과목 리스트 테이블 */}
+        {/* 4. 과목 리스트 테이블 */}
         <GradeTable>
           <TableHeader>
             <ColSubject>과목명</ColSubject>
@@ -1657,3 +1864,25 @@ const EmptySheetText = styled.div`
   color: var(--text-tertiary, #8b95a1);
   padding: 32px 16px;
 `;
+
+function mapCourseOffering(courseOfferingId: number | undefined): any {
+  // 시간표 이벤트에는 개설강의 PK가 들어오지만, 여기서 바로 상세 메타를 모두
+  // 가져오지는 못하는 경우가 많다. 최소한의 안전한 폴백 객체를 반환해
+  // 이후 import 흐름에서 이름/학점/시간을 어림잡아 사용할 수 있게 한다.
+  if (courseOfferingId == null) {
+    return {
+      courseOfferingId: undefined,
+      name: "미매칭 강의",
+      credits: 0,
+      totalHours: 0,
+    };
+  }
+
+  return {
+    courseOfferingId,
+    name: `강의 ${courseOfferingId}`,
+    credits: 0,
+    totalHours: 0,
+  };
+}
+
