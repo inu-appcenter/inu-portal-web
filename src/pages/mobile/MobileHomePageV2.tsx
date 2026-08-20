@@ -22,6 +22,7 @@ import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import CapsuleButton from "@/components/common/CapsuleButton";
 import Banner from "@/containers/mobile/home/Banner";
 
 import KakaoIcon from "@/resources/assets/mobile-home/footer/kakao.svg";
@@ -241,7 +242,25 @@ export default function MobileHomePageV2() {
                   );
                 })
               ) : (
-                <EmptyClassItem>오늘은 등록된 수업이 없어요.</EmptyClassItem>
+                <TimetableEmptyState>
+                  {!activeTimetable && (
+                    <CreateTimetableButton
+                      variant="primary"
+                      onClick={(event) => {
+                        // 카드 전체 onClick과 목적지가 같아 이벤트가 두 번 타지 않도록 막는다.
+                        event.stopPropagation();
+                        navigate(ROUTES.TIMETABLE.ROOT);
+                      }}
+                    >
+                      시간표 생성하기
+                    </CreateTimetableButton>
+                  )}
+                  <TimetableEmptyText>
+                    {activeTimetable
+                      ? "오늘은 등록된 수업이 없어요."
+                      : "등록된 시간표가 없어요. 시간표를 만들어 보세요."}
+                  </TimetableEmptyText>
+                </TimetableEmptyState>
               )}
             </ClassList>
           </TodayTimetableCard>
@@ -542,6 +561,38 @@ const ClassDetail = styled.span`
 
 const ClassRoom = styled.span`
   color: var(--text-secondary, #333d4b);
+`;
+
+const TimetableEmptyState = styled.div`
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 76px;
+  width: 100%;
+`;
+
+// 공용 CapsuleButton(primary)을 시안의 소형 사이즈로만 조정한다.
+const CreateTimetableButton = styled(CapsuleButton)`
+  height: 36px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  box-shadow: none;
+`;
+
+const TimetableEmptyText = styled.p`
+  margin: 0;
+  width: 100%;
+  color: var(--text-disabled, #b0b8c1);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: center;
+  word-break: keep-all;
 `;
 
 const EmptyClassItem = styled.div`
