@@ -55,6 +55,8 @@ const SUB_FILTER_OPTIONS: Array<{
   { value: "PAST_USER_NO_CURRENT_TIMETABLE", label: "[시간표] 지난 학기 유저 (이번 학기 미작성)", description: "직전 학기는 시간표가 있으나 이번 학기 미작성 회원" },
   { value: "NO_FRIENDS", label: "[친구] 친구 0명인 회원", description: "수락된 친구 관계가 0명인 회원" },
   { value: "NO_COMMUNITY_ACTIVITY", label: "[커뮤니티] 작성 글/댓글 없음", description: "게시글 및 댓글 작성 이력이 0건인 회원" },
+  { value: "STUDENT_ID_ODD", label: "[학번] 끝자리 홀수", description: "학번이 1·3·5·7·9로 끝나는 회원 (홀수 수강신청일)" },
+  { value: "STUDENT_ID_EVEN", label: "[학번] 끝자리 짝수", description: "학번이 0·2·4·6·8로 끝나는 회원 (짝수 수강신청일)" },
 ];
 
 const PATH_OPTIONS = [
