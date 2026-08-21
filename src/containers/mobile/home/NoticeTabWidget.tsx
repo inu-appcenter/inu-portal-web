@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { getNotices, getDepartmentNotices } from "@/apis/notices";
+import {
+  ALL_NOTICE_CATEGORY,
+  getDepartmentNotices,
+  getNoticeListQueryKey,
+  getNotices,
+  NOTICE_LIST_STALE_TIME,
+} from "@/apis/notices";
 import { Notice, DepartmentNotice } from "@/types/notices";
 import Box from "@/components/common/Box";
 import TabUpper from "@/components/common/TabUpper";
@@ -11,6 +18,7 @@ import findTitleOrCode from "@/utils/findTitleOrCode";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { ROUTES } from "@/constants/routes";
 import { formatTimeAgo } from "@/utils/date";
+import { markNoticesSeen } from "@/utils/noticeSeenStorage";
 
 interface NoticeTabWidgetProps {
   activeTab: "school" | "dept";
@@ -24,28 +32,18 @@ export default function NoticeTabWidget({
   const navigate = useNavigate();
   const { userInfo, tokenInfo } = useUserStore();
 
-  const [schoolNotices, setSchoolNotices] = useState<Notice[]>([]);
   const [deptNotices, setDeptNotices] = useState<DepartmentNotice[]>([]);
-  const [isLoadingSchool, setIsLoadingSchool] = useState(true);
   const [isLoadingDept, setIsLoadingDept] = useState(false);
 
   // 날짜 포맷팅에 공통 유틸 함수 formatTimeAgo 사용
 
-  // 학교 공지사항 가져오기
-  useEffect(() => {
-    const fetchSchoolNotices = async () => {
-      setIsLoadingSchool(true);
-      try {
-        const response = await getNotices("전체", "date", 1);
-        setSchoolNotices(response.data.contents);
-      } catch (error) {
-        console.error("학교 공지사항 가져오기 실패", error);
-      } finally {
-        setIsLoadingSchool(false);
-      }
-    };
-    fetchSchoolNotices();
-  }, []);
+  // 학교 공지사항 가져오기(홈 인사말과 같은 캐시를 공유한다)
+  const { data: schoolNotices = [], isLoading: isLoadingSchool } = useQuery({
+    queryKey: getNoticeListQueryKey(ALL_NOTICE_CATEGORY, "date", 1),
+    queryFn: () => getNotices(ALL_NOTICE_CATEGORY, "date", 1),
+    select: (response) => response.data.contents,
+    staleTime: NOTICE_LIST_STALE_TIME,
+  });
 
   // 학과 공지사항 가져오기
   useEffect(() => {
@@ -92,6 +90,8 @@ export default function NoticeTabWidget({
   };
 
   const handleSchoolNoticeClick = (notice: Notice) => {
+    // 읽음 상태 API가 없어 목록을 열람한 시점을 로컬에 기록한다.
+    markNoticesSeen();
     mixpanelTrack.noticeViewed(notice.category, notice.title, false);
     if (notice.url) {
       window.open(notice.url, "_blank", "noopener,noreferrer");

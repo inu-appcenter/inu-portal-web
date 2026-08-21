@@ -5,6 +5,7 @@ import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useGreetingMessage } from "@/hooks/useGreetingMessage";
 import type { ClassItem as TimetableClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { formatHoursToTime } from "@/utils/timetable";
 import { ROUTES } from "@/constants/routes";
@@ -144,7 +145,6 @@ export default function MobileHomePageV2() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // const nickname = userInfo?.nickname || "유니";
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
   const today = new Date();
   const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
@@ -192,6 +192,13 @@ export default function MobileHomePageV2() {
     : isTimetablesLoading || isDetailLoading
       ? "불러오는 중"
       : getTimetableStatusText(todayClasses, today);
+
+  const greeting = useGreetingMessage({
+    nickname: userInfo?.nickname,
+    todayClasses,
+    hasTimetable: Boolean(activeTimetable),
+    isTimetableReady: isLoggedIn && !isTimetablesLoading && !isDetailLoading,
+  });
 
   return (
     <V2Wrapper>
@@ -458,25 +465,25 @@ const UpperSection = styled.div`
   background: #eff5fc;
 `;
 
-// const WelcomeMessage = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   gap: 4px;
-//   margin-bottom: 24px;
-//   text-align: left;
-//   padding-left: 8px;
+const WelcomeMessage = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 24px;
+  text-align: left;
+  padding-left: 8px;
+
+  color: var(--text-secondary, #333d4b);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+`;
 //
-//   color: var(--text-secondary, #333d4b);
-//   font-size: 20px;
-//   font-style: normal;
-//   font-weight: 700;
-//   line-height: 28px;
-//   letter-spacing: -0.2px;
-// `;
-//
-// const HighlightName = styled.span``;
-//
-// const GreetingText = styled.span``;
+const HighlightName = styled.span``;
+
+const GreetingText = styled.span``;
 
 const TodayTimetableCard = styled.div`
   background-color: #ffffff;

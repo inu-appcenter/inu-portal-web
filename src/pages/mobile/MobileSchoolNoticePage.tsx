@@ -28,6 +28,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
+import { markNoticesSeen } from "@/utils/noticeSeenStorage";
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
@@ -275,6 +276,11 @@ const MobileSchoolNoticePage = () => {
     ),
     [categoryList, selectedCategory],
   );
+
+  // 목록을 열었다면 새 공지를 확인한 것으로 보고 홈 인사말의 "새 공지" 상태를 해제한다.
+  useEffect(() => {
+    markNoticesSeen();
+  }, []);
 
   useHeader({
     title: committedQuery ? "검색 결과" : "학교 공지사항",
