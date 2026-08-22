@@ -126,7 +126,7 @@ const SchoolNoticeList = ({
             title={notice.title}
             writer={notice.writer}
             date={notice.createDate}
-            onClick={(e) => {
+            onClick={() => {
               onNoticeView(notice.category, notice.title);
               if (notice.id) {
                 navigate(ROUTES.BOARD.NOTICE_DETAIL(notice.id));
@@ -256,15 +256,9 @@ const MobileSchoolNoticePage = () => {
       <CategorySelectorNew
         categories={categoryList}
         selectedCategory={selectedCategory}
-        onSelectCategory={(category) => {
-          const index = categoryList.indexOf(category);
-          if (swiperRef && index !== -1) {
-            swiperRef.slideTo(index);
-          }
-        }}
       />
     ),
-    [categoryList, selectedCategory, swiperRef],
+    [categoryList, selectedCategory],
   );
 
   useHeader({
