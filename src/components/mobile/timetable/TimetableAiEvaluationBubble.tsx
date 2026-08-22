@@ -447,7 +447,7 @@ const FloatingButtonContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10002;
+  z-index: 90;
 
   @media (min-width: 1024px) {
     bottom: 80px;
