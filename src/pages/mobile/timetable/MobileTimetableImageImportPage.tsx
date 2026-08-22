@@ -803,50 +803,52 @@ export default function MobileTimetableImageImportPage() {
 
       {/* 하단 고정 액션바 */}
       <FixedBottomArea>
-        {view !== "result" && (
-          <SecurityCaption>
-            이미지는 서버에 저장하지 않고 기기에서만 분석해요
-          </SecurityCaption>
-        )}
-        <FixedButtonRow>
-          <CancelBottomButton
-            variant="secondary"
-            onClick={handleHeaderBack}
-            disabled={isSaving}
-          >
-            취소
-          </CancelBottomButton>
-
-          {view === "intro" && (
-            <PrimaryBottomButton
-              variant="primary"
-              onClick={() => inputRef.current?.click()}
+        <FixedBottomContent>
+          {view !== "result" && (
+            <SecurityCaption>
+              이미지는 서버에 저장하지 않고 기기에서만 분석해요
+            </SecurityCaption>
+          )}
+          <FixedButtonRow>
+            <CancelBottomButton
+              variant="secondary"
+              onClick={handleHeaderBack}
+              disabled={isSaving}
             >
-              이미지 선택
-            </PrimaryBottomButton>
-          )}
+              취소
+            </CancelBottomButton>
 
-          {view === "analyzing" && (
-            <PrimaryBottomButton variant="primary" disabled loading>
-              분석 중...
-            </PrimaryBottomButton>
-          )}
+            {view === "intro" && (
+              <PrimaryBottomButton
+                variant="primary"
+                onClick={() => inputRef.current?.click()}
+              >
+                이미지 선택
+              </PrimaryBottomButton>
+            )}
 
-          {view === "result" && (
-            <PrimaryBottomButton
-              variant="primary"
-              onClick={handleSave}
-              disabled={!isSelectionComplete || isSaving}
-              loading={isSaving}
-            >
-              {isSaving
-                ? "등록 중..."
-                : isSelectionComplete
-                  ? "선택 강의 등록"
-                  : "모든 분반을 선택해 주세요"}
-            </PrimaryBottomButton>
-          )}
-        </FixedButtonRow>
+            {view === "analyzing" && (
+              <PrimaryBottomButton variant="primary" disabled loading>
+                분석 중...
+              </PrimaryBottomButton>
+            )}
+
+            {view === "result" && (
+              <PrimaryBottomButton
+                variant="primary"
+                onClick={handleSave}
+                disabled={!isSelectionComplete || isSaving}
+                loading={isSaving}
+              >
+                {isSaving
+                  ? "등록 중..."
+                  : isSelectionComplete
+                    ? "선택 강의 등록"
+                    : "모든 분반을 선택해 주세요"}
+              </PrimaryBottomButton>
+            )}
+          </FixedButtonRow>
+        </FixedBottomContent>
       </FixedBottomArea>
 
       {/* 미저장 이탈 확인 모달 */}
@@ -1414,22 +1416,29 @@ const WarningText = styled.div`
 const FixedBottomArea = styled.div`
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
-  max-width: 768px;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-  box-sizing: border-box;
   background: linear-gradient(
     180deg,
     rgba(248, 249, 251, 0) 0%,
     rgba(248, 249, 251, 0.9) 24%,
     rgba(248, 249, 251, 1) 100%
   );
+  z-index: 100;
+  pointer-events: none;
+`;
+
+const FixedBottomContent = styled.div`
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: 100;
+  pointer-events: auto;
 `;
 
 const SecurityCaption = styled.div`
