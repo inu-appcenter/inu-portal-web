@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
+import TimetableGrid, {
+  ClassItem,
+} from "@/components/mobile/timetable/TimetableGrid";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -17,6 +19,7 @@ import {
   useTimeTableDetail,
   useUpdateTimeTableName,
   useDeleteTimeTable,
+  useDeleteTimeTableItem,
 } from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
@@ -371,6 +374,7 @@ const MobileTimeTablePage = () => {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputVal, setRenameInputVal] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteItemTarget, setDeleteItemTarget] = useState<ClassItem | null>(null);
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
@@ -381,6 +385,7 @@ const MobileTimeTablePage = () => {
   const { semesters } = useSemesters();
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
+  const deleteItemMutation = useDeleteTimeTableItem();
 
   const currentSemester = useMemo(
     () => semesters.find((semester) => semester.status === "OPEN") ?? null,
@@ -690,6 +695,49 @@ const MobileTimeTablePage = () => {
       };
     }, [timetableEvents, offeringById, offeringBySubNum, courseById]);
 
+  const handleDeleteItemClick = (id: number) => {
+    if (!activeTimetable) return;
+    const target = activeTimetable.events.find((e) => e.id === id);
+    if (target) {
+      setDeleteItemTarget(target);
+    }
+  };
+
+  const handleDeleteItemConfirm = () => {
+    if (
+      !activeTimetable ||
+      !deleteItemTarget ||
+      deleteItemTarget.itemId === undefined ||
+      deleteItemMutation.isPending
+    )
+      return;
+
+    deleteItemMutation.mutate(
+      {
+        timeTableId: activeTimetable.id,
+        timeTableItemId: deleteItemTarget.itemId,
+      },
+      {
+        onSuccess: () => {
+          mixpanelTrack.timetableItemActionCompleted(
+            "항목 삭제",
+            deleteItemTarget.isCustom ? "직접 일정" : "강의",
+            {
+              semester: activeTimetable.semester,
+            },
+          );
+          setDeleteItemTarget(null);
+        },
+        onError: (error: any) => {
+          alert(
+            error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",
+          );
+          setDeleteItemTarget(null);
+        },
+      },
+    );
+  };
+
   return (
     <MobileTimeTablePageWrapper>
       <ComingSoonModal
@@ -792,6 +840,23 @@ const MobileTimeTablePage = () => {
             }}
           />
 
+          <Modal
+            isOpen={deleteItemTarget !== null}
+            onClose={() => setDeleteItemTarget(null)}
+            title={deleteItemTarget?.isCustom ? "일정 삭제" : "강의 삭제"}
+            description={`"${deleteItemTarget?.name ?? ""}" ${deleteItemTarget?.isCustom ? "일정을" : "강의를"} 시간표에서\n삭제하시겠습니까?`}
+            primaryButton={{
+              text: "삭제",
+              variant: "danger",
+              onClick: handleDeleteItemConfirm,
+              disabled: deleteItemMutation.isPending,
+            }}
+            secondaryButton={{
+              text: "취소",
+              onClick: () => setDeleteItemTarget(null),
+            }}
+          />
+
           <TimetableThemeBottomSheet
             open={isThemeSheetOpen}
             onOpenChange={setIsThemeSheetOpen}
@@ -848,6 +913,7 @@ const MobileTimeTablePage = () => {
           <TimetableGrid
             events={activeTimetable.events}
             theme={activeTimetable.theme}
+            onDelete={handleDeleteItemClick}
           />
         </>
       ) : (
