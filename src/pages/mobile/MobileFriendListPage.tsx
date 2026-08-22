@@ -814,9 +814,10 @@ export default function MobileFriendListPage() {
             $visible={!isSelectionMode && !isSearchActive && !isShareMode}
           >
             <AddFriendMenuCard
-              isOpen={isAddMenuOpen}
-              onAddClick={() => {
-                closeAddMenu(() => setIsAddFriendModalOpen(true));
+              open={isAddMenuOpen}
+              onScrimClick={() => closeAddMenu()}
+              onSearchClick={() => {
+                closeAddMenu(() => setIsAddFriendOpen(true));
               }}
               onNearbyClick={() => {
                 closeAddMenu(() => setIsNearbyInfoOpen(true));
@@ -856,11 +857,32 @@ export default function MobileFriendListPage() {
                     ? selectedIds.length === 0 || chatMutation.isPending
                     : !selectedRoomId
                   : selectedIds.length === 0
-                : "공유할 채팅방 선택"
-              : "시간표 비교하기"}
-          </CompareFloatingButton>
-        </CompareButtonArea>
-      </FloatingActionsWrapper>
+              }
+              className={
+                (
+                  isShareMode
+                    ? shareTab === "friends"
+                      ? selectedIds.length === 0
+                      : !selectedRoomId
+                    : selectedIds.length === 0
+                )
+                  ? "disabled"
+                  : ""
+              }
+            >
+              {isShareMode
+                ? shareTab === "friends"
+                  ? selectedIds.length > 0
+                    ? `선택한 ${selectedIds.length}명과 채팅방 생성 및 공유`
+                    : "시간표 공유할 친구 선택"
+                  : selectedRoomId
+                  ? "이 채팅방에 공유하기"
+                  : "공유할 채팅방 선택"
+                : "시간표 비교하기"}
+            </CompareFloatingButton>
+          </CompareButtonArea>
+        </FloatingActionsWrapper>
+      </FloatingActionsOuter>
     </PageWrapper>
   );
 }
