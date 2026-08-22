@@ -736,11 +736,15 @@ export default function MobileTimeTableComparePage() {
       return freeViewClasses;
     }
     // activeTabUpper === "compare" 일 때: 내 시간표 + 선택된 친구들의 시간표를 겹쳐서 노출
+    const isMultiCompare = selectedFriendIdsState.length >= 2;
+    const fixedColor = "rgba(255, 212, 59, 0.20)";
+
     const result: ClassItem[] = [];
     if (selectedFriendIdsState.includes(99999)) {
       result.push(
         ...myClasses.map((c) => ({
           ...c,
+          color: isMultiCompare ? fixedColor : c.color,
           ownerName: "내 시간표",
         })),
       );
@@ -752,6 +756,7 @@ export default function MobileTimeTableComparePage() {
         result.push(
           ...classes.map((c) => ({
             ...c,
+            color: isMultiCompare ? fixedColor : c.color,
             ownerName: (friend.friendAlias || friend.nickname) + "의 시간표",
             isFriendOwned: true,
           })),
@@ -1453,7 +1458,7 @@ const Badge = styled.div<{ $isSelected?: boolean }>`
     background: ${({ $isSelected }) =>
       $isSelected
         ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
-        : "var(--timeTable-color-yellow, #FFE589)"};
+        : "rgba(255, 212, 59, 0.20)"};
     color: var(--text-secondary, #333d4b);
     font-size: 12px;
     font-style: normal;
