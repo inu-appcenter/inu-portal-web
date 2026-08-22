@@ -267,10 +267,7 @@ export default function MobileSchoolNoticeDetailPage() {
         <ShareButton type="button" aria-label="공유하기" onClick={handleShare}>
           <Share2 size={24} color="var(--text-secondary, #333d4b)" />
         </ShareButton>
-        <StyledCapsuleButton
-          variant="primary"
-          onClick={handleOpenOriginalPage}
-        >
+        <StyledCapsuleButton variant="primary" onClick={handleOpenOriginalPage}>
           학교 홈페이지에서 보기
         </StyledCapsuleButton>
       </BottomFloatingCTA>
@@ -298,6 +295,7 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   gap: 20px;
   padding: 20px 16px calc(112px + env(safe-area-inset-bottom, 0px));
+  padding-top: 0;
   width: 100%;
   max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
   min-width: 0;
@@ -305,7 +303,8 @@ const ContentWrapper = styled.div`
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 32px ${DESKTOP_GUTTER} calc(120px + env(safe-area-inset-bottom, 0px));
+    padding: 32px ${DESKTOP_GUTTER}
+      calc(120px + env(safe-area-inset-bottom, 0px));
     gap: 28px;
   }
 `;
