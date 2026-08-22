@@ -28,7 +28,7 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 
 // 아이콘
-import { Plus, Send, CalendarPlus } from "lucide-react";
+import { Plus, Send } from "lucide-react";
 
 const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
 
@@ -137,25 +137,6 @@ export default function MobileTimeTableComparePage() {
   }, [timetables, activeTimetableId, openSemester]);
 
   useTimeTableDetail(activeTimetable?.id);
-
-  // "내 일정 추가"(#265). 이 화면에 표시 중인 시간표(activeTimetable)가 전역
-  // activeTimetableId와 다를 수 있어(학기가 다르면 대표 시간표나 목록의 첫 항목으로
-  // 대체됨, 위 useMemo 참고) 기존 "일정 추가" 화면(MobileCourseAddPage)으로 그냥
-  // 이동하면 전역 activeTimetableId 기준으로 저장돼 여기서 보고 있던 시간표가
-  // 아닌 다른 시간표에 저장될 수 있다. 이동 전 전역 상태를 이 화면 기준으로
-  // 맞춰준다 - setActiveTimetable은 서버에 반영되는 "대표 시간표" 지정과는 무관한
-  // 로컬 UI 선택값이라 부작용이 적다.
-  const handleAddMySchedule = () => {
-    if (!activeTimetable) {
-      alert("먼저 이 학기의 시간표를 만들어 주세요.");
-      return;
-    }
-    if (activeTimetable.id !== activeTimetableId) {
-      setActiveTimetable(activeTimetable.id);
-    }
-    mixpanelTrack.timetableFeatureClicked("내 일정 추가", "시간표 비교");
-    navigate(ROUTES.TIMETABLE.ADD);
-  };
 
   const myClasses = useMemo(
     () =>
@@ -1014,21 +995,6 @@ export default function MobileTimeTableComparePage() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleAddMySchedule();
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleAddMySchedule();
-                }}
-                aria-label="내 일정 추가"
-              >
-                <CalendarPlus size={18} strokeWidth={2} />
-              </AddFriendButton>
-              <AddFriendButton
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
                   const allFriendIds = searchParams.get("ids") || "";
                   navigate(
                     allFriendIds
@@ -1088,7 +1054,7 @@ export default function MobileTimeTableComparePage() {
         height="100%"
         zIndex={200}
       >
-        <SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>
+        {/*<SectionTitleBottomSheet>겹치는 공강</SectionTitleBottomSheet>*/}
         <ScrollableBody
           $snapHeight={typeof snap === "number" ? snap : 0.45}
           data-vaul-no-drag=""
@@ -1475,13 +1441,13 @@ const EmptyStateText = styled.div`
   font-weight: 500;
 `;
 
-const SectionTitleBottomSheet = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--gray-900, #191f28);
-  margin: 0;
-  margin-bottom: 16px;
-`;
+// const SectionTitleBottomSheet = styled.h2`
+//   font-size: 20px;
+//   font-weight: 700;
+//   color: var(--gray-900, #191f28);
+//   margin: 0;
+//   margin-bottom: 16px;
+// `;
 
 const ScrollableBody = styled.div<{ $snapHeight?: number }>`
   flex: 1;
