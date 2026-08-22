@@ -288,6 +288,8 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   box-sizing: border-box;
 `;
 
@@ -296,15 +298,14 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   gap: 20px;
   padding: 20px 16px calc(112px + env(safe-area-inset-bottom, 0px));
-  padding-top: 0;
   width: 100%;
   max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
+  min-width: 0;
   margin: 0 auto;
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 32px ${DESKTOP_GUTTER}
-      calc(120px + env(safe-area-inset-bottom, 0px));
+    padding: 32px ${DESKTOP_GUTTER} calc(120px + env(safe-area-inset-bottom, 0px));
     gap: 28px;
   }
 `;
@@ -397,6 +398,8 @@ const ArticleSection = styled.div`
   flex-direction: column;
   gap: 32px;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
 `;
 
 // 횃불이 AI 요약 카드 (Figma 2960:8684)
@@ -490,25 +493,67 @@ const BodyHtmlContent = styled.div`
   line-height: 1.6;
   color: var(--text-primary, #191f28);
   word-break: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* 고정 폭 인라인 컨테이너가 화면을 뚫고 나가지 않도록 방어 */
+  div,
+  p,
+  span,
+  section,
+  article {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 
   p {
     margin: 0 0 12px 0;
     line-height: 1.6;
   }
 
-  img {
-    max-width: 100%;
-    height: auto;
+  img,
+  video,
+  iframe,
+  embed,
+  object {
+    max-width: 100% !important;
+    height: auto !important;
     border-radius: 8px;
     margin: 8px 0;
   }
 
+  /* 테이블/표는 화면 폭을 넘을 수 있으므로 표 자체만 가로 스크롤 가능하게 처리 */
   table {
     width: 100%;
+    max-width: 100%;
     border-collapse: collapse;
     margin: 16px 0;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     display: block;
+  }
+
+  /* pre, code 블록도 가로 스크롤 허용 */
+  pre {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: var(--bg-muted, #f1f3f5);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 12px 0;
   }
 
   th,
@@ -516,6 +561,7 @@ const BodyHtmlContent = styled.div`
     border: 1px solid var(--border-default, #e5e8eb);
     padding: 8px 12px;
     font-size: 14px;
+    word-break: break-word;
   }
 
   th {
