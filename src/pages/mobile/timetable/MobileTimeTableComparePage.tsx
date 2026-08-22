@@ -161,7 +161,7 @@ export default function MobileTimeTableComparePage() {
     () =>
       (activeTimetable?.events ?? []).map((item) => ({
         ...item,
-        color: item.color ?? "#FEF3C7",
+        color: item.color,
       })),
     [activeTimetable?.events],
   );
@@ -881,8 +881,7 @@ export default function MobileTimeTableComparePage() {
         )
         .filter((memberId): memberId is number => memberId != null),
     ].filter(
-      (memberId, index, ids) =>
-        memberId > 0 && ids.indexOf(memberId) === index,
+      (memberId, index, ids) => memberId > 0 && ids.indexOf(memberId) === index,
     ),
     topFreeTimes: goodMeetingTimes.slice(0, 3).map((slot) => ({
       day: slot.day,
@@ -956,7 +955,9 @@ export default function MobileTimeTableComparePage() {
       });
       const payload = buildTimetableSharePayload(targetIds);
       const payloadStr = encodeURIComponent(JSON.stringify(payload));
-      navigate(`${ROUTES.CHAT.ROOT}/${originRoomId}?sharePayload=${payloadStr}`);
+      navigate(
+        `${ROUTES.CHAT.ROOT}/${originRoomId}?sharePayload=${payloadStr}`,
+      );
       return;
     }
 
@@ -1054,7 +1055,10 @@ export default function MobileTimeTableComparePage() {
             <TimetableGrid
               events={activeEvents}
               highlightedSlot={highlightedSlot}
-              isCompareMode={activeTabUpper === "compare"}
+              isCompareMode={
+                activeTabUpper === "compare" &&
+                selectedFriendIdsState.length >= 2
+              }
               isFreeMode={activeTabUpper === "free"}
             />
           </GridSection>
@@ -1470,7 +1474,8 @@ const SectionTitleBottomSheet = styled.h2`
   font-size: 20px;
   font-weight: 700;
   color: var(--gray-900, #191f28);
-  margin: 0 0 32px 0;
+  margin: 0;
+  margin-bottom: 16px;
 `;
 
 const ScrollableBody = styled.div<{ $snapHeight?: number }>`
