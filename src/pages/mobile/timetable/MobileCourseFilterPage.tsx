@@ -83,6 +83,8 @@ export default function MobileCourseFilterPage() {
   }, [filters, initialFilters]);
 
   const [hasPushState, setHasPushState] = useState(false);
+  const hasPushStateRef = useRef(false);
+  const isPopStateRef = useRef(false);
   const isOverlayOpen = view !== "main";
 
   // 라우터 이탈 방지용 blocker (상세 오버레이 스택 정리 중인 back() 동작과 충돌하지 않도록 처리, 저장 중이면 비활성)
@@ -125,7 +127,9 @@ export default function MobileCourseFilterPage() {
 
     // navigate(-1) 호출 전 blocker를 비활성화하여 이중 모달 방지
     isSavingRef.current = true;
-    setIsSaving(true);
+    flushSync(() => {
+      setIsSaving(true);
+    });
     if (
       window.AndroidBridge &&
       typeof window.AndroidBridge.goBack === "function"
@@ -139,29 +143,39 @@ export default function MobileCourseFilterPage() {
   // 1회성 pushState 스택 관리 및 뒤로가기 popstate 연동
   useEffect(() => {
     if (isOverlayOpen) {
-      if (!hasPushState) {
+      if (!hasPushStateRef.current) {
         window.history.pushState({ filterOverlayOpen: true }, "");
+        hasPushStateRef.current = true;
         setHasPushState(true);
       }
+      isPopStateRef.current = false;
 
       const handlePopState = () => {
+        isPopStateRef.current = true;
+        hasPushStateRef.current = false;
         setHasPushState(false);
 
         if (view === "major") {
           if (majorLevel2) {
             setMajorLevel2(null);
             window.history.pushState({ filterOverlayOpen: true }, "");
+            hasPushStateRef.current = true;
             setHasPushState(true);
-          } else if (majorLevel1) {
+            isPopStateRef.current = false;
+            return;
+          }
+          if (majorLevel1) {
             setMajorLevel1(null);
             window.history.pushState({ filterOverlayOpen: true }, "");
+            hasPushStateRef.current = true;
             setHasPushState(true);
-          } else {
-            setView("main");
+            isPopStateRef.current = false;
+            return;
           }
-        } else {
           setView("main");
+          return;
         }
+        setView("main");
       };
 
       window.addEventListener("popstate", handlePopState);
@@ -169,16 +183,21 @@ export default function MobileCourseFilterPage() {
         window.removeEventListener("popstate", handlePopState);
       };
     } else {
-      if (hasPushState) {
+      if (hasPushStateRef.current && !isPopStateRef.current) {
+        hasPushStateRef.current = false;
         window.history.back();
         // window.history.back() 비동기 동작이 완료되고 react-router-dom의
         // popstate 수신 전파가 끝날 때까지 useBlocker 활성화를 150ms 지연하여 타이밍 충돌을 방지합니다.
         setTimeout(() => {
           setHasPushState(false);
         }, 150);
+      } else {
+        hasPushStateRef.current = false;
+        setHasPushState(false);
       }
+      isPopStateRef.current = false;
     }
-  }, [isOverlayOpen, view, majorLevel1, majorLevel2, hasPushState]);
+  }, [isOverlayOpen, view, majorLevel1, majorLevel2]);
 
   // 페이지 단위 미저장이탈 방지 등록 (필터 메인이고 변경사항이 있을 때)
   useEffect(() => {
