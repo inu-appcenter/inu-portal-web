@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
+import TimetableGrid, {
+  ClassItem,
+} from "@/components/mobile/timetable/TimetableGrid";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -17,6 +19,7 @@ import {
   useTimeTableDetail,
   useUpdateTimeTableName,
   useDeleteTimeTable,
+  useDeleteTimeTableItem,
 } from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
@@ -27,7 +30,6 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
-import TimetableImageImportModal from "@/components/mobile/timetable/TimetableImageImportModal";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
 const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
@@ -372,9 +374,11 @@ const MobileTimeTablePage = () => {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputVal, setRenameInputVal] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteItemTarget, setDeleteItemTarget] = useState<ClassItem | null>(
+    null,
+  );
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isImageImportOpen, setIsImageImportOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
 
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
@@ -383,6 +387,7 @@ const MobileTimeTablePage = () => {
   const { semesters } = useSemesters();
   const updateNameMutation = useUpdateTimeTableName();
   const deleteMutation = useDeleteTimeTable();
+  const deleteItemMutation = useDeleteTimeTableItem();
 
   const currentSemester = useMemo(
     () => semesters.find((semester) => semester.status === "OPEN") ?? null,
@@ -437,11 +442,11 @@ const MobileTimeTablePage = () => {
 
   useEffect(() => {
     if (!activeTimetable || searchParams.get("imageImport") !== "1") return;
-    setIsImageImportOpen(true);
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete("imageImport");
     setSearchParams(nextParams, { replace: true });
-  }, [activeTimetable, searchParams, setSearchParams]);
+    navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`);
+  }, [activeTimetable, searchParams, setSearchParams, navigate]);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
   const appEnvironment = getAppEnvironmentStatus();
@@ -504,7 +509,7 @@ const MobileTimeTablePage = () => {
             "시간표 이미지로 등록",
             "헤더 메뉴",
           );
-          setIsImageImportOpen(true);
+          navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`);
         },
       },
       {
@@ -587,7 +592,7 @@ const MobileTimeTablePage = () => {
       open_method: shouldOpenSimulatorInNewWebView ? "새 웹뷰" : "내부 라우트",
     });
     alert(
-      "실제와 다를 수 있으며, PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다. 앱 내 강의 정보는 현시점에는 최신 정보가 아니니 주의하세요.",
+      "PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다.\nhttps://intip.inuappcenter.kr",
     );
     if (shouldOpenSimulatorInNewWebView) {
       appBridge.navigateTo(SIMULATOR_URL);
@@ -690,6 +695,49 @@ const MobileTimeTablePage = () => {
       };
     }, [timetableEvents, offeringById, offeringBySubNum, courseById]);
 
+  const handleDeleteItemClick = (id: number) => {
+    if (!activeTimetable) return;
+    const target = activeTimetable.events.find((e) => e.id === id);
+    if (target) {
+      setDeleteItemTarget(target);
+    }
+  };
+
+  const handleDeleteItemConfirm = () => {
+    if (
+      !activeTimetable ||
+      !deleteItemTarget ||
+      deleteItemTarget.itemId === undefined ||
+      deleteItemMutation.isPending
+    )
+      return;
+
+    deleteItemMutation.mutate(
+      {
+        timeTableId: activeTimetable.id,
+        timeTableItemId: deleteItemTarget.itemId,
+      },
+      {
+        onSuccess: () => {
+          mixpanelTrack.timetableItemActionCompleted(
+            "항목 삭제",
+            deleteItemTarget.isCustom ? "직접 일정" : "강의",
+            {
+              semester: activeTimetable.semester,
+            },
+          );
+          setDeleteItemTarget(null);
+        },
+        onError: (error: any) => {
+          alert(
+            error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",
+          );
+          setDeleteItemTarget(null);
+        },
+      },
+    );
+  };
+
   return (
     <MobileTimeTablePageWrapper>
       <ComingSoonModal
@@ -705,7 +753,7 @@ const MobileTimeTablePage = () => {
           setIsCreateModalOpen(false);
           if (createThenImport) {
             setCreateThenImport(false);
-            navigate(`${ROUTES.TIMETABLE.ROOT}?id=${created.id}&imageImport=1`);
+            navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${created.id}`);
             return;
           }
           navigate(`${ROUTES.TIMETABLE.EDIT}?id=${created.id}`);
@@ -714,21 +762,6 @@ const MobileTimeTablePage = () => {
 
       {isLoggedIn && activeTimetable && (
         <>
-          <TimetableImageImportModal
-            open={isImageImportOpen}
-            onClose={() => setIsImageImportOpen(false)}
-            timetableId={activeTimetable.id}
-            year={activeTimetable.year}
-            term={activeTimetable.term}
-            existingOfferingIds={activeTimetable.events
-              .map((event) => event.courseOfferingId)
-              .filter((id): id is number => id !== undefined)}
-            existingSubjectNumbers={activeTimetable.events
-              .map((event) => event.courseId)
-              .filter((subjectNumber): subjectNumber is string =>
-                Boolean(subjectNumber),
-              )}
-          />
           <Modal
             isOpen={isRenameModalOpen}
             onClose={() => setIsRenameModalOpen(false)}
@@ -807,6 +840,23 @@ const MobileTimeTablePage = () => {
             }}
           />
 
+          <Modal
+            isOpen={deleteItemTarget !== null}
+            onClose={() => setDeleteItemTarget(null)}
+            title={deleteItemTarget?.isCustom ? "일정 삭제" : "강의 삭제"}
+            description={`"${deleteItemTarget?.name ?? ""}" ${deleteItemTarget?.isCustom ? "일정을" : "강의를"} 시간표에서\n삭제하시겠습니까?`}
+            primaryButton={{
+              text: "삭제",
+              variant: "danger",
+              onClick: handleDeleteItemConfirm,
+              disabled: deleteItemMutation.isPending,
+            }}
+            secondaryButton={{
+              text: "취소",
+              onClick: () => setDeleteItemTarget(null),
+            }}
+          />
+
           <TimetableThemeBottomSheet
             open={isThemeSheetOpen}
             onOpenChange={setIsThemeSheetOpen}
@@ -849,7 +899,11 @@ const MobileTimeTablePage = () => {
               </ImageImportPromptText>
               <ImageImportButton
                 type="button"
-                onClick={() => setIsImageImportOpen(true)}
+                onClick={() =>
+                  navigate(
+                    `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
+                  )
+                }
               >
                 <ScanLine size={18} />
                 이미지로 가져오기
@@ -859,6 +913,7 @@ const MobileTimeTablePage = () => {
           <TimetableGrid
             events={activeTimetable.events}
             theme={activeTimetable.theme}
+            onDelete={handleDeleteItemClick}
           />
         </>
       ) : (

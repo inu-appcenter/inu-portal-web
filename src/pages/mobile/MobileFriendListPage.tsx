@@ -807,80 +807,82 @@ export default function MobileFriendListPage() {
       )}
 
       {/* Floating Area (always rendered for animation) */}
-      <FloatingActionsWrapper>
-        {/* Plus button - scale out when selection mode is active */}
-        <PlusButtonWrapper
-          $visible={!isSelectionMode && !isSearchActive && !isShareMode}
-        >
-          <AddFriendMenuCard
-            open={isAddMenuOpen}
-            onScrimClick={() => closeAddMenu()}
-            onSearchClick={() => {
-              closeAddMenu(() => setIsAddFriendOpen(true));
-            }}
-            onNearbyClick={() => {
-              closeAddMenu(() => setIsNearbyInfoOpen(true));
-            }}
-            onInviteClick={() => {
-              closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
-            }}
-          />
-          <FloatingButton
-            onClick={toggleAddMenu}
-            $rotated={isAddMenuOpen}
+      <FloatingActionsOuter>
+        <FloatingActionsWrapper>
+          {/* Plus button - scale out when selection mode is active */}
+          <PlusButtonWrapper
+            $visible={!isSelectionMode && !isSearchActive && !isShareMode}
           >
-            <PlusIcon />
-          </FloatingButton>
-        </PlusButtonWrapper>
-
-        {/* Search bar */}
-        {(!isShareMode || shareTab === "friends") && (
-          <SearchBarContainer $isSearchActive={isSearchActive}>
-            <FloatingSearchBar
-              placeholder="친구 이름 또는 학번 검색"
-              onSearch={setSearchTerm}
-              onActiveChange={handleSearchActiveChange}
-              searchParamKey="q"
-              size={56}
+            <AddFriendMenuCard
+              open={isAddMenuOpen}
+              onScrimClick={() => closeAddMenu()}
+              onSearchClick={() => {
+                closeAddMenu(() => setIsAddFriendOpen(true));
+              }}
+              onNearbyClick={() => {
+                closeAddMenu(() => setIsNearbyInfoOpen(true));
+              }}
+              onInviteClick={() => {
+                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+              }}
             />
-          </SearchBarContainer>
-        )}
+            <FloatingButton
+              onClick={toggleAddMenu}
+              $rotated={isAddMenuOpen}
+            >
+              <PlusIcon />
+            </FloatingButton>
+          </PlusButtonWrapper>
 
-        {/* Compare / Share button - slides up from bottom */}
-        <CompareButtonArea $visible={isShareMode || isSelectionMode}>
-          <CompareFloatingButton
-            onClick={handleCompareClick}
-            disabled={
-              isShareMode
-                ? shareTab === "friends"
-                  ? selectedIds.length === 0 || chatMutation.isPending
-                  : !selectedRoomId
-                : selectedIds.length === 0
-            }
-            className={
-              (
+          {/* Search bar */}
+          {(!isShareMode || shareTab === "friends") && (
+            <SearchBarContainer $isSearchActive={isSearchActive}>
+              <FloatingSearchBar
+                placeholder="친구 이름 또는 학번 검색"
+                onSearch={setSearchTerm}
+                onActiveChange={handleSearchActiveChange}
+                searchParamKey="q"
+                size={56}
+              />
+            </SearchBarContainer>
+          )}
+
+          {/* Compare / Share button - slides up from bottom */}
+          <CompareButtonArea $visible={isShareMode || isSelectionMode}>
+            <CompareFloatingButton
+              onClick={handleCompareClick}
+              disabled={
                 isShareMode
                   ? shareTab === "friends"
-                    ? selectedIds.length === 0
+                    ? selectedIds.length === 0 || chatMutation.isPending
                     : !selectedRoomId
                   : selectedIds.length === 0
-              )
-                ? "disabled"
-                : ""
-            }
-          >
-            {isShareMode
-              ? shareTab === "friends"
-                ? selectedIds.length > 0
-                  ? `선택한 ${selectedIds.length}명과 채팅방 생성 및 공유`
-                  : "시간표 공유할 친구 선택"
-                : selectedRoomId
-                ? "이 채팅방에 공유하기"
-                : "공유할 채팅방 선택"
-              : "시간표 비교하기"}
-          </CompareFloatingButton>
-        </CompareButtonArea>
-      </FloatingActionsWrapper>
+              }
+              className={
+                (
+                  isShareMode
+                    ? shareTab === "friends"
+                      ? selectedIds.length === 0
+                      : !selectedRoomId
+                    : selectedIds.length === 0
+                )
+                  ? "disabled"
+                  : ""
+              }
+            >
+              {isShareMode
+                ? shareTab === "friends"
+                  ? selectedIds.length > 0
+                    ? `선택한 ${selectedIds.length}명과 채팅방 생성 및 공유`
+                    : "시간표 공유할 친구 선택"
+                  : selectedRoomId
+                  ? "이 채팅방에 공유하기"
+                  : "공유할 채팅방 선택"
+                : "시간표 비교하기"}
+            </CompareFloatingButton>
+          </CompareButtonArea>
+        </FloatingActionsWrapper>
+      </FloatingActionsOuter>
     </PageWrapper>
   );
 }
@@ -1128,20 +1130,30 @@ const EmptyDescription = styled.p`
   text-align: center;
 `;
 
-const FloatingActionsWrapper = styled.div`
+const FloatingActionsOuter = styled.div`
   position: fixed;
   bottom: calc(var(--nav-height, 100px) + 0px);
   right: 0;
   left: 0;
+  width: 100%;
+  z-index: 99;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
+  );
+`;
+
+const FloatingActionsWrapper = styled.div`
+  max-width: 768px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  z-index: 99;
-  max-width: 768px;
   pointer-events: none;
   box-sizing: border-box;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 16.02%, #fff 100%);
   padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
 
   & > * {

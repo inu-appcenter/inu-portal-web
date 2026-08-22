@@ -5,7 +5,6 @@ import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import { useGreetingMessage } from "@/hooks/useGreetingMessage";
 import type { ClassItem as TimetableClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { formatHoursToTime } from "@/utils/timetable";
 import { ROUTES } from "@/constants/routes";
@@ -193,22 +192,10 @@ export default function MobileHomePageV2() {
       ? "불러오는 중"
       : getTimetableStatusText(todayClasses, today);
 
-  const greeting = useGreetingMessage({
-    nickname: userInfo?.nickname,
-    todayClasses,
-    hasTimetable: Boolean(activeTimetable),
-    isTimetableReady: isLoggedIn && !isTimetablesLoading && !isDetailLoading,
-  });
-
   return (
     <V2Wrapper>
       <UpperSection>
         <SectionInner>
-          {/*<WelcomeMessage>*/}
-          {/*  <HighlightName>{nickname}님,</HighlightName>*/}
-          {/*  <GreetingText>좋은 아침이에요!</GreetingText>*/}
-          {/*</WelcomeMessage>*/}
-
           <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
             <WidgetHeader>
               <WidgetTitle>{todayDateText}</WidgetTitle>
@@ -464,26 +451,6 @@ const UpperSection = styled.div`
   padding-bottom: 24px;
   background: #eff5fc;
 `;
-
-const WelcomeMessage = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 24px;
-  text-align: left;
-  padding-left: 8px;
-
-  color: var(--text-secondary, #333d4b);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 28px;
-  letter-spacing: -0.2px;
-`;
-//
-const HighlightName = styled.span``;
-
-const GreetingText = styled.span``;
 
 const TodayTimetableCard = styled.div`
   background-color: #ffffff;

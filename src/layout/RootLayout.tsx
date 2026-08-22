@@ -182,6 +182,7 @@ export default function RootLayout() {
       <ScreenContainer>
         {outlet}
         <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
+        <GlobalBottomFadeOverlay aria-hidden="true" />
       </ScreenContainer>
       {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
       <FeatureTourSheet
@@ -205,4 +206,21 @@ const ScreenContainer = styled.div`
     max-width: none;
     box-shadow: none;
   }
+`;
+
+const GlobalBottomFadeOverlay = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
+  );
+  pointer-events: none;
+  z-index: 50;
 `;

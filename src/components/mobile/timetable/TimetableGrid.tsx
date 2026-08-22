@@ -415,12 +415,16 @@ const TimetableGrid = ({
         }}
       >
         <ItemContent>
-          <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
-          {(theme?.showRoom ?? true) && item.room && (
-            <ClassRoom $fontSize={theme?.fontSize}>{formatRoom(item.room)}</ClassRoom>
-          )}
-          {theme?.showProfessor && item.professor && (
-            <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
+          {!isCompareMode && (
+            <>
+              <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
+              {(theme?.showRoom ?? true) && item.room && (
+                <ClassRoom $fontSize={theme?.fontSize}>{formatRoom(item.room)}</ClassRoom>
+              )}
+              {theme?.showProfessor && item.professor && (
+                <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
+              )}
+            </>
           )}
         </ItemContent>
       </ClassItemBlock>

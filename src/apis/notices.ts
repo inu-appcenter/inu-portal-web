@@ -4,6 +4,7 @@ import {
   DepartmentNotice,
   Keyword,
   Notice,
+  NoticeDetail,
   SearchNotice,
 } from "@/types/notices";
 import { Schedule } from "@/types/schedules";
@@ -26,6 +27,9 @@ export const getNoticeListQueryKey = (
 export const getNoticeSearchQueryKey = (query: string, category?: string) =>
   ["notices", "search", query, category] as const;
 
+export const getNoticeDetailQueryKey = (id: number) =>
+  ["notices", "detail", id] as const;
+
 const normalizeRequiredDepartment = (department: string): string => {
   const normalizedDepartment = department.trim();
 
@@ -34,6 +38,16 @@ const normalizeRequiredDepartment = (department: string): string => {
   }
 
   return normalizedDepartment;
+};
+
+// 학교 공지사항 상세 조회
+export const getNoticeDetail = async (
+  id: number,
+): Promise<ApiResponse<NoticeDetail>> => {
+  const response = await axiosInstance.get<ApiResponse<NoticeDetail>>(
+    `/api/notices/${id}`,
+  );
+  return response.data;
 };
 
 // 전체 공지사항 조회
