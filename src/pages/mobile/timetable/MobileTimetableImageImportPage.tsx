@@ -912,18 +912,19 @@ const DropzoneCard = styled.button`
   width: 100%;
   border: 1.5px dashed #0061ff;
   border-radius: 20px;
-  background: #f8faff;
-  padding: 20px 16px;
+  background: var(--bg-brand, #eff6ff);
+  padding: 20px 16px 0 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   cursor: pointer;
   box-sizing: border-box;
   text-align: left;
+  overflow: hidden;
   transition: background 0.2s, border-color 0.2s;
 
   &:hover {
-    background: #f0f5ff;
+    background: #e5f0ff;
   }
 `;
 
@@ -969,21 +970,21 @@ const DropzoneSubtitle = styled.div`
 
 const SampleImageWrapper = styled.div`
   width: 100%;
-  border-radius: 14px;
-  background: #edf3fe;
+  background: transparent;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  overflow: hidden;
   box-sizing: border-box;
 `;
 
 const SampleImage = styled.img`
   width: 100%;
   height: auto;
-  max-height: 200px;
+  max-height: 220px;
   object-fit: contain;
+  object-position: bottom center;
   display: block;
+  vertical-align: bottom;
 `;
 
 const GuideSection = styled.div`
