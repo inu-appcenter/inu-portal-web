@@ -87,8 +87,7 @@ export default function MobileTimeTableComparePage() {
   // "공유"가 새 채팅방을 만드는 대신 이 방으로 바로 공유한다.
   const originRoomId = searchParams.get("roomId") || "";
   const { userInfo } = useUserStore();
-  const { activeTimetableId, timetables, setActiveTimetable } =
-    useTimetableStore();
+  const { activeTimetableId, timetables } = useTimetableStore();
 
   const chipScrollRef = useRef<HTMLDivElement | null>(null);
   const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
@@ -1459,13 +1458,11 @@ const ScrollableBody = styled.div<{ $snapHeight?: number }>`
   flex-direction: column;
   gap: 8px;
   min-height: 0;
-  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(144px + env(safe-area-inset-bottom, 0px));
 
   /* 스크롤 영역의 높이를 snap 높이에 따라 동적으로 묶어줌 */
   max-height: ${({ $snapHeight }) =>
-    typeof $snapHeight === "number"
-      ? `calc(${$snapHeight * 100}dvh - 120px)`
-      : "none"};
+    typeof $snapHeight === "number" ? `calc(${$snapHeight * 100}dvh)` : "none"};
 
   /* 스크롤바 숨김 */
   &::-webkit-scrollbar {
