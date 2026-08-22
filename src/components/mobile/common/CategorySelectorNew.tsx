@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { resetScrollToTop } from "@/utils/scroll";
 
 interface CategoryOption {
   label: string;
@@ -13,6 +14,7 @@ interface CategorySelectorNewProps {
   selectedCategory?: string;
   queryParam?: string;
   paramsToReset?: string[];
+  onSelectCategory?: (category: string) => void;
 }
 
 export default function CategorySelectorNew({
@@ -20,6 +22,7 @@ export default function CategorySelectorNew({
   selectedCategory,
   queryParam = "category",
   paramsToReset = ["search"],
+  onSelectCategory,
 }: CategorySelectorNewProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,6 +82,10 @@ export default function CategorySelectorNew({
   }, [selectedCategory]);
 
   const handleClickCategory = (category: string) => {
+    if (category !== selectedCategory) {
+      resetScrollToTop();
+    }
+    onSelectCategory?.(category);
     const params = new URLSearchParams(location.search);
     paramsToReset.forEach((paramKey) => params.delete(paramKey));
     params.set(queryParam, category);

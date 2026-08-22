@@ -243,6 +243,7 @@ const MobileSchoolNoticePage = () => {
       return;
     }
 
+    resetScrollToTop();
     mixpanelTrack.searchPerformed("Notice", nextQuery, 0);
   };
 

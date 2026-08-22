@@ -2,6 +2,7 @@ import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "re
 import styled from "styled-components";
 import { Search, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { resetScrollToTop } from "@/utils/scroll";
 
 export interface FloatingSearchBarRef {
   blur: () => void;
@@ -171,6 +172,7 @@ const FloatingSearchBar = forwardRef<
   }));
 
   const executeSearch = (query: string) => {
+    resetScrollToTop();
     if (onSearch) {
       onSearch(query);
     }
