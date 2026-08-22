@@ -13,7 +13,6 @@ import {
   useNavigate,
   useSearchParams,
   useBlocker,
-  useBeforeUnload,
 } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
@@ -176,15 +175,6 @@ export default function MobileTimetableImageImportPage() {
       setShowUnsavedModal(true);
     }
   }, [blocker.state, isSaving]);
-
-  useBeforeUnload(
-    (event) => {
-      if (!hasChanges || isSaving) return;
-      event.preventDefault();
-      event.returnValue = "";
-    },
-    { capture: true },
-  );
 
   useEffect(() => {
     const handlePageBack = () => {
