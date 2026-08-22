@@ -8,8 +8,6 @@ import {
   ChevronDown,
   ImagePlus,
   X,
-  Smartphone,
-  ImageIcon,
 } from "lucide-react";
 import { useNavigate, useSearchParams, useBlocker, useBeforeUnload } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -20,6 +18,8 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCreateTimeTableCourseItem, useTimeTables } from "@/hooks/useTimeTables";
 import { getCourseOfferingsPage, searchCourseOfferings } from "@/apis/courseOfferings";
 import type { CourseOffering } from "@/types/courseOfferings";
+import sugangAppLogoSvg from "@/resources/assets/timetable/수강신청앱로고.svg";
+import timetableSampleSvg from "@/resources/assets/timetable/시간표이미지선택하기예시이미지.svg";
 import {
   detectTimetableBlocks,
   detectTimetableImageLayout,
@@ -574,11 +574,10 @@ export default function MobileTimetableImageImportPage() {
               </DropzoneHeader>
 
               <SampleImageWrapper>
-                {/* 추후 /images/timetable/image-import-sample.png 등의 에셋이 들어갈 영역 */}
-                <SamplePlaceholder>
-                  <ImageIcon size={36} color="#93c5fd" />
-                  <span>시간표 캡처 이미지 예시</span>
-                </SamplePlaceholder>
+                <SampleImage
+                  src={timetableSampleSvg}
+                  alt="시간표 캡처 이미지 예시"
+                />
               </SampleImageWrapper>
             </DropzoneCard>
 
@@ -593,10 +592,7 @@ export default function MobileTimetableImageImportPage() {
                     </GuideItemTitleRow>
                     <GuideItemSubtitle>수강신청 앱 내역 화면 (권장)</GuideItemSubtitle>
                   </GuideItemLeft>
-                  <AppIconSlot>
-                    {/* 수강신청 앱 아이콘 에셋 placeholder */}
-                    <Smartphone size={22} color="#0061ff" />
-                  </AppIconSlot>
+                  <AppIconImg src={sugangAppLogoSvg} alt="수강신청 앱 로고" />
                 </GuideItem>
 
                 <GuideDivider />
@@ -606,9 +602,6 @@ export default function MobileTimetableImageImportPage() {
                     <GuideItemTitle>에브리타임</GuideItemTitle>
                     <GuideItemSubtitle>시간표 전체 화면</GuideItemSubtitle>
                   </GuideItemLeft>
-                  <AppIconSlot>
-                    <Smartphone size={22} color="#6b7684" />
-                  </AppIconSlot>
                 </GuideItem>
               </GuideCard>
             </GuideSection>
@@ -976,25 +969,21 @@ const DropzoneSubtitle = styled.div`
 
 const SampleImageWrapper = styled.div`
   width: 100%;
-  height: 140px;
   border-radius: 14px;
   background: #edf3fe;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  box-sizing: border-box;
 `;
 
-const SamplePlaceholder = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-
-  span {
-    font-size: 12px;
-    color: #8b95a1;
-  }
+const SampleImage = styled.img`
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  display: block;
 `;
 
 const GuideSection = styled.div`
@@ -1073,15 +1062,12 @@ const GuideDivider = styled.div`
   width: 100%;
 `;
 
-const AppIconSlot = styled.div`
+const AppIconImg = styled.img`
   width: 40px;
   height: 40px;
   flex-shrink: 0;
   border-radius: 10px;
-  background: #f1f3f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
 `;
 
 // --- Analyzing Styles ---
