@@ -31,6 +31,7 @@ export const ROUTES = {
     SYLLABUS: "/timetable/syllabus",
     WIZARD: "/timetable/wizard",
     WIZARD_GROUP: "/timetable/wizard-group",
+    IMAGE_IMPORT: "/timetable/image-import",
   },
 
   // 친구

@@ -66,6 +66,7 @@ import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimu
 import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import MobileTimetableWizardPage from "@/pages/mobile/timetable/MobileTimetableWizardPage";
 import MobileTimetableGroupWizardPage from "@/pages/mobile/timetable/MobileTimetableGroupWizardPage";
+import MobileTimetableImageImportPage from "@/pages/mobile/timetable/MobileTimetableImageImportPage";
 import MobileTimeTableListPage from "@/pages/mobile/timetable/MobileTimeTableListPage";
 import MobileGradeCalculatorPage from "@/pages/mobile/timetable/MobileGradeCalculatorPage";
 import MobileSyllabusPage from "@/pages/mobile/timetable/MobileSyllabusPage";
@@ -157,6 +158,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.TIMETABLE.WIZARD_GROUP,
             element: <MobileTimetableGroupWizardPage />,
+          },
+          {
+            path: ROUTES.TIMETABLE.IMAGE_IMPORT,
+            element: <MobileTimetableImageImportPage />,
           },
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },

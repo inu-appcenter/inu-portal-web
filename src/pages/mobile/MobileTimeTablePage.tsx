@@ -27,7 +27,6 @@ import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
-import TimetableImageImportModal from "@/components/mobile/timetable/TimetableImageImportModal";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
 const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
@@ -374,7 +373,6 @@ const MobileTimeTablePage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isImageImportOpen, setIsImageImportOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
 
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
@@ -437,11 +435,11 @@ const MobileTimeTablePage = () => {
 
   useEffect(() => {
     if (!activeTimetable || searchParams.get("imageImport") !== "1") return;
-    setIsImageImportOpen(true);
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete("imageImport");
     setSearchParams(nextParams, { replace: true });
-  }, [activeTimetable, searchParams, setSearchParams]);
+    navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`);
+  }, [activeTimetable, searchParams, setSearchParams, navigate]);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
   const appEnvironment = getAppEnvironmentStatus();
@@ -504,7 +502,9 @@ const MobileTimeTablePage = () => {
             "시간표 이미지로 등록",
             "헤더 메뉴",
           );
-          setIsImageImportOpen(true);
+          navigate(
+            `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
+          );
         },
       },
       {
@@ -705,7 +705,7 @@ const MobileTimeTablePage = () => {
           setIsCreateModalOpen(false);
           if (createThenImport) {
             setCreateThenImport(false);
-            navigate(`${ROUTES.TIMETABLE.ROOT}?id=${created.id}&imageImport=1`);
+            navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${created.id}`);
             return;
           }
           navigate(`${ROUTES.TIMETABLE.EDIT}?id=${created.id}`);
@@ -714,21 +714,6 @@ const MobileTimeTablePage = () => {
 
       {isLoggedIn && activeTimetable && (
         <>
-          <TimetableImageImportModal
-            open={isImageImportOpen}
-            onClose={() => setIsImageImportOpen(false)}
-            timetableId={activeTimetable.id}
-            year={activeTimetable.year}
-            term={activeTimetable.term}
-            existingOfferingIds={activeTimetable.events
-              .map((event) => event.courseOfferingId)
-              .filter((id): id is number => id !== undefined)}
-            existingSubjectNumbers={activeTimetable.events
-              .map((event) => event.courseId)
-              .filter((subjectNumber): subjectNumber is string =>
-                Boolean(subjectNumber),
-              )}
-          />
           <Modal
             isOpen={isRenameModalOpen}
             onClose={() => setIsRenameModalOpen(false)}
@@ -849,7 +834,11 @@ const MobileTimeTablePage = () => {
               </ImageImportPromptText>
               <ImageImportButton
                 type="button"
-                onClick={() => setIsImageImportOpen(true)}
+                onClick={() =>
+                  navigate(
+                    `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
+                  )
+                }
               >
                 <ScanLine size={18} />
                 이미지로 가져오기
