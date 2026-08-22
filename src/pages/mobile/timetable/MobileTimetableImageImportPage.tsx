@@ -19,7 +19,7 @@ import { useCreateTimeTableCourseItem, useTimeTables } from "@/hooks/useTimeTabl
 import { getCourseOfferingsPage, searchCourseOfferings } from "@/apis/courseOfferings";
 import type { CourseOffering } from "@/types/courseOfferings";
 import sugangAppLogoSvg from "@/resources/assets/timetable/수강신청앱로고.svg";
-import timetableSampleSvg from "@/resources/assets/timetable/시간표이미지선택하기예시이미지.svg";
+import timetableSampleWebp from "@/resources/assets/timetable/시간표이미지선택하기예시이미지.webp";
 import {
   detectTimetableBlocks,
   detectTimetableImageLayout,
@@ -575,7 +575,7 @@ export default function MobileTimetableImageImportPage() {
 
               <SampleImageWrapper>
                 <SampleImage
-                  src={timetableSampleSvg}
+                  src={timetableSampleWebp}
                   alt="시간표 캡처 이미지 예시"
                 />
               </SampleImageWrapper>
