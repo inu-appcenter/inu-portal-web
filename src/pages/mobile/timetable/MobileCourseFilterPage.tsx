@@ -413,6 +413,7 @@ export default function MobileCourseFilterPage() {
         onClose={handleStayOnPage}
         title="변경사항 적용 안 함"
         description="필터 변경사항이 있습니다. 적용하지 않고 시간표 편집 화면으로 돌아갈까요?"
+        closeOnBack={false}
         primaryButton={{
           text: "적용 안 함",
           onClick: handleLeaveWithoutSaving,

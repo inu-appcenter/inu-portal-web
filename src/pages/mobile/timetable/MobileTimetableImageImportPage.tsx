@@ -896,6 +896,7 @@ export default function MobileTimetableImageImportPage() {
         onClose={handleStayOnPage}
         title="시간표 등록 취소"
         description="분석된 시간표 정보가 있습니다. 등록하지 않고 나갈까요?"
+        closeOnBack={false}
         primaryButton={{
           text: "나가기",
           onClick: handleLeaveWithoutSaving,
