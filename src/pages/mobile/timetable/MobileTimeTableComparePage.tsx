@@ -976,7 +976,7 @@ export default function MobileTimeTableComparePage() {
     >
       <ContentArea>
         {/* 2. 친구 필터 칩 목록 노출 */}
-        {(activeTabUpper === "compare" || activeTabUpper === "free") && (
+        {activeTabUpper === "compare" && (
           <ChipSection data-vaul-no-drag="">
             <ChipScrollArea
               ref={chipScrollRef}
