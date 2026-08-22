@@ -9,14 +9,25 @@ import {
   ImagePlus,
   X,
 } from "lucide-react";
-import { useNavigate, useSearchParams, useBlocker, useBeforeUnload } from "react-router-dom";
+import {
+  useNavigate,
+  useSearchParams,
+  useBlocker,
+  useBeforeUnload,
+} from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import { useCreateTimeTableCourseItem, useTimeTables } from "@/hooks/useTimeTables";
-import { getCourseOfferingsPage, searchCourseOfferings } from "@/apis/courseOfferings";
+import {
+  useCreateTimeTableCourseItem,
+  useTimeTables,
+} from "@/hooks/useTimeTables";
+import {
+  getCourseOfferingsPage,
+  searchCourseOfferings,
+} from "@/apis/courseOfferings";
 import type { CourseOffering } from "@/types/courseOfferings";
 import sugangAppLogoSvg from "@/resources/assets/timetable/수강신청앱로고.svg";
 import timetableSampleWebp from "@/resources/assets/timetable/시간표이미지선택하기예시이미지.webp";
@@ -99,7 +110,9 @@ export default function MobileTimetableImageImportPage() {
   const [progress, setProgress] = useState(0);
   const [matches, setMatches] = useState<Match[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [openCandidateGroupId, setOpenCandidateGroupId] = useState<string | null>(null);
+  const [openCandidateGroupId, setOpenCandidateGroupId] = useState<
+    string | null
+  >(null);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [hasPushState, setHasPushState] = useState(false);
   const isSavingRef = useRef(false);
@@ -121,7 +134,8 @@ export default function MobileTimetableImageImportPage() {
       setOpenCandidateGroupId(null);
     };
     document.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    return () =>
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
   }, [openCandidateGroupId]);
 
   // 2. Candidate Popover 팝업 시 1회성 pushState 관리
@@ -249,7 +263,8 @@ export default function MobileTimetableImageImportPage() {
     setProgress(0);
     setStatus("강의 블록을 찾고 있어요.");
     try {
-      let detectedBlocks: Awaited<ReturnType<typeof detectTimetableBlocks>> = [];
+      let detectedBlocks: Awaited<ReturnType<typeof detectTimetableBlocks>> =
+        [];
       const { createWorker } = await import("tesseract.js");
       const worker = await createWorker("kor+eng", 1, {
         logger: (message) => {
@@ -261,13 +276,19 @@ export default function MobileTimetableImageImportPage() {
       try {
         setStatus("시간표 이미지 형식을 확인하고 있어요.");
         const fullImageResult = await worker.recognize(file);
-        const subjectNumbers = extractBracketedSubjectNumbers(fullImageResult.data.text);
+        const subjectNumbers = extractBracketedSubjectNumbers(
+          fullImageResult.data.text,
+        );
 
         if (subjectNumbers.length > 0) {
           setStatus("수강번호로 개설 강좌를 찾고 있어요.");
           const numberMatches: Match[] = [];
           for (const subjectNumber of subjectNumbers) {
-            const offerings = await searchCourseOfferings(year, term, subjectNumber);
+            const offerings = await searchCourseOfferings(
+              year,
+              term,
+              subjectNumber,
+            );
             const offering = offerings.find(
               (candidate) => candidate.subjectNumber === subjectNumber,
             );
@@ -320,7 +341,9 @@ export default function MobileTimetableImageImportPage() {
           throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
         }
         for (let index = 0; index < detectedBlocks.length; index += 1) {
-          setStatus(`강의 글자를 읽고 있어요. (${index + 1}/${detectedBlocks.length})`);
+          setStatus(
+            `강의 글자를 읽고 있어요. (${index + 1}/${detectedBlocks.length})`,
+          );
           const result = await worker.recognize(detectedBlocks[index].crop);
           detectedBlocks[index].rawText = result.data.text.trim();
           detectedBlocks[index].confidence = result.data.confidence;
@@ -357,7 +380,10 @@ export default function MobileTimetableImageImportPage() {
         );
         const candidates = [...candidateMap.values()]
           .filter((offering) => !existingOfferingIds.includes(offering.id))
-          .map((offering) => ({ offering, score: scoreOffering(group, offering) }))
+          .map((offering) => ({
+            offering,
+            score: scoreOffering(group, offering),
+          }))
           .sort((a, b) => b.score - a.score)
           .map(({ offering }) => offering);
         preliminaryMatches.push({ group, candidates, selectedId: null });
@@ -372,7 +398,9 @@ export default function MobileTimetableImageImportPage() {
           fragmentCandidates.length === 1
             ? fragmentCandidates[0]
             : findConfidentOffering(match.group, match.candidates);
-        const mergeKey = offering ? `offering-${offering.id}` : `ocr-${match.group.id}`;
+        const mergeKey = offering
+          ? `offering-${offering.id}`
+          : `ocr-${match.group.id}`;
         const current = merged.get(mergeKey);
         if (current) {
           current.group.blocks.push(...match.group.blocks);
@@ -397,11 +425,17 @@ export default function MobileTimetableImageImportPage() {
 
       const nextMatches = [...merged.values()].map((match) => {
         const candidates = match.candidates
-          .map((offering) => ({ offering, score: scoreOffering(match.group, offering) }))
+          .map((offering) => ({
+            offering,
+            score: scoreOffering(match.group, offering),
+          }))
           .sort((a, b) => b.score - a.score)
           .slice(0, 3)
           .map(({ offering }) => offering);
-        const confidentOffering = findConfidentOffering(match.group, candidates);
+        const confidentOffering = findConfidentOffering(
+          match.group,
+          candidates,
+        );
         return {
           ...match,
           candidates,
@@ -412,7 +446,9 @@ export default function MobileTimetableImageImportPage() {
       setMatches(nextMatches);
       setView("result");
     } catch (error) {
-      alert(error instanceof Error ? error.message : "이미지 분석에 실패했습니다.");
+      alert(
+        error instanceof Error ? error.message : "이미지 분석에 실패했습니다.",
+      );
       setView("intro");
     }
   };
@@ -590,7 +626,9 @@ export default function MobileTimetableImageImportPage() {
                       <GuideItemTitle>인천대학교 수강신청 앱</GuideItemTitle>
                       <AccuracyBadge>가장 정확해요</AccuracyBadge>
                     </GuideItemTitleRow>
-                    <GuideItemSubtitle>수강신청 앱 내역 화면 (권장)</GuideItemSubtitle>
+                    <GuideItemSubtitle>
+                      수강신청 앱 내역 화면 (권장)
+                    </GuideItemSubtitle>
                   </GuideItemLeft>
                   <AppIconImg src={sugangAppLogoSvg} alt="수강신청 앱 로고" />
                 </GuideItem>
@@ -630,7 +668,9 @@ export default function MobileTimetableImageImportPage() {
                 ) : (
                   <AlertCircle size={14} />
                 )}
-                <span>{isSelectionComplete ? "선택 완료" : "분반 확인 필요"}</span>
+                <span>
+                  {isSelectionComplete ? "선택 완료" : "분반 확인 필요"}
+                </span>
               </ResultStatusBadge>
             </ResultHeaderRow>
 
@@ -701,10 +741,14 @@ export default function MobileTimetableImageImportPage() {
                         >
                           <SelectTrigger
                             type="button"
-                            aria-expanded={openCandidateGroupId === match.group.id}
+                            aria-expanded={
+                              openCandidateGroupId === match.group.id
+                            }
                             onClick={() => {
                               setOpenCandidateGroupId((current) =>
-                                current === match.group.id ? null : match.group.id,
+                                current === match.group.id
+                                  ? null
+                                  : match.group.id,
                               );
                             }}
                           >
@@ -741,8 +785,10 @@ export default function MobileTimetableImageImportPage() {
                                 }}
                               >
                                 {match.candidates.map((candidate) => {
-                                  const meetingLabel = formatOfferingMeetings(candidate);
-                                  const isSelected = match.selectedId === candidate.id;
+                                  const meetingLabel =
+                                    formatOfferingMeetings(candidate);
+                                  const isSelected =
+                                    match.selectedId === candidate.id;
                                   return (
                                     <PopoverOption
                                       key={candidate.id}
@@ -767,13 +813,21 @@ export default function MobileTimetableImageImportPage() {
                                       <PopoverOptionText>
                                         <strong>
                                           {candidate.courseTitle}
-                                          <span>{candidate.professor || "교수 미정"}</span>
+                                          <span>
+                                            {candidate.professor || "교수 미정"}
+                                          </span>
                                         </strong>
-                                        <small>수강번호 {candidate.subjectNumber}</small>
-                                        {meetingLabel && <em>{meetingLabel}</em>}
+                                        <small>
+                                          수강번호 {candidate.subjectNumber}
+                                        </small>
+                                        {meetingLabel && (
+                                          <em>{meetingLabel}</em>
+                                        )}
                                       </PopoverOptionText>
                                       <OptionCheck $selected={isSelected}>
-                                        {isSelected && <CheckCircle2 size={16} />}
+                                        {isSelected && (
+                                          <CheckCircle2 size={16} />
+                                        )}
                                       </OptionCheck>
                                     </PopoverOption>
                                   );
@@ -784,7 +838,9 @@ export default function MobileTimetableImageImportPage() {
                         </SelectWrapper>
                       </CandidateField>
                     ) : (
-                      <WarningText>일치하는 개설 강좌를 찾지 못했습니다.</WarningText>
+                      <WarningText>
+                        일치하는 개설 강좌를 찾지 못했습니다.
+                      </WarningText>
                     )}
                   </ResultCard>
                 );
@@ -883,6 +939,7 @@ const ScrollContent = styled.div`
   overflow-y: auto;
   box-sizing: border-box;
   padding: 24px 16px 140px;
+  padding-top: 0;
   -webkit-overflow-scrolling: touch;
 `;
 
@@ -899,7 +956,12 @@ const IntroContainer = styled.div`
 `;
 
 const Headline = styled.h1`
-  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
@@ -921,7 +983,9 @@ const DropzoneCard = styled.button`
   box-sizing: border-box;
   text-align: left;
   overflow: hidden;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 
   &:hover {
     background: #e5f0ff;
@@ -1188,7 +1252,9 @@ const ResultCard = styled.div<{ $completed: boolean }>`
   background: ${({ $completed }) => ($completed ? "#ffffff" : "#fffafa")};
   border: 1px solid ${({ $completed }) => ($completed ? "#d3e5ff" : "#fecaca")};
   box-sizing: border-box;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 `;
 
 const CardHeaderRow = styled.div`
@@ -1409,8 +1475,8 @@ const FixedBottomArea = styled.div`
   background: linear-gradient(
     180deg,
     rgba(248, 249, 251, 0) 0%,
-    rgba(248, 249, 251, 0.9) 24%,
-    rgba(248, 249, 251, 1) 100%
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
   );
   z-index: 100;
   pointer-events: none;
