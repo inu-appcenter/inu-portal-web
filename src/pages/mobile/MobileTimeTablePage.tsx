@@ -374,7 +374,9 @@ const MobileTimeTablePage = () => {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renameInputVal, setRenameInputVal] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteItemTarget, setDeleteItemTarget] = useState<ClassItem | null>(null);
+  const [deleteItemTarget, setDeleteItemTarget] = useState<ClassItem | null>(
+    null,
+  );
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
@@ -507,9 +509,7 @@ const MobileTimeTablePage = () => {
             "시간표 이미지로 등록",
             "헤더 메뉴",
           );
-          navigate(
-            `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
-          );
+          navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`);
         },
       },
       {
@@ -592,7 +592,7 @@ const MobileTimeTablePage = () => {
       open_method: shouldOpenSimulatorInNewWebView ? "새 웹뷰" : "내부 라우트",
     });
     alert(
-      "실제와 다를 수 있으며, PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다. 앱 내 강의 정보는 현시점에는 최신 정보가 아니니 주의하세요.",
+      "PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다.\nhttps://intip.inuappcenter.kr",
     );
     if (shouldOpenSimulatorInNewWebView) {
       appBridge.navigateTo(SIMULATOR_URL);
