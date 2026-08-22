@@ -19,7 +19,14 @@ interface SubLayoutProps {
   backgroundColor?: string;
 }
 
-const getInitialHeaderHeight = (path: string): number => {
+const getInitialHeaderHeight = (path: string, search: string = ""): number => {
+  const params = new URLSearchParams(search);
+  const isSearchMode =
+    params.has("query") || params.has("search") || params.has("keyword");
+  if (isSearchMode) {
+    return 64;
+  }
+
   const pagesWithSubHeader = [
     "/timetable/compare",
     "/home/notice",
@@ -33,7 +40,7 @@ const getInitialHeaderHeight = (path: string): number => {
   ) {
     return 126;
   }
-  return 76;
+  return 64;
 };
 
 export default function SubLayout({
@@ -61,8 +68,9 @@ export default function SubLayout({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [setIsScrolled]);
 
-  const initialHeaderHeight = getInitialHeaderHeight(location.pathname);
-  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader, initialHeaderHeight, location.pathname);
+  const fullPathKey = `${location.pathname}${location.search}`;
+  const initialHeaderHeight = getInitialHeaderHeight(location.pathname, location.search);
+  const measuredHeaderHeight = useMeasuredElementHeight(headerRef, showHeader, initialHeaderHeight, fullPathKey);
   const headerHeight = showHeader ? (measuredHeaderHeight || initialHeaderHeight) : 20;
   const navHeight = showNav ? 100 : 0;
 
