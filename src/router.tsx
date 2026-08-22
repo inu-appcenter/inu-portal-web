@@ -50,6 +50,7 @@ import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeature
 import MobileAdminBusPage from "@/pages/mobile/Admin/MobileAdminBusPage";
 
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
+import MobileSchoolNoticeDetailPage from "@/pages/mobile/MobileSchoolNoticeDetailPage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
 import MobileTipsCategoryPage from "@/pages/mobile/MobileTipsCategoryPage";
@@ -227,7 +228,13 @@ export const router = createBrowserRouter([
             path: `${ROUTES.BOARD.TIPS_WRITE}/:id`,
             element: <MobileWritePage />,
           },
-          { path: ROUTES.BOARD.NOTICE, element: <MobileSchoolNoticePage /> },
+          {
+            path: ROUTES.BOARD.NOTICE,
+            children: [
+              { index: true, element: <MobileSchoolNoticePage /> },
+              { path: ":id", element: <MobileSchoolNoticeDetailPage /> },
+            ],
+          },
           {
             path: ROUTES.BOARD.DEPT_NOTICE,
             element: <MobileDeptNoticePage />,

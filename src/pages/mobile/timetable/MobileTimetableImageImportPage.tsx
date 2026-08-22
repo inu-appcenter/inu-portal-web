@@ -9,11 +9,7 @@ import {
   ImagePlus,
   X,
 } from "lucide-react";
-import {
-  useNavigate,
-  useSearchParams,
-  useBlocker,
-} from "react-router-dom";
+import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
@@ -947,17 +943,12 @@ const IntroContainer = styled.div`
 `;
 
 const Headline = styled.h1`
-  font-family:
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  font-weight: 600;
+  /* heading-1 */
+  font-family: Pretendard;
   font-size: 20px;
-  line-height: 32px;
-  color: var(--text-primary, #191f28);
-  margin: 0;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px; /* 160% */
   white-space: pre-line;
 `;
 

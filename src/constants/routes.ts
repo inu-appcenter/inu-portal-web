@@ -84,6 +84,7 @@ export const ROUTES = {
     TIPS_WRITE: "/home/tips/write",
     TIPS_EDIT: (id: string | number) => `/home/tips/write/${id}`,
     NOTICE: "/home/notice",
+    NOTICE_DETAIL: (id: string | number) => `/home/notice/${id}`,
     DEPT_NOTICE: "/home/deptnotice",
     DEPT_NOTICE_DETAIL: (dept: string | number) =>
       `/home/deptnotice?dept=${dept}`,
