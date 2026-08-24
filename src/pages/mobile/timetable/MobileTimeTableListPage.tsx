@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 import Modal from "@/components/common/Modal";
@@ -204,7 +204,22 @@ export default function MobileTimeTableListPage() {
                   : undefined
               }
             >
-              <SemesterHeader>{sem}</SemesterHeader>
+              <SemesterHeaderRow>
+                <SemesterTitle>{sem}</SemesterTitle>
+                <SemesterAddButton
+                  type="button"
+                  aria-label={`${sem} 시간표 추가`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    mixpanelTrack.timetableFeatureClicked("시간표 생성", "학기 섹션", {
+                      semester: sem,
+                    });
+                    openAddModal(sem);
+                  }}
+                >
+                  <Plus size={20} />
+                </SemesterAddButton>
+              </SemesterHeaderRow>
               {hasTimetable ? (
                 <ScheduleListWrapper>
                   {list.map((t) => (
@@ -341,13 +356,42 @@ const TimeTableListCard = styled.div<{ $isClickable?: boolean }>`
   `}
 `;
 
-const SemesterHeader = styled.div`
-  padding: 16px 16px 8px 16px;
+const SemesterHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 6px 16px;
+`;
+
+const SemesterTitle = styled.div`
   font-family: Pretendard;
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
   color: var(--text-secondary, #333d4b);
+`;
+
+const SemesterAddButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+  color: var(--text-secondary, #333d4b);
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--bg-muted, #f1f3f5);
+  }
+
+  &:active {
+    background-color: var(--bg-disabled, #e5e8eb);
+  }
 `;
 
 const ScheduleListWrapper = styled.div`

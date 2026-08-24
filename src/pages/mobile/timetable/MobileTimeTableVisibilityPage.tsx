@@ -95,15 +95,17 @@ export default function MobileTimeTableVisibilityPage() {
       </CardGroup>
 
       <FixedFooter>
-        <CapsuleButton
-          variant="primary"
-          fullWidth
-          onClick={handleSave}
-          disabled={!activeTimetable || updateVisibilityMutation.isPending}
-          style={{ boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.16)" }}
-        >
-          저장하기
-        </CapsuleButton>
+        <FixedFooterContent>
+          <CapsuleButton
+            variant="primary"
+            fullWidth
+            onClick={handleSave}
+            disabled={!activeTimetable || updateVisibilityMutation.isPending}
+            style={{ boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.16)" }}
+          >
+            저장하기
+          </CapsuleButton>
+        </FixedFooterContent>
       </FixedFooter>
     </PageWrapper>
   );
@@ -142,10 +144,23 @@ const FixedFooter = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px ${MOBILE_PAGE_GUTTER}
-    calc(24px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(to top, var(--bg-base, white) 85%, transparent);
+  width: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
   z-index: 100;
+  pointer-events: none;
+`;
+
+const FixedFooterContent = styled.div`
+  width: 100%;
   max-width: 768px;
   margin: 0 auto;
+  padding: 16px ${MOBILE_PAGE_GUTTER}
+    calc(24px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  pointer-events: auto;
 `;

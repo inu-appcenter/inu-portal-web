@@ -27,6 +27,7 @@ export interface ModalProps {
     style?: React.CSSProperties;
   };
   closeOnOverlayClick?: boolean;
+  closeOnBack?: boolean;
 }
 
 export default function Modal({
@@ -38,8 +39,9 @@ export default function Modal({
   primaryButton,
   secondaryButton,
   closeOnOverlayClick = true,
+  closeOnBack = true,
 }: ModalProps) {
-  useSheetBackHandler(isOpen, onClose);
+  useSheetBackHandler(isOpen, onClose, closeOnBack);
 
   return (
     <Dialog.Root

@@ -8,6 +8,9 @@ import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+
 const NoticeSkeletonItem = () => {
   return (
     <SkeletonContainer>
@@ -24,6 +27,7 @@ const NoticeSkeletonItem = () => {
 };
 
 export default function NoticeForm() {
+  const navigate = useNavigate();
   // const [sort, setSort] = useState<NoticeSort>("date");
   const [notices, setNotices] = useState<Notice[]>([]);
 
@@ -75,9 +79,13 @@ export default function NoticeForm() {
                     notice.category,
                     notice.title,
                     false,
+                    "Home Notice Widget",
                   );
-                  if (notice.url)
+                  if (notice.id) {
+                    navigate(ROUTES.BOARD.NOTICE_DETAIL(notice.id));
+                  } else if (notice.url) {
                     window.open(notice.url, "_blank");
+                  }
                 }}
               />
               {index !== 2 && <Divider margin="0" />}

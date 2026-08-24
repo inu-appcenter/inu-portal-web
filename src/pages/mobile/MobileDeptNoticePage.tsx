@@ -8,20 +8,16 @@ import {
   getDepartmentNoticeSchedules,
   getSchoolDepartmentNotices,
 } from "@/apis/notices";
-import ActionButton from "@/components/common/ActionButton";
-import Box from "@/components/common/Box";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
 import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
 import LoginRequiredModal from "@/components/mobile/common/LoginRequiredModal";
-import PostItem from "@/components/mobile/notice/PostItem";
+import DeptNoticeItem from "@/components/mobile/notice/DeptNoticeItem";
 import { ROUTES } from "@/constants/routes";
 import { MenuItemType, useHeader } from "@/context/HeaderContext";
-import AI_LOGO from "@/resources/assets/calendar/챗불이요약.png";
 import useUserStore from "@/stores/useUserStore";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
-  MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
 import { DepartmentNotice } from "@/types/notices";
 import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
@@ -161,6 +157,8 @@ const MobileDeptNoticePage = () => {
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     enabled: !!userInfo.departmentCode && !!tokenInfo.accessToken,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
   useEffect(() => {
@@ -196,9 +194,7 @@ const MobileDeptNoticePage = () => {
       <TipsCardWrapper>
         {isLoading && deptNotices.length === 0 ? (
           Array.from({ length: 8 }).map((_, i) => (
-            <Box key={`dept-init-skeleton-${i}`}>
-              <PostItem isLoading />
-            </Box>
+            <DeptNoticeItem key={`dept-init-skeleton-${i}`} isLoading />
           ))
         ) : isError ? (
           <LoadingText>데이터를 불러오는 중 오류가 발생했습니다.</LoadingText>
@@ -206,38 +202,24 @@ const MobileDeptNoticePage = () => {
           <LoadingText>게시물이 없습니다.</LoadingText>
         ) : (
           deptNotices.map((deptNotice: DepartmentNotice, index: number) => (
-            <Box
+            <DeptNoticeItem
               key={`${deptNotice.id || index}`}
+              title={deptNotice.title}
+              date={deptNotice.createDate}
+              views={deptNotice.view}
+              hasSchedules={deptNotice.hasSchedules}
+              onCalendarClick={(e) => {
+                mixpanelTrack.featureClicked(
+                  "Dept AI Calendar",
+                  "Dept Notice List",
+                );
+                handleCalendarClick(e, deptNotice.id);
+              }}
               onClick={() => {
                 mixpanelTrack.deptNoticeViewed(currentDept, deptNotice.title);
                 if (deptNotice.url) window.open(deptNotice.url, "_blank");
               }}
-            >
-              <PostItem
-                title={deptNotice.title}
-                date={deptNotice.createDate}
-                views={deptNotice.view}
-                isEllipsis={false}
-                showWriter={false}
-              />
-              {deptNotice.hasSchedules && (
-                <CalendarActionButton
-                  style={{ alignSelf: "end" }}
-                  onClick={(e) => {
-                    mixpanelTrack.featureClicked(
-                      "Dept AI Calendar",
-                      "Dept Notice List",
-                    );
-                    handleCalendarClick(e, deptNotice.id);
-                  }}
-                >
-                  <img src={AI_LOGO} alt="횃불이AI" />
-                  <span>
-                    <strong>횃불이 AI</strong> 캘린더
-                  </span>
-                </CalendarActionButton>
-              )}
-            </Box>
+            />
           ))
         )}
       </TipsCardWrapper>
@@ -245,9 +227,7 @@ const MobileDeptNoticePage = () => {
       <div ref={ref} style={{ height: "20px" }}>
         {isFetchingNextPage && (
           <TipsCardWrapper>
-            <Box>
-              <PostItem isLoading />
-            </Box>
+            <DeptNoticeItem isLoading />
           </TipsCardWrapper>
         )}
       </div>
@@ -259,7 +239,7 @@ const MobileDeptNoticePage = () => {
       {userInfo.department && (
         <FloatingActionButton
           text="공지 알리미 설정"
-          icon={<Bell size={16} color="white" fill="currentColor" />}
+          icon={<Bell size={20} color="var(--text-secondary, #333d4b)" />}
           onClick={() => {
             mixpanelTrack.notificationSettingsOpened(
               "Department Notice Page",
@@ -267,6 +247,7 @@ const MobileDeptNoticePage = () => {
             );
             navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`);
           }}
+          bottom="40px"
         />
       )}
     </MobileDeptNoticePageWrapper>
@@ -289,19 +270,15 @@ const MobileDeptNoticePageWrapper = styled.div`
 const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 0 ${MOBILE_PAGE_GUTTER};
-  padding-top: 12px;
-  padding-bottom: 20px;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 20px 0;
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     width: 100%;
     margin: 0;
-    padding: 16px 0 32px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    padding: 0 0 32px;
   }
 `;
 
@@ -310,21 +287,4 @@ const LoadingText = styled.h4`
   padding: 20px 0;
   color: #888;
   font-size: 14px;
-`;
-
-const CalendarActionButton = styled(ActionButton)`
-  align-self: flex-end;
-  min-width: auto;
-  padding: 6px 12px;
-  gap: 2px;
-  font-size: 12px;
-  font-weight: 400;
-  margin-top: 8px;
-  line-height: normal;
-
-  img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-  }
 `;

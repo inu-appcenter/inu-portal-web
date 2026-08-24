@@ -54,7 +54,7 @@ export default function useMeasuredElementHeight<T extends HTMLElement>(
       window.removeEventListener("resize", updateHeight);
       observer.disconnect();
     };
-  }, [enabled, ref]);
+  }, [enabled, ref, resetKey]);
 
   return height;
 }

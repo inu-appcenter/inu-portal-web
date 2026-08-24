@@ -2,6 +2,7 @@ import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "re
 import styled from "styled-components";
 import { Search, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { resetScrollToTop } from "@/utils/scroll";
 
 export interface FloatingSearchBarRef {
   blur: () => void;
@@ -113,6 +114,37 @@ const FloatingSearchBar = forwardRef<
     }
   }, [isSearchActive]);
 
+  // 검색어가 비어있는 상태에서 다른 영역 클릭 또는 스크롤 시 검색바 닫기
+  useEffect(() => {
+    if (!isSearchActive) return;
+
+    const handleOutsideInteraction = (e: Event) => {
+      if (
+        e.type === "pointerdown" &&
+        (e.target as HTMLElement)?.closest?.(".floating-search-bar-wrapper")
+      ) {
+        return;
+      }
+
+      if (!searchQuery.trim()) {
+        inputRef.current?.blur();
+        handleActiveChange(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsideInteraction, {
+      passive: true,
+    });
+    window.addEventListener("scroll", handleOutsideInteraction, {
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideInteraction);
+      window.removeEventListener("scroll", handleOutsideInteraction);
+    };
+  }, [isSearchActive, searchQuery]);
+
   const handleClear = (e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -148,6 +180,7 @@ const FloatingSearchBar = forwardRef<
   }));
 
   const executeSearch = (query: string) => {
+    resetScrollToTop();
     if (onSearch) {
       onSearch(query);
     }
@@ -164,7 +197,11 @@ const FloatingSearchBar = forwardRef<
   };
 
   return (
-    <SearchBarWrapper $isActive={isSearchActive} $size={size}>
+    <SearchBarWrapper
+      className="floating-search-bar-wrapper"
+      $isActive={isSearchActive}
+      $size={size}
+    >
       <SearchInput
         ref={inputRef}
         $isActive={isSearchActive}

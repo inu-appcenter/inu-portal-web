@@ -1347,8 +1347,8 @@ const FloatingSaveArea = styled.div`
   background: linear-gradient(
     180deg,
     rgba(248, 249, 251, 0) 0%,
-    var(--bg-subtle, #f8f9fb) 90%,
-    var(--bg-subtle, #f8f9fb) 100%
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
   );
 `;
 

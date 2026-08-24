@@ -271,7 +271,7 @@ export default function ClassDetailBottomSheet({
                           <Pencil size={18} />
                         </EditButton>
                       )}
-                      {onDelete && (
+                      {!readOnly && !liveClass.isFriendOwned && onDelete && (
                         <DeleteButton
                           type="button"
                           onClick={() => {
