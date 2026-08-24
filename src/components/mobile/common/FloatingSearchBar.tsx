@@ -114,15 +114,21 @@ const FloatingSearchBar = forwardRef<
     }
   }, [isSearchActive]);
 
-  // 검색어가 비어있는 상태에서 다른 영역 클릭 또는 스크롤 시 검색바 닫기
+  // 검색어가 비어있는 상태에서 다른 영역을 만지면(탭/드래그) 검색바 닫기.
+  //
+  // 드래그 신호로 scroll 이 아니라 touchmove 를 쓴다. 네이티브 웹뷰에서는 인풋에
+  // 포커스가 가면 소프트 키보드가 올라오며 뷰포트가 줄고(안드로이드는 셸이 웹뷰를
+  // 키보드 높이만큼 줄이고, iOS 는 WKWebView 가 스크롤뷰에 인셋을 넣고 포커스된
+  // 요소를 보이게 스크롤한다) 그게 window 의 scroll 로 나타난다. 사용자가 스크롤한
+  // 적이 없는데 여기서 닫혀서, 포커스가 가자마자 키보드가 닫히고 검색바가 접혔다
+  // (브라우저는 포커스만으로 뷰포트가 변하지 않아 재현되지 않는다). 손가락 드래그는
+  // 그런 오인이 없다.
   useEffect(() => {
     if (!isSearchActive) return;
 
     const handleOutsideInteraction = (e: Event) => {
-      if (
-        e.type === "pointerdown" &&
-        (e.target as HTMLElement)?.closest?.(".floating-search-bar-wrapper")
-      ) {
+      // 검색바 자신을 만지는 건 "바깥 상호작용"이 아니다.
+      if ((e.target as HTMLElement)?.closest?.(".floating-search-bar-wrapper")) {
         return;
       }
 
@@ -135,13 +141,13 @@ const FloatingSearchBar = forwardRef<
     document.addEventListener("pointerdown", handleOutsideInteraction, {
       passive: true,
     });
-    window.addEventListener("scroll", handleOutsideInteraction, {
+    document.addEventListener("touchmove", handleOutsideInteraction, {
       passive: true,
     });
 
     return () => {
       document.removeEventListener("pointerdown", handleOutsideInteraction);
-      window.removeEventListener("scroll", handleOutsideInteraction);
+      document.removeEventListener("touchmove", handleOutsideInteraction);
     };
   }, [isSearchActive, searchQuery]);
 
