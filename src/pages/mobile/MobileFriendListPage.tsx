@@ -267,6 +267,11 @@ export default function MobileFriendListPage() {
 
       if (!isSelectionModeRef.current) return;
 
+      // 우리 entry가 아직 스택에 남아 있다 = 남이 되돌린 것이다(검색바·추가
+      // 메뉴도 같은 문서에서 history를 쓴다). 그 pop까지 받아 선택모드가
+      // 제멋대로 풀리지 않게 한다.
+      if (window.history.state?.__intipFriendSelectionOpen) return;
+
       hasSelectionHistoryEntryRef.current = false;
       setIsSelectionMode(false);
     };

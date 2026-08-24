@@ -70,6 +70,14 @@ const FloatingSearchBar = forwardRef<
 
       if (!isSearchActiveRef.current) return;
 
+      // 우리가 쌓은 엔트리가 아직 스택에 남아 있다면 이 popstate 는 우리 것이
+      // 아니다. 같은 문서 안에서 히스토리를 쓰는 주체가 여럿이라(시트·드롭다운
+      // 오버레이의 useSheetBackHandler/useHistoryBackedOverlay, 네이티브 셸의
+      // 딥링크 합성 popstate, 뒤로가기 위임의 webViewGoBack) 남의 back() 이
+      // 만든 pop 까지 받아 검색바가 제멋대로 접히곤 했다. 착지한 엔트리에
+      // 우리 플래그가 그대로 있으면 무시한다.
+      if (window.history.state?.[SEARCH_HISTORY_STATE_KEY]) return;
+
       hasSearchHistoryEntryRef.current = false;
       inputRef.current?.blur();
       handleActiveChange(false);
