@@ -2,7 +2,14 @@ import styled from "styled-components";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
-import { Send, Users, Loader2, Image, ArrowDown } from "lucide-react";
+import {
+  Send,
+  Users,
+  Loader2,
+  Image,
+  ArrowDown,
+  CalendarClock,
+} from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
@@ -154,7 +161,7 @@ export default function ChattingPage() {
     };
   }, [uploadingImages]);
 
-  const { data: membersRes } = useQuery({
+  const { data: membersRes, isPending: isMembersPending } = useQuery({
     queryKey: ["chatMembers", roomId],
     queryFn: () => getChatRoomMembers(roomId ?? ""),
     enabled: !!roomId,
@@ -170,7 +177,25 @@ export default function ChattingPage() {
   });
   const friends = friendsRes?.data || [];
 
+  // 익명 오픈채팅은 닉네임이 가려져 참여자를 친구와 대조할 수 없고, 대조가
+  // 된다 해도 "누가 언제 비었는지"가 익명성을 깨뜨린다 - 아예 막는다.
+  // 공식 채팅방은 공지성 대형 방이라 공강 계산 대상이 아니다.
+  const canFindFreeTime = !roomInfo?.anonymous && !roomInfo?.isOfficial;
+
   const handleFindFreeTime = () => {
+    if (!canFindFreeTime) {
+      alert(
+        roomInfo?.anonymous
+          ? "익명 채팅방에서는 공강을 맞출 수 없어요."
+          : "공식 채팅방에서는 공강을 맞출 수 없어요.",
+      );
+      return;
+    }
+    if (isMembersPending) {
+      alert("참여자 정보를 불러오는 중이에요. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+
     const nonSelfMembers = members.filter((m) => !m.isMe);
     const matchedFriendMemberIds = nonSelfMembers
       .map(
@@ -304,13 +329,15 @@ export default function ChattingPage() {
       });
     }
 
-    items.push({
-      label: "공강 맞추기",
-      onClick: handleFindFreeTime,
-    });
+    if (canFindFreeTime) {
+      items.push({
+        label: "공강·회의 시간 맞추기",
+        onClick: handleFindFreeTime,
+      });
+    }
 
     return items;
-  }, [roomInfo, isAdmin, members, friends]);
+  }, [roomInfo, isAdmin, members, friends, canFindFreeTime]);
 
   useHeader({
     title: headerTitle,
@@ -744,6 +771,18 @@ export default function ChattingPage() {
             </IconButton>
           </label>
 
+          {/* 공강·회의 시간 맞추기 진입 버튼(#336). 기존엔 헤더 케밥 메뉴에만
+              있어서 방 안에서 바로 들어가기 어려웠다. */}
+          {canFindFreeTime && (
+            <IconButton
+              type="button"
+              onClick={handleFindFreeTime}
+              aria-label="공강·회의 시간 맞추기"
+            >
+              <CalendarClock size={24} color="#767676" />
+            </IconButton>
+          )}
+
           <Input
             placeholder="메시지 입력"
             ref={inputRef}
@@ -1108,6 +1147,7 @@ const ChatItemOtherPerson = ({
                 extraData={message.extraData}
                 content={message.content}
                 isMe={false}
+                roomId={message.roomId}
               />
             ) : (
               <>
@@ -1213,6 +1253,7 @@ const ChatItemMy = ({
                 extraData={message.extraData}
                 content={message.content}
                 isMe={true}
+                roomId={message.roomId}
               />
             ) : (
               <>

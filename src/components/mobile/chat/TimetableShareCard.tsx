@@ -9,6 +9,8 @@ interface TimetableShareCardProps {
   extraData?: string | null;
   content?: string;
   isMe?: boolean;
+  /** 이 카드가 올라온 채팅방. 다시 계산한 결과를 같은 방으로 공유하기 위해 넘긴다(#336). */
+  roomId?: number;
 }
 
 const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
@@ -32,6 +34,7 @@ const formatDuration = (hours: number) => {
 export default function TimetableShareCard({
   extraData,
   isMe,
+  roomId,
 }: TimetableShareCardProps) {
   const navigate = useNavigate();
 
@@ -57,6 +60,7 @@ export default function TimetableShareCard({
       queryParams.set("ids", friendIds.join(","));
     }
     queryParams.set("tab", "free");
+    if (roomId) queryParams.set("roomId", String(roomId));
     navigate(`${ROUTES.TIMETABLE.COMPARE}?${queryParams.toString()}`);
   };
 
