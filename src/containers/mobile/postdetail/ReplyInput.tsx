@@ -1,11 +1,15 @@
 import styled, { keyframes } from "styled-components";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import { Reply } from "@/types/posts";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { postReply, postReReply, putReply } from "@/apis/replies";
+import {
+  buildProfanityAlertMessage,
+  checkProfanity,
+} from "@/utils/profanityFilter";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { CheckSquare, Square, CornerDownLeft, Loader2 } from "lucide-react";
 
@@ -37,16 +41,29 @@ export default function ReplyInput({
   cancelEditOrReply,
 }: ReplyInputProps) {
   const [loading, setLoading] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
+
+  // 텍스트 길이 변경 시 높이 동적 조절
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [replyContent]);
 
   const handleLoginRedirect = () => {
     navigate(ROUTES.LOGIN);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
+      if (e.nativeEvent.isComposing) {
+        return;
+      }
+      e.preventDefault();
       handleCreateReply();
     }
   };
@@ -107,6 +124,13 @@ export default function ReplyInput({
     }
     if (!replyContent.trim()) {
       alert("댓글 내용을 작성해주세요.");
+      return;
+    }
+
+    // 욕설·혐오·성적 표현은 등록 전에 차단한다 (커뮤니티 무관용 정책)
+    const profanity = checkProfanity(replyContent);
+    if (profanity.hasProfanity) {
+      alert(buildProfanityAlertMessage(profanity.matched));
       return;
     }
 
@@ -181,17 +205,16 @@ export default function ReplyInput({
         </span>
         {isLoggedIn ? (
           <>
-            <input
+            <textarea
+              ref={textareaRef}
+              rows={1}
               placeholder={loading ? "댓글 등록 중..." : "댓글을 입력하세요"}
               value={replyContent}
               disabled={loading}
               onChange={(e) => setReplyContent(e.target.value)}
               onKeyDown={handleKeyPress}
             />
-            <SendButtonBtn
-              onClick={handleCreateReply}
-              $disabled={loading}
-            >
+            <SendButtonBtn onClick={handleCreateReply} $disabled={loading}>
               {loading ? (
                 <SpinIcon size={20} color="#0061FF" />
               ) : (
@@ -200,8 +223,9 @@ export default function ReplyInput({
             </SendButtonBtn>
           </>
         ) : (
-          <input
+          <textarea
             className="login-placeholder"
+            rows={1}
             placeholder="여기를 눌러 로그인하세요."
             readOnly
             value=""
@@ -224,7 +248,7 @@ const StyledReplyInput = styled.div`
   z-index: 9999;
   background: var(--bg-base, #ffffff);
   border: 1px solid var(--border-strong, #d1d6db);
-  border-radius: 32px;
+  border-radius: 24px;
   box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
   padding: 4px;
@@ -232,10 +256,9 @@ const StyledReplyInput = styled.div`
 
   .wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 4px;
     width: 100%;
-    min-height: 48px;
   }
 
   .anonymous-wrapper {
@@ -266,21 +289,25 @@ const StyledReplyInput = styled.div`
     }
   }
 
-  input {
+  textarea {
     flex: 1;
     min-width: 0;
     display: block;
     margin: 0;
-    height: 44px;
+    min-height: 24px;
+    max-height: 72px;
+    height: 24px;
     border: none;
     background: transparent;
-    padding: 0 8px;
+    padding: 10px 8px;
     font-family: Pretendard, sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 15px;
+    line-height: 24px;
     color: var(--text-secondary, #333d4b);
     outline: none;
     box-sizing: border-box;
+    resize: none;
+    overflow-y: auto;
 
     &::placeholder {
       color: var(--text-disabled, #b0b8c1);
@@ -304,17 +331,20 @@ const SpinIcon = styled(Loader2)`
 const SendButtonBtn = styled.div<{ $disabled?: boolean }>`
   flex: 0 0 36px;
   width: 36px;
-  height: 36px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
   opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
   border-radius: 50%;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 
   &:active {
-    background-color: ${({ $disabled }) => ($disabled ? "transparent" : "#f0f4ff")};
+    background-color: ${({ $disabled }) =>
+      $disabled ? "transparent" : "#f0f4ff"};
   }
 `;
 

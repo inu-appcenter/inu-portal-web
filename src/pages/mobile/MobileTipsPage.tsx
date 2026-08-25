@@ -186,9 +186,8 @@ const MobileTipsPage = () => {
       localStorage.setItem("has_swiped_tips", "true");
     }
 
-    resetScrollToTop();
-
     if (nextCategory && nextCategory !== selectedCategory) {
+      resetScrollToTop();
       const nextParams = new URLSearchParams(location.search);
       nextParams.set("category", nextCategory);
       navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });

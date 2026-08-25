@@ -66,9 +66,14 @@ export default function RootLayout() {
       return;
     }
 
+    // 최초 로그인(학과 미등록) 사용자는 학과 등록과 이용약관(EULA) 동의를 마쳐야
+    // 서비스를 이용할 수 있다. (App Store 가이드라인 1.2 UGC 대응)
+    // 이미 학과가 등록된 기존 사용자에게는 동의 절차를 강제하지 않는다.
     if (userInfo.department == null || userInfo.department === "") {
       if (location.pathname !== ROUTES.MYPAGE.PROFILE) {
-        alert("학과 정보 등록이 필요해요. 마이페이지로 이동합니다.");
+        alert(
+          "학과 정보 등록과 이용약관 동의가 필요해요. 설정 화면으로 이동합니다.",
+        );
         navigate(ROUTES.MYPAGE.PROFILE);
       }
       return;
@@ -182,6 +187,7 @@ export default function RootLayout() {
       <ScreenContainer>
         {outlet}
         <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
+        <GlobalBottomFadeOverlay aria-hidden="true" />
       </ScreenContainer>
       {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
       <FeatureTourSheet
@@ -205,4 +211,21 @@ const ScreenContainer = styled.div`
     max-width: none;
     box-shadow: none;
   }
+`;
+
+const GlobalBottomFadeOverlay = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
+  );
+  pointer-events: none;
+  z-index: 50;
 `;

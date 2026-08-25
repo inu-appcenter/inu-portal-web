@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Client } from "@stomp/stompjs";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  joinChatRoom,
-  getChatMessages,
   getPreviousMessages,
+  joinChatRoom,
   sendImageMessage,
 } from "../apis/chat";
 import {
@@ -56,8 +54,9 @@ export const useChat = (roomId: string) => {
   const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isStompConnected, setIsStompConnected] = useState(false);
-  const clientRef = useRef<Client | null>(null);
+  /** 입장(join + 초기 로드)을 마친 방. 소켓은 이 방에 대해서만 연결한다. */
+  const [enteredRoomId, setEnteredRoomId] = useState<string | null>(null);
+
   const { tokenInfo } = useUserStore();
 
   const isSyncingRef = useRef(false);
@@ -237,28 +236,24 @@ export const useChat = (roomId: string) => {
     const enterChatRoom = async () => {
       try {
         try {
-          const joinResponse: any = await joinChatRoom(roomId);
-          const joinData = joinResponse.data || joinResponse;
-          if (joinData.myHash) {
-            setMyHash(joinData.myHash);
-          }
+          const joined = unwrapResponse<ChatRoom>(await joinChatRoom(roomId));
+          if (joined?.myHash) setMyHash(joined.myHash);
         } catch (err: any) {
-          // 상태 코드 409 예외 처리
-          if (err.response?.status === 409) {
-            if (err.response?.data?.data?.myHash) {
-              setMyHash(err.response.data.data.myHash);
-            }
-          } else {
-            throw err;
-          }
+          // 409 = 이미 참여 중. 응답에 담긴 myHash만 챙기고 정상 진행한다.
+          if (err.response?.status !== 409) throw err;
+          const hash = err.response?.data?.data?.myHash;
+          if (hash) setMyHash(hash);
         }
 
         await syncRoom();
         connectStomp();
       } catch (err: any) {
+        if (cancelled) return;
         console.error("채팅방 입장에 실패했습니다:", err);
-        const serverMsg = err.response?.data?.msg;
-        setError(serverMsg || "채팅방 입장에 실패했습니다. 다시 시도해주세요.");
+        setError(
+          err.response?.data?.msg ||
+            "채팅방 입장에 실패했습니다. 다시 시도해주세요.",
+        );
       } finally {
         if (!disposed) setIsLoading(false);
       }
@@ -309,41 +304,41 @@ export const useChat = (roomId: string) => {
     };
   }, [roomId, syncRoom, tokenInfo.accessToken]);
 
-  const sendMessage = (
-    content: string,
-    isAnonymous: boolean,
-    imageFiles: File[] = [],
-    onProgress?: (progressEvent: any) => void,
-    messageType?: string,
-    extraData?: string,
-  ): boolean => {
-    if (imageFiles.length > 0 && roomInfo?.id) {
-      sendImageMessage(
-        roomInfo.id,
-        content,
-        isAnonymous,
-        imageFiles,
-        onProgress,
-      ) // 변경: 파일 배열 및 프로그레스 전달
-        .then((response) => {
-          console.log("이미지 메시지 전송 완료:", response);
-        })
-        .catch((error) => {
-          console.error("이미지 메시지 전송 실패:", error);
-          window.alert("이미지 메시지 전송에 실패했습니다.");
-        });
+  const sendMessage = useCallback(
+    (
+      content: string,
+      isAnonymous: boolean,
+      imageFiles: File[] = [],
+      onProgress?: (progressEvent: any) => void,
+      messageType?: string,
+      extraData?: string,
+    ): boolean => {
+      if (imageFiles.length > 0 && roomInfo?.id) {
+        void sendImages(
+          roomInfo.id,
+          content,
+          isAnonymous,
+          imageFiles,
+          onProgress,
+        );
+        return true;
+      }
+
+      if (!publish(content, isAnonymous, messageType, extraData)) {
+        // 연결이 끊긴 순간의 전송을 버리지 않고 재연결 후 흘려보낸다.
+        outbox.enqueue({ content, isAnonymous, messageType, extraData });
+        reconnect();
+      }
+
       return true;
-    } else {
-      return publish(
-        clientRef.current,
-        roomId,
-        content,
-        isAnonymous,
-        messageType,
-        extraData,
-      );
-    }
-  };
+    },
+    [roomInfo?.id, sendImages, publish, outbox, reconnect],
+  );
+
+  // ------------------------------------------------------------ 이전 메시지
+
+  /** 스크롤 이벤트가 연달아 들어와도 한 번만 요청하도록 막는다. */
+  const isFetchingPreviousRef = useRef(false);
 
   const fetchPreviousMessages = useCallback(async () => {
     const firstMsg = messages[0];
@@ -354,10 +349,12 @@ export const useChat = (roomId: string) => {
 
     setIsFetchingPrevious(true);
     try {
-      const response: any = await getPreviousMessages(roomId, lastId);
-      const actualMessages = response.data || response;
+      const older =
+        unwrapResponse<ChatMessage[]>(
+          await getPreviousMessages(roomId, oldestLoaded.messageId),
+        ) ?? [];
 
-      if (!actualMessages || actualMessages.length === 0) {
+      if (older.length === 0) {
         setHasMore(false);
       } else {
         setMessages((prev) => mergeMessages(prev, actualMessages));
@@ -368,9 +365,10 @@ export const useChat = (roomId: string) => {
       }
     } catch (err) {
       console.error("이전 메시지 로드 실패:", err);
-      // 2. 에러 발생 시 무한 루프 방지를 위해 잠시 중단하거나 hasMore를 false로 처리
+      // 무한 루프 방지를 위해 더 이상 요청하지 않는다.
       setHasMore(false);
     } finally {
+      isFetchingPreviousRef.current = false;
       setIsFetchingPrevious(false);
     }
   }, [roomId, messages, isFetchingPrevious, hasMore]);
@@ -388,7 +386,7 @@ export const useChat = (roomId: string) => {
     error,
     myHash,
     roomInfo,
-    isStompConnected,
+    isStompConnected: isConnected,
     fetchPreviousMessages,
     refreshRoom,
   };

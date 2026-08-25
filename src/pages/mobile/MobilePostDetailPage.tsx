@@ -35,7 +35,14 @@ const PostDetailSkeleton = () => (
           </div>
         </div>
       </SkeletonAuthorRow>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          marginTop: 16,
+        }}
+      >
         <Skeleton width="100%" height={18} />
         <Skeleton width="92%" height={18} />
         <Skeleton width="65%" height={18} />
@@ -43,12 +50,29 @@ const PostDetailSkeleton = () => (
     </SkeletonHeaderContainer>
     <CommentWrapper>
       <SkeletonCommentSection>
-        <div style={{ padding: "16px 16px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div
+          style={{
+            padding: "16px 16px 40px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
           <Skeleton width={80} height={18} />
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <div
+              key={i}
+              style={{ display: "flex", gap: 12, alignItems: "flex-start" }}
+            >
               <Skeleton circle width={36} height={36} />
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
                 <Skeleton width={80} height={14} />
                 <Skeleton width="90%" height={16} />
               </div>
@@ -124,7 +148,8 @@ export default function PostDetailPage() {
         console.error("게시글 삭제 실패", error);
         if (
           axios.isAxiosError(error) &&
-          !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
           error.response
         ) {
           const status = error.response.status;
@@ -262,6 +287,16 @@ export default function PostDetailPage() {
           <ReportModal
             target={reportTarget}
             onClose={() => setReportTarget(null)}
+            onReported={(reported) => {
+              // 신고한 콘텐츠는 즉시 숨겨야 한다.
+              // 게시글을 신고했다면 상세 페이지를 벗어나고,
+              // 댓글을 신고했다면 목록만 다시 불러온다.
+              if (reported.type === "POST") {
+                navigate(-1);
+              } else {
+                setCommentUpdated(true);
+              }
+            }}
           />
           <BlockUserModal
             target={blockTarget}
@@ -315,6 +350,7 @@ const SkeletonHeaderContainer = styled.div`
   flex-direction: column;
   gap: 16px;
   padding: 24px 16px 28px;
+  padding-top: 0;
   width: 100%;
   box-sizing: border-box;
 `;

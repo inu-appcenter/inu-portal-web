@@ -6,8 +6,9 @@ import profileImg from "@/resources/assets/mobile-mypage/profile.svg";
 import logoutImg from "@/resources/assets/mobile-mypage/logout.svg";
 import inquiryImg from "@/resources/assets/mobile-mypage/inquiry.svg";
 import AppcenterLogo from "@/resources/assets/mobile-mypage/AppcenterLogo.svg";
+import removeImg from "@/resources/assets/mobile-mypage/remove.svg";
+import { SUPPORT_EMAIL } from "@/constants/support";
 
-// import removeImg from "@/resources/assets/mobile-mypage/remove.svg";
 export const MyPageActive = [
   { title: "내가 쓴 글", image: `${writeImg}` },
   { title: "좋아요 한 글", image: `${likeImg}` },
@@ -33,7 +34,12 @@ export const MyPageCategoryLoggeedIn = [
     description: "차단한 사용자를 확인하고 차단을 해제할 수 있어요.",
   },
   { title: "로그아웃", image: `${logoutImg}` },
-  // { title: "회원탈퇴", image: `${removeImg}` },
+  // 앱 내 계정 삭제 진입점 (App Store 가이드라인 5.1.1(v))
+  {
+    title: "회원탈퇴",
+    image: `${removeImg}`,
+    description: "계정과 작성한 글·댓글이 삭제됩니다.",
+  },
 ];
 
 export const MyPageCategoryCommon = [
@@ -41,6 +47,11 @@ export const MyPageCategoryCommon = [
     title: "문의하기",
     image: `${inquiryImg}`,
     description: "문의사항이나 불편사항을 접수할 수 있어요.",
+  },
+  {
+    title: "개발자에게 메일 보내기",
+    description: `부적절한 콘텐츠·악성 사용자 신고는 24시간 이내에 처리됩니다.
+${SUPPORT_EMAIL}`,
   },
   {
     title: "인천대학교 앱센터",

@@ -141,9 +141,11 @@ const ChatPreviewWidget: React.FC<ChatPreviewWidgetProps> = ({ roomId }) => {
     });
   };
 
-  const getPastelColor = (id: number) => {
-    const index = id % PASTEL_COLORS.length;
-    return PASTEL_COLORS[index];
+  // messageId는 Number로 담을 수 없는 크기라 문자열이다. 색을 고를 뿐이니
+  // 정밀도는 필요 없고, 마지막 자릿수만으로 고르게 흩어놓는다.
+  const getPastelColor = (id: string) => {
+    const lastDigit = Number(String(id).slice(-3)) || 0;
+    return PASTEL_COLORS[lastDigit % PASTEL_COLORS.length];
   };
 
   return (

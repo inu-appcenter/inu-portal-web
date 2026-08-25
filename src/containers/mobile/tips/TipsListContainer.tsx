@@ -19,6 +19,15 @@ import { Fragment } from "react";
 import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
 import PostItem from "@/components/mobile/notice/PostItem";
+import PostModerationMenu from "@/components/mobile/moderation/PostModerationMenu";
+import ReportModal, {
+  ReportTarget,
+} from "@/components/mobile/moderation/ReportModal";
+import BlockUserModal, {
+  BlockTarget,
+} from "@/components/mobile/moderation/BlockUserModal";
+import useHiddenContentStore from "@/stores/useHiddenContentStore";
+import useUserStore from "@/stores/useUserStore";
 
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
@@ -52,6 +61,12 @@ export default function TipsListContainer({
   });
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const [blockTarget, setBlockTarget] = useState<BlockTarget | null>(null);
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
+  const hiddenPostIds = useHiddenContentStore((state) => state.postIds);
+  const hidePost = useHiddenContentStore((state) => state.hidePost);
   // const { isAppUrl } = useAppStateStore()
 
   // 초기화
@@ -211,6 +226,37 @@ export default function TipsListContainer({
     }
   };
 
+  // 신고/숨김 처리한 게시글은 목록에서 즉시 사라진다.
+  const visiblePosts = posts.filter((post) => !hiddenPostIds.includes(post.id));
+
+  const requireLogin = () => {
+    if (isLoggedIn) return true;
+    if (window.confirm("로그인이 필요해요. 로그인 페이지로 이동할까요?")) {
+      navigate(ROUTES.LOGIN);
+    }
+    return false;
+  };
+
+  const handleReportPost = (postId: number) => {
+    if (!requireLogin()) return;
+    setReportTarget({ type: "POST", postId });
+  };
+
+  const handleBlockWriter = (postId: number, nickname: string) => {
+    if (!requireLogin()) return;
+    setBlockTarget({ postId, nickname });
+  };
+
+  const renderModerationMenu = (post: Post) => (
+    <PostModerationMenu
+      postId={post.id}
+      writer={post.writer}
+      onReport={handleReportPost}
+      onBlock={handleBlockWriter}
+      onHide={hidePost}
+    />
+  );
+
   return (
     <TipsListContainerWrapper
       id="scrollableDiv"
@@ -228,7 +274,7 @@ export default function TipsListContainer({
                 ? councilNotices.length
                 : docType === "NOTIFICATION" || docType === "ALERT"
                   ? notifications.length
-                  : posts.length
+                  : visiblePosts.length
         }
         next={handleNext}
         hasMore={hasMore}
@@ -242,9 +288,9 @@ export default function TipsListContainer({
         <TipsCardWrapper $viewMode={viewMode}>
           {(docType === "TIPS" || docType === "SEARCH") &&
             viewMode === "list" ? (
-            posts.length > 0 && (
+            visiblePosts.length > 0 && (
               <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
-                {posts.map((p, i) => (
+                {visiblePosts.map((p, i) => (
                   <Fragment key={p.id}>
                     <PostItem
                       id={p.id}
@@ -258,15 +304,22 @@ export default function TipsListContainer({
                       imageCount={p.imageCount}
                       imageUrl={p.imageUrl}
                       onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(p.id))}
+                      menuSlot={renderModerationMenu(p)}
                     />
-                    {i < posts.length - 1 && <Divider margin="0" />}
+                    {i < visiblePosts.length - 1 && <Divider margin="0" />}
                   </Fragment>
                 ))}
               </Box>
             )
           ) : (
-            posts.map((p, i) => (
-              <TipsCard key={i} post={p} viewMode={viewMode} docType={docType} />
+            visiblePosts.map((p, i) => (
+              <TipsCard
+                key={i}
+                post={p}
+                viewMode={viewMode}
+                docType={docType}
+                moderationMenu={renderModerationMenu(p)}
+              />
             ))
           )}
 
@@ -318,6 +371,24 @@ export default function TipsListContainer({
           content={"마이페이지 -> 프로필 수정에서 학과 정보를 수정해보세요!"}
         />
       )}
+
+      <ReportModal
+        target={reportTarget}
+        onClose={() => setReportTarget(null)}
+      />
+      <BlockUserModal
+        target={blockTarget}
+        onClose={() => setBlockTarget(null)}
+        onBlocked={() => {
+          // 차단 즉시 이 게시글이 목록에서 사라져야 한다. 응답에 memberId가
+          // 없어(src/apis/blocks.ts 참고) 같은 작성자의 다른 글까지는 이
+          // 목록에서 특정할 수 없으므로, blockTarget이었던 글만 제거한다.
+          if (blockTarget && "postId" in blockTarget) {
+            const { postId } = blockTarget;
+            setPosts((prev) => prev.filter((post) => post.id !== postId));
+          }
+        }}
+      />
     </TipsListContainerWrapper>
   );
 }

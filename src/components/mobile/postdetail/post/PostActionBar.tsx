@@ -44,7 +44,7 @@ export default function PostActionBar({
   return (
     <ActionRow>
       <CommentCountGroup>
-        <MessageSquare size={24} color="#333D4B" />
+        <MessageSquare size={20} color="#333D4B" />
         <span>댓글 {replyCount}</span>
       </CommentCountGroup>
 
@@ -73,7 +73,7 @@ const ActionRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px 20px;
+  padding: 0 16px;
   width: 100%;
   box-sizing: border-box;
   background-color: transparent;

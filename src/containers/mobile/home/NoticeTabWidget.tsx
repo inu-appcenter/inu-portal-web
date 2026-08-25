@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { getNotices, getDepartmentNotices } from "@/apis/notices";
+import {
+  ALL_NOTICE_CATEGORY,
+  getDepartmentNotices,
+  getDepartmentNoticeSchedules,
+  getNoticeListQueryKey,
+  getNotices,
+  NOTICE_LIST_STALE_TIME,
+} from "@/apis/notices";
 import { Notice, DepartmentNotice } from "@/types/notices";
+import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
 import Box from "@/components/common/Box";
 import TabUpper from "@/components/common/TabUpper";
-import Skeleton from "@/components/common/Skeleton";
 import useUserStore from "@/stores/useUserStore";
 import findTitleOrCode from "@/utils/findTitleOrCode";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { ROUTES } from "@/constants/routes";
-import { formatTimeAgo } from "@/utils/date";
+import { markNoticesSeen } from "@/utils/noticeSeenStorage";
+import SchoolNoticeItem from "@/components/mobile/notice/SchoolNoticeItem";
+import DeptNoticeItem from "@/components/mobile/notice/DeptNoticeItem";
+import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
 
 interface NoticeTabWidgetProps {
   activeTab: "school" | "dept";
@@ -24,28 +35,25 @@ export default function NoticeTabWidget({
   const navigate = useNavigate();
   const { userInfo, tokenInfo } = useUserStore();
 
-  const [schoolNotices, setSchoolNotices] = useState<Notice[]>([]);
   const [deptNotices, setDeptNotices] = useState<DepartmentNotice[]>([]);
-  const [isLoadingSchool, setIsLoadingSchool] = useState(true);
   const [isLoadingDept, setIsLoadingDept] = useState(false);
 
-  // 날짜 포맷팅에 공통 유틸 함수 formatTimeAgo 사용
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [selectedDepartmentNoticeId, setSelectedDepartmentNoticeId] = useState<
+    number | null
+  >(null);
+  const [selectedSchedules, setSelectedSchedules] = useState<ScheduleEvent[]>(
+    [],
+  );
+  const [isScheduleLoading, setIsScheduleLoading] = useState(false);
 
-  // 학교 공지사항 가져오기
-  useEffect(() => {
-    const fetchSchoolNotices = async () => {
-      setIsLoadingSchool(true);
-      try {
-        const response = await getNotices("전체", "date", 1);
-        setSchoolNotices(response.data.contents);
-      } catch (error) {
-        console.error("학교 공지사항 가져오기 실패", error);
-      } finally {
-        setIsLoadingSchool(false);
-      }
-    };
-    fetchSchoolNotices();
-  }, []);
+  // 학교 공지사항 가져오기(홈 인사말과 같은 캐시를 공유한다)
+  const { data: schoolNotices = [], isLoading: isLoadingSchool } = useQuery({
+    queryKey: getNoticeListQueryKey(ALL_NOTICE_CATEGORY, "date", 1),
+    queryFn: () => getNotices(ALL_NOTICE_CATEGORY, "date", 1),
+    select: (response) => response.data.contents,
+    staleTime: NOTICE_LIST_STALE_TIME,
+  });
 
   // 학과 공지사항 가져오기
   useEffect(() => {
@@ -74,26 +82,76 @@ export default function NoticeTabWidget({
     fetchDeptNotices();
   }, [tokenInfo.accessToken, userInfo.department]);
 
-  // 카테고리 뱃지 타입 맵핑
-  const getCategoryType = (category?: string): "brand" | "warn" | "default" => {
-    if (!category) return "default";
-    if (category.includes("학사")) return "brand";
-    if (
-      category.includes("일반") ||
-      category.includes("행사") ||
-      category.includes("모집") ||
-      category.includes("장학") ||
-      category.includes("지원") ||
-      category.includes("취업")
-    ) {
-      return "warn";
+  // 학과 공지 일정 상세 조회
+  useEffect(() => {
+    if (!isScheduleModalOpen || selectedDepartmentNoticeId == null) {
+      return;
     }
-    return "default";
+
+    let isIgnored = false;
+
+    const fetchSchedules = async () => {
+      setIsScheduleLoading(true);
+      try {
+        const response = await getDepartmentNoticeSchedules(
+          selectedDepartmentNoticeId,
+        );
+        if (!isIgnored) {
+          setSelectedSchedules(
+            response.data.map((schedule) => toScheduleEvent(schedule, "dept")),
+          );
+        }
+      } catch (error) {
+        console.error("학과 공지 연결 일정을 불러오지 못했습니다.", error);
+        if (!isIgnored) {
+          setSelectedSchedules([]);
+        }
+      } finally {
+        if (!isIgnored) {
+          setIsScheduleLoading(false);
+        }
+      }
+    };
+
+    fetchSchedules();
+
+    return () => {
+      isIgnored = true;
+    };
+  }, [isScheduleModalOpen, selectedDepartmentNoticeId]);
+
+  const handleCalendarClick = (
+    e: React.MouseEvent,
+    departmentNoticeId: number,
+  ) => {
+    e.stopPropagation();
+    setSelectedDepartmentNoticeId(departmentNoticeId);
+    setIsScheduleModalOpen(true);
+    mixpanelTrack.featureClicked("Dept AI Calendar", "Home Notice Widget");
+    mixpanelTrack.scheduleModalViewed("Dept Notice", 1);
+  };
+
+  const handleScheduleModalOpenChange = (open: boolean) => {
+    setIsScheduleModalOpen(open);
+    if (!open) {
+      setSelectedDepartmentNoticeId(null);
+      setSelectedSchedules([]);
+      setIsScheduleLoading(false);
+    }
   };
 
   const handleSchoolNoticeClick = (notice: Notice) => {
-    mixpanelTrack.noticeViewed(notice.category, notice.title, false);
-    if (notice.url) {
+    // 읽음 상태 API가 없어 목록을 열람한 시점을 로컬에 기록한다.
+    markNoticesSeen();
+    mixpanelTrack.noticeViewed(
+      notice.category,
+      notice.title,
+      false,
+      "Home Notice Widget",
+    );
+    if (notice.id) {
+      navigate(ROUTES.BOARD.NOTICE_DETAIL(notice.id));
+    } else if (notice.url) {
       window.open(notice.url, "_blank", "noopener,noreferrer");
     }
   };
@@ -103,7 +161,12 @@ export default function NoticeTabWidget({
       findTitleOrCode(deptNotice.department) ||
       deptNotice.department ||
       userInfo.department;
-    mixpanelTrack.deptNoticeViewed(deptName, deptNotice.title);
+    mixpanelTrack.deptNoticeViewed(
+      deptName,
+      deptNotice.title,
+      false,
+      "Home Notice Widget",
+    );
     if (deptNotice.url) {
       window.open(deptNotice.url, "_blank", "noopener,noreferrer");
     }
@@ -116,6 +179,13 @@ export default function NoticeTabWidget({
 
   return (
     <Box style={{ padding: 0 }}>
+      <ScheduleModal
+        isOpen={isScheduleModalOpen}
+        onOpenChange={handleScheduleModalOpenChange}
+        events={selectedSchedules}
+        isLoading={isScheduleLoading}
+      />
+
       {/* 탭 헤더 영역 */}
       <TabArea>
         <TabInner>
@@ -132,10 +202,10 @@ export default function NoticeTabWidget({
         {activeTab === "school" ? (
           isLoadingSchool ? (
             Array.from({ length: 3 }).map((_, index) => (
-              <div key={`school-skeleton-${index}`} style={{ width: "100%" }}>
-                <SkeletonItem />
-                {index !== 2 && <ItemDivider />}
-              </div>
+              <SchoolNoticeItem
+                key={`school-skeleton-${index}`}
+                isLoading
+              />
             ))
           ) : schoolNotices.length === 0 ? (
             <EmptyContainer>
@@ -143,20 +213,18 @@ export default function NoticeTabWidget({
             </EmptyContainer>
           ) : (
             schoolNotices.slice(0, 3).map((notice, index) => (
-              <div key={notice.id || index} style={{ width: "100%" }}>
-                <NoticeItem onClick={() => handleSchoolNoticeClick(notice)}>
-                  <Badge $type={getCategoryType(notice.category)}>
-                    {notice.category}
-                  </Badge>
-                  <NoticeTitle>{notice.title}</NoticeTitle>
-                  <NoticeMeta>
-                    <span>{formatTimeAgo(notice.createDate)}</span>
-                    <span className="pipe">|</span>
-                    <span>{notice.writer}</span>
-                  </NoticeMeta>
-                </NoticeItem>
-                {index !== 2 && <ItemDivider />}
-              </div>
+              <SchoolNoticeItem
+                key={notice.id || index}
+                category={
+                  "subCategory" in notice && notice.subCategory
+                    ? `${notice.category} - ${notice.subCategory}`
+                    : notice.category
+                }
+                title={notice.title}
+                writer={notice.writer}
+                date={notice.createDate}
+                onClick={() => handleSchoolNoticeClick(notice)}
+              />
             ))
           )
         ) : /* 학과 공지사항 탭 */
@@ -176,36 +244,27 @@ export default function NoticeTabWidget({
           </MessageContainer>
         ) : isLoadingDept ? (
           Array.from({ length: 3 }).map((_, index) => (
-            <div key={`dept-skeleton-${index}`} style={{ width: "100%" }}>
-              <SkeletonItem />
-              {index !== 2 && <ItemDivider />}
-            </div>
+            <DeptNoticeItem
+              key={`dept-skeleton-${index}`}
+              isLoading
+            />
           ))
         ) : deptNotices.length === 0 ? (
           <EmptyContainer>
             <EmptyText>게시물이 없습니다.</EmptyText>
           </EmptyContainer>
         ) : (
-          deptNotices.slice(0, 3).map((deptNotice, index) => {
-            const deptName =
-              findTitleOrCode(deptNotice.department) ||
-              deptNotice.department ||
-              userInfo.department;
-            return (
-              <div key={deptNotice.id || index} style={{ width: "100%" }}>
-                <NoticeItem onClick={() => handleDeptNoticeClick(deptNotice)}>
-                  <Badge $type="brand">학과</Badge>
-                  <NoticeTitle>{deptNotice.title}</NoticeTitle>
-                  <NoticeMeta>
-                    <span>{formatTimeAgo(deptNotice.createDate)}</span>
-                    <span className="pipe">|</span>
-                    <span>{deptName}</span>
-                  </NoticeMeta>
-                </NoticeItem>
-                {index !== 2 && <ItemDivider />}
-              </div>
-            );
-          })
+          deptNotices.slice(0, 3).map((deptNotice, index) => (
+            <DeptNoticeItem
+              key={deptNotice.id || index}
+              title={deptNotice.title}
+              date={deptNotice.createDate}
+              views={deptNotice.view}
+              hasSchedules={deptNotice.hasSchedules}
+              onCalendarClick={(e) => handleCalendarClick(e, deptNotice.id)}
+              onClick={() => handleDeptNoticeClick(deptNotice)}
+            />
+          ))
         )}
       </ListContainer>
     </Box>
@@ -228,88 +287,10 @@ const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-`;
 
-const NoticeItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 16px;
-  width: 100%;
-  box-sizing: border-box;
-  cursor: pointer;
-  gap: 8px;
-  transition: background-color 0.15s ease-in-out;
-
-  &:active {
-    background-color: var(--bg-subtle, #f8f9fb);
+  > :last-child {
+    border-bottom: none;
   }
-`;
-
-const Badge = styled.span<{ $type: "brand" | "warn" | "default" }>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  border-radius: 50px;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: normal;
-
-  ${({ $type }) => {
-    if ($type === "warn") {
-      return `
-        background-color: #FFF5D6;
-        color: #B45309;
-      `;
-    } else if ($type === "brand") {
-      return `
-        background-color: #DEEFFF;
-        color: #0061FF;
-      `;
-    } else {
-      return `
-        background-color: var(--bg-muted, #f1f3f5);
-        color: var(--text-secondary, #333d4b);
-      `;
-    }
-  }}
-`;
-
-const NoticeTitle = styled.h4`
-  color: var(--text-primary, #000000);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 22px;
-  margin: 0;
-  text-align: left;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  align-self: stretch;
-`;
-
-const NoticeMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 18px;
-
-  .pipe {
-    color: #e5e8eb;
-    font-size: 11px;
-  }
-`;
-
-const ItemDivider = styled.div`
-  width: 100%;
-  height: 1px;
-  background-color: var(--border-default, #e5e8eb);
 `;
 
 const MessageContainer = styled.div`
@@ -358,26 +339,4 @@ const EmptyContainer = styled.div`
 const EmptyText = styled.span`
   font-size: 14px;
   color: var(--text-tertiary, #8b95a1);
-`;
-
-// --- Skeleton components ---
-
-const SkeletonItem = () => {
-  return (
-    <SkeletonWrapper>
-      <Skeleton width={60} height={18} />
-      <Skeleton width="90%" height={20} />
-      <Skeleton width="120px" height={14} />
-    </SkeletonWrapper>
-  );
-};
-
-const SkeletonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 16px 20px;
-  gap: 10px;
-  width: 100%;
-  box-sizing: border-box;
 `;

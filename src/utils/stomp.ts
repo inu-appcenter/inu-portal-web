@@ -1,4 +1,4 @@
-import { Client } from "@stomp/stompjs";
+import { Client, ReconnectionTimeMode } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -17,6 +17,8 @@ export const createStompClient = () => {
     // 양쪽 모두 비교적 빨리 끊긴 것으로 판단한다.
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
+    // 하트비트가 끊겼는데 close 이벤트가 오지 않는 좀비 소켓을 즉시 버린다.
+    discardWebsocketOnCommFailure: true,
   });
 
   return client;

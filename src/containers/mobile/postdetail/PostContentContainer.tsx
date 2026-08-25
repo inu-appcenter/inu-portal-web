@@ -100,7 +100,10 @@ const HeaderAndContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 24px 16px 28px;
+  //padding: 24px 16px 28px;
+  padding: 0 16px;
+  margin-bottom: 100px;
+  //padding-top: 0;
   width: 100%;
   box-sizing: border-box;
 `;
