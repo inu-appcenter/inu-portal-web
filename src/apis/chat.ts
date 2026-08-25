@@ -76,7 +76,7 @@ export const getChatMessages = async (
 // 이전 채팅 메시지 로드
 export const getPreviousMessages = async (
   roomId: string | number,
-  lastId: number,
+  lastId: string,
 ): Promise<GetPreviousChatMessagesResponse> => {
   const response = await tokenInstance.get<GetPreviousChatMessagesResponse>(
     `/api/chat-rooms/${roomId}/messages`,

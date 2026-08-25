@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { deleteMembers } from "@/apis/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import useUserStore from "@/stores/useUserStore";
+import { clearTermsAgreement } from "@/components/common/TermsAgreement";
 
 export default function DeleteButton() {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ export default function DeleteButton() {
         refreshTokenExpiredTime: "",
       });
       localStorage.removeItem("tokenInfo");
+      // 탈퇴 후 다시 가입하면 약관 동의를 새로 받아야 한다.
+      clearTermsAgreement();
 
       alert("회원 탈퇴가 완료되었습니다.");
       navigate(ROUTES.ROOT);

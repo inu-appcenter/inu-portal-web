@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
 import { Eye, MessageSquare, Heart, Bookmark } from "lucide-react";
@@ -23,6 +24,8 @@ interface NoticeItemProps {
   isEllipsis?: boolean;
   showDate?: boolean;
   showWriter?: boolean;
+  /** 신고/차단/숨기기 등 게시글 관리 메뉴 (목록에서 바로 처리하기 위함) */
+  menuSlot?: ReactNode;
 }
 
 const PostItem = ({
@@ -41,6 +44,7 @@ const PostItem = ({
   isEllipsis = true,
   showDate = true,
   showWriter = true,
+  menuSlot,
 }: NoticeItemProps) => {
   const hasInfoLine =
     (showDate && !!date) ||
@@ -48,7 +52,8 @@ const PostItem = ({
     views !== undefined ||
     like !== undefined ||
     scrap !== undefined ||
-    replyCount !== undefined;
+    replyCount !== undefined ||
+    !!menuSlot;
 
   const formattedDate = date ? formatTimeAgo(date) : "";
 
@@ -115,11 +120,16 @@ const PostItem = ({
                     </StatItem>
                   )}
                 </MetaGroup>
-                {views !== undefined && (
-                  <ViewCount>
-                    <Eye size={18} />
-                    {views}
-                  </ViewCount>
+                {(views !== undefined || menuSlot) && (
+                  <TrailingGroup>
+                    {views !== undefined && (
+                      <ViewCount>
+                        <Eye size={18} />
+                        {views}
+                      </ViewCount>
+                    )}
+                    {menuSlot}
+                  </TrailingGroup>
                 )}
               </InfoLine>
             )}
@@ -281,6 +291,13 @@ const StatItem = styled.div`
   font-style: normal;
   font-weight: 400;
   line-height: 160%;
+`;
+
+const TrailingGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
 `;
 
 const ViewCount = styled.div`

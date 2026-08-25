@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
@@ -18,6 +19,8 @@ interface TipsCardContainerProps {
   viewMode: "grid" | "list";
   docType: string;
   isEditing?: boolean;
+  /** 신고/차단/숨기기 메뉴 (게시글 카드에서만 노출) */
+  moderationMenu?: ReactNode;
 }
 
 export default function ({
@@ -29,6 +32,7 @@ export default function ({
   viewMode,
   docType,
   isEditing,
+  moderationMenu,
 }: TipsCardContainerProps) {
   const navigate = useNavigate();
 
@@ -63,7 +67,10 @@ export default function ({
           {post && (
             <TipsCardGridWrapper onClick={handleDocumentClick}>
               <GridTopWrapper>
-                <Category>{post.category}</Category>
+                <CategoryRow>
+                  <Category>{post.category}</Category>
+                  {moderationMenu}
+                </CategoryRow>
               </GridTopWrapper>
 
               <GridBottomWrapper>
@@ -155,7 +162,10 @@ export default function ({
                     <span>댓글</span>
                     <span>{post.replyCount}</span>
                   </span>
-                  <span className="writer">{post.writer}</span>
+                  <WriterRow>
+                    <span className="writer">{post.writer}</span>
+                    {moderationMenu}
+                  </WriterRow>
                 </LikeCommentWriterWrapper>
               </ListRightWrapper>
             </TipsCardListWrapper>
@@ -228,6 +238,20 @@ export default function ({
     </>
   );
 }
+
+const CategoryRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+`;
+
+const WriterRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+`;
 
 const Category = styled.div`
   font-size: 14px;

@@ -4,7 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
-import { Bell, UserX } from "lucide-react";
+import { Bell, UserX, Mail } from "lucide-react";
 import loginImg from "@/resources/assets/login/login-modal-logo.svg";
 import {
   MyPageActive,
@@ -22,6 +22,12 @@ import {
 } from "@/styles/responsive";
 import Ripple from "@/components/common/Ripple";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
+import { clearTermsAgreement } from "@/components/common/TermsAgreement";
+import {
+  APPCENTER_URL,
+  SUPPORT_FORM_URL,
+  SUPPORT_MAILTO,
+} from "@/constants/support";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -36,6 +42,9 @@ export default function MobileMyPage() {
     }
     if (title === "차단 사용자 관리") {
       return <UserX className="fallback-icon" aria-hidden="true" />;
+    }
+    if (title === "개발자에게 메일 보내기") {
+      return <Mail className="fallback-icon" aria-hidden="true" />;
     }
     return <HiOutlineCog6Tooth className="fallback-icon" aria-hidden="true" />;
   };
@@ -60,6 +69,8 @@ export default function MobileMyPage() {
       refreshTokenExpiredTime: "",
     });
     localStorage.removeItem("tokenInfo");
+    // 다른 계정으로 로그인할 수 있으므로 약관 동의 이력도 초기화한다.
+    clearTermsAgreement();
 
     navigate(ROUTES.HOME, { replace: true, state: { isTabNavigation: true } });
   };
@@ -112,12 +123,14 @@ export default function MobileMyPage() {
         break;
 
       case "문의하기":
-        window.open(
-          "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
-        );
+        window.open(SUPPORT_FORM_URL);
+        break;
+      case "개발자에게 메일 보내기":
+        // 부적절한 콘텐츠·악성 사용자 신고를 위한 개발자 직통 연락처
+        window.location.href = SUPPORT_MAILTO;
         break;
       case "인천대학교 앱센터":
-        window.open("https://home.inuappcenter.kr");
+        window.open(APPCENTER_URL);
         break;
 
       default:

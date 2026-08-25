@@ -15,6 +15,11 @@ import {
   normalizeProfileImageId,
 } from "@/utils/userInfo";
 import { UserInfoInput } from "@/types/members";
+import TermsAgreement, {
+  hasAgreedToTerms,
+  recordTermsAgreement,
+} from "@/components/common/TermsAgreement";
+import { ROUTES } from "@/constants/routes";
 
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
 const MAX_NICKNAME_LENGTH = 10;
@@ -46,7 +51,15 @@ export default function UserModify() {
   const [departments, setDepartments] = useState<SchoolDepartment[]>([]);
   const [isDepartmentLoading, setIsDepartmentLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigate = useNavigate();
+
+  // 최초 로그인 사용자(학과 미등록)에게만 이 화면에서 EULA 동의를 받는다.
+  // 이미 학과가 등록된 기존 사용자는 평소처럼 프로필만 수정한다.
+  const needsTermsAgreement =
+    userInfo.id !== 0 &&
+    !normalizeOptionalText(userInfo.department) &&
+    !hasAgreedToTerms();
 
   useEffect(() => {
     setNickname(normalizeOptionalText(userInfo.nickname));
@@ -103,9 +116,23 @@ export default function UserModify() {
     normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID);
   const hasChanges =
     hasNicknameChanged || hasValidDepartmentChange || hasImageChanged;
+  // 약관 동의가 필요한 상태라면 변경사항이 없어도 저장(동의)할 수 있어야 한다.
+  const canSubmit =
+    (hasChanges || needsTermsAgreement) &&
+    (!needsTermsAgreement || agreedToTerms);
 
   const handleModifyClick = async () => {
-    if (isSaving || !hasChanges) {
+    if (isSaving || !canSubmit) {
+      return;
+    }
+
+    if (needsTermsAgreement && !agreedToTerms) {
+      alert("이용약관 및 개인정보 처리방침에 동의해주세요.");
+      return;
+    }
+
+    if (needsTermsAgreement && !departmentCode) {
+      alert("학과를 선택해주세요.");
       return;
     }
 
@@ -160,6 +187,13 @@ export default function UserModify() {
       }
 
       setUserInfo(updatedUserInfo);
+
+      if (needsTermsAgreement) {
+        recordTermsAgreement();
+        alert("설정이 완료되었습니다. INTIP을 시작해보세요!");
+        navigate(ROUTES.HOME, { replace: true });
+        return;
+      }
 
       alert("성공적으로 수정되었습니다.");
 
@@ -272,14 +306,34 @@ export default function UserModify() {
         </ImageSelection>
       </SectionCard>
 
+      {needsTermsAgreement && (
+        <SectionCard>
+          <SectionTop>
+            <div>
+              <h3>이용약관 동의</h3>
+              <p>INTIP을 이용하려면 약관에 동의해야 해요.</p>
+            </div>
+          </SectionTop>
+
+          <TermsAgreement
+            checked={agreedToTerms}
+            onChange={setAgreedToTerms}
+          />
+        </SectionCard>
+      )}
+
       <SubmitArea>
         <SubmitButton
           type="button"
           $fullWidth
-          disabled={!hasChanges || isSaving}
+          disabled={!canSubmit || isSaving}
           onClick={handleModifyClick}
         >
-          {isSaving ? "저장 중..." : "저장하기"}
+          {isSaving
+            ? "저장 중..."
+            : needsTermsAgreement
+              ? "동의하고 시작하기"
+              : "저장하기"}
         </SubmitButton>
       </SubmitArea>
     </UserModifyWrapper>
