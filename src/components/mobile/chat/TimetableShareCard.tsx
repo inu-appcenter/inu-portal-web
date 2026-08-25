@@ -10,7 +10,7 @@ interface TimetableShareCardProps {
   content?: string;
   isMe?: boolean;
   /** 이 카드가 올라온 채팅방. 다시 계산한 결과를 같은 방으로 공유하기 위해 넘긴다(#336). */
-  roomId?: number;
+  roomId?: string | number;
 }
 
 const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
