@@ -128,7 +128,6 @@ export const useChat = (roomId: string) => {
   useEffect(() => {
     // 이 effect가 만든 클라이언트만 이 effect가 정리한다. clientRef는 전송용
     // 최신 참조일 뿐이라, 비동기 입장 도중 effect가 교체되면 서로 어긋날 수 있다.
-    let client: Client | null = null;
     let disposed = false;
 
     const connectStomp = () => {
@@ -203,7 +202,6 @@ export const useChat = (roomId: string) => {
       };
 
       stompClient.activate();
-      client = stompClient;
       clientRef.current = stompClient;
     };
 
@@ -242,19 +240,21 @@ export const useChat = (roomId: string) => {
     enterChatRoom();
 
     const handleHidden = () => {
-      if (!client) return;
+      const activeClient = clientRef.current;
+      if (!activeClient) return;
       // 소켓이 살아 있는 동안 서버는 사용자가 채팅방을 보고 있다고 판단해
       // FCM 푸시를 보내지 않는다. 탭이 얼어붙기 전에 즉시 끊어야 한다.
-      closeStompClientImmediately(client);
+      closeStompClientImmediately(activeClient);
       setIsStompConnected(false);
     };
 
     const handleVisible = () => {
-      if (!client || disposed) return;
+      const activeClient = clientRef.current;
+      if (!activeClient || disposed) return;
       // 소켓 재연결을 기다리지 않고 먼저 화면을 맞춘 뒤,
       // 재연결이 끝나면 onConnect에서 한 번 더 맞춘다.
       void syncRoom();
-      client.activate();
+      activeClient.activate();
     };
 
     const handleVisibilityChange = () => {
@@ -274,8 +274,9 @@ export const useChat = (roomId: string) => {
       disposed = true;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pagehide", handleHidden);
-      closeStompClientImmediately(client);
-      if (clientRef.current === client) {
+      const activeClient = clientRef.current;
+      closeStompClientImmediately(activeClient);
+      if (clientRef.current === activeClient) {
         clientRef.current = null;
       }
       setIsStompConnected(false);
