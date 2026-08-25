@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { login } from "@/apis/members";
 import { ROUTES } from "@/constants/routes";
-import TermOfUse from "@/components/desktop/login/TermsOfUse";
+import TermsLinks from "@/components/common/TermsLinks";
 import useUserStore from "@/stores/useUserStore";
 import LoginPassword from "@/resources/assets/login/login-password.svg";
 import LoginUser from "@/resources/assets/login/login-user.svg";
@@ -34,13 +34,16 @@ export default function LoginForm() {
   const isActive = studentId.trim() !== "" && password.trim() !== "";
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && isActive) {
+    if (event.key === "Enter") {
       void handleLogin();
     }
   };
 
   const handleLogin = async () => {
-    if (!isActive || loading) {
+    if (loading) {
+      return;
+    }
+    if (studentId.trim() === "" || password.trim() === "") {
       return;
     }
 
@@ -121,8 +124,9 @@ export default function LoginForm() {
         {loading ? "로그인 중..." : "로그인"}
       </LoginButton>
 
+      {/* 약관 동의는 로그인 후 최초 프로필 설정 화면에서 명시적으로 받는다. */}
       <span className="termofuse">
-        <TermOfUse />
+        <TermsLinks />
       </span>
     </FormWrapper>
   );
@@ -138,7 +142,7 @@ const FormWrapper = styled.div`
   .termofuse {
     width: 90%;
     max-width: 384px;
-    margin-top: 20px;
+    margin-top: 4px;
   }
 `;
 

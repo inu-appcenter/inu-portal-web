@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { clearTermsAgreement } from "@/components/common/TermsAgreement";
 import useUserStore from "@/stores/useUserStore";
 import { useNavigate } from "react-router-dom";
 import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
@@ -18,6 +19,7 @@ export default function Header() {
       refreshTokenExpiredTime: "",
     });
     localStorage.removeItem("tokenInfo");
+    clearTermsAgreement();
     navigate("/");
   };
 

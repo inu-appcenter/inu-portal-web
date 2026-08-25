@@ -12,6 +12,10 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import { X } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  buildProfanityAlertMessage,
+  checkProfanityInFields,
+} from "@/utils/profanityFilter";
 
 interface Props {
   category: string;
@@ -124,6 +128,14 @@ export default function WriteForm({ category, setCategory }: Props) {
       alert("카테고리를 선택해 주세요.");
       return;
     }
+
+    // 욕설·혐오·성적 표현은 등록 전에 차단한다 (커뮤니티 무관용 정책)
+    const profanity = checkProfanityInFields(title, content);
+    if (profanity.hasProfanity) {
+      alert(buildProfanityAlertMessage(profanity.matched));
+      return;
+    }
+
     setLoading(true);
     if (postId) {
       try {

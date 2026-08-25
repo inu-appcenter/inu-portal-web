@@ -4,6 +4,7 @@ import axios, { AxiosError } from "axios";
 import Modal from "@/components/common/Modal";
 import { postReplyReport, postReports } from "@/apis/reports";
 import { reportsReasons } from "@/resources/strings/reportsReasons";
+import useHiddenContentStore from "@/stores/useHiddenContentStore";
 
 export type ReportTarget =
   | { type: "POST"; postId: number }
@@ -13,12 +14,24 @@ interface ReportModalProps {
   /** null 이면 닫힌 상태 */
   target: ReportTarget | null;
   onClose: () => void;
+  /**
+   * 신고 접수 성공 후 호출된다.
+   * 신고한 콘텐츠는 이미 숨김 처리된 상태이므로, 화면 이탈/목록 갱신 등
+   * 화면별 후처리만 하면 된다.
+   */
+  onReported?: (target: ReportTarget) => void;
 }
 
-export default function ReportModal({ target, onClose }: ReportModalProps) {
+export default function ReportModal({
+  target,
+  onClose,
+  onReported,
+}: ReportModalProps) {
   const [selectedReason, setSelectedReason] = useState("");
   const [detail, setDetail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hidePost = useHiddenContentStore((state) => state.hidePost);
+  const hideReply = useHiddenContentStore((state) => state.hideReply);
 
   // 대상이 바뀔 때마다 입력값 초기화
   useEffect(() => {
@@ -47,10 +60,18 @@ export default function ReportModal({ target, onClose }: ReportModalProps) {
       } else {
         await postReports(target.postId, selectedReason, detail.trim());
       }
+      // 신고한 콘텐츠는 검토 결과를 기다리지 않고 내 화면에서 즉시 숨긴다.
+      if (target.type === "REPLY") {
+        hideReply(target.replyId);
+      } else {
+        hidePost(target.postId);
+      }
+
       alert(
-        "신고가 접수되었습니다.\n운영자가 24시간 이내에 검토 후 조치할 예정이에요.",
+        "신고가 접수되었습니다.\n해당 게시물은 회원님의 화면에서 즉시 숨겨지며,\n운영자가 24시간 이내에 검토 후 조치할 예정이에요.",
       );
       onClose();
+      onReported?.(target);
     } catch (error) {
       console.error("신고하기 실패", error);
       if (
@@ -87,7 +108,7 @@ export default function ReportModal({ target, onClose }: ReportModalProps) {
       onClose={onClose}
       title={target?.type === "REPLY" ? "댓글 신고하기" : "게시글 신고하기"}
       description={
-        "접수된 신고는 운영자가 24시간 이내에 검토합니다.\n규정 위반이 확인되면 게시물이 삭제되고 작성자의 이용이 제한됩니다."
+        "신고하면 해당 게시물은 회원님의 화면에서 즉시 숨겨집니다.\n접수된 신고는 운영자가 24시간 이내에 검토하며,\n규정 위반이 확인되면 게시물이 삭제되고 작성자의 이용이 제한됩니다."
       }
       primaryButton={{
         text: "신고 접수",

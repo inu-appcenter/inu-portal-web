@@ -2,14 +2,18 @@ import styled from "styled-components";
 import UserInfo from "@/containers/mobile/mypage/UserInfo";
 import UserModify from "@/containers/mobile/mypage/UserModify";
 import useUserStore from "@/stores/useUserStore";
+import { hasAgreedToTerms } from "@/components/common/TermsAgreement";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 export default function MobileProfilePage() {
   const { userInfo } = useUserStore();
+  // 최초 로그인(학과 미등록 + 약관 미동의) 사용자에게는 설정 화면으로 보인다.
+  const isInitialSetup =
+    userInfo.id !== 0 && !userInfo.department && !hasAgreedToTerms();
 
   useHeader({
-    title: "프로필 수정",
+    title: isInitialSetup ? "프로필 설정" : "프로필 수정",
   });
 
   return (
