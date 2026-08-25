@@ -736,7 +736,14 @@ export const mixpanelTrack = {
    * 시간표 비교/공강 기능 액션
    */
   timetableCompareAction: (
-    actionType: "탭 전환" | "친구 선택" | "공강 선택" | "공유",
+    actionType:
+      | "탭 전환"
+      | "친구 선택"
+      | "공강 선택"
+      | "공유"
+      | "내 시간표 불러오기"
+      | "임시 일정 편집"
+      | "임시 일정 초기화",
     properties?: Record<string, any>,
   ) => {
     trackEvent("[시간표] 비교 액션", {

@@ -63,6 +63,10 @@ interface TimetableGridProps {
   // 굳이 항상 7컬럼을 보여주면 컬럼 폭만 좁아진다. 주말 슬롯을 미리 선택하게 하고
   // 싶은 화면(제외조건 등)은 7로 지정한다.
   minDayCount?: number;
+  // 최소로 보여줄 마지막 시각(정시). 기본은 18시 - 이벤트가 더 늦게 끝나면 그에 맞춰
+  // 자동으로 늘어난다. 회의 시간 맞추기처럼 수업이 없는 야간까지 선택해야 하는
+  // 화면(#336)은 24를 넘겨 강의가 없어도 24:00까지 격자를 그리게 한다.
+  minEndHour?: number;
 }
 
 // --- 상수 데이터 ---
@@ -110,6 +114,7 @@ const TimetableGrid = ({
   showClasses = true,
   theme,
   minDayCount = MIN_DAY_COUNT,
+  minEndHour = DEFAULT_MAX_HOUR,
 }: TimetableGridProps) => {
   // 바텀시트 상태 정의
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
@@ -282,14 +287,14 @@ const TimetableGrid = ({
     const allEvents = [...timedEvents, ...timedPreviewEvents];
     const maxEventTime = Math.max(0, ...allEvents.map((e) => e.endTime));
     // 정시에 끝나지 않는 수업(예: 18:45)도 마지막 행 안에 들어오도록 올림한다.
-    const endHour = Math.max(DEFAULT_MAX_HOUR, Math.ceil(maxEventTime));
+    const endHour = Math.max(minEndHour, Math.ceil(maxEventTime));
 
     const slots = [];
     for (let i = START_HOUR; i <= endHour; i++) {
       slots.push(i);
     }
     return slots;
-  }, [timedEvents, timedPreviewEvents]);
+  }, [timedEvents, timedPreviewEvents, minEndHour]);
 
   const rowCount = (timeSlots.length - 1) * ROWS_PER_HOUR;
 

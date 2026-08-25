@@ -15,6 +15,13 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { safeLocalStorage } from "@/utils/safeStorage";
+import {
+  busySlotKeysToBlocks,
+  computeCommonFreeSlots,
+  FREE_TIME_END_HOUR,
+  type BusyBlock,
+} from "@/utils/freeTime";
 import type { TimeTableDetail, Term } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { formatSemester } from "@/utils/semester";
@@ -28,7 +35,30 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 
 // 아이콘
-import { Plus, Send } from "lucide-react";
+import {
+  CalendarCheck,
+  CalendarPlus,
+  Plus,
+  RotateCcw,
+  Send,
+} from "lucide-react";
+
+// 임시 일정은 서버에 저장하지 않는 값이라(#265에서 확정한 정책) 화면을 나갔다
+// 돌아와도 날아가지 않도록 로컬에만 남긴다.
+const TEMP_BUSY_SLOTS_STORAGE_KEY = "timetable-compare:temp-busy-slots:v1";
+
+const readStoredTempBusySlots = (): string[] => {
+  const raw = safeLocalStorage.getItem(TEMP_BUSY_SLOTS_STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((slot): slot is string => typeof slot === "string")
+      : [];
+  } catch {
+    return [];
+  }
+};
 
 const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
 
@@ -391,6 +421,33 @@ export default function MobileTimeTableComparePage() {
     };
   }, [friendTimetablesByFriendId]);
 
+  // "내 시간표 불러오기"(#336). 끄면 내 수업은 빼고 친구 일정과 임시 일정만으로
+  // 계산한다 - 내 수업이 있는 시간에도 회의를 잡아야 하는 경우가 있다.
+  const [includeMyTimetable, setIncludeMyTimetable] = useState(true);
+
+  // 임시 일정(#336): 그리드를 드래그해 찍은 "이 시간은 안 돼요" 칸.
+  // TimetableGrid의 선택 슬롯 규약(`${day}-${hour}`, hour는 0.5 단위)을 그대로 쓴다.
+  const [tempBusySlots, setTempBusySlots] = useState<string[]>(
+    readStoredTempBusySlots,
+  );
+  const [isEditingTempSchedule, setIsEditingTempSchedule] = useState(false);
+
+  useEffect(() => {
+    if (tempBusySlots.length === 0) {
+      safeLocalStorage.removeItem(TEMP_BUSY_SLOTS_STORAGE_KEY);
+      return;
+    }
+    safeLocalStorage.setItem(
+      TEMP_BUSY_SLOTS_STORAGE_KEY,
+      JSON.stringify(tempBusySlots),
+    );
+  }, [tempBusySlots]);
+
+  // 겹쳐보기 탭에는 편집 도구가 없어서, 편집 중에 탭을 옮기면 끌 방법이 사라진다.
+  useEffect(() => {
+    if (activeTabUpper !== "free") setIsEditingTempSchedule(false);
+  }, [activeTabUpper]);
+
   // 공강 시간 선택 상태 (시간표에 하이라이트 표시용)
   const [highlightedSlot, setHighlightedSlot] = useState<{
     day: number;
@@ -558,69 +615,46 @@ export default function MobileTimeTableComparePage() {
     }
   };
 
-  // 공동 공강 목록 계산 (나 + 선택된 모든 친구들)
-  const freeSlotsList = useMemo(() => {
-    if (selectedFriendIdsState.length === 0) {
-      return [];
-    }
-    const list: {
-      day: number;
-      startTime: number;
-      endTime: number;
-      duration: number;
-    }[] = [];
+  const tempBusyBlocks = useMemo(
+    () => busySlotKeysToBlocks(tempBusySlots),
+    [tempBusySlots],
+  );
 
-    // 선택된 친구들의 시간표들을 미리 구해둠
-    const selectedFriendsTimetables = selectedFriendIdsState
+  // 공강 계산에 넣을 "바쁜 시간" 묶음: 선택된 사람들의 수업 + 내가 찍은 임시 일정.
+  // 한 사람이 한 원소이고, 어느 하나라도 겹치면 그 칸은 공강이 아니다.
+  const busySources = useMemo(() => {
+    const sources: BusyBlock[][] = [];
+
+    if (selectedFriendIdsState.includes(99999) && includeMyTimetable) {
+      sources.push(myClasses);
+    }
+
+    selectedFriendIdsState
       .filter((id) => id !== 99999)
-      .map((friendId) => {
+      .forEach((friendId) => {
         const friend = friendsMap.find((f) => f.friendId === friendId);
-        return friend ? getFriendTimetable(friend) : [];
+        if (friend) sources.push(getFriendTimetable(friend));
       });
 
-    for (let day = 0; day < 5; day++) {
-      let currentStart: number | null = null;
-      for (let hour = 9; hour < 18; hour++) {
-        const isMeSelected = selectedFriendIdsState.includes(99999);
-        const isMeBusy =
-          isMeSelected &&
-          myClasses.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
-          return classes.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        });
-        const isBothFree = !isMeBusy && !isAnyFriendBusy;
+    // 임시 일정은 "나"를 껐더라도 반영한다 - 사용자가 직접 찍은 불가 시간이라
+    // 내 대표 시간표를 빼는 것과는 의도가 다르다.
+    if (tempBusyBlocks.length > 0) sources.push(tempBusyBlocks);
 
-        if (isBothFree) {
-          if (currentStart === null) {
-            currentStart = hour;
-          }
-        } else {
-          if (currentStart !== null) {
-            list.push({
-              day,
-              startTime: currentStart,
-              endTime: hour,
-              duration: hour - currentStart,
-            });
-            currentStart = null;
-          }
-        }
-      }
-      if (currentStart !== null) {
-        list.push({
-          day,
-          startTime: currentStart,
-          endTime: 18,
-          duration: 18 - currentStart,
-        });
-      }
-    }
-    return list;
-  }, [selectedFriendIdsState, friendsMap, getFriendTimetable, myClasses]);
+    return sources;
+  }, [
+    selectedFriendIdsState,
+    includeMyTimetable,
+    myClasses,
+    friendsMap,
+    getFriendTimetable,
+    tempBusyBlocks,
+  ]);
+
+  // 공동 공강 목록 계산 (나 + 선택된 모든 친구들). 09:00~24:00, 30분 단위(#336).
+  const freeSlotsList = useMemo(() => {
+    if (selectedFriendIdsState.length === 0) return [];
+    return computeCommonFreeSlots(busySources);
+  }, [selectedFriendIdsState, busySources]);
 
   // 만나기 좋은 시간: 1시간 초과인 경우 (긴 시간 순으로 정렬)
   const goodMeetingTimes = useMemo(() => {
@@ -634,86 +668,46 @@ export default function MobileTimeTableComparePage() {
     return freeSlotsList.filter((s) => s.duration <= 1.0);
   }, [freeSlotsList]);
 
-  // "공강" 보기 시간표 생성 헬퍼
-  const freeViewClasses = useMemo(() => {
-    if (selectedFriendIdsState.length === 0) {
-      return [];
-    }
-    const result: ClassItem[] = [];
-    let idCounter = 20000;
+  // "공강" 보기 시간표 오버레이 - 목록과 같은 계산 결과에서 파생시킨다.
+  const freeViewClasses = useMemo<ClassItem[]>(
+    () =>
+      freeSlotsList.map((slot, index) => ({
+        id: 20000 + index,
+        name: "",
+        room: "",
+        day: slot.day,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        color:
+          "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
+      })),
+    [freeSlotsList],
+  );
 
-    // 선택된 친구들의 시간표들을 미리 구해둠
-    const selectedFriendsTimetables = selectedFriendIdsState
-      .filter((id) => id !== 99999)
-      .map((friendId) => {
-        const friend = friendsMap.find((f) => f.friendId === friendId);
-        return friend ? getFriendTimetable(friend) : [];
-      });
-
-    for (let day = 0; day < 5; day++) {
-      let currentBlock: {
-        startTime: number;
-        endTime: number;
-      } | null = null;
-
-      for (let hour = 9; hour < 18; hour++) {
-        const isMeSelected = selectedFriendIdsState.includes(99999);
-        const isMeBusy =
-          isMeSelected &&
-          myClasses.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
-          return classes.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        });
-
-        const isBothFree = !isMeBusy && !isAnyFriendBusy;
-
-        if (isBothFree) {
-          if (currentBlock) {
-            currentBlock.endTime = hour + 1;
-          } else {
-            currentBlock = { startTime: hour, endTime: hour + 1 };
-          }
-        } else {
-          if (currentBlock) {
-            result.push({
-              id: idCounter++,
-              name: "",
-              room: "",
-              day,
-              startTime: currentBlock.startTime,
-              endTime: currentBlock.endTime,
-              color:
-                "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
-            });
-            currentBlock = null;
-          }
-        }
-      }
-
-      if (currentBlock) {
-        result.push({
-          id: idCounter++,
-          name: "",
-          room: "",
-          day,
-          startTime: currentBlock.startTime,
-          endTime: currentBlock.endTime,
-          color:
-            "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
-        });
-      }
-    }
-    return result;
-  }, [selectedFriendIdsState, friendsMap, getFriendTimetable, myClasses]);
+  // 임시 일정 블록 (공강 오버레이와 구분되도록 회색)
+  const tempBusyClasses = useMemo<ClassItem[]>(
+    () =>
+      tempBusyBlocks.map((block, index) => ({
+        id: 30000 + index,
+        name: "내 일정",
+        room: "",
+        day: block.day,
+        startTime: block.startTime,
+        endTime: block.endTime,
+        color: "rgba(107, 114, 128, 0.35)",
+      })),
+    [tempBusyBlocks],
+  );
 
   // 현재 탭 선택에 맞는 시간표 이벤트 결정
   const activeEvents = useMemo(() => {
     if (activeTabUpper === "free") {
-      return freeViewClasses;
+      // 임시 일정을 찍는 중에는 공강 오버레이를 걷어내고 기준이 되는 내 수업만
+      // 깔아둔다 - 파란 공강 블록이 격자를 덮으면 어디를 찍는지 보이지 않는다.
+      if (isEditingTempSchedule) {
+        return includeMyTimetable ? myClasses : [];
+      }
+      return [...freeViewClasses, ...tempBusyClasses];
     }
     // activeTabUpper === "compare" 일 때: 내 시간표 + 선택된 친구들의 시간표를 겹쳐서 노출
     const isMultiCompare = selectedFriendIdsState.length >= 2;
@@ -750,10 +744,42 @@ export default function MobileTimeTableComparePage() {
     friendsMap,
     getFriendTimetable,
     freeViewClasses,
+    tempBusyClasses,
+    isEditingTempSchedule,
+    includeMyTimetable,
     myClasses,
   ]);
 
   const isFreeTab = activeTabUpper === "free";
+
+  const handleToggleMyTimetable = () => {
+    mixpanelTrack.timetableCompareAction("내 시간표 불러오기", {
+      enabled: !includeMyTimetable,
+    });
+    setIncludeMyTimetable(!includeMyTimetable);
+  };
+
+  const handleToggleTempScheduleEdit = () => {
+    const next = !isEditingTempSchedule;
+    mixpanelTrack.timetableCompareAction("임시 일정 편집", {
+      enabled: next,
+      slot_count: tempBusySlots.length,
+    });
+    if (next) {
+      // 편집 중엔 그리드가 최대한 보여야 한다.
+      setHighlightedSlot(null);
+      setSnap(0.12);
+    }
+    setIsEditingTempSchedule(next);
+  };
+
+  const handleClearTempSchedule = () => {
+    mixpanelTrack.timetableCompareAction("임시 일정 초기화", {
+      slot_count: tempBusySlots.length,
+    });
+    setTempBusySlots([]);
+  };
+
   const selectedFriendStates = useMemo(
     () =>
       selectedFriendIdsState
@@ -1019,17 +1045,60 @@ export default function MobileTimeTableComparePage() {
           </ChipSection>
         )}
 
+        {/* 3. 공강 탭 도구 모음 (내 시간표 불러오기 / 임시 일정 추가) */}
+        {isFreeTab && (
+          <FreeToolbar data-vaul-no-drag="">
+            <ToolbarButton
+              type="button"
+              $active={includeMyTimetable}
+              onClick={handleToggleMyTimetable}
+            >
+              <CalendarCheck size={16} strokeWidth={2} />
+              {includeMyTimetable ? "내 시간표 반영 중" : "내 시간표 불러오기"}
+            </ToolbarButton>
+            <ToolbarButton
+              type="button"
+              $active={isEditingTempSchedule}
+              onClick={handleToggleTempScheduleEdit}
+            >
+              <CalendarPlus size={16} strokeWidth={2} />
+              {isEditingTempSchedule ? "일정 입력 완료" : "임시 일정 추가"}
+            </ToolbarButton>
+            {tempBusySlots.length > 0 && (
+              <ToolbarGhostButton
+                type="button"
+                onClick={handleClearTempSchedule}
+              >
+                <RotateCcw size={14} strokeWidth={2} />
+                초기화
+              </ToolbarGhostButton>
+            )}
+          </FreeToolbar>
+        )}
+
+        {isEditingTempSchedule && (
+          <ToolbarHint>
+            안 되는 시간을 드래그해 표시해 주세요. 표시한 일정은 내 시간표에
+            저장되지 않고 이 화면의 계산·공유에만 쓰여요.
+          </ToolbarHint>
+        )}
+
         {/* 4. 시간표 영역 */}
         {!shouldHideGrid && (
           <GridSection>
             <TimetableGrid
               events={activeEvents}
-              highlightedSlot={highlightedSlot}
+              highlightedSlot={isEditingTempSchedule ? null : highlightedSlot}
               isCompareMode={
                 activeTabUpper === "compare" &&
                 selectedFriendIdsState.length >= 2
               }
-              isFreeMode={activeTabUpper === "free"}
+              isFreeMode={isFreeTab && !isEditingTempSchedule}
+              // 회의 시간은 야간에도 잡기 때문에 강의가 없어도 24:00까지 그린다(#336).
+              minEndHour={FREE_TIME_END_HOUR}
+              isSelectionMode={isEditingTempSchedule}
+              selectedSlots={tempBusySlots}
+              onSelectedSlotsChange={setTempBusySlots}
             />
           </GridSection>
         )}
@@ -1287,6 +1356,84 @@ const AddFriendButton = styled.button`
   svg {
     pointer-events: none;
   }
+`;
+
+const FreeToolbar = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+`;
+
+const ToolbarButton = styled.button<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  pointer-events: auto !important;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+
+  border: 1px solid
+    ${({ $active }) =>
+      $active
+        ? "var(--text-brand, #0061ff)"
+        : "var(--border-default, #e5e8eb)"};
+  background-color: ${({ $active }) =>
+    $active ? "rgba(0, 97, 255, 0.08)" : "var(--bg-subtle, #f8f9fb)"};
+  color: ${({ $active }) =>
+    $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  svg {
+    pointer-events: none;
+  }
+`;
+
+const ToolbarGhostButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto !important;
+
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  svg {
+    pointer-events: none;
+  }
+`;
+
+const ToolbarHint = styled.p`
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-tertiary, #8b95a1);
 `;
 
 const GridSection = styled.div`
