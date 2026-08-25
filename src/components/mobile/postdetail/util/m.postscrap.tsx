@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bookmark } from "lucide-react";
 import styled from "styled-components";
+import { useQueryClient } from "@tanstack/react-query";
 import { ROUTES } from "@/constants/routes";
 import { putScrap } from "@/apis/posts";
 import useUserStore from "@/stores/useUserStore";
@@ -21,6 +22,7 @@ export default function PostScrap({
   const [scrapState, setScrapState] = useState(scrap);
   const [isScrapedState, setIsScrapedState] = useState(isScrapedProp);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
 
@@ -59,6 +61,10 @@ export default function PostScrap({
         setScrapState(scrapState - 1);
         setIsScrapedState(!isScrapedState);
       }
+      // 게시글 리스트(마이페이지, 커뮤니티 목록 등)가 들고 있는 캐시된 scrap
+      // 값은 이 컴포넌트의 로컬 state와 별개라 갱신되지 않는다. 리스트를
+      // 다시 불러오도록 무효화한다.
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     } catch (error) {
       console.error("스크랩 여부 변경 실패", error);
       if (
