@@ -38,8 +38,16 @@ export default function ({
 
   const handleDocumentClick = () => {
     if (isEditing) return;
-    if (docType === "NOTICE" || docType === "DEPT_NOTICE") {
-      notice && window.open("https://" + notice.url, "_blank");
+    if (docType === "NOTICE") {
+      if (notice?.id) {
+        navigate(ROUTES.BOARD.NOTICE_DETAIL(notice.id));
+      } else if (notice?.url) {
+        window.open(
+          notice.url.startsWith("http") ? notice.url : `https://${notice.url}`,
+          "_blank",
+        );
+      }
+    } else if (docType === "DEPT_NOTICE") {
       deptNotice && window.open(deptNotice.url, "_blank");
     } else if (docType === "COUNCILNOTICE") {
       councilNotice && navigate(`/councilnoticedetail?id=${councilNotice.id}`);

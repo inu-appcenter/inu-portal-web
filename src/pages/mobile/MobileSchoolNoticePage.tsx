@@ -9,25 +9,24 @@ import "swiper/css";
 import { Notice, SearchNotice } from "@/types/notices";
 import { ApiResponse, Pagination } from "@/types/common";
 import { getNotices, searchNotices } from "@/apis/notices";
-import Box from "@/components/common/Box";
-import PostItem from "@/components/mobile/notice/PostItem";
+import SchoolNoticeItem from "@/components/mobile/notice/SchoolNoticeItem";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
   DESKTOP_SEARCH_BAR_MAX_WIDTH,
-  MOBILE_PAGE_GUTTER,
 } from "@/styles/responsive";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
+import { markNoticesSeen } from "@/utils/noticeSeenStorage";
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
@@ -45,6 +44,7 @@ const SchoolNoticeList = ({
   onNoticeView,
   onLengthChange,
 }: SchoolNoticeListProps) => {
+  const navigate = useNavigate();
   const { ref, inView } = useInView();
 
   const {
@@ -66,6 +66,8 @@ const SchoolNoticeList = ({
       const currentPage = allPages.length;
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
   useEffect(() => {
@@ -85,54 +87,63 @@ const SchoolNoticeList = ({
     }
   }, [notices.length, onLengthChange]);
 
-  // 카테고리 로딩 및 변경 시 강건하게 최상단 스크롤 리셋
-  useEffect(() => {
-    resetScrollToTop();
-  }, [category, isLoading]);
-
   return (
     <TipsCardWrapper>
       {isLoading && notices.length === 0 ? (
         Array.from({ length: 8 }).map((_, i) => (
-          <Box key={`skeleton-${i}`}>
-            <PostItem isLoading />
-          </Box>
+          <SchoolNoticeItem key={`skeleton-${i}`} isLoading />
         ))
       ) : isError ? (
         <LoadingText>데이터를 불러오는 중 오류가 발생했습니다.</LoadingText>
       ) : notices.length === 0 ? (
-        <LoadingText>게시물이 없습니다.</LoadingText>
+        committedQuery ? (
+          <EmptySearchContainer>
+            <EmptyIconCircle>
+              <Search size={32} color="var(--text-tertiary, #8b95a1)" />
+            </EmptyIconCircle>
+            <EmptyTextGroup>
+              <EmptyTitleRow>
+                <EmptyQueryHighlight>‘{committedQuery}’</EmptyQueryHighlight>
+                <EmptyTitleText>검색 결과가 없어요</EmptyTitleText>
+              </EmptyTitleRow>
+              <EmptyDescription>
+                철자를 확인하거나 다른 키워드로 검색해 보세요.
+              </EmptyDescription>
+            </EmptyTextGroup>
+          </EmptySearchContainer>
+        ) : (
+          <LoadingText>게시물이 없습니다.</LoadingText>
+        )
       ) : (
         notices.map((notice: Notice | SearchNotice, index: number) => (
-          <Box
+          <SchoolNoticeItem
             key={`${notice.id || index}`}
+            category={
+              "subCategory" in notice && notice.subCategory
+                ? `${notice.category} - ${notice.subCategory}`
+                : notice.category
+            }
+            title={notice.title}
+            writer={notice.writer}
+            date={notice.createDate}
             onClick={() => {
               onNoticeView(notice.category, notice.title);
-              if (notice.url) window.open(notice.url, "_blank");
-            }}
-          >
-            <PostItem
-              title={notice.title}
-              category={
-                "subCategory" in notice && notice.subCategory
-                  ? `${notice.category} - ${notice.subCategory}`
-                  : notice.category
+              if (notice.id) {
+                navigate(ROUTES.BOARD.NOTICE_DETAIL(notice.id));
+              } else if (notice.url) {
+                window.open(notice.url, "_blank");
               }
-              writer={notice.writer}
-              date={notice.createDate}
-              views={"view" in notice ? notice.view : undefined}
-              isEllipsis={false}
-            />
-          </Box>
+            }}
+          />
         ))
       )}
 
       {/* 무한 스크롤 트리거 */}
       <div ref={ref} style={{ height: "20px", width: "100%" }}>
         {isFetchingNextPage && (
-          <Box style={{ width: "100%", marginTop: "12px" }}>
-            <PostItem isLoading />
-          </Box>
+          <div style={{ width: "100%" }}>
+            <SchoolNoticeItem isLoading />
+          </div>
         )}
       </div>
 
@@ -145,7 +156,6 @@ const SchoolNoticeList = ({
 
 const MobileSchoolNoticePage = () => {
   const { tokenInfo } = useUserStore();
-  const [categoryList, setCategoryList] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -153,34 +163,24 @@ const MobileSchoolNoticePage = () => {
   const selectedCategory = params.get("category") || "전체";
   const committedQuery = params.get("query")?.trim() ?? "";
 
-  const [inputValue, setInputValue] = useState(committedQuery);
-
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [hasSwiped, setHasSwiped] = useState(() => {
     return localStorage.getItem("has_swiped") === "true";
   });
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [selectedCategory, committedQuery]);
+  const { data: categoryResData } = useQuery({
+    queryKey: ["categories", "school_notices"],
+    queryFn: async () => {
+      const response = await getSchoolNoticeCategories();
+      return ["전체", ...(response.data || [])];
+    },
+    staleTime: 1000 * 60 * 30,
+  });
 
-  useEffect(() => {
-    setInputValue(committedQuery);
-  }, [committedQuery]);
-
-  // 카테고리 로드
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await getSchoolNoticeCategories();
-        setCategoryList(["전체", ...response.data]);
-      } catch (error) {
-        console.error("카테고리 로드 실패", error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+  const categoryList = useMemo(
+    () => categoryResData ?? ["전체"],
+    [categoryResData],
+  );
 
   const currentIndex = useMemo(() => {
     const idx = categoryList.indexOf(selectedCategory);
@@ -225,9 +225,8 @@ const MobileSchoolNoticePage = () => {
       localStorage.setItem("has_swiped", "true");
     }
 
-    resetScrollToTop();
-
     if (nextCategory && nextCategory !== selectedCategory) {
+      resetScrollToTop();
       const nextParams = new URLSearchParams(location.search);
       nextParams.set("category", nextCategory);
       navigate(`${location.pathname}?${nextParams.toString()}`, {
@@ -236,29 +235,16 @@ const MobileSchoolNoticePage = () => {
     }
   };
 
-  const handleSearchSubmit = () => {
-    const nextQuery = inputValue.trim();
+  const handleSearch = (query: string) => {
+    const nextQuery = query.trim();
 
     if (nextQuery && nextQuery.length < SEARCH_MIN_QUERY_LENGTH) {
       window.alert(SEARCH_MIN_QUERY_MESSAGE);
       return;
     }
 
-    // 검색 수행 트래킹 (결과가 0건인 경우도 포함하여 추적)
+    resetScrollToTop();
     mixpanelTrack.searchPerformed("Notice", nextQuery, 0);
-
-    const nextParams = new URLSearchParams(location.search);
-    if (nextQuery) {
-      nextParams.set("query", nextQuery);
-    } else {
-      nextParams.delete("query");
-    }
-    nextParams.set("page", "1");
-
-    // 이미 검색 중인 상태에서 검색어를 바꾸는 것이라면 히스토리를 쌓지 않고 교체(replace)합니다.
-    navigate(`${location.pathname}?${nextParams.toString()}`, {
-      replace: !!committedQuery,
-    });
   };
 
   const handleBackToAll = useCallback(() => {
@@ -278,15 +264,33 @@ const MobileSchoolNoticePage = () => {
 
   useHeader({
     title: committedQuery ? "검색 결과" : "학교 공지사항",
+    showAlarm: false,
     hasback: true,
     onBack: committedQuery ? handleBackToAll : undefined,
-    subHeader: subHeader,
+    subHeader: !committedQuery ? subHeader : undefined,
     floatingSubHeader: true,
   });
 
+  // 목록을 열었다면 새 공지를 확인한 것으로 보고 홈 인사말의 "새 공지" 상태를 해제한다.
+  useEffect(() => {
+    markNoticesSeen();
+  }, []);
+
   return (
     <MobileSchoolNoticePageWrapper>
-      {categoryList.length > 0 && (
+      {committedQuery ? (
+        <SchoolNoticeList
+          category={selectedCategory}
+          committedQuery={committedQuery}
+          onNoticeView={(cat, t) => {
+            mixpanelTrack.noticeViewed(
+              cat,
+              t,
+              !!committedQuery,
+            );
+          }}
+        />
+      ) : (
         <Swiper
           onSwiper={setSwiperRef}
           initialSlide={currentIndex}
@@ -301,11 +305,11 @@ const MobileSchoolNoticePage = () => {
             <SwiperSlide key={category} style={{ height: "auto" }}>
               <SchoolNoticeList
                 category={category}
-                committedQuery={committedQuery}
-                onNoticeView={(noticeCat, noticeTitle) => {
+                committedQuery=""
+                onNoticeView={(cat, t) => {
                   mixpanelTrack.noticeViewed(
-                    noticeCat,
-                    noticeTitle,
+                    cat,
+                    t,
                     !!committedQuery,
                   );
                 }}
@@ -318,7 +322,7 @@ const MobileSchoolNoticePage = () => {
 
       <FloatingActionButton
         text="공지 알리미 설정"
-        icon={<Bell size={16} color="white" fill="currentColor" />}
+        icon={<Bell size={20} color="var(--text-secondary, #333d4b)" />}
         onClick={() => {
           if (!tokenInfo.accessToken) {
             if (
@@ -336,17 +340,17 @@ const MobileSchoolNoticePage = () => {
             navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
           }
         }}
-        bottom={"84px"}
+        bottom={"28px"}
       />
 
-      <FloatingSearchBar>
-        <MobilePillSearchBar
-          value={inputValue}
-          onChange={setInputValue}
-          onSubmit={handleSearchSubmit}
+      <FloatingSearchBarContainer>
+        <FloatingSearchBar
           placeholder="검색어를 입력하세요."
+          searchParamKey="query"
+          size={48}
+          onSearch={handleSearch}
         />
-      </FloatingSearchBar>
+      </FloatingSearchBarContainer>
 
       {/* 가로 스와이프 안내 시각 가이드 (스와이프 조작을 한 번도 안 한 최초 진입 시에만 노출) */}
       <SwipeChevronGuides
@@ -362,7 +366,6 @@ export default MobileSchoolNoticePage;
 
 const MobileSchoolNoticePageWrapper = styled.div`
   width: 100%;
-
   padding-bottom: 120px;
 
   .swiper-autoheight {
@@ -378,19 +381,15 @@ const MobileSchoolNoticePageWrapper = styled.div`
 const TipsCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 0 ${MOBILE_PAGE_GUTTER};
-  padding-top: 12px;
-  padding-bottom: 20px;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 20px 0;
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     width: 100%;
     margin: 0;
-    padding: 16px 0 32px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    padding: 0 0 32px;
   }
 `;
 
@@ -401,12 +400,75 @@ const LoadingText = styled.h4`
   font-size: 14px;
 `;
 
-const FloatingSearchBar = styled.div`
+const EmptySearchContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 360px;
+  width: 100%;
+  padding: 40px 16px;
+  box-sizing: border-box;
+`;
+
+const EmptyIconCircle = styled.div`
+  background: var(--bg-disabled, #e5e8eb);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+`;
+
+const EmptyTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+`;
+
+const EmptyTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: "Pretendard", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+`;
+
+const EmptyQueryHighlight = styled.span`
+  color: var(--text-brand, #0061ff);
+`;
+
+const EmptyTitleText = styled.span`
+  color: var(--text-primary, #191f28);
+`;
+
+const EmptyDescription = styled.p`
+  font-family: "Pretendard", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text-tertiary, #8b95a1);
+  margin: 0;
+`;
+
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   width: calc(100% - 32px);
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
   z-index: 120;
 
   @media ${DESKTOP_MEDIA} {

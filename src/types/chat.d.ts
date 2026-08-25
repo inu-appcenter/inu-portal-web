@@ -32,8 +32,14 @@ export interface TimetableShareExtraData {
  * 채팅 메시지
  */
 export interface ChatMessage {
-  messageId: number;
-  roomId: number;
+  /**
+   * 18자리 스노우플레이크라 Number로 담을 수 없어(MAX_SAFE_INTEGER는 16자리)
+   * 서버가 문자열로 내려준다. Number()로 바꾸면 하위 자릿수가 잘려
+   * 서로 다른 메시지가 같은 값이 되므로 문자열 그대로 다뤄야 한다.
+   * 대소 비교가 필요하면 `hooks/chat/messageSync`의 `compareMessageIds`를 쓴다.
+   */
+  messageId: string;
+  roomId: string;
   senderNickname: string;
   senderAlias: string | null;
   senderChatRoomMemberId: number;
@@ -174,7 +180,8 @@ export type GetPreviousChatMessagesResponse = ChatMessage[];
  * 공개 채팅 메시지
  */
 export interface PublicChatMessage {
-  messageId: number;
+  /** ChatMessage.messageId와 같은 이유로 문자열이다. */
+  messageId: string;
   senderNickname: string;
   content: string;
   createDate: string; // ISO 8601 날짜 문자열

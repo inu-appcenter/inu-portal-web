@@ -43,7 +43,7 @@ export default function AiPage() {
           </ModalBackGround>
         )}
         <AiGenerate />
-        <h2>made by dnltjdwls1@naver.com</h2>
+        <h2>made by support@inuappcenter.kr</h2>
       </AiContents>
     </AiPageWrapper>
   );

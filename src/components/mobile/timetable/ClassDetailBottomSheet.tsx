@@ -140,7 +140,8 @@ export default function ClassDetailBottomSheet({
   const creditsVal =
     liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
 
-  const evaluationVal = liveClass.evaluation || "";
+  const evaluationVal =
+    offering?.gradeEvaluationName || liveClass.evaluation || "";
 
   const lectureReviewUrl =
     professorName && professorName !== "-"
@@ -270,7 +271,7 @@ export default function ClassDetailBottomSheet({
                           <Pencil size={18} />
                         </EditButton>
                       )}
-                      {onDelete && (
+                      {!readOnly && !liveClass.isFriendOwned && onDelete && (
                         <DeleteButton
                           type="button"
                           onClick={() => {

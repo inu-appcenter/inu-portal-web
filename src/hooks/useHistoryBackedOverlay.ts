@@ -9,7 +9,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *   back()은 비동기이므로, close 직후 곧바로 다른 오버레이(BottomSheet 등)를 열어
  *   pushState하면 그 back()이 새 entry를 대신 pop해버려 오버레이가 열리자마자 닫히는
  *   레이스가 생긴다. popstate가 실제로 끝난 뒤에만 after를 실행해 방지한다.
+ * - 착지한 entry에 우리 플래그가 남아 있으면 그 popstate는 우리 것이 아니다.
+ *   한 문서 안에서 history를 쓰는 주체가 여럿이라(검색바, 선택모드, 시트 등)
+ *   남의 back()이 만든 pop까지 받아 오버레이가 제멋대로 닫히곤 했다.
  */
+
+const OVERLAY_STATE_KEY = "__intipOverlayOpen";
+
 export function useHistoryBackedOverlay() {
   const [isOpen, setIsOpen] = useState(false);
   const hasHistoryEntryRef = useRef(false);
@@ -17,6 +23,8 @@ export function useHistoryBackedOverlay() {
   useEffect(() => {
     const handlePopState = () => {
       if (!hasHistoryEntryRef.current) return;
+      // 우리 entry가 아직 스택에 남아 있다 = 남이 되돌린 것이다.
+      if (window.history.state?.[OVERLAY_STATE_KEY]) return;
       hasHistoryEntryRef.current = false;
       setIsOpen(false);
     };
@@ -28,7 +36,7 @@ export function useHistoryBackedOverlay() {
   const open = useCallback(() => {
     setIsOpen(true);
     window.history.pushState(
-      { ...(window.history.state ?? {}), __intipOverlayOpen: true },
+      { ...(window.history.state ?? {}), [OVERLAY_STATE_KEY]: true },
       "",
     );
     hasHistoryEntryRef.current = true;

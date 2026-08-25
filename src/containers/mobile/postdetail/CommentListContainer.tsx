@@ -69,7 +69,8 @@ export default function CommentListMobile({
         console.error("댓글 삭제 실패", error);
         if (
           axios.isAxiosError(error) &&
-          !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
           error.response
         ) {
           switch (error.response.status) {
@@ -88,12 +89,15 @@ export default function CommentListMobile({
     }
   };
 
-  const handleReplyTo = (reply: Reply) => {
+  const handleReplyTo = (targetReply: Reply, targetWriter?: string) => {
     if (!isLoggedIn) {
       navigate(ROUTES.LOGIN);
       return;
     }
-    setReplyToReply(reply);
+    setReplyToReply({
+      ...targetReply,
+      writer: targetWriter || targetReply.writer,
+    });
     setReplyToEdit(null);
     setReplyContent("");
   };
@@ -105,7 +109,7 @@ export default function CommentListMobile({
     setActiveMenuId(null);
   };
 
-  // 본인 댓글이면 수정/삭제, 타인 댓글이면 신고/차단을 노출한다.
+  // 본인 댓글이면 수정/삭제, 타인 댓글이면 신고/차단 노출
   const renderCommentMenu = (reply: Reply) => (
     <MenuWrapper>
       <MenuIconBtn
@@ -139,7 +143,6 @@ export default function CommentListMobile({
                 >
                   신고
                 </DropdownItem>
-                {/* replyId만으로 서버가 작성자를 찾아 차단하므로(#294) 익명 댓글도 차단 가능하다. */}
                 <DropdownItem
                   $danger
                   onClick={() => {
@@ -164,7 +167,7 @@ export default function CommentListMobile({
           <React.Fragment key={reply.id}>
             <CommentItemRow>
               <Avatar
-                src={`https://portal.inuappcenter.kr/images/profile/${reply.isAnonymous ? 1 : (reply.fireId || 1)}`}
+                src={`https://portal.inuappcenter.kr/images/profile/${reply.isAnonymous ? 1 : reply.fireId || 1}`}
                 alt={reply.writer || "프로필"}
               />
               <CommentContentBody>
@@ -180,9 +183,15 @@ export default function CommentListMobile({
                 <CommentText>{reply.content}</CommentText>
 
                 <CommentFooterRow>
-                  <ReplyActionBtn onClick={() => handleReplyTo(reply)}>답글 달기</ReplyActionBtn>
+                  <ReplyActionBtn onClick={() => handleReplyTo(reply)}>
+                    답글 달기
+                  </ReplyActionBtn>
                   <HeartGroup>
-                    <ReplyLikeButton id={reply.id} like={reply.like} isLiked={reply.isLiked} />
+                    <ReplyLikeButton
+                      id={reply.id}
+                      like={reply.like}
+                      isLiked={reply.isLiked}
+                    />
                   </HeartGroup>
                 </CommentFooterRow>
               </CommentContentBody>
@@ -191,7 +200,7 @@ export default function CommentListMobile({
             {reply.reReplies?.map((reReply) => (
               <ReCommentItemRow key={reReply.id}>
                 <SubAvatar
-                  src={`https://portal.inuappcenter.kr/images/profile/${reReply.isAnonymous ? 1 : (reReply.fireId || 1)}`}
+                  src={`https://portal.inuappcenter.kr/images/profile/${reReply.isAnonymous ? 1 : reReply.fireId || 1}`}
                   alt={reReply.writer || "프로필"}
                 />
                 <CommentContentBody>
@@ -207,9 +216,17 @@ export default function CommentListMobile({
                   <CommentText>{reReply.content}</CommentText>
 
                   <CommentFooterRow>
-                    <div />
+                    <ReplyActionBtn
+                      onClick={() => handleReplyTo(reply, reReply.writer)}
+                    >
+                      답글 달기
+                    </ReplyActionBtn>
                     <HeartGroup>
-                      <ReplyLikeButton id={reReply.id} like={reReply.like} isLiked={reReply.isLiked} />
+                      <ReplyLikeButton
+                        id={reReply.id}
+                        like={reReply.like}
+                        isLiked={reReply.isLiked}
+                      />
                     </HeartGroup>
                   </CommentFooterRow>
                 </CommentContentBody>
@@ -229,7 +246,7 @@ const CommentSectionWrapper = styled.div`
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   box-shadow: 0px -2px 8px 0px rgba(0, 0, 0, 0.04);
-  padding: 12px 0 80px;
+  padding: 12px 0 140px;
   display: flex;
   flex-direction: column;
   flex: 1;

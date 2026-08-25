@@ -200,17 +200,19 @@ export default function CreatePersonalChatPage() {
       </Box>
 
       <FixedFooter>
-        <SubmitButton
-          disabled={selectedFriendIds.length === 0 || createMutation.isPending}
-          onClick={handleCreate}
-          $isAdmin={isAdminMode}
-        >
-          {createMutation.isPending
-            ? "채팅방 생성 중..."
-            : isAdminMode
-              ? `공식 방 만들기 (${selectedFriendIds.length}명)`
-              : `방 만들기 (${selectedFriendIds.length}명)`}
-        </SubmitButton>
+        <FixedFooterContent>
+          <SubmitButton
+            disabled={selectedFriendIds.length === 0 || createMutation.isPending}
+            onClick={handleCreate}
+            $isAdmin={isAdminMode}
+          >
+            {createMutation.isPending
+              ? "채팅방 생성 중..."
+              : isAdminMode
+                ? `공식 방 만들기 (${selectedFriendIds.length}명)`
+                : `방 만들기 (${selectedFriendIds.length}명)`}
+          </SubmitButton>
+        </FixedFooterContent>
       </FixedFooter>
     </Container>
   );
@@ -320,10 +322,25 @@ const FixedFooter = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
+  width: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  z-index: 100;
+  pointer-events: none;
+`;
+
+const FixedFooterContent = styled.div`
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
   padding: 16px ${MOBILE_PAGE_GUTTER}
     calc(32px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(to top, white 80%, transparent);
-  z-index: 100;
+  box-sizing: border-box;
+  pointer-events: auto;
 `;
 
 const SubmitButton = styled.button<{ $isAdmin?: boolean }>`
