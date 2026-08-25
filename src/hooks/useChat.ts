@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Client } from "@stomp/stompjs";
 import {
-  getPreviousMessages,
   joinChatRoom,
+  getChatMessages,
+  getPreviousMessages,
   sendImageMessage,
 } from "../apis/chat";
 import {
@@ -15,36 +17,7 @@ import { ChatMessage, ChatRoom } from "@/types/chat";
 /** 읽음 상태 브로드캐스트로 인한 재동기화의 최소 간격(ms) */
 const READ_SYNC_MIN_INTERVAL = 1000;
 
-/**
- * 서버 스냅샷을 로컬 메시지 목록에 합친다.
- *
- * 통째로 교체하면 (1) 무한스크롤로 불러온 과거 메시지가 날아가고,
- * (2) 동기화가 도는 사이 소켓으로 들어온 새 메시지가 옛 스냅샷에 덮여 사라진다.
- * messageId(TSID)는 서버에서 시간순으로 증가하므로 그대로 정렬 키로 쓴다.
- *
- * 단, 서버는 최근 50개까지만 돌려주므로(Redis 캐시 trim) 자리를 비운 사이
- * 50개 넘게 쌓였다면 기존 목록과 스냅샷이 겹치지 않는다. 그때 그냥 이어붙이면
- * 중간이 빈 채로 남고 무한스크롤로도 메울 수 없으니, 스냅샷만 남기고 다시 시작한다.
- */
-const mergeMessages = (
-  prev: ChatMessage[],
-  incoming: ChatMessage[],
-): ChatMessage[] => {
-  if (incoming.length === 0) return prev;
-
-  const merged = new Map<number, ChatMessage>();
-  for (const message of prev) merged.set(message.messageId, message);
-  // 서버 값이 우선이다(unreadCount 등 최신 상태를 담고 있다).
-  for (const message of incoming) merged.set(message.messageId, message);
-
-  return [...merged.values()].sort((a, b) => a.messageId - b.messageId);
-};
-
-const oldestMessageId = (messages: ChatMessage[]): number =>
-  messages.reduce(
-    (min, m) => (m.messageId < min ? m.messageId : min),
-    messages[0].messageId,
-  );
+import { mergeMessages, oldestMessageId, compareMessageIds } from "./chat/messageSync";
 
 export const useChat = (roomId: string) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -54,9 +27,8 @@ export const useChat = (roomId: string) => {
   const [isFetchingPrevious, setIsFetchingPrevious] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  /** 입장(join + 초기 로드)을 마친 방. 소켓은 이 방에 대해서만 연결한다. */
-  const [enteredRoomId, setEnteredRoomId] = useState<string | null>(null);
-
+  const [isStompConnected, setIsStompConnected] = useState(false);
+  const clientRef = useRef<Client | null>(null);
   const { tokenInfo } = useUserStore();
 
   const isSyncingRef = useRef(false);
@@ -65,7 +37,7 @@ export const useChat = (roomId: string) => {
 
   // 동기화는 setMessages 바깥(비동기 콜백)에서 끊김 여부를 판단해야 하므로
   // 현재 가진 마지막 messageId를 따로 들고 있는다.
-  const newestMessageIdRef = useRef<number | null>(null);
+  const newestMessageIdRef = useRef<string | null>(null);
   useEffect(() => {
     newestMessageIdRef.current =
       messages.length > 0 ? messages[messages.length - 1].messageId : null;
@@ -130,10 +102,12 @@ export const useChat = (roomId: string) => {
           // 그대로 이어붙이면 중간이 빈 채로 남고 무한스크롤로도 메울 수 없으므로,
           // 스냅샷만 남기고 과거 로딩을 다시 연다.
           const newestKnownId = newestMessageIdRef.current;
+          const oldestIncomingId = oldestMessageId(incoming);
           const hasGap =
             incoming.length > 0 &&
             newestKnownId !== null &&
-            oldestMessageId(incoming) > newestKnownId;
+            oldestIncomingId !== null &&
+            compareMessageIds(oldestIncomingId, newestKnownId) > 0;
 
           if (hasGap) setHasMore(true);
           setMessages((prev) =>
@@ -236,24 +210,28 @@ export const useChat = (roomId: string) => {
     const enterChatRoom = async () => {
       try {
         try {
-          const joined = unwrapResponse<ChatRoom>(await joinChatRoom(roomId));
-          if (joined?.myHash) setMyHash(joined.myHash);
+          const joinResponse: any = await joinChatRoom(roomId);
+          const joinData = joinResponse.data || joinResponse;
+          if (joinData.myHash) {
+            setMyHash(joinData.myHash);
+          }
         } catch (err: any) {
-          // 409 = 이미 참여 중. 응답에 담긴 myHash만 챙기고 정상 진행한다.
-          if (err.response?.status !== 409) throw err;
-          const hash = err.response?.data?.data?.myHash;
-          if (hash) setMyHash(hash);
+          // 상태 코드 409 예외 처리
+          if (err.response?.status === 409) {
+            if (err.response?.data?.data?.myHash) {
+              setMyHash(err.response.data.data.myHash);
+            }
+          } else {
+            throw err;
+          }
         }
 
         await syncRoom();
         connectStomp();
       } catch (err: any) {
-        if (cancelled) return;
         console.error("채팅방 입장에 실패했습니다:", err);
-        setError(
-          err.response?.data?.msg ||
-            "채팅방 입장에 실패했습니다. 다시 시도해주세요.",
-        );
+        const serverMsg = err.response?.data?.msg;
+        setError(serverMsg || "채팅방 입장에 실패했습니다. 다시 시도해주세요.");
       } finally {
         if (!disposed) setIsLoading(false);
       }
@@ -304,41 +282,41 @@ export const useChat = (roomId: string) => {
     };
   }, [roomId, syncRoom, tokenInfo.accessToken]);
 
-  const sendMessage = useCallback(
-    (
-      content: string,
-      isAnonymous: boolean,
-      imageFiles: File[] = [],
-      onProgress?: (progressEvent: any) => void,
-      messageType?: string,
-      extraData?: string,
-    ): boolean => {
-      if (imageFiles.length > 0 && roomInfo?.id) {
-        void sendImages(
-          roomInfo.id,
-          content,
-          isAnonymous,
-          imageFiles,
-          onProgress,
-        );
-        return true;
-      }
-
-      if (!publish(content, isAnonymous, messageType, extraData)) {
-        // 연결이 끊긴 순간의 전송을 버리지 않고 재연결 후 흘려보낸다.
-        outbox.enqueue({ content, isAnonymous, messageType, extraData });
-        reconnect();
-      }
-
+  const sendMessage = (
+    content: string,
+    isAnonymous: boolean,
+    imageFiles: File[] = [],
+    onProgress?: (progressEvent: any) => void,
+    messageType?: string,
+    extraData?: string,
+  ): boolean => {
+    if (imageFiles.length > 0 && roomInfo?.id) {
+      sendImageMessage(
+        roomInfo.id,
+        content,
+        isAnonymous,
+        imageFiles,
+        onProgress,
+      ) // 변경: 파일 배열 및 프로그레스 전달
+        .then((response) => {
+          console.log("이미지 메시지 전송 완료:", response);
+        })
+        .catch((error) => {
+          console.error("이미지 메시지 전송 실패:", error);
+          window.alert("이미지 메시지 전송에 실패했습니다.");
+        });
       return true;
-    },
-    [roomInfo?.id, sendImages, publish, outbox, reconnect],
-  );
-
-  // ------------------------------------------------------------ 이전 메시지
-
-  /** 스크롤 이벤트가 연달아 들어와도 한 번만 요청하도록 막는다. */
-  const isFetchingPreviousRef = useRef(false);
+    } else {
+      return publish(
+        clientRef.current,
+        roomId,
+        content,
+        isAnonymous,
+        messageType,
+        extraData,
+      );
+    }
+  };
 
   const fetchPreviousMessages = useCallback(async () => {
     const firstMsg = messages[0];
@@ -349,12 +327,10 @@ export const useChat = (roomId: string) => {
 
     setIsFetchingPrevious(true);
     try {
-      const older =
-        unwrapResponse<ChatMessage[]>(
-          await getPreviousMessages(roomId, oldestLoaded.messageId),
-        ) ?? [];
+      const response: any = await getPreviousMessages(roomId, lastId);
+      const actualMessages = response.data || response;
 
-      if (older.length === 0) {
+      if (!actualMessages || actualMessages.length === 0) {
         setHasMore(false);
       } else {
         setMessages((prev) => mergeMessages(prev, actualMessages));
@@ -365,10 +341,9 @@ export const useChat = (roomId: string) => {
       }
     } catch (err) {
       console.error("이전 메시지 로드 실패:", err);
-      // 무한 루프 방지를 위해 더 이상 요청하지 않는다.
+      // 2. 에러 발생 시 무한 루프 방지를 위해 잠시 중단하거나 hasMore를 false로 처리
       setHasMore(false);
     } finally {
-      isFetchingPreviousRef.current = false;
       setIsFetchingPrevious(false);
     }
   }, [roomId, messages, isFetchingPrevious, hasMore]);
@@ -386,7 +361,7 @@ export const useChat = (roomId: string) => {
     error,
     myHash,
     roomInfo,
-    isStompConnected: isConnected,
+    isStompConnected,
     fetchPreviousMessages,
     refreshRoom,
   };
