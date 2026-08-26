@@ -594,11 +594,9 @@ const MobileTimeTablePage = () => {
     alert(
       "PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다.\nhttps://intip.inuappcenter.kr",
     );
-    if (shouldOpenSimulatorInNewWebView) {
-      appBridge.navigateTo(SIMULATOR_URL);
-    } else {
+    
       navigate(ROUTES.TIMETABLE.SIMULATOR);
-    }
+    
   };
 
   const handleLoginRequiredClick = () => {
