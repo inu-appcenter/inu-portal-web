@@ -1,10 +1,20 @@
 import styled from "styled-components";
-import { AlertTriangle, Check, ExternalLink, Settings2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ExternalLink,
+  Megaphone,
+  Settings2,
+} from "lucide-react";
 import type { GraduationEvaluation } from "@/types/graduation";
 import type { ResolvedGraduationRule } from "@/utils/graduationRequirements";
 import { MAX_GPA } from "@/utils/graduationRequirements";
 import type { GraduationProfile } from "./GraduationSettingModal";
 import findTitleOrCode from "@/utils/findTitleOrCode";
+
+/** 졸업요건 변경 제보 구글폼 */
+const REQUIREMENT_REPORT_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform";
 
 interface GraduationRequirementCardProps {
   profile: GraduationProfile;
@@ -228,6 +238,21 @@ export default function GraduationRequirementCard({
               <ExternalLink size={12} />
             </SourceLink>
           )}
+
+          <ReportSection>
+            <ReportText>
+              졸업요건은 학사 개편이나 학과 공지에 따라 바뀔 수 있어요. 실제
+              규정과 다른 부분을 발견하면 알려주시면 반영할게요.
+            </ReportText>
+            <ReportButton
+              href={REQUIREMENT_REPORT_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Megaphone size={14} />
+              <span>졸업요건 변경 제보하기</span>
+            </ReportButton>
+          </ReportSection>
         </>
       )}
     </Card>
@@ -476,6 +501,38 @@ const NoticeList = styled.ul`
     font-size: 12px;
     line-height: 18px;
     color: var(--text-tertiary, #8b95a1);
+  }
+`;
+
+const ReportSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-default, #e5e8eb);
+`;
+
+const ReportText = styled.p`
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-warning, #ff4d00);
+`;
+
+const ReportButton = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background-color: var(--bg-subtle, #f8f9fb);
+  font-size: 13px;
+  color: var(--text-brand, #0061ff);
+  text-decoration: none;
+
+  svg {
+    flex-shrink: 0;
   }
 `;
 

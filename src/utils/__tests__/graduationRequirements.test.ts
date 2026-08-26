@@ -112,7 +112,8 @@ describe("evaluateGraduation", () => {
 
     expect(statuses["글쓰기이론과실제"]).toBe("DONE");
     expect(statuses["Academic English"]).toBe("DONE");
-    expect(statuses["대학영어회화"]).toBe("MISSING");
+    expect(statuses["대학영어회화1"]).toBe("MISSING");
+    expect(statuses["대학영어회화2"]).toBe("MISSING");
     expect(statuses["컴퓨팅적사고와 SW"]).toBe("MISSING");
     expect(statuses["대학수학"]).toBe("MISSING");
   });

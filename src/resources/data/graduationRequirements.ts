@@ -165,8 +165,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -190,8 +195,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "국어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -226,8 +236,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -262,8 +277,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -298,8 +318,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -485,8 +510,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -521,8 +551,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -562,8 +597,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -709,8 +749,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -740,8 +785,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -776,8 +826,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -819,8 +874,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -956,8 +1016,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "국어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -992,8 +1057,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1035,8 +1105,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1078,8 +1153,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1225,8 +1305,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -1255,8 +1340,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1291,8 +1381,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1332,8 +1427,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1373,8 +1473,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화1,2",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1421,8 +1526,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화1,2",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1474,8 +1584,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1517,8 +1632,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1570,8 +1690,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1613,8 +1738,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1656,8 +1786,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1699,8 +1834,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1747,8 +1887,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1790,8 +1935,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -1982,8 +2132,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -2012,8 +2167,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "국어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2053,8 +2213,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2094,8 +2259,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2142,8 +2312,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2190,8 +2365,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2377,8 +2557,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -2412,8 +2597,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2452,8 +2642,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2497,8 +2692,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2542,8 +2742,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2595,8 +2800,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2649,8 +2859,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2702,8 +2917,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2755,8 +2975,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2808,8 +3033,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2860,8 +3090,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2901,8 +3136,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2952,8 +3192,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -2994,8 +3239,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3053,8 +3303,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3250,8 +3505,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -3285,8 +3545,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3326,8 +3591,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3372,8 +3642,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3419,8 +3694,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3473,8 +3753,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3521,8 +3806,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3574,8 +3864,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3622,8 +3917,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3670,8 +3970,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3719,8 +4024,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3762,8 +4072,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3838,8 +4153,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3881,8 +4201,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3924,8 +4249,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -3967,8 +4297,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -4010,8 +4345,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4058,8 +4398,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화1,2",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4106,8 +4451,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4159,8 +4509,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -4230,8 +4585,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4273,8 +4633,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4316,8 +4681,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4364,8 +4734,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4417,8 +4792,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4470,8 +4850,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4517,8 +4902,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4561,8 +4951,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4605,8 +5000,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4656,8 +5056,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4709,8 +5114,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4762,8 +5172,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4815,8 +5230,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4868,8 +5288,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4911,8 +5336,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4954,8 +5384,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -4997,8 +5432,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
@@ -5050,8 +5490,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화1,2",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
           ],
@@ -5301,8 +5746,13 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "영어",
             },
             {
-              courseName: "대학영어회화",
-              credits: 2,
+              courseName: "대학영어회화1",
+              credits: 1,
+              category: "영어",
+            },
+            {
+              courseName: "대학영어회화2",
+              credits: 1,
               category: "영어",
             },
             {
