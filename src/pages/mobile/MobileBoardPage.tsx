@@ -1,3 +1,16 @@
+/**
+ * ⚠️ 이 페이지는 라우팅되어 있지 않다 (dead code).
+ *
+ * `7c93a433 Feat: 새로운 tips 페이지`에서 커뮤니티 목록이 MobileTipsPage로
+ * 넘어가면서 router.tsx에서 빠졌고, 지금은 아무 데서도 import하지 않는다.
+ * PR #340(App Store 가이드라인 1.2 대응)이 신고/차단/숨기기 메뉴를 여기(정확히는
+ * 이 페이지만 쓰는 TipsListContainer)에 붙이는 바람에 앱에서는 그 기능이 전혀
+ * 노출되지 않았고, 같은 사유로 재차 리젝됐다.
+ *
+ * 목록 화면에 무언가를 추가할 일이 있으면 실제로 라우팅되는
+ * `src/pages/mobile/MobileTipsPage.tsx`를 고쳐야 한다. 신고/차단/숨기기는
+ * `src/hooks/usePostModeration.tsx`로 공용화돼 있다.
+ */
 import styled from "styled-components";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";

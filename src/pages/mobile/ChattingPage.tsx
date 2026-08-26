@@ -46,11 +46,59 @@ import { ROUTES } from "@/constants/routes";
 import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleModal";
 import { useQuery } from "@tanstack/react-query";
 import { ChatRoomMemberResponseDto } from "@/types/chat";
+import useChatModeration from "@/hooks/useChatModeration";
 
 interface UploadingMessage {
   tempId: string;
   previewUrl: string;
   progress: number;
+}
+
+const LONG_PRESS_MS = 450;
+
+/**
+ * 메시지 길게 누르기 제스처.
+ *
+ * 채팅 메시지의 신고/차단/숨기기 시트를 여는 진입점이다 — 말풍선에 버튼을
+ * 붙이면 대화 화면이 지저분해지므로, 메신저 앱의 관례대로 롱프레스로 연다.
+ * (App Store 가이드라인 1.2 대응)
+ */
+function useLongPress(onLongPress: () => void) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const firedRef = useRef(false);
+
+  const clear = React.useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => clear, [clear]);
+
+  return {
+    onPointerDown: () => {
+      firedRef.current = false;
+      clear();
+      timerRef.current = setTimeout(() => {
+        firedRef.current = true;
+        onLongPress();
+      }, LONG_PRESS_MS);
+    },
+    onPointerUp: clear,
+    onPointerLeave: clear,
+    onPointerCancel: clear,
+    // 롱프레스로 시트를 연 뒤 따라오는 click(이미지 확대 등)은 삼킨다.
+    onClickCapture: (event: React.MouseEvent) => {
+      if (firedRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        firedRef.current = false;
+      }
+    },
+    // iOS WebView의 기본 길게누르기 메뉴(복사/공유)가 시트를 가리지 않게 한다.
+    onContextMenu: (event: React.MouseEvent) => event.preventDefault(),
+  };
 }
 
 export default function ChattingPage() {
@@ -98,6 +146,26 @@ export default function ChattingPage() {
     fetchPreviousMessages,
     refreshRoom,
   } = useChat(roomId ?? "");
+
+  // 채팅 메시지 신고/차단/숨기기 (App Store 가이드라인 1.2 — UGC).
+  // 메시지를 길게 누르면 시트가 열린다.
+  const chatModeration = useChatModeration();
+
+  const handleMessageLongPress = React.useCallback(
+    (message: ChatMessage, isMine: boolean) => {
+      if (!roomId || !message.messageId) return;
+      chatModeration.openFor({
+        roomId,
+        messageId: message.messageId,
+        senderNickname:
+          message.senderAlias || message.senderNickname || "알 수 없음",
+        senderChatRoomMemberId: message.senderChatRoomMemberId,
+        content: message.content,
+        isMine,
+      });
+    },
+    [roomId, chatModeration.openFor],
+  );
 
   const [searchParams, setSearchParams] = useSearchParams();
   const sharePayloadParam = searchParams.get("sharePayload");
@@ -313,8 +381,16 @@ export default function ChattingPage() {
       onClick: handleFindFreeTime,
     });
 
+    // App Store 가이드라인 1.2 — 신고 수단은 항상 보이는 곳에 있어야 한다.
+    // 개별 메시지는 길게 눌러 신고하고, 방 전체는 여기서 신고한다.
+    items.push({
+      label: "채팅방 신고하기",
+      onClick: () =>
+        chatModeration.openRoomReport(roomId ?? "", roomInfo?.title ?? "채팅방"),
+    });
+
     return items;
-  }, [roomInfo, isAdmin, members, friends]);
+  }, [roomInfo, isAdmin, members, friends, roomId, chatModeration.openRoomReport]);
 
   useHeader({
     title: headerTitle,
@@ -327,10 +403,18 @@ export default function ChattingPage() {
   const scrollHeightRef = useRef<number>(0);
   const lastScrollTopRef = useRef<number>(0);
 
+  // 신고/차단/숨김 처리한 메시지는 서버 검토를 기다리지 않고 즉시 화면에서 뺀다
+  // (App Store 가이드라인 1.2 — UGC). 페이지네이션·스크롤 계산은 원본 messages를
+  // 그대로 쓰고, 렌더 목록만 걸러낸다.
+  const visibleMessages = React.useMemo(
+    () => chatModeration.filterHidden(messages),
+    [messages, chatModeration.filterHidden],
+  );
+
   // 메시지 역순 메모이제이션
   const reversedMessages = React.useMemo(
-    () => [...messages].reverse(),
-    [messages],
+    () => [...visibleMessages].reverse(),
+    [visibleMessages],
   );
 
   // 스크롤 이벤트로 이전 메시지 트리거 감지
@@ -666,12 +750,12 @@ export default function ChattingPage() {
 
         {/* column-reverse를 위해 메시지를 역순으로 렌더링 */}
         {reversedMessages.map((msg, index) => {
-          const originalIndex = messages.length - 1 - index;
+          const originalIndex = visibleMessages.length - 1 - index;
           const prevMsg =
-            originalIndex > 0 ? messages[originalIndex - 1] : null;
+            originalIndex > 0 ? visibleMessages[originalIndex - 1] : null;
           const nextMsg =
-            originalIndex < messages.length - 1
-              ? messages[originalIndex + 1]
+            originalIndex < visibleMessages.length - 1
+              ? visibleMessages[originalIndex + 1]
               : null;
 
           const showDateLine =
@@ -708,6 +792,7 @@ export default function ChattingPage() {
                   onImageClick={handleImageClick}
                   showTime={showTime}
                   members={members}
+                  onLongPress={() => handleMessageLongPress(msg, true)}
                 />
               ) : (
                 <ChatItemOtherPerson
@@ -717,6 +802,8 @@ export default function ChattingPage() {
                   showName={showName}
                   showTime={showTime}
                   members={members}
+                  onLongPress={() => handleMessageLongPress(msg, false)}
+                  onSenderClick={handleOpenProfileFromImage}
                 />
               )}
               {showDateLine && (
@@ -796,6 +883,9 @@ export default function ChattingPage() {
         senderId={activeImageMeta?.senderChatRoomMemberId}
         onSenderClick={handleOpenProfileFromImage}
       />
+
+      {/* 메시지 롱프레스 → 신고 / 작성자 차단 / 숨기기 (App Store 가이드라인 1.2) */}
+      {chatModeration.sheets}
 
       <UserProfileModal
         chatRoomMemberId={selectedChatRoomMemberId}
@@ -997,6 +1087,7 @@ const ProfileImage = styled.img`
   height: 36px;
   border-radius: 50%;
   margin-right: 12px;
+  cursor: pointer;
 `;
 
 const MessageContent = styled.div`
@@ -1009,12 +1100,20 @@ const SenderName = styled.span`
   font-weight: 500;
   color: #1c1c1e;
   margin-bottom: 4px;
+  /* 눌러서 프로필(→ 차단)을 열 수 있다는 걸 드러낸다. */
+  cursor: pointer;
+  width: fit-content;
 `;
 
 const MessageBubble = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  /* 길게 누르면 신고/차단 시트가 뜬다 — iOS WebView의 기본 텍스트 선택·복사
+     말풍선이 대신 뜨면 시트를 가리므로 막는다. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 `;
 
 const Bubble = styled.div<{ $bgColor: string }>`
@@ -1060,6 +1159,8 @@ const ChatItemOtherPerson = ({
   showName,
   showTime,
   members,
+  onLongPress,
+  onSenderClick,
 }: {
   message: ChatMessage;
   onImageClick: (
@@ -1072,7 +1173,10 @@ const ChatItemOtherPerson = ({
   showName: boolean;
   showTime: boolean;
   members: ChatRoomMemberResponseDto[];
+  onLongPress: () => void;
+  onSenderClick: (chatRoomMemberId: number) => void;
 }) => {
+  const longPress = useLongPress(onLongPress);
   const getDisplayName = () => {
     const matched = members.find(
       (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
@@ -1103,10 +1207,25 @@ const ChatItemOtherPerson = ({
 
   return (
     <MessageContainer>
-      {userImageUrl && <ProfileImage src={userImageUrl} alt="profile" />}
+      {userImageUrl && (
+        <ProfileImage
+          src={userImageUrl}
+          alt="profile"
+          onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+        />
+      )}
       <MessageContent>
-        {showName && <SenderName>{getDisplayName()}</SenderName>}
-        <MessageBubble>
+        {showName && (
+          // 보낸 사람 이름을 누르면 프로필이 열리고, 거기서 차단할 수 있다.
+          <SenderName
+            role="button"
+            tabIndex={0}
+            onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+          >
+            {getDisplayName()}
+          </SenderName>
+        )}
+        <MessageBubble {...longPress}>
           <div
             style={{
               display: "flex",
@@ -1162,6 +1281,7 @@ const ChatItemMy = ({
   onImageClick,
   showTime,
   members,
+  onLongPress,
 }: {
   message: ChatMessage;
   onImageClick: (
@@ -1172,7 +1292,9 @@ const ChatItemMy = ({
   ) => void;
   showTime: boolean;
   members: ChatRoomMemberResponseDto[];
+  onLongPress: () => void;
 }) => {
+  const longPress = useLongPress(onLongPress);
   const getDisplayName = () => {
     const matched = members.find(
       (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
@@ -1203,7 +1325,7 @@ const ChatItemMy = ({
   return (
     <MyMessageContainer>
       <MyMessageContent>
-        <MessageBubble>
+        <MessageBubble {...longPress}>
           {(message.unreadCount > 0 || showTime) && (
             <TimeArea style={{ alignItems: "flex-end" }}>
               {message.unreadCount > 0 && (
