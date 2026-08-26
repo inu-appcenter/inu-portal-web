@@ -26,13 +26,11 @@ import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
-import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
-import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
+
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
-const SIMULATOR_URL = "https://ultimate-sugang-web.inuappcenter.kr";
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 
 // --- SVG Icons ---
@@ -449,9 +447,7 @@ const MobileTimeTablePage = () => {
   }, [activeTimetable, searchParams, setSearchParams, navigate]);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
-  const appEnvironment = getAppEnvironmentStatus();
-  const shouldOpenSimulatorInNewWebView =
-    supportsMultiWebView() && appEnvironment === "NEW_APP";
+
 
   const headerRight = useMemo(() => {
     if (!isLoggedIn || !activeTimetable) return null;
@@ -588,15 +584,13 @@ const MobileTimeTablePage = () => {
 
   // 모의 수강신청 버튼 클릭 처리 핸들러
   const handleSimulatorClick = () => {
-    mixpanelTrack.timetableFeatureClicked("모의 수강신청", "시간표 홈", {
-      open_method: shouldOpenSimulatorInNewWebView ? "새 웹뷰" : "내부 라우트",
-    });
+    mixpanelTrack.timetableFeatureClicked("모의 수강신청", "시간표 홈");
     alert(
       "PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다.\nhttps://intip.inuappcenter.kr",
     );
-    
-      navigate(ROUTES.TIMETABLE.SIMULATOR);
-    
+
+    navigate(ROUTES.TIMETABLE.SIMULATOR);
+
   };
 
   const handleLoginRequiredClick = () => {
@@ -784,7 +778,7 @@ const MobileTimeTablePage = () => {
                     onError: (error: any) => {
                       alert(
                         error.response?.data?.msg ||
-                          "시간표 이름 변경에 실패했습니다.",
+                        "시간표 이름 변경에 실패했습니다.",
                       );
                     },
                   },
@@ -826,7 +820,7 @@ const MobileTimeTablePage = () => {
                   onError: (error: any) => {
                     alert(
                       error.response?.data?.msg ||
-                        "시간표 삭제에 실패했습니다.",
+                      "시간표 삭제에 실패했습니다.",
                     );
                   },
                 });
