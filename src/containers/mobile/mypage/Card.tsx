@@ -12,6 +12,7 @@ import Divider from "@/components/common/Divider";
 import { Fragment } from "react";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { formatTimeAgo } from "@/utils/date";
+import usePostModeration from "@/hooks/usePostModeration";
 
 interface TipsCardContainerProps {
   post: Post[];
@@ -24,6 +25,10 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
   const [showModal, setShowModal] = useState(false);
   const [activePostId, setActivePostId] = useState<number | null>(null);
   const triggerReset = useResetTipsStore((state) => state.triggerReset);
+  // 좋아요 목록은 남이 쓴 글이라 신고/차단/숨기기가 필요하다
+  // (App Store 가이드라인 1.2 — UGC). 내가 쓴 글 목록은 X 버튼으로 바로 삭제한다.
+  const moderation = usePostModeration();
+  const visiblePosts = moderation.filterHidden(post);
 
   const handleDocumentClick = (id: number) => {
     navigate(ROUTES.BOARD.TIPS_DETAIL(id));
@@ -66,10 +71,10 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
   return (
     <CardWrapper>
       <p>
-        <span>All</span> {post.length}
+        <span>All</span> {visiblePosts.length}
       </p>
       <Box>
-        {post.map((p, index) => (
+        {visiblePosts.map((p, index) => (
           <Fragment key={p.id}>
             <RelativeWrapper>
               <XButton
@@ -85,10 +90,13 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
                 category={p.category}
                 date={formatTimeAgo(p.createDate)}
                 writer={p.writer}
+                menuSlot={
+                  type === "like" ? moderation.renderMenu(p) : undefined
+                }
                 onClick={() => handleDocumentClick(p.id)}
               />
             </RelativeWrapper>
-            {index < post.length - 1 && <Divider margin="0" />}
+            {index < visiblePosts.length - 1 && <Divider margin="0" />}
           </Fragment>
         ))}
       </Box>
@@ -110,6 +118,7 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
           </ModalWrapper>
         </ModalOverlay>
       )}
+      {moderation.modals}
     </CardWrapper>
   );
 }
