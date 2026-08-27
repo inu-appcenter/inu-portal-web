@@ -164,6 +164,16 @@ export const readNotification = async (
   return response.data;
 };
 
+// 푸시 탭 진입용 읽음 처리: 인증된 회원과 fcmMessageId로 개인 알림 행을 찾는다.
+export const readNotificationByFcmMessageId = async (
+  fcmMessageId: number,
+): Promise<ApiResponse<null>> => {
+  const response = await tokenInstance.patch<ApiResponse<null>>(
+    `/api/tokens/notifications/fcm-messages/${fcmMessageId}/read`,
+  );
+  return response.data;
+};
+
 // 안 읽은 알림 존재 여부 확인
 export const getUnreadStatus = async (): Promise<ApiResponse<boolean>> => {
   const response = await tokenInstance.get<ApiResponse<boolean>>(

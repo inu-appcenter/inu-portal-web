@@ -2,6 +2,7 @@
 // (npm 패키지/레지스트리 없음). CLAUDE.md 참고.
 import { createWebChannel, type WebChannel } from "../../packages/intip-bridge/src/adapters/web";
 import { handleBackRequest } from "./nativeBackRequest";
+import { readNotificationByFcmMessageId } from "@/apis/members";
 
 /**
  * 신 Expo 셸(intip-mobile-app)과의 단일 PlatformChannel.
@@ -38,6 +39,19 @@ if (bridgeChannel) {
   bridgeChannel.on("checkBack", (_value, msg) => {
     bridgeChannel?.reply(msg, "backResult", { handled: handleBackRequest() });
   });
+
+  // 푸시 탭 진입: fcmMessageId를 서버에 읽음 처리로 보낸 뒤, 안읽음 뱃지를
+  // 갱신하도록 알린다.
+  bridgeChannel.on("notificationOpened", ({ fcmMessageId }) => {
+    if (fcmMessageId === undefined) return;
+    void readNotificationByFcmMessageId(fcmMessageId)
+      .then(() => window.dispatchEvent(new Event("intip:notification-opened")))
+      .catch((error) => console.error("Failed to mark opened notification as read", error));
+  });
+
+  // This must stay after every NativeToWeb handler registration. The native
+  // shell holds one-shot notificationOpened events until it receives this ACK.
+  bridgeChannel.send("bridgeReady");
 
   // "tokenInfoUpdated"(네이티브가 자체 리프레시한 JWT 반영)는 여기서 결선하지 않는다.
   // useUserStore.ts가 담당한다 - 여기서 useUserStore를 import하면
