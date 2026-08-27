@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
@@ -20,7 +20,23 @@ import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
+import GradeCalculatorIntroSheet from "@/components/mobile/timetable/GradeCalculatorIntroSheet";
+import GraduationRequirementCard from "@/components/mobile/timetable/GraduationRequirementCard";
+import GraduationSettingModal, {
+  type GraduationProfile,
+} from "@/components/mobile/timetable/GraduationSettingModal";
 import { isMajorCompletion } from "@/utils/parseSmartCampusGrades";
+import {
+  calculateRequiredAverageGpa,
+  evaluateGraduation,
+  parseEntryYearFromStudentId,
+  resolveGraduationRule,
+} from "@/utils/graduationRequirements";
+import { findDepartmentCodeByName } from "@/utils/departmentOptions";
+import {
+  hasSeenGradeCalculatorIntro,
+  markGradeCalculatorIntroSeen,
+} from "@/utils/gradeCalculatorIntro";
 import type { ResolvedGradeRow } from "@/types/gradeImport";
 import type { Term } from "@/types/timetables";
 import { TERM_LABELS, TERM_ORDER, formatSemester } from "@/utils/semester";
@@ -169,10 +185,23 @@ const isPassed = (sub: Subject) =>
 // v2: 학기 키가 "N학년 M학기" 프리셋 라벨에서 실제 "연도-학기"로 바뀌어 예전 캐시와 호환되지 않는다.
 const LOCAL_STORAGE_KEY = "intip_grade_calculator_data_v2";
 
-const serializeGradeData = (data: SemestersData, targetCredits: number) =>
-  JSON.stringify({ semestersData: data, targetCredits });
+
+const serializeGradeData = (
+  data: SemestersData,
+  targetCredits: number,
+  graduationProfile: GraduationProfile,
+) => JSON.stringify({ semestersData: data, targetCredits, graduationProfile });
+
+
 
 const serializeSubjects = (subjects: Subject[]) => JSON.stringify(subjects);
+
+
+const EMPTY_GRADUATION_PROFILE: GraduationProfile = {
+  departmentCode: "",
+  entryYear: null,
+  targetGpa: null,
+};
 
 // tb.events는 "미팅(요일별 시간 블록) 1개당 1행"이라 주 2회 이상 만나는 과목은
 // 이벤트가 여러 개로 쪼개져 있다. itemId(같은 요소면 동일)로 묶어 과목당 하나만 남긴다.
@@ -248,7 +277,21 @@ export default function MobileGradeCalculatorPage() {
   const [newSemesterTerm, setNewSemesterTerm] = useState<Term>("FIRST");
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
+  const [graduationProfile, setGraduationProfile] = useState<GraduationProfile>(
+    EMPTY_GRADUATION_PROFILE,
+  );
+  const [savedGraduationProfile, setSavedGraduationProfile] =
+    useState<GraduationProfile>(EMPTY_GRADUATION_PROFILE);
+  const [showGraduationModal, setShowGraduationModal] =
+    useState<boolean>(false);
+  const [showIntroSheet, setShowIntroSheet] = useState<boolean>(false);
+  /** 저장된 졸업요건 설정이 이미 있는지 — 있으면 학과 자동 채움을 하지 않는다. */
+  const hasStoredGraduationProfile = useRef<boolean>(false);
+
   const { timetables } = useTimetableStore();
+  const userDepartment = useUserStore((state) => state.userInfo.department);
+  const userStudentId = useUserStore((state) => state.userInfo.studentId);
+
   const isLoggedIn = Boolean(useUserStore((state) => state.tokenInfo.accessToken));
 
   // --- Header Integration ---
@@ -321,8 +364,12 @@ export default function MobileGradeCalculatorPage() {
   // --- Save Data Helper ---
   const hasChanges = useMemo(() => {
     return (
-      serializeGradeData(semestersData, targetCredits) !==
-      serializeGradeData(savedSemestersData, savedTargetCredits)
+      serializeGradeData(semestersData, targetCredits, graduationProfile) !==
+      serializeGradeData(
+        savedSemestersData,
+        savedTargetCredits,
+        savedGraduationProfile,
+      )
     );
   }, [savedSemestersData, savedTargetCredits, semestersData, targetCredits]);
 
@@ -332,7 +379,7 @@ export default function MobileGradeCalculatorPage() {
   const saveToLocalStorageOnly = () => {
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      serializeGradeData(semestersData, targetCredits),
+      serializeGradeData(semestersData, targetCredits, graduationProfile),
     );
     setSavedSemestersData(semestersData);
     setSavedTargetCredits(targetCredits);
@@ -393,7 +440,7 @@ export default function MobileGradeCalculatorPage() {
 
       localStorage.setItem(
         LOCAL_STORAGE_KEY,
-        serializeGradeData(semestersData, targetCredits),
+        serializeGradeData(semestersData, targetCredits, graduationProfile),
       );
       setSavedSemestersData(semestersData);
       setSavedTargetCredits(targetCredits);
@@ -405,7 +452,13 @@ export default function MobileGradeCalculatorPage() {
     }
   };
 
-  const blocker = useBlocker(hasChanges);
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasChanges &&
+      (currentLocation.pathname !== nextLocation.pathname ||
+        currentLocation.search !== nextLocation.search ||
+        currentLocation.hash !== nextLocation.hash),
+  );
 
   useEffect(() => {
     if (blocker.state === "blocked") {
@@ -569,6 +622,8 @@ export default function MobileGradeCalculatorPage() {
     setShowTargetCreditsModal(false);
   };
 
+
+
   // --- Calculations ---
   // Helper to calculate statistics for a given list of subjects
   const calculateSemesterStats = (subjects: Subject[]) => {
@@ -638,8 +693,89 @@ export default function MobileGradeCalculatorPage() {
       gpa,
       majorGpa,
       acquiredCredits: totalAcquired,
+      // 목표 평점 계산에 쓰려면 평점 산입 학점/평점합이 그대로 필요하다.
+      gpaCredits: totalGpaCredits,
+      gpaPoints: totalGpaPoints,
     };
   }, [semestersData]);
+
+  // --- 졸업요건 판정 ---
+  const resolvedGraduationRule = useMemo(
+    () =>
+      resolveGraduationRule(
+        graduationProfile.departmentCode,
+        graduationProfile.entryYear,
+      ),
+    [graduationProfile.departmentCode, graduationProfile.entryYear],
+  );
+
+  const graduationEvaluation = useMemo(() => {
+    if (!resolvedGraduationRule) return null;
+
+    const subjects = Object.values(semestersData)
+      .flat()
+      .map((sub) => ({
+        name: sub.name,
+        credits: sub.credits,
+        isMajor: sub.isMajor,
+        passed: isPassed(sub),
+        isuName: sub.isuName,
+        isuFldName: sub.isuFldName,
+      }));
+
+    return evaluateGraduation(
+      resolvedGraduationRule.rule,
+      subjects,
+      resolvedGraduationRule.departmentCode,
+    );
+  }, [resolvedGraduationRule, semestersData]);
+
+  const requiredAverageGpa = useMemo(() => {
+    if (!graduationEvaluation || graduationProfile.targetGpa === null) {
+      return null;
+    }
+    return calculateRequiredAverageGpa({
+      targetGpa: graduationProfile.targetGpa,
+      gpaCredits: overallStats.gpaCredits,
+      gpaPoints: overallStats.gpaPoints,
+      remainingCredits: graduationEvaluation.remainingTotalCredits,
+    });
+  }, [
+    graduationEvaluation,
+    graduationProfile.targetGpa,
+    overallStats.gpaCredits,
+    overallStats.gpaPoints,
+  ]);
+
+  const handleSaveGraduationProfile = (profile: GraduationProfile) => {
+    // 학과·학번이 정해지면 취득 목표 학점은 그 규정의 졸업학점으로 맞춘다.
+    // (연필 버튼으로 직접 고치는 건 그대로 열려 있다.)
+    const resolved = resolveGraduationRule(
+      profile.departmentCode,
+      profile.entryYear,
+    );
+    const nextTargetCredits = resolved
+      ? resolved.rule.generalRequirements.minTotalCredits
+      : savedTargetCredits;
+
+    setGraduationProfile(profile);
+    setShowGraduationModal(false);
+    if (resolved) {
+      setTargetCredits(nextTargetCredits);
+    }
+
+    // 졸업요건 설정은 성적 입력과 별개라 여기서 바로 저장한다. 작성 중인 과목
+    // 목록까지 딸려 저장되지 않도록 저장본(savedSemestersData)을 그대로 쓴다.
+    // (안 그러면 설정만 바꿔도 "저장 안 된 변경사항"으로 잡혀 새로고침할 때
+    //  브라우저 이탈 경고가 뜬다.)
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      serializeGradeData(savedSemestersData, nextTargetCredits, profile),
+    );
+    setSavedGraduationProfile(profile);
+    setSavedTargetCredits(nextTargetCredits);
+    hasStoredGraduationProfile.current = true;
+  };
 
   // Current semester calculations
   const currentSemesterStats = useMemo(() => {
@@ -745,6 +881,57 @@ export default function MobileGradeCalculatorPage() {
     setShowGradeImportSheet(false);
   };
 
+
+  // --- 기능 소개 시트 (최초 1회) ---
+  useEffect(() => {
+    if (hasSeenGradeCalculatorIntro()) return;
+
+    markGradeCalculatorIntroSeen();
+    setShowIntroSheet(true);
+  }, []);
+
+  // 학과·학번은 로그인한 사용자 정보(/api/members)에서 채워둔다. 저장된 졸업요건
+  // 설정이 아직 없을 때만 넣고(사용자가 직접 지운 값을 되살리지 않도록), 저장본에도
+  // 같이 반영해 "저장 안 된 변경사항"으로 잡히지 않게 한다.
+  useEffect(() => {
+    if (hasStoredGraduationProfile.current) return;
+
+    // 서버 departmentCode("0000077")는 학사 시스템 코드라 졸업요건 데이터의
+    // 학과 코드와 다른 체계다. 학과명으로 찾아야 한다.
+    const departmentCode =
+      graduationProfile.departmentCode ||
+      findDepartmentCodeByName(userDepartment);
+    const entryYear =
+      graduationProfile.entryYear ??
+      parseEntryYearFromStudentId(userStudentId);
+
+    if (
+      departmentCode === graduationProfile.departmentCode &&
+      entryYear === graduationProfile.entryYear
+    ) {
+      return;
+    }
+
+    const filled = { ...graduationProfile, departmentCode, entryYear };
+    setGraduationProfile(filled);
+    setSavedGraduationProfile(filled);
+
+    // 학과·학번이 다 채워졌으면 취득 목표 학점도 그 규정의 졸업학점으로 맞춘다.
+    const resolved = resolveGraduationRule(departmentCode, entryYear);
+    if (resolved) {
+      const minTotalCredits = resolved.rule.generalRequirements.minTotalCredits;
+      setTargetCredits(minTotalCredits);
+      setSavedTargetCredits(minTotalCredits);
+    }
+  }, [graduationProfile, userDepartment, userStudentId]);
+
+  // 소개 시트와 설정 모달이 겹쳐 뜨지 않도록, 시트가 닫히는 애니메이션이
+  // 끝난 뒤에 졸업요건 설정을 연다.
+  const handleSetupGraduationFromIntro = () => {
+    setShowIntroSheet(false);
+    setTimeout(() => setShowGraduationModal(true), 300);
+  };
+
   return (
     <PageWrapper>
       <Modal
@@ -752,7 +939,7 @@ export default function MobileGradeCalculatorPage() {
         onClose={() => setShowTargetCreditsModal(false)}
         title="취득 학점 입력"
         description={
-          "학과별로 취득학점 기준이 다를 수 있어요.\n정확한 학점은 챗불이에게 확인해보세요."
+          "졸업요건에서 학과와 학번을 고르면 자동으로 채워져요.\n직접 고쳐서 쓸 수도 있어요."
         }
         primaryButton={{
           text: "저장",
@@ -792,6 +979,19 @@ export default function MobileGradeCalculatorPage() {
           onClick: handleStayOnPage,
         }}
         closeOnOverlayClick={false}
+      />
+
+      <GradeCalculatorIntroSheet
+        open={showIntroSheet}
+        onOpenChange={setShowIntroSheet}
+        onSetupGraduation={handleSetupGraduationFromIntro}
+      />
+
+      <GraduationSettingModal
+        isOpen={showGraduationModal}
+        profile={graduationProfile}
+        onClose={() => setShowGraduationModal(false)}
+        onSave={handleSaveGraduationProfile}
       />
 
       {/* 1. 전체 학기 요약 카드 */}
@@ -996,7 +1196,16 @@ export default function MobileGradeCalculatorPage() {
         </GraphSection>
       </StickyStatsCard>
 
-      {/* 2. 학기별 학점계산기 메인 카드 */}
+      {/* 2. 졸업요건 피드백 카드 */}
+      <GraduationRequirementCard
+        profile={graduationProfile}
+        resolved={resolvedGraduationRule}
+        evaluation={graduationEvaluation}
+        requiredAverageGpa={requiredAverageGpa}
+        onEdit={() => setShowGraduationModal(true)}
+      />
+
+      {/* 3. 학기별 학점계산기 메인 카드 */}
       <MainContainer>
         {!selectedSemesterKey ? (
           <EmptySemesterState>
@@ -1007,176 +1216,176 @@ export default function MobileGradeCalculatorPage() {
             </CapsuleButton>
           </EmptySemesterState>
         ) : (
-        <>
-        <SemesterSummaryHeader>
-          <SemesterSelectButton onClick={() => setShowSemesterSheet(true)}>
-            <span className="semester-name">{selectedSemesterLabel}</span>
-            <ChevronDown size={20} className="dropdown-caret" />
-          </SemesterSelectButton>
+          <>
+            <SemesterSummaryHeader>
+              <SemesterSelectButton onClick={() => setShowSemesterSheet(true)}>
+                <span className="semester-name">{selectedSemesterLabel}</span>
+                <ChevronDown size={20} className="dropdown-caret" />
+              </SemesterSelectButton>
 
-          <SemesterStatsRow>
-            <SemStatBox>
-              <span className="stat-val bold">
-                {currentSemesterStats.gpa.toFixed(2)}
-              </span>
-              <span className="stat-label">평점</span>
-            </SemStatBox>
-            <SemStatBox>
-              <span className="stat-val">
-                {currentSemesterStats.majorGpa.toFixed(2)}
-              </span>
-              <span className="stat-label">전공</span>
-            </SemStatBox>
-            <SemStatBox>
-              <span className="stat-val">
-                {currentSemesterStats.acquiredCredits}
-              </span>
-              <span className="stat-label">취득</span>
-            </SemStatBox>
-          </SemesterStatsRow>
+              <SemesterStatsRow>
+                <SemStatBox>
+                  <span className="stat-val bold">
+                    {currentSemesterStats.gpa.toFixed(2)}
+                  </span>
+                  <span className="stat-label">평점</span>
+                </SemStatBox>
+                <SemStatBox>
+                  <span className="stat-val">
+                    {currentSemesterStats.majorGpa.toFixed(2)}
+                  </span>
+                  <span className="stat-label">전공</span>
+                </SemStatBox>
+                <SemStatBox>
+                  <span className="stat-val">
+                    {currentSemesterStats.acquiredCredits}
+                  </span>
+                  <span className="stat-label">취득</span>
+                </SemStatBox>
+              </SemesterStatsRow>
 
-          <ImportButtonRow>
-            <ImportTimetableButton onClick={() => setShowTimetableSheet(true)}>
-              <Calendar size={16} className="calendar-icon" />
-              <span className="import-text">시간표 불러오기</span>
-            </ImportTimetableButton>
-            <ImportTimetableButton
-              onClick={() => setShowGradeImportSheet(true)}
-            >
-              <ClipboardPaste size={16} className="calendar-icon" />
-              <span className="import-text">성적 붙여넣기</span>
-            </ImportTimetableButton>
-          </ImportButtonRow>
-        </SemesterSummaryHeader>
+              <ImportButtonRow>
+                <ImportTimetableButton onClick={() => setShowTimetableSheet(true)}>
+                  <Calendar size={16} className="calendar-icon" />
+                  <span className="import-text">시간표 불러오기</span>
+                </ImportTimetableButton>
+                <ImportTimetableButton
+                  onClick={() => setShowGradeImportSheet(true)}
+                >
+                  <ClipboardPaste size={16} className="calendar-icon" />
+                  <span className="import-text">성적 붙여넣기</span>
+                </ImportTimetableButton>
+              </ImportButtonRow>
+            </SemesterSummaryHeader>
 
-        {/* 3. 과목 리스트 테이블 */}
-        <GradeTable>
-          <TableHeader>
-            <ColSubject>과목명</ColSubject>
-            <ColCredits>학점</ColCredits>
-            <ColGrade>성적</ColGrade>
-            <ColMajor>전공</ColMajor>
-            <ColDelete></ColDelete>
-          </TableHeader>
+            {/* 4. 과목 리스트 테이블 */}
+            <GradeTable>
+              <TableHeader>
+                <ColSubject>과목명</ColSubject>
+                <ColCredits>학점</ColCredits>
+                <ColGrade>성적</ColGrade>
+                <ColMajor>전공</ColMajor>
+                <ColDelete></ColDelete>
+              </TableHeader>
 
-          <TableBody>
-            {currentSubjects.length === 0 ? (
-              <EmptyRowText>
-                등록된 과목이 없습니다. 아래 과목 추가를 눌러보세요.
-              </EmptyRowText>
-            ) : (
-              currentSubjects.map((subject) => (
-                <TableRow key={subject.id} $dimmed={subject.excluded}>
-                  <ColSubject>
-                    <SubjectInput
-                      type="text"
-                      value={subject.name}
-                      placeholder="과목명 입력"
-                      onChange={(e) =>
-                        handleUpdateSubject(subject.id, "name", e.target.value)
-                      }
-                    />
-                  </ColSubject>
-                  <ColCredits>
-                    <CreditsSelectorWrapper>
-                      <span className="credits-val">{subject.credits}</span>
-                      <HiddenSelect
-                        value={subject.credits}
-                        onChange={(e) =>
-                          handleUpdateSubject(
-                            subject.id,
-                            "credits",
-                            parseInt(e.target.value, 10),
-                          )
-                        }
-                      >
-                        <option value={1}>1</option>
-                        <option value={2}>2</option>
-                        <option value={3}>3</option>
-                        <option value={4}>4</option>
-                      </HiddenSelect>
-                    </CreditsSelectorWrapper>
-                  </ColCredits>
-                  <ColGrade>
-                    <GradeSelectorButton>
-                      <span className="grade-val">
-                        {subject.grade === UNGRADED ? "-" : subject.grade}
-                      </span>
-                      <ChevronDown size={14} className="grade-caret" />
-                      <HiddenSelect
-                        value={subject.grade}
-                        onChange={(e) =>
-                          handleUpdateSubject(
-                            subject.id,
-                            "grade",
-                            e.target.value,
-                          )
-                        }
-                      >
-                        {GRADES.map((g) => (
-                          <option key={g} value={g}>
-                            {g}
-                          </option>
-                        ))}
-                        <option value={UNGRADED}>미입력</option>
-                      </HiddenSelect>
-                    </GradeSelectorButton>
-                  </ColGrade>
-                  <ColMajor>
-                    <CheckboxWrapper
-                      onClick={() =>
-                        handleUpdateSubject(
-                          subject.id,
-                          "isMajor",
-                          !subject.isMajor,
-                        )
-                      }
-                    >
-                      {subject.isMajor ? (
-                        <CheckedIcon>
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+              <TableBody>
+                {currentSubjects.length === 0 ? (
+                  <EmptyRowText>
+                    등록된 과목이 없습니다. 아래 과목 추가를 눌러보세요.
+                  </EmptyRowText>
+                ) : (
+                  currentSubjects.map((subject) => (
+                    <TableRow key={subject.id} $dimmed={subject.excluded}>
+                      <ColSubject>
+                        <SubjectInput
+                          type="text"
+                          value={subject.name}
+                          placeholder="과목명 입력"
+                          onChange={(e) =>
+                            handleUpdateSubject(subject.id, "name", e.target.value)
+                          }
+                        />
+                      </ColSubject>
+                      <ColCredits>
+                        <CreditsSelectorWrapper>
+                          <span className="credits-val">{subject.credits}</span>
+                          <HiddenSelect
+                            value={subject.credits}
+                            onChange={(e) =>
+                              handleUpdateSubject(
+                                subject.id,
+                                "credits",
+                                parseInt(e.target.value, 10),
+                              )
+                            }
                           >
-                            <path
-                              d="M20 6L9 17L4 12"
-                              stroke="#FFFFFF"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </CheckedIcon>
-                      ) : (
-                        <UncheckedIcon />
-                      )}
-                    </CheckboxWrapper>
-                  </ColMajor>
-                  <ColDelete>
-                    <DeleteButton
-                      onClick={() => handleDeleteSubject(subject.id)}
-                    >
-                      <X size={16} />
-                    </DeleteButton>
-                  </ColDelete>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+                            <option value={1}>1</option>
+                            <option value={2}>2</option>
+                            <option value={3}>3</option>
+                            <option value={4}>4</option>
+                          </HiddenSelect>
+                        </CreditsSelectorWrapper>
+                      </ColCredits>
+                      <ColGrade>
+                        <GradeSelectorButton>
+                          <span className="grade-val">
+                            {subject.grade === UNGRADED ? "-" : subject.grade}
+                          </span>
+                          <ChevronDown size={14} className="grade-caret" />
+                          <HiddenSelect
+                            value={subject.grade}
+                            onChange={(e) =>
+                              handleUpdateSubject(
+                                subject.id,
+                                "grade",
+                                e.target.value,
+                              )
+                            }
+                          >
+                            {GRADES.map((g) => (
+                              <option key={g} value={g}>
+                                {g}
+                              </option>
+                            ))}
+                            <option value={UNGRADED}>미입력</option>
+                          </HiddenSelect>
+                        </GradeSelectorButton>
+                      </ColGrade>
+                      <ColMajor>
+                        <CheckboxWrapper
+                          onClick={() =>
+                            handleUpdateSubject(
+                              subject.id,
+                              "isMajor",
+                              !subject.isMajor,
+                            )
+                          }
+                        >
+                          {subject.isMajor ? (
+                            <CheckedIcon>
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M20 6L9 17L4 12"
+                                  stroke="#FFFFFF"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </CheckedIcon>
+                          ) : (
+                            <UncheckedIcon />
+                          )}
+                        </CheckboxWrapper>
+                      </ColMajor>
+                      <ColDelete>
+                        <DeleteButton
+                          onClick={() => handleDeleteSubject(subject.id)}
+                        >
+                          <X size={16} />
+                        </DeleteButton>
+                      </ColDelete>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
 
-          {/* 테이블 하단 컨트롤 */}
-          <TableFooter>
-            <AddSubjectButton onClick={handleAddSubject}>
-              <Plus size={16} />
-              <span>과목 추가</span>
-            </AddSubjectButton>
-            <ResetButton onClick={handleResetSubjects}>초기화</ResetButton>
-          </TableFooter>
-        </GradeTable>
-        </>
+              {/* 테이블 하단 컨트롤 */}
+              <TableFooter>
+                <AddSubjectButton onClick={handleAddSubject}>
+                  <Plus size={16} />
+                  <span>과목 추가</span>
+                </AddSubjectButton>
+                <ResetButton onClick={handleResetSubjects}>초기화</ResetButton>
+              </TableFooter>
+            </GradeTable>
+          </>
         )}
       </MainContainer>
 
@@ -2050,7 +2259,7 @@ const TermPickerButton = styled.button<{ $active: boolean }>`
   border-radius: 10px;
   border: 1px solid
     ${({ $active }) =>
-      $active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+    $active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
   background-color: ${({ $active }) =>
     $active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-base, #ffffff)"};
   color: ${({ $active }) =>

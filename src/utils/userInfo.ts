@@ -25,6 +25,7 @@ export const normalizeUserInfo = (userInfo?: UserInfoInput | null): UserInfo => 
     nickname: normalizeOptionalText(userInfo?.nickname),
     department: normalizeOptionalText(userInfo?.department),
     departmentCode: normalizeOptionalText(userInfo?.departmentCode),
+    studentId: normalizeOptionalText(userInfo?.studentId),
     fireId: normalizeProfileImageId(
       userInfo?.fireId,
       id > 0 ? DEFAULT_PROFILE_IMAGE_ID : 0,

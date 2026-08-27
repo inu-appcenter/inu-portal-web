@@ -2,7 +2,12 @@
 // (npm 패키지/레지스트리 없음). CLAUDE.md 참고.
 import { createWebChannel, type WebChannel } from "../../packages/intip-bridge/src/adapters/web";
 import { handleBackRequest } from "./nativeBackRequest";
-import { readNotificationByFcmMessageId } from "@/apis/members";
+// readNotificationByFcmMessageId는 동적 import로 지연 로드한다(정적 import 금지).
+// apis/members.ts → apis/tokenInstance.ts·refreshInstance.ts → useUserStore.ts →
+// (여기) bridgeChannel.ts 로 이어지는 순환참조가 생겨, 모듈 평가 순서에 따라
+// useUserStore.ts가 bridgeChannel 상수를 TDZ 상태로 참조해 "Cannot access
+// 'bridgeChannel' before initialization"이 재발한다(bridgeChannel.ts/useUserStore.ts
+// 하단 주석이 막으려던 것과 같은 부류의 순환이지만 다른 경로).
 
 /**
  * 신 Expo 셸(intip-mobile-app)과의 단일 PlatformChannel.
@@ -44,7 +49,8 @@ if (bridgeChannel) {
   // 갱신하도록 알린다.
   bridgeChannel.on("notificationOpened", ({ fcmMessageId }) => {
     if (fcmMessageId === undefined) return;
-    void readNotificationByFcmMessageId(fcmMessageId)
+    void import("@/apis/members")
+      .then(({ readNotificationByFcmMessageId }) => readNotificationByFcmMessageId(fcmMessageId))
       .then(() => window.dispatchEvent(new Event("intip:notification-opened")))
       .catch((error) => console.error("Failed to mark opened notification as read", error));
   });

@@ -28,6 +28,15 @@ import BlockUserModal, {
 } from "@/components/mobile/moderation/BlockUserModal";
 import useHiddenContentStore from "@/stores/useHiddenContentStore";
 import useUserStore from "@/stores/useUserStore";
+import PostModerationMenu from "@/components/mobile/moderation/PostModerationMenu";
+import ReportModal, {
+  ReportTarget,
+} from "@/components/mobile/moderation/ReportModal";
+import BlockUserModal, {
+  BlockTarget,
+} from "@/components/mobile/moderation/BlockUserModal";
+import useHiddenContentStore from "@/stores/useHiddenContentStore";
+import useUserStore from "@/stores/useUserStore";
 
 interface TipsListContainerProps {
   viewMode: "grid" | "list";
@@ -61,6 +70,12 @@ export default function TipsListContainer({
   });
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const [blockTarget, setBlockTarget] = useState<BlockTarget | null>(null);
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
+  const hiddenPostIds = useHiddenContentStore((state) => state.postIds);
+  const hidePost = useHiddenContentStore((state) => state.hidePost);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [blockTarget, setBlockTarget] = useState<BlockTarget | null>(null);
   const { tokenInfo } = useUserStore();
@@ -275,6 +290,7 @@ export default function TipsListContainer({
                 : docType === "NOTIFICATION" || docType === "ALERT"
                   ? notifications.length
                   : visiblePosts.length
+                  : visiblePosts.length
         }
         next={handleNext}
         hasMore={hasMore}
@@ -289,7 +305,9 @@ export default function TipsListContainer({
           {(docType === "TIPS" || docType === "SEARCH") &&
             viewMode === "list" ? (
             visiblePosts.length > 0 && (
+            visiblePosts.length > 0 && (
               <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
+                {visiblePosts.map((p, i) => (
                 {visiblePosts.map((p, i) => (
                   <Fragment key={p.id}>
                     <PostItem
@@ -305,13 +323,23 @@ export default function TipsListContainer({
                       imageUrl={p.imageUrl}
                       onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(p.id))}
                       menuSlot={renderModerationMenu(p)}
+                      menuSlot={renderModerationMenu(p)}
                     />
+                    {i < visiblePosts.length - 1 && <Divider margin="0" />}
                     {i < visiblePosts.length - 1 && <Divider margin="0" />}
                   </Fragment>
                 ))}
               </Box>
             )
           ) : (
+            visiblePosts.map((p, i) => (
+              <TipsCard
+                key={i}
+                post={p}
+                viewMode={viewMode}
+                docType={docType}
+                moderationMenu={renderModerationMenu(p)}
+              />
             visiblePosts.map((p, i) => (
               <TipsCard
                 key={i}
