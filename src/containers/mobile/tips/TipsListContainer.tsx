@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import TipsCard from "@/components/mobile/tips/TipsCard";
 import { getPostsMobile } from "@/apis/posts";
 import { getDepartmentNotices, getNotices } from "@/apis/notices";
@@ -15,19 +16,8 @@ import MoreFeaturesBox from "../../../components/desktop/common/MoreFeaturesBox.
 import findTitleOrCode from "../../../utils/findTitleOrCode.ts";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
-import { Fragment } from "react";
 import { ROUTES } from "@/constants/routes";
-import { useNavigate } from "react-router-dom";
 import PostItem from "@/components/mobile/notice/PostItem";
-import PostModerationMenu from "@/components/mobile/moderation/PostModerationMenu";
-import ReportModal, {
-  ReportTarget,
-} from "@/components/mobile/moderation/ReportModal";
-import BlockUserModal, {
-  BlockTarget,
-} from "@/components/mobile/moderation/BlockUserModal";
-import useHiddenContentStore from "@/stores/useHiddenContentStore";
-import useUserStore from "@/stores/useUserStore";
 import PostModerationMenu from "@/components/mobile/moderation/PostModerationMenu";
 import ReportModal, {
   ReportTarget,
@@ -70,12 +60,6 @@ export default function TipsListContainer({
   });
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
-  const [blockTarget, setBlockTarget] = useState<BlockTarget | null>(null);
-  const { tokenInfo } = useUserStore();
-  const isLoggedIn = Boolean(tokenInfo.accessToken);
-  const hiddenPostIds = useHiddenContentStore((state) => state.postIds);
-  const hidePost = useHiddenContentStore((state) => state.hidePost);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [blockTarget, setBlockTarget] = useState<BlockTarget | null>(null);
   const { tokenInfo } = useUserStore();
@@ -290,7 +274,6 @@ export default function TipsListContainer({
                 : docType === "NOTIFICATION" || docType === "ALERT"
                   ? notifications.length
                   : visiblePosts.length
-                  : visiblePosts.length
         }
         next={handleNext}
         hasMore={hasMore}
@@ -303,11 +286,9 @@ export default function TipsListContainer({
       >
         <TipsCardWrapper $viewMode={viewMode}>
           {(docType === "TIPS" || docType === "SEARCH") &&
-            viewMode === "list" ? (
-            visiblePosts.length > 0 && (
+          viewMode === "list" ? (
             visiblePosts.length > 0 && (
               <Box style={{ border: 0, borderRadius: 0, background: "transparent" }}>
-                {visiblePosts.map((p, i) => (
                 {visiblePosts.map((p, i) => (
                   <Fragment key={p.id}>
                     <PostItem
@@ -323,23 +304,13 @@ export default function TipsListContainer({
                       imageUrl={p.imageUrl}
                       onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(p.id))}
                       menuSlot={renderModerationMenu(p)}
-                      menuSlot={renderModerationMenu(p)}
                     />
-                    {i < visiblePosts.length - 1 && <Divider margin="0" />}
                     {i < visiblePosts.length - 1 && <Divider margin="0" />}
                   </Fragment>
                 ))}
               </Box>
             )
           ) : (
-            visiblePosts.map((p, i) => (
-              <TipsCard
-                key={i}
-                post={p}
-                viewMode={viewMode}
-                docType={docType}
-                moderationMenu={renderModerationMenu(p)}
-              />
             visiblePosts.map((p, i) => (
               <TipsCard
                 key={i}
