@@ -19,6 +19,7 @@ import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
+import GradeCalculatorIntroSheet from "@/components/mobile/timetable/GradeCalculatorIntroSheet";
 import GraduationRequirementCard from "@/components/mobile/timetable/GraduationRequirementCard";
 import GraduationSettingModal, {
   type GraduationProfile,
@@ -32,6 +33,10 @@ import {
 } from "@/utils/graduationRequirements";
 import useUserStore from "@/stores/useUserStore";
 import { findDepartmentCodeByName } from "@/utils/departmentOptions";
+import {
+  hasSeenGradeCalculatorIntro,
+  markGradeCalculatorIntroSeen,
+} from "@/utils/gradeCalculatorIntro";
 import { groupClassItemsByCourse } from "@/utils/timetable";
 import type { ResolvedGradeRow } from "@/types/gradeImport";
 import type { Term } from "@/types/timetables";
@@ -225,6 +230,7 @@ export default function MobileGradeCalculatorPage() {
     useState<GraduationProfile>(EMPTY_GRADUATION_PROFILE);
   const [showGraduationModal, setShowGraduationModal] =
     useState<boolean>(false);
+  const [showIntroSheet, setShowIntroSheet] = useState<boolean>(false);
   /** 저장된 졸업요건 설정이 이미 있는지 — 있으면 학과 자동 채움을 하지 않는다. */
   const hasStoredGraduationProfile = useRef<boolean>(false);
 
@@ -272,6 +278,14 @@ export default function MobileGradeCalculatorPage() {
         serializeGradeData(initial, 130, EMPTY_GRADUATION_PROFILE),
       );
     }
+  }, []);
+
+  // --- 기능 소개 시트 (최초 1회) ---
+  useEffect(() => {
+    if (hasSeenGradeCalculatorIntro()) return;
+
+    markGradeCalculatorIntroSeen();
+    setShowIntroSheet(true);
   }, []);
 
   // 학과·학번은 로그인한 사용자 정보(/api/members)에서 채워둔다. 저장된 졸업요건
@@ -339,7 +353,18 @@ export default function MobileGradeCalculatorPage() {
     hasStoredGraduationProfile.current = true;
   };
 
-  const blocker = useBlocker(hasChanges);
+    // 모달·바텀시트는 하드웨어/브라우저 백키로 닫히도록 열릴 때 history 엔트리를
+  // 하나 쌓았다가 닫힐 때 history.back()으로 되돌린다(useSheetBackHandler).
+  // 이 pop은 URL이 그대로인 "화면 안에서의 뒤로가기"라 페이지 이탈이 아니다.
+  // useBlocker(true)는 그것까지 막아버려서 취득학점 수정·학기 추가 모달을 닫기만
+  // 해도 이탈 확인 다이얼로그가 떴다(#349). 경로가 실제로 바뀔 때만 막는다.
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasChanges &&
+      (currentLocation.pathname !== nextLocation.pathname ||
+        currentLocation.search !== nextLocation.search ||
+        currentLocation.hash !== nextLocation.hash),
+  );
 
   useEffect(() => {
     if (blocker.state === "blocked") {
@@ -699,6 +724,13 @@ export default function MobileGradeCalculatorPage() {
     setShowGradeImportSheet(false);
   };
 
+  // 소개 시트와 설정 모달이 겹쳐 뜨지 않도록, 시트가 닫히는 애니메이션이
+  // 끝난 뒤에 졸업요건 설정을 연다.
+  const handleSetupGraduationFromIntro = () => {
+    setShowIntroSheet(false);
+    setTimeout(() => setShowGraduationModal(true), 300);
+  };
+
   return (
     <PageWrapper>
       <Modal
@@ -746,6 +778,12 @@ export default function MobileGradeCalculatorPage() {
           onClick: handleStayOnPage,
         }}
         closeOnOverlayClick={false}
+      />
+
+      <GradeCalculatorIntroSheet
+        open={showIntroSheet}
+        onOpenChange={setShowIntroSheet}
+        onSetupGraduation={handleSetupGraduationFromIntro}
       />
 
       <GraduationSettingModal
