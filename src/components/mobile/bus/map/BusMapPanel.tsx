@@ -608,9 +608,12 @@ function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
     if (isEstimatedArrivalInfo(bus)) {
       const seconds = bus.arrivalInfo.seconds;
       if (typeof seconds === "number") {
-        return `${Math.floor(seconds / 60)}분 ${seconds % 60}초 후 도착 예상`;
+        if (seconds < 60) {
+          return "곧 도착";
+        }
+        return `${Math.floor(seconds / 60)}분`;
       }
-      return `${bus.arrivalInfo.time} 후 도착 예상`;
+      return bus.arrivalInfo.time.replace(/\s*\d+초$/, "");
     }
     return bus.arrivalInfo.time;
   }
@@ -640,7 +643,7 @@ function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
   }
 
   if (isEstimatedArrivalInfo(bus)) {
-    return null;
+    return "예상 시간표";
   }
 
   if (!stationText && !status && !isLastBus) {
