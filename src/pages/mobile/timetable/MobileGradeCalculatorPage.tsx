@@ -5,6 +5,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import {
   useBlocker,
   useBeforeUnload,
+  useNavigate,
 } from "react-router-dom";
 import {
   Pencil,
@@ -288,6 +289,7 @@ export default function MobileGradeCalculatorPage() {
   /** 저장된 졸업요건 설정이 이미 있는지 — 있으면 학과 자동 채움을 하지 않는다. */
   const hasStoredGraduationProfile = useRef<boolean>(false);
 
+  const navigate = useNavigate();
   const { timetables } = useTimetableStore();
   const userDepartment = useUserStore((state) => state.userInfo.department);
   const userStudentId = useUserStore((state) => state.userInfo.studentId);
@@ -371,7 +373,14 @@ export default function MobileGradeCalculatorPage() {
         savedGraduationProfile,
       )
     );
-  }, [savedSemestersData, savedTargetCredits, semestersData, targetCredits]);
+  }, [
+    savedSemestersData,
+    savedTargetCredits,
+    savedGraduationProfile,
+    semestersData,
+    targetCredits,
+    graduationProfile,
+  ]);
 
   const upsertGradeRecordsMutation = useUpsertGradeRecords();
   const deleteAllGradeRecordsMutation = useDeleteAllGradeRecords();
@@ -452,8 +461,16 @@ export default function MobileGradeCalculatorPage() {
     }
   };
 
+  // 이탈을 확정한 뒤에는 어떤 경로로도 다시 막지 않는다. state 가 아니라 ref 인
+  // 이유는 "나가기" 클릭 핸들러 안에서 블로커/백핸들러가 곧바로 이 값을 읽어야
+  // 하기 때문이다(리렌더를 기다릴 수 없다).
+  const isLeavingRef = useRef(false);
+  const isUnsavedModalOpenRef = useRef(false);
+  isUnsavedModalOpenRef.current = showUnsavedChangesModal;
+
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
+      !isLeavingRef.current &&
       hasChanges &&
       (currentLocation.pathname !== nextLocation.pathname ||
         currentLocation.search !== nextLocation.search ||
@@ -484,16 +501,31 @@ export default function MobileGradeCalculatorPage() {
   };
 
   const handleLeaveWithoutSaving = () => {
+    isLeavingRef.current = true;
+    backHandler.setPageUnsavedChanges(false);
     setShowUnsavedChangesModal(false);
+
     if (blocker.state === "blocked") {
       blocker.proceed();
       return;
     }
-    window.AndroidBridge?.confirmBack?.();
+
+    // 앱에서는 뒤로가기를 backHandler 가 먼저 가로채므로(nativeBackRequest 참고)
+    // 블로커가 아예 걸리지 않는다. 그때는 이탈을 우리가 직접 수행한다.
+    // router.tsx 가 -1 을 appBridge.requestBack 으로 위임하고, 이 웹뷰 안에
+    // 되돌릴 게 없으면 네이티브가 웹뷰를 닫는다.
+    navigate(-1);
   };
 
   useEffect(() => {
     const handlePageBack = () => {
+      if (isLeavingRef.current) return false; // 이탈 확정 → 네이티브에 넘긴다
+      // 경고가 이미 떠 있으면 뒤로가기는 그 경고만 닫는다. (이 모달은 히스토리
+      // 엔트리를 쌓지 않으므로 popstate 로 닫히지 않는다 — closeOnBack={false})
+      if (isUnsavedModalOpenRef.current) {
+        setShowUnsavedChangesModal(false);
+        return true;
+      }
       setShowUnsavedChangesModal(true);
       return true; // 뒤로가기 가로채기
     };
@@ -979,6 +1011,10 @@ export default function MobileGradeCalculatorPage() {
           onClick: handleStayOnPage,
         }}
         closeOnOverlayClick={false}
+        // 이 경고창은 히스토리 엔트리를 쌓으면 안 된다. 엔트리가 하나 끼면
+        // 라우터가 세어 둔 delta 가 어긋나서 blocker.proceed() 의 history.go 가
+        // 이전 화면 대신 그 엔트리만 되돌리고, 결국 페이지를 못 벗어난다.
+        closeOnBack={false}
       />
 
       <GradeCalculatorIntroSheet
