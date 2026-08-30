@@ -998,7 +998,7 @@ export default function ChattingPage() {
               $isChatbuli={isChatbuliMode}
               placeholder={
                 isChatbuliMode
-                  ? "챗불이에게 질문할 내용을 입력하세요"
+                  ? "질문할 내용을 입력하세요"
                   : "메시지 입력 또는 '/챗불이'"
               }
               ref={inputRef}
@@ -1182,14 +1182,16 @@ const InputContainer = styled.div`
 const InputBadge = styled.div`
   position: absolute;
   left: 8px;
-  top: 8px;
-  display: flex;
+  top: 7px;
+  height: 26px;
+  box-sizing: border-box;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: #ffffff;
   border: 1px solid #ffd8bf;
-  border-radius: 12px;
-  padding: 2px 6px;
+  border-radius: 13px;
+  padding: 0 6px;
   box-shadow: 0 1px 3px rgba(255, 107, 0, 0.12);
   z-index: 2;
   user-select: none;
@@ -1204,6 +1206,8 @@ const InputBadge = styled.div`
     font-size: 12px;
     font-weight: 700;
     color: #ff6b00;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .badge-close {
@@ -1226,7 +1230,7 @@ const InputBadge = styled.div`
 const Input = styled.textarea<{ $isChatbuli?: boolean }>`
   flex: 1;
   min-width: 0;
-  padding: 8px 16px;
+  padding: 8px 14px;
   box-sizing: border-box;
   background: #eff2f9;
   border-radius: 20px;
@@ -1237,7 +1241,17 @@ const Input = styled.textarea<{ $isChatbuli?: boolean }>`
   resize: none;
   outline: none;
   max-height: 96px;
-  text-indent: ${(props) => (props.$isChatbuli ? "76px" : "0px")};
+  text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+
+  &::placeholder {
+    color: #8e8e93;
+    text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+  }
+
+  &::-webkit-input-placeholder {
+    color: #8e8e93;
+    text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+  }
 `;
 
 const SendButton = styled.button`
