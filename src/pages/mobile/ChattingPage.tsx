@@ -20,6 +20,10 @@ import {
   checkProfanity,
 } from "@/utils/profanityFilter";
 import { isChatbuliCommand } from "@/utils/hangul";
+import {
+  normalizeProfileImageId,
+  DEFAULT_PROFILE_IMAGE_ID,
+} from "@/utils/userInfo";
 import Skeleton from "@/components/common/Skeleton";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
@@ -1322,10 +1326,10 @@ const SystemMessage = styled.div`
 const MessageContainer = styled.div`
   display: flex;
   margin: 0 16px 8px;
-  max-width: 85%;
+  max-width: 92%;
 
   @media (min-width: 768px) {
-    max-width: 620px;
+    max-width: 660px;
   }
 `;
 
@@ -1333,8 +1337,23 @@ const ProfileImage = styled.img`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  margin-right: 12px;
+  margin-right: 10px;
   cursor: pointer;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: #f2f2f7;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const ProfilePlaceholder = styled.div`
+  width: 36px;
+  margin-right: 10px;
   flex-shrink: 0;
 `;
 
@@ -1345,14 +1364,23 @@ const MessageContent = styled.div`
   max-width: 100%;
 `;
 
-const SenderName = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: #1c1c1e;
+const SenderHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 4px;
-  /* 눌러서 프로필(→ 차단)을 열 수 있다는 걸 드러낸다. */
+`;
+
+const SenderName = styled.span`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1c1c1e;
   cursor: pointer;
   width: fit-content;
+
+  &:hover {
+    color: #5e92f0;
+  }
 `;
 
 const MessageBubble = styled.div`
@@ -1372,7 +1400,7 @@ const Bubble = styled.div<{ $bgColor: string }>`
   border-radius: 20px;
   font-size: 16px;
   line-height: 22px;
-  max-width: 78vw;
+  max-width: 88vw;
   word-break: break-word;
   background-color: ${(props) => props.$bgColor};
   color: #1c1c1e;
@@ -1381,11 +1409,11 @@ const Bubble = styled.div<{ $bgColor: string }>`
   white-space: pre-wrap;
 
   @media (min-width: 768px) {
-    max-width: 520px;
+    max-width: 560px;
   }
 
   @media (min-width: 1024px) {
-    max-width: 600px;
+    max-width: 640px;
   }
 `;
 
@@ -1451,7 +1479,7 @@ const ChatItemOtherPerson = ({
     createDate: string,
     senderId?: number | null,
   ) => void;
-  userImageUrl: string | null;
+  userImageUrl?: string | null;
   showName: boolean;
   showTime: boolean;
   members: ChatRoomMemberResponseDto[];
@@ -1459,14 +1487,22 @@ const ChatItemOtherPerson = ({
   onSenderClick: (chatRoomMemberId: number) => void;
 }) => {
   const longPress = useLongPress(onLongPress);
+  const matched = members.find(
+    (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
+  );
   const getDisplayName = () => {
-    const matched = members.find(
-      (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
-    );
     return (
       matched?.friendAlias || message.senderAlias || message.senderNickname
     );
   };
+  const safeFireId = normalizeProfileImageId(
+    matched?.fireId,
+    DEFAULT_PROFILE_IMAGE_ID,
+  );
+  const resolvedProfileImageUrl =
+    userImageUrl ||
+    `https://portal.inuappcenter.kr/images/profile/${safeFireId}`;
+
   const thumbnailUrl =
     message.imageCount > 0
       ? `${BASE_URL}images/chat/${message.roomId}/thumbnail/${message.messageId}`
@@ -1489,23 +1525,29 @@ const ChatItemOtherPerson = ({
 
   return (
     <MessageContainer>
-      {userImageUrl && (
+      {showName ? (
         <ProfileImage
-          src={userImageUrl}
+          src={resolvedProfileImageUrl}
           alt="profile"
           onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = `https://portal.inuappcenter.kr/images/profile/${DEFAULT_PROFILE_IMAGE_ID}`;
+          }}
         />
+      ) : (
+        <ProfilePlaceholder />
       )}
       <MessageContent>
         {showName && (
-          // 보낸 사람 이름을 누르면 프로필이 열리고, 거기서 차단할 수 있다.
-          <SenderName
-            role="button"
-            tabIndex={0}
-            onClick={() => onSenderClick(message.senderChatRoomMemberId)}
-          >
-            {getDisplayName()}
-          </SenderName>
+          <SenderHeader>
+            <SenderName
+              role="button"
+              tabIndex={0}
+              onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+            >
+              {getDisplayName()}
+            </SenderName>
+          </SenderHeader>
         )}
         <MessageBubble {...longPress}>
           <div
