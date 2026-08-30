@@ -1406,6 +1406,9 @@ const MessageBubble = styled.div`
 `;
 
 const Bubble = styled.div<{ $bgColor: string }>`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 10px 14px;
   border-radius: 20px;
   font-size: 16px;
@@ -1594,7 +1597,7 @@ const ChatItemOtherPerson = ({
                         <span>챗불이에게 질문</span>
                       </BotQuestionTag>
                     )}
-                    {message.content}
+                    <div>{message.content}</div>
                   </Bubble>
                 )}
               </>
@@ -1710,7 +1713,7 @@ const ChatItemMy = ({
                         <span>챗불이에게 질문</span>
                       </BotQuestionTag>
                     )}
-                    {message.content}
+                    <div>{message.content}</div>
                   </Bubble>
                 )}
               </>
