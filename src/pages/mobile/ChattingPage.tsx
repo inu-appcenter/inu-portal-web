@@ -1322,6 +1322,11 @@ const SystemMessage = styled.div`
 const MessageContainer = styled.div`
   display: flex;
   margin: 0 16px 8px;
+  max-width: 85%;
+
+  @media (min-width: 768px) {
+    max-width: 620px;
+  }
 `;
 
 const ProfileImage = styled.img`
@@ -1330,11 +1335,14 @@ const ProfileImage = styled.img`
   border-radius: 50%;
   margin-right: 12px;
   cursor: pointer;
+  flex-shrink: 0;
 `;
 
 const MessageContent = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
 `;
 
 const SenderName = styled.span`
@@ -1351,6 +1359,7 @@ const MessageBubble = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  max-width: 100%;
   /* 길게 누르면 신고/차단 시트가 뜬다 — iOS WebView의 기본 텍스트 선택·복사
      말풍선이 대신 뜨면 시트를 가리므로 막는다. */
   -webkit-touch-callout: none;
@@ -1363,13 +1372,21 @@ const Bubble = styled.div<{ $bgColor: string }>`
   border-radius: 20px;
   font-size: 16px;
   line-height: 22px;
-  max-width: 240px;
+  max-width: 78vw;
   word-break: break-word;
   background-color: ${(props) => props.$bgColor};
   color: #1c1c1e;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
   white-space: pre-wrap;
+
+  @media (min-width: 768px) {
+    max-width: 520px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 600px;
+  }
 `;
 
 const BotQuestionTag = styled.div`

@@ -91,6 +91,11 @@ const BotContainer = styled.div`
   display: flex;
   margin: 0 16px 12px;
   align-items: flex-start;
+  max-width: 85%;
+
+  @media (min-width: 768px) {
+    max-width: 620px;
+  }
 `;
 
 const BotProfileImage = styled.img`
@@ -115,10 +120,14 @@ const BotProfileImage = styled.img`
 const BotMessageArea = styled.div`
   display: flex;
   flex-direction: column;
-  max-width: 82%;
+  max-width: 80vw;
+
+  @media (min-width: 768px) {
+    max-width: 520px;
+  }
 
   @media (min-width: 1024px) {
-    max-width: 70%;
+    max-width: 600px;
   }
 `;
 
