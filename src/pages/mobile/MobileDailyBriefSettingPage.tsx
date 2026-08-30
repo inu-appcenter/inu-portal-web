@@ -50,17 +50,17 @@ const SCHEDULE_SCOPE_OPTIONS: { label: string; value: ScheduleScope; desc: strin
   {
     label: "학교 + 학과 모두",
     value: "ALL",
-    desc: "학교 전체 학사일정과 내 학과 일정을 모두 받아봅니다.",
+    desc: "학교 전체 학사일정과 내 학과 일정을 모두 받아볼 수 있어요.",
   },
   {
     label: "학교 일정만",
     value: "SCHOOL_ONLY",
-    desc: "수강신청, 시험, 등록금 등 학교 공식 학사일정만 받아봅니다.",
+    desc: "수강신청, 시험, 등록금 등 학교 공식 학사일정만 받아볼 수 있어요.",
   },
   {
     label: "내 학과 일정만",
     value: "DEPT_ONLY",
-    desc: "내 학과 공지사항에 등록된 학과 일정만 받아봅니다.",
+    desc: "내 학과 공지사항에 등록된 학과 일정만 받아볼 수 있어요.",
   },
 ];
 
@@ -124,7 +124,7 @@ export default function MobileDailyBriefSettingPage() {
       await updateDailyBriefSettings(nextSettings);
     } catch (error) {
       console.error("Daily Brief 설정 저장 실패:", error);
-      alert("설정을 저장하지 못했습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.");
+      alert("설정을 저장하지 못했어요. 네트워크 상태를 확인한 후 다시 시도해 주세요.");
       // 실패 시 이전 설정 상태로 롤백
       setSettings(prevSettings);
     }
@@ -152,7 +152,7 @@ export default function MobileDailyBriefSettingPage() {
     if (scope === "DEPT_ONLY" && !userInfo.department) {
       if (
         window.confirm(
-          "학과 정보가 아직 설정되지 않았습니다. 마이페이지에서 학과를 설정하시겠어요?",
+          "학과 정보가 아직 설정되지 않았어요. 마이페이지에서 학과를 설정할까요?",
         )
       ) {
         navigate(ROUTES.MYPAGE.PROFILE);
@@ -174,7 +174,7 @@ export default function MobileDailyBriefSettingPage() {
         <div id="section-timetable" style={{ width: "100%" }}>
           <TitleContentArea
             title="시간표 알림"
-            description="내 대표 시간표의 강의 시작 전 알림 및 당일 강의 목록 브리핑을 설정합니다."
+            description="내 대표 시간표의 강의 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요."
           >
             <Box style={{ width: "100%", padding: 0 }}>
               {/* 전체 시간표 알림 토글 */}
@@ -182,7 +182,7 @@ export default function MobileDailyBriefSettingPage() {
                 <RowContent>
                   <RowTitle>시간표 알림 받기</RowTitle>
                   <RowDescription>
-                    강의 시작 전 알림 및 당일 강의 목록 알림을 수신합니다.
+                    강의 시작 전 알림 및 당일 강의 목록 알림을 받아볼 수 있어요.
                   </RowDescription>
                 </RowContent>
                 <SwitchContainer>
@@ -206,7 +206,7 @@ export default function MobileDailyBriefSettingPage() {
                       <SubOptionTextWrapper>
                         <SubOptionTitle>수업 시작 전 알림</SubOptionTitle>
                         <SubOptionDesc>
-                          강의가 시작되기 전에 푸시 알림으로 미리 알려드려요.
+                          강의가 시작되기 전에 푸시 알림으로 미리 받아볼 수 있어요.
                         </SubOptionDesc>
                       </SubOptionTextWrapper>
                       <Switch
@@ -271,7 +271,7 @@ export default function MobileDailyBriefSettingPage() {
                       <SubOptionTextWrapper>
                         <SubOptionTitle>당일 강의 목록 브리핑</SubOptionTitle>
                         <SubOptionDesc>
-                          지정한 시간에 오늘 수강할 강의 목록을 한 번에 정리해서 알려드려요.
+                          지정한 시간에 오늘 수강할 강의 목록을 한 번에 정리해서 받아볼 수 있어요.
                         </SubOptionDesc>
                       </SubOptionTextWrapper>
                       <Switch
@@ -347,7 +347,7 @@ export default function MobileDailyBriefSettingPage() {
         <div id="section-schedule" style={{ width: "100%" }}>
           <TitleContentArea
             title="학사일정 알림"
-            description="학교 공식 학사일정 및 학과 공지사항에 등록된 일정을 브리핑합니다."
+            description="학교 공식 학사일정 및 학과 공지사항에 등록된 일정을 브리핑으로 받아볼 수 있어요."
           >
             <Box style={{ width: "100%", padding: 0 }}>
               {/* 전체 학사일정 알림 토글 */}
@@ -355,7 +355,7 @@ export default function MobileDailyBriefSettingPage() {
                 <RowContent>
                   <RowTitle>학사일정 브리핑 받기</RowTitle>
                   <RowDescription>
-                    오늘에 해당하는 학사 및 학과 일정을 지정된 시간에 묶어서 수신합니다.
+                    오늘에 해당하는 학사 및 학과 일정을 지정된 시간에 묶어서 받아볼 수 있어요.
                   </RowDescription>
                 </RowContent>
                 <SwitchContainer>
@@ -380,7 +380,7 @@ export default function MobileDailyBriefSettingPage() {
                         <SubOptionTextWrapper>
                           <SubOptionTitle>브리핑 수신 시간</SubOptionTitle>
                           <SubOptionDesc>
-                            매일 해당 시각에 오늘의 일정이 있을 때만 알림이 발송됩니다.
+                            매일 해당 시각에 오늘의 일정이 있을 때만 알림을 받아볼 수 있어요.
                           </SubOptionDesc>
                         </SubOptionTextWrapper>
                         <StyledSelect
@@ -440,7 +440,7 @@ export default function MobileDailyBriefSettingPage() {
                     <SubOptionTextWrapper style={{ marginBottom: "12px" }}>
                       <SubOptionTitle>알림 수신 대상 범위</SubOptionTitle>
                       <SubOptionDesc>
-                        받고 싶은 일정의 종류를 선택하세요.
+                        받고 싶은 일정의 종류를 선택할 수 있어요.
                       </SubOptionDesc>
                     </SubOptionTextWrapper>
 
@@ -465,7 +465,7 @@ export default function MobileDailyBriefSettingPage() {
                     {!userInfo.department && (
                       <DeptWarningRow onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}>
                         <DeptWarningText>
-                          학과 정보가 미등록 상태입니다. 학과를 설정하면 학과 일정 알림을 받을 수 있어요.
+                          학과 정보가 미등록 상태예요. 학과를 설정하면 학과 일정 알림을 받아볼 수 있어요.
                         </DeptWarningText>
                         <ChevronRight size={16} color="#8E8E93" />
                       </DeptWarningRow>
