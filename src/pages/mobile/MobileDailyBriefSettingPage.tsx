@@ -9,10 +9,15 @@ import Switch from "@/components/common/Switch";
 import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
+import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper as SwiperClass } from "swiper";
+import "swiper/css";
 import RegisteredKeywordItem from "@/components/desktop/notice/RegisteredKeywordItem";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER, DESKTOP_READING_WIDTH } from "@/styles/responsive";
 import { mixpanelTrack, trackPageView, trackEvent } from "@/utils/mixpanel";
+import { resetScrollToTop } from "@/utils/scroll";
 import {
   DailyBriefSettings,
   ScheduleScope,
@@ -96,6 +101,39 @@ export default function MobileDailyBriefSettingPage() {
   const [settings, setSettings] = useState<DailyBriefSettings>(
     getLocalDailyBriefSettings,
   );
+
+  const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
+  const [hasSwiped, setHasSwiped] = useState(() => {
+    return localStorage.getItem("has_swiped_daily_brief") === "true";
+  });
+
+  const currentIndex = useMemo(() => {
+    const idx = DAILY_BRIEF_TABS.findIndex((t) => t.value === currentTab);
+    return idx === -1 ? 0 : idx;
+  }, [currentTab]);
+
+  useEffect(() => {
+    if (swiperRef && swiperRef.activeIndex !== currentIndex) {
+      swiperRef.slideTo(currentIndex);
+    }
+  }, [currentIndex, swiperRef]);
+
+  const handleSlideChange = (s: SwiperClass) => {
+    const nextTab = DAILY_BRIEF_TABS[s.activeIndex]?.value;
+
+    if (!hasSwiped) {
+      setHasSwiped(true);
+      localStorage.setItem("has_swiped_daily_brief", "true");
+    }
+
+    resetScrollToTop();
+
+    if (nextTab && nextTab !== currentTab) {
+      const nextParams = new URLSearchParams(location.search);
+      nextParams.set("tab", nextTab);
+      navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+    }
+  };
 
   // 저장 상태: 'idle' | 'saving' | 'saved'
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -239,320 +277,345 @@ export default function MobileDailyBriefSettingPage() {
   return (
     <PageWrapper>
       <ContentContainer>
-        {/* 탭 1: 시간표 알림 */}
-        {currentTab === "timetable" && (
-          <TitleContentArea
-            title="시간표 알림"
-            description="내 대표 시간표의 강의 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요."
-          >
-            <Box style={{ width: "100%", padding: 0 }}>
-              <SettingRow>
-                <RowContent>
-                  <RowTitle>시간표 알림 받기</RowTitle>
-                  <RowDescription>
-                    강의 시작 전 알림 및 당일 강의 목록 알림을 받아볼 수 있어요.
-                  </RowDescription>
-                </RowContent>
-                <SwitchContainer>
-                  <Switch
-                    checked={settings.timetableAlertEnabled}
-                    onCheckedChange={(checked) => {
-                      handleUpdate({ timetableAlertEnabled: checked });
-                      trackEvent("[Daily Brief] 시간표 알림 토글", { enabled: checked });
-                    }}
-                  />
-                </SwitchContainer>
-              </SettingRow>
-
-              {settings.timetableAlertEnabled && (
-                <>
-                  <Divider margin="0" />
-
-                  {/* 수업 시작 전 알림 */}
-                  <SubOptionBox>
-                    <SubOptionHeader>
-                      <SubOptionTextWrapper>
-                        <SubOptionTitle>수업 시작 전 알림</SubOptionTitle>
-                        <SubOptionDesc>
-                          강의가 시작되기 전에 푸시 알림으로 미리 받아볼 수 있어요.
-                        </SubOptionDesc>
-                      </SubOptionTextWrapper>
+        <Swiper
+          onSwiper={setSwiperRef}
+          initialSlide={currentIndex}
+          onSlideChange={handleSlideChange}
+          speed={320}
+          autoHeight={true}
+          observer={true}
+          observeParents={true}
+          style={{ width: "100%" }}
+        >
+          {/* 슬라이드 1: 시간표 알림 */}
+          <SwiperSlide style={{ height: "auto" }}>
+            <SlideInnerWrapper>
+              <TitleContentArea
+                title="시간표 알림"
+                description="내 대표 시간표의 강의 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요."
+              >
+                <Box style={{ width: "100%", padding: 0 }}>
+                  <SettingRow>
+                    <RowContent>
+                      <RowTitle>시간표 알림 받기</RowTitle>
+                      <RowDescription>
+                        강의 시작 전 알림 및 당일 강의 목록 알림을 받아볼 수 있어요.
+                      </RowDescription>
+                    </RowContent>
+                    <SwitchContainer>
                       <Switch
-                        checked={settings.timetablePreAlertEnabled}
+                        checked={settings.timetableAlertEnabled}
                         onCheckedChange={(checked) => {
-                          handleUpdate({ timetablePreAlertEnabled: checked });
-                          trackEvent("[Daily Brief] 수업 전 알림 토글", { enabled: checked });
+                          handleUpdate({ timetableAlertEnabled: checked });
+                          trackEvent("[Daily Brief] 시간표 알림 토글", { enabled: checked });
                         }}
                       />
-                    </SubOptionHeader>
+                    </SwitchContainer>
+                  </SettingRow>
 
-                    {settings.timetablePreAlertEnabled && (
-                      <>
-                        <ChipGroup>
-                          {PRE_ALERT_PRESETS.map((opt) => (
-                            <SelectableChip
-                              key={opt.value}
-                              $selected={!isCustomPreAlertOpen && settings.timetablePreAlertMinutes === opt.value}
-                              onClick={() => handlePreAlertMinutesChange(opt.value)}
-                            >
-                              {opt.label}
-                            </SelectableChip>
-                          ))}
-                          <SelectableChip
-                            $selected={isCustomPreAlertOpen || !isPreAlertInPresets}
-                            onClick={() => {
-                              setIsCustomPreAlertOpen(true);
-                              setCustomPreAlertInput(String(settings.timetablePreAlertMinutes));
-                            }}
-                          >
-                            {!isPreAlertInPresets ? `${settings.timetablePreAlertMinutes}분 전 (직접 설정)` : "직접 설정"}
-                          </SelectableChip>
-                        </ChipGroup>
+                  {settings.timetableAlertEnabled && (
+                    <>
+                      <Divider margin="0" />
 
-                        {isCustomPreAlertOpen && (
-                          <CustomInputRow>
-                            <StyledNumberInput
-                              type="number"
-                              min={1}
-                              max={180}
-                              placeholder="분 입력 (예: 25)"
-                              value={customPreAlertInput}
-                              onChange={(e) => setCustomPreAlertInput(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") handleCustomPreAlertSubmit();
-                              }}
-                            />
-                            <InputUnitLabel>분 전</InputUnitLabel>
-                            <ApplyButton onClick={handleCustomPreAlertSubmit}>적용</ApplyButton>
-                            <CancelButton onClick={() => setIsCustomPreAlertOpen(false)}>취소</CancelButton>
-                          </CustomInputRow>
-                        )}
-                      </>
-                    )}
-                  </SubOptionBox>
-
-                  <Divider margin="0" />
-
-                  {/* 당일 강의 목록 브리핑 */}
-                  <SubOptionBox>
-                    <SubOptionHeader>
-                      <SubOptionTextWrapper>
-                        <SubOptionTitle>당일 강의 목록 브리핑</SubOptionTitle>
-                        <SubOptionDesc>
-                          지정한 시간에 오늘 수강할 강의 목록을 한 번에 정리해서 받아볼 수 있어요.
-                        </SubOptionDesc>
-                      </SubOptionTextWrapper>
-                      <Switch
-                        checked={settings.timetableDailyBriefEnabled}
-                        onCheckedChange={(checked) => {
-                          handleUpdate({ timetableDailyBriefEnabled: checked });
-                          trackEvent("[Daily Brief] 당일 강의 목록 알림 토글", { enabled: checked });
-                        }}
-                      />
-                    </SubOptionHeader>
-
-                    {settings.timetableDailyBriefEnabled && (
-                      <TimeOptionContainer>
-                        <TimeSelectRow>
-                          <TimeSelectLabel>알림 수신 시간</TimeSelectLabel>
-                          <StyledSelect
-                            value={isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) ? "CUSTOM" : settings.timetableDailyBriefTime}
-                            onChange={(e) => {
-                              if (e.target.value === "CUSTOM") {
-                                setIsCustomTtTimeOpen(true);
-                                return;
-                              }
-                              setIsCustomTtTimeOpen(false);
-                              handleUpdate({ timetableDailyBriefTime: e.target.value });
-                              trackEvent("[Daily Brief] 강의 목록 수신 시간 변경", {
-                                time: e.target.value,
-                              });
-                            }}
-                          >
-                            {BASE_TIME_PRESETS.map((time) => (
-                              <option key={`tt-${time}`} value={time}>
-                                {time}
-                              </option>
-                            ))}
-                            {!BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
-                              <option value="CUSTOM">
-                                {settings.timetableDailyBriefTime} (직접 설정)
-                              </option>
-                            )}
-                            {BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
-                              <option value="CUSTOM">직접 설정...</option>
-                            )}
-                          </StyledSelect>
-                        </TimeSelectRow>
-
-                        {(isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime)) && (
-                          <CustomTimePickerRow>
-                            <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
-                            <StyledTimeInput
-                              type="time"
-                              value={settings.timetableDailyBriefTime}
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  handleUpdate({ timetableDailyBriefTime: e.target.value });
-                                  trackEvent("[Daily Brief] 강의 목록 시간 직접 입력", {
-                                    time: e.target.value,
-                                  });
-                                }
-                              }}
-                            />
-                          </CustomTimePickerRow>
-                        )}
-                      </TimeOptionContainer>
-                    )}
-                  </SubOptionBox>
-                </>
-              )}
-            </Box>
-          </TitleContentArea>
-        )}
-
-        {/* 탭 2: 학사일정 알림 */}
-        {currentTab === "schedule" && (
-          <TitleContentArea
-            title="학사일정 알림"
-            description="학교 공식 학사일정 및 학과 공지사항에 등록된 일정을 브리핑으로 받아볼 수 있어요."
-          >
-            <Box style={{ width: "100%", padding: 0 }}>
-              <SettingRow>
-                <RowContent>
-                  <RowTitle>학사일정 브리핑 받기</RowTitle>
-                  <RowDescription>
-                    오늘에 해당하는 학사 및 학과 일정을 지정된 시간에 묶어서 받아볼 수 있어요.
-                  </RowDescription>
-                </RowContent>
-                <SwitchContainer>
-                  <Switch
-                    checked={settings.scheduleAlertEnabled}
-                    onCheckedChange={(checked) => {
-                      handleUpdate({ scheduleAlertEnabled: checked });
-                      trackEvent("[Daily Brief] 학사일정 알림 토글", { enabled: checked });
-                    }}
-                  />
-                </SwitchContainer>
-              </SettingRow>
-
-              {settings.scheduleAlertEnabled && (
-                <>
-                  <Divider margin="0" />
-
-                  {/* 학사일정 브리핑 시간 */}
-                  <SubOptionBox>
-                    <TimeOptionContainer>
-                      <TimeSelectRow>
-                        <SubOptionTextWrapper>
-                          <SubOptionTitle>브리핑 수신 시간</SubOptionTitle>
-                          <SubOptionDesc>
-                            매일 해당 시각에 오늘의 일정이 있을 때만 알림을 받아볼 수 있어요.
-                          </SubOptionDesc>
-                        </SubOptionTextWrapper>
-                        <StyledSelect
-                          value={isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) ? "CUSTOM" : settings.scheduleDailyBriefTime}
-                          onChange={(e) => {
-                            if (e.target.value === "CUSTOM") {
-                              setIsCustomSchedTimeOpen(true);
-                              return;
-                            }
-                            setIsCustomSchedTimeOpen(false);
-                            handleUpdate({ scheduleDailyBriefTime: e.target.value });
-                            trackEvent("[Daily Brief] 학사일정 수신 시간 변경", {
-                              time: e.target.value,
-                            });
-                          }}
-                        >
-                          {BASE_TIME_PRESETS.map((time) => (
-                            <option key={`sched-${time}`} value={time}>
-                              {time}
-                            </option>
-                          ))}
-                          {!BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
-                            <option value="CUSTOM">
-                              {settings.scheduleDailyBriefTime} (직접 설정)
-                            </option>
-                          )}
-                          {BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
-                            <option value="CUSTOM">직접 설정...</option>
-                          )}
-                        </StyledSelect>
-                      </TimeSelectRow>
-
-                      {(isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime)) && (
-                        <CustomTimePickerRow>
-                          <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
-                          <StyledTimeInput
-                            type="time"
-                            value={settings.scheduleDailyBriefTime}
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                handleUpdate({ scheduleDailyBriefTime: e.target.value });
-                                trackEvent("[Daily Brief] 학사일정 시간 직접 입력", {
-                                  time: e.target.value,
-                                });
-                              }
+                      {/* 수업 시작 전 알림 */}
+                      <SubOptionBox>
+                        <SubOptionHeader>
+                          <SubOptionTextWrapper>
+                            <SubOptionTitle>수업 시작 전 알림</SubOptionTitle>
+                            <SubOptionDesc>
+                              강의가 시작되기 전에 푸시 알림으로 미리 받아볼 수 있어요.
+                            </SubOptionDesc>
+                          </SubOptionTextWrapper>
+                          <Switch
+                            checked={settings.timetablePreAlertEnabled}
+                            onCheckedChange={(checked) => {
+                              handleUpdate({ timetablePreAlertEnabled: checked });
+                              trackEvent("[Daily Brief] 수업 전 알림 토글", { enabled: checked });
                             }}
                           />
-                        </CustomTimePickerRow>
-                      )}
-                    </TimeOptionContainer>
-                  </SubOptionBox>
+                        </SubOptionHeader>
 
-                  <Divider margin="0" />
+                        {settings.timetablePreAlertEnabled && (
+                          <>
+                            <ChipGroup>
+                              {PRE_ALERT_PRESETS.map((opt) => (
+                                <SelectableChip
+                                  key={opt.value}
+                                  $selected={!isCustomPreAlertOpen && settings.timetablePreAlertMinutes === opt.value}
+                                  onClick={() => handlePreAlertMinutesChange(opt.value)}
+                                >
+                                  {opt.label}
+                                </SelectableChip>
+                              ))}
+                              <SelectableChip
+                                $selected={isCustomPreAlertOpen || !isPreAlertInPresets}
+                                onClick={() => {
+                                  setIsCustomPreAlertOpen(true);
+                                  setCustomPreAlertInput(String(settings.timetablePreAlertMinutes));
+                                }}
+                              >
+                                {!isPreAlertInPresets ? `${settings.timetablePreAlertMinutes}분 전 (직접 설정)` : "직접 설정"}
+                              </SelectableChip>
+                            </ChipGroup>
 
-                  {/* 알림 수신 대상 범위 */}
-                  <SubOptionBox>
-                    <SubOptionTextWrapper style={{ marginBottom: "12px" }}>
-                      <SubOptionTitle>알림 수신 대상 범위</SubOptionTitle>
-                      <SubOptionDesc>
-                        받고 싶은 일정의 종류를 선택할 수 있어요.
-                      </SubOptionDesc>
-                    </SubOptionTextWrapper>
+                            {isCustomPreAlertOpen && (
+                              <CustomInputRow>
+                                <StyledNumberInput
+                                  type="number"
+                                  min={1}
+                                  max={180}
+                                  placeholder="분 입력 (예: 25)"
+                                  value={customPreAlertInput}
+                                  onChange={(e) => setCustomPreAlertInput(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleCustomPreAlertSubmit();
+                                  }}
+                                />
+                                <InputUnitLabel>분 전</InputUnitLabel>
+                                <ApplyButton onClick={handleCustomPreAlertSubmit}>적용</ApplyButton>
+                                <CancelButton onClick={() => setIsCustomPreAlertOpen(false)}>취소</CancelButton>
+                              </CustomInputRow>
+                            )}
+                          </>
+                        )}
+                      </SubOptionBox>
 
-                    <ScopeOptionList>
-                      {SCHEDULE_SCOPE_OPTIONS.map((opt) => (
-                        <ScopeOptionCard
-                          key={opt.value}
-                          $selected={settings.scheduleScope === opt.value}
-                          onClick={() => handleScheduleScopeChange(opt.value)}
-                        >
-                          <RadioCircle $selected={settings.scheduleScope === opt.value} />
-                          <ScopeTextWrapper>
-                            <ScopeLabel $selected={settings.scheduleScope === opt.value}>
-                              {opt.label}
-                            </ScopeLabel>
-                            <ScopeDesc>{opt.desc}</ScopeDesc>
-                          </ScopeTextWrapper>
-                        </ScopeOptionCard>
-                      ))}
-                    </ScopeOptionList>
+                      <Divider margin="0" />
 
-                    {!userInfo.department && (
-                      <DeptWarningRow onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}>
-                        <DeptWarningText>
-                          학과 정보가 미등록 상태예요. 학과를 설정하면 학과 일정 알림을 받아볼 수 있어요.
-                        </DeptWarningText>
-                        <ChevronRight size={16} color="#8E8E93" />
-                      </DeptWarningRow>
-                    )}
-                  </SubOptionBox>
-                </>
-              )}
-            </Box>
-          </TitleContentArea>
-        )}
+                      {/* 당일 강의 목록 브리핑 */}
+                      <SubOptionBox>
+                        <SubOptionHeader>
+                          <SubOptionTextWrapper>
+                            <SubOptionTitle>당일 강의 목록 브리핑</SubOptionTitle>
+                            <SubOptionDesc>
+                              지정한 시간에 오늘 수강할 강의 목록을 한 번에 정리해서 받아볼 수 있어요.
+                            </SubOptionDesc>
+                          </SubOptionTextWrapper>
+                          <Switch
+                            checked={settings.timetableDailyBriefEnabled}
+                            onCheckedChange={(checked) => {
+                              handleUpdate({ timetableDailyBriefEnabled: checked });
+                              trackEvent("[Daily Brief] 당일 강의 목록 알림 토글", { enabled: checked });
+                            }}
+                          />
+                        </SubOptionHeader>
 
-        {/* 탭 3: 학교 공지 알리미 */}
-        {currentTab === "school" && (
-          <MobileSchoolAlarmSetting location="Daily Brief Page" />
-        )}
+                        {settings.timetableDailyBriefEnabled && (
+                          <TimeOptionContainer>
+                            <TimeSelectRow>
+                              <TimeSelectLabel>알림 수신 시간</TimeSelectLabel>
+                              <StyledSelect
+                                value={isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) ? "CUSTOM" : settings.timetableDailyBriefTime}
+                                onChange={(e) => {
+                                  if (e.target.value === "CUSTOM") {
+                                    setIsCustomTtTimeOpen(true);
+                                    return;
+                                  }
+                                  setIsCustomTtTimeOpen(false);
+                                  handleUpdate({ timetableDailyBriefTime: e.target.value });
+                                  trackEvent("[Daily Brief] 강의 목록 수신 시간 변경", {
+                                    time: e.target.value,
+                                  });
+                                }}
+                              >
+                                {BASE_TIME_PRESETS.map((time) => (
+                                  <option key={`tt-${time}`} value={time}>
+                                    {time}
+                                  </option>
+                                ))}
+                                {!BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
+                                  <option value="CUSTOM">
+                                    {settings.timetableDailyBriefTime} (직접 설정)
+                                  </option>
+                                )}
+                                {BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
+                                  <option value="CUSTOM">직접 설정...</option>
+                                )}
+                              </StyledSelect>
+                            </TimeSelectRow>
 
-        {/* 탭 4: 학과 공지 알리미 */}
-        {currentTab === "dept" && (
-          <MobileDeptAlarmSetting location="Daily Brief Page" />
-        )}
+                            {(isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime)) && (
+                              <CustomTimePickerRow>
+                                <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
+                                <StyledTimeInput
+                                  type="time"
+                                  value={settings.timetableDailyBriefTime}
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      handleUpdate({ timetableDailyBriefTime: e.target.value });
+                                      trackEvent("[Daily Brief] 강의 목록 시간 직접 입력", {
+                                        time: e.target.value,
+                                      });
+                                    }
+                                  }}
+                                />
+                              </CustomTimePickerRow>
+                            )}
+                          </TimeOptionContainer>
+                        )}
+                      </SubOptionBox>
+                    </>
+                  )}
+                </Box>
+              </TitleContentArea>
+            </SlideInnerWrapper>
+          </SwiperSlide>
+
+          {/* 슬라이드 2: 학사일정 알림 */}
+          <SwiperSlide style={{ height: "auto" }}>
+            <SlideInnerWrapper>
+              <TitleContentArea
+                title="학사일정 알림"
+                description="학교 공식 학사일정 및 학과 공지사항에 등록된 일정을 브리핑으로 받아볼 수 있어요."
+              >
+                <Box style={{ width: "100%", padding: 0 }}>
+                  <SettingRow>
+                    <RowContent>
+                      <RowTitle>학사일정 브리핑 받기</RowTitle>
+                      <RowDescription>
+                        오늘에 해당하는 학사 및 학과 일정을 지정된 시간에 묶어서 받아볼 수 있어요.
+                      </RowDescription>
+                    </RowContent>
+                    <SwitchContainer>
+                      <Switch
+                        checked={settings.scheduleAlertEnabled}
+                        onCheckedChange={(checked) => {
+                          handleUpdate({ scheduleAlertEnabled: checked });
+                          trackEvent("[Daily Brief] 학사일정 알림 토글", { enabled: checked });
+                        }}
+                      />
+                    </SwitchContainer>
+                  </SettingRow>
+
+                  {settings.scheduleAlertEnabled && (
+                    <>
+                      <Divider margin="0" />
+
+                      {/* 학사일정 브리핑 시간 */}
+                      <SubOptionBox>
+                        <TimeOptionContainer>
+                          <TimeSelectRow>
+                            <SubOptionTextWrapper>
+                              <SubOptionTitle>브리핑 수신 시간</SubOptionTitle>
+                              <SubOptionDesc>
+                                매일 해당 시각에 오늘의 일정이 있을 때만 알림을 받아볼 수 있어요.
+                              </SubOptionDesc>
+                            </SubOptionTextWrapper>
+                            <StyledSelect
+                              value={isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) ? "CUSTOM" : settings.scheduleDailyBriefTime}
+                              onChange={(e) => {
+                                if (e.target.value === "CUSTOM") {
+                                  setIsCustomSchedTimeOpen(true);
+                                  return;
+                                }
+                                setIsCustomSchedTimeOpen(false);
+                                handleUpdate({ scheduleDailyBriefTime: e.target.value });
+                                trackEvent("[Daily Brief] 학사일정 수신 시간 변경", {
+                                  time: e.target.value,
+                                });
+                              }}
+                            >
+                              {BASE_TIME_PRESETS.map((time) => (
+                                <option key={`sched-${time}`} value={time}>
+                                  {time}
+                                </option>
+                              ))}
+                              {!BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
+                                <option value="CUSTOM">
+                                  {settings.scheduleDailyBriefTime} (직접 설정)
+                                </option>
+                              )}
+                              {BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
+                                <option value="CUSTOM">직접 설정...</option>
+                              )}
+                            </StyledSelect>
+                          </TimeSelectRow>
+
+                          {(isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime)) && (
+                            <CustomTimePickerRow>
+                              <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
+                              <StyledTimeInput
+                                type="time"
+                                value={settings.scheduleDailyBriefTime}
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleUpdate({ scheduleDailyBriefTime: e.target.value });
+                                    trackEvent("[Daily Brief] 학사일정 시간 직접 입력", {
+                                      time: e.target.value,
+                                    });
+                                  }
+                                }}
+                              />
+                            </CustomTimePickerRow>
+                          )}
+                        </TimeOptionContainer>
+                      </SubOptionBox>
+
+                      <Divider margin="0" />
+
+                      {/* 알림 수신 대상 범위 */}
+                      <SubOptionBox>
+                        <SubOptionTextWrapper style={{ marginBottom: "12px" }}>
+                          <SubOptionTitle>알림 수신 대상 범위</SubOptionTitle>
+                          <SubOptionDesc>
+                            받고 싶은 일정의 종류를 선택할 수 있어요.
+                          </SubOptionDesc>
+                        </SubOptionTextWrapper>
+
+                        <ScopeOptionList>
+                          {SCHEDULE_SCOPE_OPTIONS.map((opt) => (
+                            <ScopeOptionCard
+                              key={opt.value}
+                              $selected={settings.scheduleScope === opt.value}
+                              onClick={() => handleScheduleScopeChange(opt.value)}
+                            >
+                              <RadioCircle $selected={settings.scheduleScope === opt.value} />
+                              <ScopeTextWrapper>
+                                <ScopeLabel $selected={settings.scheduleScope === opt.value}>
+                                  {opt.label}
+                                </ScopeLabel>
+                                <ScopeDesc>{opt.desc}</ScopeDesc>
+                              </ScopeTextWrapper>
+                            </ScopeOptionCard>
+                          ))}
+                        </ScopeOptionList>
+
+                        {!userInfo.department && (
+                          <DeptWarningRow onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}>
+                            <DeptWarningText>
+                              학과 정보가 미등록 상태예요. 학과를 설정하면 학과 일정 알림을 받아볼 수 있어요.
+                            </DeptWarningText>
+                            <ChevronRight size={16} color="#8E8E93" />
+                          </DeptWarningRow>
+                        )}
+                      </SubOptionBox>
+                    </>
+                  )}
+                </Box>
+              </TitleContentArea>
+            </SlideInnerWrapper>
+          </SwiperSlide>
+
+          {/* 슬라이드 3: 학교 공지 알리미 */}
+          <SwiperSlide style={{ height: "auto" }}>
+            <SlideInnerWrapper>
+              <MobileSchoolAlarmSetting location="Daily Brief Page" />
+            </SlideInnerWrapper>
+          </SwiperSlide>
+
+          {/* 슬라이드 4: 학과 공지 알리미 */}
+          <SwiperSlide style={{ height: "auto" }}>
+            <SlideInnerWrapper>
+              <MobileDeptAlarmSetting location="Daily Brief Page" />
+            </SlideInnerWrapper>
+          </SwiperSlide>
+        </Swiper>
+
+        <SwipeChevronGuides
+          hasSwiped={hasSwiped}
+          currentIndex={currentIndex}
+          totalSlides={DAILY_BRIEF_TABS.length}
+        />
       </ContentContainer>
     </PageWrapper>
   );
@@ -1031,10 +1094,21 @@ const ContentContainer = styled.div`
   flex-direction: column;
   gap: 24px;
 
+  .swiper-autoheight {
+    transition: height 0ms !important;
+  }
+
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_READING_WIDTH});
     margin: 0 auto;
   }
+`;
+
+const SlideInnerWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 `;
 
 const SettingRow = styled.div`
