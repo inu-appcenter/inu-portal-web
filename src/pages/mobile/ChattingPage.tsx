@@ -1120,6 +1120,16 @@ const ChatPageWrapper = styled.div`
   overscroll-behavior: none;
   background-color: var(--bg-base, #ffffff);
   z-index: 60;
+
+  @media (min-width: 768px) {
+    max-width: 1200px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    border-left: 1px solid #eaeaea;
+    border-right: 1px solid #eaeaea;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
+  }
 `;
 
 const HeaderRightArea = styled.div`
@@ -1329,7 +1339,7 @@ const MessageContainer = styled.div`
   max-width: 92%;
 
   @media (min-width: 768px) {
-    max-width: 660px;
+    max-width: 82%;
   }
 `;
 
@@ -1409,11 +1419,7 @@ const Bubble = styled.div<{ $bgColor: string }>`
   white-space: pre-wrap;
 
   @media (min-width: 768px) {
-    max-width: 560px;
-  }
-
-  @media (min-width: 1024px) {
-    max-width: 640px;
+    max-width: 780px;
   }
 `;
 
