@@ -88,6 +88,14 @@ const preprocessMarkdown = (rawText: string): string => {
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n");
 
+  // 1-1. 개행 없이 이어진 마크다운 구조(헤더, 구분선, 출처, 연속 링크 등) 방어적 개행 보정 (레거시 DB 데이터 대응)
+  text = text.replace(/([^\n])(#{1,6}\s+)/g, "$1\n\n$2");
+  text = text.replace(/([^\n])(---)/g, "$1\n\n$2");
+  text = text.replace(/(---)([^\n])/g, "$1\n\n$2");
+  text = text.replace(/([^\n])(\[출처\])/g, "$1\n\n$2");
+  text = text.replace(/(\[출처\])([^\n])/g, "$1\n$2");
+  text = text.replace(/(\]\(https?:\/\/[^\s)]+\))(?=\[)/g, "$1\n");
+
   // 2. 레거시 태그 및 접두사 제거
   text = text.replace(/\[CHATBULI_ANSWER\]/g, "");
   text = text.replace(/^\[챗불이 답변\]\s*/g, "");
@@ -299,8 +307,8 @@ const MarkdownContainer = styled.div`
   width: 100%;
   font-size: 15px;
   line-height: 1.6;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow-wrap: break-word;
   color: #1c1c1e;
 
   p {

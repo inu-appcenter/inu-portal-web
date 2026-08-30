@@ -185,6 +185,7 @@ const BotCardContent = styled.div`
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  min-width: 250px;
   box-sizing: border-box;
 `;
 
