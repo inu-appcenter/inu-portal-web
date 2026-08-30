@@ -116,6 +116,7 @@ export default function MobileDailyBriefSettingPage() {
   }, [targetTab]);
 
   const handleUpdate = async (patch: Partial<DailyBriefSettings>) => {
+    const prevSettings = settings;
     const nextSettings = { ...settings, ...patch };
     setSettings(nextSettings);
 
@@ -123,6 +124,9 @@ export default function MobileDailyBriefSettingPage() {
       await updateDailyBriefSettings(nextSettings);
     } catch (error) {
       console.error("Daily Brief 설정 저장 실패:", error);
+      alert("설정을 저장하지 못했습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.");
+      // 실패 시 이전 설정 상태로 롤백
+      setSettings(prevSettings);
     }
   };
 
