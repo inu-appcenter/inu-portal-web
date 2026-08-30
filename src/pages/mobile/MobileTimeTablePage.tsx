@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
-import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 import {
   Pencil,
   Lock,
@@ -39,7 +39,6 @@ import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateM
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
-import { TimeTable } from "@/types/timetables";
 
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 

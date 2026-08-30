@@ -6,7 +6,7 @@ import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
-import { getFriendPrimaryTimeTableDetail } from "@/apis/timetables";
+import { getChatRoomPrimaryTimeTables, getFriendPrimaryTimeTableDetail } from "@/apis/timetables";
 import { createPersonalChatRoom } from "@/apis/chat";
 import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
@@ -105,6 +105,13 @@ export default function MobileTimeTableComparePage() {
     queryFn: getFriends,
   });
 
+  const chatRoomTimetablesQuery = useQuery({
+    queryKey: ["timetables", "chat-room-primary", originRoomId, openSemester?.year, openSemester?.term],
+    queryFn: () => getChatRoomPrimaryTimeTables(originRoomId, openSemester!.year, openSemester!.term),
+    enabled: Boolean(originRoomId) && openSemester?.year != null && openSemester?.term != null,
+    retry: false,
+  });
+
   const friendsMap = useMemo(() => {
     const list = friendsRes?.data || [];
     return list;
@@ -147,11 +154,21 @@ export default function MobileTimeTableComparePage() {
   );
 
   const queriedFriends = useMemo(() => {
+    if (originRoomId) {
+      return (chatRoomTimetablesQuery.data ?? [])
+        .filter((member) => member.memberId !== userInfo.id)
+        .map((member) => ({
+          friendId: member.memberId,
+          friendMemberId: member.memberId,
+          nickname: member.nickname,
+          friendAlias: undefined,
+        }));
+    }
     if (!friendIdsParam && !memberIdsParam) return friendsMap;
     return friendsMap.filter((friend) =>
       selectedFriendIds.includes(friend.friendId),
     );
-  }, [friendsMap, friendIdsParam, memberIdsParam, selectedFriendIds]);
+  }, [originRoomId, chatRoomTimetablesQuery.data, userInfo.id, friendsMap, friendIdsParam, memberIdsParam, selectedFriendIds]);
 
   const friendTimetableQueries = useQueries({
     queries: queriedFriends.map((friend) => {
@@ -171,6 +188,7 @@ export default function MobileTimeTableComparePage() {
             openSemester!.term,
           ),
         enabled:
+          !originRoomId &&
           Boolean(friendMemberId) &&
           openSemester?.year != null &&
           openSemester?.term != null,
@@ -183,7 +201,9 @@ export default function MobileTimeTableComparePage() {
 
   const friendTimetablesByFriendId = useMemo(() => {
     const entries = queriedFriends.map((friend, index) => {
-      const detail = friendTimetableQueries[index]?.data;
+      const detail = originRoomId
+        ? chatRoomTimetablesQuery.data?.find((member) => member.memberId === friend.friendMemberId)?.timeTable
+        : friendTimetableQueries[index]?.data;
       // 학기가 어긋난 응답은 그리드에도 올리지 않는다 - 상태만 ERROR로 감춰도
       // 이 맵에서 걸러지지 않으면 블록은 그대로 그려진다.
       const classes =
@@ -194,15 +214,20 @@ export default function MobileTimeTableComparePage() {
     });
 
     return new Map(entries);
-  }, [queriedFriends, friendTimetableQueries, openSemester]);
+  }, [queriedFriends, friendTimetableQueries, chatRoomTimetablesQuery.data, originRoomId, openSemester]);
 
   const friendTimetableStatesByFriendId = useMemo(() => {
     const entries = queriedFriends.map((friend, index) => {
       const query = friendTimetableQueries[index];
-      const detail = query?.data;
+      const chatMember = chatRoomTimetablesQuery.data?.find((member) => member.memberId === friend.friendMemberId);
+      const detail = originRoomId ? chatMember?.timeTable : query?.data;
       let state: FriendTimetableState;
 
-      if (query?.isPending) {
+      if (originRoomId && chatRoomTimetablesQuery.isPending) {
+        state = "LOADING";
+      } else if (originRoomId && chatMember?.visibility === "PRIVATE") {
+        state = "PRIVATE";
+      } else if (query?.isPending) {
         state = "LOADING";
       } else if (detail && isSemesterMismatch(detail, openSemester)) {
         console.warn(
@@ -226,9 +251,15 @@ export default function MobileTimeTableComparePage() {
     });
 
     return new Map(entries);
-  }, [queriedFriends, friendTimetableQueries, openSemester]);
+  }, [queriedFriends, friendTimetableQueries, chatRoomTimetablesQuery.data, chatRoomTimetablesQuery.isPending, originRoomId, openSemester]);
 
   const activeFriends = useMemo(() => {
+    if (originRoomId) {
+      return [
+        { friendId: 99999, nickname: "나", friendAlias: "나" },
+        ...queriedFriends,
+      ];
+    }
     // 쿼리로 들어온 ID에 매칭되는 친구 필터링
     const filtered = friendsMap.filter((f) =>
       selectedFriendIds.includes(f.friendId),
@@ -240,7 +271,12 @@ export default function MobileTimeTableComparePage() {
       { friendId: 99999, nickname: "나", friendAlias: "나" },
       ...baseList,
     ];
-  }, [friendsMap, selectedFriendIds, friendIdsParam, memberIdsParam]);
+  }, [originRoomId, queriedFriends, friendsMap, selectedFriendIds, friendIdsParam, memberIdsParam]);
+
+  const comparisonIds = useMemo(
+    () => originRoomId ? queriedFriends.map((friend) => friend.friendId) : selectedFriendIds,
+    [originRoomId, queriedFriends, selectedFriendIds],
+  );
 
   useLayoutEffect(() => {
     const element = chipScrollRef.current;
@@ -273,8 +309,8 @@ export default function MobileTimeTableComparePage() {
     (searchParams.get("tab") as "compare" | "free") || "compare";
 
   const isSingleFriendMode = useMemo(() => {
-    return selectedFriendIds.length === 1;
-  }, [selectedFriendIds]);
+    return comparisonIds.length === 1;
+  }, [comparisonIds]);
 
   // subHeader 정의 (대분류 탭을 고정 헤더 영역으로 이동)
   const subHeader = useMemo(
@@ -295,10 +331,10 @@ export default function MobileTimeTableComparePage() {
           setSearchParams(newParams, { replace: true });
 
           if (id === "free") {
-            setSelectedFriendIdsState([99999, ...selectedFriendIds]);
+            setSelectedFriendIdsState([99999, ...comparisonIds]);
           } else if (id === "compare") {
-            if (selectedFriendIds.length === 1) {
-              setSelectedFriendIdsState([selectedFriendIds[0]]);
+            if (comparisonIds.length === 1) {
+              setSelectedFriendIdsState([comparisonIds[0]]);
             } else {
               setSelectedFriendIdsState([99999]);
             }
@@ -306,7 +342,7 @@ export default function MobileTimeTableComparePage() {
         }}
       />
     ),
-    [activeTabUpper, selectedFriendIds, searchParams, setSearchParams],
+    [activeTabUpper, comparisonIds, searchParams, setSearchParams],
   );
 
   // 1. 헤더 설정
@@ -323,26 +359,26 @@ export default function MobileTimeTableComparePage() {
   >(() => {
     const currentTab = searchParams.get("tab") || "compare";
     if (currentTab === "free") {
-      return [99999, ...selectedFriendIds];
+      return [99999, ...comparisonIds];
     }
     if (isSingleFriendMode) {
-      return [selectedFriendIds[0]];
+      return [comparisonIds[0]];
     }
     return [99999];
   });
 
-  // URL 쿼리 파라미터(ids)가 변경되면 상태를 동기화
+  // URL 또는 단체톡 참여자 목록이 변경되면 선택 상태를 동기화
   useEffect(() => {
     if (activeTabUpper === "free") {
-      setSelectedFriendIdsState([99999, ...selectedFriendIds]);
+      setSelectedFriendIdsState([99999, ...comparisonIds]);
     } else {
-      if (selectedFriendIds.length === 1) {
-        setSelectedFriendIdsState([selectedFriendIds[0]]);
+      if (comparisonIds.length === 1) {
+        setSelectedFriendIdsState([comparisonIds[0]]);
       } else {
         setSelectedFriendIdsState([99999]); // 비교 탭에서는 "나"만 선택된 상태로 리셋
       }
     }
-  }, [selectedFriendIds, activeTabUpper, isSingleFriendMode]);
+  }, [comparisonIds, activeTabUpper, isSingleFriendMode]);
 
   const handleFriendChipClick = (friendId: number) => {
     mixpanelTrack.timetableCompareAction("친구 선택", {
@@ -574,7 +610,7 @@ export default function MobileTimeTableComparePage() {
     const selectedFriendsTimetables = selectedFriendIdsState
       .filter((id) => id !== 99999)
       .map((friendId) => {
-        const friend = friendsMap.find((f) => f.friendId === friendId);
+        const friend = queriedFriends.find((f) => f.friendId === friendId);
         return friend ? getFriendTimetable(friend) : [];
       });
 
@@ -620,7 +656,7 @@ export default function MobileTimeTableComparePage() {
       }
     }
     return list;
-  }, [selectedFriendIdsState, friendsMap, getFriendTimetable, myClasses]);
+  }, [selectedFriendIdsState, queriedFriends, getFriendTimetable, myClasses]);
 
   // 만나기 좋은 시간: 1시간 초과인 경우 (긴 시간 순으로 정렬)
   const goodMeetingTimes = useMemo(() => {
@@ -646,7 +682,7 @@ export default function MobileTimeTableComparePage() {
     const selectedFriendsTimetables = selectedFriendIdsState
       .filter((id) => id !== 99999)
       .map((friendId) => {
-        const friend = friendsMap.find((f) => f.friendId === friendId);
+        const friend = queriedFriends.find((f) => f.friendId === friendId);
         return friend ? getFriendTimetable(friend) : [];
       });
 
@@ -708,7 +744,7 @@ export default function MobileTimeTableComparePage() {
       }
     }
     return result;
-  }, [selectedFriendIdsState, friendsMap, getFriendTimetable, myClasses]);
+  }, [selectedFriendIdsState, queriedFriends, getFriendTimetable, myClasses]);
 
   // 현재 탭 선택에 맞는 시간표 이벤트 결정
   const activeEvents = useMemo(() => {
@@ -730,7 +766,7 @@ export default function MobileTimeTableComparePage() {
       );
     }
     selectedFriendIdsState.forEach((friendId) => {
-      const friend = friendsMap.find((f) => f.friendId === friendId);
+      const friend = queriedFriends.find((f) => f.friendId === friendId);
       if (friend) {
         const classes = getFriendTimetable(friend);
         result.push(
@@ -747,7 +783,7 @@ export default function MobileTimeTableComparePage() {
   }, [
     activeTabUpper,
     selectedFriendIdsState,
-    friendsMap,
+    queriedFriends,
     getFriendTimetable,
     freeViewClasses,
     myClasses,
@@ -761,12 +797,12 @@ export default function MobileTimeTableComparePage() {
         .map((id) => ({
           id,
           name:
-            friendsMap.find((friend) => friend.friendId === id)?.friendAlias ||
-            friendsMap.find((friend) => friend.friendId === id)?.nickname ||
+            queriedFriends.find((friend) => friend.friendId === id)?.friendAlias ||
+            queriedFriends.find((friend) => friend.friendId === id)?.nickname ||
             "친구",
           state: friendTimetableStatesByFriendId.get(id) ?? "LOADING",
         })),
-    [selectedFriendIdsState, friendsMap, friendTimetableStatesByFriendId],
+    [selectedFriendIdsState, queriedFriends, friendTimetableStatesByFriendId],
   );
 
   const timetableNotice = useMemo(() => {
@@ -855,15 +891,13 @@ export default function MobileTimeTableComparePage() {
     targetFriendIds: number[],
   ): TimetableShareExtraData => ({
     title: "시간표 겹쳐보기 & 공강 공유",
-    friendIds: targetFriendIds,
+    friendIds: originRoomId ? [] : targetFriendIds,
     memberIds: [
       userInfo.id,
       ...targetFriendIds
-        .map(
-          (friendId) =>
-            friendsMap.find((friend) => friend.friendId === friendId)
-              ?.friendMemberId,
-        )
+        .map((friendId) => originRoomId
+          ? friendId
+          : friendsMap.find((friend) => friend.friendId === friendId)?.friendMemberId)
         .filter((memberId): memberId is number => memberId != null),
     ].filter(
       (memberId, index, ids) => memberId > 0 && ids.indexOf(memberId) === index,
