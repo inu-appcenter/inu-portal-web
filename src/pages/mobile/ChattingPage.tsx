@@ -1401,11 +1401,15 @@ const SystemMessage = styled.div`
 const MessageContainer = styled.div`
   display: flex;
   align-self: flex-start;
+  width: 95%;
   margin-right: auto;
   margin-bottom: 8px;
   max-width: 95%;
+  min-width: 0;
+  box-sizing: border-box;
 
   @media (min-width: 768px) {
+    width: 75%;
     margin-bottom: 12px;
     max-width: 75%;
   }
@@ -1455,6 +1459,10 @@ const SenderName = styled.span`
   color: #1c1c1e;
   cursor: pointer;
   width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   &:hover {
     color: #5e92f0;
@@ -1465,12 +1473,19 @@ const MessageBubble = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  min-width: 0;
   max-width: 100%;
   /* 길게 누르면 신고/차단 시트가 뜬다 — iOS WebView의 기본 텍스트 선택·복사
      말풍선이 대신 뜨면 시트를 가리므로 막는다. */
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+
+  /* 시간 영역을 남겨두고, 메시지 콘텐츠만 줄어들 수 있게 한다. */
+  > div {
+    min-width: 0;
+    max-width: calc(100% - 64px);
+  }
 `;
 
 const Bubble = styled.div<{ $bgColor: string }>`
@@ -1482,7 +1497,9 @@ const Bubble = styled.div<{ $bgColor: string }>`
   font-size: 14px;
   line-height: 20px;
   max-width: 100%;
+  box-sizing: border-box;
   word-break: break-word;
+  overflow-wrap: anywhere;
   background-color: ${(props) => props.$bgColor};
   color: #1c1c1e;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -1797,6 +1814,7 @@ const TimeArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex-shrink: 0;
 `;
 
 const UnreadCount = styled.span`
@@ -1813,11 +1831,15 @@ const MyMessageContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   align-self: flex-end;
+  width: 95%;
   margin-left: auto;
   margin-bottom: 8px;
   max-width: 95%;
+  min-width: 0;
+  box-sizing: border-box;
 
   @media (min-width: 768px) {
+    width: 75%;
     margin-bottom: 12px;
     max-width: 75%;
   }
