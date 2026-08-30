@@ -1063,9 +1063,7 @@ export function MobileDeptAlarmSetting({
           background: allAlarm
             ? "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)"
             : "#ffffff",
-          boxShadow: allAlarm
-            ? "0 8px 24px rgba(94, 146, 240, 0.15)"
-            : SOFT_CHIP_SHADOW,
+          boxShadow: "none",
           border: allAlarm
             ? "1px solid rgba(94, 146, 240, 0.3)"
             : "1px solid #e9ecef",
