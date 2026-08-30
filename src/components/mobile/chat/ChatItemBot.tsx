@@ -89,12 +89,15 @@ export default function ChatItemBot({
 
 const BotContainer = styled.div`
   display: flex;
-  margin: 0 16px 12px;
+  align-self: flex-start;
+  margin-right: auto;
+  margin-bottom: 12px;
   align-items: flex-start;
-  max-width: 95%;
+  max-width: 90%;
 
   @media (min-width: 768px) {
-    max-width: 88%;
+    margin-bottom: 16px;
+    max-width: 80%;
   }
 `;
 

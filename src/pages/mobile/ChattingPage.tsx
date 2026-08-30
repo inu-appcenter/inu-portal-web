@@ -1120,16 +1120,6 @@ const ChatPageWrapper = styled.div`
   overscroll-behavior: none;
   background-color: var(--bg-base, #ffffff);
   z-index: 60;
-
-  @media (min-width: 768px) {
-    max-width: 1200px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    border-left: 1px solid #eaeaea;
-    border-right: 1px solid #eaeaea;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
-  }
 `;
 
 const HeaderRightArea = styled.div`
@@ -1144,7 +1134,8 @@ const ChattingWrapper = styled.div`
   flex-direction: column-reverse;
   overflow-y: auto;
   padding-top: 76px;
-  //padding-bottom: 64px;
+  padding-left: 16px;
+  padding-right: 16px;
   box-sizing: border-box;
 
   /* iOS 하드웨어 가속 모멘텀 스크롤 활성화 */
@@ -1153,11 +1144,16 @@ const ChattingWrapper = styled.div`
   contain: content;
 
   &::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
   &::-webkit-scrollbar-thumb {
     background-color: #d1d1d1;
-    border-radius: 2px;
+    border-radius: 3px;
+  }
+
+  @media (min-width: 768px) {
+    padding-left: clamp(24px, 8vw, 120px);
+    padding-right: clamp(24px, 8vw, 120px);
   }
 `;
 
@@ -1196,6 +1192,11 @@ const FixedInputArea = styled.div`
     gap: 8px;
     min-height: 64px;
     box-sizing: border-box;
+
+    @media (min-width: 768px) {
+      padding-left: clamp(24px, 8vw, 120px);
+      padding-right: clamp(24px, 8vw, 120px);
+    }
   }
 `;
 
@@ -1317,7 +1318,7 @@ const SystemMessage = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 12px 16px;
+  margin: 12px 0;
 
   .bubble {
     background-color: #f2f2f7;
@@ -1335,11 +1336,14 @@ const SystemMessage = styled.div`
 
 const MessageContainer = styled.div`
   display: flex;
-  margin: 0 16px 8px;
-  max-width: 92%;
+  align-self: flex-start;
+  margin-right: auto;
+  margin-bottom: 8px;
+  max-width: 88%;
 
   @media (min-width: 768px) {
-    max-width: 82%;
+    margin-bottom: 12px;
+    max-width: 75%;
   }
 `;
 
@@ -1741,8 +1745,18 @@ const MyMessageContent = styled(MessageContent)`
   align-items: flex-end;
 `;
 
-const MyMessageContainer = styled(MessageContainer)`
-  flex-direction: row-reverse;
+const MyMessageContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-self: flex-end;
+  margin-left: auto;
+  margin-bottom: 8px;
+  max-width: 88%;
+
+  @media (min-width: 768px) {
+    margin-bottom: 12px;
+    max-width: 75%;
+  }
 `;
 
 const TitleWrapper = styled.div`
