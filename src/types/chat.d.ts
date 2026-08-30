@@ -10,7 +10,13 @@ export type ChatRoomType = "PERSONAL" | "OPEN";
  */
 export type ChatRoomStatus = "ACTIVE" | "CLOSED";
 
-export type MessageType = "TEXT" | "IMAGE" | "TIMETABLE_SHARE";
+export type MessageType =
+  | "TEXT"
+  | "IMAGE"
+  | "TIMETABLE_SHARE"
+  | "BOT_QUESTION"
+  | "BOT_ANSWER";
+
 
 export interface TimetableShareTimeSlot {
   day: number;

@@ -168,7 +168,46 @@ export const useChat = (roomId: string) => {
 
           const receivedMessage = parsed as ChatMessage;
           setMessages((prev) => {
-            // 중복 메시지 방지 로직 추가
+            // 챗불이 답변 메시지 수신 시 펜딩 중인 봇 카드가 있다면 In-place로 교체
+            const isBotAnswer =
+              receivedMessage.senderNickname === "챗불이" ||
+              receivedMessage.messageType === "BOT_ANSWER" ||
+              (receivedMessage.content &&
+                receivedMessage.content.includes("[CHATBULI_ANSWER]"));
+
+            if (isBotAnswer) {
+              const pendingIdx = prev.findIndex(
+                (m) =>
+                  m.extraData === "PENDING" ||
+                  m.messageId?.startsWith("temp-bot-"),
+              );
+              if (pendingIdx !== -1) {
+                const next = [...prev];
+                next[pendingIdx] = receivedMessage;
+                return next;
+              }
+            }
+
+            // 챗불이 질문 메시지 수신 시 로컬 낙관적 질문 카드가 있다면 In-place로 교체
+            const isBotQuestion =
+              receivedMessage.messageType === "BOT_QUESTION" ||
+              (receivedMessage.content &&
+                receivedMessage.content.includes("[CHATBULI_QUESTION]"));
+
+            if (isBotQuestion) {
+              const tempQIdx = prev.findIndex(
+                (m) =>
+                  m.messageId?.startsWith("temp-q-") &&
+                  m.content === receivedMessage.content,
+              );
+              if (tempQIdx !== -1) {
+                const next = [...prev];
+                next[tempQIdx] = receivedMessage;
+                return next;
+              }
+            }
+
+            // 중복 메시지 방지 로직
             const isDuplicate = prev.some(
               (m) => m.messageId === receivedMessage.messageId,
             );
@@ -283,6 +322,25 @@ export const useChat = (roomId: string) => {
     };
   }, [roomId, syncRoom, tokenInfo.accessToken]);
 
+  const waitForConnection = (timeoutMs = 3000): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (clientRef.current?.connected) {
+        resolve(true);
+        return;
+      }
+      const startTime = Date.now();
+      const interval = setInterval(() => {
+        if (clientRef.current?.connected) {
+          clearInterval(interval);
+          resolve(true);
+        } else if (Date.now() - startTime >= timeoutMs) {
+          clearInterval(interval);
+          resolve(false);
+        }
+      }, 100);
+    });
+  };
+
   const sendMessage = (
     content: string,
     isAnonymous: boolean,
@@ -298,7 +356,7 @@ export const useChat = (roomId: string) => {
         isAnonymous,
         imageFiles,
         onProgress,
-      ) // 변경: 파일 배열 및 프로그레스 전달
+      )
         .then((response) => {
           console.log("이미지 메시지 전송 완료:", response);
         })
@@ -308,6 +366,25 @@ export const useChat = (roomId: string) => {
         });
       return true;
     } else {
+      if (!clientRef.current?.connected) {
+        // 소켓이 일시적으로 끊겼을 때 최대 3초간 재연결 대기 후 발송
+        waitForConnection(3000).then((connected) => {
+          if (connected) {
+            publish(
+              clientRef.current,
+              roomId,
+              content,
+              isAnonymous,
+              messageType,
+              extraData,
+            );
+          } else {
+            console.error("STOMP 재연결 대기 시간 초과로 메시지 전송 실패");
+          }
+        });
+        return true;
+      }
+
       return publish(
         clientRef.current,
         roomId,
@@ -355,6 +432,7 @@ export const useChat = (roomId: string) => {
 
   return {
     messages,
+    setMessages,
     sendMessage,
     isLoading,
     isFetchingPrevious,
@@ -367,3 +445,4 @@ export const useChat = (roomId: string) => {
     refreshRoom,
   };
 };
+

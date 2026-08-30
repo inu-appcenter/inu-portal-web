@@ -2,13 +2,17 @@ import styled from "styled-components";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
-import { Send, Users, Loader2, Image, ArrowDown } from "lucide-react";
+import { Send, Users, Loader2, ArrowDown, Plus, X } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import TimetableShareCard from "@/components/mobile/chat/TimetableShareCard";
+import ChatItemBot from "@/components/mobile/chat/ChatItemBot";
+import ChatSlashCommandPopup from "@/components/mobile/chat/ChatSlashCommandPopup";
+import ChatPlusMenu from "@/components/mobile/chat/ChatPlusMenu";
+import ChatBulIcon from "@/resources/assets/ai/chat-bul-button.webp";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import {
@@ -127,6 +131,10 @@ export default function ChattingPage() {
   const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>(
     [],
   );
+  const [isChatbuliMode, setIsChatbuliMode] = useState<boolean>(false);
+  const [isSlashPopupOpen, setIsSlashPopupOpen] = useState<boolean>(false);
+  const [isPlusMenuOpen, setIsPlusMenuOpen] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -134,6 +142,7 @@ export default function ChattingPage() {
 
   const {
     messages,
+    setMessages,
     sendMessage,
     isLoading,
     isFetchingPrevious,
@@ -464,6 +473,11 @@ export default function ChattingPage() {
     lastMessageCountRef.current = currentCount;
   }, [messages, isFetchingPrevious]);
 
+  const isMobile = React.useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  }, []);
+
   const handleInput = () => {
     const el = inputRef.current;
     if (el) {
@@ -472,11 +486,75 @@ export default function ChattingPage() {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+
+    if (!isChatbuliMode) {
+      if (/^(\/|\/ㅊ|\/채|\/챗|\/챗불|\/챗불이)$/i.test(val.trim())) {
+        setIsSlashPopupOpen(true);
+      } else {
+        setIsSlashPopupOpen(false);
+      }
+    }
+  };
+
+  const handleEnterChatbuliMode = () => {
+    setIsChatbuliMode(true);
+    setInputValue("");
+    setIsSlashPopupOpen(false);
+    setIsPlusMenuOpen(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  };
+
+  const handleExitChatbuliMode = () => {
+    setIsChatbuliMode(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // 1. 슬래시 명령어 입력 중 공백/엔터 입력 시 챗불이 모드로 확정 전환
+    if (
+      !isChatbuliMode &&
+      /^(\/|\/ㅊ|\/채|\/챗|\/챗불|\/챗불이)$/i.test(inputValue.trim())
+    ) {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        handleEnterChatbuliMode();
+        return;
+      }
+    }
+
+    // 2. 챗불이 모드에서 빈 입력창일 때 백스페이스 누르면 모드 해제
+    if (isChatbuliMode && inputValue === "" && e.key === "Backspace") {
+      e.preventDefault();
+      handleExitChatbuliMode();
+      return;
+    }
+
+    // 3. 엔터 키 처리
+    if (e.key === "Enter" && !e.shiftKey) {
+      if (isMobile) {
+        // 모바일 가상 키보드에서는 엔터 누르면 줄바꿈(개행) 유지, 전송은 전송 버튼으로
+        return;
+      }
+
+      if (e.nativeEvent.isComposing) return;
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   const handleSendMessage = () => {
-    if (!inputValue.trim() || !roomInfo) return;
+    const trimmed = inputValue.trim();
+    if (!trimmed || !roomInfo) return;
 
     // 욕설·혐오·성적 표현은 전송 전에 차단한다 (커뮤니티 무관용 정책)
-    const profanity = checkProfanity(inputValue);
+    const profanity = checkProfanity(trimmed);
     if (profanity.hasProfanity) {
       alert(buildProfanityAlertMessage(profanity.matched));
       return;
@@ -490,13 +568,69 @@ export default function ChattingPage() {
       isFestivalChat,
     );
 
-    sendMessage(inputValue.trim(), roomInfo.anonymous);
-    setInputValue("");
+    if (isChatbuliMode) {
+      const formattedQuestion = `[챗불이에게 질문] ${trimmed}\n[CHATBULI_QUESTION]`;
+      const tempQId = `temp-q-${Date.now()}`;
+      const tempBotId = `temp-bot-${Date.now()}`;
+      const nowIso = new Date().toISOString();
+
+      const questionMsg: ChatMessage = {
+        messageId: tempQId,
+        roomId: roomId ?? "",
+        senderNickname: userInfo?.nickname || "나",
+        senderAlias: null,
+        senderChatRoomMemberId: 0,
+        senderHash: myHash || "",
+        content: formattedQuestion,
+        imageCount: 0,
+        unreadCount: 0,
+        messageType: "BOT_QUESTION",
+        extraData: null,
+        createDate: nowIso,
+      };
+
+      const pendingBotMsg: ChatMessage = {
+        messageId: tempBotId,
+        roomId: roomId ?? "",
+        senderNickname: "챗불이",
+        senderAlias: null,
+        senderChatRoomMemberId: 0,
+        senderHash: "BOT_CHATBULI",
+        content: "",
+        imageCount: 0,
+        unreadCount: 0,
+        messageType: "BOT_ANSWER",
+        extraData: "PENDING",
+        createDate: nowIso,
+      };
+
+      setMessages((prev) => [...prev, questionMsg, pendingBotMsg]);
+      sendMessage(
+        formattedQuestion,
+        roomInfo.anonymous,
+        [],
+        undefined,
+        "BOT_QUESTION",
+      );
+
+      setInputValue("");
+      setIsChatbuliMode(false);
+      setIsSlashPopupOpen(false);
+    } else {
+      sendMessage(trimmed, roomInfo.anonymous);
+      setInputValue("");
+    }
+
     if (inputRef.current) inputRef.current.style.height = "auto";
 
     // 본인이 메시지를 직접 보낸 것이므로 즉시 스크롤을 최하단으로 정렬
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = 0;
+        }
+      });
     }
   };
 
@@ -747,9 +881,25 @@ export default function ChattingPage() {
 
           const isSystemMessage = msg.senderNickname === "알림";
 
+          const isBotMessage =
+            msg.senderNickname === "챗불이" ||
+            msg.messageType === "BOT_ANSWER" ||
+            (msg.content && msg.content.includes("[CHATBULI_ANSWER]"));
+
+          const isPending =
+            msg.extraData === "PENDING" ||
+            msg.messageId?.startsWith("temp-bot-");
+
           return (
             <React.Fragment key={msg.messageId || `msg-${originalIndex}`}>
-              {isSystemMessage ? (
+              {isBotMessage ? (
+                <ChatItemBot
+                  message={msg}
+                  showTime={showTime}
+                  isLoading={isPending}
+                  onAskHere={handleEnterChatbuliMode}
+                />
+              ) : isSystemMessage ? (
                 <SystemMessage>
                   <div className="bubble">{msg.content}</div>
                 </SystemMessage>
@@ -794,47 +944,88 @@ export default function ChattingPage() {
       )}
 
       <FixedInputArea>
-        <div className="input-wrapper">
-          <label htmlFor="image-upload">
-            <input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            />
-            <IconButton as="span">
-              <Image size={24} color="#767676" />
-            </IconButton>
-          </label>
+        <ChatSlashCommandPopup
+          isOpen={isSlashPopupOpen}
+          onSelect={handleEnterChatbuliMode}
+        />
 
-          <Input
-            placeholder="메시지 입력"
-            ref={inputRef}
-            onInput={handleInput}
-            rows={1}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onFocus={() => {
-              // iOS 가상 키보드가 완전히 열릴 때까지 대기 후 스크롤 하단 자동 고정
-              setTimeout(() => {
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTop = 0;
-                }
-              }, 200);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                if (e.nativeEvent.isComposing) return;
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
+        <ChatPlusMenu
+          isOpen={isPlusMenuOpen}
+          onClose={() => setIsPlusMenuOpen(false)}
+          onSelectChatbuli={handleEnterChatbuliMode}
+          onSelectImage={() => {
+            fileInputRef.current?.click();
+          }}
+        />
+
+        <div className="input-wrapper">
+          <input
+            ref={fileInputRef}
+            id="image-upload"
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: "none" }}
+            onChange={handleImageUpload}
           />
-          <SendButton
-            onClick={handleSendMessage}
+          <IconButton
+            type="button"
+            onClick={() => setIsPlusMenuOpen((prev) => !prev)}
             onMouseDown={(e) => e.preventDefault()}
+            aria-label="추가 기능 메뉴"
+          >
+            <Plus size={24} color="#767676" />
+          </IconButton>
+
+          <InputContainer>
+            {isChatbuliMode && (
+              <InputBadge>
+                <img src={ChatBulIcon} alt="챗불이" width={16} height={16} />
+                <span className="badge-text">/챗불이</span>
+                <button
+                  type="button"
+                  className="badge-close"
+                  onClick={handleExitChatbuliMode}
+                  onMouseDown={(e) => e.preventDefault()}
+                  aria-label="챗불이 모드 해제"
+                >
+                  <X size={12} />
+                </button>
+              </InputBadge>
+            )}
+
+            <Input
+              $isChatbuli={isChatbuliMode}
+              placeholder={
+                isChatbuliMode
+                  ? "챗불이에게 질문할 내용을 입력하세요"
+                  : "메시지 입력 또는 '/챗불이'"
+              }
+              ref={inputRef}
+              onInput={handleInput}
+              rows={1}
+              value={inputValue}
+              onChange={handleInputChange}
+              onFocus={() => {
+                // iOS 가상 키보드가 완전히 열릴 때까지 대기 후 스크롤 하단 자동 고정
+                setTimeout(() => {
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTop = 0;
+                  }
+                }, 200);
+              }}
+              onKeyDown={handleKeyDown}
+            />
+          </InputContainer>
+
+          <SendButton
+            type="button"
+            onClick={handleSendMessage}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              inputRef.current?.focus();
+            }}
+            aria-label="전송"
           >
             <Send size={24} color="#5E92F0" />
           </SendButton>
@@ -963,6 +1154,7 @@ const LoadingWrapper = styled.div`
 `;
 
 const FixedInputArea = styled.div`
+  position: relative;
   background-color: #ffffff;
   border-top: 1px solid #eaeaea;
   z-index: 100;
@@ -979,7 +1171,59 @@ const FixedInputArea = styled.div`
   }
 `;
 
-const Input = styled.textarea`
+const InputContainer = styled.div`
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+`;
+
+const InputBadge = styled.div`
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #ffd8bf;
+  border-radius: 12px;
+  padding: 2px 6px;
+  box-shadow: 0 1px 3px rgba(255, 107, 0, 0.12);
+  z-index: 2;
+  user-select: none;
+  pointer-events: auto;
+
+  img {
+    border-radius: 50%;
+    object-fit: contain;
+  }
+
+  .badge-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ff6b00;
+  }
+
+  .badge-close {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8e8e93;
+    margin-left: 2px;
+
+    &:hover {
+      color: #1c1c1e;
+    }
+  }
+`;
+
+const Input = styled.textarea<{ $isChatbuli?: boolean }>`
   flex: 1;
   min-width: 0;
   padding: 8px 16px;
@@ -993,6 +1237,7 @@ const Input = styled.textarea`
   resize: none;
   outline: none;
   max-height: 96px;
+  text-indent: ${(props) => (props.$isChatbuli ? "76px" : "0px")};
 `;
 
 const SendButton = styled.button`
