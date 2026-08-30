@@ -942,6 +942,8 @@ const ChatPageWrapper = styled.div`
   left: 0;
   right: 0;
   overscroll-behavior: none;
+  background-color: var(--bg-base, #ffffff);
+  z-index: 60;
 `;
 
 const HeaderRightArea = styled.div`

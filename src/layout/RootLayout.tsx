@@ -178,6 +178,8 @@ export default function RootLayout() {
     location.pathname === ROUTES.HOME_V2 ||
     location.pathname === ROUTES.ROOT;
 
+  const isChatRoom = location.pathname.startsWith("/chat/");
+
   return (
     <HeaderProvider>
       <ScrollBarStyles />
@@ -187,7 +189,7 @@ export default function RootLayout() {
       <ScreenContainer>
         {outlet}
         <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
-        <GlobalBottomFadeOverlay aria-hidden="true" />
+        {!isChatRoom && <GlobalBottomFadeOverlay aria-hidden="true" />}
       </ScreenContainer>
       {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
       <FeatureTourSheet
