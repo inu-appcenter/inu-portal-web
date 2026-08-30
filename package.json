@@ -88,5 +88,23 @@
     "vite-plugin-svgr": "^5.2.0",
     "vite-tsconfig-paths": "^5.1.0",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "react-spring-bottom-sheet": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "@reach/portal": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "@reach/utils": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "@xstate/react": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
