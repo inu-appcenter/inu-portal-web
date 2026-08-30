@@ -345,6 +345,7 @@ export default function BusMapPanel({
                         ) : null}
                         {section.buses.map((bus) => {
                           const isSelected = selectedBusId === bus.id;
+                          const isEstimatedArrival = isEstimatedArrivalInfo(bus);
                           const statusContent = renderBusStatus(
                             bus,
                             selectedStop.supportsLiveArrival,
@@ -377,7 +378,7 @@ export default function BusMapPanel({
                                     />
                                     <ArrivalInfo>
                                       <ArrivalWrapper>
-                                        <ArrivalTime>
+                                        <ArrivalTime $isEstimated={isEstimatedArrival}>
                                           {getBusDisplayTime(
                                             bus,
                                             selectedStop.supportsLiveArrival,
@@ -604,10 +605,22 @@ function getBusArrivalPriority(bus: BusData) {
 
 function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
   if (bus.arrivalInfo?.time) {
+    if (isEstimatedArrivalInfo(bus)) {
+      const seconds = bus.arrivalInfo.seconds;
+      if (typeof seconds === "number") {
+        return `${Math.floor(seconds / 60)}분 ${seconds % 60}초 후 도착 예상`;
+      }
+      return `${bus.arrivalInfo.time} 후 도착 예상`;
+    }
     return bus.arrivalInfo.time;
   }
 
   return supportsLiveArrival ? "정보 확인" : "노선 보기";
+}
+
+function isEstimatedArrivalInfo(bus: BusData) {
+  const stationText = getArrivalStationText(bus.arrivalInfo);
+  return stationText === "시간표 기반" || stationText === "통계 추정";
 }
 
 function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
@@ -626,8 +639,8 @@ function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
     return null;
   }
 
-  if (stationText === "시간표 기반" || stationText === "통계 추정") {
-    return <span style={{ color: "#4f46e5", fontWeight: 600 }}>⏱️ 시간표 기반</span>;
+  if (isEstimatedArrivalInfo(bus)) {
+    return null;
   }
 
   if (!stationText && !status && !isLastBus) {
@@ -1042,11 +1055,11 @@ const ArrivalWrapper = styled.div`
   min-width: 0;
 `;
 
-const ArrivalTime = styled.span`
+const ArrivalTime = styled.span<{ $isEstimated?: boolean }>`
   font-weight: 500;
   font-size: 15px;
   line-height: 1.2;
-  color: #202020;
+  color: ${({ $isEstimated }) => ($isEstimated ? "#6b7280" : "#202020")};
   white-space: nowrap;
 `;
 
