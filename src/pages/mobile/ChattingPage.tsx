@@ -1413,10 +1413,10 @@ const Bubble = styled.div<{ $bgColor: string }>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 10px 14px;
-  border-radius: 20px;
-  font-size: 16px;
-  line-height: 22px;
+  padding: 9px 13px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 20px;
   max-width: 100%;
   word-break: break-word;
   background-color: ${(props) => props.$bgColor};
@@ -1433,21 +1433,21 @@ const Bubble = styled.div<{ $bgColor: string }>`
 const BotQuestionTag = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid #ffd8bf;
-  border-radius: 12px;
-  padding: 3px 8px 3px 6px;
-  margin-bottom: 6px;
-  font-size: 12px;
+  border-radius: 10px;
+  padding: 2px 7px 2px 5px;
+  margin-bottom: 5px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #ff6b00;
   width: fit-content;
   box-shadow: 0 1px 3px rgba(255, 107, 0, 0.08);
 
   img {
-    width: 17px;
-    height: 17px;
+    width: 15px;
+    height: 15px;
     object-fit: contain;
     border-radius: 50%;
   }

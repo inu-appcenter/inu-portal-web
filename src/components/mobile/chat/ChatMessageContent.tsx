@@ -305,14 +305,14 @@ export default function ChatMessageContent({ content }: ChatMessageContentProps)
 
 const MarkdownContainer = styled.div`
   width: 100%;
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
   word-break: break-word;
   overflow-wrap: break-word;
   color: #1c1c1e;
 
   p {
-    margin: 0 0 8px 0;
+    margin: 0 0 6px 0;
   }
   p:last-child {
     margin: 0;
@@ -324,19 +324,19 @@ const MarkdownContainer = styled.div`
   h4,
   h5,
   h6 {
-    margin: 14px 0 6px 0;
+    margin: 12px 0 5px 0;
     font-weight: 700;
-    line-height: 1.4;
+    line-height: 1.35;
     color: inherit;
     &:first-child {
       margin-top: 0;
     }
   }
   h1 {
-    font-size: 1.2em;
+    font-size: 1.18em;
   }
   h2 {
-    font-size: 1.12em;
+    font-size: 1.1em;
   }
   h3 {
     font-size: 1.05em;
@@ -363,11 +363,11 @@ const MarkdownContainer = styled.div`
 
   ul,
   ol {
-    margin: 8px 0;
-    padding-left: 20px;
+    margin: 6px 0;
+    padding-left: 18px;
   }
   li {
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
   li:last-child {
     margin-bottom: 0;
@@ -380,31 +380,31 @@ const MarkdownContainer = styled.div`
 
   code {
     background-color: rgba(0, 0, 0, 0.05);
-    padding: 2px 6px;
+    padding: 2px 5px;
     border-radius: 4px;
     font-family: monospace;
-    font-size: 0.9em;
+    font-size: 12.5px;
   }
 
   pre {
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     overflow-x: auto;
-    margin: 8px 0;
+    margin: 6px 0;
 
     code {
       background-color: transparent;
       padding: 0;
       border-radius: 0;
-      font-size: 13px;
+      font-size: 12.5px;
     }
   }
 
   blockquote {
-    margin: 8px 0;
-    padding: 6px 12px;
+    margin: 6px 0;
+    padding: 5px 10px;
     border-left: 3.5px solid #5e92f0;
     background-color: rgba(94, 146, 240, 0.06);
     border-radius: 0 6px 6px 0;
@@ -418,14 +418,14 @@ const MarkdownContainer = styled.div`
   hr {
     border: none;
     border-top: 1px solid #e2e8f0;
-    margin: 14px 0;
+    margin: 12px 0;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    margin: 10px 0;
-    font-size: 13.5px;
+    margin: 8px 0;
+    font-size: 12.5px;
     text-align: left;
   }
 
@@ -433,12 +433,12 @@ const MarkdownContainer = styled.div`
     background-color: rgba(94, 146, 240, 0.08);
     color: #1c1c1e;
     font-weight: 600;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #e2e8f0;
   }
 
   td {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #e2e8f0;
   }
 
@@ -447,7 +447,7 @@ const MarkdownContainer = styled.div`
   }
 
   input[type="checkbox"] {
-    margin-right: 6px;
+    margin-right: 5px;
     vertical-align: middle;
   }
 
@@ -455,12 +455,12 @@ const MarkdownContainer = styled.div`
   .katex-display {
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 8px 0;
-    margin: 8px 0;
+    padding: 6px 0;
+    margin: 6px 0;
   }
 
   .katex {
-    font-size: 1.05em;
+    font-size: 1em;
     text-rendering: auto;
   }
 `;
