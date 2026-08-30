@@ -1170,11 +1170,11 @@ export function MobileDeptAlarmSetting({
         <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
         <NotificationPreviewList>
           <PushNotificationPreviewCard
-            title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이에요.`}
+            title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 학과 공지사항이에요.`}
             body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개를 캘린더에서 확인해보세요.`}
           />
           <PushNotificationPreviewCard
-            title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이에요.`}
+            title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 학과 공지사항이에요.`}
             body="2026-2학기 학과 세미나 및 특강 참여 신청 안내"
           />
         </NotificationPreviewList>
