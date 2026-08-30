@@ -26,7 +26,7 @@ export default function MobileCalendarPage() {
 
   const handleNotificationClick = () => {
     mixpanelTrack.calendarNotificationClicked();
-    alert("Daily Brief 설정 구현 예정입니다.");
+    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=schedule`);
   };
 
   const handleMypageNavigation = () => {

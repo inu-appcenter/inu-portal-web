@@ -433,10 +433,12 @@ export const mixpanelTrack = {
     keyword: string,
     extraInfo?: string,
     location?: string,
+    isExcluded: boolean = false,
   ) => {
     const properties: Record<string, any> = {
       notice_type: noticeType,
       keyword: keyword,
+      is_excluded: isExcluded,
       location: location,
     };
     if (noticeType === "School") {
@@ -456,10 +458,12 @@ export const mixpanelTrack = {
     keyword: string,
     extraInfo?: string,
     location?: string,
+    isExcluded: boolean = false,
   ) => {
     const properties: Record<string, any> = {
       notice_type: noticeType,
       keyword: keyword,
+      is_excluded: isExcluded,
       location: location,
     };
     if (noticeType === "School") {

@@ -73,6 +73,7 @@ export const ROUTES = {
     DELETE: "/mypage/delete",
     FCM: "/mypage/fcm",
     NOTIFICATION: "/mypage/notification",
+    DAILY_BRIEF: "/mypage/notification/daily-brief",
   },
 
   // 게시판 및 기능
