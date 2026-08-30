@@ -33,7 +33,11 @@ export default function ChatItemBot({
 
   return (
     <BotContainer>
-      <BotProfileImage src={TorchAiLogo} alt="챗불이" onClick={handleOpenAIChat} />
+      <BotProfileImage
+        src={TorchAiLogo}
+        alt="챗불이"
+        onClick={handleOpenAIChat}
+      />
 
       <BotMessageArea>
         <BotHeader>
@@ -71,16 +75,15 @@ export default function ChatItemBot({
                 </ActionButtonsWrapper>
 
                 <Disclaimer>
-                  챗불이는 AI이며, 인천대학교의 공식 답변이 아니에요. 실수할 수
-                  있으니, 중요한 정보는 직접 확인하세요.
+                  챗불이는 AI이며, 인천대학교의 공식 답변이 아니에요.
+                  <br />
+                  실수할 수 있으니, 중요한 정보는 직접 확인하세요.
                 </Disclaimer>
               </>
             )}
           </BotCardContent>
 
-          {showTime && time && !isLoading && (
-            <TimeLabel>{time}</TimeLabel>
-          )}
+          {showTime && time && !isLoading && <TimeLabel>{time}</TimeLabel>}
         </BotCardWrapper>
       </BotMessageArea>
     </BotContainer>
@@ -250,7 +253,7 @@ const Disclaimer = styled.div`
   font-size: 10px;
   line-height: 1.4;
   color: #8b95a1;
-  background: #f9fafb;
+  //background: #f9fafb;
   border-radius: 8px;
   padding: 6px 8px;
 `;
