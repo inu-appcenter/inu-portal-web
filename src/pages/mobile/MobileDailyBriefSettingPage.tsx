@@ -38,7 +38,7 @@ import {
 } from "@/apis/notices";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import { NoticeRecommendKeywords } from "@/resources/strings/NoticeRecommendKeywords";
-import { ChevronRight, Loader2, Check, Bell, ExternalLink } from "lucide-react";
+import { ChevronRight, Loader2, Check, Bell } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
 export const DAILY_BRIEF_TABS = [
@@ -459,10 +459,8 @@ export default function MobileDailyBriefSettingPage() {
                 </Box>
               </TitleContentArea>
 
-              <FeatureLinkCard
-                title="시간표 바로가기"
-                desc="내 대표 시간표의 전체 강의 시간 및 강의실 위치를 확인해 보세요."
-                buttonText="시간표 보러가기"
+              <SimpleNavigationButton
+                text="시간표로 이동"
                 onClick={() => {
                   mixpanelTrack.mypageMenuClicked("Daily Brief - 시간표 바로가기");
                   navigate(ROUTES.TIMETABLE.ROOT);
@@ -471,21 +469,21 @@ export default function MobileDailyBriefSettingPage() {
 
               {/* 시간표 알림 예시 */}
               <TitleContentArea
-                title="알림 예시 미리보기"
-                description="설정한 조건에 맞춰 스마트폰 푸시 알림으로 이렇게 전송돼요."
+                title="알림 예시"
+                description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
               >
-                <Box style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <NotificationPreviewList>
                   <PushNotificationPreviewCard
                     title="[수업 알림] 잠시 후 수업이 시작됩니다!"
                     body={`'운영체제' 수업이 ${settings.timetablePreAlertMinutes || 10}분 후 (10:00, 7호관 301호)에 시작해요.`}
-                    subText="수업 시작 전 알림"
+                    subText="수업 시작 전"
                   />
                   <PushNotificationPreviewCard
                     title="[Daily Brief] 오늘 예정된 강의가 3개 있어요 📚"
                     body={`1. 운영체제 (10:00~11:50, 7호관 301호)\n2. 알고리즘 (13:00~14:50, 7호관 204호)\n3. 데이터베이스 (15:00~16:50, 7호관 301호)`}
-                    subText={`당일 ${settings.timetableDailyBriefTime || "08:30"} 브리핑`}
+                    subText={`${settings.timetableDailyBriefTime || "08:30"}`}
                   />
-                </Box>
+                </NotificationPreviewList>
               </TitleContentArea>
             </SlideInnerWrapper>
           </SwiperSlide>
@@ -623,10 +621,8 @@ export default function MobileDailyBriefSettingPage() {
                 </Box>
               </TitleContentArea>
 
-              <FeatureLinkCard
-                title="학사일정 캘린더 바로가기"
-                desc="학교 공식 학사일정 및 학과별 전체 캘린더 일정을 확인해 보세요."
-                buttonText="학사일정 보러가기"
+              <SimpleNavigationButton
+                text="학사일정으로 이동"
                 onClick={() => {
                   mixpanelTrack.mypageMenuClicked("Daily Brief - 학사일정 바로가기");
                   navigate(ROUTES.BOARD.CALENDAR);
@@ -635,16 +631,16 @@ export default function MobileDailyBriefSettingPage() {
 
               {/* 학사일정 알림 예시 */}
               <TitleContentArea
-                title="알림 예시 미리보기"
-                description="당일 일정이 있을 때 스마트폰 푸시 알림으로 이렇게 전송돼요."
+                title="알림 예시"
+                description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
               >
-                <Box style={{ padding: "16px 20px" }}>
+                <NotificationPreviewList>
                   <PushNotificationPreviewCard
                     title="[Daily Brief] 오늘의 학사일정을 확인하세요 🗓️"
                     body={`• [학교] 2026학년도 2학기 수강신청 변경 기간\n• [${userInfo.department || "컴퓨터공학부"}] 2학기 졸업작품 중간 발표회`}
-                    subText={`당일 ${settings.scheduleDailyBriefTime || "08:30"} 브리핑`}
+                    subText={`${settings.scheduleDailyBriefTime || "08:30"}`}
                   />
-                </Box>
+                </NotificationPreviewList>
               </TitleContentArea>
             </SlideInnerWrapper>
           </SwiperSlide>
@@ -910,10 +906,8 @@ export function MobileSchoolAlarmSetting({
         </TitleContentArea>
       )}
 
-      <FeatureLinkCard
-        title="학교 공지사항 바로가기"
-        desc="인천대학교의 장학, 학사, 모집 등 전체 공식 공지사항을 확인해 보세요."
-        buttonText="학교 공지 보러가기"
+      <SimpleNavigationButton
+        text="학교 공지사항으로 이동"
         onClick={() => {
           mixpanelTrack.mypageMenuClicked("Daily Brief - 학교 공지 바로가기");
           navigate(ROUTES.BOARD.NOTICE);
@@ -922,21 +916,21 @@ export function MobileSchoolAlarmSetting({
 
       {/* 학교 공지 알림 예시 */}
       <TitleContentArea
-        title="알림 예시 미리보기"
-        description="구독한 카테고리 또는 키워드 새 글이 올라오면 스마트폰 푸시 알림으로 이렇게 전송돼요."
+        title="알림 예시"
+        description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
       >
-        <Box style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <NotificationPreviewList>
           <PushNotificationPreviewCard
             title="[학사-장학금] 새로운 공지사항이 등록되었어요."
             body="2026학년도 2학기 성적우수 및 맞춤형 장학금 신청 안내"
-            subText="키워드 알림 예시"
+            subText="방금 전"
           />
           <PushNotificationPreviewCard
             title="[학사] 새로운 공지사항이 등록되었어요."
             body="2026학년도 2학기 전공 심화 및 부·복수전공 이수 신청 안내"
-            subText="카테고리 전체 구독 알림 예시"
+            subText="방금 전"
           />
-        </Box>
+        </NotificationPreviewList>
       </TitleContentArea>
     </KeyWordSettingWrapper>
   );
@@ -1160,10 +1154,8 @@ export function MobileDeptAlarmSetting({
         </TitleContentArea>
       )}
 
-      <FeatureLinkCard
-        title="학과 공지사항 바로가기"
-        desc={`${userInfo.department ? `내 학과(${userInfo.department})` : "학과"}의 공지사항 및 횃불이 AI 추출 일정을 확인해 보세요.`}
-        buttonText="학과 공지 보러가기"
+      <SimpleNavigationButton
+        text="학과 공지사항으로 이동"
         onClick={() => {
           mixpanelTrack.mypageMenuClicked("Daily Brief - 학과 공지 바로가기");
           navigate(ROUTES.BOARD.DEPT_NOTICE);
@@ -1172,21 +1164,21 @@ export function MobileDeptAlarmSetting({
 
       {/* 학과 공지 알림 예시 */}
       <TitleContentArea
-        title="알림 예시 미리보기"
-        description="구독한 학과의 새 공지 및 횃불이 AI가 추출한 일정 알림이 이렇게 전송돼요."
+        title="알림 예시"
+        description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
       >
-        <Box style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <NotificationPreviewList>
           <PushNotificationPreviewCard
             title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이 등록되었어요.`}
             body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개가 포함되어 있어요.`}
-            subText="학과 키워드 + AI 일정 알림 예시"
+            subText="방금 전"
           />
           <PushNotificationPreviewCard
             title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이 등록되었어요.`}
             body="2026-2학기 학과 세미나 및 특강 참여 신청 안내"
-            subText="학과 전체 새 글 알림 예시"
+            subText="방금 전"
           />
-        </Box>
+        </NotificationPreviewList>
       </TitleContentArea>
     </KeyWordSettingWrapper>
   );
@@ -1694,7 +1686,25 @@ const AllAlarmCheckBoxWrapper = styled.div`
 `;
 
 /**
- * 스마트폰 푸시 알림 프리뷰 컴포넌트
+ * 심플 기능 바로가기 버튼
+ */
+export function SimpleNavigationButton({
+  text,
+  onClick,
+}: {
+  text: string;
+  onClick: () => void;
+}) {
+  return (
+    <SimpleNavButtonWrapper onClick={onClick}>
+      <SimpleNavText>{text}</SimpleNavText>
+      <ChevronRight size={16} color="#5e92f0" />
+    </SimpleNavButtonWrapper>
+  );
+}
+
+/**
+ * 모바일 OS 푸시 알림 배너 프리뷰 컴포넌트
  */
 export function PushNotificationPreviewCard({
   title,
@@ -1708,160 +1718,115 @@ export function PushNotificationPreviewCard({
   subText?: string;
 }) {
   return (
-    <PreviewCard>
-      <PreviewHeader>
-        <PreviewAppIcon>
+    <OsNotificationBanner>
+      <OsHeader>
+        <OsAppIconWrapper>
           <Bell size={11} color="#ffffff" />
-        </PreviewAppIcon>
-        <PreviewAppName>인천대 포털 • {badgeText}</PreviewAppName>
-        <PreviewTime>{subText}</PreviewTime>
-      </PreviewHeader>
-      <PreviewTitle>{title}</PreviewTitle>
-      <PreviewBody>{body}</PreviewBody>
-    </PreviewCard>
+        </OsAppIconWrapper>
+        <OsAppName>인천대 포털 • {badgeText}</OsAppName>
+        <OsTimeText>{subText}</OsTimeText>
+      </OsHeader>
+      <OsTitle>{title}</OsTitle>
+      <OsBody>{body}</OsBody>
+    </OsNotificationBanner>
   );
 }
 
-/**
- * 기능 페이지 바로가기 카드 컴포넌트
- */
-export function FeatureLinkCard({
-  title,
-  desc,
-  buttonText,
-  onClick,
-}: {
-  title: string;
-  desc: string;
-  buttonText: string;
-  onClick: () => void;
-}) {
-  return (
-    <FeatureCardBox onClick={onClick}>
-      <FeatureCardContent>
-        <FeatureCardTitleRow>
-          <FeatureCardTitle>{title}</FeatureCardTitle>
-          <ExternalLink size={14} color="#5E92F0" />
-        </FeatureCardTitleRow>
-        <FeatureCardDesc>{desc}</FeatureCardDesc>
-      </FeatureCardContent>
-      <FeatureActionButton>
-        {buttonText}
-        <ChevronRight size={15} />
-      </FeatureActionButton>
-    </FeatureCardBox>
-  );
-}
-
-const PreviewCard = styled.div`
+const NotificationPreviewList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
-  background: #f4f6fa;
-  border-radius: 12px;
-  border: 1px solid #e5e9f2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-`;
-
-const PreviewHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  gap: 10px;
   width: 100%;
 `;
 
-const PreviewAppIcon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  background-color: #5e92f0;
-  flex-shrink: 0;
-`;
-
-const PreviewAppName = styled.span`
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #5e92f0;
-  flex: 1;
-`;
-
-const PreviewTime = styled.span`
-  font-size: 11px;
-  color: #8e8e93;
-`;
-
-const PreviewTitle = styled.div`
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #1c1c1e;
-  line-height: 1.35;
-`;
-
-const PreviewBody = styled.div`
-  font-size: 12.5px;
-  color: #4a5568;
-  line-height: 1.45;
-  white-space: pre-line;
-`;
-
-const FeatureCardBox = styled.div`
+const SimpleNavButtonWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px;
-  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  box-shadow: ${SOFT_CHIP_SHADOW};
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
   cursor: pointer;
-  gap: 12px;
   transition: all 0.2s ease;
 
   &:active {
     background-color: #f8faff;
     border-color: #5e92f0;
+    transform: scale(0.99);
   }
 `;
 
-const FeatureCardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-`;
-
-const FeatureCardTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const FeatureCardTitle = styled.span`
+const SimpleNavText = styled.span`
   font-size: 14.5px;
   font-weight: 600;
   color: #2c3e50;
 `;
 
-const FeatureCardDesc = styled.span`
-  font-size: 12px;
-  color: #8e8e93;
-  line-height: 1.35;
+const OsNotificationBanner = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 15px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(12px);
+  gap: 3px;
 `;
 
-const FeatureActionButton = styled.div`
-  display: inline-flex;
+const OsHeader = styled.div`
+  display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 6px 10px;
-  background-color: #f0f4ff;
-  color: #5e92f0;
-  font-size: 12.5px;
-  font-weight: 600;
-  border-radius: 8px;
-  white-space: nowrap;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 2px;
+`;
+
+const OsAppIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #5e92f0 0%, #3b74e6 100%);
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(94, 146, 240, 0.3);
+`;
+
+const OsAppName = styled.span`
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #4b5563;
+  flex: 1;
+  letter-spacing: -0.2px;
+`;
+
+const OsTimeText = styled.span`
+  font-size: 11px;
+  color: #9ca3af;
+`;
+
+const OsTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+`;
+
+const OsBody = styled.div`
+  font-size: 12.5px;
+  color: #374151;
+  line-height: 1.45;
+  white-space: pre-line;
+  letter-spacing: -0.1px;
 `;
