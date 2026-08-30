@@ -2,11 +2,15 @@ import type { Term } from "@/types/timetables";
 import type { ParsedGradeRow, ParsedGradeSheet } from "@/types/gradeImport";
 
 /**
- * 스마트캠퍼스(학교 ERP) "과목별 성적" 표를 그대로 복사해 붙여넣은 텍스트를 파싱한다.
+ * 스마트캠퍼스(학교 ERP) "과목별 성적" 표를 복사해 붙여넣은 텍스트를 파싱한다.
  *
- * 표를 복사하면 셀 구분이 탭으로 오지만, 브라우저/앱에 따라 공백만 남는 경우도 있어
- * 두 가지를 모두 받는다. 탭이 있으면 빈 셀(성적 미발표 학기의 등급 등)이 보존되므로
- * 탭 기준 분리를 우선한다.
+ * 붙여넣기 방식이 기기마다 달라 들어오는 텍스트 모양이 제각각이다.
+ *  - 안드로이드 앱: "모두 선택"이 있어 상단 메뉴 · 학기별 요약 표까지 화면 전체가 온다.
+ *  - iOS: 드래그를 아무 데서나 시작할 수 있어 앞뒤가 잘린 채로 온다(첫 줄이 행 중간일 수도).
+ * 그래서 "과목 행처럼 생긴 줄만 골라낸다"는 원칙으로 읽고, 나머지는 조용히 버린다.
+ *
+ * 셀 구분은 탭이 기본이지만 브라우저/앱에 따라 공백만 남는 경우도 있어 둘 다 받는다.
+ * 탭이 있으면 빈 셀(성적 미발표 학기의 등급 등)이 보존되므로 탭 기준 분리를 우선한다.
  *
  * 기대하는 행 모양:
  *   `기업가정신 / 0005103` `1` `P` `심화교양` `사회` `(비고)`
@@ -45,13 +49,23 @@ const GRADE_ALIASES: Record<string, string> = {
   D: "D0",
 };
 
-// `교과목명 / 과목코드` — 과목코드는 "0005103"처럼 순수 숫자이거나 "IAA6018"처럼
-// 영문 접두어가 붙는다. 교과목명 자체에 슬래시가 들어가도 코드 패턴 덕분에
-// 백트래킹으로 올바른 경계를 찾는다.
-const TITLE_CODE_RE = /^(.*?)\s*\/\s*([A-Za-z]{0,4}\d{3,10})(?=[\s\t]|$)/;
+// `교과목명 / 과목코드` — 과목코드는 "0004325"처럼 순수 숫자이거나 "XAA1358",
+// "IA02009"처럼 영문 접두어가 붙는다. 숫자를 4자리 이상 요구하는 게 중요한데,
+// 화면 전체를 복사하면 학기별 요약 표의 석차 칸("59/116")도 같이 오기 때문이다.
+// 교과목명 자체에 슬래시가 들어가도 코드 패턴 덕분에 백트래킹으로 경계를 찾는다.
+const TITLE_CODE_RE = /^(.*?)\s*\/\s*([A-Za-z]{0,4}\d{4,10})(?![0-9A-Za-z])/;
 
 const SEMESTER_TITLE_RE =
   /(\d{4})\s*년도?\s*(1|2|여름|겨울|하계|동계|계절)\s*학기/;
+
+/** "2022년 1학기 과목별 성적" — 과목 표의 제목 줄. */
+const COURSE_TABLE_TITLE_RE = /과목별\s*성적/;
+
+/** 과목명에 반드시 들어 있는 문자(한글/영문). 숫자·기호뿐인 셀은 과목명이 아니다. */
+const NAME_LIKE_RE = /[가-힣A-Za-z]/;
+
+/** 학점 칸으로 받아들일 범위. 이 밖의 숫자는 학점 열이 아니라고 본다. */
+const MAX_CREDIT = 12;
 
 const toTerm = (raw: string): Term => {
   switch (raw) {
@@ -97,7 +111,9 @@ const parseLine = (line: string): ParsedGradeRow | null => {
 
   const title = match[1].trim();
   const courseCode = match[2].trim().toUpperCase();
-  if (!title) return null;
+  // 과목명 칸 안에서 `과목명 / 코드`가 끝나야 한다. 탭이 끼어 있으면 여러 셀을 가로질러
+  // 슬래시를 찾은 것(요약 표의 "2026\t1학기\t…\t59/116" 같은 줄)이라 과목 행이 아니다.
+  if (!title || title.includes("\t") || !NAME_LIKE_RE.test(title)) return null;
 
   const cells = splitCells(line.slice(match[0].length));
 
@@ -107,7 +123,12 @@ const parseLine = (line: string): ParsedGradeRow | null => {
   let credit: number | null = null;
   if (cells.length > 0) {
     const parsedCredit = Number.parseFloat(cells[0]);
-    if (Number.isFinite(parsedCredit)) {
+    if (
+      Number.isFinite(parsedCredit) &&
+      parsedCredit >= 0 &&
+      parsedCredit <= MAX_CREDIT &&
+      /^\d+(\.\d+)?$/.test(cells[0])
+    ) {
       credit = parsedCredit;
       cursor += 1;
     }
@@ -142,41 +163,66 @@ const parseLine = (line: string): ParsedGradeRow | null => {
     isuName,
     isuFldName,
     note,
-    // "재수강성적취소" - 재수강해서 이 회차 성적이 무효가 된 행.
-    voided: note !== null && note.includes("취소"),
+    // "재수강성적취소" - 재수강해서 이 회차 성적이 무효가 된 행("성적폐기사유" 열).
+    voided: note !== null && (note.includes("취소") || note.includes("폐기")),
   };
 };
 
 export const parseSmartCampusGrades = (input: string): ParsedGradeSheet => {
+  const lines = input
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter((line) => line.trim() !== "");
+
+  // 화면 전체를 복사한 경우("모두 선택") 과목 표 제목 위쪽은 상단 메뉴와 학기별 요약
+  // 표다. 제목이 딸려왔다면 그 아래만 과목 행 후보로 본다. iOS처럼 표 중간부터 드래그해
+  // 제목이 없으면 전체를 훑되, parseLine의 행 모양 검증이 요약 행을 걸러낸다.
+  const tableTitleIndex = lines.findIndex((line) =>
+    COURSE_TABLE_TITLE_RE.test(line),
+  );
+
   const rows: ParsedGradeRow[] = [];
   const skippedLines: string[] = [];
-  let detectedSemester: ParsedGradeSheet["detectedSemester"] = null;
+  // 학기는 "2022년 1학기 과목별 성적" 제목에서 읽은 값이 가장 믿을 만하다. 요약 표에도
+  // 연도·학기가 있어서(그것도 내가 보고 있는 학기가 아니다) 제목 쪽을 우선한다.
+  let titleSemester: ParsedGradeSheet["detectedSemester"] = null;
+  let fallbackSemester: ParsedGradeSheet["detectedSemester"] = null;
 
-  for (const rawLine of input.split(/\r?\n/)) {
-    const line = rawLine.trimEnd();
-    if (!line.trim()) continue;
+  lines.forEach((line, index) => {
+    const semesterMatch = SEMESTER_TITLE_RE.exec(line);
+    if (semesterMatch) {
+      const semester = {
+        year: Number.parseInt(semesterMatch[1], 10),
+        term: toTerm(semesterMatch[2]),
+      };
+      if (COURSE_TABLE_TITLE_RE.test(line)) {
+        titleSemester ??= semester;
+      } else {
+        fallbackSemester ??= semester;
+      }
+      // 제목·요약 줄은 과목 행이 아니다.
+      return;
+    }
+
+    // 표 위쪽(메뉴·요약)은 버릴 게 뻔하니 skippedLines에도 담지 않는다.
+    if (tableTitleIndex >= 0 && index < tableTitleIndex) return;
 
     const row = parseLine(line);
     if (row) {
       rows.push(row);
-      continue;
+      return;
     }
 
-    // 과목 행이 아니면 제목 줄에서 학기 정보만 건져낸다. 나머지(표 헤더, 학기별
-    // 요약 행 등)는 조용히 버리되 무엇을 버렸는지는 남겨 UI에서 알릴 수 있게 한다.
-    const semesterMatch = SEMESTER_TITLE_RE.exec(line);
-    if (semesterMatch && !detectedSemester) {
-      detectedSemester = {
-        year: Number.parseInt(semesterMatch[1], 10),
-        term: toTerm(semesterMatch[2]),
-      };
-      continue;
-    }
-
+    // 과목 행으로 못 읽은 줄(표 헤더, 드래그가 중간에서 시작돼 잘린 첫 행 등)은
+    // 조용히 버리되 무엇을 버렸는지는 남겨 UI에서 알릴 수 있게 한다.
     skippedLines.push(line.trim());
-  }
+  });
 
-  return { rows, detectedSemester, skippedLines };
+  return {
+    rows,
+    detectedSemester: titleSemester ?? fallbackSemester,
+    skippedLines,
+  };
 };
 
 /** 이수구분/이수영역 문자열로 전공 과목인지 판별한다. */

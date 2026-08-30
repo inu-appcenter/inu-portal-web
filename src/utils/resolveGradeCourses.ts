@@ -33,6 +33,12 @@ import type { Term } from "@/types/timetables";
 // 과목명 매칭이 애매한 행만 개설강의를 추가 조회한다. 보통 0~2건이라 넉넉한 값.
 const CONCURRENCY = 4;
 
+const courseCredit = (course: Course | undefined): number | null => {
+  if (course === undefined) return null;
+  const credit = Number(course.credit);
+  return Number.isFinite(credit) ? credit : null;
+};
+
 const toResolved = (
   row: ParsedGradeRow,
   course: Course | undefined,
@@ -41,10 +47,11 @@ const toResolved = (
   ...row,
   courseId: course?.id ?? null,
   resolvedIsuName: course?.completionDivisionName ?? row.isuName,
-  resolvedCredit:
-    course !== undefined && Number.isFinite(Number(course.credit))
-      ? Number(course.credit)
-      : row.credit,
+  // 학점은 **성적표에 적힌 값이 우선**이다. 개설 학점은 교과 개편으로 바뀌는데
+  // (예: 자바프로그래밍 3 -> 2학점) 지금 서버 값을 씌우면 내가 실제로 딴 학점과
+  // 달라져 취득학점·평점이 통째로 틀어진다. 성적표에 학점 열이 안 딸려온 행
+  // (표를 과목명까지만 드래그한 경우)만 서버 값으로 메운다.
+  resolvedCredit: row.credit ?? courseCredit(course),
   matchStatus,
 });
 
