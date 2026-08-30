@@ -42,9 +42,7 @@ export default function GradeCalculatorIntroSheet({
       <SheetContainer>
         <NewBadge>NEW</NewBadge>
         <Title>
-          학점계산기가
-          <br />
-          똑똑해졌어요!
+          학점계산기를 이용해보세요!
         </Title>
 
         <Highlights>
@@ -62,7 +60,7 @@ export default function GradeCalculatorIntroSheet({
         </Highlights>
 
         <Notice>
-          졸업요건은 학과 공지를 모아 만든 참고용이에요. 최종 확인은 학과
+          졸업요건은 각 학과 홈페이지에서 수집한 정보이고, 최종 확인은 학과
           사무실에서 꼭 해주세요.
         </Notice>
 
