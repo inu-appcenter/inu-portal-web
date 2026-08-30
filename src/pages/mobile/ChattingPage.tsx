@@ -1390,21 +1390,25 @@ const Bubble = styled.div<{ $bgColor: string }>`
 `;
 
 const BotQuestionTag = styled.div`
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.9);
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid #ffd8bf;
-  border-radius: 10px;
-  padding: 2px 7px;
+  border-radius: 12px;
+  padding: 3px 8px 3px 6px;
   margin-bottom: 6px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #ff6b00;
   width: fit-content;
+  box-shadow: 0 1px 3px rgba(255, 107, 0, 0.08);
 
   img {
+    width: 17px;
+    height: 17px;
     object-fit: contain;
+    border-radius: 50%;
   }
 `;
 
@@ -1538,7 +1542,7 @@ const ChatItemOtherPerson = ({
                   <Bubble $bgColor={bgColor}>
                     {message.messageType === "BOT_QUESTION" && (
                       <BotQuestionTag>
-                        <img src={TorchAiLogo} alt="" width={12} height={12} />
+                        <img src={TorchAiLogo} alt="챗불이" width={17} height={17} />
                         <span>챗불이에게 질문</span>
                       </BotQuestionTag>
                     )}
@@ -1654,7 +1658,7 @@ const ChatItemMy = ({
                   <Bubble $bgColor={bgColor}>
                     {message.messageType === "BOT_QUESTION" && (
                       <BotQuestionTag>
-                        <img src={TorchAiLogo} alt="" width={12} height={12} />
+                        <img src={TorchAiLogo} alt="챗불이" width={17} height={17} />
                         <span>챗불이에게 질문</span>
                       </BotQuestionTag>
                     )}
