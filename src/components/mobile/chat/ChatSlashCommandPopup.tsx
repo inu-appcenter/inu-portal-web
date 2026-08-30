@@ -14,16 +14,14 @@ export default function ChatSlashCommandPopup({
 
   return (
     <PopupContainer>
+      <HeaderTitle>기능 선택</HeaderTitle>
       <CommandItem onClick={onSelect} onMouseDown={(e) => e.preventDefault()}>
         <IconWrapper>
-          <img src={TorchAiLogo} alt="챗불이" width={22} height={22} />
+          <img src={TorchAiLogo} alt="챗불이" width={24} height={24} />
         </IconWrapper>
         <CommandInfo>
-          <CommandNameWrapper>
-            <CommandName>/챗불이</CommandName>
-            <CommandBadge>AI 질문</CommandBadge>
-          </CommandNameWrapper>
-          <CommandDesc>인천대 학사/학교생활 관련 질문을 물어보세요</CommandDesc>
+          <CommandName>/챗불이</CommandName>
+          <CommandDesc>대학 생활에 대해 챗불이에게 질문하기</CommandDesc>
         </CommandInfo>
       </CommandItem>
     </PopupContainer>
@@ -35,12 +33,12 @@ const PopupContainer = styled.div`
   bottom: 100%;
   left: 16px;
   right: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   background: #ffffff;
-  border: 1px solid #eaeef4;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 14px 16px 14px 16px;
   z-index: 110;
   animation: popupFadeIn 0.18s ease-out;
 
@@ -56,13 +54,22 @@ const PopupContainer = styled.div`
   }
 `;
 
+const HeaderTitle = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: #767676;
+  margin-bottom: 12px;
+  padding-left: 2px;
+`;
+
 const CommandItem = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
   cursor: pointer;
   background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2px 2px;
   transition: background-color 0.15s ease;
 
   &:hover {
@@ -75,18 +82,16 @@ const CommandItem = styled.div`
 `;
 
 const IconWrapper = styled.div`
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background-color: #fff4ed;
-  border: 1px solid #ffe5d3;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #ebf4ff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
   img {
-    border-radius: 50%;
     object-fit: contain;
   }
 `;
@@ -94,35 +99,23 @@ const IconWrapper = styled.div`
 const CommandInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 `;
 
-const CommandNameWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
 const CommandName = styled.span`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #1c1c1e;
-`;
-
-const CommandBadge = styled.span`
-  font-size: 10px;
-  font-weight: 700;
-  color: #ff6b00;
-  background-color: #fff0e6;
-  padding: 1px 5px;
-  border-radius: 4px;
+  line-height: 1.2;
 `;
 
 const CommandDesc = styled.span`
-  font-size: 12px;
-  color: #8e8e93;
+  font-size: 13px;
+  font-weight: 400;
+  color: #767676;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.2;
 `;

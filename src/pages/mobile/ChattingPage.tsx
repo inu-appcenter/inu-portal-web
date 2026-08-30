@@ -974,7 +974,7 @@ export default function ChattingPage() {
             onMouseDown={(e) => e.preventDefault()}
             aria-label="추가 기능 메뉴"
           >
-            <Plus size={24} color="#767676" />
+            <Plus size={24} color="#0066FF" />
           </IconButton>
 
           <InputContainer>
