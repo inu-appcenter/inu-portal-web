@@ -837,8 +837,8 @@ export function MobileSchoolAlarmSetting({
             : "원하는 카테고리의 모든 새 글 알림을 설정해보세요."
         }
       >
-        <Box style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <ChipContainer>
+        <Box style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "16px", width: "100%", boxSizing: "border-box", alignItems: "stretch" }}>
+          <ChipContainer style={{ width: "100%" }}>
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton
@@ -863,8 +863,8 @@ export function MobileSchoolAlarmSetting({
           <Divider margin="4px 0" />
 
           {/* 제외할 키워드 설정 영역 */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%" }}>
               <div style={{ fontSize: "14.5px", fontWeight: 600, color: "#2c3e50" }}>
                 제외할 키워드 설정
               </div>
@@ -873,7 +873,7 @@ export function MobileSchoolAlarmSetting({
               </div>
             </div>
 
-            <InputWrapper>
+            <InputWrapper style={{ width: "100%" }}>
               <StyledInput
                 placeholder="제외할 키워드 입력 (예: 휴학, 등록금)"
                 value={newExcludeKeyword}
@@ -889,7 +889,7 @@ export function MobileSchoolAlarmSetting({
             </InputWrapper>
 
             {excludeKeywords.length > 0 && (
-              <ListWrapper style={{ marginTop: "4px" }}>
+              <ListWrapper style={{ marginTop: "4px", width: "100%" }}>
                 {excludeKeywords.map((item, index) => (
                   <React.Fragment key={item.keywordId}>
                     <RegisteredKeywordItem
@@ -1188,18 +1188,17 @@ export function MobileDeptAlarmSetting({
       {/* 1. 학과 공지 모두 알림 받기 & 제외 키워드 설정 (한 세트) */}
       <Box
         style={{
-          background: allAlarm
-            ? "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)"
-            : "#ffffff",
+          background: "#ffffff",
           boxShadow: "none",
-          border: allAlarm
-            ? "1px solid rgba(94, 146, 240, 0.3)"
-            : "1px solid #e9ecef",
+          border: "1px solid #e9ecef",
           padding: "18px 20px",
           borderRadius: "12px",
           display: "flex",
           flexDirection: "column",
           gap: "16px",
+          width: "100%",
+          boxSizing: "border-box",
+          alignItems: "stretch",
         }}
       >
         <AllAlarmCheckBoxWrapper
@@ -1232,8 +1231,8 @@ export function MobileDeptAlarmSetting({
         <Divider margin="0" />
 
         {/* 제외할 키워드 설정 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", boxSizing: "border-box" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%" }}>
             <div style={{ fontSize: "14.5px", fontWeight: 600, color: "#2c3e50" }}>
               제외할 키워드 설정
             </div>
@@ -1242,7 +1241,7 @@ export function MobileDeptAlarmSetting({
             </div>
           </div>
 
-          <InputWrapper>
+          <InputWrapper style={{ width: "100%" }}>
             <StyledInput
               placeholder="제외할 키워드 입력 (예: 근로, 채용)"
               value={excludeKeyword}
@@ -1258,7 +1257,7 @@ export function MobileDeptAlarmSetting({
           </InputWrapper>
 
           {excludeKeywords.length > 0 && (
-            <ListWrapper style={{ marginTop: "4px" }}>
+            <ListWrapper style={{ marginTop: "4px", width: "100%" }}>
               {excludeKeywords.map((item, index) => (
                 <React.Fragment key={item.keywordId}>
                   <RegisteredKeywordItem
