@@ -13,7 +13,6 @@ import { trackPageView, trackEvent } from "@/utils/mixpanel";
 import {
   DailyBriefSettings,
   ScheduleScope,
-  TimetablePreAlertOffset,
 } from "@/types/dailyBrief";
 import {
   getDailyBriefSettings,
@@ -23,14 +22,17 @@ import {
 import { ChevronRight } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
-const PRE_ALERT_OPTIONS: { label: string; value: TimetablePreAlertOffset }[] = [
+const PRE_ALERT_PRESETS = [
+  { label: "5분 전", value: 5 },
   { label: "10분 전", value: 10 },
+  { label: "15분 전", value: 15 },
   { label: "20분 전", value: 20 },
   { label: "30분 전", value: 30 },
+  { label: "45분 전", value: 45 },
   { label: "1시간 전", value: 60 },
 ];
 
-const TIME_OPTIONS = [
+const BASE_TIME_PRESETS = [
   "07:00",
   "07:30",
   "08:00",
@@ -71,6 +73,12 @@ export default function MobileDailyBriefSettingPage() {
   const [settings, setSettings] = useState<DailyBriefSettings>(
     getLocalDailyBriefSettings,
   );
+
+  // 직접 설정 UI 토글 상태
+  const [isCustomPreAlertOpen, setIsCustomPreAlertOpen] = useState(false);
+  const [customPreAlertInput, setCustomPreAlertInput] = useState<string>("");
+  const [isCustomTtTimeOpen, setIsCustomTtTimeOpen] = useState(false);
+  const [isCustomSchedTimeOpen, setIsCustomSchedTimeOpen] = useState(false);
 
   useHeader({
     title: "Daily Brief 설정",
@@ -118,9 +126,22 @@ export default function MobileDailyBriefSettingPage() {
     }
   };
 
-  const handlePreAlertMinutesChange = (minutes: TimetablePreAlertOffset) => {
+  const handlePreAlertMinutesChange = (minutes: number) => {
+    setIsCustomPreAlertOpen(false);
     handleUpdate({ timetablePreAlertMinutes: minutes });
     trackEvent("[Daily Brief] 수업 전 알림 시간 변경", { minutes });
+  };
+
+  const handleCustomPreAlertSubmit = () => {
+    const parsed = parseInt(customPreAlertInput, 10);
+    if (isNaN(parsed) || parsed < 1 || parsed > 180) {
+      alert("알림 시간은 1분에서 180분 사이로 입력해 주세요.");
+      return;
+    }
+    handleUpdate({ timetablePreAlertMinutes: parsed });
+    setIsCustomPreAlertOpen(false);
+    setCustomPreAlertInput("");
+    trackEvent("[Daily Brief] 수업 전 알림 직접 설정", { minutes: parsed });
   };
 
   const handleScheduleScopeChange = (scope: ScheduleScope) => {
@@ -137,6 +158,10 @@ export default function MobileDailyBriefSettingPage() {
     handleUpdate({ scheduleScope: scope });
     trackEvent("[Daily Brief] 학사일정 범위 변경", { scope });
   };
+
+  const isPreAlertInPresets = PRE_ALERT_PRESETS.some(
+    (p) => p.value === settings.timetablePreAlertMinutes,
+  );
 
   return (
     <PageWrapper>
@@ -190,17 +215,47 @@ export default function MobileDailyBriefSettingPage() {
                     </SubOptionHeader>
 
                     {settings.timetablePreAlertEnabled && (
-                      <ChipGroup>
-                        {PRE_ALERT_OPTIONS.map((opt) => (
+                      <>
+                        <ChipGroup>
+                          {PRE_ALERT_PRESETS.map((opt) => (
+                            <SelectableChip
+                              key={opt.value}
+                              $selected={!isCustomPreAlertOpen && settings.timetablePreAlertMinutes === opt.value}
+                              onClick={() => handlePreAlertMinutesChange(opt.value)}
+                            >
+                              {opt.label}
+                            </SelectableChip>
+                          ))}
                           <SelectableChip
-                            key={opt.value}
-                            $selected={settings.timetablePreAlertMinutes === opt.value}
-                            onClick={() => handlePreAlertMinutesChange(opt.value)}
+                            $selected={isCustomPreAlertOpen || !isPreAlertInPresets}
+                            onClick={() => {
+                              setIsCustomPreAlertOpen(true);
+                              setCustomPreAlertInput(String(settings.timetablePreAlertMinutes));
+                            }}
                           >
-                            {opt.label}
+                            {!isPreAlertInPresets ? `${settings.timetablePreAlertMinutes}분 전 (직접 설정)` : "직접 설정"}
                           </SelectableChip>
-                        ))}
-                      </ChipGroup>
+                        </ChipGroup>
+
+                        {isCustomPreAlertOpen && (
+                          <CustomInputRow>
+                            <StyledNumberInput
+                              type="number"
+                              min={1}
+                              max={180}
+                              placeholder="분 입력 (예: 25)"
+                              value={customPreAlertInput}
+                              onChange={(e) => setCustomPreAlertInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleCustomPreAlertSubmit();
+                              }}
+                            />
+                            <InputUnitLabel>분 전</InputUnitLabel>
+                            <ApplyButton onClick={handleCustomPreAlertSubmit}>적용</ApplyButton>
+                            <CancelButton onClick={() => setIsCustomPreAlertOpen(false)}>취소</CancelButton>
+                          </CustomInputRow>
+                        )}
+                      </>
                     )}
                   </SubOptionBox>
 
@@ -225,24 +280,57 @@ export default function MobileDailyBriefSettingPage() {
                     </SubOptionHeader>
 
                     {settings.timetableDailyBriefEnabled && (
-                      <TimeSelectRow>
-                        <TimeSelectLabel>알림 수신 시간</TimeSelectLabel>
-                        <StyledSelect
-                          value={settings.timetableDailyBriefTime}
-                          onChange={(e) => {
-                            handleUpdate({ timetableDailyBriefTime: e.target.value });
-                            trackEvent("[Daily Brief] 강의 목록 수신 시간 변경", {
-                              time: e.target.value,
-                            });
-                          }}
-                        >
-                          {TIME_OPTIONS.map((time) => (
-                            <option key={`tt-${time}`} value={time}>
-                              {time}
-                            </option>
-                          ))}
-                        </StyledSelect>
-                      </TimeSelectRow>
+                      <TimeOptionContainer>
+                        <TimeSelectRow>
+                          <TimeSelectLabel>알림 수신 시간</TimeSelectLabel>
+                          <StyledSelect
+                            value={isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) ? "CUSTOM" : settings.timetableDailyBriefTime}
+                            onChange={(e) => {
+                              if (e.target.value === "CUSTOM") {
+                                setIsCustomTtTimeOpen(true);
+                                return;
+                              }
+                              setIsCustomTtTimeOpen(false);
+                              handleUpdate({ timetableDailyBriefTime: e.target.value });
+                              trackEvent("[Daily Brief] 강의 목록 수신 시간 변경", {
+                                time: e.target.value,
+                              });
+                            }}
+                          >
+                            {BASE_TIME_PRESETS.map((time) => (
+                              <option key={`tt-${time}`} value={time}>
+                                {time}
+                              </option>
+                            ))}
+                            {!BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
+                              <option value="CUSTOM">
+                                {settings.timetableDailyBriefTime} (직접 설정)
+                              </option>
+                            )}
+                            {BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
+                              <option value="CUSTOM">직접 설정...</option>
+                            )}
+                          </StyledSelect>
+                        </TimeSelectRow>
+
+                        {(isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime)) && (
+                          <CustomTimePickerRow>
+                            <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
+                            <StyledTimeInput
+                              type="time"
+                              value={settings.timetableDailyBriefTime}
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleUpdate({ timetableDailyBriefTime: e.target.value });
+                                  trackEvent("[Daily Brief] 강의 목록 시간 직접 입력", {
+                                    time: e.target.value,
+                                  });
+                                }
+                              }}
+                            />
+                          </CustomTimePickerRow>
+                        )}
+                      </TimeOptionContainer>
                     )}
                   </SubOptionBox>
                 </>
@@ -283,29 +371,62 @@ export default function MobileDailyBriefSettingPage() {
 
                   {/* 학사일정 브리핑 시간 */}
                   <SubOptionBox>
-                    <TimeSelectRow>
-                      <SubOptionTextWrapper>
-                        <SubOptionTitle>브리핑 수신 시간</SubOptionTitle>
-                        <SubOptionDesc>
-                          매일 해당 시각에 오늘의 일정이 있을 때만 알림이 발송됩니다.
-                        </SubOptionDesc>
-                      </SubOptionTextWrapper>
-                      <StyledSelect
-                        value={settings.scheduleDailyBriefTime}
-                        onChange={(e) => {
-                          handleUpdate({ scheduleDailyBriefTime: e.target.value });
-                          trackEvent("[Daily Brief] 학사일정 수신 시간 변경", {
-                            time: e.target.value,
-                          });
-                        }}
-                      >
-                        {TIME_OPTIONS.map((time) => (
-                          <option key={`sched-${time}`} value={time}>
-                            {time}
-                          </option>
-                        ))}
-                      </StyledSelect>
-                    </TimeSelectRow>
+                    <TimeOptionContainer>
+                      <TimeSelectRow>
+                        <SubOptionTextWrapper>
+                          <SubOptionTitle>브리핑 수신 시간</SubOptionTitle>
+                          <SubOptionDesc>
+                            매일 해당 시각에 오늘의 일정이 있을 때만 알림이 발송됩니다.
+                          </SubOptionDesc>
+                        </SubOptionTextWrapper>
+                        <StyledSelect
+                          value={isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) ? "CUSTOM" : settings.scheduleDailyBriefTime}
+                          onChange={(e) => {
+                            if (e.target.value === "CUSTOM") {
+                              setIsCustomSchedTimeOpen(true);
+                              return;
+                            }
+                            setIsCustomSchedTimeOpen(false);
+                            handleUpdate({ scheduleDailyBriefTime: e.target.value });
+                            trackEvent("[Daily Brief] 학사일정 수신 시간 변경", {
+                              time: e.target.value,
+                            });
+                          }}
+                        >
+                          {BASE_TIME_PRESETS.map((time) => (
+                            <option key={`sched-${time}`} value={time}>
+                              {time}
+                            </option>
+                          ))}
+                          {!BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
+                            <option value="CUSTOM">
+                              {settings.scheduleDailyBriefTime} (직접 설정)
+                            </option>
+                          )}
+                          {BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
+                            <option value="CUSTOM">직접 설정...</option>
+                          )}
+                        </StyledSelect>
+                      </TimeSelectRow>
+
+                      {(isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime)) && (
+                        <CustomTimePickerRow>
+                          <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
+                          <StyledTimeInput
+                            type="time"
+                            value={settings.scheduleDailyBriefTime}
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                handleUpdate({ scheduleDailyBriefTime: e.target.value });
+                                trackEvent("[Daily Brief] 학사일정 시간 직접 입력", {
+                                  time: e.target.value,
+                                });
+                              }
+                            }}
+                          />
+                        </CustomTimePickerRow>
+                      )}
+                    </TimeOptionContainer>
                   </SubOptionBox>
 
                   <Divider margin="0" />
@@ -476,6 +597,72 @@ const SelectableChip = styled.button<{ $selected: boolean }>`
   }
 `;
 
+const CustomInputRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const StyledNumberInput = styled.input`
+  width: 120px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  background-color: #fff;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #5e92f0;
+  }
+`;
+
+const InputUnitLabel = styled.span`
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 500;
+`;
+
+const ApplyButton = styled.button`
+  border: none;
+  background-color: #5e92f0;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #4b7fd9;
+  }
+`;
+
+const CancelButton = styled.button`
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+  color: #666;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+`;
+
+const TimeOptionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+`;
+
 const TimeSelectRow = styled.div`
   display: flex;
   align-items: center;
@@ -488,6 +675,40 @@ const TimeSelectLabel = styled.div`
   font-size: 14.5px;
   color: #2c3e50;
   font-weight: 600;
+`;
+
+const CustomTimePickerRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  padding-top: 4px;
+  box-sizing: border-box;
+`;
+
+const TimePickerLabel = styled.span`
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+`;
+
+const StyledTimeInput = styled.input`
+  border-radius: 8px;
+  border: 1px solid #5e92f0;
+  padding: 7px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  background-color: #fff;
+  outline: none;
+  cursor: pointer;
+  box-shadow: ${SOFT_CHIP_SHADOW};
+
+  &:focus {
+    border-color: #5e92f0;
+    box-shadow: 0 0 0 2px rgba(94, 146, 240, 0.2);
+  }
 `;
 
 const StyledSelect = styled.select`
