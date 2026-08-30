@@ -281,14 +281,15 @@ export default function MobileDailyBriefSettingPage() {
           onSwiper={setSwiperRef}
           initialSlide={currentIndex}
           onSlideChange={handleSlideChange}
+          spaceBetween={24}
           speed={320}
           autoHeight={true}
           observer={true}
           observeParents={true}
-          style={{ width: "100%" }}
+          style={{ width: "100%", overflow: "hidden" }}
         >
           {/* 슬라이드 1: 시간표 알림 */}
-          <SwiperSlide style={{ height: "auto" }}>
+          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
             <SlideInnerWrapper>
               <TitleContentArea
                 title="시간표 알림"
@@ -489,7 +490,7 @@ export default function MobileDailyBriefSettingPage() {
           </SwiperSlide>
 
           {/* 슬라이드 2: 학사일정 알림 */}
-          <SwiperSlide style={{ height: "auto" }}>
+          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
             <SlideInnerWrapper>
               <TitleContentArea
                 title="학사일정 알림"
@@ -647,14 +648,14 @@ export default function MobileDailyBriefSettingPage() {
           </SwiperSlide>
 
           {/* 슬라이드 3: 학교 공지 알리미 */}
-          <SwiperSlide style={{ height: "auto" }}>
+          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
             <SlideInnerWrapper>
               <MobileSchoolAlarmSetting location="Daily Brief Page" />
             </SlideInnerWrapper>
           </SwiperSlide>
 
           {/* 슬라이드 4: 학과 공지 알리미 */}
-          <SwiperSlide style={{ height: "auto" }}>
+          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
             <SlideInnerWrapper>
               <MobileDeptAlarmSetting location="Daily Brief Page" />
             </SlideInnerWrapper>
@@ -1210,6 +1211,8 @@ const ContentContainer = styled.div`
 
 const SlideInnerWrapper = styled.div`
   width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 24px;
