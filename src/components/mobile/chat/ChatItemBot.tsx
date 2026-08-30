@@ -180,10 +180,10 @@ const BotCardContent = styled.div`
   border: 1px solid #eaeef4;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
   border-radius: 4px 18px 18px 18px;
-  padding: 14px 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   min-width: 250px;
   box-sizing: border-box;
@@ -203,7 +203,7 @@ const LoadingState = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 0;
+  padding: 4px 0;
 `;
 
 const LoadingText = styled.span`
@@ -214,7 +214,8 @@ const LoadingText = styled.span`
 
 const ActionButtonsWrapper = styled.div`
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   padding-top: 6px;
   border-top: 1px solid #f2f4f8;
 `;
@@ -226,12 +227,15 @@ const ActionButton = styled.button`
   gap: 5px;
   background: #f7f9fc;
   border: 1px solid #e5e8eb;
-  border-radius: 12px;
-  padding: 7px 12px;
+  border-radius: 10px;
+  padding: 6px 10px;
   font-size: 12px;
   font-weight: 600;
   color: #333d4b;
   cursor: pointer;
+  word-break: keep-all;
+  white-space: normal;
+  text-align: center;
   transition: all 0.15s ease;
 
   img {
