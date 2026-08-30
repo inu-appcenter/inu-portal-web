@@ -459,32 +459,29 @@ export default function MobileDailyBriefSettingPage() {
                 </Box>
               </TitleContentArea>
 
-              <SimpleNavigationButton
-                text="시간표로 이동"
-                onClick={() => {
-                  mixpanelTrack.mypageMenuClicked("Daily Brief - 시간표 바로가기");
-                  navigate(ROUTES.TIMETABLE.ROOT);
-                }}
-              />
+              <RightActionRow>
+                <SmallLinkButton
+                  onClick={() => {
+                    mixpanelTrack.mypageMenuClicked("Daily Brief - 시간표 바로가기");
+                    navigate(ROUTES.TIMETABLE.ROOT);
+                  }}
+                >
+                  <span>시간표로 이동</span>
+                  <ChevronRight size={13} />
+                </SmallLinkButton>
+              </RightActionRow>
 
               {/* 시간표 알림 예시 */}
-              <TitleContentArea
-                title="알림 예시"
-                description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
-              >
-                <NotificationPreviewList>
-                  <PushNotificationPreviewCard
-                    title="[수업 알림] 잠시 후 수업이 시작됩니다!"
-                    body={`'운영체제' 수업이 ${settings.timetablePreAlertMinutes || 10}분 후 (10:00, 7호관 301호)에 시작해요.`}
-                    subText="수업 시작 전"
-                  />
-                  <PushNotificationPreviewCard
-                    title="[Daily Brief] 오늘 예정된 강의가 3개 있어요 📚"
-                    body={`1. 운영체제 (10:00~11:50, 7호관 301호)\n2. 알고리즘 (13:00~14:50, 7호관 204호)\n3. 데이터베이스 (15:00~16:50, 7호관 301호)`}
-                    subText={`${settings.timetableDailyBriefTime || "08:30"}`}
-                  />
-                </NotificationPreviewList>
-              </TitleContentArea>
+              <NotificationPreviewList>
+                <PushNotificationPreviewCard
+                  title="[수업 알림] 잠시 후 수업이 시작됩니다!"
+                  body={`'운영체제' 수업이 ${settings.timetablePreAlertMinutes || 10}분 후 (10:00, 7호관 301호)에 시작해요.`}
+                />
+                <PushNotificationPreviewCard
+                  title="[Daily Brief] 오늘 예정된 강의가 3개 있어요 📚"
+                  body={`1. 운영체제 (10:00~11:50, 7호관 301호)\n2. 알고리즘 (13:00~14:50, 7호관 204호)\n3. 데이터베이스 (15:00~16:50, 7호관 301호)`}
+                />
+              </NotificationPreviewList>
             </SlideInnerWrapper>
           </SwiperSlide>
 
@@ -621,27 +618,25 @@ export default function MobileDailyBriefSettingPage() {
                 </Box>
               </TitleContentArea>
 
-              <SimpleNavigationButton
-                text="학사일정으로 이동"
-                onClick={() => {
-                  mixpanelTrack.mypageMenuClicked("Daily Brief - 학사일정 바로가기");
-                  navigate(ROUTES.BOARD.CALENDAR);
-                }}
-              />
+              <RightActionRow>
+                <SmallLinkButton
+                  onClick={() => {
+                    mixpanelTrack.mypageMenuClicked("Daily Brief - 학사일정 바로가기");
+                    navigate(ROUTES.BOARD.CALENDAR);
+                  }}
+                >
+                  <span>학사일정으로 이동</span>
+                  <ChevronRight size={13} />
+                </SmallLinkButton>
+              </RightActionRow>
 
               {/* 학사일정 알림 예시 */}
-              <TitleContentArea
-                title="알림 예시"
-                description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
-              >
-                <NotificationPreviewList>
-                  <PushNotificationPreviewCard
-                    title="[Daily Brief] 오늘의 학사일정을 확인하세요 🗓️"
-                    body={`• [학교] 2026학년도 2학기 수강신청 변경 기간\n• [${userInfo.department || "컴퓨터공학부"}] 2학기 졸업작품 중간 발표회`}
-                    subText={`${settings.scheduleDailyBriefTime || "08:30"}`}
-                  />
-                </NotificationPreviewList>
-              </TitleContentArea>
+              <NotificationPreviewList>
+                <PushNotificationPreviewCard
+                  title="[Daily Brief] 오늘의 학사일정을 확인하세요 🗓️"
+                  body={`• [학교] 2026학년도 2학기 수강신청 변경 기간\n• [${userInfo.department || "컴퓨터공학부"}] 2학기 졸업작품 중간 발표회`}
+                />
+              </NotificationPreviewList>
             </SlideInnerWrapper>
           </SwiperSlide>
 
@@ -906,32 +901,29 @@ export function MobileSchoolAlarmSetting({
         </TitleContentArea>
       )}
 
-      <SimpleNavigationButton
-        text="학교 공지사항으로 이동"
-        onClick={() => {
-          mixpanelTrack.mypageMenuClicked("Daily Brief - 학교 공지 바로가기");
-          navigate(ROUTES.BOARD.NOTICE);
-        }}
-      />
+      <RightActionRow>
+        <SmallLinkButton
+          onClick={() => {
+            mixpanelTrack.mypageMenuClicked("Daily Brief - 학교 공지 바로가기");
+            navigate(ROUTES.BOARD.NOTICE);
+          }}
+        >
+          <span>학교 공지사항으로 이동</span>
+          <ChevronRight size={13} />
+        </SmallLinkButton>
+      </RightActionRow>
 
       {/* 학교 공지 알림 예시 */}
-      <TitleContentArea
-        title="알림 예시"
-        description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
-      >
-        <NotificationPreviewList>
-          <PushNotificationPreviewCard
-            title="[학사-장학금] 새로운 공지사항이 등록되었어요."
-            body="2026학년도 2학기 성적우수 및 맞춤형 장학금 신청 안내"
-            subText="방금 전"
-          />
-          <PushNotificationPreviewCard
-            title="[학사] 새로운 공지사항이 등록되었어요."
-            body="2026학년도 2학기 전공 심화 및 부·복수전공 이수 신청 안내"
-            subText="방금 전"
-          />
-        </NotificationPreviewList>
-      </TitleContentArea>
+      <NotificationPreviewList>
+        <PushNotificationPreviewCard
+          title="[학사-장학금] 새로운 공지사항이 등록되었어요."
+          body="2026학년도 2학기 성적우수 및 맞춤형 장학금 신청 안내"
+        />
+        <PushNotificationPreviewCard
+          title="[학사] 새로운 공지사항이 등록되었어요."
+          body="2026학년도 2학기 전공 심화 및 부·복수전공 이수 신청 안내"
+        />
+      </NotificationPreviewList>
     </KeyWordSettingWrapper>
   );
 }
@@ -1154,32 +1146,29 @@ export function MobileDeptAlarmSetting({
         </TitleContentArea>
       )}
 
-      <SimpleNavigationButton
-        text="학과 공지사항으로 이동"
-        onClick={() => {
-          mixpanelTrack.mypageMenuClicked("Daily Brief - 학과 공지 바로가기");
-          navigate(ROUTES.BOARD.DEPT_NOTICE);
-        }}
-      />
+      <RightActionRow>
+        <SmallLinkButton
+          onClick={() => {
+            mixpanelTrack.mypageMenuClicked("Daily Brief - 학과 공지 바로가기");
+            navigate(ROUTES.BOARD.DEPT_NOTICE);
+          }}
+        >
+          <span>학과 공지사항으로 이동</span>
+          <ChevronRight size={13} />
+        </SmallLinkButton>
+      </RightActionRow>
 
       {/* 학과 공지 알림 예시 */}
-      <TitleContentArea
-        title="알림 예시"
-        description="스마트폰에 다음과 같은 알림 배너로 전달돼요."
-      >
-        <NotificationPreviewList>
-          <PushNotificationPreviewCard
-            title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이 등록되었어요.`}
-            body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개가 포함되어 있어요.`}
-            subText="방금 전"
-          />
-          <PushNotificationPreviewCard
-            title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이 등록되었어요.`}
-            body="2026-2학기 학과 세미나 및 특강 참여 신청 안내"
-            subText="방금 전"
-          />
-        </NotificationPreviewList>
-      </TitleContentArea>
+      <NotificationPreviewList>
+        <PushNotificationPreviewCard
+          title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이 등록되었어요.`}
+          body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개가 포함되어 있어요.`}
+        />
+        <PushNotificationPreviewCard
+          title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이 등록되었어요.`}
+          body="2026-2학기 학과 세미나 및 특강 참여 신청 안내"
+        />
+      </NotificationPreviewList>
     </KeyWordSettingWrapper>
   );
 }
@@ -1686,45 +1675,59 @@ const AllAlarmCheckBoxWrapper = styled.div`
 `;
 
 /**
- * 심플 기능 바로가기 버튼
+ * 우측 하단 소형 바로가기 링크 버튼
  */
-export function SimpleNavigationButton({
-  text,
-  onClick,
-}: {
-  text: string;
-  onClick: () => void;
-}) {
-  return (
-    <SimpleNavButtonWrapper onClick={onClick}>
-      <SimpleNavText>{text}</SimpleNavText>
-      <ChevronRight size={16} color="#5e92f0" />
-    </SimpleNavButtonWrapper>
-  );
-}
+const RightActionRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: -12px;
+  margin-bottom: 2px;
+`;
+
+const SmallLinkButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: #5e92f0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: rgba(94, 146, 240, 0.08);
+  }
+
+  &:active {
+    background-color: rgba(94, 146, 240, 0.15);
+  }
+`;
 
 /**
- * 모바일 OS 푸시 알림 배너 프리뷰 컴포넌트
+ * 모바일 OS 푸시 알림 배너 프리뷰 컴포넌트 (그림자 제거, 실제 알림 양식)
  */
 export function PushNotificationPreviewCard({
   title,
   body,
-  badgeText = "INTIP",
-  subText = "방금 전",
+  time = "지금",
 }: {
   title: string;
   body: string;
-  badgeText?: string;
-  subText?: string;
+  time?: string;
 }) {
   return (
     <OsNotificationBanner>
       <OsHeader>
         <OsAppIconWrapper>
-          <Bell size={11} color="#ffffff" />
+          <Bell size={10} color="#ffffff" />
         </OsAppIconWrapper>
-        <OsAppName>인천대 포털 • {badgeText}</OsAppName>
-        <OsTimeText>{subText}</OsTimeText>
+        <OsAppName>인천대 포털</OsAppName>
+        <OsTimeText>{time}</OsTimeText>
       </OsHeader>
       <OsTitle>{title}</OsTitle>
       <OsBody>{body}</OsBody>
@@ -1735,35 +1738,8 @@ export function PushNotificationPreviewCard({
 const NotificationPreviewList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-`;
-
-const SimpleNavButtonWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 18px;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active {
-    background-color: #f8faff;
-    border-color: #5e92f0;
-    transform: scale(0.99);
-  }
-`;
-
-const SimpleNavText = styled.span`
-  font-size: 14.5px;
-  font-weight: 600;
-  color: #2c3e50;
 `;
 
 const OsNotificationBanner = styled.div`
@@ -1771,14 +1747,10 @@ const OsNotificationBanner = styled.div`
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  padding: 13px 15px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.03);
-  backdrop-filter: blur(12px);
+  padding: 12px 14px;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e9ecef;
   gap: 3px;
 `;
 
@@ -1794,12 +1766,11 @@ const OsAppIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: linear-gradient(135deg, #5e92f0 0%, #3b74e6 100%);
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background-color: #5e92f0;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(94, 146, 240, 0.3);
 `;
 
 const OsAppName = styled.span`
