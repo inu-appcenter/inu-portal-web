@@ -23,9 +23,6 @@ import Divider from "@/components/common/Divider";
 import ExternalLinkIcon from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
 import useAIChatStore from "@/stores/useAIChatStore";
 
-const isProduction =
-  import.meta.env.VITE_API_BASE_URL === "https://portal.inuappcenter.kr/";
-
 interface AppItemProps {
   iconSrc?: string | null;
   iconComponent?: IconType | null;
@@ -110,7 +107,6 @@ const AiBrandPage = () => {
           description:
             "인천대학교 AI 챗봇 챗불이에게 학사 관련 질문을 해보세요. 학칙과 공지사항을 기반으로 궁금증을 해결해드려요.",
           iconSrc: ChatBulButtonImg,
-          isPreparing: isProduction,
           onClick: () => {
             openChat();
           },
@@ -167,9 +163,8 @@ const AiBrandPage = () => {
           description:
             "나만을 위한 맞춤 정보 요약과 꼭 필요한 학교 생활 알림을 매일 아침 전해드려요.",
           iconComponent: LuNewspaper,
-          isPreparing: true,
           onClick: () => {
-            alert("Daily Brief 서비스는 준비 중입니다!");
+            navigate(ROUTES.MYPAGE.DAILY_BRIEF);
           },
         },
       ],
