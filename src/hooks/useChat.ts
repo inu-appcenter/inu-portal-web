@@ -168,10 +168,10 @@ export const useChat = (roomId: string) => {
 
           const receivedMessage = parsed as ChatMessage;
           setMessages((prev) => {
-            // 챗불이 답변 메시지 수신 시 펜딩 중인 봇 카드가 있다면 In-place로 교체
+            // 1. 챗불이 답변 메시지 수신 시 펜딩 중인 봇 카드가 있다면 In-place로 교체
             const isBotAnswer =
-              receivedMessage.senderNickname === "챗불이" ||
               receivedMessage.messageType === "BOT_ANSWER" ||
+              receivedMessage.senderNickname === "챗불이" ||
               (receivedMessage.content &&
                 receivedMessage.content.includes("[CHATBULI_ANSWER]"));
 
@@ -179,7 +179,9 @@ export const useChat = (roomId: string) => {
               const pendingIdx = prev.findIndex(
                 (m) =>
                   m.extraData === "PENDING" ||
-                  m.messageId?.startsWith("temp-bot-"),
+                  m.messageId?.startsWith("temp-bot-") ||
+                  (m.messageType === "BOT_ANSWER" &&
+                    m.messageId?.startsWith("temp-")),
               );
               if (pendingIdx !== -1) {
                 const next = [...prev];
@@ -188,7 +190,7 @@ export const useChat = (roomId: string) => {
               }
             }
 
-            // 챗불이 질문 메시지 수신 시 로컬 낙관적 질문 카드가 있다면 In-place로 교체
+            // 2. 챗불이 질문 메시지 수신 시 로컬 낙관적 질문 카드가 있다면 In-place로 교체
             const isBotQuestion =
               receivedMessage.messageType === "BOT_QUESTION" ||
               (receivedMessage.content &&
@@ -197,8 +199,9 @@ export const useChat = (roomId: string) => {
             if (isBotQuestion) {
               const tempQIdx = prev.findIndex(
                 (m) =>
-                  m.messageId?.startsWith("temp-q-") &&
-                  m.content === receivedMessage.content,
+                  m.messageId?.startsWith("temp-q-") ||
+                  (m.messageType === "BOT_QUESTION" &&
+                    m.messageId?.startsWith("temp-")),
               );
               if (tempQIdx !== -1) {
                 const next = [...prev];

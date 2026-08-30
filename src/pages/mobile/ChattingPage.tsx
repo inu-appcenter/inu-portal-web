@@ -583,7 +583,7 @@ export default function ChattingPage() {
     );
 
     if (isChatbuliMode) {
-      const formattedQuestion = `[챗불이에게 질문] ${trimmed}\n[CHATBULI_QUESTION]`;
+      const questionContent = trimmed;
       const tempQId = `temp-q-${Date.now()}`;
       const tempBotId = `temp-bot-${Date.now()}`;
       const nowIso = new Date().toISOString();
@@ -595,7 +595,7 @@ export default function ChattingPage() {
         senderAlias: null,
         senderChatRoomMemberId: 0,
         senderHash: myHash || "",
-        content: formattedQuestion,
+        content: questionContent,
         imageCount: 0,
         unreadCount: 0,
         messageType: "BOT_QUESTION",
@@ -620,7 +620,7 @@ export default function ChattingPage() {
 
       setMessages((prev) => [...prev, questionMsg, pendingBotMsg]);
       sendMessage(
-        formattedQuestion,
+        questionContent,
         roomInfo.anonymous,
         [],
         undefined,
@@ -1372,6 +1372,25 @@ const Bubble = styled.div<{ $bgColor: string }>`
   white-space: pre-wrap;
 `;
 
+const BotQuestionTag = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ffd8bf;
+  border-radius: 10px;
+  padding: 2px 7px;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ff6b00;
+  width: fit-content;
+
+  img {
+    object-fit: contain;
+  }
+`;
+
 const ImageThumbnail = styled.img`
   width: 50vw;
   height: auto;
@@ -1499,7 +1518,15 @@ const ChatItemOtherPerson = ({
                   />
                 )}
                 {message.content && (
-                  <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+                  <Bubble $bgColor={bgColor}>
+                    {message.messageType === "BOT_QUESTION" && (
+                      <BotQuestionTag>
+                        <img src={TorchAiLogo} alt="" width={12} height={12} />
+                        <span>챗불이에게 질문</span>
+                      </BotQuestionTag>
+                    )}
+                    {message.content}
+                  </Bubble>
                 )}
               </>
             )}
@@ -1607,7 +1634,15 @@ const ChatItemMy = ({
                   />
                 )}
                 {message.content && (
-                  <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+                  <Bubble $bgColor={bgColor}>
+                    {message.messageType === "BOT_QUESTION" && (
+                      <BotQuestionTag>
+                        <img src={TorchAiLogo} alt="" width={12} height={12} />
+                        <span>챗불이에게 질문</span>
+                      </BotQuestionTag>
+                    )}
+                    {message.content}
+                  </Bubble>
                 )}
               </>
             )}
