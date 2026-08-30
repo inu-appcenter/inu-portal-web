@@ -30,6 +30,7 @@ import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateM
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
+import { TimeTable } from "@/types/timetables";
 
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 
@@ -379,7 +380,9 @@ const MobileTimeTablePage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
 
+  // const { timetables:fdf, setSemester, setActiveTimetable } = useTimetableStore();
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
+  // const timetables = [] as TimeTable[];
 
   useTimeTables(undefined, undefined, { enabled: isLoggedIn });
   const { semesters } = useSemesters();
@@ -588,7 +591,6 @@ const MobileTimeTablePage = () => {
     alert(
       "PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다.\nhttps://intip.inuappcenter.kr",
     );
-
     navigate(ROUTES.TIMETABLE.SIMULATOR);
 
   };
@@ -1034,7 +1036,7 @@ const MobileTimeTablePageWrapper = styled.div`
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  padding: var(--header-height, 56px) ${MOBILE_PAGE_GUTTER}
+  padding: var(--header-height, 56px) 8px
     calc(var(--nav-height, 100px) + 40px);
 
   @media ${DESKTOP_MEDIA} {
@@ -1134,10 +1136,10 @@ const NoTimetableContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
   gap: 20px;
   width: 100%;
-  height: 360px;
+  height: 540px;
   border-radius: 20px;
   border: 1px solid var(--border-default, #e5e8eb);
   background: var(--bg-base, #ffffff);
