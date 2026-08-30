@@ -51,6 +51,8 @@ export interface Notification {
     | "SCHOOL_NOTICE"
     | "CHAT"
     | "FRIEND"
+    | "DAILY_BRIEF_TIMETABLE"
+    | "DAILY_BRIEF_SCHEDULE"
     | string;
   targetId?: number; // 게시글 ID, 채팅방 ID 등
   createDate: string;

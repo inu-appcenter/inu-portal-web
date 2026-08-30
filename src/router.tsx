@@ -85,6 +85,7 @@ import ChattingPage from "@/pages/mobile/ChattingPage";
 import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
 import CreatePersonalChatPage from "@/pages/mobile/CreatePersonalChatPage";
 import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSettingsPage";
+import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
 
 export const router = createBrowserRouter([
   {
@@ -274,6 +275,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.DELETE, element: <MobileDeletePage /> },
           { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
           { path: ROUTES.MYPAGE.NOTIFICATION, element: <MobileNotificationSettingsPage /> },
+          { path: ROUTES.MYPAGE.DAILY_BRIEF, element: <MobileDailyBriefSettingPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },

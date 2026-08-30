@@ -533,7 +533,7 @@ const MobileTimeTablePage = () => {
         icon: <Bell size={20} />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("강의 알림 설정", "헤더 메뉴");
-          navigate(ROUTES.MYPAGE.NOTIFICATION);
+          navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=timetable`);
         },
       },
       {

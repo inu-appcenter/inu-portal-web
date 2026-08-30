@@ -75,6 +75,11 @@ export default function MobileNotificationSettingsPage() {
     }
   };
 
+  const handleDailyBriefClick = () => {
+    mixpanelTrack.mypageMenuClicked("알림설정 - Daily Brief");
+    navigate(ROUTES.MYPAGE.DAILY_BRIEF);
+  };
+
   const handleDeptClick = () => {
     mixpanelTrack.mypageMenuClicked("알림설정 - 학과공지알리미");
     navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`);
@@ -89,6 +94,16 @@ export default function MobileNotificationSettingsPage() {
     <PageWrapper>
       <ContentContainer>
         <Box style={{ padding: "0" }}>
+          <SettingRow onClick={handleDailyBriefClick}>
+            <RowContent>
+              <RowTitle>Daily Brief (시간표 · 학사일정)</RowTitle>
+              <RowDescription>수업 시작 전 알림 및 당일 강의·학사일정 맞춤 브리핑</RowDescription>
+            </RowContent>
+            <ChevronRight size={20} color="#AEAEB2" />
+          </SettingRow>
+
+          <Divider margin="0" />
+
           <SettingRow onClick={handleChatToggle} style={{ opacity: isUpdating ? 0.6 : 1, pointerEvents: isUpdating ? "none" : "auto" }}>
             <RowContent>
               <RowTitle>채팅 알림</RowTitle>
