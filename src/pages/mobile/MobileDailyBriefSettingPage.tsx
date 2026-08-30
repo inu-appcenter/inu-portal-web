@@ -476,8 +476,8 @@ export default function MobileDailyBriefSettingPage() {
                 <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
                 <NotificationPreviewList>
                   <PushNotificationPreviewCard
-                    title="[수업 알림] 잠시 후 수업이 시작됩니다!"
-                    body={`'운영체제' 수업이 ${settings.timetablePreAlertMinutes || 10}분 후 (10:00, 7호관 301호)에 시작해요.`}
+                    title={`${(settings.timetablePreAlertMinutes || 10) >= 60 && (settings.timetablePreAlertMinutes || 10) % 60 === 0 ? `${(settings.timetablePreAlertMinutes || 10) / 60}시간` : (settings.timetablePreAlertMinutes || 10) >= 60 ? `${Math.floor((settings.timetablePreAlertMinutes || 10) / 60)}시간 ${(settings.timetablePreAlertMinutes || 10) % 60}분` : `${settings.timetablePreAlertMinutes || 10}분`} 후 수업이 시작돼요.`}
+                    body="운영체제 (10:00~11:50, 7호관 301호)"
                   />
                   <PushNotificationPreviewCard
                     title="[Daily Brief] 오늘 예정된 강의가 3개 있어요 📚"
@@ -924,11 +924,11 @@ export function MobileSchoolAlarmSetting({
         <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
         <NotificationPreviewList>
           <PushNotificationPreviewCard
-            title="[학사-장학금] 새로운 공지사항이 등록되었어요."
+            title="[학사-장학금] 새로운 공지사항이에요."
             body="2026학년도 2학기 성적우수 및 맞춤형 장학금 신청 안내"
           />
           <PushNotificationPreviewCard
-            title="[학사] 새로운 공지사항이 등록되었어요."
+            title="[학사] 새로운 공지사항이에요."
             body="2026학년도 2학기 전공 심화 및 부·복수전공 이수 신청 안내"
           />
         </NotificationPreviewList>
@@ -1172,11 +1172,11 @@ export function MobileDeptAlarmSetting({
         <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
         <NotificationPreviewList>
           <PushNotificationPreviewCard
-            title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이 등록되었어요.`}
-            body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개가 포함되어 있어요.`}
+            title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이에요.`}
+            body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개를 캘린더에서 확인해보세요.`}
           />
           <PushNotificationPreviewCard
-            title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이 등록되었어요.`}
+            title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이에요.`}
             body="2026-2학기 학과 세미나 및 특강 참여 신청 안내"
           />
         </NotificationPreviewList>
