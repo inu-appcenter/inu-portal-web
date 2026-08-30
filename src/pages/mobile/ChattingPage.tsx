@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
+import { compareMessageIds } from "@/hooks/chat/messageSync";
 import { Send, Users, Loader2, ArrowDown, Plus, X } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
@@ -132,7 +133,9 @@ export default function ChattingPage() {
   >(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showNewMessageBanner, setShowNewMessageBanner] = useState(false);
-  const lastMessageCountRef = useRef<number>(0);
+  const lastSeenNewestMessageIdRef = useRef<string | null>(null);
+  const hasInitializedNewestMessageRef = useRef(false);
+  const isAtBottomRef = useRef(true);
   const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>(
     [],
   );
@@ -143,6 +146,13 @@ export default function ChattingPage() {
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
+  }, [roomId]);
+
+  useEffect(() => {
+    lastSeenNewestMessageIdRef.current = null;
+    hasInitializedNewestMessageRef.current = false;
+    isAtBottomRef.current = true;
+    setShowNewMessageBanner(false);
   }, [roomId]);
 
   const {
@@ -403,8 +413,11 @@ export default function ChattingPage() {
     const el = scrollRef.current;
     if (!el) return;
 
+    const absScrollTop = Math.abs(el.scrollTop);
+    isAtBottomRef.current = absScrollTop < 50;
+
     // 사용자가 직접 최하단 근처로 스크롤하면 알림 배너를 자연스럽게 숨김
-    if (Math.abs(el.scrollTop) < 30) {
+    if (absScrollTop < 30) {
       setShowNewMessageBanner(false);
     }
 
@@ -412,7 +425,6 @@ export default function ChattingPage() {
       return;
 
     const { scrollTop, scrollHeight, clientHeight } = el;
-    const absScrollTop = Math.abs(scrollTop);
 
     // 시각적 상단(물리적 하단) 도달 확인
     if (absScrollTop + clientHeight >= scrollHeight - 100) {
@@ -443,7 +455,7 @@ export default function ChattingPage() {
     }
   }, [isFetchingPrevious]);
 
-  // 데이터 업데이트 후 위치 보정 및 새 메시지 바닥 정렬 & 알림 노출
+  // 데이터 업데이트 후 위치 보정 및 실제 최신 메시지 수신 감지
   useLayoutEffect(() => {
     const scrollEl = scrollRef.current;
     if (!scrollEl || isFetchingPrevious) return;
@@ -452,30 +464,38 @@ export default function ChattingPage() {
     if (scrollHeightRef.current > 0) {
       scrollEl.scrollTop = lastScrollTopRef.current;
       scrollHeightRef.current = 0;
+    }
+
+    const newestMessageId = messages.at(-1)?.messageId;
+    if (!newestMessageId) return;
+
+    // 최초 동기화와 과거 메시지 페이지 추가는 기준점만 갱신하고 알림을 띄우지 않는다.
+    if (!hasInitializedNewestMessageRef.current) {
+      lastSeenNewestMessageIdRef.current = newestMessageId;
+      hasInitializedNewestMessageRef.current = true;
       return;
     }
 
-    // 신규 실시간 메시지 발신/수신 타임라인 감지
-    const currentCount = messages.length;
-    if (
-      currentCount > lastMessageCountRef.current &&
-      lastMessageCountRef.current > 0
-    ) {
-      const isNearBottom = Math.abs(scrollEl.scrollTop) < 50;
-      if (isNearBottom) {
+    const previousNewestMessageId = lastSeenNewestMessageIdRef.current;
+    const hasNewerMessage =
+      previousNewestMessageId !== null &&
+      compareMessageIds(newestMessageId, previousNewestMessageId) > 0;
+
+    if (hasNewerMessage) {
+      // 렌더링으로 스크롤 높이가 바뀌어도 판단이 흔들리지 않도록 스크롤 이벤트에서
+      // 기록한 하단 체류 상태를 사용한다.
+      if (isAtBottomRef.current) {
         scrollEl.scrollTop = 0;
         requestAnimationFrame(() => {
           scrollEl.scrollTop = 0;
         });
         setShowNewMessageBanner(false);
       } else {
-        // 이전 기록을 읽기 위해 스크롤을 올린 상태면
-        // 스크롤 위치를 보존하고 알림 배너 노출
         setShowNewMessageBanner(true);
       }
     }
 
-    lastMessageCountRef.current = currentCount;
+    lastSeenNewestMessageIdRef.current = newestMessageId;
   }, [messages, isFetchingPrevious]);
 
   const isMobile = React.useMemo(() => {
@@ -1481,10 +1501,10 @@ const MessageBubble = styled.div`
   -webkit-user-select: none;
   user-select: none;
 
-  /* 시간 영역을 남겨두고, 메시지 콘텐츠만 줄어들 수 있게 한다. */
+  /* 시간 영역은 고정하고 메시지 콘텐츠만 필요할 때 줄어들게 한다. */
   > div {
+    flex: 0 1 auto;
     min-width: 0;
-    max-width: calc(100% - 64px);
   }
 `;
 
@@ -1496,7 +1516,8 @@ const Bubble = styled.div<{ $bgColor: string }>`
   border-radius: 18px;
   font-size: 14px;
   line-height: 20px;
-  max-width: 100%;
+  /* 시간 표시까지 포함해도 모바일 화면을 넘지 않는 폭 */
+  max-width: calc(100vw - 112px);
   box-sizing: border-box;
   word-break: break-word;
   overflow-wrap: anywhere;
