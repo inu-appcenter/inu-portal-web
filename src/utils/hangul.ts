@@ -105,3 +105,27 @@ export function isChosungOnly(text: string): boolean {
   if (!text) return false;
   return [...text].every((char) => isCompatConsonant(char));
 }
+
+/**
+ * 챗불이 슬래시 명령어 입력 매칭 (/ 또는 /챗, /챗ㅂ, /챗불, /챗불이 등 한글 자모 조합 중간 과정 전체 포함)
+ */
+export function isChatbuliCommand(input: string): boolean {
+  const trimmed = input.trim();
+  if (!trimmed.startsWith("/")) return false;
+  const query = trimmed.slice(1).trim();
+  if (query === "") return true; // "/"만 입력한 상태
+
+  const target = "챗불이";
+  const targetDecomposed = decomposeHangul(target);
+  const inputDecomposed = decomposeHangul(query);
+
+  const targetChosung = extractChosung(target);
+  const inputChosung = extractChosung(query);
+
+  return (
+    targetDecomposed.startsWith(inputDecomposed) ||
+    targetChosung.startsWith(inputChosung) ||
+    "chatbuli".startsWith(query.toLowerCase())
+  );
+}
+

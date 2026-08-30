@@ -2,19 +2,28 @@ import styled from "styled-components";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
-import { Send, Users, Loader2, Image, ArrowDown } from "lucide-react";
+import { Send, Users, Loader2, ArrowDown, Plus, X } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import TimetableShareCard from "@/components/mobile/chat/TimetableShareCard";
+import ChatItemBot from "@/components/mobile/chat/ChatItemBot";
+import ChatSlashCommandPopup from "@/components/mobile/chat/ChatSlashCommandPopup";
+import ChatPlusMenu from "@/components/mobile/chat/ChatPlusMenu";
+import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import {
   buildProfanityAlertMessage,
   checkProfanity,
 } from "@/utils/profanityFilter";
+import { isChatbuliCommand } from "@/utils/hangul";
+import {
+  normalizeProfileImageId,
+  DEFAULT_PROFILE_IMAGE_ID,
+} from "@/utils/userInfo";
 import Skeleton from "@/components/common/Skeleton";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
@@ -127,6 +136,10 @@ export default function ChattingPage() {
   const [uploadingImages, setUploadingImages] = useState<UploadingMessage[]>(
     [],
   );
+  const [isChatbuliMode, setIsChatbuliMode] = useState<boolean>(false);
+  const [isSlashPopupOpen, setIsSlashPopupOpen] = useState<boolean>(false);
+  const [isPlusMenuOpen, setIsPlusMenuOpen] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     trackPageView("채팅방", { room_id: roomId });
@@ -134,6 +147,7 @@ export default function ChattingPage() {
 
   const {
     messages,
+    setMessages,
     sendMessage,
     isLoading,
     isFetchingPrevious,
@@ -464,6 +478,21 @@ export default function ChattingPage() {
     lastMessageCountRef.current = currentCount;
   }, [messages, isFetchingPrevious]);
 
+  const isMobile = React.useMemo(() => {
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      return false;
+    }
+    const ua = navigator.userAgent || "";
+    const isMobileUA =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const isIPad =
+      /Macintosh/i.test(ua) &&
+      typeof navigator.maxTouchPoints === "number" &&
+      navigator.maxTouchPoints > 1;
+
+    return isMobileUA || isIPad;
+  }, []);
+
   const handleInput = () => {
     const el = inputRef.current;
     if (el) {
@@ -472,11 +501,78 @@ export default function ChattingPage() {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+
+    if (!isChatbuliMode) {
+      if (isChatbuliCommand(val)) {
+        setIsSlashPopupOpen(true);
+      } else {
+        setIsSlashPopupOpen(false);
+      }
+    }
+  };
+
+  const handleEnterChatbuliMode = () => {
+    setIsChatbuliMode(true);
+    setInputValue("");
+    setIsSlashPopupOpen(false);
+    setIsPlusMenuOpen(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  };
+
+  const handleExitChatbuliMode = () => {
+    setIsChatbuliMode(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // 1. 슬래시 명령어 입력 중 공백/엔터 입력 시 챗불이 모드로 확정 전환
+    if (!isChatbuliMode && isChatbuliCommand(inputValue)) {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        handleEnterChatbuliMode();
+        return;
+      }
+    }
+
+    // 2. 챗불이 모드에서 빈 입력창일 때 백스페이스 누르면 모드 해제
+    if (isChatbuliMode && inputValue === "" && e.key === "Backspace") {
+      e.preventDefault();
+      handleExitChatbuliMode();
+      return;
+    }
+
+    // 3. 엔터 키 처리:
+    // - 모바일: Enter는 줄바꿈(개행) 유지, 전송은 전송 버튼으로만 수행
+    // - 컴퓨터(PC): Enter는 전송, Shift + Enter는 줄바꿈
+    if (e.key === "Enter") {
+      if (isMobile) {
+        // 모바일 가상 키보드에서는 preventDefault 하지 않고 기본 줄바꿈 수행
+        return;
+      }
+
+      if (!e.shiftKey) {
+        // PC에서 Enter 단독 입력 시 메시지 전송
+        if (e.nativeEvent.isComposing) return; // 한글 IME 조합 중 중복 전송 방지
+        e.preventDefault();
+        handleSendMessage();
+      }
+      // PC에서 Shift + Enter 입력 시에는 기본 줄바꿈 수행
+    }
+  };
+
   const handleSendMessage = () => {
-    if (!inputValue.trim() || !roomInfo) return;
+    const trimmed = inputValue.trim();
+    if (!trimmed || !roomInfo) return;
 
     // 욕설·혐오·성적 표현은 전송 전에 차단한다 (커뮤니티 무관용 정책)
-    const profanity = checkProfanity(inputValue);
+    const profanity = checkProfanity(trimmed);
     if (profanity.hasProfanity) {
       alert(buildProfanityAlertMessage(profanity.matched));
       return;
@@ -490,13 +586,69 @@ export default function ChattingPage() {
       isFestivalChat,
     );
 
-    sendMessage(inputValue.trim(), roomInfo.anonymous);
-    setInputValue("");
+    if (isChatbuliMode) {
+      const questionContent = trimmed;
+      const tempQId = `temp-q-${Date.now()}`;
+      const tempBotId = `temp-bot-${Date.now()}`;
+      const nowIso = new Date().toISOString();
+
+      const questionMsg: ChatMessage = {
+        messageId: tempQId,
+        roomId: roomId ?? "",
+        senderNickname: userInfo?.nickname || "나",
+        senderAlias: null,
+        senderChatRoomMemberId: 0,
+        senderHash: myHash || "",
+        content: questionContent,
+        imageCount: 0,
+        unreadCount: 0,
+        messageType: "BOT_QUESTION",
+        extraData: null,
+        createDate: nowIso,
+      };
+
+      const pendingBotMsg: ChatMessage = {
+        messageId: tempBotId,
+        roomId: roomId ?? "",
+        senderNickname: "챗불이",
+        senderAlias: null,
+        senderChatRoomMemberId: 0,
+        senderHash: "BOT_CHATBULI",
+        content: "",
+        imageCount: 0,
+        unreadCount: 0,
+        messageType: "BOT_ANSWER",
+        extraData: "PENDING",
+        createDate: nowIso,
+      };
+
+      setMessages((prev) => [...prev, questionMsg, pendingBotMsg]);
+      sendMessage(
+        questionContent,
+        roomInfo.anonymous,
+        [],
+        undefined,
+        "BOT_QUESTION",
+      );
+
+      setInputValue("");
+      setIsChatbuliMode(false);
+      setIsSlashPopupOpen(false);
+    } else {
+      sendMessage(trimmed, roomInfo.anonymous);
+      setInputValue("");
+    }
+
     if (inputRef.current) inputRef.current.style.height = "auto";
 
     // 본인이 메시지를 직접 보낸 것이므로 즉시 스크롤을 최하단으로 정렬
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = 0;
+        }
+      });
     }
   };
 
@@ -747,9 +899,25 @@ export default function ChattingPage() {
 
           const isSystemMessage = msg.senderNickname === "알림";
 
+          const isBotMessage =
+            msg.senderNickname === "챗불이" ||
+            msg.messageType === "BOT_ANSWER" ||
+            (msg.content && msg.content.includes("[CHATBULI_ANSWER]"));
+
+          const isPending =
+            msg.extraData === "PENDING" ||
+            msg.messageId?.startsWith("temp-bot-");
+
           return (
             <React.Fragment key={msg.messageId || `msg-${originalIndex}`}>
-              {isSystemMessage ? (
+              {isBotMessage ? (
+                <ChatItemBot
+                  message={msg}
+                  showTime={showTime}
+                  isLoading={isPending}
+                  onAskHere={handleEnterChatbuliMode}
+                />
+              ) : isSystemMessage ? (
                 <SystemMessage>
                   <div className="bubble">{msg.content}</div>
                 </SystemMessage>
@@ -794,47 +962,97 @@ export default function ChattingPage() {
       )}
 
       <FixedInputArea>
-        <div className="input-wrapper">
-          <label htmlFor="image-upload">
-            <input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            />
-            <IconButton as="span">
-              <Image size={24} color="#767676" />
-            </IconButton>
-          </label>
+        {isChatbuliMode && (
+          <ChatbuliGuideBanner>
+            <span className="guide-icon">💡</span>
+            <span className="guide-text">
+              채팅방에서는 이전 대화를 기억하지 않고 <strong>단건 질문</strong>으로 답변해요.
+            </span>
+          </ChatbuliGuideBanner>
+        )}
 
-          <Input
-            placeholder="메시지 입력"
-            ref={inputRef}
-            onInput={handleInput}
-            rows={1}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onFocus={() => {
-              // iOS 가상 키보드가 완전히 열릴 때까지 대기 후 스크롤 하단 자동 고정
-              setTimeout(() => {
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTop = 0;
-                }
-              }, 200);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                if (e.nativeEvent.isComposing) return;
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
+        <ChatSlashCommandPopup
+          isOpen={isSlashPopupOpen}
+          onSelect={handleEnterChatbuliMode}
+        />
+
+        <ChatPlusMenu
+          isOpen={isPlusMenuOpen}
+          onClose={() => setIsPlusMenuOpen(false)}
+          onSelectChatbuli={handleEnterChatbuliMode}
+          onSelectImage={() => {
+            fileInputRef.current?.click();
+          }}
+        />
+
+        <div className="input-wrapper">
+          <input
+            ref={fileInputRef}
+            id="image-upload"
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: "none" }}
+            onChange={handleImageUpload}
           />
-          <SendButton
-            onClick={handleSendMessage}
+          <IconButton
+            type="button"
+            onClick={() => setIsPlusMenuOpen((prev) => !prev)}
             onMouseDown={(e) => e.preventDefault()}
+            aria-label="추가 기능 메뉴"
+          >
+            <Plus size={24} color="#0066FF" />
+          </IconButton>
+
+          <InputContainer>
+            {isChatbuliMode && (
+              <InputBadge>
+                <img src={TorchAiLogo} alt="챗불이" width={16} height={16} />
+                <span className="badge-text">/챗불이</span>
+                <button
+                  type="button"
+                  className="badge-close"
+                  onClick={handleExitChatbuliMode}
+                  onMouseDown={(e) => e.preventDefault()}
+                  aria-label="챗불이 모드 해제"
+                >
+                  <X size={12} />
+                </button>
+              </InputBadge>
+            )}
+
+            <Input
+              $isChatbuli={isChatbuliMode}
+              placeholder={
+                isChatbuliMode
+                  ? "질문할 내용을 입력하세요"
+                  : "메시지 입력 또는 '/챗불이'"
+              }
+              ref={inputRef}
+              onInput={handleInput}
+              rows={1}
+              value={inputValue}
+              onChange={handleInputChange}
+              onFocus={() => {
+                // iOS 가상 키보드가 완전히 열릴 때까지 대기 후 스크롤 하단 자동 고정
+                setTimeout(() => {
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTop = 0;
+                  }
+                }, 200);
+              }}
+              onKeyDown={handleKeyDown}
+            />
+          </InputContainer>
+
+          <SendButton
+            type="button"
+            onClick={handleSendMessage}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              inputRef.current?.focus();
+            }}
+            aria-label="전송"
           >
             <Send size={24} color="#5E92F0" />
           </SendButton>
@@ -925,7 +1143,8 @@ const ChattingWrapper = styled.div`
   flex-direction: column-reverse;
   overflow-y: auto;
   padding-top: 76px;
-  //padding-bottom: 64px;
+  padding-left: 8px;
+  padding-right: 8px;
   box-sizing: border-box;
 
   /* iOS 하드웨어 가속 모멘텀 스크롤 활성화 */
@@ -934,11 +1153,16 @@ const ChattingWrapper = styled.div`
   contain: content;
 
   &::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
   &::-webkit-scrollbar-thumb {
     background-color: #d1d1d1;
-    border-radius: 2px;
+    border-radius: 3px;
+  }
+
+  @media (min-width: 768px) {
+    padding-left: clamp(24px, 8vw, 120px);
+    padding-right: clamp(24px, 8vw, 120px);
   }
 `;
 
@@ -962,7 +1186,63 @@ const LoadingWrapper = styled.div`
   }
 `;
 
+const ChatbuliGuideBanner = styled.div`
+  position: absolute;
+  bottom: 100%;
+  left: 8px;
+  margin-bottom: 6px;
+  background: #fff8f3;
+  border: 1px solid #ffd8bf;
+  border-radius: 12px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 10px rgba(255, 107, 0, 0.08);
+  z-index: 105;
+  animation: bannerFadeIn 0.2s ease-out;
+  pointer-events: none;
+  max-width: calc(100% - 16px);
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    left: clamp(24px, 8vw, 120px);
+    max-width: 480px;
+  }
+
+  .guide-icon {
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .guide-text {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #7a3e14;
+    line-height: 1.35;
+    word-break: keep-all;
+
+    strong {
+      font-weight: 700;
+      color: #d9480f;
+    }
+  }
+
+  @keyframes bannerFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
 const FixedInputArea = styled.div`
+  position: relative;
   background-color: #ffffff;
   border-top: 1px solid #eaeaea;
   z-index: 100;
@@ -972,17 +1252,78 @@ const FixedInputArea = styled.div`
   .input-wrapper {
     display: flex;
     align-items: center;
-    padding: 8px 16px;
+    padding: 8px 8px;
     gap: 8px;
     min-height: 64px;
     box-sizing: border-box;
+
+    @media (min-width: 768px) {
+      padding-left: clamp(24px, 8vw, 120px);
+      padding-right: clamp(24px, 8vw, 120px);
+    }
   }
 `;
 
-const Input = styled.textarea`
+const InputContainer = styled.div`
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+`;
+
+const InputBadge = styled.div`
+  position: absolute;
+  left: 8px;
+  top: 7px;
+  height: 26px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #ffffff;
+  border: 1px solid #ffd8bf;
+  border-radius: 13px;
+  padding: 0 6px;
+  box-shadow: 0 1px 3px rgba(255, 107, 0, 0.12);
+  z-index: 2;
+  user-select: none;
+  pointer-events: auto;
+
+  img {
+    border-radius: 50%;
+    object-fit: contain;
+  }
+
+  .badge-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ff6b00;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .badge-close {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8e8e93;
+    margin-left: 2px;
+
+    &:hover {
+      color: #1c1c1e;
+    }
+  }
+`;
+
+const Input = styled.textarea<{ $isChatbuli?: boolean }>`
   flex: 1;
   min-width: 0;
-  padding: 8px 16px;
+  padding: 8px 14px;
   box-sizing: border-box;
   background: #eff2f9;
   border-radius: 20px;
@@ -993,6 +1334,17 @@ const Input = styled.textarea`
   resize: none;
   outline: none;
   max-height: 96px;
+  text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+
+  &::placeholder {
+    color: #8e8e93;
+    text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+  }
+
+  &::-webkit-input-placeholder {
+    color: #8e8e93;
+    text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+  }
 `;
 
 const SendButton = styled.button`
@@ -1030,7 +1382,7 @@ const SystemMessage = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 12px 16px;
+  margin: 12px 0;
 
   .bubble {
     background-color: #f2f2f7;
@@ -1048,36 +1400,72 @@ const SystemMessage = styled.div`
 
 const MessageContainer = styled.div`
   display: flex;
-  margin: 0 16px 8px;
+  align-self: flex-start;
+  margin-right: auto;
+  margin-bottom: 8px;
+  max-width: 95%;
+
+  @media (min-width: 768px) {
+    margin-bottom: 12px;
+    max-width: 75%;
+  }
 `;
 
 const ProfileImage = styled.img`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  margin-right: 12px;
+  margin-right: 10px;
   cursor: pointer;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: #f2f2f7;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const ProfilePlaceholder = styled.div`
+  width: 36px;
+  margin-right: 10px;
+  flex-shrink: 0;
 `;
 
 const MessageContent = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+`;
+
+const SenderHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
 `;
 
 const SenderName = styled.span`
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13.5px;
+  font-weight: 600;
   color: #1c1c1e;
-  margin-bottom: 4px;
-  /* 눌러서 프로필(→ 차단)을 열 수 있다는 걸 드러낸다. */
   cursor: pointer;
   width: fit-content;
+
+  &:hover {
+    color: #5e92f0;
+  }
 `;
 
 const MessageBubble = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  max-width: 100%;
   /* 길게 누르면 신고/차단 시트가 뜬다 — iOS WebView의 기본 텍스트 선택·복사
      말풍선이 대신 뜨면 시트를 가리므로 막는다. */
   -webkit-touch-callout: none;
@@ -1086,17 +1474,47 @@ const MessageBubble = styled.div`
 `;
 
 const Bubble = styled.div<{ $bgColor: string }>`
-  padding: 10px 14px;
-  border-radius: 20px;
-  font-size: 16px;
-  line-height: 22px;
-  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 9px 13px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 20px;
+  max-width: 100%;
   word-break: break-word;
   background-color: ${(props) => props.$bgColor};
   color: #1c1c1e;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
   white-space: pre-wrap;
+
+  @media (min-width: 768px) {
+    max-width: 780px;
+  }
+`;
+
+const BotQuestionTag = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ffd8bf;
+  border-radius: 10px;
+  padding: 2px 7px 2px 5px;
+  margin-bottom: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ff6b00;
+  width: fit-content;
+  box-shadow: 0 1px 3px rgba(255, 107, 0, 0.08);
+
+  img {
+    width: 15px;
+    height: 15px;
+    object-fit: contain;
+    border-radius: 50%;
+  }
 `;
 
 const ImageThumbnail = styled.img`
@@ -1138,7 +1556,7 @@ const ChatItemOtherPerson = ({
     createDate: string,
     senderId?: number | null,
   ) => void;
-  userImageUrl: string | null;
+  userImageUrl?: string | null;
   showName: boolean;
   showTime: boolean;
   members: ChatRoomMemberResponseDto[];
@@ -1146,14 +1564,22 @@ const ChatItemOtherPerson = ({
   onSenderClick: (chatRoomMemberId: number) => void;
 }) => {
   const longPress = useLongPress(onLongPress);
+  const matched = members.find(
+    (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
+  );
   const getDisplayName = () => {
-    const matched = members.find(
-      (m: ChatRoomMemberResponseDto) => m.nickname === message.senderNickname,
-    );
     return (
       matched?.friendAlias || message.senderAlias || message.senderNickname
     );
   };
+  const safeFireId = normalizeProfileImageId(
+    matched?.fireId,
+    DEFAULT_PROFILE_IMAGE_ID,
+  );
+  const resolvedProfileImageUrl =
+    userImageUrl ||
+    `https://portal.inuappcenter.kr/images/profile/${safeFireId}`;
+
   const thumbnailUrl =
     message.imageCount > 0
       ? `${BASE_URL}images/chat/${message.roomId}/thumbnail/${message.messageId}`
@@ -1176,23 +1602,29 @@ const ChatItemOtherPerson = ({
 
   return (
     <MessageContainer>
-      {userImageUrl && (
+      {showName ? (
         <ProfileImage
-          src={userImageUrl}
+          src={resolvedProfileImageUrl}
           alt="profile"
           onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = `https://portal.inuappcenter.kr/images/profile/${DEFAULT_PROFILE_IMAGE_ID}`;
+          }}
         />
+      ) : (
+        <ProfilePlaceholder />
       )}
       <MessageContent>
         {showName && (
-          // 보낸 사람 이름을 누르면 프로필이 열리고, 거기서 차단할 수 있다.
-          <SenderName
-            role="button"
-            tabIndex={0}
-            onClick={() => onSenderClick(message.senderChatRoomMemberId)}
-          >
-            {getDisplayName()}
-          </SenderName>
+          <SenderHeader>
+            <SenderName
+              role="button"
+              tabIndex={0}
+              onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+            >
+              {getDisplayName()}
+            </SenderName>
+          </SenderHeader>
         )}
         <MessageBubble {...longPress}>
           <div
@@ -1226,7 +1658,15 @@ const ChatItemOtherPerson = ({
                   />
                 )}
                 {message.content && (
-                  <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+                  <Bubble $bgColor={bgColor}>
+                    {message.messageType === "BOT_QUESTION" && (
+                      <BotQuestionTag>
+                        <img src={TorchAiLogo} alt="챗불이" width={17} height={17} />
+                        <span>챗불이에게 질문</span>
+                      </BotQuestionTag>
+                    )}
+                    <div>{message.content}</div>
+                  </Bubble>
                 )}
               </>
             )}
@@ -1334,7 +1774,15 @@ const ChatItemMy = ({
                   />
                 )}
                 {message.content && (
-                  <Bubble $bgColor={bgColor}>{message.content}</Bubble>
+                  <Bubble $bgColor={bgColor}>
+                    {message.messageType === "BOT_QUESTION" && (
+                      <BotQuestionTag>
+                        <img src={TorchAiLogo} alt="챗불이" width={17} height={17} />
+                        <span>챗불이에게 질문</span>
+                      </BotQuestionTag>
+                    )}
+                    <div>{message.content}</div>
+                  </Bubble>
                 )}
               </>
             )}
@@ -1361,8 +1809,18 @@ const MyMessageContent = styled(MessageContent)`
   align-items: flex-end;
 `;
 
-const MyMessageContainer = styled(MessageContainer)`
-  flex-direction: row-reverse;
+const MyMessageContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-self: flex-end;
+  margin-left: auto;
+  margin-bottom: 8px;
+  max-width: 95%;
+
+  @media (min-width: 768px) {
+    margin-bottom: 12px;
+    max-width: 75%;
+  }
 `;
 
 const TitleWrapper = styled.div`

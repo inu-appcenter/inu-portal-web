@@ -124,29 +124,32 @@ export default function FriendManagementView({ searchTerm }: FriendManagementVie
         <Box>
           {friendsLoading ? (
             <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: "100%",
-                    padding: "16px 0",
-                    display: "flex",
-                    gap: "12px",
-                    alignItems: "center",
-                  }}
-                >
-                  <Skeleton width="48px" height="48px" circle />
+              {[1, 2, 3, 4, 5].map((i, idx) => (
+                <div key={i} style={{ width: "100%" }}>
                   <div
                     style={{
-                      flex: 1,
+                      width: "100%",
+                      padding: "14px 20px",
                       display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
+                      gap: "12px",
+                      alignItems: "center",
+                      boxSizing: "border-box",
                     }}
                   >
-                    <Skeleton width="120px" height="18px" />
-                    <Skeleton width="180px" height="14px" />
+                    <Skeleton width="48px" height="48px" circle />
+                    <div
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                      }}
+                    >
+                      <Skeleton width="120px" height="18px" />
+                      <Skeleton width="180px" height="14px" />
+                    </div>
                   </div>
+                  {idx < 4 && <Divider margin="0" />}
                 </div>
               ))}
             </div>
