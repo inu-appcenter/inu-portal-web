@@ -31,7 +31,7 @@ export default function ChatSlashCommandPopup({
 const PopupContainer = styled.div`
   position: absolute;
   bottom: 100%;
-  left: 16px;
+  left: 8px;
   margin-bottom: 10px;
   background: #ffffff;
   border-radius: 18px;
@@ -39,7 +39,7 @@ const PopupContainer = styled.div`
   border: 1px solid rgba(0, 0, 0, 0.06);
   padding: 14px 16px;
   z-index: 110;
-  width: calc(100% - 32px);
+  width: calc(100% - 16px);
   max-width: 360px;
   box-sizing: border-box;
   animation: popupFadeIn 0.18s ease-out;

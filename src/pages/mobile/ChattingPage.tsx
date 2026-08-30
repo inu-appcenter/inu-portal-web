@@ -1134,8 +1134,8 @@ const ChattingWrapper = styled.div`
   flex-direction: column-reverse;
   overflow-y: auto;
   padding-top: 76px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 8px;
+  padding-right: 8px;
   box-sizing: border-box;
 
   /* iOS 하드웨어 가속 모멘텀 스크롤 활성화 */
@@ -1188,7 +1188,7 @@ const FixedInputArea = styled.div`
   .input-wrapper {
     display: flex;
     align-items: center;
-    padding: 8px 16px;
+    padding: 8px 8px;
     gap: 8px;
     min-height: 64px;
     box-sizing: border-box;

@@ -63,7 +63,7 @@ const MenuBackdrop = styled.div`
 const MenuContainer = styled.div`
   position: absolute;
   bottom: 100%;
-  left: 16px;
+  left: 8px;
   margin-bottom: 8px;
   background: #ffffff;
   border: 1px solid #eaeef4;
