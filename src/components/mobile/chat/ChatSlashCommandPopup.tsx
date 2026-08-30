@@ -32,15 +32,22 @@ const PopupContainer = styled.div`
   position: absolute;
   bottom: 100%;
   left: 16px;
-  right: 16px;
   margin-bottom: 10px;
   background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 14px 16px 14px 16px;
+  border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 14px 16px;
   z-index: 110;
+  width: calc(100% - 32px);
+  max-width: 360px;
+  box-sizing: border-box;
   animation: popupFadeIn 0.18s ease-out;
+
+  @media (min-width: 768px) {
+    left: clamp(24px, 8vw, 120px);
+    width: 360px;
+  }
 
   @keyframes popupFadeIn {
     from {

@@ -77,6 +77,10 @@ const MenuContainer = styled.div`
   min-width: 170px;
   animation: menuFadeIn 0.18s ease-out;
 
+  @media (min-width: 768px) {
+    left: clamp(24px, 8vw, 120px);
+  }
+
   @keyframes menuFadeIn {
     from {
       opacity: 0;
