@@ -63,12 +63,12 @@ export default function ChatItemBot({
               <>
                 <ActionButtonsWrapper>
                   <ActionButton onClick={handleOpenAIChat}>
-                    <img src={TorchAiLogo} alt="" width={16} height={16} />
+                    <img src={TorchAiLogo} alt="" width={22} height={22} />
                     <span>챗불이로 이동</span>
                   </ActionButton>
                   {onAskHere && (
                     <ActionButton onClick={onAskHere}>
-                      <MessageSquare size={14} color="#4E5968" />
+                      <MessageSquare size={16} color="#4E5968" />
                       <span>여기서 질문</span>
                     </ActionButton>
                   )}
@@ -243,6 +243,8 @@ const ActionButton = styled.button`
 
   img {
     border-radius: 50%;
+    object-fit: contain;
+    flex-shrink: 0;
   }
 
   &:hover {
