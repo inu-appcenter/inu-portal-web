@@ -579,7 +579,7 @@ const MobileTimeTablePage = () => {
     mixpanelTrack.timetableFeatureClicked("학점계산기", "시간표 홈", {
       is_logged_in: isLoggedIn,
     });
-    alert("성적 가져오기 기능을 포함하여 곧 오픈 예정이에요.");
+    navigate(ROUTES.TIMETABLE.CALCULATOR)
   };
 
   // 모의 수강신청 버튼 클릭 처리 핸들러
