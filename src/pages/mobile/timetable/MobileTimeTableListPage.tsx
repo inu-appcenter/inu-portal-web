@@ -361,6 +361,8 @@ const SemesterHeaderRow = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px 6px 16px;
+  border-bottom: solid 1px var(--border-default);
+  
 `;
 
 const SemesterTitle = styled.div`
@@ -397,7 +399,7 @@ const SemesterAddButton = styled.button`
 const ScheduleListWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 16px 8px 16px;
+  padding: 4px 16px 8px 16px;
 `;
 
 const ScheduleRow = styled.div`
