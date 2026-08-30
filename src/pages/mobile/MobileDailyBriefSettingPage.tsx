@@ -472,16 +472,19 @@ export default function MobileDailyBriefSettingPage() {
               </RightActionRow>
 
               {/* 시간표 알림 예시 */}
-              <NotificationPreviewList>
-                <PushNotificationPreviewCard
-                  title="[수업 알림] 잠시 후 수업이 시작됩니다!"
-                  body={`'운영체제' 수업이 ${settings.timetablePreAlertMinutes || 10}분 후 (10:00, 7호관 301호)에 시작해요.`}
-                />
-                <PushNotificationPreviewCard
-                  title="[Daily Brief] 오늘 예정된 강의가 3개 있어요 📚"
-                  body={`1. 운영체제 (10:00~11:50, 7호관 301호)\n2. 알고리즘 (13:00~14:50, 7호관 204호)\n3. 데이터베이스 (15:00~16:50, 7호관 301호)`}
-                />
-              </NotificationPreviewList>
+              <PreviewSectionWrapper>
+                <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
+                <NotificationPreviewList>
+                  <PushNotificationPreviewCard
+                    title="[수업 알림] 잠시 후 수업이 시작됩니다!"
+                    body={`'운영체제' 수업이 ${settings.timetablePreAlertMinutes || 10}분 후 (10:00, 7호관 301호)에 시작해요.`}
+                  />
+                  <PushNotificationPreviewCard
+                    title="[Daily Brief] 오늘 예정된 강의가 3개 있어요 📚"
+                    body={`1. 운영체제 (10:00~11:50, 7호관 301호)\n2. 알고리즘 (13:00~14:50, 7호관 204호)\n3. 데이터베이스 (15:00~16:50, 7호관 301호)`}
+                  />
+                </NotificationPreviewList>
+              </PreviewSectionWrapper>
             </SlideInnerWrapper>
           </SwiperSlide>
 
@@ -631,12 +634,15 @@ export default function MobileDailyBriefSettingPage() {
               </RightActionRow>
 
               {/* 학사일정 알림 예시 */}
-              <NotificationPreviewList>
-                <PushNotificationPreviewCard
-                  title="[Daily Brief] 오늘의 학사일정을 확인하세요 🗓️"
-                  body={`• [학교] 2026학년도 2학기 수강신청 변경 기간\n• [${userInfo.department || "컴퓨터공학부"}] 2학기 졸업작품 중간 발표회`}
-                />
-              </NotificationPreviewList>
+              <PreviewSectionWrapper>
+                <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
+                <NotificationPreviewList>
+                  <PushNotificationPreviewCard
+                    title="[Daily Brief] 오늘의 학사일정을 확인하세요 🗓️"
+                    body={`• [학교] 2026학년도 2학기 수강신청 변경 기간\n• [${userInfo.department || "컴퓨터공학부"}] 2학기 졸업작품 중간 발표회`}
+                  />
+                </NotificationPreviewList>
+              </PreviewSectionWrapper>
             </SlideInnerWrapper>
           </SwiperSlide>
 
@@ -914,16 +920,19 @@ export function MobileSchoolAlarmSetting({
       </RightActionRow>
 
       {/* 학교 공지 알림 예시 */}
-      <NotificationPreviewList>
-        <PushNotificationPreviewCard
-          title="[학사-장학금] 새로운 공지사항이 등록되었어요."
-          body="2026학년도 2학기 성적우수 및 맞춤형 장학금 신청 안내"
-        />
-        <PushNotificationPreviewCard
-          title="[학사] 새로운 공지사항이 등록되었어요."
-          body="2026학년도 2학기 전공 심화 및 부·복수전공 이수 신청 안내"
-        />
-      </NotificationPreviewList>
+      <PreviewSectionWrapper>
+        <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
+        <NotificationPreviewList>
+          <PushNotificationPreviewCard
+            title="[학사-장학금] 새로운 공지사항이 등록되었어요."
+            body="2026학년도 2학기 성적우수 및 맞춤형 장학금 신청 안내"
+          />
+          <PushNotificationPreviewCard
+            title="[학사] 새로운 공지사항이 등록되었어요."
+            body="2026학년도 2학기 전공 심화 및 부·복수전공 이수 신청 안내"
+          />
+        </NotificationPreviewList>
+      </PreviewSectionWrapper>
     </KeyWordSettingWrapper>
   );
 }
@@ -1159,16 +1168,19 @@ export function MobileDeptAlarmSetting({
       </RightActionRow>
 
       {/* 학과 공지 알림 예시 */}
-      <NotificationPreviewList>
-        <PushNotificationPreviewCard
-          title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이 등록되었어요.`}
-          body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개가 포함되어 있어요.`}
-        />
-        <PushNotificationPreviewCard
-          title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이 등록되었어요.`}
-          body="2026-2학기 학과 세미나 및 특강 참여 신청 안내"
-        />
-      </NotificationPreviewList>
+      <PreviewSectionWrapper>
+        <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
+        <NotificationPreviewList>
+          <PushNotificationPreviewCard
+            title={`[${userInfo.department || "컴퓨터공학부"}-졸업] 새로운 공지사항이 등록되었어요.`}
+            body={`2026학년도 2학기 졸업작품 중간 발표회 일정 안내\n[횃불이 AI] 일정 1개가 포함되어 있어요.`}
+          />
+          <PushNotificationPreviewCard
+            title={`[${userInfo.department || "컴퓨터공학부"}] 새로운 공지사항이 등록되었어요.`}
+            body="2026-2학기 학과 세미나 및 특강 참여 신청 안내"
+          />
+        </NotificationPreviewList>
+      </PreviewSectionWrapper>
     </KeyWordSettingWrapper>
   );
 }
@@ -1726,7 +1738,7 @@ export function PushNotificationPreviewCard({
         <OsAppIconWrapper>
           <Bell size={10} color="#ffffff" />
         </OsAppIconWrapper>
-        <OsAppName>인천대 포털</OsAppName>
+        <OsAppName>INTIP</OsAppName>
         <OsTimeText>{time}</OsTimeText>
       </OsHeader>
       <OsTitle>{title}</OsTitle>
@@ -1734,6 +1746,20 @@ export function PushNotificationPreviewCard({
     </OsNotificationBanner>
   );
 }
+
+const PreviewSectionWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+`;
+
+const PreviewSectionLabel = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: #8e8e93;
+  margin-left: 2px;
+`;
 
 const NotificationPreviewList = styled.div`
   display: flex;
