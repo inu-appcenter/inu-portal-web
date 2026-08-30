@@ -1339,7 +1339,7 @@ const MessageContainer = styled.div`
   align-self: flex-start;
   margin-right: auto;
   margin-bottom: 8px;
-  max-width: 88%;
+  max-width: 95%;
 
   @media (min-width: 768px) {
     margin-bottom: 12px;
@@ -1417,7 +1417,7 @@ const Bubble = styled.div<{ $bgColor: string }>`
   border-radius: 20px;
   font-size: 16px;
   line-height: 22px;
-  max-width: 88vw;
+  max-width: 100%;
   word-break: break-word;
   background-color: ${(props) => props.$bgColor};
   color: #1c1c1e;
@@ -1751,7 +1751,7 @@ const MyMessageContainer = styled.div`
   align-self: flex-end;
   margin-left: auto;
   margin-bottom: 8px;
-  max-width: 88%;
+  max-width: 95%;
 
   @media (min-width: 768px) {
     margin-bottom: 12px;

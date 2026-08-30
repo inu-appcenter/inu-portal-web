@@ -96,7 +96,7 @@ const BotContainer = styled.div`
   margin-right: auto;
   margin-bottom: 12px;
   align-items: flex-start;
-  max-width: 90%;
+  max-width: 95%;
 
   @media (min-width: 768px) {
     margin-bottom: 16px;
@@ -126,12 +126,8 @@ const BotProfileImage = styled.img`
 const BotMessageArea = styled.div`
   display: flex;
   flex-direction: column;
-  max-width: 90vw;
+  max-width: 100%;
   flex: 1;
-
-  @media (min-width: 768px) {
-    max-width: 100%;
-  }
 `;
 
 const BotHeader = styled.div`
@@ -175,6 +171,8 @@ const BotCardWrapper = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  max-width: 100%;
+  width: 100%;
 `;
 
 const BotCardContent = styled.div`
