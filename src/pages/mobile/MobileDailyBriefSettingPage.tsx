@@ -1,5 +1,11 @@
 import styled, { keyframes } from "styled-components";
-import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
@@ -15,13 +21,14 @@ import { Swiper as SwiperClass } from "swiper";
 import "swiper/css";
 import RegisteredKeywordItem from "@/components/desktop/notice/RegisteredKeywordItem";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
-import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER, DESKTOP_READING_WIDTH } from "@/styles/responsive";
+import {
+  DESKTOP_MEDIA,
+  MOBILE_PAGE_GUTTER,
+  DESKTOP_READING_WIDTH,
+} from "@/styles/responsive";
 import { mixpanelTrack, trackPageView, trackEvent } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
-import {
-  DailyBriefSettings,
-  ScheduleScope,
-} from "@/types/dailyBrief";
+import { DailyBriefSettings, ScheduleScope } from "@/types/dailyBrief";
 import { Keyword } from "@/types/notices";
 import {
   getDailyBriefSettings,
@@ -72,7 +79,11 @@ const BASE_TIME_PRESETS = [
   "22:00",
 ];
 
-const SCHEDULE_SCOPE_OPTIONS: { label: string; value: ScheduleScope; desc: string }[] = [
+const SCHEDULE_SCOPE_OPTIONS: {
+  label: string;
+  value: ScheduleScope;
+  desc: string;
+}[] = [
   {
     label: "학교 + 학과 모두",
     value: "ALL",
@@ -131,12 +142,16 @@ export default function MobileDailyBriefSettingPage() {
     if (nextTab && nextTab !== currentTab) {
       const nextParams = new URLSearchParams(location.search);
       nextParams.set("tab", nextTab);
-      navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+      navigate(`${location.pathname}?${nextParams.toString()}`, {
+        replace: true,
+      });
     }
   };
 
   // 저장 상태: 'idle' | 'saving' | 'saved'
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle",
+  );
   const savedTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 직접 설정 UI 토글 상태
@@ -231,7 +246,9 @@ export default function MobileDailyBriefSettingPage() {
     } catch (error) {
       console.error("Daily Brief 설정 저장 실패:", error);
       setSaveStatus("idle");
-      alert("설정을 저장하지 못했어요. 네트워크 상태를 확인한 후 다시 시도해 주세요.");
+      alert(
+        "설정을 저장하지 못했어요. 네트워크 상태를 확인한 후 다시 시도해 주세요.",
+      );
       // 4. 실패 시 이전 설정 상태로 롤백
       setSettings(prevSettings);
     }
@@ -289,7 +306,9 @@ export default function MobileDailyBriefSettingPage() {
           style={{ width: "100%", overflow: "hidden" }}
         >
           {/* 슬라이드 1: 시간표 알림 */}
-          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
+          <SwiperSlide
+            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
+          >
             <SlideInnerWrapper>
               <TitleContentArea
                 title="시간표 알림"
@@ -300,7 +319,8 @@ export default function MobileDailyBriefSettingPage() {
                     <RowContent>
                       <RowTitle>시간표 알림 받기</RowTitle>
                       <RowDescription>
-                        강의 시작 전 알림 및 당일 강의 목록 알림을 받아볼 수 있어요.
+                        강의 시작 전 알림 및 당일 강의 목록 알림을 받아볼 수
+                        있어요.
                       </RowDescription>
                     </RowContent>
                     <SwitchContainer>
@@ -308,7 +328,9 @@ export default function MobileDailyBriefSettingPage() {
                         checked={settings.timetableAlertEnabled}
                         onCheckedChange={(checked) => {
                           handleUpdate({ timetableAlertEnabled: checked });
-                          trackEvent("[Daily Brief] 시간표 알림 토글", { enabled: checked });
+                          trackEvent("[Daily Brief] 시간표 알림 토글", {
+                            enabled: checked,
+                          });
                         }}
                       />
                     </SwitchContainer>
@@ -324,14 +346,19 @@ export default function MobileDailyBriefSettingPage() {
                           <SubOptionTextWrapper>
                             <SubOptionTitle>수업 시작 전 알림</SubOptionTitle>
                             <SubOptionDesc>
-                              강의가 시작되기 전에 푸시 알림으로 미리 받아볼 수 있어요.
+                              강의가 시작되기 전에 푸시 알림으로 미리 받아볼 수
+                              있어요.
                             </SubOptionDesc>
                           </SubOptionTextWrapper>
                           <Switch
                             checked={settings.timetablePreAlertEnabled}
                             onCheckedChange={(checked) => {
-                              handleUpdate({ timetablePreAlertEnabled: checked });
-                              trackEvent("[Daily Brief] 수업 전 알림 토글", { enabled: checked });
+                              handleUpdate({
+                                timetablePreAlertEnabled: checked,
+                              });
+                              trackEvent("[Daily Brief] 수업 전 알림 토글", {
+                                enabled: checked,
+                              });
                             }}
                           />
                         </SubOptionHeader>
@@ -342,20 +369,32 @@ export default function MobileDailyBriefSettingPage() {
                               {PRE_ALERT_PRESETS.map((opt) => (
                                 <SelectableChip
                                   key={opt.value}
-                                  $selected={!isCustomPreAlertOpen && settings.timetablePreAlertMinutes === opt.value}
-                                  onClick={() => handlePreAlertMinutesChange(opt.value)}
+                                  $selected={
+                                    !isCustomPreAlertOpen &&
+                                    settings.timetablePreAlertMinutes ===
+                                      opt.value
+                                  }
+                                  onClick={() =>
+                                    handlePreAlertMinutesChange(opt.value)
+                                  }
                                 >
                                   {opt.label}
                                 </SelectableChip>
                               ))}
                               <SelectableChip
-                                $selected={isCustomPreAlertOpen || !isPreAlertInPresets}
+                                $selected={
+                                  isCustomPreAlertOpen || !isPreAlertInPresets
+                                }
                                 onClick={() => {
                                   setIsCustomPreAlertOpen(true);
-                                  setCustomPreAlertInput(String(settings.timetablePreAlertMinutes));
+                                  setCustomPreAlertInput(
+                                    String(settings.timetablePreAlertMinutes),
+                                  );
                                 }}
                               >
-                                {!isPreAlertInPresets ? `${settings.timetablePreAlertMinutes}분 전 (직접 설정)` : "직접 설정"}
+                                {!isPreAlertInPresets
+                                  ? `${settings.timetablePreAlertMinutes}분 전 (직접 설정)`
+                                  : "직접 설정"}
                               </SelectableChip>
                             </ChipGroup>
 
@@ -367,14 +406,25 @@ export default function MobileDailyBriefSettingPage() {
                                   max={180}
                                   placeholder="분 입력 (예: 25)"
                                   value={customPreAlertInput}
-                                  onChange={(e) => setCustomPreAlertInput(e.target.value)}
+                                  onChange={(e) =>
+                                    setCustomPreAlertInput(e.target.value)
+                                  }
                                   onKeyDown={(e) => {
-                                    if (e.key === "Enter") handleCustomPreAlertSubmit();
+                                    if (e.key === "Enter")
+                                      handleCustomPreAlertSubmit();
                                   }}
                                 />
                                 <InputUnitLabel>분 전</InputUnitLabel>
-                                <ApplyButton onClick={handleCustomPreAlertSubmit}>적용</ApplyButton>
-                                <CancelButton onClick={() => setIsCustomPreAlertOpen(false)}>취소</CancelButton>
+                                <ApplyButton
+                                  onClick={handleCustomPreAlertSubmit}
+                                >
+                                  적용
+                                </ApplyButton>
+                                <CancelButton
+                                  onClick={() => setIsCustomPreAlertOpen(false)}
+                                >
+                                  취소
+                                </CancelButton>
                               </CustomInputRow>
                             )}
                           </>
@@ -387,16 +437,24 @@ export default function MobileDailyBriefSettingPage() {
                       <SubOptionBox>
                         <SubOptionHeader>
                           <SubOptionTextWrapper>
-                            <SubOptionTitle>당일 강의 목록 브리핑</SubOptionTitle>
+                            <SubOptionTitle>
+                              당일 강의 목록 브리핑
+                            </SubOptionTitle>
                             <SubOptionDesc>
-                              지정한 시간에 오늘 수강할 강의 목록을 한 번에 정리해서 받아볼 수 있어요.
+                              지정한 시간에 오늘 수강할 강의 목록을 한 번에
+                              정리해서 받아볼 수 있어요.
                             </SubOptionDesc>
                           </SubOptionTextWrapper>
                           <Switch
                             checked={settings.timetableDailyBriefEnabled}
                             onCheckedChange={(checked) => {
-                              handleUpdate({ timetableDailyBriefEnabled: checked });
-                              trackEvent("[Daily Brief] 당일 강의 목록 알림 토글", { enabled: checked });
+                              handleUpdate({
+                                timetableDailyBriefEnabled: checked,
+                              });
+                              trackEvent(
+                                "[Daily Brief] 당일 강의 목록 알림 토글",
+                                { enabled: checked },
+                              );
                             }}
                           />
                         </SubOptionHeader>
@@ -406,17 +464,29 @@ export default function MobileDailyBriefSettingPage() {
                             <TimeSelectRow>
                               <TimeSelectLabel>알림 수신 시간</TimeSelectLabel>
                               <StyledSelect
-                                value={isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) ? "CUSTOM" : settings.timetableDailyBriefTime}
+                                value={
+                                  isCustomTtTimeOpen ||
+                                  !BASE_TIME_PRESETS.includes(
+                                    settings.timetableDailyBriefTime,
+                                  )
+                                    ? "CUSTOM"
+                                    : settings.timetableDailyBriefTime
+                                }
                                 onChange={(e) => {
                                   if (e.target.value === "CUSTOM") {
                                     setIsCustomTtTimeOpen(true);
                                     return;
                                   }
                                   setIsCustomTtTimeOpen(false);
-                                  handleUpdate({ timetableDailyBriefTime: e.target.value });
-                                  trackEvent("[Daily Brief] 강의 목록 수신 시간 변경", {
-                                    time: e.target.value,
+                                  handleUpdate({
+                                    timetableDailyBriefTime: e.target.value,
                                   });
+                                  trackEvent(
+                                    "[Daily Brief] 강의 목록 수신 시간 변경",
+                                    {
+                                      time: e.target.value,
+                                    },
+                                  );
                                 }}
                               >
                                 {BASE_TIME_PRESETS.map((time) => (
@@ -424,29 +494,44 @@ export default function MobileDailyBriefSettingPage() {
                                     {time}
                                   </option>
                                 ))}
-                                {!BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
+                                {!BASE_TIME_PRESETS.includes(
+                                  settings.timetableDailyBriefTime,
+                                ) && (
                                   <option value="CUSTOM">
-                                    {settings.timetableDailyBriefTime} (직접 설정)
+                                    {settings.timetableDailyBriefTime} (직접
+                                    설정)
                                   </option>
                                 )}
-                                {BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime) && (
+                                {BASE_TIME_PRESETS.includes(
+                                  settings.timetableDailyBriefTime,
+                                ) && (
                                   <option value="CUSTOM">직접 설정...</option>
                                 )}
                               </StyledSelect>
                             </TimeSelectRow>
 
-                            {(isCustomTtTimeOpen || !BASE_TIME_PRESETS.includes(settings.timetableDailyBriefTime)) && (
+                            {(isCustomTtTimeOpen ||
+                              !BASE_TIME_PRESETS.includes(
+                                settings.timetableDailyBriefTime,
+                              )) && (
                               <CustomTimePickerRow>
-                                <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
+                                <TimePickerLabel>
+                                  시간 직접 지정:
+                                </TimePickerLabel>
                                 <StyledTimeInput
                                   type="time"
                                   value={settings.timetableDailyBriefTime}
                                   onChange={(e) => {
                                     if (e.target.value) {
-                                      handleUpdate({ timetableDailyBriefTime: e.target.value });
-                                      trackEvent("[Daily Brief] 강의 목록 시간 직접 입력", {
-                                        time: e.target.value,
+                                      handleUpdate({
+                                        timetableDailyBriefTime: e.target.value,
                                       });
+                                      trackEvent(
+                                        "[Daily Brief] 강의 목록 시간 직접 입력",
+                                        {
+                                          time: e.target.value,
+                                        },
+                                      );
                                     }
                                   }}
                                 />
@@ -463,7 +548,9 @@ export default function MobileDailyBriefSettingPage() {
               <RightActionRow>
                 <SmallLinkButton
                   onClick={() => {
-                    mixpanelTrack.mypageMenuClicked("Daily Brief - 시간표 바로가기");
+                    mixpanelTrack.mypageMenuClicked(
+                      "Daily Brief - 시간표 바로가기",
+                    );
                     navigate(ROUTES.TIMETABLE.ROOT);
                   }}
                 >
@@ -490,7 +577,9 @@ export default function MobileDailyBriefSettingPage() {
           </SwiperSlide>
 
           {/* 슬라이드 2: 학사일정 알림 */}
-          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
+          <SwiperSlide
+            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
+          >
             <SlideInnerWrapper>
               <TitleContentArea
                 title="학사일정 알림"
@@ -501,7 +590,8 @@ export default function MobileDailyBriefSettingPage() {
                     <RowContent>
                       <RowTitle>학사일정 브리핑 받기</RowTitle>
                       <RowDescription>
-                        오늘에 해당하는 학사 및 학과 일정을 지정된 시간에 묶어서 받아볼 수 있어요.
+                        오늘에 해당하는 학사 및 학과 일정을 지정된 시간에 묶어서
+                        받아볼 수 있어요.
                       </RowDescription>
                     </RowContent>
                     <SwitchContainer>
@@ -509,7 +599,9 @@ export default function MobileDailyBriefSettingPage() {
                         checked={settings.scheduleAlertEnabled}
                         onCheckedChange={(checked) => {
                           handleUpdate({ scheduleAlertEnabled: checked });
-                          trackEvent("[Daily Brief] 학사일정 알림 토글", { enabled: checked });
+                          trackEvent("[Daily Brief] 학사일정 알림 토글", {
+                            enabled: checked,
+                          });
                         }}
                       />
                     </SwitchContainer>
@@ -526,21 +618,34 @@ export default function MobileDailyBriefSettingPage() {
                             <SubOptionTextWrapper>
                               <SubOptionTitle>브리핑 수신 시간</SubOptionTitle>
                               <SubOptionDesc>
-                                매일 해당 시각에 오늘의 일정이 있을 때만 알림을 받아볼 수 있어요.
+                                매일 해당 시각에 오늘의 일정이 있을 때만 알림을
+                                받아볼 수 있어요.
                               </SubOptionDesc>
                             </SubOptionTextWrapper>
                             <StyledSelect
-                              value={isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) ? "CUSTOM" : settings.scheduleDailyBriefTime}
+                              value={
+                                isCustomSchedTimeOpen ||
+                                !BASE_TIME_PRESETS.includes(
+                                  settings.scheduleDailyBriefTime,
+                                )
+                                  ? "CUSTOM"
+                                  : settings.scheduleDailyBriefTime
+                              }
                               onChange={(e) => {
                                 if (e.target.value === "CUSTOM") {
                                   setIsCustomSchedTimeOpen(true);
                                   return;
                                 }
                                 setIsCustomSchedTimeOpen(false);
-                                handleUpdate({ scheduleDailyBriefTime: e.target.value });
-                                trackEvent("[Daily Brief] 학사일정 수신 시간 변경", {
-                                  time: e.target.value,
+                                handleUpdate({
+                                  scheduleDailyBriefTime: e.target.value,
                                 });
+                                trackEvent(
+                                  "[Daily Brief] 학사일정 수신 시간 변경",
+                                  {
+                                    time: e.target.value,
+                                  },
+                                );
                               }}
                             >
                               {BASE_TIME_PRESETS.map((time) => (
@@ -548,18 +653,23 @@ export default function MobileDailyBriefSettingPage() {
                                   {time}
                                 </option>
                               ))}
-                              {!BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
+                              {!BASE_TIME_PRESETS.includes(
+                                settings.scheduleDailyBriefTime,
+                              ) && (
                                 <option value="CUSTOM">
                                   {settings.scheduleDailyBriefTime} (직접 설정)
                                 </option>
                               )}
-                              {BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime) && (
-                                <option value="CUSTOM">직접 설정...</option>
-                              )}
+                              {BASE_TIME_PRESETS.includes(
+                                settings.scheduleDailyBriefTime,
+                              ) && <option value="CUSTOM">직접 설정...</option>}
                             </StyledSelect>
                           </TimeSelectRow>
 
-                          {(isCustomSchedTimeOpen || !BASE_TIME_PRESETS.includes(settings.scheduleDailyBriefTime)) && (
+                          {(isCustomSchedTimeOpen ||
+                            !BASE_TIME_PRESETS.includes(
+                              settings.scheduleDailyBriefTime,
+                            )) && (
                             <CustomTimePickerRow>
                               <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
                               <StyledTimeInput
@@ -567,10 +677,15 @@ export default function MobileDailyBriefSettingPage() {
                                 value={settings.scheduleDailyBriefTime}
                                 onChange={(e) => {
                                   if (e.target.value) {
-                                    handleUpdate({ scheduleDailyBriefTime: e.target.value });
-                                    trackEvent("[Daily Brief] 학사일정 시간 직접 입력", {
-                                      time: e.target.value,
+                                    handleUpdate({
+                                      scheduleDailyBriefTime: e.target.value,
                                     });
+                                    trackEvent(
+                                      "[Daily Brief] 학사일정 시간 직접 입력",
+                                      {
+                                        time: e.target.value,
+                                      },
+                                    );
                                   }
                                 }}
                               />
@@ -595,11 +710,19 @@ export default function MobileDailyBriefSettingPage() {
                             <ScopeOptionCard
                               key={opt.value}
                               $selected={settings.scheduleScope === opt.value}
-                              onClick={() => handleScheduleScopeChange(opt.value)}
+                              onClick={() =>
+                                handleScheduleScopeChange(opt.value)
+                              }
                             >
-                              <RadioCircle $selected={settings.scheduleScope === opt.value} />
+                              <RadioCircle
+                                $selected={settings.scheduleScope === opt.value}
+                              />
                               <ScopeTextWrapper>
-                                <ScopeLabel $selected={settings.scheduleScope === opt.value}>
+                                <ScopeLabel
+                                  $selected={
+                                    settings.scheduleScope === opt.value
+                                  }
+                                >
                                   {opt.label}
                                 </ScopeLabel>
                                 <ScopeDesc>{opt.desc}</ScopeDesc>
@@ -609,9 +732,12 @@ export default function MobileDailyBriefSettingPage() {
                         </ScopeOptionList>
 
                         {!userInfo.department && (
-                          <DeptWarningRow onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}>
+                          <DeptWarningRow
+                            onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}
+                          >
                             <DeptWarningText>
-                              학과 정보가 미등록 상태예요. 학과를 설정하면 학과 일정 알림을 받아볼 수 있어요.
+                              학과 정보가 미등록 상태예요. 학과를 설정하면 학과
+                              일정 알림을 받아볼 수 있어요.
                             </DeptWarningText>
                             <ChevronRight size={16} color="#8E8E93" />
                           </DeptWarningRow>
@@ -625,7 +751,9 @@ export default function MobileDailyBriefSettingPage() {
               <RightActionRow>
                 <SmallLinkButton
                   onClick={() => {
-                    mixpanelTrack.mypageMenuClicked("Daily Brief - 학사일정 바로가기");
+                    mixpanelTrack.mypageMenuClicked(
+                      "Daily Brief - 학사일정 바로가기",
+                    );
                     navigate(ROUTES.BOARD.CALENDAR);
                   }}
                 >
@@ -648,14 +776,18 @@ export default function MobileDailyBriefSettingPage() {
           </SwiperSlide>
 
           {/* 슬라이드 3: 학교 공지 알리미 */}
-          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
+          <SwiperSlide
+            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
+          >
             <SlideInnerWrapper>
               <MobileSchoolAlarmSetting location="Daily Brief Page" />
             </SlideInnerWrapper>
           </SwiperSlide>
 
           {/* 슬라이드 4: 학과 공지 알리미 */}
-          <SwiperSlide style={{ height: "auto", width: "100%", boxSizing: "border-box" }}>
+          <SwiperSlide
+            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
+          >
             <SlideInnerWrapper>
               <MobileDeptAlarmSetting location="Daily Brief Page" />
             </SlideInnerWrapper>
@@ -682,11 +814,14 @@ export function MobileSchoolAlarmSetting({
 }) {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<string[]>([]);
-  const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
+  const [subscribedCategories, setSubscribedCategories] = useState<string[]>(
+    [],
+  );
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [newKeyword, setNewKeyword] = useState("");
   const [newExcludeKeyword, setNewExcludeKeyword] = useState("");
-  const [selectedCategoryForKeyword, setSelectedCategoryForKeyword] = useState("전체");
+  const [selectedCategoryForKeyword, setSelectedCategoryForKeyword] =
+    useState("전체");
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchSchoolData = useCallback(async () => {
@@ -824,9 +959,7 @@ export function MobileSchoolAlarmSetting({
 
   return (
     <KeyWordSettingWrapper>
-      <TitleContentArea
-        description="학교 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요."
-      />
+      <TitleContentArea description="학교 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요." />
 
       {/* 1. 카테고리로 알림 받기 (카테고리 선택 + 제외 키워드 설정 한 세트) */}
       <TitleContentArea
@@ -837,35 +970,66 @@ export function MobileSchoolAlarmSetting({
             : "원하는 카테고리의 모든 새 글 알림을 설정해보세요."
         }
       >
-        <Box style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "16px", width: "100%", boxSizing: "border-box", alignItems: "stretch" }}>
+        <Box
+          style={{
+            padding: "18px 20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            width: "100%",
+            boxSizing: "border-box",
+            alignItems: "stretch",
+          }}
+        >
           <ChipContainer style={{ width: "100%" }}>
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton
-                  key={`cat-skeleton-${i}`}
-                  variant="tag"
-                  width={60}
-                  height={32}
-                  style={{ borderRadius: "100px" }}
-                />
-              ))
+                  <Skeleton
+                    key={`cat-skeleton-${i}`}
+                    variant="tag"
+                    width={60}
+                    height={32}
+                    style={{ borderRadius: "100px" }}
+                  />
+                ))
               : categories.map((cat) => (
-                <SelectableChip
-                  key={cat}
-                  $selected={subscribedCategories.includes(cat)}
-                  onClick={() => handleToggleCategory(cat)}
-                >
-                  {cat}
-                </SelectableChip>
-              ))}
+                  <SelectableChip
+                    key={cat}
+                    $selected={subscribedCategories.includes(cat)}
+                    onClick={() => handleToggleCategory(cat)}
+                  >
+                    {cat}
+                  </SelectableChip>
+                ))}
           </ChipContainer>
 
           <Divider margin="4px 0" />
 
           {/* 제외할 키워드 설정 영역 */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", boxSizing: "border-box" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%" }}>
-              <div style={{ fontSize: "14.5px", fontWeight: 600, color: "#2c3e50" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "14.5px",
+                  fontWeight: 600,
+                  color: "#2c3e50",
+                }}
+              >
                 제외할 키워드 설정
               </div>
               <div style={{ fontSize: "12.5px", color: "#8E8E93" }}>
@@ -971,27 +1135,27 @@ export function MobileSchoolAlarmSetting({
             <ListWrapper>
               {isLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
-                  <React.Fragment key={`key-skeleton-${i}`}>
-                    <Skeleton
-                      variant="text"
-                      width="100%"
-                      height={20}
-                      style={{ margin: "4px 0" }}
-                    />
-                    {i < 2 && <Divider margin="16px 0" />}
-                  </React.Fragment>
-                ))
+                    <React.Fragment key={`key-skeleton-${i}`}>
+                      <Skeleton
+                        variant="text"
+                        width="100%"
+                        height={20}
+                        style={{ margin: "4px 0" }}
+                      />
+                      {i < 2 && <Divider margin="16px 0" />}
+                    </React.Fragment>
+                  ))
                 : includeKeywords.map((item, index) => (
-                  <React.Fragment key={item.keywordId}>
-                    <RegisteredKeywordItem
-                      keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
-                      onDelete={() => handleDeleteKeyword(item.keywordId)}
-                    />
-                    {index < includeKeywords.length - 1 && (
-                      <Divider margin="16px 0" />
-                    )}
-                  </React.Fragment>
-                ))}
+                    <React.Fragment key={item.keywordId}>
+                      <RegisteredKeywordItem
+                        keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
+                        onDelete={() => handleDeleteKeyword(item.keywordId)}
+                      />
+                      {index < includeKeywords.length - 1 && (
+                        <Divider margin="16px 0" />
+                      )}
+                    </React.Fragment>
+                  ))}
             </ListWrapper>
           </Box>
         </TitleContentArea>
@@ -1064,7 +1228,9 @@ export function MobileDeptAlarmSetting({
     () =>
       keywords.filter(
         (item): item is Keyword & { keyword: string } =>
-          item.type === "DEPARTMENT" && item.keyword !== null && !item.isExcluded,
+          item.type === "DEPARTMENT" &&
+          item.keyword !== null &&
+          !item.isExcluded,
       ),
     [keywords],
   );
@@ -1073,7 +1239,9 @@ export function MobileDeptAlarmSetting({
     () =>
       keywords.filter(
         (item): item is Keyword & { keyword: string } =>
-          item.type === "DEPARTMENT" && item.keyword !== null && !!item.isExcluded,
+          item.type === "DEPARTMENT" &&
+          item.keyword !== null &&
+          !!item.isExcluded,
       ),
     [keywords],
   );
@@ -1113,7 +1281,12 @@ export function MobileDeptAlarmSetting({
     if (!excludeKeyword.trim()) return;
 
     try {
-      await createKeyword(excludeKeyword, userInfo.departmentCode, undefined, true);
+      await createKeyword(
+        excludeKeyword,
+        userInfo.departmentCode,
+        undefined,
+        true,
+      );
       mixpanelTrack.noticeKeywordAdded(
         "Department",
         excludeKeyword,
@@ -1181,9 +1354,7 @@ export function MobileDeptAlarmSetting({
 
   return (
     <KeyWordSettingWrapper>
-      <TitleContentArea
-        description="학과 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요."
-      />
+      <TitleContentArea description="학과 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요." />
 
       {/* 1. 학과 공지 모두 알림 받기 & 제외 키워드 설정 (한 세트) */}
       <Box
@@ -1231,9 +1402,26 @@ export function MobileDeptAlarmSetting({
         <Divider margin="0" />
 
         {/* 제외할 키워드 설정 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%" }}>
-            <div style={{ fontSize: "14.5px", fontWeight: 600, color: "#2c3e50" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px",
+              width: "100%",
+            }}
+          >
+            <div
+              style={{ fontSize: "14.5px", fontWeight: 600, color: "#2c3e50" }}
+            >
               제외할 키워드 설정
             </div>
             <div style={{ fontSize: "12.5px", color: "#8E8E93" }}>
@@ -1277,7 +1465,7 @@ export function MobileDeptAlarmSetting({
       {/* 2. 키워드로 알림 받기 (별도 독립 섹션) */}
       <TitleContentArea
         title="키워드로 알림 받기"
-        description="내 학과 공지 중 특정 단어가 포함된 새 글만 콕 집어 받아보세요."
+        description="카테고리와 상관없이 원하는 키워드가 포함된 공지만 받아보세요."
       >
         <Box style={{ padding: "16px 20px" }}>
           <Wrapper>
@@ -1306,27 +1494,27 @@ export function MobileDeptAlarmSetting({
             <ListWrapper>
               {isLoading
                 ? Array.from({ length: 2 }).map((_, i) => (
-                  <React.Fragment key={`key-skeleton-${i}`}>
-                    <Skeleton
-                      variant="text"
-                      width="100%"
-                      height={20}
-                      style={{ margin: "4px 0" }}
-                    />
-                    {i < 1 && <Divider margin="16px 0" />}
-                  </React.Fragment>
-                ))
+                    <React.Fragment key={`key-skeleton-${i}`}>
+                      <Skeleton
+                        variant="text"
+                        width="100%"
+                        height={20}
+                        style={{ margin: "4px 0" }}
+                      />
+                      {i < 1 && <Divider margin="16px 0" />}
+                    </React.Fragment>
+                  ))
                 : includeKeywords.map((item, index) => (
-                  <React.Fragment key={item.keywordId}>
-                    <RegisteredKeywordItem
-                      keyword={item.keyword}
-                      onDelete={() => handleDeleteKeyword(item.keywordId)}
-                    />
-                    {index < includeKeywords.length - 1 && (
-                      <Divider margin="16px 0" />
-                    )}
-                  </React.Fragment>
-                ))}
+                    <React.Fragment key={item.keywordId}>
+                      <RegisteredKeywordItem
+                        keyword={item.keyword}
+                        onDelete={() => handleDeleteKeyword(item.keywordId)}
+                      />
+                      {index < includeKeywords.length - 1 && (
+                        <Divider margin="16px 0" />
+                      )}
+                    </React.Fragment>
+                  ))}
             </ListWrapper>
           </Box>
         </TitleContentArea>
@@ -1628,7 +1816,7 @@ const StyledSelect = styled.select`
   flex-shrink: 0;
 
   &:focus {
-    border-color: #5E92F0;
+    border-color: #5e92f0;
   }
 `;
 
@@ -1674,7 +1862,7 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #5E92F0;
+    background-color: #5e92f0;
     display: ${({ $selected }) => ($selected ? "block" : "none")};
   }
 `;
