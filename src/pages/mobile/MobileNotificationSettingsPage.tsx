@@ -7,6 +7,7 @@ import { getMembers, patchChatPushSetting } from "@/apis/members";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import Box from "@/components/common/Box";
+import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Divider from "@/components/common/Divider";
 import Switch from "@/components/common/Switch";
 import { ChevronRight } from "lucide-react";
@@ -75,68 +76,96 @@ export default function MobileNotificationSettingsPage() {
     }
   };
 
-  const handleDailyBriefClick = () => {
-    mixpanelTrack.mypageMenuClicked("알림설정 - Daily Brief");
-    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=timetable`);
-  };
-
-  const handleDeptClick = () => {
-    mixpanelTrack.mypageMenuClicked("알림설정 - 학과공지알리미");
-    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=dept`);
-  };
-
-  const handleSchoolClick = () => {
-    mixpanelTrack.mypageMenuClicked("알림설정 - 학교공지알리미");
-    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=school`);
+  const handleTabClick = (tab: string, label: string) => {
+    mixpanelTrack.mypageMenuClicked(`알림설정 - ${label}`);
+    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=${tab}`);
   };
 
   return (
     <PageWrapper>
       <ContentContainer>
-        <Box style={{ padding: "0" }}>
-          <SettingRow onClick={handleDailyBriefClick}>
-            <RowContent>
-              <RowTitle>Daily Brief (시간표 · 학사일정)</RowTitle>
-              <RowDescription>수업 시작 전 알림 및 당일 강의·학사일정 맞춤 브리핑을 설정할 수 있어요.</RowDescription>
-            </RowContent>
-            <ChevronRight size={20} color="#AEAEB2" />
-          </SettingRow>
+        {/* 섹션 1: Daily Brief & 공지 알리미 */}
+        <TitleContentArea
+          title="Daily Brief & 공지 알리미"
+          description="수업 시작 전 알림부터 학사일정, 공지사항 새 글까지 맞춤 알림을 설정할 수 있어요."
+        >
+          <Box style={{ padding: 0 }}>
+            <SettingRow onClick={() => handleTabClick("timetable", "시간표 알림")}>
+              <RowContent>
+                <RowTitle>시간표 알림</RowTitle>
+                <RowDescription>
+                  수업 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요.
+                </RowDescription>
+              </RowContent>
+              <ChevronRight size={20} color="#AEAEB2" />
+            </SettingRow>
 
-          <Divider margin="0" />
+            <Divider margin="0" />
 
-          <SettingRow onClick={handleChatToggle} style={{ opacity: isUpdating ? 0.6 : 1, pointerEvents: isUpdating ? "none" : "auto" }}>
-            <RowContent>
-              <RowTitle>채팅 알림</RowTitle>
-              <RowDescription>채팅방별 알림 설정은 각 방에서 설정할 수 있어요.</RowDescription>
-            </RowContent>
-            <SwitchContainer onClick={(e) => e.stopPropagation()}>
-              <Switch
-                checked={chatPushEnabled}
-                onCheckedChange={handleChatToggle}
-              />
-            </SwitchContainer>
-          </SettingRow>
+            <SettingRow onClick={() => handleTabClick("schedule", "학사일정 알림")}>
+              <RowContent>
+                <RowTitle>학사일정 알림</RowTitle>
+                <RowDescription>
+                  오늘의 학교 및 학과 일정 브리핑을 설정할 수 있어요.
+                </RowDescription>
+              </RowContent>
+              <ChevronRight size={20} color="#AEAEB2" />
+            </SettingRow>
 
-          <Divider margin="0" />
+            <Divider margin="0" />
 
-          <SettingRow onClick={handleDeptClick}>
-            <RowContent>
-              <RowTitle>학과 공지 알리미</RowTitle>
-              <RowDescription>구독 중인 학과 및 키워드 새 글 알림을 설정할 수 있어요.</RowDescription>
-            </RowContent>
-            <ChevronRight size={20} color="#AEAEB2" />
-          </SettingRow>
+            <SettingRow onClick={() => handleTabClick("school", "학교 공지 알리미")}>
+              <RowContent>
+                <RowTitle>학교 공지 알리미</RowTitle>
+                <RowDescription>
+                  학교 공지 카테고리 및 키워드 새 글 알림을 설정할 수 있어요.
+                </RowDescription>
+              </RowContent>
+              <ChevronRight size={20} color="#AEAEB2" />
+            </SettingRow>
 
-          <Divider margin="0" />
+            <Divider margin="0" />
 
-          <SettingRow onClick={handleSchoolClick}>
-            <RowContent>
-              <RowTitle>학교 공지 알리미</RowTitle>
-              <RowDescription>학교 공지 카테고리 및 키워드 새 글 알림을 설정할 수 있어요.</RowDescription>
-            </RowContent>
-            <ChevronRight size={20} color="#AEAEB2" />
-          </SettingRow>
-        </Box>
+            <SettingRow onClick={() => handleTabClick("dept", "학과 공지 알리미")}>
+              <RowContent>
+                <RowTitle>학과 공지 알리미</RowTitle>
+                <RowDescription>
+                  구독 중인 학과 및 키워드 새 글 알림을 설정할 수 있어요.
+                </RowDescription>
+              </RowContent>
+              <ChevronRight size={20} color="#AEAEB2" />
+            </SettingRow>
+          </Box>
+        </TitleContentArea>
+
+        {/* 섹션 2: 기타 알림 */}
+        <TitleContentArea
+          title="일반 알림"
+          description="채팅 등 서비스 기본 푸시 알림을 설정할 수 있어요."
+        >
+          <Box style={{ padding: 0 }}>
+            <SettingRow
+              onClick={handleChatToggle}
+              style={{
+                opacity: isUpdating ? 0.6 : 1,
+                pointerEvents: isUpdating ? "none" : "auto",
+              }}
+            >
+              <RowContent>
+                <RowTitle>채팅 알림</RowTitle>
+                <RowDescription>
+                  채팅방별 알림 설정은 각 채팅방 안에서 개별 설정할 수 있어요.
+                </RowDescription>
+              </RowContent>
+              <SwitchContainer onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={chatPushEnabled}
+                  onCheckedChange={handleChatToggle}
+                />
+              </SwitchContainer>
+            </SettingRow>
+          </Box>
+        </TitleContentArea>
       </ContentContainer>
     </PageWrapper>
   );
@@ -157,7 +186,7 @@ const ContentContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 
   @media ${DESKTOP_MEDIA} {
     width: min(100%, ${DESKTOP_READING_WIDTH});
