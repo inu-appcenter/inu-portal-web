@@ -58,4 +58,5 @@ export interface Keyword {
   type: "DEPARTMENT" | "SCHOOL_NOTICE";
   department: string;
   category: string | null;
+  isExcluded?: boolean;
 }

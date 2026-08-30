@@ -685,6 +685,7 @@ export function MobileSchoolAlarmSetting({
   const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [newKeyword, setNewKeyword] = useState("");
+  const [newExcludeKeyword, setNewExcludeKeyword] = useState("");
   const [selectedCategoryForKeyword, setSelectedCategoryForKeyword] = useState("전체");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -714,6 +715,16 @@ export function MobileSchoolAlarmSetting({
     fetchSchoolData();
   }, [fetchSchoolData]);
 
+  const includeKeywords = useMemo(
+    () => keywords.filter((k) => !k.isExcluded),
+    [keywords],
+  );
+
+  const excludeKeywords = useMemo(
+    () => keywords.filter((k) => k.isExcluded),
+    [keywords],
+  );
+
   const handleToggleCategory = async (category: string) => {
     const isSubscribed = subscribedCategories.includes(category);
     const nextCategories = isSubscribed
@@ -736,7 +747,7 @@ export function MobileSchoolAlarmSetting({
         selectedCategoryForKeyword === "전체"
           ? undefined
           : selectedCategoryForKeyword;
-      await createKeyword(newKeyword, undefined, categoryParam);
+      await createKeyword(newKeyword, undefined, categoryParam, false);
       mixpanelTrack.noticeKeywordAdded(
         "School",
         newKeyword,
@@ -755,9 +766,38 @@ export function MobileSchoolAlarmSetting({
     }
   };
 
+  const handleAddExcludeKeyword = async () => {
+    if (!newExcludeKeyword.trim()) return;
+    try {
+      await createKeyword(newExcludeKeyword, undefined, undefined, true);
+      mixpanelTrack.noticeKeywordAdded(
+        "School",
+        newExcludeKeyword,
+        "전체",
+        location,
+        true,
+      );
+      setNewExcludeKeyword("");
+      const keyRes = await getKeywords();
+      setKeywords(
+        keyRes.data.filter(
+          (k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null,
+        ),
+      );
+    } catch (error) {
+      console.error("학교 공지 제외 키워드 등록 실패:", error);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.nativeEvent.isComposing) {
       handleAddKeyword();
+    }
+  };
+
+  const handleExcludeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      handleAddExcludeKeyword();
     }
   };
 
@@ -772,6 +812,7 @@ export function MobileSchoolAlarmSetting({
           targetKeyword.keyword || "",
           targetKeyword.category || "전체",
           location,
+          !!targetKeyword.isExcluded,
         );
       }
       setKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
@@ -874,9 +915,9 @@ export function MobileSchoolAlarmSetting({
         </Box>
       </TitleContentArea>
 
-      {(isLoading || keywords.length > 0) && (
+      {(isLoading || includeKeywords.length > 0) && (
         <TitleContentArea
-          description={`${keywords.length}개 키워드로 알림을 받고 있어요.`}
+          description={`${includeKeywords.length}개 키워드로 알림을 받고 있어요.`}
         >
           <Box style={{ padding: "16px 20px" }}>
             <ListWrapper>
@@ -892,13 +933,72 @@ export function MobileSchoolAlarmSetting({
                     {i < 2 && <Divider margin="16px 0" />}
                   </React.Fragment>
                 ))
-                : keywords.map((item, index) => (
+                : includeKeywords.map((item, index) => (
                   <React.Fragment key={item.keywordId}>
                     <RegisteredKeywordItem
                       keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
                       onDelete={() => handleDeleteKeyword(item.keywordId)}
                     />
-                    {index < keywords.length - 1 && (
+                    {index < includeKeywords.length - 1 && (
+                      <Divider margin="16px 0" />
+                    )}
+                  </React.Fragment>
+                ))}
+            </ListWrapper>
+          </Box>
+        </TitleContentArea>
+      )}
+
+      {/* 제외할 키워드 설정 */}
+      <TitleContentArea
+        title="제외할 키워드 설정"
+        description="카테고리 전체 알림 중 받고 싶지 않은 키워드를 제외해보세요."
+      >
+        <Box style={{ padding: "16px 20px" }}>
+          <Wrapper>
+            <InputWrapper>
+              <StyledInput
+                placeholder="제외할 키워드를 입력해주세요. (예: 휴학, 등록금)"
+                value={newExcludeKeyword}
+                onChange={(e) => setNewExcludeKeyword(e.target.value)}
+                onKeyDown={handleExcludeKeyDown}
+              />
+              <TextButton
+                disabled={!newExcludeKeyword.trim()}
+                onClick={handleAddExcludeKeyword}
+              >
+                등록
+              </TextButton>
+            </InputWrapper>
+          </Wrapper>
+        </Box>
+      </TitleContentArea>
+
+      {(isLoading || excludeKeywords.length > 0) && (
+        <TitleContentArea
+          description={`${excludeKeywords.length}개 제외 키워드가 설정되어 있어요.`}
+        >
+          <Box style={{ padding: "16px 20px" }}>
+            <ListWrapper>
+              {isLoading
+                ? Array.from({ length: 2 }).map((_, i) => (
+                  <React.Fragment key={`ex-key-skeleton-${i}`}>
+                    <Skeleton
+                      variant="text"
+                      width="100%"
+                      height={20}
+                      style={{ margin: "4px 0" }}
+                    />
+                    {i < 1 && <Divider margin="16px 0" />}
+                  </React.Fragment>
+                ))
+                : excludeKeywords.map((item, index) => (
+                  <React.Fragment key={item.keywordId}>
+                    <RegisteredKeywordItem
+                      keyword={`[제외] ${item.keyword}`}
+                      onDelete={() => handleDeleteKeyword(item.keywordId)}
+                    />
+                    {index < excludeKeywords.length - 1 && (
                       <Divider margin="16px 0" />
                     )}
                   </React.Fragment>
@@ -951,6 +1051,7 @@ export function MobileDeptAlarmSetting({
   const locationPath = useLocation();
 
   const [keyword, setKeyword] = useState("");
+  const [excludeKeyword, setExcludeKeyword] = useState("");
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [allAlarm, setAllAlarm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -970,11 +1071,20 @@ export function MobileDeptAlarmSetting({
     );
   }, [keywords]);
 
-  const registeredKeywords = useMemo(
+  const includeKeywords = useMemo(
     () =>
       keywords.filter(
         (item): item is Keyword & { keyword: string } =>
-          item.type === "DEPARTMENT" && item.keyword !== null,
+          item.type === "DEPARTMENT" && item.keyword !== null && !item.isExcluded,
+      ),
+    [keywords],
+  );
+
+  const excludeKeywords = useMemo(
+    () =>
+      keywords.filter(
+        (item): item is Keyword & { keyword: string } =>
+          item.type === "DEPARTMENT" && item.keyword !== null && !!item.isExcluded,
       ),
     [keywords],
   );
@@ -992,10 +1102,10 @@ export function MobileDeptAlarmSetting({
   };
 
   const handleAddKeyword = async () => {
-    if (!keyword) return;
+    if (!keyword.trim()) return;
 
     try {
-      await createKeyword(keyword, userInfo.departmentCode);
+      await createKeyword(keyword, userInfo.departmentCode, undefined, false);
       mixpanelTrack.noticeKeywordAdded(
         "Department",
         keyword,
@@ -1009,9 +1119,34 @@ export function MobileDeptAlarmSetting({
     }
   };
 
+  const handleAddExcludeKeyword = async () => {
+    if (!excludeKeyword.trim()) return;
+
+    try {
+      await createKeyword(excludeKeyword, userInfo.departmentCode, undefined, true);
+      mixpanelTrack.noticeKeywordAdded(
+        "Department",
+        excludeKeyword,
+        userInfo.department,
+        location,
+        true,
+      );
+      setExcludeKeyword("");
+      fetchKeywords();
+    } catch (error) {
+      console.error("학과 공지 제외 키워드 등록 실패:", error);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.nativeEvent.isComposing) {
       handleAddKeyword();
+    }
+  };
+
+  const handleExcludeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      handleAddExcludeKeyword();
     }
   };
 
@@ -1029,6 +1164,7 @@ export function MobileDeptAlarmSetting({
           targetKeyword.keyword || "",
           userInfo.department,
           location,
+          !!targetKeyword.isExcluded,
         );
       }
       fetchKeywords();
@@ -1110,7 +1246,7 @@ export function MobileDeptAlarmSetting({
                 onChange={(e) => setKeyword(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
-              <TextButton disabled={!keyword} onClick={handleAddKeyword}>
+              <TextButton disabled={!keyword.trim()} onClick={handleAddKeyword}>
                 등록
               </TextButton>
             </InputWrapper>
@@ -1120,9 +1256,9 @@ export function MobileDeptAlarmSetting({
         </Box>
       </TitleContentArea>
 
-      {(isLoading || registeredKeywords.length > 0) && (
+      {(isLoading || includeKeywords.length > 0) && (
         <TitleContentArea
-          description={`${registeredKeywords.length}개 키워드로 알림을 받고 있어요.`}
+          description={`${includeKeywords.length}개 키워드로 알림을 받고 있어요.`}
         >
           <Box style={{ padding: "16px 20px" }}>
             <ListWrapper>
@@ -1138,13 +1274,72 @@ export function MobileDeptAlarmSetting({
                     {i < 1 && <Divider margin="16px 0" />}
                   </React.Fragment>
                 ))
-                : registeredKeywords.map((item, index) => (
+                : includeKeywords.map((item, index) => (
                   <React.Fragment key={item.keywordId}>
                     <RegisteredKeywordItem
                       keyword={item.keyword}
                       onDelete={() => handleDeleteKeyword(item.keywordId)}
                     />
-                    {index < registeredKeywords.length - 1 && (
+                    {index < includeKeywords.length - 1 && (
+                      <Divider margin="16px 0" />
+                    )}
+                  </React.Fragment>
+                ))}
+            </ListWrapper>
+          </Box>
+        </TitleContentArea>
+      )}
+
+      {/* 학과 공지 제외할 키워드 설정 */}
+      <TitleContentArea
+        title="제외할 키워드 설정"
+        description="학과 전체 알림 중 받고 싶지 않은 키워드를 제외해보세요."
+      >
+        <Box style={{ padding: "16px 20px" }}>
+          <Wrapper>
+            <InputWrapper>
+              <StyledInput
+                placeholder="제외할 키워드를 입력해주세요. (예: 근로, 채용)"
+                value={excludeKeyword}
+                onChange={(e) => setExcludeKeyword(e.target.value)}
+                onKeyDown={handleExcludeKeyDown}
+              />
+              <TextButton
+                disabled={!excludeKeyword.trim()}
+                onClick={handleAddExcludeKeyword}
+              >
+                등록
+              </TextButton>
+            </InputWrapper>
+          </Wrapper>
+        </Box>
+      </TitleContentArea>
+
+      {(isLoading || excludeKeywords.length > 0) && (
+        <TitleContentArea
+          description={`${excludeKeywords.length}개 제외 키워드가 설정되어 있어요.`}
+        >
+          <Box style={{ padding: "16px 20px" }}>
+            <ListWrapper>
+              {isLoading
+                ? Array.from({ length: 2 }).map((_, i) => (
+                  <React.Fragment key={`ex-dept-skeleton-${i}`}>
+                    <Skeleton
+                      variant="text"
+                      width="100%"
+                      height={20}
+                      style={{ margin: "4px 0" }}
+                    />
+                    {i < 1 && <Divider margin="16px 0" />}
+                  </React.Fragment>
+                ))
+                : excludeKeywords.map((item, index) => (
+                  <React.Fragment key={item.keywordId}>
+                    <RegisteredKeywordItem
+                      keyword={`[제외] ${item.keyword}`}
+                      onDelete={() => handleDeleteKeyword(item.keywordId)}
+                    />
+                    {index < excludeKeywords.length - 1 && (
                       <Divider margin="16px 0" />
                     )}
                   </React.Fragment>

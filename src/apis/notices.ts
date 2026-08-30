@@ -153,6 +153,7 @@ export const createKeyword = async (
   keyword: string,
   departmentCode?: string,
   category?: string,
+  isExcluded?: boolean,
 ): Promise<ApiResponse<Keyword>> => {
   const normalizedKeyword = keyword.trim();
 
@@ -160,12 +161,13 @@ export const createKeyword = async (
     throw new Error("Keyword is required.");
   }
 
-  const params: { keyword: string; departmentCode?: string; category?: string } = {
+  const params: { keyword: string; departmentCode?: string; category?: string; isExcluded?: boolean } = {
     keyword: normalizedKeyword,
   };
 
   if (departmentCode) params.departmentCode = departmentCode;
   if (category) params.category = category;
+  if (isExcluded !== undefined) params.isExcluded = isExcluded;
 
   const response = await tokenInstance.post<ApiResponse<Keyword>>(
     "/api/keywords",
