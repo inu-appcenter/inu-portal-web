@@ -12,7 +12,7 @@ import TimetableShareCard from "@/components/mobile/chat/TimetableShareCard";
 import ChatItemBot from "@/components/mobile/chat/ChatItemBot";
 import ChatSlashCommandPopup from "@/components/mobile/chat/ChatSlashCommandPopup";
 import ChatPlusMenu from "@/components/mobile/chat/ChatPlusMenu";
-import ChatBulIcon from "@/resources/assets/ai/chat-bul-button.webp";
+import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import {
@@ -980,7 +980,7 @@ export default function ChattingPage() {
           <InputContainer>
             {isChatbuliMode && (
               <InputBadge>
-                <img src={ChatBulIcon} alt="챗불이" width={16} height={16} />
+                <img src={TorchAiLogo} alt="챗불이" width={16} height={16} />
                 <span className="badge-text">/챗불이</span>
                 <button
                   type="button"

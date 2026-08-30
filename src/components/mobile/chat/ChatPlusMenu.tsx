@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Image } from "lucide-react";
-import ChatBulIcon from "@/resources/assets/ai/chat-bul-button.webp";
+import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
 
 interface ChatPlusMenuProps {
   isOpen: boolean;
@@ -29,7 +29,7 @@ export default function ChatPlusMenu({
           onMouseDown={(e) => e.preventDefault()}
         >
           <IconCircle $bg="#FFF4ED">
-            <img src={ChatBulIcon} alt="챗불이" width={22} height={22} />
+            <img src={TorchAiLogo} alt="챗불이" width={22} height={22} />
           </IconCircle>
           <ItemLabel>챗불이에게 질문</ItemLabel>
         </MenuItem>

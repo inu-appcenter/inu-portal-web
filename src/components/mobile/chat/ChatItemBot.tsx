@@ -1,6 +1,6 @@
 import styled, { keyframes } from "styled-components";
 import { MessageSquare, Loader2 } from "lucide-react";
-import ChatBulIcon from "@/resources/assets/ai/chat-bul-button.webp";
+import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
 import ChatMessageContent from "./ChatMessageContent";
 import { ChatMessage } from "@/types/chat";
 import useAIChatStore from "@/stores/useAIChatStore";
@@ -33,7 +33,7 @@ export default function ChatItemBot({
 
   return (
     <BotContainer>
-      <BotProfileImage src={ChatBulIcon} alt="챗불이" onClick={handleOpenAIChat} />
+      <BotProfileImage src={TorchAiLogo} alt="챗불이" onClick={handleOpenAIChat} />
 
       <BotMessageArea>
         <BotHeader>
@@ -59,7 +59,7 @@ export default function ChatItemBot({
               <>
                 <ActionButtonsWrapper>
                   <ActionButton onClick={handleOpenAIChat}>
-                    <img src={ChatBulIcon} alt="" width={16} height={16} />
+                    <img src={TorchAiLogo} alt="" width={16} height={16} />
                     <span>챗불이로 이동</span>
                   </ActionButton>
                   {onAskHere && (

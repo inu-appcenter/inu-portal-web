@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import ChatBulIcon from "@/resources/assets/ai/chat-bul-button.webp";
+import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
 
 interface ChatSlashCommandPopupProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export default function ChatSlashCommandPopup({
     <PopupContainer>
       <CommandItem onClick={onSelect} onMouseDown={(e) => e.preventDefault()}>
         <IconWrapper>
-          <img src={ChatBulIcon} alt="챗불이" width={22} height={22} />
+          <img src={TorchAiLogo} alt="챗불이" width={22} height={22} />
         </IconWrapper>
         <CommandInfo>
           <CommandNameWrapper>
