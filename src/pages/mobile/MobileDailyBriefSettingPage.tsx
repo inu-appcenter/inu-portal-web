@@ -1,5 +1,5 @@
-import styled from "styled-components";
-import { useEffect, useState } from "react";
+import styled, { keyframes } from "styled-components";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
@@ -19,7 +19,7 @@ import {
   getLocalDailyBriefSettings,
   updateDailyBriefSettings,
 } from "@/apis/dailyBrief";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2, Check } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
 const PRE_ALERT_PRESETS = [
@@ -74,15 +74,44 @@ export default function MobileDailyBriefSettingPage() {
     getLocalDailyBriefSettings,
   );
 
+  // 저장 상태: 'idle' | 'saving' | 'saved'
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const savedTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // 직접 설정 UI 토글 상태
   const [isCustomPreAlertOpen, setIsCustomPreAlertOpen] = useState(false);
   const [customPreAlertInput, setCustomPreAlertInput] = useState<string>("");
   const [isCustomTtTimeOpen, setIsCustomTtTimeOpen] = useState(false);
   const [isCustomSchedTimeOpen, setIsCustomSchedTimeOpen] = useState(false);
 
+  // 헤더 우측 저장 상태 인디케이터
+  const headerRightIndicator = useMemo(() => {
+    if (saveStatus === "saving") {
+      return (
+        <HeaderStatusBadge>
+          <SpinIcon>
+            <Loader2 size={13} color="#5E92F0" />
+          </SpinIcon>
+          <span>저장 중...</span>
+        </HeaderStatusBadge>
+      );
+    }
+    if (saveStatus === "saved") {
+      return (
+        <HeaderStatusBadge $saved>
+          <Check size={13} color="#34C759" />
+          <span>저장됨</span>
+        </HeaderStatusBadge>
+      );
+    }
+    return null;
+  }, [saveStatus]);
+
   useHeader({
     title: "Daily Brief 설정",
     hasback: true,
+    rightArea: headerRightIndicator,
+    rightAreaNotCircle: true,
   });
 
   useEffect(() => {
@@ -97,6 +126,9 @@ export default function MobileDailyBriefSettingPage() {
 
     return () => {
       isMounted = false;
+      if (savedTimerRef.current) {
+        clearTimeout(savedTimerRef.current);
+      }
     };
   }, []);
 
@@ -118,14 +150,27 @@ export default function MobileDailyBriefSettingPage() {
   const handleUpdate = async (patch: Partial<DailyBriefSettings>) => {
     const prevSettings = settings;
     const nextSettings = { ...settings, ...patch };
+    // 1. 즉시 UI 선반영 (Optimistic Update)
     setSettings(nextSettings);
+    setSaveStatus("saving");
+
+    if (savedTimerRef.current) {
+      clearTimeout(savedTimerRef.current);
+    }
 
     try {
+      // 2. 서버에 비동기 저장 요청
       await updateDailyBriefSettings(nextSettings);
+      // 3. 저장 완료 피드백 표시
+      setSaveStatus("saved");
+      savedTimerRef.current = setTimeout(() => {
+        setSaveStatus("idle");
+      }, 1500);
     } catch (error) {
       console.error("Daily Brief 설정 저장 실패:", error);
+      setSaveStatus("idle");
       alert("설정을 저장하지 못했어요. 네트워크 상태를 확인한 후 다시 시도해 주세요.");
-      // 실패 시 이전 설정 상태로 롤백
+      // 4. 실패 시 이전 설정 상태로 롤백
       setSettings(prevSettings);
     }
   };
@@ -828,4 +873,34 @@ const DeptWarningText = styled.span`
   line-height: 1.4;
   flex: 1;
   padding-right: 8px;
+`;
+
+const rotate = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const SpinIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ${rotate} 1s linear infinite;
+`;
+
+const HeaderStatusBadge = styled.div<{ $saved?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background-color: ${({ $saved }) => ($saved ? "#e8f9ee" : "#edf4ff")};
+  color: ${({ $saved }) => ($saved ? "#2b8a3e" : "#5e92f0")};
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 `;
