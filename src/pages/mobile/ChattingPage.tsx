@@ -962,6 +962,15 @@ export default function ChattingPage() {
       )}
 
       <FixedInputArea>
+        {isChatbuliMode && (
+          <ChatbuliGuideBanner>
+            <span className="guide-icon">💡</span>
+            <span className="guide-text">
+              채팅방에서는 이전 대화를 기억하지 않고 <strong>단건 질문</strong>으로 답변해요.
+            </span>
+          </ChatbuliGuideBanner>
+        )}
+
         <ChatSlashCommandPopup
           isOpen={isSlashPopupOpen}
           onSelect={handleEnterChatbuliMode}
@@ -1174,6 +1183,61 @@ const LoadingWrapper = styled.div`
 
   svg {
     animation: spin 1s linear infinite;
+  }
+`;
+
+const ChatbuliGuideBanner = styled.div`
+  position: absolute;
+  bottom: 100%;
+  left: 8px;
+  margin-bottom: 6px;
+  background: #fff8f3;
+  border: 1px solid #ffd8bf;
+  border-radius: 12px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 10px rgba(255, 107, 0, 0.08);
+  z-index: 105;
+  animation: bannerFadeIn 0.2s ease-out;
+  pointer-events: none;
+  max-width: calc(100% - 16px);
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    left: clamp(24px, 8vw, 120px);
+    max-width: 480px;
+  }
+
+  .guide-icon {
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .guide-text {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #7a3e14;
+    line-height: 1.35;
+    word-break: keep-all;
+
+    strong {
+      font-weight: 700;
+      color: #d9480f;
+    }
+  }
+
+  @keyframes bannerFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 `;
 

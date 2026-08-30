@@ -213,9 +213,10 @@ const LoadingText = styled.span`
 `;
 
 const ActionButtonsWrapper = styled.div`
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 6px;
+  width: 100%;
   padding-top: 6px;
   border-top: 1px solid #f2f4f8;
 `;
@@ -228,7 +229,7 @@ const ActionButton = styled.button`
   background: #f7f9fc;
   border: 1px solid #e5e8eb;
   border-radius: 10px;
-  padding: 6px 10px;
+  padding: 7px 10px;
   font-size: 12px;
   font-weight: 600;
   color: #333d4b;
@@ -236,6 +237,8 @@ const ActionButton = styled.button`
   word-break: keep-all;
   white-space: normal;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
   transition: all 0.15s ease;
 
   img {
