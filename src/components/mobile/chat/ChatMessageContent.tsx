@@ -1,55 +1,85 @@
 import React from "react";
 import styled from "styled-components";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ExternalLink } from "lucide-react";
 
 interface ChatMessageContentProps {
   content: string;
 }
 
 export default function ChatMessageContent({ content }: ChatMessageContentProps) {
-  // 본문에서 [CHATBULI_ANSWER] 식별 태그 및 [챗불이 답변] 접두사 정돈
+  // 본문에서 [CHATBULI_ANSWER] 식별 태그, \n 이스케이프 문자열 및 접두사 정돈
   const cleanedContent = React.useMemo(() => {
     if (!content) return "";
-    let text = content;
+    let text = String(content);
+
+    // 1. JSON 직렬화나 API 응답에서 전달된 리터럴 \n, \r\n, \r 문자열을 실제 개행 문자로 치환
+    text = text
+      .replace(/\\r\\n/g, "\n")
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "\n")
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n");
+
+    // 2. 레거시 태그 및 접두사 제거
     text = text.replace(/\[CHATBULI_ANSWER\]/g, "");
     text = text.replace(/^\[챗불이 답변\]\s*/g, "");
+
     return text.trim();
   }, [content]);
 
-  // URL 링크를 "바로가기" 텍스트 링크로 변환 및 인라인 마크다운 렌더링
-  const renderInlineMarkdownAndLinks = (text: string) => {
+  // 인라인 마크다운 (마크다운 링크 [text](url), 일반 URL, 볼드 **, 코드 `, 기울임 *, 취소선 ~~) 파싱
+  const renderInlineMarkdown = (text: string) => {
     if (!text) return null;
 
-    // URL 정규식 패턴 (http, https)
-    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    // 1단계: 마크다운 링크 [링크텍스트](URL) 및 일반 URL 분리 파싱
+    const linkRegex = /(\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s]+)/g;
+    const tokens = text.split(linkRegex);
 
-    // 먼저 URL 기준으로 split
-    const urlTokens = text.split(urlPattern);
-
-    return urlTokens.map((token, tIdx) => {
-      if (urlPattern.test(token)) {
+    return tokens.map((token, tIdx) => {
+      // 마크다운 링크인 경우: [텍스트](URL)
+      const mdLinkMatch = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+      if (mdLinkMatch) {
+        const linkText = mdLinkMatch[1];
+        const linkUrl = mdLinkMatch[2];
         return (
           <LinkTag
-            key={`url-${tIdx}`}
+            key={`md-link-${tIdx}`}
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span>{linkText}</span>
+            <ExternalLink size={11} />
+          </LinkTag>
+        );
+      }
+
+      // 일반 URL인 경우
+      if (/^https?:\/\/[^\s]+$/.test(token)) {
+        return (
+          <LinkTag
+            key={`raw-url-${tIdx}`}
             href={token}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
           >
-            [바로가기]
+            <span>[바로가기]</span>
+            <ExternalLink size={11} />
           </LinkTag>
         );
       }
 
-      // URL이 아닌 일반 텍스트 부분은 볼드(**), 코드(`), 이탤릭(*) 파싱
-      const parts = token.split(
-        /(\*\*\*[^*]+?\*\*\*|\*\*[^*]+?\*\*|`[^`]+?`|\*[^*]+?\*)/g,
-      );
+      // 2단계: 볼드(***, **), 인라인 코드(`), 이탤릭(*), 취소선(~~) 파싱
+      const inlinePattern =
+        /(\*\*\*[^*]+?\*\*\*|\*\*[^*]+?\*\*|`[^`]+?`|~~[^~]+?~~|\*[^*]+?\*)/g;
+      const parts = token.split(inlinePattern);
 
       return parts.map((part, pIdx) => {
         if (part.startsWith("***") && part.endsWith("***") && part.length >= 6) {
           return (
-            <BoldText key={`b-${pIdx}`}>
+            <BoldText key={`bi-${pIdx}`}>
               <em>{part.slice(3, -3)}</em>
             </BoldText>
           );
@@ -63,6 +93,9 @@ export default function ChatMessageContent({ content }: ChatMessageContentProps)
               {part.slice(1, -1)}
             </HighlightBadge>
           );
+        }
+        if (part.startsWith("~~") && part.endsWith("~~") && part.length >= 4) {
+          return <del key={`del-${pIdx}`}>{part.slice(2, -2)}</del>;
         }
         if (
           part.startsWith("*") &&
@@ -87,53 +120,66 @@ export default function ChatMessageContent({ content }: ChatMessageContentProps)
           return <div key={idx} style={{ height: "6px" }} />;
         }
 
-        // 0. 가로선 (***, ---, ___)
+        // 0. 수평 구분선 (***, ---, ___)
         if (/^(\*{3,}|-{3,}|_{3,})$/.test(trimmed)) {
           return <HorizontalDivider key={idx} />;
         }
 
-        // 1. 헤더 (#, ##, ###)
-        if (/^#{1,6}\s+/.test(trimmed)) {
-          const headerText = trimmed.replace(/^#{1,6}\s+/, "");
+        // 1. 인용구 (> ...)
+        if (/^>\s*/.test(trimmed)) {
+          const quoteText = trimmed.replace(/^>\s*/, "");
           return (
-            <SectionHeader key={idx}>
-              <Sparkles size={14} color="#FF6B00" />
-              <span>{renderInlineMarkdownAndLinks(headerText)}</span>
+            <BlockQuote key={idx}>
+              {renderInlineMarkdown(quoteText)}
+            </BlockQuote>
+          );
+        }
+
+        // 2. 헤더 (#, ##, ###, #### 등)
+        const headerMatch = trimmed.match(/^#{1,6}\s*(.+)$/);
+        if (headerMatch) {
+          const headerLevel = (trimmed.match(/^#{1,6}/)?.[0] || "#").length;
+          const headerText = headerMatch[1].trim();
+          return (
+            <SectionHeader key={idx} $level={headerLevel}>
+              <Sparkles size={headerLevel <= 2 ? 14 : 12} color="#FF6B00" />
+              <span>{renderInlineMarkdown(headerText)}</span>
             </SectionHeader>
           );
         }
 
-        // 2. 번호 목록 (1. , 2. 등)
-        if (/^\d+\.\s+/.test(trimmed)) {
-          const numberPrefix = trimmed.match(/^(\d+\.)\s+/)?.[1] || "";
-          const listText = trimmed.replace(/^\d+\.\s+/, "");
+        // 3. 번호 목록 (1. , 2. , 1) 등)
+        const numberedMatch = trimmed.match(/^(\d+[\.)])\s+(.+)$/);
+        if (numberedMatch) {
+          const numberPrefix = numberedMatch[1];
+          const listText = numberedMatch[2];
           return (
             <NumberedItem key={idx}>
               <NumberLabel>{numberPrefix}</NumberLabel>
               <div className="list-text">
-                {renderInlineMarkdownAndLinks(listText)}
+                {renderInlineMarkdown(listText)}
               </div>
             </NumberedItem>
           );
         }
 
-        // 3. 불릿 목록 (-, *, •, +)
+        // 4. 불릿 목록 (-, *, •, +)
         if (/^[-*•+]\s+/.test(trimmed)) {
           const bulletText = trimmed.replace(/^[-*•+]\s+/, "");
           return (
             <BulletItem key={idx}>
               <BulletDot />
               <div className="list-text">
-                {renderInlineMarkdownAndLinks(bulletText)}
+                {renderInlineMarkdown(bulletText)}
               </div>
             </BulletItem>
           );
         }
 
-        // 4. 일반 문단
+        // 5. 일반 문단
         return (
           <Paragraph key={idx}>
-            {renderInlineMarkdownAndLinks(line)}
+            {renderInlineMarkdown(line)}
           </Paragraph>
         );
       })}
@@ -144,10 +190,10 @@ export default function ChatMessageContent({ content }: ChatMessageContentProps)
 const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   color: #1c1c1e;
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.6;
   word-break: break-word;
   user-select: text;
   -webkit-user-select: text;
@@ -158,19 +204,31 @@ const Paragraph = styled.p`
   white-space: pre-wrap;
 `;
 
-const SectionHeader = styled.div`
+const SectionHeader = styled.div<{ $level?: number }>`
   display: flex;
   align-items: center;
   gap: 6px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: ${(props) => (props.$level === 1 ? "16px" : props.$level === 2 ? "15.5px" : "15px")};
   color: #1c1c1e;
-  margin-top: 6px;
+  margin-top: ${(props) => (props.$level && props.$level <= 2 ? "10px" : "6px")};
   margin-bottom: 2px;
 
   svg {
     flex-shrink: 0;
   }
+`;
+
+const BlockQuote = styled.div`
+  border-left: 3px solid #5e92f0;
+  padding-left: 10px;
+  margin: 4px 0;
+  color: #555555;
+  font-style: italic;
+  background: #f8faff;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-radius: 0 4px 4px 0;
 `;
 
 const NumberedItem = styled.div`
@@ -237,14 +295,21 @@ const HorizontalDivider = styled.hr`
 `;
 
 const LinkTag = styled.a`
-  color: #3b6cd4;
+  color: #2b6cb0;
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   margin: 0 2px;
+  word-break: break-all;
+
+  svg {
+    flex-shrink: 0;
+  }
 
   &:hover {
-    color: #2552b8;
+    color: #1a4971;
   }
 `;
