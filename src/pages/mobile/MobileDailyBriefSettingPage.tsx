@@ -753,6 +753,7 @@ export function MobileSchoolAlarmSetting({
         newKeyword,
         selectedCategoryForKeyword,
         location,
+        false,
       );
       setNewKeyword("");
       const keyRes = await getKeywords();
@@ -827,15 +828,16 @@ export function MobileSchoolAlarmSetting({
         description="학교 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요."
       />
 
+      {/* 1. 카테고리로 알림 받기 (카테고리 선택 + 제외 키워드 설정 한 세트) */}
       <TitleContentArea
-        title="학교 공지 모두 알림 받기"
+        title="카테고리로 알림 받기"
         description={
           subscribedCategories.length > 0
-            ? `${subscribedCategories.length}개 카테고리에서 전체 새 글 알림을 받고 있어요.`
+            ? `${subscribedCategories.length}개 카테고리의 모든 새 글 알림을 받고 있어요.`
             : "원하는 카테고리의 모든 새 글 알림을 설정해보세요."
         }
       >
-        <Box style={{ padding: "16px 20px" }}>
+        <Box style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <ChipContainer>
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => (
@@ -857,12 +859,58 @@ export function MobileSchoolAlarmSetting({
                 </SelectableChip>
               ))}
           </ChipContainer>
+
+          <Divider margin="4px 0" />
+
+          {/* 제외할 키워드 설정 영역 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ fontSize: "14.5px", fontWeight: 600, color: "#2c3e50" }}>
+                제외할 키워드 설정
+              </div>
+              <div style={{ fontSize: "12.5px", color: "#8E8E93" }}>
+                카테고리 전체 알림 중 받고 싶지 않은 키워드를 제외해보세요.
+              </div>
+            </div>
+
+            <InputWrapper>
+              <StyledInput
+                placeholder="제외할 키워드 입력 (예: 휴학, 등록금)"
+                value={newExcludeKeyword}
+                onChange={(e) => setNewExcludeKeyword(e.target.value)}
+                onKeyDown={handleExcludeKeyDown}
+              />
+              <TextButton
+                disabled={!newExcludeKeyword.trim()}
+                onClick={handleAddExcludeKeyword}
+              >
+                등록
+              </TextButton>
+            </InputWrapper>
+
+            {excludeKeywords.length > 0 && (
+              <ListWrapper style={{ marginTop: "4px" }}>
+                {excludeKeywords.map((item, index) => (
+                  <React.Fragment key={item.keywordId}>
+                    <RegisteredKeywordItem
+                      keyword={`[제외] ${item.keyword}`}
+                      onDelete={() => handleDeleteKeyword(item.keywordId)}
+                    />
+                    {index < excludeKeywords.length - 1 && (
+                      <Divider margin="12px 0" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </ListWrapper>
+            )}
+          </div>
         </Box>
       </TitleContentArea>
 
+      {/* 2. 키워드로 알림 받기 (별도 독립 섹션) */}
       <TitleContentArea
         title="키워드로 알림 받기"
-        description="원하는 카테고리에 키워드 알림을 설정해보세요."
+        description="카테고리와 상관없이 원하는 키워드가 포함된 공지만 받아보세요."
       >
         <Box style={{ padding: "16px 20px" }}>
           <Wrapper>
@@ -940,65 +988,6 @@ export function MobileSchoolAlarmSetting({
                       onDelete={() => handleDeleteKeyword(item.keywordId)}
                     />
                     {index < includeKeywords.length - 1 && (
-                      <Divider margin="16px 0" />
-                    )}
-                  </React.Fragment>
-                ))}
-            </ListWrapper>
-          </Box>
-        </TitleContentArea>
-      )}
-
-      {/* 제외할 키워드 설정 */}
-      <TitleContentArea
-        title="제외할 키워드 설정"
-        description="카테고리 전체 알림 중 받고 싶지 않은 키워드를 제외해보세요."
-      >
-        <Box style={{ padding: "16px 20px" }}>
-          <Wrapper>
-            <InputWrapper>
-              <StyledInput
-                placeholder="제외할 키워드를 입력해주세요. (예: 휴학, 등록금)"
-                value={newExcludeKeyword}
-                onChange={(e) => setNewExcludeKeyword(e.target.value)}
-                onKeyDown={handleExcludeKeyDown}
-              />
-              <TextButton
-                disabled={!newExcludeKeyword.trim()}
-                onClick={handleAddExcludeKeyword}
-              >
-                등록
-              </TextButton>
-            </InputWrapper>
-          </Wrapper>
-        </Box>
-      </TitleContentArea>
-
-      {(isLoading || excludeKeywords.length > 0) && (
-        <TitleContentArea
-          description={`${excludeKeywords.length}개 제외 키워드가 설정되어 있어요.`}
-        >
-          <Box style={{ padding: "16px 20px" }}>
-            <ListWrapper>
-              {isLoading
-                ? Array.from({ length: 2 }).map((_, i) => (
-                  <React.Fragment key={`ex-key-skeleton-${i}`}>
-                    <Skeleton
-                      variant="text"
-                      width="100%"
-                      height={20}
-                      style={{ margin: "4px 0" }}
-                    />
-                    {i < 1 && <Divider margin="16px 0" />}
-                  </React.Fragment>
-                ))
-                : excludeKeywords.map((item, index) => (
-                  <React.Fragment key={item.keywordId}>
-                    <RegisteredKeywordItem
-                      keyword={`[제외] ${item.keyword}`}
-                      onDelete={() => handleDeleteKeyword(item.keywordId)}
-                    />
-                    {index < excludeKeywords.length - 1 && (
                       <Divider margin="16px 0" />
                     )}
                   </React.Fragment>
@@ -1111,6 +1100,7 @@ export function MobileDeptAlarmSetting({
         keyword,
         userInfo.department,
         location,
+        false,
       );
       setKeyword("");
       fetchKeywords();
@@ -1195,6 +1185,7 @@ export function MobileDeptAlarmSetting({
         description="학과 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요."
       />
 
+      {/* 1. 학과 공지 모두 알림 받기 & 제외 키워드 설정 (한 세트) */}
       <Box
         style={{
           background: allAlarm
@@ -1206,6 +1197,9 @@ export function MobileDeptAlarmSetting({
             : "1px solid #e9ecef",
           padding: "18px 20px",
           borderRadius: "12px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
         }}
       >
         <AllAlarmCheckBoxWrapper
@@ -1234,9 +1228,58 @@ export function MobileDeptAlarmSetting({
             <Switch checked={allAlarm} onCheckedChange={handleToggleAllAlarm} />
           </div>
         </AllAlarmCheckBoxWrapper>
+
+        <Divider margin="0" />
+
+        {/* 제외할 키워드 설정 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <div style={{ fontSize: "14.5px", fontWeight: 600, color: "#2c3e50" }}>
+              제외할 키워드 설정
+            </div>
+            <div style={{ fontSize: "12.5px", color: "#8E8E93" }}>
+              학과 전체 알림 중 받고 싶지 않은 키워드를 제외해보세요.
+            </div>
+          </div>
+
+          <InputWrapper>
+            <StyledInput
+              placeholder="제외할 키워드 입력 (예: 근로, 채용)"
+              value={excludeKeyword}
+              onChange={(e) => setExcludeKeyword(e.target.value)}
+              onKeyDown={handleExcludeKeyDown}
+            />
+            <TextButton
+              disabled={!excludeKeyword.trim()}
+              onClick={handleAddExcludeKeyword}
+            >
+              등록
+            </TextButton>
+          </InputWrapper>
+
+          {excludeKeywords.length > 0 && (
+            <ListWrapper style={{ marginTop: "4px" }}>
+              {excludeKeywords.map((item, index) => (
+                <React.Fragment key={item.keywordId}>
+                  <RegisteredKeywordItem
+                    keyword={`[제외] ${item.keyword}`}
+                    onDelete={() => handleDeleteKeyword(item.keywordId)}
+                  />
+                  {index < excludeKeywords.length - 1 && (
+                    <Divider margin="12px 0" />
+                  )}
+                </React.Fragment>
+              ))}
+            </ListWrapper>
+          )}
+        </div>
       </Box>
 
-      <TitleContentArea title="키워드로 알림 받기">
+      {/* 2. 키워드로 알림 받기 (별도 독립 섹션) */}
+      <TitleContentArea
+        title="키워드로 알림 받기"
+        description="내 학과 공지 중 특정 단어가 포함된 새 글만 콕 집어 받아보세요."
+      >
         <Box style={{ padding: "16px 20px" }}>
           <Wrapper>
             <InputWrapper>
@@ -1281,65 +1324,6 @@ export function MobileDeptAlarmSetting({
                       onDelete={() => handleDeleteKeyword(item.keywordId)}
                     />
                     {index < includeKeywords.length - 1 && (
-                      <Divider margin="16px 0" />
-                    )}
-                  </React.Fragment>
-                ))}
-            </ListWrapper>
-          </Box>
-        </TitleContentArea>
-      )}
-
-      {/* 학과 공지 제외할 키워드 설정 */}
-      <TitleContentArea
-        title="제외할 키워드 설정"
-        description="학과 전체 알림 중 받고 싶지 않은 키워드를 제외해보세요."
-      >
-        <Box style={{ padding: "16px 20px" }}>
-          <Wrapper>
-            <InputWrapper>
-              <StyledInput
-                placeholder="제외할 키워드를 입력해주세요. (예: 근로, 채용)"
-                value={excludeKeyword}
-                onChange={(e) => setExcludeKeyword(e.target.value)}
-                onKeyDown={handleExcludeKeyDown}
-              />
-              <TextButton
-                disabled={!excludeKeyword.trim()}
-                onClick={handleAddExcludeKeyword}
-              >
-                등록
-              </TextButton>
-            </InputWrapper>
-          </Wrapper>
-        </Box>
-      </TitleContentArea>
-
-      {(isLoading || excludeKeywords.length > 0) && (
-        <TitleContentArea
-          description={`${excludeKeywords.length}개 제외 키워드가 설정되어 있어요.`}
-        >
-          <Box style={{ padding: "16px 20px" }}>
-            <ListWrapper>
-              {isLoading
-                ? Array.from({ length: 2 }).map((_, i) => (
-                  <React.Fragment key={`ex-dept-skeleton-${i}`}>
-                    <Skeleton
-                      variant="text"
-                      width="100%"
-                      height={20}
-                      style={{ margin: "4px 0" }}
-                    />
-                    {i < 1 && <Divider margin="16px 0" />}
-                  </React.Fragment>
-                ))
-                : excludeKeywords.map((item, index) => (
-                  <React.Fragment key={item.keywordId}>
-                    <RegisteredKeywordItem
-                      keyword={`[제외] ${item.keyword}`}
-                      onDelete={() => handleDeleteKeyword(item.keywordId)}
-                    />
-                    {index < excludeKeywords.length - 1 && (
                       <Divider margin="16px 0" />
                     )}
                   </React.Fragment>
