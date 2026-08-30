@@ -475,8 +475,18 @@ export default function ChattingPage() {
   }, [messages, isFetchingPrevious]);
 
   const isMobile = React.useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      return false;
+    }
+    const ua = navigator.userAgent || "";
+    const isMobileUA =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const isIPad =
+      /Macintosh/i.test(ua) &&
+      typeof navigator.maxTouchPoints === "number" &&
+      navigator.maxTouchPoints > 1;
+
+    return isMobileUA || isIPad;
   }, []);
 
   const handleInput = () => {
@@ -534,16 +544,22 @@ export default function ChattingPage() {
       return;
     }
 
-    // 3. 엔터 키 처리
-    if (e.key === "Enter" && !e.shiftKey) {
+    // 3. 엔터 키 처리:
+    // - 모바일: Enter는 줄바꿈(개행) 유지, 전송은 전송 버튼으로만 수행
+    // - 컴퓨터(PC): Enter는 전송, Shift + Enter는 줄바꿈
+    if (e.key === "Enter") {
       if (isMobile) {
-        // 모바일 가상 키보드에서는 엔터 누르면 줄바꿈(개행) 유지, 전송은 전송 버튼으로
+        // 모바일 가상 키보드에서는 preventDefault 하지 않고 기본 줄바꿈 수행
         return;
       }
 
-      if (e.nativeEvent.isComposing) return;
-      e.preventDefault();
-      handleSendMessage();
+      if (!e.shiftKey) {
+        // PC에서 Enter 단독 입력 시 메시지 전송
+        if (e.nativeEvent.isComposing) return; // 한글 IME 조합 중 중복 전송 방지
+        e.preventDefault();
+        handleSendMessage();
+      }
+      // PC에서 Shift + Enter 입력 시에는 기본 줄바꿈 수행
     }
   };
 
