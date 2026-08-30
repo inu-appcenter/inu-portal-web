@@ -19,6 +19,7 @@ import {
   buildProfanityAlertMessage,
   checkProfanity,
 } from "@/utils/profanityFilter";
+import { isChatbuliCommand } from "@/utils/hangul";
 import Skeleton from "@/components/common/Skeleton";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
@@ -491,7 +492,7 @@ export default function ChattingPage() {
     setInputValue(val);
 
     if (!isChatbuliMode) {
-      if (/^(\/|\/ㅊ|\/채|\/챗|\/챗불|\/챗불이)$/i.test(val.trim())) {
+      if (isChatbuliCommand(val)) {
         setIsSlashPopupOpen(true);
       } else {
         setIsSlashPopupOpen(false);
@@ -518,10 +519,7 @@ export default function ChattingPage() {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // 1. 슬래시 명령어 입력 중 공백/엔터 입력 시 챗불이 모드로 확정 전환
-    if (
-      !isChatbuliMode &&
-      /^(\/|\/ㅊ|\/채|\/챗|\/챗불|\/챗불이)$/i.test(inputValue.trim())
-    ) {
+    if (!isChatbuliMode && isChatbuliCommand(inputValue)) {
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
         handleEnterChatbuliMode();
