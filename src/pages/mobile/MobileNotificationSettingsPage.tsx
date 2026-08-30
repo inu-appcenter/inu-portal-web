@@ -77,17 +77,17 @@ export default function MobileNotificationSettingsPage() {
 
   const handleDailyBriefClick = () => {
     mixpanelTrack.mypageMenuClicked("알림설정 - Daily Brief");
-    navigate(ROUTES.MYPAGE.DAILY_BRIEF);
+    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=timetable`);
   };
 
   const handleDeptClick = () => {
     mixpanelTrack.mypageMenuClicked("알림설정 - 학과공지알리미");
-    navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`);
+    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=dept`);
   };
 
   const handleSchoolClick = () => {
     mixpanelTrack.mypageMenuClicked("알림설정 - 학교공지알리미");
-    navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
+    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=school`);
   };
 
   return (
@@ -97,7 +97,7 @@ export default function MobileNotificationSettingsPage() {
           <SettingRow onClick={handleDailyBriefClick}>
             <RowContent>
               <RowTitle>Daily Brief (시간표 · 학사일정)</RowTitle>
-              <RowDescription>수업 시작 전 알림 및 당일 강의·학사일정 맞춤 브리핑</RowDescription>
+              <RowDescription>수업 시작 전 알림 및 당일 강의·학사일정 맞춤 브리핑을 설정할 수 있어요.</RowDescription>
             </RowContent>
             <ChevronRight size={20} color="#AEAEB2" />
           </SettingRow>
@@ -122,7 +122,7 @@ export default function MobileNotificationSettingsPage() {
           <SettingRow onClick={handleDeptClick}>
             <RowContent>
               <RowTitle>학과 공지 알리미</RowTitle>
-              <RowDescription>구독 중인 학과 및 키워드 새 글 알림 설정</RowDescription>
+              <RowDescription>구독 중인 학과 및 키워드 새 글 알림을 설정할 수 있어요.</RowDescription>
             </RowContent>
             <ChevronRight size={20} color="#AEAEB2" />
           </SettingRow>
@@ -132,7 +132,7 @@ export default function MobileNotificationSettingsPage() {
           <SettingRow onClick={handleSchoolClick}>
             <RowContent>
               <RowTitle>학교 공지 알리미</RowTitle>
-              <RowDescription>학교 공지 카테고리 및 키워드 새 글 알림 설정</RowDescription>
+              <RowDescription>학교 공지 카테고리 및 키워드 새 글 알림을 설정할 수 있어요.</RowDescription>
             </RowContent>
             <ChevronRight size={20} color="#AEAEB2" />
           </SettingRow>

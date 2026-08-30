@@ -1,26 +1,47 @@
 import styled, { keyframes } from "styled-components";
-import { useEffect, useState, useMemo, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Switch from "@/components/common/Switch";
 import Divider from "@/components/common/Divider";
+import Skeleton from "@/components/common/Skeleton";
+import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
+import RegisteredKeywordItem from "@/components/desktop/notice/RegisteredKeywordItem";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER, DESKTOP_READING_WIDTH } from "@/styles/responsive";
-import { trackPageView, trackEvent } from "@/utils/mixpanel";
+import { mixpanelTrack, trackPageView, trackEvent } from "@/utils/mixpanel";
 import {
   DailyBriefSettings,
   ScheduleScope,
 } from "@/types/dailyBrief";
+import { Keyword } from "@/types/notices";
 import {
   getDailyBriefSettings,
   getLocalDailyBriefSettings,
   updateDailyBriefSettings,
 } from "@/apis/dailyBrief";
+import {
+  createKeyword,
+  deleteKeyword,
+  getKeywords,
+  getKeywordsNotice,
+  subscribeSchoolDepartment,
+  subscribeKeywordsNotice,
+} from "@/apis/notices";
+import { getSchoolNoticeCategories } from "@/apis/categories";
+import { NoticeRecommendKeywords } from "@/resources/strings/NoticeRecommendKeywords";
 import { ChevronRight, Loader2, Check } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
+
+export const DAILY_BRIEF_TABS = [
+  { label: "시간표", value: "timetable" },
+  { label: "학사일정", value: "schedule" },
+  { label: "학교 공지", value: "school" },
+  { label: "학과 공지", value: "dept" },
+];
 
 const PRE_ALERT_PRESETS = [
   { label: "5분 전", value: 5 },
@@ -66,8 +87,10 @@ const SCHEDULE_SCOPE_OPTIONS: { label: string; value: ScheduleScope; desc: strin
 
 export default function MobileDailyBriefSettingPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const targetTab = searchParams.get("tab");
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const currentTab = params.get("tab") || "timetable";
+
   const { userInfo } = useUserStore();
 
   const [settings, setSettings] = useState<DailyBriefSettings>(
@@ -107,16 +130,32 @@ export default function MobileDailyBriefSettingPage() {
     return null;
   }, [saveStatus]);
 
+  const subHeader = useMemo(
+    () => (
+      <CategorySelectorNew
+        categories={DAILY_BRIEF_TABS}
+        selectedCategory={currentTab}
+        queryParam="tab"
+      />
+    ),
+    [currentTab],
+  );
+
   useHeader({
     title: "Daily Brief 설정",
     hasback: true,
+    subHeader: subHeader,
+    floatingSubHeader: true,
     rightArea: headerRightIndicator,
     rightAreaNotCircle: true,
   });
 
   useEffect(() => {
-    trackPageView("Daily Brief 설정");
+    trackPageView(`Daily Brief 설정 - ${currentTab}`);
+    mixpanelTrack.noticeSettingTabSwitched(currentTab);
+  }, [currentTab]);
 
+  useEffect(() => {
     let isMounted = true;
     void getDailyBriefSettings().then((res) => {
       if (isMounted && res.data) {
@@ -131,21 +170,6 @@ export default function MobileDailyBriefSettingPage() {
       }
     };
   }, []);
-
-  // tab 쿼리 파라미터가 있는 경우 해당 섹션으로 부드럽게 스크롤
-  useEffect(() => {
-    if (targetTab === "schedule") {
-      const el = document.getElementById("section-schedule");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
-    } else if (targetTab === "timetable") {
-      const el = document.getElementById("section-timetable");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-  }, [targetTab]);
 
   const handleUpdate = async (patch: Partial<DailyBriefSettings>) => {
     const prevSettings = settings;
@@ -215,14 +239,13 @@ export default function MobileDailyBriefSettingPage() {
   return (
     <PageWrapper>
       <ContentContainer>
-        {/* 1. 시간표 알림 섹션 */}
-        <div id="section-timetable" style={{ width: "100%" }}>
+        {/* 탭 1: 시간표 알림 */}
+        {currentTab === "timetable" && (
           <TitleContentArea
             title="시간표 알림"
             description="내 대표 시간표의 강의 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요."
           >
             <Box style={{ width: "100%", padding: 0 }}>
-              {/* 전체 시간표 알림 토글 */}
               <SettingRow>
                 <RowContent>
                   <RowTitle>시간표 알림 받기</RowTitle>
@@ -386,16 +409,15 @@ export default function MobileDailyBriefSettingPage() {
               )}
             </Box>
           </TitleContentArea>
-        </div>
+        )}
 
-        {/* 2. 학사일정 알림 섹션 */}
-        <div id="section-schedule" style={{ width: "100%" }}>
+        {/* 탭 2: 학사일정 알림 */}
+        {currentTab === "schedule" && (
           <TitleContentArea
             title="학사일정 알림"
             description="학교 공식 학사일정 및 학과 공지사항에 등록된 일정을 브리핑으로 받아볼 수 있어요."
           >
             <Box style={{ width: "100%", padding: 0 }}>
-              {/* 전체 학사일정 알림 토글 */}
               <SettingRow>
                 <RowContent>
                   <RowTitle>학사일정 브리핑 받기</RowTitle>
@@ -520,9 +542,477 @@ export default function MobileDailyBriefSettingPage() {
               )}
             </Box>
           </TitleContentArea>
-        </div>
+        )}
+
+        {/* 탭 3: 학교 공지 알리미 */}
+        {currentTab === "school" && (
+          <MobileSchoolAlarmSetting location="Daily Brief Page" />
+        )}
+
+        {/* 탭 4: 학과 공지 알리미 */}
+        {currentTab === "dept" && (
+          <MobileDeptAlarmSetting location="Daily Brief Page" />
+        )}
       </ContentContainer>
     </PageWrapper>
+  );
+}
+
+/**
+ * 학교 공지 알리미 컴포넌트
+ */
+export function MobileSchoolAlarmSetting({
+  location = "Daily Brief Page",
+}: {
+  location?: string;
+}) {
+  const [categories, setCategories] = useState<string[]>([]);
+  const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<Keyword[]>([]);
+  const [newKeyword, setNewKeyword] = useState("");
+  const [selectedCategoryForKeyword, setSelectedCategoryForKeyword] = useState("전체");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchSchoolData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [catRes, subRes, keyRes] = await Promise.all([
+        getSchoolNoticeCategories(),
+        getKeywordsNotice(),
+        getKeywords(),
+      ]);
+      setCategories(catRes.data);
+      setSubscribedCategories(subRes.data.map((k) => k.category || ""));
+      setKeywords(
+        keyRes.data.filter(
+          (k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null,
+        ),
+      );
+    } catch (error) {
+      console.error("학교 공지 알리미 데이터 로드 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSchoolData();
+  }, [fetchSchoolData]);
+
+  const handleToggleCategory = async (category: string) => {
+    const isSubscribed = subscribedCategories.includes(category);
+    const nextCategories = isSubscribed
+      ? subscribedCategories.filter((c) => c !== category)
+      : [...subscribedCategories, category];
+
+    try {
+      await subscribeKeywordsNotice(nextCategories);
+      setSubscribedCategories(nextCategories);
+      mixpanelTrack.noticeCategoryToggled(category, !isSubscribed, location);
+    } catch (error) {
+      console.error("학교 공지 카테고리 구독 실패:", error);
+    }
+  };
+
+  const handleAddKeyword = async () => {
+    if (!newKeyword.trim()) return;
+    try {
+      const categoryParam =
+        selectedCategoryForKeyword === "전체"
+          ? undefined
+          : selectedCategoryForKeyword;
+      await createKeyword(newKeyword, undefined, categoryParam);
+      mixpanelTrack.noticeKeywordAdded(
+        "School",
+        newKeyword,
+        selectedCategoryForKeyword,
+        location,
+      );
+      setNewKeyword("");
+      const keyRes = await getKeywords();
+      setKeywords(
+        keyRes.data.filter(
+          (k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null,
+        ),
+      );
+    } catch (error) {
+      console.error("학교 공지 키워드 등록 실패:", error);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      handleAddKeyword();
+    }
+  };
+
+  const handleDeleteKeyword = async (keywordId: number) => {
+    const targetKeyword = keywords.find((k) => k.keywordId === keywordId);
+    if (!window.confirm("키워드를 삭제할까요?")) return;
+    try {
+      await deleteKeyword(keywordId);
+      if (targetKeyword) {
+        mixpanelTrack.noticeKeywordDeleted(
+          "School",
+          targetKeyword.keyword || "",
+          targetKeyword.category || "전체",
+          location,
+        );
+      }
+      setKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
+    } catch (error) {
+      console.error("학교 공지 키워드 삭제 실패:", error);
+    }
+  };
+
+  return (
+    <KeyWordSettingWrapper>
+      <TitleContentArea
+        description="학교 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요."
+      />
+
+      <TitleContentArea
+        title="학교 공지 모두 알림 받기"
+        description={
+          subscribedCategories.length > 0
+            ? `${subscribedCategories.length}개 카테고리에서 전체 새 글 알림을 받고 있어요.`
+            : "원하는 카테고리의 모든 새 글 알림을 설정해보세요."
+        }
+      >
+        <Box style={{ padding: "16px 20px" }}>
+          <ChipContainer>
+            {isLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton
+                  key={`cat-skeleton-${i}`}
+                  variant="tag"
+                  width={60}
+                  height={32}
+                  style={{ borderRadius: "100px" }}
+                />
+              ))
+              : categories.map((cat) => (
+                <SelectableChip
+                  key={cat}
+                  $selected={subscribedCategories.includes(cat)}
+                  onClick={() => handleToggleCategory(cat)}
+                >
+                  {cat}
+                </SelectableChip>
+              ))}
+          </ChipContainer>
+        </Box>
+      </TitleContentArea>
+
+      <TitleContentArea
+        title="키워드로 알림 받기"
+        description="원하는 카테고리에 키워드 알림을 설정해보세요."
+      >
+        <Box style={{ padding: "16px 20px" }}>
+          <Wrapper>
+            <HorizontalScrollWrapper>
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton
+                    key={`select-skeleton-${i}`}
+                    variant="tag"
+                    width={60}
+                    height={32}
+                    style={{ borderRadius: "100px" }}
+                  />
+                ))
+              ) : (
+                <>
+                  <SelectableChip
+                    $selected={selectedCategoryForKeyword === "전체"}
+                    onClick={() => setSelectedCategoryForKeyword("전체")}
+                  >
+                    전체
+                  </SelectableChip>
+                  {categories.map((cat) => (
+                    <SelectableChip
+                      key={`select-${cat}`}
+                      $selected={selectedCategoryForKeyword === cat}
+                      onClick={() => setSelectedCategoryForKeyword(cat)}
+                    >
+                      {cat}
+                    </SelectableChip>
+                  ))}
+                </>
+              )}
+            </HorizontalScrollWrapper>
+            <InputWrapper>
+              <StyledInput
+                placeholder="알림 받을 키워드를 입력해주세요."
+                value={newKeyword}
+                onChange={(e) => setNewKeyword(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <TextButton
+                disabled={!newKeyword.trim()}
+                onClick={handleAddKeyword}
+              >
+                등록
+              </TextButton>
+            </InputWrapper>
+          </Wrapper>
+        </Box>
+      </TitleContentArea>
+
+      {(isLoading || keywords.length > 0) && (
+        <TitleContentArea
+          description={`${keywords.length}개 키워드로 알림을 받고 있어요.`}
+        >
+          <Box style={{ padding: "16px 20px" }}>
+            <ListWrapper>
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                  <React.Fragment key={`key-skeleton-${i}`}>
+                    <Skeleton
+                      variant="text"
+                      width="100%"
+                      height={20}
+                      style={{ margin: "4px 0" }}
+                    />
+                    {i < 2 && <Divider margin="16px 0" />}
+                  </React.Fragment>
+                ))
+                : keywords.map((item, index) => (
+                  <React.Fragment key={item.keywordId}>
+                    <RegisteredKeywordItem
+                      keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
+                      onDelete={() => handleDeleteKeyword(item.keywordId)}
+                    />
+                    {index < keywords.length - 1 && (
+                      <Divider margin="16px 0" />
+                    )}
+                  </React.Fragment>
+                ))}
+            </ListWrapper>
+          </Box>
+        </TitleContentArea>
+      )}
+    </KeyWordSettingWrapper>
+  );
+}
+
+/**
+ * 학과 공지 알리미 컴포넌트
+ */
+export function MobileDeptAlarmSetting({
+  location = "Daily Brief Page",
+}: {
+  location?: string;
+}) {
+  const { userInfo } = useUserStore();
+  const locationPath = useLocation();
+
+  const [keyword, setKeyword] = useState("");
+  const [keywords, setKeywords] = useState<Keyword[]>([]);
+  const [allAlarm, setAllAlarm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const newParams = new URLSearchParams(locationPath.search);
+    setKeyword(newParams.get("category") || "");
+  }, [locationPath.search]);
+
+  useEffect(() => {
+    fetchKeywords();
+  }, []);
+
+  useEffect(() => {
+    setAllAlarm(
+      keywords.some((k) => k.type === "DEPARTMENT" && k.keyword === null),
+    );
+  }, [keywords]);
+
+  const registeredKeywords = useMemo(
+    () =>
+      keywords.filter(
+        (item): item is Keyword & { keyword: string } =>
+          item.type === "DEPARTMENT" && item.keyword !== null,
+      ),
+    [keywords],
+  );
+
+  const fetchKeywords = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getKeywords();
+      setKeywords(res.data);
+    } catch (error) {
+      console.error("키워드 목록 불러오기 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddKeyword = async () => {
+    if (!keyword) return;
+
+    try {
+      await createKeyword(keyword, userInfo.departmentCode);
+      mixpanelTrack.noticeKeywordAdded(
+        "Department",
+        keyword,
+        userInfo.department,
+        location,
+      );
+      setKeyword("");
+      fetchKeywords();
+    } catch (error) {
+      console.error("키워드 등록 실패:", error);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+      handleAddKeyword();
+    }
+  };
+
+  const handleDeleteKeyword = async (keywordId: number) => {
+    const targetKeyword = keywords.find((k) => k.keywordId === keywordId);
+    if (!window.confirm("키워드를 삭제할까요?")) {
+      return;
+    }
+
+    try {
+      await deleteKeyword(keywordId);
+      if (targetKeyword) {
+        mixpanelTrack.noticeKeywordDeleted(
+          "Department",
+          targetKeyword.keyword || "",
+          userInfo.department,
+          location,
+        );
+      }
+      fetchKeywords();
+    } catch (error) {
+      console.error("키워드 삭제 실패:", error);
+    }
+  };
+
+  const handleToggleAllAlarm = async (checked: boolean) => {
+    try {
+      if (checked) {
+        await subscribeSchoolDepartment([userInfo.departmentCode]);
+        fetchKeywords();
+      } else {
+        await subscribeSchoolDepartment([]);
+      }
+
+      setAllAlarm(checked);
+      mixpanelTrack.noticeAllToggled(userInfo.department, checked, location);
+    } catch (error) {
+      console.error("전체 공지 알림 설정 실패:", error);
+    }
+  };
+
+  return (
+    <KeyWordSettingWrapper>
+      <TitleContentArea
+        description="학과 공지 알리미를 설정해보세요. 새 글이 올라오면 푸시알림으로 받아볼 수 있어요."
+      />
+
+      <Box
+        style={{
+          background: allAlarm
+            ? "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)"
+            : "#ffffff",
+          boxShadow: allAlarm
+            ? "0 8px 24px rgba(94, 146, 240, 0.15)"
+            : SOFT_CHIP_SHADOW,
+          border: allAlarm
+            ? "1px solid rgba(94, 146, 240, 0.3)"
+            : "1px solid #e9ecef",
+          padding: "18px 20px",
+          borderRadius: "12px",
+        }}
+      >
+        <AllAlarmCheckBoxWrapper
+          onClick={() => handleToggleAllAlarm(!allAlarm)}
+        >
+          <div>
+            <div className="first-line">학과 공지 모두 알림 받기</div>
+            <div className="second-line">
+              {isLoading ? (
+                <Skeleton width={200} height={14} />
+              ) : allAlarm ? (
+                <>
+                  {
+                    keywords.find(
+                      (k) => k.type === "DEPARTMENT" && k.keyword === null,
+                    )?.department
+                  }
+                  의 모든 공지사항 푸시알림을 받고 있어요.
+                </>
+              ) : (
+                <>키워드에 상관 없이 모든 새 글 알림을 받아보세요.</>
+              )}
+            </div>
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Switch checked={allAlarm} onCheckedChange={handleToggleAllAlarm} />
+          </div>
+        </AllAlarmCheckBoxWrapper>
+      </Box>
+
+      <TitleContentArea title="키워드로 알림 받기">
+        <Box style={{ padding: "16px 20px" }}>
+          <Wrapper>
+            <InputWrapper>
+              <StyledInput
+                placeholder="알림 받을 키워드를 입력해주세요."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <TextButton disabled={!keyword} onClick={handleAddKeyword}>
+                등록
+              </TextButton>
+            </InputWrapper>
+
+            <CategorySelectorNew categories={NoticeRecommendKeywords} />
+          </Wrapper>
+        </Box>
+      </TitleContentArea>
+
+      {(isLoading || registeredKeywords.length > 0) && (
+        <TitleContentArea
+          description={`${registeredKeywords.length}개 키워드로 알림을 받고 있어요.`}
+        >
+          <Box style={{ padding: "16px 20px" }}>
+            <ListWrapper>
+              {isLoading
+                ? Array.from({ length: 2 }).map((_, i) => (
+                  <React.Fragment key={`key-skeleton-${i}`}>
+                    <Skeleton
+                      variant="text"
+                      width="100%"
+                      height={20}
+                      style={{ margin: "4px 0" }}
+                    />
+                    {i < 1 && <Divider margin="16px 0" />}
+                  </React.Fragment>
+                ))
+                : registeredKeywords.map((item, index) => (
+                  <React.Fragment key={item.keywordId}>
+                    <RegisteredKeywordItem
+                      keyword={item.keyword}
+                      onDelete={() => handleDeleteKeyword(item.keywordId)}
+                    />
+                    {index < registeredKeywords.length - 1 && (
+                      <Divider margin="16px 0" />
+                    )}
+                  </React.Fragment>
+                ))}
+            </ListWrapper>
+          </Box>
+        </TitleContentArea>
+      )}
+    </KeyWordSettingWrapper>
   );
 }
 
@@ -903,4 +1393,115 @@ const HeaderStatusBadge = styled.div<{ $saved?: boolean }>`
   font-weight: 600;
   transition: all 0.2s ease;
   white-space: nowrap;
+`;
+
+const KeyWordSettingWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+`;
+
+const ChipContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+`;
+
+const HorizontalScrollWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const InputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const StyledInput = styled.input`
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  padding: 14px 16px;
+  padding-right: 60px;
+  box-sizing: border-box;
+  background-color: #f8f9fa;
+  color: #333;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #5e92f0;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(94, 146, 240, 0.1);
+  }
+
+  &::placeholder {
+    color: #adb5bd;
+    font-weight: 500;
+  }
+`;
+
+const TextButton = styled.button<{ disabled?: boolean }>`
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  color: ${(props) => (props.disabled ? "#ced4da" : "#5e92f0")};
+  transition: color 0.2s ease;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+`;
+
+const ListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const AllAlarmCheckBoxWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+  word-break: keep-all;
+
+  .first-line {
+    color: #1a1a1a;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .second-line {
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
 `;
