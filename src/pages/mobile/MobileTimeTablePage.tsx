@@ -40,6 +40,8 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
+import NoTimetableGraphic from '@/resources/assets/timetable/no-timetable.webp'
+
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 
 // --- SVG Icons ---
@@ -117,88 +119,7 @@ const ChevronRightIcon = () => (
 );
 
 const EmptyTimetableIllust = () => (
-  <svg
-    width="120"
-    height="120"
-    viewBox="0 0 120 120"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle cx="60" cy="60" r="52" fill="#F8F9FB" />
-    <circle cx="60" cy="60" r="44" fill="#F2F4F6" />
-
-    <circle cx="30" cy="35" r="4" fill="#E5E8EB" />
-    <circle cx="92" cy="45" r="5" fill="#E5E8EB" />
-    <circle cx="85" cy="85" r="3" fill="#E5E8EB" />
-
-    <g filter="url(#shadow)">
-      <rect x="38" y="38" width="44" height="44" rx="8" fill="#FFFFFF" />
-      <rect
-        x="38"
-        y="38"
-        width="44"
-        height="44"
-        rx="8"
-        stroke="#E5E8EB"
-        strokeWidth="1.5"
-      />
-      <path d="M38.75 50H81.25" stroke="#E5E8EB" strokeWidth="1.5" />
-      <circle cx="48" cy="58" r="2" fill="#E5E8EB" />
-      <circle cx="60" cy="58" r="2" fill="#E5E8EB" />
-      <circle cx="72" cy="58" r="2" fill="#E5E8EB" />
-
-      <circle cx="48" cy="68" r="2" fill="#E5E8EB" />
-      <circle cx="60" cy="68" r="2" fill="url(#blueGrad)" />
-      <circle cx="72" cy="68" r="2" fill="#E5E8EB" />
-    </g>
-
-    <circle
-      cx="76"
-      cy="76"
-      r="14"
-      fill="#3B82F6"
-      stroke="#FFFFFF"
-      strokeWidth="2.5"
-    />
-    <path
-      d="M76 71V77"
-      stroke="#FFFFFF"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <circle cx="76" cy="81" r="1" fill="#FFFFFF" />
-
-    <defs>
-      <filter
-        id="shadow"
-        x="32"
-        y="34"
-        width="56"
-        height="56"
-        filterUnits="userSpaceOnUse"
-        colorInterpolationFilters="sRGB"
-      >
-        <feDropShadow
-          dx="0"
-          dy="2"
-          stdDeviation="3"
-          floodColor="#000000"
-          floodOpacity="0.06"
-        />
-      </filter>
-      <linearGradient
-        id="blueGrad"
-        x1="58"
-        y1="66"
-        x2="62"
-        y2="70"
-        gradientUnits="userSpaceOnUse"
-      >
-        <stop stopColor="#3B82F6" />
-        <stop offset="1" stopColor="#0061FF" />
-      </linearGradient>
-    </defs>
-  </svg>
+  <img src={NoTimetableGraphic} width={182}/>
 );
 
 const MobileTimeTablePage = () => {
@@ -218,9 +139,13 @@ const MobileTimeTablePage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
 
-  // const { timetables:fdf, setSemester, setActiveTimetable } = useTimetableStore();
+  // const {
+  //   timetables: fdf,
+  //   setSemester,
+  //   setActiveTimetable,
+  // } = useTimetableStore();
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
-  // const timetables = [] as TimeTable[];
+  // const timetables = [] as Timetable[];
 
   useTimeTables(undefined, undefined, { enabled: isLoggedIn });
   const { semesters } = useSemesters();
@@ -288,7 +213,6 @@ const MobileTimeTablePage = () => {
   }, [activeTimetable, searchParams, setSearchParams, navigate]);
 
   const activeTitle = activeTimetable ? activeTimetable.name : "시간표";
-
 
   const headerRight = useMemo(() => {
     if (!isLoggedIn || !activeTimetable) return null;
@@ -423,7 +347,7 @@ const MobileTimeTablePage = () => {
     mixpanelTrack.timetableFeatureClicked("학점계산기", "시간표 홈", {
       is_logged_in: isLoggedIn,
     });
-    navigate(ROUTES.TIMETABLE.CALCULATOR)
+    navigate(ROUTES.TIMETABLE.CALCULATOR);
   };
 
   // 모의 수강신청 버튼 클릭 처리 핸들러
@@ -433,7 +357,6 @@ const MobileTimeTablePage = () => {
       "PC에서 접속 시 PC용으로, 모바일에서 접속 시 모바일 앱 모의 수강신청으로 이동합니다.\nhttps://intip.inuappcenter.kr",
     );
     navigate(ROUTES.TIMETABLE.SIMULATOR);
-
   };
 
   const handleLoginRequiredClick = () => {
@@ -621,7 +544,7 @@ const MobileTimeTablePage = () => {
                     onError: (error: any) => {
                       alert(
                         error.response?.data?.msg ||
-                        "시간표 이름 변경에 실패했습니다.",
+                          "시간표 이름 변경에 실패했습니다.",
                       );
                     },
                   },
@@ -663,7 +586,7 @@ const MobileTimeTablePage = () => {
                   onError: (error: any) => {
                     alert(
                       error.response?.data?.msg ||
-                      "시간표 삭제에 실패했습니다.",
+                        "시간표 삭제에 실패했습니다.",
                     );
                   },
                 });
@@ -765,12 +688,15 @@ const MobileTimeTablePage = () => {
               <NoTimetableTitle>등록된 시간표가 없어요</NoTimetableTitle>
               <NoTimetableDescription>
                 {currentSemesterLabel} 시간표를 만들어볼까요?
+                <br />
+                수강신청 앱이나 에브리타임에서 시간표를 가져올 수 있어요.
               </NoTimetableDescription>
             </NoTimetableTextGroup>
           </NoTimetableContent>
           <EmptyActionGroup>
             <CapsuleButton
               variant="primary"
+              fullWidth
               onClick={() => {
                 mixpanelTrack.timetableFeatureClicked(
                   "시간표 생성",
@@ -782,24 +708,20 @@ const MobileTimeTablePage = () => {
             >
               시간표 생성하기
             </CapsuleButton>
-            <ImportOptionGroup>
-              <ImportActionDescription>
-                에브리타임이나 수강신청 앱에서 시간표를 가져오시겠어요?
-              </ImportActionDescription>
-              <SecondaryImportButton
-                type="button"
-                onClick={() => {
-                  mixpanelTrack.timetableFeatureClicked(
-                    "이미지로 시간표 가져오기",
-                    "빈 시간표",
-                  );
-                  setCreateThenImport(true);
-                  setIsCreateModalOpen(true);
-                }}
-              >
-                이미지로 시간표 가져오기
-              </SecondaryImportButton>
-            </ImportOptionGroup>
+            <CapsuleButton
+              variant="secondary"
+              fullWidth
+              onClick={() => {
+                mixpanelTrack.timetableFeatureClicked(
+                  "이미지로 시간표 가져오기",
+                  "빈 시간표",
+                );
+                setCreateThenImport(true);
+                setIsCreateModalOpen(true);
+              }}
+            >
+              이미지로 시간표 가져오기
+            </CapsuleButton>
           </EmptyActionGroup>
         </NoTimetableContainer>
       )}
@@ -1095,7 +1017,7 @@ const NoTimetableTitle = styled.h3`
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-secondary, #333d4b);
   margin: 0;
   text-align: center;
 `;
