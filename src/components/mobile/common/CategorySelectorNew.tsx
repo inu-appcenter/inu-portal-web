@@ -165,10 +165,10 @@ const FillItem = styled.div<{ $selected: boolean }>`
   justify-content: center;
   height: 38px;
   border-radius: 100px;
-  padding: 0 16px;
+  padding: 12px 16px;
   font-size: 14px;
   font-weight: ${({ $selected }) => ($selected ? "600" : "500")};
-  background: ${({ $selected }) => ($selected ? "#5E92F0" : "transparent")};
+  background: ${({ $selected }) => ($selected ? "var(--interactive-brand)" : "transparent")};
   color: ${({ $selected }) => ($selected ? "#F4F4F4" : "#666")};
   cursor: pointer;
   white-space: nowrap;
