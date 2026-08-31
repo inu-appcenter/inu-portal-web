@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
+import { createPortal } from "react-dom";
 import { MoreVertical } from "lucide-react";
 
 /**
@@ -29,6 +30,19 @@ export default function PostModerationMenu({
   onHide,
 }: PostModerationMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+
+  // 드롭다운 위치 계산
+  useEffect(() => {
+    if (isOpen && menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.right + window.scrollX,
+      });
+    }
+  }, [isOpen]);
 
   // 목록 아이템 전체가 상세로 이동하는 클릭 영역이라 전파를 막아야 한다.
   const stop = (event: React.MouseEvent) => {
@@ -37,54 +51,62 @@ export default function PostModerationMenu({
   };
 
   return (
-    <MenuWrapper onClick={stop}>
-      <MenuIconBtn
-        type="button"
-        aria-label="게시글 관리 메뉴"
-        onClick={(event) => {
-          stop(event);
-          setIsOpen((prev) => !prev);
-        }}
-      >
-        <MoreVertical size={18} color="#8B95A1" />
-      </MenuIconBtn>
+    <>
+      <MenuWrapper onClick={stop} ref={menuRef}>
+        <MenuIconBtn
+          type="button"
+          aria-label="게시글 관리 메뉴"
+          onClick={(event) => {
+            stop(event);
+            setIsOpen((prev) => !prev);
+          }}
+        >
+          <MoreVertical size={18} color="#8B95A1" />
+        </MenuIconBtn>
+      </MenuWrapper>
 
-      {isOpen && (
-        <>
-          <MenuBackdrop
-            onClick={(event) => {
-              stop(event);
-              setIsOpen(false);
-            }}
-          />
-          <DropdownMenu>
-        
-            <DropdownItem
-              type="button"
-              $danger
+      {isOpen &&
+        createPortal(
+          <>
+            <MenuBackdrop
               onClick={(event) => {
                 stop(event);
                 setIsOpen(false);
-                onReport(postId);
+              }}
+            />
+            <DropdownMenu
+              style={{
+                top: `${menuPosition.top}px`,
+                left: `${menuPosition.left}px`,
               }}
             >
-              신고하기
-            </DropdownItem>
-            <DropdownItem
-              type="button"
-              $danger
-              onClick={(event) => {
-                stop(event);
-                setIsOpen(false);
-                onBlock(postId, writer || "작성자");
-              }}
-            >
-              작성자 차단하기
-            </DropdownItem>
-          </DropdownMenu>
-        </>
-      )}
-    </MenuWrapper>
+              <DropdownItem
+                type="button"
+                $danger
+                onClick={(event) => {
+                  stop(event);
+                  setIsOpen(false);
+                  onReport(postId);
+                }}
+              >
+                신고하기
+              </DropdownItem>
+              <DropdownItem
+                type="button"
+                $danger
+                onClick={(event) => {
+                  stop(event);
+                  setIsOpen(false);
+                  onBlock(postId, writer || "작성자");
+                }}
+              >
+                작성자 차단하기
+              </DropdownItem>
+            </DropdownMenu>
+          </>,
+          document.body
+        )}
+    </>
   );
 }
 
@@ -114,9 +136,7 @@ const MenuBackdrop = styled.div`
 `;
 
 const DropdownMenu = styled.div`
-  position: absolute;
-  top: 28px;
-  right: 0;
+  position: fixed;
   z-index: 21;
   display: flex;
   flex-direction: column;
@@ -127,6 +147,7 @@ const DropdownMenu = styled.div`
   background: var(--bg-base, #ffffff);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   overflow: hidden;
+  transform: translateX(-100%);
 `;
 
 const DropdownItem = styled.button<{ $danger?: boolean }>`
