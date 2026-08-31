@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-import Chip from "src/components/common/Chip";
+import Chip from "@/components/common/Chip";
 
 import TooltipMessage from "@/components/common/TooltipMessage";
 import { torchAiLogo as AIIcon } from "@/resources/assets/illustrations/ai";
