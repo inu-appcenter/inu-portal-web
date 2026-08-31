@@ -14,7 +14,7 @@
     "prebuild": "npm run submodule:init",
     "build": "tsc && vite build",
     "build:tokens": "style-dictionary build --config sd.config.js",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "test": "npx vitest run",
     "preview": "vite preview"
   },
