@@ -15,6 +15,7 @@ import {
   Palette,
   Trash2,
   ScanLine,
+  MoreVertical,
 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
@@ -32,6 +33,7 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
+import TimetableMenuBottomSheet from "@/components/mobile/timetable/TimetableMenuBottomSheet";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -212,6 +214,7 @@ const MobileTimeTablePage = () => {
     null,
   );
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
+  const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
 
@@ -304,6 +307,9 @@ const MobileTimeTablePage = () => {
           }
         >
           <Pencil size={22} color="#1C1C1E" />
+        </IconButton>
+        <IconButton onClick={() => setIsMenuSheetOpen(true)}>
+          <MoreVertical size={22} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
     );
@@ -690,6 +696,12 @@ const MobileTimeTablePage = () => {
             open={isThemeSheetOpen}
             onOpenChange={setIsThemeSheetOpen}
             timetableId={activeTimetable.id}
+          />
+
+          <TimetableMenuBottomSheet
+            open={isMenuSheetOpen}
+            onOpenChange={setIsMenuSheetOpen}
+            items={timetableMenuItems}
           />
         </>
       )}
