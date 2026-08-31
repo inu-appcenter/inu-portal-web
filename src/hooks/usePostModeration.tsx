@@ -91,10 +91,9 @@ export default function usePostModeration(): PostModeration {
         writer={post.writer}
         onReport={reportPost}
         onBlock={blockWriter}
-        onHide={hidePost}
       />
     ),
-    [reportPost, blockWriter, hidePost],
+    [reportPost, blockWriter],
   );
 
   const modals = useMemo(

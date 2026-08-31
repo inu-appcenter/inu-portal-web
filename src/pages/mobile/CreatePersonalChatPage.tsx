@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { ShieldCheck } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useState } from "react";
@@ -10,7 +11,7 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { ROUTES } from "@/constants/routes";
-import { Check, ShieldCheck } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import EmptyState from "@/components/common/EmptyState";
 import useUserStore from "@/stores/useUserStore";
 import Switch from "@/components/common/Switch";
@@ -162,7 +163,7 @@ export default function CreatePersonalChatPage() {
                     $selected={selectedFriendIds.includes(user.friendId)}
                   >
                     {selectedFriendIds.includes(user.friendId) && (
-                      <Check size={16} color="white" strokeWidth={3} />
+                      <Icon name="check" size={16} color="white" />
                     )}
                   </Checkbox>
                 </SelectableCard>
@@ -187,7 +188,7 @@ export default function CreatePersonalChatPage() {
                   $selected={selectedFriendIds.includes(friend.friendId)}
                 >
                   {selectedFriendIds.includes(friend.friendId) && (
-                    <Check size={16} color="white" strokeWidth={3} />
+                    <Icon name="check" size={16} color="white" />
                   )}
                 </Checkbox>
               </SelectableCard>

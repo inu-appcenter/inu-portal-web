@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Image } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 
 interface ChatPlusMenuProps {
@@ -42,7 +42,7 @@ export default function ChatPlusMenu({
           onMouseDown={(e) => e.preventDefault()}
         >
           <IconCircle $bg="#F0F4FF">
-            <Image size={20} color="#5E92F0" />
+            <Icon name="image" size={20} color="#5E92F0" />
           </IconCircle>
           <ItemLabel>사진 보내기</ItemLabel>
         </MenuItem>

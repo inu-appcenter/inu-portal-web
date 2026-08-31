@@ -19,7 +19,8 @@ import {
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
-import { ArrowDownAZ, ArrowUpZA, Check } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
 import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 
@@ -738,7 +739,7 @@ export default function MobileFriendListPage() {
                   onClick={() => setSelectedRoomId(room.roomId)}
                 >
                   <RoomItemCheckOverlay $isSelected={isSelected}>
-                    {isSelected && <Check size={14} color="#ffffff" strokeWidth={3} />}
+                    {isSelected && <Icon name="check" size={14} color="#ffffff" />}
                   </RoomItemCheckOverlay>
                   <ChatRoomListItemWrapper>
                     <ChatRoomListItem

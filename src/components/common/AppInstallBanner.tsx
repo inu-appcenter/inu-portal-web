@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 import {
   APP_STORE_URL,
@@ -82,7 +82,7 @@ export default function AppInstallBanner() {
   return createPortal(
     <Banner>
       <DismissButton type="button" onClick={handleDismiss} aria-label="배너 닫기">
-        <X size={18} />
+        <Icon name="close-md" size={18} />
       </DismissButton>
       <AppIcon src="/icon.webp" alt="" aria-hidden />
       <TextGroup>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import styled from "styled-components";
-import { Send } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 import AdminModal from "@/components/admin/AdminModal";
 import AdminSelect from "@/components/admin/AdminSelect";
@@ -172,7 +172,7 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
         <>
           <CancelButton onClick={onClose} disabled={sending}>취소</CancelButton>
           <SubmitButton onClick={handleFormSubmit} disabled={sending}>
-            <Send size={18} />
+            <Icon name="paper-plane" size={18} />
             <span>{sending ? "전송 중..." : "알림 보내기"}</span>
           </SubmitButton>
         </>

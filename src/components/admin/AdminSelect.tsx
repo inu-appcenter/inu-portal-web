@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import styled from "styled-components";
-import { ChevronDown, Check } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 interface Option {
   value: string | number;
@@ -36,7 +36,7 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
               {selectedOption ? selectedOption.label : placeholder}
             </SelectedText>
             <IconWrapper>
-              <ChevronDown size={18} />
+              <Icon name="chevron-down" size={18} />
             </IconWrapper>
           </ListboxButton>
           <Transition
@@ -67,7 +67,7 @@ const AdminSelect: React.FC<AdminSelectProps> = ({
                         </LabelGroup>
                         {selected && (
                           <CheckIconWrapper>
-                            <Check size={16} />
+                            <Icon name="check" size={16} />
                           </CheckIconWrapper>
                         )}
                       </OptionContent>

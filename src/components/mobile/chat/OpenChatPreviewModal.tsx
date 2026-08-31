@@ -3,7 +3,8 @@ import styled, { keyframes } from "styled-components";
 import Box from "@/components/common/Box";
 import BottomButtonGroup from "@/components/common/BottomButtonGroup";
 import { OpenChatRoomResponseDto } from "@/types/chat";
-import { Users, Calendar, Crown, Info } from "lucide-react";
+import { Calendar, Crown } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
@@ -68,7 +69,7 @@ export default function OpenChatPreviewModal({
                   />
                 )}
                 <DefaultIcon className="fallback">
-                  <Users size={32} color="#D6D1D5" />
+                  <Icon name="users" size={32} color="#D6D1D5" />
                 </DefaultIcon>
                 {room.official && <OfficialBadge>공식</OfficialBadge>}
               </ThumbnailWrapper>
@@ -85,7 +86,7 @@ export default function OpenChatPreviewModal({
                   <span className="value">{room.ownerNickname}</span>
                 </InfoItem>
                 <InfoItem>
-                  <Users size={16} color="#8E8E93" />
+                  <Icon name="users" size={16} color="#8E8E93" />
                   <span className="label">참여 인원</span>
                   <span className="value">{room.currentParticipants} / {room.maxCapacity}</span>
                 </InfoItem>
@@ -103,7 +104,7 @@ export default function OpenChatPreviewModal({
               {room.description && (
                 <DescriptionSection>
                   <div className="section-title">
-                    <Info size={14} />
+                    <Icon name="info" size={14} />
                     채팅방 소개
                   </div>
                   <DescriptionText>{room.description}</DescriptionText>

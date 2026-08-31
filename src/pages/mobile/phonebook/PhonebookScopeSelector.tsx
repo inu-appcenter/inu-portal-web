@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { Building2, Users } from "lucide-react";
+import { Building2 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 import { PhonebookScope } from "@/pages/mobile/phonebook/phonebookConfig";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
@@ -20,7 +21,7 @@ const PhonebookScopeSelector = ({
         onClick={() => onChange("people")}
         type="button"
       >
-        <Users size={15} />
+        <Icon name="users" size={15} />
         교직원·교수
       </ScopeButton>
       <ScopeButton

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { ChevronRight, Phone } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -407,7 +407,7 @@ const PersonResultCard = ({
       <Ripple color="rgba(0,0,0,0.05)" />
       <InnerContent>
         <ResultIconCircle aria-hidden="true">
-          <Phone size={16} strokeWidth={2.4} />
+          <Icon name="phone" size={16} />
         </ResultIconCircle>
 
         <ResultBody>
@@ -417,7 +417,7 @@ const PersonResultCard = ({
         </ResultBody>
 
         <ResultArrow aria-hidden="true">
-          <ChevronRight size={18} strokeWidth={2.4} />
+          <Icon name="chevron-right" size={18} />
         </ResultArrow>
       </InnerContent>
     </SearchResultButton>
@@ -442,7 +442,7 @@ const OfficeResultCard = ({
       <Ripple color="rgba(0,0,0,0.05)" />
       <InnerContent>
         <ResultIconCircle aria-hidden="true">
-          <Phone size={22} strokeWidth={2.4} />
+          <Icon name="phone" size={22} />
         </ResultIconCircle>
 
         <ResultBody>
@@ -452,7 +452,7 @@ const OfficeResultCard = ({
         </ResultBody>
 
         <ResultArrow aria-hidden="true">
-          <ChevronRight size={18} strokeWidth={2.4} />
+          <Icon name="chevron-right" size={18} />
         </ResultArrow>
       </InnerContent>
     </SearchResultButton>

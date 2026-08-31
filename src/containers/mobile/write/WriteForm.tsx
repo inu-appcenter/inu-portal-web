@@ -9,7 +9,7 @@ import { useResetWriteStore } from "@/reducer/resetWriteStore";
 import axios, { AxiosError } from "axios";
 import useAppStateStore from "@/stores/useAppStateStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import { X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -225,7 +225,7 @@ export default function WriteForm({ category, setCategory }: Props) {
                 onClick={() => handleImageRemove(index)}
                 type="button"
               >
-                <X size={12} color="#FFF" />
+                <Icon name="close-md" size={12} color="#FFF" />
               </RemoveImageButton>
             </ThumbnailContainer>
           ))}

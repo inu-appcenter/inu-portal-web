@@ -9,7 +9,7 @@ import rehypeKatex from "rehype-katex";
 // woff2만 지원하면 충분하므로(모던 브라우저 + WebView), woff2 전용으로 가공한
 // 사본을 대신 사용한다. node_modules는 수정하지 않는다.
 import "../../../styles/katex-woff2-only.css";
-import { ExternalLink } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 interface ChatMessageContentProps {
   content: string;
@@ -272,15 +272,7 @@ const markdownComponents: any = {
         onClick={(e) => e.stopPropagation()}
       >
         <span>{renderLinkText(children, href)}</span>
-        <ExternalLink
-          size={12}
-          style={{
-            display: "inline-block",
-            verticalAlign: "middle",
-            marginLeft: "2px",
-            flexShrink: 0,
-          }}
-        />
+        <Icon name="link-external" size={12} />
       </a>
     );
   },

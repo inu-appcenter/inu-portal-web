@@ -5,7 +5,8 @@ import { getMyChatRooms, createPersonalChatRoom } from "@/apis/chat";
 import { getFriends } from "@/apis/friends";
 import BottomSheet from "@/components/common/BottomSheet";
 import TabUpper from "@/components/common/TabUpper";
-import { MessageSquare, Users, Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { MyChatRoomResponseDto } from "@/types/chat";
 
 interface ShareTargetModalProps {
@@ -122,7 +123,7 @@ export default function ShareTargetModal({
                       onClick={() => setSelectedRoomId(room.roomId)}
                     >
                       <IconWrapper $isSelected={isSelected}>
-                        <MessageSquare size={20} />
+                        <Icon name="chat" size={20} />
                       </IconWrapper>
                       <ItemInfo>
                         <ItemName>{room.friendAlias || room.title}</ItemName>
@@ -131,7 +132,7 @@ export default function ShareTargetModal({
                         </ItemSubText>
                       </ItemInfo>
                       <CheckBadge $isSelected={isSelected}>
-                        <Check size={16} color={isSelected ? "#ffffff" : "#9ca3af"} />
+                        <Icon name="check" size={16} color={isSelected ? "#ffffff" : "#9ca3af"} />
                       </CheckBadge>
                     </ItemRow>
                   );
@@ -155,14 +156,14 @@ export default function ShareTargetModal({
                     onClick={() => handleFriendToggle(friend.friendId)}
                   >
                     <IconWrapper $isSelected={isSelected}>
-                      <Users size={20} />
+                      <Icon name="users" size={20} />
                     </IconWrapper>
                     <ItemInfo>
                       <ItemName>{friend.friendAlias || friend.nickname}</ItemName>
                       <ItemSubText>{friend.nickname}</ItemSubText>
                     </ItemInfo>
                     <CheckBadge $isSelected={isSelected}>
-                      <Check size={16} color={isSelected ? "#ffffff" : "#9ca3af"} />
+                      <Icon name="check" size={16} color={isSelected ? "#ffffff" : "#9ca3af"} />
                     </CheckBadge>
                   </ItemRow>
                 );

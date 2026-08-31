@@ -3,7 +3,8 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // u
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { compareMessageIds } from "@/hooks/chat/messageSync";
-import { Send, Users, Loader2, ArrowDown, Plus, X } from "lucide-react";
+import { Loader2, ArrowDown } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useHeader } from "@/context/HeaderContext";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
 import ImageModal from "@/components/mobile/chat/ImageModal";
@@ -311,7 +312,7 @@ export default function ChattingPage() {
             setIsMemberListOpen(true);
           }}
         >
-          <Users size={24} color="#1C1C1E" />
+          <Icon name="users" size={24} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
     ),
@@ -1021,7 +1022,7 @@ export default function ChattingPage() {
             onMouseDown={(e) => e.preventDefault()}
             aria-label="추가 기능 메뉴"
           >
-            <Plus size={24} color="#0066FF" />
+            <Icon name="add-plus-sm" size={24} color="#0066FF" />
           </IconButton>
 
           <InputContainer>
@@ -1036,7 +1037,7 @@ export default function ChattingPage() {
                   onMouseDown={(e) => e.preventDefault()}
                   aria-label="챗불이 모드 해제"
                 >
-                  <X size={12} />
+                  <Icon name="close-md" size={12} />
                 </button>
               </InputBadge>
             )}
@@ -1074,7 +1075,7 @@ export default function ChattingPage() {
             }}
             aria-label="전송"
           >
-            <Send size={24} color="#5E92F0" />
+            <Icon name="paper-plane" size={24} color="#5E92F0" />
           </SendButton>
         </div>
       </FixedInputArea>

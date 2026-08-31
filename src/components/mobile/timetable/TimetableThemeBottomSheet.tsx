@@ -3,7 +3,7 @@ import styled from "styled-components";
 import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useTimetableStore, TimetableTheme } from "@/stores/useTimetableStore";
-import { Check } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 export const THEME_PALETTES = {
@@ -260,7 +260,7 @@ export default function TimetableThemeBottomSheet({
               <CheckboxLabel onClick={() => setShowRoom(!showRoom)}>
                 <SelectionControl $selected={showRoom}>
                   {showRoom && (
-                    <Check size={14} color="#ffffff" strokeWidth={3} />
+                    <Icon name="check" size={14} color="#ffffff" />
                   )}
                 </SelectionControl>
                 <CheckboxText>강의실</CheckboxText>
@@ -269,7 +269,7 @@ export default function TimetableThemeBottomSheet({
               <CheckboxLabel onClick={() => setShowProfessor(!showProfessor)}>
                 <SelectionControl $selected={showProfessor}>
                   {showProfessor && (
-                    <Check size={14} color="#ffffff" strokeWidth={3} />
+                    <Icon name="check" size={14} color="#ffffff" />
                   )}
                 </SelectionControl>
                 <CheckboxText>교수명</CheckboxText>

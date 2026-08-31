@@ -2,13 +2,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  AlertCircle,
-  CheckCircle2,
-  ChevronDown,
-  ImagePlus,
-  X,
-} from "lucide-react";
+import { ImagePlus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
@@ -652,9 +647,9 @@ export default function MobileTimetableImageImportPage() {
               <ResultTitle>분석 결과 {matches.length}개</ResultTitle>
               <ResultStatusBadge $completed={isSelectionComplete}>
                 {isSelectionComplete ? (
-                  <CheckCircle2 size={14} />
+                  <Icon name="circle-check" size={14} />
                 ) : (
-                  <AlertCircle size={14} />
+                  <Icon name="circle-warning" size={14} />
                 )}
                 <span>
                   {isSelectionComplete ? "선택 완료" : "분반 확인 필요"}
@@ -705,7 +700,7 @@ export default function MobileTimetableImageImportPage() {
                             );
                           }}
                         >
-                          <X size={18} />
+                          <Icon name="close-md" size={18} />
                         </RemoveButton>
                       </CardActionGroup>
                     </CardHeaderRow>
@@ -745,7 +740,8 @@ export default function MobileTimetableImageImportPage() {
                                 ? `${selectedOffering.courseTitle} · ${selectedOffering.professor || "교수 미정"} · ${selectedOffering.subjectNumber}`
                                 : "분반을 선택해 주세요"}
                             </TriggerText>
-                            <ChevronDown
+                            <Icon
+                              name="chevron-down"
                               size={18}
                               color={isCardCompleted ? "#0061ff" : "#e5484d"}
                             />
@@ -814,7 +810,7 @@ export default function MobileTimetableImageImportPage() {
                                       </PopoverOptionText>
                                       <OptionCheck $selected={isSelected}>
                                         {isSelected && (
-                                          <CheckCircle2 size={16} />
+                                          <Icon name="circle-check" size={16} />
                                         )}
                                       </OptionCheck>
                                     </PopoverOption>

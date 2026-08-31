@@ -7,16 +7,8 @@ import {
   useBeforeUnload,
   useNavigate,
 } from "react-router-dom";
-import {
-  Pencil,
-  Plus,
-  Trash2,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Calendar,
-  ClipboardPaste,
-} from "lucide-react";
+import { Calendar, ClipboardPaste } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -1056,7 +1048,7 @@ export default function MobileGradeCalculatorPage() {
               <StatValueText>{overallStats.acquiredCredits}</StatValueText>
               <TargetCreditsButton onClick={handleEditTargetCredits}>
                 <span className="target-limit">/ {targetCredits}</span>
-                <Pencil size={12} className="pencil-icon" />
+                <Icon name="edit-pencil-01" size={12} className="pencil-icon" />
               </TargetCreditsButton>
             </StatValueWrapper>
           </StatBox>
@@ -1067,9 +1059,9 @@ export default function MobileGradeCalculatorPage() {
           <GraphFoldButton onClick={() => setShowGraph(!showGraph)}>
             <span>{showGraph ? "그래프 접기" : "그래프 보기"}</span>
             {showGraph ? (
-              <ChevronUp size={16} className="caret-icon" />
+              <Icon name="chevron-up" size={16} className="caret-icon" />
             ) : (
-              <ChevronDown size={16} className="caret-icon" />
+              <Icon name="chevron-down" size={16} className="caret-icon" />
             )}
           </GraphFoldButton>
           {showGraph && (
@@ -1256,7 +1248,7 @@ export default function MobileGradeCalculatorPage() {
             <SemesterSummaryHeader>
               <SemesterSelectButton onClick={() => setShowSemesterSheet(true)}>
                 <span className="semester-name">{selectedSemesterLabel}</span>
-                <ChevronDown size={20} className="dropdown-caret" />
+                <Icon name="chevron-down" size={20} className="dropdown-caret" />
               </SemesterSelectButton>
 
               <SemesterStatsRow>
@@ -1347,7 +1339,7 @@ export default function MobileGradeCalculatorPage() {
                           <span className="grade-val">
                             {subject.grade === UNGRADED ? "-" : subject.grade}
                           </span>
-                          <ChevronDown size={14} className="grade-caret" />
+                          <Icon name="chevron-down" size={14} className="grade-caret" />
                           <HiddenSelect
                             value={subject.grade}
                             onChange={(e) =>
@@ -1404,7 +1396,7 @@ export default function MobileGradeCalculatorPage() {
                         <DeleteButton
                           onClick={() => handleDeleteSubject(subject.id)}
                         >
-                          <X size={16} />
+                          <Icon name="close-md" size={16} />
                         </DeleteButton>
                       </ColDelete>
                     </TableRow>
@@ -1415,7 +1407,7 @@ export default function MobileGradeCalculatorPage() {
               {/* 테이블 하단 컨트롤 */}
               <TableFooter>
                 <AddSubjectButton onClick={handleAddSubject}>
-                  <Plus size={16} />
+                  <Icon name="add-plus-sm" size={16} />
                   <span>과목 추가</span>
                 </AddSubjectButton>
                 <ResetButton onClick={handleResetSubjects}>초기화</ResetButton>
@@ -1453,7 +1445,7 @@ export default function MobileGradeCalculatorPage() {
                       onClick={() => handleDeleteSemesterEntry(key)}
                       aria-label="학기 삭제"
                     >
-                      <Trash2 size={16} />
+                      <Icon name="trash-full" size={16} />
                     </DeleteSemesterButton>
                   </SemesterSheetRow>
                 ))
@@ -1464,7 +1456,7 @@ export default function MobileGradeCalculatorPage() {
                   openAddSemesterModal();
                 }}
               >
-                <Plus size={16} />
+                <Icon name="add-plus-sm" size={16} />
                 <span>학기 추가</span>
               </AddSemesterRow>
             </SheetList>

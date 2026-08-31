@@ -65,7 +65,6 @@ export default function TipsListContainer({
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
   const hiddenPostIds = useHiddenContentStore((state) => state.postIds);
-  const hidePost = useHiddenContentStore((state) => state.hidePost);
   // const { isAppUrl } = useAppStateStore()
 
   // 초기화
@@ -252,7 +251,6 @@ export default function TipsListContainer({
       writer={post.writer}
       onReport={handleReportPost}
       onBlock={handleBlockWriter}
-      onHide={hidePost}
     />
   );
 

@@ -1,13 +1,7 @@
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ClipboardPaste,
-  CheckCircle2,
-} from "lucide-react";
+import { ClipboardPaste } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import CapsuleButton from "@/components/common/CapsuleButton";
 // 실제 스마트캠퍼스 앱 홈 화면 스크린샷. 이름/소속은 이미 더미 데이터("김유니")로
 // 바꿔둔 캡처본이라 실사용자 개인정보가 아니다 — 다른 스크린샷으로 교체할 때도
@@ -95,7 +89,7 @@ export default function GradeImportGuideSheet({
           <div className="title-row">
             <div className="title">복사하는 방법</div>
             <CloseButton onClick={handleClose} aria-label="닫기">
-              <X size={18} />
+              <Icon name="close-md" size={18} />
             </CloseButton>
           </div>
         </SheetHeader>
@@ -127,7 +121,7 @@ export default function GradeImportGuideSheet({
           {!isFirst && (
             <PrevButton
               variant="secondary"
-              leftIcon={<ChevronLeft size={16} />}
+              leftIcon={<Icon name="chevron-left" size={16} />}
               onClick={() => setStep((s) => Math.max(0, s - 1))}
             >
               이전
@@ -136,7 +130,7 @@ export default function GradeImportGuideSheet({
           <NextButton
             variant="primary"
             fullWidth
-            rightIcon={!isLast ? <ChevronRight size={16} /> : undefined}
+            rightIcon={!isLast ? <Icon name="chevron-right" size={16} /> : undefined}
             onClick={() =>
               isLast ? handleClose() : setStep((s) => Math.min(STEPS.length - 1, s + 1))
             }
@@ -174,7 +168,7 @@ function MockGradeTop() {
     <PhoneFrame>
       <StatusBar />
       <NavyBar>
-        <ChevronLeft size={16} />
+        <Icon name="chevron-left" size={16} />
         <span>성적</span>
       </NavyBar>
       <TabsRow>
@@ -215,7 +209,7 @@ function MockGradeTop() {
       <SectionBar $peek>2026년 1학기 과목별 성적</SectionBar>
       <ScrollFade />
       <BottomBounceChevron>
-        <ChevronDown size={14} />
+        <Icon name="chevron-down" size={14} />
       </BottomBounceChevron>
     </PhoneFrame>
   );
@@ -229,7 +223,7 @@ function MockGradeSelect() {
     <PhoneFrame>
       <StatusBar />
       <NavyBar>
-        <ChevronLeft size={16} />
+        <Icon name="chevron-left" size={16} />
         <span>성적</span>
       </NavyBar>
       <TabsRow>
@@ -246,7 +240,7 @@ function MockGradeSelect() {
           <span>번역</span>
           <i />
           <span>웹 검색</span>
-          <ChevronRight size={10} />
+          <Icon name="chevron-right" size={10} />
         </ContextMenuBubble>
 
         <CourseHeaderRow>
@@ -278,7 +272,7 @@ function MockPasteBack() {
     <PhoneFrame>
       <StatusBar />
       <LightHeaderRow>
-        <ChevronLeft size={16} color="#333d4b" />
+        <Icon name="chevron-left" size={16} color="#333d4b" />
         <span>성적 붙여넣기</span>
         <span style={{ width: 16 }} />
       </LightHeaderRow>
@@ -297,7 +291,7 @@ function MockPasteBack() {
       <ImportButtonMock>불러오기</ImportButtonMock>
 
       <ResultToast>
-        <CheckCircle2 size={12} />
+        <Icon name="circle-check" size={12} />
         {DUMMY_ROWS.length}개 과목을 찾았어요
       </ResultToast>
     </PhoneFrame>

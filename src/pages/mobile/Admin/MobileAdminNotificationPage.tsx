@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styled, { css, keyframes } from "styled-components";
-import { Plus, RefreshCcw, Bell, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { RefreshCcw, Clock } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 import useUserStore from "@/stores/useUserStore.ts";
 import useMobileNavigate from "@/hooks/useMobileNavigate.ts";
@@ -24,14 +25,44 @@ import AdminModal from "@/components/admin/AdminModal";
 
 const STATUS_CONFIG: Record<
   FcmSendStatus,
-  { label: string; color: string; bg: string; icon: any }
+  { label: string; color: string; bg: string; renderIcon: (size: number) => JSX.Element }
 > = {
-  PENDING: { label: "대기 중", color: "#64748b", bg: "#f1f5f9", icon: Clock },
-  PROCESSING: { label: "처리 중", color: "#3b82f6", bg: "#eff6ff", icon: Clock },
-  SUCCESS: { label: "성공", color: "#10b981", bg: "#ecfdf5", icon: CheckCircle2 },
-  PARTIAL_FAILURE: { label: "부분 실패", color: "#f59e0b", bg: "#fffbeb", icon: AlertCircle },
-  FAILED: { label: "실패", color: "#ef4444", bg: "#fef2f2", icon: AlertCircle },
-  NO_TARGET: { label: "대상 없음", color: "#64748b", bg: "#f8fafc", icon: AlertCircle },
+  PENDING: {
+    label: "대기 중",
+    color: "#64748b",
+    bg: "#f1f5f9",
+    renderIcon: (size) => <Clock size={size} />,
+  },
+  PROCESSING: {
+    label: "처리 중",
+    color: "#3b82f6",
+    bg: "#eff6ff",
+    renderIcon: (size) => <Clock size={size} />,
+  },
+  SUCCESS: {
+    label: "성공",
+    color: "#10b981",
+    bg: "#ecfdf5",
+    renderIcon: (size) => <Icon name="circle-check" size={size} />,
+  },
+  PARTIAL_FAILURE: {
+    label: "부분 실패",
+    color: "#f59e0b",
+    bg: "#fffbeb",
+    renderIcon: (size) => <Icon name="circle-warning" size={size} />,
+  },
+  FAILED: {
+    label: "실패",
+    color: "#ef4444",
+    bg: "#fef2f2",
+    renderIcon: (size) => <Icon name="circle-warning" size={size} />,
+  },
+  NO_TARGET: {
+    label: "대상 없음",
+    color: "#64748b",
+    bg: "#f8fafc",
+    renderIcon: (size) => <Icon name="circle-warning" size={size} />,
+  },
 };
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -130,7 +161,7 @@ export default function MobileAdminNotificationPage() {
             <span>새로고침</span>
           </RefreshBtn>
           <CreateBtn onClick={() => setIsFormOpen(true)}>
-            <Plus size={20} />
+            <Icon name="add-plus-sm" size={20} />
             <span>새 알림 발송</span>
           </CreateBtn>
         </HeaderActions>
@@ -144,7 +175,7 @@ export default function MobileAdminNotificationPage() {
               return (
                 <LogCard key={log.id} onClick={() => setSelectedLog(log)}>
                   <LogIconBox $bg={status.bg} $color={status.color}>
-                    <status.icon size={20} />
+                    {status.renderIcon(20)}
                   </LogIconBox>
                   <LogMainInfo>
                     <LogHeaderRow>
@@ -166,7 +197,7 @@ export default function MobileAdminNotificationPage() {
           </LogList>
         ) : (
           <EmptyState>
-            <Bell size={48} color="#e2e8f0" />
+            <Icon name="bell" size={48} color="#e2e8f0" />
             <p>{loading ? "불러오는 중..." : "전송 이력이 없습니다."}</p>
           </EmptyState>
         )}

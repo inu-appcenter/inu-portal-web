@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Bell } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -239,7 +239,7 @@ const MobileDeptNoticePage = () => {
       {userInfo.department && (
         <FloatingActionButton
           text="공지 알리미 설정"
-          icon={<Bell size={20} color="var(--text-secondary, #333d4b)" />}
+          icon={<Icon name="bell" size={20} color="var(--text-secondary, #333d4b)" />}
           onClick={() => {
             mixpanelTrack.notificationSettingsOpened(
               "Department Notice Page",

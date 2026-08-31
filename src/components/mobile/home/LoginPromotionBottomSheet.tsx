@@ -3,7 +3,8 @@ import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { LogIn, Bell } from "lucide-react";
+import { LogIn } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface LoginPromotionBottomSheetProps {
@@ -42,7 +43,7 @@ export default function LoginPromotionBottomSheet({
         <PromoList>
           <PromoItem>
             <IconWrapper bgColor="#f0fdf4">
-              <Bell size={20} color="#22c55e" />
+              <Icon name="bell" size={20} color="#22c55e" />
             </IconWrapper>
             <PromoText>
               내 학과 공지사항 놓치지 않을테야!

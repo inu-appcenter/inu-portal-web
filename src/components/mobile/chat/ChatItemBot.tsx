@@ -1,5 +1,6 @@
 import styled, { keyframes } from "styled-components";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 import ChatMessageContent from "./ChatMessageContent";
 import { ChatMessage } from "@/types/chat";
@@ -68,7 +69,7 @@ export default function ChatItemBot({
                   </ActionButton>
                   {onAskHere && (
                     <ActionButton onClick={onAskHere}>
-                      <MessageSquare size={16} color="#4E5968" />
+                      <Icon name="chat" size={16} color="#4E5968" />
                       <span>여기서 질문</span>
                     </ActionButton>
                   )}

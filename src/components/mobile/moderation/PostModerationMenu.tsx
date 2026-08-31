@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
-import { MoreVertical } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 /**
- * 게시글 목록(피드)에서 바로 쓰는 신고/차단/숨기기 메뉴.
+ * 게시글 목록(피드)에서 바로 쓰는 신고/차단 메뉴.
  *
  * App Store 가이드라인 1.2(UGC)는 신고·차단은 물론 "피드에서 게시물을 즉시
  * 숨기는" 수단도 요구한다. 상세 페이지에 들어가지 않고도 처리할 수 있도록
@@ -19,7 +19,6 @@ interface PostModerationMenuProps {
    * 내려주지 않아(익명 글 재식별 방지, src/apis/blocks.ts 참고) 서버가 postId로
    * 작성자를 찾아 차단한다. */
   onBlock: (postId: number, nickname: string) => void;
-  onHide: (postId: number) => void;
 }
 
 export default function PostModerationMenu({
@@ -27,7 +26,6 @@ export default function PostModerationMenu({
   writer,
   onReport,
   onBlock,
-  onHide,
 }: PostModerationMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -61,7 +59,7 @@ export default function PostModerationMenu({
             setIsOpen((prev) => !prev);
           }}
         >
-          <MoreVertical size={18} color="#8B95A1" />
+          <Icon name="dot-vertical" size={18} color="#8B95A1" />
         </MenuIconBtn>
       </MenuWrapper>
 

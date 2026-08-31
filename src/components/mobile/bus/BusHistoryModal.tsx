@@ -8,7 +8,8 @@ import {
 } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { ChevronLeft, ChevronDown, Clock, RotateCw } from "lucide-react";
+import { Clock, RotateCw } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 import { getBusHistory } from "@/apis/busArrival";
 import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
@@ -712,7 +713,7 @@ export default function BusHistoryModal({
           {/* 상단 네비게이션 헤더 */}
           <NavHeader>
             <BackButton onClick={onClose} aria-label="뒤로가기">
-              <ChevronLeft size={24} color="#111827" />
+              <Icon name="chevron-left" size={24} color="#111827" />
             </BackButton>
             <Dialog.Title asChild>
               <NavTitle>과거 시간표</NavTitle>
@@ -772,7 +773,7 @@ export default function BusHistoryModal({
                 ))}
               </RouteSelect>
               <SelectArrow>
-                <ChevronDown size={18} color="#6b7280" />
+                <Icon name="chevron-down" size={18} color="#6b7280" />
               </SelectArrow>
             </RouteSelectWrapper>
           </RouteSelectorContainer>

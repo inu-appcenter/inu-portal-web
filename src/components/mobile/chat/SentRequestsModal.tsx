@@ -1,10 +1,10 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSentPendingFriends, deleteFriend } from "@/apis/friends";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import Divider from "@/components/common/Divider";
+import Icon from "@/components/common/Icon";
 import EmptyState from "@/components/common/EmptyState";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
@@ -57,7 +57,7 @@ export default function SentRequestsModal({
           <Header>
             <Title>보낸 친구 요청 목록</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <X size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="#1C1C1E" />
             </CloseButton>
           </Header>
           <ScrollArea>

@@ -109,21 +109,21 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
           <StatsDashboardCard
             title="총 API 호출"
             value={totalCalls.toLocaleString()}
-            icon={Activity}
+            icon={(size) => <Activity size={size} />}
             color="#0f766e"
             description="오늘 발생한 총 요청"
           />
           <StatsDashboardCard
             title="가장 많이 호출됨"
             value={topEndpoint ? topEndpoint.apiCount.toLocaleString() : 0}
-            icon={Zap}
+            icon={(size) => <Zap size={size} />}
             color="#f59e0b"
             description={topEndpoint ? topEndpoint.uri : "데이터 없음"}
           />
           <StatsDashboardCard
             title="엔드포인트 개수"
             value={apiLogs.length}
-            icon={BarChart3}
+            icon={(size) => <BarChart3 size={size} />}
             color="#3b82f6"
             description="활성 API 경로 수"
           />

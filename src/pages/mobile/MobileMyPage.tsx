@@ -4,7 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
-import { Bell, UserX, Mail } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { loginModalLogo as loginImg } from "@/resources/assets/illustrations/login";
 import {
   MyPageActive,
@@ -38,13 +38,13 @@ export default function MobileMyPage() {
   const renderMenuIcon = (image?: string, title?: string) => {
     if (image) return <img src={image} alt="" />;
     if (title === "알림 설정") {
-      return <Bell className="fallback-icon" aria-hidden="true" />;
+      return <Icon name="bell" size={32} className="fallback-icon" />;
     }
     if (title === "차단 사용자 관리") {
-      return <UserX className="fallback-icon" aria-hidden="true" />;
+      return <Icon name="user-remove" size={32} className="fallback-icon" />;
     }
     if (title === "개발자에게 메일 보내기") {
-      return <Mail className="fallback-icon" aria-hidden="true" />;
+      return <Icon name="mail" size={32} className="fallback-icon" />;
     }
     return <HiOutlineCog6Tooth className="fallback-icon" aria-hidden="true" />;
   };

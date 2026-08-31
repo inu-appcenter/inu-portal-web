@@ -1,6 +1,6 @@
 import { ChangeEvent, useRef } from "react";
 import styled from "styled-components";
-import { Camera, Image as ImageIcon } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import AnonymousCheck from "@/components/mobile/write/AnonymousCheck";
 import { DESKTOP_CONTENT_MAX_WIDTH, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
@@ -36,7 +36,7 @@ export default function WriteBottomBar({
         <AnonymousCheck checked={anonymous} onChange={onAnonymousChange} />
 
         <IconButton onClick={() => cameraInputRef.current?.click()} type="button">
-          <Camera size={24} color="#333D4B" />
+          <Icon name="camera" size={24} color="#333D4B" />
         </IconButton>
         <input
           ref={cameraInputRef}
@@ -48,7 +48,7 @@ export default function WriteBottomBar({
         />
 
         <IconButton onClick={() => fileInputRef.current?.click()} type="button">
-          <ImageIcon size={24} color="#333D4B" />
+          <Icon name="image" size={24} color="#333D4B" />
           {imageCount > 0 && <ImageBadge>{imageCount}</ImageBadge>}
         </IconButton>
         <input

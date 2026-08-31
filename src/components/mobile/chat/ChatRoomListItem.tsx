@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { User, Users, BellOff } from "lucide-react";
+import { BellOff } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { MyChatRoomResponseDto } from "@/types/chat";
 import {
   normalizeProfileImageId,
@@ -64,9 +65,9 @@ export default function ChatRoomListItem({
           />
           <DefaultProfileIcon className="fallback">
             {showDefaultGroupIcon ? (
-              <Users size={24} color="#D6D1D5" />
+              <Icon name="users" size={24} color="#D6D1D5" />
             ) : (
-              <User size={24} color="#D6D1D5" />
+              <Icon name="user-02" size={24} color="#D6D1D5" />
             )}
           </DefaultProfileIcon>
         </ProfileImageArea>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { Plus, X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
@@ -274,7 +274,7 @@ export default function MobileTimetableGroupWizardPage() {
                   aria-label={`그룹 ${index + 1} 삭제`}
                   onClick={() => removeGroup(group.id)}
                 >
-                  <X size={16} />
+                  <Icon name="close-md" size={16} />
                 </GroupRemoveButton>
               </GroupHead>
 
@@ -292,7 +292,7 @@ export default function MobileTimetableGroupWizardPage() {
                           removeCourseFromGroup(group.id, option.subjectNumber)
                         }
                       >
-                        <X size={12} />
+                        <Icon name="close-md" size={12} />
                       </ChipRemove>
                     </Chip>
                   ))}
@@ -304,14 +304,14 @@ export default function MobileTimetableGroupWizardPage() {
                 disabled={semester === null}
                 onClick={() => openCourseSearch({ kind: "group", groupId: group.id })}
               >
-                <Plus size={18} />
+                <Icon name="add-plus-sm" size={18} />
                 강의 추가
               </AddCourseButton>
             </GroupCard>
           ))}
 
           <AddGroupButton type="button" onClick={addGroup}>
-            <Plus size={18} />
+            <Icon name="add-plus-sm" size={18} />
             그룹 추가
           </AddGroupButton>
 

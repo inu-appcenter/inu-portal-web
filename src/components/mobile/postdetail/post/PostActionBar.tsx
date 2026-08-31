@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { MessageSquare, Share2 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import PostUtilContainer from "../../../../containers/mobile/postdetail/PostUtilContainer";
 
 interface PostActionBarProps {
@@ -44,7 +44,7 @@ export default function PostActionBar({
   return (
     <ActionRow>
       <CommentCountGroup>
-        <MessageSquare size={20} color="#333D4B" />
+        <Icon name="chat" size={20} color="#333D4B" />
         <span>댓글 {replyCount}</span>
       </CommentCountGroup>
 
@@ -62,7 +62,7 @@ export default function PostActionBar({
           />
         ) : null}
         <ShareBtn onClick={handleShare}>
-          <Share2 size={24} color="#333D4B" />
+          <Icon name="share" size={24} color="#333D4B" />
         </ShareBtn>
       </ActionButtonsGroup>
     </ActionRow>

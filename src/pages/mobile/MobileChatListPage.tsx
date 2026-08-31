@@ -8,7 +8,8 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import React, { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -239,7 +240,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       return (
         <HeaderRightArea>
           <IconButton onClick={handleSearchClick}>
-            <Search size={24} color="#1C1C1E" />
+            <Icon name="search" size={24} color="#1C1C1E" />
           </IconButton>
         </HeaderRightArea>
       );

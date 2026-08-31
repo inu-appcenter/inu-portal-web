@@ -1,6 +1,6 @@
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import styled from "styled-components";
-import { Search, X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useSearchParams } from "react-router-dom";
 import { resetScrollToTop } from "@/utils/scroll";
 
@@ -229,7 +229,7 @@ const FloatingSearchBar = forwardRef<
           onClick={handleClear}
           aria-label="검색어 지우기"
         >
-          <X size={14} strokeWidth={2.5} />
+          <Icon name="close-md" size={14} />
         </ClearButton>
       )}
       <SearchButtonCircle
@@ -247,7 +247,7 @@ const FloatingSearchBar = forwardRef<
           }
         }}
       >
-        <Search size={20} />
+        <Icon name="search" size={20} />
       </SearchButtonCircle>
     </SearchBarWrapper>
   );

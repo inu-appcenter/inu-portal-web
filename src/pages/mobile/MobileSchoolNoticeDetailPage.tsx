@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getNoticeDetail } from "@/apis/notices";
 import { useHeader } from "@/context/HeaderContext";
 import { NoticeAttachment } from "@/types/notices";
-import { Share2, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
@@ -204,9 +204,9 @@ export default function MobileSchoolNoticeDetailPage() {
                 </AiSummaryTitleGroup>
                 <AiDropdownIconWrapper>
                   {isAiSummaryOpen ? (
-                    <ChevronUp size={20} />
+                    <Icon name="chevron-up" size={20} />
                   ) : (
-                    <ChevronDown size={20} />
+                    <Icon name="chevron-down" size={20} />
                   )}
                 </AiDropdownIconWrapper>
               </AiSummaryHeader>
@@ -243,7 +243,7 @@ export default function MobileSchoolNoticeDetailPage() {
                   onClick={() => handleAttachmentClick(file)}
                 >
                   <FileIconWrapper>
-                    <FileText size={20} color="var(--text-tertiary, #8b95a1)" />
+                    <Icon name="file-document" size={20} color="var(--text-tertiary, #8b95a1)" />
                   </FileIconWrapper>
                   <FileInfo>
                     <FileName>{file.name}</FileName>
@@ -265,7 +265,7 @@ export default function MobileSchoolNoticeDetailPage() {
       {/* 3. 하단 플로팅 CTA 버튼 (공유 / 페이지 열기) */}
       <BottomFloatingCTA>
         <ShareButton type="button" aria-label="공유하기" onClick={handleShare}>
-          <Share2 size={24} color="var(--text-secondary, #333d4b)" />
+          <Icon name="share" size={24} color="var(--text-secondary, #333d4b)" />
         </ShareButton>
         <StyledCapsuleButton variant="primary" onClick={handleOpenOriginalPage}>
           학교 홈페이지에서 보기

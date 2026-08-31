@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Check } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
 /**
@@ -81,7 +81,7 @@ export default function TermsAgreement({
         onClick={() => onChange(!checked)}
       >
         <CheckBox $checked={checked} aria-hidden="true">
-          <Check size={14} strokeWidth={3} />
+          <Icon name="check" size={14} />
         </CheckBox>
         <CheckLabel>
           <strong>(필수)</strong> 이용약관 및 개인정보 처리방침에 동의합니다.
@@ -156,7 +156,7 @@ const CheckBox = styled.span<{ $checked: boolean }>`
     $checked ? "var(--border-brand, #0061ff)" : "var(--bg-base, #ffffff)"};
   color: #ffffff;
 
-  svg {
+  i {
     opacity: ${({ $checked }) => ($checked ? 1 : 0)};
   }
 `;

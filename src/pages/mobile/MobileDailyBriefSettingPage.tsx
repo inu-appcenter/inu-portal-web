@@ -45,7 +45,8 @@ import {
 } from "@/apis/notices";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import { NoticeRecommendKeywords } from "@/resources/strings/NoticeRecommendKeywords";
-import { ChevronRight, Loader2, Check, Bell } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
 
 export const DAILY_BRIEF_TABS = [
@@ -175,7 +176,7 @@ export default function MobileDailyBriefSettingPage() {
     if (saveStatus === "saved") {
       return (
         <HeaderStatusBadge $saved>
-          <Check size={13} color="#34C759" />
+          <Icon name="check" size={13} color="#34C759" />
           <span>저장됨</span>
         </HeaderStatusBadge>
       );
@@ -555,7 +556,7 @@ export default function MobileDailyBriefSettingPage() {
                   }}
                 >
                   <span>시간표로 이동</span>
-                  <ChevronRight size={13} />
+                  <Icon name="chevron-right" size={13} />
                 </SmallLinkButton>
               </RightActionRow>
 
@@ -739,7 +740,7 @@ export default function MobileDailyBriefSettingPage() {
                               학과 정보가 미등록 상태예요. 학과를 설정하면 학과
                               일정 알림을 받아볼 수 있어요.
                             </DeptWarningText>
-                            <ChevronRight size={16} color="#8E8E93" />
+                            <Icon name="chevron-right" size={16} color="#8E8E93" />
                           </DeptWarningRow>
                         )}
                       </SubOptionBox>
@@ -758,7 +759,7 @@ export default function MobileDailyBriefSettingPage() {
                   }}
                 >
                   <span>학사일정으로 이동</span>
-                  <ChevronRight size={13} />
+                  <Icon name="chevron-right" size={13} />
                 </SmallLinkButton>
               </RightActionRow>
 
@@ -1169,7 +1170,7 @@ export function MobileSchoolAlarmSetting({
           }}
         >
           <span>학교 공지사항으로 이동</span>
-          <ChevronRight size={13} />
+          <Icon name="chevron-right" size={13} />
         </SmallLinkButton>
       </RightActionRow>
 
@@ -1528,7 +1529,7 @@ export function MobileDeptAlarmSetting({
           }}
         >
           <span>학과 공지사항으로 이동</span>
-          <ChevronRight size={13} />
+          <Icon name="chevron-right" size={13} />
         </SmallLinkButton>
       </RightActionRow>
 
@@ -2103,7 +2104,7 @@ export function PushNotificationPreviewCard({
     <OsNotificationBanner>
       <OsHeader>
         <OsAppIconWrapper>
-          <Bell size={10} color="#ffffff" />
+          <Icon name="bell" size={10} color="#ffffff" />
         </OsAppIconWrapper>
         <OsAppName>INTIP</OsAppName>
         <OsTimeText>{time}</OsTimeText>

@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
-import { Eye } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 import Ripple from "@/components/common/Ripple";
 
@@ -46,7 +46,7 @@ export const DeptNoticeItem = ({
               <>
                 <DividerPipe>|</DividerPipe>
                 <ViewCountWrapper>
-                  <Eye size={14} color="var(--text-tertiary, #8b95a1)" />
+                  <Icon name="eye" size={14} color="var(--text-tertiary, #8b95a1)" />
                   <MetaText>{views}</MetaText>
                 </ViewCountWrapper>
               </>

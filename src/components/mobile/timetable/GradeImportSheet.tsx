@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { ChevronLeft } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useSemesters } from "@/hooks/useSemesters";
 import { pickCurrentSemester } from "@/utils/semester";
@@ -156,7 +156,7 @@ export default function GradeImportSheet({
                 }}
                 aria-label="다시 붙여넣기"
               >
-                <ChevronLeft size={20} />
+                <Icon name="chevron-left" size={20} />
               </BackButton>
             )}
             <div className="title">

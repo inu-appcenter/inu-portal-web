@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled, { css, keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Drawer } from "vaul";
-import { ChevronDown, RotateCw, Calendar } from "lucide-react";
+import { RotateCw, Calendar } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { FiChevronRight } from "react-icons/fi";
 import BusCircle from "@/components/mobile/bus/BusCircle";
 import BusRouteBar from "@/components/mobile/bus/BusRouteBar";
@@ -274,7 +275,7 @@ export default function BusMapPanel({
                     <option value="arrival">도착임박순</option>
                     <option value="default">기본</option>
                   </SortSelect>
-                  <SortChevron size={14} aria-hidden="true" />
+                  <SortChevron name="chevron-down" size={14} />
                 </SortSelectWrapper>
               </PanelHeaderTopRow>
               <PanelDescription>{selectedStop.stopNotice}</PanelDescription>
@@ -829,7 +830,7 @@ const SortSelect = styled.select`
   }
 `;
 
-const SortChevron = styled(ChevronDown)`
+const SortChevron = styled(Icon)`
   position: absolute;
   right: 10px;
   color: #7a889d;

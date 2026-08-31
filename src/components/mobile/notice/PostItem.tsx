@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
-import { Eye, Bookmark } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import Ripple from "@/components/common/Ripple";
 import { formatTimeAgo } from "@/utils/date";
 export type TextVariant = "tertiary" | "error" | "brand";
@@ -136,7 +136,7 @@ const PostItem = ({
                   <TrailingGroup>
                     {views !== undefined && (
                       <ViewCount>
-                        <Eye size={18} />
+                        <Icon name="eye" size={18} />
                         {views}
                       </ViewCount>
                     )}

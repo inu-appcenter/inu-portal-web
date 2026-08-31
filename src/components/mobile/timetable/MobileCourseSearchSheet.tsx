@@ -7,12 +7,10 @@ import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import {
   SlidersHorizontal,
-  Plus,
   MessagesSquare,
-  FileText,
-  Check,
   SearchX,
 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
@@ -581,7 +579,7 @@ const MobileCourseSearchSheet = ({
                                 }
                               }}
                             >
-                              {isAdded ? <Check size={20} /> : <Plus size={20} />}
+                              {isAdded ? <Icon name="check" size={20} /> : <Icon name="add-plus-sm" size={20} />}
                               {isAdded ? "추가됨" : "시간표에 추가"}
                             </PrimaryActionButton>
                             <SecondaryActionButton
@@ -599,7 +597,7 @@ const MobileCourseSearchSheet = ({
                                 alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                               }}
                             >
-                              <FileText size={20} />
+                              <Icon name="file-document" size={20} />
                               강의계획서
                             </SecondaryActionButton>
                           </ButtonRow>

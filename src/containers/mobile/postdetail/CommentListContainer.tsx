@@ -7,7 +7,7 @@ import axios, { AxiosError } from "axios";
 import { ROUTES } from "@/constants/routes";
 import { deleteReply } from "@/apis/replies";
 import useUserStore from "@/stores/useUserStore";
-import { MoreVertical } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { formatTimeAgo } from "@/utils/date";
 import useHiddenContentStore from "@/stores/useHiddenContentStore";
 
@@ -117,7 +117,7 @@ export default function CommentListMobile({
           setActiveMenuId(activeMenuId === reply.id ? null : reply.id)
         }
       >
-        <MoreVertical size={20} color="#8B95A1" />
+        <Icon name="dot-vertical" size={20} color="#8B95A1" />
       </MenuIconBtn>
       {activeMenuId === reply.id && (
         <>

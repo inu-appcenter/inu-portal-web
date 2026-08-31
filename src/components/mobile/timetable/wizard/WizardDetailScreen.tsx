@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
-import { ChevronRight } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import TimetableGrid, {
   type ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -98,7 +98,7 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
                     {onlineTypeLabel ? ` · ${onlineTypeLabel}` : ""}
                   </CourseMeta>
                 </CourseTextWrap>
-                <ChevronRight size={18} color="#8a96a5" />
+                <Icon name="chevron-right" size={18} color="#8a96a5" />
               </CourseRow>
             );
           })}

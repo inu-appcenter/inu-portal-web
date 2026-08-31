@@ -21,7 +21,7 @@ import {
 } from "@/styles/responsive";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
-import { Bell, Search } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -99,7 +99,7 @@ const SchoolNoticeList = ({
         committedQuery ? (
           <EmptySearchContainer>
             <EmptyIconCircle>
-              <Search size={32} color="var(--text-tertiary, #8b95a1)" />
+              <Icon name="search" size={32} color="var(--text-tertiary, #8b95a1)" />
             </EmptyIconCircle>
             <EmptyTextGroup>
               <EmptyTitleRow>
@@ -322,7 +322,7 @@ const MobileSchoolNoticePage = () => {
 
       <FloatingActionButton
         text="공지 알리미 설정"
-        icon={<Bell size={20} color="var(--text-secondary, #333d4b)" />}
+        icon={<Icon name="bell" size={20} color="var(--text-secondary, #333d4b)" />}
         onClick={() => {
           if (!tokenInfo.accessToken) {
             if (

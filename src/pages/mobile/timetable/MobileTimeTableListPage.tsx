@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 import Modal from "@/components/common/Modal";
@@ -217,7 +217,7 @@ export default function MobileTimeTableListPage() {
                     openAddModal(sem);
                   }}
                 >
-                  <Plus size={20} />
+                  <Icon name="add-plus-sm" size={20} />
                 </SemesterAddButton>
               </SemesterHeaderRow>
               {hasTimetable ? (
@@ -234,7 +234,7 @@ export default function MobileTimeTableListPage() {
                           }}
                           aria-label="이름 변경"
                         >
-                          <Pencil size={16} />
+                          <Icon name="edit-pencil-01" size={16} />
                         </RowIconButton>
                         <RowIconButton
                           onClick={(e) => {
@@ -243,7 +243,7 @@ export default function MobileTimeTableListPage() {
                           }}
                           aria-label="삭제"
                         >
-                          <Trash2 size={16} />
+                          <Icon name="trash-full" size={16} />
                         </RowIconButton>
                         <StarButton onClick={(e) => {
                           e.stopPropagation();

@@ -28,7 +28,7 @@ import TimetableGrid, {
 } from "@/components/mobile/timetable/TimetableGrid";
 
 // 아이콘
-import { Plus, Send } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
 
@@ -1047,7 +1047,7 @@ export default function MobileTimeTableComparePage() {
                 }}
                 aria-label="친구 추가/선택"
               >
-                <Plus size={18} strokeWidth={2} />
+                <Icon name="add-plus-sm" size={18} />
               </AddFriendButton>
             </RightActionGroup>
           </ChipSection>
@@ -1191,7 +1191,7 @@ export default function MobileTimeTableComparePage() {
         }}
         data-vaul-no-drag=""
       >
-        <Send size={24} color="#ffffff" />
+        <Icon name="paper-plane" size={24} color="#ffffff" />
       </FloatingShareButton>
 
       {/* 7. 공유 확인 모달 */}

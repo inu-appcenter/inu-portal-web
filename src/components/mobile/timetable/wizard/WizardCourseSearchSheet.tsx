@@ -5,16 +5,12 @@ import styled from "styled-components";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import {
-  Check,
-  ChevronLeft,
-  FileText,
   MessagesSquare,
-  Plus,
   RotateCcw,
   SearchX,
   SlidersHorizontal,
-  X,
 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import FloatingSearchBar, {
@@ -115,7 +111,7 @@ interface CourseRow {
   option: WizardCourseOption;
 }
 
-const buildCourseRow = (
+export const buildCourseRow = (
   offering: CourseOffering,
   course: Course | undefined,
 ): CourseRow | null => {
@@ -354,7 +350,7 @@ const WizardCourseSearchSheet = () => {
           <TitleBar>
             <SheetTitle>{target ? SHEET_TITLES[target] : ""}</SheetTitle>
             <CloseButton type="button" onClick={closeCourseSearch} aria-label="닫기">
-              <X size={18} />
+              <Icon name="close-md" size={18} />
             </CloseButton>
           </TitleBar>
 
@@ -456,7 +452,7 @@ const WizardCourseSearchSheet = () => {
                                   if (!isPicked) handlePick(row);
                                 }}
                               >
-                                {isPicked ? <Check size={20} /> : <Plus size={20} />}
+                                {isPicked ? <Icon name="check" size={20} /> : <Icon name="add-plus-sm" size={20} />}
                                 {isPicked
                                   ? "담음"
                                   : target === "exclusion"
@@ -478,7 +474,7 @@ const WizardCourseSearchSheet = () => {
                                   alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                                 }}
                               >
-                                <FileText size={20} />
+                                <Icon name="file-document" size={20} />
                                 강의계획서
                               </SecondaryActionButton>
                             </ButtonRow>
@@ -524,7 +520,7 @@ const WizardCourseSearchSheet = () => {
                   onClick={() => closeTopLayer()}
                   aria-label="뒤로"
                 >
-                  <ChevronLeft size={22} />
+                  <Icon name="chevron-left" size={22} />
                 </OverlayBackButton>
                 <OverlayTitle>{FILTER_SUB_VIEW_TITLES[filterDraft.view]}</OverlayTitle>
                 <OverlayHeaderSpacer />

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Plus, Minus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import DayChip, { DayChipProps } from "@/components/common/DayChip";
 
 export interface CourseTimeSlot {
@@ -73,11 +73,11 @@ const CourseTimeSelector = ({
           {/* 첫 일정은 삭제 불가 — 항상 최소 1개 슬롯이 남는다 */}
           {index > 0 && (
             <IconButton onClick={onRemove} type="button">
-              <Minus size={20} color="#8b95a1" strokeWidth={2.5} />
+              <Icon name="remove-minus" size={20} color="#8b95a1" />
             </IconButton>
           )}
           <IconButton onClick={onAdd} type="button">
-            <Plus size={20} color="#8b95a1" strokeWidth={2.5} />
+            <Icon name="add-plus-sm" size={20} color="#8b95a1" />
           </IconButton>
         </ActionButtons>
       </SelectorHeader>

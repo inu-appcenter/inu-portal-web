@@ -1,6 +1,6 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
-import { Info } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import type { ReactNode } from "react";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
@@ -41,7 +41,7 @@ export default function InfoBottomSheet({
 
             <HeaderSection>
               <IconWrapper>
-                <Info size={22} strokeWidth={2.2} />
+                <Icon name="info" size={22} />
               </IconWrapper>
               <Title>{title}</Title>
             </HeaderSection>

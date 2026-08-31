@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X, UserPlus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { requestFriend, searchFriend } from "@/apis/friends";
@@ -85,7 +85,7 @@ export default function AddFriendModal({
           <Header>
             <Title>친구 추가</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <X size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="#1C1C1E" />
             </CloseButton>
           </Header>
 
@@ -110,7 +110,7 @@ export default function AddFriendModal({
                     disabled={requestMutation.isPending}
                     onClick={handleRequest}
                   >
-                    <UserPlus size={18} />
+                    <Icon name="user-add" size={18} />
                     {requestMutation.isPending
                       ? "요청 중..."
                       : "친구 요청 보내기"}

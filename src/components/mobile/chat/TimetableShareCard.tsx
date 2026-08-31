@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { TimetableShareExtraData } from "@/types/chat";
 import { ROUTES } from "@/constants/routes";
 
@@ -87,7 +88,7 @@ export default function TimetableShareCard({
 
       <CardFooter>
         <span>공강 시간 확인하러 가기</span>
-        <ChevronRight size={16} color="#3B82F6" strokeWidth={2.5} />
+        <Icon name="chevron-right" size={16} color="#3B82F6" />
       </CardFooter>
     </CardContainer>
   );

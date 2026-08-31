@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { Ban, EyeOff, Siren } from "lucide-react";
+import { Ban, Siren } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import BottomSheet from "@/components/common/BottomSheet";
 
 /**
@@ -41,7 +42,7 @@ export default function ChatModerationSheet({
         <SheetTitle>메시지 관리</SheetTitle>
 
         <ActionItem type="button" onClick={() => run(onHide)}>
-          <EyeOff size={20} color="var(--gray-700, #4e5968)" />
+          <Icon name="eye-off" size={20} color="var(--gray-700, #4e5968)" />
           <ActionLabelGroup>
             <ActionLabel>이 메시지 숨기기</ActionLabel>
             <ActionHint>내 화면에서 즉시 사라집니다</ActionHint>

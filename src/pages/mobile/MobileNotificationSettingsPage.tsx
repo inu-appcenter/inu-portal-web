@@ -10,7 +10,7 @@ import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Divider from "@/components/common/Divider";
 import Switch from "@/components/common/Switch";
-import { ChevronRight } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
 
 export default function MobileNotificationSettingsPage() {
@@ -97,7 +97,7 @@ export default function MobileNotificationSettingsPage() {
                   수업 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <ChevronRight size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="#AEAEB2" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -109,7 +109,7 @@ export default function MobileNotificationSettingsPage() {
                   오늘의 학교 및 학과 일정 브리핑을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <ChevronRight size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="#AEAEB2" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -121,7 +121,7 @@ export default function MobileNotificationSettingsPage() {
                   학교 공지 카테고리 및 키워드 새 글 알림을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <ChevronRight size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="#AEAEB2" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -133,7 +133,7 @@ export default function MobileNotificationSettingsPage() {
                   구독 중인 학과 및 키워드 새 글 알림을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <ChevronRight size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="#AEAEB2" />
             </SettingRow>
           </Box>
         </TitleContentArea>

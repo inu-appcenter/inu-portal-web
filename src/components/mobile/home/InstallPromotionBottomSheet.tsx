@@ -1,7 +1,8 @@
 import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
-import { Bell, Smartphone } from "lucide-react";
+import { Smartphone } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { getMobilePlatform } from "@/utils/getMobilePlatform";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -52,7 +53,7 @@ export default function InstallPromotionBottomSheet({
         <PromoList>
           <PromoItem>
             <IconWrapper bgColor="#eaf2ff">
-              <Bell size={20} color="#2563eb" />
+              <Icon name="bell" size={20} color="#2563eb" />
             </IconWrapper>
             <PromoText>
               내 학과 공지사항 놓치지 않을테야!

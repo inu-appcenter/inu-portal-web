@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Search, X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import TimetableGrid from "@/components/mobile/timetable/TimetableGrid";
 import { useTimetableWizardStore } from "@/stores/useTimetableWizardStore";
 import { formatCourseMeta } from "@/utils/timetableWizardFormat";
@@ -45,7 +45,7 @@ const WizardStep3Exclusion = () => {
           disabled={semester === null}
           onClick={() => openCourseSearch("exclusion")}
         >
-          <Search size={16} color="var(--text-tertiary, #8b95a1)" />
+          <Icon name="search" size={16} color="var(--text-tertiary, #8b95a1)" />
           <span>교과목명, 교수명 검색</span>
         </SearchFieldButton>
         {excludedCourses.length > 0 && (
@@ -57,7 +57,7 @@ const WizardStep3Exclusion = () => {
                   <ChipMeta>{formatCourseMeta(c)}</ChipMeta>
                 </ChipTextWrap>
                 <ChipRemove onClick={() => removeExcludedCourse(c.subjectNumber)}>
-                  <X size={12} />
+                  <Icon name="close-md" size={12} />
                 </ChipRemove>
               </Chip>
             ))}

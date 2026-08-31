@@ -1,11 +1,6 @@
 import styled from "styled-components";
-import {
-  AlertTriangle,
-  Check,
-  ExternalLink,
-  Megaphone,
-  Settings2,
-} from "lucide-react";
+import { AlertTriangle, Megaphone, Settings2 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import type { GraduationEvaluation } from "@/types/graduation";
 import type { ResolvedGraduationRule } from "@/utils/graduationRequirements";
 import { MAX_GPA } from "@/utils/graduationRequirements";
@@ -148,7 +143,7 @@ export default function GraduationRequirementCard({
                       <span>{course.courseName}</span>
                     </CourseName>
                     <CourseStatus $status={course.status}>
-                      {course.status === "DONE" && <Check size={14} />}
+                      {course.status === "DONE" && <Icon name="check" size={14} />}
                       <span>
                         {course.status === "DONE" && "이수"}
                         {course.status === "PARTIAL" &&
@@ -235,7 +230,7 @@ export default function GraduationRequirementCard({
               rel="noopener noreferrer"
             >
               <span>학과 졸업요건 안내 보기</span>
-              <ExternalLink size={12} />
+              <Icon name="link-external" size={12} />
             </SourceLink>
           )}
 
