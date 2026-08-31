@@ -1,9 +1,10 @@
 import { ReactNode } from "react";
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
-import { Eye, MessageSquare, Heart, Bookmark } from "lucide-react";
+import { Eye,  Bookmark } from "lucide-react";
 import Ripple from "@/components/common/Ripple";
 import { formatTimeAgo } from "@/utils/date";
+export type TextVariant = "tertiary" | "error" | "brand";
 
 interface NoticeItemProps {
   id?: number;
@@ -93,24 +94,26 @@ const PostItem = ({
           <TextContainer>
             {category && <Category>{category}</Category>}
             <Title isEllipsis={isEllipsis}>{title || ""}</Title>
-            {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
+            {content && (
+              <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>
+            )}
 
             {hasInfoLine && (
               <InfoLine>
                 <MetaGroup>
-                  {showWriter && writer && <div className="writer">{writer}</div>}
-                  {showWriter && writer && showDate && date && <div className="dot">·</div>}
-                  {showDate && date && <div className="date">{formattedDate}</div>}
-                  {replyCount !== undefined && (
-                    <StatItem>
-                      <MessageSquare size={16} strokeWidth={1.8} />
-                      <span>{replyCount}</span>
+                  {like !== undefined && (
+                    <StatItem $variant="error">
+                      <i className="icon-heart" />
+                      
+                      <span>{like}</span>
                     </StatItem>
                   )}
-                  {like !== undefined && (
-                    <StatItem>
-                      <Heart size={16} strokeWidth={1.8} />
-                      <span>{like}</span>
+                  {replyCount !== undefined && (
+                    <StatItem $variant="brand">
+                      
+                      <i className="icon-chat_dots" />
+                      
+                      <span>{replyCount}</span>
                     </StatItem>
                   )}
                   {scrap !== undefined && (
@@ -118,6 +121,15 @@ const PostItem = ({
                       <Bookmark size={16} strokeWidth={1.8} />
                       <span>{scrap}</span>
                     </StatItem>
+                  )}
+                  {showWriter && writer && (
+                    <div className="writer">{writer}</div>
+                  )}
+                  {showWriter && writer && showDate && date && (
+                    <div className="dot">·</div>
+                  )}
+                  {showDate && date && (
+                    <div className="date">{formattedDate}</div>
                   )}
                 </MetaGroup>
                 {(views !== undefined || menuSlot) && (
@@ -137,10 +149,7 @@ const PostItem = ({
 
           {resolvedImageUrl && (
             <ThumbnailWrapper>
-              <ThumbnailImage
-                src={resolvedImageUrl}
-                alt={title || "썸네일"}
-              />
+              <ThumbnailImage src={resolvedImageUrl} alt={title || "썸네일"} />
             </ThumbnailWrapper>
           )}
         </MainSection>
@@ -197,8 +206,7 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
             }
           }
         `
-      : css`
-        `}
+      : css``}
 `;
 
 const Category = styled.div`
@@ -281,11 +289,11 @@ const MetaGroup = styled.div`
   flex-wrap: wrap;
 `;
 
-const StatItem = styled.div`
+const StatItem = styled.div<{ $variant?: TextVariant }>`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-${(props) => props.$variant ?? "teritary"}, #8b95a1);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-style: normal;
