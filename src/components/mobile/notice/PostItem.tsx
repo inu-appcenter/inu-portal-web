@@ -111,7 +111,7 @@ const PostItem = ({
                   {replyCount !== undefined && (
                     <StatItem $variant="brand">
                       
-                      <i className="icon-chat_dots" />
+                      <i className="icon-chat-dots" />
                       
                       <span>{replyCount}</span>
                     </StatItem>
@@ -192,7 +192,7 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
   width: 100%;
   min-height: 108px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
 
   ${({ $interactive }) =>
