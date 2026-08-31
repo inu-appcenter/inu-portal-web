@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import LocationIcon from "@/resources/assets/mapIcons/LocationIcon.svg";
-import OpenIcon from "@/resources/assets/mapIcons/OpenIcon.svg";
-import CloseIcon from "@/resources/assets/mapIcons/CloseIcon.svg";
+import LocationIcon from "@/resources/assets/illustrations/map/markers/location.svg";
+import OpenIcon from "@/resources/assets/illustrations/map/markers/open.svg";
+import CloseIcon from "@/resources/assets/illustrations/map/markers/close.svg";
 
 import { useState } from "react";
 import SchoolInfoBox from "./SchoolInfoBox.tsx";

@@ -1,14 +1,14 @@
 import styled from "styled-components";
-import LocationIcon from "@/resources/assets/mapIcons/LocationIcon.svg";
-import RestaurantIcon from "@/resources/assets/mapIcons/RestaurantIcon.svg";
-import ConvienienceStoreIcon from "@/resources/assets/mapIcons/ConvenienceStoreIcon.svg";
-import OpenIcon from "@/resources/assets/mapIcons/OpenIcon.svg";
+import LocationIcon from "@/resources/assets/illustrations/map/markers/location.svg";
+import RestaurantIcon from "@/resources/assets/illustrations/map/markers/restaurant.svg";
+import ConvienienceStoreIcon from "@/resources/assets/illustrations/map/markers/convenience-store.svg";
+import OpenIcon from "@/resources/assets/illustrations/map/markers/open.svg";
 
 import { useState } from "react";
 import { Place } from "@/components/map/DB";
 import { zoomLocation } from "@/components/map/utils/mapUtils";
 import RestaurantInfoBox from "./RestaurantInfoBox.tsx";
-import CloseIcon from "../../../resources/assets/mapIcons/CloseIcon.svg";
+import CloseIcon from "@/resources/assets/illustrations/map/markers/close.svg";
 
 const List = ({
   placesToRender,

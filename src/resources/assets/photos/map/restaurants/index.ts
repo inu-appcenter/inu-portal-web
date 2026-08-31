@@ -1,0 +1,43 @@
+//아직 이미지 확보 못함
+// import 학생식당 from "./학생식당.jpg";
+// import 제1기숙사식당 from "./제1기숙사식당.jpg";
+// import 제2기숙사식당 from "./제2기숙사식당.jpg";
+// import 교직원식당 from "./교직원식당.jpg";
+// import 제27호관식당 from "./27호관식당.jpg";
+// import 사범대식당 from "./사범대식당.jpg";
+import 공씨네주먹밥 from "./공씨네주먹밥.webp";
+import 토마토도시락 from "./토마토도시락.webp";
+import 고기굽는집 from "./고기굽는집.webp";
+import Salady from "./Salady.webp";
+import 쉐푸드 from "./쉐푸드.webp";
+import 봉구스밥버거 from "./봉구스밥버거.webp";
+import 법대생김밥꽈배기 from "./법대생김밥꽈배기.webp";
+import coopsket자연대 from "./coopsket자연대.webp";
+import coopsket복지회관 from "./coopsket복지회관.webp";
+import coopsket생명대 from "./coopsket생명대.webp";
+import coopsket공대 from "./coopsket공대.webp";
+import emart24도서관 from "./emart24도서관.webp";
+import 바비와따 from "./바비와따!.webp";
+
+// 이미지 객체를 생성
+export const RestaurantimageMap: Record<string, string> = {
+  // // "학생식당": 학생식당,
+  // "제1기숙사식당": 제1기숙사식당,
+  // "제2기숙사식당": 제2기숙사식당,
+  // "교직원식당": 교직원식당,
+  // "27호관식당": 제27호관식당,
+  // "사범대식당": 사범대식당,
+  공씨네주먹밥: 공씨네주먹밥,
+  토마토도시락: 토마토도시락,
+  "고기굽는 집(고집)": 고기굽는집,
+  Salady: Salady,
+  쉐푸드: 쉐푸드,
+  봉구스밥버거: 봉구스밥버거,
+  "법대생김밥/꽈배기": 법대생김밥꽈배기,
+  coopsket자연대: coopsket자연대,
+  coopsket복지회관: coopsket복지회관,
+  coopsket생명대: coopsket생명대,
+  coopsket공대: coopsket공대,
+  emart24도서관: emart24도서관,
+  "바비와따!": 바비와따,
+};

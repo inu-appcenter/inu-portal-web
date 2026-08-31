@@ -1,14 +1,14 @@
 import RestInfoBox from "./RestInfoBox.tsx";
 import { Place } from "@/components/map/DB";
 import styled from "styled-components";
-import ManRestIcon from "@/resources/assets/mapIcons/manRest.svg";
-import WomanRestIcon from "@/resources/assets/mapIcons/womanRest.svg";
-import PublicRestIcon from "@/resources/assets/mapIcons/publicRest.svg";
-import OpenIcon from "@/resources/assets/mapIcons/OpenIcon.svg";
+import ManRestIcon from "@/resources/assets/illustrations/map/markers/man-restroom.svg";
+import WomanRestIcon from "@/resources/assets/illustrations/map/markers/woman-restroom.svg";
+import PublicRestIcon from "@/resources/assets/illustrations/map/markers/public-restroom.svg";
+import OpenIcon from "@/resources/assets/illustrations/map/markers/open.svg";
 
 import { useState } from "react";
 import { zoomLocation } from "@/components/map/utils/mapUtils";
-import CloseIcon from "../../../resources/assets/mapIcons/CloseIcon.svg";
+import CloseIcon from "../../../resources/illustrations/map/markers/close.svg";
 
 const RestroomList = ({
   placesToRender,

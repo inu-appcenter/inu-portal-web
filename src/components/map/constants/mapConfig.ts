@@ -9,10 +9,10 @@ import InfoWindowSchool from "../utils/InfoWindowSchool";
 import InfoWindowRestroom from "../utils/InfoWindowRestroom";
 import InfoWindowCafe from "../utils/InfoWindowCafe";
 import InfoWindowRestaurant from "../utils/InfoWindowRestaurant";
-import { SchoolimageMap } from "@/resources/assets/mapBuildingImages/buildingImageManage.ts";
-import { CafeimageMap } from "@/resources/assets/mapCafeImages/cafeImageManage.ts";
-import { RestaurantimageMap } from "@/resources/assets/mapRestaurantImages/restaurantImageManage";
-import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
+import { SchoolimageMap } from "@/resources/assets/photos/map/buildings";
+import { CafeimageMap } from "@/resources/assets/photos/map/cafes";
+import { RestaurantimageMap } from "@/resources/assets/photos/map/restaurants";
+import defaultImage from "../../../resources/assets/photos/map/default-place.png";
 
 // 바텀시트 높이 설정 상수
 export const BOTTOM_SHEET_HEIGHT = {

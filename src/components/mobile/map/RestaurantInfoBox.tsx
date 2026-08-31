@@ -1,9 +1,9 @@
 import styled from "styled-components";
 
 import { Place } from "@/components/map/DB.tsx";
-import { RestaurantimageMap } from "@/resources/assets/mapRestaurantImages/restaurantImageManage.ts";
+import { RestaurantimageMap } from "@/resources/assets/photos/map/restaurants";
 
-import defaultImage from "@/resources/assets/mapIcons/defaultImage.png";
+import defaultImage from "@/resources/assets/photos/map/default-place.png";
 
 const RestaurantInfoBox = ({ place }: { place: Place }) => {
   const imageSrc =

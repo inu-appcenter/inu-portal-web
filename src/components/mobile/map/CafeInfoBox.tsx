@@ -2,8 +2,8 @@ import styled from "styled-components";
 
 import { Place } from "@/components/map/DB.tsx";
 
-import { CafeimageMap } from "@/resources/assets/mapCafeImages/cafeImageManage.ts";
-import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
+import { CafeimageMap } from "@/resources/assets/photos/map/cafes";
+import defaultImage from "../../../resources/assets/photos/map/default-place.png";
 
 const CafeInfoBox = ({ place }: { place: Place }) => {
   //@ts-ignore

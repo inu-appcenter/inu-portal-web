@@ -10,10 +10,10 @@ import {
   getRestaurantIcon,
   getRestIcon,
 } from "../constants/markerImages.ts";
-import { SchoolimageMap } from "@/resources/assets/mapBuildingImages/buildingImageManage.ts";
-import { CafeimageMap } from "@/resources/assets/mapCafeImages/cafeImageManage.ts";
-import { RestaurantimageMap } from "@/resources/assets/mapRestaurantImages/restaurantImageManage";
-import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
+import { SchoolimageMap } from "@/resources/assets/photos/map/buildings";
+import { CafeimageMap } from "@/resources/assets/photos/map/cafes";
+import { RestaurantimageMap } from "@/resources/assets/photos/map/restaurants";
+import defaultImage from "../../../resources/assets/photos/map/default-place.png";
 
 export const placesMarkDB = (
   places: Place[],

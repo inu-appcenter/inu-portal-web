@@ -1,13 +1,13 @@
 import styled from "styled-components";
-// import LocationIcon from "@/resources/assets/mapIcons/LocationIcon.svg";
-import CafeIcon from "@/resources/assets/mapIcons/CafeIcon.svg";
-import OpenIcon from "@/resources/assets/mapIcons/OpenIcon.svg";
+// import LocationIcon from "@/resources/assets/illustrations/map/markers/location.svg";
+import CafeIcon from "@/resources/assets/illustrations/map/markers/cafe.svg";
+import OpenIcon from "@/resources/assets/illustrations/map/markers/open.svg";
 
 import { useState } from "react";
 import { Place } from "@/components/map/DB";
 import { zoomLocation } from "@/components/map/utils/mapUtils";
 import CafeInfoBox from "./CafeInfoBox.tsx";
-import CloseIcon from "../../../resources/assets/mapIcons/CloseIcon.svg";
+import CloseIcon from "@/resources/assets/illustrations/map/markers/close.svg";
 
 const List = ({
   placesToRender,
