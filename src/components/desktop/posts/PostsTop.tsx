@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getPostsTop } from "@/apis/posts";
 import { getNoticesTop } from "@/apis/notices";
 import heart from "@/resources/assets/posts/posts-heart.svg";
+import CategoryIcon from "@/resources/assets/icons/category/CategoryIcon";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function PostsTop() {
@@ -70,13 +71,7 @@ export default function PostsTop() {
           </PostLike>
           <PostCategory>
             <ImageWrapper>
-              <img
-                src={`/categoryIcons/${post.category}_white.svg`}
-                alt=""
-                onError={(e) => {
-                  e.currentTarget.style.visibility = "hidden"; // 이미지 숨기기 (공간 유지)
-                }}
-              />
+              <CategoryIcon name={post.category} active />
             </ImageWrapper>
             <span>{post.category}</span>
           </PostCategory>
@@ -179,6 +174,9 @@ const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  /* CategoryIcon은 currentColor를 상속한다. 이 카드는 항상 active 상태(흰색)로
+     표시되므로 여기서 색을 지정한다. */
+  color: #ffffff;
 
   img {
     width: 32px;

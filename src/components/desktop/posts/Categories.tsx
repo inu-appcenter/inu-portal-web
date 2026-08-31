@@ -1,13 +1,11 @@
 import { getTipsCategories } from "@/apis/categories";
+import CategoryIcon from "@/resources/assets/icons/category/CategoryIcon";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 interface Category {
   name: string;
-  iconWhite: string;
-  iconGray: string;
-  hasError?: boolean;
 }
 
 export default function Categories() {
@@ -45,11 +43,7 @@ export default function Categories() {
           const tmpCollages: Category[] = [];
 
           allCategories.forEach((cat) => {
-            const category = {
-              name: cat,
-              iconWhite: `/categoryIcons/${cat}_white.svg`,
-              iconGray: `/categoryIcons/${cat}_gray.svg`,
-            };
+            const category = { name: cat };
 
             if (cat.endsWith("대학") || cat.endsWith("학부")) {
               tmpCollages.push(category);
@@ -64,8 +58,6 @@ export default function Categories() {
           setCategories(
             ["전체", "학사", "모집", "학점교류", "교육시험"].map((cat) => ({
               name: cat,
-              iconWhite: `/categoryIcons/${cat}_white.svg`,
-              iconGray: `/categoryIcons/${cat}_gray.svg`,
             })),
           );
         }
@@ -76,22 +68,6 @@ export default function Categories() {
 
     fetchCategories();
   }, [type]);
-
-  const handleImageError = (index: number, type: "categories" | "collages") => {
-    if (type === "categories") {
-      setCategories((prevCategories) =>
-        prevCategories.map((cat, idx) =>
-          idx === index ? { ...cat, hasError: true } : cat,
-        ),
-      );
-    } else {
-      setColleges((prevCategories) =>
-        prevCategories.map((cat, idx) =>
-          idx === index ? { ...cat, hasError: true } : cat,
-        ),
-      );
-    }
-  };
 
   const handleClickCategory = (category: string) => {
     const params = new URLSearchParams(location.search);
@@ -110,19 +86,11 @@ export default function Categories() {
           key={index}
           onClick={() => handleClickCategory(category.name)}
         >
-          {category.hasError ? (
-            <div style={{ width: "25px", height: "25px" }}></div>
-          ) : (
-            <img
-              src={
-                selectedCategory === category.name
-                  ? category.iconWhite
-                  : category.iconGray
-              }
-              alt={category.name}
-              onError={() => handleImageError(index, "categories")}
-            />
-          )}
+          <StyledCategoryIcon
+            name={category.name}
+            active={selectedCategory === category.name}
+            $selected={selectedCategory === category.name}
+          />
           {category.name}
         </CategoryItem>
       ))}
@@ -157,6 +125,13 @@ const CategoriesWrapper = styled.div`
   gap: 10px;
   width: 220px;
   margin: 60px 16px 0 16px;
+`;
+
+// CategoryIcon은 currentColor를 상속하므로, 선택 상태에 따른 아이콘 색은
+// 여기(호출부)에서 결정한다. 기존 시각 결과(비선택 #888888 / 선택 #ffffff)를 그대로 유지한다.
+const StyledCategoryIcon = styled(CategoryIcon)<{ $selected: boolean }>`
+  color: ${({ $selected }) => ($selected ? "#ffffff" : "#888888")};
+  flex-shrink: 0;
 `;
 
 const CategoryItem = styled.button`
