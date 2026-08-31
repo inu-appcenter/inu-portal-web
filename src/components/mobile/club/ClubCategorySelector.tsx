@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import dropdownIcon from "@/resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
+import dropdownIcon from "@/resources/assets/mobile-common/dropdown.svg";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ClubCategorySelector() {

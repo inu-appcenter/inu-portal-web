@@ -4,7 +4,7 @@ import { ROUTES } from "@/constants/routes"; // ROUTES 경로 확인 필요
 import 장학금 from "@/resources/assets/tips/장학금.svg";
 import 도서관 from "@/resources/assets/tips/도서관.svg";
 import 수강신청 from "@/resources/assets/tips/수강신청.svg";
-import 기숙사 from "@/resources/assets/tips/기숙사.svg";
+import 기숙사 from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import CapsuleButton from "@/components/mobile/common/CapsuleButton";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
