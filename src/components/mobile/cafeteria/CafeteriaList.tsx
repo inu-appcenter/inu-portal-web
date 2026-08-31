@@ -4,7 +4,7 @@ import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { cafeterias } from "@/resources/strings/cafeterias";
-import arrowImg from "@/resources/assets/mobile-cafeteria/Vector.svg";
+import { CafeteriaArrowIcon } from "@/resources/assets/icons/ui";
 
 interface CafeteriaTitleContainerProps {
   title: string;
@@ -34,7 +34,10 @@ export default function CafeteriaToggle({
     <ToggleWrapper>
       <div className="mobile-title" onClick={handleToggle}>
         <div>{title}</div>
-        <img src={arrowImg} alt="open cafeteria list" />
+        <CafeteriaArrowIcon
+          aria-label="open cafeteria list"
+          style={{ color: "#444444", flexShrink: 0 }}
+        />
       </div>
 
       <div className="desktop-header">

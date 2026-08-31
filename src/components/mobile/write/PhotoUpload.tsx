@@ -1,6 +1,6 @@
 import { ChangeEvent } from "react";
 import styled from "styled-components";
-import cameraIcon from "@/resources/assets/mobile-write/camera-icon.svg";
+import cameraIcon from "@/resources/assets/illustrations/mobile-write/camera-icon.svg";
 
 interface PhotoUploadProps {
   onImageChange: (files: File[]) => void;

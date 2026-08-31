@@ -4,7 +4,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { PetitionSummary } from "@/types/petitions";
 import { getPetitionsList } from "@/apis/petitions";
 import styled from "styled-components";
-import Secret from "@/resources/assets/mobile-council/secret.svg";
+import { CouncilSecretIcon } from "@/resources/assets/icons/ui";
 import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
 
 export default function PetitionList({ reloadKey }: { reloadKey: number }) {
@@ -60,7 +60,7 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
             >
               {petition.title === "비밀청원입니다." ? (
                 <>
-                  <img className="secretImg" src={Secret} alt="" />
+                  <CouncilSecretIcon className="secretImg" aria-hidden="true" />
                   <h3 className="secretText">[해당 글은 비밀글입니다]</h3>
                 </>
               ) : (
@@ -120,6 +120,7 @@ const BookCard = styled.div`
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+    color: #e9e9e9;
   }
 
   .thumbnail {

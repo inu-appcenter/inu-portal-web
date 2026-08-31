@@ -1,22 +1,48 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes"; // ROUTES 경로 확인 필요
-import 장학금 from "@/resources/assets/tips/장학금.svg";
-import 도서관 from "@/resources/assets/tips/도서관.svg";
-import 수강신청 from "@/resources/assets/tips/수강신청.svg";
+import {
+  ScholarshipIcon,
+  LibraryIcon,
+  CourseRegistrationIcon,
+} from "@/resources/assets/icons/tips";
 import 기숙사 from "@/resources/assets/mobile-home/chip/Unidorm.svg";
 import CapsuleButton from "@/components/mobile/common/CapsuleButton";
 import { mixpanelTrack } from "@/utils/mixpanel";
+
+// tips/*.svg는 currentColor로 통합하며 원래 고정색(#0E4D9D)을 잃었다.
+// TipsWidget의 아이콘은 모두 같은 색이었으므로 여기서 한 번에 지정한다.
+const TIPS_ICON_COLOR = "#0E4D9D";
 
 const TipsWidget = () => {
   const navigate = useNavigate();
 
   // 버튼 데이터 구성
   const tipsItems = [
-    { title: "장학금", description: "국가 장학금, 성적 장학금", icon: 장학금 },
-    { title: "학산도서관", description: "이용 방법, 출입 등록", icon: 도서관 },
-    { title: "수강신청", description: "장바구니, 시간표 짜기", icon: 수강신청 },
-    { title: "기숙사", description: "입퇴사, 유니돔", icon: 기숙사 },
+    {
+      title: "장학금",
+      description: "국가 장학금, 성적 장학금",
+      icon: ScholarshipIcon,
+      iconColor: TIPS_ICON_COLOR,
+    },
+    {
+      title: "학산도서관",
+      description: "이용 방법, 출입 등록",
+      icon: LibraryIcon,
+      iconColor: TIPS_ICON_COLOR,
+    },
+    {
+      title: "수강신청",
+      description: "장바구니, 시간표 짜기",
+      icon: CourseRegistrationIcon,
+      iconColor: TIPS_ICON_COLOR,
+    },
+    {
+      title: "기숙사",
+      description: "입퇴사, 유니돔",
+      icon: 기숙사,
+      iconColor: undefined,
+    },
   ];
 
   // 카테고리 페이지 이동 함수
@@ -33,6 +59,7 @@ const TipsWidget = () => {
           title={item.title}
           description={item.description}
           iconSrc={item.icon}
+          iconColor={item.iconColor}
           compact={true}
           onClick={() => handleCategoryClick(item.title)}
         />

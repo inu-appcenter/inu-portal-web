@@ -1,9 +1,6 @@
 import styled from "styled-components";
 
-import gridViewIcon from "@/resources/assets/mobile-tips/grid-view-icon-gray.svg";
-import gridViewIconActive from "@/resources/assets/mobile-tips/grid-view-icon-blue.svg";
-import listViewIcon from "@/resources/assets/mobile-tips/list-view-icon-gray.svg";
-import listViewIconActive from "@/resources/assets/mobile-tips/list-view-icon-blue.svg";
+import { GridViewIcon, ListViewIcon } from "@/resources/assets/icons/mobile-tips";
 
 interface ViewModeButtonsProps {
   viewMode: "grid" | "list";
@@ -17,14 +14,16 @@ export default function ViewModeButtons({
   return (
     <ViewModeButtonsWrapper>
       <ViewButton
+        as={GridViewIcon}
         onClick={() => setViewMode("grid")}
-        src={viewMode === "grid" ? gridViewIconActive : gridViewIcon}
-        alt="Grid View"
+        $active={viewMode === "grid"}
+        aria-label="Grid View"
       />
       <ViewButton
+        as={ListViewIcon}
         onClick={() => setViewMode("list")}
-        src={viewMode === "list" ? listViewIconActive : listViewIcon}
-        alt="RestroomList View"
+        $active={viewMode === "list"}
+        aria-label="RestroomList View"
       />
     </ViewModeButtonsWrapper>
   );
@@ -35,7 +34,11 @@ const ViewModeButtonsWrapper = styled.div`
   gap: 8px;
 `;
 
-const ViewButton = styled.img`
+// 원래 활성/비활성 두 장(파랑 #9CAFE2 / 회색 #D6D1D5)이던 아이콘을
+// currentColor 한 장으로 합쳤다. 활성 여부는 이제 color CSS로 재현한다.
+const ViewButton = styled.svg<{ $active: boolean }>`
   width: 16px;
   height: 16px;
+  cursor: pointer;
+  color: ${({ $active }) => ($active ? "#9CAFE2" : "#D6D1D5")};
 `;

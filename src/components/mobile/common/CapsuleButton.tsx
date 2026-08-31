@@ -1,13 +1,17 @@
+import type { FC, SVGProps } from "react";
 import styled from "styled-components";
 import { SOFT_PILL_SHADOW } from "@/styles/shadows";
 import Ripple from "@/components/common/Ripple";
 
 interface CapsuleButtonProps {
-  iconSrc: string;
+  /** 이미지 URL(webp/png 등) 또는 currentColor 벡터 아이콘 컴포넌트(svg?react). */
+  iconSrc: string | FC<SVGProps<SVGSVGElement>>;
   title: string;
   description: string;
   onClick?: () => void;
   compact?: boolean;
+  /** iconSrc가 벡터 컴포넌트일 때 적용할 색. 기본값은 원본 아이콘 색과 무관하게 렌더링되므로 항상 명시할 것. */
+  iconColor?: string;
 }
 
 const CapsuleButton = ({
@@ -16,12 +20,17 @@ const CapsuleButton = ({
   description,
   onClick,
   compact = false,
+  iconColor,
 }: CapsuleButtonProps) => {
   return (
     <CapsuleButtonWrapper onClick={onClick} $compact={compact}>
       <Ripple />
       <InnerContent>
-        <Icon src={iconSrc} alt="" />
+        {typeof iconSrc === "string" ? (
+          <Icon src={iconSrc} alt="" />
+        ) : (
+          <VectorIcon as={iconSrc} aria-hidden="true" $color={iconColor} />
+        )}
         <ContentArea>
           <div className="title">{title}</div>
           <div className="description">{description}</div>
@@ -68,6 +77,12 @@ const CapsuleButtonWrapper = styled.button<{ $compact: boolean }>`
 `;
 
 const Icon = styled.img``;
+
+const VectorIcon = styled.svg<{ $color?: string }>`
+  width: 24px;
+  height: 24px;
+  color: ${({ $color }) => $color ?? "inherit"};
+`;
 
 const ContentArea = styled.div`
   display: flex;

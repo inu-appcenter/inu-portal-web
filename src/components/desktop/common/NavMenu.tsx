@@ -4,9 +4,8 @@ import styled from "styled-components";
 import { navItems as originalNavItems } from "@/resources/strings/navItems";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
-import VVector from "@/resources/assets/nav/v-vector.svg";
+import { VVectorIcon, LightCircleIcon } from "@/resources/assets/icons/nav";
 import LoginModal from "@/components/desktop/common/LoginModal";
-import LightCircle from "@/resources/assets/nav/light-circle.svg";
 
 interface NavMenuProps {
   isInFooter: boolean;
@@ -100,7 +99,7 @@ export default function NavMenu({ isInFooter }: NavMenuProps) {
                     onMouseEnter={() => handleToggle(index)}
                     onMouseLeave={() => handleToggle(0)}
                   >
-                    <img className="v-vector" src={VVector} />
+                    <VVectorIcon className="v-vector" aria-hidden="true" />
                     <div className="line-vector" />
                     {items.child?.map((item, itemIndex) => (
                       <ChildDetail
@@ -109,10 +108,15 @@ export default function NavMenu({ isInFooter }: NavMenuProps) {
                           handleSubItemClick(item, itemIndex, event)
                         }
                       >
-                        <img
-                          src={LightCircle}
-                          alt="LightCircle"
-                          style={{ width: "8px", margin: "0 10px" }}
+                        <LightCircleIcon
+                          aria-hidden="true"
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            margin: "0 10px",
+                            color: "white",
+                            flexShrink: 0,
+                          }}
                         />
                         {item.title}
                         {items.title === "학과 홈페이지" &&
@@ -230,6 +234,7 @@ const ItemWrapper = styled.div`
     width: 14.6px;
     padding-top: 7px;
     padding-bottom: 7px;
+    color: white;
   }
 
   .line-vector {
