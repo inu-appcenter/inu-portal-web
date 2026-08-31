@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import aienterimg1 from "@/resources/assets/ai/횃불-ai-enter-1.svg";
-import aienterimg2 from "@/resources/assets/ai/횃불-ai-enter-2.svg";
+import aienterimg1 from "@/resources/assets/ai/횃불-ai-enter-1.webp";
+import aienterimg2 from "@/resources/assets/ai/횃불-ai-enter-2.webp";
 import { ReactSVG } from "react-svg";
 
 export default function AiForm() {

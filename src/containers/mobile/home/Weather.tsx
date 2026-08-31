@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-import sunImg from "@/resources/assets/weather/sun.svg";
+import sunImg from "@/resources/assets/weather/sun.webp";
 import snowImg from "@/resources/assets/weather/snow.svg";
-import cloudImg from "@/resources/assets/weather/cloud.svg";
+import cloudImg from "@/resources/assets/weather/cloud.webp";
 import sleetImg from "@/resources/assets/weather/sleet.svg";
 import rainImg from "@/resources/assets/weather/rain.svg";
-import moonImg from "@/resources/assets/weather/moon.svg";
-import cloudMoonImg from "@/resources/assets/weather/cloud_moon.svg";
+import moonImg from "@/resources/assets/weather/moon.webp";
+import cloudMoonImg from "@/resources/assets/weather/cloud_moon.webp";
 import pmGradeGood from "@/resources/assets/weather/pmGrade-good.svg";
 import pmGradeNormal from "@/resources/assets/weather/pmGrade-normal.svg";
 import pmGradeHarm from "@/resources/assets/weather/pmGrade-harm.svg";

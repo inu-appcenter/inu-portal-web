@@ -84,7 +84,7 @@ export default function AppInstallBanner() {
       <DismissButton type="button" onClick={handleDismiss} aria-label="배너 닫기">
         <X size={18} />
       </DismissButton>
-      <AppIcon src="/icon.svg" alt="" aria-hidden />
+      <AppIcon src="/icon.webp" alt="" aria-hidden />
       <TextGroup>
         <Title>INTIP 앱으로 보기</Title>
         <Subtitle>앱에서 더 빠르게, 알림까지 받아보세요</Subtitle>

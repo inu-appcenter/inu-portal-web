@@ -24,7 +24,7 @@ import {
   searchCourseOfferings,
 } from "@/apis/courseOfferings";
 import type { CourseOffering } from "@/types/courseOfferings";
-import sugangAppLogoSvg from "@/resources/assets/timetable/수강신청앱로고.svg";
+import sugangAppLogoSvg from "@/resources/assets/timetable/수강신청앱로고.webp";
 import timetableSampleWebp from "@/resources/assets/timetable/시간표이미지선택하기예시이미지.webp";
 import {
   detectTimetableBlocks,

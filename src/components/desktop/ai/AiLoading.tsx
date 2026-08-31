@@ -1,8 +1,8 @@
 import loading from "@/resources/assets/ai/loading.svg";
 import styled from "styled-components";
-import randomImg1 from "@/resources/assets/ai/횃불-random1.svg";
-import randomImg2 from "@/resources/assets/ai/횃불-random2.svg";
-import randomImg3 from "@/resources/assets/ai/횃불-random3.svg";
+import randomImg1 from "@/resources/assets/ai/횃불-random1.webp";
+import randomImg2 from "@/resources/assets/ai/횃불-random2.webp";
+import randomImg3 from "@/resources/assets/ai/횃불-random3.webp";
 
 export default function AiLoading() {
   return (
