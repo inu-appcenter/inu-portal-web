@@ -58,16 +58,7 @@ export default function PostModerationMenu({
             }}
           />
           <DropdownMenu>
-            <DropdownItem
-              type="button"
-              onClick={(event) => {
-                stop(event);
-                setIsOpen(false);
-                onHide(postId);
-              }}
-            >
-              이 게시글 숨기기
-            </DropdownItem>
+        
             <DropdownItem
               type="button"
               $danger
