@@ -15,6 +15,7 @@
     "build": "tsc && vite build",
     "build:tokens": "style-dictionary build --config sd.config.js",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "assets:audit": "node scripts/assets-audit.mjs",
     "test": "npx vitest run",
     "preview": "vite preview"
   },
