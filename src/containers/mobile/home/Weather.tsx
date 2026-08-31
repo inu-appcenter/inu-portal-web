@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-import sunImg from "@/resources/assets/weather/sun.webp";
-import snowImg from "@/resources/assets/weather/snow.svg";
-import cloudImg from "@/resources/assets/weather/cloud.webp";
-import sleetImg from "@/resources/assets/weather/sleet.svg";
-import rainImg from "@/resources/assets/weather/rain.svg";
-import moonImg from "@/resources/assets/weather/moon.webp";
-import cloudMoonImg from "@/resources/assets/weather/cloud_moon.webp";
-import pmGradeGood from "@/resources/assets/weather/pmGrade-good.svg";
-import pmGradeNormal from "@/resources/assets/weather/pmGrade-normal.svg";
-import pmGradeHarm from "@/resources/assets/weather/pmGrade-harm.svg";
-import pmGradeVeryHarm from "@/resources/assets/weather/pmGrade-veryharm.svg";
-import backgroundImg from "@/resources/assets/weather/weather-background.svg";
+import {
+  FALLBACK_SKY_CONDITION_SLUG,
+  PM_GRADE_ILLUSTRATIONS,
+  PM_GRADE_SLUGS,
+  SKY_CONDITION_SLUGS,
+  SKY_ILLUSTRATIONS,
+  WEATHER_BACKGROUND,
+  type PmGradeName,
+  type SkyConditionName,
+} from "@/resources/assets/illustrations/weather";
 import { getWeathers } from "@/apis/weathers";
 import { WeatherInfo } from "@/types/weathers";
 
@@ -24,6 +22,17 @@ type SkyPresentation = {
 
 const getTemperatureValue = (temperature: string) =>
   temperature.replace(/\s+/g, "").replace(/[°℃]|C$/gi, "");
+
+const NIGHT_GRADIENT =
+  "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+
+const DAY_GRADIENTS: Record<SkyConditionName, string> = {
+  맑음: "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
+  구름: "linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%)",
+  눈: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+  진눈깨비: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+  비: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+};
 
 export default function WeatherForm() {
   const [weather, setWeather] = useState<WeatherInfo>({
@@ -51,72 +60,20 @@ export default function WeatherForm() {
 
   const getSkyPresentation = (sky: string, day: string): SkyPresentation => {
     const isNight = day === "night";
+    const skyName = (sky in SKY_CONDITION_SLUGS ? sky : "맑음") as SkyConditionName;
+    const slug = SKY_CONDITION_SLUGS[skyName] ?? FALLBACK_SKY_CONDITION_SLUG;
+    const illustration = SKY_ILLUSTRATIONS[slug];
 
-    switch (sky) {
-      case "맑음":
-        return {
-          image: isNight ? moonImg : sunImg,
-          gradient: isNight
-            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
-            : "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
-          isShiftedIcon: false,
-        };
-      case "구름":
-        return {
-          image: isNight ? cloudMoonImg : cloudImg,
-          gradient: isNight
-            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
-            : "linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%)",
-          isShiftedIcon: false,
-        };
-      case "눈":
-        return {
-          image: snowImg,
-          gradient: isNight
-            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
-            : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
-          isShiftedIcon: true,
-        };
-      case "진눈깨비":
-        return {
-          image: sleetImg,
-          gradient: isNight
-            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
-            : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
-          isShiftedIcon: true,
-        };
-      case "비":
-        return {
-          image: rainImg,
-          gradient: isNight
-            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
-            : "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
-          isShiftedIcon: true,
-        };
-      default:
-        return {
-          image: isNight ? moonImg : sunImg,
-          gradient: isNight
-            ? "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)"
-            : "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
-          isShiftedIcon: false,
-        };
-    }
+    return {
+      image: isNight ? illustration.night : illustration.day,
+      gradient: isNight ? NIGHT_GRADIENT : DAY_GRADIENTS[skyName],
+      isShiftedIcon: illustration.isShiftedIcon,
+    };
   };
 
   const getPm10GradeImage = (pm10Grade: string) => {
-    switch (pm10Grade) {
-      case "좋음":
-        return pmGradeGood;
-      case "보통":
-        return pmGradeNormal;
-      case "나쁨":
-        return pmGradeHarm;
-      case "매우나쁨":
-        return pmGradeVeryHarm;
-      default:
-        return undefined;
-    }
+    const slug = PM_GRADE_SLUGS[pm10Grade as PmGradeName];
+    return slug ? PM_GRADE_ILLUSTRATIONS[slug] : undefined;
   };
 
   const pm10GradeImage = weather?.pm10Grade ? getPm10GradeImage(weather.pm10Grade) : undefined;
@@ -130,7 +87,7 @@ export default function WeatherForm() {
   return (
     <WeatherWrapper>
       <WeatherBackground $gradient={gradient}>
-        <BackImage src={backgroundImg} alt="" />
+        <BackImage src={WEATHER_BACKGROUND} alt="" />
         <WeatherContent>
           <WeatherIcon src={image} alt={weather?.sky || ""} $isShifted={isShiftedIcon} />
           <Info>
