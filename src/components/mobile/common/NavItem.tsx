@@ -1,3 +1,4 @@
+import type { FC, SVGProps } from "react";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -5,8 +6,11 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface NavItemProps {
   to: string;
-  icon: string;
-  activeIcon: string;
+  icon: FC<SVGProps<SVGSVGElement>>;
+  activeColor: string;
+  inactiveColor: string;
+  /** home 아이콘처럼 active 상태에서만 별색 파트가 있는 경우의 강조색. */
+  activeAccentColor?: string;
   label: string;
   onClick?: () => void;
   badge?: number;
@@ -14,8 +18,10 @@ interface NavItemProps {
 
 export default function NavItem({
   to,
-  icon,
-  activeIcon,
+  icon: Icon,
+  activeColor,
+  inactiveColor,
+  activeAccentColor,
   label,
   onClick,
   badge,
@@ -39,7 +45,18 @@ export default function NavItem({
   return (
     <NavItemWrapper onClick={handleClick}>
       <IconWrapper>
-        <Icon src={isActive ? activeIcon : icon} alt={label} />
+        <IconImg
+          as={Icon}
+          aria-label={label}
+          style={
+            {
+              color: isActive ? activeColor : inactiveColor,
+              "--mobile-nav-home-accent": isActive
+                ? activeAccentColor
+                : undefined,
+            } as React.CSSProperties
+          }
+        />
         {badge !== undefined && badge > 0 && (
           <Badge>{badge > 99 ? "99+" : badge}</Badge>
         )}
@@ -74,7 +91,7 @@ const IconWrapper = styled.div`
   justify-content: center;
 `;
 
-const Icon = styled.img`
+const IconImg = styled.svg`
   width: 24px;
   height: 24px;
   margin-bottom: 3px;

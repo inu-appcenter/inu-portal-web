@@ -6,7 +6,7 @@ import {
   LibraryIcon,
   CourseRegistrationIcon,
 } from "@/resources/assets/icons/tips";
-import 기숙사 from "@/resources/assets/mobile-home/chip/Unidorm.svg";
+import { UnidormIcon as 기숙사 } from "@/resources/assets/icons/mobile-home/chip";
 import CapsuleButton from "@/components/mobile/common/CapsuleButton";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
@@ -41,7 +41,7 @@ const TipsWidget = () => {
       title: "기숙사",
       description: "입퇴사, 유니돔",
       icon: 기숙사,
-      iconColor: undefined,
+      iconColor: TIPS_ICON_COLOR,
     },
   ];
 

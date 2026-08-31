@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
+import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 
 interface ChatSlashCommandPopupProps {
   isOpen: boolean;

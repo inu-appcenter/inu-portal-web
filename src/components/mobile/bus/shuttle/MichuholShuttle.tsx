@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import 사범대셔틀시간표 from "@/resources/assets/bus/사범대셔틀시간표.jpeg";
+import { educationCollegeShuttleSchedule as 사범대셔틀시간표 } from "@/resources/assets/illustrations/bus";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 
 const MichuholShuttle = () => {

@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom";
 import Chip from "src/components/common/Chip";
 
 import TooltipMessage from "@/components/common/TooltipMessage";
-import AIIcon from "@/resources/assets/ai/횃불이AI로고.svg";
-import CallINU from "@/resources/assets/mobile-home/chip/CallINU.svg";
-import Unidorm from "@/resources/assets/mobile-home/chip/Unidorm.svg";
-import CampusMapIcon from "@/resources/assets/mobile-home/category-form/map.svg";
-import AppcenterLogo_NoText from "@/resources/assets/앱센터로고_글씨x.png";
+import { torchAiLogo as AIIcon } from "@/resources/assets/illustrations/ai";
+import {
+  CallInuIcon,
+  UnidormIcon,
+} from "@/resources/assets/icons/mobile-home/chip";
+import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
+import { appcenterLogoMark as AppcenterLogo_NoText } from "@/resources/assets/illustrations/brand";
 import { LuFlaskConical, LuPartyPopper } from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
@@ -65,7 +67,9 @@ const HomeChipGroup = () => {
     },
     {
       id: "phonebook",
-      iconSrc: CallINU,
+      iconComponent: CallInuIcon,
+      iconColor: "#4071B9",
+      iconSize: 22,
       title: "INU 전화번호부",
       onClick: () => {
         mixpanelTrack.featureClicked("INU 전화번호부", "Home Chip");
@@ -106,7 +110,9 @@ const HomeChipGroup = () => {
 
     {
       id: "unidorm",
-      iconSrc: Unidorm,
+      iconComponent: UnidormIcon,
+      iconColor: "#0E4D9D",
+      iconSize: 22,
       title: "유니돔",
       isExternalLink: true,
       onClick: () => {
@@ -150,6 +156,8 @@ const HomeChipGroup = () => {
                   <Chip
                     iconSrc={chip.iconSrc}
                     iconComponent={chip.iconComponent}
+                    iconColor={chip.iconColor}
+                    iconSize={chip.iconSize}
                     title={chip.title}
                     isExternalLink={chip.isExternalLink}
                     isAIButton={chip.isAIButton}

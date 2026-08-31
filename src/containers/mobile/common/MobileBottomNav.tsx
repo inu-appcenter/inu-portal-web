@@ -6,11 +6,13 @@ import { motion } from "framer-motion";
 
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import HomeIcon from "@/resources/assets/mobile-nav-v2/Icon_Home.svg?react";
-import TimetableIcon from "@/resources/assets/mobile-nav-v2/Icon_Timetable.svg?react";
-import BusIcon from "@/resources/assets/mobile-nav-v2/Icon_Bus.svg?react";
-import ChatIcon from "@/resources/assets/mobile-nav-v2/Icon_Chat.svg?react";
-import MyIcon from "@/resources/assets/mobile-nav-v2/Icon_My.svg?react";
+import {
+  HomeIcon,
+  TimetableIcon,
+  BusIcon,
+  ChatIcon,
+  MyIcon,
+} from "@/resources/assets/icons/mobile-nav-v2";
 import { DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";

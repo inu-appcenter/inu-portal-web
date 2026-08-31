@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import lunchImg from "@/resources/assets/cafeteria/Sun.svg";
+import { sun as lunchImg } from "@/resources/assets/illustrations/cafeteria";
 
 interface CafeteriaDeatilProps {
   구성원가: string;

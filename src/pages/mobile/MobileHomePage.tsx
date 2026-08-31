@@ -2,7 +2,7 @@ import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import CategoryForm from "@/containers/mobile/home/Category";
 import NoticeForm from "@/containers/mobile/home/Notice";
-import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
+import { appcenterLogo as AppcenterLogo } from "@/resources/assets/illustrations/brand";
 import { useEffect, useRef, useState } from "react";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import Banner from "../../containers/mobile/home/Banner.tsx";

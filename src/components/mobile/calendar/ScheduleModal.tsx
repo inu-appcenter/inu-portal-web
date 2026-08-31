@@ -6,7 +6,7 @@ import styled, { keyframes } from "styled-components";
 import { getScheduleById } from "@/apis/schedules";
 import Divider from "@/components/common/Divider";
 import EventItem from "@/components/mobile/calendar/EventItem";
-import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
+import { TorchAiLogoIcon } from "@/resources/assets/illustrations/ai";
 import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
 
 const contentShow = keyframes`

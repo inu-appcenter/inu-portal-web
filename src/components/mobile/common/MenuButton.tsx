@@ -1,20 +1,21 @@
 import styled, { keyframes } from "styled-components";
-import menuButtonImage from "@/resources/assets/mobile-common/menu-button.svg";
-import intipLogo from "@/resources/assets/intip-logo.webp";
-import closeBtn from "@/resources/assets/mobile-common/closebtn.svg";
+import { MenuButtonIcon, CloseIcon } from "@/resources/assets/icons/ui";
+import { intipLogoMascot as intipLogo } from "@/resources/assets/illustrations/brand";
 import { useEffect, useState } from "react";
 import SerachForm from "@/containers/mobile/home/SerachForm";
 import AiForm from "@/containers/mobile/home/Ai";
 import SidebarPortal from "@/components/mobile/common/SidebarPortal";
 
-import menuImg from "@/resources/assets/mobile-home/category-form/menu.svg";
-import noticeImg from "@/resources/assets/mobile-home/category-form/notice.svg";
-import TipImg from "@/resources/assets/mobile-home/category-form/tip.svg";
-import calendarImg from "@/resources/assets/mobile-home/category-form/calendar.svg";
-import councilImg from "@/resources/assets/mobile-home/category-form/council.svg";
-import mapImg from "@/resources/assets/mobile-home/category-form/map.svg";
-import clubImg from "@/resources/assets/mobile-home/category-form/club.svg";
-import utilImg from "@/resources/assets/mobile-home/category-form/util.svg";
+import {
+  menu as menuImg,
+  notice as noticeImg,
+  tip as TipImg,
+  calendar as calendarImg,
+  council as councilImg,
+  map as mapImg,
+  club as clubImg,
+  util as utilImg,
+} from "@/resources/assets/illustrations/mobile-home/category-form";
 import inquiryImg from "@/resources/assets/mobile-mypage/inquiry.svg";
 
 import { useLocation, useNavigate } from "react-router-dom";
@@ -83,8 +84,8 @@ export default function MenuButton() {
   return (
     <>
       <MenuButtonImg
-        src={menuButtonImage}
-        alt="사이드바"
+        as={MenuButtonIcon}
+        aria-label="사이드바"
         onClick={() => setIsVisible(true)}
       />
       {shouldRender && (
@@ -98,7 +99,7 @@ export default function MenuButton() {
               <img className="logo" src={intipLogo} alt="로고" />
               <button onClick={() => setIsVisible(false)}>
                 <span>닫기</span>
-                <img src={closeBtn} alt="닫기 버튼" />
+                <CloseIcon aria-hidden="true" />
               </button>
             </div>
             <div className="sidebar-categories">
@@ -161,8 +162,10 @@ const fadeOut = keyframes`
     }
 `;
 
-const MenuButtonImg = styled.img`
+const MenuButtonImg = styled.svg`
   height: 18px;
+  color: #444444;
+  cursor: pointer;
 `;
 
 const Background = styled.div<{ isVisible: boolean }>`
@@ -210,6 +213,11 @@ const Sidebar = styled.div<{ isVisible: boolean }>`
       span {
         font-size: 14px;
         font-weight: 500;
+      }
+
+      svg {
+        width: 14px;
+        color: #444444;
       }
     }
   }

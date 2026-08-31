@@ -7,8 +7,10 @@ import { login } from "@/apis/members";
 import { ROUTES } from "@/constants/routes";
 import TermsLinks from "@/components/common/TermsLinks";
 import useUserStore from "@/stores/useUserStore";
-import LoginPassword from "@/resources/assets/login/login-password.svg";
-import LoginUser from "@/resources/assets/login/login-user.svg";
+import {
+  LoginPasswordIcon,
+  LoginUserIcon,
+} from "@/resources/assets/icons/ui";
 
 function getRedirectPath(search: string) {
   const redirect = new URLSearchParams(search).get("redirect");
@@ -92,7 +94,7 @@ export default function LoginForm() {
             onChange={(event) => setStudentId(event.target.value)}
             onKeyDown={handleKeyPress}
           />
-          <FormIcon src={LoginUser} alt="LoginUser" />
+          <FormIcon as={LoginUserIcon} aria-label="아이디" />
         </FormInputWrapper>
         <InputLine />
       </FormItemWrapper>
@@ -107,8 +109,8 @@ export default function LoginForm() {
             onKeyDown={handleKeyPress}
           />
           <FormIcon
-            src={LoginPassword}
-            alt="LoginPassword"
+            as={LoginPasswordIcon}
+            aria-label="비밀번호 표시 전환"
             onClick={togglePasswordVisibility}
           />
         </FormInputWrapper>
@@ -171,8 +173,10 @@ const Input = styled.input`
   flex: 1;
 `;
 
-const FormIcon = styled.img`
+const FormIcon = styled.svg`
   width: 24px;
+  height: 24px;
+  color: #969696;
 `;
 
 const InputLine = styled.div`

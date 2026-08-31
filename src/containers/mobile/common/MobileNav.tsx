@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FC, type SVGProps } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
@@ -6,50 +6,58 @@ import { useQuery } from "@tanstack/react-query";
 import NavItem from "@/components/mobile/common/NavItem";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import homeIcon from "@/resources/assets/mobile-nav/home-gray.svg";
-import homeIconActive from "@/resources/assets/mobile-nav/home-blue.svg";
-import busIcon from "@/resources/assets/mobile-nav/bus-gray.svg";
-import busIconActive from "@/resources/assets/mobile-nav/bus-blue.svg";
-import saveIcon from "@/resources/assets/mobile-nav/save-gray.svg";
-import saveIconActive from "@/resources/assets/mobile-nav/save-blue.svg";
-import mypageIcon from "@/resources/assets/mobile-nav/mypage-gray.svg";
-import mypageIconActive from "@/resources/assets/mobile-nav/mypage-blue.svg";
-import chatIcon from "@/resources/assets/mobile-nav/chat-gray.svg";
-import chatIconActive from "@/resources/assets/mobile-nav/chat-blue.svg";
+import {
+  BusIcon,
+  ChatIcon,
+  HomeIcon,
+  MypageIcon,
+  SaveIcon,
+  MOBILE_NAV_ICON_COLORS,
+} from "@/resources/assets/icons/mobile-nav";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 
-const NAV_ITEMS = [
+interface MobileNavItem {
+  to: string;
+  icon: FC<SVGProps<SVGSVGElement>>;
+  active: string;
+  inactive: string;
+  activeAccent?: string;
+  label: string;
+  key?: string;
+}
+
+const NAV_ITEMS: MobileNavItem[] = [
   {
     to: ROUTES.HOME,
-    icon: homeIcon,
-    activeIcon: homeIconActive,
+    icon: HomeIcon,
+    ...MOBILE_NAV_ICON_COLORS.home,
     label: "홈",
   },
   {
     to: ROUTES.TIMETABLE.ROOT,
-    icon: saveIcon,
-    activeIcon: saveIconActive,
+    icon: SaveIcon,
+    ...MOBILE_NAV_ICON_COLORS.save,
     label: "시간표",
   },
   {
     to: ROUTES.BUS.ROOT,
-    icon: busIcon,
-    activeIcon: busIconActive,
+    icon: BusIcon,
+    ...MOBILE_NAV_ICON_COLORS.bus,
     label: "인입런",
   },
   {
     to: ROUTES.CHAT.LIST,
-    icon: chatIcon,
-    activeIcon: chatIconActive,
+    icon: ChatIcon,
+    ...MOBILE_NAV_ICON_COLORS.chat,
     label: "채팅",
     key: "chat",
   },
   {
     to: ROUTES.MYPAGE.ROOT,
-    icon: mypageIcon,
-    activeIcon: mypageIconActive,
+    icon: MypageIcon,
+    ...MOBILE_NAV_ICON_COLORS.mypage,
     label: "마이페이지",
   },
 ];
@@ -128,7 +136,9 @@ export default function MobileNav() {
             key={item.to}
             to={item.to}
             icon={item.icon}
-            activeIcon={item.activeIcon}
+            activeColor={item.active}
+            inactiveColor={item.inactive}
+            activeAccentColor={item.activeAccent}
             label={item.label}
             onClick={() => handleNavClick(item.to, item.label)}
             badge={item.key === "chat" ? Number(totalUnreadCount) : undefined}

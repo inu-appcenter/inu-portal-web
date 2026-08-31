@@ -5,7 +5,7 @@ import { useMemo, useEffect } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import { useLocation, useNavigate } from "react-router-dom";
-import 배너이미지 from "@/resources/assets/Festival/2026-1/PaintTheUnion배너이미지.webp";
+import { festivalPaintTheUnionBanner as 배너이미지 } from "@/resources/assets/illustrations/features";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Divider from "@/components/common/Divider";

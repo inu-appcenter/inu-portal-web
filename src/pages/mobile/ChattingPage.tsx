@@ -13,7 +13,7 @@ import TimetableShareCard from "@/components/mobile/chat/TimetableShareCard";
 import ChatItemBot from "@/components/mobile/chat/ChatItemBot";
 import ChatSlashCommandPopup from "@/components/mobile/chat/ChatSlashCommandPopup";
 import ChatPlusMenu from "@/components/mobile/chat/ChatPlusMenu";
-import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
+import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 import { ChatMessage } from "@/types/chat";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
 import {

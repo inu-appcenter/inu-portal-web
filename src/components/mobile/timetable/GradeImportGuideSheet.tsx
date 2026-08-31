@@ -12,7 +12,7 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 // 실제 스마트캠퍼스 앱 홈 화면 스크린샷. 이름/소속은 이미 더미 데이터("김유니")로
 // 바꿔둔 캡처본이라 실사용자 개인정보가 아니다 — 다른 스크린샷으로 교체할 때도
 // 반드시 더미 데이터로 가린 캡처만 사용할 것.
-import inuMainScreenshot from "@/resources/assets/gradeImport/inuapp-main.jpg";
+import { gradeImportInuAppMain as inuMainScreenshot } from "@/resources/assets/illustrations/features";
 
 interface GradeImportGuideSheetProps {
   isOpen: boolean;

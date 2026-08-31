@@ -1,8 +1,10 @@
-import loading from "@/resources/assets/ai/loading.svg";
 import styled from "styled-components";
-import randomImg1 from "@/resources/assets/ai/횃불-random1.webp";
-import randomImg2 from "@/resources/assets/ai/횃불-random2.webp";
-import randomImg3 from "@/resources/assets/ai/횃불-random3.webp";
+import {
+  loadingSpinner as loading,
+  torchRandom1 as randomImg1,
+  torchRandom2 as randomImg2,
+  torchRandom3 as randomImg3,
+} from "@/resources/assets/illustrations/ai";
 
 export default function AiLoading() {
   return (

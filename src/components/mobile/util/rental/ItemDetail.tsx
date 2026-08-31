@@ -10,7 +10,7 @@ import {
   Items,
 } from "@/apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
-import closeBtn from "../../../../resources/assets/mobile-common/closebtn.svg";
+import { CloseIcon } from "../../../../resources/assets/icons/ui";
 import ImageBox from "./ImageBox.tsx";
 
 interface ItemDetailProps {
@@ -200,7 +200,7 @@ export default function ItemDetail({ itemId, onClose }: ItemDetailProps) {
       <DetailWrapper>
         <button onClick={onClose} className={"closeBtn"}>
           닫기
-          <img src={closeBtn} alt="" />
+          <CloseIcon aria-hidden="true" />
         </button>
         <h3>대여 정보를 확인해주세요 !</h3>
         <GoodWrapper>
@@ -320,8 +320,9 @@ const DetailWrapper = styled.div`
     font-size: 14px;
     font-weight: 500;
 
-    img {
+    svg {
       width: 14px;
+      color: #444444;
     }
   }
 `;

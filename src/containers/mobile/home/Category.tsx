@@ -2,14 +2,16 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useRef, type RefObject } from "react";
 
-import menuImg from "@/resources/assets/mobile-home/category-form/menu.svg";
-import noticeImg from "@/resources/assets/mobile-home/category-form/notice.svg";
-import tipImg from "@/resources/assets/mobile-home/category-form/tip.svg";
-import calendarImg from "@/resources/assets/mobile-home/category-form/calendar.svg";
-import mapImg from "@/resources/assets/mobile-home/category-form/map.svg";
-import clubImg from "@/resources/assets/mobile-home/category-form/club.svg";
-import busImg from "@/resources/assets/mobile-home/category-form/bus.svg";
-import schoolNoticeImg from "@/resources/assets/mobile-home/category-form/school-notice.svg";
+import {
+  menu as menuImg,
+  notice as noticeImg,
+  tip as tipImg,
+  calendar as calendarImg,
+  map as mapImg,
+  club as clubImg,
+  bus as busImg,
+  schoolNotice as schoolNoticeImg,
+} from "@/resources/assets/illustrations/mobile-home/category-form";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 import {

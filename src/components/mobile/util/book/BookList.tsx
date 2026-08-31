@@ -12,7 +12,7 @@ import BookDetail from "./BookDetail.tsx";
 import X_Vector from "../../../../resources/assets/mobile-mypage/X-Vector.svg";
 import HowToBuy from "../../../../components/desktop/book/HowToBuy.tsx";
 
-import 안내횃불이 from "@/resources/assets/book/안내횃불이.png";
+import 안내횃불이 from "@/resources/assets/illustrations/book/guide-mascot.png";
 
 import SerachForm from "./BookSearchForm.tsx";
 

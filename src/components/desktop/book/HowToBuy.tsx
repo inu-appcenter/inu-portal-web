@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import howtoBuy from "@/resources/assets/book/howtoBuy.png";
+import { howToBuy as howtoBuy } from "@/resources/assets/illustrations/book";
 
 export default function HowToBuy() {
   return (

@@ -8,7 +8,7 @@ import { NoticeAttachment } from "@/types/notices";
 import { Share2, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
+import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import deleteImg from "@/resources/assets/mobile-mypage/deleteImg.png";
+import deleteImg from "@/resources/assets/illustrations/mobile-mypage/delete-img.png";
 
 export default function SubTitle() {
   return (

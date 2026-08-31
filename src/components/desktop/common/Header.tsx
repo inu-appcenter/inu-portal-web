@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { clearTermsAgreement } from "@/components/common/TermsAgreement";
 import useUserStore from "@/stores/useUserStore";
 import { useNavigate } from "react-router-dom";
-import AppcenterLogo from "@/resources/assets/appcenter-logo.webp";
+import { appcenterLogo as AppcenterLogo } from "@/resources/assets/illustrations/brand";
 import { resetMixpanel } from "@/utils/mixpanel";
 
 export default function Header() {

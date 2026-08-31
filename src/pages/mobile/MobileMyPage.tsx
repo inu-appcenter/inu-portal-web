@@ -5,7 +5,7 @@ import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
 import { Bell, UserX, Mail } from "lucide-react";
-import loginImg from "@/resources/assets/login/login-modal-logo.webp";
+import { loginModalLogo as loginImg } from "@/resources/assets/illustrations/login";
 import {
   MyPageActive,
   MyPageCategoryCommon,

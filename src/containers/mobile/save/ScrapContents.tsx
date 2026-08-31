@@ -9,7 +9,7 @@ import SaveSearchForm from "@/components/mobile/save/SaveSearchForm";
 import editButton from "@/resources/assets/mobile-save/editButton.svg";
 import FolderListDropDowns from "@/components/mobile/save/MobileFolderListDropDowns";
 import DeleteConfirmModal from "@/components/mobile/save/DeleteConfirmModal";
-import Trash from "@/resources/assets/mobile-save/Trash.svg";
+import Trash from "@/resources/assets/illustrations/mobile-save/trash.svg";
 import { Folder } from "@/types/folders";
 import { Post } from "@/types/posts";
 import axios, { AxiosError } from "axios";

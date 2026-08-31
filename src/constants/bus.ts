@@ -1,6 +1,8 @@
-import 일산김포시간표 from "@/resources/assets/bus/일산김포시간표.jpeg";
-import 부천송내시간표 from "@/resources/assets/bus/부천송내시간표.jpeg";
-import 안산시흥시간표 from "@/resources/assets/bus/안산시흥시간표.jpeg";
+import {
+  ilsanGimpoSchedule as 일산김포시간표,
+  bucheonSongnaeSchedule as 부천송내시간표,
+  ansanSiheungSchedule as 안산시흥시간표,
+} from "@/resources/assets/illustrations/bus";
 
 export const SHUTTLE_ROUTES = [
   {

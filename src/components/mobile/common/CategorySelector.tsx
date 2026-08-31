@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getTipsCategories } from "@/apis/categories";
-import dropdownIcon from "@/resources/assets/mobile-common/dropdown.svg";
+import { DropdownIcon } from "@/resources/assets/icons/ui";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAppStateStore from "@/stores/useAppStateStore";
 
@@ -79,7 +79,7 @@ export default function CategorySelector() {
       ) : (
         <Dropdown>
           <div>{selectedCategory || "카테고리 선택"}</div>
-          <DropdownImg src={dropdownIcon} alt="dropdownIcon" />
+          <DropdownImg as={DropdownIcon} aria-hidden="true" />
         </Dropdown>
       )}
     </CategorySelectorWrapper>
@@ -108,9 +108,10 @@ const Dropdown = styled.div`
   );
 `;
 
-const DropdownImg = styled.img`
+const DropdownImg = styled.svg`
   width: 4px;
   height: 8px;
+  color: #9fa3a6;
 `;
 
 const DropdownOptions = styled.div`

@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
 import { Eye } from "lucide-react";
-import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
+import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 import Ripple from "@/components/common/Ripple";
 
 interface DeptNoticeItemProps {

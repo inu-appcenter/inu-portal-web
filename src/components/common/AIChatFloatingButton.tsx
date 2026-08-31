@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X } from "lucide-react";
-import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
+import { chatBubbleButton as ChatBulButtonImg } from "@/resources/assets/illustrations/ai";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import useAIChatStore from "@/stores/useAIChatStore";

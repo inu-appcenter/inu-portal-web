@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import 안내횃불이 from "@/resources/assets/book/안내횃불이.png";
+import { guideMascot as 안내횃불이 } from "@/resources/assets/illustrations/book";
 import type {
   WizardConflictItem,
   WizardCourseOption,

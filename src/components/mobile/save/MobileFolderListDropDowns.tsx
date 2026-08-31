@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import ListImg from "@/resources/assets/mypage/like.svg";
 import closeImg from "@/resources/assets/mobile-save/close-img.svg";
-import fileImg from "@/resources/assets/mypage/folder.svg";
+import fileImg from "@/resources/assets/illustrations/mypage/folder.svg";
 import { useState } from "react";
 import { postFoldersPosts } from "@/apis/folders";
 import axios from "axios";

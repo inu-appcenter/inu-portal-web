@@ -3,9 +3,11 @@ import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
 import Ripple from "@/components/common/Ripple";
 
-import AiBanner from "@/resources/assets/ai/횃불이ai배너이미지.webp";
-import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
-import TimetableEvaluateIcon from "@/resources/assets/ai/시간표이미지평가횃불이.svg";
+import {
+  aiBanner as AiBanner,
+  chatBubbleButton as ChatBulButtonImg,
+  timetableEvaluateTorch as TimetableEvaluateIcon,
+} from "@/resources/assets/illustrations/ai";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
@@ -20,7 +22,7 @@ import {
 } from "react-icons/lu";
 import { IconType } from "react-icons";
 import Divider from "@/components/common/Divider";
-import ExternalLinkIcon from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
+import { ExternalLinkIcon } from "@/resources/assets/icons/mobile-home/chip";
 import useAIChatStore from "@/stores/useAIChatStore";
 
 interface AppItemProps {
@@ -68,7 +70,7 @@ const AppItem = ({
               <LuLock size={13} color="#8e8e93" style={{ flexShrink: 0 }} />
             )}
             {isExternal && (
-              <ExternalIconImg src={ExternalLinkIcon} alt="외부 서비스" />
+              <ExternalIconImg as={ExternalLinkIcon} aria-label="외부 서비스" />
             )}
           </TitleRow>
           <div className="description">{description}</div>
@@ -369,9 +371,10 @@ const TitleRow = styled.div`
   gap: 6px;
 `;
 
-const ExternalIconImg = styled.img`
+const ExternalIconImg = styled.svg`
   width: 14px;
   height: 14px;
+  color: #969696;
   opacity: 0.55;
   flex-shrink: 0;
 `;

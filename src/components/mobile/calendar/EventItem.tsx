@@ -6,7 +6,7 @@ import styled from "styled-components";
 import ActionButton from "@/components/common/ActionButton";
 import useUserStore from "@/stores/useUserStore";
 import { ScheduleEvent, ScheduleType } from "@/types/schedules";
-import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
+import { TorchAiLogoIcon } from "@/resources/assets/illustrations/ai";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 type EventItemProps = ScheduleEvent & {

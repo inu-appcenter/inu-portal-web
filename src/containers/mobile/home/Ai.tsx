@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import aienterimg1 from "@/resources/assets/ai/횃불-ai-enter-1.webp";
-import aienterimg2 from "@/resources/assets/ai/횃불-ai-enter-2.webp";
-import { ReactSVG } from "react-svg";
+import {
+  torchAiEnter1 as aienterimg1,
+  torchAiEnter2 as aienterimg2,
+} from "@/resources/assets/illustrations/ai";
 
 export default function AiForm() {
   const navigate = useNavigate();
@@ -13,11 +14,11 @@ export default function AiForm() {
     <AiEnterWrapper>
       <AiEnter onClick={handleAiBtnClick}>
         <div className="enter-frame">
-          <ReactSVG src={aienterimg1} />
+          <img src={aienterimg1} alt="" />
           <div className="enter-title">
             횃불이 AI 생성 ✨ 지금 바로 만들러 가기
           </div>
-          <ReactSVG src={aienterimg2} />
+          <img src={aienterimg2} alt="" />
         </div>
       </AiEnter>
     </AiEnterWrapper>

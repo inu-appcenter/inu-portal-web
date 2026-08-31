@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import howtofind from "@/resources/assets/lost/howtofind.png";
+import { lostHowToFind as howtofind } from "@/resources/assets/illustrations/features";
 
 export default function HowToFind() {
   const navigate = useNavigate();

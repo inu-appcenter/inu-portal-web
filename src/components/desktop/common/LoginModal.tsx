@@ -1,8 +1,10 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import LoginModalLogo from "@/resources/assets/login/login-modal-logo.webp";
-import Bubble from "@/resources/assets/login/login-modal-bubble.svg";
+import {
+  loginModalLogo as LoginModalLogo,
+  loginModalBubble as Bubble,
+} from "@/resources/assets/illustrations/login";
 
 interface Props {
   openModal: () => void;

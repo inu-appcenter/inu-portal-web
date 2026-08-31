@@ -1,7 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-// import intipLogo from "@/resources/assets/intip-logo.webp";
-import intipLogo from "@/resources/assets/intip-logo-new.webp";
+// import { intipLogoMascot as intipLogo } from "@/resources/assets/illustrations/brand";
+import { intipLogoWordmark as intipLogo } from "@/resources/assets/illustrations/brand";
 import { useNavigate } from "react-router-dom";
 import { forwardRef } from "react";
 import { useCustomNavigate } from "@/hooks/useCustomNavigate";

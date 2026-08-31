@@ -25,10 +25,12 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Banner from "@/containers/mobile/home/Banner";
 
-import KakaoIcon from "@/resources/assets/mobile-home/footer/kakao.svg";
-import InstagramIcon from "@/resources/assets/mobile-home/footer/instagram.svg";
-import GithubIcon from "@/resources/assets/mobile-home/footer/github-fill.svg";
-import MailIcon from "@/resources/assets/mobile-home/footer/mail.svg";
+import {
+  KakaoIcon,
+  InstagramIcon,
+  GithubIcon,
+  MailIcon,
+} from "@/resources/assets/icons/mobile-home/footer";
 
 import { formatRoom } from "@/components/mobile/timetable/TimetableGrid";
 
@@ -412,11 +414,10 @@ export default function MobileHomePageV2() {
                   aria-label={label}
                 >
                   <SocialIcon
-                    src={icon}
-                    alt=""
+                    as={icon}
+                    aria-hidden="true"
                     $width={width}
                     $height={height}
-                    loading="lazy"
                   />
                 </SocialLink>
               ))}
@@ -758,10 +759,11 @@ const SocialLink = styled.a`
   }
 `;
 
-const SocialIcon = styled.img<{ $width: number; $height: number }>`
+const SocialIcon = styled.svg<{ $width: number; $height: number }>`
   display: block;
   width: ${({ $width }) => $width}px;
   height: ${({ $height }) => $height}px;
+  color: #8b95a1;
 `;
 
 const FooterNote = styled.div`

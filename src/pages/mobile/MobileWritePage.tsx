@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import WriteForm from "@/containers/mobile/write/WriteForm";
 import { useLocation, useParams } from "react-router-dom";
-import loginImg from "@/resources/assets/login/login-modal-logo.webp";
+import { loginModalLogo as loginImg } from "@/resources/assets/illustrations/login";
 import { useResetWriteStore } from "@/reducer/resetWriteStore";
 import useUserStore from "@/stores/useUserStore";
 import CategorySelect from "@/components/mobile/write/CategorySelect";

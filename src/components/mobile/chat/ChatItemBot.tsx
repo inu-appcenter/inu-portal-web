@@ -1,6 +1,6 @@
 import styled, { keyframes } from "styled-components";
 import { MessageSquare, Loader2 } from "lucide-react";
-import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
+import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 import ChatMessageContent from "./ChatMessageContent";
 import { ChatMessage } from "@/types/chat";
 import useAIChatStore from "@/stores/useAIChatStore";

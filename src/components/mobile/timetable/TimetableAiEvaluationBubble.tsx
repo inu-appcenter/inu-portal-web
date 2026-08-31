@@ -3,9 +3,11 @@ import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { X, Sparkles, AlertCircle, Copy, Check, RefreshCw } from "lucide-react";
-import TimetableAiEvalButtonIcon from "@/resources/assets/timetable/시간표평가버튼.svg?react";
-import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
-import TimetableTorchIcon from "@/resources/assets/ai/시간표이미지평가횃불이.svg?react";
+import { EvaluationButtonIcon as TimetableAiEvalButtonIcon } from "@/resources/assets/illustrations/timetable";
+import {
+  TorchAiLogoIcon,
+  TimetableEvaluateTorchIcon as TimetableTorchIcon,
+} from "@/resources/assets/illustrations/ai";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useTimeTableEvaluation } from "@/hooks/useTimeTableEvaluation";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";

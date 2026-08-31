@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Image } from "lucide-react";
-import TorchAiLogo from "@/resources/assets/ai/횃불이AI로고.svg";
+import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 
 interface ChatPlusMenuProps {
   isOpen: boolean;
