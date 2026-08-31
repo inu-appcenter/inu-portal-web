@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { ExternalLinkIcon } from "@/resources/assets/icons/mobile-home/chip";
+import FontelloIcon from "./Icon";
 import Ripple from "./Ripple";
 
 interface ChipButtonProps {
@@ -46,7 +46,7 @@ const Chip = ({
         <ContentArea>
           <div className="title">{title}</div>
           {isExternalLink && (
-            <ExternalLinkImg aria-hidden="true" />
+            <ExternalLinkImg />
           )}
         </ContentArea>
       </InnerContent>
@@ -94,7 +94,10 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   }
 `;
 
-const ExternalLinkImg = styled(ExternalLinkIcon)`
+const ExternalLinkImg = styled(FontelloIcon).attrs({
+  name: "link-external" as const,
+  size: 11,
+})`
   color: #969696;
 `;
 

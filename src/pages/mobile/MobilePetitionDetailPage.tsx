@@ -1,6 +1,6 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-import { BackIcon } from "@/resources/assets/icons/ui";
+import FontelloIcon from "@/components/common/Icon";
 import { useEffect, useState } from "react";
 import { deletePetitions, getPetitionsDetail, putLike } from "@/apis/petitions";
 import PostContentContainer from "@/containers/mobile/postdetail/PostContentContainer";
@@ -139,7 +139,7 @@ export default function MobilePetitionDetailPage() {
             <PostTopWrapper>
               <PostUtilWrapper>
                 <BackBtn onClick={() => navigate(-1)}>
-                  <BackIcon aria-label="뒤로가기 버튼" />
+                  <FontelloIcon name="chevron-left" size={20} label="뒤로가기 버튼" />
                 </BackBtn>
                 {petition.hasAuthority && (
                   <>

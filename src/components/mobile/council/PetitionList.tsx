@@ -4,7 +4,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { PetitionSummary } from "@/types/petitions";
 import { getPetitionsList } from "@/apis/petitions";
 import styled from "styled-components";
-import { CouncilSecretIcon } from "@/resources/assets/icons/ui";
+import FontelloIcon from "@/components/common/Icon";
 import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
 
 export default function PetitionList({ reloadKey }: { reloadKey: number }) {
@@ -60,7 +60,7 @@ export default function PetitionList({ reloadKey }: { reloadKey: number }) {
             >
               {petition.title === "비밀청원입니다." ? (
                 <>
-                  <CouncilSecretIcon className="secretImg" aria-hidden="true" />
+                  <FontelloIcon className="secretImg" name="lock" size={64} />
                   <h3 className="secretText">[해당 글은 비밀글입니다]</h3>
                 </>
               ) : (

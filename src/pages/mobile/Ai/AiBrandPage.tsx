@@ -22,7 +22,7 @@ import {
 } from "react-icons/lu";
 import { IconType } from "react-icons";
 import Divider from "@/components/common/Divider";
-import { ExternalLinkIcon } from "@/resources/assets/icons/mobile-home/chip";
+import FontelloIcon from "@/components/common/Icon";
 import useAIChatStore from "@/stores/useAIChatStore";
 
 interface AppItemProps {
@@ -70,7 +70,7 @@ const AppItem = ({
               <LuLock size={13} color="#8e8e93" style={{ flexShrink: 0 }} />
             )}
             {isExternal && (
-              <ExternalIconImg as={ExternalLinkIcon} aria-label="외부 서비스" />
+              <ExternalIconImg name="link-external" size={14} label="외부 서비스" />
             )}
           </TitleRow>
           <div className="description">{description}</div>
@@ -371,9 +371,7 @@ const TitleRow = styled.div`
   gap: 6px;
 `;
 
-const ExternalIconImg = styled.svg`
-  width: 14px;
-  height: 14px;
+const ExternalIconImg = styled(FontelloIcon)`
   color: #969696;
   opacity: 0.55;
   flex-shrink: 0;

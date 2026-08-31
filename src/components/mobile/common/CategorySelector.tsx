@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getTipsCategories } from "@/apis/categories";
-import { DropdownIcon } from "@/resources/assets/icons/ui";
+import FontelloIcon from "@/components/common/Icon";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAppStateStore from "@/stores/useAppStateStore";
 
@@ -79,7 +79,7 @@ export default function CategorySelector() {
       ) : (
         <Dropdown>
           <div>{selectedCategory || "카테고리 선택"}</div>
-          <DropdownImg as={DropdownIcon} aria-hidden="true" />
+          <DropdownImg name="chevron-down" size={8} />
         </Dropdown>
       )}
     </CategorySelectorWrapper>
@@ -108,9 +108,7 @@ const Dropdown = styled.div`
   );
 `;
 
-const DropdownImg = styled.svg`
-  width: 4px;
-  height: 8px;
+const DropdownImg = styled(FontelloIcon)`
   color: #9fa3a6;
 `;
 

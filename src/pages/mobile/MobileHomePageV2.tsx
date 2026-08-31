@@ -23,14 +23,10 @@ import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import Icon from "@/components/common/Icon";
+import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import Banner from "@/containers/mobile/home/Banner";
 
-import {
-  KakaoIcon,
-  InstagramIcon,
-  GithubIcon,
-  MailIcon,
-} from "@/resources/assets/icons/mobile-home/footer";
 
 import { formatRoom } from "@/components/mobile/timetable/TimetableGrid";
 
@@ -47,37 +43,34 @@ const POLICY_LINKS = [
   },
 ] as const;
 
-// 아이콘 leaf 크기는 피그마 원본 지오메트리(20px 박스 기준 오버플로 포함)를 그대로 유지한다.
+// Fontello 글리프는 정사각 em 박스라 피그마 원본의 아이콘별 미세한
+// 가로/세로 차이(22 x 21.1667 등)는 20px 정사각으로 통일된다.
 const SOCIAL_LINKS = [
   {
     label: "카카오톡 채널",
     href: "https://pf.kakao.com/_xgxaSLd",
-    icon: KakaoIcon,
-    width: 22,
-    height: 21.1667,
+    icon: "kakaotalk",
   },
   {
     label: "인스타그램",
     href: "https://www.instagram.com/inuappcenter",
-    icon: InstagramIcon,
-    width: 20,
-    height: 20,
+    icon: "instagram-line",
   },
   {
     label: "GitHub",
     href: "https://github.com/inu-appcenter",
-    icon: GithubIcon,
-    width: 20,
-    height: 19.7762,
+    icon: "github-invertocat-black-1",
   },
   {
     label: "이메일 문의",
     href: "mailto:support@inuappcenter.kr",
-    icon: MailIcon,
-    width: 22,
-    height: 20,
+    icon: "mail",
   },
-] as const;
+] as const satisfies readonly {
+  label: string;
+  href: string;
+  icon: FontelloIconName;
+}[];
 
 const getTodayTimetableDay = (date: Date) => (date.getDay() + 6) % 7;
 
@@ -405,7 +398,7 @@ export default function MobileHomePageV2() {
             </OrgAddress>
 
             <SocialLinks>
-              {SOCIAL_LINKS.map(({ label, href, icon, width, height }) => (
+              {SOCIAL_LINKS.map(({ label, href, icon }) => (
                 <SocialLink
                   key={label}
                   href={href}
@@ -413,12 +406,7 @@ export default function MobileHomePageV2() {
                   rel="noopener noreferrer"
                   aria-label={label}
                 >
-                  <SocialIcon
-                    as={icon}
-                    aria-hidden="true"
-                    $width={width}
-                    $height={height}
-                  />
+                  <SocialIcon name={icon} size={20} />
                 </SocialLink>
               ))}
             </SocialLinks>
@@ -759,10 +747,7 @@ const SocialLink = styled.a`
   }
 `;
 
-const SocialIcon = styled.svg<{ $width: number; $height: number }>`
-  display: block;
-  width: ${({ $width }) => $width}px;
-  height: ${({ $height }) => $height}px;
+const SocialIcon = styled(Icon)`
   color: #8b95a1;
 `;
 

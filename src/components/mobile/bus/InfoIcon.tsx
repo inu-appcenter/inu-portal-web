@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { BusInfoIcon } from "@/resources/assets/icons/ui";
+import FontelloIcon from "@/components/common/Icon";
 
 interface Props {
   onClick?: () => void;
@@ -8,7 +8,7 @@ interface Props {
 export default function InfoIcon({ onClick }: Props) {
   return (
     <Icon onClick={onClick}>
-      <BusInfoIcon aria-label="정류장 정보" />
+      <FontelloIcon name="info" size={20} label="정류장 정보" />
     </Icon>
   );
 }
@@ -22,8 +22,4 @@ const Icon = styled.button`
   margin-bottom: 1px;
   color: #9b9b9b;
 
-  svg {
-    width: 20px;
-    height: 20px;
-  }
 `;

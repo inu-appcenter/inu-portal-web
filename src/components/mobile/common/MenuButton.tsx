@@ -1,5 +1,6 @@
 import styled, { keyframes } from "styled-components";
-import { MenuButtonIcon, CloseIcon } from "@/resources/assets/icons/ui";
+import { MenuButtonIcon } from "@/resources/assets/icons/ui";
+import FontelloIcon from "@/components/common/Icon";
 import { intipLogoMascot as intipLogo } from "@/resources/assets/illustrations/brand";
 import { useEffect, useState } from "react";
 import SerachForm from "@/containers/mobile/home/SerachForm";
@@ -99,7 +100,7 @@ export default function MenuButton() {
               <img className="logo" src={intipLogo} alt="로고" />
               <button onClick={() => setIsVisible(false)}>
                 <span>닫기</span>
-                <CloseIcon aria-hidden="true" />
+                <FontelloIcon name="close-md" size={14} />
               </button>
             </div>
             <div className="sidebar-categories">
@@ -215,10 +216,7 @@ const Sidebar = styled.div<{ isVisible: boolean }>`
         font-weight: 500;
       }
 
-      svg {
-        width: 14px;
-        color: #444444;
-      }
+      color: #444444;
     }
   }
 

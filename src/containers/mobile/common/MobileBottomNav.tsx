@@ -6,13 +6,8 @@ import { motion } from "framer-motion";
 
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import {
-  HomeIcon,
-  TimetableIcon,
-  BusIcon,
-  ChatIcon,
-  MyIcon,
-} from "@/resources/assets/icons/mobile-nav-v2";
+import Icon from "@/components/common/Icon";
+import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import { DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
@@ -20,31 +15,36 @@ import TooltipMessage from "@/components/common/TooltipMessage";
 import { usePromotion } from "@/hooks/usePromotion";
 import { PROMOTIONS } from "@/utils/promotion/registry";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: {
+  to: string;
+  icon: FontelloIconName;
+  label: string;
+  key?: string;
+}[] = [
   {
     to: ROUTES.HOME,
-    icon: HomeIcon,
+    icon: "home",
     label: "홈",
   },
   {
     to: ROUTES.TIMETABLE.ROOT,
-    icon: TimetableIcon,
+    icon: "timetable",
     label: "시간표",
   },
   {
     to: ROUTES.BUS.ROOT,
-    icon: BusIcon,
+    icon: "bus",
     label: "인입런",
   },
   {
     to: ROUTES.CHAT.LIST,
-    icon: ChatIcon,
+    icon: "chat",
     label: "채팅",
     key: "chat",
   },
   {
     to: ROUTES.MYPAGE.ROOT,
-    icon: MyIcon,
+    icon: "my",
     label: "마이페이지",
   },
 ];
@@ -141,7 +141,7 @@ export default function MobileBottomNav() {
                   $isActive={isActive}
                   ref={isTimetableItem ? timetableIconRef : undefined}
                 >
-                  <item.icon />
+                  <Icon name={item.icon} size={32} />
                   {badge !== undefined && badge > 0 && (
                     <Badge>{badge > 99 ? "99+" : badge}</Badge>
                   )}
@@ -244,15 +244,6 @@ const IconWrapper = styled.div<{ $isActive: boolean }>`
   color: ${({ $isActive }) => ($isActive ? "#3B82F6" : "#B0B8C1")};
   transition: color 0.2s ease;
 
-  svg {
-    width: 100%;
-    height: 100%;
-
-    path {
-      fill: currentColor;
-      transition: fill 0.2s ease;
-    }
-  }
 `;
 
 const Badge = styled.div`

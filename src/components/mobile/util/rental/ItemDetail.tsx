@@ -10,7 +10,7 @@ import {
   Items,
 } from "@/apis/rental.ts";
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
-import { CloseIcon } from "../../../../resources/assets/icons/ui";
+import FontelloIcon from "@/components/common/Icon";
 import ImageBox from "./ImageBox.tsx";
 
 interface ItemDetailProps {
@@ -200,7 +200,7 @@ export default function ItemDetail({ itemId, onClose }: ItemDetailProps) {
       <DetailWrapper>
         <button onClick={onClose} className={"closeBtn"}>
           닫기
-          <CloseIcon aria-hidden="true" />
+          <FontelloIcon name="close-md" size={14} />
         </button>
         <h3>대여 정보를 확인해주세요 !</h3>
         <GoodWrapper>

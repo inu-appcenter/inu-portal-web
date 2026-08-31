@@ -7,10 +7,7 @@ import { login } from "@/apis/members";
 import { ROUTES } from "@/constants/routes";
 import TermsLinks from "@/components/common/TermsLinks";
 import useUserStore from "@/stores/useUserStore";
-import {
-  LoginPasswordIcon,
-  LoginUserIcon,
-} from "@/resources/assets/icons/ui";
+import FontelloIcon from "@/components/common/Icon";
 
 function getRedirectPath(search: string) {
   const redirect = new URLSearchParams(search).get("redirect");
@@ -94,7 +91,7 @@ export default function LoginForm() {
             onChange={(event) => setStudentId(event.target.value)}
             onKeyDown={handleKeyPress}
           />
-          <FormIcon as={LoginUserIcon} aria-label="아이디" />
+          <FormIcon name="user-02" size={24} label="아이디" />
         </FormInputWrapper>
         <InputLine />
       </FormItemWrapper>
@@ -108,11 +105,13 @@ export default function LoginForm() {
             onChange={(event) => setPassword(event.target.value)}
             onKeyDown={handleKeyPress}
           />
-          <FormIcon
-            as={LoginPasswordIcon}
+          <PasswordToggle
+            type="button"
             aria-label="비밀번호 표시 전환"
             onClick={togglePasswordVisibility}
-          />
+          >
+            <FormIcon name="lock" size={24} />
+          </PasswordToggle>
         </FormInputWrapper>
         <InputLine />
       </FormItemWrapper>
@@ -173,10 +172,17 @@ const Input = styled.input`
   flex: 1;
 `;
 
-const FormIcon = styled.svg`
-  width: 24px;
-  height: 24px;
+const FormIcon = styled(FontelloIcon)`
   color: #969696;
+`;
+
+const PasswordToggle = styled.button`
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 `;
 
 const InputLine = styled.div`
