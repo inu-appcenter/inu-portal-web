@@ -18,6 +18,7 @@ export interface FriendResponseDto {
   studentId: string;
   fireId: number;
   friendAlias?: string;
+  department?: string;
 }
 
 /**

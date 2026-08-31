@@ -626,7 +626,7 @@ export default function MobileFriendListPage() {
       const rowId = `${prefix}-${friend.friendId}`;
       const isSelected = selectedIds.includes(friend.friendId);
       const isExpanded = expandedId === rowId;
-      const dept = getFriendDept(friend.nickname);
+      
       const year = getFriendStudentYear(friend.studentId);
       const safeFireId = normalizeProfileImageId(
         friend.fireId,
@@ -670,7 +670,7 @@ export default function MobileFriendListPage() {
               <ExpandedDetailInner>
                 <DetailContent>
                   <StudentInfoRow>
-                    {year} · {dept}
+                    {year} · {friend.department ?? '-'}
                   </StudentInfoRow>
                   <ActionButtonRow>
                     <CircleActionButton
