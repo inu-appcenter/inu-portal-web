@@ -5,7 +5,10 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
+// KaTeX 기본 CSS는 woff2/woff/ttf 3중 포맷을 모두 번들에 포함시킨다.
+// woff2만 지원하면 충분하므로(모던 브라우저 + WebView), woff2 전용으로 가공한
+// 사본을 대신 사용한다. node_modules는 수정하지 않는다.
+import "../../../styles/katex-woff2-only.css";
 import { ExternalLink } from "lucide-react";
 
 interface ChatMessageContentProps {
