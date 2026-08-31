@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
-import { Eye,  Bookmark } from "lucide-react";
+import { Eye, Bookmark } from "lucide-react";
 import Ripple from "@/components/common/Ripple";
 import { formatTimeAgo } from "@/utils/date";
 export type TextVariant = "tertiary" | "error" | "brand";
@@ -104,32 +104,32 @@ const PostItem = ({
                   {like !== undefined && (
                     <StatItem $variant="error">
                       <i className="icon-heart" />
-                      
+
                       <span>{like}</span>
                     </StatItem>
                   )}
                   {replyCount !== undefined && (
                     <StatItem $variant="brand">
-                      
                       <i className="icon-chat-dots" />
-                      
+
                       <span>{replyCount}</span>
                     </StatItem>
                   )}
-                  {scrap !== undefined && (
+                  {/* {scrap !== undefined && (
                     <StatItem>
                       <Bookmark size={16} strokeWidth={1.8} />
                       <span>{scrap}</span>
                     </StatItem>
+                  )} */}
+                  {showDate && date && <div className="dot">·</div>}
+                  {showDate && date && (
+                    <div className="date">{formattedDate}</div>
+                  )}
+                  {showDate && date && showWriter && writer && (
+                    <div className="dot">·</div>
                   )}
                   {showWriter && writer && (
                     <div className="writer">{writer}</div>
-                  )}
-                  {showWriter && writer && showDate && date && (
-                    <div className="dot">·</div>
-                  )}
-                  {showDate && date && (
-                    <div className="date">{formattedDate}</div>
                   )}
                 </MetaGroup>
                 {(views !== undefined || menuSlot) && (
@@ -292,7 +292,7 @@ const MetaGroup = styled.div`
 const StatItem = styled.div<{ $variant?: TextVariant }>`
   display: flex;
   align-items: center;
-  gap: 4px;
+
   color: var(--text-${(props) => props.$variant ?? "teritary"}, #8b95a1);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
