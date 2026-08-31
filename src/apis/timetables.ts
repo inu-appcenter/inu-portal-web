@@ -263,6 +263,26 @@ export const getFriendPrimaryTimeTableDetail = async (
   return response.data.data;
 };
 
+export interface ChatRoomPrimaryTimeTable {
+  memberId: number;
+  nickname: string;
+  visibility: TimeTableVisibility | null;
+  timeTable: TimeTableDetail | null;
+}
+
+/** 일반 단체톡의 현재 참여자 대표 시간표 일괄 조회 (오픈채팅은 허용하지 않음) */
+export const getChatRoomPrimaryTimeTables = async (
+  roomId: number | string,
+  year: number,
+  term: Term,
+): Promise<ChatRoomPrimaryTimeTable[]> => {
+  const response = await tokenInstance.get<ApiResponse<ChatRoomPrimaryTimeTable[]>>(
+    `/api/timetables/chat-rooms/${roomId}/primary`,
+    { params: { year, term } },
+  );
+  return response.data.data ?? [];
+};
+
 /**
  * 시간표 AI 평가 캐시 조회
  */

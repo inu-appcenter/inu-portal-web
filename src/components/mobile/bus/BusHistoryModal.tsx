@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { ChevronLeft, ChevronDown, Clock, RotateCw } from "lucide-react";
@@ -43,6 +50,7 @@ interface TimelineItem {
 interface MatrixCellData {
   time: string;
   plate?: string;
+  minutes: number;
 }
 
 // 차량 번호판 포맷터 (예: "인천70바1234" -> "70바1234")
@@ -63,9 +71,9 @@ const DAYS_OF_WEEK = [
   { dayIndex: 0, label: "일" },
 ];
 
-// 서버에서 수집하는 모든 시간대 (05시 ~ 23시)
+// 서버에서 수집하는 모든 시간대 (00시, 05시 ~ 23시)
 const ALL_COLLECTED_HOURS = [
-  5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+  0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
 ];
 
 const ALL_ROUTES_VALUE = "ALL";
@@ -113,7 +121,7 @@ export default function BusHistoryModal({
   // 모달이 처음 열릴 때 상태 초기화
   const prevIsOpenRef = useRef<boolean>(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen && !prevIsOpenRef.current) {
       const now = new Date();
       setSelectedDayIndex(now.getDay());
@@ -254,6 +262,7 @@ export default function BusHistoryModal({
   >({});
   const hourChipRefs = useRef<Record<number, HTMLButtonElement | null>>({});
   const hasAutoScrolledRef = useRef<boolean>(false);
+  const scrollSelectionFrameRef = useRef<number | null>(null);
 
   // 현재 시간 (HH:mm)
   const now = new Date();
@@ -394,7 +403,9 @@ export default function BusHistoryModal({
       cells: Record<string, MatrixCellData | undefined>;
     }> = [];
 
-    const THRESHOLD = 12;
+    // 서로 5분 이내인 도착 기록만 같은 회차로 간주한다.
+    // 배차가 길거나 들쭉날쭉한 노선에서 서로 다른 버스를 한 행에 묶는 것을 방지한다.
+    const THRESHOLD = 5;
 
     while (pointers.some((ptr, idx) => ptr < lists[idx].length)) {
       let minVal = Infinity;
@@ -415,6 +426,7 @@ export default function BusHistoryModal({
             rowCells[keys[idx]] = {
               time: cell.time,
               plate: cell.plate,
+              minutes: cell.minutes,
             };
             pointers[idx]++;
           }
@@ -443,24 +455,51 @@ export default function BusHistoryModal({
       return upcomingIdx !== -1 ? upcomingIdx : timelineItems.length - 1;
     } else {
       if (matrixRows.length === 0) return -1;
-      const upcomingIdx = matrixRows.findIndex(
-        (row) => row.representativeMinutes >= currentMinutes,
-      );
-      return upcomingIdx !== -1 ? upcomingIdx : matrixRows.length - 1;
+      const todayColumnKey = columns.find((column) => column.isToday)?.key;
+      if (!todayColumnKey) return -1;
+
+      // 행의 가장 이른 시각이 아니라 오늘 열의 실제 도착시각을 기준으로 다음 버스를 찾는다.
+      const upcomingIdx = matrixRows.findIndex((row) => {
+        const todayCell = row.cells[todayColumnKey];
+        return todayCell != null && todayCell.minutes >= currentMinutes;
+      });
+      if (upcomingIdx !== -1) return upcomingIdx;
+
+      // 오늘의 미래 기록은 아직 수집되지 않았을 수 있으므로, 과거 주차를 포함해
+      // 현재 시각 이후 가장 가까운 도착 기록이 있는 행을 다음 버스 후보로 사용한다.
+      let nearestFutureIndex = -1;
+      let nearestFutureMinutes = Infinity;
+      matrixRows.forEach((row, index) => {
+        Object.values(row.cells).forEach((cell) => {
+          if (
+            cell != null &&
+            cell.minutes >= currentMinutes &&
+            cell.minutes < nearestFutureMinutes
+          ) {
+            nearestFutureIndex = index;
+            nearestFutureMinutes = cell.minutes;
+          }
+        });
+      });
+      if (nearestFutureIndex !== -1) return nearestFutureIndex;
+
+      // 모든 주차의 기록이 지난 경우에만 오늘 열의 마지막 기록을 강조한다.
+      for (let index = matrixRows.length - 1; index >= 0; index -= 1) {
+        if (matrixRows[index].cells[todayColumnKey] != null) {
+          return index;
+        }
+      }
+      return -1;
     }
   }, [
     isAllRoutesMode,
     timelineItems,
     matrixRows,
+    columns,
     selectedDayIndex,
     todayDayIndex,
     currentMinutes,
   ]);
-
-  // 데이터 변경 시 ref 초기화
-  useEffect(() => {
-    hourRowRefs.current = {};
-  }, [matrixRows, timelineItems, isAllRoutesMode]);
 
   // 사용 가능한 시간대 칩 목록 (05시~23시)
   const availableHours = useMemo(() => {
@@ -483,8 +522,11 @@ export default function BusHistoryModal({
     return () => clearTimeout(timer);
   }, [isOpen, selectedHour, selectedDayIndex]);
 
-  // 시간대 칩 클릭 시 해당 시간대로 부드럽게 스크롤
-  const handleHourClick = (hour: number) => {
+  // 시간대 칩 클릭 및 최초 진입 시 해당 시간대로 이동
+  const scrollToHour = (
+    hour: number,
+    behavior: ScrollBehavior = "smooth",
+  ) => {
     const container = listContainerRef.current;
     if (!container) return;
 
@@ -494,13 +536,13 @@ export default function BusHistoryModal({
       const lastHour = timelineItems[timelineItems.length - 1].hour;
 
       if (hour <= firstHour) {
-        container.scrollTo({ top: 0, behavior: "smooth" });
+        container.scrollTo({ top: 0, behavior });
         return;
       }
       if (hour >= lastHour) {
         container.scrollTo({
           top: container.scrollHeight,
-          behavior: "smooth",
+          behavior,
         });
         return;
       }
@@ -517,7 +559,7 @@ export default function BusHistoryModal({
         const targetScrollTop = container.scrollTop + relativeTop - 45;
         container.scrollTo({
           top: Math.max(0, targetScrollTop),
-          behavior: "smooth",
+          behavior,
         });
       }
     } else {
@@ -526,13 +568,13 @@ export default function BusHistoryModal({
       const lastHour = matrixRows[matrixRows.length - 1].hour;
 
       if (hour <= firstHour) {
-        container.scrollTo({ top: 0, behavior: "smooth" });
+        container.scrollTo({ top: 0, behavior });
         return;
       }
       if (hour >= lastHour) {
         container.scrollTo({
           top: container.scrollHeight,
-          behavior: "smooth",
+          behavior,
         });
         return;
       }
@@ -549,10 +591,15 @@ export default function BusHistoryModal({
         const targetScrollTop = container.scrollTop + relativeTop - 45;
         container.scrollTo({
           top: Math.max(0, targetScrollTop),
-          behavior: "smooth",
+          behavior,
         });
       }
     }
+  };
+
+  // 시간대 칩 클릭 시 해당 시간대로 부드럽게 스크롤
+  const handleHourClick = (hour: number) => {
+    scrollToHour(hour, "smooth");
   };
 
   const handleHourChipClick = (hour: number) => {
@@ -560,8 +607,55 @@ export default function BusHistoryModal({
     handleHourClick(hour);
   };
 
-  // 모달 오픈 시 현재 시간 강조 라인으로 자동 스크롤
+  // 목록을 직접 스크롤할 때 화면 상단에 보이는 시간대로 칩 선택 상태를 동기화한다.
+  const handleTableScroll = useCallback(() => {
+    if (scrollSelectionFrameRef.current !== null) return;
+
+    scrollSelectionFrameRef.current = window.requestAnimationFrame(() => {
+      scrollSelectionFrameRef.current = null;
+
+      const container = listContainerRef.current;
+      if (!container) return;
+
+      const hours = isAllRoutesMode
+        ? Array.from(new Set(timelineItems.map((item) => item.hour))).sort(
+            (a, b) => a - b,
+          )
+        : Array.from(new Set(matrixRows.map((row) => row.hour))).sort(
+            (a, b) => a - b,
+          );
+      if (hours.length === 0) return;
+
+      // 매트릭스 헤더와 목록 여백을 감안해 상단에서 조금 내려온 지점을 기준으로 한다.
+      const visibleMarker = container.getBoundingClientRect().top + 56;
+      let visibleHour = hours[0];
+
+      for (const hour of hours) {
+        const rowElement = hourRowRefs.current[hour];
+        if (rowElement && rowElement.getBoundingClientRect().top <= visibleMarker) {
+          visibleHour = hour;
+        } else {
+          break;
+        }
+      }
+
+      setSelectedHour((currentHour) =>
+        currentHour === visibleHour ? currentHour : visibleHour,
+      );
+    });
+  }, [isAllRoutesMode, matrixRows, timelineItems]);
+
   useEffect(() => {
+    return () => {
+      if (scrollSelectionFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollSelectionFrameRef.current);
+      }
+    };
+  }, []);
+
+  // 모달 최초 진입 시에는 애니메이션 없이 현재 시간대를 즉시 표시한다.
+  // 이후 시간대 칩 클릭은 handleHourClick에서 부드럽게 이동한다.
+  useLayoutEffect(() => {
     const hasData = isAllRoutesMode
       ? timelineItems.length > 0
       : matrixRows.length > 0;
@@ -569,31 +663,27 @@ export default function BusHistoryModal({
       return;
     }
 
-    const timer = setTimeout(() => {
-      const container = listContainerRef.current;
-      hasAutoScrolledRef.current = true;
+    const container = listContainerRef.current;
+    hasAutoScrolledRef.current = true;
 
-      if (
-        selectedDayIndex === todayDayIndex &&
-        targetItemRef.current &&
-        container
-      ) {
-        const containerRect = container.getBoundingClientRect();
-        const targetRect = targetItemRef.current.getBoundingClientRect();
-        const relativeTop = targetRect.top - containerRect.top;
-        const targetScrollTop = container.scrollTop + relativeTop - 90;
+    if (
+      selectedDayIndex === todayDayIndex &&
+      targetItemRef.current &&
+      container
+    ) {
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = targetItemRef.current.getBoundingClientRect();
+      const relativeTop = targetRect.top - containerRect.top;
+      const targetScrollTop = container.scrollTop + relativeTop - 90;
 
-        container.scrollTo({
-          top: Math.max(0, targetScrollTop),
-          behavior: "smooth",
-        });
-        return;
-      }
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "auto",
+      });
+      return;
+    }
 
-      handleHourClick(selectedHour);
-    }, 120);
-
-    return () => clearTimeout(timer);
+    scrollToHour(selectedHour, "auto");
   }, [
     isOpen,
     loading,
@@ -728,7 +818,7 @@ export default function BusHistoryModal({
           </HourFilterBar>
 
           {/* 본문 뷰포트 (전체 노선: 타임라인 뷰 / 개별 노선: 매트릭스 표) */}
-          <TableViewport ref={listContainerRef}>
+          <TableViewport ref={listContainerRef} onScroll={handleTableScroll}>
             {loading ? (
               <LoadingBox>
                 <RotateCw size={24} className="spin" color="#2563eb" />
