@@ -488,6 +488,13 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     }
   }, [selectedCategory, isLoading, isOpenRoomsLoading, swiperRef]);
 
+  const handleFriendContentHeightChange = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      swiperRef?.update();
+      swiperRef?.updateAutoHeight();
+    });
+  }, [swiperRef]);
+
   const fabLabel = useMemo(() => {
     if (selectedCategory === "개인") return "새로운 채팅";
     if (selectedCategory === "친구") return "친구 추가";
@@ -805,6 +812,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
               selectedIds={selectedIds}
               onToggleSelect={handleToggleSelect}
               onPressStart={handlePressStart}
+              onContentHeightChange={handleFriendContentHeightChange}
             />
           </Slide>
         </SwiperSlide>
@@ -953,7 +961,11 @@ const Slide = styled.div`
   gap: 24px;
   box-sizing: border-box;
   padding: 0 ${MOBILE_PAGE_GUTTER};
-  min-height: 60vh;
+  /* Keep the entire visible content area responsive to horizontal swipes,
+     including when a tab has only a few rows. */
+  min-height: calc(
+    100dvh - var(--header-height, 56px) - 24px - var(--nav-height, 100px) - 60px
+  );
 `;
 
 const NotificationWarningBanner = styled.div`

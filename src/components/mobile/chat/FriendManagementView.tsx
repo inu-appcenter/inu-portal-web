@@ -197,6 +197,7 @@ export interface FriendManagementViewProps {
   onPressStart?: (friendId: number) => void;
   onPressCancel?: () => void;
   isShareMode?: boolean;
+  onContentHeightChange?: () => void;
 }
 
 export default function FriendManagementView({
@@ -207,6 +208,7 @@ export default function FriendManagementView({
   onPressStart,
   onPressCancel,
   isShareMode = false,
+  onContentHeightChange,
 }: FriendManagementViewProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -223,6 +225,16 @@ export default function FriendManagementView({
     friendId: number;
     nickname: string;
   } | null>(null);
+
+  // Swiper's auto-height does not observe CSS grid row transitions. Notify the
+  // parent both when the transition begins and after it finishes so the expanded
+  // row remains inside the swipe viewport.
+  useEffect(() => {
+    onContentHeightChange?.();
+    const timer = window.setTimeout(() => onContentHeightChange?.(), 280);
+
+    return () => window.clearTimeout(timer);
+  }, [expandedId, onContentHeightChange]);
 
   // Sorting
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
@@ -972,4 +984,4 @@ const EmptyDescription = styled.p`
   margin: 0;
   text-align: center;
   white-space: pre-line;
-`;
+`;
