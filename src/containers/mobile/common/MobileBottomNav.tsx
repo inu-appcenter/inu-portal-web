@@ -178,10 +178,8 @@ const NavContainer = styled.div`
   height: ${BOTTOM_NAV_SAFE_HEIGHT};
   z-index: 1000;
   pointer-events: auto;
-  background: var(--bg-blur, rgba(255, 255, 255, 0.60));
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--bg-base, #ffffff);
+  border-top: 1px solid var(--border-default, #e5e8eb);
   border-radius: 36px 36px 0 0;
 
   @media ${DESKTOP_MEDIA} {
@@ -225,10 +223,7 @@ const ActivePillIndicator = styled(motion.div)`
   width: 74px;
   height: 64px;
   border-radius: 999px;
-  background: var(--bg-blur, rgba(255, 255, 255, 0.60));
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--bg-brand, #eff6ff);
   z-index: 1;
   pointer-events: none;
 `;
