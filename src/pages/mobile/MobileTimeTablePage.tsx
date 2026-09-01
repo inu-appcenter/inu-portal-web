@@ -144,7 +144,8 @@ const MobileTimeTablePage = () => {
   //   setSemester,
   //   setActiveTimetable,
   // } = useTimetableStore();
-  const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
+  const { timetables, activeTimetableId, setSemester, setActiveTimetable } =
+    useTimetableStore();
   // const timetables = [] as Timetable[];
 
   useTimeTables(undefined, undefined, { enabled: isLoggedIn });
@@ -166,16 +167,30 @@ const MobileTimeTablePage = () => {
     [currentSemester],
   );
 
-  const requestedTimetable = useMemo(() => {
-    const idParam = searchParams.get("id");
-    if (!idParam) return null;
+  const idParam = searchParams.get("id");
+
+  // URL의 ?id=는 "이 시간표로 띄워달라"는 **진입 시드**다. 한 번 반영하고 나면
+  // 소유권은 스토어(activeTimetableId)로 넘어간다 - 멀티 웹뷰에서 시간표 목록은
+  // 별도 웹뷰로 뜨고, 거기서 고른 시간표는 broadcastSync로만 이 화면에 도달하는데
+  // (goHome은 경로만 넘겨 쿼리스트링이 사라진다) URL이 계속 우선권을 가지면 그
+  // 선택이 곧바로 예전 id로 되돌아가 버린다.
+  const [settledId, setSettledId] = useState<string | null>(null);
+
+  const pendingUrlTimetable = useMemo(() => {
+    if (!idParam || idParam === settledId) return null;
     const id = Number(idParam);
     if (!Number.isFinite(id)) return null;
     return timetables.find((t) => t.id === id) ?? null;
-  }, [searchParams, timetables]);
+  }, [idParam, settledId, timetables]);
+
+  const storeTimetable = useMemo(
+    () => timetables.find((t) => t.id === activeTimetableId) ?? null,
+    [timetables, activeTimetableId],
+  );
 
   const activeTimetable = useMemo(() => {
-    if (requestedTimetable) return requestedTimetable;
+    if (pendingUrlTimetable) return pendingUrlTimetable;
+    if (storeTimetable) return storeTimetable;
     if (!currentSemester) return null;
     return (
       timetables.find(
@@ -185,21 +200,39 @@ const MobileTimeTablePage = () => {
           t.isRepresentative,
       ) ?? null
     );
-  }, [timetables, currentSemester, requestedTimetable]);
+  }, [timetables, currentSemester, pendingUrlTimetable, storeTimetable]);
 
   const displayedSemesterLabel =
-    requestedTimetable?.semester || currentSemesterLabel;
+    activeTimetable?.semester || currentSemesterLabel;
 
+  // 화면이 고른 시간표를 스토어와 URL 양쪽에 수렴시킨다. settledId를 같이 올려야
+  // 방금 우리가 쓴 URL이 다시 "새 시드"로 읽히는 되먹임이 생기지 않는다.
   useEffect(() => {
-    if (!isLoggedIn || !displayedSemesterLabel) return;
-    setSemester(displayedSemesterLabel);
-    setActiveTimetable(activeTimetable?.id ?? null);
+    if (!isLoggedIn || !activeTimetable) return;
+    const nextId = String(activeTimetable.id);
+
+    if (settledId !== nextId) setSettledId(nextId);
+
+    if (activeTimetable.id !== activeTimetableId) {
+      setSemester(activeTimetable.semester);
+      setActiveTimetable(activeTimetable.id);
+    }
+
+    if (idParam !== nextId) {
+      const next = new URLSearchParams(searchParams);
+      next.set("id", nextId);
+      setSearchParams(next, { replace: true });
+    }
   }, [
-    activeTimetable?.id,
-    displayedSemesterLabel,
+    activeTimetable,
+    activeTimetableId,
+    idParam,
     isLoggedIn,
+    searchParams,
     setActiveTimetable,
+    setSearchParams,
     setSemester,
+    settledId,
   ]);
 
   useTimeTableDetail(activeTimetable?.id, { enabled: isLoggedIn });
