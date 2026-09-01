@@ -13,3 +13,6 @@
 # Pages가 타입을 정하지 못하기 때문.
 /.well-known/apple-app-site-association  /app-links/apple-app-site-association  200
 /.well-known/assetlinks.json             /app-links/assetlinks.json             200
+
+
+https://intip-test.pages.dev/* https://intip-inuappcenter.kr/:splat 301
