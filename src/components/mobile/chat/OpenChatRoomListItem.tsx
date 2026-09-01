@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Users } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { OpenChatRoomResponseDto } from "@/types/chat";
 import Ripple from "@/components/common/Ripple";
 
@@ -26,7 +26,7 @@ export default function OpenChatRoomListItem({
             />
           )}
           <DefaultIcon className="fallback">
-            <Users size={24} color="#D6D1D5" />
+            <Icon name="users" size={24} color="#D6D1D5" />
           </DefaultIcon>
         </ThumbnailArea>
         <ContentArea>
@@ -36,7 +36,7 @@ export default function OpenChatRoomListItem({
           </TitleArea>
           {room.description && <Description>{room.description}</Description>}
           <ParticipantInfo>
-            <Users size={14} color="#8E8E93" />
+            <Icon name="users" size={14} color="#8E8E93" />
             <span>
               {room.currentParticipants} / {room.maxCapacity}
             </span>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import dropdownIcon from "@/resources/assets/mobile-tips/CategorySelectDropdown-img.svg";
+import FontelloIcon from "@/components/common/Icon";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ClubCategorySelector() {
@@ -48,7 +48,7 @@ export default function ClubCategorySelector() {
       ) : (
         <Dropdown>
           <div>{selectedCategory || "카테고리 선택"}</div>
-          <DropdownImg src={dropdownIcon} alt="dropdownIcon" />
+          <DropdownImg name="chevron-down" size={8} />
         </Dropdown>
       )}
     </CategorySelectorWrapper>
@@ -77,9 +77,8 @@ const Dropdown = styled.div`
   );
 `;
 
-const DropdownImg = styled.img`
-  width: 4px;
-  height: 8px;
+const DropdownImg = styled(FontelloIcon)`
+  color: #9fa3a6;
 `;
 
 const DropdownOptions = styled.div`

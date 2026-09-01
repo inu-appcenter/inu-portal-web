@@ -415,12 +415,16 @@ const TimetableGrid = ({
         }}
       >
         <ItemContent>
-          <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
-          {(theme?.showRoom ?? true) && item.room && (
-            <ClassRoom $fontSize={theme?.fontSize}>{formatRoom(item.room)}</ClassRoom>
-          )}
-          {theme?.showProfessor && item.professor && (
-            <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
+          {!isCompareMode && (
+            <>
+              <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
+              {(theme?.showRoom ?? true) && item.room && (
+                <ClassRoom $fontSize={theme?.fontSize}>{formatRoom(item.room)}</ClassRoom>
+              )}
+              {theme?.showProfessor && item.professor && (
+                <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
+              )}
+            </>
           )}
         </ItemContent>
       </ClassItemBlock>
@@ -558,7 +562,7 @@ const GridContainer = styled.div<{ $rowCount: number; $dayCount: number }>`
   grid-template-columns: 24px repeat(${({ $dayCount }) => $dayCount}, minmax(0, 1fr));
   grid-template-rows: 24px repeat(${({ $rowCount }) => $rowCount}, ${ROW_HEIGHT_PX}px);
   border: 1px solid var(--border-strong);
-  border-radius: 16px;
+  border-radius: 20px;
   background-color: var(--bg-base);
   overflow: hidden;
   position: relative;
@@ -763,8 +767,8 @@ const UntimedCourseItem = styled.button`
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 44px;
-  padding: 8px 16px;
+  
+  padding: 4px 16px;
   border: 0;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
   background: transparent;

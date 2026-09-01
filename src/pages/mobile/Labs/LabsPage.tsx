@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
 
-import 실험실배너 from "@/resources/assets/labs/실험실배너.webp";
+import { labsBanner as 실험실배너 } from "@/resources/assets/illustrations/features";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";

@@ -1,7 +1,8 @@
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import styled from "styled-components";
-import { Search, X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useSearchParams } from "react-router-dom";
+import { resetScrollToTop } from "@/utils/scroll";
 
 export interface FloatingSearchBarRef {
   blur: () => void;
@@ -70,6 +71,14 @@ const FloatingSearchBar = forwardRef<
 
       if (!isSearchActiveRef.current) return;
 
+      // 우리가 쌓은 엔트리가 아직 스택에 남아 있다면 이 popstate 는 우리 것이
+      // 아니다. 같은 문서 안에서 히스토리를 쓰는 주체가 여럿이라(시트·드롭다운
+      // 오버레이의 useSheetBackHandler/useHistoryBackedOverlay, 네이티브 셸의
+      // 딥링크 합성 popstate, 뒤로가기 위임의 webViewGoBack) 남의 back() 이
+      // 만든 pop 까지 받아 검색바가 제멋대로 접히곤 했다. 착지한 엔트리에
+      // 우리 플래그가 그대로 있으면 무시한다.
+      if (window.history.state?.[SEARCH_HISTORY_STATE_KEY]) return;
+
       hasSearchHistoryEntryRef.current = false;
       inputRef.current?.blur();
       handleActiveChange(false);
@@ -104,6 +113,43 @@ const FloatingSearchBar = forwardRef<
       window.history.back();
     }
   }, [isSearchActive]);
+
+  // 검색어가 비어있는 상태에서 다른 영역을 만지면(탭/드래그) 검색바 닫기.
+  //
+  // 드래그 신호로 scroll 이 아니라 touchmove 를 쓴다. 네이티브 웹뷰에서는 인풋에
+  // 포커스가 가면 소프트 키보드가 올라오며 뷰포트가 줄고(안드로이드는 셸이 웹뷰를
+  // 키보드 높이만큼 줄이고, iOS 는 WKWebView 가 스크롤뷰에 인셋을 넣고 포커스된
+  // 요소를 보이게 스크롤한다) 그게 window 의 scroll 로 나타난다. 사용자가 스크롤한
+  // 적이 없는데 여기서 닫혀서, 포커스가 가자마자 키보드가 닫히고 검색바가 접혔다
+  // (브라우저는 포커스만으로 뷰포트가 변하지 않아 재현되지 않는다). 손가락 드래그는
+  // 그런 오인이 없다.
+  useEffect(() => {
+    if (!isSearchActive) return;
+
+    const handleOutsideInteraction = (e: Event) => {
+      // 검색바 자신을 만지는 건 "바깥 상호작용"이 아니다.
+      if ((e.target as HTMLElement)?.closest?.(".floating-search-bar-wrapper")) {
+        return;
+      }
+
+      if (!searchQuery.trim()) {
+        inputRef.current?.blur();
+        handleActiveChange(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsideInteraction, {
+      passive: true,
+    });
+    document.addEventListener("touchmove", handleOutsideInteraction, {
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideInteraction);
+      document.removeEventListener("touchmove", handleOutsideInteraction);
+    };
+  }, [isSearchActive, searchQuery]);
 
   const handleClear = (e?: React.MouseEvent) => {
     if (e) {
@@ -140,6 +186,7 @@ const FloatingSearchBar = forwardRef<
   }));
 
   const executeSearch = (query: string) => {
+    resetScrollToTop();
     if (onSearch) {
       onSearch(query);
     }
@@ -156,7 +203,11 @@ const FloatingSearchBar = forwardRef<
   };
 
   return (
-    <SearchBarWrapper $isActive={isSearchActive} $size={size}>
+    <SearchBarWrapper
+      className="floating-search-bar-wrapper"
+      $isActive={isSearchActive}
+      $size={size}
+    >
       <SearchInput
         ref={inputRef}
         $isActive={isSearchActive}
@@ -178,7 +229,7 @@ const FloatingSearchBar = forwardRef<
           onClick={handleClear}
           aria-label="검색어 지우기"
         >
-          <X size={14} strokeWidth={2.5} />
+          <Icon name="close-md" size={14} />
         </ClearButton>
       )}
       <SearchButtonCircle
@@ -196,7 +247,7 @@ const FloatingSearchBar = forwardRef<
           }
         }}
       >
-        <Search size={20} />
+        <Icon name="search" size={20} />
       </SearchButtonCircle>
     </SearchBarWrapper>
   );

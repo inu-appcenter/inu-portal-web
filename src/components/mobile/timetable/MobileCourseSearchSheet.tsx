@@ -1,18 +1,16 @@
 import styled from "styled-components";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import type { ReactNode, RefObject, UIEventHandler } from "react";
+import type { ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import {
   SlidersHorizontal,
-  Plus,
   MessagesSquare,
-  FileText,
-  Check,
   SearchX,
 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
@@ -51,6 +49,7 @@ export interface CourseResult {
   hyName?: string;
   ssupTypeName?: string;
   ssupTypeCode?: string;
+  gradeEvaluationMethod: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -64,14 +63,12 @@ const LECTURE_REVIEW_NOTICE_MESSAGE =
 
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
-  onScrollCapture: UIEventHandler<HTMLDivElement>;
   isAnimating: boolean;
   scrollRef: (node: HTMLDivElement | null) => void;
 }
 
 const CourseSheetScrollableContent = ({
   children,
-  onScrollCapture,
   isAnimating,
   scrollRef,
 }: CourseSheetScrollableContentProps) => {
@@ -83,7 +80,6 @@ const CourseSheetScrollableContent = ({
       // react-modal-sheet의 타입 선언은 scrollRef를 RefObject로만 허용하지만,
       // 내부 mergeRefs는 함수형 콜백 ref도 그대로 호출해 준다 (dist/index.js 참고).
       scrollRef={scrollRef as unknown as RefObject<HTMLDivElement | null>}
-      onScrollCapture={onScrollCapture}
       scrollStyle={{ paddingBottom: scrollPaddingBottom }}
       disableDrag={({ scrollPosition }) =>
         scrollPosition !== undefined && scrollPosition !== "top"
@@ -416,7 +412,13 @@ const MobileCourseSearchSheet = ({
     observerRef.current.observe(node);
   }, []);
 
-  const handleScroll: UIEventHandler<HTMLDivElement> = () => {
+  // 목록을 손가락으로 끌면 키보드를 내린다. scroll 이 아니라 touchmove 를 보는
+  // 이유: 웹뷰에서 인풋에 포커스가 가면 소프트 키보드가 올라오며 뷰포트가 줄고
+  // (안드로이드는 셸이 웹뷰를 키보드 높이만큼 줄이고, iOS 는 WKWebView 가
+  // 스크롤뷰에 인셋을 넣는다) 그 레이아웃 변화가 목록의 scroll 이벤트로 나타난다.
+  // 사용자가 스크롤한 적이 없는데 blur() 가 불려 포커스가 잡히자마자 키보드가
+  // 닫히고 검색바까지 접혔다. 손가락 드래그는 그런 오인이 없다.
+  const dismissKeyboardOnDrag = () => {
     searchBarRef.current?.blur();
   };
 
@@ -457,11 +459,10 @@ const MobileCourseSearchSheet = ({
         >
           <CourseSheetHeader />
           <CourseSheetScrollableContent
-            onScrollCapture={handleScroll}
             isAnimating={isAnimating}
             scrollRef={attachScroller}
           >
-            <SheetContentWrapper>
+            <SheetContentWrapper onTouchMove={dismissKeyboardOnDrag}>
               <CourseList>
                 {isLoading ? (
                   Array.from({ length: 6 }).map((_, index) => (
@@ -539,7 +540,9 @@ const MobileCourseSearchSheet = ({
                           {course.professor}
                         </AttributeItem>
                         <AttributeItem>{course.credits}학점</AttributeItem>
-                        <AttributeItem>상대평가</AttributeItem>
+                        <AttributeItem>
+                          {course.gradeEvaluationMethod}
+                        </AttributeItem>
                       </CourseAttributes>
 
                       <CourseAdditionalInfo>
@@ -576,7 +579,7 @@ const MobileCourseSearchSheet = ({
                                 }
                               }}
                             >
-                              {isAdded ? <Check size={20} /> : <Plus size={20} />}
+                              {isAdded ? <Icon name="check" size={20} /> : <Icon name="add-plus-sm" size={20} />}
                               {isAdded ? "추가됨" : "시간표에 추가"}
                             </PrimaryActionButton>
                             <SecondaryActionButton
@@ -594,7 +597,7 @@ const MobileCourseSearchSheet = ({
                                 alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                               }}
                             >
-                              <FileText size={20} />
+                              <Icon name="file-document" size={20} />
                               강의계획서
                             </SecondaryActionButton>
                           </ButtonRow>

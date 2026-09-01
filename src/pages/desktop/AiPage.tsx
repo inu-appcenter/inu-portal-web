@@ -5,7 +5,7 @@ import AiTitle from "@/components/desktop/ai/AiTitle";
 import HowToUse from "@/components/desktop/ai/HowToUse";
 import styled from "styled-components";
 import { useState } from "react";
-import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
+import Icon from "@/components/common/Icon";
 import TitleContentArea from "../../components/desktop/common/TitleContentArea.tsx";
 import { useHeader } from "@/context/HeaderContext";
 
@@ -35,7 +35,7 @@ export default function AiPage() {
             <Modal>
               <div className="close" onClick={() => setShow(false)}>
                 <span>닫기</span>
-                <img src={X_Vector} alt="X" />
+                <Icon name="close-md" size={10} />
               </div>
               {/* <AiIntroText /> */}
               <HowToUse />
@@ -43,7 +43,7 @@ export default function AiPage() {
           </ModalBackGround>
         )}
         <AiGenerate />
-        <h2>made by dnltjdwls1@naver.com</h2>
+        <h2>made by support@inuappcenter.kr</h2>
       </AiContents>
     </AiPageWrapper>
   );

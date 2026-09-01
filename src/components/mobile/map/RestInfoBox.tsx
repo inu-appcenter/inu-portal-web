@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import Woman from "@/resources/assets/mapIcons/woman.svg";
-import Bed from "@/resources/assets/mapIcons/bed.svg";
-import Shower from "@/resources/assets/mapIcons/shower.svg";
+import Woman from "@/resources/assets/illustrations/map/markers/feminine-products.svg";
+import Bed from "@/resources/assets/illustrations/map/markers/bed.svg";
+import Shower from "@/resources/assets/illustrations/map/markers/shower.svg";
 
 const RestInfoBox = ({
   title,

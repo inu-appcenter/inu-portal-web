@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import Gear from "@/resources/assets/mobile-save/Gear.svg";
+import { gear as Gear } from "@/resources/assets/icons/save";
 import { useState } from "react";
 import FolderActionModal from "@/containers/mobile/save/FolderActionModal";
 import { DESKTOP_MEDIA } from "@/styles/responsive";

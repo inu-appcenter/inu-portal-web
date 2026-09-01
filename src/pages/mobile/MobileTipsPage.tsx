@@ -23,6 +23,7 @@ import { Swiper as SwiperClass } from "swiper";
 import "swiper/css";
 import { resetScrollToTop } from "@/utils/scroll";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import usePostModeration from "@/hooks/usePostModeration";
 
 interface CategoryPostListProps {
   category: string;
@@ -30,6 +31,8 @@ interface CategoryPostListProps {
 
 const CategoryPostList = ({ category }: CategoryPostListProps) => {
   const navigate = useNavigate();
+  // App Store 가이드라인 1.2(UGC) — 커뮤니티 피드에서 신고/작성자 차단/즉시 숨김.
+  const moderation = usePostModeration();
 
   const {
     data,
@@ -52,8 +55,9 @@ const CategoryPostList = ({ category }: CategoryPostListProps) => {
   });
 
   const posts = useMemo(() => {
-    return data?.pages.flatMap((page) => page) ?? [];
-  }, [data]);
+    // 신고/차단/숨김 처리한 글은 서버 검토를 기다리지 않고 즉시 피드에서 뺀다.
+    return moderation.filterHidden(data?.pages.flatMap((page) => page) ?? []);
+  }, [data, moderation.filterHidden]);
 
   if (isLoading && posts.length === 0) {
     return (
@@ -99,6 +103,7 @@ const CategoryPostList = ({ category }: CategoryPostListProps) => {
                   replyCount={post.replyCount}
                   imageCount={post.imageCount}
                   imageUrl={post.imageUrl}
+                  menuSlot={moderation.renderMenu(post)}
                   onClick={() => {
                     mixpanelTrack.tipViewed(category, post.title);
                     navigate(ROUTES.BOARD.TIPS_DETAIL(post.id));
@@ -112,6 +117,7 @@ const CategoryPostList = ({ category }: CategoryPostListProps) => {
           )}
         </Box>
       </InfiniteScroll>
+      {moderation.modals}
     </ListContainer>
   );
 };
@@ -186,9 +192,8 @@ const MobileTipsPage = () => {
       localStorage.setItem("has_swiped_tips", "true");
     }
 
-    resetScrollToTop();
-
     if (nextCategory && nextCategory !== selectedCategory) {
+      resetScrollToTop();
       const nextParams = new URLSearchParams(location.search);
       nextParams.set("category", nextCategory);
       navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });

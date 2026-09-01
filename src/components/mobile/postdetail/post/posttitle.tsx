@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Eye } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { formatTimeAgo } from "@/utils/date";
 
 interface PostTitleProps {
@@ -43,7 +43,7 @@ export default function PostTitle({
 
         {view !== undefined && (
           <ViewCountRow>
-            <Eye size={16} color="#8B95A1" />
+            <Icon name="eye" size={16} color="#8B95A1" />
             <span>{view}</span>
           </ViewCountRow>
         )}

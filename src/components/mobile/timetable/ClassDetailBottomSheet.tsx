@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { Trash2, Image as ImageIcon, Pencil } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
@@ -140,7 +140,8 @@ export default function ClassDetailBottomSheet({
   const creditsVal =
     liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
 
-  const evaluationVal = liveClass.evaluation || "";
+  const evaluationVal =
+    offering?.gradeEvaluationName || liveClass.evaluation || "";
 
   const lectureReviewUrl =
     professorName && professorName !== "-"
@@ -267,10 +268,10 @@ export default function ClassDetailBottomSheet({
                             onOpenChange(false);
                           }}
                         >
-                          <Pencil size={18} />
+                          <Icon name="edit-pencil-01" size={18} />
                         </EditButton>
                       )}
-                      {onDelete && (
+                      {!readOnly && !liveClass.isFriendOwned && onDelete && (
                         <DeleteButton
                           type="button"
                           onClick={() => {
@@ -278,7 +279,7 @@ export default function ClassDetailBottomSheet({
                             onOpenChange(false);
                           }}
                         >
-                          <Trash2 size={18} />
+                          <Icon name="trash-full" size={18} />
                         </DeleteButton>
                       )}
                     </HeaderActions>
@@ -304,7 +305,7 @@ export default function ClassDetailBottomSheet({
                           onOpenChange(false);
                         }}
                       >
-                        <ImageIcon size={16} />
+                        <Icon name="image" size={16} />
                       </RoomMapButton>
                     </RoomRow>
                   </DetailsSection>

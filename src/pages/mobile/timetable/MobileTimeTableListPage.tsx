@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 import Modal from "@/components/common/Modal";
@@ -204,7 +204,22 @@ export default function MobileTimeTableListPage() {
                   : undefined
               }
             >
-              <SemesterHeader>{sem}</SemesterHeader>
+              <SemesterHeaderRow>
+                <SemesterTitle>{sem}</SemesterTitle>
+                <SemesterAddButton
+                  type="button"
+                  aria-label={`${sem} 시간표 추가`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    mixpanelTrack.timetableFeatureClicked("시간표 생성", "학기 섹션", {
+                      semester: sem,
+                    });
+                    openAddModal(sem);
+                  }}
+                >
+                  <Icon name="add-plus-sm" size={20} />
+                </SemesterAddButton>
+              </SemesterHeaderRow>
               {hasTimetable ? (
                 <ScheduleListWrapper>
                   {list.map((t) => (
@@ -219,7 +234,7 @@ export default function MobileTimeTableListPage() {
                           }}
                           aria-label="이름 변경"
                         >
-                          <Pencil size={16} />
+                          <Icon name="edit-pencil-01" size={16} />
                         </RowIconButton>
                         <RowIconButton
                           onClick={(e) => {
@@ -228,7 +243,7 @@ export default function MobileTimeTableListPage() {
                           }}
                           aria-label="삭제"
                         >
-                          <Trash2 size={16} />
+                          <Icon name="trash-full" size={16} />
                         </RowIconButton>
                         <StarButton onClick={(e) => {
                           e.stopPropagation();
@@ -341,8 +356,16 @@ const TimeTableListCard = styled.div<{ $isClickable?: boolean }>`
   `}
 `;
 
-const SemesterHeader = styled.div`
-  padding: 16px 16px 8px 16px;
+const SemesterHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 6px 16px;
+  border-bottom: solid 1px var(--border-default);
+  
+`;
+
+const SemesterTitle = styled.div`
   font-family: Pretendard;
   font-weight: 600;
   font-size: 16px;
@@ -350,10 +373,33 @@ const SemesterHeader = styled.div`
   color: var(--text-secondary, #333d4b);
 `;
 
+const SemesterAddButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+  color: var(--text-secondary, #333d4b);
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--bg-muted, #f1f3f5);
+  }
+
+  &:active {
+    background-color: var(--bg-disabled, #e5e8eb);
+  }
+`;
+
 const ScheduleListWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 16px 8px 16px;
+  padding: 4px 16px 8px 16px;
 `;
 
 const ScheduleRow = styled.div`

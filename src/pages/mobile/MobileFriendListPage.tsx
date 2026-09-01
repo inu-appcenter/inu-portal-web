@@ -19,7 +19,8 @@ import {
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
-import { ArrowDownAZ, ArrowUpZA, Check } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
 import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 
@@ -205,17 +206,6 @@ const EmptyFriendsIllust = () => (
   </svg>
 );
 
-// --- Dummy Helper Mapper (Matches existing API mapping logic) ---
-const getFriendDept = (nickname: string) => {
-  const deptMap: Record<string, string> = {
-    김유니: "컴퓨터공학부",
-    박민서: "생명공학부",
-    이지원: "미디어커뮤니케이션학과",
-    최유리: "도시환경공학부",
-    홍길동: "Global Trade 학부",
-  };
-  return deptMap[nickname] || "컴퓨터공학부";
-};
 
 const getFriendStudentYear = (studentId: string) => {
   if (!studentId) return "23학번";
@@ -266,6 +256,11 @@ export default function MobileFriendListPage() {
       }
 
       if (!isSelectionModeRef.current) return;
+
+      // 우리 entry가 아직 스택에 남아 있다 = 남이 되돌린 것이다(검색바·추가
+      // 메뉴도 같은 문서에서 history를 쓴다). 그 pop까지 받아 선택모드가
+      // 제멋대로 풀리지 않게 한다.
+      if (window.history.state?.__intipFriendSelectionOpen) return;
 
       hasSelectionHistoryEntryRef.current = false;
       setIsSelectionMode(false);
@@ -621,7 +616,7 @@ export default function MobileFriendListPage() {
       const rowId = `${prefix}-${friend.friendId}`;
       const isSelected = selectedIds.includes(friend.friendId);
       const isExpanded = expandedId === rowId;
-      const dept = getFriendDept(friend.nickname);
+      
       const year = getFriendStudentYear(friend.studentId);
       const safeFireId = normalizeProfileImageId(
         friend.fireId,
@@ -665,7 +660,7 @@ export default function MobileFriendListPage() {
               <ExpandedDetailInner>
                 <DetailContent>
                   <StudentInfoRow>
-                    {year} · {dept}
+                    {year} · {friend.department ?? '-'}
                   </StudentInfoRow>
                   <ActionButtonRow>
                     <CircleActionButton
@@ -733,7 +728,7 @@ export default function MobileFriendListPage() {
                   onClick={() => setSelectedRoomId(room.roomId)}
                 >
                   <RoomItemCheckOverlay $isSelected={isSelected}>
-                    {isSelected && <Check size={14} color="#ffffff" strokeWidth={3} />}
+                    {isSelected && <Icon name="check" size={14} color="#ffffff" />}
                   </RoomItemCheckOverlay>
                   <ChatRoomListItemWrapper>
                     <ChatRoomListItem
@@ -807,80 +802,82 @@ export default function MobileFriendListPage() {
       )}
 
       {/* Floating Area (always rendered for animation) */}
-      <FloatingActionsWrapper>
-        {/* Plus button - scale out when selection mode is active */}
-        <PlusButtonWrapper
-          $visible={!isSelectionMode && !isSearchActive && !isShareMode}
-        >
-          <AddFriendMenuCard
-            open={isAddMenuOpen}
-            onScrimClick={() => closeAddMenu()}
-            onSearchClick={() => {
-              closeAddMenu(() => setIsAddFriendOpen(true));
-            }}
-            onNearbyClick={() => {
-              closeAddMenu(() => setIsNearbyInfoOpen(true));
-            }}
-            onInviteClick={() => {
-              closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
-            }}
-          />
-          <FloatingButton
-            onClick={toggleAddMenu}
-            $rotated={isAddMenuOpen}
+      <FloatingActionsOuter>
+        <FloatingActionsWrapper>
+          {/* Plus button - scale out when selection mode is active */}
+          <PlusButtonWrapper
+            $visible={!isSelectionMode && !isSearchActive && !isShareMode}
           >
-            <PlusIcon />
-          </FloatingButton>
-        </PlusButtonWrapper>
-
-        {/* Search bar */}
-        {(!isShareMode || shareTab === "friends") && (
-          <SearchBarContainer $isSearchActive={isSearchActive}>
-            <FloatingSearchBar
-              placeholder="친구 이름 또는 학번 검색"
-              onSearch={setSearchTerm}
-              onActiveChange={handleSearchActiveChange}
-              searchParamKey="q"
-              size={56}
+            <AddFriendMenuCard
+              open={isAddMenuOpen}
+              onScrimClick={() => closeAddMenu()}
+              onSearchClick={() => {
+                closeAddMenu(() => setIsAddFriendOpen(true));
+              }}
+              onNearbyClick={() => {
+                closeAddMenu(() => setIsNearbyInfoOpen(true));
+              }}
+              onInviteClick={() => {
+                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+              }}
             />
-          </SearchBarContainer>
-        )}
+            <FloatingButton
+              onClick={toggleAddMenu}
+              $rotated={isAddMenuOpen}
+            >
+              <PlusIcon />
+            </FloatingButton>
+          </PlusButtonWrapper>
 
-        {/* Compare / Share button - slides up from bottom */}
-        <CompareButtonArea $visible={isShareMode || isSelectionMode}>
-          <CompareFloatingButton
-            onClick={handleCompareClick}
-            disabled={
-              isShareMode
-                ? shareTab === "friends"
-                  ? selectedIds.length === 0 || chatMutation.isPending
-                  : !selectedRoomId
-                : selectedIds.length === 0
-            }
-            className={
-              (
+          {/* Search bar */}
+          {(!isShareMode || shareTab === "friends") && (
+            <SearchBarContainer $isSearchActive={isSearchActive}>
+              <FloatingSearchBar
+                placeholder="친구 이름 또는 학번 검색"
+                onSearch={setSearchTerm}
+                onActiveChange={handleSearchActiveChange}
+                searchParamKey="q"
+                size={56}
+              />
+            </SearchBarContainer>
+          )}
+
+          {/* Compare / Share button - slides up from bottom */}
+          <CompareButtonArea $visible={isShareMode || isSelectionMode}>
+            <CompareFloatingButton
+              onClick={handleCompareClick}
+              disabled={
                 isShareMode
                   ? shareTab === "friends"
-                    ? selectedIds.length === 0
+                    ? selectedIds.length === 0 || chatMutation.isPending
                     : !selectedRoomId
                   : selectedIds.length === 0
-              )
-                ? "disabled"
-                : ""
-            }
-          >
-            {isShareMode
-              ? shareTab === "friends"
-                ? selectedIds.length > 0
-                  ? `선택한 ${selectedIds.length}명과 채팅방 생성 및 공유`
-                  : "시간표 공유할 친구 선택"
-                : selectedRoomId
-                ? "이 채팅방에 공유하기"
-                : "공유할 채팅방 선택"
-              : "시간표 비교하기"}
-          </CompareFloatingButton>
-        </CompareButtonArea>
-      </FloatingActionsWrapper>
+              }
+              className={
+                (
+                  isShareMode
+                    ? shareTab === "friends"
+                      ? selectedIds.length === 0
+                      : !selectedRoomId
+                    : selectedIds.length === 0
+                )
+                  ? "disabled"
+                  : ""
+              }
+            >
+              {isShareMode
+                ? shareTab === "friends"
+                  ? selectedIds.length > 0
+                    ? `선택한 ${selectedIds.length}명과 채팅방 생성 및 공유`
+                    : "시간표 공유할 친구 선택"
+                  : selectedRoomId
+                  ? "이 채팅방에 공유하기"
+                  : "공유할 채팅방 선택"
+                : "시간표 비교하기"}
+            </CompareFloatingButton>
+          </CompareButtonArea>
+        </FloatingActionsWrapper>
+      </FloatingActionsOuter>
     </PageWrapper>
   );
 }
@@ -1128,20 +1125,30 @@ const EmptyDescription = styled.p`
   text-align: center;
 `;
 
-const FloatingActionsWrapper = styled.div`
+const FloatingActionsOuter = styled.div`
   position: fixed;
   bottom: calc(var(--nav-height, 100px) + 0px);
   right: 0;
   left: 0;
+  width: 100%;
+  z-index: 99;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
+  );
+`;
+
+const FloatingActionsWrapper = styled.div`
+  max-width: 768px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  z-index: 99;
-  max-width: 768px;
   pointer-events: none;
   box-sizing: border-box;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 16.02%, #fff 100%);
   padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
 
   & > * {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Drawer } from "vaul";
-import { X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
 export interface BottomSheetProps {
@@ -121,7 +121,7 @@ export default function BottomSheet({
             </DragHeader>
             {showCloseButton && (
               <CloseButton onClick={() => onOpenChange?.(false)}>
-                <X size={18} />
+                <Icon name="close-md" size={18} />
               </CloseButton>
             )}
             <ContentAreaBottomSheet>{children}</ContentAreaBottomSheet>

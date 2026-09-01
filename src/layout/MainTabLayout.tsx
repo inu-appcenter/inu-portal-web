@@ -7,7 +7,7 @@ import MobileHeader from "@/containers/mobile/common/MobileHeader";
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
 import { ROUTES } from "@/constants/routes";
-import UpperBackgroundImg from "@/resources/assets/mobile-common/upperBackgroundImg.svg";
+import { upperBackground as UpperBackgroundImg } from "@/resources/assets/illustrations/mobile-common";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_GUTTER,

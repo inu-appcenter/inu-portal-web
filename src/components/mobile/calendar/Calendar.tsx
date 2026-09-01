@@ -3,6 +3,8 @@ import {
   addDays,
   addMonths,
   addWeeks,
+  differenceInCalendarDays,
+  eachDayOfInterval,
   endOfMonth,
   endOfWeek,
   format,
@@ -12,10 +14,10 @@ import {
   parseISO,
   startOfMonth,
   startOfWeek,
-  subWeeks,
   subMonths,
+  subWeeks,
 } from "date-fns";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { getMyDeptSchedules, getSchedules } from "@/apis/schedules";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
@@ -56,6 +58,26 @@ const ChevronRight = () => (
   </svg>
 );
 
+function findAvailableRow(
+  occupiedRows: boolean[][],
+  start: number,
+  end: number,
+): number {
+  let row = 0;
+  while (true) {
+    if (!occupiedRows[row]) return row;
+    let isAvailable = true;
+    for (let c = start; c <= end; c++) {
+      if (occupiedRows[row][c]) {
+        isAvailable = false;
+        break;
+      }
+    }
+    if (isAvailable) return row;
+    row++;
+  }
+}
+
 interface CalendarbarProps {
   mode?: "monthly" | "weekly";
   baseDate?: Date;
@@ -65,14 +87,15 @@ export default function Calendar({
   mode = "monthly",
   baseDate = new Date(),
 }: CalendarbarProps) {
+  const { tokenInfo, userInfo } = useUserStore();
+
   // 모달 관련 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const [currentDate, setCurrentDate] = useState(baseDate);
-  const [monthEvents, setMonthEvents] = useState<ScheduleEvent[]>([]);
-  const [weeks, setWeeks] = useState<Date[][]>([]);
+  const [allLoadedEvents, setAllLoadedEvents] = useState<ScheduleEvent[]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
     {
       weekIndex: number;
@@ -84,40 +107,8 @@ export default function Calendar({
     }[]
   >([]);
 
-  const handleDayClick = (date: Date) => {
-    mixpanelTrack.calendarDateClicked(format(date, "yyyy-MM-dd"));
-    setSelectedDate(date);
-    setIsModalOpen(true);
-
-    // 믹스패널 트래킹: 캘린더에서 일정 상세 모달 열림
-    const eventsCount = monthEvents.filter((event) => {
-      const start = parseISO(String(event.start));
-      const end = parseISO(String(event.end));
-      return (
-        (isAfter(date, addDays(start, -1)) || isSameDay(date, start)) &&
-        (isBefore(date, addDays(end, 1)) || isSameDay(date, end))
-      );
-    }).length;
-
-    mixpanelTrack.scheduleModalViewed("Calendar", eventsCount);
-  };
-
-  const selectedDateEvents = monthEvents.filter((event) => {
-    if (!selectedDate) return false;
-    const start = parseISO(String(event.start));
-    const end = parseISO(String(event.end));
-    // 선택한 날짜가 시작일과 종료일 사이에 있는지 확인
-    return (
-      (isAfter(selectedDate, addDays(start, -1)) ||
-        isSameDay(selectedDate, start)) &&
-      (isBefore(selectedDate, addDays(end, 1)) || isSameDay(selectedDate, end))
-    );
-  });
-
-  const selectedMonthStr = format(currentDate, "yyyy-MM");
-
-  // 주차 및 날짜 계산
-  useEffect(() => {
+  // 주차 및 날짜 동기 계산 (상태 비동기성 제거 및 정확한 7일 단위 보장)
+  const weeks = useMemo(() => {
     const weeksArr: Date[][] = [];
 
     if (mode === "weekly") {
@@ -133,117 +124,201 @@ export default function Calendar({
       const firstDay = startOfMonth(currentDate);
       const lastDay = endOfMonth(firstDay);
       const calendarStart = startOfWeek(firstDay, { weekStartsOn: 0 });
-      const calendarEnd = endOfWeek(lastDay, { weekStartsOn: 6 });
+      const calendarEnd = endOfWeek(lastDay, { weekStartsOn: 0 });
 
-      const totalDays =
-        Math.ceil(
-          (calendarEnd.getTime() - calendarStart.getTime()) /
-            (1000 * 60 * 60 * 24),
-        ) + 1;
-      const dates = Array.from({ length: totalDays }, (_, i) =>
-        addDays(calendarStart, i),
-      );
+      const dates = eachDayOfInterval({
+        start: calendarStart,
+        end: calendarEnd,
+      });
 
       for (let i = 0; i < dates.length; i += 7) {
         weeksArr.push(dates.slice(i, i + 7));
       }
     }
-    setWeeks(weeksArr);
+    return weeksArr;
   }, [currentDate, mode]);
 
-  // 이벤트 데이터 로드 및 배치
+  // 이벤트 데이터 로드 및 배치 (멀티먼스 병렬 조회 + Race Condition 방지)
   useEffect(() => {
     if (weeks.length === 0) return;
 
-    const fetchEvents = async () => {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
+    let isCancelled = false;
 
-      const { tokenInfo, userInfo } = useUserStore.getState();
-      const hasAuth = Boolean(tokenInfo?.accessToken && userInfo?.department);
+    const fetchEvents = async () => {
+      // 표시되는 모든 주의 연/월 목록 추출 (이전달 말/다음달 초 누락 방지)
+      const monthMap = new Map<string, { year: number; month: number }>();
+      weeks.forEach((week) => {
+        week.forEach((date) => {
+          const year = date.getFullYear();
+          const month = date.getMonth() + 1;
+          const key = `${year}-${month}`;
+          if (!monthMap.has(key)) {
+            monthMap.set(key, { year, month });
+          }
+        });
+      });
+
+      const hasAuth = Boolean(tokenInfo?.accessToken);
 
       try {
-        const [resSchool, resDept] = await Promise.all([
-          getSchedules(year, month),
-          hasAuth
-            ? getMyDeptSchedules(year, month).catch((err) => {
-                console.error("학과 일정 가져오기 실패", err);
+        const fetchPromises = Array.from(monthMap.values()).map(
+          async ({ year, month }) => {
+            const [resSchool, resDept] = await Promise.all([
+              getSchedules(year, month).catch((err) => {
+                console.error(`학사일정 가져오기 실패 (${year}-${month})`, err);
                 return { data: [] };
-              })
-            : Promise.resolve({ data: [] }),
-        ]);
+              }),
+              hasAuth
+                ? getMyDeptSchedules(year, month).catch((err) => {
+                    console.error(
+                      `학과 일정 가져오기 실패 (${year}-${month})`,
+                      err,
+                    );
+                    return { data: [] };
+                  })
+                : Promise.resolve({ data: [] }),
+            ]);
 
-        // 타입 부여 및 데이터 통합
-        const schoolEvents = (resSchool?.data ?? []).map((schedule) =>
-          toScheduleEvent(schedule, "school"),
+            const schoolEvents = (resSchool?.data ?? []).map((schedule) =>
+              toScheduleEvent(schedule, "school"),
+            );
+            const deptEvents = (resDept?.data ?? []).map((schedule) =>
+              toScheduleEvent(schedule, "dept"),
+            );
+            return [...schoolEvents, ...deptEvents];
+          },
         );
-        const deptEvents = (resDept?.data ?? []).map((schedule) =>
-          toScheduleEvent(schedule, "dept"),
-        );
-        const combinedEvents = [...schoolEvents, ...deptEvents];
 
-        setMonthEvents(combinedEvents);
+        const allResults = await Promise.all(fetchPromises);
+        if (isCancelled) return;
 
+        // ID 기준 중복 제거
+        const eventMap = new Map<string | number, ScheduleEvent>();
+        allResults.flat().forEach((ev) => {
+          if (!eventMap.has(ev.id)) {
+            eventMap.set(ev.id, ev);
+          }
+        });
+
+        const combinedEvents = Array.from(eventMap.values());
+
+        // 일정 정렬: 시작일 오름차순 -> 기간 내림차순 -> ID 오름차순
+        combinedEvents.sort((a, b) => {
+          const startA = a.start;
+          const startB = b.start;
+          if (startA !== startB) return startA.localeCompare(startB);
+          const durA = parseISO(a.end).getTime() - parseISO(a.start).getTime();
+          const durB = parseISO(b.end).getTime() - parseISO(b.start).getTime();
+          if (durA !== durB) return durB - durA;
+          return a.id - b.id;
+        });
+
+        setAllLoadedEvents(combinedEvents);
+
+        // 주차별 이벤트 바 배치 계산
         const parsedEvents: typeof eventsByWeek = [];
+        const eventRowMap = new Map<string | number, number>();
 
         weeks.forEach((week, weekIndex) => {
           const weekStart = week[0];
           const weekEnd = week[6];
 
-          const eventsInWeek = combinedEvents
-            .map((event) => {
-              const start = parseISO(String(event.start));
-              const end = parseISO(String(event.end));
-              if (
-                (isBefore(start, addDays(weekEnd, 1)) ||
-                  isSameDay(start, weekEnd)) &&
-                (isAfter(end, addDays(weekStart, -1)) ||
-                  isSameDay(end, weekStart))
-              ) {
-                const startIdx = week.findIndex((d) =>
-                  isSameDay(d, isBefore(start, weekStart) ? weekStart : start),
-                );
-                const endIdx = week.findIndex((d) =>
-                  isSameDay(d, isAfter(end, weekEnd) ? weekEnd : end),
-                );
-                return {
-                  start: startIdx,
-                  end: endIdx,
-                  title: String(event.title),
-                  type: event.type,
-                };
-              }
-              return null;
-            })
-            .filter(Boolean) as {
+          const eventsInWeek: {
+            id: string | number;
             start: number;
             end: number;
             title: string;
             type: ScheduleType;
-          }[];
+          }[] = [];
 
-          const placed: typeof parsedEvents = [];
+          combinedEvents.forEach((event) => {
+            const start = parseISO(String(event.start));
+            const end = parseISO(String(event.end));
+
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
+
+            // 이벤트가 이번 주와 겹치는지 확인
+            if (!isAfter(start, weekEnd) && !isBefore(end, weekStart)) {
+              const effectiveStart = isBefore(start, weekStart)
+                ? weekStart
+                : start;
+              const effectiveEnd = isAfter(end, weekEnd) ? weekEnd : end;
+
+              const startIdx = Math.max(
+                0,
+                Math.min(6, differenceInCalendarDays(effectiveStart, weekStart)),
+              );
+              const endIdx = Math.max(
+                startIdx,
+                Math.min(6, differenceInCalendarDays(effectiveEnd, weekStart)),
+              );
+
+              eventsInWeek.push({
+                id: event.id,
+                start: startIdx,
+                end: endIdx,
+                title: String(event.title),
+                type: event.type,
+              });
+            }
+          });
+
+          const occupiedRows: boolean[][] = [];
+
           eventsInWeek.forEach((ev) => {
             let row = 0;
-            while (
-              placed.some(
-                (p) => p.row === row && ev.start <= p.end && ev.end >= p.start,
-              )
-            ) {
-              row++;
+            const prevAssignedRow = eventRowMap.get(ev.id);
+
+            if (prevAssignedRow !== undefined) {
+              let canUsePrevRow = true;
+              for (let c = ev.start; c <= ev.end; c++) {
+                if (occupiedRows[prevAssignedRow]?.[c]) {
+                  canUsePrevRow = false;
+                  break;
+                }
+              }
+              if (canUsePrevRow) {
+                row = prevAssignedRow;
+              } else {
+                row = findAvailableRow(occupiedRows, ev.start, ev.end);
+              }
+            } else {
+              row = findAvailableRow(occupiedRows, ev.start, ev.end);
             }
-            placed.push({ ...ev, weekIndex, row });
+
+            while (occupiedRows.length <= row) {
+              occupiedRows.push(new Array(7).fill(false));
+            }
+            for (let c = ev.start; c <= ev.end; c++) {
+              occupiedRows[row][c] = true;
+            }
+
+            eventRowMap.set(ev.id, row);
+            parsedEvents.push({
+              weekIndex,
+              start: ev.start,
+              end: ev.end,
+              title: ev.title,
+              row,
+              type: ev.type,
+            });
           });
-          parsedEvents.push(...placed);
         });
+
         setEventsByWeek(parsedEvents);
       } catch (error) {
-        console.error("학사일정 데이터 로드 실패", error);
+        if (!isCancelled) {
+          console.error("학사일정 데이터 로드 실패", error);
+        }
       }
     };
 
     fetchEvents();
-  }, [weeks, selectedMonthStr]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [weeks, tokenInfo?.accessToken, userInfo?.department]);
 
   // 주차별 최대 행 계산
   const maxRowsByWeek = weeks.map((_, weekIdx) => {
@@ -252,6 +327,45 @@ export default function Calendar({
       .map((e) => e.row);
     return rows.length > 0 ? Math.max(...rows) + 1 : 1;
   });
+
+  const handleDayClick = (date: Date) => {
+    mixpanelTrack.calendarDateClicked(format(date, "yyyy-MM-dd"));
+    setSelectedDate(date);
+    setIsModalOpen(true);
+
+    // 믹스패널 트래킹: 캘린더에서 일정 상세 모달 열림
+    const eventsCount = allLoadedEvents.filter((event) => {
+      const start = parseISO(String(event.start));
+      const end = parseISO(String(event.end));
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+      return !isBefore(date, start) && !isAfter(date, end);
+    }).length;
+
+    mixpanelTrack.scheduleModalViewed("Calendar", eventsCount);
+  };
+
+  const selectedDateEvents = useMemo(() => {
+    if (!selectedDate) return [];
+    return allLoadedEvents.filter((event) => {
+      const start = parseISO(String(event.start));
+      const end = parseISO(String(event.end));
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+      return !isBefore(selectedDate, start) && !isAfter(selectedDate, end);
+    });
+  }, [allLoadedEvents, selectedDate]);
+
+  // 현재 월에 해당하는 일정만 우측 목록에 표시
+  const currentMonthEvents = useMemo(() => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+
+    return allLoadedEvents.filter((event) => {
+      const start = parseISO(String(event.start));
+      const end = parseISO(String(event.end));
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+      return !isAfter(start, monthEnd) && !isBefore(end, monthStart);
+    });
+  }, [allLoadedEvents, currentDate]);
 
   const goToNext = () => {
     setCurrentDate((prev) => {
@@ -323,7 +437,7 @@ export default function Calendar({
                         <DayCell
                           key={idx}
                           $isCurrentMonth={isActive}
-                          onClick={() => handleDayClick(date)} // 날짜 클릭 시 모달 열기
+                          onClick={() => handleDayClick(date)}
                           style={{ cursor: "pointer" }}
                         >
                           {isToday && <TodayCircle />}
@@ -340,7 +454,7 @@ export default function Calendar({
                       .filter((e) => e.weekIndex === weekIdx)
                       .map((event, i) => (
                         <EventBar
-                          key={i}
+                          key={`${event.weekIndex}-${event.start}-${event.end}-${event.row}-${i}`}
                           $start={event.start}
                           $end={event.end}
                           $row={event.row}
@@ -359,18 +473,16 @@ export default function Calendar({
         {mode === "monthly" && (
           <RightSection>
             <TitleContentArea
-              title={
-                mode === "monthly"
-                  ? `${format(currentDate, "yyyy년 MM월")} 일정`
-                  : "최근 일정"
-              }
+              title={`${format(currentDate, "yyyy년 MM월")} 일정`}
             >
               <Box>
-                {monthEvents.length > 0 ? (
-                  monthEvents.map((event, idx) => (
+                {currentMonthEvents.length > 0 ? (
+                  currentMonthEvents.map((event, idx) => (
                     <Fragment key={event.id}>
                       <EventItem {...event} />
-                      {idx < monthEvents.length - 1 && <Divider margin="0" />}
+                      {idx < currentMonthEvents.length - 1 && (
+                        <Divider margin="0" />
+                      )}
                     </Fragment>
                   ))
                 ) : (
@@ -547,7 +659,6 @@ const EventBar = styled.div<{
     return `calc((100% - 24px) / 7 * ${count} + ${(count - 1) * 4}px)`;
   }};
   height: 20px;
-  /* 타입에 따른 배경색 조건부 렌더링 */
   background-color: ${({ $type }) =>
     $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
   color: black;
@@ -562,7 +673,7 @@ const EventBar = styled.div<{
   overflow: hidden;
   text-overflow: ellipsis;
   z-index: 3;
-  pointer-events: none; //클릭 통과
+  pointer-events: none;
   line-height: normal;
 `;
 

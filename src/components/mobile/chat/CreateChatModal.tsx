@@ -6,11 +6,13 @@ import { useState } from "react";
 import { createChatRoom } from "@/apis/chat";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { Camera } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
+import {
+  checkedCheckbox,
+  uncheckedCheckbox,
+} from "@/resources/assets/icons/posts";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -105,7 +107,7 @@ export default function CreateChatModal({
                 <Label style={{ alignSelf: "center" }}>방 썸네일</Label>
                 <ThumbnailInputWrapper>
                   <ThumbnailPreview src={previewUrl || ""}>
-                    {!previewUrl && <Camera size={24} color="#CBD5E1" />}
+                    {!previewUrl && <Icon name="camera" size={24} color="#CBD5E1" />}
                   </ThumbnailPreview>
                   <FileInput
                     type="file"
@@ -113,7 +115,7 @@ export default function CreateChatModal({
                     onChange={handleFileChange}
                   />
                   <EditBadge>
-                    <Camera size={14} color="white" />
+                    <Icon name="camera" size={14} color="white" />
                   </EditBadge>
                 </ThumbnailInputWrapper>
               </ThumbnailGroup>

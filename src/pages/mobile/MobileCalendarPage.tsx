@@ -3,7 +3,7 @@ import Calendar from "@/components/mobile/calendar/Calendar";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import { Bell } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
 import useUserStore from "@/stores/useUserStore";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
@@ -26,7 +26,7 @@ export default function MobileCalendarPage() {
 
   const handleNotificationClick = () => {
     mixpanelTrack.calendarNotificationClicked();
-    alert("Daily Brief 설정 구현 예정입니다.");
+    navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=schedule`);
   };
 
   const handleMypageNavigation = () => {
@@ -64,7 +64,7 @@ export default function MobileCalendarPage() {
 
       <FloatingActionButton
         text="일정 알림 받기"
-        icon={<Bell size={16} color="white" fill="currentColor" />}
+        icon={<Icon name="bell" size={16} color="white" />}
         onClick={handleNotificationClick}
       />
 

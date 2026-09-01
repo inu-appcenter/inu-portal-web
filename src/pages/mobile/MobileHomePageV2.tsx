@@ -22,12 +22,55 @@ import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
-import AppcenterLogo from "@/resources/assets/앱센터로고_new.svg";
+import CapsuleButton from "@/components/common/CapsuleButton";
+import Icon from "@/components/common/Icon";
+import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import Banner from "@/containers/mobile/home/Banner";
+
 
 import { formatRoom } from "@/components/mobile/timetable/TimetableGrid";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
+
+const POLICY_LINKS = [
+  { label: "이용약관", href: "/terms-of-use.html" },
+  { label: "개인정보 처리 방침", href: "/privacy-policy.html" },
+  { label: "커뮤니티 이용 규칙", href: "/community-guideline.html" },
+  { label: "청소년 보호 정책", href: "/youth-protection.html" },
+  {
+    label: "문의하기",
+    href: "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
+  },
+] as const;
+
+// Fontello 글리프는 정사각 em 박스라 피그마 원본의 아이콘별 미세한
+// 가로/세로 차이(22 x 21.1667 등)는 20px 정사각으로 통일된다.
+const SOCIAL_LINKS = [
+  {
+    label: "카카오톡 채널",
+    href: "https://pf.kakao.com/_xgxaSLd",
+    icon: "kakaotalk",
+  },
+  {
+    label: "인스타그램",
+    href: "https://www.instagram.com/inuappcenter",
+    icon: "instagram-line",
+  },
+  {
+    label: "GitHub",
+    href: "https://github.com/inu-appcenter",
+    icon: "github-invertocat-black-1",
+  },
+  {
+    label: "이메일 문의",
+    href: "mailto:support@inuappcenter.kr",
+    icon: "mail",
+  },
+] as const satisfies readonly {
+  label: string;
+  href: string;
+  icon: FontelloIconName;
+}[];
 
 const getTodayTimetableDay = (date: Date) => (date.getDay() + 6) % 7;
 
@@ -96,7 +139,6 @@ export default function MobileHomePageV2() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // const nickname = userInfo?.nickname || "유니";
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
   const today = new Date();
   const todayDateText = `${today.getMonth() + 1}월 ${today.getDate()}일 (${dayNames[today.getDay()]}) 오늘의 시간표`;
@@ -149,11 +191,6 @@ export default function MobileHomePageV2() {
     <V2Wrapper>
       <UpperSection>
         <SectionInner>
-          {/*<WelcomeMessage>*/}
-          {/*  <HighlightName>{nickname}님,</HighlightName>*/}
-          {/*  <GreetingText>좋은 아침이에요!</GreetingText>*/}
-          {/*</WelcomeMessage>*/}
-
           <TodayTimetableCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
             <WidgetHeader>
               <WidgetTitle>{todayDateText}</WidgetTitle>
@@ -194,7 +231,25 @@ export default function MobileHomePageV2() {
                   );
                 })
               ) : (
-                <EmptyClassItem>오늘은 등록된 수업이 없어요.</EmptyClassItem>
+                <TimetableEmptyState>
+                  {!activeTimetable && (
+                    <CreateTimetableButton
+                      variant="primary"
+                      onClick={(event) => {
+                        // 카드 전체 onClick과 목적지가 같아 이벤트가 두 번 타지 않도록 막는다.
+                        event.stopPropagation();
+                        navigate(ROUTES.TIMETABLE.ROOT);
+                      }}
+                    >
+                      시간표 생성하기
+                    </CreateTimetableButton>
+                  )}
+                  <TimetableEmptyText>
+                    {activeTimetable
+                      ? "오늘은 등록된 수업이 없어요."
+                      : "등록된 시간표가 없어요. 시간표를 만들어 보세요."}
+                  </TimetableEmptyText>
+                </TimetableEmptyState>
               )}
             </ClassList>
           </TodayTimetableCard>
@@ -295,43 +350,76 @@ export default function MobileHomePageV2() {
         </SectionInner>
       </LowerSheetSection>
 
-      <AppcenterLogoWrapper>
-        <LogoInner>
-          <img
-            src={AppcenterLogo}
-            alt="appcenterLogo"
-            onClick={() => window.open("https://home.inuappcenter.kr")}
-          />
-        </LogoInner>
+      <FooterSection>
+        <FooterInner>
+          <FooterMain>
+            <BrandHeader
+              href="https://home.inuappcenter.kr"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <BrandLogo
+                src="/images/logo_text_icon_combination.svg"
+                alt="INTIP"
+                width={180}
+                height={56}
+                loading="lazy"
+              />
+            </BrandHeader>
 
-        <PolicyLinksInner>
-          <PolicyLinks>
-            <a href="/terms-of-use.html" target="_blank" rel="noopener noreferrer">
-              이용약관
-            </a>
-            <PolicyDivider />
-            <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">
-              개인정보 처리방침
-            </a>
-            <PolicyDivider />
-            <a
-              href="/community-guideline.html"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              커뮤니티 이용규칙
-            </a>
-            <PolicyDivider />
-            <a
-              href="/youth-protection.html"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              청소년 보호정책
-            </a>
-          </PolicyLinks>
-        </PolicyLinksInner>
-      </AppcenterLogoWrapper>
+            <PolicyLinks>
+              {POLICY_LINKS.map(({ label, href }) => (
+                <PolicyLink
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {label}
+                </PolicyLink>
+              ))}
+            </PolicyLinks>
+          </FooterMain>
+
+          <OrgContainer>
+            <OrgHeader>
+              <AppcenterMark
+                src="/images/AppCenter_Logo.svg"
+                alt=""
+                width={12}
+                height={16}
+                loading="lazy"
+              />
+              <OrgName>인천대학교 IT Innovation LAB</OrgName>
+            </OrgHeader>
+
+            <OrgAddress>
+              인천광역시 아카데미로 119, 4호관 정보전산원(BM컨텐츠관) 107호
+            </OrgAddress>
+
+            <SocialLinks>
+              {SOCIAL_LINKS.map(({ label, href, icon }) => (
+                <SocialLink
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                >
+                  <SocialIcon name={icon} size={20} />
+                </SocialLink>
+              ))}
+            </SocialLinks>
+          </OrgContainer>
+
+          <FooterNote>
+            <span>© {new Date().getFullYear()} INTIP. All rights reserved.</span>
+            <span>본 서비스는 인천대학교 공식 서비스가 아닙니다.</span>
+          </FooterNote>
+
+          <BottomScrollSpacer />
+        </FooterInner>
+      </FooterSection>
     </V2Wrapper>
   );
 }
@@ -353,31 +441,13 @@ const UpperSection = styled.div`
   background: #eff5fc;
 `;
 
-// const WelcomeMessage = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   gap: 4px;
-//   margin-bottom: 24px;
-//   text-align: left;
-//   padding-left: 8px;
-//
-//   color: var(--text-secondary, #333d4b);
-//   font-size: 20px;
-//   font-style: normal;
-//   font-weight: 700;
-//   line-height: 28px;
-//   letter-spacing: -0.2px;
-// `;
-//
-// const HighlightName = styled.span``;
-//
-// const GreetingText = styled.span``;
-
 const TodayTimetableCard = styled.div`
   background-color: #ffffff;
   border-radius: 20px;
   padding: 16px;
-  box-shadow: 0 4px 20px 0 rgba(0, 97, 255, 0.06);
+  
+  box-shadow: 0px 4px 24px 0px #3B82F63D;
+
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
@@ -458,6 +528,38 @@ const ClassRoom = styled.span`
   color: var(--text-secondary, #333d4b);
 `;
 
+const TimetableEmptyState = styled.div`
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 76px;
+  width: 100%;
+`;
+
+// 공용 CapsuleButton(primary)을 시안의 소형 사이즈로만 조정한다.
+const CreateTimetableButton = styled(CapsuleButton)`
+  height: 36px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  box-shadow: none;
+`;
+
+const TimetableEmptyText = styled.p`
+  margin: 0;
+  width: 100%;
+  color: var(--text-disabled, #b0b8c1);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: center;
+  word-break: keep-all;
+`;
+
 const EmptyClassItem = styled.div`
   padding: 8px 16px;
   color: var(--text-tertiary, #8b95a1);
@@ -514,45 +616,6 @@ const DesktopWidgetColumn = styled.div`
   min-width: 0;
 `;
 
-const AppcenterLogoWrapper = styled.div`
-  background: var(--gray-1000, #000);
-  padding: 48px 0 calc(var(--nav-height, 100px) + 24px);
-  width: 100%;
-  box-sizing: border-box;
-
-  img {
-    width: 136px;
-    height: 52px;
-    aspect-ratio: 34/13;
-    cursor: pointer;
-  }
-`;
-
-const PolicyLinks = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-
-  a {
-    color: var(--gray-500, #8b95a1);
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
-    text-decoration: none;
-
-    &:hover {
-      color: var(--gray-300, #b0b8c1);
-    }
-  }
-`;
-
-const PolicyDivider = styled.span`
-  width: 1px;
-  height: 10px;
-  background: var(--gray-800, #333);
-`;
-
 const SectionInner = styled.div`
   width: 100%;
   max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
@@ -567,26 +630,139 @@ const SectionInner = styled.div`
   }
 `;
 
-const LogoInner = styled(SectionInner)`
-  padding-left: 32px;
-  padding-right: 32px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
+const FooterSection = styled.footer`
+  background: var(--gray-50, #f8f9fb);
+  width: 100%;
+  box-sizing: border-box;
+`;
 
-  @media ${DESKTOP_MEDIA} {
-    padding-left: clamp(24px, 4vw, 48px);
-    padding-right: clamp(24px, 4vw, 48px);
+const FooterInner = styled(SectionInner)`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 40px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+`;
+
+const FooterMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  width: 100%;
+`;
+
+const BrandHeader = styled.a`
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+`;
+
+const BrandLogo = styled.img`
+  display: block;
+  width: 180px;
+  height: 56px;
+`;
+
+const PolicyLinks = styled.nav`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+`;
+
+const PolicyLink = styled.a`
+  display: flex;
+  align-items: center;
+  height: 24px;
+  color: var(--text-secondary, #333d4b);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+  word-break: keep-all;
+
+  &:hover {
+    color: var(--text-brand, #0061ff);
   }
 `;
 
-const PolicyLinksInner = styled(SectionInner)`
-  padding-left: 32px;
-  padding-right: 32px;
-  margin-top: 20px;
+const OrgContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+`;
 
-  @media ${DESKTOP_MEDIA} {
-    padding-left: clamp(24px, 4vw, 48px);
-    padding-right: clamp(24px, 4vw, 48px);
+const OrgHeader = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+`;
+
+const AppcenterMark = styled.img`
+  display: block;
+  width: 12px;
+  height: 16px;
+`;
+
+const OrgName = styled.span`
+  color: var(--text-secondary, #333d4b);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+`;
+
+const OrgAddress = styled.p`
+  margin: 0;
+  color: var(--text-secondary, #333d4b);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  word-break: keep-all;
+`;
+
+const SocialLinks = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+`;
+
+const SocialLink = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #ffffff);
+
+  &:hover {
+    background: var(--gray-100, #f1f3f5);
   }
+`;
+
+const SocialIcon = styled(Icon)`
+  color: #8b95a1;
+`;
+
+const FooterNote = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  color: var(--text-tertiary, #8b95a1);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+`;
+
+const BottomScrollSpacer = styled.div`
+  width: 100%;
+  height: calc(var(--nav-height, 0px) + 48px);
 `;

@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, Copy, RefreshCw, Share2, User } from "lucide-react";
+import { Copy, RefreshCw } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -106,7 +107,7 @@ export default function MobileFriendQrPage() {
             }}
           />
           <DefaultIconArea>
-            <User size={22} color="#D6D1D5" />
+            <Icon name="user-02" size={22} color="#D6D1D5" />
           </DefaultIconArea>
         </ProfileArea>
 
@@ -141,12 +142,12 @@ export default function MobileFriendQrPage() {
           disabled={!inviteUrl}
           aria-label="링크 복사"
         >
-          {isCopied ? <Check size={18} /> : <Copy size={18} />}
+          {isCopied ? <Icon name="check" size={18} /> : <Copy size={18} />}
         </IconButton>
       </LinkRow>
 
       <PrimaryButton type="button" onClick={handleShare} disabled={!inviteUrl}>
-        <Share2 size={18} />
+        <Icon name="share" size={18} />
         링크 공유하기
       </PrimaryButton>
 

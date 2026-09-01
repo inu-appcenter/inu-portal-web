@@ -7,8 +7,9 @@ import axios, { AxiosError } from "axios";
 import { ROUTES } from "@/constants/routes";
 import { deleteReply } from "@/apis/replies";
 import useUserStore from "@/stores/useUserStore";
-import { MoreVertical } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { formatTimeAgo } from "@/utils/date";
+import useHiddenContentStore from "@/stores/useHiddenContentStore";
 
 interface CommentListProps {
   postId?: number;
@@ -41,10 +42,21 @@ export default function CommentListMobile({
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+  const hiddenReplyIds = useHiddenContentStore((state) => state.replyIds);
 
-  const allComments = bestReply
+  const rawComments = bestReply
     ? [bestReply, ...replies.filter((reply) => reply.id !== bestReply.id)]
     : replies;
+
+  // 신고한 댓글은 서버 검토 전이라도 내 화면에서 즉시 사라져야 한다.
+  const allComments = rawComments
+    .filter((reply) => !hiddenReplyIds.includes(reply.id))
+    .map((reply) => ({
+      ...reply,
+      reReplies: reply.reReplies?.filter(
+        (reReply) => !hiddenReplyIds.includes(reReply.id),
+      ),
+    }));
 
   const handleDeleteReply = async (replyId: number) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
@@ -57,7 +69,8 @@ export default function CommentListMobile({
         console.error("댓글 삭제 실패", error);
         if (
           axios.isAxiosError(error) &&
-          !(error as AxiosError & { isRefreshError?: boolean }).isRefreshError &&
+          !(error as AxiosError & { isRefreshError?: boolean })
+            .isRefreshError &&
           error.response
         ) {
           switch (error.response.status) {
@@ -76,12 +89,15 @@ export default function CommentListMobile({
     }
   };
 
-  const handleReplyTo = (reply: Reply) => {
+  const handleReplyTo = (targetReply: Reply, targetWriter?: string) => {
     if (!isLoggedIn) {
       navigate(ROUTES.LOGIN);
       return;
     }
-    setReplyToReply(reply);
+    setReplyToReply({
+      ...targetReply,
+      writer: targetWriter || targetReply.writer,
+    });
     setReplyToEdit(null);
     setReplyContent("");
   };
@@ -93,7 +109,7 @@ export default function CommentListMobile({
     setActiveMenuId(null);
   };
 
-  // 본인 댓글이면 수정/삭제, 타인 댓글이면 신고/차단을 노출한다.
+  // 본인 댓글이면 수정/삭제, 타인 댓글이면 신고/차단 노출
   const renderCommentMenu = (reply: Reply) => (
     <MenuWrapper>
       <MenuIconBtn
@@ -101,7 +117,7 @@ export default function CommentListMobile({
           setActiveMenuId(activeMenuId === reply.id ? null : reply.id)
         }
       >
-        <MoreVertical size={20} color="#8B95A1" />
+        <Icon name="dot-vertical" size={20} color="#8B95A1" />
       </MenuIconBtn>
       {activeMenuId === reply.id && (
         <>
@@ -127,7 +143,6 @@ export default function CommentListMobile({
                 >
                   신고
                 </DropdownItem>
-                {/* replyId만으로 서버가 작성자를 찾아 차단하므로(#294) 익명 댓글도 차단 가능하다. */}
                 <DropdownItem
                   $danger
                   onClick={() => {
@@ -152,7 +167,7 @@ export default function CommentListMobile({
           <React.Fragment key={reply.id}>
             <CommentItemRow>
               <Avatar
-                src={`https://portal.inuappcenter.kr/images/profile/${reply.isAnonymous ? 1 : (reply.fireId || 1)}`}
+                src={`https://portal.inuappcenter.kr/images/profile/${reply.isAnonymous ? 1 : reply.fireId || 1}`}
                 alt={reply.writer || "프로필"}
               />
               <CommentContentBody>
@@ -168,9 +183,15 @@ export default function CommentListMobile({
                 <CommentText>{reply.content}</CommentText>
 
                 <CommentFooterRow>
-                  <ReplyActionBtn onClick={() => handleReplyTo(reply)}>답글 달기</ReplyActionBtn>
+                  <ReplyActionBtn onClick={() => handleReplyTo(reply)}>
+                    답글 달기
+                  </ReplyActionBtn>
                   <HeartGroup>
-                    <ReplyLikeButton id={reply.id} like={reply.like} isLiked={reply.isLiked} />
+                    <ReplyLikeButton
+                      id={reply.id}
+                      like={reply.like}
+                      isLiked={reply.isLiked}
+                    />
                   </HeartGroup>
                 </CommentFooterRow>
               </CommentContentBody>
@@ -179,7 +200,7 @@ export default function CommentListMobile({
             {reply.reReplies?.map((reReply) => (
               <ReCommentItemRow key={reReply.id}>
                 <SubAvatar
-                  src={`https://portal.inuappcenter.kr/images/profile/${reReply.isAnonymous ? 1 : (reReply.fireId || 1)}`}
+                  src={`https://portal.inuappcenter.kr/images/profile/${reReply.isAnonymous ? 1 : reReply.fireId || 1}`}
                   alt={reReply.writer || "프로필"}
                 />
                 <CommentContentBody>
@@ -195,9 +216,17 @@ export default function CommentListMobile({
                   <CommentText>{reReply.content}</CommentText>
 
                   <CommentFooterRow>
-                    <div />
+                    <ReplyActionBtn
+                      onClick={() => handleReplyTo(reply, reReply.writer)}
+                    >
+                      답글 달기
+                    </ReplyActionBtn>
                     <HeartGroup>
-                      <ReplyLikeButton id={reReply.id} like={reReply.like} isLiked={reReply.isLiked} />
+                      <ReplyLikeButton
+                        id={reReply.id}
+                        like={reReply.like}
+                        isLiked={reReply.isLiked}
+                      />
                     </HeartGroup>
                   </CommentFooterRow>
                 </CommentContentBody>
@@ -217,7 +246,7 @@ const CommentSectionWrapper = styled.div`
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   box-shadow: 0px -2px 8px 0px rgba(0, 0, 0, 0.04);
-  padding: 12px 0 80px;
+  padding: 12px 0 140px;
   display: flex;
   flex-direction: column;
   flex: 1;

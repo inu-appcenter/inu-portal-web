@@ -148,12 +148,14 @@ export const mixpanelTrack = {
     category: string,
     title: string,
     isFromSearch: boolean = false,
+    location?: string,
   ) => {
     trackEvent("[학교 공지] 조회", {
       notice_type: "School",
       category: category,
       title: title,
       is_from_search: isFromSearch,
+      location: location || (isFromSearch ? "School Notice Search" : "School Notice Page"),
     });
   },
 
@@ -164,12 +166,14 @@ export const mixpanelTrack = {
     deptName: string,
     title: string,
     isFromSearch: boolean = false,
+    location?: string,
   ) => {
     trackEvent("[학과 공지] 조회", {
       notice_type: "Department",
       department_name: deptName,
       title: title,
       is_from_search: isFromSearch,
+      location: location || (isFromSearch ? "Department Notice Search" : "Department Notice Page"),
     });
   },
 
@@ -429,10 +433,12 @@ export const mixpanelTrack = {
     keyword: string,
     extraInfo?: string,
     location?: string,
+    isExcluded: boolean = false,
   ) => {
     const properties: Record<string, any> = {
       notice_type: noticeType,
       keyword: keyword,
+      is_excluded: isExcluded,
       location: location,
     };
     if (noticeType === "School") {
@@ -452,10 +458,12 @@ export const mixpanelTrack = {
     keyword: string,
     extraInfo?: string,
     location?: string,
+    isExcluded: boolean = false,
   ) => {
     const properties: Record<string, any> = {
       notice_type: noticeType,
       keyword: keyword,
+      is_excluded: isExcluded,
       location: location,
     };
     if (noticeType === "School") {

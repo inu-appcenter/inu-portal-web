@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import styled, { css, keyframes } from "styled-components";
-import { Plus, RefreshCw, Eye, EyeOff, Settings2, Flag as FlagIcon } from "lucide-react";
+import { RefreshCw, Settings2, Flag as FlagIcon } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
@@ -122,7 +123,7 @@ export default function MobileAdminFeatureFlagsPage() {
               <LoadingIcon size={18} $loading={isFetching} />
             </RefreshBtn>
             <CreateBtn onClick={() => setIsCreateModalOpen(true)}>
-              <Plus size={20} />
+              <Icon name="add-plus-sm" size={20} />
               <span>새 플래그 추가</span>
             </CreateBtn>
           </HeaderActions>
@@ -154,7 +155,7 @@ export default function MobileAdminFeatureFlagsPage() {
                 <FlagDescription>{flag.description || "설명이 없습니다."}</FlagDescription>
                 <FlagFooter>
                   <VisibilityIndicator $visible={flag.clientVisible}>
-                    {flag.clientVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+                    {flag.clientVisible ? <Icon name="eye" size={14} /> : <Icon name="eye-off" size={14} />}
                     <span>{flag.clientVisible ? "공개" : "비공개"}</span>
                   </VisibilityIndicator>
                   <SettingBtn onClick={() => setEditingFlag(flag)}>

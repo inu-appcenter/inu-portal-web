@@ -1,0 +1,332 @@
+[
+  {
+    "departmentCode": "COMPUTER_SCIENCE",
+    "departmentName": "컴퓨터공학부",
+    "graduationRequirementUrl": "https://cse.inu.ac.kr/isis/3523/subview.do"
+  },
+  {
+    "departmentCode": "ECONOMICS",
+    "departmentName": "경제학과",
+    "graduationRequirementUrl": "https://econ.inu.ac.kr/econ/2640/subview.do"
+  },
+  {
+    "departmentCode": "KOREAN",
+    "departmentName": "국어국문학과",
+    "graduationRequirementUrl": "https://korean.inu.ac.kr/bbs/korean/286/327695/artclView.do"
+  },
+  {
+    "departmentCode": "MECHANICAL_ENGINEERING",
+    "departmentName": "기계공학과",
+    "graduationRequirementUrl": "https://me.inu.ac.kr/me/2984/subview.do"
+  },
+  {
+    "departmentCode": "PUBLIC_ADMINISTRATION",
+    "departmentName": "행정학과",
+    "graduationRequirementUrl": "https://uipa.inu.ac.kr/uipa/7799/subview.do"
+  },
+  {
+    "departmentCode": "ENGLISH_LITERATURE",
+    "departmentName": "영어영문학과",
+    "graduationRequirementUrl": "https://english.inu.ac.kr/ui/1975/subview.do"
+  },
+  {
+    "departmentCode": "GERMAN",
+    "departmentName": "독어독문학과",
+    "graduationRequirementUrl": "https://german.inu.ac.kr/german/1823/subview.do"
+  },
+  {
+    "departmentCode": "CHEMISTRY",
+    "departmentName": "화학과",
+    "graduationRequirementUrl": "https://chem.inu.ac.kr/chem/2404/subview.do"
+  },
+  {
+    "departmentCode": "MARINE_SCIENCE",
+    "departmentName": "해양학과",
+    "graduationRequirementUrl": "https://marine.inu.ac.kr/marine/2318/subview.do"
+  },
+  {
+    "departmentCode": "SOCIAL_WELFARE",
+    "departmentName": "사회복지학과",
+    "graduationRequirementUrl": "https://dsw.inu.ac.kr/dsw/2491/subview.do"
+  },
+  {
+    "departmentCode": "MEDIA_COMMUNICATION",
+    "departmentName": "미디어커뮤니케이션학과",
+    "graduationRequirementUrl": "https://newdays.inu.ac.kr/shinbang/2536/subview.do"
+  },
+  {
+    "departmentCode": "LIBRARY_INFORMATION_SCIENCE",
+    "departmentName": "문헌정보학과",
+    "graduationRequirementUrl": "https://cls.inu.ac.kr/cls/2446/subview.do"
+  },
+  {
+    "departmentCode": "CREATIVE_TALENT_DEVELOPMENT",
+    "departmentName": "창의인재개발학과",
+    "graduationRequirementUrl": "https://hrd.inu.ac.kr/hrd/2578/subview.do"
+  },
+  {
+    "departmentCode": "POLITICAL_SCIENCE_DIPLOMACY",
+    "departmentName": "정치외교학과",
+    "graduationRequirementUrl": "https://politics.inu.ac.kr/politics/2740/subview.do"
+  },
+  {
+    "departmentCode": "MATHEMATICS",
+    "departmentName": "수학과",
+    "graduationRequirementUrl": "https://www.inu.ac.kr/inu/666/subview.do"
+  },
+  {
+    "departmentCode": "PHYSICS",
+    "departmentName": "물리학과",
+    "graduationRequirementUrl": "https://physics.inu.ac.kr/bbs/physics/304/428417/artclView.do"
+  },
+  {
+    "departmentCode": "FASHION_INDUSTRY",
+    "departmentName": "패션산업학과",
+    "graduationRequirementUrl": null
+  },
+  {
+    "departmentCode": "FRENCH",
+    "departmentName": "불어불문학과",
+    "graduationRequirementUrl": "https://inufrance.inu.ac.kr/inufrance/12395/subview.do"
+  },
+  {
+    "departmentCode": "CHINESE",
+    "departmentName": "중어중국학과",
+    "graduationRequirementUrl": "https://inuchina.inu.ac.kr/bbs/inuchina/301/336265/artclView.do"
+  },
+  {
+    "departmentCode": "JAPAN_AREA_STUDIES",
+    "departmentName": "일본지역문화학과",
+    "graduationRequirementUrl": "https://unjapan.inu.ac.kr/unjapan/2039/subview.do"
+  },
+  {
+    "departmentCode": "TRADE",
+    "departmentName": "무역학부",
+    "graduationRequirementUrl": "https://trade.inu.ac.kr/trade/2689/subview.do"
+  },
+  {
+    "departmentCode": "ELECTRICAL_ENGINEERING",
+    "departmentName": "전기공학과",
+    "graduationRequirementUrl": "https://elec.inu.ac.kr/elec/3319/subview.do"
+  },
+  {
+    "departmentCode": "INDUSTRIAL_MANAGEMENT_ENGINEERING",
+    "departmentName": "산업경영공학과",
+    "graduationRequirementUrl": "https://ime.inu.ac.kr/ime/3096/subview.do"
+  },
+  {
+    "departmentCode": "MATERIALS_SCIENCE_ENGINEERING",
+    "departmentName": "신소재공학과",
+    "graduationRequirementUrl": "https://mse.inu.ac.kr/mse/3141/subview.do"
+  },
+  {
+    "departmentCode": "SAFETY_ENGINEERING",
+    "departmentName": "안전공학과",
+    "graduationRequirementUrl": "https://safety.inu.ac.kr/safety/3197/subview.do"
+  },
+  {
+    "departmentCode": "INFORMATION_COMMUNICATION_ENGINEERING",
+    "departmentName": "정보통신공학과",
+    "graduationRequirementUrl": "https://ite.inu.ac.kr/ite/3468/subview.do"
+  },
+  {
+    "departmentCode": "BUSINESS_ADMINISTRATION",
+    "departmentName": "경영학부",
+    "graduationRequirementUrl": "https://biz.inu.ac.kr/biz/3607/subview.do"
+  },
+  {
+    "departmentCode": "DATA_SCIENCE",
+    "departmentName": "데이터과학과",
+    "graduationRequirementUrl": "https://datascience.inu.ac.kr/datascience/3710/subview.do"
+  },
+  {
+    "departmentCode": "TAX_ACCOUNTING",
+    "departmentName": "세무회계학과",
+    "graduationRequirementUrl": "https://tax.inu.ac.kr/tax/3660/subview.do"
+  },
+  {
+    "departmentCode": "CONSUMER_STUDIES",
+    "departmentName": "소비자학과",
+    "graduationRequirementUrl": "https://ccs.inu.ac.kr/ccs/2787/subview.do"
+  },
+  {
+    "departmentCode": "ELECTRONIC_ENGINEERING",
+    "departmentName": "전자공학과",
+    "graduationRequirementUrl": "https://ee.inu.ac.kr/electron/13794/subview.do"
+  },
+  {
+    "departmentCode": "ENERGY_CHEMICAL_ENGINEERING",
+    "departmentName": "에너지화학공학과",
+    "graduationRequirementUrl": "https://energy.inu.ac.kr/bbs/energy/868/391461/artclView.do"
+  },
+  {
+    "departmentCode": "BIO_ROBOT_SYSTEM_ENGINEERING",
+    "departmentName": "바이오-로봇시스템공학과",
+    "graduationRequirementUrl": null
+  },
+  {
+    "departmentCode": "EMBEDDED_SYSTEM_ENGINEERING",
+    "departmentName": "임베디드시스템공학과",
+    "graduationRequirementUrl": "https://ese.inu.ac.kr/ese/3424/subview.do"
+  },
+  {
+    "departmentCode": "KOREAN_PAINTING",
+    "departmentName": "한국화전공",
+    "graduationRequirementUrl": "https://finearts.inu.ac.kr/finearts/4118/subview.do"
+  },
+  {
+    "departmentCode": "WESTERN_PAINTING",
+    "departmentName": "서양화전공",
+    "graduationRequirementUrl": "https://finearts.inu.ac.kr/finearts/4118/subview.do"
+  },
+  {
+    "departmentCode": "DESIGN",
+    "departmentName": "디자인학부",
+    "graduationRequirementUrl": "https://design.inu.ac.kr/design/4011/subview.do"
+  },
+  {
+    "departmentCode": "PERFORMING_ARTS",
+    "departmentName": "공연예술학과",
+    "graduationRequirementUrl": null
+  },
+  {
+    "departmentCode": "SPORTS_SCIENCE",
+    "departmentName": "스포츠과학부",
+    "graduationRequirementUrl": "https://inupe.inu.ac.kr/inupe/4192/subview.do"
+  },
+  {
+    "departmentCode": "EXERCISE_HEALTH_SCIENCE",
+    "departmentName": "운동건강학부",
+    "graduationRequirementUrl": "https://uiex.inu.ac.kr/uiex/4061/subview.do"
+  },
+  {
+    "departmentCode": "KOREAN_EDUCATION",
+    "departmentName": "국어교육과",
+    "graduationRequirementUrl": "https://edukorean.inu.ac.kr/edukorean/4240/subview.do"
+  },
+  {
+    "departmentCode": "ENGLISH_EDUCATION",
+    "departmentName": "영어교육과",
+    "graduationRequirementUrl": "https://eduenglish.inu.ac.kr/eduenglish/4414/subview.do"
+  },
+  {
+    "departmentCode": "JAPANESE_EDUCATION",
+    "departmentName": "일어교육과",
+    "graduationRequirementUrl": "https://edujapanese.inu.ac.kr/edujapanese/4600/subview.do"
+  },
+  {
+    "departmentCode": "MATHEMATICS_EDUCATION",
+    "departmentName": "수학교육과",
+    "graduationRequirementUrl": "https://mathedu.inu.ac.kr/edumath/4303/subview.do"
+  },
+  {
+    "departmentCode": "PHYSICAL_EDUCATION",
+    "departmentName": "체육교육과",
+    "graduationRequirementUrl": "https://eduphysical.inu.ac.kr/eduphysical/4649/subview.do"
+  },
+  {
+    "departmentCode": "EARLY_CHILDHOOD_EDUCATION",
+    "departmentName": "유아교육과",
+    "graduationRequirementUrl": "https://ece.inu.ac.kr/ece/4480/subview.do"
+  },
+  {
+    "departmentCode": "HISTORY_EDUCATION",
+    "departmentName": "역사교육과",
+    "graduationRequirementUrl": "https://eduhistory.inu.ac.kr/eduhistory/7992/subview.do"
+  },
+  {
+    "departmentCode": "ETHICS_EDUCATION",
+    "departmentName": "윤리교육과",
+    "graduationRequirementUrl": "https://eduethics.inu.ac.kr/inu/666/subview.do"
+  },
+  {
+    "departmentCode": "URBAN_ADMINISTRATION",
+    "departmentName": "도시행정학과",
+    "graduationRequirementUrl": "https://urban.inu.ac.kr/urban/4900/subview.do"
+  },
+  {
+    "departmentCode": "ENVIRONMENTAL_ENGINEERING",
+    "departmentName": "환경공학전공",
+    "graduationRequirementUrl": "https://et.inu.ac.kr/et/7723/subview.do"
+  },
+  {
+    "departmentCode": "SMART_CITY_ENGINEERING",
+    "departmentName": "도시공학과",
+    "graduationRequirementUrl": "https://scity.inu.ac.kr/ucv/4748/subview.do"
+  },
+  {
+    "departmentCode": "ARCHITECTURAL_ENGINEERING",
+    "departmentName": "건축공학(도시건축학부)",
+    "graduationRequirementUrl": "https://archi.inu.ac.kr/archi/4843/subview.do"
+  },
+  {
+    "departmentCode": "URBAN_ARCHITECTURE",
+    "departmentName": "도시건축학(도시건축학부)",
+    "graduationRequirementUrl": "https://archi.inu.ac.kr/archi/4844/subview.do"
+  },
+  {
+    "departmentCode": "CIVIL_ENVIRONMENTAL_ENGINEERING",
+    "departmentName": "건설환경공학전공(도시환경공학부)",
+    "graduationRequirementUrl": "https://www.inu.ac.kr/inu/666/subview.do"
+  },
+  {
+    "departmentCode": "LIFE_SCIENCE",
+    "departmentName": "생명과학부(생명과학전공)",
+    "graduationRequirementUrl": "https://life.inu.ac.kr/life/4962/subview.do"
+  },
+  {
+    "departmentCode": "MOLECULAR_BIOMEDICAL_SCIENCE",
+    "departmentName": "생명과학부(분자의생명전공)",
+    "graduationRequirementUrl": "https://life.inu.ac.kr/life/4962/subview.do"
+  },
+  {
+    "departmentCode": "BIOENGINEERING",
+    "departmentName": "생명공학부(생명공학전공)",
+    "graduationRequirementUrl": "https://bioeng.inu.ac.kr/engineeringlife/5129/subview.do"
+  },
+  {
+    "departmentCode": "NANO_BIOENGINEERING",
+    "departmentName": "생명공학부(나노바이오공학전공)",
+    "graduationRequirementUrl": "https://nanobio.inu.ac.kr/nanobio/5078/subview.do"
+  },
+  {
+    "departmentCode": "LIBERAL_STUDIES",
+    "departmentName": "자유전공학부",
+    "graduationRequirementUrl": null
+  },
+  {
+    "departmentCode": "INTERNATIONAL_LIBERAL_STUDIES",
+    "departmentName": "국제자유전공학부",
+    "graduationRequirementUrl": null
+  },
+  {
+    "departmentCode": "CONVERGENCE_STUDIES",
+    "departmentName": "융합학부",
+    "graduationRequirementUrl": null
+  },
+  {
+    "departmentCode": "NORTHEAST_ASIA_TRADE",
+    "departmentName": "동북아국제통상전공",
+    "graduationRequirementUrl": "https://sns.inu.ac.kr/nas/3794/subview.do"
+  },
+  {
+    "departmentCode": "SMART_LOGISTICS_ENGINEERING",
+    "departmentName": "스마트물류공학전공",
+    "graduationRequirementUrl": "https://slog.inu.ac.kr/slog/3838/subview.do"
+  },
+  {
+    "departmentCode": "IBE",
+    "departmentName": "IBE전공(국제통상학부)",
+    "graduationRequirementUrl": "https://ibe.inu.ac.kr/ibe/3878/subview.do"
+  },
+  {
+    "departmentCode": "LAW",
+    "departmentName": "법학부",
+    "graduationRequirementUrl": "https://law.inu.ac.kr/inu/666/subview.do"
+  },
+  {
+    "departmentCode": "TECHNO_MANAGEMENT",
+    "departmentName": "테크노경영학과",
+    "graduationRequirementUrl": null
+  }
+]

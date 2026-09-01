@@ -3,18 +3,8 @@ import styled from "styled-components";
 import { useState } from "react";
 import EditFriendAliasModal from "./EditFriendAliasModal";
 import Modal from "@/components/common/Modal";
-import {
-  UserPlus,
-  UserCheck,
-  UserMinus,
-  UserX,
-  Edit3,
-  Ban,
-  LogOut,
-  MessageSquare,
-  Star,
-  X,
-} from "lucide-react";
+import { UserCheck, Edit3, Ban, LogOut } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   requestFriend,
@@ -645,7 +635,7 @@ export default function UserProfileModal({
                         }}
                         title="친구 삭제"
                       >
-                        <UserMinus size={22} color="var(--text-tertiary, #8b95a1)" />
+                        <Icon name="user-remove" size={22} color="var(--text-tertiary, #8b95a1)" />
                       </IconButton>
                     )}
                     <IconButton
@@ -667,7 +657,7 @@ export default function UserProfileModal({
                   onClick={() => onOpenChange(false)}
                   title="닫기"
                 >
-                  <X size={22} color="var(--text-tertiary, #8b95a1)" />
+                  <Icon name="close-md" size={22} color="var(--text-tertiary, #8b95a1)" />
                 </IconButton>
               </HeaderRight>
             </Header>
@@ -758,9 +748,9 @@ export default function UserProfileModal({
                             }}
                             title="즐겨찾기"
                           >
-                            <Star
+                            <Icon
+                              name="star"
                               size={24}
-                              fill={isFavorite ? "#FFC107" : "none"}
                               color={isFavorite ? "#FFC107" : "#0061FF"}
                             />
                           </CircleActionButton>
@@ -775,7 +765,7 @@ export default function UserProfileModal({
                               onClick={handleReject}
                               $variant="secondary"
                             >
-                              <UserX size={20} />
+                              <Icon name="user-remove" size={20} />
                               거절
                             </ActionButton>
                             <ActionButton
@@ -794,7 +784,7 @@ export default function UserProfileModal({
                             $variant="primary"
                             disabled={requestMutation.isPending}
                           >
-                            <UserPlus size={20} />
+                            <Icon name="user-add" size={20} />
                             친구 요청
                           </ActionButton>
                         )}
@@ -838,7 +828,7 @@ export default function UserProfileModal({
                           $variant="primary"
                           disabled={chatMutation.isPending}
                         >
-                          <MessageSquare size={20} />
+                          <Icon name="chat" size={20} />
                           1대1 채팅
                         </ActionButton>
                       </VerticalButtonGroup>

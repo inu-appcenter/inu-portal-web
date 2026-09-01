@@ -1,6 +1,8 @@
 import styled from "styled-components";
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
+import {
+  checkedCheckbox,
+  uncheckedCheckbox,
+} from "@/resources/assets/icons/posts";
 
 interface AnonymousCheckProps {
   checked: boolean;

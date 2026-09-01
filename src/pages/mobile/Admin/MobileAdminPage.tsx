@@ -1,18 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import {
-  Users,
-  Activity,
-  Bell,
-  Flag,
-  ArrowRight,
-  MessageSquare,
-  Bot,
-  Bus,
-} from "lucide-react";
+import { Activity, Flag, ArrowRight, Bot, Bus } from "lucide-react";
 
-
+import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useHeader } from "@/context/HeaderContext";
@@ -38,7 +29,7 @@ const MobileAdminPage = () => {
       label: "접속 유저 통계",
       path: ROUTES.ADMIN.USER_STAT,
       description: "전체 활성 유저 및 유형별 유입 통계",
-      icon: Users,
+      icon: (size: number) => <Icon name="users" size={size} color="#fff" />,
       color: "#3b82f6",
       isExternal: false,
     },
@@ -46,7 +37,7 @@ const MobileAdminPage = () => {
       label: "API 사용 통계",
       path: ROUTES.ADMIN.API_STAT,
       description: "엔드포인트별 호출 빈도 및 트래픽 분석",
-      icon: Activity,
+      icon: (size: number) => <Activity size={size} color="#fff" />,
       color: "#10b981",
       isExternal: false,
     },
@@ -54,7 +45,7 @@ const MobileAdminPage = () => {
       label: "푸시 알림 전송",
       path: ROUTES.ADMIN.USER_NOTIFICATIION,
       description: "전체 또는 타겟별 맞춤형 푸시 자동화",
-      icon: Bell,
+      icon: (size: number) => <Icon name="bell" size={size} color="#fff" />,
       color: "#f59e0b",
       isExternal: false,
     },
@@ -62,7 +53,7 @@ const MobileAdminPage = () => {
       label: "Feature Flag 관리",
       path: ROUTES.ADMIN.FEATURE_FLAGS,
       description: "배포 없이 즉각적인 신규 기능 제어",
-      icon: Flag,
+      icon: (size: number) => <Flag size={size} color="#fff" />,
       color: "#8b5cf6",
       isExternal: false,
     },
@@ -70,7 +61,7 @@ const MobileAdminPage = () => {
       label: "채팅방 관리",
       path: ROUTES.ADMIN.CHAT,
       description: "축제 및 상시 채팅방 생성 및 제어",
-      icon: MessageSquare,
+      icon: (size: number) => <Icon name="chat" size={size} color="#fff" />,
       color: "#5844e4",
       isExternal: false,
     },
@@ -78,7 +69,7 @@ const MobileAdminPage = () => {
       label: "AI 챗불이 관리",
       path: chatBotConsoleUrl,
       description: "AI 챗불이 설정 및 모니터링",
-      icon: Bot,
+      icon: (size: number) => <Bot size={size} color="#fff" />,
       color: "#ec4899",
       isExternal: true,
     },
@@ -86,7 +77,7 @@ const MobileAdminPage = () => {
       label: "버스 노선 및 수집 관리",
       path: ROUTES.ADMIN.BUS,
       description: "동적 노선 구간 슬라이싱 및 30초 수집 정류장 설정",
-      icon: Bus,
+      icon: (size: number) => <Bus size={size} color="#fff" />,
       color: "#2563eb",
       isExternal: false,
     },
@@ -164,7 +155,7 @@ const MobileAdminPage = () => {
           <StatsDashboardCard
             title="오늘의 방문자"
             value={stats.todayUsers}
-            icon={Users}
+            icon={(size) => <Icon name="users" size={size} />}
             color="#3b82f6"
             trend={{ value: 12, isUp: true }}
             description="어제보다 12% 증가"
@@ -173,7 +164,7 @@ const MobileAdminPage = () => {
           <StatsDashboardCard
             title="오늘의 API 호출"
             value={stats.apiCalls.toLocaleString()}
-            icon={Activity}
+            icon={(size) => <Activity size={size} />}
             color="#10b981"
             trend={{ value: 5, isUp: true }}
             onClick={() => navigate(ROUTES.ADMIN.API_STAT)}
@@ -181,7 +172,7 @@ const MobileAdminPage = () => {
           <StatsDashboardCard
             title="활성 기능 플래그"
             value={stats.activeFlags}
-            icon={Flag}
+            icon={(size) => <Flag size={size} />}
             color="#818cf8"
             description="현재 적용 중인 주요 기능"
             onClick={() => navigate(ROUTES.ADMIN.FEATURE_FLAGS)}
@@ -193,7 +184,7 @@ const MobileAdminPage = () => {
           {adminPages.map((page) => (
             <MenuCard key={page.path} onClick={() => handleCardClick(page)}>
               <CardIcon $bg={page.color}>
-                <page.icon size={28} color="#fff" />
+                {page.icon(28)}
               </CardIcon>
               <CardText>
                 <CardTitle>{page.label}</CardTitle>

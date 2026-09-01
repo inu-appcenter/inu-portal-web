@@ -1,6 +1,6 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-import backbtn from "@/resources/assets/mobile-common/backbtn.svg";
+import FontelloIcon from "@/components/common/Icon";
 import { useEffect, useState } from "react";
 import { deletePetitions, getPetitionsDetail, putLike } from "@/apis/petitions";
 import PostContentContainer from "@/containers/mobile/postdetail/PostContentContainer";
@@ -9,8 +9,10 @@ import axios, { AxiosError } from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import UploadPetition from "@/components/mobile/council/UploadPetition";
 import useReloadKeyStore from "@/stores/useReloadKeyStore";
-import heartEmptyImg from "@/resources/assets/posts/heart-empty.svg";
-import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
+import {
+  heartEmpty as heartEmptyImg,
+  heartFilled as heartFilledImg,
+} from "@/resources/assets/icons/posts";
 
 export default function MobilePetitionDetailPage() {
   const { triggerReload } = useReloadKeyStore();
@@ -139,7 +141,7 @@ export default function MobilePetitionDetailPage() {
             <PostTopWrapper>
               <PostUtilWrapper>
                 <BackBtn onClick={() => navigate(-1)}>
-                  <img src={backbtn} alt="뒤로가기 버튼" />
+                  <FontelloIcon name="chevron-left" size={20} label="뒤로가기 버튼" />
                 </BackBtn>
                 {petition.hasAuthority && (
                   <>
@@ -214,6 +216,12 @@ const BackBtn = styled.div`
   margin-right: auto;
   display: flex;
   padding: 8px;
+
+  svg {
+    width: 10px;
+    height: 18px;
+    color: black;
+  }
 `;
 
 const Button = styled.button``;

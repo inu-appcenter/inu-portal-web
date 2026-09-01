@@ -1,9 +1,10 @@
+import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { Post } from "@/types/posts";
 import { DepartmentNotice, Notice } from "@/types/notices";
-import heart from "@/resources/assets/posts/posts-heart.svg";
+import { heartBlue as heart } from "@/resources/assets/icons/posts";
 import { CouncilNotice } from "@/types/councilNotices";
 import { FaEye } from "react-icons/fa";
 import { Notification } from "@/types/members";
@@ -18,6 +19,8 @@ interface TipsCardContainerProps {
   viewMode: "grid" | "list";
   docType: string;
   isEditing?: boolean;
+  /** 신고/차단/숨기기 메뉴 (게시글 카드에서만 노출) */
+  moderationMenu?: ReactNode;
 }
 
 export default function ({
@@ -29,13 +32,22 @@ export default function ({
   viewMode,
   docType,
   isEditing,
+  moderationMenu,
 }: TipsCardContainerProps) {
   const navigate = useNavigate();
 
   const handleDocumentClick = () => {
     if (isEditing) return;
-    if (docType === "NOTICE" || docType === "DEPT_NOTICE") {
-      notice && window.open("https://" + notice.url, "_blank");
+    if (docType === "NOTICE") {
+      if (notice?.id) {
+        navigate(ROUTES.BOARD.NOTICE_DETAIL(notice.id));
+      } else if (notice?.url) {
+        window.open(
+          notice.url.startsWith("http") ? notice.url : `https://${notice.url}`,
+          "_blank",
+        );
+      }
+    } else if (docType === "DEPT_NOTICE") {
       deptNotice && window.open(deptNotice.url, "_blank");
     } else if (docType === "COUNCILNOTICE") {
       councilNotice && navigate(`/councilnoticedetail?id=${councilNotice.id}`);
@@ -55,7 +67,10 @@ export default function ({
           {post && (
             <TipsCardGridWrapper onClick={handleDocumentClick}>
               <GridTopWrapper>
-                <Category>{post.category}</Category>
+                <CategoryRow>
+                  <Category>{post.category}</Category>
+                  {moderationMenu}
+                </CategoryRow>
               </GridTopWrapper>
 
               <GridBottomWrapper>
@@ -147,7 +162,10 @@ export default function ({
                     <span>댓글</span>
                     <span>{post.replyCount}</span>
                   </span>
-                  <span className="writer">{post.writer}</span>
+                  <WriterRow>
+                    <span className="writer">{post.writer}</span>
+                    {moderationMenu}
+                  </WriterRow>
                 </LikeCommentWriterWrapper>
               </ListRightWrapper>
             </TipsCardListWrapper>
@@ -220,6 +238,20 @@ export default function ({
     </>
   );
 }
+
+const CategoryRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+`;
+
+const WriterRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+`;
 
 const Category = styled.div`
   font-size: 14px;

@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { TimetableShareExtraData } from "@/types/chat";
 import { ROUTES } from "@/constants/routes";
 
@@ -87,14 +88,18 @@ export default function TimetableShareCard({
 
       <CardFooter>
         <span>공강 시간 확인하러 가기</span>
-        <ChevronRight size={16} color="#3B82F6" strokeWidth={2.5} />
+        <Icon name="chevron-right" size={16} color="#3B82F6" />
       </CardFooter>
     </CardContainer>
   );
 }
 
 const CardContainer = styled.div<{ $isMe?: boolean }>`
-  width: 250px;
+  /* 말풍선의 시간 영역까지 고려해 좁은 화면에서는 카드 폭을 함께 줄인다. */
+  width: min(250px, calc(100vw - 128px));
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: #ffffff;
   border-radius: 16px;
   border: 1px solid #e5e8eb;
@@ -138,6 +143,9 @@ const TimeItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
   background: #f8fafc;
   padding: 6px 10px;
   border-radius: 8px;
@@ -148,6 +156,9 @@ const TimeLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1 1 120px;
+  flex-wrap: wrap;
+  min-width: 0;
 `;
 
 const DayBadge = styled.span`
@@ -160,6 +171,7 @@ const TimeText = styled.span`
   font-size: 12px;
   color: #64748b;
   font-weight: 500;
+  overflow-wrap: anywhere;
 `;
 
 const DurationBadge = styled.span`
@@ -169,6 +181,8 @@ const DurationBadge = styled.span`
   background: #dbeafe;
   padding: 2px 6px;
   border-radius: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
 `;
 
 const EmptyText = styled.div`
@@ -182,13 +196,22 @@ const CardFooter = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 10px 16px;
   background: #f8fafc;
   border-top: 1px solid #f1f5f9;
 
   span {
+    min-width: 0;
     font-size: 13px;
     font-weight: 700;
     color: #2563eb;
+    line-height: 18px;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  svg {
+    flex-shrink: 0;
   }
 `;

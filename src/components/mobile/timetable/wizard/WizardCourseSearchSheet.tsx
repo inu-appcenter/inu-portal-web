@@ -1,20 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode, UIEventHandler } from "react";
+import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import {
-  Check,
-  ChevronLeft,
-  FileText,
   MessagesSquare,
-  Plus,
   RotateCcw,
   SearchX,
   SlidersHorizontal,
-  X,
 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import FloatingSearchBar, {
@@ -111,10 +107,11 @@ interface CourseRow {
   capacity: number | null;
   savedCount: number | null;
   note: string | null;
+  gradeEvaluationMethod: string;
   option: WizardCourseOption;
 }
 
-const buildCourseRow = (
+export const buildCourseRow = (
   offering: CourseOffering,
   course: Course | undefined,
 ): CourseRow | null => {
@@ -153,6 +150,7 @@ const buildCourseRow = (
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,
     savedCount: offering.savedCount ?? 0,
+    gradeEvaluationMethod: option.gradeEvaluationMethod ?? "-",
     note: offering.note,
     option,
   };
@@ -160,7 +158,6 @@ const buildCourseRow = (
 
 interface ScrollableContentProps {
   children: ReactNode;
-  onScrollCapture: UIEventHandler<HTMLDivElement>;
   isAnimating: boolean;
 }
 
@@ -168,7 +165,6 @@ interface ScrollableContentProps {
 // 반영한다(편집 화면 시트와 동일한 방식).
 const CourseSheetScrollableContent = ({
   children,
-  onScrollCapture,
   isAnimating,
 }: ScrollableContentProps) => {
   const { y } = Sheet.useContext();
@@ -176,7 +172,6 @@ const CourseSheetScrollableContent = ({
 
   return (
     <CourseSheetContent
-      onScrollCapture={onScrollCapture}
       scrollStyle={{ paddingBottom: scrollPaddingBottom }}
       disableDrag={({ scrollPosition }) =>
         scrollPosition !== undefined && scrollPosition !== "top"
@@ -311,7 +306,13 @@ const WizardCourseSearchSheet = () => {
 
   useEffect(() => () => observerRef.current?.disconnect(), []);
 
-  const handleScroll: UIEventHandler<HTMLDivElement> = () => {
+  // 목록을 손가락으로 끌면 키보드를 내린다. scroll 이 아니라 touchmove 를 보는
+  // 이유: 웹뷰에서 인풋에 포커스가 가면 소프트 키보드가 올라오며 뷰포트가 줄고
+  // (안드로이드는 셸이 웹뷰를 키보드 높이만큼 줄이고, iOS 는 WKWebView 가
+  // 스크롤뷰에 인셋을 넣는다) 그 레이아웃 변화가 목록의 scroll 이벤트로 나타난다.
+  // 사용자가 스크롤한 적이 없는데 blur() 가 불려 포커스가 잡히자마자 키보드가
+  // 닫히고 검색바까지 접혔다. 손가락 드래그는 그런 오인이 없다.
+  const dismissKeyboardOnDrag = () => {
     searchBarRef.current?.blur();
   };
 
@@ -349,15 +350,12 @@ const WizardCourseSearchSheet = () => {
           <TitleBar>
             <SheetTitle>{target ? SHEET_TITLES[target] : ""}</SheetTitle>
             <CloseButton type="button" onClick={closeCourseSearch} aria-label="닫기">
-              <X size={18} />
+              <Icon name="close-md" size={18} />
             </CloseButton>
           </TitleBar>
 
-          <CourseSheetScrollableContent
-            onScrollCapture={handleScroll}
-            isAnimating={isAnimating}
-          >
-            <SheetContentWrapper>
+          <CourseSheetScrollableContent isAnimating={isAnimating}>
+            <SheetContentWrapper onTouchMove={dismissKeyboardOnDrag}>
               <CourseList>
                 {isError ? (
                   <EmptyContainer>
@@ -425,7 +423,9 @@ const WizardCourseSearchSheet = () => {
                         <CourseAttributes>
                           <AttributeItem $primary>{row.professor}</AttributeItem>
                           <AttributeItem>{row.credit}학점</AttributeItem>
-                          <AttributeItem>상대평가</AttributeItem>
+                          <AttributeItem>
+                            {row.gradeEvaluationMethod}
+                          </AttributeItem>
                         </CourseAttributes>
 
                         <CourseAdditionalInfo>
@@ -452,7 +452,7 @@ const WizardCourseSearchSheet = () => {
                                   if (!isPicked) handlePick(row);
                                 }}
                               >
-                                {isPicked ? <Check size={20} /> : <Plus size={20} />}
+                                {isPicked ? <Icon name="check" size={20} /> : <Icon name="add-plus-sm" size={20} />}
                                 {isPicked
                                   ? "담음"
                                   : target === "exclusion"
@@ -474,7 +474,7 @@ const WizardCourseSearchSheet = () => {
                                   alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                                 }}
                               >
-                                <FileText size={20} />
+                                <Icon name="file-document" size={20} />
                                 강의계획서
                               </SecondaryActionButton>
                             </ButtonRow>
@@ -520,7 +520,7 @@ const WizardCourseSearchSheet = () => {
                   onClick={() => closeTopLayer()}
                   aria-label="뒤로"
                 >
-                  <ChevronLeft size={22} />
+                  <Icon name="chevron-left" size={22} />
                 </OverlayBackButton>
                 <OverlayTitle>{FILTER_SUB_VIEW_TITLES[filterDraft.view]}</OverlayTitle>
                 <OverlayHeaderSpacer />

@@ -51,7 +51,11 @@ export interface ResolvedGradeRow extends ParsedGradeRow {
   courseId: number | null;
   /** 서버 기준 이수구분. 매칭 실패 시 붙여넣은 값을 그대로 둔다. */
   resolvedIsuName: string | null;
-  /** 서버 기준 학점. 매칭 실패 시 붙여넣은 값을 그대로 둔다. */
+  /**
+   * 실제 이수한 학점. 성적표에 적힌 값이 우선이고, 학점 열이 안 딸려온 행만
+   * 매칭된 강의의 학점으로 메운다. 개설 학점은 개편으로 바뀌므로(3 -> 2학점)
+   * 서버 값을 덮어쓰면 안 된다.
+   */
   resolvedCredit: number | null;
   matchStatus: GradeMatchStatus;
 }

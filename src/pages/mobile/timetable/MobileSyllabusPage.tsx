@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { ChevronDown } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { motion, AnimatePresence } from "framer-motion";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -166,7 +166,7 @@ const Accordion = ({ title, isOpen, onToggle, children }: AccordionProps) => {
       <AccordionHeader onClick={onToggle}>
         <AccordionTitle>{title}</AccordionTitle>
         <ChevronIconWrapper $isOpen={isOpen}>
-          <ChevronDown size={24} />
+          <Icon name="chevron-down" size={24} />
         </ChevronIconWrapper>
       </AccordionHeader>
 

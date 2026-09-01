@@ -6,11 +6,8 @@ import { motion } from "framer-motion";
 
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import HomeIcon from "@/resources/assets/mobile-nav-v2/Icon_Home.svg?react";
-import TimetableIcon from "@/resources/assets/mobile-nav-v2/Icon_Timetable.svg?react";
-import BusIcon from "@/resources/assets/mobile-nav-v2/Icon_Bus.svg?react";
-import ChatIcon from "@/resources/assets/mobile-nav-v2/Icon_Chat.svg?react";
-import MyIcon from "@/resources/assets/mobile-nav-v2/Icon_My.svg?react";
+import Icon from "@/components/common/Icon";
+import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import { DESKTOP_MEDIA, DESKTOP_CONTENT_MAX_WIDTH } from "@/styles/responsive";
 import { getUnreadTotalCount } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
@@ -18,31 +15,36 @@ import TooltipMessage from "@/components/common/TooltipMessage";
 import { usePromotion } from "@/hooks/usePromotion";
 import { PROMOTIONS } from "@/utils/promotion/registry";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: {
+  to: string;
+  icon: FontelloIconName;
+  label: string;
+  key?: string;
+}[] = [
   {
     to: ROUTES.HOME,
-    icon: HomeIcon,
+    icon: "home",
     label: "홈",
   },
   {
     to: ROUTES.TIMETABLE.ROOT,
-    icon: TimetableIcon,
+    icon: "timetable",
     label: "시간표",
   },
   {
     to: ROUTES.BUS.ROOT,
-    icon: BusIcon,
+    icon: "bus",
     label: "인입런",
   },
   {
     to: ROUTES.CHAT.LIST,
-    icon: ChatIcon,
+    icon: "chat",
     label: "채팅",
     key: "chat",
   },
   {
     to: ROUTES.MYPAGE.ROOT,
-    icon: MyIcon,
+    icon: "my",
     label: "마이페이지",
   },
 ];
@@ -139,7 +141,7 @@ export default function MobileBottomNav() {
                   $isActive={isActive}
                   ref={isTimetableItem ? timetableIconRef : undefined}
                 >
-                  <item.icon />
+                  <Icon name={item.icon} size={32} />
                   {badge !== undefined && badge > 0 && (
                     <Badge>{badge > 99 ? "99+" : badge}</Badge>
                   )}
@@ -176,10 +178,8 @@ const NavContainer = styled.div`
   height: ${BOTTOM_NAV_SAFE_HEIGHT};
   z-index: 1000;
   pointer-events: auto;
-  background: var(--bg-blur, rgba(255, 255, 255, 0.60));
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--bg-base, #ffffff);
+  border-top: 1px solid var(--border-default, #e5e8eb);
   border-radius: 36px 36px 0 0;
 
   @media ${DESKTOP_MEDIA} {
@@ -223,10 +223,7 @@ const ActivePillIndicator = styled(motion.div)`
   width: 74px;
   height: 64px;
   border-radius: 999px;
-  background: var(--bg-blur, rgba(255, 255, 255, 0.60));
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--bg-brand, #eff6ff);
   z-index: 1;
   pointer-events: none;
 `;
@@ -242,15 +239,6 @@ const IconWrapper = styled.div<{ $isActive: boolean }>`
   color: ${({ $isActive }) => ($isActive ? "#3B82F6" : "#B0B8C1")};
   transition: color 0.2s ease;
 
-  svg {
-    width: 100%;
-    height: 100%;
-
-    path {
-      fill: currentColor;
-      transition: fill 0.2s ease;
-    }
-  }
 `;
 
 const Badge = styled.div`

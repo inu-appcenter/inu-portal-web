@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
-import { ChevronDown, ExternalLink } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import styled from "styled-components";
 import ActionButton from "@/components/common/ActionButton";
 import useUserStore from "@/stores/useUserStore";
 import { ScheduleEvent, ScheduleType } from "@/types/schedules";
-import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
+import { TorchAiLogoIcon } from "@/resources/assets/illustrations/ai";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 type EventItemProps = ScheduleEvent & {
@@ -64,7 +64,7 @@ const EventItem = ({ isOpenMode, ...props }: EventItemProps) => {
             animate={{ rotate: isOpen ? 180 : 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <ChevronDown size={20} />
+            <Icon name="chevron-down" size={20} />
           </ArrowIcon>
         )}
       </EventHeader>
@@ -116,7 +116,9 @@ const EventItem = ({ isOpenMode, ...props }: EventItemProps) => {
                     }
                   >
                     공지사항 보기
-                    <ExternalLink size={14} style={{ marginLeft: "8px" }} />
+                    <span style={{ marginLeft: "8px", display: "inline-flex" }}>
+                      <Icon name="link-external" size={14} />
+                    </span>
                   </ActionButton>
                 )}
                 <SirenWrapper

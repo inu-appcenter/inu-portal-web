@@ -3,19 +3,14 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Bus,
-  Plus,
   RefreshCw,
-  Trash2,
   List,
-  Search,
   Edit2,
   Tag,
-  X,
   ArrowRight,
-  Check,
-  Info,
   Power,
 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
@@ -605,13 +600,13 @@ export default function MobileAdminBusPage() {
                     </>
                   ) : (
                     <>
-                      <Plus size={20} color="#16a34a" /> 시종점 기반 자동 탐색 규칙 추가
+                      <Icon name="add-plus-sm" size={20} color="#16a34a" /> 시종점 기반 자동 탐색 규칙 추가
                     </>
                   )}
                 </HeaderTitle>
                 {editingRuleId !== null && (
                   <CancelMiniButton type="button" onClick={handleCancelEditRule}>
-                    <X size={14} /> 수정 취소
+                    <Icon name="close-md" size={14} /> 수정 취소
                   </CancelMiniButton>
                 )}
               </CardHeader>
@@ -684,7 +679,7 @@ export default function MobileAdminBusPage() {
                           type="button"
                           onClick={() => openSearchModal("start")}
                         >
-                          <Search size={13} /> 공공데이터 검색
+                          <Icon name="search" size={13} /> 공공데이터 검색
                         </SearchTriggerButton>
                       </BoxHeaderRow>
 
@@ -779,7 +774,7 @@ export default function MobileAdminBusPage() {
                           type="button"
                           onClick={() => openSearchModal("end")}
                         >
-                          <Plus size={13} /> 목표 정류장 추가 검색
+                          <Icon name="add-plus-sm" size={13} /> 목표 정류장 추가 검색
                         </SearchTriggerButton>
                       </BoxHeaderRow>
 
@@ -795,7 +790,9 @@ export default function MobileAdminBusPage() {
                           }}
                           onClick={() => openSearchModal("end")}
                         >
-                          <Search size={22} color="#94a3b8" style={{ marginBottom: "6px" }} />
+                          <div style={{ marginBottom: "6px" }}>
+                            <Icon name="search" size={22} color="#94a3b8" />
+                          </div>
                           <div style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>
                             목표 도착 정류장을 검색하여 추가해주세요
                           </div>
@@ -864,7 +861,7 @@ export default function MobileAdminBusPage() {
                                   }}
                                   onClick={() => handleRemoveEndStop(index)}
                                 >
-                                  <Trash2 size={12} /> 삭제
+                                  <Icon name="trash-full" size={12} /> 삭제
                                 </button>
                               </div>
 
@@ -909,11 +906,11 @@ export default function MobileAdminBusPage() {
                     <SubmitButton type="submit" disabled={loading}>
                       {editingRuleId !== null ? (
                         <>
-                          <Check size={16} /> 탐색 규칙 수정 완료 (#ID: {editingRuleId})
+                          <Icon name="check" size={16} /> 탐색 규칙 수정 완료 (#ID: {editingRuleId})
                         </>
                       ) : (
                         <>
-                          <Plus size={16} /> 새 규칙 등록하기
+                          <Icon name="add-plus-sm" size={16} /> 새 규칙 등록하기
                         </>
                       )}
                     </SubmitButton>
@@ -984,7 +981,7 @@ export default function MobileAdminBusPage() {
                                 onClick={() => handleDeleteRule(rule.id)}
                                 title="규칙 삭제"
                               >
-                                <Trash2 size={14} />
+                                <Icon name="trash-full" size={14} />
                               </DeleteButton>
                             </RuleActionGroup>
                           </RuleCardHeader>
@@ -1087,7 +1084,7 @@ export default function MobileAdminBusPage() {
 
                       {sec.busNotice && (
                         <NoticeBox>
-                          <Info size={12} />
+                          <Icon name="info" size={12} />
                           <span>{sec.busNotice}</span>
                         </NoticeBox>
                       )}
@@ -1107,7 +1104,7 @@ export default function MobileAdminBusPage() {
                         <DeleteButton
                           onClick={() => handleDeleteRouteSection(sec.id)}
                         >
-                          <Trash2 size={14} />
+                          <Icon name="trash-full" size={14} />
                         </DeleteButton>
                       </ActionRow>
                     </RouteCard>
@@ -1144,7 +1141,7 @@ export default function MobileAdminBusPage() {
                         type="button"
                         onClick={() => openSearchModal("alias")}
                       >
-                        <Search size={14} />{" "}
+                        <Icon name="search" size={14} />{" "}
                         {aliasForm.bstopName
                           ? `${aliasForm.bstopName} (${aliasForm.bstopId})`
                           : "공공데이터 정류소 검색하기"}
@@ -1258,7 +1255,7 @@ export default function MobileAdminBusPage() {
                   </FormGrid>
 
                   <SubmitButton type="submit" disabled={loading}>
-                    <Plus size={16} /> 별칭 및 안내 문구 저장하기
+                    <Icon name="add-plus-sm" size={16} /> 별칭 및 안내 문구 저장하기
                   </SubmitButton>
                 </form>
               </CardBody>
@@ -1308,7 +1305,7 @@ export default function MobileAdminBusPage() {
                               <DeleteButton
                                 onClick={() => handleDeleteAlias(a.id)}
                               >
-                                <Trash2 size={14} />
+                                <Icon name="trash-full" size={14} />
                               </DeleteButton>
                             </div>
                           </td>
@@ -1331,10 +1328,10 @@ export default function MobileAdminBusPage() {
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <ModalHeader>
                 <ModalTitle>
-                  <Search size={18} /> 정류장 실시간 검색
+                  <Icon name="search" size={18} /> 정류장 실시간 검색
                 </ModalTitle>
                 <CloseButton onClick={() => setSearchModalOpen(false)}>
-                  <X size={18} />
+                  <Icon name="close-md" size={18} />
                 </CloseButton>
               </ModalHeader>
 
@@ -1374,7 +1371,7 @@ export default function MobileAdminBusPage() {
                         <AliasTag>[{stop.stopAlias}]</AliasTag>
                       )}
                       <SelectStopBtn type="button">
-                        <Check size={14} /> 선택
+                        <Icon name="check" size={14} /> 선택
                       </SelectStopBtn>
                     </ResultItemRight>
                   </SearchResultItem>
@@ -1395,7 +1392,7 @@ export default function MobileAdminBusPage() {
                   <Edit2 size={18} /> 노선 팁 및 구간 정보 수정
                 </ModalTitle>
                 <CloseButton onClick={() => setEditModalOpen(false)}>
-                  <X size={18} />
+                  <Icon name="close-md" size={18} />
                 </CloseButton>
               </ModalHeader>
 
@@ -1487,7 +1484,7 @@ export default function MobileAdminBusPage() {
                     취소
                   </CancelButton>
                   <SubmitButton type="submit" disabled={loading}>
-                    <Check size={16} /> 수정 완료
+                    <Icon name="check" size={16} /> 수정 완료
                   </SubmitButton>
                 </ModalFooter>
               </form>

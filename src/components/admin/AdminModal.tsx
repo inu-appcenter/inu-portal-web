@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ const AdminModal: React.FC<AdminModalProps> = ({
                   )}
                 </div>
                 <CloseButton onClick={onClose}>
-                  <X size={20} />
+                  <Icon name="close-md" size={20} />
                 </CloseButton>
               </Header>
 

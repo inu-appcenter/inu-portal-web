@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type React from "react";
 import styled from "styled-components";
-import { X, Star, Check, ChevronRight } from "lucide-react";
+import { Star } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -180,14 +181,14 @@ const CourseFilterPanel = ({
                     >
                       <span>{chip}</span>
                       <XIconWrapper>
-                        <X size={12} color="var(--text-brand, #0061ff)" />
+                        <Icon name="close-md" size={12} color="var(--text-brand, #0061ff)" />
                       </XIconWrapper>
                     </ChipItem>
                   ))}
                 </ChipsScrollWrapper>
               </CategoryTextWrapper>
               <ChevronWrapper>
-                <ChevronRight size={20} color="var(--gray-400, #b0b8c1)" />
+                <Icon name="chevron-right" size={20} color="var(--gray-400, #b0b8c1)" />
               </ChevronWrapper>
               <Ripple />
             </CategoryItemRow>
@@ -205,13 +206,13 @@ const CourseFilterPanel = ({
           <BreadcrumbItem $active={!majorLevel1}>전공/영역</BreadcrumbItem>
           {majorLevel1 && (
             <>
-              <ChevronRight size={16} color="var(--gray-400, #b0b8c1)" />
+              <Icon name="chevron-right" size={16} color="var(--gray-400, #b0b8c1)" />
               <BreadcrumbItem $active={!majorLevel2}>{majorLevel1}</BreadcrumbItem>
             </>
           )}
           {majorLevel2 && (
             <>
-              <ChevronRight size={16} color="var(--gray-400, #b0b8c1)" />
+              <Icon name="chevron-right" size={16} color="var(--gray-400, #b0b8c1)" />
               <BreadcrumbItem $active>{majorLevel2}</BreadcrumbItem>
             </>
           )}
@@ -232,10 +233,10 @@ const CourseFilterPanel = ({
                 >
                   <OptionLabel>{m.name}</OptionLabel>
                   {m.hasChevron ? (
-                    <ChevronRight size={20} color="var(--gray-400, #b0b8c1)" />
+                    <Icon name="chevron-right" size={20} color="var(--gray-400, #b0b8c1)" />
                   ) : (
                     isSelected && (
-                      <Check size={20} color="var(--border-brand, #0061ff)" />
+                      <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
                     )
                   )}
                   <Ripple />
@@ -270,7 +271,7 @@ const CourseFilterPanel = ({
                     />
                   </FavoriteStarButton>
                   <OptionLabel>{college}</OptionLabel>
-                  <ChevronRight size={20} color="var(--gray-400, #b0b8c1)" />
+                  <Icon name="chevron-right" size={20} color="var(--gray-400, #b0b8c1)" />
                   <Ripple />
                 </OptionItemRow>
               );
@@ -287,7 +288,7 @@ const CourseFilterPanel = ({
                 <OptionItemRow key={subName} onClick={() => handleSelectMajor(subName)}>
                   <OptionLabel style={{ paddingLeft: "8px" }}>{subName}</OptionLabel>
                   {isSelected && (
-                    <Check size={20} color="var(--border-brand, #0061ff)" />
+                    <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
                   )}
                   <Ripple />
                 </OptionItemRow>
@@ -320,7 +321,7 @@ const CourseFilterPanel = ({
                   </FavoriteStarButton>
                   <OptionLabel>{dept}</OptionLabel>
                   {isSelected && (
-                    <Check size={20} color="var(--border-brand, #0061ff)" />
+                    <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
                   )}
                   <Ripple />
                 </OptionItemRow>
@@ -340,7 +341,7 @@ const CourseFilterPanel = ({
             <OptionItemRow key={option} onClick={() => handleSelectSort(option)}>
               <OptionLabel style={{ paddingLeft: "8px" }}>{option}</OptionLabel>
               {filters.sort === option && (
-                <Check size={20} color="var(--border-brand, #0061ff)" />
+                <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
               )}
               <Ripple />
             </OptionItemRow>

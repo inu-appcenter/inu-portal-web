@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { SchoolimageMap } from "@/resources/assets/mapBuildingImages/buildingImageManage.ts";
+import { SchoolimageMap } from "@/resources/assets/photos/map/buildings";
 import { Place } from "@/components/map/DB.tsx";
-import defaultImage from "../../../resources/assets/mapIcons/defaultImage.png";
+import defaultImage from "../../../resources/assets/photos/map/default-place.png";
 
 const SchoolInfoBox = ({ place }: { place: Place }) => {
   const imageSrc = SchoolimageMap[place.location] ?? defaultImage;

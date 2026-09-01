@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 import {
   APP_STORE_URL,
@@ -82,9 +82,9 @@ export default function AppInstallBanner() {
   return createPortal(
     <Banner>
       <DismissButton type="button" onClick={handleDismiss} aria-label="배너 닫기">
-        <X size={18} />
+        <Icon name="close-md" size={18} />
       </DismissButton>
-      <AppIcon src="/icon.svg" alt="" aria-hidden />
+      <AppIcon src="/icon.webp" alt="" aria-hidden />
       <TextGroup>
         <Title>INTIP 앱으로 보기</Title>
         <Subtitle>앱에서 더 빠르게, 알림까지 받아보세요</Subtitle>

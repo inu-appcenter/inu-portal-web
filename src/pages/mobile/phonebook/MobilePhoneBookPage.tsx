@@ -11,8 +11,10 @@ import {
   MIN_PHONEBOOK_QUERY_LENGTH,
   PHONEBOOK_MIN_QUERY_MESSAGE,
 } from "@/pages/mobile/phonebook/phonebookConfig";
-import callinuBannerVideo from "@/resources/assets/phonebook/callinu-banner.mp4";
-import callinuBanner from "@/resources/assets/phonebook/callinu-banner.webp";
+import {
+  callinuBannerVideo,
+  callinuBanner,
+} from "@/resources/assets/illustrations/phonebook";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,

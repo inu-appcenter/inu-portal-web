@@ -36,7 +36,7 @@ const CommonStyles = createGlobalStyle`
   }
 
   a, button, img {
-    cursor: url('/pointers/cursor-pointer.svg'), pointer;
+    cursor: url('/pointers/cursor-pointer.webp'), pointer;
   }
 
   button, input, textarea, select {

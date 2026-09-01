@@ -4,7 +4,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { CouncilNotice } from "@/types/councilNotices";
 import { getCouncilNoticesList } from "@/apis/councilNotices";
 import styled from "styled-components";
-import eyeImg from "@/resources/assets/posts/eye.svg";
+import { eye as eyeImg } from "@/resources/assets/icons/posts";
 
 export default function NoticeList({ reloadKey }: { reloadKey: number }) {
   const [notices, setNotices] = useState<CouncilNotice[]>([]);

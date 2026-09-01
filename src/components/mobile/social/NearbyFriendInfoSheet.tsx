@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
-import { MapPin, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import BottomSheet from "@/components/common/BottomSheet";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
@@ -107,7 +108,7 @@ export default function NearbyFriendInfoSheet({
       {phase === "consent" && (
         <>
           <IconWrapper>
-            <MapPin size={24} strokeWidth={2.2} />
+            <Icon name="location" size={24} />
           </IconWrapper>
           <Title>위치 정보 수집·이용 동의</Title>
           <ConsentList>
@@ -132,7 +133,7 @@ export default function NearbyFriendInfoSheet({
       {phase === "locating" && (
         <StatusBlock>
           <IconWrapper>
-            <MapPin size={24} strokeWidth={2.2} />
+            <Icon name="location" size={24} />
           </IconWrapper>
           <Title>주변을 찾는 중이에요</Title>
           <Description>위치 확인 중이에요. 잠시만 기다려주세요.</Description>
@@ -142,7 +143,7 @@ export default function NearbyFriendInfoSheet({
       {(phase === "denied" || phase === "error") && (
         <StatusBlock>
           <IconWrapper>
-            <MapPin size={24} strokeWidth={2.2} />
+            <Icon name="location" size={24} />
           </IconWrapper>
           <Title>
             {phase === "denied" ? "위치 권한이 꺼져 있어요" : "위치를 확인할 수 없어요"}

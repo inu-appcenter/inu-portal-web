@@ -46,6 +46,8 @@ export interface CourseOffering {
   savedCount?: number | null;
   note: string | null;
   meetings: CourseOfferingMeeting[];
+  /** 성적 평가 방식("상대평가"·"절대평가") */
+  gradeEvaluationName?: string | null;
 }
 
 // GET /api/course-offerings 쿼리 파라미터 필터

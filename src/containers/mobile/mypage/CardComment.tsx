@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import styled from "styled-components";
-import HeartFilledImg from "@/resources/assets/mobile-mypage/heart-filled-img.svg";
-import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
+import { heartFilled as HeartFilledImg } from "@/resources/assets/icons/posts";
+import Icon from "@/components/common/Icon";
 import { MembersReplies } from "@/types/members";
 import { deleteReply } from "@/apis/replies";
 import axios, { AxiosError } from "axios";
@@ -80,7 +80,9 @@ export default function CardComment({
             onClick={() => handleDocumentClick(p.postId)}
           >
             <XButton
-              src={X_Vector}
+              name="close-md"
+              size={10}
+              label="삭제"
               onClick={(e) => {
                 e.stopPropagation(); // Prevent card click when X is clicked
                 handleXButtonClick(p.id);
@@ -161,7 +163,7 @@ const TipsCardWrapper = styled.div`
   cursor: pointer;
 `;
 
-const XButton = styled.img`
+const XButton = styled(Icon)`
   position: absolute;
   top: 20px;
   right: 20px;

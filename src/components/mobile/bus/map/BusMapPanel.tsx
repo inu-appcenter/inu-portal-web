@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled, { css, keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Drawer } from "vaul";
-import { ChevronDown, RotateCw, Calendar } from "lucide-react";
+import { RotateCw, Calendar } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { FiChevronRight } from "react-icons/fi";
 import BusCircle from "@/components/mobile/bus/BusCircle";
 import BusRouteBar from "@/components/mobile/bus/BusRouteBar";
@@ -274,7 +275,7 @@ export default function BusMapPanel({
                     <option value="arrival">도착임박순</option>
                     <option value="default">기본</option>
                   </SortSelect>
-                  <SortChevron size={14} aria-hidden="true" />
+                  <SortChevron name="chevron-down" size={14} />
                 </SortSelectWrapper>
               </PanelHeaderTopRow>
               <PanelDescription>{selectedStop.stopNotice}</PanelDescription>
@@ -345,6 +346,7 @@ export default function BusMapPanel({
                         ) : null}
                         {section.buses.map((bus) => {
                           const isSelected = selectedBusId === bus.id;
+                          const isEstimatedArrival = isEstimatedArrivalInfo(bus);
                           const statusContent = renderBusStatus(
                             bus,
                             selectedStop.supportsLiveArrival,
@@ -377,7 +379,7 @@ export default function BusMapPanel({
                                     />
                                     <ArrivalInfo>
                                       <ArrivalWrapper>
-                                        <ArrivalTime>
+                                        <ArrivalTime $isEstimated={isEstimatedArrival}>
                                           {getBusDisplayTime(
                                             bus,
                                             selectedStop.supportsLiveArrival,
@@ -604,10 +606,25 @@ function getBusArrivalPriority(bus: BusData) {
 
 function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
   if (bus.arrivalInfo?.time) {
+    if (isEstimatedArrivalInfo(bus)) {
+      const seconds = bus.arrivalInfo.seconds;
+      if (typeof seconds === "number") {
+        if (seconds < 60) {
+          return "곧 도착";
+        }
+        return `${Math.floor(seconds / 60)}분`;
+      }
+      return bus.arrivalInfo.time.replace(/\s*\d+초$/, "");
+    }
     return bus.arrivalInfo.time;
   }
 
   return supportsLiveArrival ? "정보 확인" : "노선 보기";
+}
+
+function isEstimatedArrivalInfo(bus: BusData) {
+  const stationText = getArrivalStationText(bus.arrivalInfo);
+  return stationText === "시간표 기반" || stationText === "통계 추정";
 }
 
 function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
@@ -626,8 +643,8 @@ function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
     return null;
   }
 
-  if (stationText === "시간표 기반" || stationText === "통계 추정") {
-    return <span style={{ color: "#4f46e5", fontWeight: 600 }}>⏱️ 시간표 기반</span>;
+  if (isEstimatedArrivalInfo(bus)) {
+    return "예상 시간표";
   }
 
   if (!stationText && !status && !isLastBus) {
@@ -813,7 +830,7 @@ const SortSelect = styled.select`
   }
 `;
 
-const SortChevron = styled(ChevronDown)`
+const SortChevron = styled(Icon)`
   position: absolute;
   right: 10px;
   color: #7a889d;
@@ -1042,11 +1059,11 @@ const ArrivalWrapper = styled.div`
   min-width: 0;
 `;
 
-const ArrivalTime = styled.span`
+const ArrivalTime = styled.span<{ $isEstimated?: boolean }>`
   font-weight: 500;
   font-size: 15px;
   line-height: 1.2;
-  color: #202020;
+  color: ${({ $isEstimated }) => ($isEstimated ? "#6b7280" : "#202020")};
   white-space: nowrap;
 `;
 

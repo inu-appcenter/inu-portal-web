@@ -1,11 +1,12 @@
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-import intipLogo from "@/resources/assets/intip-logo.webp";
+// import { intipLogoMascot as intipLogo } from "@/resources/assets/illustrations/brand";
+import { intipLogoWordmark as intipLogo } from "@/resources/assets/illustrations/brand";
 import { useNavigate } from "react-router-dom";
 import { forwardRef } from "react";
 import { useCustomNavigate } from "@/hooks/useCustomNavigate";
 
-import { Bell } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import BackButton from "@/components/mobile/login/BackButton";
 import TopRightDropdownMenu from "@/components/desktop/common/TopRightDropdownMenu";
 import { useHeaderConfig } from "@/context/HeaderContext";
@@ -33,7 +34,7 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   return (
     <BellWrapper onClick={handleNotiBtnClick}>
       <Ripple />
-      <Bell size={24} />
+      <Icon name="bell" size={24} />
       {hasNew && <Badge />}
     </BellWrapper>
   );

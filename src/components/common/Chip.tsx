@@ -1,10 +1,14 @@
 import styled from "styled-components";
-import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
+import FontelloIcon from "./Icon";
 import Ripple from "./Ripple";
 
 interface ChipButtonProps {
   iconSrc?: string;
   iconComponent?: React.ElementType;
+  /** iconComponent 색상. 생략 시 기존 동작대로 브랜드 블루(#4071B9). */
+  iconColor?: string;
+  /** iconComponent 크기(px). 생략 시 기존 동작대로 20(react-icons 기본). */
+  iconSize?: number;
   title: string;
   isExternalLink?: boolean;
   isAIButton?: boolean;
@@ -14,6 +18,8 @@ interface ChipButtonProps {
 const Chip = ({
   iconSrc,
   iconComponent: IconComponent,
+  iconColor = "#4071B9",
+  iconSize = 20,
   title,
   isExternalLink,
   isAIButton,
@@ -30,10 +36,18 @@ const Chip = ({
       <Ripple />
       <InnerContent>
         {iconSrc && <Icon src={iconSrc} alt="" $isAIButton={isAIButton} />}
-        {IconComponent && <IconComponent size={20} color="#4071B9" />}
+        {IconComponent && (
+          <IconComponent
+            size={iconSize}
+            color={iconColor}
+            style={{ width: iconSize, height: iconSize, flexShrink: 0 }}
+          />
+        )}
         <ContentArea>
           <div className="title">{title}</div>
-          {isExternalLink && <img src={외부연결버튼} />}
+          {isExternalLink && (
+            <ExternalLinkImg />
+          )}
         </ContentArea>
       </InnerContent>
     </ChipWrapper>
@@ -78,6 +92,13 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
       transform: scale(0.96);
     }
   }
+`;
+
+const ExternalLinkImg = styled(FontelloIcon).attrs({
+  name: "link-external" as const,
+  size: 11,
+})`
+  color: #969696;
 `;
 
 const Icon = styled.img<{ $isAIButton?: boolean }>`

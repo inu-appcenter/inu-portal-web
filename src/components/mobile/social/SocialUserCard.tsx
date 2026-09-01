@@ -1,5 +1,5 @@
 import styled, { css } from "styled-components";
-import { User, ChevronRight } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import {
   normalizeProfileImageId,
   DEFAULT_PROFILE_IMAGE_ID,
@@ -43,7 +43,7 @@ export default function SocialUserCard({
             }}
           />
           <DefaultIconArea>
-            <User size={24} color="#D6D1D5" />
+            <Icon name="user-02" size={24} color="#D6D1D5" />
           </DefaultIconArea>
         </ProfileArea>
 
@@ -70,7 +70,7 @@ export default function SocialUserCard({
             </ActionButton>
           )}
           {!onActionClick && !onSecondaryActionClick && (
-            <ChevronRight size={20} color="#D1D1D6" />
+            <Icon name="chevron-right" size={20} color="#D1D1D6" />
           )}
         </ActionArea>
       </InnerContent>

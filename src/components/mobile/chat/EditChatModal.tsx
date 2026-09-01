@@ -4,7 +4,7 @@ import BottomButtonGroup from "@/components/common/BottomButtonGroup";
 import { useState, useEffect } from "react";
 import { updateChatRoomInfo } from "@/apis/chat";
 import { useQueryClient } from "@tanstack/react-query";
-import { Camera } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { ChatRoom } from "@/types/chat";
 
 const contentShow = keyframes`
@@ -108,7 +108,7 @@ export default function EditChatModal({
               <Label>방 썸네일</Label>
               <ThumbnailInputWrapper>
                 <ThumbnailPreview src={previewUrl || ""}>
-                  {!previewUrl && <Camera size={24} color="#CBD5E1" />}
+                  {!previewUrl && <Icon name="camera" size={24} color="#CBD5E1" />}
                 </ThumbnailPreview>
                 <FileInput
                   type="file"
@@ -116,7 +116,7 @@ export default function EditChatModal({
                   onChange={handleFileChange}
                 />
                 <EditBadge>
-                  <Camera size={14} color="white" />
+                  <Icon name="camera" size={14} color="white" />
                 </EditBadge>
               </ThumbnailInputWrapper>
             </ThumbnailGroup>

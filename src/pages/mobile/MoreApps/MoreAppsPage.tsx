@@ -5,7 +5,7 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import { BoardContent } from "@/types/appcenter";
 import { getAllBoardsContents } from "@/apis/appcenter";
-import appcenterBanner from "@/resources/assets/banner/앱센터배너.webp";
+import { appcenterBanner } from "@/resources/assets/illustrations/banner";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";

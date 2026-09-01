@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { SOFT_PILL_SHADOW } from "@/styles/shadows";
-import 외부연결버튼 from "@/resources/assets/mobile-home/chip/ExternalLink-white.svg";
+import Icon from "@/components/common/Icon";
 
 // 버튼 속성 상속 인터페이스
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,7 +12,7 @@ const FillButton = ({ children, isExternalLink, ...props }: Props) => {
   return (
     // 나머지 속성 전달
     <FillButtonWrapper {...props}>
-      {children} {isExternalLink && <img src={외부연결버튼} />}
+      {children} {isExternalLink && <Icon name="link-external" size={11} />}
     </FillButtonWrapper>
   );
 };

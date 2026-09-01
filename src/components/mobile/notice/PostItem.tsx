@@ -1,8 +1,10 @@
+import { ReactNode } from "react";
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
-import { Eye, MessageSquare, Heart, Bookmark } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import Ripple from "@/components/common/Ripple";
 import { formatTimeAgo } from "@/utils/date";
+export type TextVariant = "tertiary" | "error" | "brand";
 
 interface NoticeItemProps {
   id?: number;
@@ -23,6 +25,8 @@ interface NoticeItemProps {
   isEllipsis?: boolean;
   showDate?: boolean;
   showWriter?: boolean;
+  /** 신고/차단/숨기기 등 게시글 관리 메뉴 (목록에서 바로 처리하기 위함) */
+  menuSlot?: ReactNode;
 }
 
 const PostItem = ({
@@ -41,6 +45,7 @@ const PostItem = ({
   isEllipsis = true,
   showDate = true,
   showWriter = true,
+  menuSlot,
 }: NoticeItemProps) => {
   const hasInfoLine =
     (showDate && !!date) ||
@@ -48,7 +53,8 @@ const PostItem = ({
     views !== undefined ||
     like !== undefined ||
     scrap !== undefined ||
-    replyCount !== undefined;
+    replyCount !== undefined ||
+    !!menuSlot;
 
   const formattedDate = date ? formatTimeAgo(date) : "";
 
@@ -88,38 +94,54 @@ const PostItem = ({
           <TextContainer>
             {category && <Category>{category}</Category>}
             <Title isEllipsis={isEllipsis}>{title || ""}</Title>
-            {content && <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>}
+            {content && (
+              <ContentLine isEllipsis={isEllipsis}>{content}</ContentLine>
+            )}
 
             {hasInfoLine && (
               <InfoLine>
                 <MetaGroup>
-                  {showWriter && writer && <div className="writer">{writer}</div>}
-                  {showWriter && writer && showDate && date && <div className="dot">·</div>}
-                  {showDate && date && <div className="date">{formattedDate}</div>}
-                  {replyCount !== undefined && (
-                    <StatItem>
-                      <MessageSquare size={16} strokeWidth={1.8} />
-                      <span>{replyCount}</span>
-                    </StatItem>
-                  )}
                   {like !== undefined && (
-                    <StatItem>
-                      <Heart size={16} strokeWidth={1.8} />
+                    <StatItem $variant="error">
+                      <i className="icon-heart" />
+
                       <span>{like}</span>
                     </StatItem>
                   )}
-                  {scrap !== undefined && (
+                  {replyCount !== undefined && (
+                    <StatItem $variant="brand">
+                      <i className="icon-chat-dots" />
+
+                      <span>{replyCount}</span>
+                    </StatItem>
+                  )}
+                  {/* {scrap !== undefined && (
                     <StatItem>
                       <Bookmark size={16} strokeWidth={1.8} />
                       <span>{scrap}</span>
                     </StatItem>
+                  )} */}
+                  {showDate && date && (like !== undefined || replyCount !== undefined) && <div className="dot">·</div>}
+                  {showDate && date && (
+                    <div className="date">{formattedDate}</div>
+                  )}
+                  {showDate && date && showWriter && writer && (
+                    <div className="dot">·</div>
+                  )}
+                  {showWriter && writer && (
+                    <div className="writer">{writer}</div>
                   )}
                 </MetaGroup>
-                {views !== undefined && (
-                  <ViewCount>
-                    <Eye size={18} />
-                    {views}
-                  </ViewCount>
+                {(views !== undefined || menuSlot) && (
+                  <TrailingGroup>
+                    {views !== undefined && (
+                      <ViewCount>
+                        <Icon name="eye" size={18} />
+                        {views}
+                      </ViewCount>
+                    )}
+                    {menuSlot}
+                  </TrailingGroup>
                 )}
               </InfoLine>
             )}
@@ -127,10 +149,7 @@ const PostItem = ({
 
           {resolvedImageUrl && (
             <ThumbnailWrapper>
-              <ThumbnailImage
-                src={resolvedImageUrl}
-                alt={title || "썸네일"}
-              />
+              <ThumbnailImage src={resolvedImageUrl} alt={title || "썸네일"} />
             </ThumbnailWrapper>
           )}
         </MainSection>
@@ -173,7 +192,7 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
   width: 100%;
   min-height: 108px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
 
   ${({ $interactive }) =>
@@ -187,8 +206,7 @@ const NoticeItemWrapper = styled.div<{ $interactive?: boolean }>`
             }
           }
         `
-      : css`
-        `}
+      : css``}
 `;
 
 const Category = styled.div`
@@ -271,16 +289,23 @@ const MetaGroup = styled.div`
   flex-wrap: wrap;
 `;
 
-const StatItem = styled.div`
+const StatItem = styled.div<{ $variant?: TextVariant }>`
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: var(--text-tertiary, #8b95a1);
+
+  color: var(--text-${(props) => props.$variant ?? "teritary"}, #8b95a1);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
   line-height: 160%;
+`;
+
+const TrailingGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
 `;
 
 const ViewCount = styled.div`

@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { MapPin, QrCode, UserRoundSearch } from "lucide-react";
+import { UserRoundSearch } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 /**
  * 친구 추가 FAB을 눌렀을 때 뜨는 카드형 드롭다운 메뉴.
@@ -32,11 +33,11 @@ export default function AddFriendMenuCard({
           닉네임으로 찾기
         </MenuRow>
         <MenuRow type="button" onClick={onNearbyClick}>
-          <MapPin size={20} />
+          <Icon name="location" size={20} color="#5E92F0" />
           주변 친구 찾기
         </MenuRow>
         <MenuRow type="button" onClick={onInviteClick}>
-          <QrCode size={20} />
+          <Icon name="qr-code" size={20} color="#5E92F0" />
           링크·QR로 초대
         </MenuRow>
       </MenuCard>

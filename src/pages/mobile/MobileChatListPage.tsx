@@ -5,10 +5,11 @@ import "swiper/css";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useEffect, useMemo, useState, useCallback, memo } from "react";
+import React, { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -239,7 +240,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       return (
         <HeaderRightArea>
           <IconButton onClick={handleSearchClick}>
-            <Search size={24} color="#1C1C1E" />
+            <Icon name="search" size={24} color="#1C1C1E" />
           </IconButton>
         </HeaderRightArea>
       );
@@ -451,30 +452,33 @@ const MobileChatListPage = memo(function MobileChatListPage() {
               <ListWrapper>
                 {isLoading ? (
                   <ListWrapper>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width: "100%",
-                          padding: "12px 0",
-                          display: "flex",
-                          gap: "12px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Skeleton width="48px" height="48px" circle />
+                    {[1, 2, 3, 4, 5].map((i, idx) => (
+                      <React.Fragment key={i}>
                         <div
                           style={{
-                            flex: 1,
+                            width: "100%",
+                            padding: "12px 20px",
                             display: "flex",
-                            flexDirection: "column",
-                            gap: "8px",
+                            gap: "12px",
+                            alignItems: "center",
+                            boxSizing: "border-box",
                           }}
                         >
-                          <Skeleton width="40%" height="18px" />
-                          <Skeleton width="70%" height="14px" />
+                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                            }}
+                          >
+                            <Skeleton width="40%" height="18px" />
+                            <Skeleton width="70%" height="14px" />
+                          </div>
                         </div>
-                      </div>
+                        {idx < 4 && <Divider margin="0" />}
+                      </React.Fragment>
                     ))}
                   </ListWrapper>
                 ) : personalRooms.length > 0 ? (
@@ -537,30 +541,33 @@ const MobileChatListPage = memo(function MobileChatListPage() {
               <ListWrapper>
                 {isLoading ? (
                   <ListWrapper>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width: "100%",
-                          padding: "12px 0",
-                          display: "flex",
-                          gap: "12px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Skeleton width="48px" height="48px" circle />
+                    {[1, 2, 3, 4, 5].map((i, idx) => (
+                      <React.Fragment key={i}>
                         <div
                           style={{
-                            flex: 1,
+                            width: "100%",
+                            padding: "12px 20px",
                             display: "flex",
-                            flexDirection: "column",
-                            gap: "8px",
+                            gap: "12px",
+                            alignItems: "center",
+                            boxSizing: "border-box",
                           }}
                         >
-                          <Skeleton width="40%" height="18px" />
-                          <Skeleton width="70%" height="14px" />
+                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              flex: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                            }}
+                          >
+                            <Skeleton width="40%" height="18px" />
+                            <Skeleton width="70%" height="14px" />
+                          </div>
                         </div>
-                      </div>
+                        {idx < 4 && <Divider margin="0" />}
+                      </React.Fragment>
                     ))}
                   </ListWrapper>
                 ) : openRooms.length > 0 ? (
@@ -587,30 +594,33 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                 <ListWrapper>
                   {isOpenRoomsLoading ? (
                     <ListWrapper>
-                      {[1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          style={{
-                            width: "100%",
-                            padding: "12px 0",
-                            display: "flex",
-                            gap: "12px",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Skeleton width="48px" height="48px" circle />
+                      {[1, 2, 3].map((i, idx) => (
+                        <React.Fragment key={i}>
                           <div
                             style={{
-                              flex: 1,
+                              width: "100%",
+                              padding: "12px 20px",
                               display: "flex",
-                              flexDirection: "column",
-                              gap: "8px",
+                              gap: "12px",
+                              alignItems: "center",
+                              boxSizing: "border-box",
                             }}
                           >
-                            <Skeleton width="60%" height="18px" />
-                            <Skeleton width="40%" height="14px" />
+                            <Skeleton width="48px" height="48px" circle />
+                            <div
+                              style={{
+                                flex: 1,
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "8px",
+                              }}
+                            >
+                              <Skeleton width="60%" height="18px" />
+                              <Skeleton width="40%" height="14px" />
+                            </div>
                           </div>
-                        </div>
+                          {idx < 2 && <Divider margin="0" />}
+                        </React.Fragment>
                       ))}
                     </ListWrapper>
                   ) : openRoomsDiscoveryRes?.data &&

@@ -6,15 +6,16 @@ import { getMembersScraps } from "@/apis/members";
 import { getSearchFolderScrap, getSearchScrap } from "@/apis/search";
 import { putScrap } from "@/apis/posts";
 import SaveSearchForm from "@/components/mobile/save/SaveSearchForm";
-import editButton from "@/resources/assets/mobile-save/editButton.svg";
+import { editButton } from "@/resources/assets/icons/save";
 import FolderListDropDowns from "@/components/mobile/save/MobileFolderListDropDowns";
 import DeleteConfirmModal from "@/components/mobile/save/DeleteConfirmModal";
-import Trash from "@/resources/assets/mobile-save/Trash.svg";
+import Trash from "@/resources/assets/illustrations/mobile-save/trash.svg";
 import { Folder } from "@/types/folders";
 import { Post } from "@/types/posts";
 import axios, { AxiosError } from "axios";
 import useAppStateStore from "@/stores/useAppStateStore";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import usePostModeration from "@/hooks/usePostModeration";
 
 interface ScrapContentsProps {
   folders: Folder[];
@@ -35,6 +36,9 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null); // 삭제할 게시물 ID 상태 추가
   const { isAppUrl } = useAppStateStore();
+  // 스크랩 목록도 남이 쓴 글이라 신고/차단/숨기기가 있어야 한다
+  // (App Store 가이드라인 1.2 — UGC).
+  const moderation = usePostModeration();
 
   // 데이터 가져오기 함수
   const fetchData = useCallback(
@@ -263,7 +267,13 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
     let currentPage = 1;
     let pagePosts: (Post | { page: number })[] = [];
 
-    posts.forEach((post, index) => {
+    // 신고/차단/숨김 처리한 글은 즉시 목록에서 사라진다. 페이지 구분자
+    // ({ page })는 그대로 두고 게시글만 걸러낸다.
+    const visible = posts.filter(
+      (post) => "page" in post || moderation.filterHidden([post]).length > 0,
+    );
+
+    visible.forEach((post, index) => {
       if ("page" in post) {
         if (pagePosts.length > 0) {
           groupedPosts.push(
@@ -285,6 +295,7 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
                       docType="TIPS"
                       viewMode="list"
                       isEditing={isEditing}
+                      moderationMenu={moderation.renderMenu(p as Post)}
                     />
                     <DeleteButton
                       onClick={() =>
@@ -326,6 +337,7 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
                   docType="TIPS"
                   viewMode="list"
                   isEditing={isEditing}
+                  moderationMenu={moderation.renderMenu(p as Post)}
                 />
                 <DeleteButton
                   onClick={() =>
@@ -407,6 +419,7 @@ export default function ScrapContents({ folders, folder }: ScrapContentsProps) {
           onCancel={cancelRemovePosts}
         />
       )}
+      {moderation.modals}
     </ScrapContentsContainerWrapper>
   );
 }

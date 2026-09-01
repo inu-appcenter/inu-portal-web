@@ -1,12 +1,13 @@
 import React from "react";
 import styled from "styled-components";
-import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 
 interface StatsDashboardCardProps {
   title: string;
   value: string | number;
-  icon: LucideIcon;
+  /** 아이콘 렌더 함수. lucide 컴포넌트와 Fontello `Icon` 둘 다 넘길 수 있게 렌더 함수로 받는다. */
+  icon: (size: number) => React.ReactNode;
   trend?: {
     value: number;
     isUp: boolean;
@@ -19,7 +20,7 @@ interface StatsDashboardCardProps {
 const StatsDashboardCard: React.FC<StatsDashboardCardProps> = ({
   title,
   value,
-  icon: Icon,
+  icon,
   trend,
   description,
   color = "#0f766e",
@@ -29,12 +30,12 @@ const StatsDashboardCard: React.FC<StatsDashboardCardProps> = ({
     <Card onClick={onClick} $isClickable={!!onClick}>
       <MobileIconWrapper>
         <IconWrapper $color={color}>
-          <Icon size={20} />
+          {icon(20)}
         </IconWrapper>
       </MobileIconWrapper>
       <Header>
         <IconWrapper $color={color}>
-          <Icon size={24} />
+          {icon(24)}
         </IconWrapper>
         {trend && (
           <TrendBadge $isUp={trend.isUp}>

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import logoWithText from "@/resources/assets/mobile-login/logo-with-text.svg";
+import { mobileLoginLogoWithText as logoWithText } from "@/resources/assets/illustrations/login";
 
 export default function LoginLogo() {
   return <LogoImage src={logoWithText} alt="App Logo" />;

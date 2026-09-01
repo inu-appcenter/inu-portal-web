@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { ShieldCheck } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useState } from "react";
@@ -10,7 +11,7 @@ import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { ROUTES } from "@/constants/routes";
-import { Check, ShieldCheck } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import EmptyState from "@/components/common/EmptyState";
 import useUserStore from "@/stores/useUserStore";
 import Switch from "@/components/common/Switch";
@@ -162,7 +163,7 @@ export default function CreatePersonalChatPage() {
                     $selected={selectedFriendIds.includes(user.friendId)}
                   >
                     {selectedFriendIds.includes(user.friendId) && (
-                      <Check size={16} color="white" strokeWidth={3} />
+                      <Icon name="check" size={16} color="white" />
                     )}
                   </Checkbox>
                 </SelectableCard>
@@ -187,7 +188,7 @@ export default function CreatePersonalChatPage() {
                   $selected={selectedFriendIds.includes(friend.friendId)}
                 >
                   {selectedFriendIds.includes(friend.friendId) && (
-                    <Check size={16} color="white" strokeWidth={3} />
+                    <Icon name="check" size={16} color="white" />
                   )}
                 </Checkbox>
               </SelectableCard>
@@ -200,17 +201,19 @@ export default function CreatePersonalChatPage() {
       </Box>
 
       <FixedFooter>
-        <SubmitButton
-          disabled={selectedFriendIds.length === 0 || createMutation.isPending}
-          onClick={handleCreate}
-          $isAdmin={isAdminMode}
-        >
-          {createMutation.isPending
-            ? "채팅방 생성 중..."
-            : isAdminMode
-              ? `공식 방 만들기 (${selectedFriendIds.length}명)`
-              : `방 만들기 (${selectedFriendIds.length}명)`}
-        </SubmitButton>
+        <FixedFooterContent>
+          <SubmitButton
+            disabled={selectedFriendIds.length === 0 || createMutation.isPending}
+            onClick={handleCreate}
+            $isAdmin={isAdminMode}
+          >
+            {createMutation.isPending
+              ? "채팅방 생성 중..."
+              : isAdminMode
+                ? `공식 방 만들기 (${selectedFriendIds.length}명)`
+                : `방 만들기 (${selectedFriendIds.length}명)`}
+          </SubmitButton>
+        </FixedFooterContent>
       </FixedFooter>
     </Container>
   );
@@ -320,10 +323,25 @@ const FixedFooter = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
+  width: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  z-index: 100;
+  pointer-events: none;
+`;
+
+const FixedFooterContent = styled.div`
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
   padding: 16px ${MOBILE_PAGE_GUTTER}
     calc(32px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(to top, white 80%, transparent);
-  z-index: 100;
+  box-sizing: border-box;
+  pointer-events: auto;
 `;
 
 const SubmitButton = styled.button<{ $isAdmin?: boolean }>`

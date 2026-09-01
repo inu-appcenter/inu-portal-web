@@ -4,24 +4,26 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import { useState } from "react";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
-import { Bell, UserX } from "lucide-react";
-import loginImg from "@/resources/assets/login/login-modal-logo.svg";
+import Icon from "@/components/common/Icon";
+import { loginModalLogo as loginImg } from "@/resources/assets/illustrations/login";
 import {
   MyPageActive,
   MyPageCategoryCommon,
   MyPageCategoryLoggeedIn,
 } from "@/resources/strings/m-mypage";
-import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { deleteFcmToken } from "@/apis/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import {
-  DESKTOP_MEDIA,
-  DESKTOP_READING_WIDTH,
-} from "@/styles/responsive";
+import { DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
 import Ripple from "@/components/common/Ripple";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
+import { clearTermsAgreement } from "@/components/common/TermsAgreement";
+import {
+  APPCENTER_URL,
+  SUPPORT_FORM_URL,
+  SUPPORT_MAILTO,
+} from "@/constants/support";
 
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
@@ -32,10 +34,13 @@ export default function MobileMyPage() {
   const renderMenuIcon = (image?: string, title?: string) => {
     if (image) return <img src={image} alt="" />;
     if (title === "알림 설정") {
-      return <Bell className="fallback-icon" aria-hidden="true" />;
+      return <Icon name="bell" size={32} className="fallback-icon" />;
     }
     if (title === "차단 사용자 관리") {
-      return <UserX className="fallback-icon" aria-hidden="true" />;
+      return <Icon name="user-remove" size={32} className="fallback-icon" />;
+    }
+    if (title === "개발자에게 메일 보내기") {
+      return <Icon name="mail" size={32} className="fallback-icon" />;
     }
     return <HiOutlineCog6Tooth className="fallback-icon" aria-hidden="true" />;
   };
@@ -60,6 +65,8 @@ export default function MobileMyPage() {
       refreshTokenExpiredTime: "",
     });
     localStorage.removeItem("tokenInfo");
+    // 다른 계정으로 로그인할 수 있으므로 약관 동의 이력도 초기화한다.
+    clearTermsAgreement();
 
     navigate(ROUTES.HOME, { replace: true, state: { isTabNavigation: true } });
   };
@@ -112,12 +119,14 @@ export default function MobileMyPage() {
         break;
 
       case "문의하기":
-        window.open(
-          "https://docs.google.com/forms/d/e/1FAIpQLSc1DAOC2N_HVzsMa6JMoSOqckpkX39SkHbrZD_eKTtr2cfKqA/viewform",
-        );
+        window.open(SUPPORT_FORM_URL);
+        break;
+      case "개발자에게 메일 보내기":
+        // 부적절한 콘텐츠·악성 사용자 신고를 위한 개발자 직통 연락처
+        window.location.href = SUPPORT_MAILTO;
         break;
       case "인천대학교 앱센터":
-        window.open("https://home.inuappcenter.kr");
+        window.open(APPCENTER_URL);
         break;
 
       default:
@@ -153,19 +162,21 @@ export default function MobileMyPage() {
               </ErrorWrapper>
             )}
           </UserWrapper>
-          {isLoggedIn && <ActiveWrapper>
-            {MyPageActive.map((active, index) => (
-              <div
-                className="item"
-                key={index}
-                onClick={() => handleClick(active.title)}
-              >
-                <img src={active.image} />
-                <p>{active.title}</p>
-              </div>
-            ))}
-            {!userInfo.id && <Overlay />} {/* 로그인 안 됐으면 오버레이 */}
-          </ActiveWrapper>}
+          {isLoggedIn && (
+            <ActiveWrapper>
+              {MyPageActive.map((active, index) => (
+                <div
+                  className="item"
+                  key={index}
+                  onClick={() => handleClick(active.title)}
+                >
+                  <img src={active.image} />
+                  <p>{active.title}</p>
+                </div>
+              ))}
+              {!userInfo.id && <Overlay />} {/* 로그인 안 됐으면 오버레이 */}
+            </ActiveWrapper>
+          )}
         </TopBackground>
 
         <CategoryWrapper $hasActiveSummary={isLoggedIn}>
@@ -187,21 +198,18 @@ export default function MobileMyPage() {
                     )}
                   </div>
                 </span>
-                <Arrow src={arrowImg} />
+                <Arrow color="#A0A0A0" name="chevron-right" />
               </div>
             ))}
           {/* admin role일 경우 관리자 페이지 추가 */}
           {userInfo.role === "admin" && (
-            <div
-              className="item"
-              onClick={() => handleClick("관리자 페이지")}
-            >
+            <div className="item" onClick={() => handleClick("관리자 페이지")}>
               <Ripple />
               <span>
                 {renderMenuIcon()}
                 <div>관리자 페이지</div>
               </span>
-              <Arrow src={arrowImg} />
+              <Arrow color="#A0A0A0" name="chevron-right" />
             </div>
           )}
           {MyPageCategoryCommon.map((category, index) => (
@@ -218,7 +226,7 @@ export default function MobileMyPage() {
                   <div className="description">{category.description}</div>
                 </div>
               </span>
-              <Arrow src={arrowImg} />
+              <Arrow color="#A0A0A0" name="chevron-right" />
             </div>
           ))}{" "}
           <div className="item" onClick={() => handleClick("알림 설정 확인")}>
@@ -230,7 +238,7 @@ export default function MobileMyPage() {
                 <div className="description">FCM 토큰 및 전송 상태 확인</div>
               </div>
             </span>
-            <Arrow src={arrowImg} />
+            <Arrow color="#A0A0A0" name="chevron-right" />
           </div>
         </CategoryWrapper>
       </DesktopContentGrid>
@@ -304,7 +312,8 @@ const DesktopContentGrid = styled.div`
 const TopBackground = styled.div<{ $hasActiveSummary: boolean }>`
   background: transparent;
   height: fit-content;
-  padding: 32px 0 ${({ $hasActiveSummary }) => ($hasActiveSummary ? "80px" : "24px")};
+  padding: 32px 0
+    ${({ $hasActiveSummary }) => ($hasActiveSummary ? "80px" : "24px")};
   width: 100%;
   position: relative;
   display: flex;
@@ -431,7 +440,8 @@ const ActiveWrapper = styled.div`
 
 const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
   display: flex;
-  margin-top: ${({ $hasActiveSummary }) => ($hasActiveSummary ? "56px" : "12px")};
+  margin-top: ${({ $hasActiveSummary }) =>
+    $hasActiveSummary ? "56px" : "12px"};
   border-radius: 10px;
   flex-direction: column;
   align-items: center;
@@ -556,11 +566,9 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
   }
 `;
 
-const Arrow = styled.img`
-  width: 8px;
-
+const Arrow = styled(Icon)`
   @media ${DESKTOP_MEDIA} {
-    width: 10px;
+    font-size: 11px;
     opacity: 0.7;
   }
 `;

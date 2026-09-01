@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
-import { X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getBlockedUsers, unblockUser } from "@/apis/blocks";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
@@ -58,7 +58,7 @@ export default function BlockedUsersModal({
               <Title>{title}</Title>
             </TitleArea>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <X size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="#1C1C1E" />
             </CloseButton>
           </Header>
           <ScrollArea>

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
-import pencil from "@/resources/assets/posts/pencil-white.svg";
+import { pencilWhite as pencil } from "@/resources/assets/icons/posts";
 import LoginModal from "@/components/desktop/common/LoginModal";
 import { useState } from "react";
 import useUserStore from "@/stores/useUserStore";

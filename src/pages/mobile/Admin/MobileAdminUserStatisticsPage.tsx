@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Calendar, Users, UserCheck, UserMinus } from "lucide-react";
+import { Calendar, UserCheck } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 import useUserStore from "@/stores/useUserStore.ts";
 import { getMemberLogs } from "@/apis/admin";
@@ -109,19 +110,19 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
           <StatsDashboardCard
             title="총 방문자"
             value={memberLog?.memberCount || 0}
-            icon={Users}
+            icon={(size) => <Icon name="users" size={size} />}
             color="#0f766e"
           />
           <StatsDashboardCard
             title="로그인 유저"
             value={counts.login}
-            icon={UserCheck}
+            icon={(size) => <UserCheck size={size} />}
             color="#3b82f6"
           />
           <StatsDashboardCard
             title="비로그인 유저"
             value={counts.guest}
-            icon={UserMinus}
+            icon={(size) => <Icon name="user-remove" size={size} />}
             color="#64748b"
           />
         </StatsGrid>
@@ -166,7 +167,7 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
                   return (
                     <MemberItem key={idx}>
                       <MemberIcon $isUser={isUser}>
-                        {isUser ? <UserCheck size={14} /> : <UserMinus size={14} />}
+                        {isUser ? <UserCheck size={14} /> : <Icon name="user-remove" size={14} />}
                       </MemberIcon>
                       <MemberInfo>
                         <MemberId>{id}</MemberId>

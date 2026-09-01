@@ -9,10 +9,10 @@ import {
 } from "@/apis/books.ts";
 import styled from "styled-components";
 import BookDetail from "./BookDetail.tsx";
-import X_Vector from "../../../../resources/assets/mobile-mypage/X-Vector.svg";
+import Icon from "@/components/common/Icon";
 import HowToBuy from "../../../../components/desktop/book/HowToBuy.tsx";
 
-import 안내횃불이 from "@/resources/assets/book/안내횃불이.png";
+import 안내횃불이 from "@/resources/assets/illustrations/book/guide-mascot.png";
 
 import SerachForm from "./BookSearchForm.tsx";
 
@@ -106,7 +106,7 @@ export default function BookList({ reloadKey }: { reloadKey: number }) {
             <Modal>
               <div className="close" onClick={() => setShow(false)}>
                 <span>닫기</span>
-                <img src={X_Vector} alt="X" />
+                <Icon name="close-md" size={10} />
               </div>
               {/* <AiIntroText /> */}
               <HowToBuy />

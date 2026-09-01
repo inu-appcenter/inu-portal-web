@@ -31,6 +31,7 @@ export const ROUTES = {
     SYLLABUS: "/timetable/syllabus",
     WIZARD: "/timetable/wizard",
     WIZARD_GROUP: "/timetable/wizard-group",
+    IMAGE_IMPORT: "/timetable/image-import",
   },
 
   // 친구
@@ -72,6 +73,7 @@ export const ROUTES = {
     DELETE: "/mypage/delete",
     FCM: "/mypage/fcm",
     NOTIFICATION: "/mypage/notification",
+    DAILY_BRIEF: "/mypage/notification/daily-brief",
   },
 
   // 게시판 및 기능
@@ -83,6 +85,7 @@ export const ROUTES = {
     TIPS_WRITE: "/home/tips/write",
     TIPS_EDIT: (id: string | number) => `/home/tips/write/${id}`,
     NOTICE: "/home/notice",
+    NOTICE_DETAIL: (id: string | number) => `/home/notice/${id}`,
     DEPT_NOTICE: "/home/deptnotice",
     DEPT_NOTICE_DETAIL: (dept: string | number) =>
       `/home/deptnotice?dept=${dept}`,

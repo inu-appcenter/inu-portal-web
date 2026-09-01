@@ -1,7 +1,10 @@
 import styled from "styled-components";
 import BusCardSection from "@/components/mobile/bus/goHomeSchool/BusCardSection.tsx";
 import { useHeader } from "@/context/HeaderContext";
-import busActiveIcon from "@/resources/assets/mobile-nav/bus-blue.svg";
+import {
+  BusIcon,
+  MOBILE_NAV_ICON_COLORS,
+} from "@/resources/assets/icons/mobile-nav";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const BUS_PAGE_TABLET_MEDIA = "(min-width: 760px)";
@@ -23,7 +26,10 @@ export default function MobileBusPage() {
               <br />한 곳에서 모아보세요.
             </LeadTitle>
             <LeadIconBubble>
-              <img src={busActiveIcon} alt="" />
+              <BusIcon
+                aria-hidden="true"
+                style={{ color: MOBILE_NAV_ICON_COLORS.bus.active }}
+              />
             </LeadIconBubble>
           </LeadTopRow>
         </LeadSurface>
@@ -141,7 +147,7 @@ const LeadIconBubble = styled.div`
   border: 1px solid rgba(14, 77, 157, 0.08);
   box-shadow: 0 8px 18px rgba(41, 79, 140, 0.08);
 
-  img {
+  svg {
     width: 22px;
     height: 22px;
   }

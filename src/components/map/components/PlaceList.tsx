@@ -1,13 +1,13 @@
 import styled from "styled-components";
-import LocationIcon from "@/resources/assets/mapIcons/LocationIcon.svg";
-import OpenIcon from "@/resources/assets/mapIcons/OpenIcon.svg";
-import CloseIcon from "@/resources/assets/mapIcons/CloseIcon.svg";
-import CafeIcon from "@/resources/assets/mapIcons/CafeIcon.svg";
-import RestaurantIcon from "@/resources/assets/mapIcons/RestaurantIcon.svg";
-import ConvienienceStoreIcon from "@/resources/assets/mapIcons/ConvenienceStoreIcon.svg";
-import ManRestIcon from "@/resources/assets/mapIcons/manRest.svg";
-import WomanRestIcon from "@/resources/assets/mapIcons/womanRest.svg";
-import PublicRestIcon from "@/resources/assets/mapIcons/publicRest.svg";
+import LocationIcon from "@/resources/assets/illustrations/map/markers/location.svg"
+import OpenIcon from "@/resources/assets/illustrations/map/markers/open.svg";
+import CloseIcon from "@/resources/assets/illustrations/map/markers/close.svg";
+import CafeIcon from "@/resources/assets/illustrations/map/markers/cafe.svg";
+import RestaurantIcon from "@/resources/assets/illustrations/map/markers/restaurant.svg";
+import ConvienienceStoreIcon from "@/resources/assets/illustrations/map/markers/convenience-store.svg";
+import ManRestIcon from "@/resources/assets/illustrations/map/markers/man-restroom.svg";
+import WomanRestIcon from "@/resources/assets/illustrations/map/markers/woman-restroom.svg";
+import PublicRestIcon from "@/resources/assets/illustrations/map/markers/public-restroom.svg";
 
 import { useState, ReactNode, useRef, useEffect } from "react";
 import { Place } from "@/components/map/DB";

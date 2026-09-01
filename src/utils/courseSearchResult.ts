@@ -53,6 +53,7 @@ export const mapCourseOfferingToCourseResult = (
       endTime: parseTimeToHours(m.endTime),
       credits: index === 0 ? credits : 0,
       professor: offering.professor ?? undefined,
+      evaluation: offering.gradeEvaluationName ?? undefined,
     })),
     deptName: offering.deptName ?? course?.departmentName,
     collegeName: offering.collegeName ?? course?.collegeName,
@@ -61,6 +62,7 @@ export const mapCourseOfferingToCourseResult = (
     hyName: offering.hyName ?? course?.targetGradeName,
     ssupTypeName: offering.ssupTypeName ?? undefined,
     ssupTypeCode: offering.ssupTypeCode ?? undefined,
+    gradeEvaluationMethod: offering.gradeEvaluationName ?? "-",
   };
 };
 

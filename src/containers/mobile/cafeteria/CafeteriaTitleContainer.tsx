@@ -2,7 +2,7 @@ import CafeteriaDate from "@/components/mobile/cafeteria/CafeteriaDate";
 import styled from "styled-components";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
-// import eatingRice from "@/resources/assets/cafeteria/eatingRice.png";
+// import { eatingRice } from "@/resources/assets/photos/cafeteria";
 
 interface weekDatesProps {
   dayName: string;

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { Check, LinkIcon, User, UserPlus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -103,7 +103,7 @@ export default function MobileFriendInvitePage() {
       <PageWrapper>
         <StatusBlock>
           <IconWrapper>
-            <LinkIcon size={24} strokeWidth={2.2} />
+            <Icon name="link-angled" size={24} />
           </IconWrapper>
           <Title>링크를 확인하는 중이에요</Title>
         </StatusBlock>
@@ -116,7 +116,7 @@ export default function MobileFriendInvitePage() {
       <PageWrapper>
         <StatusBlock>
           <IconWrapper $tone="muted">
-            <LinkIcon size={24} strokeWidth={2.2} />
+            <Icon name="link-angled" size={24} />
           </IconWrapper>
           <Title>유효하지 않은 링크예요</Title>
           <Description>
@@ -149,11 +149,11 @@ export default function MobileFriendInvitePage() {
             }}
           />
           <DefaultIconArea>
-            <User size={32} color="#D6D1D5" />
+            <Icon name="user-02" size={32} color="#D6D1D5" />
           </DefaultIconArea>
           {isAccepted && (
             <AcceptedBadge>
-              <Check size={14} strokeWidth={3} />
+              <Icon name="check" size={14} />
             </AcceptedBadge>
           )}
         </ProfileArea>
@@ -191,7 +191,7 @@ export default function MobileFriendInvitePage() {
               onClick={handleAccept}
               disabled={acceptMutation.isPending}
             >
-              <UserPlus size={18} />
+              <Icon name="user-add" size={18} />
               {acceptMutation.isPending
                 ? "추가하는 중…"
                 : isLoggedIn

@@ -50,6 +50,7 @@ import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeature
 import MobileAdminBusPage from "@/pages/mobile/Admin/MobileAdminBusPage";
 
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
+import MobileSchoolNoticeDetailPage from "@/pages/mobile/MobileSchoolNoticeDetailPage";
 import MobileDeptNoticePage from "@/pages/mobile/MobileDeptNoticePage";
 import MobileTipsPage from "@/pages/mobile/MobileTipsPage";
 import MobileTipsCategoryPage from "@/pages/mobile/MobileTipsCategoryPage";
@@ -66,6 +67,7 @@ import MobileSugangSimulatorPage from "@/pages/mobile/timetable/MobileSugangSimu
 import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterPage";
 import MobileTimetableWizardPage from "@/pages/mobile/timetable/MobileTimetableWizardPage";
 import MobileTimetableGroupWizardPage from "@/pages/mobile/timetable/MobileTimetableGroupWizardPage";
+import MobileTimetableImageImportPage from "@/pages/mobile/timetable/MobileTimetableImageImportPage";
 import MobileTimeTableListPage from "@/pages/mobile/timetable/MobileTimeTableListPage";
 import MobileGradeCalculatorPage from "@/pages/mobile/timetable/MobileGradeCalculatorPage";
 import MobileSyllabusPage from "@/pages/mobile/timetable/MobileSyllabusPage";
@@ -83,6 +85,7 @@ import ChattingPage from "@/pages/mobile/ChattingPage";
 import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
 import CreatePersonalChatPage from "@/pages/mobile/CreatePersonalChatPage";
 import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSettingsPage";
+import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
 
 export const router = createBrowserRouter([
   {
@@ -158,6 +161,10 @@ export const router = createBrowserRouter([
             path: ROUTES.TIMETABLE.WIZARD_GROUP,
             element: <MobileTimetableGroupWizardPage />,
           },
+          {
+            path: ROUTES.TIMETABLE.IMAGE_IMPORT,
+            element: <MobileTimetableImageImportPage />,
+          },
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
           { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
@@ -222,7 +229,13 @@ export const router = createBrowserRouter([
             path: `${ROUTES.BOARD.TIPS_WRITE}/:id`,
             element: <MobileWritePage />,
           },
-          { path: ROUTES.BOARD.NOTICE, element: <MobileSchoolNoticePage /> },
+          {
+            path: ROUTES.BOARD.NOTICE,
+            children: [
+              { index: true, element: <MobileSchoolNoticePage /> },
+              { path: ":id", element: <MobileSchoolNoticeDetailPage /> },
+            ],
+          },
           {
             path: ROUTES.BOARD.DEPT_NOTICE,
             element: <MobileDeptNoticePage />,
@@ -262,6 +275,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.DELETE, element: <MobileDeletePage /> },
           { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
           { path: ROUTES.MYPAGE.NOTIFICATION, element: <MobileNotificationSettingsPage /> },
+          { path: ROUTES.MYPAGE.DAILY_BRIEF, element: <MobileDailyBriefSettingPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },

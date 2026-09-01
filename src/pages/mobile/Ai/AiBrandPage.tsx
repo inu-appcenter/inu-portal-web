@@ -3,9 +3,11 @@ import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
 import Ripple from "@/components/common/Ripple";
 
-import AiBanner from "@/resources/assets/ai/횃불이ai배너이미지.webp";
-import ChatBulButtonImg from "@/resources/assets/ai/chat-bul-button.webp";
-import TimetableEvaluateIcon from "@/resources/assets/ai/시간표이미지평가횃불이.svg";
+import {
+  aiBanner as AiBanner,
+  chatBubbleButton as ChatBulButtonImg,
+  timetableEvaluateTorch as TimetableEvaluateIcon,
+} from "@/resources/assets/illustrations/ai";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
@@ -20,11 +22,8 @@ import {
 } from "react-icons/lu";
 import { IconType } from "react-icons";
 import Divider from "@/components/common/Divider";
-import ExternalLinkIcon from "@/resources/assets/mobile-home/chip/ExternalLink.svg";
+import FontelloIcon from "@/components/common/Icon";
 import useAIChatStore from "@/stores/useAIChatStore";
-
-const isProduction =
-  import.meta.env.VITE_API_BASE_URL === "https://portal.inuappcenter.kr/";
 
 interface AppItemProps {
   iconSrc?: string | null;
@@ -71,7 +70,7 @@ const AppItem = ({
               <LuLock size={13} color="#8e8e93" style={{ flexShrink: 0 }} />
             )}
             {isExternal && (
-              <ExternalIconImg src={ExternalLinkIcon} alt="외부 서비스" />
+              <ExternalIconImg name="link-external" size={14} label="외부 서비스" />
             )}
           </TitleRow>
           <div className="description">{description}</div>
@@ -110,7 +109,6 @@ const AiBrandPage = () => {
           description:
             "인천대학교 AI 챗봇 챗불이에게 학사 관련 질문을 해보세요. 학칙과 공지사항을 기반으로 궁금증을 해결해드려요.",
           iconSrc: ChatBulButtonImg,
-          isPreparing: isProduction,
           onClick: () => {
             openChat();
           },
@@ -167,9 +165,8 @@ const AiBrandPage = () => {
           description:
             "나만을 위한 맞춤 정보 요약과 꼭 필요한 학교 생활 알림을 매일 아침 전해드려요.",
           iconComponent: LuNewspaper,
-          isPreparing: true,
           onClick: () => {
-            alert("Daily Brief 서비스는 준비 중입니다!");
+            navigate(ROUTES.MYPAGE.DAILY_BRIEF);
           },
         },
       ],
@@ -374,9 +371,8 @@ const TitleRow = styled.div`
   gap: 6px;
 `;
 
-const ExternalIconImg = styled.img`
-  width: 14px;
-  height: 14px;
+const ExternalIconImg = styled(FontelloIcon)`
+  color: #969696;
   opacity: 0.55;
   flex-shrink: 0;
 `;

@@ -27,6 +27,4 @@ dist-ssr
 
 # Cloudflare Wrangler local dev cache
 .wrangler
-
-# npm auth (holds GitHub Packages token — must never be committed)
-.npmrc
+

@@ -30,7 +30,8 @@ export default FloatingActionButton;
 
 const FixedButtonWrapper = styled.div<{ $bottom: string }>`
   position: fixed;
-  bottom: ${({ $bottom }) => `calc(${$bottom} + env(safe-area-inset-bottom, 0px))`};
+  bottom: ${({ $bottom }) =>
+    `calc(${$bottom} + env(safe-area-inset-bottom, 0px))`};
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
@@ -42,22 +43,29 @@ const FixedButtonWrapper = styled.div<{ $bottom: string }>`
 
 const Button = styled.button`
   pointer-events: auto;
-  background-color: #333;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  padding: 8px 14px;
-  font-size: 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: var(--bg-blur, rgba(255, 255, 255, 0.6));
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-family: "Pretendard", sans-serif;
+  font-size: 16px;
   font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  line-height: 24px;
+  color: var(--text-secondary, #333d4b);
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
 
   &.active-touch {
-    background-color: #000;
-    transform: scale(0.98);
+    background-color: rgba(255, 255, 255, 0.85);
+    transform: scale(0.96);
   }
 `;

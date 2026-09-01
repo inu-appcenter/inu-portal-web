@@ -8,12 +8,14 @@ import { ROUTES } from "@/constants/routes";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 
-import deptNoticeBanner from "@/resources/assets/banner/학과공지알리미.webp";
-import busBanner from "@/resources/assets/banner/인입런.webp";
-import surveyBanner from "@/resources/assets/banner/설문배너.webp";
-import appcenterBanner from "@/resources/assets/banner/앱센터배너.webp";
-import appcenterRecruitBanner from "@/resources/assets/banner/앱센터18.5기모집배너.webp";
-import ainuBanner from "@/resources/assets/banner/AINU배너.webp";
+import {
+  deptNoticeBanner,
+  inipreonBanner as busBanner,
+  surveyBanner,
+  appcenterBanner,
+  appcenterRecruitBanner,
+  ainuBanner,
+} from "@/resources/assets/illustrations/banner";
 
 import WeatherForm from "./Weather.tsx";
 import { mixpanelTrack } from "@/utils/mixpanel";

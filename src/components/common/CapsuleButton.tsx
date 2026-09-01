@@ -64,7 +64,7 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
       `;
     case "primary":
       return css`
-        background: var(--interactive-primary, #3b82f6);
+        background: var(--interactive-primary, #0061ff);
         color: #fff;
 
         &:hover:not(:disabled) {
@@ -125,7 +125,8 @@ const StyledButton = styled.button<{
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
-  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  font-family: Pretendard;
   text-align: center;
   font-size: 20px;
   font-style: normal;

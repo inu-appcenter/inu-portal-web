@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { X, Sparkles, AlertCircle, Copy, Check, RefreshCw } from "lucide-react";
-import TimetableAiEvalButtonIcon from "@/resources/assets/timetable/시간표평가버튼.svg?react";
-import TorchAiLogoIcon from "@/resources/assets/ai/횃불이AI로고.svg?react";
-import TimetableTorchIcon from "@/resources/assets/ai/시간표이미지평가횃불이.svg?react";
+import { Sparkles, Copy, RefreshCw } from "lucide-react";
+import Icon from "@/components/common/Icon";
+import { EvaluationButtonIcon as TimetableAiEvalButtonIcon } from "@/resources/assets/illustrations/timetable";
+import {
+  TorchAiLogoIcon,
+  TimetableEvaluateTorchIcon as TimetableTorchIcon,
+} from "@/resources/assets/illustrations/ai";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useTimeTableEvaluation } from "@/hooks/useTimeTableEvaluation";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
@@ -276,7 +279,7 @@ const TimetableAiEvaluationBubble = ({
                 </ProfileGroup>
 
                 <CloseButton onClick={() => setIsOpen(false)} aria-label="닫기">
-                  <X size={17} />
+                  <Icon name="close-md" size={17} />
                 </CloseButton>
               </BubbleTopBar>
 
@@ -304,7 +307,7 @@ const TimetableAiEvaluationBubble = ({
                 {/* 2. 에러 상태 */}
                 {error && (
                   <ErrorContainer>
-                    <AlertCircle size={28} color="#FF3B30" />
+                    <Icon name="circle-warning" size={28} color="#FF3B30" />
                     <ErrorMessage>{error}</ErrorMessage>
                     <RetryButton onClick={handleRetry}>
                       다시 시도하기
@@ -328,7 +331,7 @@ const TimetableAiEvaluationBubble = ({
                         <MessageFooter>
                           <ActionButton onClick={handleCopy} title="답변 복사">
                             {copied ? (
-                              <Check size={12} color="#52c41a" />
+                              <Icon name="check" size={12} color="#52c41a" />
                             ) : (
                               <Copy size={12} />
                             )}
@@ -447,7 +450,7 @@ const FloatingButtonContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10002;
+  z-index: 90;
 
   @media (min-width: 1024px) {
     bottom: 80px;

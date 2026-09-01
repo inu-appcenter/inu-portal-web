@@ -40,6 +40,8 @@ export interface TimeTableCourseItem {
   subjectNumber: string | null;
   credit: string | number | null;
   meetings: TimeTableMeeting[];
+  /** 성적 평가 방식. 개설강의 응답의 같은 이름 필드와 같은 값. */
+  gradeEvaluationName?: string | null;
 }
 
 export interface TimeTableCustomScheduleItem {

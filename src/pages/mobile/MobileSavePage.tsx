@@ -4,7 +4,7 @@ import ScrapFolders from "@/containers/mobile/save/ScrapFolders";
 import ScrapContents from "@/containers/mobile/save/ScrapContents";
 import ManageFolder from "@/containers/mobile/save/ManageFolder";
 import { getFolders } from "@/apis/folders";
-import loginImg from "@/resources/assets/login/login-modal-logo.svg";
+import { loginModalLogo as loginImg } from "@/resources/assets/illustrations/login";
 import { Folder } from "@/types/folders";
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/stores/useUserStore";

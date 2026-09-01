@@ -2,8 +2,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 
-import OpenBtn from "@/resources/assets/rental/OpenBtn.svg";
-import CloseBtn from "@/resources/assets/rental/CloseBtn.svg";
+import Icon from "@/components/common/Icon";
 
 const NoticeBox = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,8 +14,8 @@ const NoticeBox = () => {
     <NoticeBoxWrapper>
       <TitleWrapper onClick={handleClick}>
         <Title>※ 물품 대여 방법 꼭 ! 확인하세요</Title>
-        {!isOpen && <img src={OpenBtn} style={{ width: "15px" }} />}
-        {isOpen && <img src={CloseBtn} style={{ width: "15px" }} />}
+        {!isOpen && <Icon name="chevron-down" size={15} />}
+        {isOpen && <Icon name="chevron-up" size={15} />}
       </TitleWrapper>
       {isOpen && (
         <Content>

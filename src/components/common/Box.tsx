@@ -31,7 +31,7 @@ const BoxWrapper = styled.div<{ $interactive?: boolean }>`
   border: 1px solid var(--border-default, #E5E8EB);
   background: var(--bg-base, #FFF);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 
   ${({ $interactive }) =>
     $interactive &&

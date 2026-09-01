@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { MessageSquare, Plus } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useHeader } from "@/context/HeaderContext";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Box from "@/components/common/Box";
@@ -8,8 +8,10 @@ import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import { createChatRoom } from "@/apis/chat";
 
 // 체크박스 이미지 리소스 임포트
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
+import {
+  checkedCheckbox,
+  uncheckedCheckbox,
+} from "@/resources/assets/icons/posts";
 
 const MobileAdminChatPage = () => {
   useHeader({
@@ -59,7 +61,7 @@ const MobileAdminChatPage = () => {
     <AdminLayout>
       <Wrapper>
         <SectionTitle>
-          <MessageSquare size={20} />새 채팅방 생성
+          <Icon name="chat" size={20} />새 채팅방 생성
         </SectionTitle>
 
         <Box>
@@ -96,7 +98,7 @@ const MobileAdminChatPage = () => {
                 축제 채팅방 설정 자동 입력
               </SecondaryButton>
               <PrimaryButton onClick={handleCreateRoom} disabled={isLoading}>
-                <Plus size={18} />
+                <Icon name="add-plus-sm" size={18} />
                 {isLoading ? "생성 중..." : "채팅방 생성하기"}
               </PrimaryButton>
             </ButtonGroup>

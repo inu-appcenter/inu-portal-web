@@ -1,16 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  X,
-  LogOut,
-  Trash2,
-  Bell,
-  BellOff,
-  Edit3,
-  UserPlus,
-  Check,
-} from "lucide-react";
+import { LogOut, BellOff, Edit3 } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { useNavigate } from "react-router-dom";
@@ -190,11 +182,11 @@ export default function MemberListDrawer({
                   onClick={() => setIsInviteOpen(true)}
                   title="초대하기"
                 >
-                  <UserPlus size={22} color="#5E92F0" />
+                  <Icon name="user-add" size={22} color="#5E92F0" />
                 </IconButton>
               )}
               <CloseButton onClick={() => onOpenChange(false)}>
-                <X size={24} color="#1C1C1E" />
+                <Icon name="close-md" size={24} color="#1C1C1E" />
               </CloseButton>
             </div>
           </Header>
@@ -251,7 +243,7 @@ export default function MemberListDrawer({
                   채팅방 정보 수정
                 </ActionButton>
                 <ActionButton onClick={handleClose} $variant="danger">
-                  <Trash2 size={20} />
+                  <Icon name="trash-full" size={20} />
                   채팅방 폐쇄
                 </ActionButton>
               </>
@@ -262,7 +254,7 @@ export default function MemberListDrawer({
                 title={roomInfo?.pushEnabled ? "알림 끄기" : "알림 켜기"}
               >
                 {roomInfo?.pushEnabled ? (
-                  <Bell size={22} />
+                  <Icon name="bell" size={22} />
                 ) : (
                   <BellOff size={22} />
                 )}
@@ -456,7 +448,7 @@ const InviteFriendsModal = ({
           <Header>
             <Title>내 친구에서 초대</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <X size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="#1C1C1E" />
             </CloseButton>
           </Header>
           <ScrollArea>
@@ -473,7 +465,7 @@ const InviteFriendsModal = ({
                     />
                     <Checkbox $selected={selectedIds.includes(friend.friendId)}>
                       {selectedIds.includes(friend.friendId) && (
-                        <Check size={16} color="white" strokeWidth={3} />
+                        <Icon name="check" size={16} color="white" />
                       )}
                     </Checkbox>
                   </SelectableCard>

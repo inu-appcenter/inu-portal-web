@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { ChevronLeft } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useSemesters } from "@/hooks/useSemesters";
 import { pickCurrentSemester } from "@/utils/semester";
@@ -156,7 +156,7 @@ export default function GradeImportSheet({
                 }}
                 aria-label="다시 붙여넣기"
               >
-                <ChevronLeft size={20} />
+                <Icon name="chevron-left" size={20} />
               </BackButton>
             )}
             <div className="title">
@@ -174,8 +174,9 @@ export default function GradeImportSheet({
                   복사한 뒤 그대로 붙여넣으세요.
                 </p>
                 <p className="sub">
-                  교과목명/과목코드, 학점, 등급, 이수구분 순서면 됩니다. 표
-                  제목까지 함께 붙여넣으면 학기도 자동으로 인식해요.
+                  화면을 통째로 복사하거나("모두 선택") 표 중간부터 드래그해도
+                  과목 행만 알아서 골라내요. 표 제목까지 함께 붙여넣으면 학기도
+                  자동으로 인식해요.
                 </p>
                 <GuideLinkButton type="button" onClick={() => setShowGuide(true)}>
                   복사하는 방법이 궁금하다면? 예시로 보기

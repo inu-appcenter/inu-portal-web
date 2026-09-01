@@ -1,6 +1,13 @@
 import { formatHoursToTime } from "@/utils/timetable";
 import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
-import type { WizardCourseOption } from "@/types/timetableWizard";
+import type {
+  WizardCourseOption,
+  WizardWishlistItem,
+} from "@/types/timetableWizard";
+import type {
+  CourseCardOfferingView,
+  CourseCardView,
+} from "@/types/courseCardView";
 
 export const WIZARD_DAY_NAMES = ["월", "화", "수", "목", "금", "토", "일"];
 
@@ -40,5 +47,49 @@ export const mapWizardCoursesToClassItems = (
       ssupTypeCode: course.ssupTypeCode ?? undefined,
       courseOfferingId: course.courseOfferingId,
       courseId: course.subjectNumber,
+      evaluation: course.gradeEvaluationMethod ?? undefined,
     })),
   );
+
+// 위시리스트(WizardCourseOption 스냅샷)를 CourseCard의 View Model로 변환한다.
+//
+// 위시리스트 항목은 "개설강의 1개 = 항목 1개"지만 카드는 "과목 1개 + 그 분반들"이
+// 단위라, courseId로 묶어 담은 순서대로 카드를 만든다. 같은 과목의 다른 분반을 여러 개
+// 담아둔 경우 카드 하나에 분반 행이 여러 줄 쌓인다.
+//
+// 스냅샷에 없는 정보(이수구분·학년)는 채우지 않고 비운다 - 카드가 그 자리를 그리지 않는다.
+export const toWishlistCourseCards = (
+  wishlist: WizardWishlistItem[],
+): CourseCardView[] => {
+  const cards = new Map<number, CourseCardView>();
+
+  wishlist.forEach(({ course, required }) => {
+    const offering: CourseCardOfferingView = {
+      offeringId: course.courseOfferingId,
+      subjectNumber: course.subjectNumber,
+      professor: course.professor,
+      timeStr: formatCourseMeetings(course),
+      room: course.meetings[0]?.location ?? null,
+      // 담은 인원은 스냅샷에 없다(담는 시점의 서버 값이라 이후 의미가 흐려진다)
+      savedCount: null,
+      required,
+    };
+
+    const card = cards.get(course.courseId);
+    if (card) {
+      card.offerings.push(offering);
+      return;
+    }
+
+    cards.set(course.courseId, {
+      courseId: course.courseId,
+      title: course.title,
+      credit: course.credit,
+      gradeEvaluationLabel: course.gradeEvaluationMethod ?? null,
+      offerings: [offering],
+      
+    });
+  });
+
+  return [...cards.values()];
+};

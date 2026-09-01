@@ -1,8 +1,10 @@
 import styled from "styled-components";
-import Manual1 from "@/resources/assets/helllo-bus/manual-1.svg";
-import Manual2 from "@/resources/assets/helllo-bus/manual-2.svg";
-import Manual3 from "@/resources/assets/helllo-bus/manual-3.svg";
-import Manual4 from "@/resources/assets/helllo-bus/manual-4.svg";
+import {
+  manual1 as Manual1,
+  manual2 as Manual2,
+  manual3 as Manual3,
+  manual4 as Manual4,
+} from "@/resources/assets/illustrations/hello-bus";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 
 interface HelloBusProps {
