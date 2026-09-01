@@ -121,7 +121,7 @@ const PostItem = ({
                       <span>{scrap}</span>
                     </StatItem>
                   )} */}
-                  {showDate && date && <div className="dot">·</div>}
+                  {showDate && date && (like !== undefined || replyCount !== undefined) && <div className="dot">·</div>}
                   {showDate && date && (
                     <div className="date">{formattedDate}</div>
                   )}

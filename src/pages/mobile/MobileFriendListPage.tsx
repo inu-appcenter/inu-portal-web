@@ -206,17 +206,6 @@ const EmptyFriendsIllust = () => (
   </svg>
 );
 
-// --- Dummy Helper Mapper (Matches existing API mapping logic) ---
-const getFriendDept = (nickname: string) => {
-  const deptMap: Record<string, string> = {
-    김유니: "컴퓨터공학부",
-    박민서: "생명공학부",
-    이지원: "미디어커뮤니케이션학과",
-    최유리: "도시환경공학부",
-    홍길동: "Global Trade 학부",
-  };
-  return deptMap[nickname] || "컴퓨터공학부";
-};
 
 const getFriendStudentYear = (studentId: string) => {
   if (!studentId) return "23학번";
