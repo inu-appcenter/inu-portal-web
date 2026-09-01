@@ -302,7 +302,7 @@ const PageWrapper = styled.div`
   gap: 24px;
 
   @media ${DESKTOP_MEDIA} {
-    padding: calc(var(--header-height, 56px) + 16px) 16px 120px;
+    padding: 0 16px 120px;
   }
 `;
 
