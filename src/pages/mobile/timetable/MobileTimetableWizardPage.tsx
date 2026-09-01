@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { Plus, X } from "lucide-react";
+import Icon from "@/components/common/Icon";
 import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
@@ -28,11 +28,12 @@ import {
   WizardEmptyState,
   WizardErrorState,
 } from "@/components/mobile/timetable/wizard/WizardEmptyErrorScreens";
-import { formatCourseMeta } from "@/utils/timetableWizardFormat";
+import { toWishlistCourseCards } from "@/utils/timetableWizardFormat";
 import type {
   WizardPreferenceConditions,
   WizardCourseOption,
 } from "@/types/timetableWizard";
+import { CourseCard } from "@/components/mobile/timetable/CourseCard";
 
 const GENERATING_MIN_VISIBLE_MS = 1600;
 const DAY_LABELS = ["월", "화", "수", "목", "금"];
@@ -156,6 +157,9 @@ export default function MobileTimetableWizardPage() {
     },
     [removeWishlistCourse, openCourseSearch],
   );
+
+  // 위시리스트는 개설강의 단위 스냅샷이고 카드는 과목 단위라, 그리기 직전에만 묶는다.
+  const wishlistCards = useMemo(() => toWishlistCourseCards(wishlist), [wishlist]);
 
   const selectedCandidate = useMemo(
     () => result?.candidates.find((c) => c.id === selectedCandidateId) ?? null,
@@ -291,31 +295,18 @@ export default function MobileTimetableWizardPage() {
             <CardHint>
               강의 후보를 담아주세요. 반드시 들어가야 하는 강의는 "필수"로 바꿔주세요.
             </CardHint>
-            {wishlist.length > 0 && (
-              <ChipRow>
-                {wishlist.map((item) => (
-                  <Chip key={item.course.subjectNumber} $required={item.required}>
-                    <ChipRequiredToggle
-                      type="button"
-                      $required={item.required}
-                      onClick={() => toggleWishlistRequired(item.course.subjectNumber)}
-                    >
-                      {item.required ? "필수" : "선택"}
-                    </ChipRequiredToggle>
-                    <ChipTextWrap>
-                      <ChipTitle $required={item.required}>{item.course.title}</ChipTitle>
-                      <ChipMeta $required={item.required}>{formatCourseMeta(item.course)}</ChipMeta>
-                    </ChipTextWrap>
-                    <ChipRemove
-                      type="button"
-                      onClick={() => removeWishlistCourse(item.course.subjectNumber)}
-                    >
-                      <X size={12} />
-                    </ChipRemove>
-                  </Chip>
-                ))}
-              </ChipRow>
-            )}
+            {wishlistCards.map((card) => (
+              <CourseCard
+                key={card.courseId}
+                data={card}
+                onRemoveOffering={(offering) =>
+                  removeWishlistCourse(offering.subjectNumber)
+                }
+                onToggleRequired={(offering) =>
+                  toggleWishlistRequired(offering.subjectNumber)
+                }
+              />
+            ))}
             {/* 학기만 정해지면 항상 열 수 있다. 조회 결과가 0건이어도 시트 안에서
                 필터를 되돌릴 수 있어야 하므로 결과 개수로 막지 않는다. */}
             <AddCourseButton
@@ -323,7 +314,7 @@ export default function MobileTimetableWizardPage() {
               disabled={semester === null}
               onClick={() => openCourseSearch("wishlist")}
             >
-              <Plus size={18} />
+              <Icon name="add-plus-sm" size={18} />
               강의 추가
             </AddCourseButton>
           </Card>
@@ -692,74 +683,6 @@ const SelectBox = styled.select`
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%238B95A1' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>");
   background-repeat: no-repeat;
   background-position: right 16px center;
-`;
-
-const ChipRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const Chip = styled.div<{ $required: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 14px;
-  background: ${({ $required }) =>
-    $required ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)"};
-  border: ${({ $required }) =>
-    $required
-      ? "1px solid var(--interactive-primary, #3b82f6)"
-      : "1px dashed var(--border-default, #e5e8eb)"};
-`;
-
-const ChipTextWrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-`;
-
-const ChipTitle = styled.span<{ $required: boolean }>`
-  color: ${({ $required }) =>
-    $required ? "var(--interactive-primary, #3b82f6)" : "var(--text-primary, #191f28)"};
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 18px;
-`;
-
-const ChipMeta = styled.span<{ $required: boolean }>`
-  color: ${({ $required }) =>
-    $required ? "rgba(59, 130, 246, 0.8)" : "var(--text-tertiary, #8b95a1)"};
-  font-size: 11px;
-  font-weight: 400;
-  line-height: 15px;
-`;
-
-const ChipRequiredToggle = styled.button<{ $required: boolean }>`
-  flex-shrink: 0;
-  border: none;
-  border-radius: 999px;
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  background: ${({ $required }) =>
-    $required ? "var(--interactive-primary, #3b82f6)" : "var(--bg-disabled, #e5e8eb)"};
-  color: ${({ $required }) => ($required ? "#ffffff" : "var(--text-tertiary, #8b95a1)")};
-`;
-
-const ChipRemove = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  color: var(--interactive-primary, #3b82f6);
-  cursor: pointer;
 `;
 
 const CardHint = styled.p`
