@@ -141,7 +141,7 @@ export default function MobileBottomNav() {
                   $isActive={isActive}
                   ref={isTimetableItem ? timetableIconRef : undefined}
                 >
-                  <Icon name={item.icon} size={32} />
+                  <Icon name={item.icon} size={26} />
                   {badge !== undefined && badge > 0 && (
                     <Badge>{badge > 99 ? "99+" : badge}</Badge>
                   )}
@@ -167,8 +167,8 @@ export default function MobileBottomNav() {
   );
 }
 
-export const BOTTOM_PADDING = 8;
-export const BOTTOM_NAV_CONTENT_HEIGHT = 76;
+export const BOTTOM_PADDING = 6;
+export const BOTTOM_NAV_CONTENT_HEIGHT = 62;
 export const BOTTOM_NAV_HEIGHT = BOTTOM_NAV_CONTENT_HEIGHT + BOTTOM_PADDING;
 export const BOTTOM_NAV_SAFE_HEIGHT = `calc(${BOTTOM_NAV_CONTENT_HEIGHT}px + max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px)))`;
 
@@ -180,7 +180,7 @@ const NavContainer = styled.div`
   pointer-events: auto;
   background: var(--bg-base, #ffffff);
   border-top: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 36px 36px 0 0;
+  border-radius: 24px 24px 0 0;
 
   @media ${DESKTOP_MEDIA} {
     max-width: none;
@@ -220,8 +220,8 @@ const NavItemButton = styled.button`
 
 const ActivePillIndicator = styled(motion.div)`
   position: absolute;
-  width: 74px;
-  height: 64px;
+  width: 62px;
+  height: 50px;
   border-radius: 999px;
   background: var(--bg-brand, #eff6ff);
   z-index: 1;
@@ -233,18 +233,17 @@ const IconWrapper = styled.div<{ $isActive: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   z-index: 2;
   color: ${({ $isActive }) => ($isActive ? "#3B82F6" : "#B0B8C1")};
   transition: color 0.2s ease;
-
 `;
 
 const Badge = styled.div`
   position: absolute;
   top: -4px;
-  right: -8px;
+  right: -6px;
   background-color: #ff3b30;
   color: white;
   font-size: 10px;
@@ -267,10 +266,10 @@ const LabelText = styled.span<{ $isActive: boolean }>`
     $isActive ? "#3B82F6" : "var(--text-disabled, #B0B8C1)"};
   text-align: center;
   font-family: "Pretendard", sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-style: normal;
   font-weight: 500;
-  line-height: 16px;
+  line-height: 14px;
   letter-spacing: 0px;
   margin-top: 2px;
   transition: color 0.2s ease;

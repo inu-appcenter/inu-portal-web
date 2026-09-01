@@ -132,6 +132,15 @@ const isStandaloneHtmlPage = (pathname: string) => pathname.endsWith(".html");
 
 export const onRequest: PagesFunction = async (context) => {
   const url = new URL(context.request.url);
+
+    // 접속한 호스트가 pages.dev 기본 도메인인 경우
+  if (url.hostname === 'intip-test.pages.dev') {
+    // 호스트를 새 커스텀 도메인으로 변경 (경로와 파라미터는 그대로 유지됨)
+    url.hostname = 'intip.inuappcenter.kr';
+    
+    // 301 영구 이동 상태 코드로 리다이렉트
+    return Response.redirect(url.toString(), 301);
+  }
   if (isStandaloneHtmlPage(url.pathname)) return context.next();
 
   const route = OG_ROUTES.find((candidate) => candidate.match(url));

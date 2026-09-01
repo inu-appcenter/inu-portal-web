@@ -1,6 +1,6 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditFriendAliasModal from "./EditFriendAliasModal";
 import Modal from "@/components/common/Modal";
 import { UserCheck, Edit3, Ban, LogOut } from "lucide-react";
@@ -352,6 +352,39 @@ export default function UserProfileModal({
   const isConfirmModalOpen = deleteConfirmOpen || blockConfirmOpen || isAliasModalOpen;
   useSheetBackHandler(isOpen, () => onOpenChange(false));
 
+  const deleteMutation = useMutation({
+    mutationFn: (targetFriendId: number) => deleteFriend(targetFriendId),
+    onSuccess: () => {
+      alert("친구를 삭제했습니다.");
+      onOpenChange(false);
+      queryClient.removeQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+      queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.msg || "친구 삭제에 실패했습니다.");
+    },
+  });
+
+  const blockMutation = useMutation({
+    mutationFn: (targetId: number) => blockUser(targetId),
+    onSuccess: () => {
+      alert("유저를 차단했습니다.");
+      onOpenChange(false);
+      queryClient.removeQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+      queryClient.invalidateQueries({ queryKey: ["blockedUsers"] });
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.msg || "차단에 실패했습니다.");
+    },
+  });
+
+  const isDeletingOrBlocking =
+    deleteMutation.isPending || blockMutation.isPending;
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
     queryFn: async () => {
@@ -363,7 +396,12 @@ export default function UserProfileModal({
       }
       throw new Error("No context provided for profile query");
     },
-    enabled: (isChatContext || isFriendContext) && isOpen,
+    enabled:
+      (isChatContext || isFriendContext) &&
+      isOpen &&
+      !isDeletingOrBlocking &&
+      !deleteConfirmOpen &&
+      !blockConfirmOpen,
     retry: false,
   });
 
@@ -383,14 +421,18 @@ export default function UserProfileModal({
 
   const profile = selfProfile ?? data?.data;
 
-  // 에러 처리 (차단된 유저 등 404 에러 시)
-  if (isError && isOpen) {
-    const err = error as any;
-    if (err.response?.status === 404) {
-      alert("존재하지 않거나 차단된 사용자입니다.");
+  // 에러 처리 (차단된 유저 등 404 에러 시 안전하게 닫기)
+  useEffect(() => {
+    if (isError && isOpen && !isDeletingOrBlocking) {
+      const err = error as any;
+      if (err.response?.status === 404) {
+        alert("존재하지 않거나 차단된 사용자입니다.");
+      } else {
+        alert(err.response?.data?.msg || "친구 정보를 확인할 수 없습니다.");
+      }
       onOpenChange(false);
     }
-  }
+  }, [isError, isOpen, isDeletingOrBlocking, error, onOpenChange]);
 
   const requestMutation = useMutation({
     mutationFn: (nickname: string) => requestFriend(nickname),
@@ -411,17 +453,6 @@ export default function UserProfileModal({
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
       queryClient.invalidateQueries({ queryKey: ["friends"] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (friendId: number) => deleteFriend(friendId),
-    onSuccess: () => {
-      alert("처리되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
-      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
-      queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
     },
   });
 
@@ -502,19 +533,6 @@ export default function UserProfileModal({
     if (isFriendContext && !friendId) return;
     chatMutation.mutate();
   };
-
-  const blockMutation = useMutation({
-    mutationFn: (targetId: number) => blockUser(targetId),
-    onSuccess: () => {
-      alert("유저를 차단했습니다.");
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
-      onOpenChange(false);
-    },
-    onError: (error: any) => {
-      alert(error.response?.data?.msg || "차단에 실패했습니다.");
-    },
-  });
 
   const kickMutation = useMutation({
     mutationFn: (targetChatRoomMemberId: number) =>

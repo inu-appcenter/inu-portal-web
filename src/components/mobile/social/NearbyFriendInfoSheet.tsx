@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import styled from "styled-components";
+import { useCallback, useEffect, useRef, useState } from "react";
+import styled, { keyframes } from "styled-components";
 import { RefreshCw } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import BottomSheet from "@/components/common/BottomSheet";
+import Modal from "@/components/common/Modal";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
+import useUserStore from "@/stores/useUserStore";
 import {
   requestFriend,
   updateMyLocation,
@@ -18,7 +20,13 @@ interface NearbyFriendInfoSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const CONSENT_STORAGE_KEY = "__intipNearbyLocationConsent";
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+const AUTO_REFRESH_INTERVAL_SECONDS = 5;
+const PREFETCH_CACHE_TTL_MS = 15000;
 
 type Phase = "consent" | "locating" | "results" | "denied" | "error";
 
@@ -27,57 +35,163 @@ export default function NearbyFriendInfoSheet({
   onOpenChange,
 }: NearbyFriendInfoSheetProps) {
   const queryClient = useQueryClient();
+  const { userInfo, setUserInfo } = useUserStore();
   const [phase, setPhase] = useState<Phase>("consent");
   const [nearbyMembers, setNearbyMembers] = useState<NearbyMemberResponseDto[]>(
     [],
   );
   const [requestedIds, setRequestedIds] = useState<number[]>([]);
+  const [countdown, setCountdown] = useState<number>(
+    AUTO_REFRESH_INTERVAL_SECONDS,
+  );
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const isLocatingRef = useRef<boolean>(false);
 
-  const locate = useCallback(() => {
-    setPhase("locating");
+  const prefetchedCoordsRef = useRef<{
+    coords: Coordinates;
+    timestamp: number;
+  } | null>(null);
+  const prefetchPromiseRef = useRef<Promise<Coordinates> | null>(null);
+
+  // 백그라운드에서 미리 GPS 위치 수집 (동의 화면을 보고 있는 동안 워밍업)
+  const prefetchLocation = useCallback((): Promise<Coordinates> => {
     if (!navigator.geolocation) {
-      setPhase("error");
-      return;
+      return Promise.reject(new Error("GEOLOCATION_UNSUPPORTED"));
     }
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          await updateMyLocation(latitude, longitude);
-          const res = await getNearbyFriends(latitude, longitude);
-          setNearbyMembers(res.data);
-          setPhase("results");
-        } catch {
-          setPhase("error");
-        }
-      },
-      (err) => {
-        setPhase(
-          err.code === err.PERMISSION_DENIED ? "denied" : "error",
-        );
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
+
+    if (
+      prefetchedCoordsRef.current &&
+      Date.now() - prefetchedCoordsRef.current.timestamp < PREFETCH_CACHE_TTL_MS
+    ) {
+      return Promise.resolve(prefetchedCoordsRef.current.coords);
+    }
+
+    if (prefetchPromiseRef.current) {
+      return prefetchPromiseRef.current;
+    }
+
+    const promise = new Promise<Coordinates>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords: Coordinates = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+          prefetchedCoordsRef.current = { coords, timestamp: Date.now() };
+          prefetchPromiseRef.current = null;
+          resolve(coords);
+        },
+        (err) => {
+          prefetchPromiseRef.current = null;
+          reject(err);
+        },
+        { enableHighAccuracy: true, timeout: 10000 },
+      );
+    });
+
+    prefetchPromiseRef.current = promise;
+    return promise;
   }, []);
 
+  const locate = useCallback(
+    async (showLocatingPhase: boolean = true) => {
+      if (isLocatingRef.current) return;
+
+      if (showLocatingPhase) {
+        setPhase("locating");
+      } else {
+        setIsRefreshing(true);
+      }
+
+      isLocatingRef.current = true;
+      try {
+        const coords = await prefetchLocation();
+        if (!showLocatingPhase) {
+          // 자동/수동 갱신 시 다음 주기를 위해 캐시 만료
+          prefetchedCoordsRef.current = null;
+        }
+
+        await updateMyLocation(coords.latitude, coords.longitude);
+        const res = await getNearbyFriends(coords.latitude, coords.longitude);
+        setNearbyMembers(res.data);
+        setPhase("results");
+        setCountdown(AUTO_REFRESH_INTERVAL_SECONDS);
+      } catch (err: any) {
+        const msg = err?.response?.data?.msg || "";
+        if (
+          msg.includes("동의") ||
+          (err?.response?.status === 400 && msg.includes("노출"))
+        ) {
+          setPhase("consent");
+        } else if (err?.code === 1 || err?.PERMISSION_DENIED === 1) {
+          if (showLocatingPhase) setPhase("denied");
+        } else {
+          if (showLocatingPhase) setPhase("error");
+        }
+      } finally {
+        isLocatingRef.current = false;
+        setIsRefreshing(false);
+      }
+    },
+    [prefetchLocation],
+  );
+
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      prefetchedCoordsRef.current = null;
+      prefetchPromiseRef.current = null;
+      return;
+    }
+
     setRequestedIds([]);
-    if (localStorage.getItem(CONSENT_STORAGE_KEY) === "true") {
-      locate();
+    setCountdown(AUTO_REFRESH_INTERVAL_SECONDS);
+
+    // 1. 바텀시트가 열리는 순간 즉시 백그라운드 GPS 위치 수집 시작 (Warm-up)
+    prefetchLocation().catch(() => {});
+
+    // 2. 이미 동의한 상태라면 바로 탐색 진행, 미동의면 동의 화면 표시
+    if (userInfo.nearbyVisibility) {
+      locate(true);
     } else {
       setPhase("consent");
     }
-  }, [open, locate]);
+  }, [open, userInfo.nearbyVisibility, prefetchLocation, locate]);
+
+  // 5초 주기 자동 업데이트 & 카운트다운 타이머
+  useEffect(() => {
+    if (!open || phase !== "results") return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          prefetchedCoordsRef.current = null;
+          prefetchPromiseRef.current = null;
+          locate(false);
+          return AUTO_REFRESH_INTERVAL_SECONDS;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [open, phase, locate]);
+
+  const handleManualRefresh = () => {
+    prefetchedCoordsRef.current = null;
+    prefetchPromiseRef.current = null;
+    setCountdown(AUTO_REFRESH_INTERVAL_SECONDS);
+    locate(false);
+  };
 
   const handleAgree = async () => {
-    localStorage.setItem(CONSENT_STORAGE_KEY, "true");
     try {
       await updateNearbyVisibility(true);
-    } catch {
-      // 노출 설정 실패해도 이번 조회 자체는 계속 진행
+      setUserInfo({ ...userInfo, nearbyVisibility: true });
+      // 이미 백그라운드에서 prefetchLocation()으로 좌표를 수집해두었으므로 즉시 locate 완료됨
+      locate(true);
+    } catch (err: any) {
+      alert(err?.response?.data?.msg || "위치 노출 설정에 실패했습니다.");
     }
-    locate();
   };
 
   const requestMutation = useMutation({
@@ -90,10 +204,19 @@ export default function NearbyFriendInfoSheet({
     },
   });
 
+  const [confirmTarget, setConfirmTarget] =
+    useState<NearbyMemberResponseDto | null>(null);
+
   const handleRequest = (member: NearbyMemberResponseDto) => {
-    requestMutation.mutate(member.nickname, {
+    setConfirmTarget(member);
+  };
+
+  const confirmRequest = () => {
+    if (!confirmTarget) return;
+    requestMutation.mutate(confirmTarget.nickname, {
       onSuccess: () => {
-        setRequestedIds((prev) => [...prev, member.memberId]);
+        setRequestedIds((prev) => [...prev, confirmTarget.memberId]);
+        setConfirmTarget(null);
       },
     });
   };
@@ -159,7 +282,7 @@ export default function NearbyFriendInfoSheet({
               "잠시 후 다시 시도해주세요."
             )}
           </Description>
-          <PrimaryButton onClick={locate}>
+          <PrimaryButton onClick={() => locate(true)}>
             <RefreshCw size={16} /> 다시 시도
           </PrimaryButton>
         </StatusBlock>
@@ -168,9 +291,21 @@ export default function NearbyFriendInfoSheet({
       {phase === "results" && (
         <ResultsWrapper>
           <ResultsHeader>
-            <Title style={{ margin: 0 }}>내 주변 친구</Title>
-            <RefreshButton onClick={locate} aria-label="새로고침">
-              <RefreshCw size={16} />
+            <ResultsHeaderLeft>
+              <Title style={{ margin: 0 }}>내 주변 친구</Title>
+              <CountdownBadge>
+                {isRefreshing ? "업데이트 중..." : `${countdown}초 뒤 업데이트`}
+              </CountdownBadge>
+            </ResultsHeaderLeft>
+            <RefreshButton
+              onClick={handleManualRefresh}
+              aria-label="새로고침"
+              disabled={isRefreshing}
+            >
+              <RefreshCw
+                size={16}
+                className={isRefreshing ? "spin" : undefined}
+              />
             </RefreshButton>
           </ResultsHeader>
 
@@ -197,6 +332,22 @@ export default function NearbyFriendInfoSheet({
           )}
         </ResultsWrapper>
       )}
+
+      <Modal
+        isOpen={confirmTarget !== null}
+        onClose={() => setConfirmTarget(null)}
+        title="친구 요청"
+        description={`${confirmTarget?.nickname}님에게 친구 요청을 보낼까요?`}
+        primaryButton={{
+          text: "요청 보내기",
+          onClick: confirmRequest,
+          loading: requestMutation.isPending,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setConfirmTarget(null),
+        }}
+      />
     </BottomSheet>
   );
 }
@@ -297,6 +448,31 @@ const ResultsHeader = styled.div`
   padding-bottom: 12px;
 `;
 
+const ResultsHeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CountdownBadge = styled.span`
+  font-family: Pretendard;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+  background: var(--bg-subtle, #f8f9fb);
+  padding: 3px 8px;
+  border-radius: 999px;
+`;
+
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
 const RefreshButton = styled.button`
   display: flex;
   align-items: center;
@@ -312,6 +488,15 @@ const RefreshButton = styled.button`
 
   &:active {
     background-color: var(--bg-muted, #f1f3f5);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  .spin {
+    animation: ${spin} 1s linear infinite;
   }
 `;
 

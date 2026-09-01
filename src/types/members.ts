@@ -14,6 +14,7 @@ export interface UserInfoInput {
   fireId?: number | null;
   role?: string | null;
   chatPushEnabled?: boolean | null;
+  nearbyVisibility?: boolean | null;
 }
 
 export interface UserInfo {
@@ -25,6 +26,7 @@ export interface UserInfo {
   fireId: number;
   role: string; // "admin" | ""
   chatPushEnabled: boolean;
+  nearbyVisibility: boolean;
 }
 
 export interface MembersReplies {

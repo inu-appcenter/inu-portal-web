@@ -177,7 +177,7 @@ const MobileTimeTableEditPage = () => {
   const combinedFilters: CourseOfferingFilters = useMemo(
     () => ({
       ...offeringFilters,
-      keyword,
+      keyword: keyword?.trim(),
     }),
     [offeringFilters, keyword],
   );
