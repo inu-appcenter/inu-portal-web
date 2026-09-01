@@ -738,16 +738,6 @@ const MobileTimeTablePage = () => {
       </SemesterInfoLine>
 
       <ButtonGroup>
-        <SimulatorCard onClick={handleSimulatorClick}>
-          <SimulatorCardBody>
-            <SimulatorCardTitle>모의 수강신청</SimulatorCardTitle>
-            <SimulatorCardDescription>
-              수강신청 전 시간표를 미리 짜 보세요
-            </SimulatorCardDescription>
-          </SimulatorCardBody>
-          <ChevronRightIcon />
-        </SimulatorCard>
-
         <ButtonRow>
           <MenuCard
             onClick={() => {
@@ -781,6 +771,16 @@ const MobileTimeTablePage = () => {
             <MenuCardDescription>예상 학점을 계산해 보세요</MenuCardDescription>
           </MenuCard>
         </ButtonRow>
+
+        <SimulatorCard onClick={handleSimulatorClick}>
+          <SimulatorCardBody>
+            <SimulatorCardTitle>모의 수강신청</SimulatorCardTitle>
+            <SimulatorCardDescription>
+              미리 수강신청 앱/웹을 사용해보세요.
+            </SimulatorCardDescription>
+          </SimulatorCardBody>
+          <ChevronRightIcon />
+        </SimulatorCard>
       </ButtonGroup>
 
       {isLoggedIn && activeTimetable && (
@@ -963,32 +963,6 @@ const EmptyActionGroup = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-`;
-
-const ImportOptionGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-`;
-
-const SecondaryImportButton = styled.button`
-  border: 0;
-  background: transparent;
-  color: #6b7684;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
-`;
-
-const ImportActionDescription = styled.p`
-  margin: 0;
-  color: #8b95a1;
-  font-size: 13px;
-  line-height: 18px;
-  text-align: center;
-  word-break: keep-all;
 `;
 
 const NoTimetableContent = styled.div`
