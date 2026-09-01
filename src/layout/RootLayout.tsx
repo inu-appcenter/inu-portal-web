@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { getMembers, postApiLogs, postFcmToken } from "@/apis/members";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES, isMainTabPath } from "@/constants/routes";
 import { HeaderProvider } from "@/context/HeaderContext";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import useAppStateStore from "@/stores/useAppStateStore";
@@ -179,6 +179,8 @@ export default function RootLayout() {
     location.pathname === ROUTES.ROOT;
 
   const isChatRoom = location.pathname.startsWith("/chat/");
+  const hasBottomNav = isMainTabPath(location.pathname);
+  const hideBottomFade = isChatRoom || hasBottomNav;
 
   return (
     <HeaderProvider>
@@ -189,7 +191,7 @@ export default function RootLayout() {
       <ScreenContainer>
         {outlet}
         <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
-        {!isChatRoom && <GlobalBottomFadeOverlay aria-hidden="true" />}
+        {!hideBottomFade && <GlobalBottomFadeOverlay aria-hidden="true" />}
       </ScreenContainer>
       {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
       <FeatureTourSheet
