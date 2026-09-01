@@ -2,7 +2,10 @@ import { create } from "zustand";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { TimeTable, TimeTableVisibility } from "@/types/timetables";
 import { formatSemester } from "@/utils/semester";
-import { broadcastSync } from "@/stores/middleware/broadcastSync";
+import {
+  broadcastSync,
+  flushBroadcastSync,
+} from "@/stores/middleware/broadcastSync";
 
 export interface TimetableTheme {
   colorTheme: "default" | "pastelWarm" | "pastelCool" | "monotone";
@@ -145,12 +148,24 @@ const storeTimetableCache = (state: TimetableStore) => {
 
 const initialCachedState = getCachedTimetableState();
 
+const SYNC_CHANNEL = "timetable-store-sync";
+
+/**
+ * 대기 중인 시간표 스토어 브로드캐스트를 즉시 내보낸다.
+ *
+ * broadcastSync는 한 틱의 set()들을 마이크로태스크로 병합하는데, "선택을 바꾸고
+ * 곧바로 이 웹뷰를 떠나는" 흐름(목록에서 시간표 선택 → goHome/goBack)에서는 떠나는
+ * 브릿지 메시지가 동기적으로 먼저 도착해 병합된 브로드캐스트가 유실된다. 그런
+ * 호출부는 이동 직전에 이 함수를 불러야 한다.
+ */
+export const flushTimetableStoreSync = () => flushBroadcastSync(SYNC_CHANNEL);
+
 export const useTimetableStore = create<TimetableStore>()(
   broadcastSync<TimetableStore>({
     // 시간표 상세 화면 등이 별도 웹뷰로 뜬 RN 멀티 웹뷰 환경에서, 거기서 편집한
     // 시간표(요소 추가/테마 변경 등)가 이전 화면(다른 웹뷰)의 목록에도 즉시
     // 반영되도록 동기화한다.
-    name: "timetable-store-sync",
+    name: SYNC_CHANNEL,
     partialize: (state) => ({
       selectedSemester: state.selectedSemester,
       activeTimetableId: state.activeTimetableId,
