@@ -5,7 +5,7 @@ import { getLostList } from "@/apis/lost.ts";
 import styled from "styled-components";
 import LostDetail from "./LostDetail.tsx";
 import 안내횃불이 from "@/resources/assets/illustrations/book/guide-mascot.png";
-import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
+import Icon from "@/components/common/Icon";
 import HowToFind from "@/components/desktop/lost/HowToFind";
 
 export default function LostList({ reloadKey }: { reloadKey: number }) {
@@ -55,7 +55,7 @@ export default function LostList({ reloadKey }: { reloadKey: number }) {
             <Modal>
               <div className="close" onClick={() => setShow(false)}>
                 <span>닫기</span>
-                <img src={X_Vector} alt="X" />
+                <Icon name="close-md" size={10} />
               </div>
               <HowToFind />
             </Modal>

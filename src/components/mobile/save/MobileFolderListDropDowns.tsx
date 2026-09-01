@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import ListImg from "@/resources/assets/mypage/like.svg";
-import closeImg from "@/resources/assets/mobile-save/close-img.svg";
+import Icon from "@/components/common/Icon";
 import fileImg from "@/resources/assets/illustrations/mypage/folder.svg";
 import { useState } from "react";
 import { postFoldersPosts } from "@/apis/folders";
@@ -84,7 +84,13 @@ export default function MobileFolderListDropDowns({
             <img src={ListImg} className="list-img" />
             <span>List</span>
           </div>
-          <img src={closeImg} className="close-img" onClick={onClose} />
+          <Icon
+            className="close-img"
+            name="close-md"
+            size={17}
+            label="닫기"
+            onClick={onClose}
+          />
         </FolderListClose>
         <FolderListDetail>
           {folders

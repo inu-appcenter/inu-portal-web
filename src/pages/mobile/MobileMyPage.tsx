@@ -11,7 +11,6 @@ import {
   MyPageCategoryCommon,
   MyPageCategoryLoggeedIn,
 } from "@/resources/strings/m-mypage";
-import arrowImg from "@/resources/assets/mobile-mypage/arrow.svg";
 import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { deleteFcmToken } from "@/apis/members";
@@ -200,7 +199,7 @@ export default function MobileMyPage() {
                     )}
                   </div>
                 </span>
-                <Arrow src={arrowImg} />
+                <Arrow name="chevron-right" size={9} />
               </div>
             ))}
           {/* admin role일 경우 관리자 페이지 추가 */}
@@ -214,7 +213,7 @@ export default function MobileMyPage() {
                 {renderMenuIcon()}
                 <div>관리자 페이지</div>
               </span>
-              <Arrow src={arrowImg} />
+              <Arrow name="chevron-right" size={9} />
             </div>
           )}
           {MyPageCategoryCommon.map((category, index) => (
@@ -231,7 +230,7 @@ export default function MobileMyPage() {
                   <div className="description">{category.description}</div>
                 </div>
               </span>
-              <Arrow src={arrowImg} />
+              <Arrow name="chevron-right" size={9} />
             </div>
           ))}{" "}
           <div className="item" onClick={() => handleClick("알림 설정 확인")}>
@@ -243,7 +242,7 @@ export default function MobileMyPage() {
                 <div className="description">FCM 토큰 및 전송 상태 확인</div>
               </div>
             </span>
-            <Arrow src={arrowImg} />
+            <Arrow name="chevron-right" size={9} />
           </div>
         </CategoryWrapper>
       </DesktopContentGrid>
@@ -569,11 +568,9 @@ const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
   }
 `;
 
-const Arrow = styled.img`
-  width: 8px;
-
+const Arrow = styled(Icon)`
   @media ${DESKTOP_MEDIA} {
-    width: 10px;
+    font-size: 11px;
     opacity: 0.7;
   }
 `;

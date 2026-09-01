@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import backBtnImg from "@/resources/assets/mobile-mypage/oui_arrow-up.svg";
+import Icon from "@/components/common/Icon";
 import { useNavigate } from "react-router-dom";
 
 export default function BackButton() {
@@ -7,14 +7,12 @@ export default function BackButton() {
 
   return (
     <Img
-      src={backBtnImg}
-      alt="뒤로가기 이미지"
+      name="chevron-left"
+      size={23}
+      label="뒤로가기"
       onClick={() => navigate(`/mypage`)}
     />
   );
 }
 
-const Img = styled.img`
-  width: 23px;
-  height: 23px;
-`;
+const Img = styled(Icon)``;

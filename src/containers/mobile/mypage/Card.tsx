@@ -3,7 +3,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import { deletePost, putLike } from "@/apis/posts";
 import { ROUTES } from "@/constants/routes";
-import X_Vector from "@/resources/assets/mobile-mypage/X-Vector.svg";
+import Icon from "@/components/common/Icon";
 import { useResetTipsStore } from "@/reducer/resetTipsStore";
 import { Post } from "@/types/posts";
 import PostItem from "@/components/mobile/notice/PostItem";
@@ -78,8 +78,9 @@ export default function Card({ post, onUpdate, type }: TipsCardContainerProps) {
           <Fragment key={p.id}>
             <RelativeWrapper>
               <XButton
-                src={X_Vector}
-                alt="delete"
+                name="close-md"
+                size={10}
+                label="삭제"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent card click when X is clicked
                   handleXButtonClick(p.id);
@@ -140,7 +141,7 @@ const CardWrapper = styled.div`
   }
 `;
 
-const XButton = styled.img`
+const XButton = styled(Icon)`
   position: absolute;
   top: 0;
   right: 0;
