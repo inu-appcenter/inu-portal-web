@@ -4,6 +4,7 @@ import { RefreshCw } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import BottomSheet from "@/components/common/BottomSheet";
+import Modal from "@/components/common/Modal";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import useUserStore from "@/stores/useUserStore";
 import {
@@ -203,10 +204,19 @@ export default function NearbyFriendInfoSheet({
     },
   });
 
+  const [confirmTarget, setConfirmTarget] =
+    useState<NearbyMemberResponseDto | null>(null);
+
   const handleRequest = (member: NearbyMemberResponseDto) => {
-    requestMutation.mutate(member.nickname, {
+    setConfirmTarget(member);
+  };
+
+  const confirmRequest = () => {
+    if (!confirmTarget) return;
+    requestMutation.mutate(confirmTarget.nickname, {
       onSuccess: () => {
-        setRequestedIds((prev) => [...prev, member.memberId]);
+        setRequestedIds((prev) => [...prev, confirmTarget.memberId]);
+        setConfirmTarget(null);
       },
     });
   };
@@ -322,6 +332,22 @@ export default function NearbyFriendInfoSheet({
           )}
         </ResultsWrapper>
       )}
+
+      <Modal
+        isOpen={confirmTarget !== null}
+        onClose={() => setConfirmTarget(null)}
+        title="친구 요청"
+        description={`${confirmTarget?.nickname}님에게 친구 요청을 보낼까요?`}
+        primaryButton={{
+          text: "요청 보내기",
+          onClick: confirmRequest,
+          loading: requestMutation.isPending,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setConfirmTarget(null),
+        }}
+      />
     </BottomSheet>
   );
 }
