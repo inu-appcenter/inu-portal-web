@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Pencil, Search, Clock, User, BookOpen } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -19,6 +19,7 @@ import {
   searchCourseOfferings,
 } from "@/apis/courseOfferings";
 import type { CourseOffering } from "@/types/courseOfferings";
+import type { Term, TimeTableDay } from "@/types/timetables";
 import {
   sugangAppLogo as sugangAppLogoSvg,
   sampleImagePicker as timetableSampleWebp,
@@ -101,6 +102,7 @@ export default function MobileTimetableImageImportPage() {
   const [status, setStatus] = useState("강의 블록을 찾고 있어요.");
   const [progress, setProgress] = useState(0);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [openCandidateGroupId, setOpenCandidateGroupId] = useState<
     string | null
@@ -258,7 +260,7 @@ export default function MobileTimetableImageImportPage() {
       });
       try {
         setStatus("시간표 이미지 형식을 확인하고 있어요.");
-        const fullImageResult = await worker.recognize(file);
+        const fullImageResult = await worker.recognize(file, {}, { blocks: true });
         const subjectNumbers = extractBracketedSubjectNumbers(
           fullImageResult.data.text,
         );
@@ -318,16 +320,29 @@ export default function MobileTimetableImageImportPage() {
           return;
         }
 
+        const ocrLines: Array<{ text: string; bbox: { x0: number; y0: number; x1: number; y1: number } }> = [];
+        fullImageResult.data.blocks?.forEach((b) => {
+          b.paragraphs?.forEach((p) => {
+            p.lines?.forEach((l) => {
+              ocrLines.push({ text: l.text, bbox: l.bbox });
+            });
+          });
+        });
+
         const layout = detectTimetableImageLayout(fullImageResult.data.text);
-        detectedBlocks = await detectTimetableBlocks(file, layout);
+        detectedBlocks = await detectTimetableBlocks(file, layout, ocrLines);
         if (!detectedBlocks.length) {
           throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
         }
+        await worker.setParameters({
+          tessedit_pageseg_mode: "6" as any,
+        });
         for (let index = 0; index < detectedBlocks.length; index += 1) {
           setStatus(
             `강의 글자를 읽고 있어요. (${index + 1}/${detectedBlocks.length})`,
           );
-          const result = await worker.recognize(detectedBlocks[index].crop);
+          const blockCrop = detectedBlocks[index].crop;
+          const result = await worker.recognize(blockCrop);
           detectedBlocks[index].rawText = result.data.text.trim();
           detectedBlocks[index].confidence = result.data.confidence;
         }
@@ -337,40 +352,91 @@ export default function MobileTimetableImageImportPage() {
 
       const groups = parseAndGroupBlocks(detectedBlocks);
       setStatus("개설 강좌와 비교하고 있어요.");
+
+      // 1. 모든 그룹의 검색 키워드 취합 (중복 제거 후 병렬 조회)
+      const allKeywords = new Set<string>();
+      groups.forEach((group) => {
+        const hangulOnly = group.title.replace(/[^가-힣]/g, "");
+        if (hangulOnly.length >= 2) {
+          for (let i = 0; i <= hangulOnly.length - 2; i += 1) {
+            allKeywords.add(hangulOnly.slice(i, i + 2));
+            if (i + 3 <= hangulOnly.length) allKeywords.add(hangulOnly.slice(i, i + 3));
+            if (i + 4 <= hangulOnly.length) allKeywords.add(hangulOnly.slice(i, i + 4));
+          }
+        }
+        if (group.professor && group.professor.length >= 2) {
+          allKeywords.add(group.professor);
+        }
+      });
+
+      const keywordResults = await Promise.all(
+        [...allKeywords].map((kw) =>
+          searchCourseOfferings(year, term, kw).catch(() => []),
+        ),
+      );
+      const globalCandidatePool = new Map<number, CourseOffering>();
+      keywordResults.flat().forEach((offering) => {
+        globalCandidatePool.set(offering.id, offering);
+      });
+
+      // 2. 시간표 블록들의 요일/시간대 강좌 병렬 조회 (±10~25분 오차 슬롯 생성)
+      const toMinutes = (v: string) => {
+        const [h, m] = v.slice(0, 5).split(":").map(Number);
+        return h * 60 + m;
+      };
+      const toTimeStr = (min: number) =>
+        `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+      const allMeetingVariants = groups.flatMap((g) =>
+        g.blocks.flatMap((b) => {
+          const sMin = toMinutes(b.startTime);
+          const eMin = toMinutes(b.endTime);
+          const offsets = [0, -10, 10, -15, 15, -20, 20, -25, 25];
+          return offsets.map(
+            (off) =>
+              `${b.day}|${toTimeStr(Math.max(0, sMin + off))}|${toTimeStr(Math.max(0, eMin + off))}`,
+          );
+        }),
+      );
+      const uniqueMeetings = [...new Set(allMeetingVariants)].slice(0, 80);
+
+      if (uniqueMeetings.length > 0) {
+        try {
+          const meetingPage = await getCourseOfferingsPage(year, term, 0, 100, {
+            meetingFilterMode: "HAS_CLASS",
+            meetings: uniqueMeetings,
+          });
+          meetingPage.content.forEach((offering) =>
+            globalCandidatePool.set(offering.id, offering),
+          );
+        } catch {
+          // ignore
+        }
+      }
+
+      // 3. 각 그룹별 매칭 및 점수화
       const preliminaryMatches: Match[] = [];
       for (const group of groups) {
-        const keywords = [
-          ...new Set([
-            group.title,
-            group.professor,
-            group.title.replace(/\s/g, "").slice(0, 2),
-          ]),
-        ].filter((keyword) => keyword.length >= 2);
-        const candidateMap = new Map<number, CourseOffering>();
-        for (const keyword of keywords) {
-          const found = await searchCourseOfferings(year, term, keyword);
-          found.forEach((offering) => candidateMap.set(offering.id, offering));
-          if (candidateMap.size >= 10) break;
-        }
-        const meetingPage = await getCourseOfferingsPage(year, term, 0, 50, {
-          meetingFilterMode: "HAS_CLASS",
-          meetings: group.blocks.map(
-            (block) => `${block.day}|${block.startTime}|${block.endTime}`,
-          ),
-        });
-        meetingPage.content.forEach((offering) =>
-          candidateMap.set(offering.id, offering),
-        );
-        const candidates = [...candidateMap.values()]
+        const candidates = [...globalCandidatePool.values()]
           .filter((offering) => !existingOfferingIds.includes(offering.id))
           .map((offering) => ({
             offering,
             score: scoreOffering(group, offering),
           }))
+          .filter(({ score }) => score >= 20)
           .sort((a, b) => b.score - a.score)
           .map(({ offering }) => offering);
         preliminaryMatches.push({ group, candidates, selectedId: null });
       }
+
+      const isLocationOnly = (title: string) => {
+        const stripped = title.replace(/\s/g, "");
+        return (
+          /^[A-Za-z0-9가-힣]{1,6}-[A-Za-z0-9]{2,4}(?:호)?$/.test(stripped) ||
+          /^[0-9OoIl]{1,2}-[0-9OoIl]{2,4}(?:호)?$/.test(stripped) ||
+          title === "인식 실패"
+        );
+      };
 
       const merged = new Map<string, Match>();
       preliminaryMatches.forEach((match) => {
@@ -406,7 +472,37 @@ export default function MobileTimetableImageImportPage() {
         }
       });
 
-      const nextMatches = [...merged.values()].map((match) => {
+      // 4. 호실 패턴 단독 그룹(07-505 등)을 이미 매칭된 강좌의 남은 미팅과 병합
+      const mergedList = [...merged.values()];
+      const confidentCourseMatches = mergedList.filter((m) =>
+        m.group.id.startsWith("offering-") ||
+        (m.candidates.length > 0 && !isLocationOnly(m.group.title)),
+      );
+
+      const filteredMerged = mergedList.filter((match) => {
+        if (!isLocationOnly(match.group.title) || match.candidates.length > 0) {
+          return true;
+        }
+        // 호실 단독 그룹의 블록이 다른 확정 강좌의 meeting에 포함되는지 확인
+        for (const confidentMatch of confidentCourseMatches) {
+          const candidate = confidentMatch.candidates[0];
+          if (!candidate) continue;
+          const hasMeeting = match.group.blocks.some((locBlock) =>
+            candidate.meetings.some(
+              (m) =>
+                m.day === locBlock.day &&
+                Math.abs(toMinutes(m.startTime) - toMinutes(locBlock.startTime)) <= 25,
+            ),
+          );
+          if (hasMeeting) {
+            confidentMatch.group.blocks.push(...match.group.blocks);
+            return false; // 호실 단독 카드는 제거하고 기존 강좌에 흡수
+          }
+        }
+        return true;
+      });
+
+      const nextMatches = filteredMerged.map((match) => {
         const candidates = match.candidates
           .map((offering) => ({
             offering,
@@ -553,6 +649,56 @@ export default function MobileTimetableImageImportPage() {
     }
   };
 
+  const handleSelectOffering = (matchId: string, offering: CourseOffering) => {
+    setMatches((prev) =>
+      prev.map((match) => {
+        if (match.group.id !== matchId) return match;
+        return {
+          ...match,
+          selectedId: offering.id,
+          candidates: [
+            offering,
+            ...match.candidates.filter((c) => c.id !== offering.id),
+          ],
+          group: {
+            ...match.group,
+            title: offering.courseTitle,
+            professor: offering.professor ?? match.group.professor,
+          },
+        };
+      }),
+    );
+    setEditingMatch(null);
+  };
+
+  const handleSaveManual = (
+    matchId: string,
+    title: string,
+    professor: string,
+    day: TimeTableDay,
+    startTime: string,
+    endTime: string,
+  ) => {
+    setMatches((prev) =>
+      prev.map((match) => {
+        if (match.group.id !== matchId) return match;
+        const updatedBlocks = match.group.blocks.map((b, i) =>
+          i === 0 ? { ...b, day, startTime, endTime } : b,
+        );
+        return {
+          ...match,
+          group: {
+            ...match.group,
+            title: title || match.group.title,
+            professor,
+            blocks: updatedBlocks,
+          },
+        };
+      }),
+    );
+    setEditingMatch(null);
+  };
+
   const isSelectionComplete =
     matches.length > 0 && matches.every((match) => match.selectedId !== null);
 
@@ -659,7 +805,7 @@ export default function MobileTimetableImageImportPage() {
 
             <ResultDescription>
               {
-                "과목명·요일·시간을 확인해 주세요.\n완전히 잘못 인식된 과목은 X를 눌러 제외하고, 등록 후 시간표 편집에서 직접 추가해 주세요."
+                "과목명·요일·시간을 확인해 주세요.\n글자가 잘못 인식되었거나 분반 목록에 없는 경우, 연필(✏️) 버튼을 눌러 과목명을 수정하거나 분반을 검색해 보세요."
               }
             </ResultDescription>
 
@@ -691,6 +837,13 @@ export default function MobileTimetableImageImportPage() {
                         <CardStatusBadge $completed={isCardCompleted}>
                           {isCardCompleted ? "선택 완료" : "선택 필요"}
                         </CardStatusBadge>
+                        <EditButton
+                          type="button"
+                          aria-label={`${match.group.title} 정보 수정 및 분반 검색`}
+                          onClick={() => setEditingMatch(match)}
+                        >
+                          <Pencil size={14} />
+                        </EditButton>
                         <RemoveButton
                           type="button"
                           aria-label={`${match.group.title} 제외`}
@@ -900,6 +1053,17 @@ export default function MobileTimetableImageImportPage() {
           text: "계속 진행",
           onClick: handleStayOnPage,
         }}
+      />
+
+      {/* 강의 정보 직접 수정 & 분반 실시간 검색 모달 */}
+      <CourseEditModal
+        isOpen={editingMatch !== null}
+        match={editingMatch}
+        year={year}
+        term={term}
+        onClose={() => setEditingMatch(null)}
+        onSelectOffering={handleSelectOffering}
+        onSaveManual={handleSaveManual}
       />
     </PageWrapper>
   );
@@ -1300,11 +1464,31 @@ const RemoveButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border: 0;
   transition: background 0.15s;
 
   &:hover {
     background: #e5e8eb;
     color: #4e5968;
+  }
+`;
+
+const EditButton = styled.button`
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f1f3f5;
+  color: #4e5968;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 0;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #e5e8eb;
+    color: #191f28;
   }
 `;
 
@@ -1354,30 +1538,28 @@ const SelectTrigger = styled.button`
 const TriggerText = styled.span<{ $placeholder: boolean }>`
   font-family: Pretendard;
   font-weight: 500;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 20px;
-  color: ${({ $placeholder }) => ($placeholder ? "#e5484d" : "#191f28")};
+  color: ${({ $placeholder }) => ($placeholder ? "#8b95a1" : "#191f28")};
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-align: left;
 `;
 
 const CandidatePopover = styled(motion.div)<{ $openUpward: boolean }>`
   position: absolute;
-  left: -1px;
-  right: -1px;
-  top: ${({ $openUpward }) => ($openUpward ? "auto" : "calc(100% + 6px)")};
-  bottom: ${({ $openUpward }) => ($openUpward ? "calc(100% + 6px)" : "auto")};
-  z-index: 40;
-  max-height: 240px;
-  overflow-y: auto;
-  padding: 6px;
-  border: 1px solid #d1d6db;
-  border-radius: 14px;
+  left: 0;
+  right: 0;
+  ${({ $openUpward }) => ($openUpward ? "bottom: calc(100% + 4px);" : "top: calc(100% + 4px);")}
   background: #ffffff;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
-  overscroll-behavior: contain;
+  border: 1px solid #e5e8eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+  padding: 4px;
 `;
 
 const PopoverOption = styled.button<{ $selected: boolean }>`
@@ -1507,3 +1689,587 @@ const PrimaryBottomButton = styled(CapsuleButton)`
   font-size: 16px;
   font-weight: 600;
 `;
+
+// --- Course Edit Modal Component ---
+
+interface CourseEditModalProps {
+  isOpen: boolean;
+  match: Match | null;
+  year: number;
+  term: Term;
+  onClose: () => void;
+  onSelectOffering: (matchId: string, offering: CourseOffering) => void;
+  onSaveManual: (
+    matchId: string,
+    title: string,
+    professor: string,
+    day: TimeTableDay,
+    startTime: string,
+    endTime: string,
+  ) => void;
+}
+
+function CourseEditModal({
+  isOpen,
+  match,
+  year,
+  term,
+  onClose,
+  onSelectOffering,
+  onSaveManual,
+}: CourseEditModalProps) {
+  if (!isOpen || !match) return null;
+
+  const [title, setTitle] = useState(
+    match.group.title === "인식 실패" ? "" : match.group.title,
+  );
+  const [professor, setProfessor] = useState(match.group.professor);
+  const [day, setDay] = useState<TimeTableDay>(
+    match.group.blocks[0]?.day ?? "MONDAY",
+  );
+  const [startTime, setStartTime] = useState(
+    match.group.blocks[0]?.startTime ?? "09:00",
+  );
+  const [endTime, setEndTime] = useState(
+    match.group.blocks[0]?.endTime ?? "10:30",
+  );
+
+  const [debouncedKeyword, setDebouncedKeyword] = useState(title);
+  const [searchResults, setSearchResults] = useState<CourseOffering[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedKeyword(title.trim());
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [title]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchOfferings = async () => {
+      setIsSearching(true);
+      try {
+        const promises: Promise<CourseOffering[]>[] = [];
+        if (debouncedKeyword.length >= 1) {
+          promises.push(searchCourseOfferings(year, term, debouncedKeyword));
+        }
+        if (professor.trim().length >= 2) {
+          promises.push(searchCourseOfferings(year, term, professor.trim()));
+        }
+        promises.push(
+          getCourseOfferingsPage(year, term, 0, 50)
+            .then((res) => res.content)
+            .catch(() => []),
+        );
+
+        const results = await Promise.all(promises);
+        if (!active) return;
+
+        const pool = new Map<number, CourseOffering>();
+        results.flat().forEach((offering) => {
+          pool.set(offering.id, offering);
+        });
+
+        const dummyGroup: DetectedCourseGroup = {
+          id: "temp",
+          title: title.trim() || match.group.title,
+          professor: professor.trim(),
+          rawText: "",
+          blocks: [
+            {
+              id: "temp-block",
+              crop: {} as any,
+              day,
+              startTime,
+              endTime,
+              rawText: "",
+              confidence: 100,
+            },
+          ],
+        };
+
+        const sorted = [...pool.values()]
+          .map((offering) => ({
+            offering,
+            score: scoreOffering(dummyGroup, offering),
+          }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 15)
+          .map(({ offering }) => offering);
+
+        setSearchResults(sorted);
+      } catch (err) {
+        console.warn("Live search failed:", err);
+      } finally {
+        if (active) setIsSearching(false);
+      }
+    };
+
+    fetchOfferings();
+    return () => {
+      active = false;
+    };
+  }, [
+    debouncedKeyword,
+    professor,
+    day,
+    startTime,
+    endTime,
+    year,
+    term,
+    match.group.title,
+  ]);
+
+  const handleSelect = (offering: CourseOffering) => {
+    onSelectOffering(match.group.id, offering);
+  };
+
+  const handleManualSave = () => {
+    onSaveManual(
+      match.group.id,
+      title.trim() || match.group.title,
+      professor.trim(),
+      day,
+      startTime,
+      endTime,
+    );
+  };
+
+  return (
+    <ModalBackdrop onClick={onClose}>
+      <ModalContentSheet onClick={(e) => e.stopPropagation()}>
+        <ModalSheetHeader>
+          <div>
+            <ModalSheetTitle>강의 정보 수정 & 분반 검색</ModalSheetTitle>
+            <ModalSheetSubtitle>
+              과목명이나 교수명을 수정하면 개설 강좌가 검색됩니다.
+            </ModalSheetSubtitle>
+          </div>
+          <ModalCloseButton type="button" onClick={onClose}>
+            <Icon name="close-md" size={20} />
+          </ModalCloseButton>
+        </ModalSheetHeader>
+
+        <ModalSheetBody>
+          <FormGroup>
+            <FormLabel>
+              <BookOpen size={14} /> 과목명
+            </FormLabel>
+            <FormInput
+              type="text"
+              placeholder="예: 철근콘크리트구조, 인명구조실습"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              autoFocus
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <FormLabel>
+              <User size={14} /> 교수명
+            </FormLabel>
+            <FormInput
+              type="text"
+              placeholder="예: 김우일, 함경수 (선택사항)"
+              value={professor}
+              onChange={(e) => setProfessor(e.target.value)}
+            />
+          </FormGroup>
+
+          <FormRow>
+            <FormGroup style={{ flex: 1 }}>
+              <FormLabel>
+                <Clock size={14} /> 요일
+              </FormLabel>
+              <DayChipGroup>
+                {(
+                  [
+                    "MONDAY",
+                    "TUESDAY",
+                    "WEDNESDAY",
+                    "THURSDAY",
+                    "FRIDAY",
+                    "SATURDAY",
+                  ] as TimeTableDay[]
+                ).map((d) => (
+                  <DayChip
+                    key={d}
+                    type="button"
+                    $active={day === d}
+                    onClick={() => setDay(d)}
+                  >
+                    {DAY_LABEL[d]}
+                  </DayChip>
+                ))}
+              </DayChipGroup>
+            </FormGroup>
+          </FormRow>
+
+          <FormRow>
+            <FormGroup style={{ flex: 1 }}>
+              <FormLabel>시작 시간</FormLabel>
+              <FormInput
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup style={{ flex: 1 }}>
+              <FormLabel>종료 시간</FormLabel>
+              <FormInput
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+            </FormGroup>
+          </FormRow>
+
+          <ResultsSection>
+            <ResultsSectionTitle>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Search size={14} color="#0061ff" />
+                <span>검색된 개설 분반 ({searchResults.length}개)</span>
+              </div>
+              {isSearching && (
+                <SearchLoadingBadge>검색 중...</SearchLoadingBadge>
+              )}
+            </ResultsSectionTitle>
+
+            <OfferingsScrollList>
+              {searchResults.length > 0 ? (
+                searchResults.map((offering) => {
+                  const isSelected = match.selectedId === offering.id;
+                  const meetings = formatOfferingMeetings(offering);
+                  return (
+                    <OfferingItemCard
+                      key={offering.id}
+                      $selected={isSelected}
+                      onClick={() => handleSelect(offering)}
+                    >
+                      <OfferingMainInfo>
+                        <OfferingTitleRow>
+                          <OfferingCourseTitle>
+                            {offering.courseTitle}
+                          </OfferingCourseTitle>
+                          <OfferingBadge>
+                            {offering.deptName ||
+                              offering.isuName ||
+                              "개설"}
+                          </OfferingBadge>
+                        </OfferingTitleRow>
+                        <OfferingSubInfo>
+                          <span>{offering.professor || "교수 미정"}</span>
+                          <span>·</span>
+                          <span>{offering.subjectNumber}</span>
+                          {meetings && (
+                            <>
+                              <span>·</span>
+                              <span style={{ color: "#0061ff" }}>{meetings}</span>
+                            </>
+                          )}
+                        </OfferingSubInfo>
+                      </OfferingMainInfo>
+                      <SelectActionButton type="button" $selected={isSelected}>
+                        {isSelected ? "선택됨" : "선택"}
+                      </SelectActionButton>
+                    </OfferingItemCard>
+                  );
+                })
+              ) : (
+                <EmptyResultsText>
+                  {isSearching
+                    ? "일치하는 개설 강좌를 검색 중입니다..."
+                    : "일치하는 개설 강좌를 찾지 못했습니다. 과목명을 검색해 보세요."}
+                </EmptyResultsText>
+              )}
+            </OfferingsScrollList>
+          </ResultsSection>
+        </ModalSheetBody>
+
+        <ModalSheetFooter>
+          <CapsuleButton
+            variant="secondary"
+            onClick={onClose}
+            style={{ flex: 1 }}
+          >
+            취소
+          </CapsuleButton>
+          <CapsuleButton
+            variant="primary"
+            onClick={handleManualSave}
+            style={{ flex: 2 }}
+          >
+            직접 입력으로 적용
+          </CapsuleButton>
+        </ModalSheetFooter>
+      </ModalContentSheet>
+    </ModalBackdrop>
+  );
+}
+
+// --- Edit Modal Styled Components ---
+
+const ModalBackdrop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.48);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+`;
+
+const ModalContentSheet = styled.div`
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+  animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes slideUpModal {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+`;
+
+const ModalSheetHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid #f2f4f6;
+`;
+
+const ModalSheetTitle = styled.h3`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #191f28;
+`;
+
+const ModalSheetSubtitle = styled.p`
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #8b95a1;
+`;
+
+const ModalCloseButton = styled.button`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f2f4f6;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7684;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #e5e8eb;
+  }
+`;
+
+const ModalSheetBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const FormRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const FormLabel = styled.label`
+  font-size: 13px;
+  font-weight: 600;
+  color: #4e5968;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #e5e8eb;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #191f28;
+  background: #fdfdfe;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #0061ff;
+    background: #ffffff;
+  }
+`;
+
+const DayChipGroup = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
+
+const DayChip = styled.button<{ $active: boolean }>`
+  flex: 1;
+  min-width: 40px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid ${({ $active }) => ($active ? "#0061ff" : "#e5e8eb")};
+  background: ${({ $active }) => ($active ? "#0061ff" : "#ffffff")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#4e5968")};
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+`;
+
+const ResultsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const ResultsSectionTitle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #191f28;
+`;
+
+const SearchLoadingBadge = styled.span`
+  font-size: 11px;
+  color: #0061ff;
+  font-weight: 600;
+`;
+
+const OfferingsScrollList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 2px;
+`;
+
+const OfferingItemCard = styled.div<{ $selected: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: ${({ $selected }) => ($selected ? "#f0f6ff" : "#f8f9fb")};
+  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#e5484d")};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: ${({ $selected }) => ($selected ? "#e5f0ff" : "#f1f3f5")};
+  }
+`;
+
+const OfferingMainInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+`;
+
+const OfferingTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
+
+const OfferingCourseTitle = styled.span`
+  font-size: 14px;
+  font-weight: 700;
+  color: #191f28;
+`;
+
+const OfferingBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #eef3ff;
+  color: #0061ff;
+`;
+
+const OfferingSubInfo = styled.div`
+  font-size: 12px;
+  color: #6b7684;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+`;
+
+const SelectActionButton = styled.button<{ $selected: boolean }>`
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+  background: ${({ $selected }) => ($selected ? "#0061ff" : "#ffffff")};
+  color: ${({ $selected }) => ($selected ? "#ffffff" : "#0061ff")};
+  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#d3e5ff")};
+  cursor: pointer;
+  flex-shrink: 0;
+`;
+
+const EmptyResultsText = styled.div`
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #8b95a1;
+  background: #f8f9fb;
+  border-radius: 10px;
+  line-height: 20px;
+`;
+
+const ModalSheetFooter = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #f2f4f6;
+  background: #ffffff;
+`;
+

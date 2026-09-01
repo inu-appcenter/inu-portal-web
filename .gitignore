@@ -27,4 +27,8 @@ dist-ssr
 
 # Cloudflare Wrangler local dev cache
 .wrangler
+
+# OCR models
+*.traineddata
+*.onnx
 
