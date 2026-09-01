@@ -15,4 +15,4 @@
 /.well-known/assetlinks.json             /app-links/assetlinks.json             200
 
 
-https://intip-test.pages.dev/* https://intip-inuappcenter.kr/:splat 301
+https://intip-test.pages.dev/* https://intip.inuappcenter.kr/:splat 301
