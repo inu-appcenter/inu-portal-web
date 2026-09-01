@@ -32,5 +32,6 @@ export const normalizeUserInfo = (userInfo?: UserInfoInput | null): UserInfo => 
     ),
     role: normalizeOptionalText(userInfo?.role),
     chatPushEnabled: !!userInfo?.chatPushEnabled,
+    nearbyVisibility: !!userInfo?.nearbyVisibility,
   };
 };
