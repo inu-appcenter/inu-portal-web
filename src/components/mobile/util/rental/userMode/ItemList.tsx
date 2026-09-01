@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import DefaultImage from "@/resources/assets/rental/DefaultImage.svg";
+import { defaultImage as DefaultImage } from "@/resources/assets/illustrations/rental";
 
 import { Items } from "@/apis/rental.ts";
 import ImageBox from "../ImageBox.tsx";

@@ -8,8 +8,10 @@ import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import { createChatRoom } from "@/apis/chat";
 
 // 체크박스 이미지 리소스 임포트
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
+import {
+  checkedCheckbox,
+  uncheckedCheckbox,
+} from "@/resources/assets/icons/posts";
 
 const MobileAdminChatPage = () => {
   useHeader({

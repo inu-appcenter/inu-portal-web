@@ -9,8 +9,10 @@ import axios, { AxiosError } from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import UploadPetition from "@/components/mobile/council/UploadPetition";
 import useReloadKeyStore from "@/stores/useReloadKeyStore";
-import heartEmptyImg from "@/resources/assets/posts/heart-empty.svg";
-import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
+import {
+  heartEmpty as heartEmptyImg,
+  heartFilled as heartFilledImg,
+} from "@/resources/assets/icons/posts";
 
 export default function MobilePetitionDetailPage() {
   const { triggerReload } = useReloadKeyStore();

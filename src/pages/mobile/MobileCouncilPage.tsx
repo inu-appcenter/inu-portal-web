@@ -7,7 +7,7 @@ import UploadPetition from "@/components/mobile/council/UploadPetition";
 import PetitionList from "@/components/mobile/council/PetitionList";
 import { useState } from "react";
 import useUserStore from "@/stores/useUserStore";
-import PencilImg from "@/resources/assets/posts/pencil-white.svg";
+import { pencilWhite as PencilImg } from "@/resources/assets/icons/posts";
 import useReloadKeyStore from "@/stores/useReloadKeyStore";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 

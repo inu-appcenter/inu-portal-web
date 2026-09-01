@@ -55,7 +55,7 @@ const Glyph = styled.i<{ $size: number; $color?: string }>`
   line-height: 1;
   color: ${({ $color }) => $color ?? "currentColor"};
 
-  display: inline-flex;
+  display: block;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;

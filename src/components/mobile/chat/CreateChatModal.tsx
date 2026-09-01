@@ -9,8 +9,10 @@ import { ROUTES } from "@/constants/routes";
 import Icon from "@/components/common/Icon";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
-import checkedCheckbox from "@/resources/assets/posts/checked-checkbox.svg";
-import uncheckedCheckbox from "@/resources/assets/posts/unchecked-checkbox.svg";
+import {
+  checkedCheckbox,
+  uncheckedCheckbox,
+} from "@/resources/assets/icons/posts";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }

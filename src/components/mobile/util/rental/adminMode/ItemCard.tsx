@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 import ImageBox from "../ImageBox.tsx";
-import DefaultImage from "../../../../../resources/assets/rental/DefaultImage.svg";
+import { defaultImage as DefaultImage } from "@/resources/assets/illustrations/rental";
 import ReservationList from "./ReservationListWrapper.tsx";
 import { Items } from "@/apis/rental.ts";
 import { Reservation } from "@/apis/rentalAdmin.ts";

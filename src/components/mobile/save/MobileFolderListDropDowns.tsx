@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import ListImg from "@/resources/assets/mypage/like.svg";
+import { like as ListImg } from "@/resources/assets/icons/mypage";
 import Icon from "@/components/common/Icon";
 import fileImg from "@/resources/assets/illustrations/mypage/folder.svg";
 import { useState } from "react";

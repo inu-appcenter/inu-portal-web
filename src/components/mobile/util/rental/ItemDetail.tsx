@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
-import DefaultImage from "@/resources/assets/rental/DefaultImage.svg";
+import { defaultImage as DefaultImage } from "@/resources/assets/illustrations/rental";
 import {
   createReservation,
   getAvailableQuantity,

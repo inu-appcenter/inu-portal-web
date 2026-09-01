@@ -40,7 +40,7 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
-import NoTimetableGraphic from '@/resources/assets/timetable/no-timetable.webp'
+import { noTimetable as NoTimetableGraphic } from '@/resources/assets/illustrations/timetable'
 
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 

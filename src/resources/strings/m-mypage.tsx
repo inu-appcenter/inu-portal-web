@@ -1,10 +1,14 @@
-import writeImg from "@/resources/assets/mypage/post.svg";
-import likeImg from "@/resources/assets/mypage/like.svg";
-import commentImg from "@/resources/assets/mypage/comment.svg";
+import {
+  comment as commentImg,
+  like as likeImg,
+  post as writeImg,
+} from "@/resources/assets/icons/mypage";
 import scrapImg from "@/resources/assets/illustrations/mobile-mypage/scrap.svg";
 import profileImg from "@/resources/assets/illustrations/mobile-mypage/profile.svg";
-import logoutImg from "@/resources/assets/mobile-mypage/logout.svg";
-import inquiryImg from "@/resources/assets/mobile-mypage/inquiry.svg";
+import {
+  inquiry as inquiryImg,
+  logout as logoutImg,
+} from "@/resources/assets/icons/mypage";
 import AppcenterLogo from "@/resources/assets/illustrations/mobile-mypage/appcenter-logo.svg";
 import removeImg from "@/resources/assets/illustrations/mobile-mypage/remove.svg";
 import { SUPPORT_EMAIL } from "@/constants/support";

@@ -6,7 +6,7 @@ import { getMembersScraps } from "@/apis/members";
 import { getSearchFolderScrap, getSearchScrap } from "@/apis/search";
 import { putScrap } from "@/apis/posts";
 import SaveSearchForm from "@/components/mobile/save/SaveSearchForm";
-import editButton from "@/resources/assets/mobile-save/editButton.svg";
+import { editButton } from "@/resources/assets/icons/save";
 import FolderListDropDowns from "@/components/mobile/save/MobileFolderListDropDowns";
 import DeleteConfirmModal from "@/components/mobile/save/DeleteConfirmModal";
 import Trash from "@/resources/assets/illustrations/mobile-save/trash.svg";

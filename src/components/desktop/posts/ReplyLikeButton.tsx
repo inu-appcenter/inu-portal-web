@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useQueryClient } from "@tanstack/react-query";
-import heartEmpty from "@/resources/assets/posts/heart-empty.svg";
-import heartFilled from "@/resources/assets/posts/heart-filled.svg";
+import { heartEmpty, heartFilled } from "@/resources/assets/icons/posts";
 import { putReplyLike } from "@/apis/replies";
 import axios, { AxiosError } from "axios";
 

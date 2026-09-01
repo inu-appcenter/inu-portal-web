@@ -4,7 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { Post } from "@/types/posts";
 import { DepartmentNotice, Notice } from "@/types/notices";
-import heart from "@/resources/assets/posts/posts-heart.svg";
+import { heartBlue as heart } from "@/resources/assets/icons/posts";
 import { CouncilNotice } from "@/types/councilNotices";
 import { FaEye } from "react-icons/fa";
 import { Notification } from "@/types/members";

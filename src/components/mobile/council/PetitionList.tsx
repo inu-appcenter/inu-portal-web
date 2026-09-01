@@ -5,7 +5,7 @@ import { PetitionSummary } from "@/types/petitions";
 import { getPetitionsList } from "@/apis/petitions";
 import styled from "styled-components";
 import FontelloIcon from "@/components/common/Icon";
-import heartFilledImg from "@/resources/assets/posts/heart-filled.svg";
+import { heartFilled as heartFilledImg } from "@/resources/assets/icons/posts";
 
 export default function PetitionList({ reloadKey }: { reloadKey: number }) {
   const [petitions, setPetitions] = useState<PetitionSummary[]>([]);

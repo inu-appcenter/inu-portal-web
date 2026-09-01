@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import styled from "styled-components";
-import HeartFilledImg from "@/resources/assets/posts/heart-filled.svg";
+import { heartFilled as HeartFilledImg } from "@/resources/assets/icons/posts";
 import Icon from "@/components/common/Icon";
 import { MembersReplies } from "@/types/members";
 import { deleteReply } from "@/apis/replies";
