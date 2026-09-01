@@ -15,10 +15,7 @@ import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { deleteFcmToken } from "@/apis/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import {
-  DESKTOP_MEDIA,
-  DESKTOP_READING_WIDTH,
-} from "@/styles/responsive";
+import { DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
 import Ripple from "@/components/common/Ripple";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import { clearTermsAgreement } from "@/components/common/TermsAgreement";
@@ -165,19 +162,21 @@ export default function MobileMyPage() {
               </ErrorWrapper>
             )}
           </UserWrapper>
-          {isLoggedIn && <ActiveWrapper>
-            {MyPageActive.map((active, index) => (
-              <div
-                className="item"
-                key={index}
-                onClick={() => handleClick(active.title)}
-              >
-                <img src={active.image} />
-                <p>{active.title}</p>
-              </div>
-            ))}
-            {!userInfo.id && <Overlay />} {/* 로그인 안 됐으면 오버레이 */}
-          </ActiveWrapper>}
+          {isLoggedIn && (
+            <ActiveWrapper>
+              {MyPageActive.map((active, index) => (
+                <div
+                  className="item"
+                  key={index}
+                  onClick={() => handleClick(active.title)}
+                >
+                  <img src={active.image} />
+                  <p>{active.title}</p>
+                </div>
+              ))}
+              {!userInfo.id && <Overlay />} {/* 로그인 안 됐으면 오버레이 */}
+            </ActiveWrapper>
+          )}
         </TopBackground>
 
         <CategoryWrapper $hasActiveSummary={isLoggedIn}>
@@ -199,21 +198,18 @@ export default function MobileMyPage() {
                     )}
                   </div>
                 </span>
-                <Arrow name="chevron-right" size={9} />
+                <Arrow color="#A0A0A0" name="chevron-right" />
               </div>
             ))}
           {/* admin role일 경우 관리자 페이지 추가 */}
           {userInfo.role === "admin" && (
-            <div
-              className="item"
-              onClick={() => handleClick("관리자 페이지")}
-            >
+            <div className="item" onClick={() => handleClick("관리자 페이지")}>
               <Ripple />
               <span>
                 {renderMenuIcon()}
                 <div>관리자 페이지</div>
               </span>
-              <Arrow name="chevron-right" size={9} />
+              <Arrow color="#A0A0A0" name="chevron-right" />
             </div>
           )}
           {MyPageCategoryCommon.map((category, index) => (
@@ -230,7 +226,7 @@ export default function MobileMyPage() {
                   <div className="description">{category.description}</div>
                 </div>
               </span>
-              <Arrow name="chevron-right" size={9} />
+              <Arrow color="#A0A0A0" name="chevron-right" />
             </div>
           ))}{" "}
           <div className="item" onClick={() => handleClick("알림 설정 확인")}>
@@ -242,7 +238,7 @@ export default function MobileMyPage() {
                 <div className="description">FCM 토큰 및 전송 상태 확인</div>
               </div>
             </span>
-            <Arrow name="chevron-right" size={9} />
+            <Arrow color="#A0A0A0" name="chevron-right" />
           </div>
         </CategoryWrapper>
       </DesktopContentGrid>
@@ -316,7 +312,8 @@ const DesktopContentGrid = styled.div`
 const TopBackground = styled.div<{ $hasActiveSummary: boolean }>`
   background: transparent;
   height: fit-content;
-  padding: 32px 0 ${({ $hasActiveSummary }) => ($hasActiveSummary ? "80px" : "24px")};
+  padding: 32px 0
+    ${({ $hasActiveSummary }) => ($hasActiveSummary ? "80px" : "24px")};
   width: 100%;
   position: relative;
   display: flex;
@@ -443,7 +440,8 @@ const ActiveWrapper = styled.div`
 
 const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
   display: flex;
-  margin-top: ${({ $hasActiveSummary }) => ($hasActiveSummary ? "56px" : "12px")};
+  margin-top: ${({ $hasActiveSummary }) =>
+    $hasActiveSummary ? "56px" : "12px"};
   border-radius: 10px;
   flex-direction: column;
   align-items: center;
