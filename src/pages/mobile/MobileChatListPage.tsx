@@ -5,7 +5,7 @@ import "swiper/css";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import React, { useEffect, useMemo, useState, useCallback, memo } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -43,6 +43,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "개인";
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const isSelectionModeRef = useRef(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
   const {
@@ -164,8 +167,82 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     [categories, selectedCategory],
   );
 
+  const allFriendIds = useMemo(
+    () => friendsRes?.data?.map((f) => f.friendId) || [],
+    [friendsRes],
+  );
+
+  // Clear selectedIds when exiting selection mode
+  useEffect(() => {
+    if (!isSelectionMode) {
+      setSelectedIds([]);
+    }
+  }, [isSelectionMode]);
+
+  // When switching away from "친구", exit selection mode
+  useEffect(() => {
+    if (selectedCategory !== "친구" && isSelectionMode) {
+      setIsSelectionMode(false);
+      setSelectedIds([]);
+    }
+  }, [selectedCategory, isSelectionMode]);
+
+  useEffect(() => {
+    isSelectionModeRef.current = isSelectionMode;
+  }, [isSelectionMode]);
+
+  useEffect(() => {
+    const handlePopStateForSelection = () => {
+      if (isSelectionModeRef.current) {
+        setIsSelectionMode(false);
+      }
+    };
+    window.addEventListener("popstate", handlePopStateForSelection);
+    return () =>
+      window.removeEventListener("popstate", handlePopStateForSelection);
+  }, []);
+
+  const handleToggleSelect = useCallback((friendId: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(friendId)
+        ? prev.filter((id) => id !== friendId)
+        : [...prev, friendId],
+    );
+  }, []);
+
+  const handlePressStart = useCallback((friendId: number) => {
+    if (!isSelectionModeRef.current) {
+      setIsSelectionMode(true);
+      setSelectedIds([friendId]);
+      window.history.pushState({ modal: "selection" }, "");
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedIds.length === allFriendIds.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(allFriendIds);
+    }
+  }, [selectedIds.length, allFriendIds]);
+
+  const handleEnterSelectionMode = useCallback(() => {
+    setIsSelectionMode(true);
+    window.history.pushState({ modal: "selection" }, "");
+  }, []);
+
+  const handleExitSelectionMode = useCallback(() => {
+    setIsSelectionMode(false);
+    if (window.history.state?.modal === "selection") {
+      window.history.back();
+    }
+  }, []);
+
   const menuItems = useMemo(() => {
-    if (isSearching) return undefined;
+    if (isSearching || isSelectionMode) return undefined;
 
     const defaultMenu = [
       {
@@ -197,7 +274,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       ];
     }
     return defaultMenu;
-  }, [selectedCategory, navigate, isSearching]);
+  }, [selectedCategory, navigate, isSearching, isSelectionMode]);
 
   const handleSearchClick = useCallback(() => {
     setIsSearching(true);
@@ -236,9 +313,32 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   }, [selectedCategory, isSearching]);
 
   const headerRight = useMemo(() => {
-    if (!isSearching && selectedCategory === "친구") {
+    if (isSearching) return null;
+
+    if (selectedCategory === "친구") {
+      if (isSelectionMode) {
+        return (
+          <HeaderActionsContainer>
+            <HeaderActionButton onClick={handleSelectAll}>
+              {selectedIds.length === allFriendIds.length
+                ? "전체 해제"
+                : "전체 선택"}
+            </HeaderActionButton>
+            <HeaderActionButton
+              onClick={handleExitSelectionMode}
+              className="cancel"
+            >
+              취소
+            </HeaderActionButton>
+          </HeaderActionsContainer>
+        );
+      }
+
       return (
         <HeaderRightArea>
+          <HeaderActionButton onClick={handleEnterSelectionMode}>
+            시간표 비교
+          </HeaderActionButton>
           <IconButton onClick={handleSearchClick}>
             <Icon name="search" size={24} color="#1C1C1E" />
           </IconButton>
@@ -246,23 +346,43 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       );
     }
     return null;
-  }, [selectedCategory, isSearching, handleSearchClick]);
+  }, [
+    selectedCategory,
+    isSearching,
+    isSelectionMode,
+    selectedIds.length,
+    allFriendIds.length,
+    handleSelectAll,
+    handleExitSelectionMode,
+    handleEnterSelectionMode,
+    handleSearchClick,
+  ]);
 
   const headerTitle = useMemo(() => {
     if (isSearching) {
       return "친구 검색";
     }
+    if (isSelectionMode) {
+      return selectedIds.length > 0
+        ? `${selectedIds.length}명 선택됨`
+        : "시간표 비교";
+    }
     return "채팅";
-  }, [isSearching]);
+  }, [isSearching, isSelectionMode, selectedIds.length]);
 
   useHeader({
     title: headerTitle,
-    subHeader: isSearching ? null : subHeader,
+    subHeader: isSearching || isSelectionMode ? null : subHeader,
     floatingSubHeader: true,
-    hasback: isSearching,
-    onBack: isSearching ? handleCloseSearch : undefined,
+    hasback: isSearching || isSelectionMode,
+    onBack: isSearching
+      ? handleCloseSearch
+      : isSelectionMode
+      ? handleExitSelectionMode
+      : undefined,
     menuItems: menuItems,
     rightArea: headerRight,
+    rightAreaNotCircle: true,
   });
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
@@ -347,12 +467,12 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   useEffect(() => {
     if (!swiperRef) return;
 
-    if (isSearching || isAnyModalOpen) {
+    if (isSearching || isAnyModalOpen || isSelectionMode) {
       swiperRef.allowTouchMove = false;
     } else {
       swiperRef.allowTouchMove = true;
     }
-  }, [swiperRef, isSearching, isAnyModalOpen]);
+  }, [swiperRef, isSearching, isAnyModalOpen, isSelectionMode]);
 
   // 데이터 로딩 완료 및 카테고리 전환 시점을 대비한 스위퍼 리사이징 수동 업데이트 트리거
   useEffect(() => {
@@ -385,7 +505,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         }}
         initialSlide={currentIndex}
         onSlideChange={handleSlideChange}
-        allowTouchMove={!isAnyModalOpen && !isSearching}
+        allowTouchMove={!isAnyModalOpen && !isSearching && !isSelectionMode}
         speed={320}
         autoHeight={true}
         observer={true}
@@ -504,7 +624,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
           <Slide>
             <TitleContentArea
               description={
-                "채팅 기능은 beta 버전이며, 불안정할 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 학번으로 친구를 미리 등록해보세요!"
+                "채팅 기능은 beta 버전이며, 불안정할 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 친구를 미리 등록해보세요!"
               }
             />
             {isLoggedIn && !userInfo.chatPushEnabled && (
@@ -656,9 +776,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
               <TitleContentArea
                 description={
                   <>
-                    닉네임으로 친구를 찾아보세요.
+                    닉네임 검색, 주변 친구 찾기, 초대 링크로 친구를 찾아보세요!
                     <br />
-                    아직 학번 닉네임을 사용중이라면, 마이페이지에서 새로운
+                    아직 학번 닉네임을 사용 중이라면, 마이페이지에서 새로운
                     닉네임을 설정해보세요.
                   </>
                 }
@@ -679,12 +799,18 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                 }
               />
             )}
-            <FriendManagementView searchTerm={searchTerm} />
+            <FriendManagementView
+              searchTerm={searchTerm}
+              isSelectionMode={isSelectionMode}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onPressStart={handlePressStart}
+            />
           </Slide>
         </SwiperSlide>
       </Swiper>
 
-      {!isSearching && isLoggedIn && (
+      {!isSearching && !isSelectionMode && isLoggedIn && (
         <FabAnchor>
           {selectedCategory === "친구" && (
             <AddFriendMenuCard
@@ -735,6 +861,25 @@ const MobileChatListPage = memo(function MobileChatListPage() {
             <ButtonLabel $isTop={isTop}>{fabLabel}</ButtonLabel>
           </FloatingActionButton>
         </FabAnchor>
+      )}
+
+      {isSelectionMode && selectedCategory === "친구" && (
+        <CompareButtonFloatingArea>
+          <CompareFloatingButton
+            onClick={() => {
+              if (selectedIds.length === 0) return;
+              navigate(
+                `${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`,
+              );
+            }}
+            disabled={selectedIds.length === 0}
+            className={selectedIds.length === 0 ? "disabled" : ""}
+          >
+            {selectedIds.length > 0
+              ? `선택한 ${selectedIds.length}명과 시간표 비교`
+              : "비교할 친구를 선택해주세요"}
+          </CompareFloatingButton>
+        </CompareButtonFloatingArea>
       )}
 
       {isSearching && (
@@ -916,5 +1061,82 @@ const FloatingSearchContainer = styled.div`
   & > * {
     max-width: 400px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+`;
+
+const HeaderActionsContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+`;
+
+const HeaderActionButton = styled.button`
+  border: none;
+  background: none;
+  font-family: Pretendard;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--text-brand, #0061ff);
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.cancel {
+    color: var(--text-secondary, #333d4b);
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+`;
+
+const CompareButtonFloatingArea = styled.div`
+  position: fixed;
+  bottom: calc(100px + env(safe-area-inset-bottom, 0px) + 12px);
+  left: 0;
+  right: 0;
+  padding: 0 16px;
+  display: flex;
+  justify-content: center;
+  z-index: 100;
+`;
+
+const CompareFloatingButton = styled.button`
+  width: 100%;
+  max-width: 500px;
+  height: 52px;
+  border-radius: 16px;
+  background-color: var(--interactive-primary, #0061ff);
+  color: #ffffff;
+  border: none;
+  font-family: Pretendard;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 97, 255, 0.25);
+  transition: all 0.2s ease-in-out;
+  outline: none;
+
+  &.disabled {
+    background-color: var(--bg-disabled, #e5e8eb);
+    color: var(--text-disabled, #8b95a1);
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+  }
+
+  &:active {
+    background-color: var(--interactive-primary-pressed, #2563eb);
+    transform: scale(0.98);
   }
 `;

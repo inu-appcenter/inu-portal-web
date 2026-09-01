@@ -71,7 +71,7 @@ const MobileAlertPage = () => {
         navigate(ROUTES.CHAT.LIST);
       }
     } else if (alert.type === "FRIEND") {
-      navigate(`${ROUTES.CHAT.LIST}?category=친구`);
+      navigate(ROUTES.FRIEND.LIST);
     } else if (alert.type === "DAILY_BRIEF_TIMETABLE") {
       navigate(ROUTES.TIMETABLE.ROOT);
     } else if (alert.type === "DAILY_BRIEF_SCHEDULE") {

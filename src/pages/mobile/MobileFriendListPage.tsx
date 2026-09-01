@@ -2,12 +2,19 @@ import styled from "styled-components";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getFriends } from "@/apis/friends";
+import {
+  getFriends,
+  getPendingFriends,
+  acceptFriend,
+  deleteFriend,
+} from "@/apis/friends";
 import { createPersonalChatRoom, getMyChatRooms } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import SocialUserCard from "@/components/mobile/social/SocialUserCard";
+import Divider from "@/components/common/Divider";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import AddFriendMenuCard from "@/components/mobile/social/AddFriendMenuCard";
 import TabUpper from "@/components/common/TabUpper";
@@ -19,37 +26,16 @@ import {
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import Ripple from "@/components/common/Ripple";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
-import { ArrowDownAZ, ArrowUpZA } from "lucide-react";
+import { ArrowDownAZ, ArrowUpZA, Plus } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
 import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
+import useUserStore from "@/stores/useUserStore";
+import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
+import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
+import Modal from "@/components/common/Modal";
 
 // --- SVG Icons ---
-
-const PlusIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M12 5V19"
-      stroke="#333D4B"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M5 12H19"
-      stroke="#333D4B"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 const CheckIcon = () => (
   <svg
@@ -231,6 +217,26 @@ export default function MobileFriendListPage() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [isTop, setIsTop] = useState(true);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsTop(window.scrollY === 0);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const isSelectionModeRef = useRef(false);
@@ -336,9 +342,20 @@ export default function MobileFriendListPage() {
     );
   }, []);
 
+  const { userInfo } = useUserStore();
+  const isLoggedIn = userInfo && userInfo.id !== 0;
+
   // Profile modal states
   const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
+  const [selectedMyId, setSelectedMyId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
+  const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    type: "accept" | "reject";
+    friendId: number;
+    nickname: string;
+  } | null>(null);
 
   // Long press timer tracking refs
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -351,6 +368,33 @@ export default function MobileFriendListPage() {
   });
 
   const friends = useMemo(() => friendsRes?.data || [], [friendsRes]);
+
+  // 대기 중인 친구 요청 조회
+  const { data: pendingRes } = useQuery({
+    queryKey: ["pendingFriends"],
+    queryFn: getPendingFriends,
+    enabled: !isShareMode && !isSelectionMode,
+  });
+
+  const pendingRequests = pendingRes?.data || [];
+
+  // 친구 요청 수락
+  const acceptMutation = useMutation({
+    mutationFn: acceptFriend,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+    },
+  });
+
+  // 친구 삭제/거절
+  const deleteMutation = useMutation({
+    mutationFn: deleteFriend,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+    },
+  });
 
   // Query my chat rooms when in share mode and rooms tab
   const { data: myChatRoomsRes } = useQuery({
@@ -510,6 +554,30 @@ export default function MobileFriendListPage() {
     );
   }, [isShareMode, shareTab]);
 
+  const menuItems = useMemo(() => {
+    if (isSelectionMode || isShareMode) return undefined;
+    return [
+      {
+        label: "알림 설정",
+        onClick: () => {
+          navigate(ROUTES.MYPAGE.NOTIFICATION);
+        },
+      },
+      {
+        label: "보낸 친구 요청 목록",
+        onClick: () => {
+          setIsSentRequestsModalOpen(true);
+        },
+      },
+      {
+        label: "차단 친구 관리",
+        onClick: () => {
+          setIsBlockedModalOpen(true);
+        },
+      },
+    ];
+  }, [isSelectionMode, isShareMode, navigate]);
+
   useHeader({
     title: isShareMode ? "시간표 공유 대상 선택" : "친구",
     hasback: true,
@@ -518,6 +586,7 @@ export default function MobileFriendListPage() {
     rightAreaNotCircle: true,
     rightArea: headerRight,
     subHeader: subHeader,
+    menuItems: menuItems,
   });
 
   // Expand / selection click handler
@@ -694,6 +763,7 @@ export default function MobileFriendListPage() {
   return (
     <PageWrapper $isShareMode={isShareMode}>
       <UserProfileModal
+        memberId={selectedMyId}
         friendId={selectedFriendId}
         isOpen={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
@@ -701,6 +771,37 @@ export default function MobileFriendListPage() {
           selectedFriendId !== null && favoriteIds.includes(selectedFriendId)
         }
         onToggleFavorite={handleToggleFavorite}
+      />
+      <Modal
+        isOpen={confirmModal !== null}
+        onClose={() => setConfirmModal(null)}
+        title={
+          confirmModal?.type === "accept"
+            ? "친구 요청 수락"
+            : "친구 요청 거절"
+        }
+        description={
+          confirmModal?.type === "accept"
+            ? `${confirmModal.nickname}님의 친구 요청을 수락하시겠습니까?`
+            : `${confirmModal?.nickname}님의 친구 요청을 거절하시겠습니까?`
+        }
+        primaryButton={{
+          text: confirmModal?.type === "accept" ? "수락" : "거절",
+          variant: confirmModal?.type === "accept" ? "brand" : "danger",
+          onClick: () => {
+            if (!confirmModal) return;
+            if (confirmModal.type === "accept") {
+              acceptMutation.mutate(confirmModal.friendId);
+            } else {
+              deleteMutation.mutate(confirmModal.friendId);
+            }
+            setConfirmModal(null);
+          },
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setConfirmModal(null),
+        }}
       />
       <AddFriendModal
         isOpen={isAddFriendOpen}
@@ -714,6 +815,14 @@ export default function MobileFriendListPage() {
       <NearbyFriendInfoSheet
         open={isNearbyInfoOpen}
         onOpenChange={setIsNearbyInfoOpen}
+      />
+      <BlockedUsersModal
+        isOpen={isBlockedModalOpen}
+        onOpenChange={setIsBlockedModalOpen}
+      />
+      <SentRequestsModal
+        isOpen={isSentRequestsModalOpen}
+        onOpenChange={setIsSentRequestsModalOpen}
       />
 
       {isShareMode && shareTab === "rooms" ? (
@@ -747,6 +856,85 @@ export default function MobileFriendListPage() {
         </FriendListContainer>
       ) : (
         <>
+          {isLoggedIn && !searchTerm.trim() && !isShareMode && !isSelectionMode && (
+            <>
+              <SectionHeader>내 프로필</SectionHeader>
+              <FriendListContainer style={{ marginBottom: "16px" }}>
+                <MyProfileRow
+                  onClick={() => {
+                    setSelectedMyId(userInfo.id);
+                    setSelectedFriendId(null);
+                    setIsProfileModalOpen(true);
+                  }}
+                >
+                  <Ripple />
+                  <ProfileArea>
+                    <ProfileImage
+                      src={`https://portal.inuappcenter.kr/images/profile/${normalizeProfileImageId(userInfo?.fireId, DEFAULT_PROFILE_IMAGE_ID)}`}
+                      alt="Profile"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          "https://portal.inuappcenter.kr/images/profile/default.png";
+                      }}
+                    />
+                  </ProfileArea>
+                  <MyProfileInfo>
+                    <MyProfileName>{userInfo.nickname}</MyProfileName>
+                    <MyProfileDepartment>
+                      {userInfo.department || "학과 정보 없음"}
+                    </MyProfileDepartment>
+                  </MyProfileInfo>
+                  <Icon
+                    name="chevron-right"
+                    size={20}
+                    color="var(--text-tertiary, #8b95a1)"
+                  />
+                </MyProfileRow>
+              </FriendListContainer>
+            </>
+          )}
+
+          {pendingRequests.length > 0 &&
+            !isShareMode &&
+            !isSelectionMode &&
+            !searchTerm.trim() && (
+              <>
+                <SectionHeader>
+                  받은 친구 요청 ({pendingRequests.length})
+                </SectionHeader>
+                <FriendListContainer style={{ marginBottom: "20px" }}>
+                  {pendingRequests.map((req, index) => (
+                    <div key={req.friendId} style={{ width: "100%" }}>
+                      <SocialUserCard
+                        name={req.nickname}
+                        subtitle={req.studentId}
+                        fireId={req.fireId}
+                        onActionClick={() =>
+                          setConfirmModal({
+                            type: "accept",
+                            friendId: req.friendId,
+                            nickname: req.nickname,
+                          })
+                        }
+                        onSecondaryActionClick={() =>
+                          setConfirmModal({
+                            type: "reject",
+                            friendId: req.friendId,
+                            nickname: req.nickname,
+                          })
+                        }
+                        actionLabel="수락"
+                        secondaryActionLabel="거절"
+                      />
+                      {index < pendingRequests.length - 1 && (
+                        <Divider margin="0" />
+                      )}
+                    </div>
+                  ))}
+                </FriendListContainer>
+              </>
+            )}
+
           <StatusSection>
             <TotalCountText>내 친구 ({filteredFriends.length})</TotalCountText>
             <SortIndicator
@@ -821,12 +1009,20 @@ export default function MobileFriendListPage() {
                 closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
               }}
             />
-            <FloatingButton
+            <FloatingActionButton
               onClick={toggleAddMenu}
-              $rotated={isAddMenuOpen}
+              $isTop={isTop}
             >
-              <PlusIcon />
-            </FloatingButton>
+              <Plus
+                size={20}
+                color="white"
+                style={{
+                  transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transform: isAddMenuOpen ? "rotate(45deg)" : "rotate(0deg)",
+                }}
+              />
+              <ButtonLabel $isTop={isTop}>친구 추가</ButtonLabel>
+            </FloatingActionButton>
           </PlusButtonWrapper>
 
           {/* Search bar */}
@@ -936,6 +1132,44 @@ const FriendListContainer = styled.div`
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+`;
+
+const MyProfileRow = styled.div`
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 14px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  background-color: transparent;
+`;
+
+const MyProfileInfo = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 12px;
+  overflow: hidden;
+`;
+
+const MyProfileName = styled.div`
+  font-family: Pretendard;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--text-primary, #333d4b);
+`;
+
+const MyProfileDepartment = styled.div`
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-tertiary, #8b95a1);
 `;
 
 const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
@@ -1158,21 +1392,61 @@ const FloatingActionsWrapper = styled.div`
 
 const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
   position: relative;
-  height: ${({ $visible }) => ($visible ? "56px" : "0px")};
-  width: 56px;
+  display: flex;
+  justify-content: flex-end;
   margin-bottom: ${({ $visible }) => ($visible ? "12px" : "0px")};
   pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
   transition:
-    height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.25s ease,
     margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+`;
 
-  & > button:last-child {
-    transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
-    opacity: ${({ $visible }) => ($visible ? 1 : 0)};
-    transition:
-      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-      opacity 0.25s ease;
+const FloatingActionButton = styled.button<{ $isTop: boolean }>`
+  height: 48px;
+  border-radius: 24px;
+  background-color: #5e92f0;
+  border: none;
+  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.35);
+  cursor: pointer;
+  z-index: 10;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  display: grid;
+  grid-template-columns: auto ${({ $isTop }) => ($isTop ? "1fr" : "0fr")};
+
+  padding: ${({ $isTop }) => ($isTop ? "0 16px 0 14px" : "0 14px")};
+
+  transition:
+    grid-template-columns 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s;
+
+  &:active {
+    transform: scale(0.95);
   }
+`;
+
+const ButtonLabel = styled.span<{ $isTop: boolean }>`
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+
+  margin-left: ${({ $isTop }) => ($isTop ? "5px" : "0px")};
+
+  opacity: ${({ $isTop }) => ($isTop ? 1 : 0)};
+
+  transition:
+    margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity ${({ $isTop }) => ($isTop ? "0.2s" : "0.12s")}
+      cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const CompareButtonArea = styled.div<{ $visible: boolean }>`
@@ -1198,32 +1472,6 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
   display: flex;
   justify-content: flex-end;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-`;
-
-const FloatingButton = styled.button<{ $rotated?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid var(--border-default, #e5e8eb);
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  cursor: pointer;
-  outline: none;
-
-  & > svg {
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: ${({ $rotated }) => ($rotated ? "rotate(45deg)" : "rotate(0deg)")};
-  }
-
-  &:active {
-    background-color: var(--bg-muted, #f1f3f5);
-    transform: scale(0.95);
-  }
 `;
 
 const CompareFloatingButton = styled.button`
