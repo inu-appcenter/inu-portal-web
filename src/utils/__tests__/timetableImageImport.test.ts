@@ -6,6 +6,7 @@ import {
   findUniqueTitleOffering,
   isConfidentOfferingMatch,
   parseAndGroupBlocks,
+  preprocessBlockCanvas,
   type DetectedTimetableBlock,
 } from "../timetableImageImport";
 import type { CourseOffering } from "@/types/courseOfferings";
@@ -192,5 +193,103 @@ describe("parseAndGroupBlocks", () => {
     ] as CourseOffering[];
 
     expect(findConfidentOffering(course, candidates)?.id).toBe(1);
+  });
+});
+
+describe("preprocessBlockCanvas", () => {
+  it("document가 없는 Node 환경에서는 원본 Canvas를 안전하게 반환한다", () => {
+    const mockCanvas = { width: 100, height: 40 } as HTMLCanvasElement;
+    const result = preprocessBlockCanvas(mockCanvas);
+    expect(result).toBe(mockCanvas);
+  });
+});
+
+describe("decomposeHangul & hangulSimilarity", () => {
+  it("음성인식입문 오타 텍스트를 높은 유사도로 판정한다", () => {
+    const noisy = "음서이시인무2ㄷ";
+    const target = "음성인식입문";
+    const [course] = parseAndGroupBlocks([
+      {
+        ...block(noisy, "WEDNESDAY"),
+        startTime: "13:30",
+        endTime: "14:45",
+      },
+    ]);
+    const candidates = [
+      {
+        id: 101,
+        courseTitle: target,
+        professor: "교수갑",
+        meetings: [{ day: "WEDNESDAY", startTime: "13:30:00", endTime: "14:45:00" }],
+      },
+    ] as CourseOffering[];
+
+    expect(findConfidentOffering(course, candidates)?.id).toBe(101);
+  });
+
+  it("지능정보시스템 오타 텍스트(지능정보시스Ela)를 정확히 매칭한다", () => {
+    const noisy = "지능정보시스\nEla\n07-416";
+    const target = "지능정보시스템";
+    const [course] = parseAndGroupBlocks([
+      {
+        ...block(noisy, "THURSDAY"),
+        startTime: "10:30",
+        endTime: "11:45",
+      },
+    ]);
+    const candidates = [
+      {
+        id: 102,
+        courseTitle: target,
+        professor: "교수을",
+        meetings: [{ day: "THURSDAY", startTime: "10:30:00", endTime: "11:45:00" }],
+      },
+    ] as CourseOffering[];
+
+    expect(findConfidentOffering(course, candidates)?.id).toBe(102);
+  });
+
+  it("강의실 번호(07-505)만 읽힌 블록이라도 해당 시간대의 유일한 강좌를 매칭한다", () => {
+    const noisy = "07-505";
+    const target = "자연어처리";
+    const [course] = parseAndGroupBlocks([
+      {
+        ...block(noisy, "MONDAY"),
+        startTime: "09:00",
+        endTime: "10:15",
+      },
+    ]);
+    const candidates = [
+      {
+        id: 103,
+        courseTitle: target,
+        professor: "교수병",
+        meetings: [{ day: "MONDAY", startTime: "09:00:00", endTime: "10:15:00" }],
+      },
+    ] as CourseOffering[];
+
+    expect(findConfidentOffering(course, candidates)?.id).toBe(103);
+  });
+
+  it("앞글자가 잘린 과목명(:근콘크리트, 크리트)도 철근콘크리트구조로 정확히 매칭한다", () => {
+    const noisy = ":근콘크리트";
+    const target = "철근콘크리트구조";
+    const [course] = parseAndGroupBlocks([
+      {
+        ...block(noisy, "WEDNESDAY"),
+        startTime: "09:00",
+        endTime: "10:00",
+      },
+    ]);
+    const candidates = [
+      {
+        id: 104,
+        courseTitle: target,
+        professor: "교수정",
+        meetings: [{ day: "WEDNESDAY", startTime: "09:00:00", endTime: "10:00:00" }],
+      },
+    ] as CourseOffering[];
+
+    expect(findConfidentOffering(course, candidates)?.id).toBe(104);
   });
 });
