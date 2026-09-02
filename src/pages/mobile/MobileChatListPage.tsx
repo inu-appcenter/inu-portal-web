@@ -210,14 +210,11 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     );
   }, []);
 
-  const handlePressStart = useCallback((friendId: number) => {
+  const handleLongPress = useCallback((friendId: number) => {
     if (!isSelectionModeRef.current) {
       setIsSelectionMode(true);
       setSelectedIds([friendId]);
       window.history.pushState({ modal: "selection" }, "");
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
     }
   }, []);
 
@@ -811,7 +808,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
               isSelectionMode={isSelectionMode}
               selectedIds={selectedIds}
               onToggleSelect={handleToggleSelect}
-              onPressStart={handlePressStart}
+              onLongPress={handleLongPress}
               onContentHeightChange={handleFriendContentHeightChange}
             />
           </Slide>

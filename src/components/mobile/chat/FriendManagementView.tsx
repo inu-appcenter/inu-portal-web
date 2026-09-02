@@ -8,6 +8,7 @@ import {
   acceptFriend,
   deleteFriend,
 } from "@/apis/friends";
+import { FriendResponseDto } from "@/types/friends";
 import { createPersonalChatRoom } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
@@ -194,9 +195,12 @@ export interface FriendManagementViewProps {
   isSelectionMode?: boolean;
   selectedIds?: number[];
   onToggleSelect?: (friendId: number) => void;
+  onLongPress?: (friendId: number) => void;
   onPressStart?: (friendId: number) => void;
   onPressCancel?: () => void;
   isShareMode?: boolean;
+  sharePayload?: string;
+  onFilteredFriendsChange?: (friends: FriendResponseDto[]) => void;
   onContentHeightChange?: () => void;
 }
 
@@ -205,9 +209,12 @@ export default function FriendManagementView({
   isSelectionMode = false,
   selectedIds = [],
   onToggleSelect,
+  onLongPress,
   onPressStart,
   onPressCancel,
   isShareMode = false,
+  sharePayload,
+  onFilteredFriendsChange,
   onContentHeightChange,
 }: FriendManagementViewProps) {
   const navigate = useNavigate();
@@ -272,6 +279,15 @@ export default function FriendManagementView({
   // Long press tracking for rows
   const internalLongPressTimer = useRef<NodeJS.Timeout | null>(null);
   const preventClick = useRef(false);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (internalLongPressTimer.current) {
+        clearTimeout(internalLongPressTimer.current);
+      }
+    };
+  }, []);
 
   // Queries
   const { data: friendsRes, isLoading: friendsLoading } = useQuery({
@@ -310,7 +326,13 @@ export default function FriendManagementView({
       const roomData = res.data || res;
       const roomId = roomData.id || roomData.roomId;
       if (roomId) {
-        navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
+        if (isShareMode && sharePayload) {
+          navigate(
+            `${ROUTES.CHAT.ROOT}/${roomId}?sharePayload=${sharePayload}`,
+          );
+        } else {
+          navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
+        }
       }
     },
     onError: (error: any) => {
@@ -342,6 +364,10 @@ export default function FriendManagementView({
     });
   }, [friends, searchTerm, sortOrder]);
 
+  useEffect(() => {
+    onFilteredFriendsChange?.(filteredFriends);
+  }, [filteredFriends, onFilteredFriendsChange]);
+
   const favoriteFriends = useMemo(() => {
     return filteredFriends.filter((f) => favoriteIds.includes(f.friendId));
   }, [filteredFriends, favoriteIds]);
@@ -362,28 +388,59 @@ export default function FriendManagementView({
     }
   };
 
-  const handlePressStartInternal = (friendId: number) => {
-    if (onPressStart) {
-      onPressStart(friendId);
-      return;
-    }
-    preventClick.current = false;
-    internalLongPressTimer.current = setTimeout(() => {
-      preventClick.current = true;
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
-    }, 600);
-  };
-
-  const handlePressCancelInternal = () => {
-    if (onPressCancel) {
-      onPressCancel();
-    }
+  const handlePressCancelInternal = useCallback(() => {
     if (internalLongPressTimer.current) {
       clearTimeout(internalLongPressTimer.current);
+      internalLongPressTimer.current = null;
     }
-  };
+    touchStartPos.current = null;
+    onPressCancel?.();
+  }, [onPressCancel]);
+
+  const handlePressStartInternal = useCallback(
+    (friendId: number) => {
+      if (isSelectionMode) return;
+      preventClick.current = false;
+      if (internalLongPressTimer.current) {
+        clearTimeout(internalLongPressTimer.current);
+      }
+      internalLongPressTimer.current = setTimeout(() => {
+        preventClick.current = true;
+        setExpandedId(null);
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+        if (onLongPress) {
+          onLongPress(friendId);
+        } else if (onPressStart) {
+          onPressStart(friendId);
+        }
+      }, 600);
+    },
+    [isSelectionMode, onLongPress, onPressStart],
+  );
+
+  const handleTouchStart = useCallback(
+    (friendId: number, e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+      handlePressStartInternal(friendId);
+    },
+    [handlePressStartInternal],
+  );
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!touchStartPos.current) return;
+      const touch = e.touches[0];
+      const diffX = Math.abs(touch.clientX - touchStartPos.current.x);
+      const diffY = Math.abs(touch.clientY - touchStartPos.current.y);
+      if (diffX > 10 || diffY > 10) {
+        handlePressCancelInternal();
+      }
+    },
+    [handlePressCancelInternal],
+  );
 
   const renderFriendRows = (list: typeof filteredFriends, prefix: string) => {
     return list.map((friend) => {
@@ -406,9 +463,9 @@ export default function FriendManagementView({
               onMouseDown={() => handlePressStartInternal(friend.friendId)}
               onMouseUp={handlePressCancelInternal}
               onMouseLeave={handlePressCancelInternal}
-              onTouchStart={() => handlePressStartInternal(friend.friendId)}
+              onTouchStart={(e) => handleTouchStart(friend.friendId, e)}
               onTouchEnd={handlePressCancelInternal}
-              onTouchMove={handlePressCancelInternal}
+              onTouchMove={handleTouchMove}
               onClick={() => handleRowClick(friend.friendId, rowId)}
             >
               <Ripple />

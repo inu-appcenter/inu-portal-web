@@ -2,204 +2,24 @@ import styled from "styled-components";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  getFriends,
-  getPendingFriends,
-  acceptFriend,
-  deleteFriend,
-} from "@/apis/friends";
 import { createPersonalChatRoom, getMyChatRooms } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import UserProfileModal from "@/components/mobile/social/UserProfileModal";
-import SocialUserCard from "@/components/mobile/social/SocialUserCard";
-import Divider from "@/components/common/Divider";
+import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import AddFriendModal from "@/components/mobile/chat/AddFriendModal";
 import AddFriendMenuCard from "@/components/mobile/social/AddFriendMenuCard";
 import TabUpper from "@/components/common/TabUpper";
 import { MyChatRoomResponseDto } from "@/types/chat";
-import {
-  normalizeProfileImageId,
-  DEFAULT_PROFILE_IMAGE_ID,
-} from "@/utils/userInfo";
+import { FriendResponseDto } from "@/types/friends";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
-import Ripple from "@/components/common/Ripple";
 import ChatRoomListItem from "@/components/mobile/chat/ChatRoomListItem";
-import { ArrowDownAZ, ArrowUpZA, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSheet";
 import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
-import useUserStore from "@/stores/useUserStore";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
-import Modal from "@/components/common/Modal";
-
-// --- SVG Icons ---
-
-const CheckIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M20 6L9 17L4 12"
-      stroke="#0061FF"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const AlarmIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle
-      cx="12"
-      cy="13"
-      r="7.5"
-      stroke="#B45309"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M12 9V13L14 15"
-      stroke="#B45309"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M5 3L8 1.3"
-      stroke="#B45309"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M19 3L16 1.3"
-      stroke="#B45309"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M6 20L4.5 21.5"
-      stroke="#B45309"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M18 20L19.5 21.5"
-      stroke="#B45309"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const ChatBubbleIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-      stroke="#0061FF"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
-      stroke="#0061FF"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle
-      cx="12"
-      cy="7"
-      r="4"
-      stroke="#0061FF"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const EmptyFriendsIllust = () => (
-  <svg
-    width="120"
-    height="120"
-    viewBox="0 0 120 120"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle cx="60" cy="60" r="52" fill="#F8F9FB" />
-    <circle cx="60" cy="60" r="44" fill="#F2F4F6" />
-    <g filter="url(#shadow)">
-      <circle cx="48" cy="52" r="12" fill="#D3E5FF" />
-      <circle cx="72" cy="54" r="10" fill="#E5E8EB" />
-      <path d="M48 68C38 68 34 76 34 84H62C62 76 58 68 48 68Z" fill="#D3E5FF" />
-      <path d="M72 68C64 68 60 74 60 81H84C84 74 80 68 72 68Z" fill="#E5E8EB" />
-    </g>
-    <defs>
-      <filter
-        id="shadow"
-        x="28"
-        y="36"
-        width="62"
-        height="54"
-        filterUnits="userSpaceOnUse"
-      >
-        <feDropShadow
-          dx="0"
-          dy="2"
-          stdDeviation="2"
-          floodColor="#000000"
-          floodOpacity="0.04"
-        />
-      </filter>
-    </defs>
-  </svg>
-);
-
-
-const getFriendStudentYear = (studentId: string) => {
-  if (!studentId) return "23학번";
-  if (studentId.length >= 4) {
-    return `${studentId.slice(2, 4)}학번`;
-  }
-  return `${studentId}학번`;
-};
 
 export default function MobileFriendListPage() {
   const navigate = useNavigate();
@@ -216,7 +36,6 @@ export default function MobileFriendListPage() {
   // States
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isTop, setIsTop] = useState(true);
 
   useEffect(() => {
@@ -263,9 +82,6 @@ export default function MobileFriendListPage() {
 
       if (!isSelectionModeRef.current) return;
 
-      // 우리 entry가 아직 스택에 남아 있다 = 남이 되돌린 것이다(검색바·추가
-      // 메뉴도 같은 문서에서 history를 쓴다). 그 pop까지 받아 선택모드가
-      // 제멋대로 풀리지 않게 한다.
       if (window.history.state?.__intipFriendSelectionOpen) return;
 
       hasSelectionHistoryEntryRef.current = false;
@@ -302,8 +118,11 @@ export default function MobileFriendListPage() {
   }, [isSelectionMode]);
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [filteredFriends, setFilteredFriends] = useState<FriendResponseDto[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
   const [isNearbyInfoOpen, setIsNearbyInfoOpen] = useState(false);
+  const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
+  const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
 
   // Add-friend FAB 드롭다운 메뉴 (닉네임 검색 / 주변 친구 찾기 / 링크·QR 초대)
   const {
@@ -311,90 +130,6 @@ export default function MobileFriendListPage() {
     close: closeAddMenu,
     toggle: toggleAddMenu,
   } = useHistoryBackedOverlay();
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
-    () =>
-      (localStorage.getItem("__intipFriendSortOrder") as "asc" | "desc") ||
-      "asc",
-  );
-
-  useEffect(() => {
-    localStorage.setItem("__intipFriendSortOrder", sortOrder);
-  }, [sortOrder]);
-
-  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem("__intipFriendFavorites");
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem("__intipFriendFavorites", JSON.stringify(favoriteIds));
-  }, [favoriteIds]);
-
-  const handleToggleFavorite = useCallback((friendId: number) => {
-    setFavoriteIds((prev) =>
-      prev.includes(friendId)
-        ? prev.filter((id) => id !== friendId)
-        : [...prev, friendId],
-    );
-  }, []);
-
-  const { userInfo } = useUserStore();
-  const isLoggedIn = userInfo && userInfo.id !== 0;
-
-  // Profile modal states
-  const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
-  const [selectedMyId, setSelectedMyId] = useState<number | null>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
-  const [isSentRequestsModalOpen, setIsSentRequestsModalOpen] = useState(false);
-  const [confirmModal, setConfirmModal] = useState<{
-    type: "accept" | "reject";
-    friendId: number;
-    nickname: string;
-  } | null>(null);
-
-  // Long press timer tracking refs
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const preventClick = useRef(false);
-
-  // Query friends
-  const { data: friendsRes } = useQuery({
-    queryKey: ["friends"],
-    queryFn: getFriends,
-  });
-
-  const friends = useMemo(() => friendsRes?.data || [], [friendsRes]);
-
-  // 대기 중인 친구 요청 조회
-  const { data: pendingRes } = useQuery({
-    queryKey: ["pendingFriends"],
-    queryFn: getPendingFriends,
-    enabled: !isShareMode && !isSelectionMode,
-  });
-
-  const pendingRequests = pendingRes?.data || [];
-
-  // 친구 요청 수락
-  const acceptMutation = useMutation({
-    mutationFn: acceptFriend,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
-      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
-    },
-  });
-
-  // 친구 삭제/거절
-  const deleteMutation = useMutation({
-    mutationFn: deleteFriend,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
-      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
-    },
-  });
 
   // Query my chat rooms when in share mode and rooms tab
   const { data: myChatRoomsRes } = useQuery({
@@ -426,36 +161,6 @@ export default function MobileFriendListPage() {
     },
   });
 
-  // Filtered friends list
-  const filteredFriends = useMemo(() => {
-    let result = friends;
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        (f) =>
-          f.nickname.toLowerCase().includes(term) ||
-          (f.friendAlias && f.friendAlias.toLowerCase().includes(term)) ||
-          (f.studentId && f.studentId.includes(term)),
-      );
-    }
-    // Chronological name sorting based on sortOrder
-    return [...result].sort((a, b) => {
-      const nameA = a.friendAlias || a.nickname;
-      const nameB = b.friendAlias || b.nickname;
-      return sortOrder === "asc"
-        ? nameA.localeCompare(nameB)
-        : nameB.localeCompare(nameA);
-    });
-  }, [friends, searchTerm, sortOrder]);
-
-  const favoriteFriends = useMemo(() => {
-    return filteredFriends.filter((f) => favoriteIds.includes(f.friendId));
-  }, [filteredFriends, favoriteIds]);
-
-  const regularFriends = useMemo(() => {
-    return filteredFriends;
-  }, [filteredFriends]);
-
   // Init selections from query param 'ids' if any
   useEffect(() => {
     const idsParam = searchParams.get("ids");
@@ -475,13 +180,27 @@ export default function MobileFriendListPage() {
     }
   }, [isSelectionMode]);
 
-  // Header handlers
+  // Selection handlers
+  const handleToggleSelect = useCallback((friendId: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(friendId)
+        ? prev.filter((id) => id !== friendId)
+        : [...prev, friendId],
+    );
+  }, []);
+
+  const handleLongPress = useCallback((friendId: number) => {
+    if (!isSelectionModeRef.current) {
+      setIsSelectionMode(true);
+      setSelectedIds([friendId]);
+    }
+  }, []);
+
   const handleSelectToggle = useCallback(() => {
     if (isSelectionMode) {
       setIsSelectionMode(false);
     } else {
       setIsSelectionMode(true);
-      setExpandedId(null); // Collapse all accordion items
       closeAddMenu();
     }
   }, [isSelectionMode, closeAddMenu]);
@@ -589,49 +308,6 @@ export default function MobileFriendListPage() {
     menuItems: menuItems,
   });
 
-  // Expand / selection click handler
-  const handleFriendClick = (friendId: number, rowId: string) => {
-    if (isSelectionMode) {
-      setSelectedIds((prev) =>
-        prev.includes(friendId)
-          ? prev.filter((id) => id !== friendId)
-          : [...prev, friendId],
-      );
-    } else {
-      setExpandedId((prev) => (prev === rowId ? null : rowId));
-    }
-  };
-
-  // Long press event handlers
-  const handlePressStart = (friendId: number) => {
-    preventClick.current = false;
-    longPressTimer.current = setTimeout(() => {
-      preventClick.current = true;
-      if (!isSelectionMode) {
-        setIsSelectionMode(true);
-        setExpandedId(null);
-        setSelectedIds([friendId]);
-        if (navigator.vibrate) {
-          navigator.vibrate(50);
-        }
-      }
-    }, 600); // 600ms long press threshold
-  };
-
-  const handlePressCancel = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-    }
-  };
-
-  const handleRowClick = (friendId: number, rowId: string) => {
-    if (preventClick.current) {
-      preventClick.current = false;
-      return;
-    }
-    handleFriendClick(friendId, rowId);
-  };
-
   const handleCompareClick = () => {
     if (isShareMode) {
       if (shareTab === "friends") {
@@ -649,25 +325,6 @@ export default function MobileFriendListPage() {
     }
   };
 
-  const handleSingleTimetableCompare = (
-    e: React.MouseEvent,
-    friendId: number,
-  ) => {
-    e.stopPropagation();
-    navigate(`${ROUTES.TIMETABLE.COMPARE}?ids=${friendId}`);
-  };
-
-  const handleSingleChatClick = (e: React.MouseEvent, friendId: number) => {
-    e.stopPropagation();
-    chatMutation.mutate([friendId]);
-  };
-
-  const handleSingleInfoClick = (e: React.MouseEvent, friendId: number) => {
-    e.stopPropagation();
-    setSelectedFriendId(friendId);
-    setIsProfileModalOpen(true);
-  };
-
   const handleSearchActiveChange = useCallback(
     (active: boolean) => {
       setIsSearchActive(active);
@@ -680,129 +337,8 @@ export default function MobileFriendListPage() {
     [closeAddMenu],
   );
 
-  const renderFriendRows = (list: typeof filteredFriends, prefix: string) => {
-    return list.map((friend) => {
-      const rowId = `${prefix}-${friend.friendId}`;
-      const isSelected = selectedIds.includes(friend.friendId);
-      const isExpanded = expandedId === rowId;
-      
-      const year = getFriendStudentYear(friend.studentId);
-      const safeFireId = normalizeProfileImageId(
-        friend.fireId,
-        DEFAULT_PROFILE_IMAGE_ID,
-      );
-
-      const showDetail = !isSelectionMode && isExpanded;
-
-      return (
-        <FriendRowWrapper key={friend.friendId} $expanded={isExpanded}>
-          <RowInner>
-            <RowHeader
-              onMouseDown={() => handlePressStart(friend.friendId)}
-              onMouseUp={handlePressCancel}
-              onMouseLeave={handlePressCancel}
-              onTouchStart={() => handlePressStart(friend.friendId)}
-              onTouchEnd={handlePressCancel}
-              onTouchMove={handlePressCancel}
-              onClick={() => handleRowClick(friend.friendId, rowId)}
-            >
-              <Ripple />
-              <ProfileArea>
-                <ProfileImage
-                  src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
-                  alt="Profile"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "https://portal.inuappcenter.kr/images/profile/default.png";
-                  }}
-                />
-                {isSelectionMode && (
-                  <SelectionOverlay $selected={isSelected}>
-                    {isSelected && <CheckIcon />}
-                  </SelectionOverlay>
-                )}
-              </ProfileArea>
-              <NameRow>{friend.friendAlias || friend.nickname}</NameRow>
-            </RowHeader>
-
-            <ExpandedDetailWrapper $expanded={showDetail}>
-              <ExpandedDetailInner>
-                <DetailContent>
-                  <StudentInfoRow>
-                    {year} · {friend.department ?? '-'}
-                  </StudentInfoRow>
-                  <ActionButtonRow>
-                    <CircleActionButton
-                      className="warn"
-                      onClick={(e) =>
-                        handleSingleTimetableCompare(e, friend.friendId)
-                      }
-                    >
-                      <AlarmIcon />
-                    </CircleActionButton>
-                    <CircleActionButton
-                      onClick={(e) => handleSingleChatClick(e, friend.friendId)}
-                    >
-                      <ChatBubbleIcon />
-                    </CircleActionButton>
-                    <CircleActionButton
-                      onClick={(e) => handleSingleInfoClick(e, friend.friendId)}
-                    >
-                      <UserIcon />
-                    </CircleActionButton>
-                  </ActionButtonRow>
-                </DetailContent>
-              </ExpandedDetailInner>
-            </ExpandedDetailWrapper>
-          </RowInner>
-        </FriendRowWrapper>
-      );
-    });
-  };
-
   return (
     <PageWrapper $isShareMode={isShareMode}>
-      <UserProfileModal
-        memberId={selectedMyId}
-        friendId={selectedFriendId}
-        isOpen={isProfileModalOpen}
-        onOpenChange={setIsProfileModalOpen}
-        isFavorite={
-          selectedFriendId !== null && favoriteIds.includes(selectedFriendId)
-        }
-        onToggleFavorite={handleToggleFavorite}
-      />
-      <Modal
-        isOpen={confirmModal !== null}
-        onClose={() => setConfirmModal(null)}
-        title={
-          confirmModal?.type === "accept"
-            ? "친구 요청 수락"
-            : "친구 요청 거절"
-        }
-        description={
-          confirmModal?.type === "accept"
-            ? `${confirmModal.nickname}님의 친구 요청을 수락하시겠습니까?`
-            : `${confirmModal?.nickname}님의 친구 요청을 거절하시겠습니까?`
-        }
-        primaryButton={{
-          text: confirmModal?.type === "accept" ? "수락" : "거절",
-          variant: confirmModal?.type === "accept" ? "brand" : "danger",
-          onClick: () => {
-            if (!confirmModal) return;
-            if (confirmModal.type === "accept") {
-              acceptMutation.mutate(confirmModal.friendId);
-            } else {
-              deleteMutation.mutate(confirmModal.friendId);
-            }
-            setConfirmModal(null);
-          },
-        }}
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setConfirmModal(null),
-        }}
-      />
       <AddFriendModal
         isOpen={isAddFriendOpen}
         onOpenChange={(open) => {
@@ -855,138 +391,16 @@ export default function MobileFriendListPage() {
           )}
         </FriendListContainer>
       ) : (
-        <>
-          {isLoggedIn && !searchTerm.trim() && !isShareMode && !isSelectionMode && (
-            <>
-              <SectionHeader>내 프로필</SectionHeader>
-              <FriendListContainer style={{ marginBottom: "16px" }}>
-                <MyProfileRow
-                  onClick={() => {
-                    setSelectedMyId(userInfo.id);
-                    setSelectedFriendId(null);
-                    setIsProfileModalOpen(true);
-                  }}
-                >
-                  <Ripple />
-                  <ProfileArea>
-                    <ProfileImage
-                      src={`https://portal.inuappcenter.kr/images/profile/${normalizeProfileImageId(userInfo?.fireId, DEFAULT_PROFILE_IMAGE_ID)}`}
-                      alt="Profile"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "https://portal.inuappcenter.kr/images/profile/default.png";
-                      }}
-                    />
-                  </ProfileArea>
-                  <MyProfileInfo>
-                    <MyProfileName>{userInfo.nickname}</MyProfileName>
-                    <MyProfileDepartment>
-                      {userInfo.department || "학과 정보 없음"}
-                    </MyProfileDepartment>
-                  </MyProfileInfo>
-                  <Icon
-                    name="chevron-right"
-                    size={20}
-                    color="var(--text-tertiary, #8b95a1)"
-                  />
-                </MyProfileRow>
-              </FriendListContainer>
-            </>
-          )}
-
-          {pendingRequests.length > 0 &&
-            !isShareMode &&
-            !isSelectionMode &&
-            !searchTerm.trim() && (
-              <>
-                <SectionHeader>
-                  받은 친구 요청 ({pendingRequests.length})
-                </SectionHeader>
-                <FriendListContainer style={{ marginBottom: "20px" }}>
-                  {pendingRequests.map((req, index) => (
-                    <div key={req.friendId} style={{ width: "100%" }}>
-                      <SocialUserCard
-                        name={req.nickname}
-                        subtitle={req.studentId}
-                        fireId={req.fireId}
-                        onActionClick={() =>
-                          setConfirmModal({
-                            type: "accept",
-                            friendId: req.friendId,
-                            nickname: req.nickname,
-                          })
-                        }
-                        onSecondaryActionClick={() =>
-                          setConfirmModal({
-                            type: "reject",
-                            friendId: req.friendId,
-                            nickname: req.nickname,
-                          })
-                        }
-                        actionLabel="수락"
-                        secondaryActionLabel="거절"
-                      />
-                      {index < pendingRequests.length - 1 && (
-                        <Divider margin="0" />
-                      )}
-                    </div>
-                  ))}
-                </FriendListContainer>
-              </>
-            )}
-
-          <StatusSection>
-            <TotalCountText>내 친구 ({filteredFriends.length})</TotalCountText>
-            <SortIndicator
-              onClick={() =>
-                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-              }
-            >
-              <span>{sortOrder === "asc" ? "오름차순" : "내림차순"}</span>
-              {sortOrder === "asc" ? (
-                <ArrowDownAZ size={18} color="#8B95A1" />
-              ) : (
-                <ArrowUpZA size={18} color="#8B95A1" />
-              )}
-            </SortIndicator>
-          </StatusSection>
-
-          {filteredFriends.length > 0 ? (
-            <>
-              {favoriteFriends.length > 0 && (
-                <>
-                  <SectionHeader>즐겨찾기 ({favoriteFriends.length})</SectionHeader>
-                  <FriendListContainer style={{ marginBottom: "20px" }}>
-                    {renderFriendRows(favoriteFriends, "fav")}
-                  </FriendListContainer>
-                </>
-              )}
-
-              {regularFriends.length > 0 && (
-                <>
-                  {favoriteFriends.length > 0 && (
-                    <SectionHeader>친구 ({regularFriends.length})</SectionHeader>
-                  )}
-                  <FriendListContainer>
-                    {renderFriendRows(regularFriends, "reg")}
-                  </FriendListContainer>
-                </>
-              )}
-            </>
-          ) : (
-            <FriendListContainer>
-              <EmptyContainer>
-                <EmptyFriendsIllust />
-                <EmptyTitle>친구가 없어요</EmptyTitle>
-                <EmptyDescription>
-                  아래 +버튼을 눌러 친구를 추가하고
-                  <br />
-                  친구와 시간표를 비교해보세요.
-                </EmptyDescription>
-              </EmptyContainer>
-            </FriendListContainer>
-          )}
-        </>
+        <FriendManagementView
+          searchTerm={searchTerm}
+          isSelectionMode={isSelectionMode}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onLongPress={handleLongPress}
+          isShareMode={isShareMode}
+          sharePayload={sharePayloadParam || undefined}
+          onFilteredFriendsChange={setFilteredFriends}
+        />
       )}
 
       {/* Floating Area (always rendered for animation) */}
@@ -1091,38 +505,6 @@ const PageWrapper = styled.div<{ $isShareMode?: boolean }>`
   background-color: var(--bg-subtle, #f8f9fb);
 `;
 
-const StatusSection = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 0 12px;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-`;
-
-const TotalCountText = styled.span`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
-`;
-
-const SortIndicator = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 2px;
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
-  cursor: pointer;
-`;
-
 const FriendListContainer = styled.div`
   background: var(--bg-base, #ffffff);
   border: 1px solid var(--border-default, #e5e8eb);
@@ -1132,201 +514,6 @@ const FriendListContainer = styled.div`
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-`;
-
-const MyProfileRow = styled.div`
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 14px 16px;
-  width: 100%;
-  box-sizing: border-box;
-  cursor: pointer;
-  background-color: transparent;
-`;
-
-const MyProfileInfo = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-left: 12px;
-  overflow: hidden;
-`;
-
-const MyProfileName = styled.div`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 22px;
-  color: var(--text-primary, #333d4b);
-`;
-
-const MyProfileDepartment = styled.div`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-tertiary, #8b95a1);
-`;
-
-const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  box-sizing: border-box;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
-  background-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const RowInner = styled.div`
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  box-sizing: border-box;
-`;
-
-const RowHeader = styled.div`
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 10px 16px;
-  width: 100%;
-  box-sizing: border-box;
-  cursor: pointer;
-`;
-
-const ProfileArea = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  position: relative;
-`;
-
-const ProfileImage = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  object-fit: cover;
-  background-color: var(--border-brand-subtle, #d3e5ff);
-`;
-
-const SelectionOverlay = styled.div<{ $selected: boolean }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  box-sizing: border-box;
-  border: 2px solid
-    ${({ $selected }) => ($selected ? "#0061ff" : "rgba(0, 0, 0, 0.15)")};
-  background-color: ${({ $selected }) =>
-    $selected ? "rgba(0, 97, 255, 0.4)" : "transparent"};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease-in-out;
-`;
-
-const NameRow = styled.div`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  color: var(--text-primary, #333d4b);
-  display: flex;
-  align-items: center;
-  min-height: 40px; /* Vertically centers name next to profile */
-  margin-left: 12px;
-  box-sizing: border-box;
-`;
-
-const ExpandedDetailWrapper = styled.div<{ $expanded: boolean }>`
-  display: grid;
-  grid-template-rows: ${({ $expanded }) => ($expanded ? "1fr" : "0fr")};
-  transition:
-    grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  overflow: hidden;
-  visibility: ${({ $expanded }) => ($expanded ? "visible" : "hidden")};
-`;
-
-const ExpandedDetailInner = styled.div`
-  min-height: 0;
-  width: 100%;
-`;
-
-const DetailContent = styled.div`
-  padding: 4px 16px 10px 68px; /* 16px gutter + 40px profile + 12px gap = 68px left padding */
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  box-sizing: border-box;
-`;
-
-const StudentInfoRow = styled.div`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
-  margin-bottom: 12px;
-`;
-
-const ActionButtonRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  align-items: center;
-`;
-
-const CircleActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background-color: var(--bg-brand, #eff6ff);
-  cursor: pointer;
-  outline: none;
-  box-sizing: border-box;
-  transition: all 0.2s ease-in-out;
-
-  &:active {
-    transform: scale(0.95);
-    background-color: var(--border-brand-subtle, #d3e5ff);
-  }
-
-  &.warn,
-  &.fav {
-    border: 1px solid var(--border-warn, #fee588);
-    background-color: var(--bg-warn, #fffaeb);
-
-    &:active {
-      background-color: var(--border-warn, #fee588);
-    }
-  }
 `;
 
 const EmptyContainer = styled.div`
@@ -1346,16 +533,6 @@ const EmptyTitle = styled.h3`
   line-height: 32px;
   color: var(--text-primary, #333d4b);
   margin: 24px 0 8px 0;
-  text-align: center;
-`;
-
-const EmptyDescription = styled.p`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-secondary, #6b7684);
-  margin: 0;
   text-align: center;
 `;
 
@@ -1538,15 +715,6 @@ const HeaderActionButton = styled.button`
 const HeaderRightSingle = styled.div`
   display: flex;
   align-items: center;
-`;
-
-const SectionHeader = styled.div`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-secondary, #6b7684);
-  margin: 16px 0 8px 12px;
 `;
 
 const SelectableRoomItemWrapper = styled.div<{ $isSelected: boolean }>`
