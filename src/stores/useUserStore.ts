@@ -4,8 +4,13 @@ import { create } from "zustand";
 import { identifyUser } from "@/utils/mixpanel";
 import { bridgeChannel } from "@/utils/bridgeChannel";
 import { broadcastSync } from "@/stores/middleware/broadcastSync";
-
 import { safeLocalStorage } from "@/utils/safeStorage";
+import { queryClient } from "@/lib/queryClient";
+import { getMemberIdFromToken } from "@/utils/token";
+import {
+  TIMETABLES_QUERY_KEY,
+  useTimetableStore,
+} from "@/stores/useTimetableStore";
 
 interface UserState {
   tokenInfo: TokenInfo;
@@ -14,6 +19,19 @@ interface UserState {
   setUserInfo: (userProfile: UserInfoInput) => void;
   isLoading: boolean;
 }
+
+const handleUserAuthChange = (
+  prevToken?: string | null,
+  nextToken?: string | null,
+) => {
+  const prevMemberId = getMemberIdFromToken(prevToken);
+  const nextMemberId = getMemberIdFromToken(nextToken);
+
+  if (prevMemberId !== nextMemberId) {
+    useTimetableStore.getState().reloadTimetableCache(nextMemberId);
+    queryClient.removeQueries({ queryKey: TIMETABLES_QUERY_KEY });
+  }
+};
 
 const getInitialToken = () => {
   const stored = safeLocalStorage.getItem("tokenInfo");
@@ -45,19 +63,23 @@ const useUserStore = create<UserState>()(
     // 살아남). 이 채널로 tokenInfo/userInfo 변경을 다른 웹뷰에도 즉시 반영한다.
     name: "user-store-sync",
     partialize: (state) => ({ tokenInfo: state.tokenInfo, userInfo: state.userInfo }),
-    onReceive: (partial) => {
+    onReceive: (partial, state) => {
       if (partial.tokenInfo) {
+        const prevToken = state.tokenInfo.accessToken;
         safeLocalStorage.setItem("tokenInfo", JSON.stringify(partial.tokenInfo));
+        handleUserAuthChange(prevToken, partial.tokenInfo.accessToken);
       }
     },
-  })((set) => ({
+  })((set, get) => ({
     tokenInfo: getInitialToken(),
     userInfo: normalizeUserInfo(),
     isLoading: false, // 초기화 완료됨
 
     setTokenInfo: (tokenInfo, options) => {
+      const prevToken = get().tokenInfo.accessToken;
       set(() => ({ tokenInfo }));
       safeLocalStorage.setItem("tokenInfo", JSON.stringify(tokenInfo));
+      handleUserAuthChange(prevToken, tokenInfo.accessToken);
 
     // 네이티브 셸(intip-mobile-app)로 JWT를 미러링해 SecureStore에 보관시킨다 —
     // 백그라운드 FCM 토큰 등록 등 네이티브가 웹뷰 없이 자체적으로 API를 호출해야
