@@ -22,6 +22,7 @@ import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { useSemesters } from "@/hooks/useSemesters";
 import useUserStore from "@/stores/useUserStore";
+import { getMemberIdFromToken } from "@/utils/token";
 import {
   useTimeTables,
   useTimeTableDetail,
@@ -175,6 +176,15 @@ const MobileTimeTablePage = () => {
   // (goHome은 경로만 넘겨 쿼리스트링이 사라진다) URL이 계속 우선권을 가지면 그
   // 선택이 곧바로 예전 id로 되돌아가 버린다.
   const [settledId, setSettledId] = useState<string | null>(null);
+
+  const currentMemberId = useMemo(
+    () => getMemberIdFromToken(tokenInfo.accessToken),
+    [tokenInfo.accessToken],
+  );
+
+  useEffect(() => {
+    setSettledId(null);
+  }, [currentMemberId]);
 
   const pendingUrlTimetable = useMemo(() => {
     if (!idParam || idParam === settledId) return null;

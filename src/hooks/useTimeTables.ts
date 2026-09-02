@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   useMutation,
   useQuery,
@@ -19,7 +19,12 @@ import {
   updateTimeTablePrimary,
   updateTimeTableVisibility,
 } from "@/apis/timetables";
-import { useTimetableStore } from "@/stores/useTimetableStore";
+import {
+  getCurrentMemberId,
+  TIMETABLES_QUERY_KEY,
+  useTimetableStore,
+} from "@/stores/useTimetableStore";
+import useUserStore from "@/stores/useUserStore";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
 import type {
   Term,
@@ -28,13 +33,21 @@ import type {
   TimeTableVisibility,
 } from "@/types/timetables";
 
-export const TIMETABLES_QUERY_KEY = ["timetables"] as const;
+export { TIMETABLES_QUERY_KEY };
 
-/**
- * year/term 없이 조회하는 모든 소비자(root의 MobileTimeTablePage 등, 현재
- * useTimeTables() 호출부 전부)가 공유하는 정확한 쿼리 키.
- */
-const ALL_TIMETABLES_QUERY_KEY = [...TIMETABLES_QUERY_KEY, "all", "all"] as const;
+export const getAllTimeTablesQueryKey = (memberId?: string | null) =>
+  [...TIMETABLES_QUERY_KEY, memberId ?? "anonymous", "all", "all"] as const;
+
+export const getTimeTableDetailQueryKey = (
+  timeTableId: number,
+  memberId?: string | null,
+) =>
+  [
+    ...TIMETABLES_QUERY_KEY,
+    "detail",
+    timeTableId,
+    memberId ?? "anonymous",
+  ] as const;
 
 /**
  * 목록에 영향을 주는 mutation 성공 시, 다른 웹뷰(RN 멀티 웹뷰 스택의 sibling
@@ -49,11 +62,14 @@ const ALL_TIMETABLES_QUERY_KEY = [...TIMETABLES_QUERY_KEY, "all", "all"] as cons
  * root 등 다른 웹뷰로 미러링해줄 수 있다. 그 플러그인은 쿼리 fetch 성공
  * ("success")·추가·제거만 브로드캐스트하고 invalidate는 보내지 않는다.
  */
-const syncTimeTablesList = (queryClient: QueryClient) =>
-  queryClient.fetchQuery({
-    queryKey: ALL_TIMETABLES_QUERY_KEY,
+const syncTimeTablesList = (queryClient: QueryClient) => {
+  const token = useUserStore.getState().tokenInfo.accessToken;
+  const memberId = getCurrentMemberId(token);
+  return queryClient.fetchQuery({
+    queryKey: getAllTimeTablesQueryKey(memberId),
     queryFn: () => getTimeTables(),
   });
+};
 
 /**
  * 상세(시간표에 담긴 요소 목록)에 영향을 주는 mutation 성공 시의 강제 refetch.
@@ -71,24 +87,39 @@ const syncTimeTablesList = (queryClient: QueryClient) =>
  *
  * 저장 자체는 이미 성공했으므로, 이 동기화가 실패해도 에러로 번지게 두지 않는다.
  */
-const syncTimeTableDetail = (queryClient: QueryClient, timeTableId: number) =>
-  queryClient
+const syncTimeTableDetail = (queryClient: QueryClient, timeTableId: number) => {
+  const token = useUserStore.getState().tokenInfo.accessToken;
+  const memberId = getCurrentMemberId(token);
+  return queryClient
     .fetchQuery({
-      queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
+      queryKey: getTimeTableDetailQueryKey(timeTableId, memberId),
       queryFn: () => getTimeTableDetail(timeTableId),
     })
     .catch(() => undefined);
+};
 
 export const useTimeTables = (
   year?: number,
   term?: Term,
   options?: { enabled?: boolean },
 ) => {
+  const token = useUserStore((state) => state.tokenInfo.accessToken);
+  const memberId = useMemo(() => getCurrentMemberId(token), [token]);
   const setTimetables = useTimetableStore((state) => state.setTimetables);
   const enabled = options?.enabled ?? true;
 
+  const queryKey = useMemo(
+    () => [
+      ...TIMETABLES_QUERY_KEY,
+      memberId ?? "anonymous",
+      year ?? "all",
+      term ?? "all",
+    ],
+    [memberId, year, term],
+  );
+
   const query = useQuery({
-    queryKey: [...TIMETABLES_QUERY_KEY, year ?? "all", term ?? "all"],
+    queryKey,
     queryFn: () => getTimeTables(year, term),
     enabled,
     staleTime: 1000 * 60 * 5,
@@ -112,13 +143,23 @@ export const useTimeTableDetail = (
   timeTableId?: number | null,
   options?: { enabled?: boolean },
 ) => {
+  const token = useUserStore((state) => state.tokenInfo.accessToken);
+  const memberId = useMemo(() => getCurrentMemberId(token), [token]);
   const updateTimetableEvents = useTimetableStore(
     (state) => state.updateTimetableEvents,
   );
   const enabled = options?.enabled ?? true;
 
+  const queryKey = useMemo(
+    () =>
+      timeTableId != null
+        ? getTimeTableDetailQueryKey(timeTableId, memberId)
+        : [...TIMETABLES_QUERY_KEY, "detail", null, memberId ?? "anonymous"],
+    [timeTableId, memberId],
+  );
+
   const query = useQuery({
-    queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
+    queryKey,
     queryFn: () => getTimeTableDetail(timeTableId!),
     enabled: enabled && timeTableId != null,
     staleTime: 1000 * 60 * 5,
@@ -305,8 +346,16 @@ export const useDeleteTimeTableItem = () => {
 };
 
 export const useSemesterTimeTables = (semesterId?: number) => {
+  const token = useUserStore((state) => state.tokenInfo.accessToken);
+  const memberId = useMemo(() => getCurrentMemberId(token), [token]);
+
   const query = useQuery({
-    queryKey: [...TIMETABLES_QUERY_KEY, "semester", semesterId],
+    queryKey: [
+      ...TIMETABLES_QUERY_KEY,
+      "semester",
+      semesterId,
+      memberId ?? "anonymous",
+    ],
     queryFn: () => getTimeTablesBySemester(semesterId!),
     enabled: semesterId !== undefined,
     staleTime: 1000 * 60 * 5,
