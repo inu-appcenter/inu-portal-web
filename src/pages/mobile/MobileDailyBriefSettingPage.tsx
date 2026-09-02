@@ -80,6 +80,32 @@ const BASE_TIME_PRESETS = [
   "22:00",
 ];
 
+const validateBriefTime = (
+  timeStr: string,
+): { isValid: boolean; message?: string } => {
+  if (!timeStr) return { isValid: false, message: "시간을 입력해 주세요." };
+  const [hStr, mStr] = timeStr.split(":");
+  const hour = parseInt(hStr, 10);
+  const minute = parseInt(mStr, 10);
+
+  if (isNaN(hour) || isNaN(minute)) {
+    return { isValid: false, message: "올바른 시간 형식이 아닙니다." };
+  }
+  if (hour < 7 || (hour === 22 && minute > 50) || hour > 22) {
+    return {
+      isValid: false,
+      message: "브리핑 알림 시간은 오전 07:00부터 오후 10:50 사이로 설정해 주세요.",
+    };
+  }
+  if (minute % 10 !== 0) {
+    return {
+      isValid: false,
+      message: "알림 시간은 10분 단위(00, 10, 20, 30, 40, 50분)로 설정해 주세요.",
+    };
+  }
+  return { isValid: true };
+};
+
 const SCHEDULE_SCOPE_OPTIONS: {
   label: string;
   value: ScheduleScope;
@@ -515,15 +541,24 @@ export default function MobileDailyBriefSettingPage() {
                               !BASE_TIME_PRESETS.includes(
                                 settings.timetableDailyBriefTime,
                               )) && (
-                              <CustomTimePickerRow>
-                                <TimePickerLabel>
-                                  시간 직접 지정:
-                                </TimePickerLabel>
-                                <StyledTimeInput
-                                  type="time"
-                                  value={settings.timetableDailyBriefTime}
-                                  onChange={(e) => {
-                                    if (e.target.value) {
+                              <CustomTimePickerWrapper>
+                                <CustomTimePickerRow>
+                                  <TimePickerLabel>
+                                    시간 직접 지정:
+                                  </TimePickerLabel>
+                                  <StyledTimeInput
+                                    type="time"
+                                    min="07:00"
+                                    max="22:50"
+                                    step="600"
+                                    value={settings.timetableDailyBriefTime}
+                                    onChange={(e) => {
+                                      if (!e.target.value) return;
+                                      const validation = validateBriefTime(e.target.value);
+                                      if (!validation.isValid) {
+                                        alert(validation.message);
+                                        return;
+                                      }
                                       handleUpdate({
                                         timetableDailyBriefTime: e.target.value,
                                       });
@@ -533,10 +568,13 @@ export default function MobileDailyBriefSettingPage() {
                                           time: e.target.value,
                                         },
                                       );
-                                    }
-                                  }}
-                                />
-                              </CustomTimePickerRow>
+                                    }}
+                                  />
+                                </CustomTimePickerRow>
+                                <TimePickerHelpText>
+                                  오전 07:00 ~ 오후 10:50 사이 (10분 단위)
+                                </TimePickerHelpText>
+                              </CustomTimePickerWrapper>
                             )}
                           </TimeOptionContainer>
                         )}
@@ -671,13 +709,22 @@ export default function MobileDailyBriefSettingPage() {
                             !BASE_TIME_PRESETS.includes(
                               settings.scheduleDailyBriefTime,
                             )) && (
-                            <CustomTimePickerRow>
-                              <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
-                              <StyledTimeInput
-                                type="time"
-                                value={settings.scheduleDailyBriefTime}
-                                onChange={(e) => {
-                                  if (e.target.value) {
+                            <CustomTimePickerWrapper>
+                              <CustomTimePickerRow>
+                                <TimePickerLabel>시간 직접 지정:</TimePickerLabel>
+                                <StyledTimeInput
+                                  type="time"
+                                  min="07:00"
+                                  max="22:50"
+                                  step="600"
+                                  value={settings.scheduleDailyBriefTime}
+                                  onChange={(e) => {
+                                    if (!e.target.value) return;
+                                    const validation = validateBriefTime(e.target.value);
+                                    if (!validation.isValid) {
+                                      alert(validation.message);
+                                      return;
+                                    }
                                     handleUpdate({
                                       scheduleDailyBriefTime: e.target.value,
                                     });
@@ -687,10 +734,13 @@ export default function MobileDailyBriefSettingPage() {
                                         time: e.target.value,
                                       },
                                     );
-                                  }
-                                }}
-                              />
-                            </CustomTimePickerRow>
+                                  }}
+                                />
+                              </CustomTimePickerRow>
+                              <TimePickerHelpText>
+                                오전 07:00 ~ 오후 10:50 사이 (10분 단위)
+                              </TimePickerHelpText>
+                            </CustomTimePickerWrapper>
                           )}
                         </TimeOptionContainer>
                       </SubOptionBox>
@@ -1764,6 +1814,14 @@ const TimeSelectLabel = styled.div`
   font-weight: 600;
 `;
 
+const CustomTimePickerWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  gap: 4px;
+`;
+
 const CustomTimePickerRow = styled.div`
   display: flex;
   align-items: center;
@@ -1796,6 +1854,13 @@ const StyledTimeInput = styled.input`
     border-color: #5e92f0;
     box-shadow: 0 0 0 2px rgba(94, 146, 240, 0.2);
   }
+`;
+
+const TimePickerHelpText = styled.span`
+  font-size: 11.5px;
+  color: #718096;
+  font-weight: 500;
+  padding-right: 2px;
 `;
 
 const StyledSelect = styled.select`

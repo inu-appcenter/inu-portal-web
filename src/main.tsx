@@ -3,8 +3,9 @@ import ReactDOM from "react-dom/client";
 import App from "@/App";
 import GlobalErrorBoundary from "@/components/common/GlobalErrorBoundary";
 import CommonStyles from "@/styles/CommonStyles";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimental";
+import { queryClient } from "@/lib/queryClient";
 import { initMixpanel } from "./utils/mixpanel";
 import { startPwaCleanup } from "./utils/pwaCleanup";
 import { isLegacyHost } from "./utils/legacyHost";
@@ -27,15 +28,6 @@ function bootApp() {
 
   // 옛 PWA·임시 핫픽스 워커의 잔재를 회수한다. 자세한 배경은 utils/pwaCleanup.ts 참고.
   startPwaCleanup();
-
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
 
   try {
     // RN 멀티 웹뷰 환경에서 같은 오리진의 다른 웹뷰(또는 브라우저 탭)와 쿼리

@@ -2,10 +2,13 @@ import { create } from "zustand";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { TimeTable, TimeTableVisibility } from "@/types/timetables";
 import { formatSemester } from "@/utils/semester";
+import { getMemberIdFromToken } from "@/utils/token";
 import {
   broadcastSync,
   flushBroadcastSync,
 } from "@/stores/middleware/broadcastSync";
+
+export const TIMETABLES_QUERY_KEY = ["timetables"] as const;
 
 export interface TimetableTheme {
   colorTheme: "default" | "pastelWarm" | "pastelCool" | "monotone";
@@ -49,37 +52,36 @@ const getLegacyTimetableThemes = (): Record<number, TimetableTheme> => {
   }
 };
 
-const getCurrentMemberId = () => {
+export const getCurrentMemberId = (token?: string | null) => {
+  if (token) {
+    const memberId = getMemberIdFromToken(token);
+    if (memberId) return memberId;
+  }
+
   if (typeof window === "undefined") return null;
 
   try {
     const tokenInfo = JSON.parse(window.localStorage.getItem("tokenInfo") ?? "{}");
-    const token = tokenInfo.accessToken as string | undefined;
-    if (!token) return null;
-
-    const payload = token.split(".")[1];
-    if (!payload) return null;
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
-    const decoded = JSON.parse(window.atob(normalized));
-    return typeof decoded.sub === "string" && decoded.sub ? decoded.sub : null;
+    return getMemberIdFromToken(tokenInfo.accessToken);
   } catch {
     return null;
   }
 };
 
-const getTimetableCacheKey = () => {
-  const memberId = getCurrentMemberId();
-  return memberId ? `${TIMETABLE_CACHE_PREFIX}:${memberId}` : null;
+const getTimetableCacheKey = (memberId?: string | null) => {
+  const targetMemberId = memberId !== undefined ? memberId : getCurrentMemberId();
+  return targetMemberId ? `${TIMETABLE_CACHE_PREFIX}:${targetMemberId}` : null;
 };
 
-const getCachedTimetableState = (): Omit<TimetableCache, "version"> => {
+export const getCachedTimetableState = (
+  memberId?: string | null,
+): Omit<TimetableCache, "version"> => {
   const empty = {
     selectedSemester: "",
     activeTimetableId: null,
     timetables: [],
   };
-  const cacheKey = getTimetableCacheKey();
+  const cacheKey = getTimetableCacheKey(memberId);
   if (!cacheKey) return empty;
 
   try {
@@ -124,6 +126,7 @@ interface TimetableStore {
   setSemester: (semester: string) => void;
   setActiveTimetable: (id: number | null) => void;
   setTimetables: (serverTimetables: TimeTable[]) => void;
+  reloadTimetableCache: (memberId?: string | null) => void;
   updateTimetableTheme: (id: number, theme: TimetableTheme) => void;
   updateTimetableEvents: (id: number, events: ClassItem[]) => void;
 }
@@ -176,6 +179,14 @@ export const useTimetableStore = create<TimetableStore>()(
   selectedSemester: initialCachedState.selectedSemester,
   activeTimetableId: initialCachedState.activeTimetableId,
   timetables: initialCachedState.timetables,
+  reloadTimetableCache: (memberId) => {
+    const nextState = getCachedTimetableState(memberId);
+    set({
+      selectedSemester: nextState.selectedSemester,
+      activeTimetableId: nextState.activeTimetableId,
+      timetables: nextState.timetables,
+    });
+  },
   setSemester: (semester) => {
     set({ selectedSemester: semester });
     storeTimetableCache(get());
