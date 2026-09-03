@@ -607,6 +607,28 @@ export default function MobileTimetableImageImportPage() {
                 const displayProfessor =
                   selectedOffering?.professor ??
                   (match.group.professor || "교수 미정");
+                const displaySchedule = (() => {
+                  if (selectedOffering) {
+                    if (
+                      selectedOffering.meetings &&
+                      selectedOffering.meetings.length > 0
+                    ) {
+                      return formatOfferingMeetings(selectedOffering);
+                    }
+                    return "시간 미지정";
+                  }
+                  if (match.group.blocks && match.group.blocks.length > 0) {
+                    const text = match.group.blocks
+                      .filter((b) => b.startTime && b.endTime)
+                      .map(
+                        (block) =>
+                          `${DAY_LABEL[block.day] ?? block.day} ${block.startTime}~${block.endTime}`,
+                      )
+                      .join(", ");
+                    if (text) return text;
+                  }
+                  return "시간 미지정";
+                })();
 
                 return (
                   <ResultCard key={match.group.id} $completed={isCardCompleted}>
@@ -643,12 +665,7 @@ export default function MobileTimetableImageImportPage() {
                     </CardHeaderRow>
 
                     <CardScheduleText>
-                      {match.group.blocks
-                        .map(
-                          (block) =>
-                            `${DAY_LABEL[block.day] ?? block.day} ${block.startTime}~${block.endTime}`,
-                        )
-                        .join(", ")}
+                      {displaySchedule}
                     </CardScheduleText>
 
                     {match.candidates.length > 0 ? (
